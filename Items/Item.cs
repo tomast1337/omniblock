@@ -7,8 +7,14 @@ using java.lang;
 
 namespace betareborn.Items
 {
-    public class Item : java.lang.Object
-    {
+    
+    public class Item : java.lang.Object {
+        
+        static Item()
+        {
+            StatList.func_25151_b();
+        }
+        
         protected static java.util.Random itemRand = new();
         public static Item[] itemsList = new Item[32000];
         public static Item shovelSteel = (new ItemSpade(0, EnumToolMaterial.IRON)).setIconCoord(2, 5).setItemName("shovelIron");
@@ -314,9 +320,5 @@ namespace betareborn.Items
         {
         }
 
-        static Item()
-        {
-            StatList.func_25151_b();
-        }
     }
 }

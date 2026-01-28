@@ -9,7 +9,7 @@ namespace betareborn.Stats
         private Map field_25102_a = new HashMap();
         private Map field_25101_b = new HashMap();
         private bool field_27189_c = false;
-        private StatsSyncher statsSyncher;
+        private StatsSyncer _statsSyncer;
 
         public StatFileWriter(Session var1, java.io.File var2)
         {
@@ -36,7 +36,7 @@ namespace betareborn.Stats
                 }
             }
 
-            statsSyncher = new StatsSyncher(var1, this, var3);
+            _statsSyncer = new StatsSyncer(var1, this, var3);
         }
 
         public void readStat(StatBase var1, int var2)
@@ -241,17 +241,17 @@ namespace betareborn.Stats
 
         public void syncStats()
         {
-            statsSyncher.syncStatsFileWithMap(func_27176_a());
+            _statsSyncer.syncStatsFileWithMap(func_27176_a());
         }
 
         public void func_27178_d()
         {
-            if (field_27189_c && statsSyncher.func_27420_b())
+            if (field_27189_c && _statsSyncer.func_27420_b())
             {
-                statsSyncher.func_27424_a(func_27176_a());
+                _statsSyncer.func_27424_a(func_27176_a());
             }
 
-            statsSyncher.func_27425_c();
+            _statsSyncer.func_27425_c();
         }
     }
 

@@ -8,9 +8,9 @@ namespace betareborn.Guis
 
         private TileEntityFurnace furnaceInventory;
 
-        public GuiFurnace(InventoryPlayer var1, TileEntityFurnace var2) : base(new ContainerFurnace(var1, var2))
+        public GuiFurnace(InventoryPlayer playerInventory, TileEntityFurnace furnace) : base(new ContainerFurnace(playerInventory, furnace))
         {
-            furnaceInventory = var2;
+            furnaceInventory = furnace;
         }
 
         protected override void drawGuiContainerForegroundLayer()

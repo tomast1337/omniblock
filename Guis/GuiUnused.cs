@@ -18,7 +18,7 @@ namespace betareborn.Guis
             base.drawScreen(var1, var2, var3);
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
         }
     }

@@ -179,9 +179,9 @@ namespace betareborn.Guis
 
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
-            if (var2 == 1 || var2 == mc.gameSettings.keyBindInventory.keyCode)
+            if (eventKey == 1 || eventKey == mc.gameSettings.keyBindInventory.keyCode)
             {
                 mc.thePlayer.closeScreen();
             }

@@ -58,11 +58,11 @@ namespace betareborn.Guis
             }
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
-            field_22114_h.textboxKeyTyped(var1, var2);
+            field_22114_h.textboxKeyTyped(eventChar, eventKey);
             ((GuiButton)controlList.get(0)).enabled = field_22114_h.getText().Trim().Length > 0;
-            if (var1 == 13)
+            if (eventChar == 13)
             {
                 actionPerformed((GuiButton)controlList.get(0));
             }

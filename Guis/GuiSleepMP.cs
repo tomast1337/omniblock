@@ -18,13 +18,13 @@ namespace betareborn.Guis
             Keyboard.enableRepeatEvents(false);
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
-            if (var2 == 1)
+            if (eventKey == 1)
             {
                 func_22115_j();
             }
-            else if (var2 == 28)
+            else if (eventKey == 28)
             {
                 String var3 = message.Trim();
                 if (var3.Length > 0)
@@ -36,7 +36,7 @@ namespace betareborn.Guis
             }
             else
             {
-                base.keyTyped(var1, var2);
+                base.keyTyped(eventChar, eventKey);
             }
 
         }

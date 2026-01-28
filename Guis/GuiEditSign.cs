@@ -53,26 +53,26 @@ namespace betareborn.Guis
             }
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
-            if (var2 == 200)
+            if (eventKey == 200)
             {
                 editLine = editLine - 1 & 3;
             }
 
-            if (var2 == 208 || var2 == 28)
+            if (eventKey == 208 || eventKey == 28)
             {
                 editLine = editLine + 1 & 3;
             }
 
-            if (var2 == 14 && entitySign.signText[editLine].Length > 0)
+            if (eventKey == 14 && entitySign.signText[editLine].Length > 0)
             {
                 entitySign.signText[editLine] = entitySign.signText[editLine].Substring(0, entitySign.signText[editLine].Length - 1);
             }
 
-            if (allowedCharacters.IndexOf(var1) >= 0 && entitySign.signText[editLine].Length < 15)
+            if (allowedCharacters.IndexOf(eventChar) >= 0 && entitySign.signText[editLine].Length < 15)
             {
-                entitySign.signText[editLine] = entitySign.signText[editLine] + var1;
+                entitySign.signText[editLine] = entitySign.signText[editLine] + eventChar;
             }
 
         }

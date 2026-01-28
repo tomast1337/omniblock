@@ -14,7 +14,7 @@ namespace betareborn.Guis
             netHandler = var1;
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
         }
 

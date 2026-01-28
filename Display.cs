@@ -22,7 +22,7 @@ namespace betareborn
         private static string _title = "Game";
         private static bool _fullscreen = false;
         private static int _swapInterval = 0;
-        private static bool _resizable = false;
+        private static bool _resizable = true;
         private static bool _wasResized = false;
         private static bool _closeRequested = false;
 

@@ -3,12 +3,12 @@ using java.util;
 
 namespace betareborn.Threading
 {
-    public class ThreadStatSyncherSend : java.lang.Thread
+    public class ThreadStatSyncerSend : java.lang.Thread
     {
         readonly Map field_27233_a;
-        readonly StatsSyncher field_27232_b;
+        readonly StatsSyncer field_27232_b;
 
-        public ThreadStatSyncherSend(StatsSyncher var1, Map var2)
+        public ThreadStatSyncerSend(StatsSyncer var1, Map var2)
         {
             field_27232_b = var1;
             field_27233_a = var2;
@@ -19,7 +19,7 @@ namespace betareborn.Threading
         {
             try
             {
-                StatsSyncher.func_27412_a(field_27232_b, field_27233_a, StatsSyncher.func_27414_e(field_27232_b), StatsSyncher.func_27417_f(field_27232_b), StatsSyncher.func_27419_g(field_27232_b));
+                StatsSyncer.func_27412_a(field_27232_b, field_27233_a, StatsSyncer.func_27414_e(field_27232_b), StatsSyncer.func_27417_f(field_27232_b), StatsSyncer.func_27419_g(field_27232_b));
             }
             catch (java.lang.Exception var5)
             {
@@ -27,7 +27,7 @@ namespace betareborn.Threading
             }
             finally
             {
-                StatsSyncher.func_27416_a(field_27232_b, false);
+                StatsSyncer.func_27416_a(field_27232_b, false);
             }
 
         }

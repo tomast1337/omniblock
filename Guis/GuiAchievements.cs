@@ -51,16 +51,16 @@ namespace betareborn.Guis
             base.actionPerformed(var1);
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
-            if (var2 == mc.gameSettings.keyBindInventory.keyCode)
+            if (eventKey == mc.gameSettings.keyBindInventory.keyCode)
             {
                 mc.displayGuiScreen((GuiScreen)null);
                 mc.setIngameFocus();
             }
             else
             {
-                base.keyTyped(var1, var2);
+                base.keyTyped(eventChar, eventKey);
             }
 
         }

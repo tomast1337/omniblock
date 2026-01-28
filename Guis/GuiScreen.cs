@@ -27,9 +27,9 @@ namespace betareborn.Guis
 
         }
 
-        protected virtual void keyTyped(char var1, int var2)
+        protected virtual void keyTyped(char eventChar, int eventKey)
         {
-            if (var2 == 1)
+            if (eventKey == 1)
             {
                 mc.displayGuiScreen(null);
                 mc.setIngameFocus();

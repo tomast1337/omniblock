@@ -1017,13 +1017,13 @@ namespace betareborn.Entities
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     GLManager.GL.Fog(GLEnum.FogEnd, farPlaneDistance * 0.8F);
                 }
-
+            
                 if (mc.theWorld.worldProvider.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                 }
             }
-
+            
             GLManager.GL.Enable(GLEnum.ColorMaterial);
             GLManager.GL.ColorMaterial(GLEnum.Front, GLEnum.Ambient);
         }

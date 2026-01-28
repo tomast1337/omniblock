@@ -5,7 +5,7 @@ using java.util;
 
 namespace betareborn.Stats
 {
-    public class StatsSyncher
+    public class StatsSyncer
     {
         private volatile bool field_27438_a = false;
         private volatile Map field_27437_b = null;
@@ -21,7 +21,7 @@ namespace betareborn.Stats
         private int field_27427_l = 0;
         private int field_27426_m = 0;
 
-        public StatsSyncher(Session var1, StatFileWriter var2, java.io.File var3)
+        public StatsSyncer(Session var1, StatFileWriter var2, java.io.File var3)
         {
             field_27434_e = new java.io.File(var3, "stats_" + var1.username.ToLower() + "_unsent.dat");
             field_27433_f = new java.io.File(var3, "stats_" + var1.username.ToLower() + ".dat");
@@ -145,7 +145,7 @@ namespace betareborn.Stats
             {
                 field_27427_l = 100;
                 field_27438_a = true;
-                (new ThreadStatSyncherReceive(this)).start();
+                (new ThreadStatSyncerReceive(this)).start();
             }
         }
 
@@ -159,7 +159,7 @@ namespace betareborn.Stats
             {
                 field_27427_l = 100;
                 field_27438_a = true;
-                (new ThreadStatSyncherSend(this, var1)).start();
+                (new ThreadStatSyncerSend(this, var1)).start();
             }
         }
 
@@ -233,57 +233,57 @@ namespace betareborn.Stats
 
         }
 
-        public static Map func_27422_a(StatsSyncher var0)
+        public static Map func_27422_a(StatsSyncer var0)
         {
             return var0.field_27437_b;
         }
 
-        public static java.io.File func_27423_b(StatsSyncher var0)
+        public static java.io.File func_27423_b(StatsSyncer var0)
         {
             return var0.field_27433_f;
         }
 
-        public static java.io.File func_27411_c(StatsSyncher var0)
+        public static java.io.File func_27411_c(StatsSyncer var0)
         {
             return var0.field_27431_h;
         }
 
-        public static java.io.File func_27413_d(StatsSyncher var0)
+        public static java.io.File func_27413_d(StatsSyncer var0)
         {
             return var0.field_27429_j;
         }
 
-        public static void func_27412_a(StatsSyncher var0, Map var1, java.io.File var2, java.io.File var3, java.io.File var4)
+        public static void func_27412_a(StatsSyncer var0, Map var1, java.io.File var2, java.io.File var3, java.io.File var4)
         {
             var0.func_27410_a(var1, var2, var3, var4);
         }
 
-        public static Map func_27421_a(StatsSyncher var0, Map var1)
+        public static Map func_27421_a(StatsSyncer var0, Map var1)
         {
             return var0.field_27437_b = var1;
         }
 
-        public static Map func_27409_a(StatsSyncher var0, java.io.File var1, java.io.File var2, java.io.File var3)
+        public static Map func_27409_a(StatsSyncer var0, java.io.File var1, java.io.File var2, java.io.File var3)
         {
             return var0.func_27415_a(var1, var2, var3);
         }
 
-        public static bool func_27416_a(StatsSyncher var0, bool var1)
+        public static bool func_27416_a(StatsSyncer var0, bool var1)
         {
             return var0.field_27438_a = var1;
         }
 
-        public static java.io.File func_27414_e(StatsSyncher var0)
+        public static java.io.File func_27414_e(StatsSyncer var0)
         {
             return var0.field_27434_e;
         }
 
-        public static java.io.File func_27417_f(StatsSyncher var0)
+        public static java.io.File func_27417_f(StatsSyncer var0)
         {
             return var0.field_27432_g;
         }
 
-        public static java.io.File func_27419_g(StatsSyncher var0)
+        public static java.io.File func_27419_g(StatsSyncer var0)
         {
             return var0.field_27430_i;
         }

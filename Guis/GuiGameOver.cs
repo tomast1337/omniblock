@@ -17,7 +17,7 @@ namespace betareborn.Guis
 
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
         }
 

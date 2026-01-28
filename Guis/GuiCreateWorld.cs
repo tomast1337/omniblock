@@ -114,18 +114,18 @@ namespace betareborn.Guis
             }
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
             if (textboxWorldName.isFocused)
             {
-                textboxWorldName.textboxKeyTyped(var1, var2);
+                textboxWorldName.textboxKeyTyped(eventChar, eventKey);
             }
             else
             {
-                textboxSeed.textboxKeyTyped(var1, var2);
+                textboxSeed.textboxKeyTyped(eventChar, eventKey);
             }
 
-            if (var1 == 13)
+            if (eventChar == 13)
             {
                 actionPerformed((GuiButton)controlList.get(0));
             }

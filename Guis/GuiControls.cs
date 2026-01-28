@@ -52,17 +52,17 @@ namespace betareborn.Guis
 
         }
 
-        protected override void keyTyped(char var1, int var2)
+        protected override void keyTyped(char eventChar, int eventKey)
         {
             if (buttonId >= 0)
             {
-                options.setKeyBinding(buttonId, var2);
+                options.setKeyBinding(buttonId, eventKey);
                 ((GuiButton)controlList.get(buttonId)).displayString = options.getOptionDisplayString(buttonId);
                 buttonId = -1;
             }
             else
             {
-                base.keyTyped(var1, var2);
+                base.keyTyped(eventChar, eventKey);
             }
 
         }

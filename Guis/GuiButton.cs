@@ -13,23 +13,23 @@ namespace betareborn.Guis
         public bool enabled;
         public bool enabled2;
 
-        public GuiButton(int var1, int var2, int var3, string var4) : this(var1, var2, var3, 200, 20, var4)
+        public GuiButton(int _id, int xPos, int yPos, string var4) : this(_id, xPos, yPos, 200, 20, var4)
         {
 
         }
 
-        public GuiButton(int var1, int var2, int var3, int var4, int var5, string var6)
+        public GuiButton(int _id, int xPos, int yPos, int wid, int hei, string displayStr)
         {
             width = 200;
             height = 20;
             enabled = true;
             enabled2 = true;
-            id = var1;
-            xPosition = var2;
-            yPosition = var3;
-            width = var4;
-            height = var5;
-            displayString = var6;
+            id = _id;
+            xPosition = xPos;
+            yPosition = yPos;
+            width = wid;
+            height = hei;
+            displayString = displayStr;
         }
 
         protected virtual int getHoverState(bool var1)

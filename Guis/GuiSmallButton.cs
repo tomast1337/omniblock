@@ -5,16 +5,16 @@ namespace betareborn.Guis
 
         private readonly EnumOptions enumOptions;
 
-        public GuiSmallButton(int var1, int var2, int var3, String var4) : this(var1, var2, var3, null, var4)
+        public GuiSmallButton(int x, int y, int width, String var4) : this(x, y, width, null, var4)
         {
         }
 
-        public GuiSmallButton(int var1, int var2, int var3, int var4, int var5, String var6) : base(var1, var2, var3, var4, var5, var6)
+        public GuiSmallButton(int x, int y, int width, int wid, int hei, String displayStr) : base(x, y, width, wid, hei, displayStr)
         {
             enumOptions = null;
         }
 
-        public GuiSmallButton(int var1, int var2, int var3, EnumOptions var4, String var5) : base(var1, var2, var3, 150, 20, var5)
+        public GuiSmallButton(int x, int y, int width, EnumOptions var4, String var5) : base(x, y, width, 150, 20, var5)
         {
             enumOptions = var4;
         }
