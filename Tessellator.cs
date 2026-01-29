@@ -46,7 +46,6 @@ namespace betareborn
         private readonly int vboCount = 10;
         private readonly int bufferSize;
 
-        // Capture mode fields
         private bool isCaptureMode = false;
         private List<Vertex> capturedVertices = null;
         private int[] scratchBuffer = null;
@@ -62,11 +61,15 @@ namespace betareborn
             GLAllocation.generateBuffersARB(vertexBuffers);
         }
 
+        public Tessellator()
+        {
+        }
+
         public void startCapture()
         {
             isCaptureMode = true;
             capturedVertices = [];
-            scratchBuffer = new int[bufferSize];
+            scratchBuffer = new int[32];
             scratchBufferIndex = 0;
         }
 
@@ -83,6 +86,15 @@ namespace betareborn
             scratchBuffer = null;
             scratchBufferIndex = 0;
             return result;
+        }
+
+        public void begin()
+        {
+            scratchBufferIndex = 0;
+            vertexCount = 0;
+            hasTexture = false;
+            hasColor = false;
+            hasNormals = false;
         }
 
         public unsafe void draw()
@@ -171,7 +183,10 @@ namespace betareborn
         private void reset()
         {
             vertexCount = 0;
-            byteBuffer.clear();
+            if (byteBuffer != null)
+            {
+                byteBuffer.clear();
+            }
             rawBufferIndex = 0;
             addedVertices = 0;
         }

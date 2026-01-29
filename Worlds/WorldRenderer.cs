@@ -12,7 +12,6 @@ namespace betareborn.Worlds
     public class WorldRenderer
     {
         public World worldObj;
-        private static Tessellator tessellator = Tessellator.instance;
         public static int chunksUpdated = 0;
 
         // VBOs for this specific renderer
@@ -119,13 +118,14 @@ namespace betareborn.Worlds
 
                 Chunk.isLit = false;
                 Stopwatch sw2 = Stopwatch.StartNew();
-                ChunkCache var9 = new(worldObj, var1 - var8, var2 - var8, var3 - var8, var4 + var8, var5 + var8, var6 + var8);
+                ChunkCacheSnapshot var9 = new(worldObj, var1 - var8, var2 - var8, var3 - var8, var4 + var8, var5 + var8, var6 + var8);
                 sw2.Stop();
                 if (sw2.Elapsed.TotalMilliseconds > 1.0)
                 {
                     Console.WriteLine($"sw2 ms: {sw2.Elapsed.TotalMilliseconds:F4}");
                 }
-                RenderBlocks var10 = new(var9, Tessellator.instance);
+                Tessellator tessellator = new();
+                RenderBlocks var10 = new(var9, tessellator);
 
                 List<Vertex>? solidVertices = null;
                 List<Vertex>? translucentVertices = null;
@@ -214,6 +214,8 @@ namespace betareborn.Worlds
                 {
                     Console.WriteLine($"sw ms: {sw.Elapsed.TotalMilliseconds:F4}");
                 }
+
+                var9.Dispose();
             }
 
             return true;
