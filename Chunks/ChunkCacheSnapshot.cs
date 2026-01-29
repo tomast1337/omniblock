@@ -13,6 +13,7 @@ namespace betareborn.Chunks
         private readonly float[] lightTable;
         private readonly int skylightSubtracted;
         private readonly WorldChunkManager worldChunkManager;
+        private bool isLit = false;
 
         public ChunkCacheSnapshot(World var1, int var2, int var3, int var4, int var5, int var6, int var7)
         {
@@ -175,7 +176,7 @@ namespace betareborn.Chunks
                 {
                     var5 = (var1 >> 4) - chunkX;
                     var6 = (var3 >> 4) - chunkZ;
-                    return chunkArray[var5][var6].getBlockLightValue(var1 & 15, var2, var3 & 15, skylightSubtracted);
+                    return chunkArray[var5][var6].getBlockLightValue(var1 & 15, var2, var3 & 15, skylightSubtracted, out isLit);
                 }
             }
             else
@@ -199,6 +200,11 @@ namespace betareborn.Chunks
         {
             Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
             return var4 == null ? false : var4.isOpaqueCube();
+        }
+
+        public bool getIsLit()
+        {
+            return isLit;
         }
 
         public void Dispose()

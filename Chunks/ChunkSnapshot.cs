@@ -9,6 +9,7 @@ namespace betareborn.Chunks
         private readonly NibbleArray skylightMap;
         private readonly NibbleArray blocklightMap;
         private bool disposed = false;
+        private bool isLit = false;
 
         public ChunkSnapshot(Chunk toSnapshot)
         {
@@ -42,13 +43,13 @@ namespace betareborn.Chunks
             return light == EnumSkyBlock.Sky ? skylightMap.getNibble(x, y, z) : (light == EnumSkyBlock.Block ? blocklightMap.getNibble(x, y, z) : 0);
         }
 
-        public int getBlockLightValue(int x, int y, int z, int var4)
+        public int getBlockLightValue(int x, int y, int z, int var4, out bool isLit)
         {
+            isLit = this.isLit;
             int var5 = skylightMap.getNibble(x, y, z);
             if (var5 > 0)
             {
-                //TODO: IS THIS IMPORTANT?
-                //isLit = true;
+                isLit = this.isLit = true;
             }
 
             var5 -= var4;

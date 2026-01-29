@@ -14,7 +14,6 @@ namespace betareborn.Worlds
         public World worldObj;
         public static int chunksUpdated = 0;
 
-        // VBOs for this specific renderer
         private uint solidVBO = 0;
         private uint translucentVBO = 0;
         private int solidVertexCount = 0;
@@ -46,8 +45,9 @@ namespace betareborn.Worlds
         public int glOcclusionQuery;
         public bool isChunkLit;
         private bool isInitialized = false;
+        private TaskPool updateTaskPool;
 
-        public unsafe WorldRenderer(World var1, int var3, int var4, int var5, int var6)
+        public unsafe WorldRenderer(World var1, int var3, int var4, int var5, int var6, TaskPool tp)
         {
             worldObj = var1;
             sizeWidth = sizeHeight = sizeDepth = var6;
@@ -61,6 +61,7 @@ namespace betareborn.Worlds
             posX = -999;
             setPosition(var3, var4, var5);
             needsUpdate = false;
+            updateTaskPool = tp;
         }
 
         public void setPosition(int var1, int var2, int var3)
@@ -205,7 +206,7 @@ namespace betareborn.Worlds
 
                 UploadMeshData(solidVertices, translucentVertices);
 
-                isChunkLit = Chunk.isLit;
+                isChunkLit = var9.getIsLit();
                 isInitialized = true;
 
                 sw.Stop();

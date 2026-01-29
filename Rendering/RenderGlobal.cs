@@ -9,7 +9,7 @@ using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering
 {
-    public class RenderGlobal : IWorldAccess
+    public class RenderGlobal : IWorldAccess, IDisposable
     {
         public List<TileEntity> tileEntities = [];
         private World worldObj;
@@ -45,6 +45,7 @@ namespace betareborn.Rendering
         private int renderersSkippingRenderPass;
         private int worldRenderersCheckIndex;
         private readonly List<WorldRenderer> glRenderLists = [];
+        private readonly TaskPool worldRendererUpdateTaskPool = new(2, 10);
         //private readonly RenderList[] allRenderLists = [new RenderList(), new RenderList(), new RenderList(), new RenderList()];
         double prevSortX = -9999.0D;
         double prevSortY = -9999.0D;
@@ -224,7 +225,7 @@ namespace betareborn.Rendering
                 {
                     for (int var6 = 0; var6 < renderChunksDeep; ++var6)
                     {
-                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = new(worldObj, var4 * 16, var5 * 16, var6 * 16, 16)
+                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = new(worldObj, var4 * 16, var5 * 16, var6 * 16, 16, worldRendererUpdateTaskPool)
                         {
                             isWaitingOnOcclusionQuery = false,
                             isVisible = true,
@@ -1406,6 +1407,12 @@ namespace betareborn.Rendering
                     break;
             }
 
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            worldRendererUpdateTaskPool.Dispose();
         }
     }
 
