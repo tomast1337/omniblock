@@ -24,8 +24,7 @@ namespace betareborn.Worlds
         public World worldObj;
         public static int chunksUpdated = 0;
 
-        private uint solidVBO = 0;
-        private uint translucentVBO = 0;
+        private readonly VertexBuffer<Vertex>[] vertexBuffers = new VertexBuffer<Vertex>[2];
         private int solidVertexCount = 0;
         private int translucentVertexCount = 0;
 
@@ -52,7 +51,6 @@ namespace betareborn.Worlds
         public int chunkIndex;
         public bool isVisible = true;
         public bool isWaitingOnOcclusionQuery;
-        public int glOcclusionQuery;
         public bool isChunkLit;
         private bool isInitialized = false;
         private TaskPool updateTaskPool;
@@ -65,11 +63,6 @@ namespace betareborn.Worlds
             worldObj = var1;
             sizeWidth = sizeHeight = sizeDepth = var6;
             rendererRadius = MathHelper.sqrt_float((float)(sizeWidth * sizeWidth + sizeHeight * sizeHeight + sizeDepth * sizeDepth)) / 2.0F;
-
-            uint* vbos = stackalloc uint[2];
-            GLManager.GL.GenBuffers(2, vbos);
-            solidVBO = vbos[0];
-            translucentVBO = vbos[1];
 
             posX = -999;
             setPosition(var3, var4, var5);
@@ -263,8 +256,16 @@ namespace betareborn.Worlds
                 solidVertexCount = solidVertices.Count;
 
                 var sv = CollectionsMarshal.AsSpan(solidVertices);
-                GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, solidVBO);
-                GLManager.GL.BufferData<Vertex>(GLEnum.ArrayBuffer, sv, GLEnum.StaticDraw);
+
+                var vb = vertexBuffers[0];
+                if (vb == null)
+                {
+                    vertexBuffers[0] = new(sv);
+                }
+                else
+                {
+                    vb.BufferData(sv);
+                }
             }
             else
             {
@@ -276,15 +277,21 @@ namespace betareborn.Worlds
                 translucentVertexCount = translucentVertices.Count;
 
                 var tv = CollectionsMarshal.AsSpan(translucentVertices);
-                GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, translucentVBO);
-                GLManager.GL.BufferData<Vertex>(GLEnum.ArrayBuffer, tv, GLEnum.StaticDraw);
+
+                var vb = vertexBuffers[1];
+                if (vb == null)
+                {
+                    vertexBuffers[1] = new(tv);
+                }
+                else
+                {
+                    vb.BufferData(tv);
+                }
             }
             else
             {
                 translucentVertexCount = 0;
             }
-
-            GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, 0);
         }
 
         public void ReloadRenderer()
@@ -311,7 +318,7 @@ namespace betareborn.Worlds
             if (!isInFrustum || skipRenderPass[pass])
                 return;
 
-            uint vbo = pass == 0 ? solidVBO : translucentVBO;
+            VertexBuffer<Vertex> vbo = pass == 0 ? vertexBuffers[0] : vertexBuffers[1];
             int vertexCount = pass == 0 ? solidVertexCount : translucentVertexCount;
 
             if (vertexCount == 0)
@@ -321,7 +328,7 @@ namespace betareborn.Worlds
             GLManager.GL.Translate(posXMinus - viewPos.X, posYMinus - viewPos.Y, posZMinus - viewPos.Z);
             setupGLTranslation();
 
-            GLManager.GL.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
+            vbo.Bind();
 
             GLManager.GL.EnableClientState(GLEnum.VertexArray);
             GLManager.GL.VertexPointer(3, GLEnum.Float, 32, (void*)0);
@@ -364,15 +371,8 @@ namespace betareborn.Worlds
 
         public unsafe void CleanupVBOs()
         {
-            if (solidVBO != 0 || translucentVBO != 0)
-            {
-                uint* vbos = stackalloc uint[2];
-                vbos[0] = solidVBO;
-                vbos[1] = translucentVBO;
-                GLManager.GL.DeleteBuffers(2, vbos);
-                solidVBO = 0;
-                translucentVBO = 0;
-            }
+            vertexBuffers[0]?.Dispose();
+            vertexBuffers[1]?.Dispose();
         }
 
         public void func_1204_c()
