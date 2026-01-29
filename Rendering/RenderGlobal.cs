@@ -4,6 +4,7 @@ using betareborn.Items;
 using betareborn.TileEntities;
 using betareborn.Worlds;
 using java.util;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering
@@ -19,7 +20,7 @@ namespace betareborn.Rendering
         private int renderChunksWide;
         private int renderChunksTall;
         private int renderChunksDeep;
-        private readonly int glRenderListBase;
+        //private readonly int glRenderListBase;
         private readonly Minecraft mc;
         private RenderBlocks globalRenderBlocks;
         private int cloudOffsetX = 0;
@@ -44,7 +45,7 @@ namespace betareborn.Rendering
         private int renderersSkippingRenderPass;
         private int worldRenderersCheckIndex;
         private readonly List<WorldRenderer> glRenderLists = [];
-        private readonly RenderList[] allRenderLists = [new RenderList(), new RenderList(), new RenderList(), new RenderList()];
+        //private readonly RenderList[] allRenderLists = [new RenderList(), new RenderList(), new RenderList(), new RenderList()];
         double prevSortX = -9999.0D;
         double prevSortY = -9999.0D;
         double prevSortZ = -9999.0D;
@@ -56,7 +57,7 @@ namespace betareborn.Rendering
             mc = var1;
             renderEngine = var2;
             byte var3 = 64;
-            glRenderListBase = GLAllocation.generateDisplayLists(var3 * var3 * var3 * 3);
+            //glRenderListBase = GLAllocation.generateDisplayLists(var3 * var3 * var3 * 3);
 
             starGLCallList = GLAllocation.generateDisplayLists(3);
             GLManager.GL.PushMatrix();
@@ -223,7 +224,7 @@ namespace betareborn.Rendering
                 {
                     for (int var6 = 0; var6 < renderChunksDeep; ++var6)
                     {
-                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = new(worldObj, var4 * 16, var5 * 16, var6 * 16, 16, glRenderListBase + var2)
+                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = new(worldObj, var4 * 16, var5 * 16, var6 * 16, 16)
                         {
                             isWaitingOnOcclusionQuery = false,
                             isVisible = true,
@@ -461,6 +462,11 @@ namespace betareborn.Rendering
         {
             glRenderLists.Clear();
             int var6 = 0;
+            EntityLiving var19 = mc.renderViewEntity;
+            double var20 = var19.lastTickPosX + (var19.posX - var19.lastTickPosX) * var4;
+            double var10 = var19.lastTickPosY + (var19.posY - var19.lastTickPosY) * var4;
+            double var12 = var19.lastTickPosZ + (var19.posZ - var19.lastTickPosZ) * var4;
+            Vector3D<double> viewPos = new(var20, var10, var12);
 
             for (int var7 = var1; var7 < var2; ++var7)
             {
@@ -483,60 +489,16 @@ namespace betareborn.Rendering
 
                 if (!sortedWorldRenderers[var7].skipRenderPass[var3] && sortedWorldRenderers[var7].isInFrustum && (sortedWorldRenderers[var7].isVisible))
                 {
-                    int var8 = sortedWorldRenderers[var7].getGLCallListForPass(var3);
-                    if (var8 >= 0)
+                    var renderer = sortedWorldRenderers[var7];
+                    if (renderer.shouldRender(var3))
                     {
-                        glRenderLists.Add(sortedWorldRenderers[var7]);
+                        renderer.RenderPass(var3, viewPos);
                         ++var6;
                     }
                 }
             }
 
-            EntityLiving var19 = mc.renderViewEntity;
-            double var20 = var19.lastTickPosX + (var19.posX - var19.lastTickPosX) * var4;
-            double var10 = var19.lastTickPosY + (var19.posY - var19.lastTickPosY) * var4;
-            double var12 = var19.lastTickPosZ + (var19.posZ - var19.lastTickPosZ) * var4;
-            int var14 = 0;
-
-            int var15;
-            for (var15 = 0; var15 < allRenderLists.Length; ++var15)
-            {
-                allRenderLists[var15].func_859_b();
-            }
-
-            for (var15 = 0; var15 < glRenderLists.Count; ++var15)
-            {
-                WorldRenderer var16 = glRenderLists[var15];
-                int var17 = -1;
-
-                for (int var18 = 0; var18 < var14; ++var18)
-                {
-                    if (allRenderLists[var18].func_862_a(var16.posXMinus, var16.posYMinus, var16.posZMinus))
-                    {
-                        var17 = var18;
-                    }
-                }
-
-                if (var17 < 0)
-                {
-                    var17 = var14++;
-                    allRenderLists[var17].func_861_a(var16.posXMinus, var16.posYMinus, var16.posZMinus, var20, var10, var12);
-                }
-
-                allRenderLists[var17].func_858_a(var16.getGLCallListForPass(var3));
-            }
-
-            renderAllRenderLists(var3, var4);
             return var6;
-        }
-
-        public void renderAllRenderLists(int var1, double var2)
-        {
-            for (int var4 = 0; var4 < allRenderLists.Length; ++var4)
-            {
-                allRenderLists[var4].func_860_a();
-            }
-
         }
 
         public void updateClouds()
@@ -1371,7 +1333,7 @@ namespace betareborn.Rendering
 
         public void func_28137_f()
         {
-            GLAllocation.func_28194_b(glRenderListBase);
+            //GLAllocation.func_28194_b(glRenderListBase);
         }
 
         public void func_28136_a(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)

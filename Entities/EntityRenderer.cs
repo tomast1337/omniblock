@@ -621,10 +621,10 @@ namespace betareborn.Entities
 
                 var16 = var5.sortAndRender(var4, 1, (double)var1);
 
-                if (var16 > 0)
-                {
-                    var5.renderAllRenderLists(1, (double)var1);
-                }
+                //if (var16 > 0)
+                //{
+                //    var5.renderAllRenderLists(1, (double)var1);
+                //}
 
                 GLManager.GL.ShadeModel(GLEnum.Flat);
             }

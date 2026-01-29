@@ -2,17 +2,25 @@ using betareborn.Blocks;
 using betareborn.Chunks;
 using betareborn.Entities;
 using betareborn.Rendering;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace betareborn.Worlds
 {
     public class WorldRenderer
     {
         public World worldObj;
-        private readonly int glRenderList = -1;
         private static Tessellator tessellator = Tessellator.instance;
         public static int chunksUpdated = 0;
+
+        // VBOs for this specific renderer
+        private uint solidVBO = 0;
+        private uint translucentVBO = 0;
+        private int solidVertexCount = 0;
+        private int translucentVertexCount = 0;
+
         public int posX;
         public int posY;
         public int posZ;
@@ -40,12 +48,17 @@ namespace betareborn.Worlds
         public bool isChunkLit;
         private bool isInitialized = false;
 
-        public WorldRenderer(World var1, int var3, int var4, int var5, int var6, int var7)
+        public unsafe WorldRenderer(World var1, int var3, int var4, int var5, int var6)
         {
             worldObj = var1;
             sizeWidth = sizeHeight = sizeDepth = var6;
             rendererRadius = MathHelper.sqrt_float((float)(sizeWidth * sizeWidth + sizeHeight * sizeHeight + sizeDepth * sizeDepth)) / 2.0F;
-            glRenderList = var7;
+
+            uint* vbos = stackalloc uint[2];
+            GLManager.GL.GenBuffers(2, vbos);
+            solidVBO = vbos[0];
+            translucentVBO = vbos[1];
+
             posX = -999;
             setPosition(var3, var4, var5);
             needsUpdate = false;
@@ -114,11 +127,18 @@ namespace betareborn.Worlds
                 }
                 RenderBlocks var10 = new(var9);
 
+                List<Vertex>? solidVertices = null;
+                List<Vertex>? translucentVertices = null;
+
                 for (int var11 = 0; var11 < 2; ++var11)
                 {
                     bool var12 = false;
                     bool var13 = false;
                     bool var14 = false;
+
+                    tessellator.startCapture();
+                    tessellator.startDrawingQuads();
+                    tessellator.setTranslationD((double)(-posX), (double)(-posY), (double)(-posZ));
 
                     for (int var15 = var2; var15 < var5; ++var15)
                     {
@@ -132,15 +152,6 @@ namespace betareborn.Worlds
                                     if (!var14)
                                     {
                                         var14 = true;
-                                        GLManager.GL.NewList((uint)(glRenderList + var11), GLEnum.Compile);
-                                        GLManager.GL.PushMatrix();
-                                        setupGLTranslation();
-                                        float var19 = 1.000001F;
-                                        GLManager.GL.Translate((float)(-sizeDepth) / 2.0F, (float)(-sizeHeight) / 2.0F, (float)(-sizeDepth) / 2.0F);
-                                        GLManager.GL.Scale(var19, var19, var19);
-                                        GLManager.GL.Translate((float)sizeDepth / 2.0F, (float)sizeHeight / 2.0F, (float)sizeDepth / 2.0F);
-                                        tessellator.startDrawingQuads();
-                                        tessellator.setTranslationD((double)(-posX), (double)(-posY), (double)(-posZ));
                                     }
 
                                     Block var24 = Block.blocksList[var18];
@@ -158,12 +169,23 @@ namespace betareborn.Worlds
                         }
                     }
 
-                    if (var14)
+                    tessellator.draw();
+                    tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
+
+                    List<Vertex> capturedVertices = tessellator.endCapture();
+
+                    if (capturedVertices.Count > 0)
                     {
-                        tessellator.draw();
-                        GLManager.GL.PopMatrix();
-                        GLManager.GL.EndList();
-                        tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
+                        var13 = true;
+
+                        if (var11 == 0)
+                        {
+                            solidVertices = capturedVertices;
+                        }
+                        else
+                        {
+                            translucentVertices = capturedVertices;
+                        }
                     }
                     else
                     {
@@ -181,6 +203,8 @@ namespace betareborn.Worlds
                     }
                 }
 
+                UploadMeshData(solidVertices, translucentVertices);
+
                 isChunkLit = Chunk.isLit;
                 isInitialized = true;
 
@@ -191,8 +215,76 @@ namespace betareborn.Worlds
                     Console.WriteLine($"sw ms: {sw.Elapsed.TotalMilliseconds:F4}");
                 }
             }
-            
+
             return true;
+        }
+
+        private unsafe void UploadMeshData(List<Vertex>? solidVertices, List<Vertex>? translucentVertices)
+        {
+            if (solidVertices != null && solidVertices.Count > 0)
+            {
+                solidVertexCount = solidVertices.Count;
+
+                var sv = CollectionsMarshal.AsSpan(solidVertices);
+                GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, solidVBO);
+                GLManager.GL.BufferData<Vertex>(GLEnum.ArrayBuffer, sv, GLEnum.StaticDraw);
+            }
+            else
+            {
+                solidVertexCount = 0;
+            }
+
+            if (translucentVertices != null && translucentVertices.Count > 0)
+            {
+                translucentVertexCount = translucentVertices.Count;
+
+                var tv = CollectionsMarshal.AsSpan(translucentVertices);
+                GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, translucentVBO);
+                GLManager.GL.BufferData<Vertex>(GLEnum.ArrayBuffer, tv, GLEnum.StaticDraw);
+            }
+            else
+            {
+                translucentVertexCount = 0;
+            }
+
+            GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, 0);
+        }
+
+        public unsafe void RenderPass(int pass, Vector3D<double> viewPos)
+        {
+            if (!isInFrustum || skipRenderPass[pass])
+                return;
+
+            uint vbo = pass == 0 ? solidVBO : translucentVBO;
+            int vertexCount = pass == 0 ? solidVertexCount : translucentVertexCount;
+
+            if (vertexCount == 0)
+                return;
+
+            GLManager.GL.PushMatrix();
+            GLManager.GL.Translate(posXMinus - viewPos.X, posYMinus - viewPos.Y, posZMinus - viewPos.Z);
+            setupGLTranslation();
+
+            GLManager.GL.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
+
+            GLManager.GL.EnableClientState(GLEnum.VertexArray);
+            GLManager.GL.VertexPointer(3, GLEnum.Float, 32, (void*)0);
+
+            GLManager.GL.EnableClientState(GLEnum.TextureCoordArray);
+            GLManager.GL.TexCoordPointer(2, GLEnum.Float, 32, (void*)12);
+
+            GLManager.GL.EnableClientState(GLEnum.ColorArray);
+            GLManager.GL.ColorPointer(4, ColorPointerType.UnsignedByte, 32, (void*)20);
+
+            GLManager.GL.DrawArrays(GLEnum.Triangles, 0, (uint)vertexCount);
+
+            GLManager.GL.DisableClientState(GLEnum.VertexArray);
+            GLManager.GL.DisableClientState(GLEnum.TextureCoordArray);
+            GLManager.GL.DisableClientState(GLEnum.ColorArray);
+
+            GLManager.GL.PopMatrix();
+
+            GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, 0);
         }
 
         public float distanceToEntitySquared(Entity var1)
@@ -214,25 +306,34 @@ namespace betareborn.Worlds
             isInitialized = false;
         }
 
+        public unsafe void CleanupVBOs()
+        {
+            if (solidVBO != 0 || translucentVBO != 0)
+            {
+                uint* vbos = stackalloc uint[2];
+                vbos[0] = solidVBO;
+                vbos[1] = translucentVBO;
+                GLManager.GL.DeleteBuffers(2, vbos);
+                solidVBO = 0;
+                translucentVBO = 0;
+            }
+        }
+
         public void func_1204_c()
         {
             setDontDraw();
+            CleanupVBOs();
             worldObj = null;
         }
 
-        public int getGLCallListForPass(int var1)
+        public bool shouldRender(int var1)
         {
-            return !isInFrustum ? -1 : (!skipRenderPass[var1] ? glRenderList + var1 : -1);
+            return isInFrustum && !skipRenderPass[var1];
         }
 
         public void updateInFrustrum(ICamera var1)
         {
             isInFrustum = var1.isBoundingBoxInFrustum(rendererBoundingBox);
-        }
-
-        public void callOcclusionQueryList()
-        {
-            GLManager.GL.CallList((uint)(glRenderList + 2));
         }
 
         public bool skipAllRenderPasses()
@@ -245,5 +346,4 @@ namespace betareborn.Worlds
             needsUpdate = true;
         }
     }
-
 }
