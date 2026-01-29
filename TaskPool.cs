@@ -7,6 +7,7 @@ namespace betareborn
         private readonly BlockingCollection<Action> _queue = [];
         private readonly Thread[] _workers;
         private readonly int sleep = 0;
+        private volatile bool running = true;
 
         public TaskPool(int threadCount, int sleepMs = 0)
         {
@@ -27,12 +28,31 @@ namespace betareborn
 
         private void WorkerLoop()
         {
-            foreach (var job in _queue.GetConsumingEnumerable())
-                job();
+            long c = 0;
+            //while (running)
+            //{
+            //    if (_queue.TryDequeue(out Action? job))
+            //    {
+            //        job();
+            //    }
 
-            if (sleep > 0)
+            //    if (c % 1000 == 0)
+            //    {
+            //    }
+
+            //    if (sleep > 0)
+            //    {
+            //        Thread.Sleep(sleep);
+            //    }
+            //}
+            foreach (var job in _queue.GetConsumingEnumerable())
             {
-                Thread.Sleep(sleep);
+                job();
+                c++;
+                if (c % 50 == 0)
+                {
+                    Console.WriteLine("queue size: " + _queue.Count);
+                }
             }
         }
 
@@ -44,6 +64,8 @@ namespace betareborn
         public void Dispose()
         {
             _queue.CompleteAdding();
+
+            running = false;
             foreach (var t in _workers)
                 t.Join();
         }

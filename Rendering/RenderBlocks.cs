@@ -2,6 +2,7 @@ using betareborn.Blocks;
 using betareborn.Materials;
 using betareborn.Models;
 using betareborn.Worlds;
+using Silk.NET.Maths;
 
 namespace betareborn.Rendering
 {
@@ -754,77 +755,77 @@ namespace betareborn.Rendering
             float var18 = ((float)var15 + 15.99F) / 256.0F;
             float var19 = (float)var16 / 256.0F;
             float var20 = ((float)var16 + 15.99F) / 256.0F;
-            Vec3D[] var21 = new Vec3D[8];
+            Vector3D<double>[] var21 = new Vector3D<double>[8];
             float var22 = 1.0F / 16.0F;
             float var23 = 1.0F / 16.0F;
             float var24 = 10.0F / 16.0F;
-            var21[0] = Vec3D.createVector((double)(-var22), 0.0D, (double)(-var23));
-            var21[1] = Vec3D.createVector((double)var22, 0.0D, (double)(-var23));
-            var21[2] = Vec3D.createVector((double)var22, 0.0D, (double)var23);
-            var21[3] = Vec3D.createVector((double)(-var22), 0.0D, (double)var23);
-            var21[4] = Vec3D.createVector((double)(-var22), (double)var24, (double)(-var23));
-            var21[5] = Vec3D.createVector((double)var22, (double)var24, (double)(-var23));
-            var21[6] = Vec3D.createVector((double)var22, (double)var24, (double)var23);
-            var21[7] = Vec3D.createVector((double)(-var22), (double)var24, (double)var23);
+            var21[0] = new((double)(-var22), 0.0D, (double)(-var23));
+            var21[1] = new((double)var22, 0.0D, (double)(-var23));
+            var21[2] = new((double)var22, 0.0D, (double)var23);
+            var21[3] = new((double)(-var22), 0.0D, (double)var23);
+            var21[4] = new((double)(-var22), (double)var24, (double)(-var23));
+            var21[5] = new((double)var22, (double)var24, (double)(-var23));
+            var21[6] = new((double)var22, (double)var24, (double)var23);
+            var21[7] = new((double)(-var22), (double)var24, (double)var23);
 
             for (int var25 = 0; var25 < 8; ++var25)
             {
                 if (var7)
                 {
-                    var21[var25].zCoord -= 1.0D / 16.0D;
-                    var21[var25].rotateAroundX((float)Math.PI * 2.0F / 9.0F);
+                    var21[var25].Z -= 1.0D / 16.0D;
+                    rotateAroundX(ref var21[var25], (float)Math.PI * 2.0F / 9.0F);
                 }
                 else
                 {
-                    var21[var25].zCoord += 1.0D / 16.0D;
-                    var21[var25].rotateAroundX(-((float)Math.PI * 2.0F / 9.0F));
+                    var21[var25].Z += 1.0D / 16.0D;
+                    rotateAroundX(ref var21[var25], (-((float)Math.PI * 2.0F / 9.0F)));
                 }
 
                 if (var6 == 6)
                 {
-                    var21[var25].rotateAroundY((float)Math.PI * 0.5F);
+                    rotateAroundY(ref var21[var25], ((float)Math.PI * 0.5F));
                 }
 
                 if (var6 < 5)
                 {
-                    var21[var25].yCoord -= 0.375D;
-                    var21[var25].rotateAroundX((float)Math.PI * 0.5F);
+                    var21[var25].Y -= 0.375D;
+                    rotateAroundX(ref var21[var25], ((float)Math.PI * 0.5F));
                     if (var6 == 4)
                     {
-                        var21[var25].rotateAroundY(0.0F);
+                        rotateAroundY(ref var21[var25], 0.0f);
                     }
 
                     if (var6 == 3)
                     {
-                        var21[var25].rotateAroundY((float)Math.PI);
+                        rotateAroundY(ref var21[var25], (float)Math.PI);
                     }
 
                     if (var6 == 2)
                     {
-                        var21[var25].rotateAroundY((float)Math.PI * 0.5F);
+                        rotateAroundY(ref var21[var25], ((float)Math.PI * 0.5F));
                     }
 
                     if (var6 == 1)
                     {
-                        var21[var25].rotateAroundY((float)Math.PI * -0.5F);
+                        rotateAroundY(ref var21[var25], (float)Math.PI * -0.5F);
                     }
 
-                    var21[var25].xCoord += (double)var2 + 0.5D;
-                    var21[var25].yCoord += (double)((float)var3 + 0.5F);
-                    var21[var25].zCoord += (double)var4 + 0.5D;
+                    var21[var25].X += (double)var2 + 0.5D;
+                    var21[var25].Y += (double)((float)var3 + 0.5F);
+                    var21[var25].Z += (double)var4 + 0.5D;
                 }
                 else
                 {
-                    var21[var25].xCoord += (double)var2 + 0.5D;
-                    var21[var25].yCoord += (double)((float)var3 + 2.0F / 16.0F);
-                    var21[var25].zCoord += (double)var4 + 0.5D;
+                    var21[var25].X += (double)var2 + 0.5D;
+                    var21[var25].Y += (double)((float)var3 + 2.0F / 16.0F);
+                    var21[var25].Z += (double)var4 + 0.5D;
                 }
             }
 
-            Vec3D var30 = null;
-            Vec3D var26 = null;
-            Vec3D var27 = null;
-            Vec3D var28 = null;
+            Vector3D<double> var30 = new();
+            Vector3D<double> var26 = new();
+            Vector3D<double> var27 = new();
+            Vector3D<double> var28 = new();
 
             for (int var29 = 0; var29 < 6; ++var29)
             {
@@ -886,10 +887,10 @@ namespace betareborn.Rendering
                     var28 = var21[4];
                 }
 
-                var8.addVertexWithUV(var30.xCoord, var30.yCoord, var30.zCoord, (double)var17, (double)var20);
-                var8.addVertexWithUV(var26.xCoord, var26.yCoord, var26.zCoord, (double)var18, (double)var20);
-                var8.addVertexWithUV(var27.xCoord, var27.yCoord, var27.zCoord, (double)var18, (double)var19);
-                var8.addVertexWithUV(var28.xCoord, var28.yCoord, var28.zCoord, (double)var17, (double)var19);
+                var8.addVertexWithUV(var30.X, var30.Y, var30.Z, (double)var17, (double)var20);
+                var8.addVertexWithUV(var26.X, var26.Y, var26.Z, (double)var18, (double)var20);
+                var8.addVertexWithUV(var27.X, var27.Y, var27.Z, (double)var18, (double)var19);
+                var8.addVertexWithUV(var28.X, var28.Y, var28.Z, (double)var17, (double)var19);
             }
 
             return true;
@@ -3860,6 +3861,30 @@ namespace betareborn.Rendering
         public static bool renderItemIn3d(int var0)
         {
             return var0 == 0 ? true : (var0 == 13 ? true : (var0 == 10 ? true : (var0 == 11 ? true : var0 == 16)));
+        }
+
+        public static void rotateAroundX(ref Vector3D<double> vec, float var1)
+        {
+            float var2 = MathHelper.cos(var1);
+            float var3 = MathHelper.sin(var1);
+            double var4 = vec.X;
+            double var6 = vec.Y * (double)var2 + vec.Z * (double)var3;
+            double var8 = vec.Z * (double)var2 - vec.Y * (double)var3;
+            vec.X = var4;
+            vec.Y = var6;
+            vec.Z = var8;
+        }
+
+        private static void rotateAroundY(ref Vector3D<double> vec, float var1)
+        {
+            float var2 = MathHelper.cos(var1);
+            float var3 = MathHelper.sin(var1);
+            double var4 = vec.X * (double)var2 + vec.Z * (double)var3;
+            double var6 = vec.Y;
+            double var8 = vec.Z * (double)var2 - vec.X * (double)var3;
+            vec.X = var4;
+            vec.Y = var6;
+            vec.Z = var8;
         }
     }
 

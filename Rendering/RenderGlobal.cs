@@ -44,9 +44,9 @@ namespace betareborn.Rendering
         private int renderersBeingRendered;
         private int renderersSkippingRenderPass;
         private int worldRenderersCheckIndex;
+        private readonly HashSet<Vector3D<int>> pendingMeshes = [];
         private readonly List<WorldRenderer> glRenderLists = [];
-        private readonly TaskPool worldRendererUpdateTaskPool = new(2, 10);
-        //private readonly RenderList[] allRenderLists = [new RenderList(), new RenderList(), new RenderList(), new RenderList()];
+        private readonly TaskPool worldRendererUpdateTaskPool = new(2);
         double prevSortX = -9999.0D;
         double prevSortY = -9999.0D;
         double prevSortZ = -9999.0D;
@@ -58,7 +58,6 @@ namespace betareborn.Rendering
             mc = var1;
             renderEngine = var2;
             byte var3 = 64;
-            //glRenderListBase = GLAllocation.generateDisplayLists(var3 * var3 * var3 * 3);
 
             starGLCallList = GLAllocation.generateDisplayLists(3);
             GLManager.GL.PushMatrix();
@@ -193,6 +192,7 @@ namespace betareborn.Rendering
                     worldRenderers[var1].func_1204_c();
                 }
             }
+            pendingMeshes.Clear();
 
             var1 = 64 << 3 - renderDistance;
 
@@ -865,7 +865,7 @@ namespace betareborn.Rendering
                 renderersToUpdateNow.Add(renderer);
                 worldRenderersToUpdate[i] = null;
             }
-
+            pendingMeshes.Clear();
             if (renderersToUpdateNow != null)
             {
                 if (renderersToUpdateNow.Count > 1)
@@ -876,14 +876,11 @@ namespace betareborn.Rendering
                 for (int i = renderersToUpdateNow.Count - 1; i >= 0; --i)
                 {
                     WorldRenderer renderer = renderersToUpdateNow[i];
-                    if (renderer.updateRenderer())
-                    {
-                        renderer.needsUpdate = false;
-                    }
+                    renderer.updateRenderer(pendingMeshes);
                 }
                 //Console.WriteLine($"updated {renderersToUpdateNow.Count} renderers");
             }
-
+            //Console.WriteLine($"pending mesh count:{pendingMeshes.Count}");
             for (int i = MAX_PRIORITY_RENDERERS - 1; i >= 0; --i)
             {
                 WorldRenderer renderer = priorityRenderers[i];
@@ -896,9 +893,8 @@ namespace betareborn.Rendering
                         break;
                     }
 
-                    if (renderer.updateRenderer())
+                    if (renderer.updateRenderer(pendingMeshes))
                     {
-                        renderer.needsUpdate = false;
                         priorityRenderersUpdated++;
                     }
                 }

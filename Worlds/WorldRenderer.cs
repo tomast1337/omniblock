@@ -4,13 +4,23 @@ using betareborn.Entities;
 using betareborn.Rendering;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace betareborn.Worlds
 {
     public class WorldRenderer
     {
+        //TODO: this code is horse shit
+        //right now if you modify the renderer while its mesh is pending, the update will be ignored, or maybe something else is borked. FIX IT
+
+        private sealed class MeshBuildResult
+        {
+            public List<Vertex>? Solid;
+            public List<Vertex>? Translucent;
+            public bool IsLit;
+            public bool[] SkipRenderPass = new bool[2];
+        }
+
         public World worldObj;
         public static int chunksUpdated = 0;
 
@@ -46,6 +56,9 @@ namespace betareborn.Worlds
         public bool isChunkLit;
         private bool isInitialized = false;
         private TaskPool updateTaskPool;
+        private Task<MeshBuildResult>? meshTask;
+        private volatile bool meshTaskPending;
+        private int meshVersion = 0;
 
         public unsafe WorldRenderer(World var1, int var3, int var4, int var5, int var6, TaskPool tp)
         {
@@ -68,6 +81,8 @@ namespace betareborn.Worlds
         {
             if (var1 != posX || var2 != posY || var3 != posZ)
             {
+                Interlocked.Increment(ref meshVersion);
+
                 setDontDraw();
                 posX = var1;
                 posY = var2;
@@ -92,132 +107,151 @@ namespace betareborn.Worlds
             GLManager.GL.Translate((float)posXClip, (float)posYClip, (float)posZClip);
         }
 
-        public bool updateRenderer()
+        private MeshBuildResult BuildMesh(Vector3D<int> pos, Vector3D<int> size, ChunkCacheSnapshot cache)
         {
-            if (needsUpdate)
+            int minX = pos.X;
+            int minY = pos.Y;
+            int minZ = pos.Z;
+            int maxX = pos.X + size.X;
+            int maxY = pos.Y + size.Y;
+            int maxZ = pos.Z + size.Z;
+
+            var result = new MeshBuildResult();
+
+            for (int i = 0; i < 2; i++)
+                result.SkipRenderPass[i] = true;
+
+            var tess = new Tessellator();
+            var rb = new RenderBlocks(cache, tess);
+
+            for (int pass = 0; pass < 2; pass++)
             {
-                Stopwatch sw = Stopwatch.StartNew();
-                ++chunksUpdated;
-                int var1 = posX;
-                int var2 = posY;
-                int var3 = posZ;
-                int var4 = posX + sizeWidth;
-                int var5 = posY + sizeHeight;
-                int var6 = posZ + sizeDepth;
-                byte var8 = 1;
+                bool hasNextPass = false;
+                bool renderedAnything = false;
 
-                if (!worldObj.checkChunksExist(var1 - var8, var2 - var8, var3 - var8,
-                                       var4 + var8, var5 + var8, var6 + var8))
-                {
-                    return false;
-                }
+                tess.startCapture();
+                tess.startDrawingQuads();
+                tess.setTranslationD(-pos.X, -pos.Y, -pos.Z);
 
-                for (int var7 = 0; var7 < 2; ++var7)
-                {
-                    skipRenderPass[var7] = true;
-                }
-
-                Chunk.isLit = false;
-                Stopwatch sw2 = Stopwatch.StartNew();
-                ChunkCacheSnapshot var9 = new(worldObj, var1 - var8, var2 - var8, var3 - var8, var4 + var8, var5 + var8, var6 + var8);
-                sw2.Stop();
-                if (sw2.Elapsed.TotalMilliseconds > 1.0)
-                {
-                    Console.WriteLine($"sw2 ms: {sw2.Elapsed.TotalMilliseconds:F4}");
-                }
-                Tessellator tessellator = new();
-                RenderBlocks var10 = new(var9, tessellator);
-
-                List<Vertex>? solidVertices = null;
-                List<Vertex>? translucentVertices = null;
-
-                for (int var11 = 0; var11 < 2; ++var11)
-                {
-                    bool var12 = false;
-                    bool var13 = false;
-                    bool var14 = false;
-
-                    tessellator.startCapture();
-                    tessellator.startDrawingQuads();
-                    tessellator.setTranslationD((double)(-posX), (double)(-posY), (double)(-posZ));
-
-                    for (int var15 = var2; var15 < var5; ++var15)
-                    {
-                        for (int var16 = var3; var16 < var6; ++var16)
+                for (int y = minY; y < maxY; y++)
+                    for (int z = minZ; z < maxZ; z++)
+                        for (int x = minX; x < maxX; x++)
                         {
-                            for (int var17 = var1; var17 < var4; ++var17)
-                            {
-                                int var18 = var9.getBlockId(var17, var15, var16);
-                                if (var18 > 0)
-                                {
-                                    if (!var14)
-                                    {
-                                        var14 = true;
-                                    }
+                            int id = cache.getBlockId(x, y, z);
+                            if (id <= 0) continue;
 
-                                    Block var24 = Block.blocksList[var18];
-                                    int var20 = var24.getRenderBlockPass();
-                                    if (var20 != var11)
-                                    {
-                                        var12 = true;
-                                    }
-                                    else if (var20 == var11)
-                                    {
-                                        var13 |= var10.renderBlockByRenderType(var24, var17, var15, var16);
-                                    }
-                                }
+                            Block b = Block.blocksList[id];
+                            int blockPass = b.getRenderBlockPass();
+
+                            if (blockPass != pass)
+                            {
+                                hasNextPass = true;
+                            }
+                            else
+                            {
+                                renderedAnything |= rb.renderBlockByRenderType(b, x, y, z);
                             }
                         }
-                    }
 
-                    tessellator.draw();
-                    tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
+                tess.draw();
+                tess.setTranslationD(0, 0, 0);
 
-                    List<Vertex> capturedVertices = tessellator.endCapture();
-
-                    if (capturedVertices.Count > 0)
-                    {
-                        var13 = true;
-
-                        if (var11 == 0)
-                        {
-                            solidVertices = capturedVertices;
-                        }
-                        else
-                        {
-                            translucentVertices = capturedVertices;
-                        }
-                    }
-                    else
-                    {
-                        var13 = false;
-                    }
-
-                    if (var13)
-                    {
-                        skipRenderPass[var11] = false;
-                    }
-
-                    if (!var12)
-                    {
-                        break;
-                    }
-                }
-
-                UploadMeshData(solidVertices, translucentVertices);
-
-                isChunkLit = var9.getIsLit();
-                isInitialized = true;
-
-                sw.Stop();
-                long ticks = sw.ElapsedTicks;
-                if (sw2.Elapsed.TotalMilliseconds > 6.0)
+                var verts = tess.endCapture();
+                if (verts.Count > 0)
                 {
-                    Console.WriteLine($"sw ms: {sw.Elapsed.TotalMilliseconds:F4}");
+                    renderedAnything = true;
+                    if (pass == 0) result.Solid = verts;
+                    else result.Translucent = verts;
                 }
 
-                var9.Dispose();
+                result.SkipRenderPass[pass] = !renderedAnything;
+
+                if (!hasNextPass)
+                    break;
             }
+
+            result.IsLit = cache.getIsLit();
+            cache.Dispose();
+            return result;
+        }
+
+        public bool updateRenderer(HashSet<Vector3D<int>> pendingMeshes)
+        {
+            Vector3D<int> pos = new(posX, posY, posZ);
+            if (!needsUpdate) return true;
+
+            if (!meshTaskPending)
+            {
+                if (pendingMeshes.Contains(pos)) return false;
+
+                if (!worldObj.checkChunksExist(posX - 1, posY - 1, posZ - 1, posX + sizeWidth + 1, posY + sizeHeight + 1, posZ + sizeDepth + 1))
+                    return false;
+
+                meshTaskPending = true;
+                pendingMeshes.Add(pos);
+
+                int taskVersion = meshVersion;
+                var capturedPos = pos;
+                var capturedSize = new Vector3D<int>(sizeWidth, sizeHeight, sizeDepth);
+                var cache = new ChunkCacheSnapshot(worldObj, posX - 1, posY - 1, posZ - 1, posX + sizeWidth + 1, posY + sizeHeight + 1, posZ + sizeDepth + 1);
+
+                var tcs = new TaskCompletionSource<MeshBuildResult>();
+
+                updateTaskPool.Enqueue(() =>
+                {
+                    try
+                    {
+                        if (taskVersion != Volatile.Read(ref meshVersion))
+                        {
+                            cache.Dispose();
+                            tcs.SetCanceled();
+                            return;
+                        }
+
+                        var result = BuildMesh(capturedPos, capturedSize, cache);
+                        tcs.SetResult(result);
+                    }
+                    catch (Exception e)
+                    {
+                        cache.Dispose();
+                        tcs.SetException(e);
+                    }
+                });
+
+                meshTask = tcs.Task;
+                return false;
+            }
+
+            if (meshTask == null)
+            {
+                meshTaskPending = false;
+                pendingMeshes.Remove(pos);
+                return false;
+            }
+
+            if (!meshTask.IsCompleted)
+                return false;
+
+            pendingMeshes.Remove(pos);
+
+            if (meshTask.IsCanceled || meshTask.IsFaulted)
+            {
+                meshTask = null;
+                meshTaskPending = false;
+                return false;
+            }
+
+            var result = meshTask.Result;
+            meshTask = null;
+            meshTaskPending = false;
+            needsUpdate = false;
+
+            UploadMeshData(result.Solid, result.Translucent);
+
+            isChunkLit = result.IsLit;
+            skipRenderPass[0] = result.SkipRenderPass[0];
+            skipRenderPass[1] = result.SkipRenderPass[1];
+            isInitialized = true;
 
             return true;
         }
@@ -251,6 +285,25 @@ namespace betareborn.Worlds
             }
 
             GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, 0);
+        }
+
+        public void ReloadRenderer()
+        {
+            Interlocked.Increment(ref meshVersion);
+
+            needsUpdate = true;
+            isInitialized = false;
+            meshTaskPending = false;
+
+            meshTask = null;
+
+            for (int i = 0; i < 2; i++)
+            {
+                skipRenderPass[i] = true;
+            }
+
+            solidVertexCount = 0;
+            translucentVertexCount = 0;
         }
 
         public unsafe void RenderPass(int pass, Vector3D<double> viewPos)

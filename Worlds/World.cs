@@ -60,7 +60,6 @@ namespace betareborn.Worlds
         private int soundCounter;
         private readonly List<Entity> field_1012_M;
         public bool multiplayerWorld;
-        public WorldChunkManagerCache chunkManagerCache = new();
 
         public WorldChunkManager getWorldChunkManager()
         {

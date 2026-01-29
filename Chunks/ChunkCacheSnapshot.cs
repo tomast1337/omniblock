@@ -17,7 +17,8 @@ namespace betareborn.Chunks
 
         public ChunkCacheSnapshot(World var1, int var2, int var3, int var4, int var5, int var6, int var7)
         {
-            worldChunkManager = var1.chunkManagerCache.get(var1);
+            //TODO: OPTIMIZE THIS
+            worldChunkManager = new(var1);
 
             chunkX = var2 >> 4;
             chunkZ = var4 >> 4;
