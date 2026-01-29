@@ -125,7 +125,7 @@ namespace betareborn.Worlds
                 {
                     Console.WriteLine($"sw2 ms: {sw2.Elapsed.TotalMilliseconds:F4}");
                 }
-                RenderBlocks var10 = new(var9);
+                RenderBlocks var10 = new(var9, Tessellator.instance);
 
                 List<Vertex>? solidVertices = null;
                 List<Vertex>? translucentVertices = null;
