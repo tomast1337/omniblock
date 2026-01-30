@@ -2237,6 +2237,36 @@ namespace betareborn.Worlds
             }
             Profiler.Stop("updateSkylightSubtracted");
 
+            //int count = 0;
+            //int r = renderDistance - 1;
+            //for (int x = -r; x <= r; x++)
+            //{
+            //    for (int z = -r; z <= r; z++)
+            //    {
+            //        if (count > 2)
+            //        {
+            //            break;
+            //        }
+
+
+            //        var player = (EntityPlayer)playerEntities.get(0);
+            //        int posX = (int)player.posX >> 4;
+            //        int posZ = (int)player.posZ >> 4;
+
+            //        int cx = posX + x;
+            //        int cz = posZ + z;
+
+
+            //        if (!chunkProvider.chunkExists(cx, cz))
+            //        {
+            //            getChunkFromChunkCoords(cx, cz);
+            //            count++;
+
+            //        }
+
+            //    }
+            //}
+
             var2 = worldInfo.getWorldTime() + 1L;
             if (var2 % (long)autosavePeriod == 0L)
             {

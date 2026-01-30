@@ -3,8 +3,6 @@ using betareborn.Entities;
 using betareborn.Items;
 using betareborn.TileEntities;
 using betareborn.Worlds;
-using java.util;
-using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering
@@ -14,9 +12,9 @@ namespace betareborn.Rendering
         public List<TileEntity> tileEntities = [];
         private World worldObj;
         private readonly RenderEngine renderEngine;
-        private readonly List<WorldRenderer> worldRenderersToUpdate = [];
-        private WorldRenderer[] sortedWorldRenderers;
-        private WorldRenderer[] worldRenderers;
+        //private readonly List<WorldRenderer> worldRenderersToUpdate = [];
+        //private WorldRenderer[] sortedWorldRenderers;
+        //private WorldRenderer[] worldRenderers;
         private int renderChunksWide;
         private int renderChunksTall;
         private int renderChunksDeep;
@@ -44,9 +42,10 @@ namespace betareborn.Rendering
         private int renderersBeingRendered;
         private int renderersSkippingRenderPass;
         private int worldRenderersCheckIndex;
-        private readonly HashSet<Vector3D<int>> pendingMeshes = [];
-        private readonly List<WorldRenderer> glRenderLists = [];
+        //private readonly HashSet<Vector3D<int>> pendingMeshes = [];
+        //private readonly List<WorldRenderer> glRenderLists = [];
         private readonly TaskPool worldRendererUpdateTaskPool = new(2);
+        private WorldRenderer worldRenderer;
         double prevSortX = -9999.0D;
         double prevSortY = -9999.0D;
         double prevSortZ = -9999.0D;
@@ -71,6 +70,8 @@ namespace betareborn.Rendering
             byte var6 = 64;
             int var7 = 256 / var6 + 2;
             float var5 = 16.0F;
+
+            worldRenderer = new(var1.theWorld, 2);
 
             int var8;
             int var9;
@@ -180,29 +181,32 @@ namespace betareborn.Rendering
 
         }
 
+        public void tick(Entity view, float var3)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            double var33 = view.lastTickPosX + (view.posX - view.lastTickPosX) * var3;
+            double var7 = view.lastTickPosY + (view.posY - view.lastTickPosY) * var3;
+            double var9 = view.lastTickPosZ + (view.posZ - view.lastTickPosZ) * var3;
+            worldRenderer.Tick(new(var33, var7, var9));
+        }
+
         public void loadRenderers()
         {
             Block.leaves.setGraphicsLevel(mc.gameSettings.fancyGraphics);
             renderDistance = mc.gameSettings.renderDistance;
             int var1;
-            if (worldRenderers != null)
-            {
-                for (var1 = 0; var1 < worldRenderers.Length; ++var1)
-                {
-                    worldRenderers[var1].func_1204_c();
-                }
-            }
-            pendingMeshes.Clear();
+            worldRenderer?.Dispose();
+            worldRenderer = new(worldObj, 2);
 
             var1 = 64 << 3 - renderDistance;
 
             renderChunksWide = var1 / 16 + 1;
             renderChunksTall = 8;
             renderChunksDeep = var1 / 16 + 1;
-            worldRenderers = new WorldRenderer[renderChunksWide * renderChunksTall * renderChunksDeep];
-            sortedWorldRenderers = new WorldRenderer[renderChunksWide * renderChunksTall * renderChunksDeep];
-            int var2 = 0;
-            int var3 = 0;
             minBlockX = 0;
             minBlockY = 0;
             minBlockZ = 0;
@@ -210,46 +214,7 @@ namespace betareborn.Rendering
             maxBlockY = renderChunksTall;
             maxBlockZ = renderChunksDeep;
 
-            int var4;
-            for (var4 = 0; var4 < worldRenderersToUpdate.Count; ++var4)
-            {
-                worldRenderersToUpdate[var4].needsUpdate = false;
-            }
-
-            worldRenderersToUpdate.Clear();
             tileEntities.Clear();
-
-            for (var4 = 0; var4 < renderChunksWide; ++var4)
-            {
-                for (int var5 = 0; var5 < renderChunksTall; ++var5)
-                {
-                    for (int var6 = 0; var6 < renderChunksDeep; ++var6)
-                    {
-                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = new(worldObj, var4 * 16, var5 * 16, var6 * 16, 16, worldRendererUpdateTaskPool)
-                        {
-                            isWaitingOnOcclusionQuery = false,
-                            isVisible = true,
-                            isInFrustum = true,
-                            chunkIndex = var3++
-                        };
-
-                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4].markDirty();
-                        sortedWorldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4];
-                        worldRenderersToUpdate.Add(worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4]);
-                        var2 += 3;
-                    }
-                }
-            }
-
-            if (worldObj != null)
-            {
-                EntityLiving var7 = mc.renderViewEntity;
-                if (var7 != null)
-                {
-                    markRenderersForNewPosition(MathHelper.floor_double(var7.posX), MathHelper.floor_double(var7.posY), MathHelper.floor_double(var7.posZ));
-                    Arrays.sort(sortedWorldRenderers, new EntitySorter(var7));
-                }
-            }
 
             renderEntitiesStartupCounter = 2;
         }
@@ -331,175 +296,39 @@ namespace betareborn.Rendering
             return "E: " + countEntitiesRendered + "/" + countEntitiesTotal + ". B: " + countEntitiesHidden + ", I: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
         }
 
-        private void markRenderersForNewPosition(int var1, int var2, int var3)
+        public int sortAndRender(EntityLiving var1, int pass, double var3, ICamera cam)
         {
-            var1 -= 8;
-            var2 -= 8;
-            var3 -= 8;
-            minBlockX = java.lang.Integer.MAX_VALUE;
-            minBlockY = java.lang.Integer.MAX_VALUE;
-            minBlockZ = java.lang.Integer.MAX_VALUE;
-            maxBlockX = java.lang.Integer.MIN_VALUE;
-            maxBlockY = java.lang.Integer.MIN_VALUE;
-            maxBlockZ = java.lang.Integer.MIN_VALUE;
-            int var4 = renderChunksWide * 16;
-            int var5 = var4 / 2;
-
-            for (int var6 = 0; var6 < renderChunksWide; ++var6)
-            {
-                int var7 = var6 * 16;
-                int var8 = var7 + var5 - var1;
-                if (var8 < 0)
-                {
-                    var8 -= var4 - 1;
-                }
-
-                var8 /= var4;
-                var7 -= var8 * var4;
-                if (var7 < minBlockX)
-                {
-                    minBlockX = var7;
-                }
-
-                if (var7 > maxBlockX)
-                {
-                    maxBlockX = var7;
-                }
-
-                for (int var9 = 0; var9 < renderChunksDeep; ++var9)
-                {
-                    int var10 = var9 * 16;
-                    int var11 = var10 + var5 - var3;
-                    if (var11 < 0)
-                    {
-                        var11 -= var4 - 1;
-                    }
-
-                    var11 /= var4;
-                    var10 -= var11 * var4;
-                    if (var10 < minBlockZ)
-                    {
-                        minBlockZ = var10;
-                    }
-
-                    if (var10 > maxBlockZ)
-                    {
-                        maxBlockZ = var10;
-                    }
-
-                    for (int var12 = 0; var12 < renderChunksTall; ++var12)
-                    {
-                        int var13 = var12 * 16;
-                        if (var13 < minBlockY)
-                        {
-                            minBlockY = var13;
-                        }
-
-                        if (var13 > maxBlockY)
-                        {
-                            maxBlockY = var13;
-                        }
-
-                        WorldRenderer var14 = worldRenderers[(var9 * renderChunksTall + var12) * renderChunksWide + var6];
-                        bool var15 = var14.needsUpdate;
-                        var14.setPosition(var7, var13, var10);
-                        if (!var15 && var14.needsUpdate)
-                        {
-                            worldRenderersToUpdate.Add(var14);
-                        }
-                    }
-                }
-            }
-
-        }
-
-        public int sortAndRender(EntityLiving var1, int var2, double var3)
-        {
-            for (int var5 = 0; var5 < 10; ++var5)
-            {
-                worldRenderersCheckIndex = (worldRenderersCheckIndex + 1) % worldRenderers.Length;
-                WorldRenderer var6 = worldRenderers[worldRenderersCheckIndex];
-                if (var6.needsUpdate && !worldRenderersToUpdate.Contains(var6))
-                {
-                    worldRenderersToUpdate.Add(var6);
-                }
-            }
-
             if (mc.gameSettings.renderDistance != renderDistance)
             {
                 loadRenderers();
             }
 
-            if (var2 == 0)
-            {
-                renderersLoaded = 0;
-                renderersBeingClipped = 0;
-                renderersBeingOccluded = 0;
-                renderersBeingRendered = 0;
-                renderersSkippingRenderPass = 0;
-            }
-
             double var33 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * var3;
             double var7 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * var3;
             double var9 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * var3;
-            double var11 = var1.posX - prevSortX;
-            double var13 = var1.posY - prevSortY;
-            double var15 = var1.posZ - prevSortZ;
-            if (var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
+
+            if (pass == 0)
             {
-                prevSortX = var1.posX;
-                prevSortY = var1.posY;
-                prevSortZ = var1.posZ;
-                markRenderersForNewPosition(MathHelper.floor_double(var1.posX), MathHelper.floor_double(var1.posY), MathHelper.floor_double(var1.posZ));
-                Arrays.sort(sortedWorldRenderers, new EntitySorter(var1));
+                worldRenderer.Render(cam, new(var33, var7, var9), renderDistance);
+            }
+            else
+            {
+                worldRenderer.RenderTransparent(new(var33, var7, var9));
             }
 
-            RenderHelper.disableStandardItemLighting();
+            //if (var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
+            //{
+            //    prevSortX = var1.posX;
+            //    prevSortY = var1.posY;
+            //    prevSortZ = var1.posZ;
+            //    markRenderersForNewPosition(MathHelper.floor_double(var1.posX), MathHelper.floor_double(var1.posY), MathHelper.floor_double(var1.posZ));
+            //    Arrays.sort(sortedWorldRenderers, new EntitySorter(var1));
+            //}
 
-            return renderSortedRenderers(0, sortedWorldRenderers.Length, var2, var3);
-        }
+            //RenderHelper.disableStandardItemLighting();
 
-        private int renderSortedRenderers(int var1, int var2, int var3, double var4)
-        {
-            glRenderLists.Clear();
-            int var6 = 0;
-            EntityLiving var19 = mc.renderViewEntity;
-            double var20 = var19.lastTickPosX + (var19.posX - var19.lastTickPosX) * var4;
-            double var10 = var19.lastTickPosY + (var19.posY - var19.lastTickPosY) * var4;
-            double var12 = var19.lastTickPosZ + (var19.posZ - var19.lastTickPosZ) * var4;
-            Vector3D<double> viewPos = new(var20, var10, var12);
-
-            for (int var7 = var1; var7 < var2; ++var7)
-            {
-                if (var3 == 0)
-                {
-                    ++renderersLoaded;
-                    if (sortedWorldRenderers[var7].skipRenderPass[var3])
-                    {
-                        ++renderersSkippingRenderPass;
-                    }
-                    else if (!sortedWorldRenderers[var7].isInFrustum)
-                    {
-                        ++renderersBeingClipped;
-                    }
-                    else
-                    {
-                        ++renderersBeingRendered;
-                    }
-                }
-
-                if (!sortedWorldRenderers[var7].skipRenderPass[var3] && sortedWorldRenderers[var7].isInFrustum && (sortedWorldRenderers[var7].isVisible))
-                {
-                    var renderer = sortedWorldRenderers[var7];
-                    if (renderer.shouldRender(var3))
-                    {
-                        renderer.RenderPass(var3, viewPos);
-                        ++var6;
-                    }
-                }
-            }
-
-            return var6;
+            //return renderSortedRenderers(0, sortedWorldRenderers.Length, var2, var3);
+            return 0;
         }
 
         public void updateClouds()
@@ -828,141 +657,142 @@ namespace betareborn.Rendering
 
         public bool updateRenderers(EntityLiving entity, bool forceUpdateAll)
         {
-            const int MAX_PRIORITY_RENDERERS = 2;
-            RenderSorter sorter = new(entity);
+            //const int MAX_PRIORITY_RENDERERS = 2;
+            //RenderSorter sorter = new(entity);
 
-            WorldRenderer[] priorityRenderers = new WorldRenderer[MAX_PRIORITY_RENDERERS];
-            List<WorldRenderer> renderersToUpdateNow = null;
+            //WorldRenderer[] priorityRenderers = new WorldRenderer[MAX_PRIORITY_RENDERERS];
+            //List<WorldRenderer> renderersToUpdateNow = null;
 
-            int totalRenderers = worldRenderersToUpdate.Count;
-            int normalRenderersUpdated = 0;
-            int priorityRenderersUpdated = 0;
+            //int totalRenderers = worldRenderersToUpdate.Count;
+            //int normalRenderersUpdated = 0;
+            //int priorityRenderersUpdated = 0;
 
-            for (int i = 0; i < totalRenderers; ++i)
-            {
-                WorldRenderer renderer = worldRenderersToUpdate[i];
-                bool shouldSkip = false;
-
-                if (!forceUpdateAll)
-                {
-                    if (renderer.distanceToEntitySquared(entity) > 256.0F)
-                    {
-                        shouldSkip = !tryAddToPriorityQueue(renderer, priorityRenderers, sorter);
-                    }
-                }
-                else if (!renderer.isInFrustum)
-                {
-                    shouldSkip = true;
-                }
-
-                if (shouldSkip)
-                {
-                    continue;
-                }
-
-                renderersToUpdateNow ??= [];
-                normalRenderersUpdated++;
-                renderersToUpdateNow.Add(renderer);
-                worldRenderersToUpdate[i] = null;
-            }
-            pendingMeshes.Clear();
-            if (renderersToUpdateNow != null)
-            {
-                if (renderersToUpdateNow.Count > 1)
-                {
-                    renderersToUpdateNow.Sort(sorter);
-                }
-
-                for (int i = renderersToUpdateNow.Count - 1; i >= 0; --i)
-                {
-                    WorldRenderer renderer = renderersToUpdateNow[i];
-                    renderer.updateRenderer(pendingMeshes);
-                }
-                //Console.WriteLine($"updated {renderersToUpdateNow.Count} renderers");
-            }
-            //Console.WriteLine($"pending mesh count:{pendingMeshes.Count}");
-            for (int i = MAX_PRIORITY_RENDERERS - 1; i >= 0; --i)
-            {
-                WorldRenderer renderer = priorityRenderers[i];
-                if (renderer != null)
-                {
-                    if (!renderer.isInFrustum && i != MAX_PRIORITY_RENDERERS - 1)
-                    {
-                        priorityRenderers[i] = null;
-                        priorityRenderers[0] = null;
-                        break;
-                    }
-
-                    if (renderer.updateRenderer(pendingMeshes))
-                    {
-                        priorityRenderersUpdated++;
-                    }
-                }
-            }
-            //if (priorityRenderersUpdated > 0)
+            //for (int i = 0; i < totalRenderers; ++i)
             //{
-            //    Console.WriteLine($"updated {priorityRenderersUpdated} priority renderers");
+            //    WorldRenderer renderer = worldRenderersToUpdate[i];
+            //    bool shouldSkip = false;
+
+            //    if (!forceUpdateAll)
+            //    {
+            //        if (renderer.distanceToEntitySquared(entity) > 256.0F)
+            //        {
+            //            shouldSkip = !tryAddToPriorityQueue(renderer, priorityRenderers, sorter);
+            //        }
+            //    }
+            //    else if (!renderer.isInFrustum)
+            //    {
+            //        shouldSkip = true;
+            //    }
+
+            //    if (shouldSkip)
+            //    {
+            //        continue;
+            //    }
+
+            //    renderersToUpdateNow ??= [];
+            //    normalRenderersUpdated++;
+            //    renderersToUpdateNow.Add(renderer);
+            //    worldRenderersToUpdate[i] = null;
+            //}
+            //pendingMeshes.Clear();
+            //if (renderersToUpdateNow != null)
+            //{
+            //    if (renderersToUpdateNow.Count > 1)
+            //    {
+            //        renderersToUpdateNow.Sort(sorter);
+            //    }
+
+            //    for (int i = renderersToUpdateNow.Count - 1; i >= 0; --i)
+            //    {
+            //        WorldRenderer renderer = renderersToUpdateNow[i];
+            //        renderer.updateRenderer(pendingMeshes);
+            //    }
+            //    //Console.WriteLine($"updated {renderersToUpdateNow.Count} renderers");
+            //}
+            ////Console.WriteLine($"pending mesh count:{pendingMeshes.Count}");
+            //for (int i = MAX_PRIORITY_RENDERERS - 1; i >= 0; --i)
+            //{
+            //    WorldRenderer renderer = priorityRenderers[i];
+            //    if (renderer != null)
+            //    {
+            //        if (!renderer.isInFrustum && i != MAX_PRIORITY_RENDERERS - 1)
+            //        {
+            //            priorityRenderers[i] = null;
+            //            priorityRenderers[0] = null;
+            //            break;
+            //        }
+
+            //        if (renderer.updateRenderer(pendingMeshes))
+            //        {
+            //            priorityRenderersUpdated++;
+            //        }
+            //    }
+            //}
+            ////if (priorityRenderersUpdated > 0)
+            ////{
+            ////    Console.WriteLine($"updated {priorityRenderersUpdated} priority renderers");
+            ////}
+
+            //int writeIndex = 0;
+            //for (int readIndex = 0; readIndex < totalRenderers; ++readIndex)
+            //{
+            //    WorldRenderer renderer = worldRenderersToUpdate[readIndex];
+
+            //    if (renderer != null)
+            //    {
+            //        bool wasInPriorityQueue = false;
+            //        for (int p = 0; p < MAX_PRIORITY_RENDERERS; ++p)
+            //        {
+            //            if (renderer == priorityRenderers[p])
+            //            {
+            //                wasInPriorityQueue = true;
+            //                break;
+            //            }
+            //        }
+
+            //        if (!wasInPriorityQueue)
+            //        {
+            //            if (writeIndex != readIndex)
+            //            {
+            //                worldRenderersToUpdate[writeIndex] = renderer;
+            //            }
+            //            writeIndex++;
+            //        }
+            //    }
             //}
 
-            int writeIndex = 0;
-            for (int readIndex = 0; readIndex < totalRenderers; ++readIndex)
-            {
-                WorldRenderer renderer = worldRenderersToUpdate[readIndex];
+            //while (worldRenderersToUpdate.Count > writeIndex)
+            //{
+            //    worldRenderersToUpdate.RemoveAt(worldRenderersToUpdate.Count - 1);
+            //}
 
-                if (renderer != null)
-                {
-                    bool wasInPriorityQueue = false;
-                    for (int p = 0; p < MAX_PRIORITY_RENDERERS; ++p)
-                    {
-                        if (renderer == priorityRenderers[p])
-                        {
-                            wasInPriorityQueue = true;
-                            break;
-                        }
-                    }
-
-                    if (!wasInPriorityQueue)
-                    {
-                        if (writeIndex != readIndex)
-                        {
-                            worldRenderersToUpdate[writeIndex] = renderer;
-                        }
-                        writeIndex++;
-                    }
-                }
-            }
-
-            while (worldRenderersToUpdate.Count > writeIndex)
-            {
-                worldRenderersToUpdate.RemoveAt(worldRenderersToUpdate.Count - 1);
-            }
-
-            return totalRenderers == normalRenderersUpdated + priorityRenderersUpdated;
-        }
-
-        private bool tryAddToPriorityQueue(WorldRenderer renderer, WorldRenderer[] priorityQueue, RenderSorter sorter)
-        {
-            int queueSize = priorityQueue.Length;
-
-            int insertPos = 0;
-            for (; insertPos < queueSize && (priorityQueue[insertPos] == null || sorter.Compare(priorityQueue[insertPos], renderer) <= 0); ++insertPos)
-            {
-            }
-            insertPos--;
-
-            if (insertPos <= 0)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < insertPos; i++)
-            {
-                priorityQueue[i] = priorityQueue[i + 1];
-            }
-            priorityQueue[insertPos] = renderer;
-
+            //return totalRenderers == normalRenderersUpdated + priorityRenderersUpdated;
             return false;
         }
+
+        //private bool tryAddToPriorityQueue(WorldRenderer renderer, WorldRenderer[] priorityQueue, RenderSorter sorter)
+        //{
+        //    int queueSize = priorityQueue.Length;
+
+        //    int insertPos = 0;
+        //    for (; insertPos < queueSize && (priorityQueue[insertPos] == null || sorter.Compare(priorityQueue[insertPos], renderer) <= 0); ++insertPos)
+        //    {
+        //    }
+        //    insertPos--;
+
+        //    if (insertPos <= 0)
+        //    {
+        //        return false;
+        //    }
+
+        //    for (int i = 0; i < insertPos; i++)
+        //    {
+        //        priorityQueue[i] = priorityQueue[i + 1];
+        //    }
+        //    priorityQueue[insertPos] = renderer;
+
+        //    return false;
+        //}
 
         public void drawBlockBreaking(EntityPlayer var1, MovingObjectPosition var2, int var3, ItemStack var4, float var5)
         {
@@ -1144,13 +974,15 @@ namespace betareborn.Rendering
                             var18 += renderChunksDeep;
                         }
 
-                        int var19 = (var18 * renderChunksTall + var16) * renderChunksWide + var14;
-                        WorldRenderer var20 = worldRenderers[var19];
-                        if (!var20.needsUpdate)
-                        {
-                            worldRenderersToUpdate.Add(var20);
-                            var20.markDirty();
-                        }
+                        //int var19 = (var18 * renderChunksTall + var16) * renderChunksWide + var14;
+                        //WorldRenderer var20 = worldRenderers[var19];
+                        //if (!var20.needsUpdate)
+                        //{
+                        //    worldRenderersToUpdate.Add(var20);
+                        //    var20.markDirty();
+                        //}
+
+                        worldRenderer.MarkDirty(new(var14, var16, var18));
                     }
                 }
             }
@@ -1169,15 +1001,15 @@ namespace betareborn.Rendering
 
         public void clipRenderersByFrustrum(ICamera var1, float var2)
         {
-            for (int var3 = 0; var3 < worldRenderers.Length; ++var3)
-            {
-                if (!worldRenderers[var3].skipAllRenderPasses() && (!worldRenderers[var3].isInFrustum || (var3 + frustrumCheckOffset & 15) == 0))
-                {
-                    worldRenderers[var3].updateInFrustrum(var1);
-                }
-            }
+            //for (int var3 = 0; var3 < worldRenderers.Length; ++var3)
+            //{
+            //    if (!worldRenderers[var3].skipAllRenderPasses() && (!worldRenderers[var3].isInFrustum || (var3 + frustrumCheckOffset & 15) == 0))
+            //    {
+            //        worldRenderers[var3].updateInFrustrum(var1);
+            //    }
+            //}
 
-            ++frustrumCheckOffset;
+            //++frustrumCheckOffset;
         }
 
         public void playRecord(String var1, int var2, int var3, int var4)
@@ -1313,14 +1145,14 @@ namespace betareborn.Rendering
 
         public void updateAllRenderers()
         {
-            for (int var1 = 0; var1 < worldRenderers.Length; ++var1)
-            {
-                if (worldRenderers[var1].isChunkLit && !worldRenderers[var1].needsUpdate)
-                {
-                    worldRenderersToUpdate.Add(worldRenderers[var1]);
-                    worldRenderers[var1].markDirty();
-                }
-            }
+            //for (int var1 = 0; var1 < worldRenderers.Length; ++var1)
+            //{
+            //    if (worldRenderers[var1].isChunkLit && !worldRenderers[var1].needsUpdate)
+            //    {
+            //        worldRenderersToUpdate.Add(worldRenderers[var1]);
+            //        worldRenderers[var1].markDirty();
+            //    }
+            //}
 
         }
 

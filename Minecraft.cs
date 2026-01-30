@@ -555,7 +555,7 @@ namespace betareborn
 
                             try
                             {
-                                runTick();
+                                runTick(timer.renderPartialTicks);
                             }
                             catch (MinecraftException var16)
                             {
@@ -690,8 +690,8 @@ namespace betareborn
                              java.lang.System.currentTimeMillis() >= var1 + 1000L;
                              var3 = 0)
                         {
-                            debug = var3 + " fps, " + WorldRenderer.chunksUpdated + " chunk updates";
-                            WorldRenderer.chunksUpdated = 0;
+                            debug = var3 + " fps, "/* + WorldRenderer.chunksUpdated*/ + "0 chunk updates";
+                            //WorldRenderer.chunksUpdated = 0;
                             var1 += 1000L;
                         }
                     }
@@ -1118,7 +1118,7 @@ namespace betareborn
             (new ThreadCheckHasPaid(this)).start();
         }
 
-        public void runTick()
+        public void runTick(float partialTicks)
         {
             Profiler.PushGroup("runTick");
             if (ticksRan == 6000)
@@ -1135,6 +1135,8 @@ namespace betareborn
             entityRenderer.getMouseOver(1.0F);
 
             AsyncIO.tick();
+
+            entityRenderer.tick(partialTicks);
 
             Profiler.Start("chunkProviderLoadOrGenerateSetCurrentChunkOver");
             int var3;

@@ -78,6 +78,14 @@ namespace betareborn.Entities
             addRainParticles();
         }
 
+        public void tick(float var1)
+        {
+            if (mc.renderGlobal != null)
+            {
+                mc.renderGlobal.tick(mc.renderViewEntity, var1);
+            }
+        }
+
         public void getMouseOver(float var1)
         {
             if (mc.renderViewEntity != null)
@@ -562,24 +570,26 @@ namespace betareborn.Entities
             mc.renderGlobal.clipRenderersByFrustrum(var19, var1);
             Profiler.Stop("clipRenderers");
 
-            Profiler.Start("updateRenderers");
-            while (!mc.renderGlobal.updateRenderers(var4, false) && var2 != 0L)
-            {
-                long var20 = var2 - java.lang.System.nanoTime();
-                if (var20 < 0L || var20 > 1000000000L)
-                {
-                    break;
-                }
-            }
-            Profiler.Stop("updateRenderers");
+            //Profiler.Start("updateRenderers");
+            //while (!mc.renderGlobal.updateRenderers(var4, false) && var2 != 0L)
+            //{
+            //    long var20 = var2 - java.lang.System.nanoTime();
+            //    if (var20 < 0L || var20 > 1000000000L)
+            //    {
+            //        break;
+            //    }
+            //}
+            //Profiler.Stop("updateRenderers");
 
             setupFog(0, var1);
             GLManager.GL.Enable(GLEnum.Fog);
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/terrain.png"));
             RenderHelper.disableStandardItemLighting();
+
             Profiler.Start("sortAndRender");
-            var5.sortAndRender(var4, 0, (double)var1);
+            var5.sortAndRender(var4, 0, (double)var1, var19);
             Profiler.Stop("sortAndRender");
+
             GLManager.GL.ShadeModel(GLEnum.Flat);
             RenderHelper.enableStandardItemLighting();
             Profiler.Start("renderEntities");
@@ -619,7 +629,7 @@ namespace betareborn.Entities
                     GLManager.GL.ShadeModel(GLEnum.Smooth);
                 }
 
-                var16 = var5.sortAndRender(var4, 1, (double)var1);
+                var16 = var5.sortAndRender(var4, 1, (double)var1, var19);
 
                 //if (var16 > 0)
                 //{
@@ -630,7 +640,7 @@ namespace betareborn.Entities
             }
             else
             {
-                var5.sortAndRender(var4, 1, (double)var1);
+                var5.sortAndRender(var4, 1, (double)var1, var19);
             }
             Profiler.Stop("sortAndRender2");
 
@@ -1017,13 +1027,13 @@ namespace betareborn.Entities
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     GLManager.GL.Fog(GLEnum.FogEnd, farPlaneDistance * 0.8F);
                 }
-            
+
                 if (mc.theWorld.worldProvider.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                 }
             }
-            
+
             GLManager.GL.Enable(GLEnum.ColorMaterial);
             GLManager.GL.ColorMaterial(GLEnum.Front, GLEnum.Ambient);
         }
