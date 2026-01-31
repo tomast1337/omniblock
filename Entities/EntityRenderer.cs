@@ -19,10 +19,6 @@ namespace betareborn.Entities
         private Entity pointedEntity = null;
         private MouseFilter mouseFilterXAxis = new MouseFilter();
         private MouseFilter mouseFilterYAxis = new MouseFilter();
-        private MouseFilter mouseFilterDummy1 = new MouseFilter();
-        private MouseFilter mouseFilterDummy2 = new MouseFilter();
-        private MouseFilter mouseFilterDummy3 = new MouseFilter();
-        private MouseFilter mouseFilterDummy4 = new MouseFilter();
         private float field_22228_r = 4.0F;
         private float field_22227_s = 4.0F;
         private float field_22226_t = 0.0F;
@@ -41,8 +37,6 @@ namespace betareborn.Entities
         private long field_28133_I = 0L;
         private java.util.Random random = new();
         private int rainSoundCounter = 0;
-        volatile int field_1394_b = 0;
-        volatile int field_1393_c = 0;
         float[] fogColorBuffer = new float[16];
         float fogColorRed;
         float fogColorGreen;
@@ -564,22 +558,8 @@ namespace betareborn.Entities
                 GLManager.GL.ShadeModel(GLEnum.Smooth);
             }
 
-            Frustrum var19 = new Frustrum();
+            Frustrum var19 = new();
             var19.setPosition(var7, var9, var11);
-            Profiler.Start("clipRenderers");
-            mc.renderGlobal.clipRenderersByFrustrum(var19, var1);
-            Profiler.Stop("clipRenderers");
-
-            //Profiler.Start("updateRenderers");
-            //while (!mc.renderGlobal.updateRenderers(var4, false) && var2 != 0L)
-            //{
-            //    long var20 = var2 - java.lang.System.nanoTime();
-            //    if (var20 < 0L || var20 > 1000000000L)
-            //    {
-            //        break;
-            //    }
-            //}
-            //Profiler.Stop("updateRenderers");
 
             setupFog(0, var1);
             GLManager.GL.Enable(GLEnum.Fog);
@@ -592,6 +572,7 @@ namespace betareborn.Entities
 
             GLManager.GL.ShadeModel(GLEnum.Flat);
             RenderHelper.enableStandardItemLighting();
+
             Profiler.Start("renderEntities");
             var5.renderEntities(var4.getPosition(var1), var19, var1);
             Profiler.Stop("renderEntities");
@@ -629,18 +610,13 @@ namespace betareborn.Entities
                     GLManager.GL.ShadeModel(GLEnum.Smooth);
                 }
 
-                var16 = var5.sortAndRender(var4, 1, (double)var1, var19);
-
-                //if (var16 > 0)
-                //{
-                //    var5.renderAllRenderLists(1, (double)var1);
-                //}
+                var5.sortAndRender(var4, 1, var1, var19);
 
                 GLManager.GL.ShadeModel(GLEnum.Flat);
             }
             else
             {
-                var5.sortAndRender(var4, 1, (double)var1, var19);
+                var5.sortAndRender(var4, 1, var1, var19);
             }
             Profiler.Stop("sortAndRender2");
 

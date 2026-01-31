@@ -307,6 +307,8 @@ namespace betareborn.Rendering
             double var7 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * var3;
             double var9 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * var3;
 
+            RenderHelper.disableStandardItemLighting();
+
             if (pass == 0)
             {
                 worldRenderer.Render(cam, new(var33, var7, var9), renderDistance);
@@ -316,18 +318,6 @@ namespace betareborn.Rendering
                 worldRenderer.RenderTransparent(new(var33, var7, var9));
             }
 
-            //if (var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
-            //{
-            //    prevSortX = var1.posX;
-            //    prevSortY = var1.posY;
-            //    prevSortZ = var1.posZ;
-            //    markRenderersForNewPosition(MathHelper.floor_double(var1.posX), MathHelper.floor_double(var1.posY), MathHelper.floor_double(var1.posZ));
-            //    Arrays.sort(sortedWorldRenderers, new EntitySorter(var1));
-            //}
-
-            //RenderHelper.disableStandardItemLighting();
-
-            //return renderSortedRenderers(0, sortedWorldRenderers.Length, var2, var3);
             return 0;
         }
 
@@ -1145,14 +1135,6 @@ namespace betareborn.Rendering
 
         public void updateAllRenderers()
         {
-            //for (int var1 = 0; var1 < worldRenderers.Length; ++var1)
-            //{
-            //    if (worldRenderers[var1].isChunkLit && !worldRenderers[var1].needsUpdate)
-            //    {
-            //        worldRenderersToUpdate.Add(worldRenderers[var1]);
-            //        worldRenderers[var1].markDirty();
-            //    }
-            //}
 
         }
 

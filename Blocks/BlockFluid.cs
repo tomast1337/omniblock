@@ -201,12 +201,13 @@ namespace betareborn.Blocks
 
                 if (var13)
                 {
+                    var5 = Normalize(var5) + new Vector3D<double>(0.0, -0.6, 0.0);
                     //var5 = var5.normalize().addVector(0.0D, -6.0D, 0.0D);
-                    var5 = Vector3D.Normalize(var5) + new Vector3D<double>(0.0f, -6.0f, 0.0f);
                 }
             }
 
-            var5 = Vector3D.Normalize(var5);
+            //var5 = var5.normalize();
+            var5 = Normalize(var5);
             return var5;
         }
 
@@ -263,15 +264,15 @@ namespace betareborn.Blocks
 
         public static double func_293_a(IBlockAccess var0, int var1, int var2, int var3, Material var4)
         {
-            Vector3D<double> var5 = new();
+            Vector3D<double> var5 = new(0.0);
             if (var4 == Material.water)
             {
-                var5 = ((BlockFluid)Block.waterMoving).getFlowVector(var0, var1, var2, var3);
+                var5 = ((BlockFluid)waterMoving).getFlowVector(var0, var1, var2, var3);
             }
 
             if (var4 == Material.lava)
             {
-                var5 = ((BlockFluid)Block.lavaMoving).getFlowVector(var0, var1, var2, var3);
+                var5 = ((BlockFluid)lavaMoving).getFlowVector(var0, var1, var2, var3);
             }
 
             return var5.X == 0.0D && var5.Z == 0.0D ? -1000.0D : java.lang.Math.atan2(var5.Z, var5.X) - Math.PI * 0.5D;
@@ -347,6 +348,12 @@ namespace betareborn.Blocks
                 var1.spawnParticle("largesmoke", (double)var2 + java.lang.Math.random(), (double)var3 + 1.2D, (double)var4 + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
             }
 
+        }
+
+        private static Vector3D<double> Normalize(Vector3D<double> vec)
+        {
+            double var1 = (double)MathHelper.sqrt_double(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z);
+            return var1 < 1.0E-4D ? new(0.0) : new(vec.X / var1, vec.Y / var1, vec.Z / var1);
         }
     }
 
