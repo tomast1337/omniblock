@@ -181,6 +181,9 @@ namespace betareborn
             AchievementList.openInventory.setStatStringFormatter(new StatStringFormatKeyInv(this));
             loadScreen();
 
+            bool anisotropicFiltering = GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic");
+            Console.WriteLine($"Anisotropic Filtering Supported: {anisotropicFiltering}");
+
             try
             {
                 var window = Display.getWindow();
@@ -197,15 +200,6 @@ namespace betareborn
             Keyboard.create(Display.getGlfw(), Display.getWindowHandle());
             Mouse.create(Display.getGlfw(), Display.getWindowHandle(), Display.getWidth(), Display.getHeight());
             mouseHelper = new MouseHelper();
-
-            //try
-            //{
-            //    Controllers.create();
-            //}
-            //catch (java.lang.Exception var4)
-            //{
-            //    var4.printStackTrace();
-            //}
 
             checkGLError("Pre startup");
             GLManager.GL.Enable(GLEnum.Texture2D);

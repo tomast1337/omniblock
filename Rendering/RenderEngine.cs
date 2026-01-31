@@ -188,6 +188,15 @@ namespace betareborn.Rendering
                                                  (int)TextureMagFilter.Nearest);
                                 GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel,
                                                  mips.Length - 1);
+
+                                if (GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic"))
+                                {
+                                    GLManager.GL.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAniso);
+
+                                    maxAniso = System.Math.Clamp(maxAniso, 1.0f, 16.0f);
+
+                                    GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMaxAnisotropy, maxAniso);
+                                }
                             }
                             else
                             {
@@ -271,9 +280,6 @@ namespace betareborn.Rendering
             int var9;
             int var10;
             int var11;
-            int var12;
-            int var13;
-            int var14;
             for (var7 = 0; var7 < var5.Length; ++var7)
             {
                 var8 = var5[var7] >> 24 & 255;
