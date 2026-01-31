@@ -49,7 +49,7 @@ namespace betareborn.Worlds
         private readonly World world;
         private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> chunkVersions = [];
         private readonly Queue<ChunkToMeshInfo> dirtyChunks = [];
-        private int lastRenderDistance;
+        private int lastRenderDistance = 16;
         private Vector3D<double> lastViewPos;
         private int currentIndex = 0;
         private Vector3D<int> lastSearchChunk = new(int.MaxValue);
@@ -117,7 +117,7 @@ namespace betareborn.Worlds
 
             renderersToRemove.Clear();
 
-            ProcessOneMeshUpdate();
+            ProcessOneMeshUpdate(camera);
 
             const int MAX_CHUNKS_PER_FRAME = 2;
 
@@ -141,16 +141,43 @@ namespace betareborn.Worlds
             translucentRenderers.Clear();
         }
 
-        private void ProcessOneMeshUpdate()
+        private void ProcessOneMeshUpdate(ICamera camera)
         {
-            if (dirtyChunks.TryDequeue(out ChunkToMeshInfo? info))
+            int maxChecks = dirtyChunks.Count;
+            int checks = 0;
+
+            while (checks < maxChecks && dirtyChunks.TryDequeue(out ChunkToMeshInfo? info))
             {
+                checks++;
+
+                if (!IsChunkInRenderDistance(info.Pos, lastViewPos))
+                {
+                    chunkVersions.Remove(info.Pos);
+                    continue;
+                }
+
+                var aabb = AxisAlignedBB.getBoundingBoxFromPool(
+                    info.Pos.X, info.Pos.Y, info.Pos.Z,
+                    info.Pos.X + SubChunkRenderer.SIZE,
+                    info.Pos.Y + SubChunkRenderer.SIZE,
+                    info.Pos.Z + SubChunkRenderer.SIZE
+                );
+
+                if (!camera.isBoundingBoxInFrustum(aabb))
+                {
+                    dirtyChunks.Enqueue(info);
+                    continue;
+                }
+
                 meshGenerator.MeshChunk(world, info.Pos, info.Version, info.priority);
+                return;
             }
         }
 
         public void Tick(Vector3D<double> viewPos)
         {
+            lastViewPos = viewPos;
+
             Vector3D<int> currentChunk = new(
                 (int)Math.Floor(viewPos.X / 16.0),
                 (int)Math.Floor(viewPos.Y / 16.0),
@@ -165,12 +192,12 @@ namespace betareborn.Worlds
 
             if (currentIndex >= spiralOffsets.Length)
             {
-                return;
+                currentIndex = 0;
             }
 
             int radiusSq = lastRenderDistance * lastRenderDistance;
             int iters = 0;
-            const int MAX_ITERS = 32;
+            const int MAX_ITERS = 128;
 
             while (currentIndex < spiralOffsets.Length)
             {
