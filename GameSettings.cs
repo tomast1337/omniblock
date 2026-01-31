@@ -16,10 +16,7 @@ namespace betareborn
         public bool invertMouse = false;
         public int renderDistance = 0;
         public bool viewBobbing = true;
-        public bool advancedOpengl = false;
         public int limitFramerate = 1;
-        public bool fancyGraphics = true;
-        public bool ambientOcclusion = true;
         public string skin = "Default";
         public KeyBinding keyBindForward = new("key.forward", 17);
         public KeyBinding keyBindLeft = new("key.left", 30);
@@ -118,12 +115,6 @@ namespace betareborn
                 viewBobbing = !viewBobbing;
             }
 
-            if (var1 == EnumOptions.ADVANCED_OPENGL)
-            {
-                advancedOpengl = !advancedOpengl;
-                mc.renderGlobal.loadRenderers();
-            }
-
             if (var1 == EnumOptions.FRAMERATE_LIMIT)
             {
                 limitFramerate = (limitFramerate + var2 + 3) % 3;
@@ -132,18 +123,6 @@ namespace betareborn
             if (var1 == EnumOptions.DIFFICULTY)
             {
                 difficulty = difficulty + var2 & 3;
-            }
-
-            if (var1 == EnumOptions.GRAPHICS)
-            {
-                fancyGraphics = !fancyGraphics;
-                mc.renderGlobal.loadRenderers();
-            }
-
-            if (var1 == EnumOptions.AMBIENT_OCCLUSION)
-            {
-                ambientOcclusion = !ambientOcclusion;
-                mc.renderGlobal.loadRenderers();
             }
 
             saveOptions();
@@ -162,10 +141,6 @@ namespace betareborn
                     return invertMouse;
                 case 2:
                     return viewBobbing;
-                case 4:
-                    return advancedOpengl;
-                case 5:
-                    return ambientOcclusion;
                 default:
                     return false;
             }
@@ -187,7 +162,7 @@ namespace betareborn
             }
             else
             {
-                return var1 == EnumOptions.RENDER_DISTANCE ? var3 + var2.translateKey(RENDER_DISTANCES[renderDistance]) : (var1 == EnumOptions.DIFFICULTY ? var3 + var2.translateKey(DIFFICULTIES[difficulty]) : (var1 == EnumOptions.GUI_SCALE ? var3 + var2.translateKey(GUISCALES[guiScale]) : (var1 == EnumOptions.FRAMERATE_LIMIT ? var3 + StatCollector.translateToLocal(LIMIT_FRAMERATES[limitFramerate]) : (var1 == EnumOptions.GRAPHICS ? (fancyGraphics ? var3 + var2.translateKey("options.graphics.fancy") : var3 + var2.translateKey("options.graphics.fast")) : var3))));
+                return var1 == EnumOptions.RENDER_DISTANCE ? var3 + var2.translateKey(RENDER_DISTANCES[renderDistance]) : (var1 == EnumOptions.DIFFICULTY ? var3 + var2.translateKey(DIFFICULTIES[difficulty]) : (var1 == EnumOptions.GUI_SCALE ? var3 + var2.translateKey(GUISCALES[guiScale]) : (var1 == EnumOptions.FRAMERATE_LIMIT ? var3 + StatCollector.translateToLocal(LIMIT_FRAMERATES[limitFramerate]) : var3)));
             }
         }
 
@@ -250,11 +225,6 @@ namespace betareborn
                             viewBobbing = var3[1].Equals("true");
                         }
 
-                        if (var3[0].Equals("advancedOpengl"))
-                        {
-                            advancedOpengl = var3[1].Equals("true");
-                        }
-
                         if (var3[0].Equals("fpsLimit"))
                         {
                             limitFramerate = Integer.parseInt(var3[1]);
@@ -263,16 +233,6 @@ namespace betareborn
                         if (var3[0].Equals("difficulty"))
                         {
                             difficulty = Integer.parseInt(var3[1]);
-                        }
-
-                        if (var3[0].Equals("fancyGraphics"))
-                        {
-                            fancyGraphics = var3[1].Equals("true");
-                        }
-
-                        if (var3[0].Equals("ao"))
-                        {
-                            ambientOcclusion = var3[1].Equals("true");
                         }
 
                         if (var3[0].Equals("skin"))
@@ -324,11 +284,8 @@ namespace betareborn
                 var1.println("viewDistance:" + renderDistance);
                 var1.println("guiScale:" + guiScale);
                 var1.println("bobView:" + viewBobbing);
-                var1.println("advancedOpengl:" + advancedOpengl);
                 var1.println("fpsLimit:" + limitFramerate);
                 var1.println("difficulty:" + difficulty);
-                var1.println("fancyGraphics:" + fancyGraphics);
-                var1.println("ao:" + ambientOcclusion);
                 var1.println("skin:" + skin);
                 var1.println("lastServer:" + lastServer);
 

@@ -562,7 +562,7 @@ namespace betareborn
 
                         long var24 = java.lang.System.nanoTime() - var23;
                         checkGLError("Pre render");
-                        RenderBlocks.fancyGrass = gameSettings.fancyGraphics;
+                        RenderBlocks.fancyGrass = true;
                         sndManager.func_338_a(thePlayer, timer.renderPartialTicks);
                         GLManager.GL.Enable(GLEnum.Texture2D);
                         if (theWorld != null)
@@ -1945,12 +1945,12 @@ namespace betareborn
 
         public static bool isFancyGraphicsEnabled()
         {
-            return theMinecraft != null && theMinecraft.gameSettings.fancyGraphics;
+            return theMinecraft != null;
         }
 
         public static bool isAmbientOcclusionEnabled()
         {
-            return theMinecraft != null && theMinecraft.gameSettings.ambientOcclusion;
+            return theMinecraft != null;
         }
 
         public static bool isDebugInfoEnabled()

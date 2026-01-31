@@ -8,17 +8,13 @@ namespace betareborn
         public static readonly EnumOptions SENSITIVITY = new("options.sensitivity", true, false, 3);
         public static readonly EnumOptions RENDER_DISTANCE = new("options.renderDistance", false, false, 4);
         public static readonly EnumOptions VIEW_BOBBING = new("options.viewBobbing", false, true, 5);
-        public static readonly EnumOptions ADVANCED_OPENGL = new("options.advancedOpengl", false, true, 7);
         public static readonly EnumOptions FRAMERATE_LIMIT = new("options.framerateLimit", false, false, 8);
         public static readonly EnumOptions DIFFICULTY = new("options.difficulty", false, false, 9);
-        public static readonly EnumOptions GRAPHICS = new("options.graphics", false, false, 10);
-        public static readonly EnumOptions AMBIENT_OCCLUSION = new("options.ao", false, true, 11);
         public static readonly EnumOptions GUI_SCALE = new("options.guiScale", false, false, 12);
 
         private static readonly EnumOptions[] allValues =
         [
-            MUSIC, SOUND, INVERT_MOUSE, SENSITIVITY, RENDER_DISTANCE, VIEW_BOBBING, ADVANCED_OPENGL, FRAMERATE_LIMIT, DIFFICULTY, GRAPHICS,
-            AMBIENT_OCCLUSION, GUI_SCALE
+            MUSIC, SOUND, INVERT_MOUSE, SENSITIVITY, RENDER_DISTANCE, VIEW_BOBBING, FRAMERATE_LIMIT, DIFFICULTY, GUI_SCALE
         ];
 
         private readonly bool enumFloat;

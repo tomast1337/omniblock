@@ -553,10 +553,7 @@ namespace betareborn.Entities
 
             GLManager.GL.Enable(GLEnum.Fog);
             setupFog(1, var1);
-            if (mc.gameSettings.ambientOcclusion)
-            {
-                GLManager.GL.ShadeModel(GLEnum.Smooth);
-            }
+            GLManager.GL.ShadeModel(GLEnum.Smooth);
 
             Frustrum var19 = new();
             var19.setPosition(var7, var9, var11);
@@ -603,21 +600,12 @@ namespace betareborn.Entities
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/terrain.png"));
 
             Profiler.Start("sortAndRender2");
-            if (mc.gameSettings.fancyGraphics)
-            {
-                if (mc.gameSettings.ambientOcclusion)
-                {
-                    GLManager.GL.ShadeModel(GLEnum.Smooth);
-                }
+            GLManager.GL.ShadeModel(GLEnum.Smooth);
 
-                var5.sortAndRender(var4, 1, var1, var19);
+            var5.sortAndRender(var4, 1, var1, var19);
 
-                GLManager.GL.ShadeModel(GLEnum.Flat);
-            }
-            else
-            {
-                var5.sortAndRender(var4, 1, var1, var19);
-            }
+            GLManager.GL.ShadeModel(GLEnum.Flat);
+
             Profiler.Stop("sortAndRender2");
 
             GLManager.GL.DepthMask(true);
@@ -653,10 +641,6 @@ namespace betareborn.Entities
         private void addRainParticles()
         {
             float var1 = mc.theWorld.func_27162_g(1.0F);
-            if (!mc.gameSettings.fancyGraphics)
-            {
-                var1 /= 2.0F;
-            }
 
             if (var1 != 0.0F)
             {
@@ -741,11 +725,7 @@ namespace betareborn.Entities
                 double var11 = var3.lastTickPosY + (var3.posY - var3.lastTickPosY) * (double)var1;
                 double var13 = var3.lastTickPosZ + (var3.posZ - var3.lastTickPosZ) * (double)var1;
                 int var15 = MathHelper.floor_double(var11);
-                byte var16 = 5;
-                if (mc.gameSettings.fancyGraphics)
-                {
-                    var16 = 10;
-                }
+                byte var16 = 10;
 
                 BiomeGenBase[] var17 = var4.getWorldChunkManager().func_4069_a(var5 - var16, var7 - var16, var16 * 2 + 1, var16 * 2 + 1);
                 int var18 = 0;
@@ -819,10 +799,7 @@ namespace betareborn.Entities
                 }
 
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/environment/rain.png"));
-                if (mc.gameSettings.fancyGraphics)
-                {
-                    var16 = 10;
-                }
+                var16 = 10;
 
                 var18 = 0;
 

@@ -164,7 +164,7 @@ namespace betareborn.Rendering
 
         public void loadRenderers()
         {
-            Block.leaves.setGraphicsLevel(mc.gameSettings.fancyGraphics);
+            Block.leaves.setGraphicsLevel(true);
             renderDistance = mc.gameSettings.renderDistance;
 
             worldRenderer?.Dispose();
@@ -397,55 +397,7 @@ namespace betareborn.Rendering
         {
             if (!mc.theWorld.worldProvider.isNether)
             {
-                if (mc.gameSettings.fancyGraphics)
-                {
-                    renderCloudsFancy(var1);
-                }
-                else
-                {
-                    GLManager.GL.Disable(GLEnum.CullFace);
-                    float var2 = (float)(mc.renderViewEntity.lastTickPosY + (mc.renderViewEntity.posY - mc.renderViewEntity.lastTickPosY) * (double)var1);
-                    byte var3 = 32;
-                    int var4 = 256 / var3;
-                    Tessellator var5 = Tessellator.instance;
-                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)renderEngine.getTexture("/environment/clouds.png"));
-                    GLManager.GL.Enable(GLEnum.Blend);
-                    GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-                    Vec3D var6 = worldObj.func_628_d(var1);
-                    float var7 = (float)var6.xCoord;
-                    float var8 = (float)var6.yCoord;
-                    float var9 = (float)var6.zCoord;
-                    float var10;
-
-                    var10 = 0.5F / 1024.0F;
-                    double var22 = mc.renderViewEntity.prevPosX + (mc.renderViewEntity.posX - mc.renderViewEntity.prevPosX) * (double)var1 + (double)(((float)cloudOffsetX + var1) * 0.03F);
-                    double var13 = mc.renderViewEntity.prevPosZ + (mc.renderViewEntity.posZ - mc.renderViewEntity.prevPosZ) * (double)var1;
-                    int var15 = MathHelper.floor_double(var22 / 2048.0D);
-                    int var16 = MathHelper.floor_double(var13 / 2048.0D);
-                    var22 -= (double)(var15 * 2048);
-                    var13 -= (double)(var16 * 2048);
-                    float var17 = worldObj.worldProvider.getCloudHeight() - var2 + 0.33F;
-                    float var18 = (float)(var22 * (double)var10);
-                    float var19 = (float)(var13 * (double)var10);
-                    var5.startDrawingQuads();
-                    var5.setColorRGBA_F(var7, var8, var9, 0.8F);
-
-                    for (int var20 = -var3 * var4; var20 < var3 * var4; var20 += var3)
-                    {
-                        for (int var21 = -var3 * var4; var21 < var3 * var4; var21 += var3)
-                        {
-                            var5.addVertexWithUV((double)(var20 + 0), (double)var17, (double)(var21 + var3), (double)((float)(var20 + 0) * var10 + var18), (double)((float)(var21 + var3) * var10 + var19));
-                            var5.addVertexWithUV((double)(var20 + var3), (double)var17, (double)(var21 + var3), (double)((float)(var20 + var3) * var10 + var18), (double)((float)(var21 + var3) * var10 + var19));
-                            var5.addVertexWithUV((double)(var20 + var3), (double)var17, (double)(var21 + 0), (double)((float)(var20 + var3) * var10 + var18), (double)((float)(var21 + 0) * var10 + var19));
-                            var5.addVertexWithUV((double)(var20 + 0), (double)var17, (double)(var21 + 0), (double)((float)(var20 + 0) * var10 + var18), (double)((float)(var21 + 0) * var10 + var19));
-                        }
-                    }
-
-                    var5.draw();
-                    GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-                    GLManager.GL.Disable(GLEnum.Blend);
-                    GLManager.GL.Enable(GLEnum.CullFace);
-                }
+                renderCloudsFancy(var1);
             }
         }
 
@@ -454,7 +406,7 @@ namespace betareborn.Rendering
             return false;
         }
 
-        public void renderCloudsFancy(float var1)
+        private void renderCloudsFancy(float var1)
         {
             GLManager.GL.Disable(GLEnum.CullFace);
             float var2 = (float)(mc.renderViewEntity.lastTickPosY + (mc.renderViewEntity.posY - mc.renderViewEntity.lastTickPosY) * (double)var1);
