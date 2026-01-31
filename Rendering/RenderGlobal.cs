@@ -12,9 +12,6 @@ namespace betareborn.Rendering
         public List<TileEntity> tileEntities = [];
         private World worldObj;
         private readonly RenderEngine renderEngine;
-        private int renderChunksWide;
-        private int renderChunksTall;
-        private int renderChunksDeep;
         private readonly Minecraft mc;
         private RenderBlocks globalRenderBlocks;
         private int cloudOffsetX = 0;
@@ -139,10 +136,7 @@ namespace betareborn.Rendering
 
         public void changeWorld(World var1)
         {
-            if (worldObj != null)
-            {
-                worldObj.removeWorldAccess(this);
-            }
+            worldObj?.removeWorldAccess(this);
 
             RenderManager.instance.func_852_a(var1);
             worldObj = var1;
@@ -172,15 +166,9 @@ namespace betareborn.Rendering
         {
             Block.leaves.setGraphicsLevel(mc.gameSettings.fancyGraphics);
             renderDistance = mc.gameSettings.renderDistance;
-            int var1;
+
             worldRenderer?.Dispose();
             worldRenderer = new(worldObj, 2);
-
-            var1 = 64 << 3 - renderDistance;
-
-            renderChunksWide = var1 / 16 + 1;
-            renderChunksTall = 8;
-            renderChunksDeep = var1 / 16 + 1;
 
             tileEntities.Clear();
 
@@ -608,145 +596,6 @@ namespace betareborn.Rendering
             GLManager.GL.Enable(GLEnum.CullFace);
         }
 
-        public bool updateRenderers(EntityLiving entity, bool forceUpdateAll)
-        {
-            //const int MAX_PRIORITY_RENDERERS = 2;
-            //RenderSorter sorter = new(entity);
-
-            //WorldRenderer[] priorityRenderers = new WorldRenderer[MAX_PRIORITY_RENDERERS];
-            //List<WorldRenderer> renderersToUpdateNow = null;
-
-            //int totalRenderers = worldRenderersToUpdate.Count;
-            //int normalRenderersUpdated = 0;
-            //int priorityRenderersUpdated = 0;
-
-            //for (int i = 0; i < totalRenderers; ++i)
-            //{
-            //    WorldRenderer renderer = worldRenderersToUpdate[i];
-            //    bool shouldSkip = false;
-
-            //    if (!forceUpdateAll)
-            //    {
-            //        if (renderer.distanceToEntitySquared(entity) > 256.0F)
-            //        {
-            //            shouldSkip = !tryAddToPriorityQueue(renderer, priorityRenderers, sorter);
-            //        }
-            //    }
-            //    else if (!renderer.isInFrustum)
-            //    {
-            //        shouldSkip = true;
-            //    }
-
-            //    if (shouldSkip)
-            //    {
-            //        continue;
-            //    }
-
-            //    renderersToUpdateNow ??= [];
-            //    normalRenderersUpdated++;
-            //    renderersToUpdateNow.Add(renderer);
-            //    worldRenderersToUpdate[i] = null;
-            //}
-            //pendingMeshes.Clear();
-            //if (renderersToUpdateNow != null)
-            //{
-            //    if (renderersToUpdateNow.Count > 1)
-            //    {
-            //        renderersToUpdateNow.Sort(sorter);
-            //    }
-
-            //    for (int i = renderersToUpdateNow.Count - 1; i >= 0; --i)
-            //    {
-            //        WorldRenderer renderer = renderersToUpdateNow[i];
-            //        renderer.updateRenderer(pendingMeshes);
-            //    }
-            //    //Console.WriteLine($"updated {renderersToUpdateNow.Count} renderers");
-            //}
-            ////Console.WriteLine($"pending mesh count:{pendingMeshes.Count}");
-            //for (int i = MAX_PRIORITY_RENDERERS - 1; i >= 0; --i)
-            //{
-            //    WorldRenderer renderer = priorityRenderers[i];
-            //    if (renderer != null)
-            //    {
-            //        if (!renderer.isInFrustum && i != MAX_PRIORITY_RENDERERS - 1)
-            //        {
-            //            priorityRenderers[i] = null;
-            //            priorityRenderers[0] = null;
-            //            break;
-            //        }
-
-            //        if (renderer.updateRenderer(pendingMeshes))
-            //        {
-            //            priorityRenderersUpdated++;
-            //        }
-            //    }
-            //}
-            ////if (priorityRenderersUpdated > 0)
-            ////{
-            ////    Console.WriteLine($"updated {priorityRenderersUpdated} priority renderers");
-            ////}
-
-            //int writeIndex = 0;
-            //for (int readIndex = 0; readIndex < totalRenderers; ++readIndex)
-            //{
-            //    WorldRenderer renderer = worldRenderersToUpdate[readIndex];
-
-            //    if (renderer != null)
-            //    {
-            //        bool wasInPriorityQueue = false;
-            //        for (int p = 0; p < MAX_PRIORITY_RENDERERS; ++p)
-            //        {
-            //            if (renderer == priorityRenderers[p])
-            //            {
-            //                wasInPriorityQueue = true;
-            //                break;
-            //            }
-            //        }
-
-            //        if (!wasInPriorityQueue)
-            //        {
-            //            if (writeIndex != readIndex)
-            //            {
-            //                worldRenderersToUpdate[writeIndex] = renderer;
-            //            }
-            //            writeIndex++;
-            //        }
-            //    }
-            //}
-
-            //while (worldRenderersToUpdate.Count > writeIndex)
-            //{
-            //    worldRenderersToUpdate.RemoveAt(worldRenderersToUpdate.Count - 1);
-            //}
-
-            //return totalRenderers == normalRenderersUpdated + priorityRenderersUpdated;
-            return false;
-        }
-
-        //private bool tryAddToPriorityQueue(WorldRenderer renderer, WorldRenderer[] priorityQueue, RenderSorter sorter)
-        //{
-        //    int queueSize = priorityQueue.Length;
-
-        //    int insertPos = 0;
-        //    for (; insertPos < queueSize && (priorityQueue[insertPos] == null || sorter.Compare(priorityQueue[insertPos], renderer) <= 0); ++insertPos)
-        //    {
-        //    }
-        //    insertPos--;
-
-        //    if (insertPos <= 0)
-        //    {
-        //        return false;
-        //    }
-
-        //    for (int i = 0; i < insertPos; i++)
-        //    {
-        //        priorityQueue[i] = priorityQueue[i + 1];
-        //    }
-        //    priorityQueue[insertPos] = renderer;
-
-        //    return false;
-        //}
-
         public void drawBlockBreaking(EntityPlayer var1, MovingObjectPosition var2, int var3, ItemStack var4, float var5)
         {
             Tessellator var6 = Tessellator.instance;
@@ -905,41 +754,14 @@ namespace betareborn.Rendering
 
             for (int var13 = var7; var13 <= var10; ++var13)
             {
-                int var14 = var13 % renderChunksWide;
-                if (var14 < 0)
-                {
-                    var14 += renderChunksWide;
-                }
-
                 for (int var15 = var8; var15 <= var11; ++var15)
                 {
-                    int var16 = var15 % renderChunksTall;
-                    if (var16 < 0)
-                    {
-                        var16 += renderChunksTall;
-                    }
-
                     for (int var17 = var9; var17 <= var12; ++var17)
                     {
-                        int var18 = var17 % renderChunksDeep;
-                        if (var18 < 0)
-                        {
-                            var18 += renderChunksDeep;
-                        }
-
-                        //int var19 = (var18 * renderChunksTall + var16) * renderChunksWide + var14;
-                        //WorldRenderer var20 = worldRenderers[var19];
-                        //if (!var20.needsUpdate)
-                        //{
-                        //    worldRenderersToUpdate.Add(var20);
-                        //    var20.markDirty();
-                        //}
-
-                        worldRenderer.MarkDirty(new(var14, var16, var18));
+                        worldRenderer.MarkDirty(new Silk.NET.Maths.Vector3D<int>(var13, var15, var17) * 16, true);
                     }
                 }
             }
-
         }
 
         public void markBlockAndNeighborsNeedsUpdate(int var1, int var2, int var3)
@@ -952,20 +774,7 @@ namespace betareborn.Rendering
             func_949_a(var1 - 1, var2 - 1, var3 - 1, var4 + 1, var5 + 1, var6 + 1);
         }
 
-        public void clipRenderersByFrustrum(ICamera var1, float var2)
-        {
-            //for (int var3 = 0; var3 < worldRenderers.Length; ++var3)
-            //{
-            //    if (!worldRenderers[var3].skipAllRenderPasses() && (!worldRenderers[var3].isInFrustum || (var3 + frustrumCheckOffset & 15) == 0))
-            //    {
-            //        worldRenderers[var3].updateInFrustrum(var1);
-            //    }
-            //}
-
-            //++frustrumCheckOffset;
-        }
-
-        public void playRecord(String var1, int var2, int var3, int var4)
+        public void playRecord(string var1, int var2, int var3, int var4)
         {
             if (var1 != null)
             {
@@ -975,7 +784,7 @@ namespace betareborn.Rendering
             mc.sndManager.playStreaming(var1, (float)var2, (float)var3, (float)var4, 1.0F, 1.0F);
         }
 
-        public void playSound(String var1, double var2, double var4, double var6, float var8, float var9)
+        public void playSound(string var1, double var2, double var4, double var6, float var8, float var9)
         {
             float var10 = 16.0F;
             if (var8 > 1.0F)
@@ -990,7 +799,7 @@ namespace betareborn.Rendering
 
         }
 
-        public void spawnParticle(String var1, double var2, double var4, double var6, double var8, double var10, double var12)
+        public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
         {
             if (mc != null && mc.renderViewEntity != null && mc.effectRenderer != null)
             {
@@ -1098,16 +907,10 @@ namespace betareborn.Rendering
 
         public void updateAllRenderers()
         {
-
         }
 
         public void doNothingWithTileEntity(int var1, int var2, int var3, TileEntity var4)
         {
-        }
-
-        public void func_28137_f()
-        {
-            //GLAllocation.func_28194_b(glRenderListBase);
         }
 
         public void func_28136_a(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)

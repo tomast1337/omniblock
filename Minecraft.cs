@@ -736,15 +736,6 @@ namespace betareborn
         {
             try
             {
-                //field_28006_b = new byte[0];
-                renderGlobal.func_28137_f();
-            }
-            catch (Throwable var4)
-            {
-            }
-
-            try
-            {
                 java.lang.System.gc();
                 AxisAlignedBB.cleanUp();
                 Vec3D.cleanUp();
