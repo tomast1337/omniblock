@@ -202,7 +202,6 @@ namespace betareborn.Guis
                 }
 
                 var8.drawStringWithShadow("Minecraft Beta 1.7.3 (" + mc.debug + ")", 2, 2, 16777215);
-                var8.drawStringWithShadow(mc.func_6241_m(), 2, 12, 16777215);
                 var8.drawStringWithShadow(mc.func_6262_n(), 2, 22, 16777215);
                 var8.drawStringWithShadow(mc.func_6245_o(), 2, 32, 16777215);
                 var8.drawStringWithShadow(mc.func_21002_o(), 2, 42, 16777215);

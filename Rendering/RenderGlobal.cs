@@ -7,50 +7,27 @@ using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering
 {
-    public class RenderGlobal : IWorldAccess, IDisposable
+    public class RenderGlobal : IWorldAccess
     {
         public List<TileEntity> tileEntities = [];
         private World worldObj;
         private readonly RenderEngine renderEngine;
-        //private readonly List<WorldRenderer> worldRenderersToUpdate = [];
-        //private WorldRenderer[] sortedWorldRenderers;
-        //private WorldRenderer[] worldRenderers;
         private int renderChunksWide;
         private int renderChunksTall;
         private int renderChunksDeep;
-        //private readonly int glRenderListBase;
         private readonly Minecraft mc;
         private RenderBlocks globalRenderBlocks;
         private int cloudOffsetX = 0;
         private readonly int starGLCallList;
         private readonly int glSkyList;
         private readonly int glSkyList2;
-        private int minBlockX;
-        private int minBlockY;
-        private int minBlockZ;
-        private int maxBlockX;
-        private int maxBlockY;
-        private int maxBlockZ;
         private int renderDistance = -1;
         private int renderEntitiesStartupCounter = 2;
         private int countEntitiesTotal;
         private int countEntitiesRendered;
         private int countEntitiesHidden;
-        private int renderersLoaded;
-        private int renderersBeingClipped;
-        private int renderersBeingOccluded;
-        private int renderersBeingRendered;
-        private int renderersSkippingRenderPass;
-        private int worldRenderersCheckIndex;
-        //private readonly HashSet<Vector3D<int>> pendingMeshes = [];
-        //private readonly List<WorldRenderer> glRenderLists = [];
-        private readonly TaskPool worldRendererUpdateTaskPool = new(2);
         private WorldRenderer worldRenderer;
-        double prevSortX = -9999.0D;
-        double prevSortY = -9999.0D;
-        double prevSortZ = -9999.0D;
         public float damagePartialTime;
-        int frustrumCheckOffset = 0;
 
         public RenderGlobal(Minecraft var1, RenderEngine var2)
         {
@@ -167,9 +144,6 @@ namespace betareborn.Rendering
                 worldObj.removeWorldAccess(this);
             }
 
-            prevSortX = -9999.0D;
-            prevSortY = -9999.0D;
-            prevSortZ = -9999.0D;
             RenderManager.instance.func_852_a(var1);
             worldObj = var1;
             globalRenderBlocks = new RenderBlocks(var1);
@@ -207,12 +181,6 @@ namespace betareborn.Rendering
             renderChunksWide = var1 / 16 + 1;
             renderChunksTall = 8;
             renderChunksDeep = var1 / 16 + 1;
-            minBlockX = 0;
-            minBlockY = 0;
-            minBlockZ = 0;
-            maxBlockX = renderChunksWide;
-            maxBlockY = renderChunksTall;
-            maxBlockZ = renderChunksDeep;
 
             tileEntities.Clear();
 
@@ -284,11 +252,6 @@ namespace betareborn.Rendering
                 }
 
             }
-        }
-
-        public string getDebugInfoRenders()
-        {
-            return "C: " + renderersBeingRendered + "/" + renderersLoaded + ". F: " + renderersBeingClipped + ", O: " + renderersBeingOccluded + ", E: " + renderersSkippingRenderPass;
         }
 
         public string getDebugInfoEntities()
@@ -1217,12 +1180,6 @@ namespace betareborn.Rendering
                     break;
             }
 
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            worldRendererUpdateTaskPool.Dispose();
         }
     }
 

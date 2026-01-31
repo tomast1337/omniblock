@@ -445,7 +445,6 @@ namespace betareborn
             {
                 statFileWriter.func_27175_b();
                 statFileWriter.syncStats();
-                renderGlobal.Dispose();
                 //if (mcApplet != null)
                 //{
                 //    mcApplet.clearApplet();
@@ -1779,11 +1778,6 @@ namespace betareborn
             {
                 sndManager.addMusic(var1, var2);
             }
-        }
-
-        public string func_6241_m()
-        {
-            return renderGlobal.getDebugInfoRenders();
         }
 
         public string func_6262_n()
