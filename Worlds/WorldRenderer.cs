@@ -48,7 +48,7 @@ namespace betareborn.Worlds
         private readonly ChunkMeshGenerator meshGenerator;
         private readonly World world;
         private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> chunkVersions = [];
-        private readonly Queue<ChunkToMeshInfo> dirtyChunks = [];
+        private readonly List<ChunkToMeshInfo> dirtyChunks = [];
         private int lastRenderDistance = 16;
         private Vector3D<double> lastViewPos;
         private int currentIndex = 0;
@@ -142,16 +142,22 @@ namespace betareborn.Worlds
 
         private void ProcessOneMeshUpdate(ICamera camera)
         {
-            int maxChecks = dirtyChunks.Count;
-            int checks = 0;
-
-            while (checks < maxChecks && dirtyChunks.TryDequeue(out ChunkToMeshInfo? info))
+            dirtyChunks.Sort((a, b) =>
             {
-                checks++;
+                var distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), lastViewPos);
+                var distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), lastViewPos);
+                return distA.CompareTo(distB);
+            });
+
+            for (int i = 0; i < dirtyChunks.Count; i++)
+            {
+                var info = dirtyChunks[i];
 
                 if (!IsChunkInRenderDistance(info.Pos, lastViewPos))
                 {
                     chunkVersions.Remove(info.Pos);
+                    dirtyChunks.RemoveAt(i);
+                    i--;
                     continue;
                 }
 
@@ -164,11 +170,11 @@ namespace betareborn.Worlds
 
                 if (!camera.isBoundingBoxInFrustum(aabb))
                 {
-                    dirtyChunks.Enqueue(info);
                     continue;
                 }
 
                 meshGenerator.MeshChunk(world, info.Pos, info.Version, info.priority);
+                dirtyChunks.RemoveAt(i);
                 return;
             }
         }
@@ -187,6 +193,7 @@ namespace betareborn.Worlds
             int enqueuedCount = 0;
             bool priorityPassClean = true;
 
+            //TODO: MAKE THESE CONFIGURABLE
             const int MAX_CHUNKS_PER_FRAME = 16;
             const int PRIORITY_PASS_LIMIT = 1024;
             const int BACKGROUND_PASS_LIMIT = 2048;
@@ -281,7 +288,7 @@ namespace betareborn.Worlds
             long? snapshot = version.SnapshotIfNeeded();
             if (snapshot.HasValue)
             {
-                dirtyChunks.Enqueue(new(chunkPos, snapshot.Value, priority));
+                dirtyChunks.Add(new(chunkPos, snapshot.Value, priority));
                 return true;
             }
 
