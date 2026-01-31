@@ -51,6 +51,7 @@ namespace betareborn.Worlds
         private readonly Queue<ChunkToMeshInfo> dirtyChunks = [];
         private int lastRenderDistance = 16;
         private Vector3D<double> lastViewPos;
+        private int currentIndex = 0;
 
         public WorldRenderer(World world, int workerCount)
         {
@@ -184,9 +185,13 @@ namespace betareborn.Worlds
 
             int radiusSq = lastRenderDistance * lastRenderDistance;
             int enqueuedCount = 0;
-            const int MAX_CHUNKS_PER_FRAME = 16;
+            bool priorityPassClean = true;
 
-            for (int i = 0; i < spiralOffsets.Length; i++)
+            const int MAX_CHUNKS_PER_FRAME = 16;
+            const int PRIORITY_PASS_LIMIT = 1024;
+            const int BACKGROUND_PASS_LIMIT = 2048;
+
+            for (int i = 0; i < PRIORITY_PASS_LIMIT && i < spiralOffsets.Length; i++)
             {
                 var offset = spiralOffsets[i];
                 int distSq = offset.X * offset.X + offset.Y * offset.Y + offset.Z * offset.Z;
@@ -198,6 +203,11 @@ namespace betareborn.Worlds
 
                 var chunkPos = (currentChunk + offset) * 16;
 
+                if (chunkPos.Y < 0 || chunkPos.Y >= 128)
+                {
+                    continue;
+                }
+
                 if (renderers.ContainsKey(chunkPos) || chunkVersions.ContainsKey(chunkPos))
                 {
                     continue;
@@ -206,6 +216,40 @@ namespace betareborn.Worlds
                 if (MarkDirty(chunkPos))
                 {
                     enqueuedCount++;
+                    priorityPassClean = false;
+                }
+                else
+                {
+                    priorityPassClean = false;
+                }
+
+                if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
+                {
+                    break;
+                }
+            }
+
+            if (priorityPassClean && enqueuedCount < MAX_CHUNKS_PER_FRAME)
+            {
+                for (int i = 0; i < BACKGROUND_PASS_LIMIT; i++)
+                {
+                    var offset = spiralOffsets[currentIndex];
+                    int distSq = offset.X * offset.X + offset.Y * offset.Y + offset.Z * offset.Z;
+
+                    if (distSq <= radiusSq)
+                    {
+                        var chunkPos = (currentChunk + offset) * 16;
+                        if (!renderers.ContainsKey(chunkPos) && !chunkVersions.ContainsKey(chunkPos))
+                        {
+                            if (MarkDirty(chunkPos))
+                            {
+                                enqueuedCount++;
+                            }
+                        }
+                    }
+
+                    currentIndex = (currentIndex + 1) % spiralOffsets.Length;
+
                     if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
                     {
                         break;
@@ -213,7 +257,6 @@ namespace betareborn.Worlds
                 }
             }
         }
-
 
         public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false)
         {
