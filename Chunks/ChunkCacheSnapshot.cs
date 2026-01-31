@@ -177,7 +177,16 @@ namespace betareborn.Chunks
                 {
                     var5 = (var1 >> 4) - chunkX;
                     var6 = (var3 >> 4) - chunkZ;
-                    return chunkArray[var5][var6].getBlockLightValue(var1 & 15, var2, var3 & 15, skylightSubtracted, out isLit);
+                    
+                    ChunkSnapshot chunk = chunkArray[var5][var6];
+                    int lightValue = chunk.getBlockLightValue(var1 & 15, var2, var3 & 15, skylightSubtracted);
+
+                    if (chunk.getIsLit())
+                    {
+                        isLit = true;
+                    }
+
+                    return lightValue;
                 }
             }
             else

@@ -4,6 +4,7 @@ using Silk.NET.Maths;
 
 namespace betareborn.Worlds
 {
+    //TODO: THERE IS SOME KIND OF BUG WITH UNLOADING, WHERE RENDERERS WILL NEVER GET REMESHED
     public class WorldRenderer
     {
         static WorldRenderer()
@@ -33,7 +34,7 @@ namespace betareborn.Worlds
             public SubChunkRenderer Renderer { get; } = renderer;
         }
 
-        private class ChunkToMeshInfo(Vector3D<int> pos, long version, bool priority)
+        private struct ChunkToMeshInfo(Vector3D<int> pos, long version, bool priority)
         {
             public Vector3D<int> Pos = pos;
             public long Version = version;
@@ -49,6 +50,7 @@ namespace betareborn.Worlds
         private readonly World world;
         private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> chunkVersions = [];
         private readonly List<ChunkToMeshInfo> dirtyChunks = [];
+        private readonly List<ChunkToMeshInfo> lightingUpdates = [];
         private int lastRenderDistance = 16;
         private Vector3D<double> lastViewPos;
         private int currentIndex = 0;
@@ -117,6 +119,7 @@ namespace betareborn.Worlds
             renderersToRemove.Clear();
 
             ProcessOneMeshUpdate(camera);
+            ProcessOneLightingMeshUpdate();
 
             const int MAX_CHUNKS_PER_FRAME = 2;
 
@@ -155,7 +158,6 @@ namespace betareborn.Worlds
 
                 if (!IsChunkInRenderDistance(info.Pos, lastViewPos))
                 {
-                    chunkVersions.Remove(info.Pos);
                     dirtyChunks.RemoveAt(i);
                     i--;
                     continue;
@@ -176,6 +178,55 @@ namespace betareborn.Worlds
                 meshGenerator.MeshChunk(world, info.Pos, info.Version, info.priority);
                 dirtyChunks.RemoveAt(i);
                 return;
+            }
+        }
+
+        private void ProcessOneLightingMeshUpdate()
+        {
+            lightingUpdates.Sort((a, b) =>
+            {
+                var distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), lastViewPos);
+                var distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), lastViewPos);
+                return distA.CompareTo(distB);
+            });
+
+            for (int i = 0; i < lightingUpdates.Count; i++)
+            {
+                ChunkToMeshInfo update = lightingUpdates[i];
+
+                if (!IsChunkInRenderDistance(update.Pos, lastViewPos))
+                {
+                    lightingUpdates.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
+                meshGenerator.MeshChunk(world, update.Pos, update.Version, false);
+                lightingUpdates.RemoveAt(i);
+                return;
+            }
+        }
+
+        public void UpdateAllRenderers()
+        {
+            foreach (var state in renderers.Values)
+            {
+                if (state.IsLit)
+                {
+                    if (!chunkVersions.TryGetValue(state.Renderer.Position, out var version))
+                    {
+                        version = new();
+                        chunkVersions[state.Renderer.Position] = version;
+                    }
+
+                    version.MarkDirty();
+
+                    long? snapshot = version.SnapshotIfNeeded();
+                    if (snapshot.HasValue)
+                    {
+                        lightingUpdates.Add(new(state.Renderer.Position, snapshot.Value, false));
+                    }
+                }
             }
         }
 

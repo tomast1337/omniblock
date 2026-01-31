@@ -907,6 +907,7 @@ namespace betareborn.Rendering
 
         public void updateAllRenderers()
         {
+            worldRenderer.UpdateAllRenderers();
         }
 
         public void doNothingWithTileEntity(int var1, int var2, int var3, TileEntity var4)

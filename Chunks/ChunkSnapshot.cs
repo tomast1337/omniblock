@@ -38,18 +38,12 @@ namespace betareborn.Chunks
             return data.getNibble(x, y, z);
         }
 
-        public int getSavedLightValue(EnumSkyBlock light, int x, int y, int z)
+        public int getBlockLightValue(int x, int y, int z, int var4)
         {
-            return light == EnumSkyBlock.Sky ? skylightMap.getNibble(x, y, z) : (light == EnumSkyBlock.Block ? blocklightMap.getNibble(x, y, z) : 0);
-        }
-
-        public int getBlockLightValue(int x, int y, int z, int var4, out bool isLit)
-        {
-            isLit = this.isLit;
             int var5 = skylightMap.getNibble(x, y, z);
             if (var5 > 0)
             {
-                isLit = this.isLit = true;
+                isLit = true;
             }
 
             var5 -= var4;
@@ -60,6 +54,11 @@ namespace betareborn.Chunks
             }
 
             return var5;
+        }
+
+        public bool getIsLit()
+        {
+            return isLit;
         }
 
         public void Dispose()
