@@ -51,8 +51,6 @@ namespace betareborn.Worlds
         private readonly Queue<ChunkToMeshInfo> dirtyChunks = [];
         private int lastRenderDistance = 16;
         private Vector3D<double> lastViewPos;
-        private int currentIndex = 0;
-        private Vector3D<int> lastSearchChunk = new(int.MaxValue);
 
         public WorldRenderer(World world, int workerCount)
         {
@@ -184,40 +182,19 @@ namespace betareborn.Worlds
                 (int)Math.Floor(viewPos.Z / 16.0)
             );
 
-            if (currentChunk != lastSearchChunk)
-            {
-                currentIndex = 0;
-                lastSearchChunk = currentChunk;
-            }
-
-            if (currentIndex >= spiralOffsets.Length)
-            {
-                currentIndex = 0;
-            }
-
             int radiusSq = lastRenderDistance * lastRenderDistance;
-            int iters = 0;
-            const int MAX_ITERS = 128;
+            int enqueuedCount = 0;
+            const int MAX_CHUNKS_PER_FRAME = 16;
 
-            while (currentIndex < spiralOffsets.Length)
+            for (int i = 0; i < spiralOffsets.Length; i++)
             {
-                iters++;
-
-                if (iters > MAX_ITERS)
-                {
-                    break;
-                }
-
-                var offset = spiralOffsets[currentIndex];
+                var offset = spiralOffsets[i];
                 int distSq = offset.X * offset.X + offset.Y * offset.Y + offset.Z * offset.Z;
 
                 if (distSq > radiusSq)
                 {
-                    currentIndex = spiralOffsets.Length;
-                    return;
+                    break;
                 }
-
-                currentIndex++;
 
                 var chunkPos = (currentChunk + offset) * 16;
 
@@ -226,7 +203,14 @@ namespace betareborn.Worlds
                     continue;
                 }
 
-                MarkDirty(chunkPos);
+                if (MarkDirty(chunkPos))
+                {
+                    enqueuedCount++;
+                    if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
+                    {
+                        break;
+                    }
+                }
             }
         }
 
