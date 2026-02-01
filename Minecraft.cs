@@ -22,6 +22,11 @@ using System.Diagnostics;
 
 namespace betareborn
 {
+    //TODO: THIS ERROR KEEPS GETTING PRINTED IN DEBUG MODE, GOES AWAY IN RELEASE MODE:
+    //#### GL ERROR ####
+    //@ Pre render
+    //> InvalidValue
+
     public class Minecraft : java.lang.Object, Runnable
     {
         private static Minecraft theMinecraft;
