@@ -25,11 +25,11 @@ namespace betareborn.Rendering
         protected bool loadDownloadableImageTexture(string var1, string var2)
         {
             //RenderEngine var3 = renderManager.renderEngine;
-            if(var2 == null)
+            if (var2 == null)
             {
                 return false;
             }
-            
+
             loadTexture(var2);
             return true;
             //TODO: CUSTOM SKINS
@@ -275,7 +275,7 @@ namespace betareborn.Rendering
 
         public void doRenderShadowAndFire(Entity var1, double var2, double var4, double var6, float var8, float var9)
         {
-            if (renderManager.options.fancyGraphics && shadowSize > 0.0F)
+            if (shadowSize > 0.0F)
             {
                 double var10 = renderManager.func_851_a(var1.posX, var1.posY, var1.posZ);
                 float var12 = (float)((1.0D - var10 / 256.0D) * (double)field_194_c);

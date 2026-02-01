@@ -1,15 +1,28 @@
 using java.lang;
 using java.nio;
 using Silk.NET.OpenGL.Legacy;
+using System.Runtime.InteropServices;
 
 namespace betareborn
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 32)]
+    public struct Vertex(float x, float y, float z, float u, float v, int color, int normal)
+    {
+        public float X = x;
+        public float Y = y;
+        public float Z = z;
+        public float U = u;
+        public float V = v;
+        public int Color = color;
+        public int Normal = normal;
+        public int Padding;
+    }
+
     public class Tessellator : java.lang.Object
     {
         private static readonly bool convertQuadsToTriangles = true;
         private readonly ByteBuffer byteBuffer;
         private readonly IntBuffer intBuffer;
-        private readonly FloatBuffer floatBuffer;
         private readonly int[] rawBuffer;
         private int vertexCount = 0;
         private double textureU;
@@ -33,15 +46,55 @@ namespace betareborn
         private readonly int vboCount = 10;
         private readonly int bufferSize;
 
+        private bool isCaptureMode = false;
+        private List<Vertex> capturedVertices = null;
+        private int[] scratchBuffer = null;
+        private int scratchBufferIndex = 0;
+
         private Tessellator(int var1)
         {
             bufferSize = var1;
             byteBuffer = GLAllocation.createDirectByteBuffer(var1 * 4);
             intBuffer = byteBuffer.asIntBuffer();
-            floatBuffer = byteBuffer.asFloatBuffer();
             rawBuffer = new int[var1];
             vertexBuffers = GLAllocation.createDirectIntBuffer(vboCount);
             GLAllocation.generateBuffersARB(vertexBuffers);
+        }
+
+        public Tessellator()
+        {
+        }
+
+        public void startCapture()
+        {
+            isCaptureMode = true;
+            capturedVertices = [];
+            scratchBuffer = new int[32];
+            scratchBufferIndex = 0;
+        }
+
+        public List<Vertex> endCapture()
+        {
+            if (!isCaptureMode)
+            {
+                throw new IllegalStateException("Not in capture mode!");
+            }
+
+            isCaptureMode = false;
+            List<Vertex> result = capturedVertices;
+            capturedVertices = null;
+            scratchBuffer = null;
+            scratchBufferIndex = 0;
+            return result;
+        }
+
+        public void begin()
+        {
+            scratchBufferIndex = 0;
+            vertexCount = 0;
+            hasTexture = false;
+            hasColor = false;
+            hasNormals = false;
         }
 
         public unsafe void draw()
@@ -53,6 +106,13 @@ namespace betareborn
             else
             {
                 isDrawing = false;
+
+                if (isCaptureMode)
+                {
+                    scratchBufferIndex = 0;
+                    return;
+                }
+
                 if (vertexCount > 0)
                 {
                     intBuffer.clear();
@@ -123,7 +183,10 @@ namespace betareborn
         private void reset()
         {
             vertexCount = 0;
-            byteBuffer.clear();
+            if (byteBuffer != null)
+            {
+                byteBuffer.clear();
+            }
             rawBufferIndex = 0;
             addedVertices = 0;
         }
@@ -238,59 +301,111 @@ namespace betareborn
 
         public void addVertex(double var1, double var3, double var5)
         {
-            ++addedVertices;
-            if (drawMode == 7 && convertQuadsToTriangles && addedVertices % 4 == 0)
+            if (isCaptureMode)
             {
-                for (int var7 = 0; var7 < 2; ++var7)
+                scratchBuffer[scratchBufferIndex + 0] = Float.floatToRawIntBits((float)(var1 + xOffset));
+                scratchBuffer[scratchBufferIndex + 1] = Float.floatToRawIntBits((float)(var3 + yOffset));
+                scratchBuffer[scratchBufferIndex + 2] = Float.floatToRawIntBits((float)(var5 + zOffset));
+
+                if (hasTexture)
                 {
-                    int var8 = 8 * (3 - var7);
-                    if (hasTexture)
-                    {
-                        rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - var8 + 3];
-                        rawBuffer[rawBufferIndex + 4] = rawBuffer[rawBufferIndex - var8 + 4];
-                    }
+                    scratchBuffer[scratchBufferIndex + 3] = Float.floatToRawIntBits((float)textureU);
+                    scratchBuffer[scratchBufferIndex + 4] = Float.floatToRawIntBits((float)textureV);
+                }
 
-                    if (hasColor)
-                    {
-                        rawBuffer[rawBufferIndex + 5] = rawBuffer[rawBufferIndex - var8 + 5];
-                    }
+                if (hasColor)
+                    scratchBuffer[scratchBufferIndex + 5] = color;
 
-                    rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - var8 + 0];
-                    rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - var8 + 1];
-                    rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - var8 + 2];
-                    ++vertexCount;
-                    rawBufferIndex += 8;
+                if (hasNormals)
+                    scratchBuffer[scratchBufferIndex + 6] = normal;
+
+                scratchBufferIndex += 8;
+
+                if (drawMode == 7 && convertQuadsToTriangles && scratchBufferIndex == 32)
+                {
+                    EmitVertexFromScratch(0);
+                    EmitVertexFromScratch(8);
+                    EmitVertexFromScratch(16);
+
+                    EmitVertexFromScratch(16);
+                    EmitVertexFromScratch(24);
+                    EmitVertexFromScratch(0);
+
+                    scratchBufferIndex = 0;
+                }
+
+                return;
+            }
+            else
+            {
+                ++addedVertices;
+                if (drawMode == 7 && convertQuadsToTriangles && addedVertices % 4 == 0)
+                {
+                    for (int var7 = 0; var7 < 2; ++var7)
+                    {
+                        int var8 = 8 * (3 - var7);
+                        if (hasTexture)
+                        {
+                            rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - var8 + 3];
+                            rawBuffer[rawBufferIndex + 4] = rawBuffer[rawBufferIndex - var8 + 4];
+                        }
+
+                        if (hasColor)
+                        {
+                            rawBuffer[rawBufferIndex + 5] = rawBuffer[rawBufferIndex - var8 + 5];
+                        }
+
+                        rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - var8 + 0];
+                        rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - var8 + 1];
+                        rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - var8 + 2];
+                        ++vertexCount;
+                        rawBufferIndex += 8;
+                    }
+                }
+
+                if (hasTexture)
+                {
+                    rawBuffer[rawBufferIndex + 3] = Float.floatToRawIntBits((float)textureU);
+                    rawBuffer[rawBufferIndex + 4] = Float.floatToRawIntBits((float)textureV);
+                }
+
+                if (hasColor)
+                {
+                    rawBuffer[rawBufferIndex + 5] = color;
+                }
+
+                if (hasNormals)
+                {
+                    rawBuffer[rawBufferIndex + 6] = normal;
+                }
+
+                rawBuffer[rawBufferIndex + 0] = Float.floatToRawIntBits((float)(var1 + xOffset));
+                rawBuffer[rawBufferIndex + 1] = Float.floatToRawIntBits((float)(var3 + yOffset));
+                rawBuffer[rawBufferIndex + 2] = Float.floatToRawIntBits((float)(var5 + zOffset));
+                rawBufferIndex += 8;
+                ++vertexCount;
+
+                if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - 32)
+                {
+                    draw();
+                    isDrawing = true;
                 }
             }
-
-            if (hasTexture)
-            {
-                rawBuffer[rawBufferIndex + 3] = Float.floatToRawIntBits((float)textureU);
-                rawBuffer[rawBufferIndex + 4] = Float.floatToRawIntBits((float)textureV);
-            }
-
-            if (hasColor)
-            {
-                rawBuffer[rawBufferIndex + 5] = color;
-            }
-
-            if (hasNormals)
-            {
-                rawBuffer[rawBufferIndex + 6] = normal;
-            }
-
-            rawBuffer[rawBufferIndex + 0] = Float.floatToRawIntBits((float)(var1 + xOffset));
-            rawBuffer[rawBufferIndex + 1] = Float.floatToRawIntBits((float)(var3 + yOffset));
-            rawBuffer[rawBufferIndex + 2] = Float.floatToRawIntBits((float)(var5 + zOffset));
-            rawBufferIndex += 8;
-            ++vertexCount;
-            if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - 32)
-            {
-                draw();
-                isDrawing = true;
-            }
-
         }
+
+        private void EmitVertexFromScratch(int baseIndex)
+        {
+            float x = Float.intBitsToFloat(scratchBuffer[baseIndex + 0]);
+            float y = Float.intBitsToFloat(scratchBuffer[baseIndex + 1]);
+            float z = Float.intBitsToFloat(scratchBuffer[baseIndex + 2]);
+            float u = hasTexture ? Float.intBitsToFloat(scratchBuffer[baseIndex + 3]) : 0f;
+            float v = hasTexture ? Float.intBitsToFloat(scratchBuffer[baseIndex + 4]) : 0f;
+            int col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
+            int norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
+
+            capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm));
+        }
+
 
         public void setColorOpaque_I(int var1)
         {

@@ -1,5 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Chunks;
+using Silk.NET.Maths;
 
 namespace betareborn.Worlds
 {
@@ -91,7 +92,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public virtual Vec3D func_4096_a(float var1, float var2)
+        public virtual Vector3D<double> func_4096_a(float var1, float var2)
         {
             float var3 = MathHelper.cos(var1 * (float)java.lang.Math.PI * 2.0F) * 2.0F + 0.5F;
             if (var3 < 0.0F)
@@ -110,7 +111,7 @@ namespace betareborn.Worlds
             var4 *= var3 * 0.94F + 0.06F;
             var5 *= var3 * 0.94F + 0.06F;
             var6 *= var3 * 0.91F + 0.09F;
-            return Vec3D.createVector((double)var4, (double)var5, (double)var6);
+            return new((double)var4, (double)var5, (double)var6);
         }
 
         public virtual bool canRespawnHere()

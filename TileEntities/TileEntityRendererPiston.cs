@@ -59,7 +59,7 @@ namespace betareborn.TileEntities
 
         public override void func_31069_a(World var1)
         {
-            field_31071_b = new RenderBlocks(var1);
+            field_31071_b = new RenderBlocks(var1, Tessellator.instance);
         }
 
         public override void renderTileEntityAt(TileEntity var1, double var2, double var4, double var6, float var8)

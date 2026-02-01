@@ -3,7 +3,7 @@ using betareborn.Entities;
 using betareborn.Items;
 using betareborn.TileEntities;
 using betareborn.Worlds;
-using java.util;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering
@@ -13,50 +13,25 @@ namespace betareborn.Rendering
         public List<TileEntity> tileEntities = [];
         private World worldObj;
         private readonly RenderEngine renderEngine;
-        private readonly List<WorldRenderer> worldRenderersToUpdate = [];
-        private WorldRenderer[] sortedWorldRenderers;
-        private WorldRenderer[] worldRenderers;
-        private int renderChunksWide;
-        private int renderChunksTall;
-        private int renderChunksDeep;
-        private readonly int glRenderListBase;
         private readonly Minecraft mc;
         private RenderBlocks globalRenderBlocks;
         private int cloudOffsetX = 0;
         private readonly int starGLCallList;
         private readonly int glSkyList;
         private readonly int glSkyList2;
-        private int minBlockX;
-        private int minBlockY;
-        private int minBlockZ;
-        private int maxBlockX;
-        private int maxBlockY;
-        private int maxBlockZ;
         private int renderDistance = -1;
         private int renderEntitiesStartupCounter = 2;
         private int countEntitiesTotal;
         private int countEntitiesRendered;
         private int countEntitiesHidden;
-        private int renderersLoaded;
-        private int renderersBeingClipped;
-        private int renderersBeingOccluded;
-        private int renderersBeingRendered;
-        private int renderersSkippingRenderPass;
-        private int worldRenderersCheckIndex;
-        private readonly List<WorldRenderer> glRenderLists = [];
-        private readonly RenderList[] allRenderLists = [new RenderList(), new RenderList(), new RenderList(), new RenderList()];
-        double prevSortX = -9999.0D;
-        double prevSortY = -9999.0D;
-        double prevSortZ = -9999.0D;
+        public WorldRenderer worldRenderer;
         public float damagePartialTime;
-        int frustrumCheckOffset = 0;
 
         public RenderGlobal(Minecraft var1, RenderEngine var2)
         {
             mc = var1;
             renderEngine = var2;
             byte var3 = 64;
-            glRenderListBase = GLAllocation.generateDisplayLists(var3 * var3 * var3 * 3);
 
             starGLCallList = GLAllocation.generateDisplayLists(3);
             GLManager.GL.PushMatrix();
@@ -70,6 +45,8 @@ namespace betareborn.Rendering
             byte var6 = 64;
             int var7 = 256 / var6 + 2;
             float var5 = 16.0F;
+
+            worldRenderer = new(var1.theWorld, 2);
 
             int var8;
             int var9;
@@ -160,14 +137,8 @@ namespace betareborn.Rendering
 
         public void changeWorld(World var1)
         {
-            if (worldObj != null)
-            {
-                worldObj.removeWorldAccess(this);
-            }
+            worldObj?.removeWorldAccess(this);
 
-            prevSortX = -9999.0D;
-            prevSortY = -9999.0D;
-            prevSortZ = -9999.0D;
             RenderManager.instance.func_852_a(var1);
             worldObj = var1;
             globalRenderBlocks = new RenderBlocks(var1);
@@ -179,75 +150,28 @@ namespace betareborn.Rendering
 
         }
 
+        public void tick(Entity view, float var3)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            double var33 = view.lastTickPosX + (view.posX - view.lastTickPosX) * var3;
+            double var7 = view.lastTickPosY + (view.posY - view.lastTickPosY) * var3;
+            double var9 = view.lastTickPosZ + (view.posZ - view.lastTickPosZ) * var3;
+            worldRenderer.Tick(new(var33, var7, var9));
+        }
+
         public void loadRenderers()
         {
-            Block.leaves.setGraphicsLevel(mc.gameSettings.fancyGraphics);
+            Block.leaves.setGraphicsLevel(true);
             renderDistance = mc.gameSettings.renderDistance;
-            int var1;
-            if (worldRenderers != null)
-            {
-                for (var1 = 0; var1 < worldRenderers.Length; ++var1)
-                {
-                    worldRenderers[var1].func_1204_c();
-                }
-            }
 
-            var1 = 64 << 3 - renderDistance;
+            worldRenderer?.Dispose();
+            worldRenderer = new(worldObj, 2);
 
-            renderChunksWide = var1 / 16 + 1;
-            renderChunksTall = 8;
-            renderChunksDeep = var1 / 16 + 1;
-            worldRenderers = new WorldRenderer[renderChunksWide * renderChunksTall * renderChunksDeep];
-            sortedWorldRenderers = new WorldRenderer[renderChunksWide * renderChunksTall * renderChunksDeep];
-            int var2 = 0;
-            int var3 = 0;
-            minBlockX = 0;
-            minBlockY = 0;
-            minBlockZ = 0;
-            maxBlockX = renderChunksWide;
-            maxBlockY = renderChunksTall;
-            maxBlockZ = renderChunksDeep;
-
-            int var4;
-            for (var4 = 0; var4 < worldRenderersToUpdate.Count; ++var4)
-            {
-                worldRenderersToUpdate[var4].needsUpdate = false;
-            }
-
-            worldRenderersToUpdate.Clear();
             tileEntities.Clear();
-
-            for (var4 = 0; var4 < renderChunksWide; ++var4)
-            {
-                for (int var5 = 0; var5 < renderChunksTall; ++var5)
-                {
-                    for (int var6 = 0; var6 < renderChunksDeep; ++var6)
-                    {
-                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = new(worldObj, var4 * 16, var5 * 16, var6 * 16, 16, glRenderListBase + var2)
-                        {
-                            isWaitingOnOcclusionQuery = false,
-                            isVisible = true,
-                            isInFrustum = true,
-                            chunkIndex = var3++
-                        };
-
-                        worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4].markDirty();
-                        sortedWorldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4] = worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4];
-                        worldRenderersToUpdate.Add(worldRenderers[(var6 * renderChunksTall + var5) * renderChunksWide + var4]);
-                        var2 += 3;
-                    }
-                }
-            }
-
-            if (worldObj != null)
-            {
-                EntityLiving var7 = mc.renderViewEntity;
-                if (var7 != null)
-                {
-                    markRenderersForNewPosition(MathHelper.floor_double(var7.posX), MathHelper.floor_double(var7.posY), MathHelper.floor_double(var7.posZ));
-                    Arrays.sort(sortedWorldRenderers, new EntitySorter(var7));
-                }
-            }
 
             renderEntitiesStartupCounter = 2;
         }
@@ -319,224 +243,34 @@ namespace betareborn.Rendering
             }
         }
 
-        public string getDebugInfoRenders()
-        {
-            return "C: " + renderersBeingRendered + "/" + renderersLoaded + ". F: " + renderersBeingClipped + ", O: " + renderersBeingOccluded + ", E: " + renderersSkippingRenderPass;
-        }
-
         public string getDebugInfoEntities()
         {
             return "E: " + countEntitiesRendered + "/" + countEntitiesTotal + ". B: " + countEntitiesHidden + ", I: " + (countEntitiesTotal - countEntitiesHidden - countEntitiesRendered);
         }
 
-        private void markRenderersForNewPosition(int var1, int var2, int var3)
+        public int sortAndRender(EntityLiving var1, int pass, double var3, ICamera cam)
         {
-            var1 -= 8;
-            var2 -= 8;
-            var3 -= 8;
-            minBlockX = java.lang.Integer.MAX_VALUE;
-            minBlockY = java.lang.Integer.MAX_VALUE;
-            minBlockZ = java.lang.Integer.MAX_VALUE;
-            maxBlockX = java.lang.Integer.MIN_VALUE;
-            maxBlockY = java.lang.Integer.MIN_VALUE;
-            maxBlockZ = java.lang.Integer.MIN_VALUE;
-            int var4 = renderChunksWide * 16;
-            int var5 = var4 / 2;
-
-            for (int var6 = 0; var6 < renderChunksWide; ++var6)
-            {
-                int var7 = var6 * 16;
-                int var8 = var7 + var5 - var1;
-                if (var8 < 0)
-                {
-                    var8 -= var4 - 1;
-                }
-
-                var8 /= var4;
-                var7 -= var8 * var4;
-                if (var7 < minBlockX)
-                {
-                    minBlockX = var7;
-                }
-
-                if (var7 > maxBlockX)
-                {
-                    maxBlockX = var7;
-                }
-
-                for (int var9 = 0; var9 < renderChunksDeep; ++var9)
-                {
-                    int var10 = var9 * 16;
-                    int var11 = var10 + var5 - var3;
-                    if (var11 < 0)
-                    {
-                        var11 -= var4 - 1;
-                    }
-
-                    var11 /= var4;
-                    var10 -= var11 * var4;
-                    if (var10 < minBlockZ)
-                    {
-                        minBlockZ = var10;
-                    }
-
-                    if (var10 > maxBlockZ)
-                    {
-                        maxBlockZ = var10;
-                    }
-
-                    for (int var12 = 0; var12 < renderChunksTall; ++var12)
-                    {
-                        int var13 = var12 * 16;
-                        if (var13 < minBlockY)
-                        {
-                            minBlockY = var13;
-                        }
-
-                        if (var13 > maxBlockY)
-                        {
-                            maxBlockY = var13;
-                        }
-
-                        WorldRenderer var14 = worldRenderers[(var9 * renderChunksTall + var12) * renderChunksWide + var6];
-                        bool var15 = var14.needsUpdate;
-                        var14.setPosition(var7, var13, var10);
-                        if (!var15 && var14.needsUpdate)
-                        {
-                            worldRenderersToUpdate.Add(var14);
-                        }
-                    }
-                }
-            }
-
-        }
-
-        public int sortAndRender(EntityLiving var1, int var2, double var3)
-        {
-            for (int var5 = 0; var5 < 10; ++var5)
-            {
-                worldRenderersCheckIndex = (worldRenderersCheckIndex + 1) % worldRenderers.Length;
-                WorldRenderer var6 = worldRenderers[worldRenderersCheckIndex];
-                if (var6.needsUpdate && !worldRenderersToUpdate.Contains(var6))
-                {
-                    worldRenderersToUpdate.Add(var6);
-                }
-            }
-
             if (mc.gameSettings.renderDistance != renderDistance)
             {
                 loadRenderers();
             }
 
-            if (var2 == 0)
-            {
-                renderersLoaded = 0;
-                renderersBeingClipped = 0;
-                renderersBeingOccluded = 0;
-                renderersBeingRendered = 0;
-                renderersSkippingRenderPass = 0;
-            }
-
             double var33 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * var3;
             double var7 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * var3;
             double var9 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * var3;
-            double var11 = var1.posX - prevSortX;
-            double var13 = var1.posY - prevSortY;
-            double var15 = var1.posZ - prevSortZ;
-            if (var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
-            {
-                prevSortX = var1.posX;
-                prevSortY = var1.posY;
-                prevSortZ = var1.posZ;
-                markRenderersForNewPosition(MathHelper.floor_double(var1.posX), MathHelper.floor_double(var1.posY), MathHelper.floor_double(var1.posZ));
-                Arrays.sort(sortedWorldRenderers, new EntitySorter(var1));
-            }
 
             RenderHelper.disableStandardItemLighting();
 
-            return renderSortedRenderers(0, sortedWorldRenderers.Length, var2, var3);
-        }
-
-        private int renderSortedRenderers(int var1, int var2, int var3, double var4)
-        {
-            glRenderLists.Clear();
-            int var6 = 0;
-
-            for (int var7 = var1; var7 < var2; ++var7)
+            if (pass == 0)
             {
-                if (var3 == 0)
-                {
-                    ++renderersLoaded;
-                    if (sortedWorldRenderers[var7].skipRenderPass[var3])
-                    {
-                        ++renderersSkippingRenderPass;
-                    }
-                    else if (!sortedWorldRenderers[var7].isInFrustum)
-                    {
-                        ++renderersBeingClipped;
-                    }
-                    else
-                    {
-                        ++renderersBeingRendered;
-                    }
-                }
-
-                if (!sortedWorldRenderers[var7].skipRenderPass[var3] && sortedWorldRenderers[var7].isInFrustum && (sortedWorldRenderers[var7].isVisible))
-                {
-                    int var8 = sortedWorldRenderers[var7].getGLCallListForPass(var3);
-                    if (var8 >= 0)
-                    {
-                        glRenderLists.Add(sortedWorldRenderers[var7]);
-                        ++var6;
-                    }
-                }
+                worldRenderer.Render(cam, new(var33, var7, var9), renderDistance);
+            }
+            else
+            {
+                worldRenderer.RenderTransparent(new(var33, var7, var9));
             }
 
-            EntityLiving var19 = mc.renderViewEntity;
-            double var20 = var19.lastTickPosX + (var19.posX - var19.lastTickPosX) * var4;
-            double var10 = var19.lastTickPosY + (var19.posY - var19.lastTickPosY) * var4;
-            double var12 = var19.lastTickPosZ + (var19.posZ - var19.lastTickPosZ) * var4;
-            int var14 = 0;
-
-            int var15;
-            for (var15 = 0; var15 < allRenderLists.Length; ++var15)
-            {
-                allRenderLists[var15].func_859_b();
-            }
-
-            for (var15 = 0; var15 < glRenderLists.Count; ++var15)
-            {
-                WorldRenderer var16 = glRenderLists[var15];
-                int var17 = -1;
-
-                for (int var18 = 0; var18 < var14; ++var18)
-                {
-                    if (allRenderLists[var18].func_862_a(var16.posXMinus, var16.posYMinus, var16.posZMinus))
-                    {
-                        var17 = var18;
-                    }
-                }
-
-                if (var17 < 0)
-                {
-                    var17 = var14++;
-                    allRenderLists[var17].func_861_a(var16.posXMinus, var16.posYMinus, var16.posZMinus, var20, var10, var12);
-                }
-
-                allRenderLists[var17].func_858_a(var16.getGLCallListForPass(var3));
-            }
-
-            renderAllRenderLists(var3, var4);
-            return var6;
-        }
-
-        public void renderAllRenderLists(int var1, double var2)
-        {
-            for (int var4 = 0; var4 < allRenderLists.Length; ++var4)
-            {
-                allRenderLists[var4].func_860_a();
-            }
-
+            return 0;
         }
 
         public void updateClouds()
@@ -549,10 +283,10 @@ namespace betareborn.Rendering
             if (!mc.theWorld.worldProvider.isNether)
             {
                 GLManager.GL.Disable(GLEnum.Texture2D);
-                Vec3D var2 = worldObj.func_4079_a(mc.renderViewEntity, var1);
-                float var3 = (float)var2.xCoord;
-                float var4 = (float)var2.yCoord;
-                float var5 = (float)var2.zCoord;
+                Vector3D<double> var2 = worldObj.func_4079_a(mc.renderViewEntity, var1);
+                float var3 = (float)var2.X;
+                float var4 = (float)var2.Y;
+                float var5 = (float)var2.Z;
                 float var7;
                 float var8;
 
@@ -664,64 +398,11 @@ namespace betareborn.Rendering
         {
             if (!mc.theWorld.worldProvider.isNether)
             {
-                if (mc.gameSettings.fancyGraphics)
-                {
-                    renderCloudsFancy(var1);
-                }
-                else
-                {
-                    GLManager.GL.Disable(GLEnum.CullFace);
-                    float var2 = (float)(mc.renderViewEntity.lastTickPosY + (mc.renderViewEntity.posY - mc.renderViewEntity.lastTickPosY) * (double)var1);
-                    byte var3 = 32;
-                    int var4 = 256 / var3;
-                    Tessellator var5 = Tessellator.instance;
-                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)renderEngine.getTexture("/environment/clouds.png"));
-                    GLManager.GL.Enable(GLEnum.Blend);
-                    GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-                    Vec3D var6 = worldObj.func_628_d(var1);
-                    float var7 = (float)var6.xCoord;
-                    float var8 = (float)var6.yCoord;
-                    float var9 = (float)var6.zCoord;
-                    float var10;
-
-                    var10 = 0.5F / 1024.0F;
-                    double var22 = mc.renderViewEntity.prevPosX + (mc.renderViewEntity.posX - mc.renderViewEntity.prevPosX) * (double)var1 + (double)(((float)cloudOffsetX + var1) * 0.03F);
-                    double var13 = mc.renderViewEntity.prevPosZ + (mc.renderViewEntity.posZ - mc.renderViewEntity.prevPosZ) * (double)var1;
-                    int var15 = MathHelper.floor_double(var22 / 2048.0D);
-                    int var16 = MathHelper.floor_double(var13 / 2048.0D);
-                    var22 -= (double)(var15 * 2048);
-                    var13 -= (double)(var16 * 2048);
-                    float var17 = worldObj.worldProvider.getCloudHeight() - var2 + 0.33F;
-                    float var18 = (float)(var22 * (double)var10);
-                    float var19 = (float)(var13 * (double)var10);
-                    var5.startDrawingQuads();
-                    var5.setColorRGBA_F(var7, var8, var9, 0.8F);
-
-                    for (int var20 = -var3 * var4; var20 < var3 * var4; var20 += var3)
-                    {
-                        for (int var21 = -var3 * var4; var21 < var3 * var4; var21 += var3)
-                        {
-                            var5.addVertexWithUV((double)(var20 + 0), (double)var17, (double)(var21 + var3), (double)((float)(var20 + 0) * var10 + var18), (double)((float)(var21 + var3) * var10 + var19));
-                            var5.addVertexWithUV((double)(var20 + var3), (double)var17, (double)(var21 + var3), (double)((float)(var20 + var3) * var10 + var18), (double)((float)(var21 + var3) * var10 + var19));
-                            var5.addVertexWithUV((double)(var20 + var3), (double)var17, (double)(var21 + 0), (double)((float)(var20 + var3) * var10 + var18), (double)((float)(var21 + 0) * var10 + var19));
-                            var5.addVertexWithUV((double)(var20 + 0), (double)var17, (double)(var21 + 0), (double)((float)(var20 + 0) * var10 + var18), (double)((float)(var21 + 0) * var10 + var19));
-                        }
-                    }
-
-                    var5.draw();
-                    GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-                    GLManager.GL.Disable(GLEnum.Blend);
-                    GLManager.GL.Enable(GLEnum.CullFace);
-                }
+                renderCloudsFancy(var1);
             }
         }
 
-        public bool func_27307_a(double var1, double var3, double var5, float var7)
-        {
-            return false;
-        }
-
-        public void renderCloudsFancy(float var1)
+        private void renderCloudsFancy(float var1)
         {
             GLManager.GL.Disable(GLEnum.CullFace);
             float var2 = (float)(mc.renderViewEntity.lastTickPosY + (mc.renderViewEntity.posY - mc.renderViewEntity.lastTickPosY) * (double)var1);
@@ -738,10 +419,10 @@ namespace betareborn.Rendering
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)renderEngine.getTexture("/environment/clouds.png"));
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            Vec3D var13 = worldObj.func_628_d(var1);
-            float var14 = (float)var13.xCoord;
-            float var15 = (float)var13.yCoord;
-            float var16 = (float)var13.zCoord;
+            Vector3D<double> var13 = worldObj.func_628_d(var1);
+            float var14 = (float)var13.X;
+            float var15 = (float)var13.Y;
+            float var16 = (float)var13.Z;
             float var17;
             float var18;
             float var19;
@@ -861,148 +542,6 @@ namespace betareborn.Rendering
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.GL.Disable(GLEnum.Blend);
             GLManager.GL.Enable(GLEnum.CullFace);
-        }
-
-        public bool updateRenderers(EntityLiving entity, bool forceUpdateAll)
-        {
-            const int MAX_PRIORITY_RENDERERS = 2;
-            RenderSorter sorter = new(entity);
-
-            WorldRenderer[] priorityRenderers = new WorldRenderer[MAX_PRIORITY_RENDERERS];
-            List<WorldRenderer> renderersToUpdateNow = null;
-
-            int totalRenderers = worldRenderersToUpdate.Count;
-            int normalRenderersUpdated = 0;
-            int priorityRenderersUpdated = 0;
-
-            for (int i = 0; i < totalRenderers; ++i)
-            {
-                WorldRenderer renderer = worldRenderersToUpdate[i];
-                bool shouldSkip = false;
-
-                if (!forceUpdateAll)
-                {
-                    if (renderer.distanceToEntitySquared(entity) > 256.0F)
-                    {
-                        shouldSkip = !tryAddToPriorityQueue(renderer, priorityRenderers, sorter);
-                    }
-                }
-                else if (!renderer.isInFrustum)
-                {
-                    shouldSkip = true;
-                }
-
-                if (shouldSkip)
-                {
-                    continue;
-                }
-
-                renderersToUpdateNow ??= [];
-                normalRenderersUpdated++;
-                renderersToUpdateNow.Add(renderer);
-                worldRenderersToUpdate[i] = null;
-            }
-
-            if (renderersToUpdateNow != null)
-            {
-                if (renderersToUpdateNow.Count > 1)
-                {
-                    renderersToUpdateNow.Sort(sorter);
-                }
-
-                for (int i = renderersToUpdateNow.Count - 1; i >= 0; --i)
-                {
-                    WorldRenderer renderer = renderersToUpdateNow[i];
-                    if (renderer.updateRenderer())
-                    {
-                        renderer.needsUpdate = false;
-                    }
-                }
-                //Console.WriteLine($"updated {renderersToUpdateNow.Count} renderers");
-            }
-
-            for (int i = MAX_PRIORITY_RENDERERS - 1; i >= 0; --i)
-            {
-                WorldRenderer renderer = priorityRenderers[i];
-                if (renderer != null)
-                {
-                    if (!renderer.isInFrustum && i != MAX_PRIORITY_RENDERERS - 1)
-                    {
-                        priorityRenderers[i] = null;
-                        priorityRenderers[0] = null;
-                        break;
-                    }
-
-                    if (renderer.updateRenderer())
-                    {
-                        renderer.needsUpdate = false;
-                        priorityRenderersUpdated++;
-                    }
-                }
-            }
-            //if (priorityRenderersUpdated > 0)
-            //{
-            //    Console.WriteLine($"updated {priorityRenderersUpdated} priority renderers");
-            //}
-
-            int writeIndex = 0;
-            for (int readIndex = 0; readIndex < totalRenderers; ++readIndex)
-            {
-                WorldRenderer renderer = worldRenderersToUpdate[readIndex];
-
-                if (renderer != null)
-                {
-                    bool wasInPriorityQueue = false;
-                    for (int p = 0; p < MAX_PRIORITY_RENDERERS; ++p)
-                    {
-                        if (renderer == priorityRenderers[p])
-                        {
-                            wasInPriorityQueue = true;
-                            break;
-                        }
-                    }
-
-                    if (!wasInPriorityQueue)
-                    {
-                        if (writeIndex != readIndex)
-                        {
-                            worldRenderersToUpdate[writeIndex] = renderer;
-                        }
-                        writeIndex++;
-                    }
-                }
-            }
-
-            while (worldRenderersToUpdate.Count > writeIndex)
-            {
-                worldRenderersToUpdate.RemoveAt(worldRenderersToUpdate.Count - 1);
-            }
-
-            return totalRenderers == normalRenderersUpdated + priorityRenderersUpdated;
-        }
-
-        private bool tryAddToPriorityQueue(WorldRenderer renderer, WorldRenderer[] priorityQueue, RenderSorter sorter)
-        {
-            int queueSize = priorityQueue.Length;
-
-            int insertPos = 0;
-            for (; insertPos < queueSize && (priorityQueue[insertPos] == null || sorter.Compare(priorityQueue[insertPos], renderer) <= 0); ++insertPos)
-            {
-            }
-            insertPos--;
-
-            if (insertPos <= 0)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < insertPos; i++)
-            {
-                priorityQueue[i] = priorityQueue[i + 1];
-            }
-            priorityQueue[insertPos] = renderer;
-
-            return false;
         }
 
         public void drawBlockBreaking(EntityPlayer var1, MovingObjectPosition var2, int var3, ItemStack var4, float var5)
@@ -1163,39 +702,14 @@ namespace betareborn.Rendering
 
             for (int var13 = var7; var13 <= var10; ++var13)
             {
-                int var14 = var13 % renderChunksWide;
-                if (var14 < 0)
-                {
-                    var14 += renderChunksWide;
-                }
-
                 for (int var15 = var8; var15 <= var11; ++var15)
                 {
-                    int var16 = var15 % renderChunksTall;
-                    if (var16 < 0)
-                    {
-                        var16 += renderChunksTall;
-                    }
-
                     for (int var17 = var9; var17 <= var12; ++var17)
                     {
-                        int var18 = var17 % renderChunksDeep;
-                        if (var18 < 0)
-                        {
-                            var18 += renderChunksDeep;
-                        }
-
-                        int var19 = (var18 * renderChunksTall + var16) * renderChunksWide + var14;
-                        WorldRenderer var20 = worldRenderers[var19];
-                        if (!var20.needsUpdate)
-                        {
-                            worldRenderersToUpdate.Add(var20);
-                            var20.markDirty();
-                        }
+                        worldRenderer.MarkDirty(new Silk.NET.Maths.Vector3D<int>(var13, var15, var17) * 16, true);
                     }
                 }
             }
-
         }
 
         public void markBlockAndNeighborsNeedsUpdate(int var1, int var2, int var3)
@@ -1208,20 +722,7 @@ namespace betareborn.Rendering
             func_949_a(var1 - 1, var2 - 1, var3 - 1, var4 + 1, var5 + 1, var6 + 1);
         }
 
-        public void clipRenderersByFrustrum(ICamera var1, float var2)
-        {
-            for (int var3 = 0; var3 < worldRenderers.Length; ++var3)
-            {
-                if (!worldRenderers[var3].skipAllRenderPasses() && (!worldRenderers[var3].isInFrustum || (var3 + frustrumCheckOffset & 15) == 0))
-                {
-                    worldRenderers[var3].updateInFrustrum(var1);
-                }
-            }
-
-            ++frustrumCheckOffset;
-        }
-
-        public void playRecord(String var1, int var2, int var3, int var4)
+        public void playRecord(string var1, int var2, int var3, int var4)
         {
             if (var1 != null)
             {
@@ -1231,7 +732,7 @@ namespace betareborn.Rendering
             mc.sndManager.playStreaming(var1, (float)var2, (float)var3, (float)var4, 1.0F, 1.0F);
         }
 
-        public void playSound(String var1, double var2, double var4, double var6, float var8, float var9)
+        public void playSound(string var1, double var2, double var4, double var6, float var8, float var9)
         {
             float var10 = 16.0F;
             if (var8 > 1.0F)
@@ -1246,7 +747,7 @@ namespace betareborn.Rendering
 
         }
 
-        public void spawnParticle(String var1, double var2, double var4, double var6, double var8, double var10, double var12)
+        public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
         {
             if (mc != null && mc.renderViewEntity != null && mc.effectRenderer != null)
             {
@@ -1354,24 +855,11 @@ namespace betareborn.Rendering
 
         public void updateAllRenderers()
         {
-            for (int var1 = 0; var1 < worldRenderers.Length; ++var1)
-            {
-                if (worldRenderers[var1].isChunkLit && !worldRenderers[var1].needsUpdate)
-                {
-                    worldRenderersToUpdate.Add(worldRenderers[var1]);
-                    worldRenderers[var1].markDirty();
-                }
-            }
-
+            worldRenderer.UpdateAllRenderers();
         }
 
         public void doNothingWithTileEntity(int var1, int var2, int var3, TileEntity var4)
         {
-        }
-
-        public void func_28137_f()
-        {
-            GLAllocation.func_28194_b(glRenderListBase);
         }
 
         public void func_28136_a(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)

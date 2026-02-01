@@ -1,6 +1,7 @@
 using betareborn.Entities;
 using betareborn.Materials;
 using betareborn.Worlds;
+using Silk.NET.Maths;
 
 namespace betareborn.Blocks
 {
@@ -105,9 +106,9 @@ namespace betareborn.Blocks
             return 0;
         }
 
-        private Vec3D getFlowVector(IBlockAccess var1, int var2, int var3, int var4)
+        private Vector3D<double> getFlowVector(IBlockAccess var1, int var2, int var3, int var4)
         {
-            Vec3D var5 = Vec3D.createVector(0.0D, 0.0D, 0.0D);
+            Vector3D<double> var5 = new(0.0);
             int var6 = getEffectiveFlowDecay(var1, var2, var3, var4);
 
             for (int var7 = 0; var7 < 4; ++var7)
@@ -144,14 +145,14 @@ namespace betareborn.Blocks
                         if (var11 >= 0)
                         {
                             var12 = var11 - (var6 - 8);
-                            var5 = var5.addVector((double)((var8 - var2) * var12), (double)((var3 - var3) * var12), (double)((var10 - var4) * var12));
+                            var5 += new Vector3D<double>((double)((var8 - var2) * var12), (double)((var3 - var3) * var12), (double)((var10 - var4) * var12));
                         }
                     }
                 }
                 else if (var11 >= 0)
                 {
                     var12 = var11 - var6;
-                    var5 = var5.addVector((double)((var8 - var2) * var12), (double)((var3 - var3) * var12), (double)((var10 - var4) * var12));
+                    var5 += new Vector3D<double>((double)((var8 - var2) * var12), (double)((var3 - var3) * var12), (double)((var10 - var4) * var12));
                 }
             }
 
@@ -200,20 +201,22 @@ namespace betareborn.Blocks
 
                 if (var13)
                 {
-                    var5 = var5.normalize().addVector(0.0D, -6.0D, 0.0D);
+                    var5 = Normalize(var5) + new Vector3D<double>(0.0, -0.6, 0.0);
+                    //var5 = var5.normalize().addVector(0.0D, -6.0D, 0.0D);
                 }
             }
 
-            var5 = var5.normalize();
+            //var5 = var5.normalize();
+            var5 = Normalize(var5);
             return var5;
         }
 
         public override void velocityToAddToEntity(World var1, int var2, int var3, int var4, Entity var5, Vec3D var6)
         {
-            Vec3D var7 = getFlowVector(var1, var2, var3, var4);
-            var6.xCoord += var7.xCoord;
-            var6.yCoord += var7.yCoord;
-            var6.zCoord += var7.zCoord;
+            Vector3D<double> var7 = getFlowVector(var1, var2, var3, var4);
+            var6.xCoord += var7.X;
+            var6.yCoord += var7.Y;
+            var6.zCoord += var7.Z;
         }
 
         public override int tickRate()
@@ -261,18 +264,18 @@ namespace betareborn.Blocks
 
         public static double func_293_a(IBlockAccess var0, int var1, int var2, int var3, Material var4)
         {
-            Vec3D var5 = null;
+            Vector3D<double> var5 = new(0.0);
             if (var4 == Material.water)
             {
-                var5 = ((BlockFluid)Block.waterMoving).getFlowVector(var0, var1, var2, var3);
+                var5 = ((BlockFluid)waterMoving).getFlowVector(var0, var1, var2, var3);
             }
 
             if (var4 == Material.lava)
             {
-                var5 = ((BlockFluid)Block.lavaMoving).getFlowVector(var0, var1, var2, var3);
+                var5 = ((BlockFluid)lavaMoving).getFlowVector(var0, var1, var2, var3);
             }
 
-            return var5.xCoord == 0.0D && var5.zCoord == 0.0D ? -1000.0D : java.lang.Math.atan2(var5.zCoord, var5.xCoord) - Math.PI * 0.5D;
+            return var5.X == 0.0D && var5.Z == 0.0D ? -1000.0D : java.lang.Math.atan2(var5.Z, var5.X) - Math.PI * 0.5D;
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
@@ -345,6 +348,12 @@ namespace betareborn.Blocks
                 var1.spawnParticle("largesmoke", (double)var2 + java.lang.Math.random(), (double)var3 + 1.2D, (double)var4 + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
             }
 
+        }
+
+        private static Vector3D<double> Normalize(Vector3D<double> vec)
+        {
+            double var1 = (double)MathHelper.sqrt_double(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z);
+            return var1 < 1.0E-4D ? new(0.0) : new(vec.X / var1, vec.Y / var1, vec.Z / var1);
         }
     }
 

@@ -8,6 +8,7 @@ using betareborn.Profiling;
 using betareborn.TileEntities;
 using java.lang;
 using java.util;
+using Silk.NET.Maths;
 using System.Runtime.InteropServices;
 
 namespace betareborn.Worlds
@@ -1293,7 +1294,7 @@ namespace betareborn.Worlds
             return (int)(var3 * 11.0F);
         }
 
-        public Vec3D func_4079_a(Entity var1, float var2)
+        public Vector3D<double> func_4079_a(Entity var1, float var2)
         {
             float var3 = getCelestialAngle(var2);
             float var4 = MathHelper.cos(var3 * (float)java.lang.Math.PI * 2.0F) * 2.0F + 0.5F;
@@ -1353,7 +1354,7 @@ namespace betareborn.Worlds
                 var11 = var11 * (1.0F - var14) + 1.0F * var14;
             }
 
-            return Vec3D.createVector((double)var9, (double)var10, (double)var11);
+            return new((double)var9, (double)var10, (double)var11);
         }
 
         public float getCelestialAngle(float var1)
@@ -1361,7 +1362,7 @@ namespace betareborn.Worlds
             return worldProvider.calculateCelestialAngle(worldInfo.getWorldTime(), var1);
         }
 
-        public Vec3D func_628_d(float var1)
+        public Vector3D<double> func_628_d(float var1)
         {
             float var2 = getCelestialAngle(var1);
             float var3 = MathHelper.cos(var2 * (float)java.lang.Math.PI * 2.0F) * 2.0F + 0.5F;
@@ -1403,10 +1404,10 @@ namespace betareborn.Worlds
                 var6 = var6 * var10 + var9 * (1.0F - var10);
             }
 
-            return Vec3D.createVector((double)var4, (double)var5, (double)var6);
+            return new((double)var4, (double)var5, (double)var6);
         }
 
-        public Vec3D getFogColor(float var1)
+        public Vector3D<double> getFogColor(float var1)
         {
             float var2 = getCelestialAngle(var1);
             return worldProvider.func_4096_a(var2, var1);
