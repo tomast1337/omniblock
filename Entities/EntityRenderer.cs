@@ -606,6 +606,8 @@ namespace betareborn.Entities
 
             Profiler.Stop("sortAndRender2");
 
+            //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
+
             GLManager.GL.DepthMask(true);
             GLManager.GL.Enable(GLEnum.CullFace);
             GLManager.GL.Disable(GLEnum.Blend);
