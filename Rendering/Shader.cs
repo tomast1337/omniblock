@@ -64,6 +64,18 @@ namespace betareborn.Rendering
             }
         }
 
+        public void SetUniformMatrix4(string name, float[] matrix)
+        {
+            int location = GetUniformLocation(name);
+            unsafe
+            {
+                fixed (float* mat = matrix)
+                {
+                    GLManager.GL.UniformMatrix4(location, 1, false, mat);
+                }
+            }
+        }
+
         public void SetUniform4(string name, Vector4D<float> vec)
         {
             int location = GetUniformLocation(name);

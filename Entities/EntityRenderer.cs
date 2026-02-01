@@ -553,7 +553,6 @@ namespace betareborn.Entities
 
             GLManager.GL.Enable(GLEnum.Fog);
             setupFog(1, var1);
-            GLManager.GL.ShadeModel(GLEnum.Smooth);
 
             Frustrum var19 = new();
             var19.setPosition(var7, var9, var11);
@@ -600,7 +599,6 @@ namespace betareborn.Entities
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/terrain.png"));
 
             Profiler.Start("sortAndRender2");
-            GLManager.GL.ShadeModel(GLEnum.Smooth);
 
             var5.sortAndRender(var4, 1, var1, var19);
 
@@ -938,37 +936,50 @@ namespace betareborn.Entities
         {
             EntityLiving var3 = mc.renderViewEntity;
             GLManager.GL.Fog(GLEnum.FogColor, func_908_a(fogColorRed, fogColorGreen, fogColorBlue, 1.0F));
+            mc.renderGlobal.worldRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
             GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             if (cloudFog)
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
+                mc.renderGlobal.worldRenderer.SetFogMode(1);
+                mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.water))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
+                mc.renderGlobal.worldRenderer.SetFogMode(1);
+                mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.lava))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
+                mc.renderGlobal.worldRenderer.SetFogMode(1);
+                mc.renderGlobal.worldRenderer.SetFogDensity(2.0f);
             }
             else
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
                 GLManager.GL.Fog(GLEnum.FogStart, farPlaneDistance * 0.25F);
                 GLManager.GL.Fog(GLEnum.FogEnd, farPlaneDistance);
+                mc.renderGlobal.worldRenderer.SetFogMode(0);
+                mc.renderGlobal.worldRenderer.SetFogStart(farPlaneDistance * 0.25f);
+                mc.renderGlobal.worldRenderer.SetFogEnd(farPlaneDistance);
                 if (var1 < 0)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     GLManager.GL.Fog(GLEnum.FogEnd, farPlaneDistance * 0.8F);
+                    mc.renderGlobal.worldRenderer.SetFogStart(0.0f);
+                    mc.renderGlobal.worldRenderer.SetFogEnd(farPlaneDistance * 0.8f);
                 }
 
                 if (mc.theWorld.worldProvider.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
+                    mc.renderGlobal.worldRenderer.SetFogStart(0.0f);
                 }
             }
 

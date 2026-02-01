@@ -2,6 +2,7 @@ using betareborn.Chunks;
 using betareborn.Profiling;
 using betareborn.Rendering;
 using Silk.NET.Maths;
+using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Worlds
 {
@@ -52,10 +53,17 @@ namespace betareborn.Worlds
         private readonly List<Vector3D<int>> chunkVersionsToRemove = [];
         private readonly List<ChunkToMeshInfo> dirtyChunks = [];
         private readonly List<ChunkToMeshInfo> lightingUpdates = [];
-        private readonly Shader chunkShader;
+        private readonly Rendering.Shader chunkShader;
         private int lastRenderDistance;
         private Vector3D<double> lastViewPos;
         private int currentIndex = 0;
+        private Matrix4X4<float> modelView;
+        private Matrix4X4<float> projection;
+        private int fogMode;
+        private float fogDensity;
+        private float fogStart;
+        private float fogEnd;
+        private Vector4D<float> fogColor;
 
         public WorldRenderer(World world, int workerCount)
         {
@@ -64,6 +72,8 @@ namespace betareborn.Worlds
 
             chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").getTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").getTextContent());
             Console.WriteLine("Loaded chunk shader");
+
+            GLManager.GL.UseProgram(0);
         }
 
         private static int CalculateRealRenderDistance(int val)
@@ -88,10 +98,40 @@ namespace betareborn.Worlds
             return 0;
         }
 
-        public void Render(ICamera camera, Vector3D<double> viewPos, int renderDistance)
+        public unsafe void Render(ICamera camera, Vector3D<double> viewPos, int renderDistance)
         {
             lastRenderDistance = CalculateRealRenderDistance(renderDistance);
             lastViewPos = viewPos;
+
+            chunkShader.Bind();
+            chunkShader.SetUniform1("textureSampler", 0);
+            chunkShader.SetUniform1("fogMode", fogMode);
+            chunkShader.SetUniform1("fogDensity", fogDensity);
+            chunkShader.SetUniform1("fogStart", fogStart);
+            chunkShader.SetUniform1("fogEnd", fogEnd);
+            chunkShader.SetUniform4("fogColor", fogColor);
+
+            var modelView = new Matrix4X4<float>();
+            var projection = new Matrix4X4<float>();
+
+            unsafe
+            {
+                GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, (float*)&modelView);
+            }
+
+            modelView.M41 = 0;
+            modelView.M42 = 0;
+            modelView.M43 = 0;
+
+            unsafe
+            {
+                GLManager.GL.GetFloat(GLEnum.ProjectionMatrix, (float*)&projection);
+            }
+
+            this.modelView = modelView;
+            this.projection = projection;
+
+            chunkShader.SetUniformMatrix4("projectionMatrix", projection);
 
             foreach (var state in renderers.Values)
             {
@@ -99,7 +139,7 @@ namespace betareborn.Worlds
                 {
                     if (camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
                     {
-                        state.Renderer.Render(0, viewPos);
+                        state.Renderer.Render(chunkShader, 0, viewPos, modelView);
 
                         if (state.Renderer.HasTranslucentMesh())
                         {
@@ -129,10 +169,43 @@ namespace betareborn.Worlds
             const int MAX_CHUNKS_PER_FRAME = 2;
 
             LoadNewMeshes(viewPos, MAX_CHUNKS_PER_FRAME);
+
+            GLManager.GL.UseProgram(0);
+            Rendering.VertexArray.Unbind();
+        }
+
+        public void SetFogMode(int mode)
+        {
+            fogMode = mode;
+        }
+
+        public void SetFogDensity(float density)
+        {
+            fogDensity = density;
+        }
+
+        public void SetFogStart(float start)
+        {
+            fogStart = start;
+        }
+
+        public void SetFogEnd(float end)
+        {
+            fogEnd = end;
+        }
+
+        public void SetFogColor(float r, float g, float b, float a)
+        {
+            fogColor = new(r, g, b, a);
         }
 
         public void RenderTransparent(Vector3D<double> viewPos)
         {
+            chunkShader.Bind();
+            chunkShader.SetUniform1("textureSampler", 0);
+
+            chunkShader.SetUniformMatrix4("projectionMatrix", projection);
+
             translucentRenderers.Sort((a, b) =>
             {
                 double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Position), viewPos);
@@ -142,10 +215,13 @@ namespace betareborn.Worlds
 
             foreach (var renderer in translucentRenderers)
             {
-                renderer.Render(1, viewPos);
+                renderer.Render(chunkShader, 1, viewPos, modelView);
             }
 
             translucentRenderers.Clear();
+
+            GLManager.GL.UseProgram(0);
+            Rendering.VertexArray.Unbind();
         }
 
         private void ProcessOneMeshUpdate(ICamera camera)

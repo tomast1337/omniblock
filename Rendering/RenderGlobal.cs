@@ -24,7 +24,7 @@ namespace betareborn.Rendering
         private int countEntitiesTotal;
         private int countEntitiesRendered;
         private int countEntitiesHidden;
-        private WorldRenderer worldRenderer;
+        public WorldRenderer worldRenderer;
         public float damagePartialTime;
 
         public RenderGlobal(Minecraft var1, RenderEngine var2)

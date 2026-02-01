@@ -14,6 +14,7 @@ namespace betareborn.Rendering
         public AxisAlignedBB BoundingBox { get; }
 
         private readonly VertexBuffer<Vertex>[] vertexBuffers = new VertexBuffer<Vertex>[2];
+        private readonly VertexArray[] vertexArrays = new VertexArray[2];
         private readonly int[] vertexCounts = new int[2];
         private bool disposed = false;
 
@@ -59,7 +60,7 @@ namespace betareborn.Rendering
             }
         }
 
-        private void UploadMesh(VertexBuffer<Vertex>[] buffers, int bufferIdx, Span<Vertex> meshData)
+        private unsafe void UploadMesh(VertexBuffer<Vertex>[] buffers, int bufferIdx, Span<Vertex> meshData)
         {
             if (buffers[bufferIdx] == null)
             {
@@ -71,6 +72,22 @@ namespace betareborn.Rendering
             }
 
             vertexCounts[bufferIdx] = meshData.Length;
+
+            if (vertexArrays[bufferIdx] == null)
+            {
+                vertexArrays[bufferIdx] = new();
+                vertexArrays[bufferIdx].Bind();
+                buffers[bufferIdx].Bind();
+
+                GLManager.GL.EnableVertexAttribArray(0);
+                GLManager.GL.VertexAttribPointer(0, 3, GLEnum.Float, false, 32, (void*)0);
+                GLManager.GL.EnableVertexAttribArray(1);
+                GLManager.GL.VertexAttribPointer(1, 2, GLEnum.Float, false, 32, (void*)12);
+                GLManager.GL.EnableVertexAttribArray(2);
+                GLManager.GL.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, 32, (void*)20);
+
+                VertexArray.Unbind();
+            }
         }
 
         public bool HasTranslucentMesh()
@@ -78,14 +95,13 @@ namespace betareborn.Rendering
             return vertexCounts[1] > 0;
         }
 
-        public unsafe void Render(int pass, Vector3D<double> viewPos)
+        public unsafe void Render(Shader shader, int pass, Vector3D<double> viewPos, Matrix4X4<float> modelViewMatrix)
         {
             if (pass < 0 || pass > 1)
             {
                 throw new ArgumentException("Pass must be 0 or 1");
             }
 
-            VertexBuffer<Vertex> vbo = vertexBuffers[pass];
             int vertexCount = vertexCounts[pass];
 
             if (vertexCount == 0)
@@ -93,31 +109,16 @@ namespace betareborn.Rendering
                 return;
             }
 
-            GLManager.GL.PushMatrix();
-
             Vector3D<double> pos = new(PositionMinus.X - viewPos.X, PositionMinus.Y - viewPos.Y, PositionMinus.Z - viewPos.Z);
             pos += new Vector3D<double>(ClipPosition.X, ClipPosition.Y, ClipPosition.Z);
 
-            GLManager.GL.Translate(pos.X, pos.Y, pos.Z);
+            modelViewMatrix = Matrix4X4.CreateTranslation(new Vector3D<float>((float)pos.X, (float)pos.Y, (float)pos.Z)) * modelViewMatrix;
 
-            vbo.Bind();
+            shader.SetUniformMatrix4("modelViewMatrix", modelViewMatrix);
 
-            GLManager.GL.EnableClientState(GLEnum.VertexArray);
-            GLManager.GL.VertexPointer(3, GLEnum.Float, 32, (void*)0);
-
-            GLManager.GL.EnableClientState(GLEnum.TextureCoordArray);
-            GLManager.GL.TexCoordPointer(2, GLEnum.Float, 32, (void*)12);
-
-            GLManager.GL.EnableClientState(GLEnum.ColorArray);
-            GLManager.GL.ColorPointer(4, ColorPointerType.UnsignedByte, 32, (void*)20);
+            vertexArrays[pass].Bind();
 
             GLManager.GL.DrawArrays(GLEnum.Triangles, 0, (uint)vertexCount);
-
-            GLManager.GL.DisableClientState(GLEnum.VertexArray);
-            GLManager.GL.DisableClientState(GLEnum.TextureCoordArray);
-            GLManager.GL.DisableClientState(GLEnum.ColorArray);
-
-            GLManager.GL.PopMatrix();
         }
 
         public void Dispose()
@@ -131,6 +132,9 @@ namespace betareborn.Rendering
 
             vertexBuffers[0]?.Dispose();
             vertexBuffers[1]?.Dispose();
+
+            vertexArrays[0]?.Dispose();
+            vertexArrays[1]?.Dispose();
 
             disposed = true;
         }
