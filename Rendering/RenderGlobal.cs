@@ -3,6 +3,7 @@ using betareborn.Entities;
 using betareborn.Items;
 using betareborn.TileEntities;
 using betareborn.Worlds;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering
@@ -282,10 +283,10 @@ namespace betareborn.Rendering
             if (!mc.theWorld.worldProvider.isNether)
             {
                 GLManager.GL.Disable(GLEnum.Texture2D);
-                Vec3D var2 = worldObj.func_4079_a(mc.renderViewEntity, var1);
-                float var3 = (float)var2.xCoord;
-                float var4 = (float)var2.yCoord;
-                float var5 = (float)var2.zCoord;
+                Vector3D<double> var2 = worldObj.func_4079_a(mc.renderViewEntity, var1);
+                float var3 = (float)var2.X;
+                float var4 = (float)var2.Y;
+                float var5 = (float)var2.Z;
                 float var7;
                 float var8;
 
@@ -418,10 +419,10 @@ namespace betareborn.Rendering
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)renderEngine.getTexture("/environment/clouds.png"));
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            Vec3D var13 = worldObj.func_628_d(var1);
-            float var14 = (float)var13.xCoord;
-            float var15 = (float)var13.yCoord;
-            float var16 = (float)var13.zCoord;
+            Vector3D<double> var13 = worldObj.func_628_d(var1);
+            float var14 = (float)var13.X;
+            float var15 = (float)var13.Y;
+            float var16 = (float)var13.Z;
             float var17;
             float var18;
             float var19;

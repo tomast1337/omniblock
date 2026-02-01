@@ -52,6 +52,7 @@ namespace betareborn.Worlds
         private readonly List<Vector3D<int>> chunkVersionsToRemove = [];
         private readonly List<ChunkToMeshInfo> dirtyChunks = [];
         private readonly List<ChunkToMeshInfo> lightingUpdates = [];
+        private readonly Shader chunkShader;
         private int lastRenderDistance;
         private Vector3D<double> lastViewPos;
         private int currentIndex = 0;
@@ -60,6 +61,9 @@ namespace betareborn.Worlds
         {
             meshGenerator = new(workerCount);
             this.world = world;
+
+            chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").getTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").getTextContent());
+            Console.WriteLine("Loaded chunk shader");
         }
 
         private static int CalculateRealRenderDistance(int val)
@@ -436,6 +440,8 @@ namespace betareborn.Worlds
             {
                 state.Renderer.Dispose();
             }
+
+            chunkShader.Dispose();
 
             renderers.Clear();
 

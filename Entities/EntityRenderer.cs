@@ -5,6 +5,7 @@ using betareborn.Materials;
 using betareborn.Profiling;
 using betareborn.Rendering;
 using betareborn.Worlds;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Entities
@@ -873,14 +874,14 @@ namespace betareborn.Entities
             EntityLiving var3 = mc.renderViewEntity;
             float var4 = 1.0F / (float)(4 - mc.gameSettings.renderDistance);
             var4 = 1.0F - (float)java.lang.Math.pow((double)var4, 0.25D);
-            Vec3D var5 = var2.func_4079_a(mc.renderViewEntity, var1);
-            float var6 = (float)var5.xCoord;
-            float var7 = (float)var5.yCoord;
-            float var8 = (float)var5.zCoord;
-            Vec3D var9 = var2.getFogColor(var1);
-            fogColorRed = (float)var9.xCoord;
-            fogColorGreen = (float)var9.yCoord;
-            fogColorBlue = (float)var9.zCoord;
+            Vector3D<double> var5 = var2.func_4079_a(mc.renderViewEntity, var1);
+            float var6 = (float)var5.X;
+            float var7 = (float)var5.Y;
+            float var8 = (float)var5.Z;
+            Vector3D<double> var9 = var2.getFogColor(var1);
+            fogColorRed = (float)var9.X;
+            fogColorGreen = (float)var9.Y;
+            fogColorBlue = (float)var9.Z;
             fogColorRed += (var6 - fogColorRed) * var4;
             fogColorGreen += (var7 - fogColorGreen) * var4;
             fogColorBlue += (var8 - fogColorBlue) * var4;
@@ -907,10 +908,10 @@ namespace betareborn.Entities
 
             if (cloudFog)
             {
-                Vec3D var16 = var2.func_628_d(var1);
-                fogColorRed = (float)var16.xCoord;
-                fogColorGreen = (float)var16.yCoord;
-                fogColorBlue = (float)var16.zCoord;
+                Vector3D<double> var16 = var2.func_628_d(var1);
+                fogColorRed = (float)var16.X;
+                fogColorGreen = (float)var16.Y;
+                fogColorBlue = (float)var16.Z;
             }
             else if (var3.isInsideOfMaterial(Material.water))
             {
@@ -939,35 +940,20 @@ namespace betareborn.Entities
             GLManager.GL.Fog(GLEnum.FogColor, func_908_a(fogColorRed, fogColorGreen, fogColorBlue, 1.0F));
             GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            float var4;
-            float var5;
-            float var6;
-            float var7;
-            float var8;
-            float var9;
             if (cloudFog)
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                var4 = 1.0F;
-                var5 = 1.0F;
-                var6 = 1.0F;
             }
             else if (var3.isInsideOfMaterial(Material.water))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                var4 = 0.4F;
-                var5 = 0.4F;
-                var6 = 0.9F;
             }
             else if (var3.isInsideOfMaterial(Material.lava))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-                var4 = 0.4F;
-                var5 = 0.3F;
-                var6 = 0.3F;
             }
             else
             {

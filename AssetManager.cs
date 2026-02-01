@@ -275,12 +275,12 @@ namespace betareborn
 
         private void defineEmbeddedAsset(string embeddedAssetPath, AssetType type)
         {
-            embeddedAssetPath = embeddedAssetPath.Replace('/', '.');
+            var embeddedAssetPathForPath = embeddedAssetPath.Replace('/', '.');
 
             try
             {
                 var assembly = Assembly.GetExecutingAssembly();
-                string resourceName = "betareborn." + embeddedAssetPath;
+                string resourceName = "betareborn." + embeddedAssetPathForPath;
 
                 using Stream? stream = assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Embedded resource not found: " + resourceName);
                 switch (type)
