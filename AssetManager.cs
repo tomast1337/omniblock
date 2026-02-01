@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Reflection;
 
 namespace betareborn
 {
@@ -57,6 +58,7 @@ namespace betareborn
         private readonly Dictionary<string, AssetType> assetsToLoad = [];
         private readonly Dictionary<string, Asset> loadedAssets = [];
         private readonly HashSet<string> assetDirectories = [];
+        private int embeddedAssetsLoaded = 0;
 
         private AssetManager()
         {
@@ -161,6 +163,11 @@ namespace betareborn
 
             extractNeccessaryAssets();
             loadAssets();
+
+            defineEmbeddedAsset("shaders/chunk.vert", AssetType.Text);
+            defineEmbeddedAsset("shaders/chunk.frag", AssetType.Text);
+
+            Console.WriteLine($"Loaded {embeddedAssetsLoaded} embedded assets");
         }
 
         public Asset getAsset(string assetPath)
@@ -265,5 +272,43 @@ namespace betareborn
                 assetDirectories.Add(directory);
             }
         }
+
+        private void defineEmbeddedAsset(string embeddedAssetPath, AssetType type)
+        {
+            embeddedAssetPath = embeddedAssetPath.Replace('/', '.');
+
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                string resourceName = "betareborn." + embeddedAssetPath;
+
+                using Stream? stream = assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Embedded resource not found: " + resourceName);
+                switch (type)
+                {
+                    case AssetType.Text:
+                        {
+                            using var reader = new StreamReader(stream);
+                            string text = reader.ReadToEnd();
+                            loadedAssets[embeddedAssetPath] = new(text);
+                            embeddedAssetsLoaded++;
+                            break;
+                        }
+
+                    case AssetType.Binary:
+                        {
+                            using var ms = new MemoryStream();
+                            stream.CopyTo(ms);
+                            loadedAssets[embeddedAssetPath] = new(ms.ToArray());
+                            embeddedAssetsLoaded++;
+                            break;
+                        }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception while loading embedded asset: " + e);
+            }
+        }
+
     }
 }

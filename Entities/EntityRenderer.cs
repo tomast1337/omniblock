@@ -297,7 +297,6 @@ namespace betareborn.Entities
             var4 = var2.prevPosX + (var2.posX - var2.prevPosX) * (double)var1;
             var6 = var2.prevPosY + (var2.posY - var2.prevPosY) * (double)var1 - (double)var3;
             var8 = var2.prevPosZ + (var2.posZ - var2.prevPosZ) * (double)var1;
-            cloudFog = mc.renderGlobal.func_27307_a(var4, var6, var8, var1);
         }
 
         private void setupCameraTransform(float var1)

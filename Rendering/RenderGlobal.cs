@@ -401,11 +401,6 @@ namespace betareborn.Rendering
             }
         }
 
-        public bool func_27307_a(double var1, double var3, double var5, float var7)
-        {
-            return false;
-        }
-
         private void renderCloudsFancy(float var1)
         {
             GLManager.GL.Disable(GLEnum.CullFace);
