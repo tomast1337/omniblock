@@ -9,7 +9,6 @@ namespace betareborn.Textures
         protected float[] field_1157_h = new float[256];
         protected float[] field_1156_i = new float[256];
         protected float[] field_1155_j = new float[256];
-        private int tickCounter = 0;
 
         public TextureWaterFX() : base(Block.waterMoving.blockIndexInTexture)
         {
@@ -17,8 +16,6 @@ namespace betareborn.Textures
 
         public override void onTick()
         {
-            ++tickCounter;
-
             int var1;
             int var2;
             float var3;

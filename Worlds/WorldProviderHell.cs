@@ -1,6 +1,7 @@
 using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Chunks;
+using Silk.NET.Maths;
 
 namespace betareborn.Worlds
 {
@@ -15,9 +16,9 @@ namespace betareborn.Worlds
             worldType = -1;
         }
 
-        public override Vec3D func_4096_a(float var1, float var2)
+        public override Vector3D<double> func_4096_a(float var1, float var2)
         {
-            return Vec3D.createVector((double)0.2F, (double)0.03F, (double)0.03F);
+            return new((double)0.2F, (double)0.03F, (double)0.03F);
         }
 
         protected override void generateLightBrightnessTable()

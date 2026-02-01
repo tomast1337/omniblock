@@ -1,10 +1,8 @@
-using java.util;
-
 namespace betareborn
 {
     public class AxisAlignedBB : java.lang.Object
     {
-        private static readonly List boundingBoxes = new ArrayList();
+        private static readonly List<AxisAlignedBB> boundingBoxes = [];
         private static int numBoundingBoxesInUse = 0;
         public double minX;
         public double minY;
@@ -20,7 +18,7 @@ namespace betareborn
 
         public static void cleanUp()
         {
-            boundingBoxes.clear();
+            boundingBoxes.Clear();
             numBoundingBoxesInUse = 0;
         }
 
@@ -31,12 +29,12 @@ namespace betareborn
 
         public static AxisAlignedBB getBoundingBoxFromPool(double var0, double var2, double var4, double var6, double var8, double var10)
         {
-            if (numBoundingBoxesInUse >= boundingBoxes.size())
+            if (numBoundingBoxesInUse >= boundingBoxes.Count)
             {
-                boundingBoxes.add(getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D));
+                boundingBoxes.Add(getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D));
             }
 
-            return ((AxisAlignedBB)boundingBoxes.get(numBoundingBoxesInUse++)).setBounds(var0, var2, var4, var6, var8, var10);
+            return boundingBoxes[numBoundingBoxesInUse++].setBounds(var0, var2, var4, var6, var8, var10);
         }
 
         private AxisAlignedBB(double var1, double var3, double var5, double var7, double var9, double var11)

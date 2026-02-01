@@ -23,23 +23,6 @@ namespace betareborn
             catch (NoSuchFieldError var4)
             {
             }
-
-            try
-            {
-                enumOptionsMappingHelperArray[EnumOptions.ADVANCED_OPENGL.ordinal()] = 4;
-            }
-            catch (NoSuchFieldError var2)
-            {
-            }
-
-            try
-            {
-                enumOptionsMappingHelperArray[EnumOptions.AMBIENT_OCCLUSION.ordinal()] = 5;
-            }
-            catch (NoSuchFieldError var1)
-            {
-            }
-
         }
     }
 

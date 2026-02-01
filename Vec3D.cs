@@ -2,20 +2,15 @@ namespace betareborn
 {
     public class Vec3D : java.lang.Object
     {
-        private static readonly java.util.List vectorList = new java.util.ArrayList();
+        private static readonly List<Vec3D> vectorList = [];
         private static int nextVector = 0;
         public double xCoord;
         public double yCoord;
         public double zCoord;
 
-        public static Vec3D createVectorHelper(double var0, double var2, double var4)
-        {
-            return new Vec3D(var0, var2, var4);
-        }
-
         public static void cleanUp()
         {
-            vectorList.clear();
+            vectorList.Clear();
             nextVector = 0;
         }
 
@@ -26,12 +21,12 @@ namespace betareborn
 
         public static Vec3D createVector(double var0, double var2, double var4)
         {
-            if (nextVector >= vectorList.size())
+            if (nextVector >= vectorList.Count)
             {
-                vectorList.add(createVectorHelper(0.0D, 0.0D, 0.0D));
+                vectorList.Add(new Vec3D(0.0D, 0.0D, 0.0D));
             }
 
-            return ((Vec3D)vectorList.get(nextVector++)).setComponents(var0, var2, var4);
+            return vectorList[nextVector++].setComponents(var0, var2, var4);
         }
 
         private Vec3D(double var1, double var3, double var5)

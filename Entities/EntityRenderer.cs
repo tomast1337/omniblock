@@ -5,6 +5,7 @@ using betareborn.Materials;
 using betareborn.Profiling;
 using betareborn.Rendering;
 using betareborn.Worlds;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Entities
@@ -19,10 +20,6 @@ namespace betareborn.Entities
         private Entity pointedEntity = null;
         private MouseFilter mouseFilterXAxis = new MouseFilter();
         private MouseFilter mouseFilterYAxis = new MouseFilter();
-        private MouseFilter mouseFilterDummy1 = new MouseFilter();
-        private MouseFilter mouseFilterDummy2 = new MouseFilter();
-        private MouseFilter mouseFilterDummy3 = new MouseFilter();
-        private MouseFilter mouseFilterDummy4 = new MouseFilter();
         private float field_22228_r = 4.0F;
         private float field_22227_s = 4.0F;
         private float field_22226_t = 0.0F;
@@ -41,8 +38,6 @@ namespace betareborn.Entities
         private long field_28133_I = 0L;
         private java.util.Random random = new();
         private int rainSoundCounter = 0;
-        volatile int field_1394_b = 0;
-        volatile int field_1393_c = 0;
         float[] fogColorBuffer = new float[16];
         float fogColorRed;
         float fogColorGreen;
@@ -76,6 +71,14 @@ namespace betareborn.Entities
             ++rendererUpdateCount;
             itemRenderer.updateEquippedItem();
             addRainParticles();
+        }
+
+        public void tick(float var1)
+        {
+            if (mc.renderGlobal != null)
+            {
+                mc.renderGlobal.tick(mc.renderViewEntity, var1);
+            }
         }
 
         public void getMouseOver(float var1)
@@ -295,7 +298,6 @@ namespace betareborn.Entities
             var4 = var2.prevPosX + (var2.posX - var2.prevPosX) * (double)var1;
             var6 = var2.prevPosY + (var2.posY - var2.prevPosY) * (double)var1 - (double)var3;
             var8 = var2.prevPosZ + (var2.posZ - var2.prevPosZ) * (double)var1;
-            cloudFog = mc.renderGlobal.func_27307_a(var4, var6, var8, var1);
         }
 
         private void setupCameraTransform(float var1)
@@ -551,37 +553,22 @@ namespace betareborn.Entities
 
             GLManager.GL.Enable(GLEnum.Fog);
             setupFog(1, var1);
-            if (mc.gameSettings.ambientOcclusion)
-            {
-                GLManager.GL.ShadeModel(GLEnum.Smooth);
-            }
 
-            Frustrum var19 = new Frustrum();
+            Frustrum var19 = new();
             var19.setPosition(var7, var9, var11);
-            Profiler.Start("clipRenderers");
-            mc.renderGlobal.clipRenderersByFrustrum(var19, var1);
-            Profiler.Stop("clipRenderers");
-
-            Profiler.Start("updateRenderers");
-            while (!mc.renderGlobal.updateRenderers(var4, false) && var2 != 0L)
-            {
-                long var20 = var2 - java.lang.System.nanoTime();
-                if (var20 < 0L || var20 > 1000000000L)
-                {
-                    break;
-                }
-            }
-            Profiler.Stop("updateRenderers");
 
             setupFog(0, var1);
             GLManager.GL.Enable(GLEnum.Fog);
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/terrain.png"));
             RenderHelper.disableStandardItemLighting();
+
             Profiler.Start("sortAndRender");
-            var5.sortAndRender(var4, 0, (double)var1);
+            var5.sortAndRender(var4, 0, (double)var1, var19);
             Profiler.Stop("sortAndRender");
+
             GLManager.GL.ShadeModel(GLEnum.Flat);
             RenderHelper.enableStandardItemLighting();
+
             Profiler.Start("renderEntities");
             var5.renderEntities(var4.getPosition(var1), var19, var1);
             Profiler.Stop("renderEntities");
@@ -612,27 +599,14 @@ namespace betareborn.Entities
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/terrain.png"));
 
             Profiler.Start("sortAndRender2");
-            if (mc.gameSettings.fancyGraphics)
-            {
-                if (mc.gameSettings.ambientOcclusion)
-                {
-                    GLManager.GL.ShadeModel(GLEnum.Smooth);
-                }
 
-                var16 = var5.sortAndRender(var4, 1, (double)var1);
+            var5.sortAndRender(var4, 1, var1, var19);
 
-                if (var16 > 0)
-                {
-                    var5.renderAllRenderLists(1, (double)var1);
-                }
+            GLManager.GL.ShadeModel(GLEnum.Flat);
 
-                GLManager.GL.ShadeModel(GLEnum.Flat);
-            }
-            else
-            {
-                var5.sortAndRender(var4, 1, (double)var1);
-            }
             Profiler.Stop("sortAndRender2");
+
+            //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
 
             GLManager.GL.DepthMask(true);
             GLManager.GL.Enable(GLEnum.CullFace);
@@ -667,10 +641,6 @@ namespace betareborn.Entities
         private void addRainParticles()
         {
             float var1 = mc.theWorld.func_27162_g(1.0F);
-            if (!mc.gameSettings.fancyGraphics)
-            {
-                var1 /= 2.0F;
-            }
 
             if (var1 != 0.0F)
             {
@@ -755,11 +725,7 @@ namespace betareborn.Entities
                 double var11 = var3.lastTickPosY + (var3.posY - var3.lastTickPosY) * (double)var1;
                 double var13 = var3.lastTickPosZ + (var3.posZ - var3.lastTickPosZ) * (double)var1;
                 int var15 = MathHelper.floor_double(var11);
-                byte var16 = 5;
-                if (mc.gameSettings.fancyGraphics)
-                {
-                    var16 = 10;
-                }
+                byte var16 = 10;
 
                 BiomeGenBase[] var17 = var4.getWorldChunkManager().func_4069_a(var5 - var16, var7 - var16, var16 * 2 + 1, var16 * 2 + 1);
                 int var18 = 0;
@@ -833,10 +799,7 @@ namespace betareborn.Entities
                 }
 
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/environment/rain.png"));
-                if (mc.gameSettings.fancyGraphics)
-                {
-                    var16 = 10;
-                }
+                var16 = 10;
 
                 var18 = 0;
 
@@ -911,14 +874,14 @@ namespace betareborn.Entities
             EntityLiving var3 = mc.renderViewEntity;
             float var4 = 1.0F / (float)(4 - mc.gameSettings.renderDistance);
             var4 = 1.0F - (float)java.lang.Math.pow((double)var4, 0.25D);
-            Vec3D var5 = var2.func_4079_a(mc.renderViewEntity, var1);
-            float var6 = (float)var5.xCoord;
-            float var7 = (float)var5.yCoord;
-            float var8 = (float)var5.zCoord;
-            Vec3D var9 = var2.getFogColor(var1);
-            fogColorRed = (float)var9.xCoord;
-            fogColorGreen = (float)var9.yCoord;
-            fogColorBlue = (float)var9.zCoord;
+            Vector3D<double> var5 = var2.func_4079_a(mc.renderViewEntity, var1);
+            float var6 = (float)var5.X;
+            float var7 = (float)var5.Y;
+            float var8 = (float)var5.Z;
+            Vector3D<double> var9 = var2.getFogColor(var1);
+            fogColorRed = (float)var9.X;
+            fogColorGreen = (float)var9.Y;
+            fogColorBlue = (float)var9.Z;
             fogColorRed += (var6 - fogColorRed) * var4;
             fogColorGreen += (var7 - fogColorGreen) * var4;
             fogColorBlue += (var8 - fogColorBlue) * var4;
@@ -945,10 +908,10 @@ namespace betareborn.Entities
 
             if (cloudFog)
             {
-                Vec3D var16 = var2.func_628_d(var1);
-                fogColorRed = (float)var16.xCoord;
-                fogColorGreen = (float)var16.yCoord;
-                fogColorBlue = (float)var16.zCoord;
+                Vector3D<double> var16 = var2.func_628_d(var1);
+                fogColorRed = (float)var16.X;
+                fogColorGreen = (float)var16.Y;
+                fogColorBlue = (float)var16.Z;
             }
             else if (var3.isInsideOfMaterial(Material.water))
             {
@@ -975,55 +938,53 @@ namespace betareborn.Entities
         {
             EntityLiving var3 = mc.renderViewEntity;
             GLManager.GL.Fog(GLEnum.FogColor, func_908_a(fogColorRed, fogColorGreen, fogColorBlue, 1.0F));
+            mc.renderGlobal.worldRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
             GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            float var4;
-            float var5;
-            float var6;
-            float var7;
-            float var8;
-            float var9;
             if (cloudFog)
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                var4 = 1.0F;
-                var5 = 1.0F;
-                var6 = 1.0F;
+                mc.renderGlobal.worldRenderer.SetFogMode(1);
+                mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.water))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                var4 = 0.4F;
-                var5 = 0.4F;
-                var6 = 0.9F;
+                mc.renderGlobal.worldRenderer.SetFogMode(1);
+                mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.lava))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-                var4 = 0.4F;
-                var5 = 0.3F;
-                var6 = 0.3F;
+                mc.renderGlobal.worldRenderer.SetFogMode(1);
+                mc.renderGlobal.worldRenderer.SetFogDensity(2.0f);
             }
             else
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
                 GLManager.GL.Fog(GLEnum.FogStart, farPlaneDistance * 0.25F);
                 GLManager.GL.Fog(GLEnum.FogEnd, farPlaneDistance);
+                mc.renderGlobal.worldRenderer.SetFogMode(0);
+                mc.renderGlobal.worldRenderer.SetFogStart(farPlaneDistance * 0.25f);
+                mc.renderGlobal.worldRenderer.SetFogEnd(farPlaneDistance);
                 if (var1 < 0)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     GLManager.GL.Fog(GLEnum.FogEnd, farPlaneDistance * 0.8F);
+                    mc.renderGlobal.worldRenderer.SetFogStart(0.0f);
+                    mc.renderGlobal.worldRenderer.SetFogEnd(farPlaneDistance * 0.8f);
                 }
-            
+
                 if (mc.theWorld.worldProvider.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
+                    mc.renderGlobal.worldRenderer.SetFogStart(0.0f);
                 }
             }
-            
+
             GLManager.GL.Enable(GLEnum.ColorMaterial);
             GLManager.GL.ColorMaterial(GLEnum.Front, GLEnum.Ambient);
         }

@@ -1,249 +1,525 @@
-using betareborn.Blocks;
 using betareborn.Chunks;
-using betareborn.Entities;
+using betareborn.Profiling;
 using betareborn.Rendering;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
-using System.Diagnostics;
 
 namespace betareborn.Worlds
 {
     public class WorldRenderer
     {
-        public World worldObj;
-        private readonly int glRenderList = -1;
-        private static Tessellator tessellator = Tessellator.instance;
-        public static int chunksUpdated = 0;
-        public int posX;
-        public int posY;
-        public int posZ;
-        public int sizeWidth;
-        public int sizeHeight;
-        public int sizeDepth;
-        public int posXMinus;
-        public int posYMinus;
-        public int posZMinus;
-        public int posXClip;
-        public int posYClip;
-        public int posZClip;
-        public bool isInFrustum = false;
-        public bool[] skipRenderPass = new bool[2];
-        public int posXPlus;
-        public int posYPlus;
-        public int posZPlus;
-        public float rendererRadius;
-        public bool needsUpdate;
-        public AxisAlignedBB rendererBoundingBox;
-        public int chunkIndex;
-        public bool isVisible = true;
-        public bool isWaitingOnOcclusionQuery;
-        public int glOcclusionQuery;
-        public bool isChunkLit;
-        private bool isInitialized = false;
-
-        public WorldRenderer(World var1, int var3, int var4, int var5, int var6, int var7)
+        static WorldRenderer()
         {
-            worldObj = var1;
-            sizeWidth = sizeHeight = sizeDepth = var6;
-            rendererRadius = MathHelper.sqrt_float((float)(sizeWidth * sizeWidth + sizeHeight * sizeHeight + sizeDepth * sizeDepth)) / 2.0F;
-            glRenderList = var7;
-            posX = -999;
-            setPosition(var3, var4, var5);
-            needsUpdate = false;
+            var offsets = new List<Vector3D<int>>();
+
+            for (int x = -MAX_RENDER_DISTANCE; x <= MAX_RENDER_DISTANCE; x++)
+            {
+                for (int y = -8; y <= 8; y++)
+                {
+                    for (int z = -MAX_RENDER_DISTANCE; z <= MAX_RENDER_DISTANCE; z++)
+                    {
+                        offsets.Add(new Vector3D<int>(x, y, z));
+                    }
+                }
+            }
+
+            offsets.Sort((a, b) =>
+                (a.X * a.X + a.Y * a.Y + a.Z * a.Z).CompareTo(b.X * b.X + b.Y * b.Y + b.Z * b.Z));
+
+            spiralOffsets = [.. offsets];
         }
 
-        public void setPosition(int var1, int var2, int var3)
+        private class SubChunkState(bool isLit, SubChunkRenderer renderer)
         {
-            if (var1 != posX || var2 != posY || var3 != posZ)
+            public bool IsLit { get; set; } = isLit;
+            public SubChunkRenderer Renderer { get; } = renderer;
+        }
+
+        private struct ChunkToMeshInfo(Vector3D<int> pos, long version, bool priority)
+        {
+            public Vector3D<int> Pos = pos;
+            public long Version = version;
+            public bool priority = priority;
+        }
+
+        private static readonly Vector3D<int>[] spiralOffsets;
+        private const int MAX_RENDER_DISTANCE = 33;
+        private readonly Dictionary<Vector3D<int>, SubChunkState> renderers = [];
+        private readonly List<SubChunkRenderer> translucentRenderers = [];
+        private readonly List<SubChunkRenderer> renderersToRemove = [];
+        private readonly ChunkMeshGenerator meshGenerator;
+        private readonly World world;
+        private readonly Dictionary<Vector3D<int>, ChunkMeshVersion> chunkVersions = [];
+        private readonly List<Vector3D<int>> chunkVersionsToRemove = [];
+        private readonly List<ChunkToMeshInfo> dirtyChunks = [];
+        private readonly List<ChunkToMeshInfo> lightingUpdates = [];
+        private readonly Rendering.Shader chunkShader;
+        private int lastRenderDistance;
+        private Vector3D<double> lastViewPos;
+        private int currentIndex = 0;
+        private Matrix4X4<float> modelView;
+        private Matrix4X4<float> projection;
+        private int fogMode;
+        private float fogDensity;
+        private float fogStart;
+        private float fogEnd;
+        private Vector4D<float> fogColor;
+
+        public WorldRenderer(World world, int workerCount)
+        {
+            meshGenerator = new(workerCount);
+            this.world = world;
+
+            chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").getTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").getTextContent());
+            Console.WriteLine("Loaded chunk shader");
+
+            GLManager.GL.UseProgram(0);
+        }
+
+        private static int CalculateRealRenderDistance(int val)
+        {
+            if (val == 0)
             {
-                setDontDraw();
-                posX = var1;
-                posY = var2;
-                posZ = var3;
-                posXPlus = var1 + sizeWidth / 2;
-                posYPlus = var2 + sizeHeight / 2;
-                posZPlus = var3 + sizeDepth / 2;
-                posXClip = var1 & 1023;
-                posYClip = var2;
-                posZClip = var3 & 1023;
-                posXMinus = var1 - posXClip;
-                posYMinus = var2 - posYClip;
-                posZMinus = var3 - posZClip;
-                float var4 = 6.0F;
-                rendererBoundingBox = AxisAlignedBB.getBoundingBox((double)((float)var1 - var4), (double)((float)var2 - var4), (double)((float)var3 - var4), (double)((float)(var1 + sizeWidth) + var4), (double)((float)(var2 + sizeHeight) + var4), (double)((float)(var3 + sizeDepth) + var4));
-                markDirty();
+                return 16;
+            }
+            else if (val == 1)
+            {
+                return 8;
+            }
+            else if (val == 2)
+            {
+                return 4;
+            }
+            else if (val == 3)
+            {
+                return 2;
+            }
+
+            return 0;
+        }
+
+        public unsafe void Render(ICamera camera, Vector3D<double> viewPos, int renderDistance)
+        {
+            lastRenderDistance = CalculateRealRenderDistance(renderDistance);
+            lastViewPos = viewPos;
+
+            chunkShader.Bind();
+            chunkShader.SetUniform1("textureSampler", 0);
+            chunkShader.SetUniform1("fogMode", fogMode);
+            chunkShader.SetUniform1("fogDensity", fogDensity);
+            chunkShader.SetUniform1("fogStart", fogStart);
+            chunkShader.SetUniform1("fogEnd", fogEnd);
+            chunkShader.SetUniform4("fogColor", fogColor);
+
+            var modelView = new Matrix4X4<float>();
+            var projection = new Matrix4X4<float>();
+
+            unsafe
+            {
+                GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, (float*)&modelView);
+            }
+
+            unsafe
+            {
+                GLManager.GL.GetFloat(GLEnum.ProjectionMatrix, (float*)&projection);
+            }
+
+            this.modelView = modelView;
+            this.projection = projection;
+
+            chunkShader.SetUniformMatrix4("projectionMatrix", projection);
+
+            foreach (var state in renderers.Values)
+            {
+                if (IsChunkInRenderDistance(state.Renderer.Position, viewPos))
+                {
+                    if (camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
+                    {
+                        state.Renderer.Render(chunkShader, 0, viewPos, modelView);
+
+                        if (state.Renderer.HasTranslucentMesh())
+                        {
+                            translucentRenderers.Add(state.Renderer);
+                        }
+                    }
+                }
+                else
+                {
+                    renderersToRemove.Add(state.Renderer);
+                }
+            }
+
+            foreach (var renderer in renderersToRemove)
+            {
+                renderers.Remove(renderer.Position);
+                renderer.Dispose();
+
+                chunkVersions.Remove(renderer.Position);
+            }
+
+            renderersToRemove.Clear();
+
+            ProcessOneMeshUpdate(camera);
+            ProcessOneLightingMeshUpdate();
+
+            const int MAX_CHUNKS_PER_FRAME = 2;
+
+            LoadNewMeshes(viewPos, MAX_CHUNKS_PER_FRAME);
+
+            GLManager.GL.UseProgram(0);
+            Rendering.VertexArray.Unbind();
+        }
+
+        public void SetFogMode(int mode)
+        {
+            fogMode = mode;
+        }
+
+        public void SetFogDensity(float density)
+        {
+            fogDensity = density;
+        }
+
+        public void SetFogStart(float start)
+        {
+            fogStart = start;
+        }
+
+        public void SetFogEnd(float end)
+        {
+            fogEnd = end;
+        }
+
+        public void SetFogColor(float r, float g, float b, float a)
+        {
+            fogColor = new(r, g, b, a);
+        }
+
+        public void RenderTransparent(Vector3D<double> viewPos)
+        {
+            chunkShader.Bind();
+            chunkShader.SetUniform1("textureSampler", 0);
+
+            chunkShader.SetUniformMatrix4("projectionMatrix", projection);
+
+            translucentRenderers.Sort((a, b) =>
+            {
+                double distA = Vector3D.DistanceSquared(ToDoubleVec(a.Position), viewPos);
+                double distB = Vector3D.DistanceSquared(ToDoubleVec(b.Position), viewPos);
+                return distB.CompareTo(distA);
+            });
+
+            foreach (var renderer in translucentRenderers)
+            {
+                renderer.Render(chunkShader, 1, viewPos, modelView);
+            }
+
+            translucentRenderers.Clear();
+
+            GLManager.GL.UseProgram(0);
+            Rendering.VertexArray.Unbind();
+        }
+
+        private void ProcessOneMeshUpdate(ICamera camera)
+        {
+            dirtyChunks.Sort((a, b) =>
+            {
+                var distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), lastViewPos);
+                var distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), lastViewPos);
+                return distA.CompareTo(distB);
+            });
+
+            for (int i = 0; i < dirtyChunks.Count; i++)
+            {
+                var info = dirtyChunks[i];
+
+                if (!IsChunkInRenderDistance(info.Pos, lastViewPos))
+                {
+                    dirtyChunks.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
+                var aabb = AxisAlignedBB.getBoundingBoxFromPool(
+                    info.Pos.X, info.Pos.Y, info.Pos.Z,
+                    info.Pos.X + SubChunkRenderer.SIZE,
+                    info.Pos.Y + SubChunkRenderer.SIZE,
+                    info.Pos.Z + SubChunkRenderer.SIZE
+                );
+
+                if (!camera.isBoundingBoxInFrustum(aabb))
+                {
+                    continue;
+                }
+
+                meshGenerator.MeshChunk(world, info.Pos, info.Version, info.priority);
+                dirtyChunks.RemoveAt(i);
+                return;
             }
         }
 
-        private void setupGLTranslation()
+        private void ProcessOneLightingMeshUpdate()
         {
-            GLManager.GL.Translate((float)posXClip, (float)posYClip, (float)posZClip);
+            lightingUpdates.Sort((a, b) =>
+            {
+                var distA = Vector3D.DistanceSquared(ToDoubleVec(a.Pos), lastViewPos);
+                var distB = Vector3D.DistanceSquared(ToDoubleVec(b.Pos), lastViewPos);
+                return distA.CompareTo(distB);
+            });
+
+            for (int i = 0; i < lightingUpdates.Count; i++)
+            {
+                ChunkToMeshInfo update = lightingUpdates[i];
+
+                if (!IsChunkInRenderDistance(update.Pos, lastViewPos))
+                {
+                    lightingUpdates.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
+                meshGenerator.MeshChunk(world, update.Pos, update.Version, false);
+                lightingUpdates.RemoveAt(i);
+                return;
+            }
         }
 
-        public bool updateRenderer()
+        public void UpdateAllRenderers()
         {
-            if (needsUpdate)
+            foreach (var state in renderers.Values)
             {
-                Stopwatch sw = Stopwatch.StartNew();
-                ++chunksUpdated;
-                int var1 = posX;
-                int var2 = posY;
-                int var3 = posZ;
-                int var4 = posX + sizeWidth;
-                int var5 = posY + sizeHeight;
-                int var6 = posZ + sizeDepth;
-                byte var8 = 1;
-
-                if (!worldObj.checkChunksExist(var1 - var8, var2 - var8, var3 - var8,
-                                       var4 + var8, var5 + var8, var6 + var8))
+                if (IsChunkInRenderDistance(state.Renderer.Position, lastViewPos) && state.IsLit)
                 {
-                    return false;
-                }
-
-                for (int var7 = 0; var7 < 2; ++var7)
-                {
-                    skipRenderPass[var7] = true;
-                }
-
-                Chunk.isLit = false;
-                Stopwatch sw2 = Stopwatch.StartNew();
-                ChunkCache var9 = new(worldObj, var1 - var8, var2 - var8, var3 - var8, var4 + var8, var5 + var8, var6 + var8);
-                sw2.Stop();
-                if (sw2.Elapsed.TotalMilliseconds > 1.0)
-                {
-                    Console.WriteLine($"sw2 ms: {sw2.Elapsed.TotalMilliseconds:F4}");
-                }
-                RenderBlocks var10 = new(var9);
-
-                for (int var11 = 0; var11 < 2; ++var11)
-                {
-                    bool var12 = false;
-                    bool var13 = false;
-                    bool var14 = false;
-
-                    for (int var15 = var2; var15 < var5; ++var15)
+                    if (!chunkVersions.TryGetValue(state.Renderer.Position, out var version))
                     {
-                        for (int var16 = var3; var16 < var6; ++var16)
-                        {
-                            for (int var17 = var1; var17 < var4; ++var17)
-                            {
-                                int var18 = var9.getBlockId(var17, var15, var16);
-                                if (var18 > 0)
-                                {
-                                    if (!var14)
-                                    {
-                                        var14 = true;
-                                        GLManager.GL.NewList((uint)(glRenderList + var11), GLEnum.Compile);
-                                        GLManager.GL.PushMatrix();
-                                        setupGLTranslation();
-                                        float var19 = 1.000001F;
-                                        GLManager.GL.Translate((float)(-sizeDepth) / 2.0F, (float)(-sizeHeight) / 2.0F, (float)(-sizeDepth) / 2.0F);
-                                        GLManager.GL.Scale(var19, var19, var19);
-                                        GLManager.GL.Translate((float)sizeDepth / 2.0F, (float)sizeHeight / 2.0F, (float)sizeDepth / 2.0F);
-                                        tessellator.startDrawingQuads();
-                                        tessellator.setTranslationD((double)(-posX), (double)(-posY), (double)(-posZ));
-                                    }
+                        version = new();
+                        chunkVersions[state.Renderer.Position] = version;
+                    }
 
-                                    Block var24 = Block.blocksList[var18];
-                                    int var20 = var24.getRenderBlockPass();
-                                    if (var20 != var11)
-                                    {
-                                        var12 = true;
-                                    }
-                                    else if (var20 == var11)
-                                    {
-                                        var13 |= var10.renderBlockByRenderType(var24, var17, var15, var16);
-                                    }
-                                }
+                    version.MarkDirty();
+
+                    long? snapshot = version.SnapshotIfNeeded();
+                    if (snapshot.HasValue)
+                    {
+                        lightingUpdates.Add(new(state.Renderer.Position, snapshot.Value, false));
+                    }
+                }
+            }
+        }
+
+        public void Tick(Vector3D<double> viewPos)
+        {
+            Profiler.Start("WorldRenderer.Tick");
+
+            lastViewPos = viewPos;
+
+            Vector3D<int> currentChunk = new(
+                (int)Math.Floor(viewPos.X / 16.0),
+                (int)Math.Floor(viewPos.Y / 16.0),
+                (int)Math.Floor(viewPos.Z / 16.0)
+            );
+
+            int radiusSq = lastRenderDistance * lastRenderDistance;
+            int enqueuedCount = 0;
+            bool priorityPassClean = true;
+
+            //TODO: MAKE THESE CONFIGURABLE
+            const int MAX_CHUNKS_PER_FRAME = 16;
+            const int PRIORITY_PASS_LIMIT = 1024;
+            const int BACKGROUND_PASS_LIMIT = 2048;
+
+            for (int i = 0; i < PRIORITY_PASS_LIMIT && i < spiralOffsets.Length; i++)
+            {
+                var offset = spiralOffsets[i];
+                int distSq = offset.X * offset.X + offset.Y * offset.Y + offset.Z * offset.Z;
+
+                if (distSq > radiusSq)
+                {
+                    break;
+                }
+
+                var chunkPos = (currentChunk + offset) * 16;
+
+                if (chunkPos.Y < 0 || chunkPos.Y >= 128)
+                {
+                    continue;
+                }
+
+                if (renderers.ContainsKey(chunkPos) || chunkVersions.ContainsKey(chunkPos))
+                {
+                    continue;
+                }
+
+                if (MarkDirty(chunkPos))
+                {
+                    enqueuedCount++;
+                    priorityPassClean = false;
+                }
+                else
+                {
+                    priorityPassClean = false;
+                }
+
+                if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
+                {
+                    break;
+                }
+            }
+
+            if (priorityPassClean && enqueuedCount < MAX_CHUNKS_PER_FRAME)
+            {
+                for (int i = 0; i < BACKGROUND_PASS_LIMIT; i++)
+                {
+                    var offset = spiralOffsets[currentIndex];
+                    int distSq = offset.X * offset.X + offset.Y * offset.Y + offset.Z * offset.Z;
+
+                    if (distSq <= radiusSq)
+                    {
+                        var chunkPos = (currentChunk + offset) * 16;
+                        if (!renderers.ContainsKey(chunkPos) && !chunkVersions.ContainsKey(chunkPos))
+                        {
+                            if (MarkDirty(chunkPos))
+                            {
+                                enqueuedCount++;
                             }
                         }
                     }
 
-                    if (var14)
-                    {
-                        tessellator.draw();
-                        GLManager.GL.PopMatrix();
-                        GLManager.GL.EndList();
-                        tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-                    }
-                    else
-                    {
-                        var13 = false;
-                    }
+                    currentIndex = (currentIndex + 1) % spiralOffsets.Length;
 
-                    if (var13)
-                    {
-                        skipRenderPass[var11] = false;
-                    }
-
-                    if (!var12)
+                    if (enqueuedCount >= MAX_CHUNKS_PER_FRAME)
                     {
                         break;
                     }
                 }
+            }
 
-                isChunkLit = Chunk.isLit;
-                isInitialized = true;
-
-                sw.Stop();
-                long ticks = sw.ElapsedTicks;
-                if (sw2.Elapsed.TotalMilliseconds > 6.0)
+            Profiler.Start("WorldRenderer.Tick.RemoveVersions");
+            foreach (var version in chunkVersions)
+            {
+                if (!IsChunkInRenderDistance(version.Key, lastViewPos))
                 {
-                    Console.WriteLine($"sw ms: {sw.Elapsed.TotalMilliseconds:F4}");
+                    chunkVersionsToRemove.Add(version.Key);
                 }
             }
-            
-            return true;
-        }
 
-        public float distanceToEntitySquared(Entity var1)
-        {
-            float var2 = (float)(var1.posX - (double)posXPlus);
-            float var3 = (float)(var1.posY - (double)posYPlus);
-            float var4 = (float)(var1.posZ - (double)posZPlus);
-            return var2 * var2 + var3 * var3 + var4 * var4;
-        }
-
-        public void setDontDraw()
-        {
-            for (int var1 = 0; var1 < 2; ++var1)
+            foreach (var pos in chunkVersionsToRemove)
             {
-                skipRenderPass[var1] = true;
+                chunkVersions.Remove(pos);
             }
 
-            isInFrustum = false;
-            isInitialized = false;
+            chunkVersionsToRemove.Clear();
+            Profiler.Stop("WorldRenderer.Tick.RemoveVersions");
+
+            Profiler.Stop("WorldRenderer.Tick");
         }
 
-        public void func_1204_c()
+        public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false)
         {
-            setDontDraw();
-            worldObj = null;
+            if (!IsChunkInRenderDistance(chunkPos, lastViewPos))
+            {
+                return false;
+            }
+
+            if (!world.checkChunksExist(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.SIZE + 1, chunkPos.Y + SubChunkRenderer.SIZE + 1, chunkPos.Z + SubChunkRenderer.SIZE + 1))
+            {
+                return false;
+            }
+
+            if (!chunkVersions.TryGetValue(chunkPos, out var version))
+            {
+                version = new();
+                chunkVersions[chunkPos] = version;
+            }
+
+            version.MarkDirty();
+
+            long? snapshot = version.SnapshotIfNeeded();
+            if (snapshot.HasValue)
+            {
+                dirtyChunks.Add(new(chunkPos, snapshot.Value, priority));
+                return true;
+            }
+
+            return false;
         }
 
-        public int getGLCallListForPass(int var1)
+        private void LoadNewMeshes(Vector3D<double> viewPos, int maxChunks)
         {
-            return !isInFrustum ? -1 : (!skipRenderPass[var1] ? glRenderList + var1 : -1);
+            for (int i = 0; i < maxChunks; i++)
+            {
+                var mesh = meshGenerator.GetMesh();
+                if (mesh == null) break;
+
+                if (IsChunkInRenderDistance(mesh.Pos, viewPos))
+                {
+                    if (!chunkVersions.TryGetValue(mesh.Pos, out var version))
+                    {
+                        version = new ChunkMeshVersion();
+                        chunkVersions[mesh.Pos] = version;
+                    }
+
+                    version.CompleteMesh(mesh.Version);
+
+                    if (version.IsStale(mesh.Version))
+                    {
+                        long? snapshot = version.SnapshotIfNeeded();
+                        if (snapshot.HasValue)
+                        {
+                            meshGenerator.MeshChunk(world, mesh.Pos, snapshot.Value, false);
+                        }
+                        continue;
+                    }
+
+                    if (renderers.TryGetValue(mesh.Pos, out SubChunkState? state))
+                    {
+                        state.Renderer.UploadMeshData(mesh.Solid, mesh.Translucent);
+                        state.IsLit = mesh.IsLit;
+                    }
+                    else
+                    {
+                        var renderer = new SubChunkRenderer(mesh.Pos);
+                        renderer.UploadMeshData(mesh.Solid, mesh.Translucent);
+                        renderers[mesh.Pos] = new SubChunkState(mesh.IsLit, renderer);
+                    }
+                }
+            }
         }
 
-        public void updateInFrustrum(ICamera var1)
+        private bool IsChunkInRenderDistance(Vector3D<int> chunkWorldPos, Vector3D<double> viewPos)
         {
-            isInFrustum = var1.isBoundingBoxInFrustum(rendererBoundingBox);
+            int chunkX = chunkWorldPos.X >> 4;
+            int chunkZ = chunkWorldPos.Z >> 4;
+
+            int viewChunkX = (int)Math.Floor(viewPos.X / 16.0);
+            int viewChunkZ = (int)Math.Floor(viewPos.Z / 16.0);
+
+            int dist = Vector2D.Distance(new Vector2D<int>(chunkX, chunkZ), new Vector2D<int>(viewChunkX, viewChunkZ));
+            bool isIn = dist <= lastRenderDistance;
+            return isIn;
         }
 
-        public void callOcclusionQueryList()
+        private static Vector3D<double> ToDoubleVec(Vector3D<int> vec)
         {
-            GLManager.GL.CallList((uint)(glRenderList + 2));
+            return new(vec.X, vec.Y, vec.Z);
         }
 
-        public bool skipAllRenderPasses()
+        public void Dispose()
         {
-            return !isInitialized ? false : skipRenderPass[0] && skipRenderPass[1];
-        }
+            meshGenerator.Stop();
 
-        public void markDirty()
-        {
-            needsUpdate = true;
+            foreach (var state in renderers.Values)
+            {
+                state.Renderer.Dispose();
+            }
+
+            chunkShader.Dispose();
+
+            renderers.Clear();
+
+            translucentRenderers.Clear();
+            renderersToRemove.Clear();
+            chunkVersions.Clear();
         }
     }
-
 }

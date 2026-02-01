@@ -1,6 +1,7 @@
 using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Chunks;
+using Silk.NET.Maths;
 
 namespace betareborn.Worlds
 {
@@ -28,7 +29,7 @@ namespace betareborn.Worlds
             return null;
         }
 
-        public override Vec3D func_4096_a(float var1, float var2)
+        public override Vector3D<double> func_4096_a(float var1, float var2)
         {
             int var3 = 8421536;
             float var4 = MathHelper.cos(var1 * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
@@ -48,7 +49,7 @@ namespace betareborn.Worlds
             var5 *= var4 * 0.94F + 0.06F;
             var6 *= var4 * 0.94F + 0.06F;
             var7 *= var4 * 0.91F + 0.09F;
-            return Vec3D.createVector((double)var5, (double)var6, (double)var7);
+            return new((double)var5, (double)var6, (double)var7);
         }
 
         public override bool func_28112_c()

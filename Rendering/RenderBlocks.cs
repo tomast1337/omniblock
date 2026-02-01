@@ -2,12 +2,14 @@ using betareborn.Blocks;
 using betareborn.Materials;
 using betareborn.Models;
 using betareborn.Worlds;
+using Silk.NET.Maths;
 
 namespace betareborn.Rendering
 {
     public class RenderBlocks
     {
         private IBlockAccess blockAccess;
+        private Tessellator? tessellator;
         private int overrideBlockTexture = -1;
         private bool flipTexture = false;
         private bool renderAllFaces = false;
@@ -78,8 +80,24 @@ namespace betareborn.Rendering
             blockAccess = var1;
         }
 
+        public RenderBlocks(IBlockAccess var1, Tessellator t)
+        {
+            blockAccess = var1;
+            tessellator = t;
+        }
+
         public RenderBlocks()
         {
+        }
+
+        private Tessellator getTessellator()
+        {
+            if (tessellator == null)
+            {
+                return Tessellator.instance;
+            }
+
+            return tessellator;
         }
 
         public void renderBlockUsingTexture(Block var1, int var2, int var3, int var4, int var5)
@@ -105,7 +123,7 @@ namespace betareborn.Rendering
 
         private bool renderBlockBed(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
             int var7 = BlockBed.getDirectionFromMetadata(var6);
             bool var8 = BlockBed.isBlockFootOfBed(var6);
@@ -266,7 +284,7 @@ namespace betareborn.Rendering
         public bool renderBlockTorch(Block var1, int var2, int var3, int var4)
         {
             int var5 = blockAccess.getBlockMetadata(var2, var3, var4);
-            Tessellator var6 = Tessellator.instance;
+            Tessellator var6 = getTessellator();
             float var7 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
             if (Block.lightValue[var1.blockID] > 0)
             {
@@ -307,7 +325,7 @@ namespace betareborn.Rendering
             int var6 = var5 & 3;
             int var7 = (var5 & 12) >> 2;
             renderStandardBlock(var1, var2, var3, var4);
-            Tessellator var8 = Tessellator.instance;
+            Tessellator var8 = getTessellator();
             float var9 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
             if (Block.lightValue[var1.blockID] > 0)
             {
@@ -522,7 +540,7 @@ namespace betareborn.Rendering
 
             int var17 = (var16 & 15) << 4;
             int var18 = var16 & 240;
-            Tessellator var19 = Tessellator.instance;
+            Tessellator var19 = getTessellator();
             double var20 = (double)((float)(var17 + 0) / 256.0F);
             double var22 = (double)((float)(var18 + 0) / 256.0F);
             double var24 = ((double)var17 + var14 - 0.01D) / 256.0D;
@@ -544,7 +562,7 @@ namespace betareborn.Rendering
 
             int var17 = (var16 & 15) << 4;
             int var18 = var16 & 240;
-            Tessellator var19 = Tessellator.instance;
+            Tessellator var19 = getTessellator();
             double var20 = (double)((float)(var17 + 0) / 256.0F);
             double var22 = (double)((float)(var18 + 0) / 256.0F);
             double var24 = ((double)var17 + var14 - 0.01D) / 256.0D;
@@ -566,7 +584,7 @@ namespace betareborn.Rendering
 
             int var17 = (var16 & 15) << 4;
             int var18 = var16 & 240;
-            Tessellator var19 = Tessellator.instance;
+            Tessellator var19 = getTessellator();
             double var20 = (double)((float)(var17 + 0) / 256.0F);
             double var22 = (double)((float)(var18 + 0) / 256.0F);
             double var24 = ((double)var17 + var14 - 0.01D) / 256.0D;
@@ -677,7 +695,7 @@ namespace betareborn.Rendering
             int var5 = blockAccess.getBlockMetadata(var2, var3, var4);
             int var6 = var5 & 7;
             bool var7 = (var5 & 8) > 0;
-            Tessellator var8 = Tessellator.instance;
+            Tessellator var8 = getTessellator();
             bool var9 = overrideBlockTexture >= 0;
             if (!var9)
             {
@@ -737,77 +755,77 @@ namespace betareborn.Rendering
             float var18 = ((float)var15 + 15.99F) / 256.0F;
             float var19 = (float)var16 / 256.0F;
             float var20 = ((float)var16 + 15.99F) / 256.0F;
-            Vec3D[] var21 = new Vec3D[8];
+            Vector3D<double>[] var21 = new Vector3D<double>[8];
             float var22 = 1.0F / 16.0F;
             float var23 = 1.0F / 16.0F;
             float var24 = 10.0F / 16.0F;
-            var21[0] = Vec3D.createVector((double)(-var22), 0.0D, (double)(-var23));
-            var21[1] = Vec3D.createVector((double)var22, 0.0D, (double)(-var23));
-            var21[2] = Vec3D.createVector((double)var22, 0.0D, (double)var23);
-            var21[3] = Vec3D.createVector((double)(-var22), 0.0D, (double)var23);
-            var21[4] = Vec3D.createVector((double)(-var22), (double)var24, (double)(-var23));
-            var21[5] = Vec3D.createVector((double)var22, (double)var24, (double)(-var23));
-            var21[6] = Vec3D.createVector((double)var22, (double)var24, (double)var23);
-            var21[7] = Vec3D.createVector((double)(-var22), (double)var24, (double)var23);
+            var21[0] = new((double)(-var22), 0.0D, (double)(-var23));
+            var21[1] = new((double)var22, 0.0D, (double)(-var23));
+            var21[2] = new((double)var22, 0.0D, (double)var23);
+            var21[3] = new((double)(-var22), 0.0D, (double)var23);
+            var21[4] = new((double)(-var22), (double)var24, (double)(-var23));
+            var21[5] = new((double)var22, (double)var24, (double)(-var23));
+            var21[6] = new((double)var22, (double)var24, (double)var23);
+            var21[7] = new((double)(-var22), (double)var24, (double)var23);
 
             for (int var25 = 0; var25 < 8; ++var25)
             {
                 if (var7)
                 {
-                    var21[var25].zCoord -= 1.0D / 16.0D;
-                    var21[var25].rotateAroundX((float)Math.PI * 2.0F / 9.0F);
+                    var21[var25].Z -= 1.0D / 16.0D;
+                    rotateAroundX(ref var21[var25], (float)Math.PI * 2.0F / 9.0F);
                 }
                 else
                 {
-                    var21[var25].zCoord += 1.0D / 16.0D;
-                    var21[var25].rotateAroundX(-((float)Math.PI * 2.0F / 9.0F));
+                    var21[var25].Z += 1.0D / 16.0D;
+                    rotateAroundX(ref var21[var25], (-((float)Math.PI * 2.0F / 9.0F)));
                 }
 
                 if (var6 == 6)
                 {
-                    var21[var25].rotateAroundY((float)Math.PI * 0.5F);
+                    rotateAroundY(ref var21[var25], ((float)Math.PI * 0.5F));
                 }
 
                 if (var6 < 5)
                 {
-                    var21[var25].yCoord -= 0.375D;
-                    var21[var25].rotateAroundX((float)Math.PI * 0.5F);
+                    var21[var25].Y -= 0.375D;
+                    rotateAroundX(ref var21[var25], ((float)Math.PI * 0.5F));
                     if (var6 == 4)
                     {
-                        var21[var25].rotateAroundY(0.0F);
+                        rotateAroundY(ref var21[var25], 0.0f);
                     }
 
                     if (var6 == 3)
                     {
-                        var21[var25].rotateAroundY((float)Math.PI);
+                        rotateAroundY(ref var21[var25], (float)Math.PI);
                     }
 
                     if (var6 == 2)
                     {
-                        var21[var25].rotateAroundY((float)Math.PI * 0.5F);
+                        rotateAroundY(ref var21[var25], ((float)Math.PI * 0.5F));
                     }
 
                     if (var6 == 1)
                     {
-                        var21[var25].rotateAroundY((float)Math.PI * -0.5F);
+                        rotateAroundY(ref var21[var25], (float)Math.PI * -0.5F);
                     }
 
-                    var21[var25].xCoord += (double)var2 + 0.5D;
-                    var21[var25].yCoord += (double)((float)var3 + 0.5F);
-                    var21[var25].zCoord += (double)var4 + 0.5D;
+                    var21[var25].X += (double)var2 + 0.5D;
+                    var21[var25].Y += (double)((float)var3 + 0.5F);
+                    var21[var25].Z += (double)var4 + 0.5D;
                 }
                 else
                 {
-                    var21[var25].xCoord += (double)var2 + 0.5D;
-                    var21[var25].yCoord += (double)((float)var3 + 2.0F / 16.0F);
-                    var21[var25].zCoord += (double)var4 + 0.5D;
+                    var21[var25].X += (double)var2 + 0.5D;
+                    var21[var25].Y += (double)((float)var3 + 2.0F / 16.0F);
+                    var21[var25].Z += (double)var4 + 0.5D;
                 }
             }
 
-            Vec3D var30 = null;
-            Vec3D var26 = null;
-            Vec3D var27 = null;
-            Vec3D var28 = null;
+            Vector3D<double> var30 = new();
+            Vector3D<double> var26 = new();
+            Vector3D<double> var27 = new();
+            Vector3D<double> var28 = new();
 
             for (int var29 = 0; var29 < 6; ++var29)
             {
@@ -869,10 +887,10 @@ namespace betareborn.Rendering
                     var28 = var21[4];
                 }
 
-                var8.addVertexWithUV(var30.xCoord, var30.yCoord, var30.zCoord, (double)var17, (double)var20);
-                var8.addVertexWithUV(var26.xCoord, var26.yCoord, var26.zCoord, (double)var18, (double)var20);
-                var8.addVertexWithUV(var27.xCoord, var27.yCoord, var27.zCoord, (double)var18, (double)var19);
-                var8.addVertexWithUV(var28.xCoord, var28.yCoord, var28.zCoord, (double)var17, (double)var19);
+                var8.addVertexWithUV(var30.X, var30.Y, var30.Z, (double)var17, (double)var20);
+                var8.addVertexWithUV(var26.X, var26.Y, var26.Z, (double)var18, (double)var20);
+                var8.addVertexWithUV(var27.X, var27.Y, var27.Z, (double)var18, (double)var19);
+                var8.addVertexWithUV(var28.X, var28.Y, var28.Z, (double)var17, (double)var19);
             }
 
             return true;
@@ -880,7 +898,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockFire(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             int var6 = var1.getBlockTextureFromSide(0);
             if (overrideBlockTexture >= 0)
             {
@@ -1083,7 +1101,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockRedstoneWire(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
             int var7 = var1.getBlockTextureFromSideAndMetadata(1, var6);
             if (overrideBlockTexture >= 0)
@@ -1316,7 +1334,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockMinecartTrack(BlockRail var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
             int var7 = var1.getBlockTextureFromSideAndMetadata(0, var6);
             if (overrideBlockTexture >= 0)
@@ -1414,7 +1432,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockLadder(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             int var6 = var1.getBlockTextureFromSide(0);
             if (overrideBlockTexture >= 0)
             {
@@ -1469,7 +1487,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockReed(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             float var6 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
             int var7 = var1.colorMultiplier(blockAccess, var2, var3, var4);
             float var8 = (float)(var7 >> 16 & 255) / 255.0F;
@@ -1495,7 +1513,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockCrops(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             float var6 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
             var5.setColorOpaque_F(var6, var6, var6);
             func_1245_b(var1, blockAccess.getBlockMetadata(var2, var3, var4), (double)var2, (double)((float)var3 - 1.0F / 16.0F), (double)var4);
@@ -1504,7 +1522,7 @@ namespace betareborn.Rendering
 
         public void renderTorchAtAngle(Block var1, double var2, double var4, double var6, double var8, double var10)
         {
-            Tessellator var12 = Tessellator.instance;
+            Tessellator var12 = getTessellator();
             int var13 = var1.getBlockTextureFromSide(0);
             if (overrideBlockTexture >= 0)
             {
@@ -1553,7 +1571,7 @@ namespace betareborn.Rendering
 
         public void renderCrossedSquares(Block var1, int var2, double var3, double var5, double var7)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             int var10 = var1.getBlockTextureFromSideAndMetadata(0, var2);
             if (overrideBlockTexture >= 0)
             {
@@ -1590,7 +1608,7 @@ namespace betareborn.Rendering
 
         public void func_1245_b(Block var1, int var2, double var3, double var5, double var7)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             int var10 = var1.getBlockTextureFromSideAndMetadata(0, var2);
             if (overrideBlockTexture >= 0)
             {
@@ -1647,7 +1665,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockFluids(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             int var6 = var1.colorMultiplier(blockAccess, var2, var3, var4);
             float var7 = (float)(var6 >> 16 & 255) / 255.0F;
             float var8 = (float)(var6 >> 8 & 255) / 255.0F;
@@ -1866,7 +1884,7 @@ namespace betareborn.Rendering
             float var7 = 1.0F;
             float var8 = 0.8F;
             float var9 = 0.6F;
-            Tessellator var10 = Tessellator.instance;
+            Tessellator var10 = getTessellator();
             var10.startDrawingQuads();
             float var11 = var1.getBlockBrightness(var2, var3, var4, var5);
             float var12 = var1.getBlockBrightness(var2, var3, var4 - 1, var5);
@@ -2529,7 +2547,7 @@ namespace betareborn.Rendering
         public bool renderStandardBlockWithColorMultiplier(Block var1, int var2, int var3, int var4, float var5, float var6, float var7)
         {
             enableAO = false;
-            Tessellator var8 = Tessellator.instance;
+            Tessellator var8 = getTessellator();
             bool var9 = false;
             float var10 = 0.5F;
             float var11 = 1.0F;
@@ -2679,7 +2697,7 @@ namespace betareborn.Rendering
 
         public bool func_1230_b(Block var1, int var2, int var3, int var4, float var5, float var6, float var7)
         {
-            Tessellator var8 = Tessellator.instance;
+            Tessellator var8 = getTessellator();
             bool var9 = false;
             float var10 = 0.5F;
             float var11 = 1.0F;
@@ -2898,7 +2916,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockDoor(Block var1, int var2, int var3, int var4)
         {
-            Tessellator var5 = Tessellator.instance;
+            Tessellator var5 = getTessellator();
             BlockDoor var6 = (BlockDoor)var1;
             bool var7 = false;
             float var8 = 0.5F;
@@ -3027,7 +3045,7 @@ namespace betareborn.Rendering
 
         public void renderBottomFace(Block var1, double var2, double var4, double var6, int var8)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             if (overrideBlockTexture >= 0)
             {
                 var8 = overrideBlockTexture;
@@ -3121,7 +3139,7 @@ namespace betareborn.Rendering
 
         public void renderTopFace(Block var1, double var2, double var4, double var6, int var8)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             if (overrideBlockTexture >= 0)
             {
                 var8 = overrideBlockTexture;
@@ -3215,7 +3233,7 @@ namespace betareborn.Rendering
 
         public void renderEastFace(Block var1, double var2, double var4, double var6, int var8)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             if (overrideBlockTexture >= 0)
             {
                 var8 = overrideBlockTexture;
@@ -3317,7 +3335,7 @@ namespace betareborn.Rendering
 
         public void renderWestFace(Block var1, double var2, double var4, double var6, int var8)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             if (overrideBlockTexture >= 0)
             {
                 var8 = overrideBlockTexture;
@@ -3419,7 +3437,7 @@ namespace betareborn.Rendering
 
         public void renderNorthFace(Block var1, double var2, double var4, double var6, int var8)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             if (overrideBlockTexture >= 0)
             {
                 var8 = overrideBlockTexture;
@@ -3521,7 +3539,7 @@ namespace betareborn.Rendering
 
         public void renderSouthFace(Block var1, double var2, double var4, double var6, int var8)
         {
-            Tessellator var9 = Tessellator.instance;
+            Tessellator var9 = getTessellator();
             if (overrideBlockTexture >= 0)
             {
                 var8 = overrideBlockTexture;
@@ -3623,7 +3641,7 @@ namespace betareborn.Rendering
 
         public void renderBlockOnInventory(Block var1, int var2, float var3)
         {
-            Tessellator var4 = Tessellator.instance;
+            Tessellator var4 = getTessellator();
             int var5;
             float var6;
             float var7;
@@ -3843,6 +3861,30 @@ namespace betareborn.Rendering
         public static bool renderItemIn3d(int var0)
         {
             return var0 == 0 ? true : (var0 == 13 ? true : (var0 == 10 ? true : (var0 == 11 ? true : var0 == 16)));
+        }
+
+        public static void rotateAroundX(ref Vector3D<double> vec, float var1)
+        {
+            float var2 = MathHelper.cos(var1);
+            float var3 = MathHelper.sin(var1);
+            double var4 = vec.X;
+            double var6 = vec.Y * (double)var2 + vec.Z * (double)var3;
+            double var8 = vec.Z * (double)var2 - vec.Y * (double)var3;
+            vec.X = var4;
+            vec.Y = var6;
+            vec.Z = var8;
+        }
+
+        private static void rotateAroundY(ref Vector3D<double> vec, float var1)
+        {
+            float var2 = MathHelper.cos(var1);
+            float var3 = MathHelper.sin(var1);
+            double var4 = vec.X * (double)var2 + vec.Z * (double)var3;
+            double var6 = vec.Y;
+            double var8 = vec.Z * (double)var2 - vec.X * (double)var3;
+            vec.X = var4;
+            vec.Y = var6;
+            vec.Z = var8;
         }
     }
 
