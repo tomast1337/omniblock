@@ -876,6 +876,7 @@ namespace betareborn.Entities
         protected override void jump()
         {
             base.jump();
+            // motionY = (double)0.42F*5; // fun
             addStat(StatList.jumpStat, 1);
         }
 

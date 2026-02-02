@@ -26,6 +26,7 @@ namespace betareborn
         public KeyBinding keyBindInventory = new("key.inventory", 18);
         public KeyBinding keyBindDrop = new("key.drop", 16);
         public KeyBinding keyBindChat = new("key.chat", 20);
+        public KeyBinding keyBindCommand = new("key.command", Keyboard.KEY_SLASH);
         public KeyBinding keyBindToggleFog = new("key.fog", 33);
         public KeyBinding keyBindSneak = new("key.sneak", 42);
         public KeyBinding[] keyBindings;

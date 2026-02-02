@@ -7,7 +7,7 @@ namespace betareborn
 {
     public class MapStorage : java.lang.Object
     {
-        private readonly ISaveHandler field_28191_a;
+        private readonly ISaveHandler saveHandler;
         private readonly Map loadedDataMap = new HashMap();
         private readonly List loadedDataList = new ArrayList();
         private readonly Map idCounts = new HashMap();
@@ -15,7 +15,7 @@ namespace betareborn
 
         public MapStorage(ISaveHandler var1)
         {
-            field_28191_a = var1;
+            saveHandler = var1;
             loadIdCounts();
         }
 
@@ -28,11 +28,11 @@ namespace betareborn
             }
             else
             {
-                if (field_28191_a != null)
+                if (saveHandler != null)
                 {
                     try
                     {
-                        java.io.File var4 = field_28191_a.func_28113_a(var2.value);
+                        java.io.File var4 = saveHandler.func_28113_a(var2.value);
                         if (var4 != null && var4.exists())
                         {
                             try
@@ -101,11 +101,11 @@ namespace betareborn
 
         private void saveData(MapDataBase var1)
         {
-            if (field_28191_a != null)
+            if (saveHandler != null)
             {
                 try
                 {
-                    java.io.File var2 = field_28191_a.func_28113_a(var1.field_28168_a);
+                    java.io.File var2 = saveHandler.func_28113_a(var1.field_28168_a);
                     if (var2 != null)
                     {
                         NBTTagCompound var3 = new();
@@ -136,12 +136,12 @@ namespace betareborn
             try
             {
                 idCounts.clear();
-                if (field_28191_a == null)
+                if (saveHandler == null)
                 {
                     return;
                 }
 
-                java.io.File var1 = field_28191_a.func_28113_a("idcounts");
+                java.io.File var1 = saveHandler.func_28113_a("idcounts");
                 if (var1 != null && var1.exists())
                 {
                     DataInputStream var2 = new(new FileInputStream(var1));
@@ -182,7 +182,7 @@ namespace betareborn
             }
 
             idCounts.put(var1, var2);
-            if (field_28191_a == null)
+            if (saveHandler == null)
             {
                 return var2.shortValue();
             }
@@ -190,7 +190,7 @@ namespace betareborn
             {
                 try
                 {
-                    java.io.File var3 = field_28191_a.func_28113_a("idcounts");
+                    java.io.File var3 = saveHandler.func_28113_a("idcounts");
                     if (var3 != null)
                     {
                         NBTTagCompound var4 = new();

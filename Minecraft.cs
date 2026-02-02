@@ -1377,9 +1377,12 @@ namespace betareborn
                                 thePlayer.dropCurrentItem();
                             }
 
-                            if (isMultiplayerWorld() && Keyboard.getEventKey() == gameSettings.keyBindChat.keyCode)
-                            {
+                            if (Keyboard.getEventKey() == gameSettings.keyBindChat.keyCode) {
                                 displayGuiScreen(new GuiChat());
+                            }
+                            
+                            if (Keyboard.getEventKey() == gameSettings.keyBindCommand.keyCode) {
+                                displayGuiScreen(new GuiChat("/"));
                             }
                         }
 
@@ -1394,9 +1397,7 @@ namespace betareborn
                         if (Keyboard.getEventKey() == gameSettings.keyBindToggleFog.keyCode)
                         {
                             gameSettings.setOptionValue(EnumOptions.RENDER_DISTANCE,
-                                !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)
-                                    ? 1
-                                    : -1);
+                                !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1 : -1);
                         }
                     }
                 }
@@ -1939,13 +1940,6 @@ namespace betareborn
             return theMinecraft != null && theMinecraft.gameSettings.showDebugInfo;
         }
 
-        public bool lineIsCommand(string var1)
-        {
-            if (var1.StartsWith("/"))
-            {
-            }
-
-            return false;
-        }
+        public bool lineIsCommand(string var1) => (var1.StartsWith("/"));
     }
 }

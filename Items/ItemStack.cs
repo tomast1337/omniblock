@@ -17,6 +17,11 @@ namespace betareborn.Items
         {
         }
 
+        public ItemStack(int id, int count) {
+            itemID = id;
+            stackSize = count;
+        }
+
         public ItemStack(Block var1, int var2) : this(var1.blockID, var2, 0)
         {
         }

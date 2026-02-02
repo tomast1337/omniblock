@@ -739,15 +739,15 @@ namespace betareborn.Entities
             worldObj = var1;
         }
 
-        public void setPositionAndRotation(double var1, double var3, double var5, float var7, float var8)
+        public void setPositionAndRotation(double x, double y, double z, float yaw, float pitch)
         {
-            prevPosX = posX = var1;
-            prevPosY = posY = var3;
-            prevPosZ = posZ = var5;
-            prevRotationYaw = rotationYaw = var7;
-            prevRotationPitch = rotationPitch = var8;
+            prevPosX = posX = x;
+            prevPosY = posY = y;
+            prevPosZ = posZ = z;
+            prevRotationYaw = rotationYaw = yaw;
+            prevRotationPitch = rotationPitch = pitch;
             ySize = 0.0F;
-            double var9 = (double)(prevRotationYaw - var7);
+            double var9 = (double)(prevRotationYaw - yaw);
             if (var9 < -180.0D)
             {
                 prevRotationYaw += 360.0F;
@@ -759,7 +759,7 @@ namespace betareborn.Entities
             }
 
             setPosition(posX, posY, posZ);
-            setRotation(var7, var8);
+            setRotation(yaw, pitch);
         }
 
         public void setLocationAndAngles(double var1, double var3, double var5, float var7, float var8)

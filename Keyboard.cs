@@ -311,7 +311,7 @@ namespace betareborn {
 
         private static char ShiftUp(char c) {
             if (char.IsLetter(c)) return char.ToUpper(c);
-            if (ShiftMap.ContainsKey(c)) return ShiftMap[c];
+            if (ShiftMap.TryGetValue(c, out char up)) return up;
             return c;
         }
 

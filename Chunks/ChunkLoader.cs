@@ -24,30 +24,30 @@ namespace betareborn.Chunks
             string var3 = "c." + Integer.toString(var1, 36) + "." + Integer.toString(var2, 36) + ".dat";
             string var4 = Integer.toString(var1 & 63, 36);
             string var5 = Integer.toString(var2 & 63, 36);
-            java.io.File var6 = new java.io.File(saveDir, var4);
-            if (!var6.exists())
+            java.io.File saveFile = new java.io.File(saveDir, var4);
+            if (!saveFile.exists())
             {
                 if (!createIfNecessary)
                 {
                     return null;
                 }
 
-                var6.mkdir();
+                saveFile.mkdir();
             }
 
-            var6 = new java.io.File(var6, var5);
-            if (!var6.exists())
+            saveFile = new java.io.File(saveFile, var5);
+            if (!saveFile.exists())
             {
                 if (!createIfNecessary)
                 {
                     return null;
                 }
 
-                var6.mkdir();
+                saveFile.mkdir();
             }
 
-            var6 = new java.io.File(var6, var3);
-            return !var6.exists() && !createIfNecessary ? null : var6;
+            saveFile = new java.io.File(saveFile, var3);
+            return !saveFile.exists() && !createIfNecessary ? null : saveFile;
         }
 
         public Chunk loadChunk(World var1, int var2, int var3)

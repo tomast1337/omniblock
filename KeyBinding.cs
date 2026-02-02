@@ -5,10 +5,10 @@ namespace betareborn
         public string keyDescription;
         public int keyCode;
 
-        public KeyBinding(string var1, int var2)
+        public KeyBinding(string desc, int code)
         {
-            keyDescription = var1;
-            keyCode = var2;
+            keyDescription = desc;
+            keyCode = code;
         }
     }
 }

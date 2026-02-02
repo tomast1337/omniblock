@@ -124,7 +124,7 @@ namespace betareborn.Items
         public static Item record13 = (new ItemRecord(2000, "13")).setIconCoord(0, 15).setItemName("record");
         public static Item recordCat = (new ItemRecord(2001, "cat")).setIconCoord(1, 15).setItemName("record");
         public readonly int shiftedIndex;
-        protected int maxStackSize = 64;
+        public int maxStackSize = 64;
         private int maxDamage = 0;
         protected int iconIndex;
         protected bool bFull3D = false;

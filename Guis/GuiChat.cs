@@ -1,3 +1,5 @@
+using betareborn.CommandParser;
+
 namespace betareborn.Guis {
     public class GuiChat : GuiScreen {
 
@@ -17,6 +19,12 @@ namespace betareborn.Guis {
             ++updateCounter;
         }
 
+        public GuiChat() {
+        }
+        public GuiChat(string prefix) {
+            message = prefix;
+        }
+
         protected override void keyTyped(char eventChar, int eventKey) {
             switch (eventKey) {
                 // Escape key
@@ -27,9 +35,8 @@ namespace betareborn.Guis {
                 case Keyboard.KEY_RETURN: {
                     String msg = message.Trim();
                     if (msg.Length > 0) {
-                        if (!mc.lineIsCommand(msg)) {
-                            mc.thePlayer.sendChatMessage(msg);
-                        }
+                        if (mc.lineIsCommand(msg)) CommandService.Execute(mc, msg);
+                        else mc.thePlayer.sendChatMessage(msg);
                     }
 
                     mc.displayGuiScreen((GuiScreen)null);
