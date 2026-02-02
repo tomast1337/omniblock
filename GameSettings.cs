@@ -10,6 +10,8 @@ namespace betareborn
         private static readonly string[] DIFFICULTIES = ["options.difficulty.peaceful", "options.difficulty.easy", "options.difficulty.normal", "options.difficulty.hard"];
         private static readonly string[] GUISCALES = ["options.guiScale.auto", "options.guiScale.small", "options.guiScale.normal", "options.guiScale.large"];
         private static readonly string[] LIMIT_FRAMERATES = ["performance.max", "performance.balanced", "performance.powersaver"];
+        private static readonly string[] ANISO_LEVELS = ["options.off", "2x", "4x", "8x", "16x"];
+        public static float MaxAnisotropy = 1.0f;
         public float musicVolume = 1.0F;
         public float soundVolume = 1.0F;
         public float mouseSensitivity = 0.5F;
@@ -43,6 +45,9 @@ namespace betareborn
         public float field_22272_F = 1.0F;
         public float field_22271_G = 1.0F;
         public int guiScale = 1;
+        public int anisotropicLevel = 0;
+        public bool useMipmaps = true;
+        public bool debugMode = true;
 
         public GameSettings(Minecraft var1, java.io.File var2)
         {
@@ -126,6 +131,36 @@ namespace betareborn
                 difficulty = difficulty + var2 & 3;
             }
 
+            if (var1 == EnumOptions.ANISOTROPIC)
+            {
+                anisotropicLevel = (anisotropicLevel + var2) % 5;
+                int val = anisotropicLevel == 0 ? 0 : (int)System.Math.Pow(2, anisotropicLevel);
+                if (val > MaxAnisotropy)
+                {
+                    anisotropicLevel = 0;
+                }
+
+                if (Minecraft.theMinecraft?.renderEngine != null)
+                {
+                    Minecraft.theMinecraft.renderEngine.refreshTextures();
+                }
+            }
+
+            if (var1 == EnumOptions.MIPMAPS)
+            {
+                useMipmaps = !useMipmaps;
+                if (Minecraft.theMinecraft?.renderEngine != null)
+                {
+                    Minecraft.theMinecraft.renderEngine.refreshTextures();
+                }
+            }
+
+            if (var1 == EnumOptions.DEBUG_MODE)
+            {
+                debugMode = !debugMode;
+                Profiling.Profiler.Enabled = debugMode;
+            }
+
             saveOptions();
         }
 
@@ -142,6 +177,10 @@ namespace betareborn
                     return invertMouse;
                 case 2:
                     return viewBobbing;
+                case 3:
+                    return useMipmaps;
+                case 4:
+                    return debugMode;
                 default:
                     return false;
             }
@@ -163,7 +202,7 @@ namespace betareborn
             }
             else
             {
-                return var1 == EnumOptions.RENDER_DISTANCE ? var3 + var2.translateKey(RENDER_DISTANCES[renderDistance]) : (var1 == EnumOptions.DIFFICULTY ? var3 + var2.translateKey(DIFFICULTIES[difficulty]) : (var1 == EnumOptions.GUI_SCALE ? var3 + var2.translateKey(GUISCALES[guiScale]) : (var1 == EnumOptions.FRAMERATE_LIMIT ? var3 + StatCollector.translateToLocal(LIMIT_FRAMERATES[limitFramerate]) : var3)));
+                return var1 == EnumOptions.RENDER_DISTANCE ? var3 + var2.translateKey(RENDER_DISTANCES[renderDistance]) : (var1 == EnumOptions.DIFFICULTY ? var3 + var2.translateKey(DIFFICULTIES[difficulty]) : (var1 == EnumOptions.GUI_SCALE ? var3 + var2.translateKey(GUISCALES[guiScale]) : (var1 == EnumOptions.FRAMERATE_LIMIT ? var3 + StatCollector.translateToLocal(LIMIT_FRAMERATES[limitFramerate]) : (var1 == EnumOptions.ANISOTROPIC ? var3 + (anisotropicLevel == 0 ? var2.translateKey("options.off") : ANISO_LEVELS[anisotropicLevel]) : var3))));
             }
         }
 
@@ -246,6 +285,21 @@ namespace betareborn
                             lastServer = var3[1];
                         }
 
+                        if (var3[0].Equals("anisotropicLevel"))
+                        {
+                            anisotropicLevel = Integer.parseInt(var3[1]);
+                        }
+
+                        if (var3[0].Equals("useMipmaps"))
+                        {
+                            useMipmaps = var3[1].Equals("true");
+                        }
+
+                        if (var3[0].Equals("debugMode"))
+                        {
+                            debugMode = var3[1].Equals("true");
+                        }
+
                         for (int var4 = 0; var4 < keyBindings.Length; ++var4)
                         {
                             if (var3[0].Equals("key_" + keyBindings[var4].keyDescription))
@@ -289,6 +343,9 @@ namespace betareborn
                 var1.println("difficulty:" + difficulty);
                 var1.println("skin:" + skin);
                 var1.println("lastServer:" + lastServer);
+                var1.println("anisotropicLevel:" + anisotropicLevel);
+                var1.println("useMipmaps:" + useMipmaps);
+                var1.println("debugMode:" + debugMode);
 
                 for (int var2 = 0; var2 < keyBindings.Length; ++var2)
                 {

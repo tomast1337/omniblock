@@ -1486,6 +1486,8 @@ namespace betareborn.Worlds
 
         public void updateEntities()
         {
+            Profiler.Start("updateEntites.updateWeatherEffects");
+
             int var1;
             Entity var2;
             for (var1 = 0; var1 < weatherEffects.size(); ++var1)
@@ -1497,11 +1499,14 @@ namespace betareborn.Worlds
                     weatherEffects.remove(var1--);
                 }
             }
+            Profiler.Stop("updateEntites.updateWeatherEffects");
 
             foreach (var entity in unloadedEntityList)
             {
                 loadedEntityList.Remove(entity);
             }
+
+            Profiler.Start("updateEntites.clearUnloadedEntities");
 
             int var3;
             int var4;
@@ -1522,6 +1527,10 @@ namespace betareborn.Worlds
             }
 
             unloadedEntityList.Clear();
+
+            Profiler.Stop("updateEntites.clearUnloadedEntities");
+
+            Profiler.Start("updateEntites.updateLoadedEntities");
 
             for (var1 = 0; var1 < loadedEntityList.Count; ++var1)
             {
@@ -1555,8 +1564,11 @@ namespace betareborn.Worlds
                     releaseEntitySkin(var2);
                 }
             }
+            Profiler.Stop("updateEntites.updateLoadedEntities");
 
             field_31055_L = true;
+
+            Profiler.Start("updateEntites.updateLoadedTileEntities");
 
             for (int i = loadedTileEntityList.Count - 1; i >= 0; i--)
             {
@@ -1597,6 +1609,7 @@ namespace betareborn.Worlds
                 }
                 field_30900_E.Clear();
             }
+            Profiler.Stop("updateEntites.updateLoadedTileEntities");
 
         }
 

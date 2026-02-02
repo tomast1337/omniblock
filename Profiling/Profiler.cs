@@ -6,6 +6,7 @@ namespace betareborn.Profiling
     public static class Profiler
     {
         public const int HistoryLength = 300;
+        public static bool Enabled = true;
 
         private class ProfilerData
         {
@@ -53,6 +54,7 @@ namespace betareborn.Profiling
 
         public static void PushGroup(string name)
         {
+            if (!Enabled) return;
             GetStack().Push(name);
         }
 
@@ -65,6 +67,7 @@ namespace betareborn.Profiling
 
         public static void Start(string name)
         {
+            if (!Enabled) return;
             string fullName = GetCurrentPath(name);
             var data = _sections.GetOrAdd(fullName, n => new ProfilerData { Name = n });
             data.Stopwatch.Restart();
@@ -72,6 +75,7 @@ namespace betareborn.Profiling
 
         public static void Stop(string name)
         {
+            if (!Enabled) return;
             string fullName = GetCurrentPath(name);
             if (_sections.TryGetValue(fullName, out var data))
             {
@@ -82,6 +86,7 @@ namespace betareborn.Profiling
 
         public static void Record(string name, double milliseconds)
         {
+            if (!Enabled) return;
             string fullName = GetCurrentPath(name);
             var data = _sections.GetOrAdd(fullName, n => new ProfilerData { Name = n });
             data.Update(milliseconds);
@@ -90,6 +95,7 @@ namespace betareborn.Profiling
 
         public static void Update(double dt)
         {
+            if (!Enabled) return;
             _maxResetTimer += dt;
             if (_maxResetTimer >= 1.0)
             {
@@ -106,6 +112,7 @@ namespace betareborn.Profiling
 
         public static void CaptureFrame()
         {
+            if (!Enabled) return;
             foreach (var section in _sections.Values)
             {
                 section.History[section.HistoryIndex] = section.LastExecutionTime;

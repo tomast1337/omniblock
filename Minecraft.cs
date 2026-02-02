@@ -29,7 +29,7 @@ namespace betareborn
 
     public class Minecraft : java.lang.Object, Runnable
     {
-        private static Minecraft theMinecraft;
+        public static Minecraft theMinecraft;
         public PlayerController playerController;
         private bool fullscreen = false;
         private bool hasCrashed = false;
@@ -174,6 +174,7 @@ namespace betareborn
             mcDataDir = getMinecraftDir();
             saveLoader = new SaveConverterMcRegion(new java.io.File(mcDataDir, "saves"));
             gameSettings = new GameSettings(this, mcDataDir);
+            Profiling.Profiler.Enabled = gameSettings.debugMode;
             texturePackList = new TexturePackList(this, mcDataDir);
             renderEngine = new RenderEngine(texturePackList, gameSettings);
             fontRenderer = new FontRenderer(gameSettings, renderEngine);
@@ -188,6 +189,17 @@ namespace betareborn
 
             bool anisotropicFiltering = GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic");
             Console.WriteLine($"Anisotropic Filtering Supported: {anisotropicFiltering}");
+
+            if (anisotropicFiltering)
+            {
+                GLManager.GL.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAnisotropy);
+                GameSettings.MaxAnisotropy = maxAnisotropy;
+                Console.WriteLine($"Max Anisotropy: {maxAnisotropy}");
+            }
+            else
+            {
+                GameSettings.MaxAnisotropy = 1.0f;
+            }
 
             try
             {
@@ -512,9 +524,12 @@ namespace betareborn
 
                 while (running)
                 {
-                    Profiler.Update(timer.deltaTime);
-                    Profiler.Record("frame Time", timer.deltaTime * 1000.0f);
-                    Profiler.PushGroup("run");
+                    if (gameSettings.debugMode)
+                    {
+                        Profiler.Update(timer.deltaTime);
+                        Profiler.Record("frame Time", timer.deltaTime * 1000.0f);
+                        Profiler.PushGroup("run");
+                    }
                     try
                     {
                         AxisAlignedBB.clearBoundingBoxPool();
@@ -536,7 +551,10 @@ namespace betareborn
                         }
 
                         long var23 = java.lang.System.nanoTime();
-                        Profiler.PushGroup("runTicks");
+                        if (gameSettings.debugMode)
+                        {
+                            Profiler.PushGroup("runTicks");
+                        }
 
                         for (int var6 = 0; var6 < timer.elapsedTicks; ++var6)
                         {
@@ -554,7 +572,10 @@ namespace betareborn
                             }
                         }
 
-                        Profiler.PopGroup();
+                        if (gameSettings.debugMode)
+                        {
+                            Profiler.PopGroup();
+                        }
 
                         long var24 = java.lang.System.nanoTime() - var23;
                         checkGLError("Pre render");
@@ -563,9 +584,9 @@ namespace betareborn
                         GLManager.GL.Enable(GLEnum.Texture2D);
                         if (theWorld != null)
                         {
-                            Profiler.Start("updateLighting");
+                            if (gameSettings.debugMode) Profiler.Start("updateLighting");
                             theWorld.updatingLighting();
-                            Profiler.Stop("updateLighting");
+                            if (gameSettings.debugMode) Profiler.Stop("updateLighting");
                         }
 
                         if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
@@ -585,12 +606,12 @@ namespace betareborn
                                 playerController.setPartialTime(timer.renderPartialTicks);
                             }
 
-                            Profiler.PushGroup("render");
+                            if (gameSettings.debugMode) Profiler.PushGroup("render");
                             entityRenderer.updateCameraAndRender(timer.renderPartialTicks);
-                            Profiler.PopGroup();
+                            if (gameSettings.debugMode) Profiler.PopGroup();
                         }
 
-                        if (imGuiController != null && timer.deltaTime > 0.0f && gameSettings.showDebugInfo)
+                        if (imGuiController != null && timer.deltaTime > 0.0f && gameSettings.showDebugInfo && gameSettings.debugMode)
                         {
                             imGuiController.Update(timer.deltaTime);
                             ProfilerRenderer.Draw();
@@ -687,8 +708,11 @@ namespace betareborn
                     }
                     finally
                     {
-                        Profiler.CaptureFrame();
-                        Profiler.PopGroup();
+                        if (gameSettings.debugMode)
+                        {
+                            Profiler.CaptureFrame();
+                            Profiler.PopGroup();
+                        }
                     }
                 }
             }
@@ -1208,7 +1232,7 @@ namespace betareborn
                     renderGlobal.updateClouds();
                 }
 
-                Profiler.Start("theWorldUpdateEntities");
+                Profiler.PushGroup("theWorldUpdateEntities");
                 if (!isGamePaused)
                 {
                     if (theWorld.field_27172_i > 0)
@@ -1219,7 +1243,7 @@ namespace betareborn
                     theWorld.updateEntities();
                 }
 
-                Profiler.Stop("theWorldUpdateEntities");
+                Profiler.PopGroup();
 
                 Profiler.PushGroup("theWorld.tick");
                 if (!isGamePaused || isMultiplayerWorld())
@@ -1377,11 +1401,13 @@ namespace betareborn
                                 thePlayer.dropCurrentItem();
                             }
 
-                            if (Keyboard.getEventKey() == gameSettings.keyBindChat.keyCode) {
+                            if (Keyboard.getEventKey() == gameSettings.keyBindChat.keyCode)
+                            {
                                 displayGuiScreen(new GuiChat());
                             }
-                            
-                            if (Keyboard.getEventKey() == gameSettings.keyBindCommand.keyCode) {
+
+                            if (Keyboard.getEventKey() == gameSettings.keyBindCommand.keyCode)
+                            {
                                 displayGuiScreen(new GuiChat("/"));
                             }
                         }

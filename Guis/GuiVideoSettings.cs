@@ -6,7 +6,7 @@ namespace betareborn.Guis
         private GuiScreen field_22110_h;
         protected String field_22107_a = "Video Settings";
         private GameSettings guiGameSettings;
-        private static EnumOptions[] field_22108_k = new EnumOptions[] { EnumOptions.RENDER_DISTANCE, EnumOptions.FRAMERATE_LIMIT, EnumOptions.VIEW_BOBBING, EnumOptions.GUI_SCALE };
+        private static EnumOptions[] field_22108_k = new EnumOptions[] { EnumOptions.RENDER_DISTANCE, EnumOptions.FRAMERATE_LIMIT, EnumOptions.VIEW_BOBBING, EnumOptions.GUI_SCALE, EnumOptions.ANISOTROPIC, EnumOptions.MIPMAPS, EnumOptions.DEBUG_MODE };
 
         public GuiVideoSettings(GuiScreen var1, GameSettings var2)
         {

@@ -150,58 +150,7 @@ namespace betareborn.Rendering
                         }
                         else
                         {
-                            if (var1.Contains("terrain.png"))
-                            {
-                                BufferedImage img = readTextureImage(var7);
-
-                                TextureAtlas[] mips = GenerateMipmaps(bufferedImageToTextureAtlas(img), 16);
-
-                                GLManager.GL.BindTexture(TextureTarget.Texture2D, (uint)var6);
-
-                                for (int mipLevel = 0; mipLevel < mips.Length; mipLevel++)
-                                {
-                                    TextureAtlas mip = mips[mipLevel];
-                                    byte[] pixelData = ToByteArray(mip.Pixels);
-
-                                    unsafe
-                                    {
-                                        fixed (byte* ptr = pixelData)
-                                        {
-                                            GLManager.GL.TexImage2D(
-                                                TextureTarget.Texture2D,
-                                                mipLevel,
-                                                InternalFormat.Rgba8,
-                                                (uint)mip.Width,
-                                                (uint)mip.Height,
-                                                0,
-                                                PixelFormat.Rgba,
-                                                PixelType.UnsignedByte,
-                                                ptr
-                                            );
-                                        }
-                                    }
-                                }
-
-                                GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
-                                                 (int)TextureMinFilter.NearestMipmapNearest);
-                                GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter,
-                                                 (int)TextureMagFilter.Nearest);
-                                GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel,
-                                                 mips.Length - 1);
-
-                                if (GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic"))
-                                {
-                                    GLManager.GL.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAniso);
-
-                                    maxAniso = System.Math.Clamp(maxAniso, 1.0f, 16.0f);
-
-                                    GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMaxAnisotropy, maxAniso);
-                                }
-                            }
-                            else
-                            {
-                                setupTexture(readTextureImage(var7), var6);
-                            }
+                            setupTexture(readTextureImage(var7), var6, var1.Contains("terrain.png"));
                         }
                     }
 
@@ -247,7 +196,65 @@ namespace betareborn.Rendering
 
         public unsafe void setupTexture(BufferedImage var1, int var2)
         {
+            setupTexture(var1, var2, false);
+        }
+
+        public unsafe void setupTexture(BufferedImage var1, int var2, bool isTerrain)
+        {
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2);
+
+            if (isTerrain)
+            {
+                TextureAtlas[] mips = GenerateMipmaps(bufferedImageToTextureAtlas(var1), 16);
+
+                int mipCount = options.useMipmaps ? mips.Length : 1;
+
+                for (int mipLevel = 0; mipLevel < mipCount; mipLevel++)
+                {
+                    TextureAtlas mip = mips[mipLevel];
+                    byte[] pixelData = ToByteArray(mip.Pixels);
+
+                    fixed (byte* ptr = pixelData)
+                    {
+                        GLManager.GL.TexImage2D(
+                            TextureTarget.Texture2D,
+                            mipLevel,
+                            InternalFormat.Rgba8,
+                            (uint)mip.Width,
+                            (uint)mip.Height,
+                            0,
+                            PixelFormat.Rgba,
+                            PixelType.UnsignedByte,
+                            ptr
+                        );
+                    }
+                }
+
+                if (options.useMipmaps)
+                {
+                    GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
+                                     (int)TextureMinFilter.NearestMipmapNearest);
+                }
+                else
+                {
+                    GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
+                                     (int)TextureMinFilter.Nearest);
+                }
+
+                GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter,
+                                 (int)TextureMagFilter.Nearest);
+                GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel,
+                                 mipCount - 1);
+
+                if (GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic"))
+                {
+                    float aniso = options.anisotropicLevel == 0 ? 1.0f : (float)System.Math.Pow(2, options.anisotropicLevel);
+                    aniso = System.Math.Clamp(aniso, 1.0f, GameSettings.MaxAnisotropy);
+
+                    GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMaxAnisotropy, aniso);
+                }
+                return;
+            }
 
             GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
             GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
@@ -627,7 +634,7 @@ namespace betareborn.Rendering
                     }
 
                     int var5 = ((Integer)textureMap.get(var9)).intValue();
-                    setupTexture(var4, var5);
+                    setupTexture(var4, var5, var9.Contains("terrain.png"));
                     blurTexture = false;
                     clampTexture = false;
                 }

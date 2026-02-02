@@ -11,10 +11,13 @@ namespace betareborn
         public static readonly EnumOptions FRAMERATE_LIMIT = new("options.framerateLimit", false, false, 8);
         public static readonly EnumOptions DIFFICULTY = new("options.difficulty", false, false, 9);
         public static readonly EnumOptions GUI_SCALE = new("options.guiScale", false, false, 12);
+        public static readonly EnumOptions ANISOTROPIC = new("Aniso Level", false, false, 13);
+        public static readonly EnumOptions MIPMAPS = new("Mipmaps", false, true, 14);
+        public static readonly EnumOptions DEBUG_MODE = new("Debug Mode", false, true, 15);
 
         private static readonly EnumOptions[] allValues =
         [
-            MUSIC, SOUND, INVERT_MOUSE, SENSITIVITY, RENDER_DISTANCE, VIEW_BOBBING, FRAMERATE_LIMIT, DIFFICULTY, GUI_SCALE
+            MUSIC, SOUND, INVERT_MOUSE, SENSITIVITY, RENDER_DISTANCE, VIEW_BOBBING, FRAMERATE_LIMIT, DIFFICULTY, GUI_SCALE, ANISOTROPIC, MIPMAPS, DEBUG_MODE
         ];
 
         private readonly bool enumFloat;
