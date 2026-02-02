@@ -12,7 +12,7 @@ namespace betareborn
             {
                 enumOptionsMappingHelperArray[EnumOptions.INVERT_MOUSE.ordinal()] = 1;
             }
-            catch (NoSuchFieldError var5)
+            catch (NoSuchFieldError)
             {
             }
 
@@ -20,7 +20,7 @@ namespace betareborn
             {
                 enumOptionsMappingHelperArray[EnumOptions.VIEW_BOBBING.ordinal()] = 2;
             }
-            catch (NoSuchFieldError var4)
+            catch (NoSuchFieldError)
             {
             }
 
@@ -28,7 +28,7 @@ namespace betareborn
             {
                 enumOptionsMappingHelperArray[EnumOptions.MIPMAPS.ordinal()] = 3;
             }
-            catch (NoSuchFieldError var3)
+            catch (NoSuchFieldError)
             {
             }
 
@@ -36,7 +36,7 @@ namespace betareborn
             {
                 enumOptionsMappingHelperArray[EnumOptions.DEBUG_MODE.ordinal()] = 4;
             }
-            catch (NoSuchFieldError var2)
+            catch (NoSuchFieldError)
             {
             }
         }

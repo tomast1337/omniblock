@@ -160,8 +160,15 @@ namespace betareborn
 
             Display.setTitle("Minecraft Beta 1.7.3");
 
+            mcDataDir = getMinecraftDir();
+            saveLoader = new SaveConverterMcRegion(new java.io.File(mcDataDir, "saves"));
+            gameSettings = new GameSettings(this, mcDataDir);
+            Profiling.Profiler.Enabled = gameSettings.debugMode;
+
             try
             {
+                int[] msaaValues = [0, 2, 4, 8];
+                Display.MSAA_Samples = msaaValues[gameSettings.msaaLevel];
                 Display.create();
                 GLManager.Init(Display.getGL()!);
             }
@@ -170,11 +177,6 @@ namespace betareborn
                 //var6.printStackTrace();
                 Console.WriteLine(var6);
             }
-
-            mcDataDir = getMinecraftDir();
-            saveLoader = new SaveConverterMcRegion(new java.io.File(mcDataDir, "saves"));
-            gameSettings = new GameSettings(this, mcDataDir);
-            Profiling.Profiler.Enabled = gameSettings.debugMode;
             texturePackList = new TexturePackList(this, mcDataDir);
             renderEngine = new RenderEngine(texturePackList, gameSettings);
             fontRenderer = new FontRenderer(gameSettings, renderEngine);

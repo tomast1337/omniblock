@@ -25,6 +25,7 @@ namespace betareborn
         private static bool _resizable = true;
         private static bool _wasResized = false;
         private static bool _closeRequested = false;
+        public static int MSAA_Samples = 0;
 
         // Window position
         private static int _x = -1;
@@ -436,7 +437,7 @@ namespace betareborn
                 options.WindowBorder = _resizable ? WindowBorder.Resizable : WindowBorder.Fixed;
                 options.VSync = _swapInterval > 0;
                 options.IsVisible = true;
-                options.Samples = 4;
+                options.Samples = MSAA_Samples;
                 options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Compatability, ContextFlags.Default, new APIVersion(3, 3));
 
                 if (_x >= 0 && _y >= 0)

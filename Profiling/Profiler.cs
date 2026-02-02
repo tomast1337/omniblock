@@ -6,7 +6,7 @@ namespace betareborn.Profiling
     public static class Profiler
     {
         public const int HistoryLength = 300;
-        public static bool Enabled = true;
+        public static bool Enabled = false;
 
         private class ProfilerData
         {

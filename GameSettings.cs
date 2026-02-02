@@ -11,6 +11,7 @@ namespace betareborn
         private static readonly string[] GUISCALES = ["options.guiScale.auto", "options.guiScale.small", "options.guiScale.normal", "options.guiScale.large"];
         private static readonly string[] LIMIT_FRAMERATES = ["performance.max", "performance.balanced", "performance.powersaver"];
         private static readonly string[] ANISO_LEVELS = ["options.off", "2x", "4x", "8x", "16x"];
+        private static readonly string[] MSAA_LEVELS = ["options.off", "2x", "4x", "8x"];
         public static float MaxAnisotropy = 1.0f;
         public float musicVolume = 1.0F;
         public float soundVolume = 1.0F;
@@ -46,8 +47,10 @@ namespace betareborn
         public float field_22271_G = 1.0F;
         public int guiScale = 1;
         public int anisotropicLevel = 0;
+        public int msaaLevel = 0;
+        public int INITIAL_MSAA = 0;
         public bool useMipmaps = true;
-        public bool debugMode = true;
+        public bool debugMode = false;
 
         public GameSettings(Minecraft var1, java.io.File var2)
         {
@@ -55,6 +58,7 @@ namespace betareborn
             mc = var1;
             optionsFile = new java.io.File(var2, "options.txt");
             loadOptions();
+            INITIAL_MSAA = msaaLevel;
         }
 
         public GameSettings()
@@ -155,6 +159,11 @@ namespace betareborn
                 }
             }
 
+            if (var1 == EnumOptions.MSAA)
+            {
+                msaaLevel = (msaaLevel + var2) % 4;
+            }
+
             if (var1 == EnumOptions.DEBUG_MODE)
             {
                 debugMode = !debugMode;
@@ -199,6 +208,15 @@ namespace betareborn
             {
                 bool var4 = getOptionOrdinalValue(var1);
                 return var4 ? var3 + var2.translateKey("options.on") : var3 + var2.translateKey("options.off");
+            }
+            else if (var1 == EnumOptions.MSAA)
+            {
+                string label = var3 + (msaaLevel == 0 ? var2.translateKey("options.off") : MSAA_LEVELS[msaaLevel]);
+                if (msaaLevel != INITIAL_MSAA)
+                {
+                    label += " (Reload required)";
+                }
+                return label;
             }
             else
             {
@@ -289,6 +307,11 @@ namespace betareborn
                         {
                             anisotropicLevel = Integer.parseInt(var3[1]);
                         }
+                        if (var3[0].Equals("msaaLevel"))
+                        {
+                            msaaLevel = Integer.parseInt(var3[1]);
+                            if (msaaLevel > 3) msaaLevel = 3;
+                        }
 
                         if (var3[0].Equals("useMipmaps"))
                         {
@@ -344,6 +367,7 @@ namespace betareborn
                 var1.println("skin:" + skin);
                 var1.println("lastServer:" + lastServer);
                 var1.println("anisotropicLevel:" + anisotropicLevel);
+                var1.println("msaaLevel:" + msaaLevel);
                 var1.println("useMipmaps:" + useMipmaps);
                 var1.println("debugMode:" + debugMode);
 
