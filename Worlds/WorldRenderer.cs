@@ -98,7 +98,7 @@ namespace betareborn.Worlds
             return 0;
         }
 
-        public unsafe void Render(ICamera camera, Vector3D<double> viewPos, int renderDistance, long ticks, float partialTicks)
+        public unsafe void Render(ICamera camera, Vector3D<double> viewPos, int renderDistance, long ticks, float partialTicks, bool envAnim)
         {
             lastRenderDistance = CalculateRealRenderDistance(renderDistance);
             lastViewPos = viewPos;
@@ -113,6 +113,7 @@ namespace betareborn.Worlds
 
             int wrappedTicks = (int)(ticks % 24000);
             chunkShader.SetUniform1("time", (wrappedTicks + partialTicks) / 20.0f);
+            chunkShader.SetUniform1("envAnim", envAnim ? 1 : 0);
 
             var modelView = new Matrix4X4<float>();
             var projection = new Matrix4X4<float>();

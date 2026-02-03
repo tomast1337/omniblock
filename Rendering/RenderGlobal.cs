@@ -263,7 +263,7 @@ namespace betareborn.Rendering
 
             if (pass == 0)
             {
-                worldRenderer.Render(cam, new(var33, var7, var9), renderDistance, worldObj.getWorldTime(), (float)var3);
+                worldRenderer.Render(cam, new(var33, var7, var9), renderDistance, worldObj.getWorldTime(), (float)var3, mc.gameSettings.environmentAnimation);
             }
             else
             {

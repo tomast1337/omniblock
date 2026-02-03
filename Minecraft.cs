@@ -125,19 +125,6 @@ namespace betareborn
 
         public unsafe void startGame()
         {
-            //if (mcCanvas != null)
-            //{
-            //    Graphics var1 = mcCanvas.getGraphics();
-            //    if (var1 != null)
-            //    {
-            //        var1.setColor(Color.BLACK);
-            //        var1.fillRect(0, 0, displayWidth, displayHeight);
-            //        var1.dispose();
-            //    }
-
-            //    Display.setParent(mcCanvas);
-            //}
-            /*else*/
             if (fullscreen)
             {
                 Display.setFullscreen(true);
@@ -163,7 +150,7 @@ namespace betareborn
             mcDataDir = getMinecraftDir();
             saveLoader = new SaveConverterMcRegion(new java.io.File(mcDataDir, "saves"));
             gameSettings = new GameSettings(this, mcDataDir);
-            Profiling.Profiler.Enabled = gameSettings.debugMode;
+            Profiler.Enabled = gameSettings.debugMode;
 
             try
             {
@@ -174,7 +161,6 @@ namespace betareborn
             }
             catch (System.Exception var6)
             {
-                //var6.printStackTrace();
                 Console.WriteLine(var6);
             }
             texturePackList = new TexturePackList(this, mcDataDir);

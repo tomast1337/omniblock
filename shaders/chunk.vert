@@ -13,6 +13,7 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec2 chunkPos;
 uniform float time;
+uniform bool envAnim;
 
 const float POSITION_SCALE_INV = 32.0 / 32767.0;
 
@@ -80,17 +81,20 @@ void main()
     
     uv += bias;
 
-    int textureIndex = atlasIndexFromUV(uv);
+    if (envAnim)
+    {
+        int textureIndex = atlasIndexFromUV(uv);
     
-    if (textureIndex == 12 || textureIndex == 13 || textureIndex == 39 || textureIndex == 52 || textureIndex == 55 || textureIndex == 56 || textureIndex == 132)
-    {
-        applyWind(position);
-    }
-    else if (textureIndex == 205)
-    {
-        vec3 worldPos = position + vec3(chunkPos.x, 0.0, chunkPos.y);
-        applyWaterWaves(worldPos);
-        position = worldPos - vec3(chunkPos.x, 0.0, chunkPos.y);
+        if (textureIndex == 12 || textureIndex == 13 || textureIndex == 39 || textureIndex == 52 || textureIndex == 55 || textureIndex == 56 || textureIndex == 132)
+        {
+            applyWind(position);
+        }
+        else if (textureIndex == 205)
+        {
+            vec3 worldPos = position + vec3(chunkPos.x, 0.0, chunkPos.y);
+            applyWaterWaves(worldPos);
+            position = worldPos - vec3(chunkPos.x, 0.0, chunkPos.y);
+        }
     }
 
     vec4 color = inColor;

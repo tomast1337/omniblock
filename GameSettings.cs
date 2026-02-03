@@ -51,6 +51,7 @@ namespace betareborn
         public int INITIAL_MSAA = 0;
         public bool useMipmaps = true;
         public bool debugMode = false;
+        public bool environmentAnimation = true;
 
         public GameSettings(Minecraft var1, java.io.File var2)
         {
@@ -170,6 +171,11 @@ namespace betareborn
                 Profiling.Profiler.Enabled = debugMode;
             }
 
+            if (var1 == EnumOptions.ENVIRONMENT_ANIMATION)
+            {
+                environmentAnimation = !environmentAnimation;
+            }
+
             saveOptions();
         }
 
@@ -190,6 +196,8 @@ namespace betareborn
                     return useMipmaps;
                 case 4:
                     return debugMode;
+                case 5:
+                    return environmentAnimation;
                 default:
                     return false;
             }
@@ -323,6 +331,11 @@ namespace betareborn
                             debugMode = var3[1].Equals("true");
                         }
 
+                        if (var3[0].Equals("envAnimation"))
+                        {
+                            environmentAnimation = var3[1].Equals("true");
+                        }
+
                         for (int var4 = 0; var4 < keyBindings.Length; ++var4)
                         {
                             if (var3[0].Equals("key_" + keyBindings[var4].keyDescription))
@@ -370,6 +383,7 @@ namespace betareborn
                 var1.println("msaaLevel:" + msaaLevel);
                 var1.println("useMipmaps:" + useMipmaps);
                 var1.println("debugMode:" + debugMode);
+                var1.println("envAnimation:" + environmentAnimation);
 
                 for (int var2 = 0; var2 < keyBindings.Length; ++var2)
                 {

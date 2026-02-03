@@ -39,6 +39,14 @@ namespace betareborn
             catch (NoSuchFieldError)
             {
             }
+
+            try
+            {
+                enumOptionsMappingHelperArray[EnumOptions.ENVIRONMENT_ANIMATION.ordinal()] = 5;
+            }
+            catch (NoSuchFieldError)
+            {
+            }
         }
     }
 
