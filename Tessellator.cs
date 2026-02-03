@@ -34,15 +34,20 @@ namespace betareborn
     public static class ChunkVertexHelper
     {
         private const float POSITION_SCALE = 32767f / 32f;
-        private const float POSITION_SCALE_INV = 32f / 32767f;
 
-        private const float UV_SCALE = 65535f;
+        private const float UV_SCALE = 32767f;
 
         public static ChunkVertex Create(
             int color,
-            float x, float y, float z,
-            float u, float v,
-            byte skyLight, byte blockLight)
+            float x,
+            float y,
+            float z,
+            float u,
+            float v,
+            float centroidU,
+            float centroidV,
+            byte skyLight,
+            byte blockLight)
         {
             return new ChunkVertex
             {
@@ -50,31 +55,34 @@ namespace betareborn
                 X = FloatToShortPosition(x),
                 Y = FloatToShortPosition(y),
                 Z = FloatToShortPosition(z),
-                U = FloatToShortUV(u),
-                V = FloatToShortUV(v),
+                U = FloatToShortUVWithInset(u, centroidU),
+                V = FloatToShortUVWithInset(v, centroidV),
                 Light = PackLight(skyLight, blockLight),
                 Padding = 0
             };
         }
 
-        public static short FloatToShortPosition(float position)
+        private static short FloatToShortUVWithInset(float uv, float centroid)
         {
-            return (short)(position * POSITION_SCALE);
+            int bias = (uv < centroid) ? 1 : -1;
+            int quantized = (int)System.Math.Round(uv * UV_SCALE) + bias;
+
+            return (short)((quantized & 0x7FFF) | (Sign(bias) << 15));
         }
 
-        public static float ShortToFloatPosition(short position)
+        private static int Sign(int x)
         {
-            return position * POSITION_SCALE_INV;
+            return (x < 0) ? 1 : 0;
+        }
+
+        public static short FloatToShortPosition(float position)
+        {
+            return (short)System.Math.Round(position * POSITION_SCALE);
         }
 
         public static short FloatToShortUV(float uv)
         {
             return (short)(uv * UV_SCALE);
-        }
-
-        public static float ShortToFloatUV(short uv)
-        {
-            return (ushort)uv / UV_SCALE;
         }
 
         public static byte PackLight(byte skyLight, byte blockLight)
@@ -84,15 +92,12 @@ namespace betareborn
 
             return (byte)((skyLight << 4) | blockLight);
         }
-        public static void UnpackLight(byte light, out byte skyLight, out byte blockLight)
-        {
-            skyLight = (byte)((light >> 4) & 0x0F);
-            blockLight = (byte)(light & 0x0F);
-        }
+
         public static byte GetSkyLight(byte light)
         {
             return (byte)((light >> 4) & 0x0F);
         }
+
         public static byte GetBlockLight(byte light)
         {
             return (byte)(light & 0x0F);
@@ -135,7 +140,9 @@ namespace betareborn
         private int vboIndex = 0;
         private readonly int vboCount = 10;
         private readonly int bufferSize;
-
+        private float uvCentroidU = 0f;
+        private float uvCentroidV = 0f;
+        private int uvCentroidCount = 0;
         private bool isCaptureMode = false;
         private List<Vertex> capturedVertices = null;
         private List<ChunkVertex> capturedChunkVertices = null;
@@ -160,7 +167,9 @@ namespace betareborn
         public void startCapture(TesselatorCaptureVertexFormat format)
         {
             if (format == TesselatorCaptureVertexFormat.Chunk && isDrawing)
+            {
                 throw new IllegalStateException("Chunk vertex format is only supported in capture mode!");
+            }
 
             vertexFormat = format;
             isCaptureMode = true;
@@ -170,17 +179,19 @@ namespace betareborn
 
             if (format == TesselatorCaptureVertexFormat.Default)
             {
-                capturedVertices = new List<Vertex>();
+                capturedVertices = [];
             }
             else
             {
-                capturedChunkVertices = new List<ChunkVertex>();
+                capturedChunkVertices = [];
             }
 
             scratchBuffer = new int[32];
             scratchBufferIndex = 0;
+            uvCentroidU = 0f;
+            uvCentroidV = 0f;
+            uvCentroidCount = 0;
         }
-
 
         public List<Vertex> endCaptureVertices()
         {
@@ -465,6 +476,17 @@ namespace betareborn
 
                 if (drawMode == 7 && convertQuadsToTriangles && scratchBufferIndex == 32)
                 {
+                    uvCentroidU = 0f;
+                    uvCentroidV = 0f;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        int idx = i * 8;
+                        uvCentroidU += Float.intBitsToFloat(scratchBuffer[idx + 3]);
+                        uvCentroidV += Float.intBitsToFloat(scratchBuffer[idx + 4]);
+                    }
+                    uvCentroidU *= 0.25f;
+                    uvCentroidV *= 0.25f;
+
                     EmitVertexFromScratch(0);
                     EmitVertexFromScratch(8);
                     EmitVertexFromScratch(16);
@@ -546,12 +568,15 @@ namespace betareborn
                 int col = hasColor ? scratchBuffer[baseIndex + 5] : unchecked((int)0xFFFFFFFF);
                 byte light = hasLight ? (byte)scratchBuffer[baseIndex + 7] : (byte)0;
 
+                float u = Float.intBitsToFloat(scratchBuffer[baseIndex + 3]);
+                float v = Float.intBitsToFloat(scratchBuffer[baseIndex + 4]);
+
                 capturedChunkVertices.Add(
                     ChunkVertexHelper.Create(
                         col,
                         x, y, z,
-                        Float.intBitsToFloat(scratchBuffer[baseIndex + 3]),
-                        Float.intBitsToFloat(scratchBuffer[baseIndex + 4]),
+                        u, v,
+                        uvCentroidU, uvCentroidV,
                         ChunkVertexHelper.GetSkyLight(light),
                         ChunkVertexHelper.GetBlockLight(light)
                     )

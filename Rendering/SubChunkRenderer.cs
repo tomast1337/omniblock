@@ -13,7 +13,7 @@ namespace betareborn.Rendering
         public Vector3D<int> ClipPosition { get; }
         public AxisAlignedBB BoundingBox { get; }
 
-        private readonly VertexBuffer<Vertex>[] vertexBuffers = new VertexBuffer<Vertex>[2];
+        private readonly VertexBuffer<ChunkVertex>[] vertexBuffers = new VertexBuffer<ChunkVertex>[2];
         private readonly VertexArray[] vertexArrays = new VertexArray[2];
         private readonly int[] vertexCounts = new int[2];
         private bool disposed = false;
@@ -42,25 +42,25 @@ namespace betareborn.Rendering
             vertexCounts[1] = 0;
         }
 
-        public void UploadMeshData(List<Vertex>? solidMesh, List<Vertex>? translucentMesh)
+        public void UploadMeshData(List<ChunkVertex>? solidMesh, List<ChunkVertex>? translucentMesh)
         {
             vertexCounts[0] = 0;
             vertexCounts[1] = 0;
 
             if (solidMesh != null && solidMesh.Count > 0)
             {
-                Span<Vertex> solidMeshData = CollectionsMarshal.AsSpan(solidMesh);
+                Span<ChunkVertex> solidMeshData = CollectionsMarshal.AsSpan(solidMesh);
                 UploadMesh(vertexBuffers, 0, solidMeshData);
             }
 
             if (translucentMesh != null && translucentMesh.Count > 0)
             {
-                Span<Vertex> translucentMeshData = CollectionsMarshal.AsSpan(translucentMesh);
+                Span<ChunkVertex> translucentMeshData = CollectionsMarshal.AsSpan(translucentMesh);
                 UploadMesh(vertexBuffers, 1, translucentMeshData);
             }
         }
 
-        private unsafe void UploadMesh(VertexBuffer<Vertex>[] buffers, int bufferIdx, Span<Vertex> meshData)
+        private unsafe void UploadMesh(VertexBuffer<ChunkVertex>[] buffers, int bufferIdx, Span<ChunkVertex> meshData)
         {
             if (buffers[bufferIdx] == null)
             {
@@ -79,12 +79,45 @@ namespace betareborn.Rendering
                 vertexArrays[bufferIdx].Bind();
                 buffers[bufferIdx].Bind();
 
+                const uint stride = 16;
+
                 GLManager.GL.EnableVertexAttribArray(0);
-                GLManager.GL.VertexAttribPointer(0, 3, GLEnum.Float, false, 32, (void*)0);
+                GLManager.GL.VertexAttribPointer(
+                    0,
+                    3,
+                    GLEnum.Short,
+                    false,
+                    stride,
+                    (void*)4
+                );
+
                 GLManager.GL.EnableVertexAttribArray(1);
-                GLManager.GL.VertexAttribPointer(1, 2, GLEnum.Float, false, 32, (void*)12);
+                GLManager.GL.VertexAttribIPointer(
+                    1,
+                    2,
+                    GLEnum.UnsignedShort,
+                    stride,
+                    (void*)10
+                );
+
                 GLManager.GL.EnableVertexAttribArray(2);
-                GLManager.GL.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, 32, (void*)20);
+                GLManager.GL.VertexAttribPointer(
+                    2,
+                    4,
+                    GLEnum.UnsignedByte,
+                    true,
+                    stride,
+                    (void*)0
+                );
+
+                GLManager.GL.EnableVertexAttribArray(3);
+                GLManager.GL.VertexAttribIPointer(
+                    3,
+                    1,
+                    GLEnum.UnsignedByte,
+                    stride,
+                    (void*)14
+                );
 
                 VertexArray.Unbind();
             }

@@ -10,8 +10,8 @@ namespace betareborn.Chunks
     {
         public class MeshBuildResult
         {
-            public List<Vertex>? Solid;
-            public List<Vertex>? Translucent;
+            public List<ChunkVertex>? Solid;
+            public List<ChunkVertex>? Translucent;
             public bool IsLit;
             public Vector3D<int> Pos;
             public long Version;
@@ -144,7 +144,7 @@ namespace betareborn.Chunks
             {
                 bool hasNextPass = false;
 
-                tess.startCapture(TesselatorCaptureVertexFormat.Default);
+                tess.startCapture(TesselatorCaptureVertexFormat.Chunk);
                 tess.startDrawingQuads();
                 tess.setTranslationD(-pos.X, -pos.Y, -pos.Z);
 
@@ -175,7 +175,7 @@ namespace betareborn.Chunks
                 tess.draw();
                 tess.setTranslationD(0, 0, 0);
 
-                var verts = tess.endCaptureVertices();
+                var verts = tess.endCaptureChunkVertices();
                 if (verts.Count > 0)
                 {
                     if (pass == 0)
