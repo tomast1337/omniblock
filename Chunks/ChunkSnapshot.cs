@@ -6,8 +6,8 @@ namespace betareborn.Chunks
     {
         private readonly byte[] blocks;
         private readonly NibbleArray data;
-        private readonly NibbleArray skylightMap;
-        private readonly NibbleArray blocklightMap;
+        public readonly NibbleArray skylightMap;
+        public readonly NibbleArray blocklightMap;
         private bool disposed = false;
         private bool isLit = false;
 

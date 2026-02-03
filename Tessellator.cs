@@ -8,14 +8,101 @@ namespace betareborn
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 32)]
     public struct Vertex(float x, float y, float z, float u, float v, int color, int normal)
     {
-        public float X = x;
-        public float Y = y;
-        public float Z = z;
-        public float U = u;
-        public float V = v;
-        public int Color = color;
-        public int Normal = normal;
-        public int Padding;
+        public float X = x; // 4 bytes
+        public float Y = y; // 4 bytes + 4 bytes = 8 bytes
+        public float Z = z; // 4 bytes + 8 bytes = 12 bytes
+        public float U = u; // 4 bytes + 12 bytes = 16 bytes
+        public float V = v; // 4 bytes + 16 bytes = 20 bytes
+        public int Color = color; // 4 bytes + 20 bytes = 24 bytes
+        public int Normal = normal; // 4 bytes + 20 bytes = 28 bytes
+        public int Padding; // 32 bytes total
+    }
+
+    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    public struct ChunkVertex
+    {
+        public int Color; // 4 bytes
+        public short X; // 2 bytes + 4 bytes = 6 bytes
+        public short Y; // 2 bytes + 6 bytes = 8 bytes
+        public short Z; // 2 bytes + 8 bytes = 10 bytes
+        public short U; // 2 bytes + 10 bytes = 12 bytes
+        public short V; // 2 bytes + 12 bytes = 14 bytes
+        public byte Light; // 1 byte + 14 bytes = 15 bytes
+        public byte Padding; // 16 bytes total
+    }
+
+    public static class ChunkVertexHelper
+    {
+        private const float POSITION_SCALE = 32767f / 32f;
+        private const float POSITION_SCALE_INV = 32f / 32767f;
+
+        private const float UV_SCALE = 65535f;
+
+        public static ChunkVertex Create(
+            int color,
+            float x, float y, float z,
+            float u, float v,
+            byte skyLight, byte blockLight)
+        {
+            return new ChunkVertex
+            {
+                Color = color,
+                X = FloatToShortPosition(x),
+                Y = FloatToShortPosition(y),
+                Z = FloatToShortPosition(z),
+                U = FloatToShortUV(u),
+                V = FloatToShortUV(v),
+                Light = PackLight(skyLight, blockLight),
+                Padding = 0
+            };
+        }
+
+        public static short FloatToShortPosition(float position)
+        {
+            return (short)(position * POSITION_SCALE);
+        }
+
+        public static float ShortToFloatPosition(short position)
+        {
+            return position * POSITION_SCALE_INV;
+        }
+
+        public static short FloatToShortUV(float uv)
+        {
+            return (short)(uv * UV_SCALE);
+        }
+
+        public static float ShortToFloatUV(short uv)
+        {
+            return (ushort)uv / UV_SCALE;
+        }
+
+        public static byte PackLight(byte skyLight, byte blockLight)
+        {
+            skyLight = (byte)(skyLight & 0x0F);
+            blockLight = (byte)(blockLight & 0x0F);
+
+            return (byte)((skyLight << 4) | blockLight);
+        }
+        public static void UnpackLight(byte light, out byte skyLight, out byte blockLight)
+        {
+            skyLight = (byte)((light >> 4) & 0x0F);
+            blockLight = (byte)(light & 0x0F);
+        }
+        public static byte GetSkyLight(byte light)
+        {
+            return (byte)((light >> 4) & 0x0F);
+        }
+        public static byte GetBlockLight(byte light)
+        {
+            return (byte)(light & 0x0F);
+        }
+    }
+
+    public enum TesselatorCaptureVertexFormat
+    {
+        Default,
+        Chunk
     }
 
     public class Tessellator : java.lang.Object
@@ -31,6 +118,9 @@ namespace betareborn
         private bool hasColor = false;
         private bool hasTexture = false;
         private bool hasNormals = false;
+        private byte skyLight = 0;
+        private byte blockLight = 0;
+        private bool hasLight = false;
         private int rawBufferIndex = 0;
         private int addedVertices = 0;
         private bool isColorDisabled = false;
@@ -48,8 +138,10 @@ namespace betareborn
 
         private bool isCaptureMode = false;
         private List<Vertex> capturedVertices = null;
+        private List<ChunkVertex> capturedChunkVertices = null;
         private int[] scratchBuffer = null;
         private int scratchBufferIndex = 0;
+        private TesselatorCaptureVertexFormat vertexFormat;
 
         private Tessellator(int var1)
         {
@@ -65,27 +157,63 @@ namespace betareborn
         {
         }
 
-        public void startCapture()
+        public void startCapture(TesselatorCaptureVertexFormat format)
         {
+            if (format == TesselatorCaptureVertexFormat.Chunk && isDrawing)
+                throw new IllegalStateException("Chunk vertex format is only supported in capture mode!");
+
+            vertexFormat = format;
             isCaptureMode = true;
-            capturedVertices = [];
+
+            capturedVertices = null;
+            capturedChunkVertices = null;
+
+            if (format == TesselatorCaptureVertexFormat.Default)
+            {
+                capturedVertices = new List<Vertex>();
+            }
+            else
+            {
+                capturedChunkVertices = new List<ChunkVertex>();
+            }
+
             scratchBuffer = new int[32];
             scratchBufferIndex = 0;
         }
 
-        public List<Vertex> endCapture()
+
+        public List<Vertex> endCaptureVertices()
         {
-            if (!isCaptureMode)
+            if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Default)
             {
-                throw new IllegalStateException("Not in capture mode!");
+                throw new IllegalStateException("Not capturing default vertices!");
             }
 
             isCaptureMode = false;
-            List<Vertex> result = capturedVertices;
+            var result = capturedVertices;
+            CleanupCapture();
+            return result;
+        }
+
+        public List<ChunkVertex> endCaptureChunkVertices()
+        {
+            if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Chunk)
+            {
+                throw new IllegalStateException("Not capturing chunk vertices!");
+            }
+
+            isCaptureMode = false;
+            var result = capturedChunkVertices;
+            CleanupCapture();
+            return result;
+        }
+
+        private void CleanupCapture()
+        {
             capturedVertices = null;
+            capturedChunkVertices = null;
             scratchBuffer = null;
             scratchBufferIndex = 0;
-            return result;
         }
 
         public void begin()
@@ -312,12 +440,26 @@ namespace betareborn
                     scratchBuffer[scratchBufferIndex + 3] = Float.floatToRawIntBits((float)textureU);
                     scratchBuffer[scratchBufferIndex + 4] = Float.floatToRawIntBits((float)textureV);
                 }
+                else if (vertexFormat == TesselatorCaptureVertexFormat.Chunk)
+                {
+                    throw new IllegalStateException("ChunkVertex requires texture coordinates!");
+                }
 
                 if (hasColor)
+                {
                     scratchBuffer[scratchBufferIndex + 5] = color;
+                }
 
                 if (hasNormals)
+                {
                     scratchBuffer[scratchBufferIndex + 6] = normal;
+                }
+
+                if (hasLight)
+                {
+                    scratchBuffer[scratchBufferIndex + 7] =
+                        ChunkVertexHelper.PackLight(skyLight, blockLight);
+                }
 
                 scratchBufferIndex += 8;
 
@@ -398,12 +540,32 @@ namespace betareborn
             float x = Float.intBitsToFloat(scratchBuffer[baseIndex + 0]);
             float y = Float.intBitsToFloat(scratchBuffer[baseIndex + 1]);
             float z = Float.intBitsToFloat(scratchBuffer[baseIndex + 2]);
-            float u = hasTexture ? Float.intBitsToFloat(scratchBuffer[baseIndex + 3]) : 0f;
-            float v = hasTexture ? Float.intBitsToFloat(scratchBuffer[baseIndex + 4]) : 0f;
-            int col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
-            int norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
 
-            capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm));
+            if (vertexFormat == TesselatorCaptureVertexFormat.Chunk)
+            {
+                int col = hasColor ? scratchBuffer[baseIndex + 5] : unchecked((int)0xFFFFFFFF);
+                byte light = hasLight ? (byte)scratchBuffer[baseIndex + 7] : (byte)0;
+
+                capturedChunkVertices.Add(
+                    ChunkVertexHelper.Create(
+                        col,
+                        x, y, z,
+                        Float.intBitsToFloat(scratchBuffer[baseIndex + 3]),
+                        Float.intBitsToFloat(scratchBuffer[baseIndex + 4]),
+                        ChunkVertexHelper.GetSkyLight(light),
+                        ChunkVertexHelper.GetBlockLight(light)
+                    )
+                );
+            }
+            else
+            {
+                float u = hasTexture ? Float.intBitsToFloat(scratchBuffer[baseIndex + 3]) : 0f;
+                float v = hasTexture ? Float.intBitsToFloat(scratchBuffer[baseIndex + 4]) : 0f;
+                int col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
+                int norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
+
+                capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm));
+            }
         }
 
 
@@ -440,6 +602,25 @@ namespace betareborn
             byte var5 = (byte)((int)(var2 * 127.0F));
             byte var6 = (byte)((int)(var3 * 127.0F));
             normal = var4 | var5 << 8 | var6 << 16;
+        }
+
+        public void setSkyLight(byte value)
+        {
+            skyLight = (byte)(value & 0x0F);
+            hasLight = true;
+        }
+
+        public void setBlockLight(byte value)
+        {
+            blockLight = (byte)(value & 0x0F);
+            hasLight = true;
+        }
+
+        public void setLight(byte sky, byte block)
+        {
+            skyLight = (byte)(sky & 0x0F);
+            blockLight = (byte)(block & 0x0F);
+            hasLight = true;
         }
 
         public void setTranslationD(double var1, double var3, double var5)

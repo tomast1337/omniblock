@@ -144,7 +144,7 @@ namespace betareborn.Chunks
             {
                 bool hasNextPass = false;
 
-                tess.startCapture();
+                tess.startCapture(TesselatorCaptureVertexFormat.Default);
                 tess.startDrawingQuads();
                 tess.setTranslationD(-pos.X, -pos.Y, -pos.Z);
 
@@ -175,7 +175,7 @@ namespace betareborn.Chunks
                 tess.draw();
                 tess.setTranslationD(0, 0, 0);
 
-                var verts = tess.endCapture();
+                var verts = tess.endCaptureVertices();
                 if (verts.Count > 0)
                 {
                     if (pass == 0)
