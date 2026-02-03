@@ -148,6 +148,7 @@ namespace betareborn.Rendering
             modelViewMatrix = Matrix4X4.CreateTranslation(new Vector3D<float>((float)pos.X, (float)pos.Y, (float)pos.Z)) * modelViewMatrix;
 
             shader.SetUniformMatrix4("modelViewMatrix", modelViewMatrix);
+            shader.SetUniform2("chunkPos", Position.X, Position.Z);
 
             vertexArrays[pass].Bind();
 

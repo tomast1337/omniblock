@@ -55,6 +55,12 @@ namespace betareborn.Rendering
             GLManager.GL.Uniform1(location, value);
         }
 
+        public void SetUniform2(string name, float x, float y)
+        {
+            int location = GetUniformLocation(name);
+            GLManager.GL.Uniform2(location, x, y);
+        }
+
         public void SetUniformMatrix4(string name, Matrix4X4<float> matrix)
         {
             int location = GetUniformLocation(name);
@@ -85,7 +91,9 @@ namespace betareborn.Rendering
         private int GetUniformLocation(string name)
         {
             if (uniformLocations.TryGetValue(name, out int location))
+            {
                 return location;
+            }
 
             location = GLManager.GL.GetUniformLocation(id, name);
             uniformLocations[name] = location;
