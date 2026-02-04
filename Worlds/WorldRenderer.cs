@@ -492,8 +492,8 @@ namespace betareborn.Worlds
 
         private bool IsChunkInRenderDistance(Vector3D<int> chunkWorldPos, Vector3D<double> viewPos)
         {
-            int chunkX = chunkWorldPos.X >> 4;
-            int chunkZ = chunkWorldPos.Z >> 4;
+            int chunkX = chunkWorldPos.X >> SubChunkRenderer.BITSHIFT_AMOUNT;
+            int chunkZ = chunkWorldPos.Z >> SubChunkRenderer.BITSHIFT_AMOUNT;
 
             int viewChunkX = (int)Math.Floor(viewPos.X / SubChunkRenderer.SIZE);
             int viewChunkZ = (int)Math.Floor(viewPos.Z / SubChunkRenderer.SIZE);

@@ -1,12 +1,13 @@
 ﻿using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
-using System.Runtime.InteropServices;
 
 namespace betareborn.Rendering
 {
     public class SubChunkRenderer : IDisposable
     {
         public const int SIZE = 32;
+        public const int BITSHIFT_AMOUNT = 5;
+
         public Vector3D<int> Position { get; }
         public Vector3D<int> PositionPlus { get; }
         public Vector3D<int> PositionMinus { get; }

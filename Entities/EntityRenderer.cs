@@ -305,7 +305,6 @@ namespace betareborn.Entities
             farPlaneDistance = (float)(256 >> mc.gameSettings.renderDistance);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
-            float var3 = 0.07F;
 
             if (cameraZoom != 1.0D)
             {
