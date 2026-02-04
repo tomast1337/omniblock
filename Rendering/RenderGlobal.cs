@@ -173,6 +173,17 @@ namespace betareborn.Rendering
 
             tileEntities.Clear();
 
+            if (renderDistance == 0)
+            {
+                SubChunkRenderer.SIZE = 32;
+                SubChunkRenderer.BITSHIFT_AMOUNT = 5;
+            }
+            else
+            {
+                SubChunkRenderer.SIZE = 16;
+                SubChunkRenderer.BITSHIFT_AMOUNT = 4;
+            }
+
             renderEntitiesStartupCounter = 2;
         }
 
@@ -693,12 +704,12 @@ namespace betareborn.Rendering
 
         public void func_949_a(int var1, int var2, int var3, int var4, int var5, int var6)
         {
-            int var7 = MathHelper.bucketInt(var1, 32);
-            int var8 = MathHelper.bucketInt(var2, 32);
-            int var9 = MathHelper.bucketInt(var3, 32);
-            int var10 = MathHelper.bucketInt(var4, 32);
-            int var11 = MathHelper.bucketInt(var5, 32);
-            int var12 = MathHelper.bucketInt(var6, 32);
+            int var7 = MathHelper.bucketInt(var1, SubChunkRenderer.SIZE);
+            int var8 = MathHelper.bucketInt(var2, SubChunkRenderer.SIZE);
+            int var9 = MathHelper.bucketInt(var3, SubChunkRenderer.SIZE);
+            int var10 = MathHelper.bucketInt(var4, SubChunkRenderer.SIZE);
+            int var11 = MathHelper.bucketInt(var5, SubChunkRenderer.SIZE);
+            int var12 = MathHelper.bucketInt(var6, SubChunkRenderer.SIZE);
 
             for (int var13 = var7; var13 <= var10; ++var13)
             {

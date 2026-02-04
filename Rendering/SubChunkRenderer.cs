@@ -5,8 +5,8 @@ namespace betareborn.Rendering
 {
     public class SubChunkRenderer : IDisposable
     {
-        public const int SIZE = 32;
-        public const int BITSHIFT_AMOUNT = 5;
+        public static int SIZE = 16;
+        public static int BITSHIFT_AMOUNT = 4;
 
         public Vector3D<int> Position { get; }
         public Vector3D<int> PositionPlus { get; }
