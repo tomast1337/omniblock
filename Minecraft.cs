@@ -43,7 +43,7 @@ namespace betareborn
         public EffectRenderer effectRenderer;
         public Session session = null;
         public string minecraftUri;
-        public bool hideQuitButton = true;
+        public bool hideQuitButton = false;
         public volatile bool isGamePaused = false;
         public RenderEngine renderEngine;
         public FontRenderer fontRenderer;
