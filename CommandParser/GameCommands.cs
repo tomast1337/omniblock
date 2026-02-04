@@ -49,6 +49,7 @@ public class GameCommands {
 
     [MinecraftCommand("give")]
     public void GiveItem(CommandContext ctx, string itemName, int count = -1) {
+        itemName = itemName.ToLower();
         if (allItems.TryGetValue(itemName, out var itemId)) {
             int finalCount = count;
 
