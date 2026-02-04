@@ -15,7 +15,7 @@ uniform vec2 chunkPos;
 uniform float time;
 uniform bool envAnim;
 
-const float POSITION_SCALE_INV = 32.0 / 32767.0;
+const float POSITION_SCALE_INV = 64.0 / 32767.0;
 
 vec3 unpackPosition(vec3 packedPos)
 {

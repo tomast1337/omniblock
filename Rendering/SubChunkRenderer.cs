@@ -6,7 +6,7 @@ namespace betareborn.Rendering
 {
     public class SubChunkRenderer : IDisposable
     {
-        public const int SIZE = 16;
+        public const int SIZE = 32;
         public Vector3D<int> Position { get; }
         public Vector3D<int> PositionPlus { get; }
         public Vector3D<int> PositionMinus { get; }

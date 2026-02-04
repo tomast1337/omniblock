@@ -318,9 +318,9 @@ namespace betareborn.Worlds
             lastViewPos = viewPos;
 
             Vector3D<int> currentChunk = new(
-                (int)Math.Floor(viewPos.X / 16.0),
-                (int)Math.Floor(viewPos.Y / 16.0),
-                (int)Math.Floor(viewPos.Z / 16.0)
+                (int)Math.Floor(viewPos.X / SubChunkRenderer.SIZE),
+                (int)Math.Floor(viewPos.Y / SubChunkRenderer.SIZE),
+                (int)Math.Floor(viewPos.Z / SubChunkRenderer.SIZE)
             );
 
             int radiusSq = lastRenderDistance * lastRenderDistance;
@@ -342,7 +342,7 @@ namespace betareborn.Worlds
                     break;
                 }
 
-                var chunkPos = (currentChunk + offset) * 16;
+                var chunkPos = (currentChunk + offset) * SubChunkRenderer.SIZE;
 
                 if (chunkPos.Y < 0 || chunkPos.Y >= 128)
                 {
@@ -379,7 +379,7 @@ namespace betareborn.Worlds
 
                     if (distSq <= radiusSq)
                     {
-                        var chunkPos = (currentChunk + offset) * 16;
+                        var chunkPos = (currentChunk + offset) * SubChunkRenderer.SIZE;
                         if (!renderers.ContainsKey(chunkPos) && !chunkVersions.ContainsKey(chunkPos))
                         {
                             if (MarkDirty(chunkPos))
@@ -495,8 +495,8 @@ namespace betareborn.Worlds
             int chunkX = chunkWorldPos.X >> 4;
             int chunkZ = chunkWorldPos.Z >> 4;
 
-            int viewChunkX = (int)Math.Floor(viewPos.X / 16.0);
-            int viewChunkZ = (int)Math.Floor(viewPos.Z / 16.0);
+            int viewChunkX = (int)Math.Floor(viewPos.X / SubChunkRenderer.SIZE);
+            int viewChunkZ = (int)Math.Floor(viewPos.Z / SubChunkRenderer.SIZE);
 
             int dist = Vector2D.Distance(new Vector2D<int>(chunkX, chunkZ), new Vector2D<int>(viewChunkX, viewChunkZ));
             bool isIn = dist <= lastRenderDistance;

@@ -693,12 +693,12 @@ namespace betareborn.Rendering
 
         public void func_949_a(int var1, int var2, int var3, int var4, int var5, int var6)
         {
-            int var7 = MathHelper.bucketInt(var1, 16);
-            int var8 = MathHelper.bucketInt(var2, 16);
-            int var9 = MathHelper.bucketInt(var3, 16);
-            int var10 = MathHelper.bucketInt(var4, 16);
-            int var11 = MathHelper.bucketInt(var5, 16);
-            int var12 = MathHelper.bucketInt(var6, 16);
+            int var7 = MathHelper.bucketInt(var1, 32);
+            int var8 = MathHelper.bucketInt(var2, 32);
+            int var9 = MathHelper.bucketInt(var3, 32);
+            int var10 = MathHelper.bucketInt(var4, 32);
+            int var11 = MathHelper.bucketInt(var5, 32);
+            int var12 = MathHelper.bucketInt(var6, 32);
 
             for (int var13 = var7; var13 <= var10; ++var13)
             {
@@ -706,7 +706,7 @@ namespace betareborn.Rendering
                 {
                     for (int var17 = var9; var17 <= var12; ++var17)
                     {
-                        worldRenderer.MarkDirty(new Silk.NET.Maths.Vector3D<int>(var13, var15, var17) * 16, true);
+                        worldRenderer.MarkDirty(new Vector3D<int>(var13, var15, var17) * SubChunkRenderer.SIZE, true);
                     }
                 }
             }

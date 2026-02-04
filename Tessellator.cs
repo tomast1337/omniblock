@@ -33,7 +33,7 @@ namespace betareborn
 
     public static class ChunkVertexHelper
     {
-        private const float POSITION_SCALE = 32767f / 32f;
+        private const float POSITION_SCALE = 32767f / 64f;
 
         private const float UV_SCALE = 32767f;
 
