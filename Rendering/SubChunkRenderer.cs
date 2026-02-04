@@ -42,21 +42,31 @@ namespace betareborn.Rendering
             vertexCounts[1] = 0;
         }
 
-        public void UploadMeshData(List<ChunkVertex>? solidMesh, List<ChunkVertex>? translucentMesh)
+        public void UploadMeshData(PooledList<ChunkVertex>? solidMesh, PooledList<ChunkVertex>? translucentMesh)
         {
             vertexCounts[0] = 0;
             vertexCounts[1] = 0;
 
-            if (solidMesh != null && solidMesh.Count > 0)
+            if (solidMesh != null)
             {
-                Span<ChunkVertex> solidMeshData = CollectionsMarshal.AsSpan(solidMesh);
-                UploadMesh(vertexBuffers, 0, solidMeshData);
+                if (solidMesh.Count > 0)
+                {
+                    Span<ChunkVertex> solidMeshData = solidMesh.Span;
+                    UploadMesh(vertexBuffers, 0, solidMeshData);
+                }
+
+                solidMesh.Dispose();
             }
 
-            if (translucentMesh != null && translucentMesh.Count > 0)
+            if (translucentMesh != null)
             {
-                Span<ChunkVertex> translucentMeshData = CollectionsMarshal.AsSpan(translucentMesh);
-                UploadMesh(vertexBuffers, 1, translucentMeshData);
+                if (translucentMesh.Count > 0)
+                {
+                    Span<ChunkVertex> translucentMeshData = translucentMesh.Span;
+                    UploadMesh(vertexBuffers, 1, translucentMeshData);
+                }
+
+                translucentMesh.Dispose();
             }
         }
 

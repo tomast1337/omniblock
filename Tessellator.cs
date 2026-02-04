@@ -142,10 +142,9 @@ namespace betareborn
         private readonly int bufferSize;
         private float uvCentroidU = 0f;
         private float uvCentroidV = 0f;
-        private int uvCentroidCount = 0;
         private bool isCaptureMode = false;
-        private List<Vertex> capturedVertices = null;
-        private List<ChunkVertex> capturedChunkVertices = null;
+        private PooledList<Vertex> capturedVertices = null;
+        private PooledList<ChunkVertex> capturedChunkVertices = null;
         private int[] scratchBuffer = null;
         private int scratchBufferIndex = 0;
         private TesselatorCaptureVertexFormat vertexFormat;
@@ -179,21 +178,20 @@ namespace betareborn
 
             if (format == TesselatorCaptureVertexFormat.Default)
             {
-                capturedVertices = [];
+                capturedVertices = new();
             }
             else
             {
-                capturedChunkVertices = [];
+                capturedChunkVertices = new();
             }
 
             scratchBuffer = new int[32];
             scratchBufferIndex = 0;
             uvCentroidU = 0f;
             uvCentroidV = 0f;
-            uvCentroidCount = 0;
         }
 
-        public List<Vertex> endCaptureVertices()
+        public PooledList<Vertex> endCaptureVertices()
         {
             if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Default)
             {
@@ -206,7 +204,7 @@ namespace betareborn
             return result;
         }
 
-        public List<ChunkVertex> endCaptureChunkVertices()
+        public PooledList<ChunkVertex> endCaptureChunkVertices()
         {
             if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Chunk)
             {

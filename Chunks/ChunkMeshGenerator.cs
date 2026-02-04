@@ -10,8 +10,8 @@ namespace betareborn.Chunks
     {
         public class MeshBuildResult
         {
-            public List<ChunkVertex>? Solid;
-            public List<ChunkVertex>? Translucent;
+            public PooledList<ChunkVertex>? Solid;
+            public PooledList<ChunkVertex>? Translucent;
             public bool IsLit;
             public Vector3D<int> Pos;
             public long Version;

@@ -1239,7 +1239,7 @@ namespace betareborn
                     theWorld.setAllowedMobSpawns(gameSettings.difficulty > 0, true);
                     var renderDistance = gameSettings.renderDistance switch
                     {
-                        0 => 16,
+                        0 => 32,
                         1 => 8,
                         2 => 4,
                         3 => 2,
