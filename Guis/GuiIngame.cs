@@ -435,6 +435,16 @@ namespace betareborn.Guis
 
         public void addChatMessage(String message)
         {
+            // Split on newline and treat each line as a separate chat message
+            String[] lines = message.Split("\n");
+
+            foreach (String line in lines) {
+                addWrappedChatMessage(line);
+            }
+        }
+
+        private void addWrappedChatMessage(String message)
+        {
             while (mc.fontRenderer.getStringWidth(message) > 320)
             {
                 int i;
@@ -442,7 +452,7 @@ namespace betareborn.Guis
                 {
                 }
 
-                addChatMessage(message.Substring(0, i));
+                chatMessageList.add(0, new ChatLine(message.Substring(0, i)));
                 message = message.Substring(i);
             }
 
@@ -452,7 +462,6 @@ namespace betareborn.Guis
             {
                 chatMessageList.remove(chatMessageList.size() - 1);
             }
-
         }
 
         public void setRecordPlayingMessage(String var1)
