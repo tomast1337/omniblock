@@ -163,17 +163,38 @@ public class GameCommands {
         ctx.Game.gameSettings.renderDistance = dist;
     }
 
-    [MinecraftCommand("help")]
-    public void Help(CommandContext ctx) {
-        string str = "Avaiable commands:\n";
-        foreach (var item in CommandService._commands) {
-            var attribute = item.Value.GetCustomAttribute<MinecraftCommandAttribute>();
-            if (attribute is null) {
-                continue;
+    [MinecraftCommand("help", description: "this command", usage: "/help <command>")]
+    public void Help(CommandContext ctx, String command = "") {
+        if (command == "") {
+            string str = "Avaiable commands:\n";
+            foreach (var item in CommandService._commands) {
+                var attribute = item.Value.GetCustomAttribute<MinecraftCommandAttribute>();
+                if (attribute is null) {
+                    continue;
+                }
+                if (attribute.Name == item.Key) {
+                    str += $"/{item.Key}" + (attribute.Description != "" ? $" - {attribute.Description}" : "") + "\n";
+                } else {
+                    str += $"/{item.Key} (alias of {attribute.Name})\n";
+                }
             }
-            str += $"/{item.Key}" + (attribute.Description != "" ? $" - {attribute.Description}" : "") + "\n";
+
+            ctx.Reply(str);
+            return;
+        } 
+        
+        if (!CommandService._commands.ContainsKey(command)) {
+            ctx.Reply($"Cannot find command `{command}`");
+            return;
         }
 
-        ctx.Reply(str);
-    }
+
+        var attr = CommandService._commands[command].GetCustomAttribute<MinecraftCommandAttribute>();
+        if (attr is null) {
+            ctx.Reply("Unknown error");
+            return;
+        }
+
+        ctx.Reply($"Usage:\n{attr.Usage}");
+    }   
 }

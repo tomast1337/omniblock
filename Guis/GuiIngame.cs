@@ -433,12 +433,8 @@ namespace betareborn.Guis
             chatMessageList.clear();
         }
 
-        public void addChatMessage(String message)
-        {
-            // Split on newline and treat each line as a separate chat message
-            String[] lines = message.Split("\n");
-
-            foreach (String line in lines) {
+        public void addChatMessage(String message) {
+            foreach (String line in message.Split("\n")) {
                 addWrappedChatMessage(line);
             }
         }
