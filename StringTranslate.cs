@@ -34,7 +34,7 @@ namespace betareborn
             string str = translateTable.getProperty(key, key);
             for (int i = 0; i < values.Length; i++)
             {
-                str = str.Replace($"%{i + 1}$s", values[i].ToString());
+                str = str.Replace($"%{i + 1}$s", values[i].ToString() ?? string.Empty);
             }
             return str;
         }
