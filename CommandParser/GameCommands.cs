@@ -47,7 +47,7 @@ public class GameCommands {
         ctx.Reply("Inventory cleared.");
     }
 
-    [MinecraftCommand("give", description:"gives items")]
+    [MinecraftCommand("give", description:"gives items", usage:"/give <item> <optional number>")]
     public void GiveItem(CommandContext ctx, string itemName, int count = -1) {
         itemName = itemName.ToLower();
         if (allItems.TryGetValue(itemName, out var itemId)) {
@@ -64,12 +64,12 @@ public class GameCommands {
     }
 
 
-    [MinecraftCommand("heal", description:"heals player")]
+    [MinecraftCommand("heal", description:"heals player", usage:"/heal <optional number>")]
     public void Heal(CommandContext ctx, int amount = 20) {
         ctx.Game.thePlayer.heal(amount);
     }
 
-    [MinecraftCommand("settime", "sets time")]
+    [MinecraftCommand("settime", aliases:"time", description:"sets time", usage:"/settime <sunrise|dawn|morning|noon|sunset|night|midnight>\n/settime <number>")]
     public void SetTime(CommandContext ctx, string timeValue) {
         long? timeToSet = timeValue.ToLower() switch {
             "sunrise" or "dawn" => 0,
@@ -90,12 +90,12 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("teleport", aliases: "tp", description:"teleports player")]
+    [MinecraftCommand("teleport", aliases: "tp", description:"teleports player", usage:"/teleport <x> <y> <z>")]
     public void Teleport(CommandContext ctx, float x, float y, float z) {
         ctx.Game.thePlayer.setPosition(x, y, z);
     }
 
-    [MinecraftCommand("summon", aliases: "spawn", description:"spawns mobs")]
+    [MinecraftCommand("summon", aliases: "spawn", description:"spawns mobs", usage:"/summon <entity name>")]
     public void Summon(CommandContext ctx, string name) {
         var p = ctx.Game.thePlayer;
         var ent = EntityList.createEntityAt(name, ctx.Game.theWorld, (float)p.posX, (float)p.posY, (float)p.posZ);
@@ -105,7 +105,7 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("weather", description:"sets weather")]
+    [MinecraftCommand("weather", description:"sets weather", usage:"/weather <clear|rain|storm>")]
     public void Weather(CommandContext ctx, string command) {
         command = command.ToLower();
         switch (command) {
@@ -129,7 +129,7 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("killall", description:"kills specifed mobs")]
+    [MinecraftCommand("killall", description:"kills specifed mobs", usage:"/killall <all|living|monster|animal|item|tnt>\n/killall <entiny name>")]
     public void KillAll(CommandContext ctx, string filter = "all") {
         var world = ctx.Game.theWorld;
         var entities = new List<Entity>(world.loadedEntityList);
@@ -158,7 +158,7 @@ public class GameCommands {
         ctx.Reply($"Killed {count} entities (filter: {filter}).");
     }
 
-    [MinecraftCommand("dis", description:"sets render distance")]
+    [MinecraftCommand("dis", description:"sets render distance", usage:"/dist <number>")]
     public void Distance(CommandContext ctx, int dist) {
         ctx.Game.gameSettings.renderDistance = dist;
     }
@@ -166,6 +166,7 @@ public class GameCommands {
     [MinecraftCommand("help", description: "this command", usage: "/help <command>")]
     public void Help(CommandContext ctx, String command = "") {
         if (command == "") {
+            // list commands
             string str = "Avaiable commands:\n";
             foreach (var item in CommandService._commands) {
                 var attribute = item.Value.GetCustomAttribute<MinecraftCommandAttribute>();
@@ -181,20 +182,25 @@ public class GameCommands {
 
             ctx.Reply(str);
             return;
-        } 
-        
-        if (!CommandService._commands.ContainsKey(command)) {
-            ctx.Reply($"Cannot find command `{command}`");
-            return;
-        }
+        } else {
+            // usage of specific command
+            if (!CommandService._commands.ContainsKey(command)) {
+                ctx.Reply($"Cannot find command `{command}`");
+                return;
+            }
+            var attribute = CommandService._commands[command].GetCustomAttribute<MinecraftCommandAttribute>();
+            if (attribute is null) {
+                ctx.Reply("Unknown error");
+                return;
+            }
 
+            string str = $"/{attribute.Name}" + (attribute.Description != "" ? $" - {attribute.Description}" : "") + "\n";
+            str += $"Usage:\n{attribute.Usage}";
+            if (attribute.Aliases.Length > 0) {
+                str += "\nAliases: " + String.Join(", ", attribute.Aliases);
+            }
 
-        var attr = CommandService._commands[command].GetCustomAttribute<MinecraftCommandAttribute>();
-        if (attr is null) {
-            ctx.Reply("Unknown error");
-            return;
-        }
-
-        ctx.Reply($"Usage:\n{attr.Usage}");
+            ctx.Reply(str);
+            } 
     }   
 }
