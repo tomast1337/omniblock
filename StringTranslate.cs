@@ -29,14 +29,14 @@ namespace betareborn
             return translateTable.getProperty(key, key);
         }
 
-        public string translateKeyFormat(string key, params object[] var2)
+        public string translateKeyFormat(string key, params object[] values)
         {
-            string var3 = translateTable.getProperty(key, key);
-            for (int i = 0; i < var2.Length; i++)
+            string str = translateTable.getProperty(key, key);
+            for (int i = 0; i < values.Length; i++)
             {
-                var3 = var3.Replace($"%{i + 1}$s", var2[i].ToString());
+                str = str.Replace($"%{i + 1}$s", values[i].ToString());
             }
-            return var3;
+            return str;
         }
 
         public string translateNamedKey(string key)
