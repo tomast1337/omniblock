@@ -4,10 +4,15 @@
     public class MinecraftCommandAttribute : Attribute {
         public string Name { get; }
         public string[] Aliases { get; }
+        public string Description { get; }
+        public string Usage { get; }
 
-        public MinecraftCommandAttribute(string name, params string[] aliases) {
+
+        public MinecraftCommandAttribute(string name,string description = "", string usage = "", params string[] aliases) {
             Name = name.ToLower();
             Aliases = aliases.Select(a => a.ToLower()).ToArray();
+            Description = description;
+            Usage = usage;
         }
     }
 

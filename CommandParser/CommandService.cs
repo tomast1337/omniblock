@@ -6,7 +6,7 @@ using betareborn;
 using betareborn.CommandParser;
 
 public static class CommandService {
-    private static readonly Dictionary<string, MethodInfo> _commands = new();
+    public static readonly Dictionary<string, MethodInfo> _commands = new();
 
     static CommandService() {
         RegisterCommands();

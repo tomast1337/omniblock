@@ -90,12 +90,12 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("teleport", "tp")]
+    [MinecraftCommand("teleport", aliases: "tp")]
     public void Teleport(CommandContext ctx, float x, float y, float z) {
         ctx.Game.thePlayer.setPosition(x, y, z);
     }
 
-    [MinecraftCommand("summon", "spawn")]
+    [MinecraftCommand("summon", aliases: "spawn")]
     public void Summon(CommandContext ctx, string name) {
         var p = ctx.Game.thePlayer;
         var ent = EntityList.createEntityAt(name, ctx.Game.theWorld, (float)p.posX, (float)p.posY, (float)p.posZ);
@@ -163,32 +163,17 @@ public class GameCommands {
         ctx.Game.gameSettings.renderDistance = dist;
     }
 
-
-    [MinecraftCommand("time")]
-    public void Time(CommandContext ctx, string timeArg) {
-        if (!TryParseTime(timeArg, out int time))
-        {
-            ctx.Reply("Invalid time specified.");
-            return;
+    [MinecraftCommand("help")]
+    public void Help(CommandContext ctx) {
+        string str = "Avaiable commands:\n";
+        foreach (var item in CommandService._commands) {
+            var attribute = item.Value.GetCustomAttribute<MinecraftCommandAttribute>();
+            if (attribute is null) {
+                continue;
+            }
+            str += $"/{item.Key}" + (attribute.Description != "" ? $" - {attribute.Description}" : "") + "\n";
         }
 
-        ctx.Game.theWorld.setWorldTime(time);
-        ctx.Reply($"Setting time to {time}!");
-    }
-
-    private static bool TryParseTime(string input, out int time) {
-        time = input.ToLowerInvariant() switch
-        {
-            "day" => 1000,
-            "noon" => 6000,
-            "night" => 13000,
-            "midnight" => 18000,
-            _ => -1
-        };
-
-        if (time >= 0)
-            return true;
-
-        return int.TryParse(input, out time);
+        ctx.Reply(str);
     }
 }
