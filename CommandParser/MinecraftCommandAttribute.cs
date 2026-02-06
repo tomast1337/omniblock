@@ -12,6 +12,9 @@
             Name = name.ToLower();
             Aliases = aliases.Select(a => a.ToLower()).ToArray();
             Description = description;
+            if (usage == "") {
+                usage = $"/{Name}";
+            }
             Usage = usage;
         }
     }

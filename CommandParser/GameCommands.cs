@@ -37,7 +37,7 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("clear")]
+    [MinecraftCommand("clear", description: "clears inventory")]
     public void ClearInventory(CommandContext ctx) {
         var inventory = ctx.Game.thePlayer.inventory.mainInventory;
         for (int i = 0; i < inventory.Length; i++) {
@@ -47,7 +47,7 @@ public class GameCommands {
         ctx.Reply("Inventory cleared.");
     }
 
-    [MinecraftCommand("give")]
+    [MinecraftCommand("give", description:"gives items")]
     public void GiveItem(CommandContext ctx, string itemName, int count = -1) {
         itemName = itemName.ToLower();
         if (allItems.TryGetValue(itemName, out var itemId)) {
@@ -64,12 +64,12 @@ public class GameCommands {
     }
 
 
-    [MinecraftCommand("heal")]
+    [MinecraftCommand("heal", description:"heals player")]
     public void Heal(CommandContext ctx, int amount = 20) {
         ctx.Game.thePlayer.heal(amount);
     }
 
-    [MinecraftCommand("settime")]
+    [MinecraftCommand("settime", "sets time")]
     public void SetTime(CommandContext ctx, string timeValue) {
         long? timeToSet = timeValue.ToLower() switch {
             "sunrise" or "dawn" => 0,
@@ -90,12 +90,12 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("teleport", aliases: "tp")]
+    [MinecraftCommand("teleport", aliases: "tp", description:"teleports player")]
     public void Teleport(CommandContext ctx, float x, float y, float z) {
         ctx.Game.thePlayer.setPosition(x, y, z);
     }
 
-    [MinecraftCommand("summon", aliases: "spawn")]
+    [MinecraftCommand("summon", aliases: "spawn", description:"spawns mobs")]
     public void Summon(CommandContext ctx, string name) {
         var p = ctx.Game.thePlayer;
         var ent = EntityList.createEntityAt(name, ctx.Game.theWorld, (float)p.posX, (float)p.posY, (float)p.posZ);
@@ -105,7 +105,7 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("weather")]
+    [MinecraftCommand("weather", description:"sets weather")]
     public void Weather(CommandContext ctx, string command) {
         command = command.ToLower();
         switch (command) {
@@ -129,7 +129,7 @@ public class GameCommands {
         }
     }
 
-    [MinecraftCommand("killall")]
+    [MinecraftCommand("killall", description:"kills specifed mobs")]
     public void KillAll(CommandContext ctx, string filter = "all") {
         var world = ctx.Game.theWorld;
         var entities = new List<Entity>(world.loadedEntityList);
@@ -158,7 +158,7 @@ public class GameCommands {
         ctx.Reply($"Killed {count} entities (filter: {filter}).");
     }
 
-    [MinecraftCommand("dis")]
+    [MinecraftCommand("dis", description:"sets render distance")]
     public void Distance(CommandContext ctx, int dist) {
         ctx.Game.gameSettings.renderDistance = dist;
     }
