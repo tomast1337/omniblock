@@ -90,7 +90,6 @@ public class GameCommands {
         }
     }
 
-    // Doesn't work for some reason
     [MinecraftCommand("teleport", "tp")]
     public void Teleport(CommandContext ctx, float x, float y, float z) {
         ctx.Game.thePlayer.setPosition(x, y, z);
@@ -162,5 +161,34 @@ public class GameCommands {
     [MinecraftCommand("dis")]
     public void Distance(CommandContext ctx, int dist) {
         ctx.Game.gameSettings.renderDistance = dist;
+    }
+
+
+    [MinecraftCommand("time")]
+    public void Time(CommandContext ctx, string timeArg) {
+        if (!TryParseTime(timeArg, out int time))
+        {
+            ctx.Reply("Invalid time specified.");
+            return;
+        }
+
+        ctx.Game.theWorld.setWorldTime(time);
+        ctx.Reply($"Setting time to {time}!");
+    }
+
+    private static bool TryParseTime(string input, out int time) {
+        time = input.ToLowerInvariant() switch
+        {
+            "day" => 1000,
+            "noon" => 6000,
+            "night" => 13000,
+            "midnight" => 18000,
+            _ => -1
+        };
+
+        if (time >= 0)
+            return true;
+
+        return int.TryParse(input, out time);
     }
 }

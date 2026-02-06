@@ -174,8 +174,9 @@ namespace betareborn.Entities
             return inventory.getTotalArmorValue();
         }
 
-        public virtual void sendChatMessage(string var1)
+        public virtual void sendChatMessage(string message)
         {
+            mc.ingameGUI.addChatMessage($"<{username}> {message}");
         }
 
         public override bool isSneaking()

@@ -20,6 +20,9 @@
             RawCommand = rawCommand;
         }
 
-        public void Reply(string message) => Console.WriteLine(message);
+        public void Reply(string message) {
+            Console.WriteLine(message);
+            Game.ingameGUI.addChatMessage(message);
+        }
     }
 }
