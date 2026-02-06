@@ -3,17 +3,18 @@ namespace betareborn.Stats
 
     public class StatStringFormatKeyInv : IStatStringFormat
     {
-        readonly Minecraft mc;
+        readonly Minecraft theGame;
+        private static readonly StringTranslate localizedName = StringTranslate.getInstance();
 
 
-        public StatStringFormatKeyInv(Minecraft var1)
+        public StatStringFormatKeyInv(Minecraft game)
         {
-            mc = var1;
+            theGame = game;
         }
 
-        public String formatString(String var1)
+        public String formatString(String key)
         {
-            return String.Format(var1, new Object[] { Keyboard.getKeyName(this.mc.gameSettings.keyBindInventory.keyCode) });
+            return localizedName.translateKeyFormat(key, Keyboard.getKeyName(theGame.gameSettings.keyBindInventory.keyCode));
         }
     }
 

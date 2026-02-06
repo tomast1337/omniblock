@@ -15,7 +15,7 @@ uniform int fogMode;
 
 void main() 
 {
-    vec4 texColor = texture2D(textureSampler, texCoord);
+    vec4 texColor = texture(textureSampler, texCoord);
     vec4 finalColor = texColor * vertexColor;
 
     if (finalColor.a < 0.001)

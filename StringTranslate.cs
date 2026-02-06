@@ -12,9 +12,9 @@ namespace betareborn
                 translateTable.load(new java.io.StringReader(AssetManager.Instance.getAsset("lang/en_US.lang").getTextContent()));
                 translateTable.load(new java.io.StringReader(AssetManager.Instance.getAsset("lang/stats_US.lang").getTextContent()));
             }
-            catch (java.io.IOException var2)
+            catch (java.io.IOException err)
             {
-                var2.printStackTrace();
+                err.printStackTrace();
             }
 
         }
@@ -24,20 +24,24 @@ namespace betareborn
             return instance;
         }
 
-        public string translateKey(string var1)
+        public string translateKey(string key)
         {
-            return translateTable.getProperty(var1, var1);
+            return translateTable.getProperty(key, key);
         }
 
-        public string translateKeyFormat(string var1, params object[] var2)
+        public string translateKeyFormat(string key, params object[] values)
         {
-            string var3 = translateTable.getProperty(var1, var1);
-            return string.Format(var3, var2);
+            string str = translateTable.getProperty(key, key);
+            for (int i = 0; i < values.Length; i++)
+            {
+                str = str.Replace($"%{i + 1}$s", values[i].ToString() ?? string.Empty);
+            }
+            return str;
         }
 
-        public string translateNamedKey(string var1)
+        public string translateNamedKey(string key)
         {
-            return translateTable.getProperty(var1 + ".name", "");
+            return translateTable.getProperty(key + ".name", "");
         }
     }
 }
