@@ -184,12 +184,12 @@ public class GameCommands {
             return;
         } else {
             // usage of specific command
-            if (!CommandService._commands.ContainsKey(command)) {
+            if (!CommandService._commands.TryGetValue(command, out MethodInfo? value)) {
                 ctx.Reply($"Cannot find command `{command}`");
                 return;
             }
-            var attribute = CommandService._commands[command].GetCustomAttribute<MinecraftCommandAttribute>();
-            if (attribute is null) {
+            var attribute = value.GetCustomAttribute<MinecraftCommandAttribute>();
+            if (value is null || attribute is null) {
                 ctx.Reply("Unknown error");
                 return;
             }
