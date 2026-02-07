@@ -15,9 +15,9 @@ namespace betareborn.Blocks
             setLightOpacity(255);
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
-            return AxisAlignedBB.getBoundingBoxFromPool((double)(var2 + 0), (double)(var3 + 0), (double)(var4 + 0), (double)(var2 + 1), (double)(var3 + 1), (double)(var4 + 1));
+            return Box.createCached((double)(var2 + 0), (double)(var3 + 0), (double)(var4 + 0), (double)(var2 + 1), (double)(var3 + 1), (double)(var4 + 1));
         }
 
         public override bool isOpaqueCube()

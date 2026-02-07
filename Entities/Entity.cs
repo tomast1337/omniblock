@@ -30,7 +30,7 @@ namespace betareborn.Entities
         public float rotationPitch;
         public float prevRotationYaw;
         public float prevRotationPitch;
-        public readonly AxisAlignedBB boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+        public readonly Box boundingBox = Box.create(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         public bool onGround = false;
         public bool isCollidedHorizontally;
         public bool isCollidedVertically;
@@ -147,7 +147,7 @@ namespace betareborn.Entities
             posZ = var5;
             float var7 = width / 2.0F;
             float var8 = height;
-            boundingBox.setBounds(var1 - (double)var7, var3 - (double)yOffset + (double)ySize, var5 - (double)var7, var1 + (double)var7, var3 - (double)yOffset + (double)ySize + (double)var8, var5 + (double)var7);
+            boundingBox.set(var1 - (double)var7, var3 - (double)yOffset + (double)ySize, var5 - (double)var7, var1 + (double)var7, var3 - (double)yOffset + (double)ySize + (double)var8, var5 + (double)var7);
         }
 
         public void func_346_d(float var1, float var2)
@@ -209,14 +209,14 @@ namespace betareborn.Entities
                     {
                         var4 = (rand.nextFloat() * 2.0F - 1.0F) * width;
                         var5 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                        worldObj.spawnParticle("bubble", posX + (double)var4, (double)(var2 + 1.0F), posZ + (double)var5, motionX, motionY - (double)(rand.nextFloat() * 0.2F), motionZ);
+                        worldObj.addParticle("bubble", posX + (double)var4, (double)(var2 + 1.0F), posZ + (double)var5, motionX, motionY - (double)(rand.nextFloat() * 0.2F), motionZ);
                     }
 
                     for (var3 = 0; (float)var3 < 1.0F + width * 20.0F; ++var3)
                     {
                         var4 = (rand.nextFloat() * 2.0F - 1.0F) * width;
                         var5 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                        worldObj.spawnParticle("splash", posX + (double)var4, (double)(var2 + 1.0F), posZ + (double)var5, motionX, motionY, motionZ);
+                        worldObj.addParticle("splash", posX + (double)var4, (double)(var2 + 1.0F), posZ + (double)var5, motionX, motionY, motionZ);
                     }
                 }
 
@@ -290,7 +290,7 @@ namespace betareborn.Entities
 
         public bool isOffsetPositionInLiquid(double var1, double var3, double var5)
         {
-            AxisAlignedBB var7 = boundingBox.getOffsetBoundingBox(var1, var3, var5);
+            Box var7 = boundingBox.translate(var1, var3, var5);
             var var8 = worldObj.getCollidingBoundingBoxes(this, var7);
             return var8.Count > 0 ? false : !worldObj.getIsAnyLiquid(var7);
         }
@@ -299,7 +299,7 @@ namespace betareborn.Entities
         {
             if (noClip)
             {
-                boundingBox.offset(var1, var3, var5);
+                boundingBox.translate(var1, var3, var5);
                 posX = (boundingBox.minX + boundingBox.maxX) / 2.0D;
                 posY = boundingBox.minY + (double)yOffset - (double)ySize;
                 posZ = (boundingBox.minZ + boundingBox.maxZ) / 2.0D;
@@ -323,12 +323,12 @@ namespace betareborn.Entities
                 double var11 = var1;
                 double var13 = var3;
                 double var15 = var5;
-                AxisAlignedBB var17 = boundingBox.copy();
+                Box var17 = boundingBox.copy();
                 bool var18 = onGround && isSneaking();
                 if (var18)
                 {
                     double var19;
-                    for (var19 = 0.05D; var1 != 0.0D && worldObj.getCollidingBoundingBoxes(this, boundingBox.getOffsetBoundingBox(var1, -1.0D, 0.0D)).Count == 0; var11 = var1)
+                    for (var19 = 0.05D; var1 != 0.0D && worldObj.getCollidingBoundingBoxes(this, boundingBox.translate(var1, -1.0D, 0.0D)).Count == 0; var11 = var1)
                     {
                         if (var1 < var19 && var1 >= -var19)
                         {
@@ -344,7 +344,7 @@ namespace betareborn.Entities
                         }
                     }
 
-                    for (; var5 != 0.0D && worldObj.getCollidingBoundingBoxes(this, boundingBox.getOffsetBoundingBox(0.0D, -1.0D, var5)).Count == 0; var15 = var5)
+                    for (; var5 != 0.0D && worldObj.getCollidingBoundingBoxes(this, boundingBox.translate(0.0D, -1.0D, var5)).Count == 0; var15 = var5)
                     {
                         if (var5 < var19 && var5 >= -var19)
                         {
@@ -361,14 +361,14 @@ namespace betareborn.Entities
                     }
                 }
 
-                var var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.addCoord(var1, var3, var5));
+                var var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.stretch(var1, var3, var5));
 
                 for (int var20 = 0; var20 < var35.Count; ++var20)
                 {
-                    var3 = var35[var20].calculateYOffset(boundingBox, var3);
+                    var3 = var35[var20].getYOffset(boundingBox, var3);
                 }
 
-                boundingBox.offset(0.0D, var3, 0.0D);
+                boundingBox.translate(0.0D, var3, 0.0D);
                 if (!field_9293_aM && var13 != var3)
                 {
                     var5 = 0.0D;
@@ -381,10 +381,10 @@ namespace betareborn.Entities
                 int var21;
                 for (var21 = 0; var21 < var35.Count; ++var21)
                 {
-                    var1 = var35[var21].calculateXOffset(boundingBox, var1);
+                    var1 = var35[var21].getXOffset(boundingBox, var1);
                 }
 
-                boundingBox.offset(var1, 0.0D, 0.0D);
+                boundingBox.translate(var1, 0.0D, 0.0D);
                 if (!field_9293_aM && var11 != var1)
                 {
                     var5 = 0.0D;
@@ -394,10 +394,10 @@ namespace betareborn.Entities
 
                 for (var21 = 0; var21 < var35.Count; ++var21)
                 {
-                    var5 = var35[var21].calculateZOffset(boundingBox, var5);
+                    var5 = var35[var21].getZOffset(boundingBox, var5);
                 }
 
-                boundingBox.offset(0.0D, 0.0D, var5);
+                boundingBox.translate(0.0D, 0.0D, var5);
                 if (!field_9293_aM && var15 != var5)
                 {
                     var5 = 0.0D;
@@ -416,16 +416,16 @@ namespace betareborn.Entities
                     var1 = var11;
                     var3 = (double)stepHeight;
                     var5 = var15;
-                    AxisAlignedBB var27 = boundingBox.copy();
-                    boundingBox.setBB(var17);
-                    var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.addCoord(var11, var3, var15));
+                    Box var27 = boundingBox.copy();
+                    boundingBox.clone(var17);
+                    var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.stretch(var11, var3, var15));
 
                     for (var28 = 0; var28 < var35.Count; ++var28)
                     {
-                        var3 = var35[var28].calculateYOffset(boundingBox, var3);
+                        var3 = var35[var28].getYOffset(boundingBox, var3);
                     }
 
-                    boundingBox.offset(0.0D, var3, 0.0D);
+                    boundingBox.translate(0.0D, var3, 0.0D);
                     if (!field_9293_aM && var13 != var3)
                     {
                         var5 = 0.0D;
@@ -435,10 +435,10 @@ namespace betareborn.Entities
 
                     for (var28 = 0; var28 < var35.Count; ++var28)
                     {
-                        var1 = var35[var28].calculateXOffset(boundingBox, var1);
+                        var1 = var35[var28].getXOffset(boundingBox, var1);
                     }
 
-                    boundingBox.offset(var1, 0.0D, 0.0D);
+                    boundingBox.translate(var1, 0.0D, 0.0D);
                     if (!field_9293_aM && var11 != var1)
                     {
                         var5 = 0.0D;
@@ -448,10 +448,10 @@ namespace betareborn.Entities
 
                     for (var28 = 0; var28 < var35.Count; ++var28)
                     {
-                        var5 = var35[var28].calculateZOffset(boundingBox, var5);
+                        var5 = var35[var28].getZOffset(boundingBox, var5);
                     }
 
-                    boundingBox.offset(0.0D, 0.0D, var5);
+                    boundingBox.translate(0.0D, 0.0D, var5);
                     if (!field_9293_aM && var15 != var5)
                     {
                         var5 = 0.0D;
@@ -471,10 +471,10 @@ namespace betareborn.Entities
 
                         for (var28 = 0; var28 < var35.Count; ++var28)
                         {
-                            var3 = var35[var28].calculateYOffset(boundingBox, var3);
+                            var3 = var35[var28].getYOffset(boundingBox, var3);
                         }
 
-                        boundingBox.offset(0.0D, var3, 0.0D);
+                        boundingBox.translate(0.0D, var3, 0.0D);
                     }
 
                     if (var37 * var37 + var25 * var25 >= var1 * var1 + var5 * var5)
@@ -482,7 +482,7 @@ namespace betareborn.Entities
                         var1 = var37;
                         var3 = var23;
                         var5 = var25;
-                        boundingBox.setBB(var27);
+                        boundingBox.clone(var27);
                     }
                     else
                     {
@@ -577,7 +577,7 @@ namespace betareborn.Entities
                 }
 
                 bool var42 = isWet();
-                if (worldObj.isBoundingBoxBurning(boundingBox.func_28195_e(0.001D, 0.001D, 0.001D)))
+                if (worldObj.isBoundingBoxBurning(boundingBox.contract(0.001D, 0.001D, 0.001D)))
                 {
                     dealFireDamage(1);
                     if (!var42)
@@ -625,7 +625,7 @@ namespace betareborn.Entities
 
         }
 
-        public virtual AxisAlignedBB getBoundingBox()
+        public virtual Box getBoundingBox()
         {
             return null;
         }
@@ -660,7 +660,7 @@ namespace betareborn.Entities
 
         public virtual bool handleWaterMovement()
         {
-            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.4F, 0.0D).func_28195_e(0.001D, 0.001D, 0.001D), Material.water, this);
+            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.4F, 0.0D).contract(0.001D, 0.001D, 0.001D), Material.water, this);
         }
 
         public bool isInsideOfMaterial(Material var1)
@@ -882,7 +882,7 @@ namespace betareborn.Entities
 
         public virtual bool isInRangeToRenderDist(double var1)
         {
-            double var3 = boundingBox.getAverageEdgeLength();
+            double var3 = boundingBox.getAverageSizeLength();
             var3 *= 64.0D * renderDistanceWeight;
             return var1 < var3 * var3;
         }
@@ -1047,7 +1047,7 @@ namespace betareborn.Entities
             return false;
         }
 
-        public virtual AxisAlignedBB getCollisionBox(Entity var1)
+        public virtual Box getCollisionBox(Entity var1)
         {
             return null;
         }
@@ -1175,14 +1175,14 @@ namespace betareborn.Entities
         {
             setPosition(var1, var3, var5);
             setRotation(var7, var8);
-            var var10 = worldObj.getCollidingBoundingBoxes(this, boundingBox.func_28195_e(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+            var var10 = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
             if (var10.Count > 0)
             {
                 double var11 = 0.0D;
 
                 for (int var13 = 0; var13 < var10.Count; ++var13)
                 {
-                    AxisAlignedBB var14 = var10[var13];
+                    Box var14 = var10[var13];
                     if (var14.maxY > var11)
                     {
                         var11 = var14.maxY;

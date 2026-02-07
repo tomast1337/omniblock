@@ -14,11 +14,11 @@ namespace betareborn.TileEntities
         {
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate((float)var2 + 0.5F, (float)var4, (float)var6 + 0.5F);
-            Entity var9 = (Entity)entityHashMap.get(var1.getMobID());
+            Entity var9 = (Entity)entityHashMap.get(var1.getSpawnedEntityId());
             if (var9 == null)
             {
-                var9 = EntityList.createEntityInWorld(var1.getMobID(), (World)null);
-                entityHashMap.put(var1.getMobID(), var9);
+                var9 = EntityList.createEntityInWorld(var1.getSpawnedEntityId(), (World)null);
+                entityHashMap.put(var1.getSpawnedEntityId(), var9);
             }
 
             if (var9 != null)
@@ -26,7 +26,7 @@ namespace betareborn.TileEntities
                 var9.setWorld(var1.world);
                 float var10 = 7.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, 0.4F, 0.0F);
-                GLManager.GL.Rotate((float)(var1.yaw2 + (var1.yaw - var1.yaw2) * (double)var8) * 10.0F, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate((float)(var1.lastRotation + (var1.rotation - var1.lastRotation) * (double)var8) * 10.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Rotate(-30.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Translate(0.0F, -0.4F, 0.0F);
                 GLManager.GL.Scale(var10, var10, var10);

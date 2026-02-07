@@ -12,7 +12,7 @@ namespace betareborn.Rendering
         public Vector3D<int> PositionPlus { get; }
         public Vector3D<int> PositionMinus { get; }
         public Vector3D<int> ClipPosition { get; }
-        public AxisAlignedBB BoundingBox { get; }
+        public Box BoundingBox { get; }
 
         private readonly VertexBuffer<ChunkVertex>[] vertexBuffers = new VertexBuffer<ChunkVertex>[2];
         private readonly VertexArray[] vertexArrays = new VertexArray[2];
@@ -29,7 +29,7 @@ namespace betareborn.Rendering
 
             const float padding = 6.0f;
 
-            BoundingBox = AxisAlignedBB.getBoundingBox
+            BoundingBox = Box.create
             (
                 position.X - padding,
                 position.Y - padding,

@@ -47,7 +47,7 @@ namespace betareborn.Entities
             float var1 = (float)particleAge / (float)particleMaxAge;
             if (rand.nextFloat() > var1)
             {
-                worldObj.spawnParticle("smoke", posX, posY, posZ, motionX, motionY, motionZ);
+                worldObj.addParticle("smoke", posX, posY, posZ, motionX, motionY, motionZ);
             }
 
             motionY -= 0.03D;

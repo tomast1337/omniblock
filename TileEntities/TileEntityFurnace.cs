@@ -13,17 +13,17 @@ namespace betareborn.TileEntities
         public int currentItemBurnTime = 0;
         public int furnaceCookTime = 0;
 
-        public int getSizeInventory()
+        public int size()
         {
             return furnaceItemStacks.Length;
         }
 
-        public ItemStack getStackInSlot(int var1)
+        public ItemStack getStack(int var1)
         {
             return furnaceItemStacks[var1];
         }
 
-        public ItemStack decrStackSize(int var1, int var2)
+        public ItemStack removeStack(int var1, int var2)
         {
             if (furnaceItemStacks[var1] != null)
             {
@@ -51,17 +51,17 @@ namespace betareborn.TileEntities
             }
         }
 
-        public void setInventorySlotContents(int var1, ItemStack var2)
+        public void setStack(int var1, ItemStack var2)
         {
             furnaceItemStacks[var1] = var2;
-            if (var2 != null && var2.stackSize > getInventoryStackLimit())
+            if (var2 != null && var2.stackSize > getMaxCountPerStack())
             {
-                var2.stackSize = getInventoryStackLimit();
+                var2.stackSize = getMaxCountPerStack();
             }
 
         }
 
-        public string getInvName()
+        public string getName()
         {
             return "Furnace";
         }
@@ -70,7 +70,7 @@ namespace betareborn.TileEntities
         {
             base.readNbt(var1);
             NBTTagList var2 = var1.getTagList("Items");
-            furnaceItemStacks = new ItemStack[getSizeInventory()];
+            furnaceItemStacks = new ItemStack[size()];
 
             for (int var3 = 0; var3 < var2.tagCount(); ++var3)
             {
@@ -108,7 +108,7 @@ namespace betareborn.TileEntities
             var1.setTag("Items", var2);
         }
 
-        public int getInventoryStackLimit()
+        public int getMaxCountPerStack()
         {
             return 64;
         }
@@ -199,7 +199,7 @@ namespace betareborn.TileEntities
             else
             {
                 ItemStack var1 = FurnaceRecipes.smelting().getSmeltingResult(furnaceItemStacks[0].getItem().shiftedIndex);
-                return var1 == null ? false : (furnaceItemStacks[2] == null ? true : (!furnaceItemStacks[2].isItemEqual(var1) ? false : (furnaceItemStacks[2].stackSize < getInventoryStackLimit() && furnaceItemStacks[2].stackSize < furnaceItemStacks[2].getMaxStackSize() ? true : furnaceItemStacks[2].stackSize < var1.getMaxStackSize())));
+                return var1 == null ? false : (furnaceItemStacks[2] == null ? true : (!furnaceItemStacks[2].isItemEqual(var1) ? false : (furnaceItemStacks[2].stackSize < getMaxCountPerStack() && furnaceItemStacks[2].stackSize < furnaceItemStacks[2].getMaxStackSize() ? true : furnaceItemStacks[2].stackSize < var1.getMaxStackSize())));
             }
         }
 
@@ -239,7 +239,7 @@ namespace betareborn.TileEntities
             }
         }
 
-        public bool canInteractWith(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer var1)
         {
             return world.getBlockTileEntity(x, y, z) != this ? false : var1.getDistanceSq((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
         }

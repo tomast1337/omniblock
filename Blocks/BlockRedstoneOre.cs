@@ -123,7 +123,7 @@ namespace betareborn.Blocks
 
                 if (var9 < (double)var2 || var9 > (double)(var2 + 1) || var11 < 0.0D || var11 > (double)(var3 + 1) || var13 < (double)var4 || var13 > (double)(var4 + 1))
                 {
-                    var1.spawnParticle("reddust", var9, var11, var13, 0.0D, 0.0D, 0.0D);
+                    var1.addParticle("reddust", var9, var11, var13, 0.0D, 0.0D, 0.0D);
                 }
             }
 

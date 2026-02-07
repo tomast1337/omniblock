@@ -15,10 +15,10 @@ namespace betareborn.Blocks
             setTickOnLoad(true);
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMetadata(var2, var3, var4) & 7;
-            return var5 >= 3 ? AxisAlignedBB.getBoundingBoxFromPool((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)((float)var3 + 0.5F), (double)var4 + maxZ) : null;
+            return var5 >= 3 ? Box.createCached((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)((float)var3 + 0.5F), (double)var4 + maxZ) : null;
         }
 
         public override bool isOpaqueCube()

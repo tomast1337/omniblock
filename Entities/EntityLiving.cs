@@ -151,7 +151,7 @@ namespace betareborn.Entities
                         float var2 = rand.nextFloat() - rand.nextFloat();
                         float var3 = rand.nextFloat() - rand.nextFloat();
                         float var4 = rand.nextFloat() - rand.nextFloat();
-                        worldObj.spawnParticle("bubble", posX + (double)var2, posY + (double)var3, posZ + (double)var4, motionX, motionY, motionZ);
+                        worldObj.addParticle("bubble", posX + (double)var2, posY + (double)var3, posZ + (double)var4, motionX, motionY, motionZ);
                     }
 
                     attackEntityFrom(null, 2);
@@ -193,7 +193,7 @@ namespace betareborn.Entities
                         double var8 = rand.nextGaussian() * 0.02D;
                         double var9 = rand.nextGaussian() * 0.02D;
                         double var6 = rand.nextGaussian() * 0.02D;
-                        worldObj.spawnParticle("explode", posX + (double)(rand.nextFloat() * width * 2.0F) - (double)width, posY + (double)(rand.nextFloat() * height), posZ + (double)(rand.nextFloat() * width * 2.0F) - (double)width, var8, var9, var6);
+                        worldObj.addParticle("explode", posX + (double)(rand.nextFloat() * width * 2.0F) - (double)width, posY + (double)(rand.nextFloat() * height), posZ + (double)(rand.nextFloat() * width * 2.0F) - (double)width, var8, var9, var6);
                     }
                 }
             }
@@ -212,7 +212,7 @@ namespace betareborn.Entities
                 double var4 = rand.nextGaussian() * 0.02D;
                 double var6 = rand.nextGaussian() * 0.02D;
                 double var8 = 10.0D;
-                worldObj.spawnParticle("explode", posX + (double)(rand.nextFloat() * width * 2.0F) - (double)width - var2 * var8, posY + (double)(rand.nextFloat() * height) - var4 * var8, posZ + (double)(rand.nextFloat() * width * 2.0F) - (double)width - var6 * var8, var2, var4, var6);
+                worldObj.addParticle("explode", posX + (double)(rand.nextFloat() * width * 2.0F) - (double)width - var2 * var8, posY + (double)(rand.nextFloat() * height) - var4 * var8, posZ + (double)(rand.nextFloat() * width * 2.0F) - (double)width - var6 * var8, var2, var4, var6);
             }
 
         }
@@ -726,14 +726,14 @@ namespace betareborn.Entities
                 --newPosRotationIncrements;
                 setPosition(var1, var3, var5);
                 setRotation(rotationYaw, rotationPitch);
-                var var9 = worldObj.getCollidingBoundingBoxes(this, boundingBox.func_28195_e(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+                var var9 = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
                 if (var9.Count > 0)
                 {
                     double var10 = 0.0D;
 
                     for (int var12 = 0; var12 < var9.Count; ++var12)
                     {
-                        AxisAlignedBB var13 = var9[var12];
+                        Box var13 = var9[var12];
                         if (var13.maxY > var10)
                         {
                             var10 = var13.maxY;

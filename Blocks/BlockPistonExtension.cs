@@ -81,7 +81,7 @@ namespace betareborn.Blocks
             return 0;
         }
 
-        public override void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, AxisAlignedBB var5, List<AxisAlignedBB> var6)
+        public override void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
         {
             int var7 = var1.getBlockMetadata(var2, var3, var4);
             switch (func_31050_c(var7))

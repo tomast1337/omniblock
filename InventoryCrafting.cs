@@ -18,14 +18,14 @@ namespace betareborn
             field_21104_b = var2;
         }
 
-        public int getSizeInventory()
+        public int size()
         {
             return stackList.Length;
         }
 
-        public ItemStack getStackInSlot(int var1)
+        public ItemStack getStack(int var1)
         {
-            return var1 >= getSizeInventory() ? null : stackList[var1];
+            return var1 >= size() ? null : stackList[var1];
         }
 
         public ItemStack func_21103_b(int var1, int var2)
@@ -33,7 +33,7 @@ namespace betareborn
             if (var1 >= 0 && var1 < field_21104_b)
             {
                 int var3 = var1 + var2 * field_21104_b;
-                return getStackInSlot(var3);
+                return getStack(var3);
             }
             else
             {
@@ -41,12 +41,12 @@ namespace betareborn
             }
         }
 
-        public string getInvName()
+        public string getName()
         {
             return "Crafting";
         }
 
-        public ItemStack decrStackSize(int var1, int var2)
+        public ItemStack removeStack(int var1, int var2)
         {
             if (stackList[var1] != null)
             {
@@ -76,13 +76,13 @@ namespace betareborn
             }
         }
 
-        public void setInventorySlotContents(int var1, ItemStack var2)
+        public void setStack(int var1, ItemStack var2)
         {
             stackList[var1] = var2;
             eventHandler.onCraftMatrixChanged(this);
         }
 
-        public int getInventoryStackLimit()
+        public int getMaxCountPerStack()
         {
             return 64;
         }
@@ -91,7 +91,7 @@ namespace betareborn
         {
         }
 
-        public bool canInteractWith(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer var1)
         {
             return true;
         }

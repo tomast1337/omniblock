@@ -12,7 +12,7 @@ namespace betareborn.Containers
         public ContainerChest(IInventory var1, IInventory var2)
         {
             field_20125_a = var2;
-            field_27282_b = var2.getSizeInventory() / 9;
+            field_27282_b = var2.size() / 9;
             int var3 = (field_27282_b - 4) * 18;
 
             int var4;
@@ -42,7 +42,7 @@ namespace betareborn.Containers
 
         public override bool isUsableByPlayer(EntityPlayer var1)
         {
-            return field_20125_a.canInteractWith(var1);
+            return field_20125_a.canPlayerUse(var1);
         }
 
         public override ItemStack getStackInSlot(int var1)

@@ -227,7 +227,7 @@ namespace betareborn.Blocks
                     }
                 }
 
-                var1.spawnParticle("reddust", var7 + var13, var9, var11 + var15, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("reddust", var7 + var13, var9, var11 + var15, 0.0D, 0.0D, 0.0D);
             }
         }
     }

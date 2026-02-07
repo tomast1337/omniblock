@@ -38,16 +38,16 @@ namespace betareborn.Blocks
 
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             float var5 = 1.0F / 16.0F;
-            return AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var5), (double)var3, (double)((float)var4 + var5), (double)((float)(var2 + 1) - var5), (double)((float)(var3 + 1) - var5), (double)((float)(var4 + 1) - var5));
+            return Box.createCached((double)((float)var2 + var5), (double)var3, (double)((float)var4 + var5), (double)((float)(var2 + 1) - var5), (double)((float)(var3 + 1) - var5), (double)((float)(var4 + 1) - var5));
         }
 
-        public override AxisAlignedBB getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             float var5 = 1.0F / 16.0F;
-            return AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var5), (double)var3, (double)((float)var4 + var5), (double)((float)(var2 + 1) - var5), (double)(var3 + 1), (double)((float)(var4 + 1) - var5));
+            return Box.createCached((double)((float)var2 + var5), (double)var3, (double)((float)var4 + var5), (double)((float)(var2 + 1) - var5), (double)(var3 + 1), (double)((float)(var4 + 1) - var5));
         }
 
         public override int getBlockTextureFromSide(int var1)

@@ -16,14 +16,14 @@ namespace betareborn.Guis
             field_948_f = false;
             short var3 = 222;
             int var4 = var3 - 108;
-            inventoryRows = var2.getSizeInventory() / 9;
+            inventoryRows = var2.size() / 9;
             ySize = var4 + inventoryRows * 18;
         }
 
         protected override void drawGuiContainerForegroundLayer()
         {
-            fontRenderer.drawString(lowerChestInventory.getInvName(), 8, 6, 4210752);
-            fontRenderer.drawString(upperChestInventory.getInvName(), 8, ySize - 96 + 2, 4210752);
+            fontRenderer.drawString(lowerChestInventory.getName(), 8, 6, 4210752);
+            fontRenderer.drawString(upperChestInventory.getName(), 8, ySize - 96 + 2, 4210752);
         }
 
         protected override void drawGuiContainerBackgroundLayer(float var1)

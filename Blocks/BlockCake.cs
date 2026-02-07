@@ -28,22 +28,22 @@ namespace betareborn.Blocks
             setBlockBounds(var1, 0.0F, var1, 1.0F - var1, var2, 1.0F - var1);
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMetadata(var2, var3, var4);
             float var6 = 1.0F / 16.0F;
             float var7 = (float)(1 + var5 * 2) / 16.0F;
             float var8 = 0.5F;
-            return AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var6), (double)((float)(var2 + 1) - var6), (double)((float)var3 + var8 - var6), (double)((float)(var4 + 1) - var6));
+            return Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var6), (double)((float)(var2 + 1) - var6), (double)((float)var3 + var8 - var6), (double)((float)(var4 + 1) - var6));
         }
 
-        public override AxisAlignedBB getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMetadata(var2, var3, var4);
             float var6 = 1.0F / 16.0F;
             float var7 = (float)(1 + var5 * 2) / 16.0F;
             float var8 = 0.5F;
-            return AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var6), (double)((float)(var2 + 1) - var6), (double)((float)var3 + var8), (double)((float)(var4 + 1) - var6));
+            return Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var6), (double)((float)(var2 + 1) - var6), (double)((float)var3 + var8), (double)((float)(var4 + 1) - var6));
         }
 
         public override int getBlockTextureFromSideAndMetadata(int var1, int var2)

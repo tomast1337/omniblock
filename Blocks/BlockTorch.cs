@@ -11,7 +11,7 @@ namespace betareborn.Blocks
             setTickOnLoad(true);
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }
@@ -201,28 +201,28 @@ namespace betareborn.Blocks
             double var15 = (double)0.27F;
             if (var6 == 1)
             {
-                var1.spawnParticle("smoke", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
-                var1.spawnParticle("flame", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("smoke", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("flame", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
             }
             else if (var6 == 2)
             {
-                var1.spawnParticle("smoke", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
-                var1.spawnParticle("flame", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("smoke", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("flame", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
             }
             else if (var6 == 3)
             {
-                var1.spawnParticle("smoke", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
-                var1.spawnParticle("flame", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("smoke", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("flame", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
             }
             else if (var6 == 4)
             {
-                var1.spawnParticle("smoke", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
-                var1.spawnParticle("flame", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("smoke", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("flame", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
             }
             else
             {
-                var1.spawnParticle("smoke", var7, var9, var11, 0.0D, 0.0D, 0.0D);
-                var1.spawnParticle("flame", var7, var9, var11, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("smoke", var7, var9, var11, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("flame", var7, var9, var11, 0.0D, 0.0D, 0.0D);
             }
 
         }

@@ -86,7 +86,7 @@ namespace betareborn.Blocks
             return var6 == blockMaterial ? false : (var6 == Material.ice ? false : (var5 == 1 ? true : base.shouldSideBeRendered(var1, var2, var3, var4, var5)));
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }
@@ -257,7 +257,7 @@ namespace betareborn.Blocks
                 double var12 = (double)((float)var2 + var5.nextFloat());
                 double var8 = (double)var3 + maxY;
                 double var10 = (double)((float)var4 + var5.nextFloat());
-                var1.spawnParticle("lava", var12, var8, var10, 0.0D, 0.0D, 0.0D);
+                var1.addParticle("lava", var12, var8, var10, 0.0D, 0.0D, 0.0D);
             }
 
         }
@@ -345,7 +345,7 @@ namespace betareborn.Blocks
 
             for (int var5 = 0; var5 < 8; ++var5)
             {
-                var1.spawnParticle("largesmoke", (double)var2 + java.lang.Math.random(), (double)var3 + 1.2D, (double)var4 + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
+                var1.addParticle("largesmoke", (double)var2 + java.lang.Math.random(), (double)var3 + 1.2D, (double)var4 + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
             }
 
         }

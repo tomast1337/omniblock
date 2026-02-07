@@ -32,7 +32,7 @@ namespace betareborn.Blocks
             abilityToCatchFire[var1] = var3;
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }
@@ -259,7 +259,7 @@ namespace betareborn.Blocks
                         var7 = (float)var2 + var5.nextFloat() * 0.1F;
                         var8 = (float)var3 + var5.nextFloat();
                         var9 = (float)var4 + var5.nextFloat();
-                        var1.spawnParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        var1.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
@@ -270,7 +270,7 @@ namespace betareborn.Blocks
                         var7 = (float)(var2 + 1) - var5.nextFloat() * 0.1F;
                         var8 = (float)var3 + var5.nextFloat();
                         var9 = (float)var4 + var5.nextFloat();
-                        var1.spawnParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        var1.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
@@ -281,7 +281,7 @@ namespace betareborn.Blocks
                         var7 = (float)var2 + var5.nextFloat();
                         var8 = (float)var3 + var5.nextFloat();
                         var9 = (float)var4 + var5.nextFloat() * 0.1F;
-                        var1.spawnParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        var1.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
@@ -292,7 +292,7 @@ namespace betareborn.Blocks
                         var7 = (float)var2 + var5.nextFloat();
                         var8 = (float)var3 + var5.nextFloat();
                         var9 = (float)(var4 + 1) - var5.nextFloat() * 0.1F;
-                        var1.spawnParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        var1.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
@@ -303,7 +303,7 @@ namespace betareborn.Blocks
                         var7 = (float)var2 + var5.nextFloat();
                         var8 = (float)(var3 + 1) - var5.nextFloat() * 0.1F;
                         var9 = (float)var4 + var5.nextFloat();
-                        var1.spawnParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        var1.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
                     }
                 }
             }
@@ -314,7 +314,7 @@ namespace betareborn.Blocks
                     var7 = (float)var2 + var5.nextFloat();
                     var8 = (float)var3 + var5.nextFloat() * 0.5F + 0.5F;
                     var9 = (float)var4 + var5.nextFloat();
-                    var1.spawnParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                    var1.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
                 }
             }
 

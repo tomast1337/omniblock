@@ -6,37 +6,37 @@ namespace betareborn.TileEntities
 {
     public class TileEntityDispenser : TileEntity, IInventory
     {
-        private ItemStack[] dispenserContents = new ItemStack[9];
-        private readonly java.util.Random dispenserRandom = new();
+        private ItemStack[] inventory = new ItemStack[9];
+        private readonly java.util.Random random = new();
 
-        public int getSizeInventory()
+        public int size()
         {
             return 9;
         }
 
-        public ItemStack getStackInSlot(int var1)
+        public ItemStack getStack(int slot)
         {
-            return dispenserContents[var1];
+            return inventory[slot];
         }
 
-        public ItemStack decrStackSize(int var1, int var2)
+        public ItemStack removeStack(int slot, int amount)
         {
-            if (dispenserContents[var1] != null)
+            if (inventory[slot] != null)
             {
                 ItemStack var3;
-                if (dispenserContents[var1].stackSize <= var2)
+                if (inventory[slot].stackSize <= amount)
                 {
-                    var3 = dispenserContents[var1];
-                    dispenserContents[var1] = null;
+                    var3 = inventory[slot];
+                    inventory[slot] = null;
                     markDirty();
                     return var3;
                 }
                 else
                 {
-                    var3 = dispenserContents[var1].splitStack(var2);
-                    if (dispenserContents[var1].stackSize == 0)
+                    var3 = inventory[slot].splitStack(amount);
+                    if (inventory[slot].stackSize == 0)
                     {
-                        dispenserContents[var1] = null;
+                        inventory[slot] = null;
                     }
 
                     markDirty();
@@ -49,14 +49,14 @@ namespace betareborn.TileEntities
             }
         }
 
-        public ItemStack getRandomStackFromInventory()
+        public ItemStack getItemToDispose()
         {
             int var1 = -1;
             int var2 = 1;
 
-            for (int var3 = 0; var3 < dispenserContents.Length; ++var3)
+            for (int var3 = 0; var3 < inventory.Length; ++var3)
             {
-                if (dispenserContents[var3] != null && dispenserRandom.nextInt(var2++) == 0)
+                if (inventory[var3] != null && random.nextInt(var2++) == 0)
                 {
                     var1 = var3;
                 }
@@ -64,7 +64,7 @@ namespace betareborn.TileEntities
 
             if (var1 >= 0)
             {
-                return decrStackSize(var1, 1);
+                return removeStack(var1, 1);
             }
             else
             {
@@ -72,67 +72,67 @@ namespace betareborn.TileEntities
             }
         }
 
-        public void setInventorySlotContents(int var1, ItemStack var2)
+        public void setStack(int slot, ItemStack stack)
         {
-            dispenserContents[var1] = var2;
-            if (var2 != null && var2.stackSize > getInventoryStackLimit())
+            inventory[slot] = stack;
+            if (stack != null && stack.stackSize > getMaxCountPerStack())
             {
-                var2.stackSize = getInventoryStackLimit();
+                stack.stackSize = getMaxCountPerStack();
             }
 
             markDirty();
         }
 
-        public string getInvName()
+        public string getName()
         {
             return "Trap";
         }
 
-        public override void readNbt(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            base.readNbt(var1);
-            NBTTagList var2 = var1.getTagList("Items");
-            dispenserContents = new ItemStack[getSizeInventory()];
+            base.readNbt(nbt);
+            NBTTagList var2 = nbt.getTagList("Items");
+            inventory = new ItemStack[size()];
 
             for (int var3 = 0; var3 < var2.tagCount(); ++var3)
             {
                 NBTTagCompound var4 = (NBTTagCompound)var2.tagAt(var3);
                 int var5 = var4.getByte("Slot") & 255;
-                if (var5 >= 0 && var5 < dispenserContents.Length)
+                if (var5 >= 0 && var5 < inventory.Length)
                 {
-                    dispenserContents[var5] = new ItemStack(var4);
+                    inventory[var5] = new ItemStack(var4);
                 }
             }
 
         }
 
-        public override void writeNbt(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeNbt(var1);
+            base.writeNbt(nbt);
             NBTTagList var2 = new NBTTagList();
 
-            for (int var3 = 0; var3 < dispenserContents.Length; ++var3)
+            for (int var3 = 0; var3 < inventory.Length; ++var3)
             {
-                if (dispenserContents[var3] != null)
+                if (inventory[var3] != null)
                 {
                     NBTTagCompound var4 = new NBTTagCompound();
                     var4.setByte("Slot", (sbyte)var3);
-                    dispenserContents[var3].writeToNBT(var4);
+                    inventory[var3].writeToNBT(var4);
                     var2.setTag(var4);
                 }
             }
 
-            var1.setTag("Items", var2);
+            nbt.setTag("Items", var2);
         }
 
-        public int getInventoryStackLimit()
+        public int getMaxCountPerStack()
         {
             return 64;
         }
 
-        public bool canInteractWith(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer player)
         {
-            return world.getBlockTileEntity(x, y, z) != this ? false : var1.getDistanceSq((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
+            return world.getBlockTileEntity(x, y, z) != this ? false : player.getDistanceSq((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
         }
     }
 }

@@ -68,7 +68,7 @@ namespace betareborn.Entities
                     float var5 = rand.nextFloat() * 0.5F + 0.5F;
                     float var6 = MathHelper.sin(var4) * (float)var2 * 0.5F * var5;
                     float var7 = MathHelper.cos(var4) * (float)var2 * 0.5F * var5;
-                    worldObj.spawnParticle("slime", posX + (double)var6, boundingBox.minY, posZ + (double)var7, 0.0D, 0.0D, 0.0D);
+                    worldObj.addParticle("slime", posX + (double)var6, boundingBox.minY, posZ + (double)var7, 0.0D, 0.0D, 0.0D);
                 }
 
                 if (var2 > 2)

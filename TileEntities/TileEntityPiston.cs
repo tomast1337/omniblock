@@ -91,7 +91,7 @@ namespace betareborn.TileEntities
                 var1 = 1.0F - var1;
             }
 
-            AxisAlignedBB var3 = Block.pistonMoving.func_31035_a(world, x, y, z, storedBlockID, var1, field_31025_c);
+            Box var3 = Block.pistonMoving.func_31035_a(world, x, y, z, storedBlockID, var1, field_31025_c);
             if (var3 != null)
             {
                 var var4 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, var3);

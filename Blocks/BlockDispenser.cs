@@ -123,7 +123,7 @@ namespace betareborn.Blocks
             }
 
             TileEntityDispenser var11 = (TileEntityDispenser)var1.getBlockTileEntity(var2, var3, var4);
-            ItemStack var12 = var11.getRandomStackFromInventory();
+            ItemStack var12 = var11.getItemToDispose();
             double var13 = (double)var2 + (double)var9 * 0.6D + 0.5D;
             double var15 = (double)var3 + 0.5D;
             double var17 = (double)var4 + (double)var10 * 0.6D + 0.5D;
@@ -230,9 +230,9 @@ namespace betareborn.Blocks
         {
             TileEntityDispenser var5 = (TileEntityDispenser)var1.getBlockTileEntity(var2, var3, var4);
 
-            for (int var6 = 0; var6 < var5.getSizeInventory(); ++var6)
+            for (int var6 = 0; var6 < var5.size(); ++var6)
             {
-                ItemStack var7 = var5.getStackInSlot(var6);
+                ItemStack var7 = var5.getStack(var6);
                 if (var7 != null)
                 {
                     float var8 = random.nextFloat() * 0.8F + 0.1F;

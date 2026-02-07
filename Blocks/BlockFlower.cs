@@ -49,7 +49,7 @@ namespace betareborn.Blocks
             return (var1.getFullBlockLightValue(var2, var3, var4) >= 8 || var1.canBlockSeeTheSky(var2, var3, var4)) && canThisPlantGrowOnThisBlockID(var1.getBlockId(var2, var3 - 1, var4));
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }

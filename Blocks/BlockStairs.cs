@@ -23,7 +23,7 @@ namespace betareborn.Blocks
             setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return base.getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
         }
@@ -48,7 +48,7 @@ namespace betareborn.Blocks
             return base.shouldSideBeRendered(var1, var2, var3, var4, var5);
         }
 
-        public override void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, AxisAlignedBB var5, List<AxisAlignedBB> var6)
+        public override void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
         {
             int var7 = var1.getBlockMetadata(var2, var3, var4);
             if (var7 == 0)
@@ -143,7 +143,7 @@ namespace betareborn.Blocks
             return modelBlock.tickRate();
         }
 
-        public override AxisAlignedBB getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return modelBlock.getSelectedBoundingBoxFromPool(var1, var2, var3, var4);
         }

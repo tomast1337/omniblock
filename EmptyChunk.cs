@@ -128,11 +128,11 @@ namespace betareborn
         {
         }
 
-        public override void getEntitiesWithinAABBForEntity(Entity var1, AxisAlignedBB var2, List<Entity> var3)
+        public override void getEntitiesWithinAABBForEntity(Entity var1, Box var2, List<Entity> var3)
         {
         }
 
-        public override void getEntitiesOfTypeWithinAAAB(Class var1, AxisAlignedBB var2, List<Entity> var3)
+        public override void getEntitiesOfTypeWithinAAAB(Class var1, Box var2, List<Entity> var3)
         {
         }
 

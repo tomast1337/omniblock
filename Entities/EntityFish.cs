@@ -86,7 +86,7 @@ namespace betareborn.Entities
 
         public override bool isInRangeToRenderDist(double var1)
         {
-            double var3 = boundingBox.getAverageEdgeLength() * 4.0D;
+            double var3 = boundingBox.getAverageSizeLength() * 4.0D;
             var3 *= 64.0D;
             return var1 < var3 * var3;
         }
@@ -225,7 +225,7 @@ namespace betareborn.Entities
                 }
 
                 Entity var4 = null;
-                var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+                var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.stretch(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
                 double var6 = 0.0D;
 
                 double var13;
@@ -235,8 +235,8 @@ namespace betareborn.Entities
                     if (var9.canBeCollidedWith() && (var9 != angler || ticksInAir >= 5))
                     {
                         float var10 = 0.3F;
-                        AxisAlignedBB var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
-                        MovingObjectPosition var12 = var11.func_1169_a(var20, var2);
+                        Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
+                        MovingObjectPosition var12 = var11.raycast(var20, var2);
                         if (var12 != null)
                         {
                             var13 = var20.distanceTo(var12.hitVec);
@@ -309,7 +309,7 @@ namespace betareborn.Entities
                     {
                         double var14 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var28 + 0) / (double)var26 - 0.125D + 0.125D;
                         double var16 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var28 + 1) / (double)var26 - 0.125D + 0.125D;
-                        AxisAlignedBB var18 = AxisAlignedBB.getBoundingBoxFromPool(boundingBox.minX, var14, boundingBox.minZ, boundingBox.maxX, var16, boundingBox.maxZ);
+                        Box var18 = Box.createCached(boundingBox.minX, var14, boundingBox.minZ, boundingBox.maxX, var16, boundingBox.maxZ);
                         if (worldObj.isAABBInMaterial(var18, Material.water))
                         {
                             var27 += 1.0D / (double)var26;
@@ -344,14 +344,14 @@ namespace betareborn.Entities
                                 {
                                     var31 = (rand.nextFloat() * 2.0F - 1.0F) * width;
                                     var17 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                                    worldObj.spawnParticle("bubble", posX + (double)var31, (double)(var30 + 1.0F), posZ + (double)var17, motionX, motionY - (double)(rand.nextFloat() * 0.2F), motionZ);
+                                    worldObj.addParticle("bubble", posX + (double)var31, (double)(var30 + 1.0F), posZ + (double)var17, motionX, motionY - (double)(rand.nextFloat() * 0.2F), motionZ);
                                 }
 
                                 for (var15 = 0; (float)var15 < 1.0F + width * 20.0F; ++var15)
                                 {
                                     var31 = (rand.nextFloat() * 2.0F - 1.0F) * width;
                                     var17 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                                    worldObj.spawnParticle("splash", posX + (double)var31, (double)(var30 + 1.0F), posZ + (double)var17, motionX, motionY, motionZ);
+                                    worldObj.addParticle("splash", posX + (double)var31, (double)(var30 + 1.0F), posZ + (double)var17, motionX, motionY, motionZ);
                                 }
                             }
                         }

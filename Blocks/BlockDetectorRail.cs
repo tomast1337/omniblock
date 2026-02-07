@@ -59,7 +59,7 @@ namespace betareborn.Blocks
             bool var6 = (var5 & 8) != 0;
             bool var7 = false;
             float var8 = 2.0F / 16.0F;
-            var var9 = var1.getEntitiesWithinAABB(EntityMinecart.Class, AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var8), (double)var3, (double)((float)var4 + var8), (double)((float)(var2 + 1) - var8), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var8)));
+            var var9 = var1.getEntitiesWithinAABB(EntityMinecart.Class, Box.createCached((double)((float)var2 + var8), (double)var3, (double)((float)var4 + var8), (double)((float)(var2 + 1) - var8), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var8)));
             if (var9.Count > 0)
             {
                 var7 = true;

@@ -91,7 +91,7 @@ namespace betareborn
             int var29 = MathHelper.floor_double(explosionY + (double)explosionSize + 1.0D);
             int var7 = MathHelper.floor_double(explosionZ - (double)explosionSize - 1.0D);
             int var30 = MathHelper.floor_double(explosionZ + (double)explosionSize + 1.0D);
-            var var9 = worldObj.getEntitiesWithinAABBExcludingEntity(exploder, AxisAlignedBB.getBoundingBoxFromPool((double)var3, (double)var5, (double)var7, (double)var4, (double)var29, (double)var30));
+            var var9 = worldObj.getEntitiesWithinAABBExcludingEntity(exploder, Box.createCached((double)var3, (double)var5, (double)var7, (double)var4, (double)var29, (double)var30));
             Vec3D var31 = Vec3D.createVector(explosionX, explosionY, explosionZ);
 
             for (int var11 = 0; var11 < var9.Count; ++var11)
@@ -168,8 +168,8 @@ namespace betareborn
                     var15 *= var23;
                     var17 *= var23;
                     var19 *= var23;
-                    worldObj.spawnParticle("explode", (var9 + explosionX * 1.0D) / 2.0D, (var11 + explosionY * 1.0D) / 2.0D, (var13 + explosionZ * 1.0D) / 2.0D, var15, var17, var19);
-                    worldObj.spawnParticle("smoke", var9, var11, var13, var15, var17, var19);
+                    worldObj.addParticle("explode", (var9 + explosionX * 1.0D) / 2.0D, (var11 + explosionY * 1.0D) / 2.0D, (var13 + explosionZ * 1.0D) / 2.0D, var15, var17, var19);
+                    worldObj.addParticle("smoke", var9, var11, var13, var15, var17, var19);
                 }
 
                 if (var8 > 0)

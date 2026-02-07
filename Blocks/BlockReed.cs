@@ -67,7 +67,7 @@ namespace betareborn.Blocks
             return canPlaceBlockAt(var1, var2, var3, var4);
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }

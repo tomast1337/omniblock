@@ -43,12 +43,12 @@ namespace betareborn.Entities
         {
         }
 
-        public override AxisAlignedBB getCollisionBox(Entity var1)
+        public override Box getCollisionBox(Entity var1)
         {
             return var1.boundingBox;
         }
 
-        public override AxisAlignedBB getBoundingBox()
+        public override Box getBoundingBox()
         {
             return boundingBox;
         }
@@ -166,7 +166,7 @@ namespace betareborn.Entities
             {
                 double var5 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var4 + 0) / (double)var1 - 0.125D;
                 double var7 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var4 + 1) / (double)var1 - 0.125D;
-                AxisAlignedBB var9 = AxisAlignedBB.getBoundingBoxFromPool(boundingBox.minX, var5, boundingBox.minZ, boundingBox.maxX, var7, boundingBox.maxZ);
+                Box var9 = Box.createCached(boundingBox.minX, var5, boundingBox.minZ, boundingBox.maxX, var7, boundingBox.maxZ);
                 if (worldObj.isAABBInMaterial(var9, Material.water))
                 {
                     var2 += 1.0D / (double)var1;
@@ -287,13 +287,13 @@ namespace betareborn.Entities
                         {
                             var17 = posX - var8 * var13 * 0.8D + var10 * var15;
                             var19 = posZ - var10 * var13 * 0.8D - var8 * var15;
-                            worldObj.spawnParticle("splash", var17, posY - 0.125D, var19, motionX, motionY, motionZ);
+                            worldObj.addParticle("splash", var17, posY - 0.125D, var19, motionX, motionY, motionZ);
                         }
                         else
                         {
                             var17 = posX + var8 + var10 * var13 * 0.7D;
                             var19 = posZ + var10 - var8 * var13 * 0.7D;
-                            worldObj.spawnParticle("splash", var17, posY - 0.125D, var19, motionX, motionY, motionZ);
+                            worldObj.addParticle("splash", var17, posY - 0.125D, var19, motionX, motionY, motionZ);
                         }
                     }
                 }

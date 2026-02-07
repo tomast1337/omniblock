@@ -123,7 +123,7 @@ namespace betareborn.Entities
             }
             else if (playerToAttack == null && !hasPath() && !isWolfTamed() && worldObj.rand.nextInt(100) == 0)
             {
-                var var1 = worldObj.getEntitiesWithinAABB(EntitySheep.Class, AxisAlignedBB.getBoundingBoxFromPool(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                var var1 = worldObj.getEntitiesWithinAABB(EntitySheep.Class, Box.createCached(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
                 if (var1.Count > 0)
                 {
                     setTarget(var1[worldObj.rand.nextInt(var1.Count)]);
@@ -228,7 +228,7 @@ namespace betareborn.Entities
                     {
                         float var4 = (rand.nextFloat() * 2.0F - 1.0F) * width * 0.5F;
                         float var5 = (rand.nextFloat() * 2.0F - 1.0F) * width * 0.5F;
-                        worldObj.spawnParticle("splash", posX + (double)var4, (double)(var1 + 0.8F), posZ + (double)var5, motionX, motionY, motionZ);
+                        worldObj.addParticle("splash", posX + (double)var4, (double)(var1 + 0.8F), posZ + (double)var5, motionX, motionY, motionZ);
                     }
                 }
             }
@@ -337,7 +337,7 @@ namespace betareborn.Entities
 
                     if (var1 is EntityLiving)
                     {
-                        var var3 = worldObj.getEntitiesWithinAABB(typeof(EntityWolf), AxisAlignedBB.getBoundingBoxFromPool(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                        var var3 = worldObj.getEntitiesWithinAABB(typeof(EntityWolf), Box.createCached(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
 
                         foreach (var var5 in var3)
                         {
@@ -411,7 +411,7 @@ namespace betareborn.Entities
                     --var2.stackSize;
                     if (var2.stackSize <= 0)
                     {
-                        var1.inventory.setInventorySlotContents(var1.inventory.currentItem, (ItemStack)null);
+                        var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                     }
 
                     if (!worldObj.multiplayerWorld)
@@ -446,7 +446,7 @@ namespace betareborn.Entities
                         --var2.stackSize;
                         if (var2.stackSize <= 0)
                         {
-                            var1.inventory.setInventorySlotContents(var1.inventory.currentItem, (ItemStack)null);
+                            var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                         }
 
                         heal(((ItemFood)Item.porkRaw).getHealAmount());
@@ -483,7 +483,7 @@ namespace betareborn.Entities
                 double var4 = rand.nextGaussian() * 0.02D;
                 double var6 = rand.nextGaussian() * 0.02D;
                 double var8 = rand.nextGaussian() * 0.02D;
-                worldObj.spawnParticle(var2, posX + (double)(rand.nextFloat() * width * 2.0F) - (double)width, posY + 0.5D + (double)(rand.nextFloat() * height), posZ + (double)(rand.nextFloat() * width * 2.0F) - (double)width, var4, var6, var8);
+                worldObj.addParticle(var2, posX + (double)(rand.nextFloat() * width * 2.0F) - (double)width, posY + 0.5D + (double)(rand.nextFloat() * height), posZ + (double)(rand.nextFloat() * width * 2.0F) - (double)width, var4, var6, var8);
             }
 
         }

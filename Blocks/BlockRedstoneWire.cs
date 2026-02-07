@@ -23,7 +23,7 @@ namespace betareborn.Blocks
             return blockIndexInTexture;
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }
@@ -450,7 +450,7 @@ namespace betareborn.Blocks
                     var16 = 0.0F;
                 }
 
-                var1.spawnParticle("reddust", var7, var9, var11, (double)var14, (double)var15, (double)var16);
+                var1.addParticle("reddust", var7, var9, var11, (double)var14, (double)var15, (double)var16);
             }
 
         }

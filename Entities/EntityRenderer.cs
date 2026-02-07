@@ -114,7 +114,7 @@ namespace betareborn.Entities
                     Vec3D var8 = var6.addVector(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2);
                     pointedEntity = null;
                     float var9 = 1.0F;
-                    var var10 = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.renderViewEntity, mc.renderViewEntity.boundingBox.addCoord(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2).expand((double)var9, (double)var9, (double)var9));
+                    var var10 = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.renderViewEntity, mc.renderViewEntity.boundingBox.stretch(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2).expand((double)var9, (double)var9, (double)var9));
                     double var11 = 0.0D;
 
                     for (int var13 = 0; var13 < var10.Count; ++var13)
@@ -123,9 +123,9 @@ namespace betareborn.Entities
                         if (var14.canBeCollidedWith())
                         {
                             float var15 = var14.getCollisionBorderSize();
-                            AxisAlignedBB var16 = var14.boundingBox.expand((double)var15, (double)var15, (double)var15);
-                            MovingObjectPosition var17 = var16.func_1169_a(var6, var8);
-                            if (var16.isVecInside(var6))
+                            Box var16 = var14.boundingBox.expand((double)var15, (double)var15, (double)var15);
+                            MovingObjectPosition var17 = var16.raycast(var6, var8);
+                            if (var16.contains(var6))
                             {
                                 if (0.0D < var11 || var11 == 0.0D)
                                 {

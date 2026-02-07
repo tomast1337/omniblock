@@ -34,7 +34,7 @@ namespace betareborn.Containers
 
             for (var3 = 0; var3 < 4; ++var3)
             {
-                addSlot(new SlotArmor(this, var1, var1.getSizeInventory() - 1 - var3, 8, 8 + var3 * 18, var3));
+                addSlot(new SlotArmor(this, var1, var1.size() - 1 - var3, 8, 8 + var3 * 18, var3));
             }
 
             for (var3 = 0; var3 < 3; ++var3)
@@ -55,7 +55,7 @@ namespace betareborn.Containers
 
         public override void onCraftMatrixChanged(IInventory var1)
         {
-            craftResult.setInventorySlotContents(0, CraftingManager.getInstance().findMatchingRecipe(craftMatrix));
+            craftResult.setStack(0, CraftingManager.getInstance().findMatchingRecipe(craftMatrix));
         }
 
         public override void onCraftGuiClosed(EntityPlayer var1)
@@ -64,11 +64,11 @@ namespace betareborn.Containers
 
             for (int var2 = 0; var2 < 4; ++var2)
             {
-                ItemStack var3 = craftMatrix.getStackInSlot(var2);
+                ItemStack var3 = craftMatrix.getStack(var2);
                 if (var3 != null)
                 {
                     var1.dropPlayerItem(var3);
-                    craftMatrix.setInventorySlotContents(var2, (ItemStack)null);
+                    craftMatrix.setStack(var2, (ItemStack)null);
                 }
             }
 

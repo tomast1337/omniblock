@@ -11,7 +11,7 @@ namespace betareborn.Blocks
         {
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }
@@ -224,7 +224,7 @@ namespace betareborn.Blocks
                     var17 = (double)(var5.nextFloat() * 2.0F * (float)var19);
                 }
 
-                var1.spawnParticle("portal", var7, var9, var11, var13, var15, var17);
+                var1.addParticle("portal", var7, var9, var11, var13, var15, var17);
             }
 
         }

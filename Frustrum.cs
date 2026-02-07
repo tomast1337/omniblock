@@ -20,7 +20,7 @@ namespace betareborn
             return clippingHelper.isBoxInFrustum(var1 - xPosition, var3 - yPosition, var5 - zPosition, var7 - xPosition, var9 - yPosition, var11 - zPosition);
         }
 
-        public bool isBoundingBoxInFrustum(AxisAlignedBB var1)
+        public bool isBoundingBoxInFrustum(Box var1)
         {
             return isBoxInFrustum(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
         }

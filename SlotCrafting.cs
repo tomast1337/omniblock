@@ -57,15 +57,15 @@ namespace betareborn
                 thePlayer.addStat(Achievements.CRAFT_SWORD, 1);
             }
 
-            for (int var2 = 0; var2 < craftMatrix.getSizeInventory(); ++var2)
+            for (int var2 = 0; var2 < craftMatrix.size(); ++var2)
             {
-                ItemStack var3 = craftMatrix.getStackInSlot(var2);
+                ItemStack var3 = craftMatrix.getStack(var2);
                 if (var3 != null)
                 {
-                    craftMatrix.decrStackSize(var2, 1);
+                    craftMatrix.removeStack(var2, 1);
                     if (var3.getItem().hasContainerItem())
                     {
-                        craftMatrix.setInventorySlotContents(var2, new ItemStack(var3.getItem().getContainerItem()));
+                        craftMatrix.setStack(var2, new ItemStack(var3.getItem().getContainerItem()));
                     }
                 }
             }

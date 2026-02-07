@@ -109,7 +109,7 @@ namespace betareborn.Items
 
                                 for (int var28 = 0; var28 < 8; ++var28)
                                 {
-                                    var2.spawnParticle("largesmoke", (double)var25 + java.lang.Math.random(), (double)var26 + java.lang.Math.random(), (double)var27 + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
+                                    var2.addParticle("largesmoke", (double)var25 + java.lang.Math.random(), (double)var26 + java.lang.Math.random(), (double)var27 + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
                                 }
                             }
                             else

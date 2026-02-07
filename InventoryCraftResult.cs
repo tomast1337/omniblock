@@ -8,22 +8,22 @@ namespace betareborn
 
         private ItemStack[] stackResult = new ItemStack[1];
 
-        public int getSizeInventory()
+        public int size()
         {
             return 1;
         }
 
-        public ItemStack getStackInSlot(int var1)
+        public ItemStack getStack(int var1)
         {
             return stackResult[var1];
         }
 
-        public string getInvName()
+        public string getName()
         {
             return "Result";
         }
 
-        public ItemStack decrStackSize(int var1, int var2)
+        public ItemStack removeStack(int var1, int var2)
         {
             if (stackResult[var1] != null)
             {
@@ -37,12 +37,12 @@ namespace betareborn
             }
         }
 
-        public void setInventorySlotContents(int var1, ItemStack var2)
+        public void setStack(int var1, ItemStack var2)
         {
             stackResult[var1] = var2;
         }
 
-        public int getInventoryStackLimit()
+        public int getMaxCountPerStack()
         {
             return 64;
         }
@@ -51,7 +51,7 @@ namespace betareborn
         {
         }
 
-        public bool canInteractWith(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer var1)
         {
             return true;
         }

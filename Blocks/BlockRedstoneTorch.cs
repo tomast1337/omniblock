@@ -125,7 +125,7 @@ namespace betareborn.Blocks
                             double var8 = (double)var2 + var5.nextDouble() * 0.6D + 0.2D;
                             double var10 = (double)var3 + var5.nextDouble() * 0.6D + 0.2D;
                             double var12 = (double)var4 + var5.nextDouble() * 0.6D + 0.2D;
-                            var1.spawnParticle("smoke", var8, var10, var12, 0.0D, 0.0D, 0.0D);
+                            var1.addParticle("smoke", var8, var10, var12, 0.0D, 0.0D, 0.0D);
                         }
                     }
                 }
@@ -170,23 +170,23 @@ namespace betareborn.Blocks
                 double var15 = (double)0.27F;
                 if (var6 == 1)
                 {
-                    var1.spawnParticle("reddust", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                    var1.addParticle("reddust", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
                 }
                 else if (var6 == 2)
                 {
-                    var1.spawnParticle("reddust", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                    var1.addParticle("reddust", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
                 }
                 else if (var6 == 3)
                 {
-                    var1.spawnParticle("reddust", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
+                    var1.addParticle("reddust", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
                 }
                 else if (var6 == 4)
                 {
-                    var1.spawnParticle("reddust", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
+                    var1.addParticle("reddust", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
                 }
                 else
                 {
-                    var1.spawnParticle("reddust", var7, var9, var11, 0.0D, 0.0D, 0.0D);
+                    var1.addParticle("reddust", var7, var9, var11, 0.0D, 0.0D, 0.0D);
                 }
 
             }

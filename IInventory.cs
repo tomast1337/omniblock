@@ -5,21 +5,21 @@ namespace betareborn
 {
     public interface IInventory
     {
-        int getSizeInventory();
+        int size();
 
-        ItemStack getStackInSlot(int var1);
+        ItemStack getStack(int var1);
 
-        ItemStack decrStackSize(int var1, int var2);
+        ItemStack removeStack(int var1, int var2);
 
-        void setInventorySlotContents(int var1, ItemStack var2);
+        void setStack(int var1, ItemStack var2);
 
-        string getInvName();
+        string getName();
 
-        int getInventoryStackLimit();
+        int getMaxCountPerStack();
 
         void markDirty();
 
-        bool canInteractWith(EntityPlayer var1);
+        bool canPlayerUse(EntityPlayer var1);
     }
 
 }

@@ -109,7 +109,7 @@ namespace betareborn.Worlds
                                     ItemStack var18 = pickCheckLootItem(var2);
                                     if (var18 != null)
                                     {
-                                        var16.setInventorySlotContents(var2.nextInt(var16.getSizeInventory()), var18);
+                                        var16.setStack(var2.nextInt(var16.size()), var18);
                                     }
                                 }
                             }
@@ -119,7 +119,7 @@ namespace betareborn.Worlds
 
                 var1.setBlockWithNotify(var3, var4, var5, Block.mobSpawner.blockID);
                 TileEntityMobSpawner var19 = (TileEntityMobSpawner)var1.getBlockTileEntity(var3, var4, var5);
-                var19.setMobID(pickMobSpawner(var2));
+                var19.setSpawnedEntityId(pickMobSpawner(var2));
                 return true;
             }
             else

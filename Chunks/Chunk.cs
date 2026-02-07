@@ -598,7 +598,7 @@ namespace betareborn.Chunks
             isModified = true;
         }
 
-        public virtual void getEntitiesWithinAABBForEntity(Entity var1, AxisAlignedBB var2, List<Entity> var3)
+        public virtual void getEntitiesWithinAABBForEntity(Entity var1, Box var2, List<Entity> var3)
         {
             int var4 = MathHelper.floor_double((var2.minY - 2.0D) / 16.0D);
             int var5 = MathHelper.floor_double((var2.maxY + 2.0D) / 16.0D);
@@ -619,7 +619,7 @@ namespace betareborn.Chunks
                 for (int var8 = 0; var8 < var7.Count; ++var8)
                 {
                     Entity var9 = var7[var8];
-                    if (var9 != var1 && var9.boundingBox.intersectsWith(var2))
+                    if (var9 != var1 && var9.boundingBox.intersects(var2))
                     {
                         var3.Add(var9);
                     }
@@ -628,7 +628,7 @@ namespace betareborn.Chunks
 
         }
 
-        public virtual void getEntitiesOfTypeWithinAAAB(java.lang.Class var1, AxisAlignedBB var2, List<Entity> var3)
+        public virtual void getEntitiesOfTypeWithinAAAB(java.lang.Class var1, Box var2, List<Entity> var3)
         {
             int var4 = MathHelper.floor_double((var2.minY - 2.0D) / 16.0D);
             int var5 = MathHelper.floor_double((var2.maxY + 2.0D) / 16.0D);
@@ -649,7 +649,7 @@ namespace betareborn.Chunks
                 for (int var8 = 0; var8 < var7.Count; ++var8)
                 {
                     Entity var9 = var7[var8];
-                    if (var1.isAssignableFrom(var9.getClass()) && var9.boundingBox.intersectsWith(var2))
+                    if (var1.isAssignableFrom(var9.getClass()) && var9.boundingBox.intersects(var2))
                     {
                         var3.Add(var9);
                     }

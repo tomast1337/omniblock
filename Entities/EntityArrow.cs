@@ -108,8 +108,8 @@ namespace betareborn.Entities
             if (var15 > 0)
             {
                 Block.blocksList[var15].setBlockBoundsBasedOnState(worldObj, xTile, yTile, zTile);
-                AxisAlignedBB var2 = Block.blocksList[var15].getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
-                if (var2 != null && var2.isVecInside(Vec3D.createVector(posX, posY, posZ)))
+                Box var2 = Block.blocksList[var15].getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
+                if (var2 != null && var2.contains(Vec3D.createVector(posX, posY, posZ)))
                 {
                     inGround = true;
                 }
@@ -157,7 +157,7 @@ namespace betareborn.Entities
                 }
 
                 Entity var4 = null;
-                var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+                var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.stretch(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
                 double var6 = 0.0D;
 
                 float var10;
@@ -167,8 +167,8 @@ namespace betareborn.Entities
                     if (var9.canBeCollidedWith() && (var9 != owner || ticksInAir >= 5))
                     {
                         var10 = 0.3F;
-                        AxisAlignedBB var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
-                        MovingObjectPosition var12 = var11.func_1169_a(var16, var17);
+                        Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
+                        MovingObjectPosition var12 = var11.raycast(var16, var17);
                         if (var12 != null)
                         {
                             double var13 = var16.distanceTo(var12.hitVec);
@@ -260,7 +260,7 @@ namespace betareborn.Entities
                     for (int var21 = 0; var21 < 4; ++var21)
                     {
                         float var22 = 0.25F;
-                        worldObj.spawnParticle("bubble", posX - motionX * (double)var22, posY - motionY * (double)var22, posZ - motionZ * (double)var22, motionX, motionY, motionZ);
+                        worldObj.addParticle("bubble", posX - motionX * (double)var22, posY - motionY * (double)var22, posZ - motionZ * (double)var22, motionX, motionY, motionZ);
                     }
 
                     var20 = 0.8F;

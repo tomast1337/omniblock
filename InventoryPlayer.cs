@@ -43,7 +43,7 @@ namespace betareborn
         {
             for (int var2 = 0; var2 < mainInventory.Length; ++var2)
             {
-                if (mainInventory[var2] != null && mainInventory[var2].itemID == var1.itemID && mainInventory[var2].isStackable() && mainInventory[var2].stackSize < mainInventory[var2].getMaxStackSize() && mainInventory[var2].stackSize < getInventoryStackLimit() && (!mainInventory[var2].getHasSubtypes() || mainInventory[var2].getItemDamage() == var1.getItemDamage()))
+                if (mainInventory[var2] != null && mainInventory[var2].itemID == var1.itemID && mainInventory[var2].isStackable() && mainInventory[var2].stackSize < mainInventory[var2].getMaxStackSize() && mainInventory[var2].stackSize < getMaxCountPerStack() && (!mainInventory[var2].getHasSubtypes() || mainInventory[var2].getItemDamage() == var1.getItemDamage()))
                 {
                     return var2;
                 }
@@ -124,9 +124,9 @@ namespace betareborn
                     var5 = mainInventory[var4].getMaxStackSize() - mainInventory[var4].stackSize;
                 }
 
-                if (var5 > getInventoryStackLimit() - mainInventory[var4].stackSize)
+                if (var5 > getMaxCountPerStack() - mainInventory[var4].stackSize)
                 {
-                    var5 = getInventoryStackLimit() - mainInventory[var4].stackSize;
+                    var5 = getMaxCountPerStack() - mainInventory[var4].stackSize;
                 }
 
                 if (var5 == 0)
@@ -203,7 +203,7 @@ namespace betareborn
             }
         }
 
-        public ItemStack decrStackSize(int var1, int var2)
+        public ItemStack removeStack(int var1, int var2)
         {
             ItemStack[] var3 = mainInventory;
             if (var1 >= mainInventory.Length)
@@ -238,7 +238,7 @@ namespace betareborn
             }
         }
 
-        public void setInventorySlotContents(int var1, ItemStack var2)
+        public void setStack(int var1, ItemStack var2)
         {
             ItemStack[] var3 = mainInventory;
             if (var1 >= var3.Length)
@@ -316,12 +316,12 @@ namespace betareborn
 
         }
 
-        public int getSizeInventory()
+        public int size()
         {
             return mainInventory.Length + 4;
         }
 
-        public ItemStack getStackInSlot(int var1)
+        public ItemStack getStack(int var1)
         {
             ItemStack[] var2 = mainInventory;
             if (var1 >= var2.Length)
@@ -333,19 +333,19 @@ namespace betareborn
             return var2[var1];
         }
 
-        public String getInvName()
+        public String getName()
         {
             return "Inventory";
         }
 
-        public int getInventoryStackLimit()
+        public int getMaxCountPerStack()
         {
             return 64;
         }
 
         public int getDamageVsEntity(Entity var1)
         {
-            ItemStack var2 = getStackInSlot(currentItem);
+            ItemStack var2 = getStack(currentItem);
             return var2 != null ? var2.getDamageVsEntity(var1) : 1;
         }
 
@@ -357,7 +357,7 @@ namespace betareborn
             }
             else
             {
-                ItemStack var2 = getStackInSlot(currentItem);
+                ItemStack var2 = getStack(currentItem);
                 return var2 != null ? var2.canHarvestBlock(var1) : false;
             }
         }
@@ -453,7 +453,7 @@ namespace betareborn
             return itemStack;
         }
 
-        public bool canInteractWith(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer var1)
         {
             return player.isDead ? false : var1.getDistanceSqToEntity(player) <= 64.0D;
         }

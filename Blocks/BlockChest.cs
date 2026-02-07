@@ -170,9 +170,9 @@ namespace betareborn.Blocks
         {
             TileEntityChest var5 = (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4);
 
-            for (int var6 = 0; var6 < var5.getSizeInventory(); ++var6)
+            for (int var6 = 0; var6 < var5.size(); ++var6)
             {
-                ItemStack var7 = var5.getStackInSlot(var6);
+                ItemStack var7 = var5.getStack(var6);
                 if (var7 != null)
                 {
                     float var8 = random.nextFloat() * 0.8F + 0.1F;

@@ -52,7 +52,7 @@ namespace betareborn.Containers
 
         public override void onCraftMatrixChanged(IInventory var1)
         {
-            craftResult.setInventorySlotContents(0, CraftingManager.getInstance().findMatchingRecipe(craftMatrix));
+            craftResult.setStack(0, CraftingManager.getInstance().findMatchingRecipe(craftMatrix));
         }
 
         public override void onCraftGuiClosed(EntityPlayer var1)
@@ -62,7 +62,7 @@ namespace betareborn.Containers
             {
                 for (int var2 = 0; var2 < 9; ++var2)
                 {
-                    ItemStack var3 = craftMatrix.getStackInSlot(var2);
+                    ItemStack var3 = craftMatrix.getStack(var2);
                     if (var3 != null)
                     {
                         var1.dropPlayerItem(var3);

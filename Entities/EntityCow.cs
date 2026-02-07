@@ -54,7 +54,7 @@ namespace betareborn.Entities
             ItemStack var2 = var1.inventory.getCurrentItem();
             if (var2 != null && var2.itemID == Item.bucketEmpty.shiftedIndex)
             {
-                var1.inventory.setInventorySlotContents(var1.inventory.currentItem, new ItemStack(Item.bucketMilk));
+                var1.inventory.setStack(var1.inventory.currentItem, new ItemStack(Item.bucketMilk));
                 return true;
             }
             else

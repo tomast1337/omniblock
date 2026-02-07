@@ -31,7 +31,7 @@ namespace betareborn.Entities
 
         public override bool isInRangeToRenderDist(double var1)
         {
-            double var3 = boundingBox.getAverageEdgeLength() * 4.0D;
+            double var3 = boundingBox.getAverageSizeLength() * 4.0D;
             var3 *= 64.0D;
             return var1 < var3 * var3;
         }
@@ -110,7 +110,7 @@ namespace betareborn.Entities
             }
 
             Entity var4 = null;
-            var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+            var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.stretch(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
             double var6 = 0.0D;
 
             for (int var8 = 0; var8 < var5.Count; ++var8)
@@ -119,8 +119,8 @@ namespace betareborn.Entities
                 if (var9.canBeCollidedWith() && (var9 != field_9397_j || field_9395_l >= 25))
                 {
                     float var10 = 0.3F;
-                    AxisAlignedBB var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
-                    MovingObjectPosition var12 = var11.func_1169_a(var15, var2);
+                    Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
+                    MovingObjectPosition var12 = var11.raycast(var15, var2);
                     if (var12 != null)
                     {
                         double var13 = var15.distanceTo(var12.hitVec);
@@ -185,7 +185,7 @@ namespace betareborn.Entities
                 for (int var18 = 0; var18 < 4; ++var18)
                 {
                     float var19 = 0.25F;
-                    worldObj.spawnParticle("bubble", posX - motionX * (double)var19, posY - motionY * (double)var19, posZ - motionZ * (double)var19, motionX, motionY, motionZ);
+                    worldObj.addParticle("bubble", posX - motionX * (double)var19, posY - motionY * (double)var19, posZ - motionZ * (double)var19, motionX, motionY, motionZ);
                 }
 
                 var17 = 0.8F;
@@ -197,7 +197,7 @@ namespace betareborn.Entities
             motionX *= (double)var17;
             motionY *= (double)var17;
             motionZ *= (double)var17;
-            worldObj.spawnParticle("smoke", posX, posY + 0.5D, posZ, 0.0D, 0.0D, 0.0D);
+            worldObj.addParticle("smoke", posX, posY + 0.5D, posZ, 0.0D, 0.0D, 0.0D);
             setPosition(posX, posY, posZ);
         }
 

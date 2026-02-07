@@ -103,7 +103,7 @@ namespace betareborn.Blocks
             return new TileEntityPiston(var0, var1, var2, var3, var4);
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             TileEntityPiston var5 = func_31034_c(var1, var2, var3, var4);
             if (var5 == null)
@@ -151,11 +151,11 @@ namespace betareborn.Blocks
 
         }
 
-        public AxisAlignedBB func_31035_a(World var1, int var2, int var3, int var4, int var5, float var6, int var7)
+        public Box func_31035_a(World var1, int var2, int var3, int var4, int var5, float var6, int var7)
         {
             if (var5 != 0 && var5 != blockID)
             {
-                AxisAlignedBB var8 = Block.blocksList[var5].getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
+                Box var8 = Block.blocksList[var5].getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
                 if (var8 == null)
                 {
                     return null;

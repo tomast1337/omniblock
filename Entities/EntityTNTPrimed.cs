@@ -74,7 +74,7 @@ namespace betareborn.Entities
             }
             else
             {
-                worldObj.spawnParticle("smoke", posX, posY + 0.5D, posZ, 0.0D, 0.0D, 0.0D);
+                worldObj.addParticle("smoke", posX, posY + 0.5D, posZ, 0.0D, 0.0D, 0.0D);
             }
 
         }

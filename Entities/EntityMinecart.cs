@@ -62,12 +62,12 @@ namespace betareborn.Entities
         {
         }
 
-        public override AxisAlignedBB getCollisionBox(Entity var1)
+        public override Box getCollisionBox(Entity var1)
         {
             return var1.boundingBox;
         }
 
-        public override AxisAlignedBB getBoundingBox()
+        public override Box getBoundingBox()
         {
             return null;
         }
@@ -115,9 +115,9 @@ namespace betareborn.Entities
                     {
                         EntityMinecart var3 = this;
 
-                        for (int var4 = 0; var4 < var3.getSizeInventory(); ++var4)
+                        for (int var4 = 0; var4 < var3.size(); ++var4)
                         {
-                            ItemStack var5 = var3.getStackInSlot(var4);
+                            ItemStack var5 = var3.getStack(var4);
                             if (var5 != null)
                             {
                                 float var6 = rand.nextFloat() * 0.8F + 0.1F;
@@ -174,9 +174,9 @@ namespace betareborn.Entities
 
         public override void setEntityDead()
         {
-            for (int var1 = 0; var1 < getSizeInventory(); ++var1)
+            for (int var1 = 0; var1 < size(); ++var1)
             {
-                ItemStack var2 = getStackInSlot(var1);
+                ItemStack var2 = getStack(var1);
                 if (var2 != null)
                 {
                     float var3 = rand.nextFloat() * 0.8F + 0.1F;
@@ -616,7 +616,7 @@ namespace betareborn.Entities
                         pushX = pushZ = 0.0D;
                     }
 
-                    worldObj.spawnParticle("largesmoke", posX, posY + 0.8D, posZ, 0.0D, 0.0D, 0.0D);
+                    worldObj.addParticle("largesmoke", posX, posY + 0.8D, posZ, 0.0D, 0.0D, 0.0D);
                 }
 
             }
@@ -788,7 +788,7 @@ namespace betareborn.Entities
             else if (minecartType == 1)
             {
                 NBTTagList var2 = var1.getTagList("Items");
-                cargoItems = new ItemStack[getSizeInventory()];
+                cargoItems = new ItemStack[size()];
 
                 for (int var3 = 0; var3 < var2.tagCount(); ++var3)
                 {
@@ -893,17 +893,17 @@ namespace betareborn.Entities
             }
         }
 
-        public int getSizeInventory()
+        public int size()
         {
             return 27;
         }
 
-        public ItemStack getStackInSlot(int var1)
+        public ItemStack getStack(int var1)
         {
             return cargoItems[var1];
         }
 
-        public ItemStack decrStackSize(int var1, int var2)
+        public ItemStack removeStack(int var1, int var2)
         {
             if (cargoItems[var1] != null)
             {
@@ -931,22 +931,22 @@ namespace betareborn.Entities
             }
         }
 
-        public void setInventorySlotContents(int var1, ItemStack var2)
+        public void setStack(int var1, ItemStack var2)
         {
             cargoItems[var1] = var2;
-            if (var2 != null && var2.stackSize > getInventoryStackLimit())
+            if (var2 != null && var2.stackSize > getMaxCountPerStack())
             {
-                var2.stackSize = getInventoryStackLimit();
+                var2.stackSize = getMaxCountPerStack();
             }
 
         }
 
-        public string getInvName()
+        public string getName()
         {
             return "Minecart";
         }
 
-        public int getInventoryStackLimit()
+        public int getMaxCountPerStack()
         {
             return 64;
         }
@@ -983,7 +983,7 @@ namespace betareborn.Entities
                 {
                     if (--var2.stackSize == 0)
                     {
-                        var1.inventory.setInventorySlotContents(var1.inventory.currentItem, (ItemStack)null);
+                        var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                     }
 
                     fuel += 1200;
@@ -1016,7 +1016,7 @@ namespace betareborn.Entities
             field_9407_s = motionZ = var5;
         }
 
-        public bool canInteractWith(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer var1)
         {
             return isDead ? false : var1.getDistanceSqToEntity(this) <= 64.0D;
         }

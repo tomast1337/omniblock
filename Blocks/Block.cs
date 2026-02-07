@@ -283,24 +283,24 @@ namespace betareborn.Blocks
             return blockIndexInTexture;
         }
 
-        public virtual AxisAlignedBB getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public virtual Box getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
-            return AxisAlignedBB.getBoundingBoxFromPool((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)var3 + maxY, (double)var4 + maxZ);
+            return Box.createCached((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)var3 + maxY, (double)var4 + maxZ);
         }
 
-        public virtual void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, AxisAlignedBB var5, List<AxisAlignedBB> var6)
+        public virtual void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
         {
-            AxisAlignedBB var7 = getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
-            if (var7 != null && var5.intersectsWith(var7))
+            Box var7 = getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
+            if (var7 != null && var5.intersects(var7))
             {
                 var6.Add(var7);
             }
 
         }
 
-        public virtual AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public virtual Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
-            return AxisAlignedBB.getBoundingBoxFromPool((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)var3 + maxY, (double)var4 + maxZ);
+            return Box.createCached((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)var3 + maxY, (double)var4 + maxZ);
         }
 
         public virtual bool isOpaqueCube()

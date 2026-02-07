@@ -144,7 +144,7 @@ namespace betareborn.Entities
             var6 += func_411_c(art.sizeY);
             setPosition((double)var5, (double)var6, (double)var7);
             float var9 = -(0.1F / 16.0F);
-            boundingBox.setBounds((double)(var5 - var2 - var9), (double)(var6 - var3 - var9), (double)(var7 - var4 - var9), (double)(var5 + var2 + var9), (double)(var6 + var3 + var9), (double)(var7 + var4 + var9));
+            boundingBox.set((double)(var5 - var2 - var9), (double)(var6 - var3 - var9), (double)(var7 - var4 - var9), (double)(var5 + var2 + var9), (double)(var6 + var3 + var9), (double)(var7 + var4 + var9));
         }
 
         private float func_411_c(int var1)

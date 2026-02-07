@@ -51,7 +51,7 @@ namespace betareborn.Worlds
         public bool findingSpawnPoint;
         private bool allPlayersSleeping;
         public MapStorage field_28108_z;
-        private readonly List<AxisAlignedBB> collidingBoundingBoxes;
+        private readonly List<Box> collidingBoundingBoxes;
         private bool field_31055_L;
         private int lightingUpdatesCounter;
         private bool spawnHostileMobs;
@@ -1130,7 +1130,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
+        public void addParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
         {
             for (int var14 = 0; var14 < worldAccesses.Count; ++var14)
             {
@@ -1224,7 +1224,7 @@ namespace betareborn.Worlds
             worldAccesses.Remove(var1);
         }
 
-        public List<AxisAlignedBB> getCollidingBoundingBoxes(Entity var1, AxisAlignedBB var2)
+        public List<Box> getCollidingBoundingBoxes(Entity var1, Box var2)
         {
             collidingBoundingBoxes.Clear();
             int var3 = MathHelper.floor_double(var2.minX);
@@ -1257,14 +1257,14 @@ namespace betareborn.Worlds
 
             for (int var16 = 0; var16 < var15.Count; ++var16)
             {
-                AxisAlignedBB var13 = var15[var16].getBoundingBox();
-                if (var13 != null && var13.intersectsWith(var2))
+                Box var13 = var15[var16].getBoundingBox();
+                if (var13 != null && var13.intersects(var2))
                 {
                     collidingBoundingBoxes.Add(var13);
                 }
 
                 var13 = var1.getCollisionBox(var15[var16]);
-                if (var13 != null && var13.intersectsWith(var2))
+                if (var13 != null && var13.intersects(var2))
                 {
                     collidingBoundingBoxes.Add(var13);
                 }
@@ -1717,7 +1717,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public bool checkIfAABBIsClear(AxisAlignedBB var1)
+        public bool checkIfAABBIsClear(Box var1)
         {
             List<Entity> var2 = getEntitiesWithinAABBExcludingEntity((Entity)null, var1);
 
@@ -1733,7 +1733,7 @@ namespace betareborn.Worlds
             return true;
         }
 
-        public bool getIsAnyLiquid(AxisAlignedBB var1)
+        public bool getIsAnyLiquid(Box var1)
         {
             int var2 = MathHelper.floor_double(var1.minX);
             int var3 = MathHelper.floor_double(var1.maxX + 1.0D);
@@ -1774,7 +1774,7 @@ namespace betareborn.Worlds
             return false;
         }
 
-        public bool isBoundingBoxBurning(AxisAlignedBB var1)
+        public bool isBoundingBoxBurning(Box var1)
         {
             int var2 = MathHelper.floor_double(var1.minX);
             int var3 = MathHelper.floor_double(var1.maxX + 1.0D);
@@ -1803,7 +1803,7 @@ namespace betareborn.Worlds
             return false;
         }
 
-        public bool handleMaterialAcceleration(AxisAlignedBB var1, Material var2, Entity var3)
+        public bool handleMaterialAcceleration(Box var1, Material var2, Entity var3)
         {
             int var4 = MathHelper.floor_double(var1.minX);
             int var5 = MathHelper.floor_double(var1.maxX + 1.0D);
@@ -1853,7 +1853,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public bool isMaterialInBB(AxisAlignedBB var1, Material var2)
+        public bool isMaterialInBB(Box var1, Material var2)
         {
             int var3 = MathHelper.floor_double(var1.minX);
             int var4 = MathHelper.floor_double(var1.maxX + 1.0D);
@@ -1880,7 +1880,7 @@ namespace betareborn.Worlds
             return false;
         }
 
-        public bool isAABBInMaterial(AxisAlignedBB var1, Material var2)
+        public bool isAABBInMaterial(Box var1, Material var2)
         {
             int var3 = MathHelper.floor_double(var1.minX);
             int var4 = MathHelper.floor_double(var1.maxX + 1.0D);
@@ -1931,7 +1931,7 @@ namespace betareborn.Worlds
             return var10;
         }
 
-        public float func_675_a(Vec3D var1, AxisAlignedBB var2)
+        public float func_675_a(Vec3D var1, Box var2)
         {
             double var3 = 1.0D / ((var2.maxX - var2.minX) * 2.0D + 1.0D);
             double var5 = 1.0D / ((var2.maxY - var2.minY) * 2.0D + 1.0D);
@@ -2559,7 +2559,7 @@ namespace betareborn.Worlds
 
         }
 
-        public List<Entity> getEntitiesWithinAABBExcludingEntity(Entity var1, AxisAlignedBB var2)
+        public List<Entity> getEntitiesWithinAABBExcludingEntity(Entity var1, Box var2)
         {
             field_1012_M.Clear();
             int var3 = MathHelper.floor_double((var2.minX - 2.0D) / 16.0D);
@@ -2581,7 +2581,7 @@ namespace betareborn.Worlds
             return field_1012_M;
         }
 
-        public List<Entity> getEntitiesWithinAABB(Class var1, AxisAlignedBB var2)
+        public List<Entity> getEntitiesWithinAABB(Class var1, Box var2)
         {
             int var3 = MathHelper.floor_double((var2.minX - 2.0D) / 16.0D);
             int var4 = MathHelper.floor_double((var2.maxX + 2.0D) / 16.0D);
@@ -2667,7 +2667,7 @@ namespace betareborn.Worlds
             int var7 = getBlockId(var2, var3, var4);
             Block var8 = Block.blocksList[var7];
             Block var9 = Block.blocksList[var1];
-            AxisAlignedBB var10 = var9.getCollisionBoundingBoxFromPool(this, var2, var3, var4);
+            Box var10 = var9.getCollisionBoundingBoxFromPool(this, var2, var3, var4);
             if (var5)
             {
                 var10 = null;

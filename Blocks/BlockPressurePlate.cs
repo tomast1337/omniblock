@@ -22,7 +22,7 @@ namespace betareborn.Blocks
             return 20;
         }
 
-        public override AxisAlignedBB getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
+        public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
             return null;
         }
@@ -92,17 +92,17 @@ namespace betareborn.Blocks
             List<Entity> var8 = null;
             if (triggerMobType == EnumMobType.everything)
             {
-                var8 = var1.getEntitiesWithinAABBExcludingEntity((Entity)null, AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
+                var8 = var1.getEntitiesWithinAABBExcludingEntity((Entity)null, Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
             }
 
             if (triggerMobType == EnumMobType.mobs)
             {
-                var8 = var1.getEntitiesWithinAABB(EntityLiving.Class, AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
+                var8 = var1.getEntitiesWithinAABB(EntityLiving.Class, Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
             }
 
             if (triggerMobType == EnumMobType.players)
             {
-                var8 = var1.getEntitiesWithinAABB(EntityPlayer.Class, AxisAlignedBB.getBoundingBoxFromPool((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
+                var8 = var1.getEntitiesWithinAABB(EntityPlayer.Class, Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
             }
 
             if (var8.Count > 0)

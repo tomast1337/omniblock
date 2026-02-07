@@ -146,11 +146,11 @@ namespace betareborn.Entities
             double var9 = (waypointX - posX) / var7;
             double var11 = (waypointY - posY) / var7;
             double var13 = (waypointZ - posZ) / var7;
-            AxisAlignedBB var15 = boundingBox.copy();
+            Box var15 = boundingBox.copy();
 
             for (int var16 = 1; (double)var16 < var7; ++var16)
             {
-                var15.offset(var9, var11, var13);
+                var15.translate(var9, var11, var13);
                 if (worldObj.getCollidingBoundingBoxes(this, var15).Count > 0)
                 {
                     return false;

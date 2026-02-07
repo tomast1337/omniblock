@@ -29,7 +29,7 @@ namespace betareborn.Entities
 
         public override bool isInRangeToRenderDist(double var1)
         {
-            double var3 = boundingBox.getAverageEdgeLength() * 4.0D;
+            double var3 = boundingBox.getAverageSizeLength() * 4.0D;
             var3 *= 64.0D;
             return var1 < var3 * var3;
         }
@@ -144,7 +144,7 @@ namespace betareborn.Entities
             if (!worldObj.multiplayerWorld)
             {
                 Entity var4 = null;
-                var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+                var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.stretch(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
                 double var6 = 0.0D;
 
                 for (int var8 = 0; var8 < var5.Count; ++var8)
@@ -153,8 +153,8 @@ namespace betareborn.Entities
                     if (var9.canBeCollidedWith() && (var9 != thrower || ticksInAirSnowball >= 5))
                     {
                         float var10 = 0.3F;
-                        AxisAlignedBB var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
-                        MovingObjectPosition var12 = var11.func_1169_a(var15, var2);
+                        Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
+                        MovingObjectPosition var12 = var11.raycast(var15, var2);
                         if (var12 != null)
                         {
                             double var13 = var15.distanceTo(var12.hitVec);
@@ -181,7 +181,7 @@ namespace betareborn.Entities
 
                 for (int var16 = 0; var16 < 8; ++var16)
                 {
-                    worldObj.spawnParticle("snowballpoof", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
+                    worldObj.addParticle("snowballpoof", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
                 }
 
                 setEntityDead();
@@ -221,7 +221,7 @@ namespace betareborn.Entities
                 for (int var7 = 0; var7 < 4; ++var7)
                 {
                     float var20 = 0.25F;
-                    worldObj.spawnParticle("bubble", posX - motionX * (double)var20, posY - motionY * (double)var20, posZ - motionZ * (double)var20, motionX, motionY, motionZ);
+                    worldObj.addParticle("bubble", posX - motionX * (double)var20, posY - motionY * (double)var20, posZ - motionZ * (double)var20, motionX, motionY, motionZ);
                 }
 
                 var18 = 0.8F;

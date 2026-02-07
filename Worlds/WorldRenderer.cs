@@ -244,7 +244,7 @@ namespace betareborn.Worlds
                     continue;
                 }
 
-                var aabb = AxisAlignedBB.getBoundingBoxFromPool(
+                var aabb = Box.createCached(
                     info.Pos.X, info.Pos.Y, info.Pos.Z,
                     info.Pos.X + SubChunkRenderer.SIZE,
                     info.Pos.Y + SubChunkRenderer.SIZE,

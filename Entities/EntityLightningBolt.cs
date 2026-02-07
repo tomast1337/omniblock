@@ -79,7 +79,7 @@ namespace betareborn.Entities
             if (field_27028_b >= 0)
             {
                 double var6 = 3.0D;
-                var var7 = worldObj.getEntitiesWithinAABBExcludingEntity(this, AxisAlignedBB.getBoundingBoxFromPool(posX - var6, posY - var6, posZ - var6, posX + var6, posY + 6.0D + var6, posZ + var6));
+                var var7 = worldObj.getEntitiesWithinAABBExcludingEntity(this, Box.createCached(posX - var6, posY - var6, posZ - var6, posX + var6, posY + 6.0D + var6, posZ + var6));
 
                 for (int var4 = 0; var4 < var7.Count; ++var4)
                 {

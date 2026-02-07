@@ -195,7 +195,7 @@ namespace betareborn.Rendering
             }
         }
 
-        public static void renderOffsetAABB(AxisAlignedBB var0, double var1, double var3, double var5)
+        public static void renderOffsetAABB(Box var0, double var1, double var3, double var5)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
             Tessellator var7 = Tessellator.instance;
@@ -237,7 +237,7 @@ namespace betareborn.Rendering
             GLManager.GL.Enable(GLEnum.Texture2D);
         }
 
-        public static void renderAABB(AxisAlignedBB var0)
+        public static void renderAABB(Box var0)
         {
             Tessellator var1 = Tessellator.instance;
             var1.startDrawingQuads();

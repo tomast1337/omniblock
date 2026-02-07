@@ -520,7 +520,7 @@ namespace betareborn
                     }
                     try
                     {
-                        AxisAlignedBB.clearBoundingBoxPool();
+                        Box.resetCacheCount();
                         Vec3D.initialize();
                         if (Display.isCloseRequested())
                         {
@@ -728,7 +728,7 @@ namespace betareborn
             try
             {
                 java.lang.System.gc();
-                AxisAlignedBB.cleanUp();
+                Box.clearCache();
                 Vec3D.cleanUp();
             }
             catch (Throwable var3)

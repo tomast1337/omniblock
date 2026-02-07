@@ -38,7 +38,7 @@ namespace betareborn.Containers
 
         public override bool isUsableByPlayer(EntityPlayer var1)
         {
-            return field_21149_a.canInteractWith(var1);
+            return field_21149_a.canPlayerUse(var1);
         }
     }
 

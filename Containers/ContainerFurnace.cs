@@ -84,7 +84,7 @@ namespace betareborn.Containers
 
         public override bool isUsableByPlayer(EntityPlayer var1)
         {
-            return furnace.canInteractWith(var1);
+            return furnace.canPlayerUse(var1);
         }
 
         public override ItemStack getStackInSlot(int var1)

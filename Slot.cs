@@ -30,7 +30,7 @@ namespace betareborn
 
         public ItemStack getStack()
         {
-            return inventory.getStackInSlot(slotIndex);
+            return inventory.getStack(slotIndex);
         }
 
         public bool getHasStack()
@@ -40,7 +40,7 @@ namespace betareborn
 
         public void putStack(ItemStack var1)
         {
-            inventory.setInventorySlotContents(slotIndex, var1);
+            inventory.setStack(slotIndex, var1);
             onSlotChanged();
         }
 
@@ -51,7 +51,7 @@ namespace betareborn
 
         public virtual int getSlotStackLimit()
         {
-            return inventory.getInventoryStackLimit();
+            return inventory.getMaxCountPerStack();
         }
 
         public int getBackgroundIconIndex()
@@ -61,7 +61,7 @@ namespace betareborn
 
         public ItemStack decrStackSize(int var1)
         {
-            return inventory.decrStackSize(slotIndex, var1);
+            return inventory.removeStack(slotIndex, var1);
         }
     }
 

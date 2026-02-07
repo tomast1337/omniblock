@@ -16,42 +16,42 @@ namespace betareborn
             lowerChest = var3;
         }
 
-        public int getSizeInventory()
+        public int size()
         {
-            return upperChest.getSizeInventory() + lowerChest.getSizeInventory();
+            return upperChest.size() + lowerChest.size();
         }
 
-        public string getInvName()
+        public string getName()
         {
             return name;
         }
 
-        public ItemStack getStackInSlot(int var1)
+        public ItemStack getStack(int var1)
         {
-            return var1 >= upperChest.getSizeInventory() ? lowerChest.getStackInSlot(var1 - upperChest.getSizeInventory()) : upperChest.getStackInSlot(var1);
+            return var1 >= upperChest.size() ? lowerChest.getStack(var1 - upperChest.size()) : upperChest.getStack(var1);
         }
 
-        public ItemStack decrStackSize(int var1, int var2)
+        public ItemStack removeStack(int var1, int var2)
         {
-            return var1 >= upperChest.getSizeInventory() ? lowerChest.decrStackSize(var1 - upperChest.getSizeInventory(), var2) : upperChest.decrStackSize(var1, var2);
+            return var1 >= upperChest.size() ? lowerChest.removeStack(var1 - upperChest.size(), var2) : upperChest.removeStack(var1, var2);
         }
 
-        public void setInventorySlotContents(int var1, ItemStack var2)
+        public void setStack(int var1, ItemStack var2)
         {
-            if (var1 >= upperChest.getSizeInventory())
+            if (var1 >= upperChest.size())
             {
-                lowerChest.setInventorySlotContents(var1 - upperChest.getSizeInventory(), var2);
+                lowerChest.setStack(var1 - upperChest.size(), var2);
             }
             else
             {
-                upperChest.setInventorySlotContents(var1, var2);
+                upperChest.setStack(var1, var2);
             }
 
         }
 
-        public int getInventoryStackLimit()
+        public int getMaxCountPerStack()
         {
-            return upperChest.getInventoryStackLimit();
+            return upperChest.getMaxCountPerStack();
         }
 
         public void markDirty()
@@ -60,9 +60,9 @@ namespace betareborn
             lowerChest.markDirty();
         }
 
-        public bool canInteractWith(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer var1)
         {
-            return upperChest.canInteractWith(var1) && lowerChest.canInteractWith(var1);
+            return upperChest.canPlayerUse(var1) && lowerChest.canPlayerUse(var1);
         }
     }
 
