@@ -7,10 +7,10 @@ namespace betareborn.Blocks
 {
     public class BlockDoor : Block
     {
-        public BlockDoor(int var1, Material var2) : base(var1, var2)
+        public BlockDoor(int id, Material material) : base(id, material)
         {
             textureId = 97;
-            if (var2 == Material.METAL)
+            if (material == Material.METAL)
             {
                 ++textureId;
             }
@@ -20,20 +20,20 @@ namespace betareborn.Blocks
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var4, 0.5F + var3);
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            if (var1 != 0 && var1 != 1)
+            if (side != 0 && side != 1)
             {
-                int var3 = getState(var2);
-                if ((var3 == 0 || var3 == 2) ^ var1 <= 3)
+                int var3 = setOpen(meta);
+                if ((var3 == 0 || var3 == 2) ^ side <= 3)
                 {
                     return textureId;
                 }
                 else
                 {
-                    int var4 = var3 / 2 + (var1 & 1 ^ var3);
-                    var4 += (var2 & 4) / 4;
-                    int var5 = textureId - (var2 & 8) * 2;
+                    int var4 = var3 / 2 + (side & 1 ^ var3);
+                    var4 += (meta & 4) / 4;
+                    int var5 = textureId - (meta & 8) * 2;
                     if ((var4 & 1) != 0)
                     {
                         var5 = -var5;
@@ -63,52 +63,52 @@ namespace betareborn.Blocks
             return 7;
         }
 
-        public override Box getBoundingBox(World var1, int var2, int var3, int var4)
+        public override Box getBoundingBox(World world, int x, int y, int z)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.getBoundingBox(var1, var2, var3, var4);
+            updateBoundingBox(world, x, y, z);
+            return base.getBoundingBox(world, x, y, z);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.getCollisionShape(var1, var2, var3, var4);
+            updateBoundingBox(world, x, y, z);
+            return base.getCollisionShape(world, x, y, z);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            setDoorRotation(getState(var1.getBlockMeta(var2, var3, var4)));
+            rotate(setOpen(blockView.getBlockMeta(x, y, z)));
         }
 
-        public void setDoorRotation(int var1)
+        public void rotate(int meta)
         {
             float var2 = 3.0F / 16.0F;
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F);
-            if (var1 == 0)
+            if (meta == 0)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, var2);
             }
 
-            if (var1 == 1)
+            if (meta == 1)
             {
                 setBoundingBox(1.0F - var2, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             }
 
-            if (var1 == 2)
+            if (meta == 2)
             {
                 setBoundingBox(0.0F, 0.0F, 1.0F - var2, 1.0F, 1.0F, 1.0F);
             }
 
-            if (var1 == 3)
+            if (meta == 3)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, var2, 1.0F, 1.0F);
             }
 
         }
 
-        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer var5)
         {
-            onUse(var1, var2, var3, var4, var5);
+            onUse(world, x, y, z, var5);
         }
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
@@ -138,114 +138,114 @@ namespace betareborn.Blocks
 
                     var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
                     var1.setBlocksDirty(var2, var3 - 1, var4, var2, var3, var4);
-                    var1.func_28107_a(var5, 1003, var2, var3, var4, 0);
+                    var1.worldEvent(var5, 1003, var2, var3, var4, 0);
                     return true;
                 }
             }
         }
 
-        public void onPoweredBlockChange(World var1, int var2, int var3, int var4, bool var5)
+        public void setOpen(World world, int x, int y, int z, bool open)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = world.getBlockMeta(x, y, z);
             if ((var6 & 8) != 0)
             {
-                if (var1.getBlockId(var2, var3 - 1, var4) == id)
+                if (world.getBlockId(x, y - 1, z) == id)
                 {
-                    onPoweredBlockChange(var1, var2, var3 - 1, var4, var5);
+                    setOpen(world, x, y - 1, z, open);
                 }
 
             }
             else
             {
-                bool var7 = (var1.getBlockMeta(var2, var3, var4) & 4) > 0;
-                if (var7 != var5)
+                bool var7 = (world.getBlockMeta(x, y, z) & 4) > 0;
+                if (var7 != open)
                 {
-                    if (var1.getBlockId(var2, var3 + 1, var4) == id)
+                    if (world.getBlockId(x, y + 1, z) == id)
                     {
-                        var1.setBlockMeta(var2, var3 + 1, var4, (var6 ^ 4) + 8);
+                        world.setBlockMeta(x, y + 1, z, (var6 ^ 4) + 8);
                     }
 
-                    var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                    var1.setBlocksDirty(var2, var3 - 1, var4, var2, var3, var4);
-                    var1.func_28107_a((EntityPlayer)null, 1003, var2, var3, var4, 0);
+                    world.setBlockMeta(x, y, z, var6 ^ 4);
+                    world.setBlocksDirty(x, y - 1, z, x, y, z);
+                    world.worldEvent((EntityPlayer)null, 1003, x, y, z, 0);
                 }
             }
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = world.getBlockMeta(x, y, z);
             if ((var6 & 8) != 0)
             {
-                if (var1.getBlockId(var2, var3 - 1, var4) != id)
+                if (world.getBlockId(x, y - 1, z) != base.id)
                 {
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    world.setBlockWithNotify(x, y, z, 0);
                 }
 
-                if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
+                if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
                 {
-                    neighborUpdate(var1, var2, var3 - 1, var4, var5);
+                    neighborUpdate(world, x, y - 1, z, id);
                 }
             }
             else
             {
                 bool var7 = false;
-                if (var1.getBlockId(var2, var3 + 1, var4) != id)
+                if (world.getBlockId(x, y + 1, z) != base.id)
                 {
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    world.setBlockWithNotify(x, y, z, 0);
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2, var3 - 1, var4))
+                if (!world.shouldSuffocate(x, y - 1, z))
                 {
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    world.setBlockWithNotify(x, y, z, 0);
                     var7 = true;
-                    if (var1.getBlockId(var2, var3 + 1, var4) == id)
+                    if (world.getBlockId(x, y + 1, z) == base.id)
                     {
-                        var1.setBlockWithNotify(var2, var3 + 1, var4, 0);
+                        world.setBlockWithNotify(x, y + 1, z, 0);
                     }
                 }
 
                 if (var7)
                 {
-                    if (!var1.isRemote)
+                    if (!world.isRemote)
                     {
-                        dropStacks(var1, var2, var3, var4, var6);
+                        dropStacks(world, x, y, z, var6);
                     }
                 }
-                else if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
+                else if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
                 {
-                    bool var8 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
-                    onPoweredBlockChange(var1, var2, var3, var4, var8);
+                    bool var8 = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
+                    setOpen(world, x, y, z, var8);
                 }
             }
 
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return (var1 & 8) != 0 ? 0 : (material == Material.METAL ? Item.doorSteel.id : Item.doorWood.id);
+            return (blockMeta & 8) != 0 ? 0 : (material == Material.METAL ? Item.doorSteel.id : Item.doorWood.id);
         }
 
-        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.raycast(var1, var2, var3, var4, var5, var6);
+            updateBoundingBox(world, x, y, z);
+            return base.raycast(world, x, y, z, startPos, endPos);
         }
 
-        public int getState(int var1)
+        public int setOpen(int meta)
         {
-            return (var1 & 4) == 0 ? var1 - 1 & 3 : var1 & 3;
+            return (meta & 4) == 0 ? meta - 1 & 3 : meta & 3;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return var3 >= 127 ? false : var1.shouldSuffocate(var2, var3 - 1, var4) && base.canPlaceAt(var1, var2, var3, var4) && base.canPlaceAt(var1, var2, var3 + 1, var4);
+            return y >= 127 ? false : world.shouldSuffocate(x, y - 1, z) && base.canPlaceAt(world, x, y, z) && base.canPlaceAt(world, x, y + 1, z);
         }
 
-        public static bool isOpen(int var0)
+        public static bool isOpen(int meta)
         {
-            return (var0 & 4) != 0;
+            return (meta & 4) != 0;
         }
 
         public override int getPistonBehavior()

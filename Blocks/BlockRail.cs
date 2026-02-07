@@ -150,7 +150,7 @@ namespace betareborn.Blocks
                 }
                 else if (id == Block.POWERED_RAIL.id)
                 {
-                    bool var9 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
+                    bool var9 = var1.isPowered(var2, var3, var4) || var1.isPowered(var2, var3 + 1, var4);
                     var9 = var9 || func_27044_a(var1, var2, var3, var4, var6, true, 0) || func_27044_a(var1, var2, var3, var4, var6, false, 0);
                     bool var10 = false;
                     if (var9 && (var6 & 8) == 0)
@@ -185,7 +185,7 @@ namespace betareborn.Blocks
         {
             if (!var1.isRemote)
             {
-                (new RailLogic(this, var1, var2, var3, var4)).func_792_a(var1.isBlockIndirectlyGettingPowered(var2, var3, var4), var5);
+                (new RailLogic(this, var1, var2, var3, var4)).func_792_a(var1.isPowered(var2, var3, var4), var5);
             }
         }
 
@@ -302,7 +302,7 @@ namespace betareborn.Blocks
 
                 if ((var9 & 8) != 0)
                 {
-                    if (!var1.isBlockIndirectlyGettingPowered(var2, var3, var4) && !var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4))
+                    if (!var1.isPowered(var2, var3, var4) && !var1.isPowered(var2, var3 + 1, var4))
                     {
                         return func_27044_a(var1, var2, var3, var4, var9, var5, var6 + 1);
                     }

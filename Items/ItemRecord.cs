@@ -26,7 +26,7 @@ namespace betareborn.Items
                 else
                 {
                     ((BlockJukeBox)Block.JUKEBOX).ejectRecord(var3, var4, var5, var6, id);
-                    var3.func_28107_a((EntityPlayer)null, 1005, var4, var5, var6, id);
+                    var3.worldEvent((EntityPlayer)null, 1005, var4, var5, var6, id);
                     --var1.count;
                     return true;
                 }

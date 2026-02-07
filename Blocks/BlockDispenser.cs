@@ -178,7 +178,7 @@ namespace betareborn.Blocks
         {
             if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
             {
-                bool var6 = world.isBlockIndirectlyGettingPowered(x, y, z) || world.isBlockIndirectlyGettingPowered(x, y + 1, z);
+                bool var6 = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
                 if (var6)
                 {
                     world.scheduleBlockUpdate(x, y, z, base.id, getTickRate());
@@ -189,7 +189,7 @@ namespace betareborn.Blocks
 
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (world.isBlockIndirectlyGettingPowered(x, y, z) || world.isBlockIndirectlyGettingPowered(x, y + 1, z))
+            if (world.isPowered(x, y, z) || world.isPowered(x, y + 1, z))
             {
                 dispense(world, x, y, z, random);
             }

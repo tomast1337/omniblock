@@ -1995,7 +1995,7 @@ namespace betareborn.Worlds
 
             if (getBlockId(var2, var3, var4) == Block.FIRE.id)
             {
-                func_28107_a(var1, 1004, var2, var3, var4, 0);
+                worldEvent(var1, 1004, var2, var3, var4, 0);
                 setBlockWithNotify(var2, var3, var4, 0);
             }
 
@@ -2744,7 +2744,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public bool isBlockIndirectlyGettingPowered(int var1, int var2, int var3)
+        public bool isPowered(int var1, int var2, int var3)
         {
             return isBlockIndirectlyProvidingPowerTo(var1, var2 - 1, var3, 0) ? true : (isBlockIndirectlyProvidingPowerTo(var1, var2 + 1, var3, 1) ? true : (isBlockIndirectlyProvidingPowerTo(var1, var2, var3 - 1, 2) ? true : (isBlockIndirectlyProvidingPowerTo(var1, var2, var3 + 1, 3) ? true : (isBlockIndirectlyProvidingPowerTo(var1 - 1, var2, var3, 4) ? true : isBlockIndirectlyProvidingPowerTo(var1 + 1, var2, var3, 5)))));
         }
@@ -3106,10 +3106,10 @@ namespace betareborn.Worlds
 
         public void worldEvent(int var1, int var2, int var3, int var4, int var5)
         {
-            func_28107_a((EntityPlayer)null, var1, var2, var3, var4, var5);
+            worldEvent((EntityPlayer)null, var1, var2, var3, var4, var5);
         }
 
-        public void func_28107_a(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
+        public void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
         {
             for (int var7 = 0; var7 < worldAccesses.Count; ++var7)
             {

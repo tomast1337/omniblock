@@ -102,7 +102,7 @@ namespace betareborn.Blocks
             {
                 int var6 = var1.getBlockMeta(var2, var3, var4);
                 var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                var1.func_28107_a(var5, 1003, var2, var3, var4, 0);
+                var1.worldEvent(var5, 1003, var2, var3, var4, 0);
                 return true;
             }
         }
@@ -114,7 +114,7 @@ namespace betareborn.Blocks
             if (var7 != var5)
             {
                 var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                var1.func_28107_a((EntityPlayer)null, 1003, var2, var3, var4, 0);
+                var1.worldEvent((EntityPlayer)null, 1003, var2, var3, var4, 0);
             }
         }
 
@@ -153,7 +153,7 @@ namespace betareborn.Blocks
 
                 if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
                 {
-                    bool var9 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4);
+                    bool var9 = var1.isPowered(var2, var3, var4);
                     onPoweredBlockChange(var1, var2, var3, var4, var9);
                 }
 

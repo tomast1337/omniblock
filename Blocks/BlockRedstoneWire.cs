@@ -72,7 +72,7 @@ namespace betareborn.Blocks
             int var8 = var1.getBlockMeta(var2, var3, var4);
             int var9 = 0;
             wiresProvidePower = false;
-            bool var10 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4);
+            bool var10 = var1.isPowered(var2, var3, var4);
             wiresProvidePower = true;
             int var11;
             int var12;
