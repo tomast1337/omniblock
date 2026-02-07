@@ -60,7 +60,7 @@ namespace betareborn.Worlds
         private readonly Set positionsToUpdate;
         private int soundCounter;
         private readonly List<Entity> field_1012_M;
-        public bool multiplayerWorld;
+        public bool isRemote;
 
         public BiomeSource getBiomeSource()
         {
@@ -98,7 +98,7 @@ namespace betareborn.Worlds
             positionsToUpdate = new HashSet();
             soundCounter = random.nextInt(12000);
             field_1012_M = [];
-            multiplayerWorld = false;
+            isRemote = false;
             saveHandler = var1;
             worldInfo = new WorldInfo(var4, var2);
             dimension = var3;
@@ -140,7 +140,7 @@ namespace betareborn.Worlds
             positionsToUpdate = new HashSet();
             soundCounter = random.nextInt(12000);
             field_1012_M = [];
-            multiplayerWorld = false;
+            isRemote = false;
             lockTimestamp = var1.lockTimestamp;
             saveHandler = var1.saveHandler;
             worldInfo = new WorldInfo(var1.worldInfo);
@@ -187,7 +187,7 @@ namespace betareborn.Worlds
             positionsToUpdate = new HashSet();
             soundCounter = random.nextInt(12000);
             field_1012_M = [];
-            multiplayerWorld = false;
+            isRemote = false;
             saveHandler = var1;
             field_28108_z = new MapStorage(var1);
             worldInfo = var1.loadWorldInfo();
@@ -636,7 +636,7 @@ namespace betareborn.Worlds
 
         private void notifyBlockOfNeighborChange(int var1, int var2, int var3, int var4)
         {
-            if (!editingBlocks && !multiplayerWorld)
+            if (!editingBlocks && !isRemote)
             {
                 Block var5 = Block.BLOCKS[getBlockId(var1, var2, var3)];
                 if (var5 != null)
@@ -893,17 +893,17 @@ namespace betareborn.Worlds
             return skylightSubtracted < 4;
         }
 
-        public MovingObjectPosition rayTraceBlocks(Vec3D var1, Vec3D var2)
+        public HitResult rayTraceBlocks(Vec3D var1, Vec3D var2)
         {
             return func_28105_a(var1, var2, false, false);
         }
 
-        public MovingObjectPosition rayTraceBlocks_do(Vec3D var1, Vec3D var2, bool var3)
+        public HitResult rayTraceBlocks_do(Vec3D var1, Vec3D var2, bool var3)
         {
             return func_28105_a(var1, var2, var3, false);
         }
 
-        public MovingObjectPosition func_28105_a(Vec3D var1, Vec3D var2, bool var3, bool var4)
+        public HitResult func_28105_a(Vec3D var1, Vec3D var2, bool var3, bool var4)
         {
             if (!java.lang.Double.isNaN(var1.xCoord) && !java.lang.Double.isNaN(var1.yCoord) && !java.lang.Double.isNaN(var1.zCoord))
             {
@@ -920,7 +920,7 @@ namespace betareborn.Worlds
                     Block var13 = Block.BLOCKS[var11];
                     if ((!var4 || var13 == null || var13.getCollisionShape(this, var8, var9, var10) != null) && var11 > 0 && var13.hasCollision(var12, var3))
                     {
-                        MovingObjectPosition var14 = var13.collisionRayTrace(this, var8, var9, var10, var1, var2);
+                        HitResult var14 = var13.raycast(this, var8, var9, var10, var1, var2);
                         if (var14 != null)
                         {
                             return var14;
@@ -1082,7 +1082,7 @@ namespace betareborn.Worlds
                         Block var37 = Block.BLOCKS[var35];
                         if ((!var4 || var37 == null || var37.getCollisionShape(this, var8, var9, var10) != null) && var35 > 0 && var37.hasCollision(var36, var3))
                         {
-                            MovingObjectPosition var38 = var37.collisionRayTrace(this, var8, var9, var10, var1, var2);
+                            HitResult var38 = var37.raycast(this, var8, var9, var10, var1, var2);
                             if (var38 != null)
                             {
                                 return var38;
@@ -2472,7 +2472,7 @@ namespace betareborn.Worlds
                     {
                         var10 = var14.getBlockID(var7, var9 - 1, var8);
                         var15 = var14.getBlockID(var7, var9, var8);
-                        if (func_27161_C() && var15 == 0 && Block.SNOW.canPlaceBlockAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ICE.id && Block.BLOCKS[var10].material.blocksMovement())
+                        if (func_27161_C() && var15 == 0 && Block.SNOW.canPlaceAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ICE.id && Block.BLOCKS[var10].material.blocksMovement())
                         {
                             setBlockWithNotify(var7 + var3, var9, var8 + var4, Block.SNOW.id);
                         }
@@ -2684,7 +2684,7 @@ namespace betareborn.Worlds
                     var8 = null;
                 }
 
-                return var1 > 0 && var8 == null && var9.canPlaceBlockOnSide(this, var2, var3, var4, var6);
+                return var1 > 0 && var8 == null && var9.canPlaceAt(this, var2, var3, var4, var6);
             }
         }
 
@@ -3019,7 +3019,7 @@ namespace betareborn.Worlds
 
         public bool isAllPlayersFullyAsleep()
         {
-            if (allPlayersSleeping && !multiplayerWorld)
+            if (allPlayersSleeping && !isRemote)
             {
                 Iterator var1 = playerEntities.iterator();
 

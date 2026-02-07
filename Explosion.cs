@@ -67,7 +67,7 @@ namespace betareborn
                                 int var25 = worldObj.getBlockId(var22, var23, var24);
                                 if (var25 > 0)
                                 {
-                                    var14 -= (Block.BLOCKS[var25].getExplosionResistance(exploder) + 0.3F) * var21;
+                                    var14 -= (Block.BLOCKS[var25].getBlastResistance(exploder) + 0.3F) * var21;
                                 }
 
                                 if (var14 > 0.0F)
@@ -176,7 +176,7 @@ namespace betareborn
                 {
                     Block.BLOCKS[var8].dropStacks(worldObj, var5, var6, var7, worldObj.getBlockMeta(var5, var6, var7), 0.3F);
                     worldObj.setBlockWithNotify(var5, var6, var7, 0);
-                    Block.BLOCKS[var8].onBlockDestroyedByExplosion(worldObj, var5, var6, var7);
+                    Block.BLOCKS[var8].onDestroyedByExplosion(worldObj, var5, var6, var7);
                 }
             }
 

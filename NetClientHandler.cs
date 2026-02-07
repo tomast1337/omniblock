@@ -48,7 +48,7 @@ namespace betareborn
             mc.playerController = new PlayerControllerMP(mc, this);
             mc.statFileWriter.readStat(StatList.joinMultiplayerStat, 1);
             worldClient = new WorldClient(this, var1.mapSeed, var1.dimension);
-            worldClient.multiplayerWorld = true;
+            worldClient.isRemote = true;
             mc.changeWorld1(worldClient);
             mc.thePlayer.dimension = var1.dimension;
             mc.displayGuiScreen(new GuiDownloadTerrain(this));
@@ -569,7 +569,7 @@ namespace betareborn
             {
                 field_1210_g = false;
                 worldClient = new WorldClient(this, worldClient.getWorldInfo().getRandomSeed(), var1.field_28048_a);
-                worldClient.multiplayerWorld = true;
+                worldClient.isRemote = true;
                 mc.changeWorld1(worldClient);
                 mc.thePlayer.dimension = var1.field_28048_a;
                 mc.displayGuiScreen(new GuiDownloadTerrain(this));

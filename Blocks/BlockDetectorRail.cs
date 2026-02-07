@@ -10,7 +10,7 @@ namespace betareborn.Blocks
             setTickRandomly(true);
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
             return 20;
         }
@@ -22,7 +22,7 @@ namespace betareborn.Blocks
 
         public override void onEntityCollidedWithBlock(World var1, int var2, int var3, int var4, Entity var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var6 = var1.getBlockMeta(var2, var3, var4);
                 if ((var6 & 8) == 0)
@@ -34,7 +34,7 @@ namespace betareborn.Blocks
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var6 = var1.getBlockMeta(var2, var3, var4);
                 if ((var6 & 8) != 0)
@@ -83,7 +83,7 @@ namespace betareborn.Blocks
 
             if (var7)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+                var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
             }
 
         }

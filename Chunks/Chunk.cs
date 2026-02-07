@@ -293,9 +293,9 @@ namespace betareborn.Chunks
                 int var9 = xPosition * 16 + var1;
                 int var10 = zPosition * 16 + var3;
                 blocks[var1 << 11 | var3 << 7 | var2] = (byte)(var6 & 255);
-                if (var8 != 0 && !worldObj.multiplayerWorld)
+                if (var8 != 0 && !worldObj.isRemote)
                 {
-                    Block.BLOCKS[var8].onBlockRemoval(worldObj, var9, var2, var10);
+                    Block.BLOCKS[var8].onBreak(worldObj, var9, var2, var10);
                 }
 
                 data.setNibble(var1, var2, var3, var5);
@@ -321,7 +321,7 @@ namespace betareborn.Chunks
                 data.setNibble(var1, var2, var3, var5);
                 if (var4 != 0)
                 {
-                    Block.BLOCKS[var4].onBlockAdded(worldObj, var9, var2, var10);
+                    Block.BLOCKS[var4].onPlaced(worldObj, var9, var2, var10);
                 }
 
                 isModified = true;
@@ -345,7 +345,7 @@ namespace betareborn.Chunks
                 blocks[var1 << 11 | var3 << 7 | var2] = (byte)(var5 & 255);
                 if (var7 != 0)
                 {
-                    Block.BLOCKS[var7].onBlockRemoval(worldObj, var8, var2, var9);
+                    Block.BLOCKS[var7].onBreak(worldObj, var8, var2, var9);
                 }
 
                 data.setNibble(var1, var2, var3, 0);
@@ -364,9 +364,9 @@ namespace betareborn.Chunks
                 worldObj.scheduleLightingUpdate(EnumSkyBlock.Sky, var8, var2, var9, var8, var2, var9);
                 worldObj.scheduleLightingUpdate(EnumSkyBlock.Block, var8, var2, var9, var8, var2, var9);
                 func_996_c(var1, var3);
-                if (var4 != 0 && !worldObj.multiplayerWorld)
+                if (var4 != 0 && !worldObj.isRemote)
                 {
-                    Block.BLOCKS[var4].onBlockAdded(worldObj, var8, var2, var9);
+                    Block.BLOCKS[var4].onPlaced(worldObj, var8, var2, var9);
                 }
 
                 isModified = true;
@@ -495,7 +495,7 @@ namespace betareborn.Chunks
                 }
 
                 BlockContainer var7 = (BlockContainer)Block.BLOCKS[var6];
-                var7.onBlockAdded(worldObj, xPosition * 16 + var1, var2, zPosition * 16 + var3);
+                var7.onPlaced(worldObj, xPosition * 16 + var1, var2, zPosition * 16 + var3);
                 //var5 = (TileEntity)chunkTileEntityMap.get(var4);
                 chunkTileEntityMap.TryGetValue(var4, out var5);
             }

@@ -13,7 +13,7 @@ namespace betareborn.Blocks
             setTickRandomly(true);
         }
 
-        public override int getRenderBlockPass()
+        public override int getRenderLayer()
         {
             return 1;
         }
@@ -34,7 +34,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 0;
         }
@@ -43,7 +43,7 @@ namespace betareborn.Blocks
         {
             if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11 - Block.BLOCK_LIGHT_OPACITY[id])
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, Block.WATER.id);
             }
 

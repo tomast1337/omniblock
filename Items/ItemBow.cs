@@ -16,7 +16,7 @@ namespace betareborn.Items
             if (var3.inventory.consumeInventoryItem(Item.arrow.id))
             {
                 var2.playSoundAtEntity(var3, "random.bow", 1.0F, 1.0F / (itemRand.nextFloat() * 0.4F + 0.8F));
-                if (!var2.multiplayerWorld)
+                if (!var2.isRemote)
                 {
                     var2.spawnEntity(new EntityArrow(var2, var3));
                 }

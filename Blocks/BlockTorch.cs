@@ -36,12 +36,12 @@ namespace betareborn.Blocks
             return var1.shouldSuffocate(var2, var3, var4) || var1.getBlockId(var2, var3, var4) == Block.FENCE.id;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return var1.shouldSuffocate(var2 - 1, var3, var4) ? true : (var1.shouldSuffocate(var2 + 1, var3, var4) ? true : (var1.shouldSuffocate(var2, var3, var4 - 1) ? true : (var1.shouldSuffocate(var2, var3, var4 + 1) ? true : func_31032_h(var1, var2, var3 - 1, var4))));
         }
 
-        public override void onBlockPlaced(World var1, int var2, int var3, int var4, int var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, int var5)
         {
             int var6 = var1.getBlockMeta(var2, var3, var4);
             if (var5 == 1 && func_31032_h(var1, var2, var3 - 1, var4))
@@ -77,12 +77,12 @@ namespace betareborn.Blocks
             base.onTick(var1, var2, var3, var4, var5);
             if (var1.getBlockMeta(var2, var3, var4) == 0)
             {
-                onBlockAdded(var1, var2, var3, var4);
+                onPlaced(var1, var2, var3, var4);
             }
 
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             if (var1.shouldSuffocate(var2 - 1, var3, var4))
             {
@@ -141,7 +141,7 @@ namespace betareborn.Blocks
 
                 if (var7)
                 {
-                    dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                    dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
             }
@@ -150,9 +150,9 @@ namespace betareborn.Blocks
 
         private bool dropTorchIfCantStay(World var1, int var2, int var3, int var4)
         {
-            if (!canPlaceBlockAt(var1, var2, var3, var4))
+            if (!canPlaceAt(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
                 return false;
             }
@@ -162,7 +162,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
         {
             int var7 = var1.getBlockMeta(var2, var3, var4) & 7;
             float var8 = 0.15F;
@@ -188,7 +188,7 @@ namespace betareborn.Blocks
                 setBoundingBox(0.5F - var8, 0.0F, 0.5F - var8, 0.5F + var8, 0.6F, 0.5F + var8);
             }
 
-            return base.collisionRayTrace(var1, var2, var3, var4, var5, var6);
+            return base.raycast(var1, var2, var3, var4, var5, var6);
         }
 
         public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)

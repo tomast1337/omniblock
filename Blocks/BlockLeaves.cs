@@ -42,7 +42,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             sbyte var5 = 1;
             int var6 = var5 + 1;
@@ -69,7 +69,7 @@ namespace betareborn.Blocks
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var6 = var1.getBlockMeta(var2, var3, var4);
                 if ((var6 & 8) != 0)
@@ -184,11 +184,11 @@ namespace betareborn.Blocks
 
         private void removeLeaves(World var1, int var2, int var3, int var4)
         {
-            dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+            dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
             var1.setBlockWithNotify(var2, var3, var4, 0);
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return var1.nextInt(20) == 0 ? 1 : 0;
         }
@@ -200,10 +200,10 @@ namespace betareborn.Blocks
 
         public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
-            if (!var1.multiplayerWorld && var2.getCurrentEquippedItem() != null && var2.getCurrentEquippedItem().itemID == Item.shears.id)
+            if (!var1.isRemote && var2.getCurrentEquippedItem() != null && var2.getCurrentEquippedItem().itemID == Item.shears.id)
             {
                 var2.addStat(StatList.mineBlockStatArray[id], 1);
-                dropBlockAsItem_do(var1, var3, var4, var5, new ItemStack(Block.LEAVES.id, 1, var6 & 3));
+                dropStack(var1, var3, var4, var5, new ItemStack(Block.LEAVES.id, 1, var6 & 3));
             }
             else
             {
@@ -212,7 +212,7 @@ namespace betareborn.Blocks
 
         }
 
-        protected override int damageDropped(int var1)
+        protected override int getDroppedItemMeta(int var1)
         {
             return var1 & 3;
         }
@@ -233,9 +233,9 @@ namespace betareborn.Blocks
             textureId = baseIndexInPNG + (var1 ? 0 : 1);
         }
 
-        public override void onEntityWalking(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onSteppedOn(World var1, int var2, int var3, int var4, Entity var5)
         {
-            base.onEntityWalking(var1, var2, var3, var4, var5);
+            base.onSteppedOn(var1, var2, var3, var4, var5);
         }
     }
 

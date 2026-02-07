@@ -24,15 +24,15 @@ namespace betareborn.Blocks
             return Block.FURNACE.id;
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            base.onBlockAdded(var1, var2, var3, var4);
+            base.onPlaced(var1, var2, var3, var4);
             setDefaultDirection(var1, var2, var3, var4);
         }
 
         private void setDefaultDirection(World var1, int var2, int var3, int var4)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var5 = var1.getBlockId(var2, var3, var4 - 1);
                 int var6 = var1.getBlockId(var2, var3, var4 + 1);
@@ -121,7 +121,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (var1.multiplayerWorld)
+            if (var1.isRemote)
             {
                 return true;
             }
@@ -183,7 +183,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             if (!keepFurnaceInventory)
             {
@@ -218,7 +218,7 @@ namespace betareborn.Blocks
                 }
             }
 
-            base.onBlockRemoval(var1, var2, var3, var4);
+            base.onBreak(var1, var2, var3, var4);
         }
     }
 }

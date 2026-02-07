@@ -33,7 +33,7 @@ namespace betareborn.Blocks
 
         public void ejectRecord(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
                 var6.recordId = var5;
@@ -44,7 +44,7 @@ namespace betareborn.Blocks
 
         public void func_28038_b_(World var1, int var2, int var3, int var4)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 TileEntityRecordPlayer var5 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
                 int var6 = var5.recordId;
@@ -66,15 +66,15 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             func_28038_b_(var1, var2, var3, var4);
-            base.onBlockRemoval(var1, var2, var3, var4);
+            base.onBreak(var1, var2, var3, var4);
         }
 
         public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 base.dropStacks(var1, var2, var3, var4, var5, var6);
             }

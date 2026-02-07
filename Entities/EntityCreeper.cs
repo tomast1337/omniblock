@@ -42,7 +42,7 @@ namespace betareborn.Entities
 
         protected override void attackBlockedEntity(Entity var1, float var2)
         {
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 if (timeSinceIgnited > 0)
                 {
@@ -60,7 +60,7 @@ namespace betareborn.Entities
         public override void onUpdate()
         {
             lastActiveTime = timeSinceIgnited;
-            if (worldObj.multiplayerWorld)
+            if (worldObj.isRemote)
             {
                 int var1 = getCreeperState();
                 if (var1 > 0 && timeSinceIgnited == 0)
@@ -115,7 +115,7 @@ namespace betareborn.Entities
 
         protected override void attackEntity(Entity var1, float var2)
         {
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 int var3 = getCreeperState();
                 if (var3 <= 0 && var2 < 3.0F || var3 > 0 && var2 < 7.0F)

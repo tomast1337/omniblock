@@ -136,7 +136,7 @@ namespace betareborn.Blocks
 
             if (var6)
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 

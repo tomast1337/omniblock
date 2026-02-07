@@ -48,7 +48,7 @@ namespace betareborn.Entities
 
         public override bool interact(EntityPlayer var1)
         {
-            if (!getSaddled() || worldObj.multiplayerWorld || riddenByEntity != null && riddenByEntity != var1)
+            if (!getSaddled() || worldObj.isRemote || riddenByEntity != null && riddenByEntity != var1)
             {
                 return false;
             }
@@ -84,7 +84,7 @@ namespace betareborn.Entities
 
         public override void onStruckByLightning(EntityLightningBolt var1)
         {
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 EntityPigZombie var2 = new EntityPigZombie(worldObj);
                 var2.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, rotationYaw, rotationPitch);

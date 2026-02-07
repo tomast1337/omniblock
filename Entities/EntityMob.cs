@@ -28,7 +28,7 @@ namespace betareborn.Entities
         public override void onUpdate()
         {
             base.onUpdate();
-            if (!worldObj.multiplayerWorld && worldObj.difficultySetting == 0)
+            if (!worldObj.isRemote && worldObj.difficultySetting == 0)
             {
                 setEntityDead();
             }

@@ -79,12 +79,12 @@ namespace betareborn.Blocks
             return 8;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return var1.shouldSuffocate(var2 - 1, var3, var4) ? true : (var1.shouldSuffocate(var2 + 1, var3, var4) ? true : (var1.shouldSuffocate(var2, var3, var4 - 1) ? true : var1.shouldSuffocate(var2, var3, var4 + 1)));
         }
 
-        public override void onBlockPlaced(World var1, int var2, int var3, int var4, int var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, int var5)
         {
             int var6 = var1.getBlockMeta(var2, var3, var4);
             if ((var6 == 0 || var5 == 2) && var1.shouldSuffocate(var2, var3, var4 + 1))
@@ -136,14 +136,14 @@ namespace betareborn.Blocks
 
             if (!var7)
             {
-                dropBlockAsItem(var1, var2, var3, var4, var6);
+                dropStacks(var1, var2, var3, var4, var6);
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
             base.neighborUpdate(var1, var2, var3, var4, var5);
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 1;
         }

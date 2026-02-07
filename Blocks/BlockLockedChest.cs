@@ -57,7 +57,7 @@ namespace betareborn.Blocks
             return var1 == 1 ? textureId - 1 : (var1 == 0 ? textureId - 1 : (var1 == 3 ? textureId + 1 : textureId));
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return true;
         }

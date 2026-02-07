@@ -10,9 +10,9 @@ namespace betareborn.Blocks
         {
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return var1.getBlockId(var2, var3 - 1, var4) == id ? true : (!var1.getMaterial(var2, var3 - 1, var4).isSolid() ? false : base.canPlaceBlockAt(var1, var2, var3, var4));
+            return var1.getBlockId(var2, var3 - 1, var4) == id ? true : (!var1.getMaterial(var2, var3 - 1, var4).isSolid() ? false : base.canPlaceAt(var1, var2, var3, var4));
         }
 
         public override Box getCollisionShape(World var1, int var2, int var3, int var4)

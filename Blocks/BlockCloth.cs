@@ -21,7 +21,7 @@ namespace betareborn.Blocks
             }
         }
 
-        protected override int damageDropped(int var1)
+        protected override int getDroppedItemMeta(int var1)
         {
             return var1;
         }

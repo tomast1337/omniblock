@@ -133,7 +133,7 @@ namespace betareborn.Entities
                 attackEntityFrom(null, 1);
             }
 
-            if (isImmuneToFire || worldObj.multiplayerWorld)
+            if (isImmuneToFire || worldObj.isRemote)
             {
                 fire = 0;
             }
@@ -363,7 +363,7 @@ namespace betareborn.Entities
 
         public override bool attackEntityFrom(Entity var1, int var2)
         {
-            if (worldObj.multiplayerWorld)
+            if (worldObj.isRemote)
             {
                 return false;
             }
@@ -502,7 +502,7 @@ namespace betareborn.Entities
             }
 
             unused_flag = true;
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 dropFewItems();
             }
@@ -1021,7 +1021,7 @@ namespace betareborn.Entities
             }
         }
 
-        public MovingObjectPosition rayTrace(double var1, float var3)
+        public HitResult rayTrace(double var1, float var3)
         {
             Vec3D var4 = getPosition(var3);
             Vec3D var5 = getLook(var3);

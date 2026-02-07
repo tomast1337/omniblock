@@ -10,7 +10,7 @@ namespace betareborn.Blocks
             textureId = 48;
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             sbyte var5 = 2;
 
@@ -29,7 +29,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             sbyte var5 = 2;
 

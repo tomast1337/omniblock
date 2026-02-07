@@ -20,7 +20,7 @@ namespace betareborn.Blocks
             field_468_a = var3;
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
             return 30;
         }
@@ -31,10 +31,10 @@ namespace betareborn.Blocks
             base.onBlockClicked(var1, var2, var3, var4, var5);
         }
 
-        public override void onEntityWalking(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onSteppedOn(World var1, int var2, int var3, int var4, Entity var5)
         {
             func_320_h(var1, var2, var3, var4);
-            base.onEntityWalking(var1, var2, var3, var4, var5);
+            base.onSteppedOn(var1, var2, var3, var4, var5);
         }
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
@@ -67,7 +67,7 @@ namespace betareborn.Blocks
             return Item.redstone.id;
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 4 + var1.nextInt(2);
         }

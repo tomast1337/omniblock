@@ -318,65 +318,65 @@ namespace betareborn.Blocks
         {
         }
 
-        public virtual void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public virtual void randomDisplayTick(World world, int x, int y, int z, java.util.Random random)
         {
         }
 
-        public virtual void onBlockDestroyedByPlayer(World var1, int var2, int var3, int var4, int var5)
+        public virtual void onMetadataChange(World world, int x, int y, int z, int meta)
         {
         }
 
-        public virtual void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public virtual void neighborUpdate(World world, int x, int y, int z, int id)
         {
         }
 
-        public virtual int tickRate()
+        public virtual int getTickRate()
         {
             return 10;
         }
 
-        public virtual void onBlockAdded(World var1, int var2, int var3, int var4)
+        public virtual void onPlaced(World world, int x, int y, int z)
         {
         }
 
-        public virtual void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public virtual void onBreak(World world, int x, int y, int z)
         {
         }
 
-        public virtual int quantityDropped(java.util.Random var1)
+        public virtual int getDroppedItemCount(java.util.Random random)
         {
             return 1;
         }
 
-        public virtual int getDroppedItemId(int var1, java.util.Random var2)
+        public virtual int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return id;
         }
 
-        public float blockStrength(EntityPlayer var1)
+        public float getHardness(EntityPlayer player)
         {
-            return hardness < 0.0F ? 0.0F : (!var1.canHarvestBlock(this) ? 1.0F / hardness / 100.0F : var1.getCurrentPlayerStrVsBlock(this) / hardness / 30.0F);
+            return hardness < 0.0F ? 0.0F : (!player.canHarvest(this) ? 1.0F / hardness / 100.0F : player.getCurrentPlayerStrVsBlock(this) / hardness / 30.0F);
         }
 
-        public void dropBlockAsItem(World var1, int var2, int var3, int var4, int var5)
+        public void dropStacks(World world, int x, int y, int z, int meta)
         {
-            dropStacks(var1, var2, var3, var4, var5, 1.0F);
+            dropStacks(world, x, y, z, meta, 1.0F);
         }
 
-        public virtual void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
+        public virtual void dropStacks(World world, int x, int y, int z, int meta, float luck)
         {
-            if (!var1.multiplayerWorld)
+            if (!world.isRemote)
             {
-                int var7 = quantityDropped(var1.random);
+                int var7 = getDroppedItemCount(world.random);
 
                 for (int var8 = 0; var8 < var7; ++var8)
                 {
-                    if (var1.random.nextFloat() <= var6)
+                    if (world.random.nextFloat() <= luck)
                     {
-                        int var9 = getDroppedItemId(var5, var1.random);
+                        int var9 = getDroppedItemId(meta, world.random);
                         if (var9 > 0)
                         {
-                            dropBlockAsItem_do(var1, var2, var3, var4, new ItemStack(var9, 1, damageDropped(var5)));
+                            dropStack(world, x, y, z, new ItemStack(var9, 1, getDroppedItemMeta(meta)));
                         }
                     }
                 }
@@ -384,41 +384,41 @@ namespace betareborn.Blocks
             }
         }
 
-        protected void dropBlockAsItem_do(World var1, int var2, int var3, int var4, ItemStack var5)
+        protected void dropStack(World world, int x, int y, int z, ItemStack itemStack)
         {
-            if (!var1.multiplayerWorld)
+            if (!world.isRemote)
             {
                 float var6 = 0.7F;
-                double var7 = (double)(var1.random.nextFloat() * var6) + (double)(1.0F - var6) * 0.5D;
-                double var9 = (double)(var1.random.nextFloat() * var6) + (double)(1.0F - var6) * 0.5D;
-                double var11 = (double)(var1.random.nextFloat() * var6) + (double)(1.0F - var6) * 0.5D;
-                EntityItem var13 = new EntityItem(var1, (double)var2 + var7, (double)var3 + var9, (double)var4 + var11, var5);
+                double var7 = (double)(world.random.nextFloat() * var6) + (double)(1.0F - var6) * 0.5D;
+                double var9 = (double)(world.random.nextFloat() * var6) + (double)(1.0F - var6) * 0.5D;
+                double var11 = (double)(world.random.nextFloat() * var6) + (double)(1.0F - var6) * 0.5D;
+                EntityItem var13 = new EntityItem(world, (double)x + var7, (double)y + var9, (double)z + var11, itemStack);
                 var13.delayBeforeCanPickup = 10;
-                var1.spawnEntity(var13);
+                world.spawnEntity(var13);
             }
         }
 
-        protected virtual int damageDropped(int var1)
+        protected virtual int getDroppedItemMeta(int blockMeta)
         {
             return 0;
         }
 
-        public virtual float getExplosionResistance(Entity var1)
+        public virtual float getBlastResistance(Entity entity)
         {
             return resistance / 5.0F;
         }
 
-        public virtual MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public virtual HitResult raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            var5 = var5.addVector((double)(-var2), (double)(-var3), (double)(-var4));
-            var6 = var6.addVector((double)(-var2), (double)(-var3), (double)(-var4));
-            Vec3D var7 = var5.getIntermediateWithXValue(var6, minX);
-            Vec3D var8 = var5.getIntermediateWithXValue(var6, maxX);
-            Vec3D var9 = var5.getIntermediateWithYValue(var6, minY);
-            Vec3D var10 = var5.getIntermediateWithYValue(var6, maxY);
-            Vec3D var11 = var5.getIntermediateWithZValue(var6, minZ);
-            Vec3D var12 = var5.getIntermediateWithZValue(var6, maxZ);
+            updateBoundingBox(world, x, y, z);
+            startPos = startPos.addVector((double)(-x), (double)(-y), (double)(-z));
+            endPos = endPos.addVector((double)(-x), (double)(-y), (double)(-z));
+            Vec3D var7 = startPos.getIntermediateWithXValue(endPos, minX);
+            Vec3D var8 = startPos.getIntermediateWithXValue(endPos, maxX);
+            Vec3D var9 = startPos.getIntermediateWithYValue(endPos, minY);
+            Vec3D var10 = startPos.getIntermediateWithYValue(endPos, maxY);
+            Vec3D var11 = startPos.getIntermediateWithZValue(endPos, minZ);
+            Vec3D var12 = startPos.getIntermediateWithZValue(endPos, maxZ);
             if (!isVecInsideYZBounds(var7))
             {
                 var7 = null;
@@ -450,32 +450,32 @@ namespace betareborn.Blocks
             }
 
             Vec3D var13 = null;
-            if (var7 != null && (var13 == null || var5.distanceTo(var7) < var5.distanceTo(var13)))
+            if (var7 != null && (var13 == null || startPos.distanceTo(var7) < startPos.distanceTo(var13)))
             {
                 var13 = var7;
             }
 
-            if (var8 != null && (var13 == null || var5.distanceTo(var8) < var5.distanceTo(var13)))
+            if (var8 != null && (var13 == null || startPos.distanceTo(var8) < startPos.distanceTo(var13)))
             {
                 var13 = var8;
             }
 
-            if (var9 != null && (var13 == null || var5.distanceTo(var9) < var5.distanceTo(var13)))
+            if (var9 != null && (var13 == null || startPos.distanceTo(var9) < startPos.distanceTo(var13)))
             {
                 var13 = var9;
             }
 
-            if (var10 != null && (var13 == null || var5.distanceTo(var10) < var5.distanceTo(var13)))
+            if (var10 != null && (var13 == null || startPos.distanceTo(var10) < startPos.distanceTo(var13)))
             {
                 var13 = var10;
             }
 
-            if (var11 != null && (var13 == null || var5.distanceTo(var11) < var5.distanceTo(var13)))
+            if (var11 != null && (var13 == null || startPos.distanceTo(var11) < startPos.distanceTo(var13)))
             {
                 var13 = var11;
             }
 
-            if (var12 != null && (var13 == null || var5.distanceTo(var12) < var5.distanceTo(var13)))
+            if (var12 != null && (var13 == null || startPos.distanceTo(var12) < startPos.distanceTo(var13)))
             {
                 var13 = var12;
             }
@@ -517,55 +517,55 @@ namespace betareborn.Blocks
                     var14 = 3;
                 }
 
-                return new MovingObjectPosition(var2, var3, var4, var14, var13.addVector((double)var2, (double)var3, (double)var4));
+                return new HitResult(x, y, z, var14, var13.addVector((double)x, (double)y, (double)z));
             }
         }
 
-        private bool isVecInsideYZBounds(Vec3D var1)
+        private bool isVecInsideYZBounds(Vec3D pos)
         {
-            return var1 == null ? false : var1.yCoord >= minY && var1.yCoord <= maxY && var1.zCoord >= minZ && var1.zCoord <= maxZ;
+            return pos == null ? false : pos.yCoord >= minY && pos.yCoord <= maxY && pos.zCoord >= minZ && pos.zCoord <= maxZ;
         }
 
-        private bool isVecInsideXZBounds(Vec3D var1)
+        private bool isVecInsideXZBounds(Vec3D pos)
         {
-            return var1 == null ? false : var1.xCoord >= minX && var1.xCoord <= maxX && var1.zCoord >= minZ && var1.zCoord <= maxZ;
+            return pos == null ? false : pos.xCoord >= minX && pos.xCoord <= maxX && pos.zCoord >= minZ && pos.zCoord <= maxZ;
         }
 
-        private bool isVecInsideXYBounds(Vec3D var1)
+        private bool isVecInsideXYBounds(Vec3D pos)
         {
-            return var1 == null ? false : var1.xCoord >= minX && var1.xCoord <= maxX && var1.yCoord >= minY && var1.yCoord <= maxY;
+            return pos == null ? false : pos.xCoord >= minX && pos.xCoord <= maxX && pos.yCoord >= minY && pos.yCoord <= maxY;
         }
 
-        public virtual void onBlockDestroyedByExplosion(World var1, int var2, int var3, int var4)
+        public virtual void onDestroyedByExplosion(World world, int x, int y, int z)
         {
         }
 
-        public virtual int getRenderBlockPass()
+        public virtual int getRenderLayer()
         {
             return 0;
         }
 
-        public virtual bool canPlaceBlockOnSide(World var1, int var2, int var3, int var4, int var5)
+        public virtual bool canPlaceAt(World world, int x, int y, int z, int side)
         {
-            return canPlaceBlockAt(var1, var2, var3, var4);
+            return canPlaceAt(world, x, y, z);
         }
 
-        public virtual bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public virtual bool canPlaceAt(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockId(var2, var3, var4);
+            int var5 = world.getBlockId(x, y, z);
             return var5 == 0 || BLOCKS[var5].material.isReplaceable();
         }
 
-        public virtual bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public virtual bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
             return false;
         }
 
-        public virtual void onEntityWalking(World var1, int var2, int var3, int var4, Entity var5)
+        public virtual void onSteppedOn(World world, int x, int y, int z, Entity entity)
         {
         }
 
-        public virtual void onBlockPlaced(World var1, int var2, int var3, int var4, int var5)
+        public virtual void onPlaced(World world, int x, int y, int z, int direction)
         {
         }
 
@@ -617,7 +617,7 @@ namespace betareborn.Blocks
         public virtual void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
             var2.addStat(StatList.mineBlockStatArray[id], 1);
-            dropBlockAsItem(var1, var3, var4, var5, var6);
+            dropStacks(var1, var3, var4, var5, var6);
         }
 
         public virtual bool canBlockStay(World var1, int var2, int var3, int var4)

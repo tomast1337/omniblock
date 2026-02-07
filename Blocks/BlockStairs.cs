@@ -93,9 +93,9 @@ namespace betareborn.Blocks
             modelBlock.onBlockClicked(var1, var2, var3, var4, var5);
         }
 
-        public override void onBlockDestroyedByPlayer(World var1, int var2, int var3, int var4, int var5)
+        public override void onMetadataChange(World var1, int var2, int var3, int var4, int var5)
         {
-            modelBlock.onBlockDestroyedByPlayer(var1, var2, var3, var4, var5);
+            modelBlock.onMetadataChange(var1, var2, var3, var4, var5);
         }
 
         public override float getLuminance(BlockView var1, int var2, int var3, int var4)
@@ -103,14 +103,14 @@ namespace betareborn.Blocks
             return modelBlock.getLuminance(var1, var2, var3, var4);
         }
 
-        public override float getExplosionResistance(Entity var1)
+        public override float getBlastResistance(Entity var1)
         {
-            return modelBlock.getExplosionResistance(var1);
+            return modelBlock.getBlastResistance(var1);
         }
 
-        public override int getRenderBlockPass()
+        public override int getRenderLayer()
         {
-            return modelBlock.getRenderBlockPass();
+            return modelBlock.getRenderLayer();
         }
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
@@ -118,9 +118,9 @@ namespace betareborn.Blocks
             return modelBlock.getDroppedItemId(var1, var2);
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
-            return modelBlock.quantityDropped(var1);
+            return modelBlock.getDroppedItemCount(var1);
         }
 
         public override int getTexture(int var1, int var2)
@@ -138,9 +138,9 @@ namespace betareborn.Blocks
             return modelBlock.getTexture(var1, var2, var3, var4, var5);
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
-            return modelBlock.tickRate();
+            return modelBlock.getTickRate();
         }
 
         public override Box getBoundingBox(World var1, int var2, int var3, int var4)
@@ -163,20 +163,20 @@ namespace betareborn.Blocks
             return modelBlock.hasCollision(var1, var2);
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return modelBlock.canPlaceBlockAt(var1, var2, var3, var4);
+            return modelBlock.canPlaceAt(var1, var2, var3, var4);
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             neighborUpdate(var1, var2, var3, var4, 0);
-            modelBlock.onBlockAdded(var1, var2, var3, var4);
+            modelBlock.onPlaced(var1, var2, var3, var4);
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
-            modelBlock.onBlockRemoval(var1, var2, var3, var4);
+            modelBlock.onBreak(var1, var2, var3, var4);
         }
 
         public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
@@ -184,9 +184,9 @@ namespace betareborn.Blocks
             modelBlock.dropStacks(var1, var2, var3, var4, var5, var6);
         }
 
-        public override void onEntityWalking(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onSteppedOn(World var1, int var2, int var3, int var4, Entity var5)
         {
-            modelBlock.onEntityWalking(var1, var2, var3, var4, var5);
+            modelBlock.onSteppedOn(var1, var2, var3, var4, var5);
         }
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
@@ -199,9 +199,9 @@ namespace betareborn.Blocks
             return modelBlock.onUse(var1, var2, var3, var4, var5);
         }
 
-        public override void onBlockDestroyedByExplosion(World var1, int var2, int var3, int var4)
+        public override void onDestroyedByExplosion(World var1, int var2, int var3, int var4)
         {
-            modelBlock.onBlockDestroyedByExplosion(var1, var2, var3, var4);
+            modelBlock.onDestroyedByExplosion(var1, var2, var3, var4);
         }
 
         public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)

@@ -208,9 +208,9 @@ namespace betareborn.Blocks
 
                 if (var7)
                 {
-                    if (!var1.multiplayerWorld)
+                    if (!var1.isRemote)
                     {
-                        dropBlockAsItem(var1, var2, var3, var4, var6);
+                        dropStacks(var1, var2, var3, var4, var6);
                     }
                 }
                 else if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
@@ -227,10 +227,10 @@ namespace betareborn.Blocks
             return (var1 & 8) != 0 ? 0 : (material == Material.METAL ? Item.doorSteel.id : Item.doorWood.id);
         }
 
-        public override MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
         {
             updateBoundingBox(var1, var2, var3, var4);
-            return base.collisionRayTrace(var1, var2, var3, var4, var5, var6);
+            return base.raycast(var1, var2, var3, var4, var5, var6);
         }
 
         public int getState(int var1)
@@ -238,9 +238,9 @@ namespace betareborn.Blocks
             return (var1 & 4) == 0 ? var1 - 1 & 3 : var1 & 3;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return var3 >= 127 ? false : var1.shouldSuffocate(var2, var3 - 1, var4) && base.canPlaceBlockAt(var1, var2, var3, var4) && base.canPlaceBlockAt(var1, var2, var3 + 1, var4);
+            return var3 >= 127 ? false : var1.shouldSuffocate(var2, var3 - 1, var4) && base.canPlaceAt(var1, var2, var3, var4) && base.canPlaceAt(var1, var2, var3 + 1, var4);
         }
 
         public static bool isOpen(int var0)

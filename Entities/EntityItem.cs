@@ -133,7 +133,7 @@ namespace betareborn.Entities
 
         public override void onCollideWithPlayer(EntityPlayer var1)
         {
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 int var2 = item.count;
                 if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(item))

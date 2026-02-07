@@ -33,7 +33,7 @@ namespace betareborn.Items
                 int var8 = var3.getBlockId(var4, var5, var6);
                 if (var8 == Block.SAPLING.id)
                 {
-                    if (!var3.multiplayerWorld)
+                    if (!var3.isRemote)
                     {
                         ((BlockSapling)Block.SAPLING).growTree(var3, var4, var5, var6, var3.random);
                         --var1.count;
@@ -42,7 +42,7 @@ namespace betareborn.Items
                 }
                 if (var8 == Block.WHEAT.id)
                 {
-                    if (!var3.multiplayerWorld)
+                    if (!var3.isRemote)
                     {
                         ((BlockCrops)Block.WHEAT).fertilize(var3, var4, var5, var6);
                         --var1.count;
@@ -51,7 +51,7 @@ namespace betareborn.Items
                 }
                 if (var8 == Block.GRASS_BLOCK.id)
                 {
-                    if (!var3.multiplayerWorld)
+                    if (!var3.isRemote)
                     {
                         --var1.count;
 

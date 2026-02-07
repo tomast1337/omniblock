@@ -148,7 +148,7 @@ namespace betareborn.Entities
                 ++ticksInAir;
                 Vec3D var16 = Vec3D.createVector(posX, posY, posZ);
                 Vec3D var17 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
-                MovingObjectPosition var3 = worldObj.func_28105_a(var16, var17, false, true);
+                HitResult var3 = worldObj.func_28105_a(var16, var17, false, true);
                 var16 = Vec3D.createVector(posX, posY, posZ);
                 var17 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
                 if (var3 != null)
@@ -168,7 +168,7 @@ namespace betareborn.Entities
                     {
                         var10 = 0.3F;
                         Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
-                        MovingObjectPosition var12 = var11.raycast(var16, var17);
+                        HitResult var12 = var11.raycast(var16, var17);
                         if (var12 != null)
                         {
                             double var13 = var16.distanceTo(var12.hitVec);
@@ -183,7 +183,7 @@ namespace betareborn.Entities
 
                 if (var4 != null)
                 {
-                    var3 = new MovingObjectPosition(var4);
+                    var3 = new HitResult(var4);
                 }
 
                 float var19;
@@ -300,7 +300,7 @@ namespace betareborn.Entities
 
         public override void onCollideWithPlayer(EntityPlayer var1)
         {
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 if (inGround && doesArrowBelongToPlayer && arrowShake <= 0 && var1.inventory.addItemStackToInventory(new ItemStack(Item.arrow, 1)))
                 {

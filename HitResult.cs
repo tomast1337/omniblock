@@ -2,7 +2,7 @@ using betareborn.Entities;
 
 namespace betareborn
 {
-    public class MovingObjectPosition : java.lang.Object
+    public class HitResult : java.lang.Object
     {
         public EnumMovingObjectType typeOfHit;
         public int blockX;
@@ -12,7 +12,7 @@ namespace betareborn
         public Vec3D hitVec;
         public Entity entityHit;
 
-        public MovingObjectPosition(int var1, int var2, int var3, int var4, Vec3D var5)
+        public HitResult(int var1, int var2, int var3, int var4, Vec3D var5)
         {
             typeOfHit = EnumMovingObjectType.TILE;
             blockX = var1;
@@ -22,7 +22,7 @@ namespace betareborn
             hitVec = Vec3D.createVector(var5.xCoord, var5.yCoord, var5.zCoord);
         }
 
-        public MovingObjectPosition(Entity var1)
+        public HitResult(Entity var1)
         {
             typeOfHit = EnumMovingObjectType.ENTITY;
             entityHit = var1;

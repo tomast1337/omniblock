@@ -34,11 +34,11 @@ namespace betareborn.Blocks
             return blockType;
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             if (this != Block.SLAB)
             {
-                base.onBlockAdded(var1, var2, var3, var4);
+                base.onPlaced(var1, var2, var3, var4);
             }
 
             int var5 = var1.getBlockId(var2, var3 - 1, var4);
@@ -60,12 +60,12 @@ namespace betareborn.Blocks
             return Block.SLAB.id;
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return blockType ? 2 : 1;
         }
 
-        protected override int damageDropped(int var1)
+        protected override int getDroppedItemMeta(int var1)
         {
             return var1;
         }

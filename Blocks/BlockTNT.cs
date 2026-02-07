@@ -16,12 +16,12 @@ namespace betareborn.Blocks
             return var1 == 0 ? textureId + 2 : (var1 == 1 ? textureId + 1 : textureId);
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            base.onBlockAdded(var1, var2, var3, var4);
+            base.onPlaced(var1, var2, var3, var4);
             if (var1.isBlockIndirectlyGettingPowered(var2, var3, var4))
             {
-                onBlockDestroyedByPlayer(var1, var2, var3, var4, 1);
+                onMetadataChange(var1, var2, var3, var4, 1);
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
@@ -31,31 +31,31 @@ namespace betareborn.Blocks
         {
             if (var5 > 0 && Block.BLOCKS[var5].canProvidePower() && var1.isBlockIndirectlyGettingPowered(var2, var3, var4))
             {
-                onBlockDestroyedByPlayer(var1, var2, var3, var4, 1);
+                onMetadataChange(var1, var2, var3, var4, 1);
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 0;
         }
 
-        public override void onBlockDestroyedByExplosion(World var1, int var2, int var3, int var4)
+        public override void onDestroyedByExplosion(World var1, int var2, int var3, int var4)
         {
             EntityTNTPrimed var5 = new EntityTNTPrimed(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F));
             var5.fuse = var1.random.nextInt(var5.fuse / 4) + var5.fuse / 8;
             var1.spawnEntity(var5);
         }
 
-        public override void onBlockDestroyedByPlayer(World var1, int var2, int var3, int var4, int var5)
+        public override void onMetadataChange(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 if ((var5 & 1) == 0)
                 {
-                    dropBlockAsItem_do(var1, var2, var3, var4, new ItemStack(Block.TNT.id, 1, 0));
+                    dropStack(var1, var2, var3, var4, new ItemStack(Block.TNT.id, 1, 0));
                 }
                 else
                 {

@@ -52,12 +52,12 @@ namespace betareborn.Blocks
             return 3;
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 0;
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
             return 40;
         }
@@ -65,7 +65,7 @@ namespace betareborn.Blocks
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
             bool var6 = var1.getBlockId(var2, var3 - 1, var4) == Block.NETHERRACK.id;
-            if (!canPlaceBlockAt(var1, var2, var3, var4))
+            if (!canPlaceAt(var1, var2, var3, var4))
             {
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
@@ -78,7 +78,7 @@ namespace betareborn.Blocks
                     var1.setBlockMetadata(var2, var3, var4, var7 + var5.nextInt(3) / 2);
                 }
 
-                var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+                var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
                 if (!var6 && !func_263_h(var1, var2, var3, var4))
                 {
                     if (!var1.shouldSuffocate(var2, var3 - 1, var4) || var7 > 3)
@@ -165,7 +165,7 @@ namespace betareborn.Blocks
 
                 if (var9)
                 {
-                    Block.TNT.onBlockDestroyedByPlayer(var1, var2, var3, var4, 1);
+                    Block.TNT.onMetadataChange(var1, var2, var3, var4, 1);
                 }
             }
 
@@ -211,7 +211,7 @@ namespace betareborn.Blocks
             return var6 > var5 ? var6 : var5;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return var1.shouldSuffocate(var2, var3 - 1, var4) || func_263_h(var1, var2, var3, var4);
         }
@@ -224,7 +224,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             if (var1.getBlockId(var2, var3 - 1, var4) != Block.OBSIDIAN.id || !Block.NETHER_PORTAL.tryToCreatePortal(var1, var2, var3, var4))
             {
@@ -234,7 +234,7 @@ namespace betareborn.Blocks
                 }
                 else
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+                    var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
                 }
             }
         }

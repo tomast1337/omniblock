@@ -274,7 +274,7 @@ namespace betareborn
             return createCached(minX, minY, minZ, maxX, maxY, maxZ);
         }
 
-        public MovingObjectPosition raycast(Vec3D min, Vec3D max)
+        public HitResult raycast(Vec3D min, Vec3D max)
         {
             Vec3D var3 = min.getIntermediateWithXValue(max, minX);
             Vec3D var4 = min.getIntermediateWithXValue(max, maxX);
@@ -380,7 +380,7 @@ namespace betareborn
                     var10 = 3;
                 }
 
-                return new MovingObjectPosition(0, 0, 0, var10, var9);
+                return new HitResult(0, 0, 0, var10, var9);
             }
         }
 

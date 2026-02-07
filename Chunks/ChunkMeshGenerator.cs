@@ -158,7 +158,7 @@ namespace betareborn.Chunks
                             if (id <= 0) continue;
 
                             Block b = Block.BLOCKS[id];
-                            int blockPass = b.getRenderBlockPass();
+                            int blockPass = b.getRenderLayer();
 
                             if (blockPass != pass)
                             {

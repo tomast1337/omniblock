@@ -19,7 +19,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (var1.multiplayerWorld)
+            if (var1.isRemote)
             {
                 return true;
             }

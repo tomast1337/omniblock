@@ -219,7 +219,7 @@ namespace betareborn.Blocks
             var6.zCoord += var7.Z;
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
             return material == Material.WATER ? 5 : (material == Material.LAVA ? 30 : 0);
         }
@@ -236,7 +236,7 @@ namespace betareborn.Blocks
             base.onTick(var1, var2, var3, var4, var5);
         }
 
-        public override int getRenderBlockPass()
+        public override int getRenderLayer()
         {
             return material == Material.WATER ? 1 : 0;
         }
@@ -278,7 +278,7 @@ namespace betareborn.Blocks
             return var5.X == 0.0D && var5.Z == 0.0D ? -1000.0D : java.lang.Math.atan2(var5.Z, var5.X) - Math.PI * 0.5D;
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             checkForHarden(var1, var2, var3, var4);
         }

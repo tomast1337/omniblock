@@ -61,7 +61,7 @@ namespace betareborn
         public GuiIngame ingameGUI;
         public bool skipRenderWorld = false;
         public ModelBiped field_9242_w = new ModelBiped(0.0F);
-        public MovingObjectPosition objectMouseOver = null;
+        public HitResult objectMouseOver = null;
         public GameSettings gameSettings;
         public SoundManager sndManager = new SoundManager();
         public MouseHelper mouseHelper;
@@ -1158,7 +1158,7 @@ namespace betareborn
                 {
                     displayGuiScreen((GuiScreen)null);
                 }
-                else if (thePlayer.isPlayerSleeping() && theWorld != null && theWorld.multiplayerWorld)
+                else if (thePlayer.isPlayerSleeping() && theWorld != null && theWorld.isRemote)
                 {
                     displayGuiScreen(new GuiSleepMP());
                 }
@@ -1202,7 +1202,7 @@ namespace betareborn
                 }
 
                 theWorld.difficultySetting = gameSettings.difficulty;
-                if (theWorld.multiplayerWorld)
+                if (theWorld.isRemote)
                 {
                     theWorld.difficultySetting = 3;
                 }
@@ -1447,7 +1447,7 @@ namespace betareborn
 
         public bool isMultiplayerWorld()
         {
-            return theWorld != null && theWorld.multiplayerWorld;
+            return theWorld != null && theWorld.isRemote;
         }
 
         public void startWorld(string var1, string var2, long var3)
@@ -1635,7 +1635,7 @@ namespace betareborn
                     }
                 }
 
-                if (!var1.multiplayerWorld)
+                if (!var1.isRemote)
                 {
                     func_6255_d(var2);
                 }
@@ -1782,7 +1782,7 @@ namespace betareborn
 
         public void respawn(bool var1, int var2)
         {
-            if (!theWorld.multiplayerWorld && !theWorld.dimension.hasWorldSpawn())
+            if (!theWorld.isRemote && !theWorld.dimension.hasWorldSpawn())
             {
                 usePortal();
             }

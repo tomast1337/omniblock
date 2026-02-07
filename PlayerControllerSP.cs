@@ -30,7 +30,7 @@ namespace betareborn
             int var6 = mc.theWorld.getBlockMeta(var1, var2, var3);
             bool var7 = base.sendBlockRemoved(var1, var2, var3, var4);
             ItemStack var8 = mc.thePlayer.getCurrentEquippedItem();
-            bool var9 = mc.thePlayer.canHarvestBlock(Block.BLOCKS[var5]);
+            bool var9 = mc.thePlayer.canHarvest(Block.BLOCKS[var5]);
             if (var8 != null)
             {
                 var8.onDestroyBlock(var5, var1, var2, var3, mc.thePlayer);
@@ -58,7 +58,7 @@ namespace betareborn
                 Block.BLOCKS[var5].onBlockClicked(mc.theWorld, var1, var2, var3, mc.thePlayer);
             }
 
-            if (var5 > 0 && Block.BLOCKS[var5].blockStrength(mc.thePlayer) >= 1.0F)
+            if (var5 > 0 && Block.BLOCKS[var5].getHardness(mc.thePlayer) >= 1.0F)
             {
                 sendBlockRemoved(var1, var2, var3, var4);
             }
@@ -88,7 +88,7 @@ namespace betareborn
                     }
 
                     Block var6 = Block.BLOCKS[var5];
-                    curBlockDamage += var6.blockStrength(mc.thePlayer);
+                    curBlockDamage += var6.getHardness(mc.thePlayer);
                     if (field_1069_h % 4.0F == 0.0F && var6 != null)
                     {
                         mc.sndManager.playSound(var6.soundGroup.func_1145_d(), (float)var1 + 0.5F, (float)var2 + 0.5F, (float)var3 + 0.5F, (var6.soundGroup.getVolume() + 1.0F) / 8.0F, var6.soundGroup.getPitch() * 0.5F);

@@ -555,7 +555,7 @@ namespace betareborn.Rendering
             GLManager.GL.Enable(GLEnum.CullFace);
         }
 
-        public void drawBlockBreaking(EntityPlayer var1, MovingObjectPosition var2, int var3, ItemStack var4, float var5)
+        public void drawBlockBreaking(EntityPlayer var1, HitResult var2, int var3, ItemStack var4, float var5)
         {
             Tessellator var6 = Tessellator.instance;
             GLManager.GL.Enable(GLEnum.Blend);
@@ -645,7 +645,7 @@ namespace betareborn.Rendering
             GLManager.GL.Disable(GLEnum.AlphaTest);
         }
 
-        public void drawSelectionBox(EntityPlayer var1, MovingObjectPosition var2, int var3, ItemStack var4, float var5)
+        public void drawSelectionBox(EntityPlayer var1, HitResult var2, int var3, ItemStack var4, float var5)
         {
             if (var3 == 0 && var2.typeOfHit == EnumMovingObjectType.TILE)
             {

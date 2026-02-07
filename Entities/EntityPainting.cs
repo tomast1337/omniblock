@@ -154,7 +154,7 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            if (field_695_c++ == 100 && !worldObj.multiplayerWorld)
+            if (field_695_c++ == 100 && !worldObj.isRemote)
             {
                 field_695_c = 0;
                 if (!func_410_i())
@@ -244,7 +244,7 @@ namespace betareborn.Entities
 
         public override bool attackEntityFrom(Entity var1, int var2)
         {
-            if (!isDead && !worldObj.multiplayerWorld)
+            if (!isDead && !worldObj.isRemote)
             {
                 setEntityDead();
                 setBeenAttacked();
@@ -292,7 +292,7 @@ namespace betareborn.Entities
 
         public override void moveEntity(double var1, double var3, double var5)
         {
-            if (!worldObj.multiplayerWorld && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
+            if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 setEntityDead();
                 worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
@@ -302,7 +302,7 @@ namespace betareborn.Entities
 
         public override void addVelocity(double var1, double var3, double var5)
         {
-            if (!worldObj.multiplayerWorld && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
+            if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 setEntityDead();
                 worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));

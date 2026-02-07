@@ -109,7 +109,7 @@ namespace betareborn.Blocks
         public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
         {
             base.dropStacks(var1, var2, var3, var4, var5, var6);
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 for (int var7 = 0; var7 < 3; ++var7)
                 {
@@ -133,7 +133,7 @@ namespace betareborn.Blocks
             return var1 == 7 ? Item.wheat.id : -1;
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 1;
         }

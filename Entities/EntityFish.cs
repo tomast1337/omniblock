@@ -159,7 +159,7 @@ namespace betareborn.Entities
             }
             else
             {
-                if (!worldObj.multiplayerWorld)
+                if (!worldObj.isRemote)
                 {
                     ItemStack var1 = angler.getCurrentEquippedItem();
                     if (angler.isDead || !angler.isEntityAlive() || var1 == null || var1.getItem() != Item.fishingRod || getDistanceSqToEntity(angler) > 1024.0D)
@@ -216,7 +216,7 @@ namespace betareborn.Entities
 
                 Vec3D var20 = Vec3D.createVector(posX, posY, posZ);
                 Vec3D var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
-                MovingObjectPosition var3 = worldObj.rayTraceBlocks(var20, var2);
+                HitResult var3 = worldObj.rayTraceBlocks(var20, var2);
                 var20 = Vec3D.createVector(posX, posY, posZ);
                 var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
                 if (var3 != null)
@@ -236,7 +236,7 @@ namespace betareborn.Entities
                     {
                         float var10 = 0.3F;
                         Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
-                        MovingObjectPosition var12 = var11.raycast(var20, var2);
+                        HitResult var12 = var11.raycast(var20, var2);
                         if (var12 != null)
                         {
                             var13 = var20.distanceTo(var12.hitVec);
@@ -251,7 +251,7 @@ namespace betareborn.Entities
 
                 if (var4 != null)
                 {
-                    var3 = new MovingObjectPosition(var4);
+                    var3 = new HitResult(var4);
                 }
 
                 if (var3 != null)

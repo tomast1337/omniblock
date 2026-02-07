@@ -41,7 +41,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3 - 1, var4);
             return var5 == id ? true : (var5 != Block.GRASS_BLOCK.id && var5 != Block.DIRT.id ? false : (var1.getMaterial(var2 - 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2 + 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2, var3 - 1, var4 - 1) == Material.WATER ? true : var1.getMaterial(var2, var3 - 1, var4 + 1) == Material.WATER))));
@@ -56,7 +56,7 @@ namespace betareborn.Blocks
         {
             if (!canBlockStay(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
@@ -64,7 +64,7 @@ namespace betareborn.Blocks
 
         public override bool canBlockStay(World var1, int var2, int var3, int var4)
         {
-            return canPlaceBlockAt(var1, var2, var3, var4);
+            return canPlaceAt(var1, var2, var3, var4);
         }
 
         public override Box getCollisionShape(World var1, int var2, int var3, int var4)

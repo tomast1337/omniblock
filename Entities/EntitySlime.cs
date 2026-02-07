@@ -123,7 +123,7 @@ namespace betareborn.Entities
         public override void setEntityDead()
         {
             int var1 = getSlimeSize();
-            if (!worldObj.multiplayerWorld && var1 > 1 && health == 0)
+            if (!worldObj.isRemote && var1 > 1 && health == 0)
             {
                 for (int var2 = 0; var2 < 4; ++var2)
                 {

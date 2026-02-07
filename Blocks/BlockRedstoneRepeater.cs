@@ -23,9 +23,9 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canPlaceBlockAt(var1, var2, var3, var4);
+            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canPlaceAt(var1, var2, var3, var4);
         }
 
         public override bool canBlockStay(World var1, int var2, int var3, int var4)
@@ -95,7 +95,7 @@ namespace betareborn.Blocks
         {
             if (!canBlockStay(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
             else
@@ -159,7 +159,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
             var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);

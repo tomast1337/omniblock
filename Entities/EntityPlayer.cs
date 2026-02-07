@@ -50,7 +50,7 @@ namespace betareborn.Entities
         public EntityPlayer(World var1) : base(var1)
         {
             inventory = new InventoryPlayer(this);
-            inventorySlots = new ContainerPlayer(inventory, !var1.multiplayerWorld);
+            inventorySlots = new ContainerPlayer(inventory, !var1.isRemote);
             craftingInventory = inventorySlots;
             yOffset = 1.62F;
             Vec3i var2 = var1.getSpawnPoint();
@@ -78,7 +78,7 @@ namespace betareborn.Entities
                     sleepTimer = 100;
                 }
 
-                if (!worldObj.multiplayerWorld)
+                if (!worldObj.isRemote)
                 {
                     if (!isInBed())
                     {
@@ -100,7 +100,7 @@ namespace betareborn.Entities
             }
 
             base.onUpdate();
-            if (!worldObj.multiplayerWorld && craftingInventory != null && !craftingInventory.isUsableByPlayer(this))
+            if (!worldObj.isRemote && craftingInventory != null && !craftingInventory.isUsableByPlayer(this))
             {
                 closeScreen();
                 craftingInventory = inventorySlots;
@@ -372,7 +372,7 @@ namespace betareborn.Entities
             return var2;
         }
 
-        public bool canHarvestBlock(Block var1)
+        public bool canHarvest(Block var1)
         {
             return inventory.canHarvestBlock(var1);
         }
@@ -445,7 +445,7 @@ namespace betareborn.Entities
             }
             else
             {
-                if (isPlayerSleeping() && !worldObj.multiplayerWorld)
+                if (isPlayerSleeping() && !worldObj.isRemote)
                 {
                     wakeUpPlayer(true, true, false);
                 }
@@ -653,7 +653,7 @@ namespace betareborn.Entities
 
         public EnumStatus sleepInBedAt(int var1, int var2, int var3)
         {
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 if (isPlayerSleeping() || !isEntityAlive())
                 {
@@ -712,7 +712,7 @@ namespace betareborn.Entities
             sleepTimer = 0;
             bedChunkCoordinates = new Vec3i(var1, var2, var3);
             motionX = motionZ = motionY = 0.0D;
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 worldObj.updateAllPlayersSleepingFlag();
             }
@@ -761,7 +761,7 @@ namespace betareborn.Entities
             }
 
             sleeping = false;
-            if (!worldObj.multiplayerWorld && var2)
+            if (!worldObj.isRemote && var2)
             {
                 worldObj.updateAllPlayersSleepingFlag();
             }

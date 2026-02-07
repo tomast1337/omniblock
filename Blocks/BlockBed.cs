@@ -19,7 +19,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (world.multiplayerWorld)
+            if (world.isRemote)
             {
                 return true;
             }
@@ -155,9 +155,9 @@ namespace betareborn.Blocks
             else if (world.getBlockId(x + BED_OFFSETS[var7][0], y, z + BED_OFFSETS[var7][1]) != this.id)
             {
                 world.setBlockWithNotify(x, y, z, 0);
-                if (!world.multiplayerWorld)
+                if (!world.isRemote)
                 {
-                    dropBlockAsItem(world, x, y, z, var6);
+                    dropStacks(world, x, y, z, var6);
                 }
             }
 

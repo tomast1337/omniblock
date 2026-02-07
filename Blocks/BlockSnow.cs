@@ -38,7 +38,7 @@ namespace betareborn.Blocks
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, var6, 1.0F);
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3 - 1, var4);
             return var5 != 0 && Block.BLOCKS[var5].isOpaque() ? var1.getMaterial(var2, var3 - 1, var4).blocksMovement() : false;
@@ -51,9 +51,9 @@ namespace betareborn.Blocks
 
         private bool func_314_h(World var1, int var2, int var3, int var4)
         {
-            if (!canPlaceBlockAt(var1, var2, var3, var4))
+            if (!canPlaceAt(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
                 return false;
             }
@@ -82,7 +82,7 @@ namespace betareborn.Blocks
             return Item.snowball.id;
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 0;
         }
@@ -91,7 +91,7 @@ namespace betareborn.Blocks
         {
             if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11)
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 

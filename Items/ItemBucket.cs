@@ -33,7 +33,7 @@ namespace betareborn.Items
             float var20 = var14 * var16;
             double var21 = 5.0D;
             Vec3D var23 = var13.addVector((double)var18 * var21, (double)var17 * var21, (double)var20 * var21);
-            MovingObjectPosition var24 = var2.rayTraceBlocks_do(var13, var23, isFull == 0);
+            HitResult var24 = var2.rayTraceBlocks_do(var13, var23, isFull == 0);
             if (var24 == null)
             {
                 return var1;

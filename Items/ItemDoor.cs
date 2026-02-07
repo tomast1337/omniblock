@@ -35,7 +35,7 @@ namespace betareborn.Items
                     var8 = Block.IRON_DOOR;
                 }
 
-                if (!var8.canPlaceBlockAt(var3, var4, var5, var6))
+                if (!var8.canPlaceAt(var3, var4, var5, var6))
                 {
                     return false;
                 }

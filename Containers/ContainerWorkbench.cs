@@ -58,7 +58,7 @@ namespace betareborn.Containers
         public override void onCraftGuiClosed(EntityPlayer var1)
         {
             base.onCraftGuiClosed(var1);
-            if (!field_20133_c.multiplayerWorld)
+            if (!field_20133_c.isRemote)
             {
                 for (int var2 = 0; var2 < 9; ++var2)
                 {

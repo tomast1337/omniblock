@@ -87,7 +87,7 @@ namespace betareborn.Blocks
                     else
                     {
                         var1.setBlockMeta(var2, var3, var4, var10);
-                        var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+                        var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
                         var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
                     }
                 }
@@ -162,7 +162,7 @@ namespace betareborn.Blocks
                     }
                     else
                     {
-                        Block.BLOCKS[var6].dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                        Block.BLOCKS[var6].dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     }
                 }
 
@@ -333,12 +333,12 @@ namespace betareborn.Blocks
             return var5 == material ? false : (var5 == Material.LAVA ? false : !blockBlocksFlow(var1, var2, var3, var4));
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            base.onBlockAdded(var1, var2, var3, var4);
+            base.onPlaced(var1, var2, var3, var4);
             if (var1.getBlockId(var2, var3, var4) == id)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+                var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
             }
 
         }

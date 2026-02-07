@@ -17,11 +17,11 @@ namespace betareborn.Blocks
             return null;
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             TileEntity var5 = var1.getBlockTileEntity(var2, var3, var4);
             if (var5 != null && var5 is TileEntityPiston)
@@ -30,17 +30,17 @@ namespace betareborn.Blocks
             }
             else
             {
-                base.onBlockRemoval(var1, var2, var3, var4);
+                base.onBreak(var1, var2, var3, var4);
             }
 
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return false;
         }
 
-        public override bool canPlaceBlockOnSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
         {
             return false;
         }
@@ -62,7 +62,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (!var1.multiplayerWorld && var1.getBlockTileEntity(var2, var3, var4) == null)
+            if (!var1.isRemote && var1.getBlockTileEntity(var2, var3, var4) == null)
             {
                 var1.setBlockWithNotify(var2, var3, var4, 0);
                 return true;
@@ -80,19 +80,19 @@ namespace betareborn.Blocks
 
         public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 TileEntityPiston var7 = func_31034_c(var1, var2, var3, var4);
                 if (var7 != null)
                 {
-                    Block.BLOCKS[var7.getPushedBlockId()].dropBlockAsItem(var1, var2, var3, var4, var7.getPushedBlockData());
+                    Block.BLOCKS[var7.getPushedBlockId()].dropStacks(var1, var2, var3, var4, var7.getPushedBlockData());
                 }
             }
         }
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.multiplayerWorld && var1.getBlockTileEntity(var2, var3, var4) == null)
+            if (!var1.isRemote && var1.getBlockTileEntity(var2, var3, var4) == null)
             {
             }
 

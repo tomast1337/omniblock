@@ -229,7 +229,7 @@ namespace betareborn.Entities
                 inWater = false;
             }
 
-            if (worldObj.multiplayerWorld)
+            if (worldObj.isRemote)
             {
                 fire = 0;
             }
@@ -264,7 +264,7 @@ namespace betareborn.Entities
                 kill();
             }
 
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 setEntityFlag(0, fire > 0);
                 setEntityFlag(2, ridingEntity != null);
@@ -548,7 +548,7 @@ namespace betareborn.Entities
                             worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
                         }
 
-                        Block.BLOCKS[var28].onEntityWalking(worldObj, var38, var26, var39, this);
+                        Block.BLOCKS[var28].onSteppedOn(worldObj, var38, var26, var39, this);
                     }
                 }
 

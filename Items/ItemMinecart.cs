@@ -20,7 +20,7 @@ namespace betareborn.Items
             int var8 = var3.getBlockId(var4, var5, var6);
             if (BlockRail.isRailBlock(var8))
             {
-                if (!var3.multiplayerWorld)
+                if (!var3.isRemote)
                 {
                     var3.spawnEntity(new EntityMinecart(var3, (double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), (double)((float)var6 + 0.5F), minecartType));
                 }

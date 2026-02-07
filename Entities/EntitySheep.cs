@@ -47,7 +47,7 @@ namespace betareborn.Entities
             ItemStack var2 = var1.inventory.getCurrentItem();
             if (var2 != null && var2.itemID == Item.shears.id && !getSheared())
             {
-                if (!worldObj.multiplayerWorld)
+                if (!worldObj.isRemote)
                 {
                     setSheared(true);
                     int var3 = 2 + rand.nextInt(3);

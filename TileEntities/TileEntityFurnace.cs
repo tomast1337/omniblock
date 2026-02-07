@@ -142,7 +142,7 @@ namespace betareborn.TileEntities
                 --burnTime;
             }
 
-            if (!world.multiplayerWorld)
+            if (!world.isRemote)
             {
                 if (burnTime == 0 && canAcceptRecipeOutput())
                 {

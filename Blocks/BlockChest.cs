@@ -135,7 +135,7 @@ namespace betareborn.Blocks
             return var1 == 1 ? textureId - 1 : (var1 == 0 ? textureId - 1 : (var1 == 3 ? textureId + 1 : textureId));
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             int var5 = 0;
             if (var1.getBlockId(var2 - 1, var3, var4) == id)
@@ -166,7 +166,7 @@ namespace betareborn.Blocks
             return var1.getBlockId(var2, var3, var4) != id ? false : (var1.getBlockId(var2 - 1, var3, var4) == id ? true : (var1.getBlockId(var2 + 1, var3, var4) == id ? true : (var1.getBlockId(var2, var3, var4 - 1) == id ? true : var1.getBlockId(var2, var3, var4 + 1) == id)));
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             TileEntityChest var5 = (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4);
 
@@ -198,7 +198,7 @@ namespace betareborn.Blocks
                 }
             }
 
-            base.onBlockRemoval(var1, var2, var3, var4);
+            base.onBreak(var1, var2, var3, var4);
         }
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
@@ -246,7 +246,7 @@ namespace betareborn.Blocks
                     var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4 + 1));
                 }
 
-                if (var1.multiplayerWorld)
+                if (var1.isRemote)
                 {
                     return true;
                 }

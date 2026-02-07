@@ -51,7 +51,7 @@ namespace betareborn.Entities
             prevTimeInPortal = timeInPortal;
             if (inPortal)
             {
-                if (!worldObj.multiplayerWorld && ridingEntity != null)
+                if (!worldObj.isRemote && ridingEntity != null)
                 {
                     mountEntity((Entity)null);
                 }
@@ -70,7 +70,7 @@ namespace betareborn.Entities
                 if (timeInPortal >= 1.0F)
                 {
                     timeInPortal = 1.0F;
-                    if (!worldObj.multiplayerWorld)
+                    if (!worldObj.isRemote)
                     {
                         timeUntilPortal = 10;
                         mc.sndManager.playSoundFX("portal.travel", 1.0F, rand.nextFloat() * 0.4F + 0.8F);

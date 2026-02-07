@@ -96,16 +96,16 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return !base.canPlaceBlockAt(var1, var2, var3, var4) ? false : canBlockStay(var1, var2, var3, var4);
+            return !base.canPlaceAt(var1, var2, var3, var4) ? false : canBlockStay(var1, var2, var3, var4);
         }
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (!canBlockStay(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
@@ -116,7 +116,7 @@ namespace betareborn.Blocks
             return var1.getMaterial(var2, var3 - 1, var4).isSolid();
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 0;
         }

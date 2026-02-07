@@ -96,7 +96,7 @@ namespace betareborn.Entities
 
         public override bool attackEntityFrom(Entity var1, int var2)
         {
-            if (!worldObj.multiplayerWorld && !isDead)
+            if (!worldObj.isRemote && !isDead)
             {
                 minecartRockDirection = -minecartRockDirection;
                 minecartTimeSinceHit = 10;
@@ -218,7 +218,7 @@ namespace betareborn.Entities
             }
 
             double var7;
-            if (worldObj.multiplayerWorld && field_9415_k > 0)
+            if (worldObj.isRemote && field_9415_k > 0)
             {
                 if (field_9415_k > 0)
                 {
@@ -810,7 +810,7 @@ namespace betareborn.Entities
 
         public override void applyEntityCollision(Entity var1)
         {
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 if (var1 != riddenByEntity)
                 {
@@ -964,14 +964,14 @@ namespace betareborn.Entities
                     return true;
                 }
 
-                if (!worldObj.multiplayerWorld)
+                if (!worldObj.isRemote)
                 {
                     var1.mountEntity(this);
                 }
             }
             else if (minecartType == 1)
             {
-                if (!worldObj.multiplayerWorld)
+                if (!worldObj.isRemote)
                 {
                     var1.displayGUIChest(this);
                 }

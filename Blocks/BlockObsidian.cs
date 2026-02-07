@@ -6,7 +6,7 @@ namespace betareborn.Blocks
         {
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 1;
         }

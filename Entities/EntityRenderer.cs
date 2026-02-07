@@ -124,7 +124,7 @@ namespace betareborn.Entities
                         {
                             float var15 = var14.getCollisionBorderSize();
                             Box var16 = var14.boundingBox.expand((double)var15, (double)var15, (double)var15);
-                            MovingObjectPosition var17 = var16.raycast(var6, var8);
+                            HitResult var17 = var16.raycast(var6, var8);
                             if (var16.contains(var6))
                             {
                                 if (0.0D < var11 || var11 == 0.0D)
@@ -147,7 +147,7 @@ namespace betareborn.Entities
 
                     if (pointedEntity != null && !(mc.playerController is PlayerControllerTest))
                     {
-                        mc.objectMouseOver = new MovingObjectPosition(pointedEntity);
+                        mc.objectMouseOver = new HitResult(pointedEntity);
                     }
 
                 }
@@ -265,7 +265,7 @@ namespace betareborn.Entities
                         var21 *= 0.1F;
                         var22 *= 0.1F;
                         var23 *= 0.1F;
-                        MovingObjectPosition var24 = mc.theWorld.rayTraceBlocks(Vec3D.createVector(var4 + (double)var21, var6 + (double)var22, var8 + (double)var23), Vec3D.createVector(var4 - var14 + (double)var21 + (double)var23, var6 - var18 + (double)var22, var8 - var16 + (double)var23));
+                        HitResult var24 = mc.theWorld.rayTraceBlocks(Vec3D.createVector(var4 + (double)var21, var6 + (double)var22, var8 + (double)var23), Vec3D.createVector(var4 - var14 + (double)var21 + (double)var23, var6 - var18 + (double)var22, var8 - var16 + (double)var23));
                         if (var24 != null)
                         {
                             double var25 = var24.hitVec.distanceTo(Vec3D.createVector(var4, var6, var8));

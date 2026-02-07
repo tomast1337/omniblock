@@ -45,16 +45,16 @@ namespace betareborn.Blocks
             setTickRandomly(true);
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
             return 2;
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             if (var1.getBlockMeta(var2, var3, var4) == 0)
             {
-                base.onBlockAdded(var1, var2, var3, var4);
+                base.onPlaced(var1, var2, var3, var4);
             }
 
             if (torchActive)
@@ -69,7 +69,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             if (torchActive)
             {
@@ -140,7 +140,7 @@ namespace betareborn.Blocks
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             base.neighborUpdate(var1, var2, var3, var4, var5);
-            var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+            var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
         }
 
         public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)

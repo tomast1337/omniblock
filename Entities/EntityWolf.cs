@@ -135,7 +135,7 @@ namespace betareborn.Entities
                 setWolfSitting(false);
             }
 
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 dataWatcher.updateObject(18, java.lang.Integer.valueOf(health));
             }
@@ -414,7 +414,7 @@ namespace betareborn.Entities
                         var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                     }
 
-                    if (!worldObj.multiplayerWorld)
+                    if (!worldObj.isRemote)
                     {
                         if (rand.nextInt(3) == 0)
                         {
@@ -456,7 +456,7 @@ namespace betareborn.Entities
 
                 if (var1.username.Equals(getWolfOwner(), StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!worldObj.multiplayerWorld)
+                    if (!worldObj.isRemote)
                     {
                         setWolfSitting(!isWolfSitting());
                         isJumping = false;

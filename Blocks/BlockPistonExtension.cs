@@ -24,9 +24,9 @@ namespace betareborn.Blocks
             field_31053_a = -1;
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
-            base.onBlockRemoval(var1, var2, var3, var4);
+            base.onBreak(var1, var2, var3, var4);
             int var5 = var1.getBlockMeta(var2, var3, var4);
             int var6 = PistonBlockTextures.field_31057_a[func_31050_c(var5)];
             var2 += PistonBlockTextures.field_31056_b[var6];
@@ -38,7 +38,7 @@ namespace betareborn.Blocks
                 var5 = var1.getBlockMeta(var2, var3, var4);
                 if (BlockPistonBase.isPowered(var5))
                 {
-                    Block.BLOCKS[var7].dropBlockAsItem(var1, var2, var3, var4, var5);
+                    Block.BLOCKS[var7].dropStacks(var1, var2, var3, var4, var5);
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
             }
@@ -66,17 +66,17 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return false;
         }
 
-        public override bool canPlaceBlockOnSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
         {
             return false;
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 0;
         }

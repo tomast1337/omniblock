@@ -23,7 +23,7 @@ namespace betareborn.Entities
                 int var8 = MathHelper.floor_double(var2);
                 int var9 = MathHelper.floor_double(var4);
                 int var10 = MathHelper.floor_double(var6);
-                if (var1.getBlockId(var8, var9, var10) == 0 && Block.FIRE.canPlaceBlockAt(var1, var8, var9, var10))
+                if (var1.getBlockId(var8, var9, var10) == 0 && Block.FIRE.canPlaceAt(var1, var8, var9, var10))
                 {
                     var1.setBlockWithNotify(var8, var9, var10, Block.FIRE.id);
                 }
@@ -33,7 +33,7 @@ namespace betareborn.Entities
                     var9 = MathHelper.floor_double(var2) + rand.nextInt(3) - 1;
                     var10 = MathHelper.floor_double(var4) + rand.nextInt(3) - 1;
                     int var11 = MathHelper.floor_double(var6) + rand.nextInt(3) - 1;
-                    if (var1.getBlockId(var9, var10, var11) == 0 && Block.FIRE.canPlaceBlockAt(var1, var9, var10, var11))
+                    if (var1.getBlockId(var9, var10, var11) == 0 && Block.FIRE.canPlaceAt(var1, var9, var10, var11))
                     {
                         var1.setBlockWithNotify(var9, var10, var11, Block.FIRE.id);
                     }
@@ -68,7 +68,7 @@ namespace betareborn.Entities
                         int var1 = MathHelper.floor_double(posX);
                         int var2 = MathHelper.floor_double(posY);
                         int var3 = MathHelper.floor_double(posZ);
-                        if (worldObj.getBlockId(var1, var2, var3) == 0 && Block.FIRE.canPlaceBlockAt(worldObj, var1, var2, var3))
+                        if (worldObj.getBlockId(var1, var2, var3) == 0 && Block.FIRE.canPlaceAt(worldObj, var1, var2, var3))
                         {
                             worldObj.setBlockWithNotify(var1, var2, var3, Block.FIRE.id);
                         }

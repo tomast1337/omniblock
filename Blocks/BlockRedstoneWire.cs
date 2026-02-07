@@ -48,7 +48,7 @@ namespace betareborn.Blocks
             return 8388608;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return var1.shouldSuffocate(var2, var3 - 1, var4);
         }
@@ -226,10 +226,10 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            base.onBlockAdded(var1, var2, var3, var4);
-            if (!var1.multiplayerWorld)
+            base.onPlaced(var1, var2, var3, var4);
+            if (!var1.isRemote)
             {
                 updateAndPropagateCurrentStrength(var1, var2, var3, var4);
                 var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
@@ -277,10 +277,10 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
-            base.onBlockRemoval(var1, var2, var3, var4);
-            if (!var1.multiplayerWorld)
+            base.onBreak(var1, var2, var3, var4);
+            if (!var1.isRemote)
             {
                 var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
                 var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
@@ -343,13 +343,13 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var6 = var1.getBlockMeta(var2, var3, var4);
-                bool var7 = canPlaceBlockAt(var1, var2, var3, var4);
+                bool var7 = canPlaceAt(var1, var2, var3, var4);
                 if (!var7)
                 {
-                    dropBlockAsItem(var1, var2, var3, var4, var6);
+                    dropStacks(var1, var2, var3, var4, var6);
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
                 else

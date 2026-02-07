@@ -31,7 +31,7 @@ namespace betareborn.Blocks
             var1.editingBlocks = true;
             var1.setBlockAndMetadata(var2, var3, var4, id - 1, var5);
             var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
-            var1.scheduleBlockUpdate(var2, var3, var4, id - 1, tickRate());
+            var1.scheduleBlockUpdate(var2, var3, var4, id - 1, getTickRate());
             var1.editingBlocks = false;
         }
 

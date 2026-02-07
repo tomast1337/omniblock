@@ -34,7 +34,7 @@ namespace betareborn
             bool var8 = var5.setBlockWithNotify(var1, var2, var3, 0);
             if (var6 != null && var8)
             {
-                var6.onBlockDestroyedByPlayer(var5, var1, var2, var3, var7);
+                var6.onMetadataChange(var5, var1, var2, var3, var7);
             }
 
             return var8;

@@ -267,7 +267,7 @@ namespace betareborn.Items
 
         public override void onUpdate(ItemStack var1, World var2, Entity var3, int var4, bool var5)
         {
-            if (!var2.multiplayerWorld)
+            if (!var2.isRemote)
             {
                 MapData var6 = func_28012_a(var1, var2);
                 if (var3 is EntityPlayer)

@@ -48,7 +48,7 @@ namespace betareborn.Blocks
         {
             int var6 = func_31039_c(var1, var2, var3, var4, (EntityPlayer)var5);
             var1.setBlockMeta(var2, var3, var4, var6);
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 func_31043_h(var1, var2, var3, var4);
             }
@@ -57,16 +57,16 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.multiplayerWorld && !field_31048_b)
+            if (!var1.isRemote && !field_31048_b)
             {
                 func_31043_h(var1, var2, var3, var4);
             }
 
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            if (!var1.multiplayerWorld && var1.getBlockTileEntity(var2, var3, var4) == null)
+            if (!var1.isRemote && var1.getBlockTileEntity(var2, var3, var4) == null)
             {
                 func_31043_h(var1, var2, var3, var4);
             }
@@ -379,7 +379,7 @@ namespace betareborn.Blocks
                             continue;
                         }
 
-                        Block.BLOCKS[var10].dropBlockAsItem(var1, var6, var7, var8, var1.getBlockMeta(var6, var7, var8));
+                        Block.BLOCKS[var10].dropStacks(var1, var6, var7, var8, var1.getBlockMeta(var6, var7, var8));
                         var1.setBlockWithNotify(var6, var7, var8, 0);
                     }
                 }

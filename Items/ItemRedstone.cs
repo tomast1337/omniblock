@@ -51,7 +51,7 @@ namespace betareborn.Items
                 }
             }
 
-            if (Block.REDSTONE_WIRE.canPlaceBlockAt(var3, var4, var5, var6))
+            if (Block.REDSTONE_WIRE.canPlaceAt(var3, var4, var5, var6))
             {
                 --var1.count;
                 var3.setBlockWithNotify(var4, var5, var6, Block.REDSTONE_WIRE.id);

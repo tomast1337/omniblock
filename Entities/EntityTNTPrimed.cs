@@ -62,7 +62,7 @@ namespace betareborn.Entities
 
             if (fuse-- <= 0)
             {
-                if (!worldObj.multiplayerWorld)
+                if (!worldObj.isRemote)
                 {
                     setEntityDead();
                     explode();

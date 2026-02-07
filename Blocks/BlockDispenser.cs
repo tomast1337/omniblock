@@ -15,7 +15,7 @@ namespace betareborn.Blocks
             textureId = 45;
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
             return 4;
         }
@@ -25,15 +25,15 @@ namespace betareborn.Blocks
             return Block.DISPENSER.id;
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            base.onBlockAdded(var1, var2, var3, var4);
+            base.onPlaced(var1, var2, var3, var4);
             setDispenserDefaultDirection(var1, var2, var3, var4);
         }
 
         private void setDispenserDefaultDirection(World var1, int var2, int var3, int var4)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var5 = var1.getBlockId(var2, var3, var4 - 1);
                 int var6 = var1.getBlockId(var2, var3, var4 + 1);
@@ -88,7 +88,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (var1.multiplayerWorld)
+            if (var1.isRemote)
             {
                 return true;
             }
@@ -181,7 +181,7 @@ namespace betareborn.Blocks
                 bool var6 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
                 if (var6)
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+                    var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
                 }
             }
 
@@ -226,7 +226,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             TileEntityDispenser var5 = (TileEntityDispenser)var1.getBlockTileEntity(var2, var3, var4);
 
@@ -258,7 +258,7 @@ namespace betareborn.Blocks
                 }
             }
 
-            base.onBlockRemoval(var1, var2, var3, var4);
+            base.onBreak(var1, var2, var3, var4);
         }
     }
 

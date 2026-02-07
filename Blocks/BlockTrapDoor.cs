@@ -120,7 +120,7 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var6 = var1.getBlockMeta(var2, var3, var4);
                 int var7 = var2;
@@ -148,7 +148,7 @@ namespace betareborn.Blocks
                 if (!var1.shouldSuffocate(var7, var3, var8))
                 {
                     var1.setBlockWithNotify(var2, var3, var4, 0);
-                    dropBlockAsItem(var1, var2, var3, var4, var6);
+                    dropStacks(var1, var2, var3, var4, var6);
                 }
 
                 if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
@@ -160,13 +160,13 @@ namespace betareborn.Blocks
             }
         }
 
-        public override MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
         {
             updateBoundingBox(var1, var2, var3, var4);
-            return base.collisionRayTrace(var1, var2, var3, var4, var5, var6);
+            return base.raycast(var1, var2, var3, var4, var5, var6);
         }
 
-        public override void onBlockPlaced(World var1, int var2, int var3, int var4, int var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, int var5)
         {
             sbyte var6 = 0;
             if (var5 == 2)
@@ -192,7 +192,7 @@ namespace betareborn.Blocks
             var1.setBlockMeta(var2, var3, var4, var6);
         }
 
-        public override bool canPlaceBlockOnSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
         {
             if (var5 == 0)
             {

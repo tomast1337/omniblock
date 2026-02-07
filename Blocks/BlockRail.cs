@@ -40,10 +40,10 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
         {
             updateBoundingBox(var1, var2, var3, var4);
-            return base.collisionRayTrace(var1, var2, var3, var4, var5, var6);
+            return base.raycast(var1, var2, var3, var4, var5, var6);
         }
 
         public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
@@ -92,14 +92,14 @@ namespace betareborn.Blocks
             return 1;
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return var1.shouldSuffocate(var2, var3 - 1, var4);
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 func_4031_h(var1, var2, var3, var4, true);
             }
@@ -108,7 +108,7 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 int var6 = var1.getBlockMeta(var2, var3, var4);
                 int var7 = var6;
@@ -145,7 +145,7 @@ namespace betareborn.Blocks
 
                 if (var8)
                 {
-                    dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                    dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
                 else if (id == Block.POWERED_RAIL.id)
@@ -183,7 +183,7 @@ namespace betareborn.Blocks
 
         private void func_4031_h(World var1, int var2, int var3, int var4, bool var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 (new RailLogic(this, var1, var2, var3, var4)).func_792_a(var1.isBlockIndirectlyGettingPowered(var2, var3, var4), var5);
             }

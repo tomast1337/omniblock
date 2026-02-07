@@ -52,7 +52,7 @@ namespace betareborn.Entities
             }
 
             field_752_b += field_755_h * 2.0F;
-            if (!worldObj.multiplayerWorld && --timeUntilNextEgg <= 0)
+            if (!worldObj.isRemote && --timeUntilNextEgg <= 0)
             {
                 worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
                 dropItem(Item.egg.id, 1);

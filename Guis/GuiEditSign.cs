@@ -28,7 +28,7 @@ namespace betareborn.Guis
         public override void onGuiClosed()
         {
             Keyboard.enableRepeatEvents(false);
-            if (mc.theWorld.multiplayerWorld)
+            if (mc.theWorld.isRemote)
             {
                 mc.getSendQueue().addToSendQueue(new UpdateSignPacket(entitySign.x, entitySign.y, entitySign.z, entitySign.texts));
             }

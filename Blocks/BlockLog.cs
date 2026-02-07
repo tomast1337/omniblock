@@ -11,7 +11,7 @@ namespace betareborn.Blocks
             textureId = 20;
         }
 
-        public override int quantityDropped(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random var1)
         {
             return 1;
         }
@@ -26,7 +26,7 @@ namespace betareborn.Blocks
             base.harvestBlock(var1, var2, var3, var4, var5, var6);
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             sbyte var5 = 4;
             int var6 = var5 + 1;
@@ -59,7 +59,7 @@ namespace betareborn.Blocks
             return var1 == 1 ? 21 : (var1 == 0 ? 21 : (var2 == 1 ? 116 : (var2 == 2 ? 117 : 20)));
         }
 
-        protected override int damageDropped(int var1)
+        protected override int getDroppedItemMeta(int var1)
         {
             return var1;
         }

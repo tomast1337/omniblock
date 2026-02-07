@@ -50,7 +50,7 @@ namespace betareborn.Items
                     ++var4;
                 }
 
-                if (!Block.SIGN.canPlaceBlockAt(var3, var4, var5, var6))
+                if (!Block.SIGN.canPlaceAt(var3, var4, var5, var6))
                 {
                     return false;
                 }

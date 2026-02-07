@@ -38,7 +38,7 @@ namespace betareborn.Blocks
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 if (var1.getBlockLightValue(var2, var3 + 1, var4) < 4 && Block.BLOCK_LIGHT_OPACITY[var1.getBlockId(var2, var3 + 1, var4)] > 2)
                 {

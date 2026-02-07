@@ -76,7 +76,7 @@ namespace betareborn.Entities
 
         public override bool attackEntityFrom(Entity var1, int var2)
         {
-            if (!worldObj.multiplayerWorld && !isDead)
+            if (!worldObj.isRemote && !isDead)
             {
                 boatRockDirection = -boatRockDirection;
                 boatTimeSinceHit = 10;
@@ -177,7 +177,7 @@ namespace betareborn.Entities
             double var8;
             double var10;
             double var21;
-            if (worldObj.multiplayerWorld)
+            if (worldObj.isRemote)
             {
                 if (field_9394_d > 0)
                 {
@@ -300,7 +300,7 @@ namespace betareborn.Entities
 
                 if (isCollidedHorizontally && var6 > 0.15D)
                 {
-                    if (!worldObj.multiplayerWorld)
+                    if (!worldObj.isRemote)
                     {
                         setEntityDead();
 
@@ -418,7 +418,7 @@ namespace betareborn.Entities
             }
             else
             {
-                if (!worldObj.multiplayerWorld)
+                if (!worldObj.isRemote)
                 {
                     var1.mountEntity(this);
                 }

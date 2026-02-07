@@ -48,7 +48,7 @@ namespace betareborn.TileEntities
                     rotation -= 360.0D;
                 }
 
-                if (!world.multiplayerWorld)
+                if (!world.isRemote)
                 {
                     if (spawnDelay == -1)
                     {

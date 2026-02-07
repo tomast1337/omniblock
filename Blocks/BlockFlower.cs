@@ -13,9 +13,9 @@ namespace betareborn.Blocks
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 3.0F, 0.5F + var3);
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return base.canPlaceBlockAt(var1, var2, var3, var4) && canThisPlantGrowOnThisBlockID(var1.getBlockId(var2, var3 - 1, var4));
+            return base.canPlaceAt(var1, var2, var3, var4) && canThisPlantGrowOnThisBlockID(var1.getBlockId(var2, var3 - 1, var4));
         }
 
         protected virtual bool canThisPlantGrowOnThisBlockID(int var1)
@@ -38,7 +38,7 @@ namespace betareborn.Blocks
         {
             if (!canBlockStay(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 

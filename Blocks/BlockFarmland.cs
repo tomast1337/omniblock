@@ -59,7 +59,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onEntityWalking(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onSteppedOn(World var1, int var2, int var3, int var4, Entity var5)
         {
             if (var1.random.nextInt(4) == 0)
             {

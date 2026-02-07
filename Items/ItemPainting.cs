@@ -42,7 +42,7 @@ namespace betareborn.Items
                 EntityPainting var9 = new EntityPainting(var3, var4, var5, var6, var8);
                 if (var9.func_410_i())
                 {
-                    if (!var3.multiplayerWorld)
+                    if (!var3.isRemote)
                     {
                         var3.spawnEntity(var9);
                     }

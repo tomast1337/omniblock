@@ -31,17 +31,17 @@ namespace betareborn.Blocks
             return 12;
         }
 
-        public override bool canPlaceBlockOnSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
         {
             return var5 == 1 && var1.shouldSuffocate(var2, var3 - 1, var4) ? true : (var5 == 2 && var1.shouldSuffocate(var2, var3, var4 + 1) ? true : (var5 == 3 && var1.shouldSuffocate(var2, var3, var4 - 1) ? true : (var5 == 4 && var1.shouldSuffocate(var2 + 1, var3, var4) ? true : var5 == 5 && var1.shouldSuffocate(var2 - 1, var3, var4))));
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             return var1.shouldSuffocate(var2 - 1, var3, var4) ? true : (var1.shouldSuffocate(var2 + 1, var3, var4) ? true : (var1.shouldSuffocate(var2, var3, var4 - 1) ? true : (var1.shouldSuffocate(var2, var3, var4 + 1) ? true : var1.shouldSuffocate(var2, var3 - 1, var4))));
         }
 
-        public override void onBlockPlaced(World var1, int var2, int var3, int var4, int var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, int var5)
         {
             int var6 = var1.getBlockMeta(var2, var3, var4);
             int var7 = var6 & 8;
@@ -74,7 +74,7 @@ namespace betareborn.Blocks
 
             if (var6 == -1)
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
             else
@@ -121,7 +121,7 @@ namespace betareborn.Blocks
 
                 if (var7)
                 {
-                    dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                    dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
             }
@@ -130,9 +130,9 @@ namespace betareborn.Blocks
 
         private bool checkIfAttachedToBlock(World var1, int var2, int var3, int var4)
         {
-            if (!canPlaceBlockAt(var1, var2, var3, var4))
+            if (!canPlaceAt(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
                 return false;
             }
@@ -177,7 +177,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (var1.multiplayerWorld)
+            if (var1.isRemote)
             {
                 return true;
             }
@@ -215,7 +215,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockRemoval(World var1, int var2, int var3, int var4)
+        public override void onBreak(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMeta(var2, var3, var4);
             if ((var5 & 8) > 0)
@@ -244,7 +244,7 @@ namespace betareborn.Blocks
                 }
             }
 
-            base.onBlockRemoval(var1, var2, var3, var4);
+            base.onBreak(var1, var2, var3, var4);
         }
 
         public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)

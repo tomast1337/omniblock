@@ -133,7 +133,7 @@ namespace betareborn.Entities
 
             Vec3D var15 = Vec3D.createVector(posX, posY, posZ);
             Vec3D var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
-            MovingObjectPosition var3 = worldObj.rayTraceBlocks(var15, var2);
+            HitResult var3 = worldObj.rayTraceBlocks(var15, var2);
             var15 = Vec3D.createVector(posX, posY, posZ);
             var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
             if (var3 != null)
@@ -141,7 +141,7 @@ namespace betareborn.Entities
                 var2 = Vec3D.createVector(var3.hitVec.xCoord, var3.hitVec.yCoord, var3.hitVec.zCoord);
             }
 
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 Entity var4 = null;
                 var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.stretch(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
@@ -154,7 +154,7 @@ namespace betareborn.Entities
                     {
                         float var10 = 0.3F;
                         Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
-                        MovingObjectPosition var12 = var11.raycast(var15, var2);
+                        HitResult var12 = var11.raycast(var15, var2);
                         if (var12 != null)
                         {
                             double var13 = var15.distanceTo(var12.hitVec);
@@ -169,7 +169,7 @@ namespace betareborn.Entities
 
                 if (var4 != null)
                 {
-                    var3 = new MovingObjectPosition(var4);
+                    var3 = new HitResult(var4);
                 }
             }
 

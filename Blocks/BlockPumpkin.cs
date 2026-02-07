@@ -43,12 +43,12 @@ namespace betareborn.Blocks
             return var1 == 1 ? textureId : (var1 == 0 ? textureId : (var1 == 3 ? textureId + 1 + 16 : textureId + 16));
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            base.onBlockAdded(var1, var2, var3, var4);
+            base.onPlaced(var1, var2, var3, var4);
         }
 
-        public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3, var4);
             return (var5 == 0 || Block.BLOCKS[var5].material.isReplaceable()) && var1.shouldSuffocate(var2, var3 - 1, var4);

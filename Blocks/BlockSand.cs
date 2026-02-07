@@ -12,14 +12,14 @@ namespace betareborn.Blocks
         {
         }
 
-        public override void onBlockAdded(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.tickRate());
+            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.getTickRate());
         }
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.tickRate());
+            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.getTickRate());
         }
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
@@ -55,7 +55,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override int tickRate()
+        public override int getTickRate()
         {
             return 3;
         }

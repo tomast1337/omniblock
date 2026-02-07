@@ -37,7 +37,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (var1.multiplayerWorld)
+            if (var1.isRemote)
             {
                 return true;
             }
@@ -52,7 +52,7 @@ namespace betareborn.Blocks
 
         public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 TileEntityNote var6 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
                 var6.playNote(var1, var2, var3, var4);

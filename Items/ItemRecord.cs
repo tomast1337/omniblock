@@ -19,7 +19,7 @@ namespace betareborn.Items
         {
             if (var3.getBlockId(var4, var5, var6) == Block.JUKEBOX.id && var3.getBlockMeta(var4, var5, var6) == 0)
             {
-                if (var3.multiplayerWorld)
+                if (var3.isRemote)
                 {
                     return true;
                 }

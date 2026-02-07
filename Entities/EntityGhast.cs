@@ -38,7 +38,7 @@ namespace betareborn.Entities
 
         public override void updatePlayerActionState()
         {
-            if (!worldObj.multiplayerWorld && worldObj.difficultySetting == 0)
+            if (!worldObj.isRemote && worldObj.difficultySetting == 0)
             {
                 setEntityDead();
             }
@@ -129,7 +129,7 @@ namespace betareborn.Entities
                 }
             }
 
-            if (!worldObj.multiplayerWorld)
+            if (!worldObj.isRemote)
             {
                 sbyte var21 = dataWatcher.getWatchableObjectByte(16);
                 byte var12 = (byte)(attackCounter > 10 ? 1 : 0);

@@ -12,7 +12,7 @@ namespace betareborn.Blocks
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (!var1.multiplayerWorld)
+            if (!var1.isRemote)
             {
                 base.onTick(var1, var2, var3, var4, var5);
                 if (var1.getBlockLightValue(var2, var3 + 1, var4) >= 9 && var5.nextInt(30) == 0)
@@ -66,7 +66,7 @@ namespace betareborn.Blocks
 
         }
 
-        protected override int damageDropped(int var1)
+        protected override int getDroppedItemMeta(int var1)
         {
             return var1 & 3;
         }
