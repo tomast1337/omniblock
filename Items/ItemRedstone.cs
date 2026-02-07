@@ -53,7 +53,7 @@ namespace betareborn.Items
 
             if (Block.redstoneWire.canPlaceBlockAt(var3, var4, var5, var6))
             {
-                --var1.stackSize;
+                --var1.count;
                 var3.setBlockWithNotify(var4, var5, var6, Block.redstoneWire.blockID);
             }
 

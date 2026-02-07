@@ -54,7 +54,7 @@ namespace betareborn
                             var6 /= var12;
                             var8 /= var12;
                             var10 /= var12;
-                            float var14 = explosionSize * (0.7F + worldObj.rand.nextFloat() * 0.6F);
+                            float var14 = explosionSize * (0.7F + worldObj.random.nextFloat() * 0.6F);
                             var15 = explosionX;
                             var17 = explosionY;
                             var19 = explosionZ;
@@ -140,7 +140,7 @@ namespace betareborn
 
         public void doExplosionB(bool var1)
         {
-            worldObj.playSoundEffect(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (worldObj.rand.nextFloat() - worldObj.rand.nextFloat()) * 0.2F) * 0.7F);
+            worldObj.playSoundEffect(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (worldObj.random.nextFloat() - worldObj.random.nextFloat()) * 0.2F) * 0.7F);
             ArrayList var2 = new ArrayList();
             var2.addAll(destroyedBlockPositions);
 
@@ -153,9 +153,9 @@ namespace betareborn
                 int var8 = worldObj.getBlockId(var5, var6, var7);
                 if (var1)
                 {
-                    double var9 = (double)((float)var5 + worldObj.rand.nextFloat());
-                    double var11 = (double)((float)var6 + worldObj.rand.nextFloat());
-                    double var13 = (double)((float)var7 + worldObj.rand.nextFloat());
+                    double var9 = (double)((float)var5 + worldObj.random.nextFloat());
+                    double var11 = (double)((float)var6 + worldObj.random.nextFloat());
+                    double var13 = (double)((float)var7 + worldObj.random.nextFloat());
                     double var15 = var9 - explosionX;
                     double var17 = var11 - explosionY;
                     double var19 = var13 - explosionZ;
@@ -164,7 +164,7 @@ namespace betareborn
                     var17 /= var21;
                     var19 /= var21;
                     double var23 = 0.5D / (var21 / (double)explosionSize + 0.1D);
-                    var23 *= (double)(worldObj.rand.nextFloat() * worldObj.rand.nextFloat() + 0.3F);
+                    var23 *= (double)(worldObj.random.nextFloat() * worldObj.random.nextFloat() + 0.3F);
                     var15 *= var23;
                     var17 *= var23;
                     var19 *= var23;

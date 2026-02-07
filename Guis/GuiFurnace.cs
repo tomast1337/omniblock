@@ -30,11 +30,11 @@ namespace betareborn.Guis
             int var5;
             if (furnaceInventory.isBurning())
             {
-                var5 = furnaceInventory.getBurnTimeRemainingScaled(12);
+                var5 = furnaceInventory.getFuelTimeDelta(12);
                 drawTexturedModalRect(var3 + 56, var4 + 36 + 12 - var5, 176, 12 - var5, 14, var5 + 2);
             }
 
-            var5 = furnaceInventory.getCookProgressScaled(24);
+            var5 = furnaceInventory.getCookTimeDelta(24);
             drawTexturedModalRect(var3 + 79, var4 + 34, 176, 14, var5 + 1, 16);
         }
     }

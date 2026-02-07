@@ -62,7 +62,7 @@ namespace betareborn.Containers
                     func_28125_a(var4, 0, field_27282_b * 9, false);
                 }
 
-                if (var4.stackSize == 0)
+                if (var4.count == 0)
                 {
                     var3.putStack((ItemStack)null);
                 }

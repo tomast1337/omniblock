@@ -8,7 +8,7 @@ namespace betareborn.Blocks
     {
         public static bool fallInstantly = false;
 
-        public BlockSand(int var1, int var2) : base(var1, var2, Material.sand)
+        public BlockSand(int var1, int var2) : base(var1, var2, Material.SAND)
         {
         }
 
@@ -35,7 +35,7 @@ namespace betareborn.Blocks
                 if (!fallInstantly && var1.checkChunksExist(var2 - var8, var3 - var8, var4 - var8, var2 + var8, var3 + var8, var4 + var8))
                 {
                     EntityFallingSand var9 = new EntityFallingSand(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), this.blockID);
-                    var1.entityJoinedWorld(var9);
+                    var1.spawnEntity(var9);
                 }
                 else
                 {
@@ -74,7 +74,7 @@ namespace betareborn.Blocks
             else
             {
                 Material var5 = Block.blocksList[var4].blockMaterial;
-                return var5 == Material.water ? true : var5 == Material.lava;
+                return var5 == Material.WATER ? true : var5 == Material.LAVA;
             }
         }
     }

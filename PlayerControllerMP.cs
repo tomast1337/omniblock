@@ -38,7 +38,7 @@ namespace betareborn
             if (var7 != null)
             {
                 var7.onDestroyBlock(var5, var1, var2, var3, mc.thePlayer);
-                if (var7.stackSize == 0)
+                if (var7.count == 0)
                 {
                     var7.func_1097_a(mc.thePlayer);
                     mc.thePlayer.destroyCurrentEquippedItem();

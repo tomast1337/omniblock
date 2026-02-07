@@ -28,7 +28,7 @@ namespace betareborn
             {
                 thePlayer.addStat(Achievements.BUILD_WORKBENCH, 1);
             }
-            else if (var1.itemID == Item.pickaxeWood.shiftedIndex)
+            else if (var1.itemID == Item.pickaxeWood.id)
             {
                 thePlayer.addStat(Achievements.BUILD_PICKAXE, 1);
             }
@@ -36,23 +36,23 @@ namespace betareborn
             {
                 thePlayer.addStat(Achievements.BUILD_FURNACE, 1);
             }
-            else if (var1.itemID == Item.hoeWood.shiftedIndex)
+            else if (var1.itemID == Item.hoeWood.id)
             {
                 thePlayer.addStat(Achievements.BUILD_HOE, 1);
             }
-            else if (var1.itemID == Item.bread.shiftedIndex)
+            else if (var1.itemID == Item.bread.id)
             {
                 thePlayer.addStat(Achievements.MAKE_BREAD, 1);
             }
-            else if (var1.itemID == Item.cake.shiftedIndex)
+            else if (var1.itemID == Item.cake.id)
             {
                 thePlayer.addStat(Achievements.BAKE_CAKE, 1);
             }
-            else if (var1.itemID == Item.pickaxeStone.shiftedIndex)
+            else if (var1.itemID == Item.pickaxeStone.id)
             {
                 thePlayer.addStat(Achievements.CRAFT_STONE_PICKAXE, 1);
             }
-            else if (var1.itemID == Item.swordWood.shiftedIndex)
+            else if (var1.itemID == Item.swordWood.id)
             {
                 thePlayer.addStat(Achievements.CRAFT_SWORD, 1);
             }

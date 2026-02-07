@@ -84,7 +84,7 @@ namespace betareborn
                     var18 += 0.5D;
                 }
 
-                var2.setLocationAndAngles(var22, var16, var18, var2.rotationYaw, 0.0F);
+                var2.setPositionAndAnglesKeepPrevAngles(var22, var16, var18, var2.rotationYaw, 0.0F);
                 var2.motionX = var2.motionY = var2.motionZ = 0.0D;
                 return true;
             }
@@ -159,7 +159,7 @@ namespace betareborn
                                             var27 = var14 + (var25 - 1) * var22 + var24 * var23;
                                             var28 = var20 + var26;
                                             int var29 = var17 + (var25 - 1) * var23 - var24 * var22;
-                                            if (var26 < 0 && !var1.getBlockMaterial(var27, var28, var29).isSolid() || var26 >= 0 && !var1.isAirBlock(var27, var28, var29))
+                                            if (var26 < 0 && !var1.getMaterial(var27, var28, var29).isSolid() || var26 >= 0 && !var1.isAirBlock(var27, var28, var29))
                                             {
                                                 validLocation = false;
                                             }
@@ -218,7 +218,7 @@ namespace betareborn
                                             var26 = var14 + (var24 - 1) * var22;
                                             var27 = var20 + var25;
                                             var28 = var17 + (var24 - 1) * var23;
-                                            if (var25 < 0 && !var1.getBlockMaterial(var26, var27, var28).isSolid() || var25 >= 0 && !var1.isAirBlock(var26, var27, var28))
+                                            if (var25 < 0 && !var1.getMaterial(var26, var27, var28).isSolid() || var25 >= 0 && !var1.isAirBlock(var26, var27, var28))
                                             {
                                                 validLocation = false;
                                             }

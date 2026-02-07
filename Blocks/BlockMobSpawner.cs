@@ -6,7 +6,7 @@ namespace betareborn.Blocks
     public class BlockMobSpawner : BlockContainer
     {
 
-        public BlockMobSpawner(int var1, int var2) : base(var1, var2, Material.rock)
+        public BlockMobSpawner(int var1, int var2) : base(var1, var2, Material.STONE)
         {
         }
 

@@ -160,7 +160,7 @@ namespace betareborn.Entities
                 if (!func_410_i())
                 {
                     setEntityDead();
-                    worldObj.entityJoinedWorld(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                    worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
                 }
             }
 
@@ -209,11 +209,11 @@ namespace betareborn.Entities
                         Material var8;
                         if (direction != 0 && direction != 2)
                         {
-                            var8 = worldObj.getBlockMaterial(xPosition, var4 + var7, var5 + var6);
+                            var8 = worldObj.getMaterial(xPosition, var4 + var7, var5 + var6);
                         }
                         else
                         {
-                            var8 = worldObj.getBlockMaterial(var3 + var6, var4 + var7, zPosition);
+                            var8 = worldObj.getMaterial(var3 + var6, var4 + var7, zPosition);
                         }
 
                         if (!var8.isSolid())
@@ -248,7 +248,7 @@ namespace betareborn.Entities
             {
                 setEntityDead();
                 setBeenAttacked();
-                worldObj.entityJoinedWorld(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
             }
 
             return true;
@@ -295,7 +295,7 @@ namespace betareborn.Entities
             if (!worldObj.multiplayerWorld && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 setEntityDead();
-                worldObj.entityJoinedWorld(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
             }
 
         }
@@ -305,7 +305,7 @@ namespace betareborn.Entities
             if (!worldObj.multiplayerWorld && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 setEntityDead();
-                worldObj.entityJoinedWorld(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
             }
 
         }

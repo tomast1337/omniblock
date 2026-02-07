@@ -84,7 +84,7 @@ namespace betareborn.Entities
 
         public override bool isInWater()
         {
-            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.6F, 0.0D), Material.water, this);
+            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.6F, 0.0D), Material.WATER, this);
         }
 
         public override void onLivingUpdate()

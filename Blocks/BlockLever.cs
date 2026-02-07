@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockLever : Block
     {
 
-        public BlockLever(int var1, int var2) : base(var1, var2, Material.circuits)
+        public BlockLever(int var1, int var2) : base(var1, var2, Material.PISTON_BREAKABLE)
         {
         }
 
@@ -49,7 +49,7 @@ namespace betareborn.Blocks
             var6 = -1;
             if (var5 == 1 && var1.isBlockNormalCube(var2, var3 - 1, var4))
             {
-                var6 = 5 + var1.rand.nextInt(2);
+                var6 = 5 + var1.random.nextInt(2);
             }
 
             if (var5 == 2 && var1.isBlockNormalCube(var2, var3, var4 + 1))

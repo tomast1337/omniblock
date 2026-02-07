@@ -28,12 +28,12 @@ namespace betareborn.Entities
             base.readEntityFromNBT(var1);
         }
 
-        public override bool getCanSpawnHere()
+        public override bool canSpawn()
         {
             int var1 = MathHelper.floor_double(posX);
             int var2 = MathHelper.floor_double(boundingBox.minY);
             int var3 = MathHelper.floor_double(posZ);
-            return worldObj.getBlockId(var1, var2 - 1, var3) == Block.grass.blockID && worldObj.getFullBlockLightValue(var1, var2, var3) > 8 && base.getCanSpawnHere();
+            return worldObj.getBlockId(var1, var2 - 1, var3) == Block.grass.blockID && worldObj.getFullBlockLightValue(var1, var2, var3) > 8 && base.canSpawn();
         }
 
         public override int getTalkInterval()

@@ -51,7 +51,7 @@ namespace betareborn
             if (stackList[var1] != null)
             {
                 ItemStack var3;
-                if (stackList[var1].stackSize <= var2)
+                if (stackList[var1].count <= var2)
                 {
                     var3 = stackList[var1];
                     stackList[var1] = null;
@@ -61,7 +61,7 @@ namespace betareborn
                 else
                 {
                     var3 = stackList[var1].splitStack(var2);
-                    if (stackList[var1].stackSize == 0)
+                    if (stackList[var1].count == 0)
                     {
                         stackList[var1] = null;
                     }

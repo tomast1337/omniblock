@@ -75,7 +75,7 @@ namespace betareborn.Stats
                     var0.add(Integer.valueOf(var2.getRecipeOutput().itemID));
                 }
 
-                var1 = FurnaceRecipes.smelting().getSmeltingList().values().iterator();
+                var1 = SmeltingRecipeManager.getInstance().getSmeltingList().values().iterator();
 
                 while (var1.hasNext())
                 {

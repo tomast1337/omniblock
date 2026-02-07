@@ -171,7 +171,7 @@ namespace betareborn.Rendering
             }
 
             float var14;
-            if (var5 != null && var5.itemID == Item.mapItem.shiftedIndex)
+            if (var5 != null && var5.itemID == Item.mapItem.id)
             {
                 GLManager.GL.PushMatrix();
                 var14 = 0.8F;
@@ -351,7 +351,7 @@ namespace betareborn.Rendering
                 }
             }
 
-            if (mc.thePlayer.isInsideOfMaterial(Material.water))
+            if (mc.thePlayer.isInsideOfMaterial(Material.WATER))
             {
                 var2 = mc.renderEngine.getTexture("/misc/water.png");
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2);

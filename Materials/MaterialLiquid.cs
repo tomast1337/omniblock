@@ -5,16 +5,16 @@ namespace betareborn.Materials
 
         public MaterialLiquid(MapColor var1) : base(var1)
         {
-            setIsGroundCover();
-            setNoPushMobility();
+            setReplaceable();
+            setDestroyPistonBehavior();
         }
 
-        public override bool getIsLiquid()
+        public override bool isFluid()
         {
             return true;
         }
 
-        public override bool getIsSolid()
+        public override bool blocksMovement()
         {
             return false;
         }

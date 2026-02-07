@@ -7,7 +7,7 @@ namespace betareborn.Blocks
 {
     public class BlockWeb : Block
     {
-        public BlockWeb(int var1, int var2) : base(var1, var2, Material.field_31068_A)
+        public BlockWeb(int var1, int var2) : base(var1, var2, Material.COBWEB)
         {
         }
 
@@ -38,7 +38,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.silk.shiftedIndex;
+            return Item.silk.id;
         }
     }
 

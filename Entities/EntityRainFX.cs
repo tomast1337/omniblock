@@ -52,8 +52,8 @@ namespace betareborn.Entities
                 motionZ *= (double)0.7F;
             }
 
-            Material var1 = worldObj.getBlockMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
-            if (var1.getIsLiquid() || var1.isSolid())
+            Material var1 = worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+            if (var1.isFluid() || var1.isSolid())
             {
                 double var2 = (double)((float)(MathHelper.floor_double(posY) + 1) - BlockFluid.getPercentAir(worldObj.getBlockMetadata(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ))));
                 if (posY < var2)

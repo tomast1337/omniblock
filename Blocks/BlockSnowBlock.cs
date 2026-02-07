@@ -7,14 +7,14 @@ namespace betareborn.Blocks
     public class BlockSnowBlock : Block
     {
 
-        public BlockSnowBlock(int var1, int var2) : base(var1, var2, Material.builtSnow)
+        public BlockSnowBlock(int var1, int var2) : base(var1, var2, Material.SNOW_BLOCK)
         {
             setTickOnLoad(true);
         }
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.snowball.shiftedIndex;
+            return Item.snowball.id;
         }
 
         public override int quantityDropped(java.util.Random var1)

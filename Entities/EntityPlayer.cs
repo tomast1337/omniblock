@@ -54,7 +54,7 @@ namespace betareborn.Entities
             craftingInventory = inventorySlots;
             yOffset = 1.62F;
             ChunkCoordinates var2 = var1.getSpawnPoint();
-            setLocationAndAngles((double)var2.x + 0.5D, (double)(var2.y + 1), (double)var2.z + 0.5D, 0.0F, 0.0F);
+            setPositionAndAnglesKeepPrevAngles((double)var2.x + 0.5D, (double)(var2.y + 1), (double)var2.z + 0.5D, 0.0F, 0.0F);
             health = 20;
             field_9351_C = "humanoid";
             field_9353_B = 180.0F;
@@ -353,13 +353,13 @@ namespace betareborn.Entities
 
         protected virtual void joinEntityItemWithWorld(EntityItem var1)
         {
-            worldObj.entityJoinedWorld(var1);
+            worldObj.spawnEntity(var1);
         }
 
         public float getCurrentPlayerStrVsBlock(Block var1)
         {
             float var2 = inventory.getStrVsBlock(var1);
-            if (isInsideOfMaterial(Material.water))
+            if (isInsideOfMaterial(Material.WATER))
             {
                 var2 /= 5.0F;
             }
@@ -559,7 +559,7 @@ namespace betareborn.Entities
                 if (var2 != null && var1 is EntityLiving)
                 {
                     var2.useItemOnEntity((EntityLiving)var1);
-                    if (var2.stackSize <= 0)
+                    if (var2.count <= 0)
                     {
                         var2.func_1097_a(this);
                         destroyCurrentEquippedItem();
@@ -605,7 +605,7 @@ namespace betareborn.Entities
                 if (var3 != null && var1 is EntityLiving)
                 {
                     var3.hitEntity((EntityLiving)var1, this);
-                    if (var3.stackSize <= 0)
+                    if (var3.count <= 0)
                     {
                         var3.func_1097_a(this);
                         destroyCurrentEquippedItem();
@@ -894,7 +894,7 @@ namespace betareborn.Entities
             if (ridingEntity == null)
             {
                 int var7;
-                if (isInsideOfMaterial(Material.water))
+                if (isInsideOfMaterial(Material.WATER))
                 {
                     var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
                     if (var7 > 0)
@@ -991,7 +991,7 @@ namespace betareborn.Entities
         public override int getItemIcon(ItemStack var1)
         {
             int var2 = base.getItemIcon(var1);
-            if (var1.itemID == Item.fishingRod.shiftedIndex && fishEntity != null)
+            if (var1.itemID == Item.fishingRod.id && fishEntity != null)
             {
                 var2 = var1.getIconIndex() + 16;
             }

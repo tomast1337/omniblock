@@ -12,7 +12,7 @@ namespace betareborn.Blocks
     {
         public static readonly int[][] headBlockToFootBlockMap = [[0, 1], [-1, 0], [0, -1], [1, 0]];
 
-        public BlockBed(int var1) : base(var1, 134, Material.cloth)
+        public BlockBed(int var1) : base(var1, 134, Material.WOOL)
         {
             setBounds();
         }
@@ -165,7 +165,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return isBlockFootOfBed(var1) ? 0 : Item.bed.shiftedIndex;
+            return isBlockFootOfBed(var1) ? 0 : Item.bed.id;
         }
 
         private void setBounds()

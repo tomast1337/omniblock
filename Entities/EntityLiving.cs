@@ -139,7 +139,7 @@ namespace betareborn.Entities
             }
 
             int var1;
-            if (isEntityAlive() && isInsideOfMaterial(Material.water) && !canBreatheUnderwater())
+            if (isEntityAlive() && isInsideOfMaterial(Material.WATER) && !canBreatheUnderwater())
             {
                 --air;
                 if (air == -20)
@@ -204,7 +204,7 @@ namespace betareborn.Entities
             prevRotationPitch = rotationPitch;
         }
 
-        public void spawnExplosionParticle()
+        public void animateSpawn()
         {
             for (int var1 = 0; var1 < 20; ++var1)
             {
@@ -954,7 +954,7 @@ namespace betareborn.Entities
         {
         }
 
-        public virtual bool getCanSpawnHere()
+        public virtual bool canSpawn()
         {
             return worldObj.checkIfAABBIsClear(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).Count == 0 && !worldObj.getIsAnyLiquid(boundingBox);
         }

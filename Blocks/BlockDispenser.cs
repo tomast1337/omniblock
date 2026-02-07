@@ -10,7 +10,7 @@ namespace betareborn.Blocks
     {
         private java.util.Random random = new();
 
-        public BlockDispenser(int var1) : base(var1, Material.rock)
+        public BlockDispenser(int var1) : base(var1, Material.STONE)
         {
             blockIndexInTexture = 45;
         }
@@ -133,26 +133,26 @@ namespace betareborn.Blocks
             }
             else
             {
-                if (var12.itemID == Item.arrow.shiftedIndex)
+                if (var12.itemID == Item.arrow.id)
                 {
                     EntityArrow var19 = new EntityArrow(var1, var13, var15, var17);
                     var19.setArrowHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
                     var19.doesArrowBelongToPlayer = true;
-                    var1.entityJoinedWorld(var19);
+                    var1.spawnEntity(var19);
                     var1.func_28106_e(1002, var2, var3, var4, 0);
                 }
-                else if (var12.itemID == Item.egg.shiftedIndex)
+                else if (var12.itemID == Item.egg.id)
                 {
                     EntityEgg var22 = new EntityEgg(var1, var13, var15, var17);
                     var22.setEggHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
-                    var1.entityJoinedWorld(var22);
+                    var1.spawnEntity(var22);
                     var1.func_28106_e(1002, var2, var3, var4, 0);
                 }
-                else if (var12.itemID == Item.snowball.shiftedIndex)
+                else if (var12.itemID == Item.snowball.id)
                 {
                     EntitySnowball var23 = new EntitySnowball(var1, var13, var15, var17);
                     var23.setSnowballHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
-                    var1.entityJoinedWorld(var23);
+                    var1.spawnEntity(var23);
                     var1.func_28106_e(1002, var2, var3, var4, 0);
                 }
                 else
@@ -165,7 +165,7 @@ namespace betareborn.Blocks
                     var24.motionX += var5.nextGaussian() * (double)0.0075F * 6.0D;
                     var24.motionY += var5.nextGaussian() * (double)0.0075F * 6.0D;
                     var24.motionZ += var5.nextGaussian() * (double)0.0075F * 6.0D;
-                    var1.entityJoinedWorld(var24);
+                    var1.spawnEntity(var24);
                     var1.func_28106_e(1000, var2, var3, var4, 0);
                 }
 
@@ -239,21 +239,21 @@ namespace betareborn.Blocks
                     float var9 = random.nextFloat() * 0.8F + 0.1F;
                     float var10 = random.nextFloat() * 0.8F + 0.1F;
 
-                    while (var7.stackSize > 0)
+                    while (var7.count > 0)
                     {
                         int var11 = random.nextInt(21) + 10;
-                        if (var11 > var7.stackSize)
+                        if (var11 > var7.count)
                         {
-                            var11 = var7.stackSize;
+                            var11 = var7.count;
                         }
 
-                        var7.stackSize -= var11;
+                        var7.count -= var11;
                         EntityItem var12 = new EntityItem(var1, (double)((float)var2 + var8), (double)((float)var3 + var9), (double)((float)var4 + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
                         float var13 = 0.05F;
                         var12.motionX = (double)((float)random.nextGaussian() * var13);
                         var12.motionY = (double)((float)random.nextGaussian() * var13 + 0.2F);
                         var12.motionZ = (double)((float)random.nextGaussian() * var13);
-                        var1.entityJoinedWorld(var12);
+                        var1.spawnEntity(var12);
                     }
                 }
             }

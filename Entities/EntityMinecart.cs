@@ -110,7 +110,7 @@ namespace betareborn.Entities
                     }
 
                     setEntityDead();
-                    dropItemWithOffset(Item.minecartEmpty.shiftedIndex, 1, 0.0F);
+                    dropItemWithOffset(Item.minecartEmpty.id, 1, 0.0F);
                     if (minecartType == 1)
                     {
                         EntityMinecart var3 = this;
@@ -124,21 +124,21 @@ namespace betareborn.Entities
                                 float var7 = rand.nextFloat() * 0.8F + 0.1F;
                                 float var8 = rand.nextFloat() * 0.8F + 0.1F;
 
-                                while (var5.stackSize > 0)
+                                while (var5.count > 0)
                                 {
                                     int var9 = rand.nextInt(21) + 10;
-                                    if (var9 > var5.stackSize)
+                                    if (var9 > var5.count)
                                     {
-                                        var9 = var5.stackSize;
+                                        var9 = var5.count;
                                     }
 
-                                    var5.stackSize -= var9;
+                                    var5.count -= var9;
                                     EntityItem var10 = new EntityItem(worldObj, posX + (double)var6, posY + (double)var7, posZ + (double)var8, new ItemStack(var5.itemID, var9, var5.getItemDamage()));
                                     float var11 = 0.05F;
                                     var10.motionX = (double)((float)rand.nextGaussian() * var11);
                                     var10.motionY = (double)((float)rand.nextGaussian() * var11 + 0.2F);
                                     var10.motionZ = (double)((float)rand.nextGaussian() * var11);
-                                    worldObj.entityJoinedWorld(var10);
+                                    worldObj.spawnEntity(var10);
                                 }
                             }
                         }
@@ -183,21 +183,21 @@ namespace betareborn.Entities
                     float var4 = rand.nextFloat() * 0.8F + 0.1F;
                     float var5 = rand.nextFloat() * 0.8F + 0.1F;
 
-                    while (var2.stackSize > 0)
+                    while (var2.count > 0)
                     {
                         int var6 = rand.nextInt(21) + 10;
-                        if (var6 > var2.stackSize)
+                        if (var6 > var2.count)
                         {
-                            var6 = var2.stackSize;
+                            var6 = var2.count;
                         }
 
-                        var2.stackSize -= var6;
+                        var2.count -= var6;
                         EntityItem var7 = new EntityItem(worldObj, posX + (double)var3, posY + (double)var4, posZ + (double)var5, new ItemStack(var2.itemID, var6, var2.getItemDamage()));
                         float var8 = 0.05F;
                         var7.motionX = (double)((float)rand.nextGaussian() * var8);
                         var7.motionY = (double)((float)rand.nextGaussian() * var8 + 0.2F);
                         var7.motionZ = (double)((float)rand.nextGaussian() * var8);
-                        worldObj.entityJoinedWorld(var7);
+                        worldObj.spawnEntity(var7);
                     }
                 }
             }
@@ -908,7 +908,7 @@ namespace betareborn.Entities
             if (cargoItems[var1] != null)
             {
                 ItemStack var3;
-                if (cargoItems[var1].stackSize <= var2)
+                if (cargoItems[var1].count <= var2)
                 {
                     var3 = cargoItems[var1];
                     cargoItems[var1] = null;
@@ -917,7 +917,7 @@ namespace betareborn.Entities
                 else
                 {
                     var3 = cargoItems[var1].splitStack(var2);
-                    if (cargoItems[var1].stackSize == 0)
+                    if (cargoItems[var1].count == 0)
                     {
                         cargoItems[var1] = null;
                     }
@@ -934,9 +934,9 @@ namespace betareborn.Entities
         public void setStack(int var1, ItemStack var2)
         {
             cargoItems[var1] = var2;
-            if (var2 != null && var2.stackSize > getMaxCountPerStack())
+            if (var2 != null && var2.count > getMaxCountPerStack())
             {
-                var2.stackSize = getMaxCountPerStack();
+                var2.count = getMaxCountPerStack();
             }
 
         }
@@ -979,9 +979,9 @@ namespace betareborn.Entities
             else if (minecartType == 2)
             {
                 ItemStack var2 = var1.inventory.getCurrentItem();
-                if (var2 != null && var2.itemID == Item.coal.shiftedIndex)
+                if (var2 != null && var2.itemID == Item.coal.id)
                 {
-                    if (--var2.stackSize == 0)
+                    if (--var2.count == 0)
                     {
                         var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                     }

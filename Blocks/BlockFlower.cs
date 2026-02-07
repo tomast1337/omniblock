@@ -5,7 +5,7 @@ namespace betareborn.Blocks
 {
     public class BlockFlower : Block
     {
-        public BlockFlower(int var1, int var2) : base(var1, Material.plants)
+        public BlockFlower(int var1, int var2) : base(var1, Material.PLANT)
         {
             blockIndexInTexture = var2;
             setTickOnLoad(true);

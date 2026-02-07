@@ -201,12 +201,12 @@ namespace betareborn.Entities
             return null;
         }
 
-        public override bool getCanSpawnHere()
+        public override bool canSpawn()
         {
             int var1 = MathHelper.floor_double(posX);
             int var2 = MathHelper.floor_double(boundingBox.minY);
             int var3 = MathHelper.floor_double(posZ);
-            return base.getCanSpawnHere() && getBlockPathWeight(var1, var2, var3) >= 0.0F;
+            return base.canSpawn() && getBlockPathWeight(var1, var2, var3) >= 0.0F;
         }
 
         public bool hasPath()

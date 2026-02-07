@@ -121,12 +121,12 @@ namespace betareborn.Entities
                     setWolfSitting(true);
                 }
             }
-            else if (playerToAttack == null && !hasPath() && !isWolfTamed() && worldObj.rand.nextInt(100) == 0)
+            else if (playerToAttack == null && !hasPath() && !isWolfTamed() && worldObj.random.nextInt(100) == 0)
             {
                 var var1 = worldObj.getEntitiesWithinAABB(EntitySheep.Class, Box.createCached(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
                 if (var1.Count > 0)
                 {
-                    setTarget(var1[worldObj.rand.nextInt(var1.Count)]);
+                    setTarget(var1[worldObj.random.nextInt(var1.Count)]);
                 }
             }
 
@@ -155,7 +155,7 @@ namespace betareborn.Entities
                     ItemStack var3 = var2.inventory.getCurrentItem();
                     if (var3 != null)
                     {
-                        if (!isWolfTamed() && var3.itemID == Item.bone.shiftedIndex)
+                        if (!isWolfTamed() && var3.itemID == Item.bone.id)
                         {
                             looksWithInterest = true;
                         }
@@ -290,7 +290,7 @@ namespace betareborn.Entities
                     {
                         if ((var7 < 1 || var8 < 1 || var7 > 3 || var8 > 3) && worldObj.isBlockNormalCube(var4 + var7, var6 - 1, var5 + var8) && !worldObj.isBlockNormalCube(var4 + var7, var6, var5 + var8) && !worldObj.isBlockNormalCube(var4 + var7, var6 + 1, var5 + var8))
                         {
-                            setLocationAndAngles((double)((float)(var4 + var7) + 0.5F), (double)var6, (double)((float)(var5 + var8) + 0.5F), rotationYaw, rotationPitch);
+                            setPositionAndAnglesKeepPrevAngles((double)((float)(var4 + var7) + 0.5F), (double)var6, (double)((float)(var5 + var8) + 0.5F), rotationYaw, rotationPitch);
                             return;
                         }
                     }
@@ -406,10 +406,10 @@ namespace betareborn.Entities
             ItemStack var2 = var1.inventory.getCurrentItem();
             if (!isWolfTamed())
             {
-                if (var2 != null && var2.itemID == Item.bone.shiftedIndex && !isWolfAngry())
+                if (var2 != null && var2.itemID == Item.bone.id && !isWolfAngry())
                 {
-                    --var2.stackSize;
-                    if (var2.stackSize <= 0)
+                    --var2.count;
+                    if (var2.count <= 0)
                     {
                         var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                     }
@@ -443,8 +443,8 @@ namespace betareborn.Entities
                     ItemFood var3 = (ItemFood)Item.itemsList[var2.itemID];
                     if (var3.getIsWolfsFavoriteMeat() && dataWatcher.getWatchableObjectInt(18) < 20)
                     {
-                        --var2.stackSize;
-                        if (var2.stackSize <= 0)
+                        --var2.count;
+                        if (var2.count <= 0)
                         {
                             var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                         }

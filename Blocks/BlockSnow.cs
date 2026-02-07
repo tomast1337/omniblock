@@ -9,7 +9,7 @@ namespace betareborn.Blocks
     public class BlockSnow : Block
     {
 
-        public BlockSnow(int var1, int var2) : base(var1, var2, Material.snow)
+        public BlockSnow(int var1, int var2) : base(var1, var2, Material.SNOW_LAYER)
         {
             setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
             setTickOnLoad(true);
@@ -41,7 +41,7 @@ namespace betareborn.Blocks
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3 - 1, var4);
-            return var5 != 0 && Block.blocksList[var5].isOpaqueCube() ? var1.getBlockMaterial(var2, var3 - 1, var4).getIsSolid() : false;
+            return var5 != 0 && Block.blocksList[var5].isOpaqueCube() ? var1.getMaterial(var2, var3 - 1, var4).blocksMovement() : false;
         }
 
         public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
@@ -65,21 +65,21 @@ namespace betareborn.Blocks
 
         public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
-            int var7 = Item.snowball.shiftedIndex;
+            int var7 = Item.snowball.id;
             float var8 = 0.7F;
-            double var9 = (double)(var1.rand.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            double var11 = (double)(var1.rand.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            double var13 = (double)(var1.rand.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+            double var9 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+            double var11 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+            double var13 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
             EntityItem var15 = new EntityItem(var1, (double)var3 + var9, (double)var4 + var11, (double)var5 + var13, new ItemStack(var7, 1, 0));
             var15.delayBeforeCanPickup = 10;
-            var1.entityJoinedWorld(var15);
+            var1.spawnEntity(var15);
             var1.setBlockWithNotify(var3, var4, var5, 0);
             var2.addStat(StatList.mineBlockStatArray[blockID], 1);
         }
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.snowball.shiftedIndex;
+            return Item.snowball.id;
         }
 
         public override int quantityDropped(java.util.Random var1)

@@ -543,7 +543,7 @@ namespace betareborn.Entities
                             var29 = Block.snow.stepSound;
                             worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
                         }
-                        else if (!Block.blocksList[var28].blockMaterial.getIsLiquid())
+                        else if (!Block.blocksList[var28].blockMaterial.isFluid())
                         {
                             worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
                         }
@@ -660,7 +660,7 @@ namespace betareborn.Entities
 
         public virtual bool handleWaterMovement()
         {
-            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.4F, 0.0D).contract(0.001D, 0.001D, 0.001D), Material.water, this);
+            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.4F, 0.0D).contract(0.001D, 0.001D, 0.001D), Material.WATER, this);
         }
 
         public bool isInsideOfMaterial(Material var1)
@@ -689,7 +689,7 @@ namespace betareborn.Entities
 
         public bool handleLavaMovement()
         {
-            return worldObj.isMaterialInBB(boundingBox.expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.lava);
+            return worldObj.isMaterialInBB(boundingBox.expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.LAVA);
         }
 
         public void moveFlying(float var1, float var2, float var3)
@@ -762,7 +762,7 @@ namespace betareborn.Entities
             setRotation(yaw, pitch);
         }
 
-        public void setLocationAndAngles(double var1, double var3, double var5, float var7, float var8)
+        public void setPositionAndAnglesKeepPrevAngles(double var1, double var3, double var5, float var7, float var8)
         {
             lastTickPosX = prevPosX = posX = var1;
             lastTickPosY = prevPosY = posY = var3 + (double)yOffset;
@@ -780,7 +780,7 @@ namespace betareborn.Entities
             return MathHelper.sqrt_float(var2 * var2 + var3 * var3 + var4 * var4);
         }
 
-        public double getDistanceSq(double var1, double var3, double var5)
+        public double getSquaredDistance(double var1, double var3, double var5)
         {
             double var7 = posX - var1;
             double var9 = posY - var3;
@@ -1014,7 +1014,7 @@ namespace betareborn.Entities
         {
             EntityItem var3 = new EntityItem(worldObj, posX, posY + (double)var2, posZ, var1);
             var3.delayBeforeCanPickup = 10;
-            worldObj.entityJoinedWorld(var3);
+            worldObj.spawnEntity(var3);
             return var3;
         }
 
@@ -1142,7 +1142,7 @@ namespace betareborn.Entities
             {
                 if (ridingEntity != null)
                 {
-                    setLocationAndAngles(ridingEntity.posX, ridingEntity.boundingBox.minY + (double)ridingEntity.height, ridingEntity.posZ, rotationYaw, rotationPitch);
+                    setPositionAndAnglesKeepPrevAngles(ridingEntity.posX, ridingEntity.boundingBox.minY + (double)ridingEntity.height, ridingEntity.posZ, rotationYaw, rotationPitch);
                     ridingEntity.riddenByEntity = null;
                 }
 
@@ -1152,7 +1152,7 @@ namespace betareborn.Entities
             {
                 ridingEntity.riddenByEntity = null;
                 ridingEntity = null;
-                setLocationAndAngles(var1.posX, var1.boundingBox.minY + (double)var1.height, var1.posZ, rotationYaw, rotationPitch);
+                setPositionAndAnglesKeepPrevAngles(var1.posX, var1.boundingBox.minY + (double)var1.height, var1.posZ, rotationYaw, rotationPitch);
             }
             else
             {

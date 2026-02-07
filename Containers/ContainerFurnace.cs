@@ -42,42 +42,42 @@ namespace betareborn.Containers
             for (int var1 = 0; var1 < field_20121_g.size(); ++var1)
             {
                 ICrafting var2 = (ICrafting)field_20121_g.get(var1);
-                if (cookTime != furnace.furnaceCookTime)
+                if (cookTime != furnace.cookTime)
                 {
-                    var2.func_20158_a(this, 0, furnace.furnaceCookTime);
+                    var2.func_20158_a(this, 0, furnace.cookTime);
                 }
 
-                if (burnTime != furnace.furnaceBurnTime)
+                if (burnTime != furnace.burnTime)
                 {
-                    var2.func_20158_a(this, 1, furnace.furnaceBurnTime);
+                    var2.func_20158_a(this, 1, furnace.burnTime);
                 }
 
-                if (itemBurnTime != furnace.currentItemBurnTime)
+                if (itemBurnTime != furnace.fuelTime)
                 {
-                    var2.func_20158_a(this, 2, furnace.currentItemBurnTime);
+                    var2.func_20158_a(this, 2, furnace.fuelTime);
                 }
             }
 
-            cookTime = furnace.furnaceCookTime;
-            burnTime = furnace.furnaceBurnTime;
-            itemBurnTime = furnace.currentItemBurnTime;
+            cookTime = furnace.cookTime;
+            burnTime = furnace.burnTime;
+            itemBurnTime = furnace.fuelTime;
         }
 
         public override void func_20112_a(int var1, int var2)
         {
             if (var1 == 0)
             {
-                furnace.furnaceCookTime = var2;
+                furnace.cookTime = var2;
             }
 
             if (var1 == 1)
             {
-                furnace.furnaceBurnTime = var2;
+                furnace.burnTime = var2;
             }
 
             if (var1 == 2)
             {
-                furnace.currentItemBurnTime = var2;
+                furnace.fuelTime = var2;
             }
 
         }
@@ -112,7 +112,7 @@ namespace betareborn.Containers
                     func_28125_a(var4, 3, 39, false);
                 }
 
-                if (var4.stackSize == 0)
+                if (var4.count == 0)
                 {
                     var3.putStack((ItemStack)null);
                 }
@@ -121,7 +121,7 @@ namespace betareborn.Containers
                     var3.onSlotChanged();
                 }
 
-                if (var4.stackSize == var2.stackSize)
+                if (var4.count == var2.count)
                 {
                     return null;
                 }

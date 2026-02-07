@@ -1847,12 +1847,12 @@ namespace betareborn.Rendering
             {
                 int var8 = var1 - (var7 & 1);
                 int var10 = var3 - (var7 >> 1 & 1);
-                if (blockAccess.getBlockMaterial(var8, var2 + 1, var10) == var4)
+                if (blockAccess.getMaterial(var8, var2 + 1, var10) == var4)
                 {
                     return 1.0F;
                 }
 
-                Material var11 = blockAccess.getBlockMaterial(var8, var2, var10);
+                Material var11 = blockAccess.getMaterial(var8, var2, var10);
                 if (var11 != var4)
                 {
                     if (!var11.isSolid())
@@ -2591,7 +2591,7 @@ namespace betareborn.Rendering
             if (renderAllFaces || var1.shouldSideBeRendered(blockAccess, var2, var3 + 1, var4, 1))
             {
                 var27 = var1.getBlockBrightness(blockAccess, var2, var3 + 1, var4);
-                if (var1.maxY != 1.0D && !var1.blockMaterial.getIsLiquid())
+                if (var1.maxY != 1.0D && !var1.blockMaterial.isFluid())
                 {
                     var27 = var26;
                 }
@@ -2729,7 +2729,7 @@ namespace betareborn.Rendering
             if (renderAllFaces || var1.shouldSideBeRendered(blockAccess, var2, var3 + 1, var4, 1))
             {
                 var28 = var1.getBlockBrightness(blockAccess, var2, var3 + 1, var4);
-                if (var1.maxY != 1.0D && !var1.blockMaterial.getIsLiquid())
+                if (var1.maxY != 1.0D && !var1.blockMaterial.isFluid())
                 {
                     var28 = var27;
                 }

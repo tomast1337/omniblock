@@ -7,7 +7,7 @@ namespace betareborn.Blocks
 {
     public class BlockPistonMoving : BlockContainer
     {
-        public BlockPistonMoving(int var1) : base(var1, Material.field_31067_B)
+        public BlockPistonMoving(int var1) : base(var1, Material.PISTON)
         {
             setHardness(-1.0F);
         }

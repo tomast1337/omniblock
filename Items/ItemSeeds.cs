@@ -26,7 +26,7 @@ namespace betareborn.Items
                 if (var8 == Block.tilledField.blockID && var3.isAirBlock(var4, var5 + 1, var6))
                 {
                     var3.setBlockWithNotify(var4, var5 + 1, var6, field_318_a);
-                    --var1.stackSize;
+                    --var1.count;
                     return true;
                 }
                 else

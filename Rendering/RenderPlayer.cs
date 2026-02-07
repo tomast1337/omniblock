@@ -123,7 +123,7 @@ namespace betareborn.Rendering
         protected void renderSpecials(EntityPlayer var1, float var2)
         {
             ItemStack var3 = var1.inventory.armorItemInSlot(3);
-            if (var3 != null && var3.getItem().shiftedIndex < 256)
+            if (var3 != null && var3.getItem().id < 256)
             {
                 GLManager.GL.PushMatrix();
                 modelBipedMain.bipedHead.postRender(1.0F / 16.0F);

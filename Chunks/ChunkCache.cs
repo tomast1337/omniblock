@@ -174,10 +174,10 @@ namespace betareborn.Chunks
             }
         }
 
-        public Material getBlockMaterial(int var1, int var2, int var3)
+        public Material getMaterial(int var1, int var2, int var3)
         {
             int var4 = getBlockId(var1, var2, var3);
-            return var4 == 0 ? Material.air : Block.blocksList[var4].blockMaterial;
+            return var4 == 0 ? Material.AIR : Block.blocksList[var4].blockMaterial;
         }
 
         public WorldChunkManager getWorldChunkManager()
@@ -194,7 +194,7 @@ namespace betareborn.Chunks
         public bool isBlockNormalCube(int var1, int var2, int var3)
         {
             Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.blockMaterial.getIsSolid() && var4.renderAsNormalBlock();
+            return var4 == null ? false : var4.blockMaterial.blocksMovement() && var4.renderAsNormalBlock();
         }
     }
 

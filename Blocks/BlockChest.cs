@@ -10,7 +10,7 @@ namespace betareborn.Blocks
     {
         private java.util.Random random = new();
 
-        public BlockChest(int var1) : base(var1, Material.wood)
+        public BlockChest(int var1) : base(var1, Material.WOOD)
         {
             blockIndexInTexture = 26;
         }
@@ -179,21 +179,21 @@ namespace betareborn.Blocks
                     float var9 = random.nextFloat() * 0.8F + 0.1F;
                     float var10 = random.nextFloat() * 0.8F + 0.1F;
 
-                    while (var7.stackSize > 0)
+                    while (var7.count > 0)
                     {
                         int var11 = random.nextInt(21) + 10;
-                        if (var11 > var7.stackSize)
+                        if (var11 > var7.count)
                         {
-                            var11 = var7.stackSize;
+                            var11 = var7.count;
                         }
 
-                        var7.stackSize -= var11;
+                        var7.count -= var11;
                         EntityItem var12 = new EntityItem(var1, (double)((float)var2 + var8), (double)((float)var3 + var9), (double)((float)var4 + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
                         float var13 = 0.05F;
                         var12.motionX = (double)((float)random.nextGaussian() * var13);
                         var12.motionY = (double)((float)random.nextGaussian() * var13 + 0.2F);
                         var12.motionZ = (double)((float)random.nextGaussian() * var13);
-                        var1.entityJoinedWorld(var12);
+                        var1.spawnEntity(var12);
                     }
                 }
             }

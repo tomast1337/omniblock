@@ -14,7 +14,7 @@ namespace betareborn.Entities
 
         public EntityLightningBolt(World var1, double var2, double var4, double var6) : base(var1)
         {
-            setLocationAndAngles(var2, var4, var6, 0.0F, 0.0F);
+            setPositionAndAnglesKeepPrevAngles(var2, var4, var6, 0.0F, 0.0F);
             field_27028_b = 2;
             field_27029_a = rand.nextLong();
             field_27030_c = rand.nextInt(3) + 1;

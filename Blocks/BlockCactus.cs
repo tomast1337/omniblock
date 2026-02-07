@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockCactus : Block
     {
 
-        public BlockCactus(int var1, int var2) : base(var1, var2, Material.cactus)
+        public BlockCactus(int var1, int var2) : base(var1, var2, Material.CACTUS)
         {
             setTickOnLoad(true);
         }
@@ -87,19 +87,19 @@ namespace betareborn.Blocks
 
         public override bool canBlockStay(World var1, int var2, int var3, int var4)
         {
-            if (var1.getBlockMaterial(var2 - 1, var3, var4).isSolid())
+            if (var1.getMaterial(var2 - 1, var3, var4).isSolid())
             {
                 return false;
             }
-            else if (var1.getBlockMaterial(var2 + 1, var3, var4).isSolid())
+            else if (var1.getMaterial(var2 + 1, var3, var4).isSolid())
             {
                 return false;
             }
-            else if (var1.getBlockMaterial(var2, var3, var4 - 1).isSolid())
+            else if (var1.getMaterial(var2, var3, var4 - 1).isSolid())
             {
                 return false;
             }
-            else if (var1.getBlockMaterial(var2, var3, var4 + 1).isSolid())
+            else if (var1.getMaterial(var2, var3, var4 + 1).isSolid())
             {
                 return false;
             }

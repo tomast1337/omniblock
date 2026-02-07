@@ -131,8 +131,8 @@ namespace betareborn.Entities
                     float var4 = ((float)(var2 / 2) - 0.5F) * (float)var1 / 4.0F;
                     EntitySlime var5 = new EntitySlime(worldObj);
                     var5.setSlimeSize(var1 / 2);
-                    var5.setLocationAndAngles(posX + (double)var3, posY + 0.5D, posZ + (double)var4, rand.nextFloat() * 360.0F, 0.0F);
-                    worldObj.entityJoinedWorld(var5);
+                    var5.setPositionAndAnglesKeepPrevAngles(posX + (double)var3, posY + 0.5D, posZ + (double)var4, rand.nextFloat() * 360.0F, 0.0F);
+                    worldObj.spawnEntity(var5);
                 }
             }
 
@@ -161,10 +161,10 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return getSlimeSize() == 1 ? Item.slimeBall.shiftedIndex : 0;
+            return getSlimeSize() == 1 ? Item.slimeBall.id : 0;
         }
 
-        public override bool getCanSpawnHere()
+        public override bool canSpawn()
         {
             Chunk var1 = worldObj.getChunkFromBlockCoords(MathHelper.floor_double(posX), MathHelper.floor_double(posZ));
             return (getSlimeSize() == 1 || worldObj.difficultySetting > 0) && rand.nextInt(10) == 0 && var1.func_997_a(987234911L).nextInt(10) == 0 && posY < 16.0D;

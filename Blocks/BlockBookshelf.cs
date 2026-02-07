@@ -4,7 +4,7 @@ namespace betareborn.Blocks
 {
     public class BlockBookshelf : Block
     {
-        public BlockBookshelf(int var1, int var2) : base(var1, var2, Material.wood)
+        public BlockBookshelf(int var1, int var2) : base(var1, var2, Material.WOOD)
         {
         }
 

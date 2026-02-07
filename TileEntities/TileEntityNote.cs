@@ -7,18 +7,18 @@ namespace betareborn.TileEntities
     public class TileEntityNote : TileEntity
     {
         public sbyte note = 0;
-        public bool previousRedstoneState = false;
+        public bool powered = false;
 
-        public override void writeNbt(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeNbt(var1);
-            var1.setByte("note", note);
+            base.writeNbt(nbt);
+            nbt.setByte("note", note);
         }
 
-        public override void readNbt(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            base.readNbt(var1);
-            note = var1.getByte("note");
+            base.readNbt(nbt);
+            note = nbt.getByte("note");
             if (note < 0)
             {
                 note = 0;
@@ -31,39 +31,39 @@ namespace betareborn.TileEntities
 
         }
 
-        public void changePitch()
+        public void cycleNote()
         {
             note = (sbyte)((note + 1) % 25);
             markDirty();
         }
 
-        public void triggerNote(World var1, int var2, int var3, int var4)
+        public void playNote(World world, int x, int y, int z)
         {
-            if (var1.getBlockMaterial(var2, var3 + 1, var4) == Material.air)
+            if (world.getMaterial(x, y + 1, z) == Material.AIR)
             {
-                Material var5 = var1.getBlockMaterial(var2, var3 - 1, var4);
+                Material var5 = world.getMaterial(x, y - 1, z);
                 byte var6 = 0;
-                if (var5 == Material.rock)
+                if (var5 == Material.STONE)
                 {
                     var6 = 1;
                 }
 
-                if (var5 == Material.sand)
+                if (var5 == Material.SAND)
                 {
                     var6 = 2;
                 }
 
-                if (var5 == Material.glass)
+                if (var5 == Material.GLASS)
                 {
                     var6 = 3;
                 }
 
-                if (var5 == Material.wood)
+                if (var5 == Material.WOOD)
                 {
                     var6 = 4;
                 }
 
-                var1.playNoteAt(var2, var3, var4, var6, note);
+                world.playNoteBlockActionAt(x, y, z, var6, note);
             }
         }
     }

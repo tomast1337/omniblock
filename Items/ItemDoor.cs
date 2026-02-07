@@ -26,7 +26,7 @@ namespace betareborn.Items
             {
                 ++var5;
                 Block var8;
-                if (doorMaterial == Material.wood)
+                if (doorMaterial == Material.WOOD)
                 {
                     var8 = Block.doorWood;
                 }
@@ -90,7 +90,7 @@ namespace betareborn.Items
                     var3.editingBlocks = false;
                     var3.notifyBlocksOfNeighborChange(var4, var5, var6, var8.blockID);
                     var3.notifyBlocksOfNeighborChange(var4, var5 + 1, var6, var8.blockID);
-                    --var1.stackSize;
+                    --var1.count;
                     return true;
                 }
             }

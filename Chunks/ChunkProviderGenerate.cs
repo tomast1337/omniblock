@@ -706,7 +706,7 @@ namespace betareborn.Chunks
                     var21 = var19 - (var5 + 8);
                     int var22 = worldObj.findTopSolidBlock(var25, var19);
                     double var23 = generatedTemperatures[var20 * 16 + var21] - (double)(var22 - 64) / 64.0D * 0.3D;
-                    if (var23 < 0.5D && var22 > 0 && var22 < 128 && worldObj.isAirBlock(var25, var22, var19) && worldObj.getBlockMaterial(var25, var22 - 1, var19).getIsSolid() && worldObj.getBlockMaterial(var25, var22 - 1, var19) != Material.ice)
+                    if (var23 < 0.5D && var22 > 0 && var22 < 128 && worldObj.isAirBlock(var25, var22, var19) && worldObj.getMaterial(var25, var22 - 1, var19).blocksMovement() && worldObj.getMaterial(var25, var22 - 1, var19) != Material.ICE)
                     {
                         worldObj.setBlockWithNotify(var25, var22, var19, Block.snow.blockID);
                     }

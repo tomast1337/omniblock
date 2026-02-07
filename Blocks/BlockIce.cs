@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockIce : BlockBreakable
     {
 
-        public BlockIce(int var1, int var2) : base(var1, var2, Material.ice, false)
+        public BlockIce(int var1, int var2) : base(var1, var2, Material.ICE, false)
         {
             slipperiness = 0.98F;
             setTickOnLoad(true);
@@ -26,8 +26,8 @@ namespace betareborn.Blocks
         public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
             base.harvestBlock(var1, var2, var3, var4, var5, var6);
-            Material var7 = var1.getBlockMaterial(var3, var4 - 1, var5);
-            if (var7.getIsSolid() || var7.getIsLiquid())
+            Material var7 = var1.getMaterial(var3, var4 - 1, var5);
+            if (var7.blocksMovement() || var7.isFluid())
             {
                 var1.setBlockWithNotify(var3, var4, var5, Block.waterMoving.blockID);
             }

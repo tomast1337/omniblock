@@ -206,17 +206,17 @@ namespace betareborn
                             if (var9 != Block.doorSteel.blockID && var9 != Block.doorWood.blockID)
                             {
                                 Material var11 = Block.blocksList[var9].blockMaterial;
-                                if (var11.getIsSolid())
+                                if (var11.blocksMovement())
                                 {
                                     return 0;
                                 }
 
-                                if (var11 == Material.water)
+                                if (var11 == Material.WATER)
                                 {
                                     return -1;
                                 }
 
-                                if (var11 == Material.lava)
+                                if (var11 == Material.LAVA)
                                 {
                                     return -2;
                                 }

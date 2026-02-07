@@ -13,7 +13,7 @@ namespace betareborn.Blocks
         private bool wiresProvidePower = true;
         private Set field_21031_b = new HashSet();
 
-        public BlockRedstoneWire(int var1, int var2) : base(var1, var2, Material.circuits)
+        public BlockRedstoneWire(int var1, int var2) : base(var1, var2, Material.PISTON_BREAKABLE)
         {
             setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F);
         }
@@ -363,7 +363,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.redstone.shiftedIndex;
+            return Item.redstone.id;
         }
 
         public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)

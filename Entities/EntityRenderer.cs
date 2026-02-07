@@ -158,7 +158,7 @@ namespace betareborn.Entities
         {
             EntityLiving var2 = mc.renderViewEntity;
             float var3 = 70.0F;
-            if (var2.isInsideOfMaterial(Material.water))
+            if (var2.isInsideOfMaterial(Material.WATER))
             {
                 var3 = 60.0F;
             }
@@ -582,7 +582,7 @@ namespace betareborn.Entities
             Profiler.Stop("renderParticles");
 
             EntityPlayer var21;
-            if (mc.objectMouseOver != null && var4.isInsideOfMaterial(Material.water) && var4 is EntityPlayer)
+            if (mc.objectMouseOver != null && var4.isInsideOfMaterial(Material.WATER) && var4 is EntityPlayer)
             {
                 var21 = (EntityPlayer)var4;
                 GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -610,7 +610,7 @@ namespace betareborn.Entities
             GLManager.GL.DepthMask(true);
             GLManager.GL.Enable(GLEnum.CullFace);
             GLManager.GL.Disable(GLEnum.Blend);
-            if (cameraZoom == 1.0D && var4 is EntityPlayer && mc.objectMouseOver != null && !var4.isInsideOfMaterial(Material.water))
+            if (cameraZoom == 1.0D && var4 is EntityPlayer && mc.objectMouseOver != null && !var4.isInsideOfMaterial(Material.WATER))
             {
                 var21 = (EntityPlayer)var4;
                 GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -667,7 +667,7 @@ namespace betareborn.Entities
                         float var21 = random.nextFloat();
                         if (var19 > 0)
                         {
-                            if (Block.blocksList[var19].blockMaterial == Material.lava)
+                            if (Block.blocksList[var19].blockMaterial == Material.LAVA)
                             {
                                 mc.effectRenderer.addEffect(new EntitySmokeFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.blocksList[var19].minY, (double)((float)var17 + var21), 0.0D, 0.0D, 0.0D));
                             }
@@ -912,13 +912,13 @@ namespace betareborn.Entities
                 fogColorGreen = (float)var16.Y;
                 fogColorBlue = (float)var16.Z;
             }
-            else if (var3.isInsideOfMaterial(Material.water))
+            else if (var3.isInsideOfMaterial(Material.WATER))
             {
                 fogColorRed = 0.02F;
                 fogColorGreen = 0.02F;
                 fogColorBlue = 0.2F;
             }
-            else if (var3.isInsideOfMaterial(Material.lava))
+            else if (var3.isInsideOfMaterial(Material.LAVA))
             {
                 fogColorRed = 0.6F;
                 fogColorGreen = 0.1F;
@@ -947,14 +947,14 @@ namespace betareborn.Entities
                 mc.renderGlobal.worldRenderer.SetFogMode(1);
                 mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
-            else if (var3.isInsideOfMaterial(Material.water))
+            else if (var3.isInsideOfMaterial(Material.WATER))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
                 mc.renderGlobal.worldRenderer.SetFogMode(1);
                 mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
-            else if (var3.isInsideOfMaterial(Material.lava))
+            else if (var3.isInsideOfMaterial(Material.LAVA))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);

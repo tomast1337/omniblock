@@ -8,7 +8,7 @@ namespace betareborn.Blocks
         private int[] chanceToEncourageFire = new int[256];
         private int[] abilityToCatchFire = new int[256];
 
-        public BlockFire(int var1, int var2) : base(var1, var2, Material.fire)
+        public BlockFire(int var1, int var2) : base(var1, var2, Material.FIRE)
         {
             setTickOnLoad(true);
         }

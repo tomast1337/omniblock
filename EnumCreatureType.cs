@@ -6,9 +6,9 @@ namespace betareborn
 {
     public class EnumCreatureType
     {
-        public static readonly EnumCreatureType monster = new EnumCreatureType(IMob.Class, 70, Material.air, false);
-        public static readonly EnumCreatureType creature = new EnumCreatureType(typeof(EntityAnimal), 15, Material.air, true);
-        public static readonly EnumCreatureType waterCreature = new EnumCreatureType(typeof(EntityWaterMob), 5, Material.water, true);
+        public static readonly EnumCreatureType monster = new EnumCreatureType(IMob.Class, 70, Material.AIR, false);
+        public static readonly EnumCreatureType creature = new EnumCreatureType(typeof(EntityAnimal), 15, Material.AIR, true);
+        public static readonly EnumCreatureType waterCreature = new EnumCreatureType(typeof(EntityWaterMob), 5, Material.WATER, true);
 
         private readonly Class creatureClass;
         private readonly int maxNumberOfCreature;

@@ -42,7 +42,7 @@ namespace betareborn.Worlds
                 Entity var3 = (Entity)field_1053_F.iterator().next();
                 if (!loadedEntityList.Contains(var3))
                 {
-                    entityJoinedWorld(var3);
+                    spawnEntity(var3);
                 }
             }
 
@@ -116,9 +116,9 @@ namespace betareborn.Worlds
 
         }
 
-        public override bool entityJoinedWorld(Entity var1)
+        public override bool spawnEntity(Entity var1)
         {
-            bool var2 = base.entityJoinedWorld(var1);
+            bool var2 = base.spawnEntity(var1);
             field_20914_E.add(var1);
             if (!var2)
             {
@@ -164,7 +164,7 @@ namespace betareborn.Worlds
 
             field_20914_E.add(var2);
             var2.entityId = var1;
-            if (!entityJoinedWorld(var2))
+            if (!spawnEntity(var2))
             {
                 field_1053_F.add(var2);
             }

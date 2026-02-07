@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockPortal : BlockBreakable
     {
 
-        public BlockPortal(int var1, int var2) : base(var1, var2, Material.portal, false)
+        public BlockPortal(int var1, int var2) : base(var1, var2, Material.NETHER_PORTAL, false)
         {
         }
 

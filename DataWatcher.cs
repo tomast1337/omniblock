@@ -113,8 +113,8 @@ namespace betareborn
                     break;
                 case 5:
                     ItemStack var4 = (ItemStack)var1.getObject();
-                    var0.writeShort(var4.getItem().shiftedIndex);
-                    var0.writeByte(var4.stackSize);
+                    var0.writeShort(var4.getItem().id);
+                    var0.writeByte(var4.count);
                     var0.writeShort(var4.getItemDamage());
                     break;
                 case 6:

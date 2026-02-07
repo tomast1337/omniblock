@@ -11,7 +11,7 @@ namespace betareborn.Blocks
         private int baseIndexInPNG;
         int[] adjacentTreeBlocks;
 
-        public BlockLeaves(int var1, int var2) : base(var1, var2, Material.leaves, false)
+        public BlockLeaves(int var1, int var2) : base(var1, var2, Material.LEAVES, false)
         {
             baseIndexInPNG = var2;
             setTickOnLoad(true);
@@ -200,7 +200,7 @@ namespace betareborn.Blocks
 
         public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
-            if (!var1.multiplayerWorld && var2.getCurrentEquippedItem() != null && var2.getCurrentEquippedItem().itemID == Item.shears.shiftedIndex)
+            if (!var1.multiplayerWorld && var2.getCurrentEquippedItem() != null && var2.getCurrentEquippedItem().itemID == Item.shears.id)
             {
                 var2.addStat(StatList.mineBlockStatArray[blockID], 1);
                 dropBlockAsItem_do(var1, var3, var4, var5, new ItemStack(Block.leaves.blockID, 1, var6 & 3));

@@ -41,7 +41,7 @@ namespace betareborn.Worlds
         private readonly long lockTimestamp;
         protected int autosavePeriod;
         public int difficultySetting;
-        public java.util.Random rand;
+        public java.util.Random random;
         public bool isNewWorld;
         public readonly WorldProvider worldProvider;
         protected List<IWorldAccess> worldAccesses;
@@ -88,7 +88,7 @@ namespace betareborn.Worlds
             editingBlocks = false;
             lockTimestamp = java.lang.System.currentTimeMillis();
             autosavePeriod = AUTOSAVE_PERIOD;
-            rand = new();
+            random = new();
             isNewWorld = false;
             worldAccesses = [];
             collidingBoundingBoxes = [];
@@ -96,7 +96,7 @@ namespace betareborn.Worlds
             spawnHostileMobs = true;
             spawnPeacefulMobs = true;
             positionsToUpdate = new HashSet();
-            soundCounter = rand.nextInt(12000);
+            soundCounter = random.nextInt(12000);
             field_1012_M = [];
             multiplayerWorld = false;
             saveHandler = var1;
@@ -130,7 +130,7 @@ namespace betareborn.Worlds
             editingBlocks = false;
             lockTimestamp = java.lang.System.currentTimeMillis();
             autosavePeriod = AUTOSAVE_PERIOD;
-            rand = new();
+            random = new();
             isNewWorld = false;
             worldAccesses = [];
             collidingBoundingBoxes = [];
@@ -138,7 +138,7 @@ namespace betareborn.Worlds
             spawnHostileMobs = true;
             spawnPeacefulMobs = true;
             positionsToUpdate = new HashSet();
-            soundCounter = rand.nextInt(12000);
+            soundCounter = random.nextInt(12000);
             field_1012_M = [];
             multiplayerWorld = false;
             lockTimestamp = var1.lockTimestamp;
@@ -177,7 +177,7 @@ namespace betareborn.Worlds
             editingBlocks = false;
             lockTimestamp = java.lang.System.currentTimeMillis();
             autosavePeriod = AUTOSAVE_PERIOD;
-            rand = new java.util.Random();
+            random = new java.util.Random();
             isNewWorld = false;
             worldAccesses = [];
             collidingBoundingBoxes = [];
@@ -185,7 +185,7 @@ namespace betareborn.Worlds
             spawnHostileMobs = true;
             spawnPeacefulMobs = true;
             positionsToUpdate = new HashSet();
-            soundCounter = rand.nextInt(12000);
+            soundCounter = random.nextInt(12000);
             field_1012_M = [];
             multiplayerWorld = false;
             saveHandler = var1;
@@ -240,9 +240,9 @@ namespace betareborn.Worlds
             byte var2 = 64;
 
             int var3;
-            for (var3 = 0; !worldProvider.canCoordinateBeSpawn(var1, var3); var3 += rand.nextInt(64) - rand.nextInt(64))
+            for (var3 = 0; !worldProvider.canCoordinateBeSpawn(var1, var3); var3 += random.nextInt(64) - random.nextInt(64))
             {
-                var1 += rand.nextInt(64) - rand.nextInt(64);
+                var1 += random.nextInt(64) - random.nextInt(64);
             }
 
             worldInfo.setSpawn(var1, var2, var3);
@@ -259,9 +259,9 @@ namespace betareborn.Worlds
             int var1 = worldInfo.getSpawnX();
 
             int var2;
-            for (var2 = worldInfo.getSpawnZ(); getFirstUncoveredBlock(var1, var2) == 0; var2 += rand.nextInt(8) - rand.nextInt(8))
+            for (var2 = worldInfo.getSpawnZ(); getFirstUncoveredBlock(var1, var2) == 0; var2 += random.nextInt(8) - random.nextInt(8))
             {
-                var1 += rand.nextInt(8) - rand.nextInt(8);
+                var1 += random.nextInt(8) - random.nextInt(8);
             }
 
             worldInfo.setSpawnX(var1);
@@ -301,7 +301,7 @@ namespace betareborn.Worlds
                     var3.setCurrentChunkOver(var4, var5);
                 }
 
-                entityJoinedWorld(var1);
+                spawnEntity(var1);
             }
             catch (java.lang.Exception var6)
             {
@@ -477,10 +477,10 @@ namespace betareborn.Worlds
             }
         }
 
-        public Material getBlockMaterial(int var1, int var2, int var3)
+        public Material getMaterial(int var1, int var2, int var3)
         {
             int var4 = getBlockId(var1, var2, var3);
-            return var4 == 0 ? Material.air : Block.blocksList[var4].blockMaterial;
+            return var4 == 0 ? Material.AIR : Block.blocksList[var4].blockMaterial;
         }
 
         public int getBlockMetadata(int var1, int var2, int var3)
@@ -1145,7 +1145,7 @@ namespace betareborn.Worlds
             return true;
         }
 
-        public virtual bool entityJoinedWorld(Entity var1)
+        public virtual bool spawnEntity(Entity var1)
         {
             int var2 = MathHelper.floor_double(var1.posX / 16.0D);
             int var3 = MathHelper.floor_double(var1.posZ / 16.0D);
@@ -1422,8 +1422,8 @@ namespace betareborn.Worlds
             for (var2 &= 15; var4 > 0; --var4)
             {
                 int var5 = var3.getBlockID(var1, var4, var2);
-                Material var6 = var5 == 0 ? Material.air : Block.blocksList[var5].blockMaterial;
-                if (var6.getIsSolid() || var6.getIsLiquid())
+                Material var6 = var5 == 0 ? Material.AIR : Block.blocksList[var5].blockMaterial;
+                if (var6.blocksMovement() || var6.isFluid())
                 {
                     return var4 + 1;
                 }
@@ -1460,7 +1460,7 @@ namespace betareborn.Worlds
                     int var8 = getBlockId(var6.xCoord, var6.yCoord, var6.zCoord);
                     if (var8 == var6.blockID && var8 > 0)
                     {
-                        Block.blocksList[var8].updateTick(this, var6.xCoord, var6.yCoord, var6.zCoord, rand);
+                        Block.blocksList[var8].updateTick(this, var6.xCoord, var6.yCoord, var6.zCoord, random);
                     }
                 }
 
@@ -1763,7 +1763,7 @@ namespace betareborn.Worlds
                     for (int var10 = var6; var10 < var7; ++var10)
                     {
                         Block var11 = Block.blocksList[getBlockId(var8, var9, var10)];
-                        if (var11 != null && var11.blockMaterial.getIsLiquid())
+                        if (var11 != null && var11.blockMaterial.isFluid())
                         {
                             return true;
                         }
@@ -2078,7 +2078,7 @@ namespace betareborn.Worlds
         public bool isBlockNormalCube(int var1, int var2, int var3)
         {
             Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.blockMaterial.getIsTranslucent() && var4.renderAsNormalBlock();
+            return var4 == null ? false : var4.blockMaterial.suffocates() && var4.renderAsNormalBlock();
         }
 
         public void saveWorldIndirectly(IProgressUpdate var1)
@@ -2295,11 +2295,11 @@ namespace betareborn.Worlds
                 {
                     if (worldInfo.getThundering())
                     {
-                        worldInfo.setThunderTime(rand.nextInt(12000) + 3600);
+                        worldInfo.setThunderTime(random.nextInt(12000) + 3600);
                     }
                     else
                     {
-                        worldInfo.setThunderTime(rand.nextInt(168000) + 12000);
+                        worldInfo.setThunderTime(random.nextInt(168000) + 12000);
                     }
                 }
                 else
@@ -2317,11 +2317,11 @@ namespace betareborn.Worlds
                 {
                     if (worldInfo.getRaining())
                     {
-                        worldInfo.setRainTime(rand.nextInt(12000) + 12000);
+                        worldInfo.setRainTime(random.nextInt(12000) + 12000);
                     }
                     else
                     {
-                        worldInfo.setRainTime(rand.nextInt(168000) + 12000);
+                        worldInfo.setRainTime(random.nextInt(168000) + 12000);
                     }
                 }
                 else
@@ -2435,18 +2435,18 @@ namespace betareborn.Worlds
                     var10 = var14.getBlockID(var7, var9, var8);
                     var7 += var3;
                     var8 += var4;
-                    if (var10 == 0 && getFullBlockLightValue(var7, var9, var8) <= rand.nextInt(8) && getSavedLightValue(EnumSkyBlock.Sky, var7, var9, var8) <= 0)
+                    if (var10 == 0 && getFullBlockLightValue(var7, var9, var8) <= random.nextInt(8) && getSavedLightValue(EnumSkyBlock.Sky, var7, var9, var8) <= 0)
                     {
                         EntityPlayer var11 = getClosestPlayer((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, 8.0D);
-                        if (var11 != null && var11.getDistanceSq((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D) > 4.0D)
+                        if (var11 != null && var11.getSquaredDistance((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D) > 4.0D)
                         {
-                            playSoundEffect((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, "ambient.cave.cave", 0.7F, 0.8F + rand.nextFloat() * 0.2F);
-                            soundCounter = rand.nextInt(12000) + 6000;
+                            playSoundEffect((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, "ambient.cave.cave", 0.7F, 0.8F + random.nextFloat() * 0.2F);
+                            soundCounter = random.nextInt(12000) + 6000;
                         }
                     }
                 }
 
-                if (rand.nextInt(100000) == 0 && func_27161_C() && func_27160_B())
+                if (random.nextInt(100000) == 0 && func_27161_C() && func_27160_B())
                 {
                     field_9437_g = field_9437_g * 3 + 1013904223;
                     var6 = field_9437_g >> 2;
@@ -2461,7 +2461,7 @@ namespace betareborn.Worlds
                 }
 
                 int var15;
-                if (rand.nextInt(16) == 0)
+                if (random.nextInt(16) == 0)
                 {
                     field_9437_g = field_9437_g * 3 + 1013904223;
                     var6 = field_9437_g >> 2;
@@ -2472,7 +2472,7 @@ namespace betareborn.Worlds
                     {
                         var10 = var14.getBlockID(var7, var9 - 1, var8);
                         var15 = var14.getBlockID(var7, var9, var8);
-                        if (func_27161_C() && var15 == 0 && Block.snow.canPlaceBlockAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ice.blockID && Block.blocksList[var10].blockMaterial.getIsSolid())
+                        if (func_27161_C() && var15 == 0 && Block.snow.canPlaceBlockAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ice.blockID && Block.blocksList[var10].blockMaterial.blocksMovement())
                         {
                             setBlockWithNotify(var7 + var3, var9, var8 + var4, Block.snow.blockID);
                         }
@@ -2494,7 +2494,7 @@ namespace betareborn.Worlds
                     var15 = var14.blocks[var8 << 11 | var9 << 7 | var10] & 255;
                     if (Block.tickOnLoad[var15])
                     {
-                        Block.blocksList[var15].updateTick(this, var8 + var3, var10, var9 + var4, rand);
+                        Block.blocksList[var15].updateTick(this, var8 + var3, var10, var9 + var4, random);
                     }
                 }
             }
@@ -2531,7 +2531,7 @@ namespace betareborn.Worlds
                         int var6 = getBlockId(var4.xCoord, var4.yCoord, var4.zCoord);
                         if (var6 == var4.blockID && var6 > 0)
                         {
-                            Block.blocksList[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, rand);
+                            Block.blocksList[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, random);
                         }
                     }
                 }
@@ -2547,9 +2547,9 @@ namespace betareborn.Worlds
 
             for (int var6 = 0; var6 < 1000; ++var6)
             {
-                int var7 = var1 + rand.nextInt(var4) - rand.nextInt(var4);
-                int var8 = var2 + rand.nextInt(var4) - rand.nextInt(var4);
-                int var9 = var3 + rand.nextInt(var4) - rand.nextInt(var4);
+                int var7 = var1 + random.nextInt(var4) - random.nextInt(var4);
+                int var8 = var2 + random.nextInt(var4) - random.nextInt(var4);
+                int var9 = var3 + random.nextInt(var4) - random.nextInt(var4);
                 int var10 = getBlockId(var7, var8, var9);
                 if (var10 > 0)
                 {
@@ -2762,7 +2762,7 @@ namespace betareborn.Worlds
             for (int var12 = 0; var12 < playerEntities.size(); ++var12)
             {
                 EntityPlayer var13 = (EntityPlayer)playerEntities.get(var12);
-                double var14 = var13.getDistanceSq(var1, var3, var5);
+                double var14 = var13.getSquaredDistance(var1, var3, var5);
                 if ((var7 < 0.0D || var14 < var7 * var7) && (var9 == -1.0D || var14 < var9))
                 {
                     var9 = var14;
@@ -2968,7 +2968,7 @@ namespace betareborn.Worlds
             return chunkProvider;
         }
 
-        public void playNoteAt(int var1, int var2, int var3, int var4, int var5)
+        public void playNoteBlockActionAt(int var1, int var2, int var3, int var4, int var5)
         {
             int var6 = getBlockId(var1, var2, var3);
             if (var6 > 0)

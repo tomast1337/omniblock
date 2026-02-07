@@ -26,7 +26,7 @@ namespace betareborn.Entities
             base.readEntityFromNBT(var1);
         }
 
-        public override bool getCanSpawnHere()
+        public override bool canSpawn()
         {
             return worldObj.checkIfAABBIsClear(boundingBox);
         }

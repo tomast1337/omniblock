@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockReed : Block
     {
 
-        public BlockReed(int var1, int var2) : base(var1, Material.plants)
+        public BlockReed(int var1, int var2) : base(var1, Material.PLANT)
         {
             blockIndexInTexture = var2;
             float var3 = 6.0F / 16.0F;
@@ -44,7 +44,7 @@ namespace betareborn.Blocks
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3 - 1, var4);
-            return var5 == blockID ? true : (var5 != Block.grass.blockID && var5 != Block.dirt.blockID ? false : (var1.getBlockMaterial(var2 - 1, var3 - 1, var4) == Material.water ? true : (var1.getBlockMaterial(var2 + 1, var3 - 1, var4) == Material.water ? true : (var1.getBlockMaterial(var2, var3 - 1, var4 - 1) == Material.water ? true : var1.getBlockMaterial(var2, var3 - 1, var4 + 1) == Material.water))));
+            return var5 == blockID ? true : (var5 != Block.grass.blockID && var5 != Block.dirt.blockID ? false : (var1.getMaterial(var2 - 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2 + 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2, var3 - 1, var4 - 1) == Material.WATER ? true : var1.getMaterial(var2, var3 - 1, var4 + 1) == Material.WATER))));
         }
 
         public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
@@ -74,7 +74,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.reed.shiftedIndex;
+            return Item.reed.id;
         }
 
         public override bool isOpaqueCube()

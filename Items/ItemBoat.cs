@@ -48,10 +48,10 @@ namespace betareborn.Items
                             --var26;
                         }
 
-                        var2.entityJoinedWorld(new EntityBoat(var2, (double)((float)var25 + 0.5F), (double)((float)var26 + 1.0F), (double)((float)var27 + 0.5F)));
+                        var2.spawnEntity(new EntityBoat(var2, (double)((float)var25 + 0.5F), (double)((float)var26 + 1.0F), (double)((float)var27 + 0.5F)));
                     }
 
-                    --var1.stackSize;
+                    --var1.count;
                 }
 
                 return var1;

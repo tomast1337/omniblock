@@ -90,7 +90,7 @@ namespace betareborn.Entities
             base.readEntityFromNBT(var1);
         }
 
-        public override bool getCanSpawnHere()
+        public override bool canSpawn()
         {
             int var1 = MathHelper.floor_double(posX);
             int var2 = MathHelper.floor_double(boundingBox.minY);
@@ -110,7 +110,7 @@ namespace betareborn.Entities
                     worldObj.skylightSubtracted = var5;
                 }
 
-                return var4 <= rand.nextInt(8) && base.getCanSpawnHere();
+                return var4 <= rand.nextInt(8) && base.canSpawn();
             }
         }
     }

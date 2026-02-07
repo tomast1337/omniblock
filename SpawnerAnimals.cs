@@ -16,9 +16,9 @@ namespace betareborn
 
         protected static ChunkPosition getRandomSpawningPointInChunk(World var0, int var1, int var2)
         {
-            int var3 = var1 + var0.rand.nextInt(16);
-            int var4 = var0.rand.nextInt(128);
-            int var5 = var2 + var0.rand.nextInt(16);
+            int var3 = var1 + var0.random.nextInt(16);
+            int var4 = var0.random.nextInt(128);
+            int var5 = var2 + var0.random.nextInt(16);
             return new ChunkPosition(var3, var4, var5);
         }
 
@@ -80,7 +80,7 @@ namespace betareborn
                                 var15 = (SpawnListEntry)var14.next();
                             }
 
-                            int var40 = var0.rand.nextInt(var13);
+                            int var40 = var0.random.nextInt(var13);
                             var15 = (SpawnListEntry)var12.get(0);
                             Iterator var16 = var12.iterator();
 
@@ -105,7 +105,7 @@ namespace betareborn
                                 continue;
                             }
 
-                            if (var0.getBlockMaterial(var42, var18, var19) != var38.getCreatureMaterial())
+                            if (var0.getMaterial(var42, var18, var19) != var38.getCreatureMaterial())
                             {
                                 continue;
                             }
@@ -122,9 +122,9 @@ namespace betareborn
 
                                 for (int var26 = 0; var26 < 4 && !breakToNextChunk; ++var26)
                                 {
-                                    var22 += var0.rand.nextInt(var25) - var0.rand.nextInt(var25);
-                                    var23 += var0.rand.nextInt(1) - var0.rand.nextInt(1);
-                                    var24 += var0.rand.nextInt(var25) - var0.rand.nextInt(var25);
+                                    var22 += var0.random.nextInt(var25) - var0.random.nextInt(var25);
+                                    var23 += var0.random.nextInt(1) - var0.random.nextInt(1);
+                                    var24 += var0.random.nextInt(var25) - var0.random.nextInt(var25);
                                     if (canCreatureTypeSpawnAtLocation(var38, var0, var22, var23, var24))
                                     {
                                         float var27 = (float)var22 + 0.5F;
@@ -149,11 +149,11 @@ namespace betareborn
                                                     return var3;
                                                 }
 
-                                                var43.setLocationAndAngles((double)var27, (double)var28, (double)var29, var0.rand.nextFloat() * 360.0F, 0.0F);
-                                                if (var43.getCanSpawnHere())
+                                                var43.setPositionAndAnglesKeepPrevAngles((double)var27, (double)var28, (double)var29, var0.random.nextFloat() * 360.0F, 0.0F);
+                                                if (var43.canSpawn())
                                                 {
                                                     ++var20;
-                                                    var0.entityJoinedWorld(var43);
+                                                    var0.spawnEntity(var43);
                                                     creatureSpecificInit(var43, var0, var27, var28, var29);
                                                     if (var20 >= var43.getMaxSpawnedInChunk())
                                                     {
@@ -177,21 +177,21 @@ namespace betareborn
 
         private static bool canCreatureTypeSpawnAtLocation(EnumCreatureType var0, World var1, int var2, int var3, int var4)
         {
-            return var0.getCreatureMaterial() == Material.water ? var1.getBlockMaterial(var2, var3, var4).getIsLiquid() && !var1.isBlockNormalCube(var2, var3 + 1, var4) : var1.isBlockNormalCube(var2, var3 - 1, var4) && !var1.isBlockNormalCube(var2, var3, var4) && !var1.getBlockMaterial(var2, var3, var4).getIsLiquid() && !var1.isBlockNormalCube(var2, var3 + 1, var4);
+            return var0.getCreatureMaterial() == Material.WATER ? var1.getMaterial(var2, var3, var4).isFluid() && !var1.isBlockNormalCube(var2, var3 + 1, var4) : var1.isBlockNormalCube(var2, var3 - 1, var4) && !var1.isBlockNormalCube(var2, var3, var4) && !var1.getMaterial(var2, var3, var4).isFluid() && !var1.isBlockNormalCube(var2, var3 + 1, var4);
         }
 
         private static void creatureSpecificInit(EntityLiving var0, World var1, float var2, float var3, float var4)
         {
-            if (var0 is EntitySpider && var1.rand.nextInt(100) == 0)
+            if (var0 is EntitySpider && var1.random.nextInt(100) == 0)
             {
                 EntitySkeleton var5 = new EntitySkeleton(var1);
-                var5.setLocationAndAngles((double)var2, (double)var3, (double)var4, var0.rotationYaw, 0.0F);
-                var1.entityJoinedWorld(var5);
+                var5.setPositionAndAnglesKeepPrevAngles((double)var2, (double)var3, (double)var4, var0.rotationYaw, 0.0F);
+                var1.spawnEntity(var5);
                 var5.mountEntity(var0);
             }
             else if (var0 is EntitySheep)
             {
-                ((EntitySheep)var0).setFleeceColor(EntitySheep.getRandomFleeceColor(var1.rand));
+                ((EntitySheep)var0).setFleeceColor(EntitySheep.getRandomFleeceColor(var1.random));
             }
 
         }
@@ -224,9 +224,9 @@ namespace betareborn
 
                 for (int var8 = 0; var8 < 20 && !var7; ++var8)
                 {
-                    int var9 = MathHelper.floor_double(var5.posX) + var0.rand.nextInt(32) - var0.rand.nextInt(32);
-                    int var10 = MathHelper.floor_double(var5.posZ) + var0.rand.nextInt(32) - var0.rand.nextInt(32);
-                    int var11 = MathHelper.floor_double(var5.posY) + var0.rand.nextInt(16) - var0.rand.nextInt(16);
+                    int var9 = MathHelper.floor_double(var5.posX) + var0.random.nextInt(32) - var0.random.nextInt(32);
+                    int var10 = MathHelper.floor_double(var5.posZ) + var0.random.nextInt(32) - var0.random.nextInt(32);
+                    int var11 = MathHelper.floor_double(var5.posY) + var0.random.nextInt(16) - var0.random.nextInt(16);
                     if (var11 < 1)
                     {
                         var11 = 1;
@@ -236,7 +236,7 @@ namespace betareborn
                         var11 = 128;
                     }
 
-                    int var12 = var0.rand.nextInt(var6.Length);
+                    int var12 = var0.random.nextInt(var6.Length);
 
                     int var13;
                     for (var13 = var11; var13 > 2 && !var0.isBlockNormalCube(var9, var13 - 1, var10); --var13)
@@ -265,8 +265,8 @@ namespace betareborn
                             return var2;
                         }
 
-                        var17.setLocationAndAngles((double)var14, (double)var15, (double)var16, var0.rand.nextFloat() * 360.0F, 0.0F);
-                        if (var17.getCanSpawnHere())
+                        var17.setPositionAndAnglesKeepPrevAngles((double)var14, (double)var15, (double)var16, var0.random.nextFloat() * 360.0F, 0.0F);
+                        if (var17.canSpawn())
                         {
                             PathEntity var18 = var3.createEntityPathTo(var17, var5, 32.0F);
                             if (var18 != null && var18.pathLength > 1)
@@ -280,8 +280,8 @@ namespace betareborn
                                         var20 = new ChunkCoordinates(var9, var13 + 1, var10);
                                     }
 
-                                    var17.setLocationAndAngles((double)((float)var20.x + 0.5F), (double)var20.y, (double)((float)var20.z + 0.5F), 0.0F, 0.0F);
-                                    var0.entityJoinedWorld(var17);
+                                    var17.setPositionAndAnglesKeepPrevAngles((double)((float)var20.x + 0.5F), (double)var20.y, (double)((float)var20.z + 0.5F), 0.0F, 0.0F);
+                                    var0.spawnEntity(var17);
                                     creatureSpecificInit(var17, var0, (float)var20.x + 0.5F, (float)var20.y, (float)var20.z + 0.5F);
                                     var5.wakeUpPlayer(true, false, false);
                                     var17.playLivingSound();

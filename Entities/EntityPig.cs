@@ -61,7 +61,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return fire > 0 ? Item.porkCooked.shiftedIndex : Item.porkRaw.shiftedIndex;
+            return fire > 0 ? Item.porkCooked.id : Item.porkRaw.id;
         }
 
         public bool getSaddled()
@@ -87,8 +87,8 @@ namespace betareborn.Entities
             if (!worldObj.multiplayerWorld)
             {
                 EntityPigZombie var2 = new EntityPigZombie(worldObj);
-                var2.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
-                worldObj.entityJoinedWorld(var2);
+                var2.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, rotationYaw, rotationPitch);
+                worldObj.spawnEntity(var2);
                 setEntityDead();
             }
         }

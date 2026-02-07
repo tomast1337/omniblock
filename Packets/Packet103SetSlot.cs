@@ -45,7 +45,7 @@ namespace betareborn.Packets
             else
             {
                 var1.writeShort(this.myItemStack.itemID);
-                var1.writeByte(this.myItemStack.stackSize);
+                var1.writeByte(this.myItemStack.count);
                 var1.writeShort(this.myItemStack.getItemDamage());
             }
 

@@ -29,7 +29,7 @@ namespace betareborn
             if (inventoryContents[var1] != null)
             {
                 ItemStack var3;
-                if (inventoryContents[var1].stackSize <= var2)
+                if (inventoryContents[var1].count <= var2)
                 {
                     var3 = inventoryContents[var1];
                     inventoryContents[var1] = null;
@@ -39,7 +39,7 @@ namespace betareborn
                 else
                 {
                     var3 = inventoryContents[var1].splitStack(var2);
-                    if (inventoryContents[var1].stackSize == 0)
+                    if (inventoryContents[var1].count == 0)
                     {
                         inventoryContents[var1] = null;
                     }
@@ -57,9 +57,9 @@ namespace betareborn
         public void setStack(int var1, ItemStack var2)
         {
             inventoryContents[var1] = var2;
-            if (var2 != null && var2.stackSize > getMaxCountPerStack())
+            if (var2 != null && var2.count > getMaxCountPerStack())
             {
-                var2.stackSize = getMaxCountPerStack();
+                var2.count = getMaxCountPerStack();
             }
 
             markDirty();

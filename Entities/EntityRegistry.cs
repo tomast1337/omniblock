@@ -90,7 +90,7 @@ namespace betareborn.Entities
                         {
                             ent.setPosition(x, y, z);
                             ent.setPositionAndRotation(x, y, z, 0, 0);
-                            if (!world.entityJoinedWorld(ent))
+                            if (!world.spawnEntity(ent))
                             {
                                 Console.Error.WriteLine($"Entity `{name}` with ID:`{id}` failed to join world.");
                             }

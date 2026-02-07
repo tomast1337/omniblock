@@ -5,7 +5,7 @@ namespace betareborn.Materials
 
         public MaterialTransparent(MapColor var1) : base(var1)
         {
-            setIsGroundCover();
+            setReplaceable();
         }
 
         public override bool isSolid()
@@ -13,12 +13,12 @@ namespace betareborn.Materials
             return false;
         }
 
-        public override bool getCanBlockGrass()
+        public override bool blocksVision()
         {
             return false;
         }
 
-        public override bool getIsSolid()
+        public override bool blocksMovement()
         {
             return false;
         }

@@ -19,7 +19,7 @@ namespace betareborn.Blocks
             return var0 == Block.rail.blockID || var0 == Block.railPowered.blockID || var0 == Block.railDetector.blockID;
         }
 
-        public BlockRail(int var1, int var2, bool var3) : base(var1, var2, Material.circuits)
+        public BlockRail(int var1, int var2, bool var3) : base(var1, var2, Material.PISTON_BREAKABLE)
         {
             isPowered = var3;
             setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);

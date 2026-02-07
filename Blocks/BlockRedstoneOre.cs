@@ -10,7 +10,7 @@ namespace betareborn.Blocks
 
         private bool field_468_a;
 
-        public BlockRedstoneOre(int var1, int var2, bool var3) : base(var1, var2, Material.rock)
+        public BlockRedstoneOre(int var1, int var2, bool var3) : base(var1, var2, Material.STONE)
         {
             if (var3)
             {
@@ -64,7 +64,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.redstone.shiftedIndex;
+            return Item.redstone.id;
         }
 
         public override int quantityDropped(java.util.Random var1)
@@ -83,7 +83,7 @@ namespace betareborn.Blocks
 
         private void func_319_i(World var1, int var2, int var3, int var4)
         {
-            java.util.Random var5 = var1.rand;
+            java.util.Random var5 = var1.random;
             double var6 = 1.0D / 16.0D;
 
             for (int var8 = 0; var8 < 6; ++var8)

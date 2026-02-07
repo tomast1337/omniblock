@@ -97,7 +97,7 @@ namespace betareborn.Entities
 
                     for (var3 = 0; var3 < 2; ++var3)
                     {
-                        dropItemWithOffset(Item.stick.shiftedIndex, 1, 0.0F);
+                        dropItemWithOffset(Item.stick.id, 1, 0.0F);
                     }
 
                     setEntityDead();
@@ -167,7 +167,7 @@ namespace betareborn.Entities
                 double var5 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var4 + 0) / (double)var1 - 0.125D;
                 double var7 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var4 + 1) / (double)var1 - 0.125D;
                 Box var9 = Box.createCached(boundingBox.minX, var5, boundingBox.minZ, boundingBox.maxX, var7, boundingBox.maxZ);
-                if (worldObj.isAABBInMaterial(var9, Material.water))
+                if (worldObj.isAABBInMaterial(var9, Material.WATER))
                 {
                     var2 += 1.0D / (double)var1;
                 }
@@ -312,7 +312,7 @@ namespace betareborn.Entities
 
                         for (var22 = 0; var22 < 2; ++var22)
                         {
-                            dropItemWithOffset(Item.stick.shiftedIndex, 1, 0.0F);
+                            dropItemWithOffset(Item.stick.id, 1, 0.0F);
                         }
                     }
                 }

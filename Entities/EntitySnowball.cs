@@ -38,7 +38,7 @@ namespace betareborn.Entities
         {
             thrower = var2;
             setSize(0.25F, 0.25F);
-            setLocationAndAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
+            setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
             posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
             posY -= (double)0.1F;
             posZ -= (double)(MathHelper.sin(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);

@@ -6,7 +6,7 @@ namespace betareborn.Blocks
 {
     public class BlockLog : Block
     {
-        public BlockLog(int var1) : base(var1, Material.wood)
+        public BlockLog(int var1) : base(var1, Material.WOOD)
         {
             blockIndexInTexture = 20;
         }

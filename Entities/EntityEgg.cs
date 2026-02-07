@@ -38,7 +38,7 @@ namespace betareborn.Entities
         {
             field_20051_g = var2;
             setSize(0.25F, 0.25F);
-            setLocationAndAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
+            setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
             posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)Math.PI) * 0.16F);
             posY -= (double)0.1F;
             posZ -= (double)(MathHelper.sin(rotationYaw / 180.0F * (float)Math.PI) * 0.16F);
@@ -190,8 +190,8 @@ namespace betareborn.Entities
                     for (int var17 = 0; var17 < var16; ++var17)
                     {
                         EntityChicken var21 = new EntityChicken(worldObj);
-                        var21.setLocationAndAngles(posX, posY, posZ, rotationYaw, 0.0F);
-                        worldObj.entityJoinedWorld(var21);
+                        var21.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, rotationYaw, 0.0F);
+                        worldObj.spawnEntity(var21);
                     }
                 }
 

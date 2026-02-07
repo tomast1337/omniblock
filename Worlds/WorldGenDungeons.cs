@@ -24,7 +24,7 @@ namespace betareborn.Worlds
                 {
                     for (var12 = var5 - var8 - 1; var12 <= var5 + var8 + 1; ++var12)
                     {
-                        Material var13 = var1.getBlockMaterial(var10, var11, var12);
+                        Material var13 = var1.getMaterial(var10, var11, var12);
                         if (var11 == var4 - 1 && !var13.isSolid())
                         {
                             return false;
@@ -55,11 +55,11 @@ namespace betareborn.Worlds
                             {
                                 var1.setBlockWithNotify(var10, var11, var12, 0);
                             }
-                            else if (var11 >= 0 && !var1.getBlockMaterial(var10, var11 - 1, var12).isSolid())
+                            else if (var11 >= 0 && !var1.getMaterial(var10, var11 - 1, var12).isSolid())
                             {
                                 var1.setBlockWithNotify(var10, var11, var12, 0);
                             }
-                            else if (var1.getBlockMaterial(var10, var11, var12).isSolid())
+                            else if (var1.getMaterial(var10, var11, var12).isSolid())
                             {
                                 if (var11 == var4 - 1 && var2.nextInt(4) != 0)
                                 {
@@ -83,19 +83,19 @@ namespace betareborn.Worlds
                         if (var1.isAirBlock(var12, var4, var14))
                         {
                             int var15 = 0;
-                            if (var1.getBlockMaterial(var12 - 1, var4, var14).isSolid())
+                            if (var1.getMaterial(var12 - 1, var4, var14).isSolid())
                             {
                                 ++var15;
                             }
-                            if (var1.getBlockMaterial(var12 + 1, var4, var14).isSolid())
+                            if (var1.getMaterial(var12 + 1, var4, var14).isSolid())
                             {
                                 ++var15;
                             }
-                            if (var1.getBlockMaterial(var12, var4, var14 - 1).isSolid())
+                            if (var1.getMaterial(var12, var4, var14 - 1).isSolid())
                             {
                                 ++var15;
                             }
-                            if (var1.getBlockMaterial(var12, var4, var14 + 1).isSolid())
+                            if (var1.getMaterial(var12, var4, var14 + 1).isSolid())
                             {
                                 ++var15;
                             }
@@ -131,7 +131,7 @@ namespace betareborn.Worlds
         private ItemStack pickCheckLootItem(java.util.Random var1)
         {
             int var2 = var1.nextInt(11);
-            return var2 == 0 ? new ItemStack(Item.saddle) : (var2 == 1 ? new ItemStack(Item.ingotIron, var1.nextInt(4) + 1) : (var2 == 2 ? new ItemStack(Item.bread) : (var2 == 3 ? new ItemStack(Item.wheat, var1.nextInt(4) + 1) : (var2 == 4 ? new ItemStack(Item.gunpowder, var1.nextInt(4) + 1) : (var2 == 5 ? new ItemStack(Item.silk, var1.nextInt(4) + 1) : (var2 == 6 ? new ItemStack(Item.bucketEmpty) : (var2 == 7 && var1.nextInt(100) == 0 ? new ItemStack(Item.appleGold) : (var2 == 8 && var1.nextInt(2) == 0 ? new ItemStack(Item.redstone, var1.nextInt(4) + 1) : (var2 == 9 && var1.nextInt(10) == 0 ? new ItemStack(Item.itemsList[Item.record13.shiftedIndex + var1.nextInt(2)]) : (var2 == 10 ? new ItemStack(Item.dyePowder, 1, 3) : null))))))))));
+            return var2 == 0 ? new ItemStack(Item.saddle) : (var2 == 1 ? new ItemStack(Item.ingotIron, var1.nextInt(4) + 1) : (var2 == 2 ? new ItemStack(Item.bread) : (var2 == 3 ? new ItemStack(Item.wheat, var1.nextInt(4) + 1) : (var2 == 4 ? new ItemStack(Item.gunpowder, var1.nextInt(4) + 1) : (var2 == 5 ? new ItemStack(Item.silk, var1.nextInt(4) + 1) : (var2 == 6 ? new ItemStack(Item.bucketEmpty) : (var2 == 7 && var1.nextInt(100) == 0 ? new ItemStack(Item.appleGold) : (var2 == 8 && var1.nextInt(2) == 0 ? new ItemStack(Item.redstone, var1.nextInt(4) + 1) : (var2 == 9 && var1.nextInt(10) == 0 ? new ItemStack(Item.itemsList[Item.record13.id + var1.nextInt(2)]) : (var2 == 10 ? new ItemStack(Item.dyePowder, 1, 3) : null))))))))));
         }
 
         private String pickMobSpawner(java.util.Random var1)

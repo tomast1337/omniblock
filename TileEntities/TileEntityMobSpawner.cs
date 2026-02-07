@@ -37,9 +37,9 @@ namespace betareborn.TileEntities
             lastRotation = rotation;
             if (isPlayerInRange())
             {
-                double var1 = (double)((float)x + world.rand.nextFloat());
-                double var3 = (double)((float)y + world.rand.nextFloat());
-                double var5 = (double)((float)z + world.rand.nextFloat());
+                double var1 = (double)((float)x + world.random.nextFloat());
+                double var3 = (double)((float)y + world.random.nextFloat());
+                double var5 = (double)((float)z + world.random.nextFloat());
                 world.addParticle("smoke", var1, var3, var5, 0.0D, 0.0D, 0.0D);
                 world.addParticle("flame", var1, var3, var5, 0.0D, 0.0D, 0.0D);
 
@@ -80,24 +80,24 @@ namespace betareborn.TileEntities
 
                         if (var9 != null)
                         {
-                            double var11 = (double)x + (world.rand.nextDouble() - world.rand.nextDouble()) * 4.0D;
-                            double var13 = (double)(y + world.rand.nextInt(3) - 1);
-                            double var15 = (double)z + (world.rand.nextDouble() - world.rand.nextDouble()) * 4.0D;
-                            var9.setLocationAndAngles(var11, var13, var15, world.rand.nextFloat() * 360.0F, 0.0F);
-                            if (var9.getCanSpawnHere())
+                            double var11 = (double)x + (world.random.nextDouble() - world.random.nextDouble()) * 4.0D;
+                            double var13 = (double)(y + world.random.nextInt(3) - 1);
+                            double var15 = (double)z + (world.random.nextDouble() - world.random.nextDouble()) * 4.0D;
+                            var9.setPositionAndAnglesKeepPrevAngles(var11, var13, var15, world.random.nextFloat() * 360.0F, 0.0F);
+                            if (var9.canSpawn())
                             {
-                                world.entityJoinedWorld(var9);
+                                world.spawnEntity(var9);
 
                                 for (int var17 = 0; var17 < 20; ++var17)
                                 {
-                                    var1 = (double)x + 0.5D + ((double)world.rand.nextFloat() - 0.5D) * 2.0D;
-                                    var3 = (double)y + 0.5D + ((double)world.rand.nextFloat() - 0.5D) * 2.0D;
-                                    var5 = (double)z + 0.5D + ((double)world.rand.nextFloat() - 0.5D) * 2.0D;
+                                    var1 = (double)x + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
+                                    var3 = (double)y + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
+                                    var5 = (double)z + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
                                     world.addParticle("smoke", var1, var3, var5, 0.0D, 0.0D, 0.0D);
                                     world.addParticle("flame", var1, var3, var5, 0.0D, 0.0D, 0.0D);
                                 }
 
-                                var9.spawnExplosionParticle();
+                                var9.animateSpawn();
                                 resetDelay();
                             }
                         }
@@ -110,21 +110,21 @@ namespace betareborn.TileEntities
 
         private void resetDelay()
         {
-            spawnDelay = 200 + world.rand.nextInt(600);
+            spawnDelay = 200 + world.random.nextInt(600);
         }
 
-        public override void readNbt(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            base.readNbt(var1);
-            spawnedEntityId = var1.getString("EntityId");
-            spawnDelay = var1.getShort("Delay");
+            base.readNbt(nbt);
+            spawnedEntityId = nbt.getString("EntityId");
+            spawnDelay = nbt.getShort("Delay");
         }
 
-        public override void writeNbt(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeNbt(var1);
-            var1.setString("EntityId", spawnedEntityId);
-            var1.setShort("Delay", (short)spawnDelay);
+            base.writeNbt(nbt);
+            nbt.setString("EntityId", spawnedEntityId);
+            nbt.setShort("Delay", (short)spawnDelay);
         }
     }
 

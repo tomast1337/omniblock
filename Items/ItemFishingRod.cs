@@ -35,7 +35,7 @@ namespace betareborn.Items
                 var2.playSoundAtEntity(var3, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
                 if (!var2.multiplayerWorld)
                 {
-                    var2.entityJoinedWorld(new EntityFish(var2, var3));
+                    var2.spawnEntity(new EntityFish(var2, var3));
                 }
 
                 var3.swingItem();

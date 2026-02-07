@@ -4,20 +4,20 @@ namespace betareborn.TileEntities
 {
     public class TileEntityRecordPlayer : TileEntity
     {
-        public int record;
+        public int recordId;
 
-        public override void readNbt(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            base.readNbt(var1);
-            record = var1.getInteger("Record");
+            base.readNbt(nbt);
+            recordId = nbt.getInteger("Record");
         }
 
-        public override void writeNbt(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeNbt(var1);
-            if (record > 0)
+            base.writeNbt(nbt);
+            if (recordId > 0)
             {
-                var1.setInteger("Record", record);
+                nbt.setInteger("Record", recordId);
             }
 
         }

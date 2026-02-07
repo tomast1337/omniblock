@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockFarmland : Block
     {
 
-        public BlockFarmland(int var1) : base(var1, Material.ground)
+        public BlockFarmland(int var1) : base(var1, Material.SOIL)
         {
             blockIndexInTexture = 87;
             setTickOnLoad(true);
@@ -61,7 +61,7 @@ namespace betareborn.Blocks
 
         public override void onEntityWalking(World var1, int var2, int var3, int var4, Entity var5)
         {
-            if (var1.rand.nextInt(4) == 0)
+            if (var1.random.nextInt(4) == 0)
             {
                 var1.setBlockWithNotify(var2, var3, var4, Block.dirt.blockID);
             }
@@ -94,7 +94,7 @@ namespace betareborn.Blocks
                 {
                     for (int var7 = var4 - 4; var7 <= var4 + 4; ++var7)
                     {
-                        if (var1.getBlockMaterial(var5, var6, var7) == Material.water)
+                        if (var1.getMaterial(var5, var6, var7) == Material.WATER)
                         {
                             return true;
                         }
@@ -108,7 +108,7 @@ namespace betareborn.Blocks
         public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
         {
             base.onNeighborBlockChange(var1, var2, var3, var4, var5);
-            Material var6 = var1.getBlockMaterial(var2, var3 + 1, var4);
+            Material var6 = var1.getMaterial(var2, var3 + 1, var4);
             if (var6.isSolid())
             {
                 var1.setBlockWithNotify(var2, var3, var4, Block.dirt.blockID);

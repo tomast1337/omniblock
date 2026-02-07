@@ -10,7 +10,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return var2.nextInt(10) == 0 ? Item.flint.shiftedIndex : blockID;
+            return var2.nextInt(10) == 0 ? Item.flint.id : blockID;
         }
     }
 

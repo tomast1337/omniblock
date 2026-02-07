@@ -23,7 +23,7 @@ namespace betareborn
                 }
                 else
                 {
-                    mc.thePlayer.inventory.mainInventory[var2].stackSize = 1;
+                    mc.thePlayer.inventory.mainInventory[var2].count = 1;
                 }
             }
 

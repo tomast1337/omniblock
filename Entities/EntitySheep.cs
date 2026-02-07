@@ -45,7 +45,7 @@ namespace betareborn.Entities
         public override bool interact(EntityPlayer var1)
         {
             ItemStack var2 = var1.inventory.getCurrentItem();
-            if (var2 != null && var2.itemID == Item.shears.shiftedIndex && !getSheared())
+            if (var2 != null && var2.itemID == Item.shears.id && !getSheared())
             {
                 if (!worldObj.multiplayerWorld)
                 {

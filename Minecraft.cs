@@ -961,7 +961,7 @@ namespace betareborn
                     else
                     {
                         ItemStack var7 = thePlayer.inventory.getCurrentItem();
-                        int var8 = var7 != null ? var7.stackSize : 0;
+                        int var8 = var7 != null ? var7.count : 0;
                         if (playerController.sendPlaceBlock(thePlayer, theWorld, var7, var3, var4, var5, var6))
                         {
                             var2 = false;
@@ -973,11 +973,11 @@ namespace betareborn
                             return;
                         }
 
-                        if (var7.stackSize == 0)
+                        if (var7.count == 0)
                         {
                             thePlayer.inventory.mainInventory[thePlayer.inventory.currentItem] = null;
                         }
-                        else if (var7.stackSize != var8)
+                        else if (var7.count != var8)
                         {
                             entityRenderer.itemRenderer.func_9449_b();
                         }
@@ -1500,7 +1500,7 @@ namespace betareborn
             {
                 var1 /= var5;
                 var3 /= var5;
-                thePlayer.setLocationAndAngles(var1, thePlayer.posY, var3, thePlayer.rotationYaw,
+                thePlayer.setPositionAndAnglesKeepPrevAngles(var1, thePlayer.posY, var3, thePlayer.rotationYaw,
                     thePlayer.rotationPitch);
                 if (thePlayer.isEntityAlive())
                 {
@@ -1515,7 +1515,7 @@ namespace betareborn
             {
                 var1 *= var5;
                 var3 *= var5;
-                thePlayer.setLocationAndAngles(var1, thePlayer.posY, var3, thePlayer.rotationYaw,
+                thePlayer.setPositionAndAnglesKeepPrevAngles(var1, thePlayer.posY, var3, thePlayer.rotationYaw,
                     thePlayer.rotationPitch);
                 if (thePlayer.isEntityAlive())
                 {
@@ -1530,7 +1530,7 @@ namespace betareborn
             thePlayer.worldObj = theWorld;
             if (thePlayer.isEntityAlive())
             {
-                thePlayer.setLocationAndAngles(var1, thePlayer.posY, var3, thePlayer.rotationYaw,
+                thePlayer.setPositionAndAnglesKeepPrevAngles(var1, thePlayer.posY, var3, thePlayer.rotationYaw,
                     thePlayer.rotationPitch);
                 theWorld.updateEntityWithOptionalForce(thePlayer, false);
                 (new Teleporter()).func_4107_a(theWorld, thePlayer);
@@ -1631,7 +1631,7 @@ namespace betareborn
                     thePlayer.preparePlayerToSpawn();
                     if (var1 != null)
                     {
-                        var1.entityJoinedWorld(thePlayer);
+                        var1.spawnEntity(thePlayer);
                     }
                 }
 
@@ -1833,7 +1833,7 @@ namespace betareborn
             if (var5)
             {
                 thePlayer.setPlayerSpawnCoordinate(var3);
-                thePlayer.setLocationAndAngles((double)((float)var4.x + 0.5F), (double)((float)var4.y + 0.1F),
+                thePlayer.setPositionAndAnglesKeepPrevAngles((double)((float)var4.x + 0.5F), (double)((float)var4.y + 0.1F),
                     (double)((float)var4.z + 0.5F), 0.0F, 0.0F);
             }
 

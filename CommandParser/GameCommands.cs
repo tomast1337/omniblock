@@ -30,7 +30,7 @@ public class GameCommands {
                 .ToList();
             fields.ForEach(x => {
                 var item = ((Item)x.GetValue(null));
-                var id = item.shiftedIndex;
+                var id = item.id;
                 allItems.TryAdd(x.Name.ToLower(), id);
                 items.TryAdd(id, item);
             });

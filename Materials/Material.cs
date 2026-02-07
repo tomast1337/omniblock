@@ -2,47 +2,47 @@ namespace betareborn.Materials
 {
     public class Material : java.lang.Object
     {
-        public static readonly Material air = new MaterialTransparent(MapColor.airColor);
-        public static readonly Material grassMaterial = new(MapColor.grassColor);
-        public static readonly Material ground = new(MapColor.dirtColor);
-        public static readonly Material wood = (new Material(MapColor.woodColor)).setBurning();
-        public static readonly Material rock = (new Material(MapColor.stoneColor)).setNoHarvest();
-        public static readonly Material iron = (new Material(MapColor.ironColor)).setNoHarvest();
-        public static readonly Material water = (new MaterialLiquid(MapColor.waterColor)).setNoPushMobility();
-        public static readonly Material lava = (new MaterialLiquid(MapColor.tntColor)).setNoPushMobility();
-        public static readonly Material leaves = (new Material(MapColor.foliageColor)).setBurning().setIsTranslucent().setNoPushMobility();
-        public static readonly Material plants = (new MaterialLogic(MapColor.foliageColor)).setNoPushMobility();
-        public static readonly Material sponge = new(MapColor.clothColor);
-        public static readonly Material cloth = (new Material(MapColor.clothColor)).setBurning();
-        public static readonly Material fire = (new MaterialTransparent(MapColor.airColor)).setNoPushMobility();
-        public static readonly Material sand = new(MapColor.sandColor);
-        public static readonly Material circuits = (new MaterialLogic(MapColor.airColor)).setNoPushMobility();
-        public static readonly Material glass = (new Material(MapColor.airColor)).setIsTranslucent();
-        public static readonly Material tnt = (new Material(MapColor.tntColor)).setBurning().setIsTranslucent();
-        public static readonly Material field_4262_q = (new Material(MapColor.foliageColor)).setNoPushMobility();
-        public static readonly Material ice = (new Material(MapColor.iceColor)).setIsTranslucent();
-        public static readonly Material snow = (new MaterialLogic(MapColor.snowColor)).setIsGroundCover().setIsTranslucent().setNoHarvest().setNoPushMobility();
-        public static readonly Material builtSnow = (new Material(MapColor.snowColor)).setNoHarvest();
-        public static readonly Material cactus = (new Material(MapColor.foliageColor)).setIsTranslucent().setNoPushMobility();
-        public static readonly Material clay = new(MapColor.clayColor);
-        public static readonly Material pumpkin = (new Material(MapColor.foliageColor)).setNoPushMobility();
-        public static readonly Material portal = (new MaterialPortal(MapColor.airColor)).setImmovableMobility();
-        public static readonly Material cakeMaterial = (new Material(MapColor.airColor)).setNoPushMobility();
-        public static readonly Material field_31068_A = (new Material(MapColor.clothColor)).setNoHarvest().setNoPushMobility();
-        public static readonly Material field_31067_B = (new Material(MapColor.stoneColor)).setImmovableMobility();
-        private bool canBurn;
-        private bool groundCover;
-        private bool isOpaque;
-        public readonly MapColor materialMapColor;
-        private bool canHarvest = true;
-        private int mobilityFlag;
+        public static readonly Material AIR = new MaterialTransparent(MapColor.airColor);
+        public static readonly Material SOLID_ORGANIC = new(MapColor.grassColor);
+        public static readonly Material SOIL = new(MapColor.dirtColor);
+        public static readonly Material WOOD = (new Material(MapColor.woodColor)).setBurning();
+        public static readonly Material STONE = (new Material(MapColor.stoneColor)).setRequiresTool();
+        public static readonly Material METAL = (new Material(MapColor.ironColor)).setRequiresTool();
+        public static readonly Material WATER = (new MaterialLiquid(MapColor.waterColor)).setDestroyPistonBehavior();
+        public static readonly Material LAVA = (new MaterialLiquid(MapColor.tntColor)).setDestroyPistonBehavior();
+        public static readonly Material LEAVES = (new Material(MapColor.foliageColor)).setBurning().setTransparent().setDestroyPistonBehavior();
+        public static readonly Material PLANT = (new MaterialLogic(MapColor.foliageColor)).setDestroyPistonBehavior();
+        public static readonly Material SPONGE = new(MapColor.clothColor);
+        public static readonly Material WOOL = (new Material(MapColor.clothColor)).setBurning();
+        public static readonly Material FIRE = (new MaterialTransparent(MapColor.airColor)).setDestroyPistonBehavior();
+        public static readonly Material SAND = new(MapColor.sandColor);
+        public static readonly Material PISTON_BREAKABLE = (new MaterialLogic(MapColor.airColor)).setDestroyPistonBehavior();
+        public static readonly Material GLASS = (new Material(MapColor.airColor)).setTransparent();
+        public static readonly Material TNT = (new Material(MapColor.tntColor)).setBurning().setTransparent();
+        public static readonly Material field_4262_q = (new Material(MapColor.foliageColor)).setDestroyPistonBehavior();
+        public static readonly Material ICE = (new Material(MapColor.iceColor)).setTransparent();
+        public static readonly Material SNOW_LAYER = (new MaterialLogic(MapColor.snowColor)).setReplaceable().setTransparent().setRequiresTool().setDestroyPistonBehavior();
+        public static readonly Material SNOW_BLOCK = (new Material(MapColor.snowColor)).setRequiresTool();
+        public static readonly Material CACTUS = (new Material(MapColor.foliageColor)).setTransparent().setDestroyPistonBehavior();
+        public static readonly Material CLAY = new(MapColor.clayColor);
+        public static readonly Material PUMPKIN = (new Material(MapColor.foliageColor)).setDestroyPistonBehavior();
+        public static readonly Material NETHER_PORTAL = (new MaterialPortal(MapColor.airColor)).setUnpushablePistonBehavior();
+        public static readonly Material CAKE = (new Material(MapColor.airColor)).setDestroyPistonBehavior();
+        public static readonly Material COBWEB = (new Material(MapColor.clothColor)).setRequiresTool().setDestroyPistonBehavior();
+        public static readonly Material PISTON = (new Material(MapColor.stoneColor)).setUnpushablePistonBehavior();
+        private bool burnable;
+        private bool replaceable;
+        private bool transparent;
+        public readonly MapColor mapColor;
+        private bool handHarvestable = true;
+        private int pistonBehavior;
 
-        public Material(MapColor var1)
+        public Material(MapColor mapColor)
         {
-            materialMapColor = var1;
+            this.mapColor = mapColor;
         }
 
-        public virtual bool getIsLiquid()
+        public virtual bool isFluid()
         {
             return false;
         }
@@ -52,74 +52,74 @@ namespace betareborn.Materials
             return true;
         }
 
-        public virtual bool getCanBlockGrass()
+        public virtual bool blocksVision()
         {
             return true;
         }
 
-        public virtual bool getIsSolid()
+        public virtual bool blocksMovement()
         {
             return true;
         }
 
-        private Material setIsTranslucent()
+        private Material setTransparent()
         {
-            isOpaque = true;
+            transparent = true;
             return this;
         }
 
-        private Material setNoHarvest()
+        private Material setRequiresTool()
         {
-            canHarvest = false;
+            handHarvestable = false;
             return this;
         }
 
         private Material setBurning()
         {
-            canBurn = true;
+            burnable = true;
             return this;
         }
 
-        public bool getBurning()
+        public bool isBurnable()
         {
-            return canBurn;
+            return burnable;
         }
 
-        public Material setIsGroundCover()
+        public Material setReplaceable()
         {
-            groundCover = true;
+            replaceable = true;
             return this;
         }
 
-        public bool getIsGroundCover()
+        public bool isReplaceable()
         {
-            return groundCover;
+            return replaceable;
         }
 
-        public bool getIsTranslucent()
+        public bool suffocates()
         {
-            return isOpaque ? false : getIsSolid();
+            return transparent ? false : blocksMovement();
         }
 
-        public bool getIsHarvestable()
+        public bool isHandHarvestable()
         {
-            return canHarvest;
+            return handHarvestable;
         }
 
-        public int getMaterialMobility()
+        public int getPistonBehavior()
         {
-            return mobilityFlag;
+            return pistonBehavior;
         }
 
-        protected Material setNoPushMobility()
+        protected Material setDestroyPistonBehavior()
         {
-            mobilityFlag = 1;
+            pistonBehavior = 1;
             return this;
         }
 
-        protected Material setImmovableMobility()
+        protected Material setUnpushablePistonBehavior()
         {
-            mobilityFlag = 2;
+            pistonBehavior = 2;
             return this;
         }
     }

@@ -140,7 +140,7 @@ namespace betareborn.Guis
                     }
                 }
 
-                if (mc.thePlayer.isInsideOfMaterial(Material.water))
+                if (mc.thePlayer.isInsideOfMaterial(Material.WATER))
                 {
                     var16 = (int)java.lang.Math.ceil((double)(mc.thePlayer.air - 2) * 10.0D / 300.0D);
                     var17 = (int)java.lang.Math.ceil((double)mc.thePlayer.air * 10.0D / 300.0D) - var16;

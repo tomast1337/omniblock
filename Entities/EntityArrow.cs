@@ -39,7 +39,7 @@ namespace betareborn.Entities
             owner = var2;
             doesArrowBelongToPlayer = var2 is EntityPlayer;
             setSize(0.5F, 0.5F);
-            setLocationAndAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
+            setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
             posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
             posY -= (double)0.1F;
             posZ -= (double)(MathHelper.sin(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
@@ -88,7 +88,7 @@ namespace betareborn.Entities
                 prevRotationPitch = rotationPitch = (float)(java.lang.Math.atan2(var3, (double)var7) * 180.0D / (double)((float)java.lang.Math.PI));
                 prevRotationPitch = rotationPitch;
                 prevRotationYaw = rotationYaw;
-                setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
+                setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, rotationYaw, rotationPitch);
                 ticksInGround = 0;
             }
 

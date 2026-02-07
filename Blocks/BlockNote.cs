@@ -7,7 +7,7 @@ namespace betareborn.Blocks
 {
     public class BlockNote : BlockContainer
     {
-        public BlockNote(int var1) : base(var1, 74, Material.wood)
+        public BlockNote(int var1) : base(var1, 74, Material.WOOD)
         {
         }
 
@@ -22,14 +22,14 @@ namespace betareborn.Blocks
             {
                 bool var6 = var1.isBlockGettingPowered(var2, var3, var4);
                 TileEntityNote var7 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
-                if (var7.previousRedstoneState != var6)
+                if (var7.powered != var6)
                 {
                     if (var6)
                     {
-                        var7.triggerNote(var1, var2, var3, var4);
+                        var7.playNote(var1, var2, var3, var4);
                     }
 
-                    var7.previousRedstoneState = var6;
+                    var7.powered = var6;
                 }
             }
 
@@ -44,8 +44,8 @@ namespace betareborn.Blocks
             else
             {
                 TileEntityNote var6 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
-                var6.changePitch();
-                var6.triggerNote(var1, var2, var3, var4);
+                var6.cycleNote();
+                var6.playNote(var1, var2, var3, var4);
                 return true;
             }
         }
@@ -55,7 +55,7 @@ namespace betareborn.Blocks
             if (!var1.multiplayerWorld)
             {
                 TileEntityNote var6 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
-                var6.triggerNote(var1, var2, var3, var4);
+                var6.playNote(var1, var2, var3, var4);
             }
         }
 

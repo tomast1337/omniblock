@@ -16,7 +16,7 @@ namespace betareborn.Worlds
 
         public override bool generate(World var1, java.util.Random var2, int var3, int var4, int var5)
         {
-            if (var1.getBlockMaterial(var3, var4, var5) != Material.water)
+            if (var1.getMaterial(var3, var4, var5) != Material.WATER)
             {
                 return false;
             }

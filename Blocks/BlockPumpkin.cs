@@ -9,7 +9,7 @@ namespace betareborn.Blocks
 
         private bool blockType;
 
-        public BlockPumpkin(int var1, int var2, bool var3) : base(var1, Material.pumpkin)
+        public BlockPumpkin(int var1, int var2, bool var3) : base(var1, Material.PUMPKIN)
         {
             blockIndexInTexture = var2;
             setTickOnLoad(true);
@@ -51,7 +51,7 @@ namespace betareborn.Blocks
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3, var4);
-            return (var5 == 0 || Block.blocksList[var5].blockMaterial.getIsGroundCover()) && var1.isBlockNormalCube(var2, var3 - 1, var4);
+            return (var5 == 0 || Block.blocksList[var5].blockMaterial.isReplaceable()) && var1.isBlockNormalCube(var2, var3 - 1, var4);
         }
 
         public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)

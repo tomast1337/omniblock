@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockCake : Block
     {
 
-        public BlockCake(int var1, int var2) : base(var1, var2, Material.cakeMaterial)
+        public BlockCake(int var1, int var2) : base(var1, var2, Material.CAKE)
         {
             setTickOnLoad(true);
         }
@@ -113,7 +113,7 @@ namespace betareborn.Blocks
 
         public override bool canBlockStay(World var1, int var2, int var3, int var4)
         {
-            return var1.getBlockMaterial(var2, var3 - 1, var4).isSolid();
+            return var1.getMaterial(var2, var3 - 1, var4).isSolid();
         }
 
         public override int quantityDropped(java.util.Random var1)

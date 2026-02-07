@@ -8,38 +8,38 @@ namespace betareborn.TileEntities
 {
     public class TileEntityFurnace : TileEntity, IInventory
     {
-        private ItemStack[] furnaceItemStacks = new ItemStack[3];
-        public int furnaceBurnTime = 0;
-        public int currentItemBurnTime = 0;
-        public int furnaceCookTime = 0;
+        private ItemStack[] inventory = new ItemStack[3];
+        public int burnTime = 0;
+        public int fuelTime = 0;
+        public int cookTime = 0;
 
         public int size()
         {
-            return furnaceItemStacks.Length;
+            return inventory.Length;
         }
 
-        public ItemStack getStack(int var1)
+        public ItemStack getStack(int slot)
         {
-            return furnaceItemStacks[var1];
+            return inventory[slot];
         }
 
-        public ItemStack removeStack(int var1, int var2)
+        public ItemStack removeStack(int slot, int stack)
         {
-            if (furnaceItemStacks[var1] != null)
+            if (inventory[slot] != null)
             {
                 ItemStack var3;
-                if (furnaceItemStacks[var1].stackSize <= var2)
+                if (inventory[slot].count <= stack)
                 {
-                    var3 = furnaceItemStacks[var1];
-                    furnaceItemStacks[var1] = null;
+                    var3 = inventory[slot];
+                    inventory[slot] = null;
                     return var3;
                 }
                 else
                 {
-                    var3 = furnaceItemStacks[var1].splitStack(var2);
-                    if (furnaceItemStacks[var1].stackSize == 0)
+                    var3 = inventory[slot].splitStack(stack);
+                    if (inventory[slot].count == 0)
                     {
-                        furnaceItemStacks[var1] = null;
+                        inventory[slot] = null;
                     }
 
                     return var3;
@@ -51,12 +51,12 @@ namespace betareborn.TileEntities
             }
         }
 
-        public void setStack(int var1, ItemStack var2)
+        public void setStack(int slot, ItemStack stack)
         {
-            furnaceItemStacks[var1] = var2;
-            if (var2 != null && var2.stackSize > getMaxCountPerStack())
+            inventory[slot] = stack;
+            if (stack != null && stack.count > getMaxCountPerStack())
             {
-                var2.stackSize = getMaxCountPerStack();
+                stack.count = getMaxCountPerStack();
             }
 
         }
@@ -66,46 +66,46 @@ namespace betareborn.TileEntities
             return "Furnace";
         }
 
-        public override void readNbt(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            base.readNbt(var1);
-            NBTTagList var2 = var1.getTagList("Items");
-            furnaceItemStacks = new ItemStack[size()];
+            base.readNbt(nbt);
+            NBTTagList var2 = nbt.getTagList("Items");
+            inventory = new ItemStack[size()];
 
             for (int var3 = 0; var3 < var2.tagCount(); ++var3)
             {
                 NBTTagCompound var4 = (NBTTagCompound)var2.tagAt(var3);
                 sbyte var5 = var4.getByte("Slot");
-                if (var5 >= 0 && var5 < furnaceItemStacks.Length)
+                if (var5 >= 0 && var5 < inventory.Length)
                 {
-                    furnaceItemStacks[var5] = new ItemStack(var4);
+                    inventory[var5] = new ItemStack(var4);
                 }
             }
 
-            furnaceBurnTime = var1.getShort("BurnTime");
-            furnaceCookTime = var1.getShort("CookTime");
-            currentItemBurnTime = getItemBurnTime(furnaceItemStacks[1]);
+            burnTime = nbt.getShort("BurnTime");
+            cookTime = nbt.getShort("CookTime");
+            fuelTime = getFuelTime(inventory[1]);
         }
 
-        public override void writeNbt(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeNbt(var1);
-            var1.setShort("BurnTime", (short)furnaceBurnTime);
-            var1.setShort("CookTime", (short)furnaceCookTime);
+            base.writeNbt(nbt);
+            nbt.setShort("BurnTime", (short)burnTime);
+            nbt.setShort("CookTime", (short)cookTime);
             NBTTagList var2 = new NBTTagList();
 
-            for (int var3 = 0; var3 < furnaceItemStacks.Length; ++var3)
+            for (int var3 = 0; var3 < inventory.Length; ++var3)
             {
-                if (furnaceItemStacks[var3] != null)
+                if (inventory[var3] != null)
                 {
                     NBTTagCompound var4 = new NBTTagCompound();
                     var4.setByte("Slot", (sbyte)var3);
-                    furnaceItemStacks[var3].writeToNBT(var4);
+                    inventory[var3].writeToNBT(var4);
                     var2.setTag(var4);
                 }
             }
 
-            var1.setTag("Items", var2);
+            nbt.setTag("Items", var2);
         }
 
         public int getMaxCountPerStack()
@@ -113,73 +113,73 @@ namespace betareborn.TileEntities
             return 64;
         }
 
-        public int getCookProgressScaled(int var1)
+        public int getCookTimeDelta(int multiplier)
         {
-            return furnaceCookTime * var1 / 200;
+            return cookTime * multiplier / 200;
         }
 
-        public int getBurnTimeRemainingScaled(int var1)
+        public int getFuelTimeDelta(int multiplier)
         {
-            if (currentItemBurnTime == 0)
+            if (fuelTime == 0)
             {
-                currentItemBurnTime = 200;
+                fuelTime = 200;
             }
 
-            return furnaceBurnTime * var1 / currentItemBurnTime;
+            return burnTime * multiplier / fuelTime;
         }
 
         public bool isBurning()
         {
-            return furnaceBurnTime > 0;
+            return burnTime > 0;
         }
 
         public override void tick()
         {
-            bool var1 = furnaceBurnTime > 0;
+            bool var1 = burnTime > 0;
             bool var2 = false;
-            if (furnaceBurnTime > 0)
+            if (burnTime > 0)
             {
-                --furnaceBurnTime;
+                --burnTime;
             }
 
             if (!world.multiplayerWorld)
             {
-                if (furnaceBurnTime == 0 && canSmelt())
+                if (burnTime == 0 && canAcceptRecipeOutput())
                 {
-                    currentItemBurnTime = furnaceBurnTime = getItemBurnTime(furnaceItemStacks[1]);
-                    if (furnaceBurnTime > 0)
+                    fuelTime = burnTime = getFuelTime(inventory[1]);
+                    if (burnTime > 0)
                     {
                         var2 = true;
-                        if (furnaceItemStacks[1] != null)
+                        if (inventory[1] != null)
                         {
-                            --furnaceItemStacks[1].stackSize;
-                            if (furnaceItemStacks[1].stackSize == 0)
+                            --inventory[1].count;
+                            if (inventory[1].count == 0)
                             {
-                                furnaceItemStacks[1] = null;
+                                inventory[1] = null;
                             }
                         }
                     }
                 }
 
-                if (isBurning() && canSmelt())
+                if (isBurning() && canAcceptRecipeOutput())
                 {
-                    ++furnaceCookTime;
-                    if (furnaceCookTime == 200)
+                    ++cookTime;
+                    if (cookTime == 200)
                     {
-                        furnaceCookTime = 0;
-                        smeltItem();
+                        cookTime = 0;
+                        craftRecipe();
                         var2 = true;
                     }
                 }
                 else
                 {
-                    furnaceCookTime = 0;
+                    cookTime = 0;
                 }
 
-                if (var1 != furnaceBurnTime > 0)
+                if (var1 != burnTime > 0)
                 {
                     var2 = true;
-                    BlockFurnace.updateFurnaceBlockState(furnaceBurnTime > 0, world, x, y, z);
+                    BlockFurnace.updateFurnaceBlockState(burnTime > 0, world, x, y, z);
                 }
             }
 
@@ -190,58 +190,58 @@ namespace betareborn.TileEntities
 
         }
 
-        private bool canSmelt()
+        private bool canAcceptRecipeOutput()
         {
-            if (furnaceItemStacks[0] == null)
+            if (inventory[0] == null)
             {
                 return false;
             }
             else
             {
-                ItemStack var1 = FurnaceRecipes.smelting().getSmeltingResult(furnaceItemStacks[0].getItem().shiftedIndex);
-                return var1 == null ? false : (furnaceItemStacks[2] == null ? true : (!furnaceItemStacks[2].isItemEqual(var1) ? false : (furnaceItemStacks[2].stackSize < getMaxCountPerStack() && furnaceItemStacks[2].stackSize < furnaceItemStacks[2].getMaxStackSize() ? true : furnaceItemStacks[2].stackSize < var1.getMaxStackSize())));
+                ItemStack var1 = SmeltingRecipeManager.getInstance().craft(inventory[0].getItem().id);
+                return var1 == null ? false : (inventory[2] == null ? true : (!inventory[2].isItemEqual(var1) ? false : (inventory[2].count < getMaxCountPerStack() && inventory[2].count < inventory[2].getMaxCount() ? true : inventory[2].count < var1.getMaxCount())));
             }
         }
 
-        public void smeltItem()
+        public void craftRecipe()
         {
-            if (canSmelt())
+            if (canAcceptRecipeOutput())
             {
-                ItemStack var1 = FurnaceRecipes.smelting().getSmeltingResult(furnaceItemStacks[0].getItem().shiftedIndex);
-                if (furnaceItemStacks[2] == null)
+                ItemStack var1 = SmeltingRecipeManager.getInstance().craft(inventory[0].getItem().id);
+                if (inventory[2] == null)
                 {
-                    furnaceItemStacks[2] = var1.copy();
+                    inventory[2] = var1.copy();
                 }
-                else if (furnaceItemStacks[2].itemID == var1.itemID)
+                else if (inventory[2].itemID == var1.itemID)
                 {
-                    ++furnaceItemStacks[2].stackSize;
+                    ++inventory[2].count;
                 }
 
-                --furnaceItemStacks[0].stackSize;
-                if (furnaceItemStacks[0].stackSize <= 0)
+                --inventory[0].count;
+                if (inventory[0].count <= 0)
                 {
-                    furnaceItemStacks[0] = null;
+                    inventory[0] = null;
                 }
 
             }
         }
 
-        private int getItemBurnTime(ItemStack var1)
+        private int getFuelTime(ItemStack itemStack)
         {
-            if (var1 == null)
+            if (itemStack == null)
             {
                 return 0;
             }
             else
             {
-                int var2 = var1.getItem().shiftedIndex;
-                return var2 < 256 && Block.blocksList[var2].blockMaterial == Material.wood ? 300 : (var2 == Item.stick.shiftedIndex ? 100 : (var2 == Item.coal.shiftedIndex ? 1600 : (var2 == Item.bucketLava.shiftedIndex ? 20000 : (var2 == Block.sapling.blockID ? 100 : 0))));
+                int var2 = itemStack.getItem().id;
+                return var2 < 256 && Block.blocksList[var2].blockMaterial == Material.WOOD ? 300 : (var2 == Item.stick.id ? 100 : (var2 == Item.coal.id ? 1600 : (var2 == Item.bucketLava.id ? 20000 : (var2 == Block.sapling.blockID ? 100 : 0))));
             }
         }
 
-        public bool canPlayerUse(EntityPlayer var1)
+        public bool canPlayerUse(EntityPlayer player)
         {
-            return world.getBlockTileEntity(x, y, z) != this ? false : var1.getDistanceSq((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
+            return world.getBlockTileEntity(x, y, z) != this ? false : player.getSquaredDistance((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
         }
     }
 

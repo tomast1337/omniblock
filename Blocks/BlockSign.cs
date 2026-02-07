@@ -12,7 +12,7 @@ namespace betareborn.Blocks
         private Class signEntityClass;
         private bool isFreestanding;
 
-        public BlockSign(int var1, Class var2, bool var3) : base(var1, Material.wood)
+        public BlockSign(int var1, Class var2, bool var3) : base(var1, Material.WOOD)
         {
             isFreestanding = var3;
             blockIndexInTexture = 4;
@@ -96,7 +96,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.sign.shiftedIndex;
+            return Item.sign.id;
         }
 
         public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
@@ -104,7 +104,7 @@ namespace betareborn.Blocks
             bool var6 = false;
             if (isFreestanding)
             {
-                if (!var1.getBlockMaterial(var2, var3 - 1, var4).isSolid())
+                if (!var1.getMaterial(var2, var3 - 1, var4).isSolid())
                 {
                     var6 = true;
                 }
@@ -113,22 +113,22 @@ namespace betareborn.Blocks
             {
                 int var7 = var1.getBlockMetadata(var2, var3, var4);
                 var6 = true;
-                if (var7 == 2 && var1.getBlockMaterial(var2, var3, var4 + 1).isSolid())
+                if (var7 == 2 && var1.getMaterial(var2, var3, var4 + 1).isSolid())
                 {
                     var6 = false;
                 }
 
-                if (var7 == 3 && var1.getBlockMaterial(var2, var3, var4 - 1).isSolid())
+                if (var7 == 3 && var1.getMaterial(var2, var3, var4 - 1).isSolid())
                 {
                     var6 = false;
                 }
 
-                if (var7 == 4 && var1.getBlockMaterial(var2 + 1, var3, var4).isSolid())
+                if (var7 == 4 && var1.getMaterial(var2 + 1, var3, var4).isSolid())
                 {
                     var6 = false;
                 }
 
-                if (var7 == 5 && var1.getBlockMaterial(var2 - 1, var3, var4).isSolid())
+                if (var7 == 5 && var1.getMaterial(var2 - 1, var3, var4).isSolid())
                 {
                     var6 = false;
                 }

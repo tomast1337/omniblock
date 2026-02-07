@@ -5,7 +5,7 @@ namespace betareborn.Blocks
 {
     public class BlockSponge : Block
     {
-        public BlockSponge(int var1) : base(var1, Material.sponge)
+        public BlockSponge(int var1) : base(var1, Material.SPONGE)
         {
             blockIndexInTexture = 48;
         }
@@ -20,7 +20,7 @@ namespace betareborn.Blocks
                 {
                     for (int var8 = var4 - var5; var8 <= var4 + var5; ++var8)
                     {
-                        if (var1.getBlockMaterial(var6, var7, var8) == Material.water)
+                        if (var1.getMaterial(var6, var7, var8) == Material.WATER)
                         {
                         }
                     }

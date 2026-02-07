@@ -92,7 +92,7 @@ namespace betareborn
 
         public ItemStack getCraftingResult(InventoryCrafting var1)
         {
-            return new ItemStack(recipeOutput.itemID, recipeOutput.stackSize, recipeOutput.getItemDamage());
+            return new ItemStack(recipeOutput.itemID, recipeOutput.count, recipeOutput.getItemDamage());
         }
 
         public int getRecipeSize()

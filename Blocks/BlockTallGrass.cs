@@ -38,7 +38,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return var2.nextInt(8) == 0 ? Item.seeds.shiftedIndex : -1;
+            return var2.nextInt(8) == 0 ? Item.seeds.id : -1;
         }
     }
 

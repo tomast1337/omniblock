@@ -26,7 +26,7 @@ namespace betareborn.Packets
         {
             this.entityId = var1.entityId;
             this.itemID = var1.item.itemID;
-            this.count = var1.item.stackSize;
+            this.count = var1.item.count;
             this.itemDamage = var1.item.getItemDamage();
             this.xPosition = MathHelper.floor_double(var1.posX * 32.0D);
             this.yPosition = MathHelper.floor_double(var1.posY * 32.0D);

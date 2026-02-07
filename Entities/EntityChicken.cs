@@ -55,7 +55,7 @@ namespace betareborn.Entities
             if (!worldObj.multiplayerWorld && --timeUntilNextEgg <= 0)
             {
                 worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
-                dropItem(Item.egg.shiftedIndex, 1);
+                dropItem(Item.egg.id, 1);
                 timeUntilNextEgg = rand.nextInt(6000) + 6000;
             }
 
@@ -92,7 +92,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.feather.shiftedIndex;
+            return Item.feather.id;
         }
     }
 

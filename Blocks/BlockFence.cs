@@ -6,13 +6,13 @@ namespace betareborn.Blocks
     public class BlockFence : Block
     {
 
-        public BlockFence(int var1, int var2) : base(var1, var2, Material.wood)
+        public BlockFence(int var1, int var2) : base(var1, var2, Material.WOOD)
         {
         }
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
-            return var1.getBlockId(var2, var3 - 1, var4) == blockID ? true : (!var1.getBlockMaterial(var2, var3 - 1, var4).isSolid() ? false : base.canPlaceBlockAt(var1, var2, var3, var4));
+            return var1.getBlockId(var2, var3 - 1, var4) == blockID ? true : (!var1.getMaterial(var2, var3 - 1, var4).isSolid() ? false : base.canPlaceBlockAt(var1, var2, var3, var4));
         }
 
         public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)

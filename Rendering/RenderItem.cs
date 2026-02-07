@@ -26,17 +26,17 @@ namespace betareborn.Rendering
             float var11 = MathHelper.sin(((float)var1.age + var9) / 10.0F + var1.field_804_d) * 0.1F + 0.1F;
             float var12 = (((float)var1.age + var9) / 20.0F + var1.field_804_d) * (180.0F / (float)java.lang.Math.PI);
             byte var13 = 1;
-            if (var1.item.stackSize > 1)
+            if (var1.item.count > 1)
             {
                 var13 = 2;
             }
 
-            if (var1.item.stackSize > 5)
+            if (var1.item.count > 5)
             {
                 var13 = 3;
             }
 
-            if (var1.item.stackSize > 20)
+            if (var1.item.count > 20)
             {
                 var13 = 4;
             }
@@ -204,9 +204,9 @@ namespace betareborn.Rendering
         {
             if (var3 != null)
             {
-                if (var3.stackSize > 1)
+                if (var3.count > 1)
                 {
-                    String var6 = "" + var3.stackSize;
+                    String var6 = "" + var3.count;
                     GLManager.GL.Disable(GLEnum.Lighting);
                     GLManager.GL.Disable(GLEnum.DepthTest);
                     var1.drawStringWithShadow(var6, var4 + 19 - 2 - var1.getStringWidth(var6), var5 + 6 + 3, 16777215);

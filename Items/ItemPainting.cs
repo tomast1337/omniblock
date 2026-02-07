@@ -44,10 +44,10 @@ namespace betareborn.Items
                 {
                     if (!var3.multiplayerWorld)
                     {
-                        var3.entityJoinedWorld(var9);
+                        var3.spawnEntity(var9);
                     }
 
-                    --var1.stackSize;
+                    --var1.count;
                 }
 
                 return true;

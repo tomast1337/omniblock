@@ -4,7 +4,7 @@ namespace betareborn.Blocks
 {
     public class BlockCloth : Block
     {
-        public BlockCloth() : base(35, 64, Material.cloth)
+        public BlockCloth() : base(35, 64, Material.WOOL)
         {
         }
 

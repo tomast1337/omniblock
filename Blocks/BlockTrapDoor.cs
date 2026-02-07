@@ -10,7 +10,7 @@ namespace betareborn.Blocks
         public BlockTrapDoor(int var1, Material var2) : base(var1, var2)
         {
             blockIndexInTexture = 84;
-            if (var2 == Material.iron)
+            if (var2 == Material.METAL)
             {
                 ++blockIndexInTexture;
             }
@@ -94,7 +94,7 @@ namespace betareborn.Blocks
 
         public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (blockMaterial == Material.iron)
+            if (blockMaterial == Material.METAL)
             {
                 return true;
             }

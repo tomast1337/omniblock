@@ -85,13 +85,13 @@ namespace betareborn.Items
         public static Item painting = (new ItemPainting(65)).setIconCoord(10, 1).setItemName("painting");
         public static Item appleGold = (new ItemFood(66, 42, false)).setIconCoord(11, 0).setItemName("appleGold");
         public static Item sign = (new ItemSign(67)).setIconCoord(10, 2).setItemName("sign");
-        public static Item doorWood = (new ItemDoor(68, Material.wood)).setIconCoord(11, 2).setItemName("doorWood");
+        public static Item doorWood = (new ItemDoor(68, Material.WOOD)).setIconCoord(11, 2).setItemName("doorWood");
         public static Item bucketEmpty = (new ItemBucket(69, 0)).setIconCoord(10, 4).setItemName("bucket");
         public static Item bucketWater = (new ItemBucket(70, Block.waterMoving.blockID)).setIconCoord(11, 4).setItemName("bucketWater").setContainerItem(bucketEmpty);
         public static Item bucketLava = (new ItemBucket(71, Block.lavaMoving.blockID)).setIconCoord(12, 4).setItemName("bucketLava").setContainerItem(bucketEmpty);
         public static Item minecartEmpty = (new ItemMinecart(72, 0)).setIconCoord(7, 8).setItemName("minecart");
         public static Item saddle = (new ItemSaddle(73)).setIconCoord(8, 6).setItemName("saddle");
-        public static Item doorSteel = (new ItemDoor(74, Material.iron)).setIconCoord(12, 2).setItemName("doorIron");
+        public static Item doorSteel = (new ItemDoor(74, Material.METAL)).setIconCoord(12, 2).setItemName("doorIron");
         public static Item redstone = (new ItemRedstone(75)).setIconCoord(8, 3).setItemName("redstone");
         public static Item snowball = (new ItemSnowball(76)).setIconCoord(14, 0).setItemName("snowball");
         public static Item boat = (new ItemBoat(77)).setIconCoord(8, 8).setItemName("boat");
@@ -123,7 +123,7 @@ namespace betareborn.Items
         public static ItemShears shears = (ItemShears)(new ItemShears(103)).setIconCoord(13, 5).setItemName("shears");
         public static Item record13 = (new ItemRecord(2000, "13")).setIconCoord(0, 15).setItemName("record");
         public static Item recordCat = (new ItemRecord(2001, "cat")).setIconCoord(1, 15).setItemName("record");
-        public readonly int shiftedIndex;
+        public readonly int id;
         public int maxStackSize = 64;
         private int maxDamage = 0;
         protected int iconIndex;
@@ -134,7 +134,7 @@ namespace betareborn.Items
 
         protected Item(int var1)
         {
-            shiftedIndex = 256 + var1;
+            id = 256 + var1;
             if (itemsList[256 + var1] != null)
             {
                 java.lang.System.@out.println("CONFLICT @ " + var1);

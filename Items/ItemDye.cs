@@ -35,8 +35,8 @@ namespace betareborn.Items
                 {
                     if (!var3.multiplayerWorld)
                     {
-                        ((BlockSapling)Block.sapling).growTree(var3, var4, var5, var6, var3.rand);
-                        --var1.stackSize;
+                        ((BlockSapling)Block.sapling).growTree(var3, var4, var5, var6, var3.random);
+                        --var1.count;
                     }
                     return true;
                 }
@@ -45,7 +45,7 @@ namespace betareborn.Items
                     if (!var3.multiplayerWorld)
                     {
                         ((BlockCrops)Block.crops).fertilize(var3, var4, var5, var6);
-                        --var1.stackSize;
+                        --var1.count;
                     }
                     return true;
                 }
@@ -53,7 +53,7 @@ namespace betareborn.Items
                 {
                     if (!var3.multiplayerWorld)
                     {
-                        --var1.stackSize;
+                        --var1.count;
 
                         for (int var9 = 0; var9 < 128; ++var9)
                         {
@@ -105,7 +105,7 @@ namespace betareborn.Items
                 if (!var3.getSheared() && var3.getFleeceColor() != var4)
                 {
                     var3.setFleeceColor(var4);
-                    --var1.stackSize;
+                    --var1.count;
                 }
             }
 

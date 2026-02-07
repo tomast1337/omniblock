@@ -46,13 +46,13 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.leather.shiftedIndex;
+            return Item.leather.id;
         }
 
         public override bool interact(EntityPlayer var1)
         {
             ItemStack var2 = var1.inventory.getCurrentItem();
-            if (var2 != null && var2.itemID == Item.bucketEmpty.shiftedIndex)
+            if (var2 != null && var2.itemID == Item.bucketEmpty.id)
             {
                 var1.inventory.setStack(var1.inventory.currentItem, new ItemStack(Item.bucketMilk));
                 return true;

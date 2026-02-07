@@ -12,12 +12,12 @@ namespace betareborn.Materials
             return false;
         }
 
-        public override bool getCanBlockGrass()
+        public override bool blocksVision()
         {
             return false;
         }
 
-        public override bool getIsSolid()
+        public override bool blocksMovement()
         {
             return false;
         }

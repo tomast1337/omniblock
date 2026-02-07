@@ -70,7 +70,7 @@ namespace betareborn.Containers
                         if (var2 == 1)
                         {
                             var4.dropPlayerItem(var6.getItemStack().splitStack(1));
-                            if (var6.getItemStack().stackSize == 0)
+                            if (var6.getItemStack().count == 0)
                             {
                                 var6.setItemStack((ItemStack)null);
                             }
@@ -85,12 +85,12 @@ namespace betareborn.Containers
                         ItemStack var7 = getStackInSlot(var1);
                         if (var7 != null)
                         {
-                            int var8 = var7.stackSize;
+                            int var8 = var7.count;
                             var5 = var7.copy();
                             Slot var9 = (Slot)slots.get(var1);
                             if (var9 != null && var9.getStack() != null)
                             {
-                                var10 = var9.getStack().stackSize;
+                                var10 = var9.getStack().count;
                                 if (var10 < var8)
                                 {
                                     func_27280_a(var1, var2, var3, var4);
@@ -115,14 +115,14 @@ namespace betareborn.Containers
                             {
                                 if (var14 != null && var12.isItemValid(var14))
                                 {
-                                    var10 = var2 == 0 ? var14.stackSize : 1;
+                                    var10 = var2 == 0 ? var14.count : 1;
                                     if (var10 > var12.getSlotStackLimit())
                                     {
                                         var10 = var12.getSlotStackLimit();
                                     }
 
                                     var12.putStack(var14.splitStack(var10));
-                                    if (var14.stackSize == 0)
+                                    if (var14.count == 0)
                                     {
                                         var6.setItemStack((ItemStack)null);
                                     }
@@ -130,10 +130,10 @@ namespace betareborn.Containers
                             }
                             else if (var14 == null)
                             {
-                                var10 = var2 == 0 ? var13.stackSize : (var13.stackSize + 1) / 2;
+                                var10 = var2 == 0 ? var13.count : (var13.count + 1) / 2;
                                 ItemStack var11 = var12.decrStackSize(var10);
                                 var6.setItemStack(var11);
-                                if (var13.stackSize == 0)
+                                if (var13.count == 0)
                                 {
                                     var12.putStack((ItemStack)null);
                                 }
@@ -144,7 +144,7 @@ namespace betareborn.Containers
                             {
                                 if (var13.itemID != var14.itemID || var13.getHasSubtypes() && var13.getItemDamage() != var14.getItemDamage())
                                 {
-                                    if (var14.stackSize <= var12.getSlotStackLimit())
+                                    if (var14.count <= var12.getSlotStackLimit())
                                     {
                                         var12.putStack(var14);
                                         var6.setItemStack(var13);
@@ -152,34 +152,34 @@ namespace betareborn.Containers
                                 }
                                 else
                                 {
-                                    var10 = var2 == 0 ? var14.stackSize : 1;
-                                    if (var10 > var12.getSlotStackLimit() - var13.stackSize)
+                                    var10 = var2 == 0 ? var14.count : 1;
+                                    if (var10 > var12.getSlotStackLimit() - var13.count)
                                     {
-                                        var10 = var12.getSlotStackLimit() - var13.stackSize;
+                                        var10 = var12.getSlotStackLimit() - var13.count;
                                     }
 
-                                    if (var10 > var14.getMaxStackSize() - var13.stackSize)
+                                    if (var10 > var14.getMaxCount() - var13.count)
                                     {
-                                        var10 = var14.getMaxStackSize() - var13.stackSize;
+                                        var10 = var14.getMaxCount() - var13.count;
                                     }
 
                                     var14.splitStack(var10);
-                                    if (var14.stackSize == 0)
+                                    if (var14.count == 0)
                                     {
                                         var6.setItemStack((ItemStack)null);
                                     }
 
-                                    var13.stackSize += var10;
+                                    var13.count += var10;
                                 }
                             }
-                            else if (var13.itemID == var14.itemID && var14.getMaxStackSize() > 1 && (!var13.getHasSubtypes() || var13.getItemDamage() == var14.getItemDamage()))
+                            else if (var13.itemID == var14.itemID && var14.getMaxCount() > 1 && (!var13.getHasSubtypes() || var13.getItemDamage() == var14.getItemDamage()))
                             {
-                                var10 = var13.stackSize;
-                                if (var10 > 0 && var10 + var14.stackSize <= var14.getMaxStackSize())
+                                var10 = var13.count;
+                                if (var10 > 0 && var10 + var14.count <= var14.getMaxCount())
                                 {
-                                    var14.stackSize += var10;
+                                    var14.count += var10;
                                     var13.splitStack(var10);
-                                    if (var13.stackSize == 0)
+                                    if (var13.count == 0)
                                     {
                                         var12.putStack((ItemStack)null);
                                     }
@@ -257,23 +257,23 @@ namespace betareborn.Containers
             ItemStack var7;
             if (var1.isStackable())
             {
-                while (var1.stackSize > 0 && (!var4 && var5 < var3 || var4 && var5 >= var2))
+                while (var1.count > 0 && (!var4 && var5 < var3 || var4 && var5 >= var2))
                 {
                     var6 = (Slot)slots.get(var5);
                     var7 = var6.getStack();
                     if (var7 != null && var7.itemID == var1.itemID && (!var1.getHasSubtypes() || var1.getItemDamage() == var7.getItemDamage()))
                     {
-                        int var8 = var7.stackSize + var1.stackSize;
-                        if (var8 <= var1.getMaxStackSize())
+                        int var8 = var7.count + var1.count;
+                        if (var8 <= var1.getMaxCount())
                         {
-                            var1.stackSize = 0;
-                            var7.stackSize = var8;
+                            var1.count = 0;
+                            var7.count = var8;
                             var6.onSlotChanged();
                         }
-                        else if (var7.stackSize < var1.getMaxStackSize())
+                        else if (var7.count < var1.getMaxCount())
                         {
-                            var1.stackSize -= var1.getMaxStackSize() - var7.stackSize;
-                            var7.stackSize = var1.getMaxStackSize();
+                            var1.count -= var1.getMaxCount() - var7.count;
+                            var7.count = var1.getMaxCount();
                             var6.onSlotChanged();
                         }
                     }
@@ -289,7 +289,7 @@ namespace betareborn.Containers
                 }
             }
 
-            if (var1.stackSize > 0)
+            if (var1.count > 0)
             {
                 if (var4)
                 {
@@ -308,7 +308,7 @@ namespace betareborn.Containers
                     {
                         var6.putStack(var1.copy());
                         var6.onSlotChanged();
-                        var1.stackSize = 0;
+                        var1.count = 0;
                         break;
                     }
 

@@ -11,7 +11,7 @@ namespace betareborn.Blocks
         private bool isSticky;
         private bool field_31048_b;
 
-        public BlockPistonBase(int var1, int var2, bool var3) : base(var1, var2, Material.field_31067_B)
+        public BlockPistonBase(int var1, int var2, bool var3) : base(var1, var2, Material.PISTON)
         {
             isSticky = var3;
             setStepSound(soundStoneFootstep);
@@ -85,13 +85,13 @@ namespace betareborn.Blocks
                     if (func_31045_h(var1, var2, var3, var4, var6))
                     {
                         var1.setBlockMetadata(var2, var3, var4, var6 | 8);
-                        var1.playNoteAt(var2, var3, var4, 0, var6);
+                        var1.playNoteBlockActionAt(var2, var3, var4, 0, var6);
                     }
                 }
                 else if (!var7 && isPowered(var5))
                 {
                     var1.setBlockMetadata(var2, var3, var4, var6);
-                    var1.playNoteAt(var2, var3, var4, 1, var6);
+                    var1.playNoteBlockActionAt(var2, var3, var4, 1, var6);
                 }
 
             }
@@ -110,7 +110,7 @@ namespace betareborn.Blocks
                 if (func_31047_i(var1, var2, var3, var4, var6))
                 {
                     var1.setBlockMetadataWithNotify(var2, var3, var4, var6 | 8);
-                    var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "tile.piston.out", 0.5F, var1.rand.nextFloat() * 0.25F + 0.6F);
+                    var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "tile.piston.out", 0.5F, var1.random.nextFloat() * 0.25F + 0.6F);
                 }
             }
             else if (var5 == 1)
@@ -175,7 +175,7 @@ namespace betareborn.Blocks
                     field_31048_b = true;
                 }
 
-                var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "tile.piston.in", 0.5F, var1.rand.nextFloat() * 0.15F + 0.6F);
+                var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "tile.piston.in", 0.5F, var1.random.nextFloat() * 0.15F + 0.6F);
             }
 
             field_31048_b = false;

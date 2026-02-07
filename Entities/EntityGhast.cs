@@ -111,7 +111,7 @@ namespace betareborn.Entities
                         var17.posX = posX + var20.xCoord * var18;
                         var17.posY = posY + (double)(height / 2.0F) + 0.5D;
                         var17.posZ = posZ + var20.zCoord * var18;
-                        worldObj.entityJoinedWorld(var17);
+                        worldObj.spawnEntity(var17);
                         attackCounter = -40;
                     }
                 }
@@ -177,7 +177,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.gunpowder.shiftedIndex;
+            return Item.gunpowder.id;
         }
 
         protected override float getSoundVolume()
@@ -185,9 +185,9 @@ namespace betareborn.Entities
             return 10.0F;
         }
 
-        public override bool getCanSpawnHere()
+        public override bool canSpawn()
         {
-            return rand.nextInt(20) == 0 && base.getCanSpawnHere() && worldObj.difficultySetting > 0;
+            return rand.nextInt(20) == 0 && base.canSpawn() && worldObj.difficultySetting > 0;
         }
 
         public override int getMaxSpawnedInChunk()

@@ -8,7 +8,7 @@ namespace betareborn.Blocks
         public static readonly string[] field_22037_a = ["stone", "sand", "wood", "cobble"];
         private bool blockType;
 
-        public BlockStep(int var1, bool var2) : base(var1, 6, Material.rock)
+        public BlockStep(int var1, bool var2) : base(var1, 6, Material.STONE)
         {
             blockType = var2;
             if (!var2)

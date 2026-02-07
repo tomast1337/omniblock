@@ -18,7 +18,7 @@ namespace betareborn.Items
                 if (!var3.getSaddled())
                 {
                     var3.setSaddled(true);
-                    --var1.stackSize;
+                    --var1.count;
                 }
             }
 

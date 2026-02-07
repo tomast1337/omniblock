@@ -43,7 +43,7 @@ namespace betareborn
         {
             for (int var2 = 0; var2 < mainInventory.Length; ++var2)
             {
-                if (mainInventory[var2] != null && mainInventory[var2].itemID == var1.itemID && mainInventory[var2].isStackable() && mainInventory[var2].stackSize < mainInventory[var2].getMaxStackSize() && mainInventory[var2].stackSize < getMaxCountPerStack() && (!mainInventory[var2].getHasSubtypes() || mainInventory[var2].getItemDamage() == var1.getItemDamage()))
+                if (mainInventory[var2] != null && mainInventory[var2].itemID == var1.itemID && mainInventory[var2].isStackable() && mainInventory[var2].count < mainInventory[var2].getMaxCount() && mainInventory[var2].count < getMaxCountPerStack() && (!mainInventory[var2].getHasSubtypes() || mainInventory[var2].getItemDamage() == var1.getItemDamage()))
                 {
                     return var2;
                 }
@@ -100,7 +100,7 @@ namespace betareborn
         private int storePartialItemStack(ItemStack var1)
         {
             int var2 = var1.itemID;
-            int var3 = var1.stackSize;
+            int var3 = var1.count;
             int var4 = storeItemStack(var1);
             if (var4 < 0)
             {
@@ -119,14 +119,14 @@ namespace betareborn
                 }
 
                 int var5 = var3;
-                if (var3 > mainInventory[var4].getMaxStackSize() - mainInventory[var4].stackSize)
+                if (var3 > mainInventory[var4].getMaxCount() - mainInventory[var4].count)
                 {
-                    var5 = mainInventory[var4].getMaxStackSize() - mainInventory[var4].stackSize;
+                    var5 = mainInventory[var4].getMaxCount() - mainInventory[var4].count;
                 }
 
-                if (var5 > getMaxCountPerStack() - mainInventory[var4].stackSize)
+                if (var5 > getMaxCountPerStack() - mainInventory[var4].count)
                 {
-                    var5 = getMaxCountPerStack() - mainInventory[var4].stackSize;
+                    var5 = getMaxCountPerStack() - mainInventory[var4].count;
                 }
 
                 if (var5 == 0)
@@ -136,7 +136,7 @@ namespace betareborn
                 else
                 {
                     var3 -= var5;
-                    mainInventory[var4].stackSize += var5;
+                    mainInventory[var4].count += var5;
                     mainInventory[var4].animationsToGo = 5;
                     return var3;
                 }
@@ -164,7 +164,7 @@ namespace betareborn
             }
             else
             {
-                if (--mainInventory[var2].stackSize <= 0)
+                if (--mainInventory[var2].count <= 0)
                 {
                     mainInventory[var2] = null;
                 }
@@ -183,7 +183,7 @@ namespace betareborn
                 {
                     mainInventory[var2] = ItemStack.copyItemStack(var1);
                     mainInventory[var2].animationsToGo = 5;
-                    var1.stackSize = 0;
+                    var1.count = 0;
                     return true;
                 }
                 else
@@ -195,11 +195,11 @@ namespace betareborn
             {
                 do
                 {
-                    var2 = var1.stackSize;
-                    var1.stackSize = storePartialItemStack(var1);
-                } while (var1.stackSize > 0 && var1.stackSize < var2);
+                    var2 = var1.count;
+                    var1.count = storePartialItemStack(var1);
+                } while (var1.count > 0 && var1.count < var2);
 
-                return var1.stackSize < var2;
+                return var1.count < var2;
             }
         }
 
@@ -215,7 +215,7 @@ namespace betareborn
             if (var3[var1] != null)
             {
                 ItemStack var4;
-                if (var3[var1].stackSize <= var2)
+                if (var3[var1].count <= var2)
                 {
                     var4 = var3[var1];
                     var3[var1] = null;
@@ -224,7 +224,7 @@ namespace betareborn
                 else
                 {
                     var4 = var3[var1].splitStack(var2);
-                    if (var3[var1].stackSize == 0)
+                    if (var3[var1].count == 0)
                     {
                         var3[var1] = null;
                     }
@@ -351,7 +351,7 @@ namespace betareborn
 
         public bool canHarvestBlock(Block var1)
         {
-            if (var1.blockMaterial.getIsHarvestable())
+            if (var1.blockMaterial.isHandHarvestable())
             {
                 return true;
             }
@@ -404,7 +404,7 @@ namespace betareborn
                 if (armorInventory[var2] != null && armorInventory[var2].getItem() is ItemArmor)
                 {
                     armorInventory[var2].damageItem(var1, player);
-                    if (armorInventory[var2].stackSize == 0)
+                    if (armorInventory[var2].count == 0)
                     {
                         armorInventory[var2].func_1097_a(player);
                         armorInventory[var2] = null;

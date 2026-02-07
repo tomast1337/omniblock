@@ -95,7 +95,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.silk.shiftedIndex;
+            return Item.silk.id;
         }
 
         public override bool isOnLadder()

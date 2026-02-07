@@ -108,7 +108,7 @@ namespace betareborn.Entities
             base.onDeath(var1);
             if (var1 is EntitySkeleton)
             {
-                dropItem(Item.record13.shiftedIndex + rand.nextInt(2), 1);
+                dropItem(Item.record13.id + rand.nextInt(2), 1);
             }
 
         }
@@ -168,7 +168,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.gunpowder.shiftedIndex;
+            return Item.gunpowder.id;
         }
 
         private int getCreeperState()

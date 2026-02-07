@@ -104,7 +104,7 @@ namespace betareborn.Containers
                     func_28125_a(var4, 9, 45, false);
                 }
 
-                if (var4.stackSize == 0)
+                if (var4.count == 0)
                 {
                     var3.putStack((ItemStack)null);
                 }
@@ -113,7 +113,7 @@ namespace betareborn.Containers
                     var3.onSlotChanged();
                 }
 
-                if (var4.stackSize == var2.stackSize)
+                if (var4.count == var2.count)
                 {
                     return null;
                 }

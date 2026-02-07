@@ -25,9 +25,9 @@ namespace betareborn.Items
                 }
                 else
                 {
-                    ((BlockJukeBox)Block.jukebox).ejectRecord(var3, var4, var5, var6, shiftedIndex);
-                    var3.func_28107_a((EntityPlayer)null, 1005, var4, var5, var6, shiftedIndex);
-                    --var1.stackSize;
+                    ((BlockJukeBox)Block.jukebox).ejectRecord(var3, var4, var5, var6, id);
+                    var3.func_28107_a((EntityPlayer)null, 1005, var4, var5, var6, id);
+                    --var1.count;
                     return true;
                 }
             }

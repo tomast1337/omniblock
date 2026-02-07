@@ -74,7 +74,7 @@ namespace betareborn.Containers
 
         public override bool isUsableByPlayer(EntityPlayer var1)
         {
-            return field_20133_c.getBlockId(field_20132_h, field_20131_i, field_20130_j) != Block.workbench.blockID ? false : var1.getDistanceSq((double)field_20132_h + 0.5D, (double)field_20131_i + 0.5D, (double)field_20130_j + 0.5D) <= 64.0D;
+            return field_20133_c.getBlockId(field_20132_h, field_20131_i, field_20130_j) != Block.workbench.blockID ? false : var1.getSquaredDistance((double)field_20132_h + 0.5D, (double)field_20131_i + 0.5D, (double)field_20130_j + 0.5D) <= 64.0D;
         }
 
         public override ItemStack getStackInSlot(int var1)
@@ -102,7 +102,7 @@ namespace betareborn.Containers
                     func_28125_a(var4, 10, 46, false);
                 }
 
-                if (var4.stackSize == 0)
+                if (var4.count == 0)
                 {
                     var3.putStack((ItemStack)null);
                 }
@@ -111,7 +111,7 @@ namespace betareborn.Containers
                     var3.onSlotChanged();
                 }
 
-                if (var4.stackSize == var2.stackSize)
+                if (var4.count == var2.count)
                 {
                     return null;
                 }

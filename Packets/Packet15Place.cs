@@ -59,7 +59,7 @@ namespace betareborn.Packets
             else
             {
                 var1.writeShort(this.itemStack.itemID);
-                var1.writeByte(this.itemStack.stackSize);
+                var1.writeByte(this.itemStack.count);
                 var1.writeShort(this.itemStack.getItemDamage());
             }
 

@@ -4,7 +4,7 @@ namespace betareborn.Blocks
 {
     public class BlockSandStone : Block
     {
-        public BlockSandStone(int var1) : base(var1, 192, Material.rock)
+        public BlockSandStone(int var1) : base(var1, 192, Material.STONE)
         {
         }
 

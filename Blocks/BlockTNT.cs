@@ -7,7 +7,7 @@ namespace betareborn.Blocks
 {
     public class BlockTNT : Block
     {
-        public BlockTNT(int var1, int var2) : base(var1, var2, Material.tnt)
+        public BlockTNT(int var1, int var2) : base(var1, var2, Material.TNT)
         {
         }
 
@@ -45,8 +45,8 @@ namespace betareborn.Blocks
         public override void onBlockDestroyedByExplosion(World var1, int var2, int var3, int var4)
         {
             EntityTNTPrimed var5 = new EntityTNTPrimed(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F));
-            var5.fuse = var1.rand.nextInt(var5.fuse / 4) + var5.fuse / 8;
-            var1.entityJoinedWorld(var5);
+            var5.fuse = var1.random.nextInt(var5.fuse / 4) + var5.fuse / 8;
+            var1.spawnEntity(var5);
         }
 
         public override void onBlockDestroyedByPlayer(World var1, int var2, int var3, int var4, int var5)
@@ -60,7 +60,7 @@ namespace betareborn.Blocks
                 else
                 {
                     EntityTNTPrimed var6 = new EntityTNTPrimed(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F));
-                    var1.entityJoinedWorld(var6);
+                    var1.spawnEntity(var6);
                     var1.playSoundAtEntity(var6, "random.fuse", 1.0F, 1.0F);
                 }
 
@@ -69,7 +69,7 @@ namespace betareborn.Blocks
 
         public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (var5.getCurrentEquippedItem() != null && var5.getCurrentEquippedItem().itemID == Item.flintAndSteel.shiftedIndex)
+            if (var5.getCurrentEquippedItem() != null && var5.getCurrentEquippedItem().itemID == Item.flintAndSteel.id)
             {
                 var1.setBlockMetadata(var2, var3, var4, 1);
             }

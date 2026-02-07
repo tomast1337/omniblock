@@ -56,7 +56,7 @@ namespace betareborn.Entities
             prevPosY = posY;
             prevPosZ = posZ;
             motionY -= (double)0.04F;
-            if (worldObj.getBlockMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) == Material.lava)
+            if (worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) == Material.LAVA)
             {
                 motionY = (double)0.2F;
                 motionX = (double)((rand.nextFloat() - rand.nextFloat()) * 0.2F);
@@ -96,7 +96,7 @@ namespace betareborn.Entities
 
         public override bool handleWaterMovement()
         {
-            return worldObj.handleMaterialAcceleration(boundingBox, Material.water, this);
+            return worldObj.handleMaterialAcceleration(boundingBox, Material.WATER, this);
         }
 
         protected override void dealFireDamage(int var1)
@@ -135,7 +135,7 @@ namespace betareborn.Entities
         {
             if (!worldObj.multiplayerWorld)
             {
-                int var2 = item.stackSize;
+                int var2 = item.count;
                 if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(item))
                 {
                     if (item.itemID == Block.wood.blockID)
@@ -143,14 +143,14 @@ namespace betareborn.Entities
                         var1.triggerAchievement(Achievements.MINE_WOOD);
                     }
 
-                    if (item.itemID == Item.leather.shiftedIndex)
+                    if (item.itemID == Item.leather.id)
                     {
                         var1.triggerAchievement(Achievements.KILL_COW);
                     }
 
                     worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
                     var1.onItemPickup(this, var2);
-                    if (item.stackSize <= 0)
+                    if (item.count <= 0)
                     {
                         setEntityDead();
                     }

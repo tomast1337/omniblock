@@ -623,7 +623,7 @@ namespace betareborn
             else if (var1.windowId == 0 && var1.itemSlot >= 36 && var1.itemSlot < 45)
             {
                 ItemStack var2 = mc.thePlayer.inventorySlots.getSlot(var1.itemSlot).getStack();
-                if (var1.myItemStack != null && (var2 == null || var2.stackSize < var1.myItemStack.stackSize))
+                if (var1.myItemStack != null && (var2 == null || var2.count < var1.myItemStack.count))
                 {
                     var1.myItemStack.animationsToGo = 5;
                 }
@@ -724,7 +724,7 @@ namespace betareborn
 
         public override void handleNotePlay(Packet54PlayNoteBlock var1)
         {
-            mc.theWorld.playNoteAt(var1.xLocation, var1.yLocation, var1.zLocation, var1.instrumentType, var1.pitch);
+            mc.theWorld.playNoteBlockActionAt(var1.xLocation, var1.yLocation, var1.zLocation, var1.instrumentType, var1.pitch);
         }
 
         public override void func_25118_a(Packet70Bed var1)
@@ -750,7 +750,7 @@ namespace betareborn
 
         public override void func_28116_a(Packet131MapData var1)
         {
-            if (var1.field_28055_a == Item.mapItem.shiftedIndex)
+            if (var1.field_28055_a == Item.mapItem.id)
             {
                 ItemMap.func_28013_a(var1.field_28054_b, mc.theWorld).func_28171_a(var1.field_28056_c);
             }

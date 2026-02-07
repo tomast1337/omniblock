@@ -31,7 +31,7 @@ namespace betareborn.Entities
             base.onUpdate();
         }
 
-        public override bool getCanSpawnHere()
+        public override bool canSpawn()
         {
             return worldObj.difficultySetting > 0 && worldObj.checkIfAABBIsClear(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).Count == 0 && !worldObj.getIsAnyLiquid(boundingBox);
         }
@@ -104,7 +104,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.porkCooked.shiftedIndex;
+            return Item.porkCooked.id;
         }
 
         public override ItemStack getHeldItem()

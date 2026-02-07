@@ -9,7 +9,7 @@ namespace betareborn.Blocks
     public class BlockJukeBox : BlockContainer
     {
 
-        public BlockJukeBox(int var1, int var2) : base(var1, var2, Material.wood)
+        public BlockJukeBox(int var1, int var2) : base(var1, var2, Material.WOOD)
         {
         }
 
@@ -36,7 +36,7 @@ namespace betareborn.Blocks
             if (!var1.multiplayerWorld)
             {
                 TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
-                var6.record = var5;
+                var6.recordId = var5;
                 var6.markDirty();
                 var1.setBlockMetadataWithNotify(var2, var3, var4, 1);
             }
@@ -47,21 +47,21 @@ namespace betareborn.Blocks
             if (!var1.multiplayerWorld)
             {
                 TileEntityRecordPlayer var5 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
-                int var6 = var5.record;
+                int var6 = var5.recordId;
                 if (var6 != 0)
                 {
                     var1.func_28106_e(1005, var2, var3, var4, 0);
                     var1.playRecord((String)null, var2, var3, var4);
-                    var5.record = 0;
+                    var5.recordId = 0;
                     var5.markDirty();
                     var1.setBlockMetadataWithNotify(var2, var3, var4, 0);
                     float var8 = 0.7F;
-                    double var9 = (double)(var1.rand.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-                    double var11 = (double)(var1.rand.nextFloat() * var8) + (double)(1.0F - var8) * 0.2D + 0.6D;
-                    double var13 = (double)(var1.rand.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+                    double var9 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+                    double var11 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.2D + 0.6D;
+                    double var13 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
                     EntityItem var15 = new EntityItem(var1, (double)var2 + var9, (double)var3 + var11, (double)var4 + var13, new ItemStack(var6, 1, 0));
                     var15.delayBeforeCanPickup = 10;
-                    var1.entityJoinedWorld(var15);
+                    var1.spawnEntity(var15);
                 }
             }
         }

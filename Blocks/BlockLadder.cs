@@ -6,7 +6,7 @@ namespace betareborn.Blocks
     public class BlockLadder : Block
     {
 
-        public BlockLadder(int var1, int var2) : base(var1, var2, Material.circuits)
+        public BlockLadder(int var1, int var2) : base(var1, var2, Material.PISTON_BREAKABLE)
         {
         }
 

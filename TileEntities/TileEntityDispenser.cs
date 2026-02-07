@@ -24,7 +24,7 @@ namespace betareborn.TileEntities
             if (inventory[slot] != null)
             {
                 ItemStack var3;
-                if (inventory[slot].stackSize <= amount)
+                if (inventory[slot].count <= amount)
                 {
                     var3 = inventory[slot];
                     inventory[slot] = null;
@@ -34,7 +34,7 @@ namespace betareborn.TileEntities
                 else
                 {
                     var3 = inventory[slot].splitStack(amount);
-                    if (inventory[slot].stackSize == 0)
+                    if (inventory[slot].count == 0)
                     {
                         inventory[slot] = null;
                     }
@@ -75,9 +75,9 @@ namespace betareborn.TileEntities
         public void setStack(int slot, ItemStack stack)
         {
             inventory[slot] = stack;
-            if (stack != null && stack.stackSize > getMaxCountPerStack())
+            if (stack != null && stack.count > getMaxCountPerStack())
             {
-                stack.stackSize = getMaxCountPerStack();
+                stack.count = getMaxCountPerStack();
             }
 
             markDirty();
@@ -132,7 +132,7 @@ namespace betareborn.TileEntities
 
         public bool canPlayerUse(EntityPlayer player)
         {
-            return world.getBlockTileEntity(x, y, z) != this ? false : player.getDistanceSq((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
+            return world.getBlockTileEntity(x, y, z) != this ? false : player.getSquaredDistance((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
         }
     }
 }

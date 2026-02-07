@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockWorkbench : Block
     {
 
-        public BlockWorkbench(int var1) : base(var1, Material.wood)
+        public BlockWorkbench(int var1) : base(var1, Material.WOOD)
         {
             blockIndexInTexture = 59;
         }

@@ -39,7 +39,7 @@ namespace betareborn.Entities
         public EntityFireball(World var1, double var2, double var4, double var6, double var8, double var10, double var12) : base(var1)
         {
             setSize(1.0F, 1.0F);
-            setLocationAndAngles(var2, var4, var6, rotationYaw, rotationPitch);
+            setPositionAndAnglesKeepPrevAngles(var2, var4, var6, rotationYaw, rotationPitch);
             setPosition(var2, var4, var6);
             double var14 = (double)MathHelper.sqrt_double(var8 * var8 + var10 * var10 + var12 * var12);
             field_9405_b = var8 / var14 * 0.1D;
@@ -51,7 +51,7 @@ namespace betareborn.Entities
         {
             field_9397_j = var2;
             setSize(1.0F, 1.0F);
-            setLocationAndAngles(var2.posX, var2.posY, var2.posZ, var2.rotationYaw, var2.rotationPitch);
+            setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY, var2.posZ, var2.rotationYaw, var2.rotationPitch);
             setPosition(posX, posY, posZ);
             yOffset = 0.0F;
             motionX = motionY = motionZ = 0.0D;

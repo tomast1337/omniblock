@@ -59,12 +59,12 @@ namespace betareborn
 
         public virtual bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
         {
-            int var4 = var3.stackSize;
+            int var4 = var3.count;
             ItemStack var5 = var3.useItemRightClick(var2, var1);
-            if (var5 != var3 || var5 != null && var5.stackSize != var4)
+            if (var5 != var3 || var5 != null && var5.count != var4)
             {
                 var1.inventory.mainInventory[var1.inventory.currentItem] = var5;
-                if (var5.stackSize == 0)
+                if (var5.count == 0)
                 {
                     var1.inventory.mainInventory[var1.inventory.currentItem] = null;
                 }

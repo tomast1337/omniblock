@@ -8,7 +8,7 @@ namespace betareborn.Blocks
         public BlockStationary(int var1, Material var2) : base(var1, var2)
         {
             setTickOnLoad(false);
-            if (var2 == Material.lava)
+            if (var2 == Material.LAVA)
             {
                 setTickOnLoad(true);
             }
@@ -37,7 +37,7 @@ namespace betareborn.Blocks
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (blockMaterial == Material.lava)
+            if (blockMaterial == Material.LAVA)
             {
                 int var6 = var5.nextInt(3);
 
@@ -55,7 +55,7 @@ namespace betareborn.Blocks
                             return;
                         }
                     }
-                    else if (Block.blocksList[var8].blockMaterial.getIsSolid())
+                    else if (Block.blocksList[var8].blockMaterial.blocksMovement())
                     {
                         return;
                     }
@@ -66,7 +66,7 @@ namespace betareborn.Blocks
 
         private bool func_301_k(World var1, int var2, int var3, int var4)
         {
-            return var1.getBlockMaterial(var2, var3, var4).getBurning();
+            return var1.getMaterial(var2, var3, var4).isBurnable();
         }
     }
 

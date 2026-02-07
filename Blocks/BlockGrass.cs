@@ -5,7 +5,7 @@ namespace betareborn.Blocks
 {
     public class BlockGrass : Block
     {
-        public BlockGrass(int var1) : base(var1, Material.grassMaterial)
+        public BlockGrass(int var1) : base(var1, Material.SOLID_ORGANIC)
         {
             blockIndexInTexture = 3;
             setTickOnLoad(true);
@@ -23,8 +23,8 @@ namespace betareborn.Blocks
             }
             else
             {
-                Material var6 = var1.getBlockMaterial(var2, var3 + 1, var4);
-                return var6 != Material.snow && var6 != Material.builtSnow ? 3 : 68;
+                Material var6 = var1.getMaterial(var2, var3 + 1, var4);
+                return var6 != Material.SNOW_LAYER && var6 != Material.SNOW_BLOCK ? 3 : 68;
             }
         }
 

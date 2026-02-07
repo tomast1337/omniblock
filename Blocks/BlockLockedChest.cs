@@ -6,7 +6,7 @@ namespace betareborn.Blocks
     public class BlockLockedChest : Block
     {
 
-        public BlockLockedChest(int var1) : base(var1, Material.wood)
+        public BlockLockedChest(int var1) : base(var1, Material.WOOD)
         {
             blockIndexInTexture = 26;
         }

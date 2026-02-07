@@ -751,7 +751,7 @@ namespace betareborn.Rendering
                 var10 *= var8;
             }
 
-            if (mc.renderViewEntity.getDistanceSq(var2, var4, var6) < (double)(var10 * var10))
+            if (mc.renderViewEntity.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
             {
                 mc.sndManager.playSound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
             }
@@ -875,7 +875,7 @@ namespace betareborn.Rendering
 
         public void func_28136_a(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
         {
-            java.util.Random var7 = worldObj.rand;
+            java.util.Random var7 = worldObj.random;
             int var16;
             switch (var2)
             {
@@ -891,11 +891,11 @@ namespace betareborn.Rendering
                 case 1003:
                     if (java.lang.Math.random() < 0.5D)
                     {
-                        worldObj.playSoundEffect((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_open", 1.0F, worldObj.rand.nextFloat() * 0.1F + 0.9F);
+                        worldObj.playSoundEffect((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_open", 1.0F, worldObj.random.nextFloat() * 0.1F + 0.9F);
                     }
                     else
                     {
-                        worldObj.playSoundEffect((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_close", 1.0F, worldObj.rand.nextFloat() * 0.1F + 0.9F);
+                        worldObj.playSoundEffect((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_close", 1.0F, worldObj.random.nextFloat() * 0.1F + 0.9F);
                     }
                     break;
                 case 1004:

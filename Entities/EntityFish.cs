@@ -67,7 +67,7 @@ namespace betareborn.Entities
             angler = var2;
             angler.fishEntity = this;
             setSize(0.25F, 0.25F);
-            setLocationAndAngles(var2.posX, var2.posY + 1.62D - (double)var2.yOffset, var2.posZ, var2.rotationYaw, var2.rotationPitch);
+            setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + 1.62D - (double)var2.yOffset, var2.posZ, var2.rotationYaw, var2.rotationPitch);
             posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
             posY -= (double)0.1F;
             posZ -= (double)(MathHelper.sin(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
@@ -310,7 +310,7 @@ namespace betareborn.Entities
                         double var14 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var28 + 0) / (double)var26 - 0.125D + 0.125D;
                         double var16 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var28 + 1) / (double)var26 - 0.125D + 0.125D;
                         Box var18 = Box.createCached(boundingBox.minX, var14, boundingBox.minZ, boundingBox.maxX, var16, boundingBox.maxZ);
-                        if (worldObj.isAABBInMaterial(var18, Material.water))
+                        if (worldObj.isAABBInMaterial(var18, Material.WATER))
                         {
                             var27 += 1.0D / (double)var26;
                         }
@@ -429,7 +429,7 @@ namespace betareborn.Entities
                 var13.motionX = var3 * var11;
                 var13.motionY = var5 * var11 + (double)MathHelper.sqrt_double(var9) * 0.08D;
                 var13.motionZ = var7 * var11;
-                worldObj.entityJoinedWorld(var13);
+                worldObj.spawnEntity(var13);
                 angler.addStat(StatList.fishCaughtStat, 1);
                 var1 = 1;
             }

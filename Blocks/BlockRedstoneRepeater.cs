@@ -12,7 +12,7 @@ namespace betareborn.Blocks
         private static readonly int[] field_22023_b = new int[] { 1, 2, 3, 4 };
         private readonly bool isRepeaterPowered;
 
-        public BlockRedstoneRepeater(int var1, bool var2) : base(var1, 6, Material.circuits)
+        public BlockRedstoneRepeater(int var1, bool var2) : base(var1, 6, Material.PISTON_BREAKABLE)
         {
             isRepeaterPowered = var2;
             setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
@@ -176,7 +176,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return Item.redstoneRepeater.shiftedIndex;
+            return Item.redstoneRepeater.id;
         }
 
         public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)

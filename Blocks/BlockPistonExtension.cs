@@ -8,7 +8,7 @@ namespace betareborn.Blocks
     {
         private int field_31053_a = -1;
 
-        public BlockPistonExtension(int var1, int var2) : base(var1, var2, Material.field_31067_B)
+        public BlockPistonExtension(int var1, int var2) : base(var1, var2, Material.PISTON)
         {
             setStepSound(soundStoneFootstep);
             setHardness(0.5F);

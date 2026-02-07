@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockSoulSand : Block
     {
 
-        public BlockSoulSand(int var1, int var2) : base(var1, var2, Material.sand)
+        public BlockSoulSand(int var1, int var2) : base(var1, var2, Material.SAND)
         {
         }
 

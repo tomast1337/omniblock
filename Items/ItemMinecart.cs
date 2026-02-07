@@ -22,10 +22,10 @@ namespace betareborn.Items
             {
                 if (!var3.multiplayerWorld)
                 {
-                    var3.entityJoinedWorld(new EntityMinecart(var3, (double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), (double)((float)var6 + 0.5F), minecartType));
+                    var3.spawnEntity(new EntityMinecart(var3, (double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), (double)((float)var6 + 0.5F), minecartType));
                 }
 
-                --var1.stackSize;
+                --var1.count;
                 return true;
             }
             else

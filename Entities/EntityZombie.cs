@@ -45,7 +45,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.feather.shiftedIndex;
+            return Item.feather.id;
         }
     }
 

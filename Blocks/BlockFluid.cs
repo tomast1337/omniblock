@@ -7,7 +7,7 @@ namespace betareborn.Blocks
 {
     public abstract class BlockFluid : Block
     {
-        protected BlockFluid(int var1, Material var2) : base(var1, (var2 == Material.lava ? 14 : 12) * 16 + 13, var2)
+        protected BlockFluid(int var1, Material var2) : base(var1, (var2 == Material.LAVA ? 14 : 12) * 16 + 13, var2)
         {
             float var3 = 0.0F;
             float var4 = 0.0F;
@@ -38,12 +38,12 @@ namespace betareborn.Blocks
 
         protected int getFlowDecay(World var1, int var2, int var3, int var4)
         {
-            return var1.getBlockMaterial(var2, var3, var4) != blockMaterial ? -1 : var1.getBlockMetadata(var2, var3, var4);
+            return var1.getMaterial(var2, var3, var4) != blockMaterial ? -1 : var1.getBlockMetadata(var2, var3, var4);
         }
 
         protected int getEffectiveFlowDecay(IBlockAccess var1, int var2, int var3, int var4)
         {
-            if (var1.getBlockMaterial(var2, var3, var4) != blockMaterial)
+            if (var1.getMaterial(var2, var3, var4) != blockMaterial)
             {
                 return -1;
             }
@@ -76,14 +76,14 @@ namespace betareborn.Blocks
 
         public override bool getIsBlockSolid(IBlockAccess var1, int var2, int var3, int var4, int var5)
         {
-            Material var6 = var1.getBlockMaterial(var2, var3, var4);
-            return var6 == blockMaterial ? false : (var6 == Material.ice ? false : (var5 == 1 ? true : base.getIsBlockSolid(var1, var2, var3, var4, var5)));
+            Material var6 = var1.getMaterial(var2, var3, var4);
+            return var6 == blockMaterial ? false : (var6 == Material.ICE ? false : (var5 == 1 ? true : base.getIsBlockSolid(var1, var2, var3, var4, var5)));
         }
 
         public override bool shouldSideBeRendered(IBlockAccess var1, int var2, int var3, int var4, int var5)
         {
-            Material var6 = var1.getBlockMaterial(var2, var3, var4);
-            return var6 == blockMaterial ? false : (var6 == Material.ice ? false : (var5 == 1 ? true : base.shouldSideBeRendered(var1, var2, var3, var4, var5)));
+            Material var6 = var1.getMaterial(var2, var3, var4);
+            return var6 == blockMaterial ? false : (var6 == Material.ICE ? false : (var5 == 1 ? true : base.shouldSideBeRendered(var1, var2, var3, var4, var5)));
         }
 
         public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
@@ -139,7 +139,7 @@ namespace betareborn.Blocks
                 int var12;
                 if (var11 < 0)
                 {
-                    if (!var1.getBlockMaterial(var8, var3, var10).getIsSolid())
+                    if (!var1.getMaterial(var8, var3, var10).blocksMovement())
                     {
                         var11 = getEffectiveFlowDecay(var1, var8, var3 - 1, var10);
                         if (var11 >= 0)
@@ -221,7 +221,7 @@ namespace betareborn.Blocks
 
         public override int tickRate()
         {
-            return blockMaterial == Material.water ? 5 : (blockMaterial == Material.lava ? 30 : 0);
+            return blockMaterial == Material.WATER ? 5 : (blockMaterial == Material.LAVA ? 30 : 0);
         }
 
         public override float getBlockBrightness(IBlockAccess var1, int var2, int var3, int var4)
@@ -238,12 +238,12 @@ namespace betareborn.Blocks
 
         public override int getRenderBlockPass()
         {
-            return blockMaterial == Material.water ? 1 : 0;
+            return blockMaterial == Material.WATER ? 1 : 0;
         }
 
         public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (blockMaterial == Material.water && var5.nextInt(64) == 0)
+            if (blockMaterial == Material.WATER && var5.nextInt(64) == 0)
             {
                 int var6 = var1.getBlockMetadata(var2, var3, var4);
                 if (var6 > 0 && var6 < 8)
@@ -252,7 +252,7 @@ namespace betareborn.Blocks
                 }
             }
 
-            if (blockMaterial == Material.lava && var1.getBlockMaterial(var2, var3 + 1, var4) == Material.air && !var1.isBlockOpaqueCube(var2, var3 + 1, var4) && var5.nextInt(100) == 0)
+            if (blockMaterial == Material.LAVA && var1.getMaterial(var2, var3 + 1, var4) == Material.AIR && !var1.isBlockOpaqueCube(var2, var3 + 1, var4) && var5.nextInt(100) == 0)
             {
                 double var12 = (double)((float)var2 + var5.nextFloat());
                 double var8 = (double)var3 + maxY;
@@ -265,12 +265,12 @@ namespace betareborn.Blocks
         public static double func_293_a(IBlockAccess var0, int var1, int var2, int var3, Material var4)
         {
             Vector3D<double> var5 = new(0.0);
-            if (var4 == Material.water)
+            if (var4 == Material.WATER)
             {
                 var5 = ((BlockFluid)waterMoving).getFlowVector(var0, var1, var2, var3);
             }
 
-            if (var4 == Material.lava)
+            if (var4 == Material.LAVA)
             {
                 var5 = ((BlockFluid)lavaMoving).getFlowVector(var0, var1, var2, var3);
             }
@@ -292,30 +292,30 @@ namespace betareborn.Blocks
         {
             if (var1.getBlockId(var2, var3, var4) == blockID)
             {
-                if (blockMaterial == Material.lava)
+                if (blockMaterial == Material.LAVA)
                 {
                     bool var5 = false;
-                    if (var5 || var1.getBlockMaterial(var2, var3, var4 - 1) == Material.water)
+                    if (var5 || var1.getMaterial(var2, var3, var4 - 1) == Material.WATER)
                     {
                         var5 = true;
                     }
 
-                    if (var5 || var1.getBlockMaterial(var2, var3, var4 + 1) == Material.water)
+                    if (var5 || var1.getMaterial(var2, var3, var4 + 1) == Material.WATER)
                     {
                         var5 = true;
                     }
 
-                    if (var5 || var1.getBlockMaterial(var2 - 1, var3, var4) == Material.water)
+                    if (var5 || var1.getMaterial(var2 - 1, var3, var4) == Material.WATER)
                     {
                         var5 = true;
                     }
 
-                    if (var5 || var1.getBlockMaterial(var2 + 1, var3, var4) == Material.water)
+                    if (var5 || var1.getMaterial(var2 + 1, var3, var4) == Material.WATER)
                     {
                         var5 = true;
                     }
 
-                    if (var5 || var1.getBlockMaterial(var2, var3 + 1, var4) == Material.water)
+                    if (var5 || var1.getMaterial(var2, var3 + 1, var4) == Material.WATER)
                     {
                         var5 = true;
                     }
@@ -341,7 +341,7 @@ namespace betareborn.Blocks
 
         protected void triggerLavaMixEffects(World var1, int var2, int var3, int var4)
         {
-            var1.playSoundEffect((double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), "random.fizz", 0.5F, 2.6F + (var1.rand.nextFloat() - var1.rand.nextFloat()) * 0.8F);
+            var1.playSoundEffect((double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), "random.fizz", 0.5F, 2.6F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.8F);
 
             for (int var5 = 0; var5 < 8; ++var5)
             {

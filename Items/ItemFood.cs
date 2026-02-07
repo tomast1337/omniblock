@@ -18,7 +18,7 @@ namespace betareborn.Items
 
         public override ItemStack onItemRightClick(ItemStack var1, World var2, EntityPlayer var3)
         {
-            --var1.stackSize;
+            --var1.count;
             var3.heal(healAmount);
             return var1;
         }

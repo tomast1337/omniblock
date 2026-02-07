@@ -16,7 +16,7 @@ namespace betareborn
 
         int getBlockMetadata(int var1, int var2, int var3);
 
-        Material getBlockMaterial(int var1, int var2, int var3);
+        Material getMaterial(int var1, int var2, int var3);
 
         bool isBlockOpaqueCube(int var1, int var2, int var3);
 

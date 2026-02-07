@@ -21,12 +21,12 @@ namespace betareborn
         public override void onPickupFromSlot(ItemStack var1)
         {
             var1.onCrafting(thePlayer.worldObj, thePlayer);
-            if (var1.itemID == Item.ingotIron.shiftedIndex)
+            if (var1.itemID == Item.ingotIron.id)
             {
                 thePlayer.addStat(Achievements.ACQUIRE_IRON, 1);
             }
 
-            if (var1.itemID == Item.fishCooked.shiftedIndex)
+            if (var1.itemID == Item.fishCooked.id)
             {
                 thePlayer.addStat(Achievements.COOK_FISH, 1);
             }

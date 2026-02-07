@@ -30,7 +30,7 @@ namespace betareborn.Entities
             motionX *= (double)0.85F;
             motionY *= (double)0.85F;
             motionZ *= (double)0.85F;
-            if (worldObj.getBlockMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) != Material.water)
+            if (worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) != Material.WATER)
             {
                 setEntityDead();
             }

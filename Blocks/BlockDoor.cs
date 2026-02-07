@@ -10,7 +10,7 @@ namespace betareborn.Blocks
         public BlockDoor(int var1, Material var2) : base(var1, var2)
         {
             blockIndexInTexture = 97;
-            if (var2 == Material.iron)
+            if (var2 == Material.METAL)
             {
                 ++blockIndexInTexture;
             }
@@ -113,7 +113,7 @@ namespace betareborn.Blocks
 
         public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (blockMaterial == Material.iron)
+            if (blockMaterial == Material.METAL)
             {
                 return true;
             }
@@ -224,7 +224,7 @@ namespace betareborn.Blocks
 
         public override int idDropped(int var1, java.util.Random var2)
         {
-            return (var1 & 8) != 0 ? 0 : (blockMaterial == Material.iron ? Item.doorSteel.shiftedIndex : Item.doorWood.shiftedIndex);
+            return (var1 & 8) != 0 ? 0 : (blockMaterial == Material.METAL ? Item.doorSteel.id : Item.doorWood.id);
         }
 
         public override MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)

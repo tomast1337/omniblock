@@ -8,7 +8,7 @@ namespace betareborn.Items
 {
     public class ItemStack : java.lang.Object
     {
-        public int stackSize;
+        public int count;
         public int animationsToGo;
         public int itemID;
         private int itemDamage;
@@ -19,7 +19,7 @@ namespace betareborn.Items
 
         public ItemStack(int id, int count) {
             itemID = id;
-            stackSize = count;
+            this.count = count;
         }
 
         public ItemStack(Block var1, int var2) : this(var1.blockID, var2, 0)
@@ -30,35 +30,35 @@ namespace betareborn.Items
         {
         }
 
-        public ItemStack(Item var1) : this(var1.shiftedIndex, 1, 0)
+        public ItemStack(Item var1) : this(var1.id, 1, 0)
         {
         }
 
-        public ItemStack(Item var1, int var2) : this(var1.shiftedIndex, var2, 0)
+        public ItemStack(Item var1, int var2) : this(var1.id, var2, 0)
         {
         }
 
-        public ItemStack(Item var1, int var2, int var3) : this(var1.shiftedIndex, var2, var3)
+        public ItemStack(Item var1, int var2, int var3) : this(var1.id, var2, var3)
         {
         }
 
         public ItemStack(int var1, int var2, int var3)
         {
-            stackSize = 0;
+            count = 0;
             itemID = var1;
-            stackSize = var2;
+            count = var2;
             itemDamage = var3;
         }
 
         public ItemStack(NBTTagCompound var1)
         {
-            stackSize = 0;
+            count = 0;
             readFromNBT(var1);
         }
 
         public ItemStack splitStack(int var1)
         {
-            stackSize -= var1;
+            count -= var1;
             return new ItemStack(itemID, var1, itemDamage);
         }
 
@@ -96,7 +96,7 @@ namespace betareborn.Items
         public NBTTagCompound writeToNBT(NBTTagCompound var1)
         {
             var1.setShort("id", (short)itemID);
-            var1.setByte("Count", (sbyte)stackSize);
+            var1.setByte("Count", (sbyte)count);
             var1.setShort("Damage", (short)itemDamage);
             return var1;
         }
@@ -104,18 +104,18 @@ namespace betareborn.Items
         public void readFromNBT(NBTTagCompound var1)
         {
             itemID = var1.getShort("id");
-            stackSize = var1.getByte("Count");
+            count = var1.getByte("Count");
             itemDamage = var1.getShort("Damage");
         }
 
-        public int getMaxStackSize()
+        public int getMaxCount()
         {
             return getItem().getItemStackLimit();
         }
 
         public bool isStackable()
         {
-            return getMaxStackSize() > 1 && (!isItemStackDamageable() || !isItemDamaged());
+            return getMaxCount() > 1 && (!isItemStackDamageable() || !isItemDamaged());
         }
 
         public bool isItemStackDamageable()
@@ -165,10 +165,10 @@ namespace betareborn.Items
                         ((EntityPlayer)var2).addStat(StatList.field_25170_B[itemID], 1);
                     }
 
-                    --stackSize;
-                    if (stackSize < 0)
+                    --count;
+                    if (count < 0)
                     {
-                        stackSize = 0;
+                        count = 0;
                     }
 
                     itemDamage = 0;
@@ -218,7 +218,7 @@ namespace betareborn.Items
 
         public ItemStack copy()
         {
-            return new ItemStack(itemID, stackSize, itemDamage);
+            return new ItemStack(itemID, count, itemDamage);
         }
 
         public static bool areItemStacksEqual(ItemStack var0, ItemStack var1)
@@ -228,7 +228,7 @@ namespace betareborn.Items
 
         private bool isItemStackEqual(ItemStack var1)
         {
-            return stackSize != var1.stackSize ? false : (itemID != var1.itemID ? false : itemDamage == var1.itemDamage);
+            return count != var1.count ? false : (itemID != var1.itemID ? false : itemDamage == var1.itemDamage);
         }
 
         public bool isItemEqual(ItemStack var1)
@@ -248,7 +248,7 @@ namespace betareborn.Items
 
         public override string toString()
         {
-            return stackSize + "x" + Item.itemsList[itemID].getItemName() + "@" + itemDamage;
+            return count + "x" + Item.itemsList[itemID].getItemName() + "@" + itemDamage;
         }
 
         public void updateAnimation(World var1, Entity var2, int var3, bool var4)
@@ -263,13 +263,13 @@ namespace betareborn.Items
 
         public void onCrafting(World var1, EntityPlayer var2)
         {
-            var2.addStat(StatList.field_25158_z[itemID], stackSize);
+            var2.addStat(StatList.field_25158_z[itemID], count);
             Item.itemsList[itemID].onCreated(this, var1, var2);
         }
 
         public bool isStackEqual(ItemStack var1)
         {
-            return itemID == var1.itemID && stackSize == var1.stackSize && itemDamage == var1.itemDamage;
+            return itemID == var1.itemID && count == var1.count && itemDamage == var1.itemDamage;
         }
     }
 
