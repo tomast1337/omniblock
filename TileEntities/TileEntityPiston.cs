@@ -8,120 +8,120 @@ namespace betareborn.TileEntities
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntityPiston).TypeHandle);
 
-        private int storedBlockID;
-        private int storedMetadata;
-        private int field_31025_c;
-        private bool field_31024_i;
-        private readonly bool field_31023_j;
-        private float field_31022_k;
-        private float field_31020_l;
-        private static readonly List<Entity> field_31018_m = [];
+        private int pushedBlockId;
+        private int pushedBlockData;
+        private int facing;
+        private bool extending;
+        private readonly bool source;
+        private float lastProgess;
+        private float progress;
+        private static readonly List<Entity> pushedEntities = [];
 
         public TileEntityPiston()
         {
         }
 
-        public TileEntityPiston(int var1, int var2, int var3, bool var4, bool var5)
+        public TileEntityPiston(int pushedBlockId, int pushedBlockData, int facing, bool extending, bool source)
         {
-            storedBlockID = var1;
-            storedMetadata = var2;
-            field_31025_c = var3;
-            field_31024_i = var4;
-            field_31023_j = var5;
+            this.pushedBlockId = pushedBlockId;
+            this.pushedBlockData = pushedBlockData;
+            this.facing = facing;
+            this.extending = extending;
+            this.source = source;
         }
 
-        public int getStoredBlockID()
+        public int getPushedBlockId()
         {
-            return storedBlockID;
+            return pushedBlockId;
         }
 
         public override int getPushedBlockData()
         {
-            return storedMetadata;
+            return pushedBlockData;
         }
 
-        public bool func_31015_b()
+        public bool isExtending()
         {
-            return field_31024_i;
+            return extending;
         }
 
-        public int func_31009_d()
+        public int getFacing()
         {
-            return field_31025_c;
+            return facing;
         }
 
-        public bool func_31012_k()
+        public bool isSource()
         {
-            return field_31023_j;
+            return source;
         }
 
-        public float func_31008_a(float var1)
+        public float getProgress(float tickDelta)
         {
-            if (var1 > 1.0F)
+            if (tickDelta > 1.0F)
             {
-                var1 = 1.0F;
+                tickDelta = 1.0F;
             }
 
-            return field_31020_l + (field_31022_k - field_31020_l) * var1;
+            return progress + (lastProgess - progress) * tickDelta;
         }
 
-        public float func_31017_b(float var1)
+        public float getRenderOffsetX(float tickDelta)
         {
-            return field_31024_i ? (func_31008_a(var1) - 1.0F) * (float)PistonBlockTextures.field_31056_b[field_31025_c] : (1.0F - func_31008_a(var1)) * (float)PistonBlockTextures.field_31056_b[field_31025_c];
+            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonBlockTextures.field_31056_b[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonBlockTextures.field_31056_b[facing];
         }
 
-        public float func_31014_c(float var1)
+        public float getRenderOffsetY(float tickDelta)
         {
-            return field_31024_i ? (func_31008_a(var1) - 1.0F) * (float)PistonBlockTextures.field_31059_c[field_31025_c] : (1.0F - func_31008_a(var1)) * (float)PistonBlockTextures.field_31059_c[field_31025_c];
+            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonBlockTextures.field_31059_c[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonBlockTextures.field_31059_c[facing];
         }
 
-        public float func_31013_d(float var1)
+        public float getRenderOffsetZ(float tickDelta)
         {
-            return field_31024_i ? (func_31008_a(var1) - 1.0F) * (float)PistonBlockTextures.field_31058_d[field_31025_c] : (1.0F - func_31008_a(var1)) * (float)PistonBlockTextures.field_31058_d[field_31025_c];
+            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonBlockTextures.field_31058_d[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonBlockTextures.field_31058_d[facing];
         }
 
-        private void func_31010_a(float var1, float var2)
+        private void pushEntities(float collisionShapeSizeMultiplier, float entityMoveMultiplier)
         {
-            if (!field_31024_i)
+            if (!extending)
             {
-                --var1;
+                --collisionShapeSizeMultiplier;
             }
             else
             {
-                var1 = 1.0F - var1;
+                collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
             }
 
-            Box var3 = Block.pistonMoving.func_31035_a(world, x, y, z, storedBlockID, var1, field_31025_c);
+            Box var3 = Block.pistonMoving.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
             if (var3 != null)
             {
                 var var4 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, var3);
                 if (var4.Count > 0)
                 {
-                    field_31018_m.AddRange(var4);
-                    foreach (Entity var6 in field_31018_m)
+                    pushedEntities.AddRange(var4);
+                    foreach (Entity var6 in pushedEntities)
                     {
                         var6.moveEntity(
-                            (double)(var2 * (float)PistonBlockTextures.field_31056_b[field_31025_c]),
-                            (double)(var2 * (float)PistonBlockTextures.field_31059_c[field_31025_c]),
-                            (double)(var2 * (float)PistonBlockTextures.field_31058_d[field_31025_c])
+                            (double)(entityMoveMultiplier * (float)PistonBlockTextures.field_31056_b[facing]),
+                            (double)(entityMoveMultiplier * (float)PistonBlockTextures.field_31059_c[facing]),
+                            (double)(entityMoveMultiplier * (float)PistonBlockTextures.field_31058_d[facing])
                         );
                     }
-                    field_31018_m.Clear();
+                    pushedEntities.Clear();
                 }
             }
 
         }
 
-        public void func_31011_l()
+        public void finish()
         {
-            if (field_31020_l < 1.0F)
+            if (progress < 1.0F)
             {
-                field_31020_l = field_31022_k = 1.0F;
+                progress = lastProgess = 1.0F;
                 world.removeBlockTileEntity(x, y, z);
                 markRemoved();
                 if (world.getBlockId(x, y, z) == Block.pistonMoving.blockID)
                 {
-                    world.setBlockAndMetadataWithNotify(x, y, z, storedBlockID, storedMetadata);
+                    world.setBlockAndMetadataWithNotify(x, y, z, pushedBlockId, pushedBlockData);
                 }
             }
 
@@ -129,52 +129,52 @@ namespace betareborn.TileEntities
 
         public override void tick()
         {
-            field_31020_l = field_31022_k;
-            if (field_31020_l >= 1.0F)
+            progress = lastProgess;
+            if (progress >= 1.0F)
             {
-                func_31010_a(1.0F, 0.25F);
+                pushEntities(1.0F, 0.25F);
                 world.removeBlockTileEntity(x, y, z);
                 markRemoved();
                 if (world.getBlockId(x, y, z) == Block.pistonMoving.blockID)
                 {
-                    world.setBlockAndMetadataWithNotify(x, y, z, storedBlockID, storedMetadata);
+                    world.setBlockAndMetadataWithNotify(x, y, z, pushedBlockId, pushedBlockData);
                 }
 
             }
             else
             {
-                field_31022_k += 0.5F;
-                if (field_31022_k >= 1.0F)
+                lastProgess += 0.5F;
+                if (lastProgess >= 1.0F)
                 {
-                    field_31022_k = 1.0F;
+                    lastProgess = 1.0F;
                 }
 
-                if (field_31024_i)
+                if (extending)
                 {
-                    func_31010_a(field_31022_k, field_31022_k - field_31020_l + 1.0F / 16.0F);
+                    pushEntities(lastProgess, lastProgess - progress + 1.0F / 16.0F);
                 }
 
             }
         }
 
-        public override void readNbt(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            base.readNbt(var1);
-            storedBlockID = var1.getInteger("blockId");
-            storedMetadata = var1.getInteger("blockData");
-            field_31025_c = var1.getInteger("facing");
-            field_31020_l = field_31022_k = var1.getFloat("progress");
-            field_31024_i = var1.getBoolean("extending");
+            base.readNbt(nbt);
+            pushedBlockId = nbt.getInteger("blockId");
+            pushedBlockData = nbt.getInteger("blockData");
+            facing = nbt.getInteger("facing");
+            progress = lastProgess = nbt.getFloat("progress");
+            extending = nbt.getBoolean("extending");
         }
 
-        public override void writeNbt(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeNbt(var1);
-            var1.setInteger("blockId", storedBlockID);
-            var1.setInteger("blockData", storedMetadata);
-            var1.setInteger("facing", field_31025_c);
-            var1.setFloat("progress", field_31020_l);
-            var1.setBoolean("extending", field_31024_i);
+            base.writeNbt(nbt);
+            nbt.setInteger("blockId", pushedBlockId);
+            nbt.setInteger("blockData", pushedBlockData);
+            nbt.setInteger("facing", facing);
+            nbt.setFloat("progress", progress);
+            nbt.setBoolean("extending", extending);
         }
     }
 }

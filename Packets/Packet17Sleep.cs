@@ -12,7 +12,7 @@ namespace betareborn.Packets
         public int field_22047_d;
         public int field_22046_e;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.field_22045_a = var1.readInt();
             this.field_22046_e = (sbyte)var1.readByte();
@@ -21,7 +21,7 @@ namespace betareborn.Packets
             this.field_22047_d = var1.readInt();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.field_22045_a);
             var1.writeByte(this.field_22046_e);
@@ -30,12 +30,12 @@ namespace betareborn.Packets
             var1.writeInt(this.field_22047_d);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.func_22186_a(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 14;
         }

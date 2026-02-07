@@ -25,7 +25,7 @@ namespace betareborn.Packets
             this.moving = true;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.xPosition = var1.readDouble();
             this.yPosition = var1.readDouble();
@@ -33,10 +33,10 @@ namespace betareborn.Packets
             this.zPosition = var1.readDouble();
             this.yaw = var1.readFloat();
             this.pitch = var1.readFloat();
-            base.readPacketData(var1);
+            base.read(var1);
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeDouble(this.xPosition);
             var1.writeDouble(this.yPosition);
@@ -44,10 +44,10 @@ namespace betareborn.Packets
             var1.writeDouble(this.zPosition);
             var1.writeFloat(this.yaw);
             var1.writeFloat(this.pitch);
-            base.writePacketData(var1);
+            base.write(var1);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 41;
         }

@@ -17,22 +17,22 @@ namespace betareborn.Packets
             this.windowId = var1;
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.func_20092_a(this);
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.windowId = (sbyte)var1.readByte();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeByte(this.windowId);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 1;
         }

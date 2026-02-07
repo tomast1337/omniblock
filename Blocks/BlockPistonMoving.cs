@@ -26,7 +26,7 @@ namespace betareborn.Blocks
             TileEntity var5 = var1.getBlockTileEntity(var2, var3, var4);
             if (var5 != null && var5 is TileEntityPiston)
             {
-                ((TileEntityPiston)var5).func_31011_l();
+                ((TileEntityPiston)var5).finish();
             }
             else
             {
@@ -85,7 +85,7 @@ namespace betareborn.Blocks
                 TileEntityPiston var7 = func_31034_c(var1, var2, var3, var4);
                 if (var7 != null)
                 {
-                    Block.blocksList[var7.getStoredBlockID()].dropBlockAsItem(var1, var2, var3, var4, var7.getPushedBlockData());
+                    Block.blocksList[var7.getPushedBlockId()].dropBlockAsItem(var1, var2, var3, var4, var7.getPushedBlockData());
                 }
             }
         }
@@ -112,13 +112,13 @@ namespace betareborn.Blocks
             }
             else
             {
-                float var6 = var5.func_31008_a(0.0F);
-                if (var5.func_31015_b())
+                float var6 = var5.getProgress(0.0F);
+                if (var5.isExtending())
                 {
                     var6 = 1.0F - var6;
                 }
 
-                return func_31035_a(var1, var2, var3, var4, var5.getStoredBlockID(), var6, var5.func_31009_d());
+                return getPushedBlockCollisionShape(var1, var2, var3, var4, var5.getPushedBlockId(), var6, var5.getFacing());
             }
         }
 
@@ -127,20 +127,20 @@ namespace betareborn.Blocks
             TileEntityPiston var5 = func_31034_c(var1, var2, var3, var4);
             if (var5 != null)
             {
-                Block var6 = Block.blocksList[var5.getStoredBlockID()];
+                Block var6 = Block.blocksList[var5.getPushedBlockId()];
                 if (var6 == null || var6 == this)
                 {
                     return;
                 }
 
                 var6.setBlockBoundsBasedOnState(var1, var2, var3, var4);
-                float var7 = var5.func_31008_a(0.0F);
-                if (var5.func_31015_b())
+                float var7 = var5.getProgress(0.0F);
+                if (var5.isExtending())
                 {
                     var7 = 1.0F - var7;
                 }
 
-                int var8 = var5.func_31009_d();
+                int var8 = var5.getFacing();
                 minX = var6.minX - (double)((float)PistonBlockTextures.field_31056_b[var8] * var7);
                 minY = var6.minY - (double)((float)PistonBlockTextures.field_31059_c[var8] * var7);
                 minZ = var6.minZ - (double)((float)PistonBlockTextures.field_31058_d[var8] * var7);
@@ -151,7 +151,7 @@ namespace betareborn.Blocks
 
         }
 
-        public Box func_31035_a(World var1, int var2, int var3, int var4, int var5, float var6, int var7)
+        public Box getPushedBlockCollisionShape(World var1, int var2, int var3, int var4, int var5, float var6, int var7)
         {
             if (var5 != 0 && var5 != blockID)
             {

@@ -17,22 +17,22 @@ namespace betareborn.Packets
             this.id = var1;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.id = var1.readShort();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeShort(this.id);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleBlockItemSwitch(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 2;
         }

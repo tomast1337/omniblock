@@ -12,10 +12,10 @@ namespace betareborn.Packets
 
         public Packet131MapData()
         {
-            this.isChunkDataPacket = true;
+            this.worldPacket = true;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.field_28055_a = var1.readShort();
             this.field_28054_b = var1.readShort();
@@ -23,7 +23,7 @@ namespace betareborn.Packets
             var1.readFully(this.field_28056_c);
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeShort(this.field_28055_a);
             var1.writeShort(this.field_28054_b);
@@ -31,12 +31,12 @@ namespace betareborn.Packets
             var1.write(this.field_28056_c);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.func_28116_a(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 4 + this.field_28056_c.Length;
         }

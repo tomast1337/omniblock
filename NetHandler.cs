@@ -198,7 +198,7 @@ namespace betareborn
             this.registerPacket(var1);
         }
 
-        public virtual void handleSignUpdate(Packet130UpdateSign var1)
+        public virtual void handleSignUpdate(UpdateSignPacket var1)
         {
             this.registerPacket(var1);
         }

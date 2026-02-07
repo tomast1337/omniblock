@@ -11,7 +11,7 @@ namespace betareborn.Packets
         private static Set clientPacketIdList = new HashSet();
         private static Set serverPacketIdList = new HashSet();
         public readonly long creationTimeMillis = java.lang.System.currentTimeMillis();
-        public bool isChunkDataPacket = false;
+        public bool worldPacket = false;
         private static HashMap packetStats;
         private static int totalPacketsCount;
 
@@ -88,7 +88,7 @@ namespace betareborn.Packets
                     throw new java.io.IOException("Bad packet id " + var6);
                 }
 
-                var3.readPacketData(var0);
+                var3.read(var0);
             }
             catch (EOFException var5)
             {
@@ -103,7 +103,7 @@ namespace betareborn.Packets
                 packetStats.put(Integer.valueOf(var6), var4);
             }
 
-            var4.addPacket(var3.getPacketSize());
+            var4.addPacket(var3.size());
             ++totalPacketsCount;
             if (totalPacketsCount % 1000 == 0)
             {
@@ -115,7 +115,7 @@ namespace betareborn.Packets
         public static void writePacket(Packet var0, DataOutputStream var1)
         {
             var1.write(var0.getPacketId());
-            var0.writePacketData(var1);
+            var0.write(var1);
         }
 
         public static void writeString(string var0, DataOutputStream var1)
@@ -156,13 +156,13 @@ namespace betareborn.Packets
             }
         }
 
-        public abstract void readPacketData(DataInputStream var1);
+        public abstract void read(DataInputStream var1);
 
-        public abstract void writePacketData(DataOutputStream var1);
+        public abstract void write(DataOutputStream var1);
 
-        public abstract void processPacket(NetHandler var1);
+        public abstract void apply(NetHandler var1);
 
-        public abstract int getPacketSize();
+        public abstract int size();
 
         static Packet()
         {
@@ -219,7 +219,7 @@ namespace betareborn.Packets
             addIdClassMapping(104, true, false, Packet104WindowItems.Class);
             addIdClassMapping(105, true, false, Packet105UpdateProgressbar.Class);
             addIdClassMapping(106, true, true, Packet106Transaction.Class);
-            addIdClassMapping(130, true, true, Packet130UpdateSign.Class);
+            addIdClassMapping(130, true, true, UpdateSignPacket.Class);
             addIdClassMapping(131, true, false, Packet131MapData.Class);
             addIdClassMapping(200, true, false, Packet200Statistic.Class);
             addIdClassMapping(255, true, true, Packet255KickDisconnect.Class);

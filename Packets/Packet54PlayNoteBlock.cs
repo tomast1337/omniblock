@@ -12,7 +12,7 @@ namespace betareborn.Packets
         public int instrumentType;
         public int pitch;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.xLocation = var1.readInt();
             this.yLocation = var1.readShort();
@@ -21,7 +21,7 @@ namespace betareborn.Packets
             this.pitch = var1.read();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.xLocation);
             var1.writeShort(this.yLocation);
@@ -30,12 +30,12 @@ namespace betareborn.Packets
             var1.write(this.pitch);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleNotePlay(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 12;
         }

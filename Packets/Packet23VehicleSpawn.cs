@@ -16,7 +16,7 @@ namespace betareborn.Packets
         public int type;
         public int field_28044_i;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityId = var1.readInt();
             this.type = (sbyte)var1.readByte();
@@ -33,7 +33,7 @@ namespace betareborn.Packets
 
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityId);
             var1.writeByte(this.type);
@@ -50,12 +50,12 @@ namespace betareborn.Packets
 
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleVehicleSpawn(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 21 + this.field_28044_i > 0 ? 6 : 0;
         }

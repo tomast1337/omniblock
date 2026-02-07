@@ -22,22 +22,22 @@ namespace betareborn.Packets
             this.message = var1;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.message = readString(var1, 119);
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             writeString(this.message, var1);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleChat(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return this.message.Length;
         }

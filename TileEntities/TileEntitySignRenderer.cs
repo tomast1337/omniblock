@@ -58,17 +58,17 @@ namespace betareborn.TileEntities
             GLManager.GL.DepthMask(false);
             byte var13 = 0;
 
-            for (int var14 = 0; var14 < var1.signText.Length; ++var14)
+            for (int var14 = 0; var14 < var1.texts.Length; ++var14)
             {
-                String var15 = var1.signText[var14];
-                if (var14 == var1.lineBeingEdited)
+                String var15 = var1.texts[var14];
+                if (var14 == var1.currentRow)
                 {
                     var15 = "> " + var15 + " <";
-                    var17.drawString(var15, -var17.getStringWidth(var15) / 2, var14 * 10 - var1.signText.Length * 5, var13);
+                    var17.drawString(var15, -var17.getStringWidth(var15) / 2, var14 * 10 - var1.texts.Length * 5, var13);
                 }
                 else
                 {
-                    var17.drawString(var15, -var17.getStringWidth(var15) / 2, var14 * 10 - var1.signText.Length * 5, var13);
+                    var17.drawString(var15, -var17.getStringWidth(var15) / 2, var14 * 10 - var1.texts.Length * 5, var13);
                 }
             }
 

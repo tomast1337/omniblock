@@ -28,7 +28,7 @@ namespace betareborn.Packets
             this.title = var1.art.title;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityId = var1.readInt();
             this.title = readString(var1, EnumArt.maxArtTitleLength);
@@ -38,7 +38,7 @@ namespace betareborn.Packets
             this.direction = var1.readInt();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityId);
             writeString(this.title, var1);
@@ -48,12 +48,12 @@ namespace betareborn.Packets
             var1.writeInt(this.direction);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.func_21146_a(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 24;
         }

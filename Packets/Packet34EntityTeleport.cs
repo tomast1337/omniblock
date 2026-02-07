@@ -28,7 +28,7 @@ namespace betareborn.Packets
             this.pitch = (sbyte)((int)(var1.rotationPitch * 256.0F / 360.0F));
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityId = var1.readInt();
             this.xPosition = var1.readInt();
@@ -38,7 +38,7 @@ namespace betareborn.Packets
             this.pitch = (sbyte)var1.read();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityId);
             var1.writeInt(this.xPosition);
@@ -48,12 +48,12 @@ namespace betareborn.Packets
             var1.write(this.pitch);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleEntityTeleport(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 34;
         }

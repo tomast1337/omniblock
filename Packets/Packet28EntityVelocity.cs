@@ -59,7 +59,7 @@ namespace betareborn.Packets
             this.motionZ = (int)(var6 * 8000.0D);
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityId = var1.readInt();
             this.motionX = var1.readShort();
@@ -67,7 +67,7 @@ namespace betareborn.Packets
             this.motionZ = var1.readShort();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityId);
             var1.writeShort(this.motionX);
@@ -75,12 +75,12 @@ namespace betareborn.Packets
             var1.writeShort(this.motionZ);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.func_6498_a(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 10;
         }

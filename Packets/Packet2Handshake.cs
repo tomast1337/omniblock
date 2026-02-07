@@ -17,22 +17,22 @@ namespace betareborn.Packets
             this.username = var1;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.username = readString(var1, 32);
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             writeString(this.username, var1);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleHandshake(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 4 + this.username.Length + 4;
         }

@@ -8,22 +8,22 @@ namespace betareborn.Packets
 
         public long time;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.time = var1.readLong();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeLong(this.time);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleUpdateTime(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 8;
         }

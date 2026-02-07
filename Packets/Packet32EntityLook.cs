@@ -11,21 +11,21 @@ namespace betareborn.Packets
             this.rotating = true;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
-            base.readPacketData(var1);
+            base.read(var1);
             this.yaw = (sbyte)var1.readByte();
             this.pitch = (sbyte)var1.readByte();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
-            base.writePacketData(var1);
+            base.write(var1);
             var1.writeByte(this.yaw);
             var1.writeByte(this.pitch);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 6;
         }

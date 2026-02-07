@@ -677,18 +677,18 @@ namespace betareborn
 
         }
 
-        public override void handleSignUpdate(Packet130UpdateSign var1)
+        public override void handleSignUpdate(UpdateSignPacket var1)
         {
-            if (mc.theWorld.blockExists(var1.xPosition, var1.yPosition, var1.zPosition))
+            if (mc.theWorld.blockExists(var1.x, var1.y, var1.z))
             {
-                TileEntity var2 = mc.theWorld.getBlockTileEntity(var1.xPosition, var1.yPosition, var1.zPosition);
+                TileEntity var2 = mc.theWorld.getBlockTileEntity(var1.x, var1.y, var1.z);
                 if (var2 is TileEntitySign)
                 {
                     TileEntitySign var3 = (TileEntitySign)var2;
 
                     for (int var4 = 0; var4 < 4; ++var4)
                     {
-                        var3.signText[var4] = var1.signLines[var4];
+                        var3.texts[var4] = var1.text[var4];
                     }
 
                     var3.markDirty();

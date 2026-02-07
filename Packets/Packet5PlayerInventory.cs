@@ -11,7 +11,7 @@ namespace betareborn.Packets
         public int itemID;
         public int itemDamage;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityID = var1.readInt();
             this.slot = var1.readShort();
@@ -19,7 +19,7 @@ namespace betareborn.Packets
             this.itemDamage = var1.readShort();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityID);
             var1.writeShort(this.slot);
@@ -27,12 +27,12 @@ namespace betareborn.Packets
             var1.writeShort(this.itemDamage);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handlePlayerInventory(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 8;
         }

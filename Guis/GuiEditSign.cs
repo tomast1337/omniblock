@@ -30,7 +30,7 @@ namespace betareborn.Guis
             Keyboard.enableRepeatEvents(false);
             if (mc.theWorld.multiplayerWorld)
             {
-                mc.getSendQueue().addToSendQueue(new Packet130UpdateSign(entitySign.x, entitySign.y, entitySign.z, entitySign.signText));
+                mc.getSendQueue().addToSendQueue(new UpdateSignPacket(entitySign.x, entitySign.y, entitySign.z, entitySign.texts));
             }
 
         }
@@ -65,14 +65,14 @@ namespace betareborn.Guis
                 editLine = editLine + 1 & 3;
             }
 
-            if (eventKey == 14 && entitySign.signText[editLine].Length > 0)
+            if (eventKey == 14 && entitySign.texts[editLine].Length > 0)
             {
-                entitySign.signText[editLine] = entitySign.signText[editLine].Substring(0, entitySign.signText[editLine].Length - 1);
+                entitySign.texts[editLine] = entitySign.texts[editLine].Substring(0, entitySign.texts[editLine].Length - 1);
             }
 
-            if (allowedCharacters.IndexOf(eventChar) >= 0 && entitySign.signText[editLine].Length < 15)
+            if (allowedCharacters.IndexOf(eventChar) >= 0 && entitySign.texts[editLine].Length < 15)
             {
-                entitySign.signText[editLine] = entitySign.signText[editLine] + eventChar;
+                entitySign.texts[editLine] = entitySign.texts[editLine] + eventChar;
             }
 
         }
@@ -118,11 +118,11 @@ namespace betareborn.Guis
 
             if (updateCounter / 6 % 2 == 0)
             {
-                entitySign.lineBeingEdited = editLine;
+                entitySign.currentRow = editLine;
             }
 
             TileEntityRenderer.instance.renderTileEntityAt(entitySign, -0.5D, -0.75D, -0.5D, 0.0F);
-            entitySign.lineBeingEdited = -1;
+            entitySign.currentRow = -1;
             GLManager.GL.PopMatrix();
             base.drawScreen(var1, var2, var3);
         }

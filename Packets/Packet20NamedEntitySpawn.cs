@@ -34,7 +34,7 @@ namespace betareborn.Packets
             this.currentItem = var2 == null ? 0 : var2.itemID;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityId = var1.readInt();
             this.name = readString(var1, 16);
@@ -46,7 +46,7 @@ namespace betareborn.Packets
             this.currentItem = var1.readShort();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityId);
             writeString(this.name, var1);
@@ -58,12 +58,12 @@ namespace betareborn.Packets
             var1.writeShort(this.currentItem);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleNamedEntitySpawn(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 28;
         }

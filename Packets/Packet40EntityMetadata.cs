@@ -10,24 +10,24 @@ namespace betareborn.Packets
         public int entityId;
         private List field_21048_b;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityId = var1.readInt();
             this.field_21048_b = DataWatcher.readWatchableObjects(var1);
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityId);
             DataWatcher.writeObjectsInListToStream(this.field_21048_b, var1);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.func_21148_a(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 5;
         }

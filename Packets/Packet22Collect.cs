@@ -9,24 +9,24 @@ namespace betareborn.Packets
         public int collectedEntityId;
         public int collectorEntityId;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.collectedEntityId = var1.readInt();
             this.collectorEntityId = var1.readInt();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.collectedEntityId);
             var1.writeInt(this.collectorEntityId);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleCollect(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 8;
         }

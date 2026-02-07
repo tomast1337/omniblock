@@ -65,8 +65,8 @@ namespace betareborn
                 Object var2 = sendQueueLock;
                 lock (var2)
                 {
-                    sendQueueByteLength += var1.getPacketSize() + 1;
-                    if (var1.isChunkDataPacket)
+                    sendQueueByteLength += var1.size() + 1;
+                    if (var1.worldPacket)
                     {
                         chunkDataPackets.add(var1);
                     }
@@ -95,13 +95,13 @@ namespace betareborn
                     lock (var3)
                     {
                         var2 = (Packet)dataPackets.remove(0);
-                        sendQueueByteLength -= var2.getPacketSize() + 1;
+                        sendQueueByteLength -= var2.size() + 1;
                     }
 
                     Packet.writePacket(var2, socketOutputStream);
                     var10000 = field_28144_e;
                     var10001 = var2.getPacketId();
-                    var10000[var10001] += var2.getPacketSize() + 1;
+                    var10000[var10001] += var2.size() + 1;
                     var1 = true;
                 }
 
@@ -111,13 +111,13 @@ namespace betareborn
                     lock (var3)
                     {
                         var2 = (Packet)chunkDataPackets.remove(0);
-                        sendQueueByteLength -= var2.getPacketSize() + 1;
+                        sendQueueByteLength -= var2.size() + 1;
                     }
 
                     Packet.writePacket(var2, socketOutputStream);
                     var10000 = field_28144_e;
                     var10001 = var2.getPacketId();
-                    var10000[var10001] += var2.getPacketSize() + 1;
+                    var10000[var10001] += var2.size() + 1;
                     field_20100_w = 0;
                     var1 = true;
                 }
@@ -152,7 +152,7 @@ namespace betareborn
                 {
                     int[] var10000 = field_28145_d;
                     int var10001 = var2.getPacketId();
-                    var10000[var10001] += var2.getPacketSize() + 1;
+                    var10000[var10001] += var2.size() + 1;
                     readPackets.add(var2);
                     var1 = true;
                 }
@@ -244,7 +244,7 @@ namespace betareborn
             while (!readPackets.isEmpty() && var1-- >= 0)
             {
                 Packet var2 = (Packet)readPackets.remove(0);
-                var2.processPacket(netHandler);
+                var2.apply(netHandler);
             }
 
             wakeThreads();

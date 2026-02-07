@@ -14,7 +14,7 @@ namespace betareborn.Packets
         public float explosionSize;
         public Set destroyedBlockPositions;
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.explosionX = var1.readDouble();
             this.explosionY = var1.readDouble();
@@ -37,7 +37,7 @@ namespace betareborn.Packets
 
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeDouble(this.explosionX);
             var1.writeDouble(this.explosionY);
@@ -62,12 +62,12 @@ namespace betareborn.Packets
 
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.func_12245_a(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 32 + this.destroyedBlockPositions.size() * 3;
         }

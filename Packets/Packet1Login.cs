@@ -21,7 +21,7 @@ namespace betareborn.Packets
             this.protocolVersion = var2;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.protocolVersion = var1.readInt();
             this.username = readString(var1, 16);
@@ -29,7 +29,7 @@ namespace betareborn.Packets
             this.dimension = (sbyte)var1.readByte();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.protocolVersion);
             writeString(this.username, var1);
@@ -37,12 +37,12 @@ namespace betareborn.Packets
             var1.writeByte(this.dimension);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleLogin(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 4 + this.username.Length + 4 + 5;
         }

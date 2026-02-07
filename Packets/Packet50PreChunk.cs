@@ -12,29 +12,29 @@ namespace betareborn.Packets
 
         public Packet50PreChunk()
         {
-            this.isChunkDataPacket = false;
+            this.worldPacket = false;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.xPosition = var1.readInt();
             this.yPosition = var1.readInt();
             this.mode = var1.read() != 0;
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.xPosition);
             var1.writeInt(this.yPosition);
             var1.write(this.mode ? 1 : 0);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handlePreChunk(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 9;
         }

@@ -26,7 +26,7 @@ namespace betareborn.Packets
             this.itemStack = var5;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.xPosition = var1.readInt();
             this.yPosition = var1.read();
@@ -46,7 +46,7 @@ namespace betareborn.Packets
 
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.xPosition);
             var1.write(this.yPosition);
@@ -65,12 +65,12 @@ namespace betareborn.Packets
 
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handlePlace(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 15;
         }

@@ -118,7 +118,7 @@ namespace betareborn.Blocks
                 TileEntity var8 = var1.getBlockTileEntity(var2 + PistonBlockTextures.field_31056_b[var6], var3 + PistonBlockTextures.field_31059_c[var6], var4 + PistonBlockTextures.field_31058_d[var6]);
                 if (var8 != null && var8 is TileEntityPiston)
                 {
-                    ((TileEntityPiston)var8).func_31011_l();
+                    ((TileEntityPiston)var8).finish();
                 }
 
                 var1.setBlockAndMetadata(var2, var3, var4, Block.pistonMoving.blockID, var6);
@@ -137,10 +137,10 @@ namespace betareborn.Blocks
                         if (var15 != null && var15 is TileEntityPiston)
                         {
                             TileEntityPiston var16 = (TileEntityPiston)var15;
-                            if (var16.func_31009_d() == var6 && var16.func_31015_b())
+                            if (var16.getFacing() == var6 && var16.isExtending())
                             {
-                                var16.func_31011_l();
-                                var12 = var16.getStoredBlockID();
+                                var16.finish();
+                                var12 = var16.getPushedBlockId();
                                 var13 = var16.getPushedBlockData();
                                 var14 = true;
                             }

@@ -1,4 +1,5 @@
 using betareborn.NBT;
+using betareborn.Packets;
 using java.lang;
 
 namespace betareborn.TileEntities
@@ -6,33 +7,55 @@ namespace betareborn.TileEntities
     public class TileEntitySign : TileEntity
     {
         public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntitySign).TypeHandle);
-        public string[] signText = ["", "", "", ""];
-        public int lineBeingEdited = -1;
-        private bool field_25062_c = true;
+        public string[] texts = ["", "", "", ""];
+        public int currentRow = -1;
+        private bool editable = true;
 
-        public override void writeNbt(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeNbt(var1);
-            var1.setString("Text1", signText[0]);
-            var1.setString("Text2", signText[1]);
-            var1.setString("Text3", signText[2]);
-            var1.setString("Text4", signText[3]);
+            base.writeNbt(nbt);
+            nbt.setString("Text1", texts[0]);
+            nbt.setString("Text2", texts[1]);
+            nbt.setString("Text3", texts[2]);
+            nbt.setString("Text4", texts[3]);
         }
 
-        public override void readNbt(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            field_25062_c = false;
-            base.readNbt(var1);
+            editable = false;
+            base.readNbt(nbt);
 
             for (int var2 = 0; var2 < 4; ++var2)
             {
-                signText[var2] = var1.getString("Text" + (var2 + 1));
-                if (signText[var2].Length > 15)
+                texts[var2] = nbt.getString("Text" + (var2 + 1));
+                if (texts[var2].Length > 15)
                 {
-                    signText[var2] = signText[var2].Substring(0, 15);
+                    texts[var2] = texts[var2].Substring(0, 15);
                 }
             }
 
+        }
+
+        public override Packet createUpdatePacket()
+        {
+            string[] var1 = new string[4];
+
+            for (int var2 = 0; var2 < 4; var2++)
+            {
+                var1[var2] = texts[var2];
+            }
+
+            return new UpdateSignPacket(x, y, z, var1);
+        }
+
+        public bool isEditable()
+        {
+            return editable;
+        }
+
+        public void setEditable(bool editable)
+        {
+            this.editable = editable;
         }
     }
 

@@ -36,7 +36,7 @@ namespace betareborn.Packets
             this.roll = (sbyte)((int)(var1.motionZ * 128.0D));
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.entityId = var1.readInt();
             this.itemID = var1.readShort();
@@ -50,7 +50,7 @@ namespace betareborn.Packets
             this.roll = (sbyte)var1.readByte();
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.entityId);
             var1.writeShort(this.itemID);
@@ -64,12 +64,12 @@ namespace betareborn.Packets
             var1.writeByte(this.roll);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handlePickupSpawn(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 24;
         }

@@ -15,10 +15,10 @@ namespace betareborn.Packets
 
         public Packet52MultiBlockChange()
         {
-            this.isChunkDataPacket = true;
+            this.worldPacket = true;
         }
 
-        public override void readPacketData(DataInputStream var1)
+        public override void read(DataInputStream var1)
         {
             this.xPosition = var1.readInt();
             this.zPosition = var1.readInt();
@@ -37,7 +37,7 @@ namespace betareborn.Packets
             var1.readFully(this.metadataArray);
         }
 
-        public override void writePacketData(DataOutputStream var1)
+        public override void write(DataOutputStream var1)
         {
             var1.writeInt(this.xPosition);
             var1.writeInt(this.zPosition);
@@ -52,12 +52,12 @@ namespace betareborn.Packets
             var1.write(this.metadataArray);
         }
 
-        public override void processPacket(NetHandler var1)
+        public override void apply(NetHandler var1)
         {
             var1.handleMultiBlockChange(this);
         }
 
-        public override int getPacketSize()
+        public override int size()
         {
             return 10 + this.size * 4;
         }

@@ -114,7 +114,7 @@ namespace betareborn.TileEntities
             return Block.blocksList[world.getBlockId(x, y, z)];
         }
 
-        public Packet createUpdatePacket()
+        public virtual Packet createUpdatePacket()
         {
             return null;
         }
