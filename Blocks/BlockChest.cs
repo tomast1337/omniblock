@@ -10,27 +10,27 @@ namespace betareborn.Blocks
     {
         private java.util.Random random = new();
 
-        public BlockChest(int var1) : base(var1, Material.WOOD)
+        public BlockChest(int id) : base(id, Material.WOOD)
         {
             textureId = 26;
         }
 
-        public override int getTexture(BlockView var1, int var2, int var3, int var4, int var5)
+        public override int getTexture(BlockView blockView, int x, int y, int z, int side)
         {
-            if (var5 == 1)
+            if (side == 1)
             {
                 return textureId - 1;
             }
-            else if (var5 == 0)
+            else if (side == 0)
             {
                 return textureId - 1;
             }
             else
             {
-                int var6 = var1.getBlockId(var2, var3, var4 - 1);
-                int var7 = var1.getBlockId(var2, var3, var4 + 1);
-                int var8 = var1.getBlockId(var2 - 1, var3, var4);
-                int var9 = var1.getBlockId(var2 + 1, var3, var4);
+                int var6 = blockView.getBlockId(x, y, z - 1);
+                int var7 = blockView.getBlockId(x, y, z + 1);
+                int var8 = blockView.getBlockId(x - 1, y, z);
+                int var9 = blockView.getBlockId(x + 1, y, z);
                 int var10;
                 int var11;
                 int var12;
@@ -60,9 +60,9 @@ namespace betareborn.Blocks
                             var14 = 4;
                         }
 
-                        return var5 == var14 ? textureId + 1 : textureId;
+                        return side == var14 ? textureId + 1 : textureId;
                     }
-                    else if (var5 != 4 && var5 != 5)
+                    else if (side != 4 && side != 5)
                     {
                         var10 = 0;
                         if (var8 == id)
@@ -70,9 +70,9 @@ namespace betareborn.Blocks
                             var10 = -1;
                         }
 
-                        var11 = var1.getBlockId(var8 == id ? var2 - 1 : var2 + 1, var3, var4 - 1);
-                        var12 = var1.getBlockId(var8 == id ? var2 - 1 : var2 + 1, var3, var4 + 1);
-                        if (var5 == 3)
+                        var11 = blockView.getBlockId(var8 == id ? x - 1 : x + 1, y, z - 1);
+                        var12 = blockView.getBlockId(var8 == id ? x - 1 : x + 1, y, z + 1);
+                        if (side == 3)
                         {
                             var10 = -1 - var10;
                         }
@@ -88,14 +88,14 @@ namespace betareborn.Blocks
                             var13 = 2;
                         }
 
-                        return (var5 == var13 ? textureId + 16 : textureId + 32) + var10;
+                        return (side == var13 ? textureId + 16 : textureId + 32) + var10;
                     }
                     else
                     {
                         return textureId;
                     }
                 }
-                else if (var5 != 2 && var5 != 3)
+                else if (side != 2 && side != 3)
                 {
                     var10 = 0;
                     if (var6 == id)
@@ -103,9 +103,9 @@ namespace betareborn.Blocks
                         var10 = -1;
                     }
 
-                    var11 = var1.getBlockId(var2 - 1, var3, var6 == id ? var4 - 1 : var4 + 1);
-                    var12 = var1.getBlockId(var2 + 1, var3, var6 == id ? var4 - 1 : var4 + 1);
-                    if (var5 == 4)
+                    var11 = blockView.getBlockId(x - 1, y, var6 == id ? z - 1 : z + 1);
+                    var12 = blockView.getBlockId(x + 1, y, var6 == id ? z - 1 : z + 1);
+                    if (side == 4)
                     {
                         var10 = -1 - var10;
                     }
@@ -121,7 +121,7 @@ namespace betareborn.Blocks
                         var13 = 4;
                     }
 
-                    return (var5 == var13 ? textureId + 16 : textureId + 32) + var10;
+                    return (side == var13 ? textureId + 16 : textureId + 32) + var10;
                 }
                 else
                 {
@@ -130,45 +130,45 @@ namespace betareborn.Blocks
             }
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 1 ? textureId - 1 : (var1 == 0 ? textureId - 1 : (var1 == 3 ? textureId + 1 : textureId));
+            return side == 1 ? textureId - 1 : (side == 0 ? textureId - 1 : (side == 3 ? textureId + 1 : textureId));
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
             int var5 = 0;
-            if (var1.getBlockId(var2 - 1, var3, var4) == id)
+            if (world.getBlockId(x - 1, y, z) == id)
             {
                 ++var5;
             }
 
-            if (var1.getBlockId(var2 + 1, var3, var4) == id)
+            if (world.getBlockId(x + 1, y, z) == id)
             {
                 ++var5;
             }
 
-            if (var1.getBlockId(var2, var3, var4 - 1) == id)
+            if (world.getBlockId(x, y, z - 1) == id)
             {
                 ++var5;
             }
 
-            if (var1.getBlockId(var2, var3, var4 + 1) == id)
+            if (world.getBlockId(x, y, z + 1) == id)
             {
                 ++var5;
             }
 
-            return var5 > 1 ? false : (isThereANeighborChest(var1, var2 - 1, var3, var4) ? false : (isThereANeighborChest(var1, var2 + 1, var3, var4) ? false : (isThereANeighborChest(var1, var2, var3, var4 - 1) ? false : !isThereANeighborChest(var1, var2, var3, var4 + 1))));
+            return var5 > 1 ? false : (hasNeighbor(world, x - 1, y, z) ? false : (hasNeighbor(world, x + 1, y, z) ? false : (hasNeighbor(world, x, y, z - 1) ? false : !hasNeighbor(world, x, y, z + 1))));
         }
 
-        private bool isThereANeighborChest(World var1, int var2, int var3, int var4)
+        private bool hasNeighbor(World world, int x, int y, int z)
         {
-            return var1.getBlockId(var2, var3, var4) != id ? false : (var1.getBlockId(var2 - 1, var3, var4) == id ? true : (var1.getBlockId(var2 + 1, var3, var4) == id ? true : (var1.getBlockId(var2, var3, var4 - 1) == id ? true : var1.getBlockId(var2, var3, var4 + 1) == id)));
+            return world.getBlockId(x, y, z) != id ? false : (world.getBlockId(x - 1, y, z) == id ? true : (world.getBlockId(x + 1, y, z) == id ? true : (world.getBlockId(x, y, z - 1) == id ? true : world.getBlockId(x, y, z + 1) == id)));
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            TileEntityChest var5 = (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4);
+            TileEntityChest var5 = (TileEntityChest)world.getBlockTileEntity(x, y, z);
 
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {
@@ -188,71 +188,71 @@ namespace betareborn.Blocks
                         }
 
                         var7.count -= var11;
-                        EntityItem var12 = new EntityItem(var1, (double)((float)var2 + var8), (double)((float)var3 + var9), (double)((float)var4 + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
+                        EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
                         float var13 = 0.05F;
                         var12.motionX = (double)((float)random.nextGaussian() * var13);
                         var12.motionY = (double)((float)random.nextGaussian() * var13 + 0.2F);
                         var12.motionZ = (double)((float)random.nextGaussian() * var13);
-                        var1.spawnEntity(var12);
+                        world.spawnEntity(var12);
                     }
                 }
             }
 
-            base.onBreak(var1, var2, var3, var4);
+            base.onBreak(world, x, y, z);
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            java.lang.Object var6 = (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4);
-            if (var1.shouldSuffocate(var2, var3 + 1, var4))
+            java.lang.Object var6 = (TileEntityChest)world.getBlockTileEntity(x, y, z);
+            if (world.shouldSuffocate(x, y + 1, z))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2 - 1, var3, var4) == id && var1.shouldSuffocate(var2 - 1, var3 + 1, var4))
+            else if (world.getBlockId(x - 1, y, z) == id && world.shouldSuffocate(x - 1, y + 1, z))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2 + 1, var3, var4) == id && var1.shouldSuffocate(var2 + 1, var3 + 1, var4))
+            else if (world.getBlockId(x + 1, y, z) == id && world.shouldSuffocate(x + 1, y + 1, z))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2, var3, var4 - 1) == id && var1.shouldSuffocate(var2, var3 + 1, var4 - 1))
+            else if (world.getBlockId(x, y, z - 1) == id && world.shouldSuffocate(x, y + 1, z - 1))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2, var3, var4 + 1) == id && var1.shouldSuffocate(var2, var3 + 1, var4 + 1))
+            else if (world.getBlockId(x, y, z + 1) == id && world.shouldSuffocate(x, y + 1, z + 1))
             {
                 return true;
             }
             else
             {
-                if (var1.getBlockId(var2 - 1, var3, var4) == id)
+                if (world.getBlockId(x - 1, y, z) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)var1.getBlockTileEntity(var2 - 1, var3, var4), (IInventory)var6);
+                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockTileEntity(x - 1, y, z), (IInventory)var6);
                 }
 
-                if (var1.getBlockId(var2 + 1, var3, var4) == id)
+                if (world.getBlockId(x + 1, y, z) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)var1.getBlockTileEntity(var2 + 1, var3, var4));
+                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockTileEntity(x + 1, y, z));
                 }
 
-                if (var1.getBlockId(var2, var3, var4 - 1) == id)
+                if (world.getBlockId(x, y, z - 1) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4 - 1), (IInventory)var6);
+                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockTileEntity(x, y, z - 1), (IInventory)var6);
                 }
 
-                if (var1.getBlockId(var2, var3, var4 + 1) == id)
+                if (world.getBlockId(x, y, z + 1) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4 + 1));
+                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockTileEntity(x, y, z + 1));
                 }
 
-                if (var1.isRemote)
+                if (world.isRemote)
                 {
                     return true;
                 }
                 else
                 {
-                    var5.displayGUIChest((IInventory)var6);
+                    player.displayGUIChest((IInventory)var6);
                     return true;
                 }
             }

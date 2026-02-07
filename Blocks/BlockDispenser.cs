@@ -10,7 +10,7 @@ namespace betareborn.Blocks
     {
         private java.util.Random random = new();
 
-        public BlockDispenser(int var1) : base(var1, Material.STONE)
+        public BlockDispenser(int id) : base(id, Material.STONE)
         {
             textureId = 45;
         }
@@ -20,25 +20,25 @@ namespace betareborn.Blocks
             return 4;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Block.DISPENSER.id;
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            base.onPlaced(var1, var2, var3, var4);
-            setDispenserDefaultDirection(var1, var2, var3, var4);
+            base.onPlaced(world, x, y, z);
+            updateDirection(world, x, y, z);
         }
 
-        private void setDispenserDefaultDirection(World var1, int var2, int var3, int var4)
+        private void updateDirection(World world, int x, int y, int z)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                int var5 = var1.getBlockId(var2, var3, var4 - 1);
-                int var6 = var1.getBlockId(var2, var3, var4 + 1);
-                int var7 = var1.getBlockId(var2 - 1, var3, var4);
-                int var8 = var1.getBlockId(var2 + 1, var3, var4);
+                int var5 = world.getBlockId(x, y, z - 1);
+                int var6 = world.getBlockId(x, y, z + 1);
+                int var7 = world.getBlockId(x - 1, y, z);
+                int var8 = world.getBlockId(x + 1, y, z);
                 sbyte var9 = 3;
                 if (Block.BLOCKS_OPAQUE[var5] && !Block.BLOCKS_OPAQUE[var6])
                 {
@@ -60,49 +60,49 @@ namespace betareborn.Blocks
                     var9 = 4;
                 }
 
-                var1.setBlockMeta(var2, var3, var4, var9);
+                world.setBlockMeta(x, y, z, var9);
             }
         }
 
-        public override int getTexture(BlockView var1, int var2, int var3, int var4, int var5)
+        public override int getTexture(BlockView blockView, int x, int y, int z, int side)
         {
-            if (var5 == 1)
+            if (side == 1)
             {
                 return textureId + 17;
             }
-            else if (var5 == 0)
+            else if (side == 0)
             {
                 return textureId + 17;
             }
             else
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                return var5 != var6 ? textureId : textureId + 1;
+                int var6 = blockView.getBlockMeta(x, y, z);
+                return side != var6 ? textureId : textureId + 1;
             }
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 1 ? textureId + 17 : (var1 == 0 ? textureId + 17 : (var1 == 3 ? textureId + 1 : textureId));
+            return side == 1 ? textureId + 17 : (side == 0 ? textureId + 17 : (side == 3 ? textureId + 1 : textureId));
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (var1.isRemote)
+            if (world.isRemote)
             {
                 return true;
             }
             else
             {
-                TileEntityDispenser var6 = (TileEntityDispenser)var1.getBlockTileEntity(var2, var3, var4);
-                var5.displayGUIDispenser(var6);
+                TileEntityDispenser var6 = (TileEntityDispenser)world.getBlockTileEntity(x, y, z);
+                player.displayGUIDispenser(var6);
                 return true;
             }
         }
 
-        private void dispenseItem(World var1, int var2, int var3, int var4, java.util.Random var5)
+        private void dispense(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = world.getBlockMeta(x, y, z);
             int var9 = 0;
             int var10 = 0;
             if (var6 == 3)
@@ -122,76 +122,76 @@ namespace betareborn.Blocks
                 var9 = -1;
             }
 
-            TileEntityDispenser var11 = (TileEntityDispenser)var1.getBlockTileEntity(var2, var3, var4);
+            TileEntityDispenser var11 = (TileEntityDispenser)world.getBlockTileEntity(x, y, z);
             ItemStack var12 = var11.getItemToDispose();
-            double var13 = (double)var2 + (double)var9 * 0.6D + 0.5D;
-            double var15 = (double)var3 + 0.5D;
-            double var17 = (double)var4 + (double)var10 * 0.6D + 0.5D;
+            double var13 = (double)x + (double)var9 * 0.6D + 0.5D;
+            double var15 = (double)y + 0.5D;
+            double var17 = (double)z + (double)var10 * 0.6D + 0.5D;
             if (var12 == null)
             {
-                var1.func_28106_e(1001, var2, var3, var4, 0);
+                world.worldEvent(1001, x, y, z, 0);
             }
             else
             {
                 if (var12.itemID == Item.arrow.id)
                 {
-                    EntityArrow var19 = new EntityArrow(var1, var13, var15, var17);
+                    EntityArrow var19 = new EntityArrow(world, var13, var15, var17);
                     var19.setArrowHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
                     var19.doesArrowBelongToPlayer = true;
-                    var1.spawnEntity(var19);
-                    var1.func_28106_e(1002, var2, var3, var4, 0);
+                    world.spawnEntity(var19);
+                    world.worldEvent(1002, x, y, z, 0);
                 }
                 else if (var12.itemID == Item.egg.id)
                 {
-                    EntityEgg var22 = new EntityEgg(var1, var13, var15, var17);
+                    EntityEgg var22 = new EntityEgg(world, var13, var15, var17);
                     var22.setEggHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
-                    var1.spawnEntity(var22);
-                    var1.func_28106_e(1002, var2, var3, var4, 0);
+                    world.spawnEntity(var22);
+                    world.worldEvent(1002, x, y, z, 0);
                 }
                 else if (var12.itemID == Item.snowball.id)
                 {
-                    EntitySnowball var23 = new EntitySnowball(var1, var13, var15, var17);
+                    EntitySnowball var23 = new EntitySnowball(world, var13, var15, var17);
                     var23.setSnowballHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
-                    var1.spawnEntity(var23);
-                    var1.func_28106_e(1002, var2, var3, var4, 0);
+                    world.spawnEntity(var23);
+                    world.worldEvent(1002, x, y, z, 0);
                 }
                 else
                 {
-                    EntityItem var24 = new EntityItem(var1, var13, var15 - 0.3D, var17, var12);
-                    double var20 = var5.nextDouble() * 0.1D + 0.2D;
+                    EntityItem var24 = new EntityItem(world, var13, var15 - 0.3D, var17, var12);
+                    double var20 = random.nextDouble() * 0.1D + 0.2D;
                     var24.motionX = (double)var9 * var20;
                     var24.motionY = (double)0.2F;
                     var24.motionZ = (double)var10 * var20;
-                    var24.motionX += var5.nextGaussian() * (double)0.0075F * 6.0D;
-                    var24.motionY += var5.nextGaussian() * (double)0.0075F * 6.0D;
-                    var24.motionZ += var5.nextGaussian() * (double)0.0075F * 6.0D;
-                    var1.spawnEntity(var24);
-                    var1.func_28106_e(1000, var2, var3, var4, 0);
+                    var24.motionX += random.nextGaussian() * (double)0.0075F * 6.0D;
+                    var24.motionY += random.nextGaussian() * (double)0.0075F * 6.0D;
+                    var24.motionZ += random.nextGaussian() * (double)0.0075F * 6.0D;
+                    world.spawnEntity(var24);
+                    world.worldEvent(1000, x, y, z, 0);
                 }
 
-                var1.func_28106_e(2000, var2, var3, var4, var9 + 1 + (var10 + 1) * 3);
+                world.worldEvent(2000, x, y, z, var9 + 1 + (var10 + 1) * 3);
             }
 
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
+            if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
             {
-                bool var6 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
+                bool var6 = world.isBlockIndirectlyGettingPowered(x, y, z) || world.isBlockIndirectlyGettingPowered(x, y + 1, z);
                 if (var6)
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
+                    world.scheduleBlockUpdate(x, y, z, base.id, getTickRate());
                 }
             }
 
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4))
+            if (world.isBlockIndirectlyGettingPowered(x, y, z) || world.isBlockIndirectlyGettingPowered(x, y + 1, z))
             {
-                dispenseItem(var1, var2, var3, var4, var5);
+                dispense(world, x, y, z, random);
             }
 
         }
@@ -201,34 +201,34 @@ namespace betareborn.Blocks
             return new TileEntityDispenser();
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+            int var6 = MathHelper.floor_double((double)(placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)
             {
-                var1.setBlockMeta(var2, var3, var4, 2);
+                world.setBlockMeta(x, y, z, 2);
             }
 
             if (var6 == 1)
             {
-                var1.setBlockMeta(var2, var3, var4, 5);
+                world.setBlockMeta(x, y, z, 5);
             }
 
             if (var6 == 2)
             {
-                var1.setBlockMeta(var2, var3, var4, 3);
+                world.setBlockMeta(x, y, z, 3);
             }
 
             if (var6 == 3)
             {
-                var1.setBlockMeta(var2, var3, var4, 4);
+                world.setBlockMeta(x, y, z, 4);
             }
 
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            TileEntityDispenser var5 = (TileEntityDispenser)var1.getBlockTileEntity(var2, var3, var4);
+            TileEntityDispenser var5 = (TileEntityDispenser)world.getBlockTileEntity(x, y, z);
 
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {
@@ -248,17 +248,17 @@ namespace betareborn.Blocks
                         }
 
                         var7.count -= var11;
-                        EntityItem var12 = new EntityItem(var1, (double)((float)var2 + var8), (double)((float)var3 + var9), (double)((float)var4 + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
+                        EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
                         float var13 = 0.05F;
                         var12.motionX = (double)((float)random.nextGaussian() * var13);
                         var12.motionY = (double)((float)random.nextGaussian() * var13 + 0.2F);
                         var12.motionZ = (double)((float)random.nextGaussian() * var13);
-                        var1.spawnEntity(var12);
+                        world.spawnEntity(var12);
                     }
                 }
             }
 
-            base.onBreak(var1, var2, var3, var4);
+            base.onBreak(world, x, y, z);
         }
     }
 

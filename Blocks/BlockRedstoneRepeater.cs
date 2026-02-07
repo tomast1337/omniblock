@@ -161,12 +161,12 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World var1, int var2, int var3, int var4)
         {
-            var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
-            var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
-            var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
-            var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
-            var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-            var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
+            var1.notifyNeighbors(var2 + 1, var3, var4, id);
+            var1.notifyNeighbors(var2 - 1, var3, var4, id);
+            var1.notifyNeighbors(var2, var3, var4 + 1, id);
+            var1.notifyNeighbors(var2, var3, var4 - 1, id);
+            var1.notifyNeighbors(var2, var3 - 1, var4, id);
+            var1.notifyNeighbors(var2, var3 + 1, var4, id);
         }
 
         public override bool isOpaque()

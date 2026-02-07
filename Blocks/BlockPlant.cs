@@ -3,9 +3,9 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockFlower : Block
+    public class BlockPlant : Block
     {
-        public BlockFlower(int var1, int var2) : base(var1, Material.PLANT)
+        public BlockPlant(int var1, int var2) : base(var1, Material.PLANT)
         {
             textureId = var2;
             setTickRandomly(true);
@@ -15,10 +15,10 @@ namespace betareborn.Blocks
 
         public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return base.canPlaceAt(var1, var2, var3, var4) && canThisPlantGrowOnThisBlockID(var1.getBlockId(var2, var3 - 1, var4));
+            return base.canPlaceAt(var1, var2, var3, var4) && canPlantOnTop(var1.getBlockId(var2, var3 - 1, var4));
         }
 
-        protected virtual bool canThisPlantGrowOnThisBlockID(int var1)
+        protected virtual bool canPlantOnTop(int var1)
         {
             return var1 == Block.GRASS_BLOCK.id || var1 == Block.DIRT.id || var1 == Block.FARMLAND.id;
         }
@@ -46,7 +46,7 @@ namespace betareborn.Blocks
 
         public override bool canGrow(World var1, int var2, int var3, int var4)
         {
-            return (var1.getFullBlockLightValue(var2, var3, var4) >= 8 || var1.canBlockSeeTheSky(var2, var3, var4)) && canThisPlantGrowOnThisBlockID(var1.getBlockId(var2, var3 - 1, var4));
+            return (var1.getFullBlockLightValue(var2, var3, var4) >= 8 || var1.canBlockSeeTheSky(var2, var3, var4)) && canPlantOnTop(var1.getBlockId(var2, var3 - 1, var4));
         }
 
         public override Box getCollisionShape(World var1, int var2, int var3, int var4)

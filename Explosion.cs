@@ -140,7 +140,7 @@ namespace betareborn
 
         public void doExplosionB(bool var1)
         {
-            worldObj.playSoundEffect(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (worldObj.random.nextFloat() - worldObj.random.nextFloat()) * 0.2F) * 0.7F);
+            worldObj.playSound(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (worldObj.random.nextFloat() - worldObj.random.nextFloat()) * 0.2F) * 0.7F);
             ArrayList var2 = new ArrayList();
             var2.addAll(destroyedBlockPositions);
 

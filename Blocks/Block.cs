@@ -63,10 +63,10 @@ namespace betareborn.Blocks
         public static readonly BlockPistonExtension PISTON_HEAD = (BlockPistonExtension)(new BlockPistonExtension(34, 107)).ignoreMetaUpdates();
         public static readonly Block WOOL = (new BlockCloth()).setHardness(0.8F).setSoundGroup(soundClothFootstep).setBlockName("cloth").ignoreMetaUpdates();
         public static readonly BlockPistonMoving MOVING_PISTON = new BlockPistonMoving(36);
-        public static readonly BlockFlower DANDELION = (BlockFlower)(new BlockFlower(37, 13)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("flower");
-        public static readonly BlockFlower ROSE = (BlockFlower)(new BlockFlower(38, 12)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("rose");
-        public static readonly BlockFlower BROWN_MUSHROOM = (BlockFlower)(new BlockMushroom(39, 29)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setLuminance(2.0F / 16.0F).setBlockName("mushroom");
-        public static readonly BlockFlower RED_MUSHROOM = (BlockFlower)(new BlockMushroom(40, 28)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("mushroom");
+        public static readonly BlockPlant DANDELION = (BlockPlant)(new BlockPlant(37, 13)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("flower");
+        public static readonly BlockPlant ROSE = (BlockPlant)(new BlockPlant(38, 12)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("rose");
+        public static readonly BlockPlant BROWN_MUSHROOM = (BlockPlant)(new BlockMushroom(39, 29)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setLuminance(2.0F / 16.0F).setBlockName("mushroom");
+        public static readonly BlockPlant RED_MUSHROOM = (BlockPlant)(new BlockMushroom(40, 28)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("mushroom");
         public static readonly Block GOLD_BLOCK = (new BlockOreStorage(41, 23)).setHardness(3.0F).setResistance(10.0F).setSoundGroup(soundMetalFootstep).setBlockName("blockGold");
         public static readonly Block IRON_BLOCK = (new BlockOreStorage(42, 22)).setHardness(5.0F).setResistance(10.0F).setSoundGroup(soundMetalFootstep).setBlockName("blockIron");
         public static readonly Block DOUBLE_SLAB = (new BlockStep(43, true)).setHardness(2.0F).setResistance(10.0F).setSoundGroup(soundStoneFootstep).setBlockName("stoneSlab");

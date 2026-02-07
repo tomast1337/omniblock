@@ -59,12 +59,12 @@ namespace betareborn.Blocks
 
             if (torchActive)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                var1.notifyNeighbors(var2, var3 + 1, var4, id);
+                var1.notifyNeighbors(var2 - 1, var3, var4, id);
+                var1.notifyNeighbors(var2 + 1, var3, var4, id);
+                var1.notifyNeighbors(var2, var3, var4 - 1, id);
+                var1.notifyNeighbors(var2, var3, var4 + 1, id);
             }
 
         }
@@ -73,12 +73,12 @@ namespace betareborn.Blocks
         {
             if (torchActive)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                var1.notifyNeighbors(var2, var3 + 1, var4, id);
+                var1.notifyNeighbors(var2 - 1, var3, var4, id);
+                var1.notifyNeighbors(var2 + 1, var3, var4, id);
+                var1.notifyNeighbors(var2, var3, var4 - 1, id);
+                var1.notifyNeighbors(var2, var3, var4 + 1, id);
             }
 
         }
@@ -118,7 +118,7 @@ namespace betareborn.Blocks
                     var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.REDSTONE_TORCH.id, var1.getBlockMeta(var2, var3, var4));
                     if (checkForBurnout(var1, var2, var3, var4, true))
                     {
-                        var1.playSoundEffect((double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), "random.fizz", 0.5F, 2.6F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.8F);
+                        var1.playSound((double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), "random.fizz", 0.5F, 2.6F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.8F);
 
                         for (int var7 = 0; var7 < 5; ++var7)
                         {

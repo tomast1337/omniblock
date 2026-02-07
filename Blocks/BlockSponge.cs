@@ -39,7 +39,7 @@ namespace betareborn.Blocks
                 {
                     for (int var8 = var4 - var5; var8 <= var4 + var5; ++var8)
                     {
-                        var1.notifyBlocksOfNeighborChange(var6, var7, var8, var1.getBlockId(var6, var7, var8));
+                        var1.notifyNeighbors(var6, var7, var8, var1.getBlockId(var6, var7, var8));
                     }
                 }
             }

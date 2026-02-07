@@ -5,7 +5,7 @@ namespace betareborn.Blocks
 {
     public class BlockDetectorRail : BlockRail
     {
-        public BlockDetectorRail(int var1, int var2) : base(var1, var2, true)
+        public BlockDetectorRail(int id, int textureId) : base(id, textureId, true)
         {
             setTickRandomly(true);
         }
@@ -20,46 +20,46 @@ namespace betareborn.Blocks
             return true;
         }
 
-        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
+                int var6 = world.getBlockMeta(x, y, z);
                 if ((var6 & 8) == 0)
                 {
-                    setStateIfMinecartInteractsWithRail(var1, var2, var3, var4, var6);
+                    updatePoweredStatus(world, x, y, z, var6);
                 }
             }
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
+                int var6 = world.getBlockMeta(x, y, z);
                 if ((var6 & 8) != 0)
                 {
-                    setStateIfMinecartInteractsWithRail(var1, var2, var3, var4, var6);
+                    updatePoweredStatus(world, x, y, z, var6);
                 }
             }
         }
 
-        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
         {
-            return (var1.getBlockMeta(var2, var3, var4) & 8) != 0;
+            return (blockView.getBlockMeta(x, y, z) & 8) != 0;
         }
 
-        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)
         {
-            return (var1.getBlockMeta(var2, var3, var4) & 8) == 0 ? false : var5 == 1;
+            return (world.getBlockMeta(x, y, z) & 8) == 0 ? false : side == 1;
         }
 
-        private void setStateIfMinecartInteractsWithRail(World var1, int var2, int var3, int var4, int var5)
+        private void updatePoweredStatus(World world, int x, int y, int z, int meta)
         {
-            bool var6 = (var5 & 8) != 0;
+            bool var6 = (meta & 8) != 0;
             bool var7 = false;
             float var8 = 2.0F / 16.0F;
-            var var9 = var1.getEntitiesWithinAABB(EntityMinecart.Class, Box.createCached((double)((float)var2 + var8), (double)var3, (double)((float)var4 + var8), (double)((float)(var2 + 1) - var8), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var8)));
+            var var9 = world.getEntitiesWithinAABB(EntityMinecart.Class, Box.createCached((double)((float)x + var8), (double)y, (double)((float)z + var8), (double)((float)(x + 1) - var8), (double)y + 0.25D, (double)((float)(z + 1) - var8)));
             if (var9.Count > 0)
             {
                 var7 = true;
@@ -67,23 +67,23 @@ namespace betareborn.Blocks
 
             if (var7 && !var6)
             {
-                var1.setBlockMeta(var2, var3, var4, var5 | 8);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-                var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
+                world.setBlockMeta(x, y, z, meta | 8);
+                world.notifyNeighbors(x, y, z, id);
+                world.notifyNeighbors(x, y - 1, z, id);
+                world.setBlocksDirty(x, y, z, x, y, z);
             }
 
             if (!var7 && var6)
             {
-                var1.setBlockMeta(var2, var3, var4, var5 & 7);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-                var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
+                world.setBlockMeta(x, y, z, meta & 7);
+                world.notifyNeighbors(x, y, z, id);
+                world.notifyNeighbors(x, y - 1, z, id);
+                world.setBlocksDirty(x, y, z, x, y, z);
             }
 
             if (var7)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
+                world.scheduleBlockUpdate(x, y, z, id, getTickRate());
             }
 
         }

@@ -7,52 +7,52 @@ namespace betareborn.Blocks
     public class BlockCactus : Block
     {
 
-        public BlockCactus(int var1, int var2) : base(var1, var2, Material.CACTUS)
+        public BlockCactus(int id, int textureId) : base(id, textureId, Material.CACTUS)
         {
             setTickRandomly(true);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var1.isAir(var2, var3 + 1, var4))
+            if (world.isAir(x, y + 1, z))
             {
                 int var6;
-                for (var6 = 1; var1.getBlockId(var2, var3 - var6, var4) == id; ++var6)
+                for (var6 = 1; world.getBlockId(x, y - var6, z) == id; ++var6)
                 {
                 }
 
                 if (var6 < 3)
                 {
-                    int var7 = var1.getBlockMeta(var2, var3, var4);
+                    int var7 = world.getBlockMeta(x, y, z);
                     if (var7 == 15)
                     {
-                        var1.setBlockWithNotify(var2, var3 + 1, var4, id);
-                        var1.setBlockMeta(var2, var3, var4, 0);
+                        world.setBlockWithNotify(x, y + 1, z, id);
+                        world.setBlockMeta(x, y, z, 0);
                     }
                     else
                     {
-                        var1.setBlockMeta(var2, var3, var4, var7 + 1);
+                        world.setBlockMeta(x, y, z, var7 + 1);
                     }
                 }
             }
 
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             float var5 = 1.0F / 16.0F;
-            return Box.createCached((double)((float)var2 + var5), (double)var3, (double)((float)var4 + var5), (double)((float)(var2 + 1) - var5), (double)((float)(var3 + 1) - var5), (double)((float)(var4 + 1) - var5));
+            return Box.createCached((double)((float)x + var5), (double)y, (double)((float)z + var5), (double)((float)(x + 1) - var5), (double)((float)(y + 1) - var5), (double)((float)(z + 1) - var5));
         }
 
-        public override Box getBoundingBox(World var1, int var2, int var3, int var4)
+        public override Box getBoundingBox(World world, int x, int y, int z)
         {
             float var5 = 1.0F / 16.0F;
-            return Box.createCached((double)((float)var2 + var5), (double)var3, (double)((float)var4 + var5), (double)((float)(var2 + 1) - var5), (double)(var3 + 1), (double)((float)(var4 + 1) - var5));
+            return Box.createCached((double)((float)x + var5), (double)y, (double)((float)z + var5), (double)((float)(x + 1) - var5), (double)(y + 1), (double)((float)(z + 1) - var5));
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 1 ? textureId - 1 : (var1 == 0 ? textureId + 1 : textureId);
+            return side == 1 ? textureId - 1 : (side == 0 ? textureId + 1 : textureId);
         }
 
         public override bool isFullCube()
@@ -70,49 +70,49 @@ namespace betareborn.Blocks
             return 13;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return !base.canPlaceAt(var1, var2, var3, var4) ? false : canGrow(var1, var2, var3, var4);
+            return !base.canPlaceAt(world, x, y, z) ? false : canGrow(world, x, y, z);
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (!canGrow(var1, var2, var3, var4))
+            if (!canGrow(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override bool canGrow(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World world, int x, int y, int z)
         {
-            if (var1.getMaterial(var2 - 1, var3, var4).isSolid())
+            if (world.getMaterial(x - 1, y, z).isSolid())
             {
                 return false;
             }
-            else if (var1.getMaterial(var2 + 1, var3, var4).isSolid())
+            else if (world.getMaterial(x + 1, y, z).isSolid())
             {
                 return false;
             }
-            else if (var1.getMaterial(var2, var3, var4 - 1).isSolid())
+            else if (world.getMaterial(x, y, z - 1).isSolid())
             {
                 return false;
             }
-            else if (var1.getMaterial(var2, var3, var4 + 1).isSolid())
+            else if (world.getMaterial(x, y, z + 1).isSolid())
             {
                 return false;
             }
             else
             {
-                int var5 = var1.getBlockId(var2, var3 - 1, var4);
+                int var5 = world.getBlockId(x, y - 1, z);
                 return var5 == Block.CACTUS.id || var5 == Block.SAND.id;
             }
         }
 
-        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
-            var5.attackEntityFrom((Entity)null, 1);
+            entity.attackEntityFrom((Entity)null, 1);
         }
     }
 

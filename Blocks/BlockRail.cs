@@ -166,10 +166,10 @@ namespace betareborn.Blocks
 
                     if (var10)
                     {
-                        var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                        var1.notifyNeighbors(var2, var3 - 1, var4, id);
                         if (var7 == 2 || var7 == 3 || var7 == 4 || var7 == 5)
                         {
-                            var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
+                            var1.notifyNeighbors(var2, var3 + 1, var4, id);
                         }
                     }
                 }

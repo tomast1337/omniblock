@@ -187,28 +187,28 @@ namespace betareborn.Blocks
                 int var7 = var6 & 7;
                 int var8 = 8 - (var6 & 8);
                 var1.setBlockMeta(var2, var3, var4, var7 + var8);
-                var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
-                var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
+                var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
+                var1.playSound((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
+                var1.notifyNeighbors(var2, var3, var4, id);
                 if (var7 == 1)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
+                    var1.notifyNeighbors(var2 - 1, var3, var4, id);
                 }
                 else if (var7 == 2)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
+                    var1.notifyNeighbors(var2 + 1, var3, var4, id);
                 }
                 else if (var7 == 3)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
+                    var1.notifyNeighbors(var2, var3, var4 - 1, id);
                 }
                 else if (var7 == 4)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
+                    var1.notifyNeighbors(var2, var3, var4 + 1, id);
                 }
                 else
                 {
-                    var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                    var1.notifyNeighbors(var2, var3 - 1, var4, id);
                 }
 
                 return true;
@@ -220,27 +220,27 @@ namespace betareborn.Blocks
             int var5 = var1.getBlockMeta(var2, var3, var4);
             if ((var5 & 8) > 0)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
+                var1.notifyNeighbors(var2, var3, var4, id);
                 int var6 = var5 & 7;
                 if (var6 == 1)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
+                    var1.notifyNeighbors(var2 - 1, var3, var4, id);
                 }
                 else if (var6 == 2)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
+                    var1.notifyNeighbors(var2 + 1, var3, var4, id);
                 }
                 else if (var6 == 3)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
+                    var1.notifyNeighbors(var2, var3, var4 - 1, id);
                 }
                 else if (var6 == 4)
                 {
-                    var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
+                    var1.notifyNeighbors(var2, var3, var4 + 1, id);
                 }
                 else
                 {
-                    var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                    var1.notifyNeighbors(var2, var3 - 1, var4, id);
                 }
             }
 

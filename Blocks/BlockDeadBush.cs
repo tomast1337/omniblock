@@ -1,25 +1,25 @@
 namespace betareborn.Blocks
 {
-    public class BlockDeadBush : BlockFlower
+    public class BlockDeadBush : BlockPlant
     {
 
-        public BlockDeadBush(int var1, int var2) : base(var1, var2)
+        public BlockDeadBush(int i, int j) : base(i, j)
         {
             float var3 = 0.4F;
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 0.8F, 0.5F + var3);
         }
 
-        protected override bool canThisPlantGrowOnThisBlockID(int var1)
+        protected override bool canPlantOnTop(int id)
         {
-            return var1 == Block.SAND.id;
+            return id == Block.SAND.id;
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
             return textureId;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return -1;
         }

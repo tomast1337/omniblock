@@ -8,32 +8,32 @@ namespace betareborn.Blocks
         {
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            if (var2 == 0)
+            if (meta == 0)
             {
                 return textureId;
             }
             else
             {
-                var2 = ~(var2 & 15);
-                return 113 + ((var2 & 8) >> 3) + (var2 & 7) * 16;
+                meta = ~(meta & 15);
+                return 113 + ((meta & 8) >> 3) + (meta & 7) * 16;
             }
         }
 
-        protected override int getDroppedItemMeta(int var1)
+        protected override int getDroppedItemMeta(int blockMeta)
         {
-            return var1;
+            return blockMeta;
         }
 
-        public static int func_21034_c(int var0)
+        public static int getBlockMeta(int itemMeta)
         {
-            return ~var0 & 15;
+            return ~itemMeta & 15;
         }
 
-        public static int func_21035_d(int var0)
+        public static int getItemMeta(int blockMeta)
         {
-            return ~var0 & 15;
+            return ~blockMeta & 15;
         }
     }
 

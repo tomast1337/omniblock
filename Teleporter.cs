@@ -312,7 +312,7 @@ namespace betareborn
                         var23 = var30 + (var21 - 1) * var31;
                         var24 = var16 + var22;
                         var25 = var17 + (var21 - 1) * var19;
-                        var1.notifyBlocksOfNeighborChange(var23, var24, var25, var1.getBlockId(var23, var24, var25));
+                        var1.notifyNeighbors(var23, var24, var25, var1.getBlockId(var23, var24, var25));
                     }
                 }
             }

@@ -2,7 +2,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockMushroom : BlockFlower
+    public class BlockMushroom : BlockPlant
     {
         public BlockMushroom(int var1, int var2) : base(var1, var2)
         {
@@ -31,14 +31,14 @@ namespace betareborn.Blocks
 
         }
 
-        protected override bool canThisPlantGrowOnThisBlockID(int var1)
+        protected override bool canPlantOnTop(int var1)
         {
             return Block.BLOCKS_OPAQUE[var1];
         }
 
         public override bool canGrow(World var1, int var2, int var3, int var4)
         {
-            return var3 >= 0 && var3 < 128 ? var1.getFullBlockLightValue(var2, var3, var4) < 13 && canThisPlantGrowOnThisBlockID(var1.getBlockId(var2, var3 - 1, var4)) : false;
+            return var3 >= 0 && var3 < 128 ? var1.getFullBlockLightValue(var2, var3, var4) < 13 && canPlantOnTop(var1.getBlockId(var2, var3 - 1, var4)) : false;
         }
     }
 

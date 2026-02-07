@@ -337,7 +337,7 @@ namespace betareborn
                 int var11 = var6 & 255;
                 var2.setBlockIDWithMetadata(var9, var11, var10, var7, var8);
                 worldClient.func_711_c(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
-                worldClient.markBlocksDirty(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
+                worldClient.setBlocksDirty(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
             }
 
         }
@@ -763,7 +763,7 @@ namespace betareborn
 
         public override void func_28115_a(Packet61DoorChange var1)
         {
-            mc.theWorld.func_28106_e(var1.field_28050_a, var1.field_28053_c, var1.field_28052_d, var1.field_28051_e, var1.field_28049_b);
+            mc.theWorld.worldEvent(var1.field_28050_a, var1.field_28053_c, var1.field_28052_d, var1.field_28051_e, var1.field_28049_b);
         }
 
         public override void func_27245_a(Packet200Statistic var1)

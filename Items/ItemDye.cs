@@ -44,7 +44,7 @@ namespace betareborn.Items
                 {
                     if (!var3.isRemote)
                     {
-                        ((BlockCrops)Block.WHEAT).fertilize(var3, var4, var5, var6);
+                        ((BlockCrops)Block.WHEAT).applyFullGrowth(var3, var4, var5, var6);
                         --var1.count;
                     }
                     return true;
@@ -101,7 +101,7 @@ namespace betareborn.Items
             if (var2 is EntitySheep)
             {
                 EntitySheep var3 = (EntitySheep)var2;
-                int var4 = BlockCloth.func_21034_c(var1.getItemDamage());
+                int var4 = BlockCloth.getBlockMeta(var1.getItemDamage());
                 if (!var3.getSheared() && var3.getFleeceColor() != var4)
                 {
                     var3.setFleeceColor(var4);

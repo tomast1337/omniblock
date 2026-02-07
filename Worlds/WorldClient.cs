@@ -111,7 +111,7 @@ namespace betareborn.Worlds
 
             if (!var3)
             {
-                markBlocksDirty(var1 * 16, 0, var2 * 16, var1 * 16 + 15, 128, var2 * 16 + 15);
+                setBlocksDirty(var1 * 16, 0, var2 * 16, var1 * 16 + 15, 128, var2 * 16 + 15);
             }
 
         }

@@ -6,16 +6,16 @@ namespace betareborn.Blocks
     public class BlockClay : Block
     {
 
-        public BlockClay(int var1, int var2) : base(var1, var2, Material.CLAY)
+        public BlockClay(int id, int textureId) : base(id, textureId, Material.CLAY)
         {
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.clay.id;
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 4;
         }

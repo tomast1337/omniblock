@@ -88,8 +88,8 @@ namespace betareborn.Items
                     var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.id, var9);
                     var3.setBlockAndMetadataWithNotify(var4, var5 + 1, var6, var8.id, var9 + 8);
                     var3.editingBlocks = false;
-                    var3.notifyBlocksOfNeighborChange(var4, var5, var6, var8.id);
-                    var3.notifyBlocksOfNeighborChange(var4, var5 + 1, var6, var8.id);
+                    var3.notifyNeighbors(var4, var5, var6, var8.id);
+                    var3.notifyNeighbors(var4, var5 + 1, var6, var8.id);
                     --var1.count;
                     return true;
                 }

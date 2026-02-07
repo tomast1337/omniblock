@@ -29,7 +29,7 @@ namespace betareborn
         {
             World var5 = mc.theWorld;
             Block var6 = Block.BLOCKS[var5.getBlockId(var1, var2, var3)];
-            var5.func_28106_e(2001, var1, var2, var3, var6.id + var5.getBlockMeta(var1, var2, var3) * 256);
+            var5.worldEvent(2001, var1, var2, var3, var6.id + var5.getBlockMeta(var1, var2, var3) * 256);
             int var7 = var5.getBlockMeta(var1, var2, var3);
             bool var8 = var5.setBlockWithNotify(var1, var2, var3, 0);
             if (var6 != null && var8)

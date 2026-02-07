@@ -9,7 +9,7 @@ namespace betareborn.Recipes
         {
             for (int var2 = 0; var2 < 16; ++var2)
             {
-                var1.addShapelessRecipe(new ItemStack(Block.WOOL, 1, BlockCloth.func_21035_d(var2)), [new ItemStack(Item.dyePowder, 1, var2), new ItemStack(Item.itemsList[Block.WOOL.id], 1, 0)]);
+                var1.addShapelessRecipe(new ItemStack(Block.WOOL, 1, BlockCloth.getItemMeta(var2)), [new ItemStack(Item.dyePowder, 1, var2), new ItemStack(Item.itemsList[Block.WOOL.id], 1, 0)]);
             }
 
             var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 2, 11), new object[] { Block.DANDELION });

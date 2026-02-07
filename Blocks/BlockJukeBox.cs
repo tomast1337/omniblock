@@ -50,7 +50,7 @@ namespace betareborn.Blocks
                 int var6 = var5.recordId;
                 if (var6 != 0)
                 {
-                    var1.func_28106_e(1005, var2, var3, var4, 0);
+                    var1.worldEvent(1005, var2, var3, var4, 0);
                     var1.playRecord((String)null, var2, var3, var4);
                     var5.recordId = 0;
                     var5.markDirty();

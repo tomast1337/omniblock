@@ -880,26 +880,26 @@ namespace betareborn.Rendering
             switch (var2)
             {
                 case 1000:
-                    worldObj.playSoundEffect((double)var3, (double)var4, (double)var5, "random.click", 1.0F, 1.0F);
+                    worldObj.playSound((double)var3, (double)var4, (double)var5, "random.click", 1.0F, 1.0F);
                     break;
                 case 1001:
-                    worldObj.playSoundEffect((double)var3, (double)var4, (double)var5, "random.click", 1.0F, 1.2F);
+                    worldObj.playSound((double)var3, (double)var4, (double)var5, "random.click", 1.0F, 1.2F);
                     break;
                 case 1002:
-                    worldObj.playSoundEffect((double)var3, (double)var4, (double)var5, "random.bow", 1.0F, 1.2F);
+                    worldObj.playSound((double)var3, (double)var4, (double)var5, "random.bow", 1.0F, 1.2F);
                     break;
                 case 1003:
                     if (java.lang.Math.random() < 0.5D)
                     {
-                        worldObj.playSoundEffect((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_open", 1.0F, worldObj.random.nextFloat() * 0.1F + 0.9F);
+                        worldObj.playSound((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_open", 1.0F, worldObj.random.nextFloat() * 0.1F + 0.9F);
                     }
                     else
                     {
-                        worldObj.playSoundEffect((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_close", 1.0F, worldObj.random.nextFloat() * 0.1F + 0.9F);
+                        worldObj.playSound((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D, "random.door_close", 1.0F, worldObj.random.nextFloat() * 0.1F + 0.9F);
                     }
                     break;
                 case 1004:
-                    worldObj.playSoundEffect((double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), "random.fizz", 0.5F, 2.6F + (var7.nextFloat() - var7.nextFloat()) * 0.8F);
+                    worldObj.playSound((double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), "random.fizz", 0.5F, 2.6F + (var7.nextFloat() - var7.nextFloat()) * 0.8F);
                     break;
                 case 1005:
                     if (Item.itemsList[var6] is ItemRecord)

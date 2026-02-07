@@ -137,7 +137,7 @@ namespace betareborn.Blocks
                     }
 
                     var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                    var1.markBlocksDirty(var2, var3 - 1, var4, var2, var3, var4);
+                    var1.setBlocksDirty(var2, var3 - 1, var4, var2, var3, var4);
                     var1.func_28107_a(var5, 1003, var2, var3, var4, 0);
                     return true;
                 }
@@ -166,7 +166,7 @@ namespace betareborn.Blocks
                     }
 
                     var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                    var1.markBlocksDirty(var2, var3 - 1, var4, var2, var3, var4);
+                    var1.setBlocksDirty(var2, var3 - 1, var4, var2, var3, var4);
                     var1.func_28107_a((EntityPlayer)null, 1003, var2, var3, var4, 0);
                 }
             }

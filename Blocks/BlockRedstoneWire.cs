@@ -62,7 +62,7 @@ namespace betareborn.Blocks
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {
                 ChunkPosition var7 = (ChunkPosition)var5.get(var6);
-                var1.notifyBlocksOfNeighborChange(var7.x, var7.y, var7.z, id);
+                var1.notifyNeighbors(var7.x, var7.y, var7.z, id);
             }
 
         }
@@ -139,7 +139,7 @@ namespace betareborn.Blocks
             {
                 var1.editingBlocks = true;
                 var1.setBlockMeta(var2, var3, var4, var9);
-                var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
+                var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
                 var1.editingBlocks = false;
 
                 for (var11 = 0; var11 < 4; ++var11)
@@ -216,13 +216,13 @@ namespace betareborn.Blocks
         {
             if (var1.getBlockId(var2, var3, var4) == id)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
+                var1.notifyNeighbors(var2, var3, var4, id);
+                var1.notifyNeighbors(var2 - 1, var3, var4, id);
+                var1.notifyNeighbors(var2 + 1, var3, var4, id);
+                var1.notifyNeighbors(var2, var3, var4 - 1, id);
+                var1.notifyNeighbors(var2, var3, var4 + 1, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                var1.notifyNeighbors(var2, var3 + 1, var4, id);
             }
         }
 
@@ -232,8 +232,8 @@ namespace betareborn.Blocks
             if (!var1.isRemote)
             {
                 updateAndPropagateCurrentStrength(var1, var2, var3, var4);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                var1.notifyNeighbors(var2, var3 + 1, var4, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
                 notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2, var3, var4 - 1);
@@ -282,8 +282,8 @@ namespace betareborn.Blocks
             base.onBreak(var1, var2, var3, var4);
             if (!var1.isRemote)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                var1.notifyNeighbors(var2, var3 + 1, var4, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
                 updateAndPropagateCurrentStrength(var1, var2, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3, var4);

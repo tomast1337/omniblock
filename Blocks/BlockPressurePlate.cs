@@ -113,19 +113,19 @@ namespace betareborn.Blocks
             if (var6 && !var5)
             {
                 var1.setBlockMeta(var2, var3, var4, 1);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-                var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
-                var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.1D, (double)var4 + 0.5D, "random.click", 0.3F, 0.6F);
+                var1.notifyNeighbors(var2, var3, var4, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
+                var1.playSound((double)var2 + 0.5D, (double)var3 + 0.1D, (double)var4 + 0.5D, "random.click", 0.3F, 0.6F);
             }
 
             if (!var6 && var5)
             {
                 var1.setBlockMeta(var2, var3, var4, 0);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
-                var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
-                var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.1D, (double)var4 + 0.5D, "random.click", 0.3F, 0.5F);
+                var1.notifyNeighbors(var2, var3, var4, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
+                var1.playSound((double)var2 + 0.5D, (double)var3 + 0.1D, (double)var4 + 0.5D, "random.click", 0.3F, 0.5F);
             }
 
             if (var6)
@@ -140,8 +140,8 @@ namespace betareborn.Blocks
             int var5 = var1.getBlockMeta(var2, var3, var4);
             if (var5 > 0)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                var1.notifyNeighbors(var2, var3, var4, id);
+                var1.notifyNeighbors(var2, var3 - 1, var4, id);
             }
 
             base.onBreak(var1, var2, var3, var4);

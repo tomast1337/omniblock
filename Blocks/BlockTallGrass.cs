@@ -2,7 +2,7 @@ using betareborn.Items;
 
 namespace betareborn.Blocks
 {
-    public class BlockTallGrass : BlockFlower
+    public class BlockTallGrass : BlockPlant
     {
         public BlockTallGrass(int var1, int var2) : base(var1, var2)
         {

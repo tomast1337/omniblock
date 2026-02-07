@@ -17,7 +17,7 @@ namespace betareborn.Blocks
         {
             int var5 = var1.getBlockMeta(var2, var3, var4);
             var1.setBlockAndMetadata(var2, var3, var4, id + 1, var5);
-            var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
+            var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
             var1.markBlockNeedsUpdate(var2, var3, var4);
         }
 
@@ -88,7 +88,7 @@ namespace betareborn.Blocks
                     {
                         var1.setBlockMeta(var2, var3, var4, var10);
                         var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
-                        var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
+                        var1.notifyNeighbors(var2, var3, var4, id);
                     }
                 }
                 else if (var8)

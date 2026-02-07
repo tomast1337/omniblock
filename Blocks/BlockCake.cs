@@ -7,14 +7,14 @@ namespace betareborn.Blocks
     public class BlockCake : Block
     {
 
-        public BlockCake(int var1, int var2) : base(var1, var2, Material.CAKE)
+        public BlockCake(int id, int textureId) : base(id, textureId, Material.CAKE)
         {
             setTickRandomly(true);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
+            int var5 = blockView.getBlockMeta(x, y, z);
             float var6 = 1.0F / 16.0F;
             float var7 = (float)(1 + var5 * 2) / 16.0F;
             float var8 = 0.5F;
@@ -28,32 +28,32 @@ namespace betareborn.Blocks
             setBoundingBox(var1, 0.0F, var1, 1.0F - var1, var2, 1.0F - var1);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
+            int var5 = world.getBlockMeta(x, y, z);
             float var6 = 1.0F / 16.0F;
             float var7 = (float)(1 + var5 * 2) / 16.0F;
             float var8 = 0.5F;
-            return Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var6), (double)((float)(var2 + 1) - var6), (double)((float)var3 + var8 - var6), (double)((float)(var4 + 1) - var6));
+            return Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8 - var6), (double)((float)(z + 1) - var6));
         }
 
-        public override Box getBoundingBox(World var1, int var2, int var3, int var4)
+        public override Box getBoundingBox(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
+            int var5 = world.getBlockMeta(x, y, z);
             float var6 = 1.0F / 16.0F;
             float var7 = (float)(1 + var5 * 2) / 16.0F;
             float var8 = 0.5F;
-            return Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var6), (double)((float)(var2 + 1) - var6), (double)((float)var3 + var8), (double)((float)(var4 + 1) - var6));
+            return Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8), (double)((float)(z + 1) - var6));
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            return var1 == 1 ? textureId : (var1 == 0 ? textureId + 3 : (var2 > 0 && var1 == 4 ? textureId + 2 : textureId + 1));
+            return side == 1 ? textureId : (side == 0 ? textureId + 3 : (meta > 0 && side == 4 ? textureId + 2 : textureId + 1));
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 1 ? textureId : (var1 == 0 ? textureId + 3 : textureId + 1);
+            return side == 1 ? textureId : (side == 0 ? textureId + 3 : textureId + 1);
         }
 
         public override bool isFullCube()
@@ -66,62 +66,62 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            eatCakeSlice(var1, var2, var3, var4, var5);
+            tryEat(world, x, y, z, player);
             return true;
         }
 
-        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
-            eatCakeSlice(var1, var2, var3, var4, var5);
+            tryEat(world, x, y, z, player);
         }
 
-        private void eatCakeSlice(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        private void tryEat(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (var5.health < 20)
+            if (player.health < 20)
             {
-                var5.heal(3);
-                int var6 = var1.getBlockMeta(var2, var3, var4) + 1;
+                player.heal(3);
+                int var6 = world.getBlockMeta(x, y, z) + 1;
                 if (var6 >= 6)
                 {
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    world.setBlockWithNotify(x, y, z, 0);
                 }
                 else
                 {
-                    var1.setBlockMeta(var2, var3, var4, var6);
-                    var1.markBlockAsNeedsUpdate(var2, var3, var4);
+                    world.setBlockMeta(x, y, z, var6);
+                    world.markBlockAsNeedsUpdate(x, y, z);
                 }
             }
 
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return !base.canPlaceAt(var1, var2, var3, var4) ? false : canGrow(var1, var2, var3, var4);
+            return !base.canPlaceAt(world, x, y, z) ? false : canGrow(world, x, y, z);
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (!canGrow(var1, var2, var3, var4))
+            if (!canGrow(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override bool canGrow(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World world, int x, int y, int z)
         {
-            return var1.getMaterial(var2, var3 - 1, var4).isSolid();
+            return world.getMaterial(x, y - 1, z).isSolid();
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 0;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return 0;
         }

@@ -520,7 +520,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    notifyBlocksOfNeighborChange(var1, var2, var3, var5);
+                    notifyNeighbors(var1, var2, var3, var5);
                 }
             }
 
@@ -591,7 +591,7 @@ namespace betareborn.Worlds
         protected void notifyBlockChange(int var1, int var2, int var3, int var4)
         {
             markBlockNeedsUpdate(var1, var2, var3);
-            notifyBlocksOfNeighborChange(var1, var2, var3, var4);
+            notifyNeighbors(var1, var2, var3, var4);
         }
 
         public void markBlocksDirtyVertical(int var1, int var2, int var3, int var4)
@@ -603,7 +603,7 @@ namespace betareborn.Worlds
                 var3 = var5;
             }
 
-            markBlocksDirty(var1, var3, var2, var1, var4, var2);
+            setBlocksDirty(var1, var3, var2, var1, var4, var2);
         }
 
         public void markBlockAsNeedsUpdate(int var1, int var2, int var3)
@@ -615,7 +615,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void markBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6)
+        public void setBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6)
         {
             for (int var7 = 0; var7 < worldAccesses.Count; ++var7)
             {
@@ -624,7 +624,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void notifyBlocksOfNeighborChange(int var1, int var2, int var3, int var4)
+        public void notifyNeighbors(int var1, int var2, int var3, int var4)
         {
             notifyBlockOfNeighborChange(var1 - 1, var2, var3, var4);
             notifyBlockOfNeighborChange(var1 + 1, var2, var3, var4);
@@ -1112,7 +1112,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void playSoundEffect(double var1, double var3, double var5, string var7, float var8, float var9)
+        public void playSound(double var1, double var3, double var5, string var7, float var8, float var9)
         {
             for (int var10 = 0; var10 < worldAccesses.Count; ++var10)
             {
@@ -2440,7 +2440,7 @@ namespace betareborn.Worlds
                         EntityPlayer var11 = getClosestPlayer((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, 8.0D);
                         if (var11 != null && var11.getSquaredDistance((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D) > 4.0D)
                         {
-                            playSoundEffect((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, "ambient.cave.cave", 0.7F, 0.8F + random.nextFloat() * 0.2F);
+                            playSound((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, "ambient.cave.cave", 0.7F, 0.8F + random.nextFloat() * 0.2F);
                             soundCounter = random.nextInt(12000) + 6000;
                         }
                     }
@@ -2834,7 +2834,7 @@ namespace betareborn.Worlds
                     }
 
                     var12 = getChunkFromChunkCoords(var15, var18).setChunkData(var7, var16, var13, var19, var17, var14, var20, var12);
-                    markBlocksDirty(var15 * 16 + var16, var13, var18 * 16 + var19, var15 * 16 + var17, var14, var18 * 16 + var20);
+                    setBlocksDirty(var15 * 16 + var16, var13, var18 * 16 + var19, var15 * 16 + var17, var14, var18 * 16 + var20);
                 }
             }
 
@@ -3104,7 +3104,7 @@ namespace betareborn.Worlds
             return field_28108_z.getUniqueDataId(var1);
         }
 
-        public void func_28106_e(int var1, int var2, int var3, int var4, int var5)
+        public void worldEvent(int var1, int var2, int var3, int var4, int var5)
         {
             func_28107_a((EntityPlayer)null, var1, var2, var3, var4, var5);
         }

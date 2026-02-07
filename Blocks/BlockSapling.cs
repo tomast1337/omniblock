@@ -2,7 +2,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockSapling : BlockFlower
+    public class BlockSapling : BlockPlant
     {
         public BlockSapling(int var1, int var2) : base(var1, var2)
         {
