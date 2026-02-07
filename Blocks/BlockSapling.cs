@@ -15,7 +15,7 @@ namespace betareborn.Blocks
             if (!var1.isRemote)
             {
                 base.onTick(var1, var2, var3, var4, var5);
-                if (var1.getBlockLightValue(var2, var3 + 1, var4) >= 9 && var5.nextInt(30) == 0)
+                if (var1.getLightLevel(var2, var3 + 1, var4) >= 9 && var5.nextInt(30) == 0)
                 {
                     int var6 = var1.getBlockMeta(var2, var3, var4);
                     if ((var6 & 8) == 0)

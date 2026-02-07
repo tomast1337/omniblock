@@ -6,9 +6,9 @@ namespace betareborn.Blocks
     {
         protected bool graphicsLevel;
 
-        protected BlockLeavesBase(int var1, int var2, Material var3, bool var4) : base(var1, var2, var3)
+        protected BlockLeavesBase(int id, int textureId, Material material, bool graphicsLevel) : base(id, textureId, material)
         {
-            graphicsLevel = var4;
+            this.graphicsLevel = graphicsLevel;
         }
 
         public override bool isOpaque()
@@ -16,10 +16,10 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool isSideVisible(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
         {
-            int var6 = var1.getBlockId(var2, var3, var4);
-            return !graphicsLevel && var6 == id ? false : base.isSideVisible(var1, var2, var3, var4, var5);
+            int var6 = blockView.getBlockId(x, y, z);
+            return !graphicsLevel && var6 == id ? false : base.isSideVisible(blockView, x, y, z, side);
         }
     }
 

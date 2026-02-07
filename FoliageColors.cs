@@ -1,6 +1,6 @@
 namespace betareborn
 {
-    public class ColorizerFoliage : java.lang.Object
+    public class FoliageColors : java.lang.Object
     {
         private static int[] foliageBuffer = new int[65536];
 
@@ -17,17 +17,17 @@ namespace betareborn
             return foliageBuffer[var5 << 8 | var4];
         }
 
-        public static int getFoliageColorPine()
+        public static int getSpruceColor()
         {
             return 6396257;
         }
 
-        public static int getFoliageColorBirch()
+        public static int getBirchColor()
         {
             return 8431445;
         }
 
-        public static int func_31073_c()
+        public static int getDefaultColor()
         {
             return 4764952;
         }

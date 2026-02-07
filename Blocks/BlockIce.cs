@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockIce : BlockBreakable
     {
 
-        public BlockIce(int var1, int var2) : base(var1, var2, Material.ICE, false)
+        public BlockIce(int id, int textureId) : base(id, textureId, Material.ICE, false)
         {
             slipperiness = 0.98F;
             setTickRandomly(true);
@@ -18,33 +18,33 @@ namespace betareborn.Blocks
             return 1;
         }
 
-        public override bool isSideVisible(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
         {
-            return base.isSideVisible(var1, var2, var3, var4, 1 - var5);
+            return base.isSideVisible(blockView, x, y, z, 1 - side);
         }
 
-        public override void afterBreak(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
+        public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
         {
-            base.afterBreak(var1, var2, var3, var4, var5, var6);
-            Material var7 = var1.getMaterial(var3, var4 - 1, var5);
+            base.afterBreak(world, player, x, y, z, meta);
+            Material var7 = world.getMaterial(x, y - 1, z);
             if (var7.blocksMovement() || var7.isFluid())
             {
-                var1.setBlockWithNotify(var3, var4, var5, Block.FLOWING_WATER.id);
+                world.setBlockWithNotify(x, y, z, Block.FLOWING_WATER.id);
             }
 
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 0;
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11 - Block.BLOCK_LIGHT_OPACITY[id])
+            if (world.getBrightness(LightType.Block, x, y, z) > 11 - Block.BLOCK_LIGHT_OPACITY[id])
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, Block.WATER.id);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, Block.WATER.id);
             }
 
         }

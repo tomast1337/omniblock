@@ -68,12 +68,12 @@ namespace betareborn
         {
         }
 
-        public override int getSavedLightValue(EnumSkyBlock var1, int var2, int var3, int var4)
+        public override int getSavedLightValue(LightType var1, int var2, int var3, int var4)
         {
             return 0;
         }
 
-        public override void setLightValue(EnumSkyBlock var1, int var2, int var3, int var4, int var5)
+        public override void setLightValue(LightType var1, int var2, int var3, int var4, int var5)
         {
         }
 

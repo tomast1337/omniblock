@@ -4,11 +4,11 @@ namespace betareborn.Blocks
 {
     public class BlockGlass : BlockBreakable
     {
-        public BlockGlass(int var1, int var2, Material var3, bool var4) : base(var1, var2, var3, var4)
+        public BlockGlass(int id, int texture, Material material, bool bl) : base(id, texture, material, bl)
         {
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 0;
         }

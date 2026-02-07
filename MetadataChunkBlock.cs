@@ -7,7 +7,7 @@ namespace betareborn
 {
     public struct MetadataChunkBlock
     {
-        public readonly EnumSkyBlock field_1299_a;
+        public readonly LightType field_1299_a;
         public int field_1298_b;
         public int field_1304_c;
         public int field_1303_d;
@@ -15,7 +15,7 @@ namespace betareborn
         public int field_1301_f;
         public int field_1300_g;
 
-        public MetadataChunkBlock(EnumSkyBlock var1, int var2, int var3, int var4, int var5, int var6, int var7)
+        public MetadataChunkBlock(LightType var1, int var2, int var3, int var4, int var5, int var6, int var7)
         {
             field_1299_a = var1;
             field_1298_b = var2;
@@ -85,7 +85,7 @@ namespace betareborn
 
                             for (int var27 = field_1304_c; var27 <= field_1301_f; ++var27)
                             {
-                                int var16 = var1.getSavedLightValue(field_1299_a, var10, var27, var11);
+                                int var16 = var1.getBrightness(field_1299_a, var10, var27, var11);
                                 bool var17 = false;
                                 int var18 = var1.getBlockId(var10, var27, var11);
                                 int var19 = Block.BLOCK_LIGHT_OPACITY[var18];
@@ -95,14 +95,14 @@ namespace betareborn
                                 }
 
                                 int var20 = 0;
-                                if (field_1299_a == EnumSkyBlock.Sky)
+                                if (field_1299_a == LightType.Sky)
                                 {
                                     if (var1.canExistingBlockSeeTheSky(var10, var27, var11))
                                     {
                                         var20 = 15;
                                     }
                                 }
-                                else if (field_1299_a == EnumSkyBlock.Block)
+                                else if (field_1299_a == LightType.Block)
                                 {
                                     var20 = Block.BLOCKS_LIGHT_LUMINANCE[var18];
                                 }
@@ -115,12 +115,12 @@ namespace betareborn
                                 }
                                 else
                                 {
-                                    var21 = var1.getSavedLightValue(field_1299_a, var10 - 1, var27, var11);
-                                    int var22 = var1.getSavedLightValue(field_1299_a, var10 + 1, var27, var11);
-                                    int var23 = var1.getSavedLightValue(field_1299_a, var10, var27 - 1, var11);
-                                    int var24 = var1.getSavedLightValue(field_1299_a, var10, var27 + 1, var11);
-                                    int var25 = var1.getSavedLightValue(field_1299_a, var10, var27, var11 - 1);
-                                    int var26 = var1.getSavedLightValue(field_1299_a, var10, var27, var11 + 1);
+                                    var21 = var1.getBrightness(field_1299_a, var10 - 1, var27, var11);
+                                    int var22 = var1.getBrightness(field_1299_a, var10 + 1, var27, var11);
+                                    int var23 = var1.getBrightness(field_1299_a, var10, var27 - 1, var11);
+                                    int var24 = var1.getBrightness(field_1299_a, var10, var27 + 1, var11);
+                                    int var25 = var1.getBrightness(field_1299_a, var10, var27, var11 - 1);
+                                    int var26 = var1.getBrightness(field_1299_a, var10, var27, var11 + 1);
                                     var28 = var21;
                                     if (var22 > var21)
                                     {

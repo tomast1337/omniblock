@@ -1,6 +1,6 @@
 namespace betareborn
 {
-    public class ColorizerGrass : java.lang.Object
+    public class GrassColors : java.lang.Object
     {
         private static int[] grassBuffer = new int[65536];
 
@@ -9,7 +9,7 @@ namespace betareborn
             grassBuffer = var0;
         }
 
-        public static int getGrassColor(double var0, double var2)
+        public static int getColor(double var0, double var2)
         {
             var2 *= var0;
             int var4 = (int)((1.0D - var0) * 255.0D);

@@ -89,7 +89,7 @@ namespace betareborn.Blocks
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11)
+            if (var1.getBrightness(LightType.Block, var2, var3, var4) > 11)
             {
                 dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);

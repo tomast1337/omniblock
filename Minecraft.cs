@@ -167,8 +167,8 @@ namespace betareborn
             renderEngine = new RenderEngine(texturePackList, gameSettings);
             fontRenderer = new FontRenderer(gameSettings, renderEngine);
             ColorizerWater.func_28182_a(renderEngine.func_28149_a("/misc/watercolor.png"));
-            ColorizerGrass.func_28181_a(renderEngine.func_28149_a("/misc/grasscolor.png"));
-            ColorizerFoliage.func_28152_a(renderEngine.func_28149_a("/misc/foliagecolor.png"));
+            GrassColors.func_28181_a(renderEngine.func_28149_a("/misc/grasscolor.png"));
+            FoliageColors.func_28152_a(renderEngine.func_28149_a("/misc/foliagecolor.png"));
             entityRenderer = new EntityRenderer(this);
             RenderManager.instance.itemRenderer = new ItemRenderer(this);
             statFileWriter = new StatFileWriter(session, mcDataDir);

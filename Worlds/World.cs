@@ -669,7 +669,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public int getBlockLightValue(int var1, int var2, int var3)
+        public int getLightLevel(int var1, int var2, int var3)
         {
             return getBlockLightValue_do(var1, var2, var3, true);
         }
@@ -785,20 +785,20 @@ namespace betareborn.Worlds
             }
         }
 
-        public void neighborLightPropagationChanged(EnumSkyBlock var1, int var2, int var3, int var4, int var5)
+        public void neighborLightPropagationChanged(LightType var1, int var2, int var3, int var4, int var5)
         {
-            if (!dimension.hasNoSky || var1 != EnumSkyBlock.Sky)
+            if (!dimension.hasNoSky || var1 != LightType.Sky)
             {
                 if (blockExists(var2, var3, var4))
                 {
-                    if (var1 == EnumSkyBlock.Sky)
+                    if (var1 == LightType.Sky)
                     {
                         if (canExistingBlockSeeTheSky(var2, var3, var4))
                         {
                             var5 = 15;
                         }
                     }
-                    else if (var1 == EnumSkyBlock.Block)
+                    else if (var1 == LightType.Block)
                     {
                         int var6 = getBlockId(var2, var3, var4);
                         if (Block.BLOCKS_LIGHT_LUMINANCE[var6] > var5)
@@ -807,7 +807,7 @@ namespace betareborn.Worlds
                         }
                     }
 
-                    if (getSavedLightValue(var1, var2, var3, var4) != var5)
+                    if (getBrightness(var1, var2, var3, var4) != var5)
                     {
                         scheduleLightingUpdate(var1, var2, var3, var4, var2, var3, var4);
                     }
@@ -816,7 +816,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public int getSavedLightValue(EnumSkyBlock var1, int var2, int var3, int var4)
+        public int getBrightness(LightType var1, int var2, int var3, int var4)
         {
             if (var3 < 0)
             {
@@ -844,11 +844,11 @@ namespace betareborn.Worlds
             }
             else
             {
-                return var1.field_1722_c;
+                return var1.lightValue;
             }
         }
 
-        public void setLightValue(EnumSkyBlock var1, int var2, int var3, int var4, int var5)
+        public void setLightValue(LightType var1, int var2, int var3, int var4, int var5)
         {
             if (var2 >= -32000000 && var4 >= -32000000 && var2 < 32000000 && var4 <= 32000000)
             {
@@ -874,7 +874,7 @@ namespace betareborn.Worlds
 
         public float getNaturalBrightness(int var1, int var2, int var3, int var4)
         {
-            int var5 = getBlockLightValue(var1, var2, var3);
+            int var5 = getLightLevel(var1, var2, var3);
             if (var5 < var4)
             {
                 var5 = var4;
@@ -885,7 +885,7 @@ namespace betareborn.Worlds
 
         public float getLuminance(int var1, int var2, int var3)
         {
-            return dimension.lightBrightnessTable[getBlockLightValue(var1, var2, var3)];
+            return dimension.lightBrightnessTable[getLightLevel(var1, var2, var3)];
         }
 
         public bool isDaytime()
@@ -2128,14 +2128,14 @@ namespace betareborn.Worlds
             }
         }
 
-        public void scheduleLightingUpdate(EnumSkyBlock var1, int var2, int var3, int var4, int var5, int var6, int var7)
+        public void scheduleLightingUpdate(LightType var1, int var2, int var3, int var4, int var5, int var6, int var7)
         {
             scheduleLightingUpdate_do(var1, var2, var3, var4, var5, var6, var7, true);
         }
 
-        public void scheduleLightingUpdate_do(EnumSkyBlock var1, int var2, int var3, int var4, int var5, int var6, int var7, bool var8)
+        public void scheduleLightingUpdate_do(LightType var1, int var2, int var3, int var4, int var5, int var6, int var7, bool var8)
         {
-            if (!dimension.hasNoSky || var1 != EnumSkyBlock.Sky)
+            if (!dimension.hasNoSky || var1 != LightType.Sky)
             {
                 ++lightingUpdatesScheduled;
 
@@ -2435,7 +2435,7 @@ namespace betareborn.Worlds
                     var10 = var14.getBlockID(var7, var9, var8);
                     var7 += var3;
                     var8 += var4;
-                    if (var10 == 0 && getFullBlockLightValue(var7, var9, var8) <= random.nextInt(8) && getSavedLightValue(EnumSkyBlock.Sky, var7, var9, var8) <= 0)
+                    if (var10 == 0 && getFullBlockLightValue(var7, var9, var8) <= random.nextInt(8) && getBrightness(LightType.Sky, var7, var9, var8) <= 0)
                     {
                         EntityPlayer var11 = getClosestPlayer((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, 8.0D);
                         if (var11 != null && var11.getSquaredDistance((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D) > 4.0D)
@@ -2468,7 +2468,7 @@ namespace betareborn.Worlds
                     var7 = var6 & 15;
                     var8 = var6 >> 8 & 15;
                     var9 = findTopSolidBlock(var7 + var3, var8 + var4);
-                    if (getBiomeSource().getBiome(var7 + var3, var8 + var4).getEnableSnow() && var9 >= 0 && var9 < 128 && var14.getSavedLightValue(EnumSkyBlock.Block, var7, var9, var8) < 10)
+                    if (getBiomeSource().getBiome(var7 + var3, var8 + var4).getEnableSnow() && var9 >= 0 && var9 < 128 && var14.getSavedLightValue(LightType.Block, var7, var9, var8) < 10)
                     {
                         var10 = var14.getBlockID(var7, var9 - 1, var8);
                         var15 = var14.getBlockID(var7, var9, var8);

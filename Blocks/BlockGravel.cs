@@ -4,13 +4,13 @@ namespace betareborn.Blocks
 {
     public class BlockGravel : BlockSand
     {
-        public BlockGravel(int var1, int var2) : base(var1, var2)
+        public BlockGravel(int i, int j) : base(i, j)
         {
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return var2.nextInt(10) == 0 ? Item.flint.id : id;
+            return random.nextInt(10) == 0 ? Item.flint.id : id;
         }
     }
 

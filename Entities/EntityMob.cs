@@ -95,18 +95,18 @@ namespace betareborn.Entities
             int var1 = MathHelper.floor_double(posX);
             int var2 = MathHelper.floor_double(boundingBox.minY);
             int var3 = MathHelper.floor_double(posZ);
-            if (worldObj.getSavedLightValue(EnumSkyBlock.Sky, var1, var2, var3) > rand.nextInt(32))
+            if (worldObj.getBrightness(LightType.Sky, var1, var2, var3) > rand.nextInt(32))
             {
                 return false;
             }
             else
             {
-                int var4 = worldObj.getBlockLightValue(var1, var2, var3);
+                int var4 = worldObj.getLightLevel(var1, var2, var3);
                 if (worldObj.func_27160_B())
                 {
                     int var5 = worldObj.skylightSubtracted;
                     worldObj.skylightSubtracted = 10;
-                    var4 = worldObj.getBlockLightValue(var1, var2, var3);
+                    var4 = worldObj.getLightLevel(var1, var2, var3);
                     worldObj.skylightSubtracted = var5;
                 }
 

@@ -6,16 +6,16 @@ namespace betareborn.Blocks
     public class BlockGlowStone : Block
     {
 
-        public BlockGlowStone(int var1, int var2, Material var3) : base(var1, var2, var3)
+        public BlockGlowStone(int i, int j, Material material) : base(i, j, material)
         {
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
-            return 2 + var1.nextInt(3);
+            return 2 + random.nextInt(3);
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.lightStoneDust.id;
         }

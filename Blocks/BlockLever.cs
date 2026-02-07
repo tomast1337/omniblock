@@ -7,11 +7,11 @@ namespace betareborn.Blocks
     public class BlockLever : Block
     {
 
-        public BlockLever(int var1, int var2) : base(var1, var2, Material.PISTON_BREAKABLE)
+        public BlockLever(int id, int level) : base(id, level, Material.PISTON_BREAKABLE)
         {
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
@@ -31,109 +31,109 @@ namespace betareborn.Blocks
             return 12;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World world, int x, int y, int z, int side)
         {
-            return var5 == 1 && var1.shouldSuffocate(var2, var3 - 1, var4) ? true : (var5 == 2 && var1.shouldSuffocate(var2, var3, var4 + 1) ? true : (var5 == 3 && var1.shouldSuffocate(var2, var3, var4 - 1) ? true : (var5 == 4 && var1.shouldSuffocate(var2 + 1, var3, var4) ? true : var5 == 5 && var1.shouldSuffocate(var2 - 1, var3, var4))));
+            return side == 1 && world.shouldSuffocate(x, y - 1, z) ? true : (side == 2 && world.shouldSuffocate(x, y, z + 1) ? true : (side == 3 && world.shouldSuffocate(x, y, z - 1) ? true : (side == 4 && world.shouldSuffocate(x + 1, y, z) ? true : side == 5 && world.shouldSuffocate(x - 1, y, z))));
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return var1.shouldSuffocate(var2 - 1, var3, var4) ? true : (var1.shouldSuffocate(var2 + 1, var3, var4) ? true : (var1.shouldSuffocate(var2, var3, var4 - 1) ? true : (var1.shouldSuffocate(var2, var3, var4 + 1) ? true : var1.shouldSuffocate(var2, var3 - 1, var4))));
+            return world.shouldSuffocate(x - 1, y, z) ? true : (world.shouldSuffocate(x + 1, y, z) ? true : (world.shouldSuffocate(x, y, z - 1) ? true : (world.shouldSuffocate(x, y, z + 1) ? true : world.shouldSuffocate(x, y - 1, z))));
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, int var5)
+        public override void onPlaced(World world, int x, int y, int z, int direction)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = world.getBlockMeta(x, y, z);
             int var7 = var6 & 8;
             var6 &= 7;
             var6 = -1;
-            if (var5 == 1 && var1.shouldSuffocate(var2, var3 - 1, var4))
+            if (direction == 1 && world.shouldSuffocate(x, y - 1, z))
             {
-                var6 = 5 + var1.random.nextInt(2);
+                var6 = 5 + world.random.nextInt(2);
             }
 
-            if (var5 == 2 && var1.shouldSuffocate(var2, var3, var4 + 1))
+            if (direction == 2 && world.shouldSuffocate(x, y, z + 1))
             {
                 var6 = 4;
             }
 
-            if (var5 == 3 && var1.shouldSuffocate(var2, var3, var4 - 1))
+            if (direction == 3 && world.shouldSuffocate(x, y, z - 1))
             {
                 var6 = 3;
             }
 
-            if (var5 == 4 && var1.shouldSuffocate(var2 + 1, var3, var4))
+            if (direction == 4 && world.shouldSuffocate(x + 1, y, z))
             {
                 var6 = 2;
             }
 
-            if (var5 == 5 && var1.shouldSuffocate(var2 - 1, var3, var4))
+            if (direction == 5 && world.shouldSuffocate(x - 1, y, z))
             {
                 var6 = 1;
             }
 
             if (var6 == -1)
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
             else
             {
-                var1.setBlockMeta(var2, var3, var4, var6 + var7);
+                world.setBlockMeta(x, y, z, var6 + var7);
             }
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (checkIfAttachedToBlock(var1, var2, var3, var4))
+            if (breakIfCannotPlaceAt(world, x, y, z))
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4) & 7;
+                int var6 = world.getBlockMeta(x, y, z) & 7;
                 bool var7 = false;
-                if (!var1.shouldSuffocate(var2 - 1, var3, var4) && var6 == 1)
+                if (!world.shouldSuffocate(x - 1, y, z) && var6 == 1)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2 + 1, var3, var4) && var6 == 2)
+                if (!world.shouldSuffocate(x + 1, y, z) && var6 == 2)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2, var3, var4 - 1) && var6 == 3)
+                if (!world.shouldSuffocate(x, y, z - 1) && var6 == 3)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2, var3, var4 + 1) && var6 == 4)
+                if (!world.shouldSuffocate(x, y, z + 1) && var6 == 4)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2, var3 - 1, var4) && var6 == 5)
+                if (!world.shouldSuffocate(x, y - 1, z) && var6 == 5)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2, var3 - 1, var4) && var6 == 6)
+                if (!world.shouldSuffocate(x, y - 1, z) && var6 == 6)
                 {
                     var7 = true;
                 }
 
                 if (var7)
                 {
-                    dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                    world.setBlockWithNotify(x, y, z, 0);
                 }
             }
 
         }
 
-        private bool checkIfAttachedToBlock(World var1, int var2, int var3, int var4)
+        private bool breakIfCannotPlaceAt(World world, int x, int y, int z)
         {
-            if (!canPlaceAt(var1, var2, var3, var4))
+            if (!canPlaceAt(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
                 return false;
             }
             else
@@ -142,9 +142,9 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4) & 7;
+            int var5 = blockView.getBlockMeta(x, y, z) & 7;
             float var6 = 3.0F / 16.0F;
             if (var5 == 1)
             {
@@ -170,91 +170,91 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
-            onUse(var1, var2, var3, var4, var5);
+            onUse(world, x, y, z, player);
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (var1.isRemote)
+            if (world.isRemote)
             {
                 return true;
             }
             else
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
+                int var6 = world.getBlockMeta(x, y, z);
                 int var7 = var6 & 7;
                 int var8 = 8 - (var6 & 8);
-                var1.setBlockMeta(var2, var3, var4, var7 + var8);
-                var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
-                var1.playSound((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
-                var1.notifyNeighbors(var2, var3, var4, id);
+                world.setBlockMeta(x, y, z, var7 + var8);
+                world.setBlocksDirty(x, y, z, x, y, z);
+                world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
+                world.notifyNeighbors(x, y, z, id);
                 if (var7 == 1)
                 {
-                    var1.notifyNeighbors(var2 - 1, var3, var4, id);
+                    world.notifyNeighbors(x - 1, y, z, id);
                 }
                 else if (var7 == 2)
                 {
-                    var1.notifyNeighbors(var2 + 1, var3, var4, id);
+                    world.notifyNeighbors(x + 1, y, z, id);
                 }
                 else if (var7 == 3)
                 {
-                    var1.notifyNeighbors(var2, var3, var4 - 1, id);
+                    world.notifyNeighbors(x, y, z - 1, id);
                 }
                 else if (var7 == 4)
                 {
-                    var1.notifyNeighbors(var2, var3, var4 + 1, id);
+                    world.notifyNeighbors(x, y, z + 1, id);
                 }
                 else
                 {
-                    var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                    world.notifyNeighbors(x, y - 1, z, id);
                 }
 
                 return true;
             }
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
+            int var5 = world.getBlockMeta(x, y, z);
             if ((var5 & 8) > 0)
             {
-                var1.notifyNeighbors(var2, var3, var4, id);
+                world.notifyNeighbors(x, y, z, id);
                 int var6 = var5 & 7;
                 if (var6 == 1)
                 {
-                    var1.notifyNeighbors(var2 - 1, var3, var4, id);
+                    world.notifyNeighbors(x - 1, y, z, id);
                 }
                 else if (var6 == 2)
                 {
-                    var1.notifyNeighbors(var2 + 1, var3, var4, id);
+                    world.notifyNeighbors(x + 1, y, z, id);
                 }
                 else if (var6 == 3)
                 {
-                    var1.notifyNeighbors(var2, var3, var4 - 1, id);
+                    world.notifyNeighbors(x, y, z - 1, id);
                 }
                 else if (var6 == 4)
                 {
-                    var1.notifyNeighbors(var2, var3, var4 + 1, id);
+                    world.notifyNeighbors(x, y, z + 1, id);
                 }
                 else
                 {
-                    var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                    world.notifyNeighbors(x, y - 1, z, id);
                 }
             }
 
-            base.onBreak(var1, var2, var3, var4);
+            base.onBreak(world, x, y, z);
         }
 
-        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView blockView, int x, int y, int a, int side)
         {
-            return (var1.getBlockMeta(var2, var3, var4) & 8) > 0;
+            return (blockView.getBlockMeta(x, y, a) & 8) > 0;
         }
 
-        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = world.getBlockMeta(x, y, z);
             if ((var6 & 8) == 0)
             {
                 return false;
@@ -262,7 +262,7 @@ namespace betareborn.Blocks
             else
             {
                 int var7 = var6 & 7;
-                return var7 == 6 && var5 == 1 ? true : (var7 == 5 && var5 == 1 ? true : (var7 == 4 && var5 == 2 ? true : (var7 == 3 && var5 == 3 ? true : (var7 == 2 && var5 == 4 ? true : var7 == 1 && var5 == 5))));
+                return var7 == 6 && side == 1 ? true : (var7 == 5 && side == 1 ? true : (var7 == 4 && side == 2 ? true : (var7 == 3 && side == 3 ? true : (var7 == 2 && side == 4 ? true : var7 == 1 && side == 5))));
             }
         }
 

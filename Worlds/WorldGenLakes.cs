@@ -101,7 +101,7 @@ namespace betareborn.Worlds
                 {
                     for (var10 = 4; var10 < 8; ++var10)
                     {
-                        if (var6[(var8 * 16 + var32) * 8 + var10] && var1.getBlockId(var3 + var8, var4 + var10 - 1, var5 + var32) == Block.DIRT.id && var1.getSavedLightValue(EnumSkyBlock.Sky, var3 + var8, var4 + var10, var5 + var32) > 0)
+                        if (var6[(var8 * 16 + var32) * 8 + var10] && var1.getBlockId(var3 + var8, var4 + var10 - 1, var5 + var32) == Block.DIRT.id && var1.getBrightness(LightType.Sky, var3 + var8, var4 + var10, var5 + var32) > 0)
                         {
                             var1.setBlock(var3 + var8, var4 + var10 - 1, var5 + var32, Block.GRASS_BLOCK.id);
                         }

@@ -23,7 +23,7 @@ namespace betareborn.Items
 
         public override int getColorFromDamage(int var1)
         {
-            return (var1 & 1) == 1 ? ColorizerFoliage.getFoliageColorPine() : ((var1 & 2) == 2 ? ColorizerFoliage.getFoliageColorBirch() : ColorizerFoliage.func_31073_c());
+            return (var1 & 1) == 1 ? FoliageColors.getSpruceColor() : ((var1 & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor());
         }
     }
 

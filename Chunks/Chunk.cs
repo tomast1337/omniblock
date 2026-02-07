@@ -169,12 +169,12 @@ namespace betareborn.Chunks
             int var4 = worldObj.getHeightValue(var1, var2);
             if (var4 > var3)
             {
-                worldObj.scheduleLightingUpdate(EnumSkyBlock.Sky, var1, var3, var2, var1, var4, var2);
+                worldObj.scheduleLightingUpdate(LightType.Sky, var1, var3, var2, var1, var4, var2);
                 isModified = true;
             }
             else if (var4 < var3)
             {
-                worldObj.scheduleLightingUpdate(EnumSkyBlock.Sky, var1, var4, var2, var1, var3, var2);
+                worldObj.scheduleLightingUpdate(LightType.Sky, var1, var4, var2, var1, var3, var2);
                 isModified = true;
             }
 
@@ -233,7 +233,7 @@ namespace betareborn.Chunks
                 }
                 else
                 {
-                    worldObj.scheduleLightingUpdate(EnumSkyBlock.Sky, var7, var4, var8, var7, var5, var8);
+                    worldObj.scheduleLightingUpdate(LightType.Sky, var7, var4, var8, var7, var5, var8);
 
                     for (var9 = var4; var9 < var5; ++var9)
                     {
@@ -267,7 +267,7 @@ namespace betareborn.Chunks
 
                 if (var5 != var10)
                 {
-                    worldObj.scheduleLightingUpdate(EnumSkyBlock.Sky, var7 - 1, var5, var8 - 1, var7 + 1, var10, var8 + 1);
+                    worldObj.scheduleLightingUpdate(LightType.Sky, var7 - 1, var5, var8 - 1, var7 + 1, var10, var8 + 1);
                 }
 
                 isModified = true;
@@ -313,10 +313,10 @@ namespace betareborn.Chunks
                         func_1003_g(var1, var2, var3);
                     }
 
-                    worldObj.scheduleLightingUpdate(EnumSkyBlock.Sky, var9, var2, var10, var9, var2, var10);
+                    worldObj.scheduleLightingUpdate(LightType.Sky, var9, var2, var10, var9, var2, var10);
                 }
 
-                worldObj.scheduleLightingUpdate(EnumSkyBlock.Block, var9, var2, var10, var9, var2, var10);
+                worldObj.scheduleLightingUpdate(LightType.Block, var9, var2, var10, var9, var2, var10);
                 func_996_c(var1, var3);
                 data.setNibble(var1, var2, var3, var5);
                 if (var4 != 0)
@@ -361,8 +361,8 @@ namespace betareborn.Chunks
                     func_1003_g(var1, var2, var3);
                 }
 
-                worldObj.scheduleLightingUpdate(EnumSkyBlock.Sky, var8, var2, var9, var8, var2, var9);
-                worldObj.scheduleLightingUpdate(EnumSkyBlock.Block, var8, var2, var9, var8, var2, var9);
+                worldObj.scheduleLightingUpdate(LightType.Sky, var8, var2, var9, var8, var2, var9);
+                worldObj.scheduleLightingUpdate(LightType.Block, var8, var2, var9, var8, var2, var9);
                 func_996_c(var1, var3);
                 if (var4 != 0 && !worldObj.isRemote)
                 {
@@ -385,21 +385,21 @@ namespace betareborn.Chunks
             data.setNibble(var1, var2, var3, var4);
         }
 
-        public virtual int getSavedLightValue(EnumSkyBlock var1, int var2, int var3, int var4)
+        public virtual int getSavedLightValue(LightType var1, int var2, int var3, int var4)
         {
-            return var1 == EnumSkyBlock.Sky ? skylightMap.getNibble(var2, var3, var4) : (var1 == EnumSkyBlock.Block ? blocklightMap.getNibble(var2, var3, var4) : 0);
+            return var1 == LightType.Sky ? skylightMap.getNibble(var2, var3, var4) : (var1 == LightType.Block ? blocklightMap.getNibble(var2, var3, var4) : 0);
         }
 
-        public virtual void setLightValue(EnumSkyBlock var1, int var2, int var3, int var4, int var5)
+        public virtual void setLightValue(LightType var1, int var2, int var3, int var4, int var5)
         {
             isModified = true;
-            if (var1 == EnumSkyBlock.Sky)
+            if (var1 == LightType.Sky)
             {
                 skylightMap.setNibble(var2, var3, var4, var5);
             }
             else
             {
-                if (var1 != EnumSkyBlock.Block)
+                if (var1 != LightType.Block)
                 {
                     return;
                 }

@@ -32,7 +32,7 @@ namespace betareborn.Blocks
                 var1.getBiomeSource().getBiomesInArea(var2, var4, 1, 1);
                 double var8 = var1.getBiomeSource().temperatureMap[0];
                 double var10 = var1.getBiomeSource().downfallMap[0];
-                return ColorizerGrass.getGrassColor(var8, var10);
+                return GrassColors.getColor(var8, var10);
             }
         }
 

@@ -9,74 +9,74 @@ namespace betareborn.Blocks
     public class BlockJukeBox : BlockContainer
     {
 
-        public BlockJukeBox(int var1, int var2) : base(var1, var2, Material.WOOD)
+        public BlockJukeBox(int id, int textureId) : base(id, textureId, Material.WOOD)
         {
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return textureId + (var1 == 1 ? 1 : 0);
+            return textureId + (side == 1 ? 1 : 0);
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (var1.getBlockMeta(var2, var3, var4) == 0)
+            if (world.getBlockMeta(x, y, z) == 0)
             {
                 return false;
             }
             else
             {
-                func_28038_b_(var1, var2, var3, var4);
+                tryEjectRecord(world, x, y, z);
                 return true;
             }
         }
 
-        public void ejectRecord(World var1, int var2, int var3, int var4, int var5)
+        public void insertRecord(World world, int x, int y, int z, int id)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
-                var6.recordId = var5;
+                TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)world.getBlockTileEntity(x, y, z);
+                var6.recordId = id;
                 var6.markDirty();
-                var1.setBlockMeta(var2, var3, var4, 1);
+                world.setBlockMeta(x, y, z, 1);
             }
         }
 
-        public void func_28038_b_(World var1, int var2, int var3, int var4)
+        public void tryEjectRecord(World world, int x, int y, int z)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                TileEntityRecordPlayer var5 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
+                TileEntityRecordPlayer var5 = (TileEntityRecordPlayer)world.getBlockTileEntity(x, y, z);
                 int var6 = var5.recordId;
                 if (var6 != 0)
                 {
-                    var1.worldEvent(1005, var2, var3, var4, 0);
-                    var1.playRecord((String)null, var2, var3, var4);
+                    world.worldEvent(1005, x, y, z, 0);
+                    world.playRecord((String)null, x, y, z);
                     var5.recordId = 0;
                     var5.markDirty();
-                    var1.setBlockMeta(var2, var3, var4, 0);
+                    world.setBlockMeta(x, y, z, 0);
                     float var8 = 0.7F;
-                    double var9 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-                    double var11 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.2D + 0.6D;
-                    double var13 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-                    EntityItem var15 = new EntityItem(var1, (double)var2 + var9, (double)var3 + var11, (double)var4 + var13, new ItemStack(var6, 1, 0));
+                    double var9 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+                    double var11 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.2D + 0.6D;
+                    double var13 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+                    EntityItem var15 = new EntityItem(world, (double)x + var9, (double)y + var11, (double)z + var13, new ItemStack(var6, 1, 0));
                     var15.delayBeforeCanPickup = 10;
-                    var1.spawnEntity(var15);
+                    world.spawnEntity(var15);
                 }
             }
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            func_28038_b_(var1, var2, var3, var4);
-            base.onBreak(var1, var2, var3, var4);
+            tryEjectRecord(world, x, y, z);
+            base.onBreak(world, x, y, z);
         }
 
-        public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
+        public override void dropStacks(World world, int x, int y, int z, int meta, float luck)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                base.dropStacks(var1, var2, var3, var4, var5, var6);
+                base.dropStacks(world, x, y, z, meta, luck);
             }
         }
 

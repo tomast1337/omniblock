@@ -23,7 +23,7 @@ namespace betareborn.Blocks
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
             base.onTick(world, x, y, z, random);
-            if (world.getBlockLightValue(x, y + 1, z) >= 9)
+            if (world.getLightLevel(x, y + 1, z) >= 9)
             {
                 int var6 = world.getBlockMeta(x, y, z);
                 if (var6 < 7)
