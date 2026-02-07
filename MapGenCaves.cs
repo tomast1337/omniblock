@@ -126,7 +126,7 @@ namespace betareborn
                                     var43 = (var40 * 16 + var41) * 128 + var42;
                                     if (var42 >= 0 && var42 < 128)
                                     {
-                                        if (var3[var43] == Block.waterMoving.id || var3[var43] == Block.waterStill.id)
+                                        if (var3[var43] == Block.FLOWING_WATER.id || var3[var43] == Block.WATER.id)
                                         {
                                             var56 = true;
                                         }
@@ -159,23 +159,23 @@ namespace betareborn
                                             if (var49 > -0.7D && var57 * var57 + var49 * var49 + var44 * var44 < 1.0D)
                                             {
                                                 byte var51 = var3[var46];
-                                                if (var51 == Block.grass.id)
+                                                if (var51 == Block.GRASS_BLOCK.id)
                                                 {
                                                     var47 = true;
                                                 }
 
-                                                if (var51 == Block.stone.id || var51 == Block.dirt.id || var51 == Block.grass.id)
+                                                if (var51 == Block.STONE.id || var51 == Block.DIRT.id || var51 == Block.GRASS_BLOCK.id)
                                                 {
                                                     if (var48 < 10)
                                                     {
-                                                        var3[var46] = (byte)Block.lavaMoving.id;
+                                                        var3[var46] = (byte)Block.FLOWING_LAVA.id;
                                                     }
                                                     else
                                                     {
                                                         var3[var46] = 0;
-                                                        if (var47 && var3[var46 - 1] == Block.dirt.id)
+                                                        if (var47 && var3[var46 - 1] == Block.DIRT.id)
                                                         {
-                                                            var3[var46 - 1] = (byte)Block.grass.id;
+                                                            var3[var46 - 1] = (byte)Block.GRASS_BLOCK.id;
                                                         }
                                                     }
                                                 }

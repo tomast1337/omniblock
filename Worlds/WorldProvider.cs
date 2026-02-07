@@ -47,7 +47,7 @@ namespace betareborn.Worlds
         public virtual bool canCoordinateBeSpawn(int var1, int var2)
         {
             int var3 = worldObj.getFirstUncoveredBlock(var1, var2);
-            return var3 == Block.sand.id;
+            return var3 == Block.SAND.id;
         }
 
         public virtual float calculateCelestialAngle(long var1, float var3)

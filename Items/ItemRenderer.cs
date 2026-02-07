@@ -25,10 +25,10 @@ namespace betareborn.Rendering
         public void renderItem(EntityLiving var1, ItemStack var2)
         {
             GLManager.GL.PushMatrix();
-            if (var2.itemID < 256 && RenderBlocks.renderItemIn3d(Block.blocksList[var2.itemID].getRenderType()))
+            if (var2.itemID < 256 && RenderBlocks.renderItemIn3d(Block.BLOCKS[var2.itemID].getRenderType()))
             {
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.renderEngine.getTexture("/terrain.png"));
-                renderBlocksInstance.renderBlockOnInventory(Block.blocksList[var2.itemID], var2.getItemDamage(), var1.getEntityBrightness(1.0F));
+                renderBlocksInstance.renderBlockOnInventory(Block.BLOCKS[var2.itemID], var2.getItemDamage(), var1.getEntityBrightness(1.0F));
             }
             else
             {
@@ -326,7 +326,7 @@ namespace betareborn.Rendering
                 int var6 = mc.theWorld.getBlockId(var2, var3, var4);
                 if (mc.theWorld.shouldSuffocate(var2, var3, var4))
                 {
-                    renderInsideOfBlock(var1, Block.blocksList[var6].getBlockTextureFromSide(2));
+                    renderInsideOfBlock(var1, Block.BLOCKS[var6].getBlockTextureFromSide(2));
                 }
                 else
                 {
@@ -345,9 +345,9 @@ namespace betareborn.Rendering
                     }
                 }
 
-                if (Block.blocksList[var6] != null)
+                if (Block.BLOCKS[var6] != null)
                 {
-                    renderInsideOfBlock(var1, Block.blocksList[var6].getBlockTextureFromSide(2));
+                    renderInsideOfBlock(var1, Block.BLOCKS[var6].getBlockTextureFromSide(2));
                 }
             }
 

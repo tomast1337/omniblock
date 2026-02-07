@@ -44,7 +44,7 @@ namespace betareborn.Blocks
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3 - 1, var4);
-            return var5 == id ? true : (var5 != Block.grass.id && var5 != Block.dirt.id ? false : (var1.getMaterial(var2 - 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2 + 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2, var3 - 1, var4 - 1) == Material.WATER ? true : var1.getMaterial(var2, var3 - 1, var4 + 1) == Material.WATER))));
+            return var5 == id ? true : (var5 != Block.GRASS_BLOCK.id && var5 != Block.DIRT.id ? false : (var1.getMaterial(var2 - 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2 + 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2, var3 - 1, var4 - 1) == Material.WATER ? true : var1.getMaterial(var2, var3 - 1, var4 + 1) == Material.WATER))));
         }
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)

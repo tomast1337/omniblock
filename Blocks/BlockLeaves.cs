@@ -55,7 +55,7 @@ namespace betareborn.Blocks
                         for (int var9 = -var5; var9 <= var5; ++var9)
                         {
                             int var10 = var1.getBlockId(var2 + var7, var3 + var8, var4 + var9);
-                            if (var10 == Block.leaves.id)
+                            if (var10 == Block.LEAVES.id)
                             {
                                 int var11 = var1.getBlockMeta(var2 + var7, var3 + var8, var4 + var9);
                                 var1.setBlockMetadata(var2 + var7, var3 + var8, var4 + var9, var11 | 8);
@@ -100,11 +100,11 @@ namespace betareborn.Blocks
                                 for (var14 = -var7; var14 <= var7; ++var14)
                                 {
                                     var15 = var1.getBlockId(var2 + var12, var3 + var13, var4 + var14);
-                                    if (var15 == Block.wood.id)
+                                    if (var15 == Block.LOG.id)
                                     {
                                         adjacentTreeBlocks[(var12 + var11) * var10 + (var13 + var11) * var9 + var14 + var11] = 0;
                                     }
-                                    else if (var15 == Block.leaves.id)
+                                    else if (var15 == Block.LEAVES.id)
                                     {
                                         adjacentTreeBlocks[(var12 + var11) * var10 + (var13 + var11) * var9 + var14 + var11] = -2;
                                     }
@@ -195,7 +195,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.sapling.id;
+            return Block.SAPLING.id;
         }
 
         public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
@@ -203,7 +203,7 @@ namespace betareborn.Blocks
             if (!var1.multiplayerWorld && var2.getCurrentEquippedItem() != null && var2.getCurrentEquippedItem().itemID == Item.shears.id)
             {
                 var2.addStat(StatList.mineBlockStatArray[id], 1);
-                dropBlockAsItem_do(var1, var3, var4, var5, new ItemStack(Block.leaves.id, 1, var6 & 3));
+                dropBlockAsItem_do(var1, var3, var4, var5, new ItemStack(Block.LEAVES.id, 1, var6 & 3));
             }
             else
             {

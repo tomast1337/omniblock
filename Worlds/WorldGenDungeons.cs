@@ -67,7 +67,7 @@ namespace betareborn.Worlds
                                 }
                                 else
                                 {
-                                    var1.setBlockWithNotify(var10, var11, var12, Block.cobblestone.id);
+                                    var1.setBlockWithNotify(var10, var11, var12, Block.COBBLESTONE.id);
                                 }
                             }
                         }

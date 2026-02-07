@@ -18,7 +18,7 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (var5 > 0 && Block.blocksList[var5].canProvidePower())
+            if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
             {
                 bool var6 = var1.isBlockGettingPowered(var2, var3, var4);
                 TileEntityNote var7 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);

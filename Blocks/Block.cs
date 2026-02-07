@@ -5,7 +5,6 @@ using betareborn.Stats;
 using betareborn.TileEntities;
 using betareborn.Worlds;
 using java.lang;
-using java.util;
 
 namespace betareborn.Blocks
 {
@@ -20,54 +19,54 @@ namespace betareborn.Blocks
         public static readonly StepSound soundGlassFootstep = new StepSoundStone("stone", 1.0F, 1.0F);
         public static readonly StepSound soundClothFootstep = new("cloth", 1.0F, 1.0F);
         public static readonly StepSound soundSandFootstep = new StepSoundSand("sand", 1.0F, 1.0F);
-        public static readonly Block[] blocksList = new Block[256];
-        public static readonly bool[] tickOnLoad = new bool[256];
-        public static readonly bool[] opaqueCubeLookup = new bool[256];
-        public static readonly bool[] isBlockContainer = new bool[256];
-        public static readonly int[] lightOpacity = new int[256];
-        public static readonly bool[] canBlockGrass = new bool[256];
-        public static readonly int[] lightValue = new int[256];
-        public static readonly bool[] field_28032_t = new bool[256];
-        public static readonly Block stone = (new BlockStone(1, 1)).setHardness(1.5F).setResistance(10.0F).setStepSound(soundStoneFootstep).setBlockName("stone");
-        public static readonly BlockGrass grass = (BlockGrass)(new BlockGrass(2)).setHardness(0.6F).setStepSound(soundGrassFootstep).setBlockName("grass");
-        public static readonly Block dirt = (new BlockDirt(3, 2)).setHardness(0.5F).setStepSound(soundGravelFootstep).setBlockName("dirt");
-        public static readonly Block cobblestone = (new Block(4, 16, Material.STONE)).setHardness(2.0F).setResistance(10.0F).setStepSound(soundStoneFootstep).setBlockName("stonebrick");
-        public static readonly Block planks = (new Block(5, 4, Material.WOOD)).setHardness(2.0F).setResistance(5.0F).setStepSound(soundWoodFootstep).setBlockName("wood").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block sapling = (new BlockSapling(6, 15)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("sapling").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block bedrock = (new Block(7, 17, Material.STONE)).setBlockUnbreakable().setResistance(6000000.0F).setStepSound(soundStoneFootstep).setBlockName("bedrock").disableStats();
-        public static readonly Block waterMoving = (new BlockFlowing(8, Material.WATER)).setHardness(100.0F).setLightOpacity(3).setBlockName("water").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block waterStill = (new BlockStationary(9, Material.WATER)).setHardness(100.0F).setLightOpacity(3).setBlockName("water").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block lavaMoving = (new BlockFlowing(10, Material.LAVA)).setHardness(0.0F).setLightValue(1.0F).setLightOpacity(255).setBlockName("lava").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block lavaStill = (new BlockStationary(11, Material.LAVA)).setHardness(100.0F).setLightValue(1.0F).setLightOpacity(255).setBlockName("lava").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block sand = (new BlockSand(12, 18)).setHardness(0.5F).setStepSound(soundSandFootstep).setBlockName("sand");
-        public static readonly Block gravel = (new BlockGravel(13, 19)).setHardness(0.6F).setStepSound(soundGravelFootstep).setBlockName("gravel");
-        public static readonly Block oreGold = (new BlockOre(14, 32)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreGold");
-        public static readonly Block oreIron = (new BlockOre(15, 33)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreIron");
-        public static readonly Block oreCoal = (new BlockOre(16, 34)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreCoal");
-        public static readonly Block wood = (new BlockLog(17)).setHardness(2.0F).setStepSound(soundWoodFootstep).setBlockName("log").disableNeighborNotifyOnMetadataChange();
-        public static readonly BlockLeaves leaves = (BlockLeaves)(new BlockLeaves(18, 52)).setHardness(0.2F).setLightOpacity(1).setStepSound(soundGrassFootstep).setBlockName("leaves").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block sponge = (new BlockSponge(19)).setHardness(0.6F).setStepSound(soundGrassFootstep).setBlockName("sponge");
-        public static readonly Block glass = (new BlockGlass(20, 49, Material.GLASS, false)).setHardness(0.3F).setStepSound(soundGlassFootstep).setBlockName("glass");
-        public static readonly Block oreLapis = (new BlockOre(21, 160)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreLapis");
-        public static readonly Block blockLapis = (new Block(22, 144, Material.STONE)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("blockLapis");
-        public static readonly Block dispenser = (new BlockDispenser(23)).setHardness(3.5F).setStepSound(soundStoneFootstep).setBlockName("dispenser").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block sandStone = (new BlockSandStone(24)).setStepSound(soundStoneFootstep).setHardness(0.8F).setBlockName("sandStone");
-        public static readonly Block musicBlock = (new BlockNote(25)).setHardness(0.8F).setBlockName("musicBlock").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block blockBed = (new BlockBed(26)).setHardness(0.2F).setBlockName("bed").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block railPowered = (new BlockRail(27, 179, true)).setHardness(0.7F).setStepSound(soundMetalFootstep).setBlockName("goldenRail").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block railDetector = (new BlockDetectorRail(28, 195)).setHardness(0.7F).setStepSound(soundMetalFootstep).setBlockName("detectorRail").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block pistonStickyBase = (new BlockPistonBase(29, 106, true)).setBlockName("pistonStickyBase").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block web = (new BlockWeb(30, 11)).setLightOpacity(1).setHardness(4.0F).setBlockName("web");
-        public static readonly BlockTallGrass tallGrass = (BlockTallGrass)(new BlockTallGrass(31, 39)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("tallgrass");
-        public static readonly BlockDeadBush deadBush = (BlockDeadBush)(new BlockDeadBush(32, 55)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("deadbush");
-        public static readonly Block pistonBase = (new BlockPistonBase(33, 107, false)).setBlockName("pistonBase").disableNeighborNotifyOnMetadataChange();
-        public static readonly BlockPistonExtension pistonExtension = (BlockPistonExtension)(new BlockPistonExtension(34, 107)).disableNeighborNotifyOnMetadataChange();
-        public static readonly Block cloth = (new BlockCloth()).setHardness(0.8F).setStepSound(soundClothFootstep).setBlockName("cloth").disableNeighborNotifyOnMetadataChange();
-        public static readonly BlockPistonMoving pistonMoving = new BlockPistonMoving(36);
-        public static readonly BlockFlower plantYellow = (BlockFlower)(new BlockFlower(37, 13)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("flower");
-        public static readonly BlockFlower plantRed = (BlockFlower)(new BlockFlower(38, 12)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("rose");
-        public static readonly BlockFlower mushroomBrown = (BlockFlower)(new BlockMushroom(39, 29)).setHardness(0.0F).setStepSound(soundGrassFootstep).setLightValue(2.0F / 16.0F).setBlockName("mushroom");
-        public static readonly BlockFlower mushroomRed = (BlockFlower)(new BlockMushroom(40, 28)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("mushroom");
+        public static readonly Block[] BLOCKS = new Block[256];
+        public static readonly bool[] BLOCKS_RANDOM_TICK = new bool[256];
+        public static readonly bool[] BLOCKS_OPAQUE = new bool[256];
+        public static readonly bool[] BLOCKS_WITH_ENTITY = new bool[256];
+        public static readonly int[] BLOCK_LIGHT_OPACITY = new int[256];
+        public static readonly bool[] BLOCKS_ALLOW_VISION = new bool[256];
+        public static readonly int[] BLOCKS_LIGHT_LUMINANCE = new int[256];
+        public static readonly bool[] BLOCKS_IGNORE_META_UPDATE = new bool[256];
+        public static readonly Block STONE = (new BlockStone(1, 1)).setHardness(1.5F).setResistance(10.0F).setStepSound(soundStoneFootstep).setBlockName("stone");
+        public static readonly BlockGrass GRASS_BLOCK = (BlockGrass)(new BlockGrass(2)).setHardness(0.6F).setStepSound(soundGrassFootstep).setBlockName("grass");
+        public static readonly Block DIRT = (new BlockDirt(3, 2)).setHardness(0.5F).setStepSound(soundGravelFootstep).setBlockName("dirt");
+        public static readonly Block COBBLESTONE = (new Block(4, 16, Material.STONE)).setHardness(2.0F).setResistance(10.0F).setStepSound(soundStoneFootstep).setBlockName("stonebrick");
+        public static readonly Block PLANKS = (new Block(5, 4, Material.WOOD)).setHardness(2.0F).setResistance(5.0F).setStepSound(soundWoodFootstep).setBlockName("wood").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block SAPLING = (new BlockSapling(6, 15)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("sapling").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block BEDROCK = (new Block(7, 17, Material.STONE)).setBlockUnbreakable().setResistance(6000000.0F).setStepSound(soundStoneFootstep).setBlockName("bedrock").disableStats();
+        public static readonly Block FLOWING_WATER = (new BlockFlowing(8, Material.WATER)).setHardness(100.0F).setLightOpacity(3).setBlockName("water").disableStats().disableNeighborNotifyOnMetadataChange();
+        public static readonly Block WATER = (new BlockStationary(9, Material.WATER)).setHardness(100.0F).setLightOpacity(3).setBlockName("water").disableStats().disableNeighborNotifyOnMetadataChange();
+        public static readonly Block FLOWING_LAVA = (new BlockFlowing(10, Material.LAVA)).setHardness(0.0F).setLightValue(1.0F).setLightOpacity(255).setBlockName("lava").disableStats().disableNeighborNotifyOnMetadataChange();
+        public static readonly Block LAVA = (new BlockStationary(11, Material.LAVA)).setHardness(100.0F).setLightValue(1.0F).setLightOpacity(255).setBlockName("lava").disableStats().disableNeighborNotifyOnMetadataChange();
+        public static readonly Block SAND = (new BlockSand(12, 18)).setHardness(0.5F).setStepSound(soundSandFootstep).setBlockName("sand");
+        public static readonly Block GRAVEL = (new BlockGravel(13, 19)).setHardness(0.6F).setStepSound(soundGravelFootstep).setBlockName("gravel");
+        public static readonly Block GOLD_ORE = (new BlockOre(14, 32)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreGold");
+        public static readonly Block IRON_ORE = (new BlockOre(15, 33)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreIron");
+        public static readonly Block COAL_ORE = (new BlockOre(16, 34)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreCoal");
+        public static readonly Block LOG = (new BlockLog(17)).setHardness(2.0F).setStepSound(soundWoodFootstep).setBlockName("log").disableNeighborNotifyOnMetadataChange();
+        public static readonly BlockLeaves LEAVES = (BlockLeaves)(new BlockLeaves(18, 52)).setHardness(0.2F).setLightOpacity(1).setStepSound(soundGrassFootstep).setBlockName("leaves").disableStats().disableNeighborNotifyOnMetadataChange();
+        public static readonly Block SPONGE = (new BlockSponge(19)).setHardness(0.6F).setStepSound(soundGrassFootstep).setBlockName("sponge");
+        public static readonly Block GLASS = (new BlockGlass(20, 49, Material.GLASS, false)).setHardness(0.3F).setStepSound(soundGlassFootstep).setBlockName("glass");
+        public static readonly Block LAPIS_ORE = (new BlockOre(21, 160)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreLapis");
+        public static readonly Block LAPIS_BLOCK = (new Block(22, 144, Material.STONE)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("blockLapis");
+        public static readonly Block DISPENSER = (new BlockDispenser(23)).setHardness(3.5F).setStepSound(soundStoneFootstep).setBlockName("dispenser").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block SANDSTONE = (new BlockSandStone(24)).setStepSound(soundStoneFootstep).setHardness(0.8F).setBlockName("sandStone");
+        public static readonly Block NOTE_BLOCK = (new BlockNote(25)).setHardness(0.8F).setBlockName("musicBlock").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block BED = (new BlockBed(26)).setHardness(0.2F).setBlockName("bed").disableStats().disableNeighborNotifyOnMetadataChange();
+        public static readonly Block POWERED_RAIL = (new BlockRail(27, 179, true)).setHardness(0.7F).setStepSound(soundMetalFootstep).setBlockName("goldenRail").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block DETECTOR_RAIL = (new BlockDetectorRail(28, 195)).setHardness(0.7F).setStepSound(soundMetalFootstep).setBlockName("detectorRail").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block STICKY_PISTON = (new BlockPistonBase(29, 106, true)).setBlockName("pistonStickyBase").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block COBWEB = (new BlockWeb(30, 11)).setLightOpacity(1).setHardness(4.0F).setBlockName("web");
+        public static readonly BlockTallGrass GRASS = (BlockTallGrass)(new BlockTallGrass(31, 39)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("tallgrass");
+        public static readonly BlockDeadBush DEAD_BUSH = (BlockDeadBush)(new BlockDeadBush(32, 55)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("deadbush");
+        public static readonly Block PISTON = (new BlockPistonBase(33, 107, false)).setBlockName("pistonBase").disableNeighborNotifyOnMetadataChange();
+        public static readonly BlockPistonExtension PISTON_HEAD = (BlockPistonExtension)(new BlockPistonExtension(34, 107)).disableNeighborNotifyOnMetadataChange();
+        public static readonly Block WOOL = (new BlockCloth()).setHardness(0.8F).setStepSound(soundClothFootstep).setBlockName("cloth").disableNeighborNotifyOnMetadataChange();
+        public static readonly BlockPistonMoving MOVING_PISTON = new BlockPistonMoving(36);
+        public static readonly BlockFlower DANDELION = (BlockFlower)(new BlockFlower(37, 13)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("flower");
+        public static readonly BlockFlower ROSE = (BlockFlower)(new BlockFlower(38, 12)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("rose");
+        public static readonly BlockFlower BROWN_MUSHROOM = (BlockFlower)(new BlockMushroom(39, 29)).setHardness(0.0F).setStepSound(soundGrassFootstep).setLightValue(2.0F / 16.0F).setBlockName("mushroom");
+        public static readonly BlockFlower RED_MUSHROOM = (BlockFlower)(new BlockMushroom(40, 28)).setHardness(0.0F).setStepSound(soundGrassFootstep).setBlockName("mushroom");
         public static readonly Block blockGold = (new BlockOreStorage(41, 23)).setHardness(3.0F).setResistance(10.0F).setStepSound(soundMetalFootstep).setBlockName("blockGold");
         public static readonly Block blockSteel = (new BlockOreStorage(42, 22)).setHardness(5.0F).setResistance(10.0F).setStepSound(soundMetalFootstep).setBlockName("blockIron");
         public static readonly Block stairDouble = (new BlockStep(43, true)).setHardness(2.0F).setResistance(10.0F).setStepSound(soundStoneFootstep).setBlockName("stoneSlab");
@@ -80,7 +79,7 @@ namespace betareborn.Blocks
         public static readonly Block torchWood = (new BlockTorch(50, 80)).setHardness(0.0F).setLightValue(15.0F / 16.0F).setStepSound(soundWoodFootstep).setBlockName("torch").disableNeighborNotifyOnMetadataChange();
         public static readonly BlockFire fire = (BlockFire)(new BlockFire(51, 31)).setHardness(0.0F).setLightValue(1.0F).setStepSound(soundWoodFootstep).setBlockName("fire").disableStats().disableNeighborNotifyOnMetadataChange();
         public static readonly Block mobSpawner = (new BlockMobSpawner(52, 65)).setHardness(5.0F).setStepSound(soundMetalFootstep).setBlockName("mobSpawner").disableStats();
-        public static readonly Block stairCompactPlanks = (new BlockStairs(53, planks)).setBlockName("stairsWood").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block stairCompactPlanks = (new BlockStairs(53, PLANKS)).setBlockName("stairsWood").disableNeighborNotifyOnMetadataChange();
         public static readonly Block chest = (new BlockChest(54)).setHardness(2.5F).setStepSound(soundWoodFootstep).setBlockName("chest").disableNeighborNotifyOnMetadataChange();
         public static readonly Block redstoneWire = (new BlockRedstoneWire(55, 164)).setHardness(0.0F).setStepSound(soundPowderFootstep).setBlockName("redstoneDust").disableStats().disableNeighborNotifyOnMetadataChange();
         public static readonly Block oreDiamond = (new BlockOre(56, 50)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreDiamond");
@@ -94,17 +93,17 @@ namespace betareborn.Blocks
         public static readonly Block doorWood = (new BlockDoor(64, Material.WOOD)).setHardness(3.0F).setStepSound(soundWoodFootstep).setBlockName("doorWood").disableStats().disableNeighborNotifyOnMetadataChange();
         public static readonly Block ladder = (new BlockLadder(65, 83)).setHardness(0.4F).setStepSound(soundWoodFootstep).setBlockName("ladder").disableNeighborNotifyOnMetadataChange();
         public static readonly Block rail = (new BlockRail(66, 128, false)).setHardness(0.7F).setStepSound(soundMetalFootstep).setBlockName("rail").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block stairCompactCobblestone = (new BlockStairs(67, cobblestone)).setBlockName("stairsStone").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block stairCompactCobblestone = (new BlockStairs(67, COBBLESTONE)).setBlockName("stairsStone").disableNeighborNotifyOnMetadataChange();
         public static readonly Block signWall = (new BlockSign(68, TileEntitySign.Class, false)).setHardness(1.0F).setStepSound(soundWoodFootstep).setBlockName("sign").disableStats().disableNeighborNotifyOnMetadataChange();
         public static readonly Block lever = (new BlockLever(69, 96)).setHardness(0.5F).setStepSound(soundWoodFootstep).setBlockName("lever").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block pressurePlateStone = (new BlockPressurePlate(70, stone.textureId, EnumMobType.mobs, Material.STONE)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block pressurePlateStone = (new BlockPressurePlate(70, STONE.textureId, EnumMobType.mobs, Material.STONE)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
         public static readonly Block doorSteel = (new BlockDoor(71, Material.METAL)).setHardness(5.0F).setStepSound(soundMetalFootstep).setBlockName("doorIron").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block pressurePlatePlanks = (new BlockPressurePlate(72, planks.textureId, EnumMobType.everything, Material.WOOD)).setHardness(0.5F).setStepSound(soundWoodFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block pressurePlatePlanks = (new BlockPressurePlate(72, PLANKS.textureId, EnumMobType.everything, Material.WOOD)).setHardness(0.5F).setStepSound(soundWoodFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
         public static readonly Block oreRedstone = (new BlockRedstoneOre(73, 51, false)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreRedstone").disableNeighborNotifyOnMetadataChange();
         public static readonly Block oreRedstoneGlowing = (new BlockRedstoneOre(74, 51, true)).setLightValue(10.0F / 16.0F).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreRedstone").disableNeighborNotifyOnMetadataChange();
         public static readonly Block torchRedstoneIdle = (new BlockRedstoneTorch(75, 115, false)).setHardness(0.0F).setStepSound(soundWoodFootstep).setBlockName("notGate").disableNeighborNotifyOnMetadataChange();
         public static readonly Block torchRedstoneActive = (new BlockRedstoneTorch(76, 99, true)).setHardness(0.0F).setLightValue(0.5F).setStepSound(soundWoodFootstep).setBlockName("notGate").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block button = (new BlockButton(77, stone.textureId)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("button").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block button = (new BlockButton(77, STONE.textureId)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("button").disableNeighborNotifyOnMetadataChange();
         public static readonly Block snow = (new BlockSnow(78, 66)).setHardness(0.1F).setStepSound(soundClothFootstep).setBlockName("snow");
         public static readonly Block ice = (new BlockIce(79, 67)).setHardness(0.5F).setLightOpacity(3).setStepSound(soundGlassFootstep).setBlockName("ice");
         public static readonly Block blockSnow = (new BlockSnowBlock(80, 66)).setHardness(0.2F).setStepSound(soundClothFootstep).setBlockName("snow");
@@ -149,26 +148,26 @@ namespace betareborn.Blocks
             stepSound = soundPowderFootstep;
             blockParticleGravity = 1.0F;
             slipperiness = 0.6F;
-            if (blocksList[var1] != null)
+            if (BLOCKS[var1] != null)
             {
-                throw new IllegalArgumentException("Slot " + var1 + " is already occupied by " + blocksList[var1] + " when adding " + this);
+                throw new IllegalArgumentException("Slot " + var1 + " is already occupied by " + BLOCKS[var1] + " when adding " + this);
             }
             else
             {
                 blockMaterial = var2;
-                blocksList[var1] = this;
+                BLOCKS[var1] = this;
                 id = var1;
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                opaqueCubeLookup[var1] = isOpaque();
-                lightOpacity[var1] = isOpaque() ? 255 : 0;
-                canBlockGrass[var1] = !var2.blocksVision();
-                isBlockContainer[var1] = false;
+                BLOCKS_OPAQUE[var1] = isOpaque();
+                BLOCK_LIGHT_OPACITY[var1] = isOpaque() ? 255 : 0;
+                BLOCKS_ALLOW_VISION[var1] = !var2.blocksVision();
+                BLOCKS_WITH_ENTITY[var1] = false;
             }
         }
 
         protected Block disableNeighborNotifyOnMetadataChange()
         {
-            field_28032_t[id] = true;
+            BLOCKS_IGNORE_META_UPDATE[id] = true;
             return this;
         }
 
@@ -189,13 +188,13 @@ namespace betareborn.Blocks
 
         protected Block setLightOpacity(int var1)
         {
-            lightOpacity[id] = var1;
+            BLOCK_LIGHT_OPACITY[id] = var1;
             return this;
         }
 
         protected Block setLightValue(float var1)
         {
-            lightValue[id] = (int)(15.0F * var1);
+            BLOCKS_LIGHT_LUMINANCE[id] = (int)(15.0F * var1);
             return this;
         }
 
@@ -239,7 +238,7 @@ namespace betareborn.Blocks
 
         protected Block setTickOnLoad(bool var1)
         {
-            tickOnLoad[id] = var1;
+            BLOCKS_RANDOM_TICK[id] = var1;
             return this;
         }
 
@@ -255,7 +254,7 @@ namespace betareborn.Blocks
 
         public virtual float getBlockBrightness(BlockView var1, int var2, int var3, int var4)
         {
-            return var1.getNaturalBrightness(var2, var3, var4, lightValue[id]);
+            return var1.getNaturalBrightness(var2, var3, var4, BLOCKS_LIGHT_LUMINANCE[id]);
         }
 
         public virtual bool shouldSideBeRendered(BlockView var1, int var2, int var3, int var4, int var5)
@@ -557,7 +556,7 @@ namespace betareborn.Blocks
         public virtual bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3, var4);
-            return var5 == 0 || blocksList[var5].blockMaterial.isReplaceable();
+            return var5 == 0 || BLOCKS[var5].blockMaterial.isReplaceable();
         }
 
         public virtual bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
@@ -671,24 +670,24 @@ namespace betareborn.Blocks
 
         static Block()
         {
-            Item.itemsList[cloth.id] = (new ItemCloth(cloth.id - 256)).setItemName("cloth");
-            Item.itemsList[wood.id] = (new ItemLog(wood.id - 256)).setItemName("log");
+            Item.itemsList[WOOL.id] = (new ItemCloth(WOOL.id - 256)).setItemName("cloth");
+            Item.itemsList[LOG.id] = (new ItemLog(LOG.id - 256)).setItemName("log");
             Item.itemsList[stairSingle.id] = (new ItemSlab(stairSingle.id - 256)).setItemName("stoneSlab");
-            Item.itemsList[sapling.id] = (new ItemSapling(sapling.id - 256)).setItemName("sapling");
-            Item.itemsList[leaves.id] = (new ItemLeaves(leaves.id - 256)).setItemName("leaves");
-            Item.itemsList[pistonBase.id] = new ItemPiston(pistonBase.id - 256);
-            Item.itemsList[pistonStickyBase.id] = new ItemPiston(pistonStickyBase.id - 256);
+            Item.itemsList[SAPLING.id] = (new ItemSapling(SAPLING.id - 256)).setItemName("sapling");
+            Item.itemsList[LEAVES.id] = (new ItemLeaves(LEAVES.id - 256)).setItemName("leaves");
+            Item.itemsList[PISTON.id] = new ItemPiston(PISTON.id - 256);
+            Item.itemsList[STICKY_PISTON.id] = new ItemPiston(STICKY_PISTON.id - 256);
 
             for (int var0 = 0; var0 < 256; ++var0)
             {
-                if (blocksList[var0] != null && Item.itemsList[var0] == null)
+                if (BLOCKS[var0] != null && Item.itemsList[var0] == null)
                 {
                     Item.itemsList[var0] = new ItemBlock(var0 - 256);
-                    blocksList[var0].initializeBlock();
+                    BLOCKS[var0].initializeBlock();
                 }
             }
 
-            canBlockGrass[0] = true;
+            BLOCKS_ALLOW_VISION[0] = true;
             StatList.func_25154_a();
         }
     }

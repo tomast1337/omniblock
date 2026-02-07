@@ -80,7 +80,7 @@ namespace betareborn.Worlds
                 {
                     var1.setBlockWithNotify(var3, var4, var5, field_4158_a);
                     var1.scheduledUpdatesAreImmediate = true;
-                    Block.blocksList[field_4158_a].updateTick(var1, var3, var4, var5, var2);
+                    Block.BLOCKS[field_4158_a].updateTick(var1, var3, var4, var5, var2);
                     var1.scheduledUpdatesAreImmediate = false;
                 }
 

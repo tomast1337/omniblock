@@ -136,7 +136,7 @@ namespace betareborn
         {
             if (var4 != 0)
             {
-                Block var6 = Block.blocksList[var4];
+                Block var6 = Block.BLOCKS[var4];
                 byte var7 = 4;
 
                 for (int var8 = 0; var8 < var7; ++var8)
@@ -162,7 +162,7 @@ namespace betareborn
             int var5 = worldObj.getBlockId(var1, var2, var3);
             if (var5 != 0)
             {
-                Block var6 = Block.blocksList[var5];
+                Block var6 = Block.BLOCKS[var5];
                 float var7 = 0.1F;
                 double var8 = (double)var1 + rand.nextDouble() * (var6.maxX - var6.minX - (double)(var7 * 2.0F)) + (double)var7 + var6.minX;
                 double var10 = (double)var2 + rand.nextDouble() * (var6.maxY - var6.minY - (double)(var7 * 2.0F)) + (double)var7 + var6.minY;

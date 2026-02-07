@@ -98,13 +98,13 @@ namespace betareborn.Chunks
                                         }
                                         else
                                         {
-                                            var55 = Block.waterStill.id;
+                                            var55 = Block.WATER.id;
                                         }
                                     }
 
                                     if (var48 > 0.0D)
                                     {
-                                        var55 = Block.stone.id;
+                                        var55 = Block.STONE.id;
                                     }
 
                                     var3[var44] = (byte)var55;
@@ -152,7 +152,7 @@ namespace betareborn.Chunks
                         int var18 = (var9 * 16 + var8) * 128 + var17;
                         if (var17 <= 0 + rand.nextInt(5))
                         {
-                            var3[var18] = (byte)Block.bedrock.id;
+                            var3[var18] = (byte)Block.BEDROCK.id;
                         }
                         else
                         {
@@ -161,14 +161,14 @@ namespace betareborn.Chunks
                             {
                                 var14 = -1;
                             }
-                            else if (var19 == Block.stone.id)
+                            else if (var19 == Block.STONE.id)
                             {
                                 if (var14 == -1)
                                 {
                                     if (var13 <= 0)
                                     {
                                         var15 = 0;
-                                        var16 = (byte)Block.stone.id;
+                                        var16 = (byte)Block.STONE.id;
                                     }
                                     else if (var17 >= var5 - 4 && var17 <= var5 + 1)
                                     {
@@ -181,23 +181,23 @@ namespace betareborn.Chunks
 
                                         if (var12)
                                         {
-                                            var16 = (byte)Block.gravel.id;
+                                            var16 = (byte)Block.GRAVEL.id;
                                         }
 
                                         if (var11)
                                         {
-                                            var15 = (byte)Block.sand.id;
+                                            var15 = (byte)Block.SAND.id;
                                         }
 
                                         if (var11)
                                         {
-                                            var16 = (byte)Block.sand.id;
+                                            var16 = (byte)Block.SAND.id;
                                         }
                                     }
 
                                     if (var17 < var5 && var15 == 0)
                                     {
-                                        var15 = (byte)Block.waterStill.id;
+                                        var15 = (byte)Block.WATER.id;
                                     }
 
                                     var14 = var13;
@@ -214,10 +214,10 @@ namespace betareborn.Chunks
                                 {
                                     --var14;
                                     var3[var18] = var16;
-                                    if (var14 == 0 && var16 == Block.sand.id)
+                                    if (var14 == 0 && var16 == Block.SAND.id)
                                     {
                                         var14 = rand.nextInt(4);
-                                        var16 = (byte)Block.sandStone.id;
+                                        var16 = (byte)Block.SANDSTONE.id;
                                     }
                                 }
                             }
@@ -391,7 +391,7 @@ namespace betareborn.Chunks
                 var13 = var4 + rand.nextInt(16) + 8;
                 var14 = rand.nextInt(128);
                 var15 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenLakes(Block.waterStill.id)).generate(worldObj, rand, var13, var14, var15);
+                (new WorldGenLakes(Block.WATER.id)).generate(worldObj, rand, var13, var14, var15);
             }
 
             if (rand.nextInt(8) == 0)
@@ -401,7 +401,7 @@ namespace betareborn.Chunks
                 var15 = var5 + rand.nextInt(16) + 8;
                 if (var14 < 64 || rand.nextInt(10) == 0)
                 {
-                    (new WorldGenLakes(Block.lavaStill.id)).generate(worldObj, rand, var13, var14, var15);
+                    (new WorldGenLakes(Block.LAVA.id)).generate(worldObj, rand, var13, var14, var15);
                 }
             }
 
@@ -427,7 +427,7 @@ namespace betareborn.Chunks
                 var14 = var4 + rand.nextInt(16);
                 var15 = rand.nextInt(128);
                 var16 = var5 + rand.nextInt(16);
-                (new WorldGenMinable(Block.dirt.id, 32)).generate(worldObj, rand, var14, var15, var16);
+                (new WorldGenMinable(Block.DIRT.id, 32)).generate(worldObj, rand, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 10; ++var13)
@@ -435,7 +435,7 @@ namespace betareborn.Chunks
                 var14 = var4 + rand.nextInt(16);
                 var15 = rand.nextInt(128);
                 var16 = var5 + rand.nextInt(16);
-                (new WorldGenMinable(Block.gravel.id, 32)).generate(worldObj, rand, var14, var15, var16);
+                (new WorldGenMinable(Block.GRAVEL.id, 32)).generate(worldObj, rand, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 20; ++var13)
@@ -443,7 +443,7 @@ namespace betareborn.Chunks
                 var14 = var4 + rand.nextInt(16);
                 var15 = rand.nextInt(128);
                 var16 = var5 + rand.nextInt(16);
-                (new WorldGenMinable(Block.oreCoal.id, 16)).generate(worldObj, rand, var14, var15, var16);
+                (new WorldGenMinable(Block.COAL_ORE.id, 16)).generate(worldObj, rand, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 20; ++var13)
@@ -451,7 +451,7 @@ namespace betareborn.Chunks
                 var14 = var4 + rand.nextInt(16);
                 var15 = rand.nextInt(64);
                 var16 = var5 + rand.nextInt(16);
-                (new WorldGenMinable(Block.oreIron.id, 8)).generate(worldObj, rand, var14, var15, var16);
+                (new WorldGenMinable(Block.IRON_ORE.id, 8)).generate(worldObj, rand, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 2; ++var13)
@@ -459,7 +459,7 @@ namespace betareborn.Chunks
                 var14 = var4 + rand.nextInt(16);
                 var15 = rand.nextInt(32);
                 var16 = var5 + rand.nextInt(16);
-                (new WorldGenMinable(Block.oreGold.id, 8)).generate(worldObj, rand, var14, var15, var16);
+                (new WorldGenMinable(Block.GOLD_ORE.id, 8)).generate(worldObj, rand, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 8; ++var13)
@@ -483,7 +483,7 @@ namespace betareborn.Chunks
                 var14 = var4 + rand.nextInt(16);
                 var15 = rand.nextInt(16) + rand.nextInt(16);
                 var16 = var5 + rand.nextInt(16);
-                (new WorldGenMinable(Block.oreLapis.id, 6)).generate(worldObj, rand, var14, var15, var16);
+                (new WorldGenMinable(Block.LAPIS_ORE.id, 6)).generate(worldObj, rand, var14, var15, var16);
             }
 
             var11 = 0.5D;
@@ -567,7 +567,7 @@ namespace betareborn.Chunks
                 var17 = var4 + rand.nextInt(16) + 8;
                 var25 = rand.nextInt(128);
                 var19 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.plantYellow.id)).generate(worldObj, rand, var17, var25, var19);
+                (new WorldGenFlowers(Block.DANDELION.id)).generate(worldObj, rand, var17, var25, var19);
             }
 
             byte var28 = 0;
@@ -609,7 +609,7 @@ namespace betareborn.Chunks
                 var19 = var4 + rand.nextInt(16) + 8;
                 var20 = rand.nextInt(128);
                 var21 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenTallGrass(Block.tallGrass.id, var26)).generate(worldObj, rand, var19, var20, var21);
+                (new WorldGenTallGrass(Block.GRASS.id, var26)).generate(worldObj, rand, var19, var20, var21);
             }
 
             var28 = 0;
@@ -623,7 +623,7 @@ namespace betareborn.Chunks
                 var25 = var4 + rand.nextInt(16) + 8;
                 var19 = rand.nextInt(128);
                 var20 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenDeadBush(Block.deadBush.id)).generate(worldObj, rand, var25, var19, var20);
+                (new WorldGenDeadBush(Block.DEAD_BUSH.id)).generate(worldObj, rand, var25, var19, var20);
             }
 
             if (rand.nextInt(2) == 0)
@@ -631,7 +631,7 @@ namespace betareborn.Chunks
                 var17 = var4 + rand.nextInt(16) + 8;
                 var25 = rand.nextInt(128);
                 var19 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.plantRed.id)).generate(worldObj, rand, var17, var25, var19);
+                (new WorldGenFlowers(Block.ROSE.id)).generate(worldObj, rand, var17, var25, var19);
             }
 
             if (rand.nextInt(4) == 0)
@@ -639,7 +639,7 @@ namespace betareborn.Chunks
                 var17 = var4 + rand.nextInt(16) + 8;
                 var25 = rand.nextInt(128);
                 var19 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.mushroomBrown.id)).generate(worldObj, rand, var17, var25, var19);
+                (new WorldGenFlowers(Block.BROWN_MUSHROOM.id)).generate(worldObj, rand, var17, var25, var19);
             }
 
             if (rand.nextInt(8) == 0)
@@ -647,7 +647,7 @@ namespace betareborn.Chunks
                 var17 = var4 + rand.nextInt(16) + 8;
                 var25 = rand.nextInt(128);
                 var19 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.mushroomRed.id)).generate(worldObj, rand, var17, var25, var19);
+                (new WorldGenFlowers(Block.RED_MUSHROOM.id)).generate(worldObj, rand, var17, var25, var19);
             }
 
             for (var17 = 0; var17 < 10; ++var17)
@@ -685,7 +685,7 @@ namespace betareborn.Chunks
                 var19 = var4 + rand.nextInt(16) + 8;
                 var20 = rand.nextInt(rand.nextInt(120) + 8);
                 var21 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenLiquids(Block.waterMoving.id)).generate(worldObj, rand, var19, var20, var21);
+                (new WorldGenLiquids(Block.FLOWING_WATER.id)).generate(worldObj, rand, var19, var20, var21);
             }
 
             for (var25 = 0; var25 < 20; ++var25)
@@ -693,7 +693,7 @@ namespace betareborn.Chunks
                 var19 = var4 + rand.nextInt(16) + 8;
                 var20 = rand.nextInt(rand.nextInt(rand.nextInt(112) + 8) + 8);
                 var21 = var5 + rand.nextInt(16) + 8;
-                (new WorldGenLiquids(Block.lavaMoving.id)).generate(worldObj, rand, var19, var20, var21);
+                (new WorldGenLiquids(Block.FLOWING_LAVA.id)).generate(worldObj, rand, var19, var20, var21);
             }
 
             generatedTemperatures = worldObj.getBiomeSource().getTemperatures(generatedTemperatures, var4 + 8, var5 + 8, 16, 16);

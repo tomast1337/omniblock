@@ -7,7 +7,7 @@ namespace betareborn.Recipes
     public class RecipesTools : java.lang.Object
     {
         private string[][] recipePatterns = [["XXX", " # ", " # "], ["X", "#", "#"], ["XX", "X#", " #"], ["XX", " #", " #"]];
-        private object[][] recipeItems = [[Block.planks, Block.cobblestone, Item.ingotIron, Item.diamond, Item.ingotGold], [Item.pickaxeWood, Item.pickaxeStone, Item.pickaxeSteel, Item.pickaxeDiamond, Item.pickaxeGold], [Item.shovelWood, Item.shovelStone, Item.shovelSteel, Item.shovelDiamond, Item.shovelGold], [Item.axeWood, Item.axeStone, Item.axeSteel, Item.axeDiamond, Item.axeGold], [Item.hoeWood, Item.hoeStone, Item.hoeSteel, Item.hoeDiamond, Item.hoeGold]];
+        private object[][] recipeItems = [[Block.PLANKS, Block.COBBLESTONE, Item.ingotIron, Item.diamond, Item.ingotGold], [Item.pickaxeWood, Item.pickaxeStone, Item.pickaxeSteel, Item.pickaxeDiamond, Item.pickaxeGold], [Item.shovelWood, Item.shovelStone, Item.shovelSteel, Item.shovelDiamond, Item.shovelGold], [Item.axeWood, Item.axeStone, Item.axeSteel, Item.axeDiamond, Item.axeGold], [Item.hoeWood, Item.hoeStone, Item.hoeSteel, Item.hoeDiamond, Item.hoeGold]];
 
         public void addRecipes(CraftingManager var1)
         {

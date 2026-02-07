@@ -73,7 +73,7 @@ namespace betareborn.Entities
                 int var2 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
                 if (var2 > 0)
                 {
-                    var1 = Block.blocksList[var2].slipperiness * 0.98F;
+                    var1 = Block.BLOCKS[var2].slipperiness * 0.98F;
                 }
             }
 
@@ -138,7 +138,7 @@ namespace betareborn.Entities
                 int var2 = item.count;
                 if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(item))
                 {
-                    if (item.itemID == Block.wood.id)
+                    if (item.itemID == Block.LOG.id)
                     {
                         var1.triggerAchievement(Achievements.MINE_WOOD);
                     }

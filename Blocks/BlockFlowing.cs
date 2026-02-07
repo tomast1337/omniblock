@@ -162,7 +162,7 @@ namespace betareborn.Blocks
                     }
                     else
                     {
-                        Block.blocksList[var6].dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                        Block.BLOCKS[var6].dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     }
                 }
 
@@ -294,7 +294,7 @@ namespace betareborn.Blocks
                 }
                 else
                 {
-                    Material var6 = Block.blocksList[var5].blockMaterial;
+                    Material var6 = Block.BLOCKS[var5].blockMaterial;
                     return var6.blocksMovement();
                 }
             }

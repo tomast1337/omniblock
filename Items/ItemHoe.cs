@@ -17,7 +17,7 @@ namespace betareborn.Items
         {
             int var8 = var3.getBlockId(var4, var5, var6);
             int var9 = var3.getBlockId(var4, var5 + 1, var6);
-            if ((var7 == 0 || var9 != 0 || var8 != Block.grass.id) && var8 != Block.dirt.id)
+            if ((var7 == 0 || var9 != 0 || var8 != Block.GRASS_BLOCK.id) && var8 != Block.DIRT.id)
             {
                 return false;
             }

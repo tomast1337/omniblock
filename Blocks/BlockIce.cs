@@ -29,7 +29,7 @@ namespace betareborn.Blocks
             Material var7 = var1.getMaterial(var3, var4 - 1, var5);
             if (var7.blocksMovement() || var7.isFluid())
             {
-                var1.setBlockWithNotify(var3, var4, var5, Block.waterMoving.id);
+                var1.setBlockWithNotify(var3, var4, var5, Block.FLOWING_WATER.id);
             }
 
         }
@@ -41,10 +41,10 @@ namespace betareborn.Blocks
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11 - Block.lightOpacity[id])
+            if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11 - Block.BLOCK_LIGHT_OPACITY[id])
             {
                 dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, Block.waterStill.id);
+                var1.setBlockWithNotify(var2, var3, var4, Block.WATER.id);
             }
 
         }

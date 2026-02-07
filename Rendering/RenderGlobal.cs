@@ -165,7 +165,7 @@ namespace betareborn.Rendering
 
         public void loadRenderers()
         {
-            Block.leaves.setGraphicsLevel(true);
+            Block.LEAVES.setGraphicsLevel(true);
             renderDistance = mc.gameSettings.renderDistance;
 
             worldRenderer?.Dispose();
@@ -573,7 +573,7 @@ namespace betareborn.Rendering
                     GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
                     GLManager.GL.PushMatrix();
                     var8 = worldObj.getBlockId(var2.blockX, var2.blockY, var2.blockZ);
-                    Block var9 = var8 > 0 ? Block.blocksList[var8] : null;
+                    Block var9 = var8 > 0 ? Block.BLOCKS[var8] : null;
                     GLManager.GL.Disable(GLEnum.AlphaTest);
                     GLManager.GL.PolygonOffset(-3.0F, -3.0F);
                     GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
@@ -582,7 +582,7 @@ namespace betareborn.Rendering
                     double var14 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var5;
                     if (var9 == null)
                     {
-                        var9 = Block.stone;
+                        var9 = Block.STONE;
                     }
 
                     GLManager.GL.Enable(GLEnum.AlphaTest);
@@ -659,11 +659,11 @@ namespace betareborn.Rendering
                 int var7 = worldObj.getBlockId(var2.blockX, var2.blockY, var2.blockZ);
                 if (var7 > 0)
                 {
-                    Block.blocksList[var7].updateBoundingBox(worldObj, var2.blockX, var2.blockY, var2.blockZ);
+                    Block.BLOCKS[var7].updateBoundingBox(worldObj, var2.blockX, var2.blockY, var2.blockZ);
                     double var8 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * (double)var5;
                     double var10 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * (double)var5;
                     double var12 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var5;
-                    drawOutlinedBoundingBox(Block.blocksList[var7].getSelectedBoundingBoxFromPool(worldObj, var2.blockX, var2.blockY, var2.blockZ).expand((double)var6, (double)var6, (double)var6).translate(-var8, -var10, -var12));
+                    drawOutlinedBoundingBox(Block.BLOCKS[var7].getSelectedBoundingBoxFromPool(worldObj, var2.blockX, var2.blockY, var2.blockZ).expand((double)var6, (double)var6, (double)var6).translate(-var8, -var10, -var12));
                 }
 
                 GLManager.GL.DepthMask(true);
@@ -935,7 +935,7 @@ namespace betareborn.Rendering
                     var16 = var6 & 255;
                     if (var16 > 0)
                     {
-                        Block var17 = Block.blocksList[var16];
+                        Block var17 = Block.BLOCKS[var16];
                         mc.sndManager.playSound(var17.stepSound.stepSoundDir(), (float)var3 + 0.5F, (float)var4 + 0.5F, (float)var5 + 0.5F, (var17.stepSound.getVolume() + 1.0F) / 2.0F, var17.stepSound.getPitch() * 0.8F);
                     }
 

@@ -11,7 +11,7 @@ namespace betareborn.Textures
         protected float[] field_1140_j = new float[256];
         int field_1139_k = 0;
 
-        public TextureLavaFlowFX() : base(Block.lavaMoving.textureId + 1)
+        public TextureLavaFlowFX() : base(Block.FLOWING_LAVA.textureId + 1)
         {
             tileSize = 2;
         }

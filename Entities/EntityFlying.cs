@@ -42,7 +42,7 @@ namespace betareborn.Entities
                     int var4 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
                     if (var4 > 0)
                     {
-                        var3 = Block.blocksList[var4].slipperiness * 0.91F;
+                        var3 = Block.BLOCKS[var4].slipperiness * 0.91F;
                     }
                 }
 
@@ -55,7 +55,7 @@ namespace betareborn.Entities
                     int var5 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
                     if (var5 > 0)
                     {
-                        var3 = Block.blocksList[var5].slipperiness * 0.91F;
+                        var3 = Block.BLOCKS[var5].slipperiness * 0.91F;
                     }
                 }
 

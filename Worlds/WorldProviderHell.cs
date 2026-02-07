@@ -41,7 +41,7 @@ namespace betareborn.Worlds
         public override bool canCoordinateBeSpawn(int var1, int var2)
         {
             int var3 = worldObj.getFirstUncoveredBlock(var1, var2);
-            return var3 == Block.bedrock.id ? false : (var3 == 0 ? false : Block.opaqueCubeLookup[var3]);
+            return var3 == Block.BEDROCK.id ? false : (var3 == 0 ? false : Block.BLOCKS_OPAQUE[var3]);
         }
 
         public override float calculateCelestialAngle(long var1, float var3)

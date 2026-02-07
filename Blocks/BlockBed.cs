@@ -111,7 +111,7 @@ namespace betareborn.Blocks
         {
             if (side == 0)
             {
-                return Block.planks.textureId;
+                return Block.PLANKS.textureId;
             }
             else
             {

@@ -32,14 +32,14 @@ namespace betareborn.Entities
         {
             if (!getSheared())
             {
-                entityDropItem(new ItemStack(Block.cloth.id, 1, getFleeceColor()), 0.0F);
+                entityDropItem(new ItemStack(Block.WOOL.id, 1, getFleeceColor()), 0.0F);
             }
 
         }
 
         protected override int getDropItemId()
         {
-            return Block.cloth.id;
+            return Block.WOOL.id;
         }
 
         public override bool interact(EntityPlayer var1)
@@ -54,7 +54,7 @@ namespace betareborn.Entities
 
                     for (int var4 = 0; var4 < var3; ++var4)
                     {
-                        EntityItem var5 = entityDropItem(new ItemStack(Block.cloth.id, 1, getFleeceColor()), 1.0F);
+                        EntityItem var5 = entityDropItem(new ItemStack(Block.WOOL.id, 1, getFleeceColor()), 1.0F);
                         var5.motionY += (double)(rand.nextFloat() * 0.05F);
                         var5.motionX += (double)((rand.nextFloat() - rand.nextFloat()) * 0.1F);
                         var5.motionZ += (double)((rand.nextFloat() - rand.nextFloat()) * 0.1F);

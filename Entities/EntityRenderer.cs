@@ -225,7 +225,7 @@ namespace betareborn.Entities
                 if (!mc.gameSettings.field_22273_E)
                 {
                     int var10 = mc.theWorld.getBlockId(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
-                    if (var10 == Block.blockBed.id)
+                    if (var10 == Block.BED.id)
                     {
                         int var11 = mc.theWorld.getBlockMeta(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
                         int var12 = var11 & 3;
@@ -667,9 +667,9 @@ namespace betareborn.Entities
                         float var21 = random.nextFloat();
                         if (var19 > 0)
                         {
-                            if (Block.blocksList[var19].blockMaterial == Material.LAVA)
+                            if (Block.BLOCKS[var19].blockMaterial == Material.LAVA)
                             {
-                                mc.effectRenderer.addEffect(new EntitySmokeFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.blocksList[var19].minY, (double)((float)var17 + var21), 0.0D, 0.0D, 0.0D));
+                                mc.effectRenderer.addEffect(new EntitySmokeFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21), 0.0D, 0.0D, 0.0D));
                             }
                             else
                             {
@@ -677,11 +677,11 @@ namespace betareborn.Entities
                                 if (random.nextInt(var14) == 0)
                                 {
                                     var8 = (double)((float)var16 + var20);
-                                    var10 = (double)((float)var18 + 0.1F) - Block.blocksList[var19].minY;
+                                    var10 = (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY;
                                     var12 = (double)((float)var17 + var21);
                                 }
 
-                                mc.effectRenderer.addEffect(new EntityRainFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.blocksList[var19].minY, (double)((float)var17 + var21)));
+                                mc.effectRenderer.addEffect(new EntityRainFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21)));
                             }
                         }
                     }

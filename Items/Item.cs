@@ -87,8 +87,8 @@ namespace betareborn.Items
         public static Item sign = (new ItemSign(67)).setIconCoord(10, 2).setItemName("sign");
         public static Item doorWood = (new ItemDoor(68, Material.WOOD)).setIconCoord(11, 2).setItemName("doorWood");
         public static Item bucketEmpty = (new ItemBucket(69, 0)).setIconCoord(10, 4).setItemName("bucket");
-        public static Item bucketWater = (new ItemBucket(70, Block.waterMoving.id)).setIconCoord(11, 4).setItemName("bucketWater").setContainerItem(bucketEmpty);
-        public static Item bucketLava = (new ItemBucket(71, Block.lavaMoving.id)).setIconCoord(12, 4).setItemName("bucketLava").setContainerItem(bucketEmpty);
+        public static Item bucketWater = (new ItemBucket(70, Block.FLOWING_WATER.id)).setIconCoord(11, 4).setItemName("bucketWater").setContainerItem(bucketEmpty);
+        public static Item bucketLava = (new ItemBucket(71, Block.FLOWING_LAVA.id)).setIconCoord(12, 4).setItemName("bucketLava").setContainerItem(bucketEmpty);
         public static Item minecartEmpty = (new ItemMinecart(72, 0)).setIconCoord(7, 8).setItemName("minecart");
         public static Item saddle = (new ItemSaddle(73)).setIconCoord(8, 6).setItemName("saddle");
         public static Item doorSteel = (new ItemDoor(74, Material.METAL)).setIconCoord(12, 2).setItemName("doorIron");

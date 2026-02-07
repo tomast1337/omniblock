@@ -95,7 +95,7 @@ namespace betareborn.Rendering
             if (var4.isPlayerSleeping())
             {
                 int var7 = var1.getBlockId(MathHelper.floor_double(var4.posX), MathHelper.floor_double(var4.posY), MathHelper.floor_double(var4.posZ));
-                if (var7 == Block.blockBed.id)
+                if (var7 == Block.BED.id)
                 {
                     int var8 = var1.getBlockMeta(MathHelper.floor_double(var4.posX), MathHelper.floor_double(var4.posY), MathHelper.floor_double(var4.posZ));
                     int var9 = var8 & 3;

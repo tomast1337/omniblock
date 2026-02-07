@@ -106,7 +106,7 @@ namespace betareborn.Blocks
             else
             {
                 int var5 = var1.getBlockId(var2, var3 - 1, var4);
-                return var5 == Block.cactus.id || var5 == Block.sand.id;
+                return var5 == Block.cactus.id || var5 == Block.SAND.id;
             }
         }
 

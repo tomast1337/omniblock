@@ -23,8 +23,8 @@ namespace betareborn.Biomes
         public static readonly Biome sky = (new BiomeGenSky()).setColor(8421631).setBiomeName("Sky").setDisableRain();
         public String biomeName;
         public int color;
-        public byte topBlock = (byte)Block.grass.id;
-        public byte fillerBlock = (byte)Block.dirt.id;
+        public byte topBlock = (byte)Block.GRASS_BLOCK.id;
+        public byte fillerBlock = (byte)Block.DIRT.id;
         public int field_6502_q = 5169201;
         protected java.util.List spawnableMonsterList = new ArrayList();
         protected java.util.List spawnableCreatureList = new ArrayList();
@@ -63,8 +63,8 @@ namespace betareborn.Biomes
                 }
             }
 
-            desert.topBlock = desert.fillerBlock = (byte)Block.sand.id;
-            iceDesert.topBlock = iceDesert.fillerBlock = (byte)Block.sand.id;
+            desert.topBlock = desert.fillerBlock = (byte)Block.SAND.id;
+            iceDesert.topBlock = iceDesert.fillerBlock = (byte)Block.SAND.id;
         }
 
         public virtual WorldGenerator getRandomWorldGenForTrees(java.util.Random var1)

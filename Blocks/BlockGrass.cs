@@ -40,14 +40,14 @@ namespace betareborn.Blocks
         {
             if (!var1.multiplayerWorld)
             {
-                if (var1.getBlockLightValue(var2, var3 + 1, var4) < 4 && Block.lightOpacity[var1.getBlockId(var2, var3 + 1, var4)] > 2)
+                if (var1.getBlockLightValue(var2, var3 + 1, var4) < 4 && Block.BLOCK_LIGHT_OPACITY[var1.getBlockId(var2, var3 + 1, var4)] > 2)
                 {
                     if (var5.nextInt(4) != 0)
                     {
                         return;
                     }
 
-                    var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
+                    var1.setBlockWithNotify(var2, var3, var4, Block.DIRT.id);
                 }
                 else if (var1.getBlockLightValue(var2, var3 + 1, var4) >= 9)
                 {
@@ -55,9 +55,9 @@ namespace betareborn.Blocks
                     int var7 = var3 + var5.nextInt(5) - 3;
                     int var8 = var4 + var5.nextInt(3) - 1;
                     int var9 = var1.getBlockId(var6, var7 + 1, var8);
-                    if (var1.getBlockId(var6, var7, var8) == Block.dirt.id && var1.getBlockLightValue(var6, var7 + 1, var8) >= 4 && Block.lightOpacity[var9] <= 2)
+                    if (var1.getBlockId(var6, var7, var8) == Block.DIRT.id && var1.getBlockLightValue(var6, var7 + 1, var8) >= 4 && Block.BLOCK_LIGHT_OPACITY[var9] <= 2)
                     {
-                        var1.setBlockWithNotify(var6, var7, var8, Block.grass.id);
+                        var1.setBlockWithNotify(var6, var7, var8, Block.GRASS_BLOCK.id);
                     }
                 }
 
@@ -66,7 +66,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.dirt.getDroppedItemId(0, var2);
+            return Block.DIRT.getDroppedItemId(0, var2);
         }
     }
 

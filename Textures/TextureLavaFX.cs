@@ -10,7 +10,7 @@ namespace betareborn.Textures
         protected float[] field_1145_i = new float[256];
         protected float[] field_1144_j = new float[256];
 
-        public TextureLavaFX() : base(Block.lavaMoving.textureId)
+        public TextureLavaFX() : base(Block.FLOWING_LAVA.textureId)
         {
         }
 

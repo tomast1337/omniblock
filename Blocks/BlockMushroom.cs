@@ -33,7 +33,7 @@ namespace betareborn.Blocks
 
         protected override bool canThisPlantGrowOnThisBlockID(int var1)
         {
-            return Block.opaqueCubeLookup[var1];
+            return Block.BLOCKS_OPAQUE[var1];
         }
 
         public override bool canBlockStay(World var1, int var2, int var3, int var4)

@@ -12,17 +12,17 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return id == Block.oreCoal.id ? Item.coal.id : (id == Block.oreDiamond.id ? Item.diamond.id : (id == Block.oreLapis.id ? Item.dyePowder.id : id));
+            return id == Block.COAL_ORE.id ? Item.coal.id : (id == Block.oreDiamond.id ? Item.diamond.id : (id == Block.LAPIS_ORE.id ? Item.dyePowder.id : id));
         }
 
         public override int quantityDropped(java.util.Random var1)
         {
-            return id == Block.oreLapis.id ? 4 + var1.nextInt(5) : 1;
+            return id == Block.LAPIS_ORE.id ? 4 + var1.nextInt(5) : 1;
         }
 
         protected override int damageDropped(int var1)
         {
-            return id == Block.oreLapis.id ? 4 : 0;
+            return id == Block.LAPIS_ORE.id ? 4 : 0;
         }
     }
 

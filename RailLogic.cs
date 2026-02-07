@@ -25,7 +25,7 @@ namespace betareborn
             trackZ = var5;
             int var6 = var2.getBlockId(var3, var4, var5);
             int var7 = var2.getBlockMeta(var3, var4, var5);
-            if (BlockRail.isPoweredBlockRail((BlockRail)Block.blocksList[var6]))
+            if (BlockRail.isPoweredBlockRail((BlockRail)Block.BLOCKS[var6]))
             {
                 isPoweredRail = true;
                 var7 &= -9;

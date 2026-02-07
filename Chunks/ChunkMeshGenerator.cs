@@ -157,7 +157,7 @@ namespace betareborn.Chunks
                             int id = cache.getBlockId(x, y, z);
                             if (id <= 0) continue;
 
-                            Block b = Block.blocksList[id];
+                            Block b = Block.BLOCKS[id];
                             int blockPass = b.getRenderBlockPass();
 
                             if (blockPass != pass)

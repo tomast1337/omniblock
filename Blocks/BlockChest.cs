@@ -40,22 +40,22 @@ namespace betareborn.Blocks
                     if (var8 != id && var9 != id)
                     {
                         sbyte var14 = 3;
-                        if (Block.opaqueCubeLookup[var6] && !Block.opaqueCubeLookup[var7])
+                        if (Block.BLOCKS_OPAQUE[var6] && !Block.BLOCKS_OPAQUE[var7])
                         {
                             var14 = 3;
                         }
 
-                        if (Block.opaqueCubeLookup[var7] && !Block.opaqueCubeLookup[var6])
+                        if (Block.BLOCKS_OPAQUE[var7] && !Block.BLOCKS_OPAQUE[var6])
                         {
                             var14 = 2;
                         }
 
-                        if (Block.opaqueCubeLookup[var8] && !Block.opaqueCubeLookup[var9])
+                        if (Block.BLOCKS_OPAQUE[var8] && !Block.BLOCKS_OPAQUE[var9])
                         {
                             var14 = 5;
                         }
 
-                        if (Block.opaqueCubeLookup[var9] && !Block.opaqueCubeLookup[var8])
+                        if (Block.BLOCKS_OPAQUE[var9] && !Block.BLOCKS_OPAQUE[var8])
                         {
                             var14 = 4;
                         }
@@ -78,12 +78,12 @@ namespace betareborn.Blocks
                         }
 
                         var13 = 3;
-                        if ((Block.opaqueCubeLookup[var6] || Block.opaqueCubeLookup[var11]) && !Block.opaqueCubeLookup[var7] && !Block.opaqueCubeLookup[var12])
+                        if ((Block.BLOCKS_OPAQUE[var6] || Block.BLOCKS_OPAQUE[var11]) && !Block.BLOCKS_OPAQUE[var7] && !Block.BLOCKS_OPAQUE[var12])
                         {
                             var13 = 3;
                         }
 
-                        if ((Block.opaqueCubeLookup[var7] || Block.opaqueCubeLookup[var12]) && !Block.opaqueCubeLookup[var6] && !Block.opaqueCubeLookup[var11])
+                        if ((Block.BLOCKS_OPAQUE[var7] || Block.BLOCKS_OPAQUE[var12]) && !Block.BLOCKS_OPAQUE[var6] && !Block.BLOCKS_OPAQUE[var11])
                         {
                             var13 = 2;
                         }
@@ -111,12 +111,12 @@ namespace betareborn.Blocks
                     }
 
                     var13 = 5;
-                    if ((Block.opaqueCubeLookup[var8] || Block.opaqueCubeLookup[var11]) && !Block.opaqueCubeLookup[var9] && !Block.opaqueCubeLookup[var12])
+                    if ((Block.BLOCKS_OPAQUE[var8] || Block.BLOCKS_OPAQUE[var11]) && !Block.BLOCKS_OPAQUE[var9] && !Block.BLOCKS_OPAQUE[var12])
                     {
                         var13 = 5;
                     }
 
-                    if ((Block.opaqueCubeLookup[var9] || Block.opaqueCubeLookup[var12]) && !Block.opaqueCubeLookup[var8] && !Block.opaqueCubeLookup[var11])
+                    if ((Block.BLOCKS_OPAQUE[var9] || Block.BLOCKS_OPAQUE[var12]) && !Block.BLOCKS_OPAQUE[var8] && !Block.BLOCKS_OPAQUE[var11])
                     {
                         var13 = 4;
                     }

@@ -78,7 +78,7 @@ namespace betareborn.Chunks
                 {
                     int var4 = 127;
 
-                    for (int var5 = var2 << 11 | var3 << 7; var4 > 0 && Block.lightOpacity[blocks[var5 + var4 - 1] & 255] == 0; --var4)
+                    for (int var5 = var2 << 11 | var3 << 7; var4 > 0 && Block.BLOCK_LIGHT_OPACITY[blocks[var5 + var4 - 1] & 255] == 0; --var4)
                     {
                     }
 
@@ -107,7 +107,7 @@ namespace betareborn.Chunks
                     int var4 = 127;
 
                     int var5;
-                    for (var5 = var2 << 11 | var3 << 7; var4 > 0 && Block.lightOpacity[blocks[var5 + var4 - 1] & 255] == 0; --var4)
+                    for (var5 = var2 << 11 | var3 << 7; var4 > 0 && Block.BLOCK_LIGHT_OPACITY[blocks[var5 + var4 - 1] & 255] == 0; --var4)
                     {
                     }
 
@@ -124,7 +124,7 @@ namespace betareborn.Chunks
 
                         do
                         {
-                            var6 -= Block.lightOpacity[blocks[var5 + var7] & 255];
+                            var6 -= Block.BLOCK_LIGHT_OPACITY[blocks[var5 + var7] & 255];
                             if (var6 > 0)
                             {
                                 skylightMap.setNibble(var2, var7, var3, var6);
@@ -189,7 +189,7 @@ namespace betareborn.Chunks
                 var5 = var2;
             }
 
-            for (int var6 = var1 << 11 | var3 << 7; var5 > 0 && Block.lightOpacity[blocks[var6 + var5 - 1] & 255] == 0; --var5)
+            for (int var6 = var1 << 11 | var3 << 7; var5 > 0 && Block.BLOCK_LIGHT_OPACITY[blocks[var6 + var5 - 1] & 255] == 0; --var5)
             {
             }
 
@@ -247,7 +247,7 @@ namespace betareborn.Chunks
                 for (var10 = var5; var5 > 0 && var9 > 0; skylightMap.setNibble(var1, var5, var3, var9))
                 {
                     --var5;
-                    int var11 = Block.lightOpacity[getBlockID(var1, var5, var3)];
+                    int var11 = Block.BLOCK_LIGHT_OPACITY[getBlockID(var1, var5, var3)];
                     if (var11 == 0)
                     {
                         var11 = 1;
@@ -260,7 +260,7 @@ namespace betareborn.Chunks
                     }
                 }
 
-                while (var5 > 0 && Block.lightOpacity[getBlockID(var1, var5 - 1, var3)] == 0)
+                while (var5 > 0 && Block.BLOCK_LIGHT_OPACITY[getBlockID(var1, var5 - 1, var3)] == 0)
                 {
                     --var5;
                 }
@@ -295,13 +295,13 @@ namespace betareborn.Chunks
                 blocks[var1 << 11 | var3 << 7 | var2] = (byte)(var6 & 255);
                 if (var8 != 0 && !worldObj.multiplayerWorld)
                 {
-                    Block.blocksList[var8].onBlockRemoval(worldObj, var9, var2, var10);
+                    Block.BLOCKS[var8].onBlockRemoval(worldObj, var9, var2, var10);
                 }
 
                 data.setNibble(var1, var2, var3, var5);
                 if (!worldObj.dimension.hasNoSky)
                 {
-                    if (Block.lightOpacity[var6 & 255] != 0)
+                    if (Block.BLOCK_LIGHT_OPACITY[var6 & 255] != 0)
                     {
                         if (var2 >= var7)
                         {
@@ -321,7 +321,7 @@ namespace betareborn.Chunks
                 data.setNibble(var1, var2, var3, var5);
                 if (var4 != 0)
                 {
-                    Block.blocksList[var4].onBlockAdded(worldObj, var9, var2, var10);
+                    Block.BLOCKS[var4].onBlockAdded(worldObj, var9, var2, var10);
                 }
 
                 isModified = true;
@@ -345,11 +345,11 @@ namespace betareborn.Chunks
                 blocks[var1 << 11 | var3 << 7 | var2] = (byte)(var5 & 255);
                 if (var7 != 0)
                 {
-                    Block.blocksList[var7].onBlockRemoval(worldObj, var8, var2, var9);
+                    Block.BLOCKS[var7].onBlockRemoval(worldObj, var8, var2, var9);
                 }
 
                 data.setNibble(var1, var2, var3, 0);
-                if (Block.lightOpacity[var5 & 255] != 0)
+                if (Block.BLOCK_LIGHT_OPACITY[var5 & 255] != 0)
                 {
                     if (var2 >= var6)
                     {
@@ -366,7 +366,7 @@ namespace betareborn.Chunks
                 func_996_c(var1, var3);
                 if (var4 != 0 && !worldObj.multiplayerWorld)
                 {
-                    Block.blocksList[var4].onBlockAdded(worldObj, var8, var2, var9);
+                    Block.BLOCKS[var4].onBlockAdded(worldObj, var8, var2, var9);
                 }
 
                 isModified = true;
@@ -489,12 +489,12 @@ namespace betareborn.Chunks
             if (var5 == null)
             {
                 int var6 = getBlockID(var1, var2, var3);
-                if (!Block.isBlockContainer[var6])
+                if (!Block.BLOCKS_WITH_ENTITY[var6])
                 {
                     return null;
                 }
 
-                BlockContainer var7 = (BlockContainer)Block.blocksList[var6];
+                BlockContainer var7 = (BlockContainer)Block.BLOCKS[var6];
                 var7.onBlockAdded(worldObj, xPosition * 16 + var1, var2, zPosition * 16 + var3);
                 //var5 = (TileEntity)chunkTileEntityMap.get(var4);
                 chunkTileEntityMap.TryGetValue(var4, out var5);
@@ -531,7 +531,7 @@ namespace betareborn.Chunks
             var4.x = xPosition * 16 + var1;
             var4.y = var2;
             var4.z = zPosition * 16 + var3;
-            if (getBlockID(var1, var2, var3) != 0 && Block.blocksList[getBlockID(var1, var2, var3)] is BlockContainer)
+            if (getBlockID(var1, var2, var3) != 0 && Block.BLOCKS[getBlockID(var1, var2, var3)] is BlockContainer)
             {
                 var4.cancelRemoval();
                 chunkTileEntityMap[var5] = var4;

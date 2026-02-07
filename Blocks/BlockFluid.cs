@@ -267,12 +267,12 @@ namespace betareborn.Blocks
             Vector3D<double> var5 = new(0.0);
             if (var4 == Material.WATER)
             {
-                var5 = ((BlockFluid)waterMoving).getFlowVector(var0, var1, var2, var3);
+                var5 = ((BlockFluid)FLOWING_WATER).getFlowVector(var0, var1, var2, var3);
             }
 
             if (var4 == Material.LAVA)
             {
-                var5 = ((BlockFluid)lavaMoving).getFlowVector(var0, var1, var2, var3);
+                var5 = ((BlockFluid)FLOWING_LAVA).getFlowVector(var0, var1, var2, var3);
             }
 
             return var5.X == 0.0D && var5.Z == 0.0D ? -1000.0D : java.lang.Math.atan2(var5.Z, var5.X) - Math.PI * 0.5D;
@@ -329,7 +329,7 @@ namespace betareborn.Blocks
                         }
                         else if (var6 <= 4)
                         {
-                            var1.setBlockWithNotify(var2, var3, var4, Block.cobblestone.id);
+                            var1.setBlockWithNotify(var2, var3, var4, Block.COBBLESTONE.id);
                         }
 
                         triggerLavaMixEffects(var1, var2, var3, var4);

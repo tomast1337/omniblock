@@ -121,7 +121,7 @@ namespace betareborn.Blocks
                     ((TileEntityPiston)var8).finish();
                 }
 
-                var1.setBlockAndMetadata(var2, var3, var4, Block.pistonMoving.id, var6);
+                var1.setBlockAndMetadata(var2, var3, var4, Block.MOVING_PISTON.id, var6);
                 var1.setBlockTileEntity(var2, var3, var4, BlockPistonMoving.func_31036_a(id, var6, var6, false, true));
                 if (isSticky)
                 {
@@ -131,7 +131,7 @@ namespace betareborn.Blocks
                     int var12 = var1.getBlockId(var9, var10, var11);
                     int var13 = var1.getBlockMeta(var9, var10, var11);
                     bool var14 = false;
-                    if (var12 == Block.pistonMoving.id)
+                    if (var12 == Block.MOVING_PISTON.id)
                     {
                         TileEntity var15 = var1.getBlockTileEntity(var9, var10, var11);
                         if (var15 != null && var15 is TileEntityPiston)
@@ -147,7 +147,7 @@ namespace betareborn.Blocks
                         }
                     }
 
-                    if (var14 || var12 <= 0 || !canPushBlock(var12, var1, var9, var10, var11, false) || Block.blocksList[var12].getPistonBehavior() != 0 && var12 != Block.pistonBase.id && var12 != Block.pistonStickyBase.id)
+                    if (var14 || var12 <= 0 || !canPushBlock(var12, var1, var9, var10, var11, false) || Block.BLOCKS[var12].getPistonBehavior() != 0 && var12 != Block.PISTON.id && var12 != Block.STICKY_PISTON.id)
                     {
                         if (!var14)
                         {
@@ -164,7 +164,7 @@ namespace betareborn.Blocks
                         var2 += PistonBlockTextures.field_31056_b[var6];
                         var3 += PistonBlockTextures.field_31059_c[var6];
                         var4 += PistonBlockTextures.field_31058_d[var6];
-                        var1.setBlockAndMetadata(var2, var3, var4, Block.pistonMoving.id, var13);
+                        var1.setBlockAndMetadata(var2, var3, var4, Block.MOVING_PISTON.id, var13);
                         var1.setBlockTileEntity(var2, var3, var4, BlockPistonMoving.func_31036_a(var12, var13, var6, false, false));
                     }
                 }
@@ -269,19 +269,19 @@ namespace betareborn.Blocks
             }
             else
             {
-                if (var0 != Block.pistonBase.id && var0 != Block.pistonStickyBase.id)
+                if (var0 != Block.PISTON.id && var0 != Block.STICKY_PISTON.id)
                 {
-                    if (Block.blocksList[var0].getHardness() == -1.0F)
+                    if (Block.BLOCKS[var0].getHardness() == -1.0F)
                     {
                         return false;
                     }
 
-                    if (Block.blocksList[var0].getPistonBehavior() == 2)
+                    if (Block.BLOCKS[var0].getPistonBehavior() == 2)
                     {
                         return false;
                     }
 
-                    if (!var5 && Block.blocksList[var0].getPistonBehavior() == 1)
+                    if (!var5 && Block.BLOCKS[var0].getPistonBehavior() == 1)
                     {
                         return false;
                     }
@@ -320,7 +320,7 @@ namespace betareborn.Blocks
                             return false;
                         }
 
-                        if (Block.blocksList[var9].getPistonBehavior() != 1)
+                        if (Block.BLOCKS[var9].getPistonBehavior() != 1)
                         {
                             if (var8 == 12)
                             {
@@ -365,7 +365,7 @@ namespace betareborn.Blocks
                             return false;
                         }
 
-                        if (Block.blocksList[var10].getPistonBehavior() != 1)
+                        if (Block.BLOCKS[var10].getPistonBehavior() != 1)
                         {
                             if (var9 == 12)
                             {
@@ -379,7 +379,7 @@ namespace betareborn.Blocks
                             continue;
                         }
 
-                        Block.blocksList[var10].dropBlockAsItem(var1, var6, var7, var8, var1.getBlockMeta(var6, var7, var8));
+                        Block.BLOCKS[var10].dropBlockAsItem(var1, var6, var7, var8, var1.getBlockMeta(var6, var7, var8));
                         var1.setBlockWithNotify(var6, var7, var8, 0);
                     }
                 }
@@ -393,12 +393,12 @@ namespace betareborn.Blocks
                     int var13 = var1.getBlockMeta(var9, var10, var11);
                     if (var12 == id && var9 == var2 && var10 == var3 && var11 == var4)
                     {
-                        var1.setBlockAndMetadata(var6, var7, var8, Block.pistonMoving.id, var5 | (isSticky ? 8 : 0));
-                        var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(Block.pistonExtension.id, var5 | (isSticky ? 8 : 0), var5, true, false));
+                        var1.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, var5 | (isSticky ? 8 : 0));
+                        var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(Block.PISTON_HEAD.id, var5 | (isSticky ? 8 : 0), var5, true, false));
                     }
                     else
                     {
-                        var1.setBlockAndMetadata(var6, var7, var8, Block.pistonMoving.id, var13);
+                        var1.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, var13);
                         var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(var12, var13, var5, true, false));
                     }
 

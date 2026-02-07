@@ -9,12 +9,12 @@ namespace betareborn.Blocks
 
         protected BlockContainer(int var1, Material var2) : base(var1, var2)
         {
-            isBlockContainer[var1] = true;
+            BLOCKS_WITH_ENTITY[var1] = true;
         }
 
         protected BlockContainer(int var1, int var2, Material var3) : base(var1, var2, var3)
         {
-            isBlockContainer[var1] = true;
+            BLOCKS_WITH_ENTITY[var1] = true;
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)

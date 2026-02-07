@@ -33,12 +33,12 @@ namespace betareborn.Blocks
             var3 += PistonBlockTextures.field_31059_c[var6];
             var4 += PistonBlockTextures.field_31058_d[var6];
             int var7 = var1.getBlockId(var2, var3, var4);
-            if (var7 == Block.pistonBase.id || var7 == Block.pistonStickyBase.id)
+            if (var7 == Block.PISTON.id || var7 == Block.STICKY_PISTON.id)
             {
                 var5 = var1.getBlockMeta(var2, var3, var4);
                 if (BlockPistonBase.isPowered(var5))
                 {
-                    Block.blocksList[var7].dropBlockAsItem(var1, var2, var3, var4, var5);
+                    Block.BLOCKS[var7].dropBlockAsItem(var1, var2, var3, var4, var5);
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
             }
@@ -158,13 +158,13 @@ namespace betareborn.Blocks
         {
             int var6 = func_31050_c(var1.getBlockMeta(var2, var3, var4));
             int var7 = var1.getBlockId(var2 - PistonBlockTextures.field_31056_b[var6], var3 - PistonBlockTextures.field_31059_c[var6], var4 - PistonBlockTextures.field_31058_d[var6]);
-            if (var7 != Block.pistonBase.id && var7 != Block.pistonStickyBase.id)
+            if (var7 != Block.PISTON.id && var7 != Block.STICKY_PISTON.id)
             {
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
             else
             {
-                Block.blocksList[var7].neighborUpdate(var1, var2 - PistonBlockTextures.field_31056_b[var6], var3 - PistonBlockTextures.field_31059_c[var6], var4 - PistonBlockTextures.field_31058_d[var6], var5);
+                Block.BLOCKS[var7].neighborUpdate(var1, var2 - PistonBlockTextures.field_31056_b[var6], var3 - PistonBlockTextures.field_31059_c[var6], var4 - PistonBlockTextures.field_31058_d[var6], var5);
             }
 
         }

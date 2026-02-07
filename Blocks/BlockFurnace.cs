@@ -39,22 +39,22 @@ namespace betareborn.Blocks
                 int var7 = var1.getBlockId(var2 - 1, var3, var4);
                 int var8 = var1.getBlockId(var2 + 1, var3, var4);
                 sbyte var9 = 3;
-                if (Block.opaqueCubeLookup[var5] && !Block.opaqueCubeLookup[var6])
+                if (Block.BLOCKS_OPAQUE[var5] && !Block.BLOCKS_OPAQUE[var6])
                 {
                     var9 = 3;
                 }
 
-                if (Block.opaqueCubeLookup[var6] && !Block.opaqueCubeLookup[var5])
+                if (Block.BLOCKS_OPAQUE[var6] && !Block.BLOCKS_OPAQUE[var5])
                 {
                     var9 = 2;
                 }
 
-                if (Block.opaqueCubeLookup[var7] && !Block.opaqueCubeLookup[var8])
+                if (Block.BLOCKS_OPAQUE[var7] && !Block.BLOCKS_OPAQUE[var8])
                 {
                     var9 = 5;
                 }
 
-                if (Block.opaqueCubeLookup[var8] && !Block.opaqueCubeLookup[var7])
+                if (Block.BLOCKS_OPAQUE[var8] && !Block.BLOCKS_OPAQUE[var7])
                 {
                     var9 = 4;
                 }

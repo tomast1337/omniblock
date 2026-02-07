@@ -73,7 +73,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                Material var5 = Block.blocksList[var4].blockMaterial;
+                Material var5 = Block.BLOCKS[var4].blockMaterial;
                 return var5 == Material.WATER ? true : var5 == Material.LAVA;
             }
         }

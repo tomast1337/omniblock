@@ -273,13 +273,13 @@ namespace betareborn.Entities
                     posY = (double)var2;
                     bool var12 = false;
                     bool var13 = false;
-                    if (var9 == Block.railPowered.id)
+                    if (var9 == Block.POWERED_RAIL.id)
                     {
                         var12 = (var11 & 8) != 0;
                         var13 = !var12;
                     }
 
-                    if (((BlockRail)Block.blocksList[var9]).getIsPowered())
+                    if (((BlockRail)Block.BLOCKS[var9]).getIsPowered())
                     {
                         var11 &= 7;
                     }
@@ -640,7 +640,7 @@ namespace betareborn.Entities
             else
             {
                 int var13 = worldObj.getBlockMeta(var9, var10, var11);
-                if (((BlockRail)Block.blocksList[var12]).getIsPowered())
+                if (((BlockRail)Block.BLOCKS[var12]).getIsPowered())
                 {
                     var13 &= 7;
                 }
@@ -687,7 +687,7 @@ namespace betareborn.Entities
             {
                 int var11 = worldObj.getBlockMeta(var7, var8, var9);
                 var3 = (double)var8;
-                if (((BlockRail)Block.blocksList[var10]).getIsPowered())
+                if (((BlockRail)Block.BLOCKS[var10]).getIsPowered())
                 {
                     var11 &= 7;
                 }

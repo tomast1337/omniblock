@@ -48,7 +48,7 @@ namespace betareborn.Blocks
                     }
                     else if (!isCropsNearby(var1, var2, var3, var4))
                     {
-                        var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
+                        var1.setBlockWithNotify(var2, var3, var4, Block.DIRT.id);
                     }
                 }
                 else
@@ -63,7 +63,7 @@ namespace betareborn.Blocks
         {
             if (var1.random.nextInt(4) == 0)
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
+                var1.setBlockWithNotify(var2, var3, var4, Block.DIRT.id);
             }
 
         }
@@ -111,14 +111,14 @@ namespace betareborn.Blocks
             Material var6 = var1.getMaterial(var2, var3 + 1, var4);
             if (var6.isSolid())
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
+                var1.setBlockWithNotify(var2, var3, var4, Block.DIRT.id);
             }
 
         }
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.dirt.getDroppedItemId(0, var2);
+            return Block.DIRT.getDroppedItemId(0, var2);
         }
     }
 

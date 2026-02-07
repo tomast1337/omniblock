@@ -129,12 +129,12 @@ namespace betareborn
 
             if (var1.type == 70)
             {
-                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.sand.id);
+                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.SAND.id);
             }
 
             if (var1.type == 71)
             {
-                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.gravel.id);
+                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.GRAVEL.id);
             }
 
             if (var8 != null)

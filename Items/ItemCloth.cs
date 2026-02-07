@@ -13,7 +13,7 @@ namespace betareborn.Items
 
         public override int getIconFromDamage(int var1)
         {
-            return Block.cloth.getTexture(2, BlockCloth.func_21034_c(var1));
+            return Block.WOOL.getTexture(2, BlockCloth.func_21034_c(var1));
         }
 
         public override int getPlacedBlockMetadata(int var1)

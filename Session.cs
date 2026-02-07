@@ -18,29 +18,29 @@ namespace betareborn
 
         static Session()
         {
-            registeredBlocksList.add(Block.stone);
-            registeredBlocksList.add(Block.cobblestone);
+            registeredBlocksList.add(Block.STONE);
+            registeredBlocksList.add(Block.COBBLESTONE);
             registeredBlocksList.add(Block.brick);
-            registeredBlocksList.add(Block.dirt);
-            registeredBlocksList.add(Block.planks);
-            registeredBlocksList.add(Block.wood);
-            registeredBlocksList.add(Block.leaves);
+            registeredBlocksList.add(Block.DIRT);
+            registeredBlocksList.add(Block.PLANKS);
+            registeredBlocksList.add(Block.LOG);
+            registeredBlocksList.add(Block.LEAVES);
             registeredBlocksList.add(Block.torchWood);
             registeredBlocksList.add(Block.stairSingle);
-            registeredBlocksList.add(Block.glass);
+            registeredBlocksList.add(Block.GLASS);
             registeredBlocksList.add(Block.cobblestoneMossy);
-            registeredBlocksList.add(Block.sapling);
-            registeredBlocksList.add(Block.plantYellow);
-            registeredBlocksList.add(Block.plantRed);
-            registeredBlocksList.add(Block.mushroomBrown);
-            registeredBlocksList.add(Block.mushroomRed);
-            registeredBlocksList.add(Block.sand);
-            registeredBlocksList.add(Block.gravel);
-            registeredBlocksList.add(Block.sponge);
-            registeredBlocksList.add(Block.cloth);
-            registeredBlocksList.add(Block.oreCoal);
-            registeredBlocksList.add(Block.oreIron);
-            registeredBlocksList.add(Block.oreGold);
+            registeredBlocksList.add(Block.SAPLING);
+            registeredBlocksList.add(Block.DANDELION);
+            registeredBlocksList.add(Block.ROSE);
+            registeredBlocksList.add(Block.BROWN_MUSHROOM);
+            registeredBlocksList.add(Block.RED_MUSHROOM);
+            registeredBlocksList.add(Block.SAND);
+            registeredBlocksList.add(Block.GRAVEL);
+            registeredBlocksList.add(Block.SPONGE);
+            registeredBlocksList.add(Block.WOOL);
+            registeredBlocksList.add(Block.COAL_ORE);
+            registeredBlocksList.add(Block.IRON_ORE);
+            registeredBlocksList.add(Block.GOLD_ORE);
             registeredBlocksList.add(Block.blockSteel);
             registeredBlocksList.add(Block.blockGold);
             registeredBlocksList.add(Block.bookShelf);

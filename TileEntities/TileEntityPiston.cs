@@ -91,7 +91,7 @@ namespace betareborn.TileEntities
                 collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
             }
 
-            Box var3 = Block.pistonMoving.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
+            Box var3 = Block.MOVING_PISTON.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
             if (var3 != null)
             {
                 var var4 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, var3);
@@ -119,7 +119,7 @@ namespace betareborn.TileEntities
                 progress = lastProgess = 1.0F;
                 world.removeBlockTileEntity(x, y, z);
                 markRemoved();
-                if (world.getBlockId(x, y, z) == Block.pistonMoving.id)
+                if (world.getBlockId(x, y, z) == Block.MOVING_PISTON.id)
                 {
                     world.setBlockAndMetadataWithNotify(x, y, z, pushedBlockId, pushedBlockData);
                 }
@@ -135,7 +135,7 @@ namespace betareborn.TileEntities
                 pushEntities(1.0F, 0.25F);
                 world.removeBlockTileEntity(x, y, z);
                 markRemoved();
-                if (world.getBlockId(x, y, z) == Block.pistonMoving.id)
+                if (world.getBlockId(x, y, z) == Block.MOVING_PISTON.id)
                 {
                     world.setBlockAndMetadataWithNotify(x, y, z, pushedBlockId, pushedBlockData);
                 }

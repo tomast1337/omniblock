@@ -46,12 +46,12 @@ namespace betareborn.Rendering
             float var16;
             float var17;
             float var18;
-            if (var10.itemID < 256 && RenderBlocks.renderItemIn3d(Block.blocksList[var10.itemID].getRenderType()))
+            if (var10.itemID < 256 && RenderBlocks.renderItemIn3d(Block.BLOCKS[var10.itemID].getRenderType()))
             {
                 GLManager.GL.Rotate(var12, 0.0F, 1.0F, 0.0F);
                 loadTexture("/terrain.png");
                 float var28 = 0.25F;
-                if (!Block.blocksList[var10.itemID].isFullCube() && var10.itemID != Block.stairSingle.id && Block.blocksList[var10.itemID].getRenderType() != 16)
+                if (!Block.BLOCKS[var10.itemID].isFullCube() && var10.itemID != Block.stairSingle.id && Block.BLOCKS[var10.itemID].getRenderType() != 16)
                 {
                     var28 = 0.5F;
                 }
@@ -69,7 +69,7 @@ namespace betareborn.Rendering
                         GLManager.GL.Translate(var16, var17, var18);
                     }
 
-                    renderBlocks.renderBlockOnInventory(Block.blocksList[var10.itemID], var10.getItemDamage(), var1.getEntityBrightness(var9));
+                    renderBlocks.renderBlockOnInventory(Block.BLOCKS[var10.itemID], var10.getItemDamage(), var1.getEntityBrightness(var9));
                     GLManager.GL.PopMatrix();
                 }
             }
@@ -138,10 +138,10 @@ namespace betareborn.Rendering
         public void drawItemIntoGui(FontRenderer var1, RenderEngine var2, int var3, int var4, int var5, int var6, int var7)
         {
             float var11;
-            if (var3 < 256 && RenderBlocks.renderItemIn3d(Block.blocksList[var3].getRenderType()))
+            if (var3 < 256 && RenderBlocks.renderItemIn3d(Block.BLOCKS[var3].getRenderType()))
             {
                 var2.bindTexture(var2.getTexture("/terrain.png"));
-                Block var14 = Block.blocksList[var3];
+                Block var14 = Block.BLOCKS[var3];
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Translate((float)(var6 - 2), (float)(var7 + 3), -3.0F);
                 GLManager.GL.Scale(10.0F, 10.0F, 10.0F);

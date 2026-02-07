@@ -205,7 +205,7 @@ namespace betareborn
                         {
                             if (var9 != Block.doorSteel.id && var9 != Block.doorWood.id)
                             {
-                                Material var11 = Block.blocksList[var9].blockMaterial;
+                                Material var11 = Block.BLOCKS[var9].blockMaterial;
                                 if (var11.blocksMovement())
                                 {
                                     return 0;

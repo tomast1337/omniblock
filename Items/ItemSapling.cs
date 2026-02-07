@@ -18,7 +18,7 @@ namespace betareborn.Items
 
         public override int getIconFromDamage(int var1)
         {
-            return Block.sapling.getTexture(0, var1);
+            return Block.SAPLING.getTexture(0, var1);
         }
     }
 

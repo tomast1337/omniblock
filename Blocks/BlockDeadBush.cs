@@ -11,7 +11,7 @@ namespace betareborn.Blocks
 
         protected override bool canThisPlantGrowOnThisBlockID(int var1)
         {
-            return var1 == Block.sand.id;
+            return var1 == Block.SAND.id;
         }
 
         public override int getTexture(int var1, int var2)

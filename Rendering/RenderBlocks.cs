@@ -286,7 +286,7 @@ namespace betareborn.Rendering
             int var5 = blockAccess.getBlockMeta(var2, var3, var4);
             Tessellator var6 = getTessellator();
             float var7 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var7 = 1.0F;
             }
@@ -327,7 +327,7 @@ namespace betareborn.Rendering
             renderStandardBlock(var1, var2, var3, var4);
             Tessellator var8 = getTessellator();
             float var9 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var9 = (var9 + 1.0F) * 0.5F;
             }
@@ -699,7 +699,7 @@ namespace betareborn.Rendering
             bool var9 = overrideBlockTexture >= 0;
             if (!var9)
             {
-                overrideBlockTexture = Block.cobblestone.textureId;
+                overrideBlockTexture = Block.COBBLESTONE.textureId;
             }
 
             float var10 = 0.25F;
@@ -737,7 +737,7 @@ namespace betareborn.Rendering
             }
 
             float var13 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -1498,7 +1498,7 @@ namespace betareborn.Rendering
             double var19 = (double)var2;
             double var20 = (double)var3;
             double var15 = (double)var4;
-            if (var1 == Block.tallGrass)
+            if (var1 == Block.GRASS)
             {
                 long var17 = (long)(var2 * 3129871) ^ (long)var4 * 116129781L ^ (long)var3;
                 var17 = var17 * var17 * 42317861L + var17 * 11L;
@@ -1969,18 +1969,18 @@ namespace betareborn.Rendering
             aoLightValueXPos = var1.getBlockBrightness(blockAccess, var2 + 1, var3, var4);
             aoLightValueYPos = var1.getBlockBrightness(blockAccess, var2, var3 + 1, var4);
             aoLightValueZPos = var1.getBlockBrightness(blockAccess, var2, var3, var4 + 1);
-            field_22338_U = Block.canBlockGrass[blockAccess.getBlockId(var2 + 1, var3 + 1, var4)];
-            field_22359_ac = Block.canBlockGrass[blockAccess.getBlockId(var2 + 1, var3 - 1, var4)];
-            field_22334_Y = Block.canBlockGrass[blockAccess.getBlockId(var2 + 1, var3, var4 + 1)];
-            field_22363_aa = Block.canBlockGrass[blockAccess.getBlockId(var2 + 1, var3, var4 - 1)];
-            field_22337_V = Block.canBlockGrass[blockAccess.getBlockId(var2 - 1, var3 + 1, var4)];
-            field_22357_ad = Block.canBlockGrass[blockAccess.getBlockId(var2 - 1, var3 - 1, var4)];
-            field_22335_X = Block.canBlockGrass[blockAccess.getBlockId(var2 - 1, var3, var4 - 1)];
-            field_22333_Z = Block.canBlockGrass[blockAccess.getBlockId(var2 - 1, var3, var4 + 1)];
-            field_22336_W = Block.canBlockGrass[blockAccess.getBlockId(var2, var3 + 1, var4 + 1)];
-            field_22339_T = Block.canBlockGrass[blockAccess.getBlockId(var2, var3 + 1, var4 - 1)];
-            field_22355_ae = Block.canBlockGrass[blockAccess.getBlockId(var2, var3 - 1, var4 + 1)];
-            field_22361_ab = Block.canBlockGrass[blockAccess.getBlockId(var2, var3 - 1, var4 - 1)];
+            field_22338_U = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 + 1, var3 + 1, var4)];
+            field_22359_ac = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 + 1, var3 - 1, var4)];
+            field_22334_Y = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 + 1, var3, var4 + 1)];
+            field_22363_aa = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 + 1, var3, var4 - 1)];
+            field_22337_V = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 - 1, var3 + 1, var4)];
+            field_22357_ad = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 - 1, var3 - 1, var4)];
+            field_22335_X = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 - 1, var3, var4 - 1)];
+            field_22333_Z = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2 - 1, var3, var4 + 1)];
+            field_22336_W = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2, var3 + 1, var4 + 1)];
+            field_22339_T = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2, var3 + 1, var4 - 1)];
+            field_22355_ae = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2, var3 - 1, var4 + 1)];
+            field_22361_ab = Block.BLOCKS_ALLOW_VISION[blockAccess.getBlockId(var2, var3 - 1, var4 - 1)];
             if (var1.textureId == 3)
             {
                 var18 = false;
@@ -2565,7 +2565,7 @@ namespace betareborn.Rendering
             float var23 = var10;
             float var24 = var12;
             float var25 = var13;
-            if (var1 != Block.grass)
+            if (var1 != Block.GRASS_BLOCK)
             {
                 var17 = var10 * var5;
                 var18 = var12 * var5;
@@ -2930,7 +2930,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -2944,7 +2944,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -2958,7 +2958,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -2980,7 +2980,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -3002,7 +3002,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -3024,7 +3024,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.id] > 0)
+            if (Block.BLOCKS_LIGHT_LUMINANCE[var1.id] > 0)
             {
                 var13 = 1.0F;
             }

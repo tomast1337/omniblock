@@ -85,7 +85,7 @@ namespace betareborn.Blocks
                 TileEntityPiston var7 = func_31034_c(var1, var2, var3, var4);
                 if (var7 != null)
                 {
-                    Block.blocksList[var7.getPushedBlockId()].dropBlockAsItem(var1, var2, var3, var4, var7.getPushedBlockData());
+                    Block.BLOCKS[var7.getPushedBlockId()].dropBlockAsItem(var1, var2, var3, var4, var7.getPushedBlockData());
                 }
             }
         }
@@ -127,7 +127,7 @@ namespace betareborn.Blocks
             TileEntityPiston var5 = func_31034_c(var1, var2, var3, var4);
             if (var5 != null)
             {
-                Block var6 = Block.blocksList[var5.getPushedBlockId()];
+                Block var6 = Block.BLOCKS[var5.getPushedBlockId()];
                 if (var6 == null || var6 == this)
                 {
                     return;
@@ -155,7 +155,7 @@ namespace betareborn.Blocks
         {
             if (var5 != 0 && var5 != id)
             {
-                Box var8 = Block.blocksList[var5].getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
+                Box var8 = Block.BLOCKS[var5].getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
                 if (var8 == null)
                 {
                     return null;

@@ -6,7 +6,7 @@ namespace betareborn.Items
     public class ItemAxe : ItemTool
     {
 
-        private static Block[] blocksEffectiveAgainst = new Block[] { Block.planks, Block.bookShelf, Block.wood, Block.chest };
+        private static Block[] blocksEffectiveAgainst = new Block[] { Block.PLANKS, Block.bookShelf, Block.LOG, Block.chest };
 
         public ItemAxe(int var1, EnumToolMaterial var2) : base(var1, 3, var2, blocksEffectiveAgainst)
         {

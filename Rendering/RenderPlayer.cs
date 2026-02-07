@@ -127,7 +127,7 @@ namespace betareborn.Rendering
             {
                 GLManager.GL.PushMatrix();
                 modelBipedMain.bipedHead.postRender(1.0F / 16.0F);
-                if (RenderBlocks.renderItemIn3d(Block.blocksList[var3.itemID].getRenderType()))
+                if (RenderBlocks.renderItemIn3d(Block.BLOCKS[var3.itemID].getRenderType()))
                 {
                     float var4 = 10.0F / 16.0F;
                     GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
@@ -214,7 +214,7 @@ namespace betareborn.Rendering
                     var21 = new ItemStack(Item.stick);
                 }
 
-                if (var21.itemID < 256 && RenderBlocks.renderItemIn3d(Block.blocksList[var21.itemID].getRenderType()))
+                if (var21.itemID < 256 && RenderBlocks.renderItemIn3d(Block.BLOCKS[var21.itemID].getRenderType()))
                 {
                     var5 = 0.5F;
                     GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));

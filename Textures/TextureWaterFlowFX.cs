@@ -11,7 +11,7 @@ namespace betareborn.Textures
         protected float[] field_1135_j = new float[256];
         private int field_1134_k = 0;
 
-        public TextureWaterFlowFX() : base(Block.waterMoving.textureId + 1)
+        public TextureWaterFlowFX() : base(Block.FLOWING_WATER.textureId + 1)
         {
             tileSize = 2;
         }

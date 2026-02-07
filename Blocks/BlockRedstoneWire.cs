@@ -466,7 +466,7 @@ namespace betareborn.Blocks
             {
                 return false;
             }
-            else if (Block.blocksList[var5].canProvidePower())
+            else if (Block.BLOCKS[var5].canProvidePower())
             {
                 return true;
             }

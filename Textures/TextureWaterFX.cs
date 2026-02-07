@@ -10,7 +10,7 @@ namespace betareborn.Textures
         protected float[] field_1156_i = new float[256];
         protected float[] field_1155_j = new float[256];
 
-        public TextureWaterFX() : base(Block.waterMoving.textureId)
+        public TextureWaterFX() : base(Block.FLOWING_WATER.textureId)
         {
         }
 

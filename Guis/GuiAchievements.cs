@@ -206,7 +206,7 @@ namespace betareborn.Guis
                     var21.setSeed((long)(1234 + var12 + var24));
                     var21.nextInt();
                     int var25 = var21.nextInt(1 + var13 + var22) + (var13 + var22) / 2;
-                    int var26 = Block.sand.textureId;
+                    int var26 = Block.SAND.textureId;
                     if (var25 <= 37 && var13 + var22 != 35)
                     {
                         if (var25 == 22)
@@ -222,24 +222,24 @@ namespace betareborn.Guis
                         }
                         else if (var25 == 10)
                         {
-                            var26 = Block.oreIron.textureId;
+                            var26 = Block.IRON_ORE.textureId;
                         }
                         else if (var25 == 8)
                         {
-                            var26 = Block.oreCoal.textureId;
+                            var26 = Block.COAL_ORE.textureId;
                         }
                         else if (var25 > 4)
                         {
-                            var26 = Block.stone.textureId;
+                            var26 = Block.STONE.textureId;
                         }
                         else if (var25 > 0)
                         {
-                            var26 = Block.dirt.textureId;
+                            var26 = Block.DIRT.textureId;
                         }
                     }
                     else
                     {
-                        var26 = Block.bedrock.textureId;
+                        var26 = Block.BEDROCK.textureId;
                     }
 
                     drawTexturedModalRect(var10 + var24 * 16 - var14, var11 + var22 * 16 - var15, var26 % 16 << 4, var26 >> 4 << 4, 16, 16);

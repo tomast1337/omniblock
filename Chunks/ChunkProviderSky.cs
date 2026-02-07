@@ -90,7 +90,7 @@ namespace betareborn.Chunks
                                     int var52 = 0;
                                     if (var47 > 0.0D)
                                     {
-                                        var52 = Block.stone.id;
+                                        var52 = Block.STONE.id;
                                     }
 
                                     var3[var43] = (byte)var52;
@@ -138,14 +138,14 @@ namespace betareborn.Chunks
                         {
                             var11 = -1;
                         }
-                        else if (var16 == Block.stone.id)
+                        else if (var16 == Block.STONE.id)
                         {
                             if (var11 == -1)
                             {
                                 if (var10 <= 0)
                                 {
                                     var12 = 0;
-                                    var13 = (byte)Block.stone.id;
+                                    var13 = (byte)Block.STONE.id;
                                 }
 
                                 var11 = var10;
@@ -162,10 +162,10 @@ namespace betareborn.Chunks
                             {
                                 --var11;
                                 var3[var15] = var13;
-                                if (var11 == 0 && var13 == Block.sand.id)
+                                if (var11 == 0 && var13 == Block.SAND.id)
                                 {
                                     var11 = field_28087_j.nextInt(4);
-                                    var13 = (byte)Block.sandStone.id;
+                                    var13 = (byte)Block.SANDSTONE.id;
                                 }
                             }
                         }
@@ -333,7 +333,7 @@ namespace betareborn.Chunks
                 var13 = var4 + field_28087_j.nextInt(16) + 8;
                 var14 = field_28087_j.nextInt(128);
                 var15 = var5 + field_28087_j.nextInt(16) + 8;
-                (new WorldGenLakes(Block.waterStill.id)).generate(field_28081_p, field_28087_j, var13, var14, var15);
+                (new WorldGenLakes(Block.WATER.id)).generate(field_28081_p, field_28087_j, var13, var14, var15);
             }
 
             if (field_28087_j.nextInt(8) == 0)
@@ -343,7 +343,7 @@ namespace betareborn.Chunks
                 var15 = var5 + field_28087_j.nextInt(16) + 8;
                 if (var14 < 64 || field_28087_j.nextInt(10) == 0)
                 {
-                    (new WorldGenLakes(Block.lavaStill.id)).generate(field_28081_p, field_28087_j, var13, var14, var15);
+                    (new WorldGenLakes(Block.LAVA.id)).generate(field_28081_p, field_28087_j, var13, var14, var15);
                 }
             }
 
@@ -369,7 +369,7 @@ namespace betareborn.Chunks
                 var14 = var4 + field_28087_j.nextInt(16);
                 var15 = field_28087_j.nextInt(128);
                 var16 = var5 + field_28087_j.nextInt(16);
-                (new WorldGenMinable(Block.dirt.id, 32)).generate(field_28081_p, field_28087_j, var14, var15, var16);
+                (new WorldGenMinable(Block.DIRT.id, 32)).generate(field_28081_p, field_28087_j, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 10; ++var13)
@@ -377,7 +377,7 @@ namespace betareborn.Chunks
                 var14 = var4 + field_28087_j.nextInt(16);
                 var15 = field_28087_j.nextInt(128);
                 var16 = var5 + field_28087_j.nextInt(16);
-                (new WorldGenMinable(Block.gravel.id, 32)).generate(field_28081_p, field_28087_j, var14, var15, var16);
+                (new WorldGenMinable(Block.GRAVEL.id, 32)).generate(field_28081_p, field_28087_j, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 20; ++var13)
@@ -385,7 +385,7 @@ namespace betareborn.Chunks
                 var14 = var4 + field_28087_j.nextInt(16);
                 var15 = field_28087_j.nextInt(128);
                 var16 = var5 + field_28087_j.nextInt(16);
-                (new WorldGenMinable(Block.oreCoal.id, 16)).generate(field_28081_p, field_28087_j, var14, var15, var16);
+                (new WorldGenMinable(Block.COAL_ORE.id, 16)).generate(field_28081_p, field_28087_j, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 20; ++var13)
@@ -393,7 +393,7 @@ namespace betareborn.Chunks
                 var14 = var4 + field_28087_j.nextInt(16);
                 var15 = field_28087_j.nextInt(64);
                 var16 = var5 + field_28087_j.nextInt(16);
-                (new WorldGenMinable(Block.oreIron.id, 8)).generate(field_28081_p, field_28087_j, var14, var15, var16);
+                (new WorldGenMinable(Block.IRON_ORE.id, 8)).generate(field_28081_p, field_28087_j, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 2; ++var13)
@@ -401,7 +401,7 @@ namespace betareborn.Chunks
                 var14 = var4 + field_28087_j.nextInt(16);
                 var15 = field_28087_j.nextInt(32);
                 var16 = var5 + field_28087_j.nextInt(16);
-                (new WorldGenMinable(Block.oreGold.id, 8)).generate(field_28081_p, field_28087_j, var14, var15, var16);
+                (new WorldGenMinable(Block.GOLD_ORE.id, 8)).generate(field_28081_p, field_28087_j, var14, var15, var16);
             }
 
             for (var13 = 0; var13 < 8; ++var13)
@@ -425,7 +425,7 @@ namespace betareborn.Chunks
                 var14 = var4 + field_28087_j.nextInt(16);
                 var15 = field_28087_j.nextInt(16) + field_28087_j.nextInt(16);
                 var16 = var5 + field_28087_j.nextInt(16);
-                (new WorldGenMinable(Block.oreLapis.id, 6)).generate(field_28081_p, field_28087_j, var14, var15, var16);
+                (new WorldGenMinable(Block.LAPIS_ORE.id, 6)).generate(field_28081_p, field_28087_j, var14, var15, var16);
             }
 
             var11 = 0.5D;
@@ -487,7 +487,7 @@ namespace betareborn.Chunks
                 var16 = var4 + field_28087_j.nextInt(16) + 8;
                 var17 = field_28087_j.nextInt(128);
                 var23 = var5 + field_28087_j.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.plantYellow.id)).generate(field_28081_p, field_28087_j, var16, var17, var23);
+                (new WorldGenFlowers(Block.DANDELION.id)).generate(field_28081_p, field_28087_j, var16, var17, var23);
             }
 
             if (field_28087_j.nextInt(2) == 0)
@@ -495,7 +495,7 @@ namespace betareborn.Chunks
                 var15 = var4 + field_28087_j.nextInt(16) + 8;
                 var16 = field_28087_j.nextInt(128);
                 var17 = var5 + field_28087_j.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.plantRed.id)).generate(field_28081_p, field_28087_j, var15, var16, var17);
+                (new WorldGenFlowers(Block.ROSE.id)).generate(field_28081_p, field_28087_j, var15, var16, var17);
             }
 
             if (field_28087_j.nextInt(4) == 0)
@@ -503,7 +503,7 @@ namespace betareborn.Chunks
                 var15 = var4 + field_28087_j.nextInt(16) + 8;
                 var16 = field_28087_j.nextInt(128);
                 var17 = var5 + field_28087_j.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.mushroomBrown.id)).generate(field_28081_p, field_28087_j, var15, var16, var17);
+                (new WorldGenFlowers(Block.BROWN_MUSHROOM.id)).generate(field_28081_p, field_28087_j, var15, var16, var17);
             }
 
             if (field_28087_j.nextInt(8) == 0)
@@ -511,7 +511,7 @@ namespace betareborn.Chunks
                 var15 = var4 + field_28087_j.nextInt(16) + 8;
                 var16 = field_28087_j.nextInt(128);
                 var17 = var5 + field_28087_j.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.mushroomRed.id)).generate(field_28081_p, field_28087_j, var15, var16, var17);
+                (new WorldGenFlowers(Block.RED_MUSHROOM.id)).generate(field_28081_p, field_28087_j, var15, var16, var17);
             }
 
             for (var15 = 0; var15 < 10; ++var15)
@@ -550,7 +550,7 @@ namespace betareborn.Chunks
                 var17 = var4 + field_28087_j.nextInt(16) + 8;
                 var23 = field_28087_j.nextInt(field_28087_j.nextInt(120) + 8);
                 var19 = var5 + field_28087_j.nextInt(16) + 8;
-                (new WorldGenLiquids(Block.waterMoving.id)).generate(field_28081_p, field_28087_j, var17, var23, var19);
+                (new WorldGenLiquids(Block.FLOWING_WATER.id)).generate(field_28081_p, field_28087_j, var17, var23, var19);
             }
 
             for (var16 = 0; var16 < 20; ++var16)
@@ -558,7 +558,7 @@ namespace betareborn.Chunks
                 var17 = var4 + field_28087_j.nextInt(16) + 8;
                 var23 = field_28087_j.nextInt(field_28087_j.nextInt(field_28087_j.nextInt(112) + 8) + 8);
                 var19 = var5 + field_28087_j.nextInt(16) + 8;
-                (new WorldGenLiquids(Block.lavaMoving.id)).generate(field_28081_p, field_28087_j, var17, var23, var19);
+                (new WorldGenLiquids(Block.FLOWING_LAVA.id)).generate(field_28081_p, field_28087_j, var17, var23, var19);
             }
 
             field_28074_w = field_28081_p.getBiomeSource().getTemperatures(field_28074_w, var4 + 8, var5 + 8, 16, 16);

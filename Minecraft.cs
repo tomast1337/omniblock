@@ -1075,9 +1075,9 @@ namespace betareborn
             if (objectMouseOver != null)
             {
                 int var1 = theWorld.getBlockId(objectMouseOver.blockX, objectMouseOver.blockY, objectMouseOver.blockZ);
-                if (var1 == Block.grass.id)
+                if (var1 == Block.GRASS_BLOCK.id)
                 {
-                    var1 = Block.dirt.id;
+                    var1 = Block.DIRT.id;
                 }
 
                 if (var1 == Block.stairDouble.id)
@@ -1085,9 +1085,9 @@ namespace betareborn
                     var1 = Block.stairSingle.id;
                 }
 
-                if (var1 == Block.bedrock.id)
+                if (var1 == Block.BEDROCK.id)
                 {
-                    var1 = Block.stone.id;
+                    var1 = Block.STONE.id;
                 }
 
                 thePlayer.inventory.setCurrentItem(var1, playerController is PlayerControllerTest);

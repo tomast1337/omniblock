@@ -15,15 +15,15 @@ namespace betareborn.Blocks
 
         protected override void initializeBlock()
         {
-            setBurnRate(Block.planks.id, 5, 20);
+            setBurnRate(Block.PLANKS.id, 5, 20);
             setBurnRate(Block.fence.id, 5, 20);
             setBurnRate(Block.stairCompactPlanks.id, 5, 20);
-            setBurnRate(Block.wood.id, 5, 5);
-            setBurnRate(Block.leaves.id, 30, 60);
+            setBurnRate(Block.LOG.id, 5, 5);
+            setBurnRate(Block.LEAVES.id, 30, 60);
             setBurnRate(Block.bookShelf.id, 30, 20);
             setBurnRate(Block.tnt.id, 15, 100);
-            setBurnRate(Block.tallGrass.id, 60, 100);
-            setBurnRate(Block.cloth.id, 30, 60);
+            setBurnRate(Block.GRASS.id, 60, 100);
+            setBurnRate(Block.WOOL.id, 30, 60);
         }
 
         private void setBurnRate(int var1, int var2, int var3)

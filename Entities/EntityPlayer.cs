@@ -748,7 +748,7 @@ namespace betareborn.Entities
             resetHeight();
             Vec3i var4 = bedChunkCoordinates;
             Vec3i var5 = bedChunkCoordinates;
-            if (var4 != null && worldObj.getBlockId(var4.x, var4.y, var4.z) == Block.blockBed.id)
+            if (var4 != null && worldObj.getBlockId(var4.x, var4.y, var4.z) == Block.BED.id)
             {
                 BlockBed.updateState(worldObj, var4.x, var4.y, var4.z, false);
                 var5 = BlockBed.findWakeUpPosition(worldObj, var4.x, var4.y, var4.z, 0);
@@ -784,7 +784,7 @@ namespace betareborn.Entities
 
         private bool isInBed()
         {
-            return worldObj.getBlockId(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z) == Block.blockBed.id;
+            return worldObj.getBlockId(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z) == Block.BED.id;
         }
 
         public static Vec3i func_25060_a(World var0, Vec3i var1)
@@ -794,7 +794,7 @@ namespace betareborn.Entities
             var2.prepareChunk(var1.x + 3 >> 4, var1.z - 3 >> 4);
             var2.prepareChunk(var1.x - 3 >> 4, var1.z + 3 >> 4);
             var2.prepareChunk(var1.x + 3 >> 4, var1.z + 3 >> 4);
-            if (var0.getBlockId(var1.x, var1.y, var1.z) != Block.blockBed.id)
+            if (var0.getBlockId(var1.x, var1.y, var1.z) != Block.BED.id)
             {
                 return null;
             }

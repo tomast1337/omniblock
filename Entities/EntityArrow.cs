@@ -107,8 +107,8 @@ namespace betareborn.Entities
             int var15 = worldObj.getBlockId(xTile, yTile, zTile);
             if (var15 > 0)
             {
-                Block.blocksList[var15].updateBoundingBox(worldObj, xTile, yTile, zTile);
-                Box var2 = Block.blocksList[var15].getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
+                Block.BLOCKS[var15].updateBoundingBox(worldObj, xTile, yTile, zTile);
+                Box var2 = Block.BLOCKS[var15].getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
                 if (var2 != null && var2.contains(Vec3D.createVector(posX, posY, posZ)))
                 {
                     inGround = true;

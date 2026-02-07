@@ -540,7 +540,7 @@ namespace betareborn.Entities
                 int var3 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(posY - (double)0.2F - (double)yOffset), MathHelper.floor_double(posZ));
                 if (var3 > 0)
                 {
-                    StepSound var4 = Block.blocksList[var3].stepSound;
+                    StepSound var4 = Block.BLOCKS[var3].stepSound;
                     worldObj.playSoundAtEntity(this, var4.func_1145_d(), var4.getVolume() * 0.5F, var4.getPitch() * (12.0F / 16.0F));
                 }
             }
@@ -587,7 +587,7 @@ namespace betareborn.Entities
                     int var4 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
                     if (var4 > 0)
                     {
-                        var8 = Block.blocksList[var4].slipperiness * 0.91F;
+                        var8 = Block.BLOCKS[var4].slipperiness * 0.91F;
                     }
                 }
 
@@ -600,7 +600,7 @@ namespace betareborn.Entities
                     int var5 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
                     if (var5 > 0)
                     {
-                        var8 = Block.blocksList[var5].slipperiness * 0.91F;
+                        var8 = Block.BLOCKS[var5].slipperiness * 0.91F;
                     }
                 }
 

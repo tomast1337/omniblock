@@ -56,10 +56,10 @@ namespace betareborn
                 int var5 = mc.theWorld.getBlockId(var1, var2, var3);
                 if (var5 > 0 && curBlockDamageMP == 0.0F)
                 {
-                    Block.blocksList[var5].onBlockClicked(mc.theWorld, var1, var2, var3, mc.thePlayer);
+                    Block.BLOCKS[var5].onBlockClicked(mc.theWorld, var1, var2, var3, mc.thePlayer);
                 }
 
-                if (var5 > 0 && Block.blocksList[var5].blockStrength(mc.thePlayer) >= 1.0F)
+                if (var5 > 0 && Block.BLOCKS[var5].blockStrength(mc.thePlayer) >= 1.0F)
                 {
                     sendBlockRemoved(var1, var2, var3, var4);
                 }
@@ -103,7 +103,7 @@ namespace betareborn
                             return;
                         }
 
-                        Block var6 = Block.blocksList[var5];
+                        Block var6 = Block.BLOCKS[var5];
                         curBlockDamageMP += var6.blockStrength(mc.thePlayer);
                         if (field_9441_h % 4.0F == 0.0F && var6 != null)
                         {

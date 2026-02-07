@@ -48,16 +48,16 @@ namespace betareborn.Stats
 
         public static void func_25154_a()
         {
-            field_25172_A = func_25155_a(field_25172_A, "stat.useItem", 16908288, 0, Block.blocksList.Length);
-            field_25170_B = func_25149_b(field_25170_B, "stat.breakItem", 16973824, 0, Block.blocksList.Length);
+            field_25172_A = func_25155_a(field_25172_A, "stat.useItem", 16908288, 0, Block.BLOCKS.Length);
+            field_25170_B = func_25149_b(field_25170_B, "stat.breakItem", 16973824, 0, Block.BLOCKS.Length);
             field_25166_D = true;
             func_25157_c();
         }
 
         public static void func_25151_b()
         {
-            field_25172_A = func_25155_a(field_25172_A, "stat.useItem", 16908288, Block.blocksList.Length, 32000);
-            field_25170_B = func_25149_b(field_25170_B, "stat.breakItem", 16973824, Block.blocksList.Length, 32000);
+            field_25172_A = func_25155_a(field_25172_A, "stat.useItem", 16908288, Block.BLOCKS.Length, 32000);
+            field_25170_B = func_25149_b(field_25170_B, "stat.breakItem", 16973824, Block.BLOCKS.Length, 32000);
             field_25164_E = true;
             func_25157_c();
         }
@@ -106,9 +106,9 @@ namespace betareborn.Stats
 
             for (int var3 = 0; var3 < 256; ++var3)
             {
-                if (Block.blocksList[var3] != null && Block.blocksList[var3].getEnableStats())
+                if (Block.BLOCKS[var3] != null && Block.BLOCKS[var3].getEnableStats())
                 {
-                    string var4 = StatCollector.translateToLocalFormatted(var0, [Block.blocksList[var3].translateBlockName()]);
+                    string var4 = StatCollector.translateToLocalFormatted(var0, [Block.BLOCKS[var3].translateBlockName()]);
                     var2[var3] = (new StatCrafting(var1 + var3, var4, var3)).registerStat();
                     field_25185_d.add((StatCrafting)var2[var3]);
                 }
@@ -131,7 +131,7 @@ namespace betareborn.Stats
                 {
                     string var6 = StatCollector.translateToLocalFormatted(var1, [Item.itemsList[var5].getStatName()]);
                     var0[var5] = (new StatCrafting(var2 + var5, var6, var5)).registerStat();
-                    if (var5 >= Block.blocksList.Length)
+                    if (var5 >= Block.BLOCKS.Length)
                     {
                         field_25186_c.add((StatCrafting)var0[var5]);
                     }
@@ -164,17 +164,17 @@ namespace betareborn.Stats
 
         private static void replaceAllSimilarBlocks(StatBase[] var0)
         {
-            replaceSimilarBlocks(var0, Block.waterStill.id, Block.waterMoving.id);
-            replaceSimilarBlocks(var0, Block.lavaStill.id, Block.lavaStill.id);
+            replaceSimilarBlocks(var0, Block.WATER.id, Block.FLOWING_WATER.id);
+            replaceSimilarBlocks(var0, Block.LAVA.id, Block.LAVA.id);
             replaceSimilarBlocks(var0, Block.pumpkinLantern.id, Block.pumpkin.id);
             replaceSimilarBlocks(var0, Block.stoneOvenActive.id, Block.stoneOvenIdle.id);
             replaceSimilarBlocks(var0, Block.oreRedstoneGlowing.id, Block.oreRedstone.id);
             replaceSimilarBlocks(var0, Block.redstoneRepeaterActive.id, Block.redstoneRepeaterIdle.id);
             replaceSimilarBlocks(var0, Block.torchRedstoneActive.id, Block.torchRedstoneIdle.id);
-            replaceSimilarBlocks(var0, Block.mushroomRed.id, Block.mushroomBrown.id);
+            replaceSimilarBlocks(var0, Block.RED_MUSHROOM.id, Block.BROWN_MUSHROOM.id);
             replaceSimilarBlocks(var0, Block.stairDouble.id, Block.stairSingle.id);
-            replaceSimilarBlocks(var0, Block.grass.id, Block.dirt.id);
-            replaceSimilarBlocks(var0, Block.tilledField.id, Block.dirt.id);
+            replaceSimilarBlocks(var0, Block.GRASS_BLOCK.id, Block.DIRT.id);
+            replaceSimilarBlocks(var0, Block.tilledField.id, Block.DIRT.id);
         }
 
         private static void replaceSimilarBlocks(StatBase[] var0, int var1, int var2)

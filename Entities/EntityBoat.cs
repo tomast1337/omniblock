@@ -92,7 +92,7 @@ namespace betareborn.Entities
                     int var3;
                     for (var3 = 0; var3 < 3; ++var3)
                     {
-                        dropItemWithOffset(Block.planks.id, 1, 0.0F);
+                        dropItemWithOffset(Block.PLANKS.id, 1, 0.0F);
                     }
 
                     for (var3 = 0; var3 < 2; ++var3)
@@ -307,7 +307,7 @@ namespace betareborn.Entities
                         int var22;
                         for (var22 = 0; var22 < 3; ++var22)
                         {
-                            dropItemWithOffset(Block.planks.id, 1, 0.0F);
+                            dropItemWithOffset(Block.PLANKS.id, 1, 0.0F);
                         }
 
                         for (var22 = 0; var22 < 2; ++var22)

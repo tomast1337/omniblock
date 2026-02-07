@@ -19,14 +19,14 @@ namespace betareborn.Worlds
             while (true)
             {
                 int var11 = var1.getBlockId(var3, var4, var5);
-                if (var11 != 0 && var11 != Block.leaves.id || var4 <= 0)
+                if (var11 != 0 && var11 != Block.LEAVES.id || var4 <= 0)
                 {
                     for (int var7 = 0; var7 < 4; ++var7)
                     {
                         int var8 = var3 + var2.nextInt(8) - var2.nextInt(8);
                         int var9 = var4 + var2.nextInt(4) - var2.nextInt(4);
                         int var10 = var5 + var2.nextInt(8) - var2.nextInt(8);
-                        if (var1.isAir(var8, var9, var10) && ((BlockFlower)Block.blocksList[field_28058_a]).canBlockStay(var1, var8, var9, var10))
+                        if (var1.isAir(var8, var9, var10) && ((BlockFlower)Block.BLOCKS[field_28058_a]).canBlockStay(var1, var8, var9, var10))
                         {
                             var1.setBlock(var8, var9, var10, field_28058_a);
                         }

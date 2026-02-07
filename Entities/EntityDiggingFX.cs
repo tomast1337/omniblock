@@ -21,7 +21,7 @@ namespace betareborn.Entities
 
         public EntityDiggingFX func_4041_a(int var1, int var2, int var3)
         {
-            if (field_4082_a == Block.grass)
+            if (field_4082_a == Block.GRASS_BLOCK)
             {
                 return this;
             }

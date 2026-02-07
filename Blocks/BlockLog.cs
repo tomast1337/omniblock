@@ -18,7 +18,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.wood.id;
+            return Block.LOG.id;
         }
 
         public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
@@ -39,7 +39,7 @@ namespace betareborn.Blocks
                         for (int var9 = -var5; var9 <= var5; ++var9)
                         {
                             int var10 = var1.getBlockId(var2 + var7, var3 + var8, var4 + var9);
-                            if (var10 == Block.leaves.id)
+                            if (var10 == Block.LEAVES.id)
                             {
                                 int var11 = var1.getBlockMeta(var2 + var7, var3 + var8, var4 + var9);
                                 if ((var11 & 8) == 0)

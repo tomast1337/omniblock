@@ -537,18 +537,18 @@ namespace betareborn.Entities
                     if (distanceWalkedModified > (float)nextStepDistance && var28 > 0)
                     {
                         ++nextStepDistance;
-                        StepSound var29 = Block.blocksList[var28].stepSound;
+                        StepSound var29 = Block.BLOCKS[var28].stepSound;
                         if (worldObj.getBlockId(var38, var26 + 1, var39) == Block.snow.id)
                         {
                             var29 = Block.snow.stepSound;
                             worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
                         }
-                        else if (!Block.blocksList[var28].blockMaterial.isFluid())
+                        else if (!Block.BLOCKS[var28].blockMaterial.isFluid())
                         {
                             worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
                         }
 
-                        Block.blocksList[var28].onEntityWalking(worldObj, var38, var26, var39, this);
+                        Block.BLOCKS[var28].onEntityWalking(worldObj, var38, var26, var39, this);
                     }
                 }
 
@@ -569,7 +569,7 @@ namespace betareborn.Entities
                                 int var34 = worldObj.getBlockId(var31, var32, var33);
                                 if (var34 > 0)
                                 {
-                                    Block.blocksList[var34].onEntityCollidedWithBlock(worldObj, var31, var32, var33, this);
+                                    Block.BLOCKS[var34].onEntityCollidedWithBlock(worldObj, var31, var32, var33, this);
                                 }
                             }
                         }
@@ -670,7 +670,7 @@ namespace betareborn.Entities
             int var5 = MathHelper.floor_float((float)MathHelper.floor_double(var2));
             int var6 = MathHelper.floor_double(posZ);
             int var7 = worldObj.getBlockId(var4, var5, var6);
-            if (var7 != 0 && Block.blocksList[var7].blockMaterial == var1)
+            if (var7 != 0 && Block.BLOCKS[var7].blockMaterial == var1)
             {
                 float var8 = BlockFluid.getPercentAir(worldObj.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
                 float var9 = (float)(var5 + 1) - var8;

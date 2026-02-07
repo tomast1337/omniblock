@@ -9,11 +9,11 @@ namespace betareborn.Recipes
         {
             for (int var2 = 0; var2 < 16; ++var2)
             {
-                var1.addShapelessRecipe(new ItemStack(Block.cloth, 1, BlockCloth.func_21035_d(var2)), [new ItemStack(Item.dyePowder, 1, var2), new ItemStack(Item.itemsList[Block.cloth.id], 1, 0)]);
+                var1.addShapelessRecipe(new ItemStack(Block.WOOL, 1, BlockCloth.func_21035_d(var2)), [new ItemStack(Item.dyePowder, 1, var2), new ItemStack(Item.itemsList[Block.WOOL.id], 1, 0)]);
             }
 
-            var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 2, 11), new object[] { Block.plantYellow });
-            var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 2, 1), new object[] { Block.plantRed });
+            var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 2, 11), new object[] { Block.DANDELION });
+            var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 2, 1), new object[] { Block.ROSE });
             var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 3, 15), [Item.bone]);
             var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 2, 9), [new ItemStack(Item.dyePowder, 1, 1), new ItemStack(Item.dyePowder, 1, 15)]);
             var1.addShapelessRecipe(new ItemStack(Item.dyePowder, 2, 14), [new ItemStack(Item.dyePowder, 1, 1), new ItemStack(Item.dyePowder, 1, 11)]);

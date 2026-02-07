@@ -480,7 +480,7 @@ namespace betareborn.Worlds
         public Material getMaterial(int var1, int var2, int var3)
         {
             int var4 = getBlockId(var1, var2, var3);
-            return var4 == 0 ? Material.AIR : Block.blocksList[var4].blockMaterial;
+            return var4 == 0 ? Material.AIR : Block.BLOCKS[var4].blockMaterial;
         }
 
         public int getBlockMeta(int var1, int var2, int var3)
@@ -514,7 +514,7 @@ namespace betareborn.Worlds
             if (setBlockMetadata(var1, var2, var3, var4))
             {
                 int var5 = getBlockId(var1, var2, var3);
-                if (Block.field_28032_t[var5 & 255])
+                if (Block.BLOCKS_IGNORE_META_UPDATE[var5 & 255])
                 {
                     notifyBlockChange(var1, var2, var3, var5);
                 }
@@ -638,7 +638,7 @@ namespace betareborn.Worlds
         {
             if (!editingBlocks && !multiplayerWorld)
             {
-                Block var5 = Block.blocksList[getBlockId(var1, var2, var3)];
+                Block var5 = Block.BLOCKS[getBlockId(var1, var2, var3)];
                 if (var5 != null)
                 {
                     var5.neighborUpdate(this, var1, var2, var3, var4);
@@ -801,9 +801,9 @@ namespace betareborn.Worlds
                     else if (var1 == EnumSkyBlock.Block)
                     {
                         int var6 = getBlockId(var2, var3, var4);
-                        if (Block.lightValue[var6] > var5)
+                        if (Block.BLOCKS_LIGHT_LUMINANCE[var6] > var5)
                         {
-                            var5 = Block.lightValue[var6];
+                            var5 = Block.BLOCKS_LIGHT_LUMINANCE[var6];
                         }
                     }
 
@@ -917,7 +917,7 @@ namespace betareborn.Worlds
                     int var10 = MathHelper.floor_double(var1.zCoord);
                     int var11 = getBlockId(var8, var9, var10);
                     int var12 = getBlockMeta(var8, var9, var10);
-                    Block var13 = Block.blocksList[var11];
+                    Block var13 = Block.BLOCKS[var11];
                     if ((!var4 || var13 == null || var13.getCollisionBoundingBoxFromPool(this, var8, var9, var10) != null) && var11 > 0 && var13.canCollideCheck(var12, var3))
                     {
                         MovingObjectPosition var14 = var13.collisionRayTrace(this, var8, var9, var10, var1, var2);
@@ -1079,7 +1079,7 @@ namespace betareborn.Worlds
 
                         int var35 = getBlockId(var8, var9, var10);
                         int var36 = getBlockMeta(var8, var9, var10);
-                        Block var37 = Block.blocksList[var35];
+                        Block var37 = Block.BLOCKS[var35];
                         if ((!var4 || var37 == null || var37.getCollisionBoundingBoxFromPool(this, var8, var9, var10) != null) && var35 > 0 && var37.canCollideCheck(var36, var3))
                         {
                             MovingObjectPosition var38 = var37.collisionRayTrace(this, var8, var9, var10, var1, var2);
@@ -1242,7 +1242,7 @@ namespace betareborn.Worlds
                     {
                         for (int var11 = var5 - 1; var11 < var6; ++var11)
                         {
-                            Block var12 = Block.blocksList[getBlockId(var9, var11, var10)];
+                            Block var12 = Block.BLOCKS[getBlockId(var9, var11, var10)];
                             if (var12 != null)
                             {
                                 var12.getCollidingBoundingBoxes(this, var9, var11, var10, var2, collidingBoundingBoxes);
@@ -1422,7 +1422,7 @@ namespace betareborn.Worlds
             for (var2 &= 15; var4 > 0; --var4)
             {
                 int var5 = var3.getBlockID(var1, var4, var2);
-                Material var6 = var5 == 0 ? Material.AIR : Block.blocksList[var5].blockMaterial;
+                Material var6 = var5 == 0 ? Material.AIR : Block.BLOCKS[var5].blockMaterial;
                 if (var6.blocksMovement() || var6.isFluid())
                 {
                     return var4 + 1;
@@ -1460,7 +1460,7 @@ namespace betareborn.Worlds
                     int var8 = getBlockId(var6.xCoord, var6.yCoord, var6.zCoord);
                     if (var8 == var6.blockID && var8 > 0)
                     {
-                        Block.blocksList[var8].updateTick(this, var6.xCoord, var6.yCoord, var6.zCoord, random);
+                        Block.BLOCKS[var8].updateTick(this, var6.xCoord, var6.yCoord, var6.zCoord, random);
                     }
                 }
 
@@ -1762,7 +1762,7 @@ namespace betareborn.Worlds
                 {
                     for (int var10 = var6; var10 < var7; ++var10)
                     {
-                        Block var11 = Block.blocksList[getBlockId(var8, var9, var10)];
+                        Block var11 = Block.BLOCKS[getBlockId(var8, var9, var10)];
                         if (var11 != null && var11.blockMaterial.isFluid())
                         {
                             return true;
@@ -1791,7 +1791,7 @@ namespace betareborn.Worlds
                         for (int var10 = var6; var10 < var7; ++var10)
                         {
                             int var11 = getBlockId(var8, var9, var10);
-                            if (var11 == Block.fire.id || var11 == Block.lavaMoving.id || var11 == Block.lavaStill.id)
+                            if (var11 == Block.fire.id || var11 == Block.FLOWING_LAVA.id || var11 == Block.LAVA.id)
                             {
                                 return true;
                             }
@@ -1826,7 +1826,7 @@ namespace betareborn.Worlds
                     {
                         for (int var14 = var8; var14 < var9; ++var14)
                         {
-                            Block var15 = Block.blocksList[getBlockId(var12, var13, var14)];
+                            Block var15 = Block.BLOCKS[getBlockId(var12, var13, var14)];
                             if (var15 != null && var15.blockMaterial == var2)
                             {
                                 double var16 = (double)((float)(var13 + 1) - BlockFluid.getPercentAir(getBlockMeta(var12, var13, var14)));
@@ -1868,7 +1868,7 @@ namespace betareborn.Worlds
                 {
                     for (int var11 = var7; var11 < var8; ++var11)
                     {
-                        Block var12 = Block.blocksList[getBlockId(var9, var10, var11)];
+                        Block var12 = Block.BLOCKS[getBlockId(var9, var10, var11)];
                         if (var12 != null && var12.blockMaterial == var2)
                         {
                             return true;
@@ -1895,7 +1895,7 @@ namespace betareborn.Worlds
                 {
                     for (int var11 = var7; var11 < var8; ++var11)
                     {
-                        Block var12 = Block.blocksList[getBlockId(var9, var10, var11)];
+                        Block var12 = Block.BLOCKS[getBlockId(var9, var10, var11)];
                         if (var12 != null && var12.blockMaterial == var2)
                         {
                             int var13 = getBlockMeta(var9, var10, var11);
@@ -2071,13 +2071,13 @@ namespace betareborn.Worlds
 
         public bool isOpaque(int var1, int var2, int var3)
         {
-            Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
+            Block var4 = Block.BLOCKS[getBlockId(var1, var2, var3)];
             return var4 == null ? false : var4.isOpaque();
         }
 
         public bool shouldSuffocate(int var1, int var2, int var3)
         {
-            Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
+            Block var4 = Block.BLOCKS[getBlockId(var1, var2, var3)];
             return var4 == null ? false : var4.blockMaterial.suffocates() && var4.isFullCube();
         }
 
@@ -2472,12 +2472,12 @@ namespace betareborn.Worlds
                     {
                         var10 = var14.getBlockID(var7, var9 - 1, var8);
                         var15 = var14.getBlockID(var7, var9, var8);
-                        if (func_27161_C() && var15 == 0 && Block.snow.canPlaceBlockAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ice.id && Block.blocksList[var10].blockMaterial.blocksMovement())
+                        if (func_27161_C() && var15 == 0 && Block.snow.canPlaceBlockAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ice.id && Block.BLOCKS[var10].blockMaterial.blocksMovement())
                         {
                             setBlockWithNotify(var7 + var3, var9, var8 + var4, Block.snow.id);
                         }
 
-                        if (var10 == Block.waterStill.id && var14.getBlockMetadata(var7, var9 - 1, var8) == 0)
+                        if (var10 == Block.WATER.id && var14.getBlockMetadata(var7, var9 - 1, var8) == 0)
                         {
                             setBlockWithNotify(var7 + var3, var9 - 1, var8 + var4, Block.ice.id);
                         }
@@ -2492,9 +2492,9 @@ namespace betareborn.Worlds
                     var9 = var7 >> 8 & 15;
                     var10 = var7 >> 16 & 127;
                     var15 = var14.blocks[var8 << 11 | var9 << 7 | var10] & 255;
-                    if (Block.tickOnLoad[var15])
+                    if (Block.BLOCKS_RANDOM_TICK[var15])
                     {
-                        Block.blocksList[var15].updateTick(this, var8 + var3, var10, var9 + var4, random);
+                        Block.BLOCKS[var15].updateTick(this, var8 + var3, var10, var9 + var4, random);
                     }
                 }
             }
@@ -2531,7 +2531,7 @@ namespace betareborn.Worlds
                         int var6 = getBlockId(var4.xCoord, var4.yCoord, var4.zCoord);
                         if (var6 == var4.blockID && var6 > 0)
                         {
-                            Block.blocksList[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, random);
+                            Block.BLOCKS[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, random);
                         }
                     }
                 }
@@ -2553,7 +2553,7 @@ namespace betareborn.Worlds
                 int var10 = getBlockId(var7, var8, var9);
                 if (var10 > 0)
                 {
-                    Block.blocksList[var10].randomDisplayTick(this, var7, var8, var9, var5);
+                    Block.BLOCKS[var10].randomDisplayTick(this, var7, var8, var9, var5);
                 }
             }
 
@@ -2665,8 +2665,8 @@ namespace betareborn.Worlds
         public bool canBlockBePlacedAt(int var1, int var2, int var3, int var4, bool var5, int var6)
         {
             int var7 = getBlockId(var2, var3, var4);
-            Block var8 = Block.blocksList[var7];
-            Block var9 = Block.blocksList[var1];
+            Block var8 = Block.BLOCKS[var7];
+            Block var9 = Block.BLOCKS[var1];
             Box var10 = var9.getCollisionBoundingBoxFromPool(this, var2, var3, var4);
             if (var5)
             {
@@ -2679,7 +2679,7 @@ namespace betareborn.Worlds
             }
             else
             {
-                if (var8 == Block.waterMoving || var8 == Block.waterStill || var8 == Block.lavaMoving || var8 == Block.lavaStill || var8 == Block.fire || var8 == Block.snow)
+                if (var8 == Block.FLOWING_WATER || var8 == Block.WATER || var8 == Block.FLOWING_LAVA || var8 == Block.LAVA || var8 == Block.fire || var8 == Block.snow)
                 {
                     var8 = null;
                 }
@@ -2723,7 +2723,7 @@ namespace betareborn.Worlds
         public bool isBlockProvidingPowerTo(int var1, int var2, int var3, int var4)
         {
             int var5 = getBlockId(var1, var2, var3);
-            return var5 == 0 ? false : Block.blocksList[var5].isIndirectlyPoweringTo(this, var1, var2, var3, var4);
+            return var5 == 0 ? false : Block.BLOCKS[var5].isIndirectlyPoweringTo(this, var1, var2, var3, var4);
         }
 
         public bool isBlockGettingPowered(int var1, int var2, int var3)
@@ -2740,7 +2740,7 @@ namespace betareborn.Worlds
             else
             {
                 int var5 = getBlockId(var1, var2, var3);
-                return var5 == 0 ? false : Block.blocksList[var5].isPoweringTo(this, var1, var2, var3, var4);
+                return var5 == 0 ? false : Block.BLOCKS[var5].isPoweringTo(this, var1, var2, var3, var4);
             }
         }
 
@@ -2973,7 +2973,7 @@ namespace betareborn.Worlds
             int var6 = getBlockId(var1, var2, var3);
             if (var6 > 0)
             {
-                Block.blocksList[var6].playBlock(this, var1, var2, var3, var4, var5);
+                Block.BLOCKS[var6].playBlock(this, var1, var2, var3, var4, var5);
             }
 
         }

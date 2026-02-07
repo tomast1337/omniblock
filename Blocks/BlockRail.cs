@@ -11,12 +11,12 @@ namespace betareborn.Blocks
         public static bool isRailBlockAt(World var0, int var1, int var2, int var3)
         {
             int var4 = var0.getBlockId(var1, var2, var3);
-            return var4 == Block.rail.id || var4 == Block.railPowered.id || var4 == Block.railDetector.id;
+            return var4 == Block.rail.id || var4 == Block.POWERED_RAIL.id || var4 == Block.DETECTOR_RAIL.id;
         }
 
         public static bool isRailBlock(int var0)
         {
-            return var0 == Block.rail.id || var0 == Block.railPowered.id || var0 == Block.railDetector.id;
+            return var0 == Block.rail.id || var0 == Block.POWERED_RAIL.id || var0 == Block.DETECTOR_RAIL.id;
         }
 
         public BlockRail(int var1, int var2, bool var3) : base(var1, var2, Material.PISTON_BREAKABLE)
@@ -64,7 +64,7 @@ namespace betareborn.Blocks
         {
             if (isPowered)
             {
-                if (id == Block.railPowered.id && (var2 & 8) == 0)
+                if (id == Block.POWERED_RAIL.id && (var2 & 8) == 0)
                 {
                     return textureId - 16;
                 }
@@ -148,7 +148,7 @@ namespace betareborn.Blocks
                     dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
-                else if (id == Block.railPowered.id)
+                else if (id == Block.POWERED_RAIL.id)
                 {
                     bool var9 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
                     var9 = var9 || func_27044_a(var1, var2, var3, var4, var6, true, 0) || func_27044_a(var1, var2, var3, var4, var6, false, 0);
@@ -173,7 +173,7 @@ namespace betareborn.Blocks
                         }
                     }
                 }
-                else if (var5 > 0 && Block.blocksList[var5].canProvidePower() && !isPowered && RailLogic.getNAdjacentTracks(new RailLogic(this, var1, var2, var3, var4)) == 3)
+                else if (var5 > 0 && Block.BLOCKS[var5].canProvidePower() && !isPowered && RailLogic.getNAdjacentTracks(new RailLogic(this, var1, var2, var3, var4)) == 3)
                 {
                     func_4031_h(var1, var2, var3, var4, false);
                 }
@@ -286,7 +286,7 @@ namespace betareborn.Blocks
         private bool func_27043_a(World var1, int var2, int var3, int var4, bool var5, int var6, int var7)
         {
             int var8 = var1.getBlockId(var2, var3, var4);
-            if (var8 == Block.railPowered.id)
+            if (var8 == Block.POWERED_RAIL.id)
             {
                 int var9 = var1.getBlockMeta(var2, var3, var4);
                 int var10 = var9 & 7;

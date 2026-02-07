@@ -20,7 +20,7 @@ namespace betareborn.Blocks
 
         protected virtual bool canThisPlantGrowOnThisBlockID(int var1)
         {
-            return var1 == Block.grass.id || var1 == Block.dirt.id || var1 == Block.tilledField.id;
+            return var1 == Block.GRASS_BLOCK.id || var1 == Block.DIRT.id || var1 == Block.tilledField.id;
         }
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)

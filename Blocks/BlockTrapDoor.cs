@@ -151,7 +151,7 @@ namespace betareborn.Blocks
                     dropBlockAsItem(var1, var2, var3, var4, var6);
                 }
 
-                if (var5 > 0 && Block.blocksList[var5].canProvidePower())
+                if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
                 {
                     bool var9 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4);
                     onPoweredBlockChange(var1, var2, var3, var4, var9);

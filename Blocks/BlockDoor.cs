@@ -182,7 +182,7 @@ namespace betareborn.Blocks
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
 
-                if (var5 > 0 && Block.blocksList[var5].canProvidePower())
+                if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
                 {
                     neighborUpdate(var1, var2, var3 - 1, var4, var5);
                 }
@@ -213,7 +213,7 @@ namespace betareborn.Blocks
                         dropBlockAsItem(var1, var2, var3, var4, var6);
                     }
                 }
-                else if (var5 > 0 && Block.blocksList[var5].canProvidePower())
+                else if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
                 {
                     bool var8 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
                     onPoweredBlockChange(var1, var2, var3, var4, var8);

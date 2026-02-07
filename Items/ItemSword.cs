@@ -17,7 +17,7 @@ namespace betareborn.Items
 
         public override float getStrVsBlock(ItemStack var1, Block var2)
         {
-            return var2.id == Block.web.id ? 15.0F : 1.5F;
+            return var2.id == Block.COBWEB.id ? 15.0F : 1.5F;
         }
 
         public override bool hitEntity(ItemStack var1, EntityLiving var2, EntityLiving var3)
@@ -44,7 +44,7 @@ namespace betareborn.Items
 
         public override bool canHarvestBlock(Block var1)
         {
-            return var1.id == Block.web.id;
+            return var1.id == Block.COBWEB.id;
         }
     }
 

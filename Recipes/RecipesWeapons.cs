@@ -7,7 +7,7 @@ namespace betareborn.Recipes
     public class RecipesWeapons
     {
         private string[][] recipePatterns = [["X", "X", "#"]];
-        private object[][] recipeItems = [[Block.planks, Block.cobblestone, Item.ingotIron, Item.diamond, Item.ingotGold], [Item.swordWood, Item.swordStone, Item.swordSteel, Item.swordDiamond, Item.swordGold]];
+        private object[][] recipeItems = [[Block.PLANKS, Block.COBBLESTONE, Item.ingotIron, Item.diamond, Item.ingotGold], [Item.swordWood, Item.swordStone, Item.swordSteel, Item.swordDiamond, Item.swordGold]];
 
         public void addRecipes(CraftingManager var1)
         {

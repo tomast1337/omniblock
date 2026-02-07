@@ -57,7 +57,7 @@ namespace betareborn.Worlds
                                 if (var41 * var41 + var43 * var43 + var45 * var45 < 1.0D)
                                 {
                                     int var47 = var1.getBlockId(var38, var39, var40);
-                                    if (var47 == Block.sand.id)
+                                    if (var47 == Block.SAND.id)
                                     {
                                         var1.setBlock(var38, var39, var40, clayBlockId);
                                     }

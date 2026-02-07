@@ -55,7 +55,7 @@ namespace betareborn.Blocks
                             return;
                         }
                     }
-                    else if (Block.blocksList[var8].blockMaterial.blocksMovement())
+                    else if (Block.BLOCKS[var8].blockMaterial.blocksMovement())
                     {
                         return;
                     }

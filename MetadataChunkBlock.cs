@@ -88,7 +88,7 @@ namespace betareborn
                                 int var16 = var1.getSavedLightValue(field_1299_a, var10, var27, var11);
                                 bool var17 = false;
                                 int var18 = var1.getBlockId(var10, var27, var11);
-                                int var19 = Block.lightOpacity[var18];
+                                int var19 = Block.BLOCK_LIGHT_OPACITY[var18];
                                 if (var19 == 0)
                                 {
                                     var19 = 1;
@@ -104,7 +104,7 @@ namespace betareborn
                                 }
                                 else if (field_1299_a == EnumSkyBlock.Block)
                                 {
-                                    var20 = Block.lightValue[var18];
+                                    var20 = Block.BLOCKS_LIGHT_LUMINANCE[var18];
                                 }
 
                                 int var21;
