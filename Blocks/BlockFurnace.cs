@@ -149,7 +149,7 @@ namespace betareborn.Blocks
 
             keepFurnaceInventory = false;
             var1.setBlockMetadataWithNotify(var2, var3, var4, var5);
-            var6.func_31004_j();
+            var6.cancelRemoval();
             var1.setBlockTileEntity(var2, var3, var4, var6);
         }
 

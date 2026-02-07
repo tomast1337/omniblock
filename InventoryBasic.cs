@@ -33,7 +33,7 @@ namespace betareborn
                 {
                     var3 = inventoryContents[var1];
                     inventoryContents[var1] = null;
-                    onInventoryChanged();
+                    markDirty();
                     return var3;
                 }
                 else
@@ -44,7 +44,7 @@ namespace betareborn
                         inventoryContents[var1] = null;
                     }
 
-                    onInventoryChanged();
+                    markDirty();
                     return var3;
                 }
             }
@@ -62,7 +62,7 @@ namespace betareborn
                 var2.stackSize = getInventoryStackLimit();
             }
 
-            onInventoryChanged();
+            markDirty();
         }
 
         public int getSizeInventory()
@@ -80,7 +80,7 @@ namespace betareborn
             return 64;
         }
 
-        public void onInventoryChanged()
+        public void markDirty()
         {
             if (field_20073_d != null)
             {

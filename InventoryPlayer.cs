@@ -437,7 +437,7 @@ namespace betareborn
 
         }
 
-        public void onInventoryChanged()
+        public void markDirty()
         {
             inventoryChanged = true;
         }

@@ -9,15 +9,15 @@ namespace betareborn.TileEntities
         public sbyte note = 0;
         public bool previousRedstoneState = false;
 
-        public override void writeToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeToNBT(var1);
+            base.writeNbt(var1);
             var1.setByte("note", note);
         }
 
-        public override void readFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readFromNBT(var1);
+            base.readNbt(var1);
             note = var1.getByte("note");
             if (note < 0)
             {
@@ -34,7 +34,7 @@ namespace betareborn.TileEntities
         public void changePitch()
         {
             note = (sbyte)((note + 1) % 25);
-            onInventoryChanged();
+            markDirty();
         }
 
         public void triggerNote(World var1, int var2, int var3, int var4)

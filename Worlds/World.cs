@@ -1573,17 +1573,17 @@ namespace betareborn.Worlds
             for (int i = loadedTileEntityList.Count - 1; i >= 0; i--)
             {
                 TileEntity var5 = loadedTileEntityList[i];
-                if (!var5.func_31006_g())
+                if (!var5.isRemoved())
                 {
-                    var5.updateEntity();
+                    var5.tick();
                 }
-                if (var5.func_31006_g())
+                if (var5.isRemoved())
                 {
                     loadedTileEntityList.RemoveAt(i);
-                    Chunk var7 = getChunkFromChunkCoords(var5.xCoord >> 4, var5.zCoord >> 4);
+                    Chunk var7 = getChunkFromChunkCoords(var5.x >> 4, var5.z >> 4);
                     if (var7 != null)
                     {
-                        var7.removeChunkBlockTileEntity(var5.xCoord & 15, var5.yCoord, var5.zCoord & 15);
+                        var7.removeChunkBlockTileEntity(var5.x & 15, var5.y, var5.z & 15);
                     }
                 }
             }
@@ -1593,18 +1593,18 @@ namespace betareborn.Worlds
             {
                 foreach (TileEntity var8 in field_30900_E)
                 {
-                    if (!var8.func_31006_g())
+                    if (!var8.isRemoved())
                     {
                         if (!loadedTileEntityList.Contains(var8))
                         {
                             loadedTileEntityList.Add(var8);
                         }
-                        Chunk var9 = getChunkFromChunkCoords(var8.xCoord >> 4, var8.zCoord >> 4);
+                        Chunk var9 = getChunkFromChunkCoords(var8.x >> 4, var8.z >> 4);
                         if (var9 != null)
                         {
-                            var9.setChunkBlockTileEntity(var8.xCoord & 15, var8.yCoord, var8.zCoord & 15, var8);
+                            var9.setChunkBlockTileEntity(var8.x & 15, var8.y, var8.z & 15, var8);
                         }
-                        markBlockNeedsUpdate(var8.xCoord, var8.yCoord, var8.zCoord);
+                        markBlockNeedsUpdate(var8.x, var8.y, var8.z);
                     }
                 }
                 field_30900_E.Clear();
@@ -2024,13 +2024,13 @@ namespace betareborn.Worlds
 
         public void setBlockTileEntity(int var1, int var2, int var3, TileEntity var4)
         {
-            if (!var4.func_31006_g())
+            if (!var4.isRemoved())
             {
                 if (field_31055_L)
                 {
-                    var4.xCoord = var1;
-                    var4.yCoord = var2;
-                    var4.zCoord = var3;
+                    var4.x = var1;
+                    var4.y = var2;
+                    var4.z = var3;
                     field_30900_E.Add(var4);
                 }
                 else
@@ -2051,7 +2051,7 @@ namespace betareborn.Worlds
             TileEntity var4 = getBlockTileEntity(var1, var2, var3);
             if (var4 != null && field_31055_L)
             {
-                var4.func_31005_i();
+                var4.markRemoved();
             }
             else
             {
@@ -2608,7 +2608,7 @@ namespace betareborn.Worlds
             return loadedEntityList;
         }
 
-        public void func_698_b(int var1, int var2, int var3, TileEntity var4)
+        public void updateBlockEntity(int var1, int var2, int var3, TileEntity var4)
         {
             if (blockExists(var1, var2, var3))
             {

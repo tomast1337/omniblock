@@ -37,7 +37,7 @@ namespace betareborn.Blocks
             {
                 TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
                 var6.record = var5;
-                var6.onInventoryChanged();
+                var6.markDirty();
                 var1.setBlockMetadataWithNotify(var2, var3, var4, 1);
             }
         }
@@ -53,7 +53,7 @@ namespace betareborn.Blocks
                     var1.func_28106_e(1005, var2, var3, var4, 0);
                     var1.playRecord((String)null, var2, var3, var4);
                     var5.record = 0;
-                    var5.onInventoryChanged();
+                    var5.markDirty();
                     var1.setBlockMetadataWithNotify(var2, var3, var4, 0);
                     float var8 = 0.7F;
                     double var9 = (double)(var1.rand.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;

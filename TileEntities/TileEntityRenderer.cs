@@ -79,11 +79,11 @@ namespace betareborn.TileEntities
 
         public void renderTileEntity(TileEntity var1, float var2)
         {
-            if (var1.getDistanceFrom(playerX, playerY, playerZ) < 4096.0D)
+            if (var1.distanceFrom(playerX, playerY, playerZ) < 4096.0D)
             {
-                float var3 = worldObj.getLightBrightness(var1.xCoord, var1.yCoord, var1.zCoord);
+                float var3 = worldObj.getLightBrightness(var1.x, var1.y, var1.z);
                 GLManager.GL.Color3(var3, var3, var3);
-                renderTileEntityAt(var1, (double)var1.xCoord - staticPlayerX, (double)var1.yCoord - staticPlayerY, (double)var1.zCoord - staticPlayerZ, var2);
+                renderTileEntityAt(var1, (double)var1.x - staticPlayerX, (double)var1.y - staticPlayerY, (double)var1.z - staticPlayerZ, var2);
             }
 
         }

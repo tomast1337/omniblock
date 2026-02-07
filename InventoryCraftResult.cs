@@ -47,7 +47,7 @@ namespace betareborn
             return 64;
         }
 
-        public void onInventoryChanged()
+        public void markDirty()
         {
         }
 

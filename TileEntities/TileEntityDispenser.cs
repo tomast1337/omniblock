@@ -28,7 +28,7 @@ namespace betareborn.TileEntities
                 {
                     var3 = dispenserContents[var1];
                     dispenserContents[var1] = null;
-                    onInventoryChanged();
+                    markDirty();
                     return var3;
                 }
                 else
@@ -39,7 +39,7 @@ namespace betareborn.TileEntities
                         dispenserContents[var1] = null;
                     }
 
-                    onInventoryChanged();
+                    markDirty();
                     return var3;
                 }
             }
@@ -80,7 +80,7 @@ namespace betareborn.TileEntities
                 var2.stackSize = getInventoryStackLimit();
             }
 
-            onInventoryChanged();
+            markDirty();
         }
 
         public string getInvName()
@@ -88,9 +88,9 @@ namespace betareborn.TileEntities
             return "Trap";
         }
 
-        public override void readFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readFromNBT(var1);
+            base.readNbt(var1);
             NBTTagList var2 = var1.getTagList("Items");
             dispenserContents = new ItemStack[getSizeInventory()];
 
@@ -106,9 +106,9 @@ namespace betareborn.TileEntities
 
         }
 
-        public override void writeToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeToNBT(var1);
+            base.writeNbt(var1);
             NBTTagList var2 = new NBTTagList();
 
             for (int var3 = 0; var3 < dispenserContents.Length; ++var3)
@@ -132,7 +132,7 @@ namespace betareborn.TileEntities
 
         public bool canInteractWith(EntityPlayer var1)
         {
-            return worldObj.getBlockTileEntity(xCoord, yCoord, zCoord) != this ? false : var1.getDistanceSq((double)xCoord + 0.5D, (double)yCoord + 0.5D, (double)zCoord + 0.5D) <= 64.0D;
+            return world.getBlockTileEntity(x, y, z) != this ? false : var1.getDistanceSq((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
         }
     }
 }

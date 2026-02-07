@@ -23,7 +23,7 @@ namespace betareborn.TileEntities
 
             if (var9 != null)
             {
-                var9.setWorld(var1.worldObj);
+                var9.setWorld(var1.world);
                 float var10 = 7.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, 0.4F, 0.0F);
                 GLManager.GL.Rotate((float)(var1.yaw2 + (var1.yaw - var1.yaw2) * (double)var8) * 10.0F, 0.0F, 1.0F, 0.0F);

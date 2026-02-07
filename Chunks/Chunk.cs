@@ -500,7 +500,7 @@ namespace betareborn.Chunks
                 chunkTileEntityMap.TryGetValue(var4, out var5);
             }
 
-            if (var5 != null && var5.func_31006_g())
+            if (var5 != null && var5.isRemoved())
             {
                 chunkTileEntityMap.Remove(var4);
                 return null;
@@ -513,9 +513,9 @@ namespace betareborn.Chunks
 
         public virtual void addTileEntity(TileEntity var1)
         {
-            int var2 = var1.xCoord - xPosition * 16;
-            int var3 = var1.yCoord;
-            int var4 = var1.zCoord - zPosition * 16;
+            int var2 = var1.x - xPosition * 16;
+            int var3 = var1.y;
+            int var4 = var1.z - zPosition * 16;
             setChunkBlockTileEntity(var2, var3, var4, var1);
             if (isChunkLoaded)
             {
@@ -527,13 +527,13 @@ namespace betareborn.Chunks
         public virtual void setChunkBlockTileEntity(int var1, int var2, int var3, TileEntity var4)
         {
             ChunkPosition var5 = new(var1, var2, var3);
-            var4.worldObj = worldObj;
-            var4.xCoord = xPosition * 16 + var1;
-            var4.yCoord = var2;
-            var4.zCoord = zPosition * 16 + var3;
+            var4.world = worldObj;
+            var4.x = xPosition * 16 + var1;
+            var4.y = var2;
+            var4.z = zPosition * 16 + var3;
             if (getBlockID(var1, var2, var3) != 0 && Block.blocksList[getBlockID(var1, var2, var3)] is BlockContainer)
             {
-                var4.func_31004_j();
+                var4.cancelRemoval();
                 chunkTileEntityMap[var5] = var4;
             }
             else
@@ -552,7 +552,7 @@ namespace betareborn.Chunks
                 if (var5 != null)
                 {
                     chunkTileEntityMap.Remove(var4);
-                    var5.func_31005_i();
+                    var5.markRemoved();
                 }
             }
 
@@ -583,7 +583,7 @@ namespace betareborn.Chunks
 
             foreach (var var2 in chunkTileEntityMap.Values)
             {
-                var2.func_31005_i();
+                var2.markRemoved();
             }
 
             for (int var3 = 0; var3 < entities.Length; ++var3)

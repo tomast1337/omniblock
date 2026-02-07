@@ -691,7 +691,7 @@ namespace betareborn
                         var3.signText[var4] = var1.signLines[var4];
                     }
 
-                    var3.onInventoryChanged();
+                    var3.markDirty();
                 }
             }
 

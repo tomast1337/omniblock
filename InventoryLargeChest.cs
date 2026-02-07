@@ -54,10 +54,10 @@ namespace betareborn
             return upperChest.getInventoryStackLimit();
         }
 
-        public void onInventoryChanged()
+        public void markDirty()
         {
-            upperChest.onInventoryChanged();
-            lowerChest.onInventoryChanged();
+            upperChest.markDirty();
+            lowerChest.markDirty();
         }
 
         public bool canInteractWith(EntityPlayer var1)

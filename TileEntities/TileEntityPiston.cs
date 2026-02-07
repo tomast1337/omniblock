@@ -35,7 +35,7 @@ namespace betareborn.TileEntities
             return storedBlockID;
         }
 
-        public override int getBlockMetadata()
+        public override int getPushedBlockData()
         {
             return storedMetadata;
         }
@@ -91,10 +91,10 @@ namespace betareborn.TileEntities
                 var1 = 1.0F - var1;
             }
 
-            AxisAlignedBB var3 = Block.pistonMoving.func_31035_a(worldObj, xCoord, yCoord, zCoord, storedBlockID, var1, field_31025_c);
+            AxisAlignedBB var3 = Block.pistonMoving.func_31035_a(world, x, y, z, storedBlockID, var1, field_31025_c);
             if (var3 != null)
             {
-                var var4 = worldObj.getEntitiesWithinAABBExcludingEntity((Entity)null, var3);
+                var var4 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, var3);
                 if (var4.Count > 0)
                 {
                     field_31018_m.AddRange(var4);
@@ -117,27 +117,27 @@ namespace betareborn.TileEntities
             if (field_31020_l < 1.0F)
             {
                 field_31020_l = field_31022_k = 1.0F;
-                worldObj.removeBlockTileEntity(xCoord, yCoord, zCoord);
-                func_31005_i();
-                if (worldObj.getBlockId(xCoord, yCoord, zCoord) == Block.pistonMoving.blockID)
+                world.removeBlockTileEntity(x, y, z);
+                markRemoved();
+                if (world.getBlockId(x, y, z) == Block.pistonMoving.blockID)
                 {
-                    worldObj.setBlockAndMetadataWithNotify(xCoord, yCoord, zCoord, storedBlockID, storedMetadata);
+                    world.setBlockAndMetadataWithNotify(x, y, z, storedBlockID, storedMetadata);
                 }
             }
 
         }
 
-        public override void updateEntity()
+        public override void tick()
         {
             field_31020_l = field_31022_k;
             if (field_31020_l >= 1.0F)
             {
                 func_31010_a(1.0F, 0.25F);
-                worldObj.removeBlockTileEntity(xCoord, yCoord, zCoord);
-                func_31005_i();
-                if (worldObj.getBlockId(xCoord, yCoord, zCoord) == Block.pistonMoving.blockID)
+                world.removeBlockTileEntity(x, y, z);
+                markRemoved();
+                if (world.getBlockId(x, y, z) == Block.pistonMoving.blockID)
                 {
-                    worldObj.setBlockAndMetadataWithNotify(xCoord, yCoord, zCoord, storedBlockID, storedMetadata);
+                    world.setBlockAndMetadataWithNotify(x, y, z, storedBlockID, storedMetadata);
                 }
 
             }
@@ -157,9 +157,9 @@ namespace betareborn.TileEntities
             }
         }
 
-        public override void readFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readFromNBT(var1);
+            base.readNbt(var1);
             storedBlockID = var1.getInteger("blockId");
             storedMetadata = var1.getInteger("blockData");
             field_31025_c = var1.getInteger("facing");
@@ -167,9 +167,9 @@ namespace betareborn.TileEntities
             field_31024_i = var1.getBoolean("extending");
         }
 
-        public override void writeToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeToNBT(var1);
+            base.writeNbt(var1);
             var1.setInteger("blockId", storedBlockID);
             var1.setInteger("blockData", storedMetadata);
             var1.setInteger("facing", field_31025_c);

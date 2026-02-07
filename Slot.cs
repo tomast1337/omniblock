@@ -46,7 +46,7 @@ namespace betareborn
 
         public void onSlotChanged()
         {
-            inventory.onInventoryChanged();
+            inventory.markDirty();
         }
 
         public virtual int getSlotStackLimit()

@@ -66,9 +66,9 @@ namespace betareborn.TileEntities
             return "Furnace";
         }
 
-        public override void readFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readFromNBT(var1);
+            base.readNbt(var1);
             NBTTagList var2 = var1.getTagList("Items");
             furnaceItemStacks = new ItemStack[getSizeInventory()];
 
@@ -87,9 +87,9 @@ namespace betareborn.TileEntities
             currentItemBurnTime = getItemBurnTime(furnaceItemStacks[1]);
         }
 
-        public override void writeToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeToNBT(var1);
+            base.writeNbt(var1);
             var1.setShort("BurnTime", (short)furnaceBurnTime);
             var1.setShort("CookTime", (short)furnaceCookTime);
             NBTTagList var2 = new NBTTagList();
@@ -133,7 +133,7 @@ namespace betareborn.TileEntities
             return furnaceBurnTime > 0;
         }
 
-        public override void updateEntity()
+        public override void tick()
         {
             bool var1 = furnaceBurnTime > 0;
             bool var2 = false;
@@ -142,7 +142,7 @@ namespace betareborn.TileEntities
                 --furnaceBurnTime;
             }
 
-            if (!worldObj.multiplayerWorld)
+            if (!world.multiplayerWorld)
             {
                 if (furnaceBurnTime == 0 && canSmelt())
                 {
@@ -179,13 +179,13 @@ namespace betareborn.TileEntities
                 if (var1 != furnaceBurnTime > 0)
                 {
                     var2 = true;
-                    BlockFurnace.updateFurnaceBlockState(furnaceBurnTime > 0, worldObj, xCoord, yCoord, zCoord);
+                    BlockFurnace.updateFurnaceBlockState(furnaceBurnTime > 0, world, x, y, z);
                 }
             }
 
             if (var2)
             {
-                onInventoryChanged();
+                markDirty();
             }
 
         }
@@ -241,7 +241,7 @@ namespace betareborn.TileEntities
 
         public bool canInteractWith(EntityPlayer var1)
         {
-            return worldObj.getBlockTileEntity(xCoord, yCoord, zCoord) != this ? false : var1.getDistanceSq((double)xCoord + 0.5D, (double)yCoord + 0.5D, (double)zCoord + 0.5D) <= 64.0D;
+            return world.getBlockTileEntity(x, y, z) != this ? false : var1.getDistanceSq((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
         }
     }
 

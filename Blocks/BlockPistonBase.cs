@@ -141,7 +141,7 @@ namespace betareborn.Blocks
                             {
                                 var16.func_31011_l();
                                 var12 = var16.getStoredBlockID();
-                                var13 = var16.getBlockMetadata();
+                                var13 = var16.getPushedBlockData();
                                 var14 = true;
                             }
                         }

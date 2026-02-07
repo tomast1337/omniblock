@@ -85,7 +85,7 @@ namespace betareborn.Blocks
                 TileEntityPiston var7 = func_31034_c(var1, var2, var3, var4);
                 if (var7 != null)
                 {
-                    Block.blocksList[var7.getStoredBlockID()].dropBlockAsItem(var1, var2, var3, var4, var7.getBlockMetadata());
+                    Block.blocksList[var7.getStoredBlockID()].dropBlockAsItem(var1, var2, var3, var4, var7.getPushedBlockData());
                 }
             }
         }

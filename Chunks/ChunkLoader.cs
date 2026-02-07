@@ -170,7 +170,7 @@ namespace betareborn.Chunks
             {
                 //TileEntity var9 = (TileEntity)var5.next();
                 var7 = new NBTTagCompound();
-                var9.writeToNBT(var7);
+                var9.writeNbt(var7);
                 var8.setTag(var7);
             }
 
@@ -227,7 +227,7 @@ namespace betareborn.Chunks
                 for (int var11 = 0; var11 < var10.tagCount(); ++var11)
                 {
                     NBTTagCompound var12 = (NBTTagCompound)var10.tagAt(var11);
-                    TileEntity var9 = TileEntity.createAndLoadEntity(var12);
+                    TileEntity var9 = TileEntity.createFromNbt(var12);
                     if (var9 != null)
                     {
                         var4.addTileEntity(var9);

@@ -30,7 +30,7 @@ namespace betareborn.Guis
             Keyboard.enableRepeatEvents(false);
             if (mc.theWorld.multiplayerWorld)
             {
-                mc.getSendQueue().addToSendQueue(new Packet130UpdateSign(entitySign.xCoord, entitySign.yCoord, entitySign.zCoord, entitySign.signText));
+                mc.getSendQueue().addToSendQueue(new Packet130UpdateSign(entitySign.x, entitySign.y, entitySign.z, entitySign.signText));
             }
 
         }
@@ -46,7 +46,7 @@ namespace betareborn.Guis
             {
                 if (var1.id == 0)
                 {
-                    entitySign.onInventoryChanged();
+                    entitySign.markDirty();
                     mc.displayGuiScreen((GuiScreen)null);
                 }
 
@@ -86,16 +86,16 @@ namespace betareborn.Guis
             float var4 = 93.75F;
             GLManager.GL.Scale(-var4, -var4, -var4);
             GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
-            Block var5 = entitySign.getBlockType();
+            Block var5 = entitySign.getBlock();
             if (var5 == Block.signPost)
             {
-                float var6 = (float)(entitySign.getBlockMetadata() * 360) / 16.0F;
+                float var6 = (float)(entitySign.getPushedBlockData() * 360) / 16.0F;
                 GLManager.GL.Rotate(var6, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Translate(0.0F, -1.0625F, 0.0F);
             }
             else
             {
-                int var8 = entitySign.getBlockMetadata();
+                int var8 = entitySign.getPushedBlockData();
                 float var7 = 0.0F;
                 if (var8 == 2)
                 {

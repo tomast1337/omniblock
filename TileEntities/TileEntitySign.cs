@@ -10,19 +10,19 @@ namespace betareborn.TileEntities
         public int lineBeingEdited = -1;
         private bool field_25062_c = true;
 
-        public override void writeToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeToNBT(var1);
+            base.writeNbt(var1);
             var1.setString("Text1", signText[0]);
             var1.setString("Text2", signText[1]);
             var1.setString("Text3", signText[2]);
             var1.setString("Text4", signText[3]);
         }
 
-        public override void readFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             field_25062_c = false;
-            base.readFromNBT(var1);
+            base.readNbt(var1);
 
             for (int var2 = 0; var2 < 4; ++var2)
             {

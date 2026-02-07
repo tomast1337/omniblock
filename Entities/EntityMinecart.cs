@@ -951,7 +951,7 @@ namespace betareborn.Entities
             return 64;
         }
 
-        public void onInventoryChanged()
+        public void markDirty()
         {
         }
 

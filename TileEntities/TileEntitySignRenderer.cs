@@ -9,20 +9,20 @@ namespace betareborn.TileEntities
 
         public void renderTileEntitySignAt(TileEntitySign var1, double var2, double var4, double var6, float var8)
         {
-            Block var9 = var1.getBlockType();
+            Block var9 = var1.getBlock();
             GLManager.GL.PushMatrix();
             float var10 = 2.0F / 3.0F;
             float var12;
             if (var9 == Block.signPost)
             {
                 GLManager.GL.Translate((float)var2 + 0.5F, (float)var4 + 12.0F / 16.0F * var10, (float)var6 + 0.5F);
-                float var11 = (float)(var1.getBlockMetadata() * 360) / 16.0F;
+                float var11 = (float)(var1.getPushedBlockData() * 360) / 16.0F;
                 GLManager.GL.Rotate(-var11, 0.0F, 1.0F, 0.0F);
                 signModel.signStick.showModel = true;
             }
             else
             {
-                int var16 = var1.getBlockMetadata();
+                int var16 = var1.getPushedBlockData();
                 var12 = 0.0F;
                 if (var16 == 2)
                 {

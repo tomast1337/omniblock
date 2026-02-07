@@ -17,7 +17,7 @@ namespace betareborn
 
         int getInventoryStackLimit();
 
-        void onInventoryChanged();
+        void markDirty();
 
         bool canInteractWith(EntityPlayer var1);
     }
