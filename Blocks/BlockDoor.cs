@@ -106,7 +106,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             onUse(var1, var2, var3, var4, var5);
         }
@@ -182,7 +182,7 @@ namespace betareborn.Blocks
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
 
-                if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
+                if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
                 {
                     neighborUpdate(var1, var2, var3 - 1, var4, var5);
                 }
@@ -213,7 +213,7 @@ namespace betareborn.Blocks
                         dropStacks(var1, var2, var3, var4, var6);
                     }
                 }
-                else if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
+                else if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
                 {
                     bool var8 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
                     onPoweredBlockChange(var1, var2, var3, var4, var8);

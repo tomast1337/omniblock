@@ -37,14 +37,14 @@ namespace betareborn.Stats
 
         public virtual StatBase registerStat()
         {
-            if (StatList.field_25169_C.containsKey(Integer.valueOf(statId)))
+            if (Stats.field_25169_C.containsKey(Integer.valueOf(statId)))
             {
-                throw new RuntimeException("Duplicate stat id: \"" + ((StatBase)StatList.field_25169_C.get(Integer.valueOf(statId))).statName + "\" and \"" + statName + "\" at id " + statId);
+                throw new RuntimeException("Duplicate stat id: \"" + ((StatBase)Stats.field_25169_C.get(Integer.valueOf(statId))).statName + "\" and \"" + statName + "\" at id " + statId);
             }
             else
             {
-                StatList.field_25188_a.add(this);
-                StatList.field_25169_C.put(Integer.valueOf(statId), this);
+                Stats.field_25188_a.add(this);
+                Stats.field_25169_C.put(Integer.valueOf(statId), this);
                 statGuid = AchievementMap.getGuid(statId);
                 return this;
             }

@@ -12,7 +12,7 @@ namespace betareborn.Items
         
         static Item()
         {
-            StatList.func_25151_b();
+            Stats.Stats.func_25151_b();
         }
         
         protected static java.util.Random itemRand = new();

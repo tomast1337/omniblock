@@ -157,7 +157,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             onUse(var1, var2, var3, var4, var5);
         }
@@ -235,12 +235,12 @@ namespace betareborn.Blocks
             base.onBreak(var1, var2, var3, var4);
         }
 
-        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return (var1.getBlockMeta(var2, var3, var4) & 8) > 0;
         }
 
-        public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
         {
             int var6 = var1.getBlockMeta(var2, var3, var4);
             if ((var6 & 8) == 0)
@@ -254,7 +254,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override bool canProvidePower()
+        public override bool canEmitRedstonePower()
         {
             return true;
         }
@@ -296,7 +296,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void setBlockBoundsForItemRender()
+        public override void setupRenderBoundingBox()
         {
             float var1 = 3.0F / 16.0F;
             float var2 = 2.0F / 16.0F;

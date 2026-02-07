@@ -18,11 +18,11 @@ namespace betareborn.Blocks
                 int var6 = var2 + var5.nextInt(3) - 1;
                 int var7 = var3 + var5.nextInt(2) - var5.nextInt(2);
                 int var8 = var4 + var5.nextInt(3) - 1;
-                if (var1.isAir(var6, var7, var8) && canBlockStay(var1, var6, var7, var8))
+                if (var1.isAir(var6, var7, var8) && canGrow(var1, var6, var7, var8))
                 {
                     int var10000 = var2 + (var5.nextInt(3) - 1);
                     var10000 = var4 + (var5.nextInt(3) - 1);
-                    if (var1.isAir(var6, var7, var8) && canBlockStay(var1, var6, var7, var8))
+                    if (var1.isAir(var6, var7, var8) && canGrow(var1, var6, var7, var8))
                     {
                         var1.setBlockWithNotify(var6, var7, var8, id);
                     }
@@ -36,7 +36,7 @@ namespace betareborn.Blocks
             return Block.BLOCKS_OPAQUE[var1];
         }
 
-        public override bool canBlockStay(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World var1, int var2, int var3, int var4)
         {
             return var3 >= 0 && var3 < 128 ? var1.getFullBlockLightValue(var2, var3, var4) < 13 && canThisPlantGrowOnThisBlockID(var1.getBlockId(var2, var3 - 1, var4)) : false;
         }

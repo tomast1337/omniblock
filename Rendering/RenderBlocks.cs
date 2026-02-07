@@ -1489,7 +1489,7 @@ namespace betareborn.Rendering
         {
             Tessellator var5 = getTessellator();
             float var6 = var1.getLuminance(blockAccess, var2, var3, var4);
-            int var7 = var1.colorMultiplier(blockAccess, var2, var3, var4);
+            int var7 = var1.getColorMultiplier(blockAccess, var2, var3, var4);
             float var8 = (float)(var7 >> 16 & 255) / 255.0F;
             float var9 = (float)(var7 >> 8 & 255) / 255.0F;
             float var10 = (float)(var7 & 255) / 255.0F;
@@ -1666,7 +1666,7 @@ namespace betareborn.Rendering
         public bool renderBlockFluids(Block var1, int var2, int var3, int var4)
         {
             Tessellator var5 = getTessellator();
-            int var6 = var1.colorMultiplier(blockAccess, var2, var3, var4);
+            int var6 = var1.getColorMultiplier(blockAccess, var2, var3, var4);
             float var7 = (float)(var6 >> 16 & 255) / 255.0F;
             float var8 = (float)(var6 >> 8 & 255) / 255.0F;
             float var9 = (float)(var6 & 255) / 255.0F;
@@ -1940,7 +1940,7 @@ namespace betareborn.Rendering
 
         public bool renderStandardBlock(Block var1, int var2, int var3, int var4)
         {
-            int var5 = var1.colorMultiplier(blockAccess, var2, var3, var4);
+            int var5 = var1.getColorMultiplier(blockAccess, var2, var3, var4);
             float var6 = (float)(var5 >> 16 & 255) / 255.0F;
             float var7 = (float)(var5 >> 8 & 255) / 255.0F;
             float var8 = (float)(var5 & 255) / 255.0F;
@@ -2687,7 +2687,7 @@ namespace betareborn.Rendering
 
         public bool renderBlockCactus(Block var1, int var2, int var3, int var4)
         {
-            int var5 = var1.colorMultiplier(blockAccess, var2, var3, var4);
+            int var5 = var1.getColorMultiplier(blockAccess, var2, var3, var4);
             float var6 = (float)(var5 >> 16 & 255) / 255.0F;
             float var7 = (float)(var5 >> 8 & 255) / 255.0F;
             float var8 = (float)(var5 & 255) / 255.0F;
@@ -3647,7 +3647,7 @@ namespace betareborn.Rendering
             float var7;
             if (field_31088_b)
             {
-                var5 = var1.getRenderColor(var2);
+                var5 = var1.getColor(var2);
                 var6 = (float)(var5 >> 16 & 255) / 255.0F;
                 var7 = (float)(var5 >> 8 & 255) / 255.0F;
                 float var8 = (float)(var5 & 255) / 255.0F;
@@ -3666,7 +3666,7 @@ namespace betareborn.Rendering
                 }
                 else if (var5 == 13)
                 {
-                    var1.setBlockBoundsForItemRender();
+                    var1.setupRenderBoundingBox();
                     GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
                     var6 = 1.0F / 16.0F;
                     var4.startDrawingQuads();
@@ -3827,7 +3827,7 @@ namespace betareborn.Rendering
                     var2 = 1;
                 }
 
-                var1.setBlockBoundsForItemRender();
+                var1.setupRenderBoundingBox();
                 GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
                 var4.startDrawingQuads();
                 var4.setNormal(0.0F, -1.0F, 0.0F);

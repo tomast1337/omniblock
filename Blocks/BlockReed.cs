@@ -54,7 +54,7 @@ namespace betareborn.Blocks
 
         protected void checkBlockCoordValid(World var1, int var2, int var3, int var4)
         {
-            if (!canBlockStay(var1, var2, var3, var4))
+            if (!canGrow(var1, var2, var3, var4))
             {
                 dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
@@ -62,7 +62,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool canBlockStay(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World var1, int var2, int var3, int var4)
         {
             return canPlaceAt(var1, var2, var3, var4);
         }

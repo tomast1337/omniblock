@@ -15,7 +15,7 @@ namespace betareborn.Blocks
             return var2 == 1 ? textureId : (var2 == 2 ? textureId + 16 + 1 : (var2 == 0 ? textureId + 16 : textureId));
         }
 
-        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
+        public override int getColorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMeta(var2, var3, var4);
             if (var5 == 0)

@@ -63,7 +63,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
+        public override void afterBreak(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
             int var7 = Item.snowball.id;
             float var8 = 0.7F;
@@ -74,7 +74,7 @@ namespace betareborn.Blocks
             var15.delayBeforeCanPickup = 10;
             var1.spawnEntity(var15);
             var1.setBlockWithNotify(var3, var4, var5, 0);
-            var2.addStat(StatList.mineBlockStatArray[id], 1);
+            var2.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
         }
 
         public override int getDroppedItemId(int var1, java.util.Random var2)

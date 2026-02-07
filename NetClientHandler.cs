@@ -46,7 +46,7 @@ namespace betareborn
         public override void handleLogin(Packet1Login var1)
         {
             mc.playerController = new PlayerControllerMP(mc, this);
-            mc.statFileWriter.readStat(StatList.joinMultiplayerStat, 1);
+            mc.statFileWriter.readStat(Stats.Stats.joinMultiplayerStat, 1);
             worldClient = new WorldClient(this, var1.mapSeed, var1.dimension);
             worldClient.isRemote = true;
             mc.changeWorld1(worldClient);
@@ -768,7 +768,7 @@ namespace betareborn
 
         public override void func_27245_a(Packet200Statistic var1)
         {
-            ((EntityClientPlayerMP)mc.thePlayer).func_27027_b(StatList.func_27361_a(var1.field_27052_a), var1.field_27051_b);
+            ((EntityClientPlayerMP)mc.thePlayer).func_27027_b(Stats.Stats.func_27361_a(var1.field_27052_a), var1.field_27051_b);
         }
 
         public override bool isServerHandler()

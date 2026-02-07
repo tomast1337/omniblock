@@ -25,18 +25,18 @@ namespace betareborn
             StatBase var6 = null;
             if (field_27298_b.field_27271_e == 2)
             {
-                var5 = StatList.mineBlockStatArray[var3];
-                var6 = StatList.mineBlockStatArray[var4];
+                var5 = Stats.Stats.mineBlockStatArray[var3];
+                var6 = Stats.Stats.mineBlockStatArray[var4];
             }
             else if (field_27298_b.field_27271_e == 0)
             {
-                var5 = StatList.field_25158_z[var3];
-                var6 = StatList.field_25158_z[var4];
+                var5 = Stats.Stats.field_25158_z[var3];
+                var6 = Stats.Stats.field_25158_z[var4];
             }
             else if (field_27298_b.field_27271_e == 1)
             {
-                var5 = StatList.field_25172_A[var3];
-                var6 = StatList.field_25172_A[var4];
+                var5 = Stats.Stats.field_25172_A[var3];
+                var6 = Stats.Stats.field_25172_A[var4];
             }
 
             if (var5 != null || var6 != null)

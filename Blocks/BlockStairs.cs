@@ -88,9 +88,9 @@ namespace betareborn.Blocks
             modelBlock.randomDisplayTick(var1, var2, var3, var4, var5);
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            modelBlock.onBlockClicked(var1, var2, var3, var4, var5);
+            modelBlock.onBlockBreakStart(var1, var2, var3, var4, var5);
         }
 
         public override void onMetadataChange(World var1, int var2, int var3, int var4, int var5)
@@ -148,9 +148,9 @@ namespace betareborn.Blocks
             return modelBlock.getBoundingBox(var1, var2, var3, var4);
         }
 
-        public override void velocityToAddToEntity(World var1, int var2, int var3, int var4, Entity var5, Vec3D var6)
+        public override void applyVelocity(World var1, int var2, int var3, int var4, Entity var5, Vec3D var6)
         {
-            modelBlock.velocityToAddToEntity(var1, var2, var3, var4, var5, var6);
+            modelBlock.applyVelocity(var1, var2, var3, var4, var5, var6);
         }
 
         public override bool hasCollision()
@@ -204,7 +204,7 @@ namespace betareborn.Blocks
             modelBlock.onDestroyedByExplosion(var1, var2, var3, var4);
         }
 
-        public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
         {
             int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)

@@ -18,7 +18,7 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
+            if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
             {
                 bool var6 = var1.isBlockGettingPowered(var2, var3, var4);
                 TileEntityNote var7 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
@@ -50,7 +50,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             if (!var1.isRemote)
             {
@@ -64,7 +64,7 @@ namespace betareborn.Blocks
             return new TileEntityNote();
         }
 
-        public override void playBlock(World var1, int var2, int var3, int var4, int var5, int var6)
+        public override void onBlockAction(World var1, int var2, int var3, int var4, int var5, int var6)
         {
             float var7 = (float)java.lang.Math.pow(2.0D, (double)(var6 - 12) / 12.0D);
             string var8 = "harp";

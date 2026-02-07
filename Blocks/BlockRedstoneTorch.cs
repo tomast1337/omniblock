@@ -83,7 +83,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (!torchActive)
             {
@@ -143,9 +143,9 @@ namespace betareborn.Blocks
             var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
         }
 
-        public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
         {
-            return var5 == 0 ? isPoweringTo(var1, var2, var3, var4, var5) : false;
+            return var5 == 0 ? isPoweringSide(var1, var2, var3, var4, var5) : false;
         }
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
@@ -153,7 +153,7 @@ namespace betareborn.Blocks
             return Block.LIT_REDSTONE_TORCH.id;
         }
 
-        public override bool canProvidePower()
+        public override bool canEmitRedstonePower()
         {
             return true;
         }

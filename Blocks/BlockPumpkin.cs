@@ -54,7 +54,7 @@ namespace betareborn.Blocks
             return (var5 == 0 || Block.BLOCKS[var5].material.isReplaceable()) && var1.shouldSuffocate(var2, var3 - 1, var4);
         }
 
-        public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
         {
             int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 2.5D) & 3;
             var1.setBlockMeta(var2, var3, var4, var6);

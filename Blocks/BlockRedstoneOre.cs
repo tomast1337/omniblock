@@ -25,10 +25,10 @@ namespace betareborn.Blocks
             return 30;
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             func_320_h(var1, var2, var3, var4);
-            base.onBlockClicked(var1, var2, var3, var4, var5);
+            base.onBlockBreakStart(var1, var2, var3, var4, var5);
         }
 
         public override void onSteppedOn(World var1, int var2, int var3, int var4, Entity var5)

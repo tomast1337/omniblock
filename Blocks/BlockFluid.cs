@@ -15,7 +15,7 @@ namespace betareborn.Blocks
             setTickRandomly(true);
         }
 
-        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
+        public override int getColorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             return 16777215;
         }
@@ -211,7 +211,7 @@ namespace betareborn.Blocks
             return var5;
         }
 
-        public override void velocityToAddToEntity(World var1, int var2, int var3, int var4, Entity var5, Vec3D var6)
+        public override void applyVelocity(World var1, int var2, int var3, int var4, Entity var5, Vec3D var6)
         {
             Vector3D<double> var7 = getFlowVector(var1, var2, var3, var4);
             var6.xCoord += var7.X;

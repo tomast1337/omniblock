@@ -15,12 +15,12 @@ namespace betareborn.Blocks
             return 20;
         }
 
-        public override bool canProvidePower()
+        public override bool canEmitRedstonePower()
         {
             return true;
         }
 
-        public override void onEntityCollidedWithBlock(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
         {
             if (!var1.isRemote)
             {
@@ -44,12 +44,12 @@ namespace betareborn.Blocks
             }
         }
 
-        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return (var1.getBlockMeta(var2, var3, var4) & 8) != 0;
         }
 
-        public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
         {
             return (var1.getBlockMeta(var2, var3, var4) & 8) == 0 ? false : var5 == 1;
         }

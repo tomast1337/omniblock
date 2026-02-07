@@ -133,14 +133,14 @@ namespace betareborn.Stats
                             ? var9.Value.GetInt32()
                             : java.lang.Integer.parseInt(var9.Value.GetString());
 
-                        StatBase var12 = StatList.func_27361_a(var10);
+                        StatBase var12 = Stats.func_27361_a(var10);
                         if (var12 == null)
                         {
                             java.lang.System.@out.println(var10 + " is not a valid stat");
                         }
                         else
                         {
-                            var3.append(StatList.func_27361_a(var10).statGuid).append(",");
+                            var3.append(Stats.func_27361_a(var10).statGuid).append(",");
                             var3.append(var11).append(",");
                             var1.put(var12, java.lang.Integer.valueOf(var11));
                         }

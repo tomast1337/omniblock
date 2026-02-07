@@ -21,7 +21,7 @@ namespace betareborn.Blocks
             setBoundingBox(var7, 0.0F, var6, 1.0F - var6, var8, 1.0F - var6);
         }
 
-        public override void setBlockBoundsForItemRender()
+        public override void setupRenderBoundingBox()
         {
             float var1 = 1.0F / 16.0F;
             float var2 = 0.5F;
@@ -72,7 +72,7 @@ namespace betareborn.Blocks
             return true;
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             eatCakeSlice(var1, var2, var3, var4, var5);
         }
@@ -98,12 +98,12 @@ namespace betareborn.Blocks
 
         public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return !base.canPlaceAt(var1, var2, var3, var4) ? false : canBlockStay(var1, var2, var3, var4);
+            return !base.canPlaceAt(var1, var2, var3, var4) ? false : canGrow(var1, var2, var3, var4);
         }
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!canBlockStay(var1, var2, var3, var4))
+            if (!canGrow(var1, var2, var3, var4))
             {
                 dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
@@ -111,7 +111,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool canBlockStay(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World var1, int var2, int var3, int var4)
         {
             return var1.getMaterial(var2, var3 - 1, var4).isSolid();
         }

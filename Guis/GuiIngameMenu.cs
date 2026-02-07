@@ -30,7 +30,7 @@ namespace betareborn.Guis {
             }
 
             if (var1.id == 1) {
-                mc.statFileWriter.readStat(StatList.leaveGameStat, 1);
+                mc.statFileWriter.readStat(Stats.Stats.leaveGameStat, 1);
                 if (mc.isMultiplayerWorld()) {
                     mc.theWorld.sendQuittingDisconnectingPacket();
                 }

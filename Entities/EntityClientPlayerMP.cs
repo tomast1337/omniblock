@@ -189,13 +189,13 @@ namespace betareborn.Entities
 
         }
 
-        public override void addStat(StatBase var1, int var2)
+        public override void increaseStat(StatBase var1, int var2)
         {
             if (var1 != null)
             {
                 if (var1.localOnly)
                 {
-                    base.addStat(var1, var2);
+                    base.increaseStat(var1, var2);
                 }
 
             }
@@ -207,7 +207,7 @@ namespace betareborn.Entities
             {
                 if (!var1.localOnly)
                 {
-                    base.addStat(var1, var2);
+                    base.increaseStat(var1, var2);
                 }
 
             }

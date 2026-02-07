@@ -26,7 +26,7 @@ namespace betareborn.Worlds
                         int var8 = var3 + var2.nextInt(8) - var2.nextInt(8);
                         int var9 = var4 + var2.nextInt(4) - var2.nextInt(4);
                         int var10 = var5 + var2.nextInt(8) - var2.nextInt(8);
-                        if (var1.isAir(var8, var9, var10) && ((BlockFlower)Block.BLOCKS[field_28058_a]).canBlockStay(var1, var8, var9, var10))
+                        if (var1.isAir(var8, var9, var10) && ((BlockFlower)Block.BLOCKS[field_28058_a]).canGrow(var1, var8, var9, var10))
                         {
                             var1.setBlock(var8, var9, var10, field_28058_a);
                         }

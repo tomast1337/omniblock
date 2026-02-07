@@ -23,9 +23,9 @@ namespace betareborn.Blocks
             return base.isSideVisible(var1, var2, var3, var4, 1 - var5);
         }
 
-        public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
+        public override void afterBreak(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
-            base.harvestBlock(var1, var2, var3, var4, var5, var6);
+            base.afterBreak(var1, var2, var3, var4, var5, var6);
             Material var7 = var1.getMaterial(var3, var4 - 1, var5);
             if (var7.blocksMovement() || var7.isFluid())
             {

@@ -28,7 +28,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
+        public override int getColorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             var1.getBiomeSource().getBiomesInArea(var2, var4, 1, 1);
             double var5 = var1.getBiomeSource().temperatureMap[0];

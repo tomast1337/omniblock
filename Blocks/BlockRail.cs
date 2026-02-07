@@ -173,7 +173,7 @@ namespace betareborn.Blocks
                         }
                     }
                 }
-                else if (var5 > 0 && Block.BLOCKS[var5].canProvidePower() && !isPowered && RailLogic.getNAdjacentTracks(new RailLogic(this, var1, var2, var3, var4)) == 3)
+                else if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower() && !isPowered && RailLogic.getNAdjacentTracks(new RailLogic(this, var1, var2, var3, var4)) == 3)
                 {
                     func_4031_h(var1, var2, var3, var4, false);
                 }

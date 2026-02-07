@@ -72,12 +72,12 @@ namespace betareborn.Blocks
 
         public override bool canPlaceAt(World var1, int var2, int var3, int var4)
         {
-            return !base.canPlaceAt(var1, var2, var3, var4) ? false : canBlockStay(var1, var2, var3, var4);
+            return !base.canPlaceAt(var1, var2, var3, var4) ? false : canGrow(var1, var2, var3, var4);
         }
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!canBlockStay(var1, var2, var3, var4))
+            if (!canGrow(var1, var2, var3, var4))
             {
                 dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
@@ -85,7 +85,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool canBlockStay(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World var1, int var2, int var3, int var4)
         {
             if (var1.getMaterial(var2 - 1, var3, var4).isSolid())
             {
@@ -110,7 +110,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onEntityCollidedWithBlock(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
         {
             var5.attackEntityFrom((Entity)null, 1);
         }

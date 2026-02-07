@@ -27,7 +27,7 @@ namespace betareborn.Entities
             }
             else
             {
-                int var4 = field_4082_a.colorMultiplier(worldObj, var1, var2, var3);
+                int var4 = field_4082_a.getColorMultiplier(worldObj, var1, var2, var3);
                 particleRed *= (float)(var4 >> 16 & 255) / 255.0F;
                 particleGreen *= (float)(var4 >> 8 & 255) / 255.0F;
                 particleBlue *= (float)(var4 & 255) / 255.0F;

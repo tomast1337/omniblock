@@ -219,7 +219,7 @@ namespace betareborn.Entities
             mc.ingameGUI.addChatMessageTranslate(var1);
         }
 
-        public override void addStat(StatBase var1, int var2)
+        public override void increaseStat(StatBase var1, int var2)
         {
             if (var1 != null)
             {

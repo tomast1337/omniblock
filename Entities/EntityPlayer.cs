@@ -146,7 +146,7 @@ namespace betareborn.Entities
             field_20063_u += var1 * 0.25D;
             field_20061_w += var5 * 0.25D;
             field_20062_v += var3 * 0.25D;
-            addStat(StatList.minutesPlayedStat, 1);
+            increaseStat(Stats.Stats.minutesPlayedStat, 1);
             if (ridingEntity == null)
             {
                 startMinecartRidingCoordinate = null;
@@ -289,7 +289,7 @@ namespace betareborn.Entities
             }
 
             yOffset = 0.1F;
-            addStat(StatList.deathsStat, 1);
+            increaseStat(Stats.Stats.deathsStat, 1);
         }
 
         public override void addToPlayerScore(Entity var1, int var2)
@@ -297,11 +297,11 @@ namespace betareborn.Entities
             score += var2;
             if (var1 is EntityPlayer)
             {
-                addStat(StatList.playerKillsStat, 1);
+                increaseStat(Stats.Stats.playerKillsStat, 1);
             }
             else
             {
-                addStat(StatList.mobKillsStat, 1);
+                increaseStat(Stats.Stats.mobKillsStat, 1);
             }
 
         }
@@ -347,7 +347,7 @@ namespace betareborn.Entities
                 }
 
                 joinEntityItemWithWorld(var3);
-                addStat(StatList.dropStat, 1);
+                increaseStat(Stats.Stats.dropStat, 1);
             }
         }
 
@@ -485,7 +485,7 @@ namespace betareborn.Entities
                         alertWolves((EntityLiving)var3, false);
                     }
 
-                    addStat(StatList.damageTakenStat, var2);
+                    increaseStat(Stats.Stats.damageTakenStat, var2);
                     return base.attackEntityFrom(var1, var2);
                 }
             }
@@ -619,7 +619,7 @@ namespace betareborn.Entities
                         alertWolves((EntityLiving)var1, true);
                     }
 
-                    addStat(StatList.damageDealtStat, var2);
+                    increaseStat(Stats.Stats.damageDealtStat, var2);
                 }
             }
 
@@ -866,10 +866,10 @@ namespace betareborn.Entities
 
         public void triggerAchievement(StatBase var1)
         {
-            addStat(var1, 1);
+            increaseStat(var1, 1);
         }
 
-        public virtual void addStat(StatBase var1, int var2)
+        public virtual void increaseStat(StatBase var1, int var2)
         {
         }
 
@@ -877,7 +877,7 @@ namespace betareborn.Entities
         {
             base.jump();
             // motionY = (double)0.42F*5; // fun
-            addStat(StatList.jumpStat, 1);
+            increaseStat(Stats.Stats.jumpStat, 1);
         }
 
         public override void moveEntityWithHeading(float var1, float var2)
@@ -899,7 +899,7 @@ namespace betareborn.Entities
                     var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
                     if (var7 > 0)
                     {
-                        addStat(StatList.distanceDoveStat, var7);
+                        increaseStat(Stats.Stats.distanceDoveStat, var7);
                     }
                 }
                 else if (isInWater())
@@ -907,14 +907,14 @@ namespace betareborn.Entities
                     var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var5 * var5) * 100.0F);
                     if (var7 > 0)
                     {
-                        addStat(StatList.distanceSwumStat, var7);
+                        increaseStat(Stats.Stats.distanceSwumStat, var7);
                     }
                 }
                 else if (isOnLadder())
                 {
                     if (var3 > 0.0D)
                     {
-                        addStat(StatList.distanceClimbedStat, (int)java.lang.Math.round(var3 * 100.0D));
+                        increaseStat(Stats.Stats.distanceClimbedStat, (int)java.lang.Math.round(var3 * 100.0D));
                     }
                 }
                 else if (onGround)
@@ -922,7 +922,7 @@ namespace betareborn.Entities
                     var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var5 * var5) * 100.0F);
                     if (var7 > 0)
                     {
-                        addStat(StatList.distanceWalkedStat, var7);
+                        increaseStat(Stats.Stats.distanceWalkedStat, var7);
                     }
                 }
                 else
@@ -930,7 +930,7 @@ namespace betareborn.Entities
                     var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var5 * var5) * 100.0F);
                     if (var7 > 25)
                     {
-                        addStat(StatList.distanceFlownStat, var7);
+                        increaseStat(Stats.Stats.distanceFlownStat, var7);
                     }
                 }
 
@@ -946,23 +946,23 @@ namespace betareborn.Entities
                 {
                     if (ridingEntity is EntityMinecart)
                     {
-                        addStat(StatList.distanceByMinecartStat, var7);
+                        increaseStat(Stats.Stats.distanceByMinecartStat, var7);
                         if (startMinecartRidingCoordinate == null)
                         {
                             startMinecartRidingCoordinate = new Vec3i(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
                         }
                         else if (startMinecartRidingCoordinate.getSqDistanceTo(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) >= 1000.0D)
                         {
-                            addStat(Achievements.CRAFT_RAIL, 1);
+                            increaseStat(Achievements.CRAFT_RAIL, 1);
                         }
                     }
                     else if (ridingEntity is EntityBoat)
                     {
-                        addStat(StatList.distanceByBoatStat, var7);
+                        increaseStat(Stats.Stats.distanceByBoatStat, var7);
                     }
                     else if (ridingEntity is EntityPig)
                     {
-                        addStat(StatList.distanceByPigStat, var7);
+                        increaseStat(Stats.Stats.distanceByPigStat, var7);
                     }
                 }
             }
@@ -973,7 +973,7 @@ namespace betareborn.Entities
         {
             if (var1 >= 2.0F)
             {
-                addStat(StatList.distanceFallenStat, (int)java.lang.Math.round((double)var1 * 100.0D));
+                increaseStat(Stats.Stats.distanceFallenStat, (int)java.lang.Math.round((double)var1 * 100.0D));
             }
 
             base.fall(var1);

@@ -17,12 +17,12 @@ namespace betareborn.Blocks
             setTickRandomly(true);
         }
 
-        public override int getRenderColor(int var1)
+        public override int getColor(int var1)
         {
             return (var1 & 1) == 1 ? ColorizerFoliage.getFoliageColorPine() : ((var1 & 2) == 2 ? ColorizerFoliage.getFoliageColorBirch() : ColorizerFoliage.func_31073_c());
         }
 
-        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
+        public override int getColorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMeta(var2, var3, var4);
             if ((var5 & 1) == 1)
@@ -198,16 +198,16 @@ namespace betareborn.Blocks
             return Block.SAPLING.id;
         }
 
-        public override void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
+        public override void afterBreak(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
             if (!var1.isRemote && var2.getCurrentEquippedItem() != null && var2.getCurrentEquippedItem().itemID == Item.shears.id)
             {
-                var2.addStat(StatList.mineBlockStatArray[id], 1);
+                var2.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
                 dropStack(var1, var3, var4, var5, new ItemStack(Block.LEAVES.id, 1, var6 & 3));
             }
             else
             {
-                base.harvestBlock(var1, var2, var3, var4, var5, var6);
+                base.afterBreak(var1, var2, var3, var4, var5, var6);
             }
 
         }

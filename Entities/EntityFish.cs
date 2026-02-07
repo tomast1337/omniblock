@@ -430,7 +430,7 @@ namespace betareborn.Entities
                 var13.motionY = var5 * var11 + (double)MathHelper.sqrt_double(var9) * 0.08D;
                 var13.motionZ = var7 * var11;
                 worldObj.spawnEntity(var13);
-                angler.addStat(StatList.fishCaughtStat, 1);
+                angler.increaseStat(Stats.Stats.fishCaughtStat, 1);
                 var1 = 1;
             }
 

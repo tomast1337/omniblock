@@ -176,7 +176,7 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
+            if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
             {
                 bool var6 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
                 if (var6)
@@ -201,7 +201,7 @@ namespace betareborn.Blocks
             return new TileEntityDispenser();
         }
 
-        public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
         {
             int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)

@@ -569,63 +569,63 @@ namespace betareborn.Blocks
         {
         }
 
-        public virtual void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public virtual void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
         }
 
-        public virtual void velocityToAddToEntity(World var1, int var2, int var3, int var4, Entity var5, Vec3D var6)
+        public virtual void applyVelocity(World world, int x, int y, int z, Entity entity, Vec3D velocity)
         {
         }
 
-        public virtual void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public virtual void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
         }
 
-        public virtual int getRenderColor(int var1)
-        {
-            return 16777215;
-        }
-
-        public virtual int colorMultiplier(BlockView var1, int var2, int var3, int var4)
+        public virtual int getColor(int meta)
         {
             return 16777215;
         }
 
-        public virtual bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
+        public virtual int getColorMultiplier(BlockView blockView, int x, int y, int z)
+        {
+            return 16777215;
+        }
+
+        public virtual bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
         {
             return false;
         }
 
-        public virtual bool canProvidePower()
+        public virtual bool canEmitRedstonePower()
         {
             return false;
         }
 
-        public virtual void onEntityCollidedWithBlock(World var1, int var2, int var3, int var4, Entity var5)
+        public virtual void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
         }
 
-        public virtual bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
+        public virtual bool isStrongPoweringSide(World world, int x, int y, int z, int side)
         {
             return false;
         }
 
-        public virtual void setBlockBoundsForItemRender()
+        public virtual void setupRenderBoundingBox()
         {
         }
 
-        public virtual void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
+        public virtual void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
         {
-            var2.addStat(StatList.mineBlockStatArray[id], 1);
-            dropStacks(var1, var3, var4, var5, var6);
+            player.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
+            dropStacks(world, x, y, z, meta);
         }
 
-        public virtual bool canBlockStay(World var1, int var2, int var3, int var4)
+        public virtual bool canGrow(World world, int x, int y, int z)
         {
             return true;
         }
 
-        public virtual void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public virtual void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
         }
 
@@ -645,7 +645,7 @@ namespace betareborn.Blocks
             return blockName;
         }
 
-        public virtual void playBlock(World var1, int var2, int var3, int var4, int var5, int var6)
+        public virtual void onBlockAction(World world, int x, int y, int z, int data1, int data2)
         {
         }
 
@@ -685,7 +685,7 @@ namespace betareborn.Blocks
             }
 
             BLOCKS_ALLOW_VISION[0] = true;
-            StatList.func_25154_a();
+            Stats.Stats.initializeItemStats();
         }
     }
 

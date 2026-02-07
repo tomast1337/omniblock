@@ -13,7 +13,7 @@ namespace betareborn.Stats
         public override StatBase registerStat()
         {
             base.registerStat();
-            StatList.field_25187_b.add(this);
+            Stats.field_25187_b.add(this);
             return this;
         }
     }

@@ -28,9 +28,9 @@ namespace betareborn.Blocks
             return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canPlaceAt(var1, var2, var3, var4);
         }
 
-        public override bool canBlockStay(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World var1, int var2, int var3, int var4)
         {
-            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canBlockStay(var1, var2, var3, var4);
+            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canGrow(var1, var2, var3, var4);
         }
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
@@ -73,12 +73,12 @@ namespace betareborn.Blocks
             return getTexture(var1, 0);
         }
 
-        public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
         {
-            return isPoweringTo(var1, var2, var3, var4, var5);
+            return isPoweringSide(var1, var2, var3, var4, var5);
         }
 
-        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (!isRepeaterPowered)
             {
@@ -93,7 +93,7 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!canBlockStay(var1, var2, var3, var4))
+            if (!canGrow(var1, var2, var3, var4))
             {
                 dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
@@ -142,12 +142,12 @@ namespace betareborn.Blocks
             return true;
         }
 
-        public override bool canProvidePower()
+        public override bool canEmitRedstonePower()
         {
             return false;
         }
 
-        public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
         {
             int var6 = ((MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
             var1.setBlockMeta(var2, var3, var4, var6);

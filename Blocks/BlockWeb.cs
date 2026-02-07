@@ -11,7 +11,7 @@ namespace betareborn.Blocks
         {
         }
 
-        public override void onEntityCollidedWithBlock(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
         {
             var5.isInWeb = true;
         }

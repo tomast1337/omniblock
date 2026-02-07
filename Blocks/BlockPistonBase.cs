@@ -44,7 +44,7 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
         {
             int var6 = func_31039_c(var1, var2, var3, var4, (EntityPlayer)var5);
             var1.setBlockMeta(var2, var3, var4, var6);
@@ -102,7 +102,7 @@ namespace betareborn.Blocks
             return var5 != 0 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3 - 1, var4, 0) ? true : (var5 != 1 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 1, var4, 1) ? true : (var5 != 2 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 - 1, 2) ? true : (var5 != 3 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 + 1, 3) ? true : (var5 != 5 && var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3, var4, 5) ? true : (var5 != 4 && var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3, var4, 4) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4, 0) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 2, var4, 1) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 1, var4 - 1, 2) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 1, var4 + 1, 3) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3 + 1, var4, 4) ? true : var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3 + 1, var4, 5)))))))))));
         }
 
-        public override void playBlock(World var1, int var2, int var3, int var4, int var5, int var6)
+        public override void onBlockAction(World var1, int var2, int var3, int var4, int var5, int var6)
         {
             field_31048_b = true;
             if (var5 == 0)
@@ -215,7 +215,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void setBlockBoundsForItemRender()
+        public override void setupRenderBoundingBox()
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }

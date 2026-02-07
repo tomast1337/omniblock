@@ -5,7 +5,7 @@ using java.util;
 
 namespace betareborn.Stats
 {
-    public class StatList : java.lang.Object
+    public class Stats : java.lang.Object
     {
         public static Map field_25169_C = new HashMap();
         public static List field_25188_a = new ArrayList();
@@ -46,7 +46,7 @@ namespace betareborn.Stats
         {
         }
 
-        public static void func_25154_a()
+        public static void initializeItemStats()
         {
             field_25172_A = func_25155_a(field_25172_A, "stat.useItem", 16908288, 0, Block.BLOCKS.Length);
             field_25170_B = func_25149_b(field_25170_B, "stat.breakItem", 16973824, 0, Block.BLOCKS.Length);
@@ -197,7 +197,7 @@ namespace betareborn.Stats
             return (StatBase)field_25169_C.get(Integer.valueOf(var0));
         }
 
-        static StatList()
+        static Stats()
         {
             Achievements.initialize();
             field_25166_D = false;

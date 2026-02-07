@@ -43,7 +43,7 @@ namespace betareborn.Blocks
             return 5;
         }
 
-        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
+        public override int getColorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             return 8388608;
         }
@@ -366,12 +366,12 @@ namespace betareborn.Blocks
             return Item.redstone.id;
         }
 
-        public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
         {
-            return !wiresProvidePower ? false : isPoweringTo(var1, var2, var3, var4, var5);
+            return !wiresProvidePower ? false : isPoweringSide(var1, var2, var3, var4, var5);
         }
 
-        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (!wiresProvidePower)
             {
@@ -418,7 +418,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override bool canProvidePower()
+        public override bool canEmitRedstonePower()
         {
             return wiresProvidePower;
         }
@@ -466,7 +466,7 @@ namespace betareborn.Blocks
             {
                 return false;
             }
-            else if (Block.BLOCKS[var5].canProvidePower())
+            else if (Block.BLOCKS[var5].canEmitRedstonePower())
             {
                 return true;
             }

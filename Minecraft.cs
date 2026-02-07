@@ -93,7 +93,7 @@ namespace betareborn
         {
             loadingScreen = new LoadingScreenRenderer(this);
             guiAchievement = new GuiAchievement(this);
-            StatList.func_27360_a();
+            Stats.Stats.func_27360_a();
             tempDisplayHeight = var5;
             fullscreen = var6;
             //tf is this
@@ -1465,14 +1465,14 @@ namespace betareborn
                 var6 = new World(var5, var2, var3);
                 if (var6.isNewWorld)
                 {
-                    statFileWriter.readStat(StatList.createWorldStat, 1);
-                    statFileWriter.readStat(StatList.startGameStat, 1);
+                    statFileWriter.readStat(Stats.Stats.createWorldStat, 1);
+                    statFileWriter.readStat(Stats.Stats.startGameStat, 1);
                     changeWorld2(var6, "Generating level");
                 }
                 else
                 {
-                    statFileWriter.readStat(StatList.loadWorldStat, 1);
-                    statFileWriter.readStat(StatList.startGameStat, 1);
+                    statFileWriter.readStat(Stats.Stats.loadWorldStat, 1);
+                    statFileWriter.readStat(Stats.Stats.startGameStat, 1);
                     changeWorld2(var6, "Loading level");
                 }
             }

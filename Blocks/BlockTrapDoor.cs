@@ -52,7 +52,7 @@ namespace betareborn.Blocks
             setBlockBoundsForBlockRender(var1.getBlockMeta(var2, var3, var4));
         }
 
-        public override void setBlockBoundsForItemRender()
+        public override void setupRenderBoundingBox()
         {
             float var1 = 3.0F / 16.0F;
             setBoundingBox(0.0F, 0.5F - var1 / 2.0F, 0.0F, 1.0F, 0.5F + var1 / 2.0F, 1.0F);
@@ -87,7 +87,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             onUse(var1, var2, var3, var4, var5);
         }
@@ -151,7 +151,7 @@ namespace betareborn.Blocks
                     dropStacks(var1, var2, var3, var4, var6);
                 }
 
-                if (var5 > 0 && Block.BLOCKS[var5].canProvidePower())
+                if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
                 {
                     bool var9 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4);
                     onPoweredBlockChange(var1, var2, var3, var4, var9);

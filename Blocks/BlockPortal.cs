@@ -185,7 +185,7 @@ namespace betareborn.Blocks
             return 1;
         }
 
-        public override void onEntityCollidedWithBlock(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
         {
             if (var5.ridingEntity == null && var5.riddenByEntity == null)
             {

@@ -1833,7 +1833,7 @@ namespace betareborn.Worlds
                                 if ((double)var7 >= var16)
                                 {
                                     var10 = true;
-                                    var15.velocityToAddToEntity(this, var12, var13, var14, var3, var11);
+                                    var15.applyVelocity(this, var12, var13, var14, var3, var11);
                                 }
                             }
                         }
@@ -2723,7 +2723,7 @@ namespace betareborn.Worlds
         public bool isBlockProvidingPowerTo(int var1, int var2, int var3, int var4)
         {
             int var5 = getBlockId(var1, var2, var3);
-            return var5 == 0 ? false : Block.BLOCKS[var5].isIndirectlyPoweringTo(this, var1, var2, var3, var4);
+            return var5 == 0 ? false : Block.BLOCKS[var5].isStrongPoweringSide(this, var1, var2, var3, var4);
         }
 
         public bool isBlockGettingPowered(int var1, int var2, int var3)
@@ -2740,7 +2740,7 @@ namespace betareborn.Worlds
             else
             {
                 int var5 = getBlockId(var1, var2, var3);
-                return var5 == 0 ? false : Block.BLOCKS[var5].isPoweringTo(this, var1, var2, var3, var4);
+                return var5 == 0 ? false : Block.BLOCKS[var5].isPoweringSide(this, var1, var2, var3, var4);
             }
         }
 
@@ -2973,7 +2973,7 @@ namespace betareborn.Worlds
             int var6 = getBlockId(var1, var2, var3);
             if (var6 > 0)
             {
-                Block.BLOCKS[var6].playBlock(this, var1, var2, var3, var4, var5);
+                Block.BLOCKS[var6].onBlockAction(this, var1, var2, var3, var4, var5);
             }
 
         }

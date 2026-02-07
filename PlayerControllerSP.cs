@@ -43,7 +43,7 @@ namespace betareborn
 
             if (var7 && var9)
             {
-                Block.BLOCKS[var5].harvestBlock(mc.theWorld, mc.thePlayer, var1, var2, var3, var6);
+                Block.BLOCKS[var5].afterBreak(mc.theWorld, mc.thePlayer, var1, var2, var3, var6);
             }
 
             return var7;
@@ -55,7 +55,7 @@ namespace betareborn
             int var5 = mc.theWorld.getBlockId(var1, var2, var3);
             if (var5 > 0 && curBlockDamage == 0.0F)
             {
-                Block.BLOCKS[var5].onBlockClicked(mc.theWorld, var1, var2, var3, mc.thePlayer);
+                Block.BLOCKS[var5].onBlockBreakStart(mc.theWorld, var1, var2, var3, mc.thePlayer);
             }
 
             if (var5 > 0 && Block.BLOCKS[var5].getHardness(mc.thePlayer) >= 1.0F)

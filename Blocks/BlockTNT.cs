@@ -29,7 +29,7 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (var5 > 0 && Block.BLOCKS[var5].canProvidePower() && var1.isBlockIndirectlyGettingPowered(var2, var3, var4))
+            if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower() && var1.isBlockIndirectlyGettingPowered(var2, var3, var4))
             {
                 onMetadataChange(var1, var2, var3, var4, 1);
                 var1.setBlockWithNotify(var2, var3, var4, 0);
@@ -67,14 +67,14 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onBlockClicked(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             if (var5.getCurrentEquippedItem() != null && var5.getCurrentEquippedItem().itemID == Item.flintAndSteel.id)
             {
                 var1.setBlockMetadata(var2, var3, var4, 1);
             }
 
-            base.onBlockClicked(var1, var2, var3, var4, var5);
+            base.onBlockBreakStart(var1, var2, var3, var4, var5);
         }
 
         public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)

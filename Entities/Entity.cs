@@ -569,7 +569,7 @@ namespace betareborn.Entities
                                 int var34 = worldObj.getBlockId(var31, var32, var33);
                                 if (var34 > 0)
                                 {
-                                    Block.BLOCKS[var34].onEntityCollidedWithBlock(worldObj, var31, var32, var33, this);
+                                    Block.BLOCKS[var34].onEntityCollision(worldObj, var31, var32, var33, this);
                                 }
                             }
                         }

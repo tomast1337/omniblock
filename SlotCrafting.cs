@@ -26,35 +26,35 @@ namespace betareborn
             var1.onCrafting(thePlayer.worldObj, thePlayer);
             if (var1.itemID == Block.CRAFTING_TABLE.id)
             {
-                thePlayer.addStat(Achievements.BUILD_WORKBENCH, 1);
+                thePlayer.increaseStat(Achievements.BUILD_WORKBENCH, 1);
             }
             else if (var1.itemID == Item.pickaxeWood.id)
             {
-                thePlayer.addStat(Achievements.BUILD_PICKAXE, 1);
+                thePlayer.increaseStat(Achievements.BUILD_PICKAXE, 1);
             }
             else if (var1.itemID == Block.FURNACE.id)
             {
-                thePlayer.addStat(Achievements.BUILD_FURNACE, 1);
+                thePlayer.increaseStat(Achievements.BUILD_FURNACE, 1);
             }
             else if (var1.itemID == Item.hoeWood.id)
             {
-                thePlayer.addStat(Achievements.BUILD_HOE, 1);
+                thePlayer.increaseStat(Achievements.BUILD_HOE, 1);
             }
             else if (var1.itemID == Item.bread.id)
             {
-                thePlayer.addStat(Achievements.MAKE_BREAD, 1);
+                thePlayer.increaseStat(Achievements.MAKE_BREAD, 1);
             }
             else if (var1.itemID == Item.cake.id)
             {
-                thePlayer.addStat(Achievements.BAKE_CAKE, 1);
+                thePlayer.increaseStat(Achievements.BAKE_CAKE, 1);
             }
             else if (var1.itemID == Item.pickaxeStone.id)
             {
-                thePlayer.addStat(Achievements.CRAFT_STONE_PICKAXE, 1);
+                thePlayer.increaseStat(Achievements.CRAFT_STONE_PICKAXE, 1);
             }
             else if (var1.itemID == Item.swordWood.id)
             {
-                thePlayer.addStat(Achievements.CRAFT_SWORD, 1);
+                thePlayer.increaseStat(Achievements.CRAFT_SWORD, 1);
             }
 
             for (int var2 = 0; var2 < craftMatrix.size(); ++var2)
