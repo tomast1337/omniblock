@@ -80,6 +80,7 @@ public static class CommandService {
                     }
                     else {
                         Console.WriteLine($"Error: Missing required argument '{param.Name}'.");
+                        minecraft.ingameGUI.addChatMessage($"Error: Missing required argument '{param.Name}'.");
                         return true;
                     }
                 }
