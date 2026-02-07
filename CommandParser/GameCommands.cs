@@ -99,7 +99,7 @@ public class GameCommands {
     [MinecraftCommand("summon", "spawn")]
     public void Summon(CommandContext ctx, string name) {
         var p = ctx.Game.thePlayer;
-        var ent = EntityList.createEntityAt(name, ctx.Game.theWorld, (float)p.posX, (float)p.posY, (float)p.posZ);
+        var ent = EntityRegistry.createEntityAt(name, ctx.Game.theWorld, (float)p.posX, (float)p.posY, (float)p.posZ);
 
         if (ent == null) {
             Console.Error.WriteLine($"Entity created by createEntityInWorld is null `{name}`");
@@ -147,7 +147,7 @@ public class GameCommands {
                 "animal" => ent is EntityAnimal,
                 "item" => ent is EntityItem,
                 "tnt" => ent is EntityTNTPrimed,
-                _ => EntityList.getEntityString(ent)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
+                _ => EntityRegistry.getId(ent)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
             };
 
             if (shouldKill) {

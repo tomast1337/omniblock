@@ -1,0 +1,183 @@
+using betareborn.NBT;
+using betareborn.Worlds;
+using java.lang;
+using java.util;
+using Exception = java.lang.Exception;
+
+namespace betareborn.Entities
+{
+    public class EntityRegistry
+    {
+        private static Map idToClass = new HashMap();
+        private static Map classToId = new HashMap();
+        private static Map rawIdToClass = new HashMap();
+        private static Map classToRawId = new HashMap();
+        public static Dictionary<string, int> namesToId = new();
+
+        private static void register(Class entityClass, string id, int rawId)
+        {
+            idToClass.put(id, entityClass);
+            classToId.put(entityClass, id);
+            rawIdToClass.put(Integer.valueOf(rawId), entityClass);
+            classToRawId.put(entityClass, Integer.valueOf(rawId));
+            namesToId.TryAdd(id.ToLower(), rawId);
+        }
+
+        public static Entity create(string id, World world)
+        {
+            Entity var2 = null;
+
+            try
+            {
+                Class var3 = (Class)idToClass.get(id);
+                if (var3 != null)
+                {
+                    var2 = (Entity)var3.getConstructor([World.Class]).newInstance([
+                        world
+                    ]);
+                }
+            }
+            catch (java.lang.Exception var4)
+            {
+                var4.printStackTrace();
+            }
+
+            return var2;
+        }
+
+        public static Entity getEntityFromNbt(NBTTagCompound nbt, World world)
+        {
+            Entity var2 = null;
+
+            try
+            {
+                Class var3 = (Class)idToClass.get(nbt.getString("id"));
+                if (var3 != null)
+                {
+                    var2 = (Entity)var3.getConstructor([World.Class]).newInstance([world]);
+                }
+            }
+            catch (java.lang.Exception var4)
+            {
+                var4.printStackTrace();
+            }
+
+            if (var2 != null)
+            {
+                var2.readFromNBT(nbt);
+            }
+            else
+            {
+                java.lang.System.@out.println("Skipping Entity with id " + nbt.getString("id"));
+            }
+
+            return var2;
+        }
+
+        public static Entity? createEntityAt(string name, World world, float x, float y, float z)
+        {
+            name = name.ToLower();
+            try
+            {
+                if (namesToId.TryGetValue(name, out int id))
+                {
+                    Class cls = (Class)rawIdToClass.get(Integer.valueOf(id));
+                    if (cls != null)
+                    {
+                        var ent = (Entity)cls.getConstructor(World.Class).newInstance(world);
+
+                        if (ent != null)
+                        {
+                            ent.setPosition(x, y, z);
+                            ent.setPositionAndRotation(x, y, z, 0, 0);
+                            if (!world.entityJoinedWorld(ent))
+                            {
+                                Console.Error.WriteLine($"Entity `{name}` with ID:`{id}` failed to join world.");
+                            }
+                        }
+
+                        return ent;
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine($"Failed to convert entity of name `{name}` and id `{id}` to a class.");
+                    }
+                }
+                else
+                {
+                    Console.Error.WriteLine($"Unable to find entity of name `{name}`.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+            }
+
+            return null;
+        }
+
+        public static Entity create(int rawId, World world)
+        {
+            Entity var2 = null;
+
+            try
+            {
+                Class var3 = (Class)rawIdToClass.get(Integer.valueOf(rawId));
+                if (var3 != null)
+                {
+                    var2 = (Entity)var3.getConstructor([World.Class]).newInstance([world]);
+                }
+            }
+            catch (java.lang.Exception var4)
+            {
+                var4.printStackTrace();
+            }
+
+            if (var2 == null)
+            {
+                java.lang.System.@out.println("Skipping Entity with id " + rawId);
+            }
+
+            return var2;
+        }
+
+        public static int getRawId(Entity entity)
+        {
+            return ((Integer)classToRawId.get(entity.getClass())).intValue();
+        }
+
+        public static string getId(Entity entity)
+        {
+            return (string)classToId.get(entity.getClass());
+        }
+
+        static EntityRegistry()
+        {
+            register(EntityArrow.Class, "Arrow", 10);
+            register(EntitySnowball.Class, "Snowball", 11);
+            register(EntityItem.Class, "Item", 1);
+            register(EntityPainting.Class, "Painting", 9);
+            register(EntityLiving.Class, "Mob", 48);
+            register(EntityMob.Class, "Monster", 49);
+            register(EntityCreeper.Class, "Creeper", 50);
+            register(EntitySkeleton.Class, "Skeleton", 51);
+            register(EntitySpider.Class, "Spider", 52);
+            register(EntityGiantZombie.Class, "Giant", 53);
+            register(EntityZombie.Class, "Zombie", 54);
+            register(EntitySlime.Class, "Slime", 55);
+            register(EntityGhast.Class, "Ghast", 56);
+            register(EntityPigZombie.Class, "PigZombie", 57);
+            register(EntityPig.Class, "Pig", 90);
+            register(EntitySheep.Class, "Sheep", 91);
+            register(EntityCow.Class, "Cow", 92);
+            register(EntityChicken.Class, "Chicken", 93);
+            register(EntitySquid.Class, "Squid", 94);
+            register(EntityWolf.Class, "Wolf", 95);
+            register(EntityTNTPrimed.Class, "PrimedTnt", 20);
+            register(EntityFallingSand.Class, "FallingSand", 21);
+            register(EntityMinecart.Class, "Minecart", 40);
+            register(EntityBoat.Class, "Boat", 41);
+        }
+    }
+
+}

@@ -958,7 +958,7 @@ namespace betareborn.Entities
 
         protected string getEntityString()
         {
-            return EntityList.getEntityString(this);
+            return EntityRegistry.getId(this);
         }
 
         public abstract void readEntityFromNBT(NBTTagCompound var1);

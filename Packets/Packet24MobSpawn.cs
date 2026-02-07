@@ -25,7 +25,7 @@ namespace betareborn.Packets
         public Packet24MobSpawn(EntityLiving var1)
         {
             this.entityId = var1.entityId;
-            this.type = (sbyte)EntityList.getEntityID(var1);
+            this.type = (sbyte)EntityRegistry.getRawId(var1);
             this.xPosition = MathHelper.floor_double(var1.posX * 32.0D);
             this.yPosition = MathHelper.floor_double(var1.posY * 32.0D);
             this.zPosition = MathHelper.floor_double(var1.posZ * 32.0D);

@@ -65,7 +65,7 @@ namespace betareborn.TileEntities
 
                     for (int var8 = 0; var8 < var7; ++var8)
                     {
-                        EntityLiving var9 = (EntityLiving)((EntityLiving)EntityList.createEntityInWorld(spawnedEntityId, world));
+                        EntityLiving var9 = (EntityLiving)((EntityLiving)EntityRegistry.create(spawnedEntityId, world));
                         if (var9 == null)
                         {
                             return;

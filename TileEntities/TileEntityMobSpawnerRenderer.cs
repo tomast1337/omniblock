@@ -17,7 +17,7 @@ namespace betareborn.TileEntities
             Entity var9 = (Entity)entityHashMap.get(var1.getSpawnedEntityId());
             if (var9 == null)
             {
-                var9 = EntityList.createEntityInWorld(var1.getSpawnedEntityId(), (World)null);
+                var9 = EntityRegistry.create(var1.getSpawnedEntityId(), (World)null);
                 entityHashMap.put(var1.getSpawnedEntityId(), var9);
             }
 

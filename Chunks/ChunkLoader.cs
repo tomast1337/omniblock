@@ -212,7 +212,7 @@ namespace betareborn.Chunks
                 for (int var6 = 0; var6 < var5.tagCount(); ++var6)
                 {
                     NBTTagCompound var7 = (NBTTagCompound)var5.tagAt(var6);
-                    Entity var8 = EntityList.createEntityFromNBT(var7, var0);
+                    Entity var8 = EntityRegistry.getEntityFromNbt(var7, var0);
                     var4.hasEntities = true;
                     if (var8 != null)
                     {

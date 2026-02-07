@@ -501,7 +501,7 @@ namespace betareborn
             double var6 = (double)var1.zPosition / 32.0D;
             float var8 = (float)(var1.yaw * 360) / 256.0F;
             float var9 = (float)(var1.pitch * 360) / 256.0F;
-            EntityLiving var10 = (EntityLiving)EntityList.createEntity(var1.type, mc.theWorld);
+            EntityLiving var10 = (EntityLiving)EntityRegistry.create(var1.type, mc.theWorld);
             var10.serverPosX = var1.xPosition;
             var10.serverPosY = var1.yPosition;
             var10.serverPosZ = var1.zPosition;
