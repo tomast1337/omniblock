@@ -44,10 +44,10 @@ namespace betareborn.Items
                     var10 = 1;
                 }
 
-                if (var3.isAirBlock(var4, var5, var6) && var3.isAirBlock(var4 + var10, var5, var6 + var11) && var3.isBlockNormalCube(var4, var5 - 1, var6) && var3.isBlockNormalCube(var4 + var10, var5 - 1, var6 + var11))
+                if (var3.isAir(var4, var5, var6) && var3.isAir(var4 + var10, var5, var6 + var11) && var3.shouldSuffocate(var4, var5 - 1, var6) && var3.shouldSuffocate(var4 + var10, var5 - 1, var6 + var11))
                 {
-                    var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.blockID, var9);
-                    var3.setBlockAndMetadataWithNotify(var4 + var10, var5, var6 + var11, var8.blockID, var9 + 8);
+                    var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.id, var9);
+                    var3.setBlockAndMetadataWithNotify(var4 + var10, var5, var6 + var11, var8.id, var9 + 8);
                     --var1.count;
                     return true;
                 }

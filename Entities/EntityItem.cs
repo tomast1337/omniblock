@@ -138,7 +138,7 @@ namespace betareborn.Entities
                 int var2 = item.count;
                 if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(item))
                 {
-                    if (item.itemID == Block.wood.blockID)
+                    if (item.itemID == Block.wood.id)
                     {
                         var1.triggerAchievement(Achievements.MINE_WOOD);
                     }

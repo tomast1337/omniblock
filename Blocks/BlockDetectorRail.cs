@@ -24,7 +24,7 @@ namespace betareborn.Blocks
         {
             if (!var1.multiplayerWorld)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 if ((var6 & 8) == 0)
                 {
                     setStateIfMinecartInteractsWithRail(var1, var2, var3, var4, var6);
@@ -36,7 +36,7 @@ namespace betareborn.Blocks
         {
             if (!var1.multiplayerWorld)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 if ((var6 & 8) != 0)
                 {
                     setStateIfMinecartInteractsWithRail(var1, var2, var3, var4, var6);
@@ -44,14 +44,14 @@ namespace betareborn.Blocks
             }
         }
 
-        public override bool isPoweringTo(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
         {
-            return (var1.getBlockMetadata(var2, var3, var4) & 8) != 0;
+            return (var1.getBlockMeta(var2, var3, var4) & 8) != 0;
         }
 
         public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
         {
-            return (var1.getBlockMetadata(var2, var3, var4) & 8) == 0 ? false : var5 == 1;
+            return (var1.getBlockMeta(var2, var3, var4) & 8) == 0 ? false : var5 == 1;
         }
 
         private void setStateIfMinecartInteractsWithRail(World var1, int var2, int var3, int var4, int var5)
@@ -67,23 +67,23 @@ namespace betareborn.Blocks
 
             if (var7 && !var6)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, var5 | 8);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
+                var1.setBlockMeta(var2, var3, var4, var5 | 8);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
                 var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
             }
 
             if (!var7 && var6)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, var5 & 7);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
+                var1.setBlockMeta(var2, var3, var4, var5 & 7);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
                 var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
             }
 
             if (var7)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, blockID, tickRate());
+                var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
             }
 
         }

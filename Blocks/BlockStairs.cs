@@ -9,7 +9,7 @@ namespace betareborn.Blocks
 
         private Block modelBlock;
 
-        public BlockStairs(int var1, Block var2) : base(var1, var2.blockIndexInTexture, var2.blockMaterial)
+        public BlockStairs(int var1, Block var2) : base(var1, var2.textureId, var2.blockMaterial)
         {
             modelBlock = var2;
             setHardness(var2.blockHardness);
@@ -18,9 +18,9 @@ namespace betareborn.Blocks
             setLightOpacity(255);
         }
 
-        public override void setBlockBoundsBasedOnState(IBlockAccess var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
         {
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
         public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
@@ -28,12 +28,12 @@ namespace betareborn.Blocks
             return base.getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
@@ -43,44 +43,44 @@ namespace betareborn.Blocks
             return 10;
         }
 
-        public override bool shouldSideBeRendered(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool shouldSideBeRendered(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return base.shouldSideBeRendered(var1, var2, var3, var4, var5);
         }
 
         public override void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
         {
-            int var7 = var1.getBlockMetadata(var2, var3, var4);
+            int var7 = var1.getBlockMeta(var2, var3, var4);
             if (var7 == 0)
             {
-                setBlockBounds(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
-                setBlockBounds(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
             }
             else if (var7 == 1)
             {
-                setBlockBounds(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
-                setBlockBounds(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
+                setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
             }
             else if (var7 == 2)
             {
-                setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
-                setBlockBounds(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
             }
             else if (var7 == 3)
             {
-                setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
-                setBlockBounds(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
                 base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
             }
 
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
         public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
@@ -98,7 +98,7 @@ namespace betareborn.Blocks
             modelBlock.onBlockDestroyedByPlayer(var1, var2, var3, var4, var5);
         }
 
-        public override float getBlockBrightness(IBlockAccess var1, int var2, int var3, int var4)
+        public override float getBlockBrightness(BlockView var1, int var2, int var3, int var4)
         {
             return modelBlock.getBlockBrightness(var1, var2, var3, var4);
         }
@@ -113,9 +113,9 @@ namespace betareborn.Blocks
             return modelBlock.getRenderBlockPass();
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return modelBlock.idDropped(var1, var2);
+            return modelBlock.getDroppedItemId(var1, var2);
         }
 
         public override int quantityDropped(java.util.Random var1)
@@ -123,9 +123,9 @@ namespace betareborn.Blocks
             return modelBlock.quantityDropped(var1);
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
-            return modelBlock.getBlockTextureFromSideAndMetadata(var1, var2);
+            return modelBlock.getTexture(var1, var2);
         }
 
         public override int getBlockTextureFromSide(int var1)
@@ -133,7 +133,7 @@ namespace betareborn.Blocks
             return modelBlock.getBlockTextureFromSide(var1);
         }
 
-        public override int getBlockTexture(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override int getBlockTexture(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return modelBlock.getBlockTexture(var1, var2, var3, var4, var5);
         }
@@ -170,7 +170,7 @@ namespace betareborn.Blocks
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
         {
-            onNeighborBlockChange(var1, var2, var3, var4, 0);
+            neighborUpdate(var1, var2, var3, var4, 0);
             modelBlock.onBlockAdded(var1, var2, var3, var4);
         }
 
@@ -179,9 +179,9 @@ namespace betareborn.Blocks
             modelBlock.onBlockRemoval(var1, var2, var3, var4);
         }
 
-        public override void dropBlockAsItemWithChance(World var1, int var2, int var3, int var4, int var5, float var6)
+        public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
         {
-            modelBlock.dropBlockAsItemWithChance(var1, var2, var3, var4, var5, var6);
+            modelBlock.dropStacks(var1, var2, var3, var4, var5, var6);
         }
 
         public override void onEntityWalking(World var1, int var2, int var3, int var4, Entity var5)
@@ -194,9 +194,9 @@ namespace betareborn.Blocks
             modelBlock.updateTick(var1, var2, var3, var4, var5);
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            return modelBlock.blockActivated(var1, var2, var3, var4, var5);
+            return modelBlock.onUse(var1, var2, var3, var4, var5);
         }
 
         public override void onBlockDestroyedByExplosion(World var1, int var2, int var3, int var4)
@@ -209,22 +209,22 @@ namespace betareborn.Blocks
             int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 2);
+                var1.setBlockMeta(var2, var3, var4, 2);
             }
 
             if (var6 == 1)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 1);
+                var1.setBlockMeta(var2, var3, var4, 1);
             }
 
             if (var6 == 2)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 3);
+                var1.setBlockMeta(var2, var3, var4, 3);
             }
 
             if (var6 == 3)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 0);
+                var1.setBlockMeta(var2, var3, var4, 0);
             }
 
         }

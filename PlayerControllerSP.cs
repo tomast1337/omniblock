@@ -27,7 +27,7 @@ namespace betareborn
         public override bool sendBlockRemoved(int var1, int var2, int var3, int var4)
         {
             int var5 = mc.theWorld.getBlockId(var1, var2, var3);
-            int var6 = mc.theWorld.getBlockMetadata(var1, var2, var3);
+            int var6 = mc.theWorld.getBlockMeta(var1, var2, var3);
             bool var7 = base.sendBlockRemoved(var1, var2, var3, var4);
             ItemStack var8 = mc.thePlayer.getCurrentEquippedItem();
             bool var9 = mc.thePlayer.canHarvestBlock(Block.blocksList[var5]);

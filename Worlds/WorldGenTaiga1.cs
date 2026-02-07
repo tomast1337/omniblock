@@ -38,7 +38,7 @@ namespace betareborn.Worlds
                             if (var11 >= 0 && var11 < 128)
                             {
                                 var15 = var1.getBlockId(var13, var11, var14);
-                                if (var15 != 0 && var15 != Block.leaves.blockID)
+                                if (var15 != 0 && var15 != Block.leaves.id)
                                 {
                                     var10 = false;
                                 }
@@ -58,9 +58,9 @@ namespace betareborn.Worlds
                 else
                 {
                     var11 = var1.getBlockId(var3, var4 - 1, var5);
-                    if ((var11 == Block.grass.blockID || var11 == Block.dirt.blockID) && var4 < 128 - var6 - 1)
+                    if ((var11 == Block.grass.id || var11 == Block.dirt.id) && var4 < 128 - var6 - 1)
                     {
-                        var1.setBlock(var3, var4 - 1, var5, Block.dirt.blockID);
+                        var1.setBlock(var3, var4 - 1, var5, Block.dirt.id);
                         var18 = 0;
 
                         for (var13 = var4 + var6; var13 >= var4 + var7; --var13)
@@ -74,7 +74,7 @@ namespace betareborn.Worlds
                                     int var17 = var16 - var5;
                                     if ((java.lang.Math.abs(var15) != var18 || java.lang.Math.abs(var17) != var18 || var18 <= 0) && !Block.opaqueCubeLookup[var1.getBlockId(var14, var13, var16)])
                                     {
-                                        var1.setBlockAndMetadata(var14, var13, var16, Block.leaves.blockID, 1);
+                                        var1.setBlockAndMetadata(var14, var13, var16, Block.leaves.id, 1);
                                     }
                                 }
                             }
@@ -92,9 +92,9 @@ namespace betareborn.Worlds
                         for (var13 = 0; var13 < var6 - 1; ++var13)
                         {
                             var14 = var1.getBlockId(var3, var4 + var13, var5);
-                            if (var14 == 0 || var14 == Block.leaves.blockID)
+                            if (var14 == 0 || var14 == Block.leaves.id)
                             {
-                                var1.setBlockAndMetadata(var3, var4 + var13, var5, Block.wood.blockID, 1);
+                                var1.setBlockAndMetadata(var3, var4 + var13, var5, Block.wood.id, 1);
                             }
                         }
 

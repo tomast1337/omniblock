@@ -6,12 +6,12 @@ namespace betareborn
 {
     public class Pathfinder : java.lang.Object
     {
-        private readonly IBlockAccess worldMap;
+        private readonly BlockView worldMap;
         private readonly Path path = new();
         private readonly MCHash pointMap = new();
         private readonly PathPoint[] pathOptions = new PathPoint[32];
 
-        public Pathfinder(IBlockAccess var1)
+        public Pathfinder(BlockView var1)
         {
             worldMap = var1;
         }
@@ -203,7 +203,7 @@ namespace betareborn
                         int var9 = worldMap.getBlockId(var6, var7, var8);
                         if (var9 > 0)
                         {
-                            if (var9 != Block.doorSteel.blockID && var9 != Block.doorWood.blockID)
+                            if (var9 != Block.doorSteel.id && var9 != Block.doorWood.id)
                             {
                                 Material var11 = Block.blocksList[var9].blockMaterial;
                                 if (var11.blocksMovement())
@@ -223,7 +223,7 @@ namespace betareborn
                             }
                             else
                             {
-                                int var10 = worldMap.getBlockMetadata(var6, var7, var8);
+                                int var10 = worldMap.getBlockMeta(var6, var7, var8);
                                 if (!BlockDoor.isOpen(var10))
                                 {
                                     return 0;

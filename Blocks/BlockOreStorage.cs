@@ -7,12 +7,12 @@ namespace betareborn.Blocks
 
         public BlockOreStorage(int var1, int var2) : base(var1, Material.METAL)
         {
-            blockIndexInTexture = var2;
+            textureId = var2;
         }
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return blockIndexInTexture;
+            return textureId;
         }
     }
 

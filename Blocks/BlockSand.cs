@@ -14,12 +14,12 @@ namespace betareborn.Blocks
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
         {
-            var1.scheduleBlockUpdate(var2, var3, var4, this.blockID, this.tickRate());
+            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.tickRate());
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            var1.scheduleBlockUpdate(var2, var3, var4, this.blockID, this.tickRate());
+            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.tickRate());
         }
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
@@ -34,7 +34,7 @@ namespace betareborn.Blocks
                 sbyte var8 = 32;
                 if (!fallInstantly && var1.checkChunksExist(var2 - var8, var3 - var8, var4 - var8, var2 + var8, var3 + var8, var4 + var8))
                 {
-                    EntityFallingSand var9 = new EntityFallingSand(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), this.blockID);
+                    EntityFallingSand var9 = new EntityFallingSand(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), this.id);
                     var1.spawnEntity(var9);
                 }
                 else
@@ -48,7 +48,7 @@ namespace betareborn.Blocks
 
                     if (var3 > 0)
                     {
-                        var1.setBlockWithNotify(var2, var3, var4, this.blockID);
+                        var1.setBlockWithNotify(var2, var3, var4, this.id);
                     }
                 }
             }
@@ -67,7 +67,7 @@ namespace betareborn.Blocks
             {
                 return true;
             }
-            else if (var4 == Block.fire.blockID)
+            else if (var4 == Block.fire.id)
             {
                 return true;
             }

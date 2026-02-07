@@ -12,7 +12,7 @@ namespace betareborn.Entities
         public EntityDiggingFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12, Block var14, int var15, int var16) : base(var1, var2, var4, var6, var8, var10, var12)
         {
             field_4082_a = var14;
-            particleTextureIndex = var14.getBlockTextureFromSideAndMetadata(0, var16);
+            particleTextureIndex = var14.getTexture(0, var16);
             particleGravity = var14.blockParticleGravity;
             particleRed = particleGreen = particleBlue = 0.6F;
             particleScale /= 2.0F;

@@ -7,17 +7,17 @@ namespace betareborn.Worlds
 
         public override bool generate(World var1, java.util.Random var2, int var3, int var4, int var5)
         {
-            if (!var1.isAirBlock(var3, var4, var5))
+            if (!var1.isAir(var3, var4, var5))
             {
                 return false;
             }
-            else if (var1.getBlockId(var3, var4 + 1, var5) != Block.netherrack.blockID)
+            else if (var1.getBlockId(var3, var4 + 1, var5) != Block.netherrack.id)
             {
                 return false;
             }
             else
             {
-                var1.setBlockWithNotify(var3, var4, var5, Block.glowStone.blockID);
+                var1.setBlockWithNotify(var3, var4, var5, Block.glowStone.id);
 
                 for (int var6 = 0; var6 < 1500; ++var6)
                 {
@@ -61,7 +61,7 @@ namespace betareborn.Worlds
                                 var12 = var1.getBlockId(var7, var8, var9 + 1);
                             }
 
-                            if (var12 == Block.glowStone.blockID)
+                            if (var12 == Block.glowStone.id)
                             {
                                 ++var10;
                             }
@@ -69,7 +69,7 @@ namespace betareborn.Worlds
 
                         if (var10 == 1)
                         {
-                            var1.setBlockWithNotify(var7, var8, var9, Block.glowStone.blockID);
+                            var1.setBlockWithNotify(var7, var8, var9, Block.glowStone.id);
                         }
                     }
                 }

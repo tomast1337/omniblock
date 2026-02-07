@@ -35,7 +35,7 @@ namespace betareborn.Worlds
                             return false;
                         }
 
-                        if ((var10 == var3 - var7 - 1 || var10 == var3 + var7 + 1 || var12 == var5 - var8 - 1 || var12 == var5 + var8 + 1) && var11 == var4 && var1.isAirBlock(var10, var11, var12) && var1.isAirBlock(var10, var11 + 1, var12))
+                        if ((var10 == var3 - var7 - 1 || var10 == var3 + var7 + 1 || var12 == var5 - var8 - 1 || var12 == var5 + var8 + 1) && var11 == var4 && var1.isAir(var10, var11, var12) && var1.isAir(var10, var11 + 1, var12))
                         {
                             ++var9;
                         }
@@ -63,11 +63,11 @@ namespace betareborn.Worlds
                             {
                                 if (var11 == var4 - 1 && var2.nextInt(4) != 0)
                                 {
-                                    var1.setBlockWithNotify(var10, var11, var12, Block.cobblestoneMossy.blockID);
+                                    var1.setBlockWithNotify(var10, var11, var12, Block.cobblestoneMossy.id);
                                 }
                                 else
                                 {
-                                    var1.setBlockWithNotify(var10, var11, var12, Block.cobblestone.blockID);
+                                    var1.setBlockWithNotify(var10, var11, var12, Block.cobblestone.id);
                                 }
                             }
                         }
@@ -80,7 +80,7 @@ namespace betareborn.Worlds
                     {
                         var12 = var3 + var2.nextInt(var7 * 2 + 1) - var7;
                         int var14 = var5 + var2.nextInt(var8 * 2 + 1) - var8;
-                        if (var1.isAirBlock(var12, var4, var14))
+                        if (var1.isAir(var12, var4, var14))
                         {
                             int var15 = 0;
                             if (var1.getMaterial(var12 - 1, var4, var14).isSolid())
@@ -101,7 +101,7 @@ namespace betareborn.Worlds
                             }
                             if (var15 == 1)
                             {
-                                var1.setBlockWithNotify(var12, var4, var14, Block.chest.blockID);
+                                var1.setBlockWithNotify(var12, var4, var14, Block.chest.id);
                                 TileEntityChest var16 = (TileEntityChest)var1.getBlockTileEntity(var12, var4, var14);
 
                                 for (int var17 = 0; var17 < 8; ++var17)
@@ -117,7 +117,7 @@ namespace betareborn.Worlds
                     }
                 }
 
-                var1.setBlockWithNotify(var3, var4, var5, Block.mobSpawner.blockID);
+                var1.setBlockWithNotify(var3, var4, var5, Block.mobSpawner.id);
                 TileEntityMobSpawner var19 = (TileEntityMobSpawner)var1.getBlockTileEntity(var3, var4, var5);
                 var19.setSpawnedEntityId(pickMobSpawner(var2));
                 return true;

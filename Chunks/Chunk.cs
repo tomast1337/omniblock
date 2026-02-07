@@ -117,7 +117,7 @@ namespace betareborn.Chunks
                         var1 = var4;
                     }
 
-                    if (!worldObj.worldProvider.hasNoSky)
+                    if (!worldObj.dimension.hasNoSky)
                     {
                         int var6 = 15;
                         int var7 = 127;
@@ -299,7 +299,7 @@ namespace betareborn.Chunks
                 }
 
                 data.setNibble(var1, var2, var3, var5);
-                if (!worldObj.worldProvider.hasNoSky)
+                if (!worldObj.dimension.hasNoSky)
                 {
                     if (Block.lightOpacity[var6 & 255] != 0)
                     {

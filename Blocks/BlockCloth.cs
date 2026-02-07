@@ -8,11 +8,11 @@ namespace betareborn.Blocks
         {
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
             if (var2 == 0)
             {
-                return blockIndexInTexture;
+                return textureId;
             }
             else
             {

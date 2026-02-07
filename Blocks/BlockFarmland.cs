@@ -9,9 +9,9 @@ namespace betareborn.Blocks
 
         public BlockFarmland(int var1) : base(var1, Material.SOIL)
         {
-            blockIndexInTexture = 87;
+            textureId = 87;
             setTickOnLoad(true);
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 15.0F / 16.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 15.0F / 16.0F, 1.0F);
             setLightOpacity(255);
         }
 
@@ -20,19 +20,19 @@ namespace betareborn.Blocks
             return Box.createCached((double)(var2 + 0), (double)(var3 + 0), (double)(var4 + 0), (double)(var2 + 1), (double)(var3 + 1), (double)(var4 + 1));
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
-            return var1 == 1 && var2 > 0 ? blockIndexInTexture - 1 : (var1 == 1 ? blockIndexInTexture : 2);
+            return var1 == 1 && var2 > 0 ? textureId - 1 : (var1 == 1 ? textureId : 2);
         }
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
@@ -41,19 +41,19 @@ namespace betareborn.Blocks
             {
                 if (!isWaterNearby(var1, var2, var3, var4) && !var1.canBlockBeRainedOn(var2, var3 + 1, var4))
                 {
-                    int var6 = var1.getBlockMetadata(var2, var3, var4);
+                    int var6 = var1.getBlockMeta(var2, var3, var4);
                     if (var6 > 0)
                     {
-                        var1.setBlockMetadataWithNotify(var2, var3, var4, var6 - 1);
+                        var1.setBlockMeta(var2, var3, var4, var6 - 1);
                     }
                     else if (!isCropsNearby(var1, var2, var3, var4))
                     {
-                        var1.setBlockWithNotify(var2, var3, var4, Block.dirt.blockID);
+                        var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
                     }
                 }
                 else
                 {
-                    var1.setBlockMetadataWithNotify(var2, var3, var4, 7);
+                    var1.setBlockMeta(var2, var3, var4, 7);
                 }
             }
 
@@ -63,7 +63,7 @@ namespace betareborn.Blocks
         {
             if (var1.random.nextInt(4) == 0)
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.dirt.blockID);
+                var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
             }
 
         }
@@ -76,7 +76,7 @@ namespace betareborn.Blocks
             {
                 for (int var7 = var4 - var5; var7 <= var4 + var5; ++var7)
                 {
-                    if (var1.getBlockId(var6, var3 + 1, var7) == Block.crops.blockID)
+                    if (var1.getBlockId(var6, var3 + 1, var7) == Block.crops.id)
                     {
                         return true;
                     }
@@ -105,20 +105,20 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            base.onNeighborBlockChange(var1, var2, var3, var4, var5);
+            base.neighborUpdate(var1, var2, var3, var4, var5);
             Material var6 = var1.getMaterial(var2, var3 + 1, var4);
             if (var6.isSolid())
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.dirt.blockID);
+                var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
             }
 
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.dirt.idDropped(0, var2);
+            return Block.dirt.getDroppedItemId(0, var2);
         }
     }
 

@@ -164,17 +164,17 @@ namespace betareborn.Stats
 
         private static void replaceAllSimilarBlocks(StatBase[] var0)
         {
-            replaceSimilarBlocks(var0, Block.waterStill.blockID, Block.waterMoving.blockID);
-            replaceSimilarBlocks(var0, Block.lavaStill.blockID, Block.lavaStill.blockID);
-            replaceSimilarBlocks(var0, Block.pumpkinLantern.blockID, Block.pumpkin.blockID);
-            replaceSimilarBlocks(var0, Block.stoneOvenActive.blockID, Block.stoneOvenIdle.blockID);
-            replaceSimilarBlocks(var0, Block.oreRedstoneGlowing.blockID, Block.oreRedstone.blockID);
-            replaceSimilarBlocks(var0, Block.redstoneRepeaterActive.blockID, Block.redstoneRepeaterIdle.blockID);
-            replaceSimilarBlocks(var0, Block.torchRedstoneActive.blockID, Block.torchRedstoneIdle.blockID);
-            replaceSimilarBlocks(var0, Block.mushroomRed.blockID, Block.mushroomBrown.blockID);
-            replaceSimilarBlocks(var0, Block.stairDouble.blockID, Block.stairSingle.blockID);
-            replaceSimilarBlocks(var0, Block.grass.blockID, Block.dirt.blockID);
-            replaceSimilarBlocks(var0, Block.tilledField.blockID, Block.dirt.blockID);
+            replaceSimilarBlocks(var0, Block.waterStill.id, Block.waterMoving.id);
+            replaceSimilarBlocks(var0, Block.lavaStill.id, Block.lavaStill.id);
+            replaceSimilarBlocks(var0, Block.pumpkinLantern.id, Block.pumpkin.id);
+            replaceSimilarBlocks(var0, Block.stoneOvenActive.id, Block.stoneOvenIdle.id);
+            replaceSimilarBlocks(var0, Block.oreRedstoneGlowing.id, Block.oreRedstone.id);
+            replaceSimilarBlocks(var0, Block.redstoneRepeaterActive.id, Block.redstoneRepeaterIdle.id);
+            replaceSimilarBlocks(var0, Block.torchRedstoneActive.id, Block.torchRedstoneIdle.id);
+            replaceSimilarBlocks(var0, Block.mushroomRed.id, Block.mushroomBrown.id);
+            replaceSimilarBlocks(var0, Block.stairDouble.id, Block.stairSingle.id);
+            replaceSimilarBlocks(var0, Block.grass.id, Block.dirt.id);
+            replaceSimilarBlocks(var0, Block.tilledField.id, Block.dirt.id);
         }
 
         private static void replaceSimilarBlocks(StatBase[] var0, int var1, int var2)

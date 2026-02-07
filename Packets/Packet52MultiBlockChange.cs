@@ -11,7 +11,7 @@ namespace betareborn.Packets
         public short[] coordinateArray;
         public byte[] typeArray;
         public byte[] metadataArray;
-        public int size;
+        public int _size;
 
         public Packet52MultiBlockChange()
         {
@@ -22,13 +22,13 @@ namespace betareborn.Packets
         {
             this.xPosition = var1.readInt();
             this.zPosition = var1.readInt();
-            this.size = var1.readShort() & '\uffff';
-            this.coordinateArray = new short[this.size];
+            this._size = var1.readShort() & '\uffff';
+            this.coordinateArray = new short[this._size];
 
-            this.typeArray = new byte[this.size];
-            this.metadataArray = new byte[this.size];
+            this.typeArray = new byte[this._size];
+            this.metadataArray = new byte[this._size];
 
-            for (int var2 = 0; var2 < this.size; ++var2)
+            for (int var2 = 0; var2 < this._size; ++var2)
             {
                 this.coordinateArray[var2] = var1.readShort();
             }
@@ -41,9 +41,9 @@ namespace betareborn.Packets
         {
             var1.writeInt(this.xPosition);
             var1.writeInt(this.zPosition);
-            var1.writeShort((short)this.size);
+            var1.writeShort((short)this._size);
 
-            for (int var2 = 0; var2 < this.size; ++var2)
+            for (int var2 = 0; var2 < this._size; ++var2)
             {
                 var1.writeShort(this.coordinateArray[var2]);
             }
@@ -59,7 +59,7 @@ namespace betareborn.Packets
 
         public override int size()
         {
-            return 10 + this.size * 4;
+            return 10 + this._size * 4;
         }
     }
 

@@ -22,11 +22,11 @@ namespace betareborn.Items
             this.count = count;
         }
 
-        public ItemStack(Block var1, int var2) : this(var1.blockID, var2, 0)
+        public ItemStack(Block var1, int var2) : this(var1.id, var2, 0)
         {
         }
 
-        public ItemStack(Block var1, int var2, int var3) : this(var1.blockID, var2, var3)
+        public ItemStack(Block var1, int var2, int var3) : this(var1.id, var2, var3)
         {
         }
 

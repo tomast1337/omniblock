@@ -7,11 +7,11 @@ namespace betareborn.Blocks
     {
         public BlockGrass(int var1) : base(var1, Material.SOLID_ORGANIC)
         {
-            blockIndexInTexture = 3;
+            textureId = 3;
             setTickOnLoad(true);
         }
 
-        public override int getBlockTexture(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override int getBlockTexture(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (var5 == 1)
             {
@@ -28,11 +28,11 @@ namespace betareborn.Blocks
             }
         }
 
-        public override int colorMultiplier(IBlockAccess var1, int var2, int var3, int var4)
+        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
-            var1.getWorldChunkManager().func_4069_a(var2, var4, 1, 1);
-            double var5 = var1.getWorldChunkManager().temperature[0];
-            double var7 = var1.getWorldChunkManager().humidity[0];
+            var1.getBiomeSource().getBiomesInArea(var2, var4, 1, 1);
+            double var5 = var1.getBiomeSource().temperatureMap[0];
+            double var7 = var1.getBiomeSource().downfallMap[0];
             return ColorizerGrass.getGrassColor(var5, var7);
         }
 
@@ -47,7 +47,7 @@ namespace betareborn.Blocks
                         return;
                     }
 
-                    var1.setBlockWithNotify(var2, var3, var4, Block.dirt.blockID);
+                    var1.setBlockWithNotify(var2, var3, var4, Block.dirt.id);
                 }
                 else if (var1.getBlockLightValue(var2, var3 + 1, var4) >= 9)
                 {
@@ -55,18 +55,18 @@ namespace betareborn.Blocks
                     int var7 = var3 + var5.nextInt(5) - 3;
                     int var8 = var4 + var5.nextInt(3) - 1;
                     int var9 = var1.getBlockId(var6, var7 + 1, var8);
-                    if (var1.getBlockId(var6, var7, var8) == Block.dirt.blockID && var1.getBlockLightValue(var6, var7 + 1, var8) >= 4 && Block.lightOpacity[var9] <= 2)
+                    if (var1.getBlockId(var6, var7, var8) == Block.dirt.id && var1.getBlockLightValue(var6, var7 + 1, var8) >= 4 && Block.lightOpacity[var9] <= 2)
                     {
-                        var1.setBlockWithNotify(var6, var7, var8, Block.grass.blockID);
+                        var1.setBlockWithNotify(var6, var7, var8, Block.grass.id);
                     }
                 }
 
             }
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.dirt.idDropped(0, var2);
+            return Block.dirt.getDroppedItemId(0, var2);
         }
     }
 

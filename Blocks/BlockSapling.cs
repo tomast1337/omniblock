@@ -7,7 +7,7 @@ namespace betareborn.Blocks
         public BlockSapling(int var1, int var2) : base(var1, var2)
         {
             float var3 = 0.4F;
-            setBlockBounds(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
+            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
         }
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
@@ -17,10 +17,10 @@ namespace betareborn.Blocks
                 base.updateTick(var1, var2, var3, var4, var5);
                 if (var1.getBlockLightValue(var2, var3 + 1, var4) >= 9 && var5.nextInt(30) == 0)
                 {
-                    int var6 = var1.getBlockMetadata(var2, var3, var4);
+                    int var6 = var1.getBlockMeta(var2, var3, var4);
                     if ((var6 & 8) == 0)
                     {
-                        var1.setBlockMetadataWithNotify(var2, var3, var4, var6 | 8);
+                        var1.setBlockMeta(var2, var3, var4, var6 | 8);
                     }
                     else
                     {
@@ -31,15 +31,15 @@ namespace betareborn.Blocks
             }
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
             var2 &= 3;
-            return var2 == 1 ? 63 : (var2 == 2 ? 79 : base.getBlockTextureFromSideAndMetadata(var1, var2));
+            return var2 == 1 ? 63 : (var2 == 2 ? 79 : base.getTexture(var1, var2));
         }
 
         public void growTree(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            int var6 = var1.getBlockMetadata(var2, var3, var4) & 3;
+            int var6 = var1.getBlockMeta(var2, var3, var4) & 3;
             var1.setBlock(var2, var3, var4, 0);
             Object var7 = null;
             if (var6 == 1)
@@ -61,7 +61,7 @@ namespace betareborn.Blocks
 
             if (!((WorldGenerator)var7).generate(var1, var5, var2, var3, var4))
             {
-                var1.setBlockAndMetadata(var2, var3, var4, blockID, var6);
+                var1.setBlockAndMetadata(var2, var3, var4, id, var6);
             }
 
         }

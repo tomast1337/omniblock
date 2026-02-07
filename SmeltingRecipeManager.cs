@@ -17,16 +17,16 @@ namespace betareborn
 
         private SmeltingRecipeManager()
         {
-            addSmelting(Block.oreIron.blockID, new ItemStack(Item.ingotIron));
-            addSmelting(Block.oreGold.blockID, new ItemStack(Item.ingotGold));
-            addSmelting(Block.oreDiamond.blockID, new ItemStack(Item.diamond));
-            addSmelting(Block.sand.blockID, new ItemStack(Block.glass));
+            addSmelting(Block.oreIron.id, new ItemStack(Item.ingotIron));
+            addSmelting(Block.oreGold.id, new ItemStack(Item.ingotGold));
+            addSmelting(Block.oreDiamond.id, new ItemStack(Item.diamond));
+            addSmelting(Block.sand.id, new ItemStack(Block.glass));
             addSmelting(Item.porkRaw.id, new ItemStack(Item.porkCooked));
             addSmelting(Item.fishRaw.id, new ItemStack(Item.fishCooked));
-            addSmelting(Block.cobblestone.blockID, new ItemStack(Block.stone));
+            addSmelting(Block.cobblestone.id, new ItemStack(Block.stone));
             addSmelting(Item.clay.id, new ItemStack(Item.brick));
-            addSmelting(Block.cactus.blockID, new ItemStack(Item.dyePowder, 1, 2));
-            addSmelting(Block.wood.blockID, new ItemStack(Item.coal, 1, 1));
+            addSmelting(Block.cactus.id, new ItemStack(Item.dyePowder, 1, 2));
+            addSmelting(Block.wood.id, new ItemStack(Item.coal, 1, 1));
         }
 
         public void addSmelting(int var1, ItemStack var2)

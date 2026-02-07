@@ -52,13 +52,13 @@ namespace betareborn.Items
 
                     if (isFull == 0)
                     {
-                        if (var2.getMaterial(var25, var26, var27) == Material.WATER && var2.getBlockMetadata(var25, var26, var27) == 0)
+                        if (var2.getMaterial(var25, var26, var27) == Material.WATER && var2.getBlockMeta(var25, var26, var27) == 0)
                         {
                             var2.setBlockWithNotify(var25, var26, var27, 0);
                             return new ItemStack(Item.bucketWater);
                         }
 
-                        if (var2.getMaterial(var25, var26, var27) == Material.LAVA && var2.getBlockMetadata(var25, var26, var27) == 0)
+                        if (var2.getMaterial(var25, var26, var27) == Material.LAVA && var2.getBlockMeta(var25, var26, var27) == 0)
                         {
                             var2.setBlockWithNotify(var25, var26, var27, 0);
                             return new ItemStack(Item.bucketLava);
@@ -101,9 +101,9 @@ namespace betareborn.Items
                             ++var25;
                         }
 
-                        if (var2.isAirBlock(var25, var26, var27) || !var2.getMaterial(var25, var26, var27).isSolid())
+                        if (var2.isAir(var25, var26, var27) || !var2.getMaterial(var25, var26, var27).isSolid())
                         {
-                            if (var2.worldProvider.isHellWorld && isFull == Block.waterMoving.blockID)
+                            if (var2.dimension.isHellWorld && isFull == Block.waterMoving.id)
                             {
                                 var2.playSoundEffect(var7 + 0.5D, var9 + 0.5D, var11 + 0.5D, "random.fizz", 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 

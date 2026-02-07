@@ -2,24 +2,24 @@ using java.lang;
 
 namespace betareborn.Chunks
 {
-    public class ChunkCoordinates : java.lang.Object, Comparable
+    public class Vec3i : java.lang.Object, Comparable
     {
         public int x;
         public int y;
         public int z;
 
-        public ChunkCoordinates()
+        public Vec3i()
         {
         }
 
-        public ChunkCoordinates(int var1, int var2, int var3)
+        public Vec3i(int var1, int var2, int var3)
         {
             x = var1;
             y = var2;
             z = var3;
         }
 
-        public ChunkCoordinates(ChunkCoordinates var1)
+        public Vec3i(Vec3i var1)
         {
             x = var1.x;
             y = var1.y;
@@ -28,13 +28,13 @@ namespace betareborn.Chunks
 
         public override bool equals(object var1)
         {
-            if (var1 is not ChunkCoordinates)
+            if (var1 is not Vec3i)
             {
                 return false;
             }
             else
             {
-                ChunkCoordinates var2 = (ChunkCoordinates)var1;
+                Vec3i var2 = (Vec3i)var1;
                 return x == var2.x && y == var2.y && z == var2.z;
             }
         }
@@ -44,7 +44,7 @@ namespace betareborn.Chunks
             return x + z << 8 + y << 16;
         }
 
-        public int compareChunkCoordinate(ChunkCoordinates var1)
+        public int compareChunkCoordinate(Vec3i var1)
         {
             return y == var1.y ? (z == var1.z ? x - var1.x : z - var1.z) : y - var1.y;
         }
@@ -59,7 +59,7 @@ namespace betareborn.Chunks
 
         public int CompareTo(object? var1)
         {
-            return compareChunkCoordinate((ChunkCoordinates)var1!);
+            return compareChunkCoordinate((Vec3i)var1!);
         }
     }
 }

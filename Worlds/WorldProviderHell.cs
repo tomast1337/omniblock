@@ -9,7 +9,7 @@ namespace betareborn.Worlds
     {
         public override void registerWorldChunkManager()
         {
-            worldChunkMgr = new WorldChunkManagerHell(BiomeGenBase.hell, 1.0D, 0.0D);
+            worldChunkMgr = new WorldChunkManagerHell(Biome.hell, 1.0D, 0.0D);
             isNether = true;
             isHellWorld = true;
             hasNoSky = true;
@@ -41,7 +41,7 @@ namespace betareborn.Worlds
         public override bool canCoordinateBeSpawn(int var1, int var2)
         {
             int var3 = worldObj.getFirstUncoveredBlock(var1, var2);
-            return var3 == Block.bedrock.blockID ? false : (var3 == 0 ? false : Block.opaqueCubeLookup[var3]);
+            return var3 == Block.bedrock.id ? false : (var3 == 0 ? false : Block.opaqueCubeLookup[var3]);
         }
 
         public override float calculateCelestialAngle(long var1, float var3)
@@ -49,7 +49,7 @@ namespace betareborn.Worlds
             return 0.5F;
         }
 
-        public override bool canRespawnHere()
+        public override bool hasWorldSpawn()
         {
             return false;
         }

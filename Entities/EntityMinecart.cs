@@ -143,11 +143,11 @@ namespace betareborn.Entities
                             }
                         }
 
-                        dropItemWithOffset(Block.chest.blockID, 1, 0.0F);
+                        dropItemWithOffset(Block.chest.id, 1, 0.0F);
                     }
                     else if (minecartType == 2)
                     {
-                        dropItemWithOffset(Block.stoneOvenIdle.blockID, 1, 0.0F);
+                        dropItemWithOffset(Block.stoneOvenIdle.id, 1, 0.0F);
                     }
                 }
 
@@ -269,11 +269,11 @@ namespace betareborn.Entities
                 if (BlockRail.isRailBlock(var9))
                 {
                     Vec3D var10 = func_514_g(posX, posY, posZ);
-                    int var11 = worldObj.getBlockMetadata(var1, var2, var3);
+                    int var11 = worldObj.getBlockMeta(var1, var2, var3);
                     posY = (double)var2;
                     bool var12 = false;
                     bool var13 = false;
-                    if (var9 == Block.railPowered.blockID)
+                    if (var9 == Block.railPowered.id)
                     {
                         var12 = (var11 & 8) != 0;
                         var13 = !var12;
@@ -501,22 +501,22 @@ namespace betareborn.Entities
                         }
                         else if (var11 == 1)
                         {
-                            if (worldObj.isBlockNormalCube(var1 - 1, var2, var3))
+                            if (worldObj.shouldSuffocate(var1 - 1, var2, var3))
                             {
                                 motionX = 0.02D;
                             }
-                            else if (worldObj.isBlockNormalCube(var1 + 1, var2, var3))
+                            else if (worldObj.shouldSuffocate(var1 + 1, var2, var3))
                             {
                                 motionX = -0.02D;
                             }
                         }
                         else if (var11 == 0)
                         {
-                            if (worldObj.isBlockNormalCube(var1, var2, var3 - 1))
+                            if (worldObj.shouldSuffocate(var1, var2, var3 - 1))
                             {
                                 motionZ = 0.02D;
                             }
-                            else if (worldObj.isBlockNormalCube(var1, var2, var3 + 1))
+                            else if (worldObj.shouldSuffocate(var1, var2, var3 + 1))
                             {
                                 motionZ = -0.02D;
                             }
@@ -639,7 +639,7 @@ namespace betareborn.Entities
             }
             else
             {
-                int var13 = worldObj.getBlockMetadata(var9, var10, var11);
+                int var13 = worldObj.getBlockMeta(var9, var10, var11);
                 if (((BlockRail)Block.blocksList[var12]).getIsPowered())
                 {
                     var13 &= 7;
@@ -685,7 +685,7 @@ namespace betareborn.Entities
             int var10 = worldObj.getBlockId(var7, var8, var9);
             if (BlockRail.isRailBlock(var10))
             {
-                int var11 = worldObj.getBlockMetadata(var7, var8, var9);
+                int var11 = worldObj.getBlockMeta(var7, var8, var9);
                 var3 = (double)var8;
                 if (((BlockRail)Block.blocksList[var10]).getIsPowered())
                 {

@@ -15,7 +15,7 @@ namespace betareborn.Blocks
             return 2 + var1.nextInt(3);
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return Item.lightStoneDust.id;
         }

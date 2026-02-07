@@ -129,12 +129,12 @@ namespace betareborn
 
             if (var1.type == 70)
             {
-                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.sand.blockID);
+                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.sand.id);
             }
 
             if (var1.type == 71)
             {
-                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.gravel.blockID);
+                var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.gravel.id);
             }
 
             if (var8 != null)
@@ -327,7 +327,7 @@ namespace betareborn
             int var3 = var1.xPosition * 16;
             int var4 = var1.zPosition * 16;
 
-            for (int var5 = 0; var5 < var1.size; ++var5)
+            for (int var5 = 0; var5 < var1._size; ++var5)
             {
                 short var6 = var1.coordinateArray[var5];
                 int var7 = var1.typeArray[var5] & 255;
@@ -524,7 +524,7 @@ namespace betareborn
 
         public override void handleSpawnPosition(Packet6SpawnPosition var1)
         {
-            mc.thePlayer.setPlayerSpawnCoordinate(new ChunkCoordinates(var1.xPosition, var1.yPosition, var1.zPosition));
+            mc.thePlayer.setPlayerSpawnCoordinate(new Vec3i(var1.xPosition, var1.yPosition, var1.zPosition));
             mc.theWorld.getWorldInfo().setSpawn(var1.xPosition, var1.yPosition, var1.zPosition);
         }
 

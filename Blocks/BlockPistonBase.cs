@@ -23,10 +23,10 @@ namespace betareborn.Blocks
             return isSticky ? 106 : 107;
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
             int var3 = func_31044_d(var2);
-            return var3 > 5 ? blockIndexInTexture : (var1 == var3 ? (!isPowered(var2) && minX <= 0.0D && minY <= 0.0D && minZ <= 0.0D && maxX >= 1.0D && maxY >= 1.0D && maxZ >= 1.0D ? blockIndexInTexture : 110) : (var1 == PistonBlockTextures.field_31057_a[var3] ? 109 : 108));
+            return var3 > 5 ? textureId : (var1 == var3 ? (!isPowered(var2) && minX <= 0.0D && minY <= 0.0D && minZ <= 0.0D && maxX >= 1.0D && maxY >= 1.0D && maxZ >= 1.0D ? textureId : 110) : (var1 == PistonBlockTextures.field_31057_a[var3] ? 109 : 108));
         }
 
         public override int getRenderType()
@@ -34,12 +34,12 @@ namespace betareborn.Blocks
             return 16;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             return false;
         }
@@ -47,7 +47,7 @@ namespace betareborn.Blocks
         public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
         {
             int var6 = func_31039_c(var1, var2, var3, var4, (EntityPlayer)var5);
-            var1.setBlockMetadataWithNotify(var2, var3, var4, var6);
+            var1.setBlockMeta(var2, var3, var4, var6);
             if (!var1.multiplayerWorld)
             {
                 func_31043_h(var1, var2, var3, var4);
@@ -55,7 +55,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (!var1.multiplayerWorld && !field_31048_b)
             {
@@ -75,7 +75,7 @@ namespace betareborn.Blocks
 
         private void func_31043_h(World var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
             int var6 = func_31044_d(var5);
             bool var7 = func_31041_f(var1, var2, var3, var4, var6);
             if (var5 != 7)
@@ -109,7 +109,7 @@ namespace betareborn.Blocks
             {
                 if (func_31047_i(var1, var2, var3, var4, var6))
                 {
-                    var1.setBlockMetadataWithNotify(var2, var3, var4, var6 | 8);
+                    var1.setBlockMeta(var2, var3, var4, var6 | 8);
                     var1.playSoundEffect((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "tile.piston.out", 0.5F, var1.random.nextFloat() * 0.25F + 0.6F);
                 }
             }
@@ -121,17 +121,17 @@ namespace betareborn.Blocks
                     ((TileEntityPiston)var8).finish();
                 }
 
-                var1.setBlockAndMetadata(var2, var3, var4, Block.pistonMoving.blockID, var6);
-                var1.setBlockTileEntity(var2, var3, var4, BlockPistonMoving.func_31036_a(blockID, var6, var6, false, true));
+                var1.setBlockAndMetadata(var2, var3, var4, Block.pistonMoving.id, var6);
+                var1.setBlockTileEntity(var2, var3, var4, BlockPistonMoving.func_31036_a(id, var6, var6, false, true));
                 if (isSticky)
                 {
                     int var9 = var2 + PistonBlockTextures.field_31056_b[var6] * 2;
                     int var10 = var3 + PistonBlockTextures.field_31059_c[var6] * 2;
                     int var11 = var4 + PistonBlockTextures.field_31058_d[var6] * 2;
                     int var12 = var1.getBlockId(var9, var10, var11);
-                    int var13 = var1.getBlockMetadata(var9, var10, var11);
+                    int var13 = var1.getBlockMeta(var9, var10, var11);
                     bool var14 = false;
-                    if (var12 == Block.pistonMoving.blockID)
+                    if (var12 == Block.pistonMoving.id)
                     {
                         TileEntity var15 = var1.getBlockTileEntity(var9, var10, var11);
                         if (var15 != null && var15 is TileEntityPiston)
@@ -147,7 +147,7 @@ namespace betareborn.Blocks
                         }
                     }
 
-                    if (var14 || var12 <= 0 || !canPushBlock(var12, var1, var9, var10, var11, false) || Block.blocksList[var12].getMobilityFlag() != 0 && var12 != Block.pistonBase.blockID && var12 != Block.pistonStickyBase.blockID)
+                    if (var14 || var12 <= 0 || !canPushBlock(var12, var1, var9, var10, var11, false) || Block.blocksList[var12].getPistonBehavior() != 0 && var12 != Block.pistonBase.id && var12 != Block.pistonStickyBase.id)
                     {
                         if (!var14)
                         {
@@ -164,7 +164,7 @@ namespace betareborn.Blocks
                         var2 += PistonBlockTextures.field_31056_b[var6];
                         var3 += PistonBlockTextures.field_31059_c[var6];
                         var4 += PistonBlockTextures.field_31058_d[var6];
-                        var1.setBlockAndMetadata(var2, var3, var4, Block.pistonMoving.blockID, var13);
+                        var1.setBlockAndMetadata(var2, var3, var4, Block.pistonMoving.id, var13);
                         var1.setBlockTileEntity(var2, var3, var4, BlockPistonMoving.func_31036_a(var12, var13, var6, false, false));
                     }
                 }
@@ -181,52 +181,52 @@ namespace betareborn.Blocks
             field_31048_b = false;
         }
 
-        public override void setBlockBoundsBasedOnState(IBlockAccess var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
             if (isPowered(var5))
             {
                 switch (func_31044_d(var5))
                 {
                     case 0:
-                        setBlockBounds(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
+                        setBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
                         break;
                     case 1:
-                        setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F);
+                        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F);
                         break;
                     case 2:
-                        setBlockBounds(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F);
+                        setBoundingBox(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F);
                         break;
                     case 3:
-                        setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F);
+                        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F);
                         break;
                     case 4:
-                        setBlockBounds(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                        setBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                         break;
                     case 5:
-                        setBlockBounds(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F);
+                        setBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F);
                         break;
                 }
             }
             else
             {
-                setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             }
 
         }
 
         public override void setBlockBoundsForItemRender()
         {
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
         public override void getCollidingBoundingBoxes(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
         {
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             base.getCollidingBoundingBoxes(var1, var2, var3, var4, var5, var6);
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
@@ -263,30 +263,30 @@ namespace betareborn.Blocks
 
         private static bool canPushBlock(int var0, World var1, int var2, int var3, int var4, bool var5)
         {
-            if (var0 == Block.obsidian.blockID)
+            if (var0 == Block.obsidian.id)
             {
                 return false;
             }
             else
             {
-                if (var0 != Block.pistonBase.blockID && var0 != Block.pistonStickyBase.blockID)
+                if (var0 != Block.pistonBase.id && var0 != Block.pistonStickyBase.id)
                 {
                     if (Block.blocksList[var0].getHardness() == -1.0F)
                     {
                         return false;
                     }
 
-                    if (Block.blocksList[var0].getMobilityFlag() == 2)
+                    if (Block.blocksList[var0].getPistonBehavior() == 2)
                     {
                         return false;
                     }
 
-                    if (!var5 && Block.blocksList[var0].getMobilityFlag() == 1)
+                    if (!var5 && Block.blocksList[var0].getPistonBehavior() == 1)
                     {
                         return false;
                     }
                 }
-                else if (isPowered(var1.getBlockMetadata(var2, var3, var4)))
+                else if (isPowered(var1.getBlockMeta(var2, var3, var4)))
                 {
                     return false;
                 }
@@ -320,7 +320,7 @@ namespace betareborn.Blocks
                             return false;
                         }
 
-                        if (Block.blocksList[var9].getMobilityFlag() != 1)
+                        if (Block.blocksList[var9].getPistonBehavior() != 1)
                         {
                             if (var8 == 12)
                             {
@@ -365,7 +365,7 @@ namespace betareborn.Blocks
                             return false;
                         }
 
-                        if (Block.blocksList[var10].getMobilityFlag() != 1)
+                        if (Block.blocksList[var10].getPistonBehavior() != 1)
                         {
                             if (var9 == 12)
                             {
@@ -379,7 +379,7 @@ namespace betareborn.Blocks
                             continue;
                         }
 
-                        Block.blocksList[var10].dropBlockAsItem(var1, var6, var7, var8, var1.getBlockMetadata(var6, var7, var8));
+                        Block.blocksList[var10].dropBlockAsItem(var1, var6, var7, var8, var1.getBlockMeta(var6, var7, var8));
                         var1.setBlockWithNotify(var6, var7, var8, 0);
                     }
                 }
@@ -390,15 +390,15 @@ namespace betareborn.Blocks
                     var10 = var7 - PistonBlockTextures.field_31059_c[var5];
                     int var11 = var8 - PistonBlockTextures.field_31058_d[var5];
                     int var12 = var1.getBlockId(var9, var10, var11);
-                    int var13 = var1.getBlockMetadata(var9, var10, var11);
-                    if (var12 == blockID && var9 == var2 && var10 == var3 && var11 == var4)
+                    int var13 = var1.getBlockMeta(var9, var10, var11);
+                    if (var12 == id && var9 == var2 && var10 == var3 && var11 == var4)
                     {
-                        var1.setBlockAndMetadata(var6, var7, var8, Block.pistonMoving.blockID, var5 | (isSticky ? 8 : 0));
-                        var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(Block.pistonExtension.blockID, var5 | (isSticky ? 8 : 0), var5, true, false));
+                        var1.setBlockAndMetadata(var6, var7, var8, Block.pistonMoving.id, var5 | (isSticky ? 8 : 0));
+                        var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(Block.pistonExtension.id, var5 | (isSticky ? 8 : 0), var5, true, false));
                     }
                     else
                     {
-                        var1.setBlockAndMetadata(var6, var7, var8, Block.pistonMoving.blockID, var13);
+                        var1.setBlockAndMetadata(var6, var7, var8, Block.pistonMoving.id, var13);
                         var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(var12, var13, var5, true, false));
                     }
 

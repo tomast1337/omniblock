@@ -291,7 +291,7 @@ namespace betareborn.Rendering
 
         public void renderSky(float var1)
         {
-            if (!mc.theWorld.worldProvider.isNether)
+            if (!mc.theWorld.dimension.isNether)
             {
                 GLManager.GL.Disable(GLEnum.Texture2D);
                 Vector3D<double> var2 = worldObj.func_4079_a(mc.renderViewEntity, var1);
@@ -312,7 +312,7 @@ namespace betareborn.Rendering
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 RenderHelper.disableStandardItemLighting();
-                float[] var18 = worldObj.worldProvider.calcSunriseSunsetColors(worldObj.getCelestialAngle(var1), var1);
+                float[] var18 = worldObj.dimension.calcSunriseSunsetColors(worldObj.getCelestialAngle(var1), var1);
                 float var9;
                 float var10;
                 float var11;
@@ -389,7 +389,7 @@ namespace betareborn.Rendering
                 GLManager.GL.Enable(GLEnum.AlphaTest);
                 GLManager.GL.Enable(GLEnum.Fog);
                 GLManager.GL.PopMatrix();
-                if (worldObj.worldProvider.func_28112_c())
+                if (worldObj.dimension.func_28112_c())
                 {
                     GLManager.GL.Color3(var3 * 0.2F + 0.04F, var4 * 0.2F + 0.04F, var5 * 0.6F + 0.1F);
                 }
@@ -407,7 +407,7 @@ namespace betareborn.Rendering
 
         public void renderClouds(float var1)
         {
-            if (!mc.theWorld.worldProvider.isNether)
+            if (!mc.theWorld.dimension.isNether)
             {
                 renderCloudsFancy(var1);
             }
@@ -422,7 +422,7 @@ namespace betareborn.Rendering
             float var5 = 4.0F;
             double var6 = (mc.renderViewEntity.prevPosX + (mc.renderViewEntity.posX - mc.renderViewEntity.prevPosX) * (double)var1 + (double)(((float)cloudOffsetX + var1) * 0.03F)) / (double)var4;
             double var8 = (mc.renderViewEntity.prevPosZ + (mc.renderViewEntity.posZ - mc.renderViewEntity.prevPosZ) * (double)var1) / (double)var4 + (double)0.33F;
-            float var10 = worldObj.worldProvider.getCloudHeight() - var2 + 0.33F;
+            float var10 = worldObj.dimension.getCloudHeight() - var2 + 0.33F;
             int var11 = MathHelper.floor_double(var6 / 2048.0D);
             int var12 = MathHelper.floor_double(var8 / 2048.0D);
             var6 -= (double)(var11 * 2048);
@@ -659,7 +659,7 @@ namespace betareborn.Rendering
                 int var7 = worldObj.getBlockId(var2.blockX, var2.blockY, var2.blockZ);
                 if (var7 > 0)
                 {
-                    Block.blocksList[var7].setBlockBoundsBasedOnState(worldObj, var2.blockX, var2.blockY, var2.blockZ);
+                    Block.blocksList[var7].updateBoundingBox(worldObj, var2.blockX, var2.blockY, var2.blockZ);
                     double var8 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * (double)var5;
                     double var10 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * (double)var5;
                     double var12 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var5;

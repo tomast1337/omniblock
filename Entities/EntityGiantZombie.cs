@@ -18,7 +18,7 @@ namespace betareborn.Entities
 
         protected override float getBlockPathWeight(int var1, int var2, int var3)
         {
-            return worldObj.getLightBrightness(var1, var2, var3) - 0.5F;
+            return worldObj.getLuminance(var1, var2, var3) - 0.5F;
         }
     }
 

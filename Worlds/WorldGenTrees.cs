@@ -35,7 +35,7 @@ namespace betareborn.Worlds
                             if (var8 >= 0 && var8 < 128)
                             {
                                 var12 = var1.getBlockId(var10, var8, var11);
-                                if (var12 != 0 && var12 != Block.leaves.blockID)
+                                if (var12 != 0 && var12 != Block.leaves.id)
                                 {
                                     var7 = false;
                                 }
@@ -55,9 +55,9 @@ namespace betareborn.Worlds
                 else
                 {
                     var8 = var1.getBlockId(var3, var4 - 1, var5);
-                    if ((var8 == Block.grass.blockID || var8 == Block.dirt.blockID) && var4 < 128 - var6 - 1)
+                    if ((var8 == Block.grass.id || var8 == Block.dirt.id) && var4 < 128 - var6 - 1)
                     {
-                        var1.setBlock(var3, var4 - 1, var5, Block.dirt.blockID);
+                        var1.setBlock(var3, var4 - 1, var5, Block.dirt.id);
 
                         int var16;
                         for (var16 = var4 - 3 + var6; var16 <= var4 + var6; ++var16)
@@ -74,7 +74,7 @@ namespace betareborn.Worlds
                                     int var15 = var14 - var5;
                                     if ((java.lang.Math.abs(var13) != var11 || java.lang.Math.abs(var15) != var11 || var2.nextInt(2) != 0 && var10 != 0) && !Block.opaqueCubeLookup[var1.getBlockId(var12, var16, var14)])
                                     {
-                                        var1.setBlock(var12, var16, var14, Block.leaves.blockID);
+                                        var1.setBlock(var12, var16, var14, Block.leaves.id);
                                     }
                                 }
                             }
@@ -83,9 +83,9 @@ namespace betareborn.Worlds
                         for (var16 = 0; var16 < var6; ++var16)
                         {
                             var10 = var1.getBlockId(var3, var4 + var16, var5);
-                            if (var10 == 0 || var10 == Block.leaves.blockID)
+                            if (var10 == 0 || var10 == Block.leaves.id)
                             {
-                                var1.setBlock(var3, var4 + var16, var5, Block.wood.blockID);
+                                var1.setBlock(var3, var4 + var16, var5, Block.wood.id);
                             }
                         }
 

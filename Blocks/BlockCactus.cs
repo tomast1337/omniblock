@@ -14,24 +14,24 @@ namespace betareborn.Blocks
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (var1.isAirBlock(var2, var3 + 1, var4))
+            if (var1.isAir(var2, var3 + 1, var4))
             {
                 int var6;
-                for (var6 = 1; var1.getBlockId(var2, var3 - var6, var4) == blockID; ++var6)
+                for (var6 = 1; var1.getBlockId(var2, var3 - var6, var4) == id; ++var6)
                 {
                 }
 
                 if (var6 < 3)
                 {
-                    int var7 = var1.getBlockMetadata(var2, var3, var4);
+                    int var7 = var1.getBlockMeta(var2, var3, var4);
                     if (var7 == 15)
                     {
-                        var1.setBlockWithNotify(var2, var3 + 1, var4, blockID);
-                        var1.setBlockMetadataWithNotify(var2, var3, var4, 0);
+                        var1.setBlockWithNotify(var2, var3 + 1, var4, id);
+                        var1.setBlockMeta(var2, var3, var4, 0);
                     }
                     else
                     {
-                        var1.setBlockMetadataWithNotify(var2, var3, var4, var7 + 1);
+                        var1.setBlockMeta(var2, var3, var4, var7 + 1);
                     }
                 }
             }
@@ -52,15 +52,15 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return var1 == 1 ? blockIndexInTexture - 1 : (var1 == 0 ? blockIndexInTexture + 1 : blockIndexInTexture);
+            return var1 == 1 ? textureId - 1 : (var1 == 0 ? textureId + 1 : textureId);
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
@@ -75,11 +75,11 @@ namespace betareborn.Blocks
             return !base.canPlaceBlockAt(var1, var2, var3, var4) ? false : canBlockStay(var1, var2, var3, var4);
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (!canBlockStay(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
+                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
@@ -106,7 +106,7 @@ namespace betareborn.Blocks
             else
             {
                 int var5 = var1.getBlockId(var2, var3 - 1, var4);
-                return var5 == Block.cactus.blockID || var5 == Block.sand.blockID;
+                return var5 == Block.cactus.id || var5 == Block.sand.id;
             }
         }
 

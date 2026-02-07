@@ -64,7 +64,7 @@ namespace betareborn.Entities
                 mc.renderViewEntity = mc.thePlayer;
             }
 
-            float var1 = mc.theWorld.getLightBrightness(MathHelper.floor_double(mc.renderViewEntity.posX), MathHelper.floor_double(mc.renderViewEntity.posY), MathHelper.floor_double(mc.renderViewEntity.posZ));
+            float var1 = mc.theWorld.getLuminance(MathHelper.floor_double(mc.renderViewEntity.posX), MathHelper.floor_double(mc.renderViewEntity.posY), MathHelper.floor_double(mc.renderViewEntity.posZ));
             float var2 = (float)(3 - mc.gameSettings.renderDistance) / 3.0F;
             float var3 = var1 * (1.0F - var2) + var2;
             fogColor1 += (var3 - fogColor1) * 0.1F;
@@ -225,9 +225,9 @@ namespace betareborn.Entities
                 if (!mc.gameSettings.field_22273_E)
                 {
                     int var10 = mc.theWorld.getBlockId(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
-                    if (var10 == Block.blockBed.blockID)
+                    if (var10 == Block.blockBed.id)
                     {
-                        int var11 = mc.theWorld.getBlockMetadata(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
+                        int var11 = mc.theWorld.getBlockMeta(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
                         int var12 = var11 & 3;
                         GLManager.GL.Rotate((float)(var12 * 90), 0.0F, 1.0F, 0.0F);
                     }
@@ -661,7 +661,7 @@ namespace betareborn.Entities
                     int var17 = var6 + random.nextInt(var7) - random.nextInt(var7);
                     int var18 = var3.findTopSolidBlock(var16, var17);
                     int var19 = var3.getBlockId(var16, var18 - 1, var17);
-                    if (var18 <= var5 + var7 && var18 >= var5 - var7 && var3.getWorldChunkManager().getBiomeGenAt(var16, var17).canSpawnLightningBolt())
+                    if (var18 <= var5 + var7 && var18 >= var5 - var7 && var3.getBiomeSource().getBiome(var16, var17).canSpawnLightningBolt())
                     {
                         float var20 = random.nextFloat();
                         float var21 = random.nextFloat();
@@ -726,12 +726,12 @@ namespace betareborn.Entities
                 int var15 = MathHelper.floor_double(var11);
                 byte var16 = 10;
 
-                BiomeGenBase[] var17 = var4.getWorldChunkManager().func_4069_a(var5 - var16, var7 - var16, var16 * 2 + 1, var16 * 2 + 1);
+                Biome[] var17 = var4.getBiomeSource().getBiomesInArea(var5 - var16, var7 - var16, var16 * 2 + 1, var16 * 2 + 1);
                 int var18 = 0;
 
                 int var19;
                 int var20;
-                BiomeGenBase var21;
+                Biome var21;
                 int var22;
                 int var23;
                 int var24;
@@ -779,7 +779,7 @@ namespace betareborn.Entities
                                 double var33 = (double)((float)var20 + 0.5F) - var3.posZ;
                                 float var35 = MathHelper.sqrt_double(var31 * var31 + var33 * var33) / (float)var16;
                                 var8.startDrawingQuads();
-                                float var36 = var4.getLightBrightness(var19, var23, var20);
+                                float var36 = var4.getLuminance(var19, var23, var20);
                                 GLManager.GL.Color4(var36, var36, var36, ((1.0F - var35 * var35) * 0.3F + 0.5F) * var2);
                                 var8.setTranslationD(-var9 * 1.0D, -var11 * 1.0D, -var13 * 1.0D);
                                 var8.addVertexWithUV((double)(var19 + 0), (double)var24, (double)var20 + 0.5D, (double)(0.0F * var26 + var29), (double)((float)var24 * var26 / 4.0F + var28 * var26 + var30));
@@ -831,7 +831,7 @@ namespace betareborn.Entities
                                 double var39 = (double)((float)var20 + 0.5F) - var3.posZ;
                                 float var40 = MathHelper.sqrt_double(var38 * var38 + var39 * var39) / (float)var16;
                                 var8.startDrawingQuads();
-                                float var32 = var4.getLightBrightness(var19, 128, var20) * 0.85F + 0.15F;
+                                float var32 = var4.getLuminance(var19, 128, var20) * 0.85F + 0.15F;
                                 GLManager.GL.Color4(var32, var32, var32, ((1.0F - var40 * var40) * 0.5F + 0.5F) * var2);
                                 var8.setTranslationD(-var9 * 1.0D, -var11 * 1.0D, -var13 * 1.0D);
                                 var8.addVertexWithUV((double)(var19 + 0), (double)var23, (double)var20 + 0.5D, (double)(0.0F * var37), (double)((float)var23 * var37 / 4.0F + var26 * var37));
@@ -977,7 +977,7 @@ namespace betareborn.Entities
                     mc.renderGlobal.worldRenderer.SetFogEnd(farPlaneDistance * 0.8f);
                 }
 
-                if (mc.theWorld.worldProvider.isNether)
+                if (mc.theWorld.dimension.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     mc.renderGlobal.worldRenderer.SetFogStart(0.0f);

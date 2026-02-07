@@ -13,7 +13,7 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return var1 == 0 ? blockIndexInTexture + 2 : (var1 == 1 ? blockIndexInTexture + 1 : blockIndexInTexture);
+            return var1 == 0 ? textureId + 2 : (var1 == 1 ? textureId + 1 : textureId);
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
@@ -27,7 +27,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (var5 > 0 && Block.blocksList[var5].canProvidePower() && var1.isBlockIndirectlyGettingPowered(var2, var3, var4))
             {
@@ -55,7 +55,7 @@ namespace betareborn.Blocks
             {
                 if ((var5 & 1) == 0)
                 {
-                    dropBlockAsItem_do(var1, var2, var3, var4, new ItemStack(Block.tnt.blockID, 1, 0));
+                    dropBlockAsItem_do(var1, var2, var3, var4, new ItemStack(Block.tnt.id, 1, 0));
                 }
                 else
                 {
@@ -77,9 +77,9 @@ namespace betareborn.Blocks
             base.onBlockClicked(var1, var2, var3, var4, var5);
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            return base.blockActivated(var1, var2, var3, var4, var5);
+            return base.onUse(var1, var2, var3, var4, var5);
         }
     }
 

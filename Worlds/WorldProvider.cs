@@ -7,7 +7,7 @@ namespace betareborn.Worlds
     public abstract class WorldProvider : java.lang.Object
     {
         public World worldObj;
-        public WorldChunkManager worldChunkMgr;
+        public BiomeSource worldChunkMgr;
         public bool isNether = false;
         public bool isHellWorld = false;
         public bool hasNoSky = false;
@@ -36,7 +36,7 @@ namespace betareborn.Worlds
 
         public virtual void registerWorldChunkManager()
         {
-            worldChunkMgr = new WorldChunkManager(worldObj);
+            worldChunkMgr = new BiomeSource(worldObj);
         }
 
         public virtual IChunkProvider getChunkProvider()
@@ -47,7 +47,7 @@ namespace betareborn.Worlds
         public virtual bool canCoordinateBeSpawn(int var1, int var2)
         {
             int var3 = worldObj.getFirstUncoveredBlock(var1, var2);
-            return var3 == Block.sand.blockID;
+            return var3 == Block.sand.id;
         }
 
         public virtual float calculateCelestialAngle(long var1, float var3)
@@ -114,7 +114,7 @@ namespace betareborn.Worlds
             return new((double)var4, (double)var5, (double)var6);
         }
 
-        public virtual bool canRespawnHere()
+        public virtual bool hasWorldSpawn()
         {
             return true;
         }

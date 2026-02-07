@@ -33,13 +33,13 @@ namespace betareborn.Entities
         public double field_20062_v;
         public double field_20061_w;
         protected bool sleeping;
-        public ChunkCoordinates bedChunkCoordinates;
+        public Vec3i bedChunkCoordinates;
         private int sleepTimer;
         public float field_22063_x;
         public float field_22062_y;
         public float field_22061_z;
-        private ChunkCoordinates playerSpawnCoordinate;
-        private ChunkCoordinates startMinecartRidingCoordinate;
+        private Vec3i playerSpawnCoordinate;
+        private Vec3i startMinecartRidingCoordinate;
         public int timeUntilPortal = 20;
         protected bool inPortal = false;
         public float timeInPortal;
@@ -53,7 +53,7 @@ namespace betareborn.Entities
             inventorySlots = new ContainerPlayer(inventory, !var1.multiplayerWorld);
             craftingInventory = inventorySlots;
             yOffset = 1.62F;
-            ChunkCoordinates var2 = var1.getSpawnPoint();
+            Vec3i var2 = var1.getSpawnPoint();
             setPositionAndAnglesKeepPrevAngles((double)var2.x + 0.5D, (double)(var2.y + 1), (double)var2.z + 0.5D, 0.0F, 0.0F);
             health = 20;
             field_9351_C = "humanoid";
@@ -387,13 +387,13 @@ namespace betareborn.Entities
             sleepTimer = var1.getShort("SleepTimer");
             if (sleeping)
             {
-                bedChunkCoordinates = new ChunkCoordinates(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+                bedChunkCoordinates = new Vec3i(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
                 wakeUpPlayer(true, true, false);
             }
 
             if (var1.hasKey("SpawnX") && var1.hasKey("SpawnY") && var1.hasKey("SpawnZ"))
             {
-                playerSpawnCoordinate = new ChunkCoordinates(var1.getInteger("SpawnX"), var1.getInteger("SpawnY"), var1.getInteger("SpawnZ"));
+                playerSpawnCoordinate = new Vec3i(var1.getInteger("SpawnX"), var1.getInteger("SpawnY"), var1.getInteger("SpawnZ"));
             }
 
         }
@@ -660,7 +660,7 @@ namespace betareborn.Entities
                     return EnumStatus.OTHER_PROBLEM;
                 }
 
-                if (worldObj.worldProvider.isNether)
+                if (worldObj.dimension.isNether)
                 {
                     return EnumStatus.NOT_POSSIBLE_HERE;
                 }
@@ -680,8 +680,8 @@ namespace betareborn.Entities
             yOffset = 0.2F;
             if (worldObj.blockExists(var1, var2, var3))
             {
-                int var4 = worldObj.getBlockMetadata(var1, var2, var3);
-                int var5 = BlockBed.getDirectionFromMetadata(var4);
+                int var4 = worldObj.getBlockMeta(var1, var2, var3);
+                int var5 = BlockBed.getDirection(var4);
                 float var6 = 0.5F;
                 float var7 = 0.5F;
                 switch (var5)
@@ -710,7 +710,7 @@ namespace betareborn.Entities
 
             sleeping = true;
             sleepTimer = 0;
-            bedChunkCoordinates = new ChunkCoordinates(var1, var2, var3);
+            bedChunkCoordinates = new Vec3i(var1, var2, var3);
             motionX = motionZ = motionY = 0.0D;
             if (!worldObj.multiplayerWorld)
             {
@@ -746,15 +746,15 @@ namespace betareborn.Entities
         {
             setSize(0.6F, 1.8F);
             resetHeight();
-            ChunkCoordinates var4 = bedChunkCoordinates;
-            ChunkCoordinates var5 = bedChunkCoordinates;
-            if (var4 != null && worldObj.getBlockId(var4.x, var4.y, var4.z) == Block.blockBed.blockID)
+            Vec3i var4 = bedChunkCoordinates;
+            Vec3i var5 = bedChunkCoordinates;
+            if (var4 != null && worldObj.getBlockId(var4.x, var4.y, var4.z) == Block.blockBed.id)
             {
-                BlockBed.setBedOccupied(worldObj, var4.x, var4.y, var4.z, false);
-                var5 = BlockBed.getNearestEmptyChunkCoordinates(worldObj, var4.x, var4.y, var4.z, 0);
+                BlockBed.updateState(worldObj, var4.x, var4.y, var4.z, false);
+                var5 = BlockBed.findWakeUpPosition(worldObj, var4.x, var4.y, var4.z, 0);
                 if (var5 == null)
                 {
-                    var5 = new ChunkCoordinates(var4.x, var4.y + 1, var4.z);
+                    var5 = new Vec3i(var4.x, var4.y + 1, var4.z);
                 }
 
                 setPosition((double)((float)var5.x + 0.5F), (double)((float)var5.y + yOffset + 0.1F), (double)((float)var5.z + 0.5F));
@@ -784,23 +784,23 @@ namespace betareborn.Entities
 
         private bool isInBed()
         {
-            return worldObj.getBlockId(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z) == Block.blockBed.blockID;
+            return worldObj.getBlockId(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z) == Block.blockBed.id;
         }
 
-        public static ChunkCoordinates func_25060_a(World var0, ChunkCoordinates var1)
+        public static Vec3i func_25060_a(World var0, Vec3i var1)
         {
             IChunkProvider var2 = var0.getIChunkProvider();
             var2.prepareChunk(var1.x - 3 >> 4, var1.z - 3 >> 4);
             var2.prepareChunk(var1.x + 3 >> 4, var1.z - 3 >> 4);
             var2.prepareChunk(var1.x - 3 >> 4, var1.z + 3 >> 4);
             var2.prepareChunk(var1.x + 3 >> 4, var1.z + 3 >> 4);
-            if (var0.getBlockId(var1.x, var1.y, var1.z) != Block.blockBed.blockID)
+            if (var0.getBlockId(var1.x, var1.y, var1.z) != Block.blockBed.id)
             {
                 return null;
             }
             else
             {
-                ChunkCoordinates var3 = BlockBed.getNearestEmptyChunkCoordinates(var0, var1.x, var1.y, var1.z, 0);
+                Vec3i var3 = BlockBed.findWakeUpPosition(var0, var1.x, var1.y, var1.z, 0);
                 return var3;
             }
         }
@@ -809,8 +809,8 @@ namespace betareborn.Entities
         {
             if (bedChunkCoordinates != null)
             {
-                int var1 = worldObj.getBlockMetadata(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z);
-                int var2 = BlockBed.getDirectionFromMetadata(var1);
+                int var1 = worldObj.getBlockMeta(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z);
+                int var2 = BlockBed.getDirection(var1);
                 switch (var2)
                 {
                     case 0:
@@ -846,16 +846,16 @@ namespace betareborn.Entities
         {
         }
 
-        public ChunkCoordinates getPlayerSpawnCoordinate()
+        public Vec3i getPlayerSpawnCoordinate()
         {
             return playerSpawnCoordinate;
         }
 
-        public void setPlayerSpawnCoordinate(ChunkCoordinates var1)
+        public void setPlayerSpawnCoordinate(Vec3i var1)
         {
             if (var1 != null)
             {
-                playerSpawnCoordinate = new ChunkCoordinates(var1);
+                playerSpawnCoordinate = new Vec3i(var1);
             }
             else
             {
@@ -949,7 +949,7 @@ namespace betareborn.Entities
                         addStat(StatList.distanceByMinecartStat, var7);
                         if (startMinecartRidingCoordinate == null)
                         {
-                            startMinecartRidingCoordinate = new ChunkCoordinates(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+                            startMinecartRidingCoordinate = new Vec3i(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
                         }
                         else if (startMinecartRidingCoordinate.getSqDistanceTo(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) >= 1000.0D)
                         {

@@ -669,7 +669,7 @@ namespace betareborn.Entities
             int var1 = MathHelper.floor_double(posX);
             int var2 = MathHelper.floor_double(boundingBox.minY);
             int var3 = MathHelper.floor_double(posZ);
-            return worldObj.getBlockId(var1, var2, var3) == Block.ladder.blockID;
+            return worldObj.getBlockId(var1, var2, var3) == Block.ladder.id;
         }
 
         public override void writeEntityToNBT(NBTTagCompound var1)

@@ -9,9 +9,9 @@ namespace betareborn.Blocks
         private bool torchActive = false;
         private static List torchUpdates = new ArrayList();
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
-            return var1 == 1 ? Block.redstoneWire.getBlockTextureFromSideAndMetadata(var1, var2) : base.getBlockTextureFromSideAndMetadata(var1, var2);
+            return var1 == 1 ? Block.redstoneWire.getTexture(var1, var2) : base.getTexture(var1, var2);
         }
 
         private bool checkForBurnout(World var1, int var2, int var3, int var4, bool var5)
@@ -52,19 +52,19 @@ namespace betareborn.Blocks
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
         {
-            if (var1.getBlockMetadata(var2, var3, var4) == 0)
+            if (var1.getBlockMeta(var2, var3, var4) == 0)
             {
                 base.onBlockAdded(var1, var2, var3, var4);
             }
 
             if (torchActive)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, blockID);
+                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
             }
 
         }
@@ -73,17 +73,17 @@ namespace betareborn.Blocks
         {
             if (torchActive)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, blockID);
+                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
             }
 
         }
 
-        public override bool isPoweringTo(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (!torchActive)
             {
@@ -91,14 +91,14 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 return var6 == 5 && var5 == 1 ? false : (var6 == 3 && var5 == 3 ? false : (var6 == 4 && var5 == 2 ? false : (var6 == 1 && var5 == 5 ? false : var6 != 2 || var5 != 4)));
             }
         }
 
         private bool func_30002_h(World var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
             return var5 == 5 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3 - 1, var4, 0) ? true : (var5 == 3 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 - 1, 2) ? true : (var5 == 4 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 + 1, 3) ? true : (var5 == 1 && var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3, var4, 4) ? true : var5 == 2 && var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3, var4, 5))));
         }
 
@@ -115,7 +115,7 @@ namespace betareborn.Blocks
             {
                 if (var6)
                 {
-                    var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.torchRedstoneIdle.blockID, var1.getBlockMetadata(var2, var3, var4));
+                    var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.torchRedstoneIdle.id, var1.getBlockMeta(var2, var3, var4));
                     if (checkForBurnout(var1, var2, var3, var4, true))
                     {
                         var1.playSoundEffect((double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), "random.fizz", 0.5F, 2.6F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.8F);
@@ -132,15 +132,15 @@ namespace betareborn.Blocks
             }
             else if (!var6 && !checkForBurnout(var1, var2, var3, var4, false))
             {
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.torchRedstoneActive.blockID, var1.getBlockMetadata(var2, var3, var4));
+                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.torchRedstoneActive.id, var1.getBlockMeta(var2, var3, var4));
             }
 
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            base.onNeighborBlockChange(var1, var2, var3, var4, var5);
-            var1.scheduleBlockUpdate(var2, var3, var4, blockID, tickRate());
+            base.neighborUpdate(var1, var2, var3, var4, var5);
+            var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
         }
 
         public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
@@ -148,9 +148,9 @@ namespace betareborn.Blocks
             return var5 == 0 ? isPoweringTo(var1, var2, var3, var4, var5) : false;
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.torchRedstoneActive.blockID;
+            return Block.torchRedstoneActive.id;
         }
 
         public override bool canProvidePower()
@@ -162,7 +162,7 @@ namespace betareborn.Blocks
         {
             if (torchActive)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 double var7 = (double)((float)var2 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
                 double var9 = (double)((float)var3 + 0.7F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
                 double var11 = (double)((float)var4 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;

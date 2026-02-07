@@ -17,7 +17,7 @@ public class GameCommands {
                 .ToList();
             fields.ForEach(x => {
                 var block = ((Block)x.GetValue(null));
-                var id = block.blockID;
+                var id = block.id;
                 allItems.TryAdd(x.Name.ToLower(), id);
                 blocks.TryAdd(id, block);
             });

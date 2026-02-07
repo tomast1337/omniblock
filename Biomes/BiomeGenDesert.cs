@@ -1,6 +1,6 @@
 namespace betareborn.Biomes
 {
-    public class BiomeGenDesert : BiomeGenBase
+    public class BiomeGenDesert : Biome
     {
     }
 

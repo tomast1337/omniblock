@@ -18,7 +18,7 @@ namespace betareborn.Worlds
         public WorldClient(NetClientHandler var1, long var2, int var4) : base(new SaveHandlerMP(), "MpServer", WorldProvider.getProviderForDimension(var4), var2)
         {
             sendQueue = var1;
-            setSpawnPoint(new ChunkCoordinates(8, 64, 8));
+            setSpawnPoint(new Vec3i(8, 64, 8));
             field_28108_z = var1.field_28118_b;
         }
 
@@ -82,7 +82,7 @@ namespace betareborn.Worlds
 
         public override void setSpawnLocation()
         {
-            setSpawnPoint(new ChunkCoordinates(8, 64, 8));
+            setSpawnPoint(new Vec3i(8, 64, 8));
         }
 
         protected override void updateBlocksAndPlayCaveSounds()
@@ -192,7 +192,7 @@ namespace betareborn.Worlds
         public override bool setBlockMetadata(int var1, int var2, int var3, int var4)
         {
             int var5 = getBlockId(var1, var2, var3);
-            int var6 = getBlockMetadata(var1, var2, var3);
+            int var6 = getBlockMeta(var1, var2, var3);
             if (base.setBlockMetadata(var1, var2, var3, var4))
             {
                 field_1057_z.add(new WorldBlockPositionType(this, var1, var2, var3, var5, var6));
@@ -207,7 +207,7 @@ namespace betareborn.Worlds
         public override bool setBlockAndMetadata(int var1, int var2, int var3, int var4, int var5)
         {
             int var6 = getBlockId(var1, var2, var3);
-            int var7 = getBlockMetadata(var1, var2, var3);
+            int var7 = getBlockMeta(var1, var2, var3);
             if (base.setBlockAndMetadata(var1, var2, var3, var4, var5))
             {
                 field_1057_z.add(new WorldBlockPositionType(this, var1, var2, var3, var6, var7));
@@ -222,7 +222,7 @@ namespace betareborn.Worlds
         public override bool setBlock(int var1, int var2, int var3, int var4)
         {
             int var5 = getBlockId(var1, var2, var3);
-            int var6 = getBlockMetadata(var1, var2, var3);
+            int var6 = getBlockMeta(var1, var2, var3);
             if (base.setBlock(var1, var2, var3, var4))
             {
                 field_1057_z.add(new WorldBlockPositionType(this, var1, var2, var3, var5, var6));
@@ -255,7 +255,7 @@ namespace betareborn.Worlds
 
         protected override void updateWeather()
         {
-            if (!worldProvider.hasNoSky)
+            if (!dimension.hasNoSky)
             {
                 if (field_27168_F > 0)
                 {

@@ -153,7 +153,7 @@ namespace betareborn.Rendering
             RenderHelper.enableStandardItemLighting();
             GLManager.GL.PopMatrix();
             ItemStack var5 = itemToRender;
-            float var6 = mc.theWorld.getLightBrightness(MathHelper.floor_double(var3.posX), MathHelper.floor_double(var3.posY), MathHelper.floor_double(var3.posZ));
+            float var6 = mc.theWorld.getLuminance(MathHelper.floor_double(var3.posX), MathHelper.floor_double(var3.posY), MathHelper.floor_double(var3.posZ));
             float var8;
             float var9;
             float var10;
@@ -324,7 +324,7 @@ namespace betareborn.Rendering
                 int var5 = mc.renderEngine.getTexture("/terrain.png");
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var5);
                 int var6 = mc.theWorld.getBlockId(var2, var3, var4);
-                if (mc.theWorld.isBlockNormalCube(var2, var3, var4))
+                if (mc.theWorld.shouldSuffocate(var2, var3, var4))
                 {
                     renderInsideOfBlock(var1, Block.blocksList[var6].getBlockTextureFromSide(2));
                 }
@@ -338,7 +338,7 @@ namespace betareborn.Rendering
                         int var11 = MathHelper.floor_float((float)var2 + var8);
                         int var12 = MathHelper.floor_float((float)var3 + var9);
                         int var13 = MathHelper.floor_float((float)var4 + var10);
-                        if (mc.theWorld.isBlockNormalCube(var11, var12, var13))
+                        if (mc.theWorld.shouldSuffocate(var11, var12, var13))
                         {
                             var6 = mc.theWorld.getBlockId(var11, var12, var13);
                         }
@@ -426,7 +426,7 @@ namespace betareborn.Rendering
             for (int var4 = 0; var4 < 2; ++var4)
             {
                 GLManager.GL.PushMatrix();
-                int var5 = Block.fire.blockIndexInTexture + var4 * 16;
+                int var5 = Block.fire.textureId + var4 * 16;
                 int var6 = (var5 & 15) << 4;
                 int var7 = var5 & 240;
                 float var8 = (float)var6 / 256.0F;

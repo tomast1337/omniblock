@@ -126,7 +126,7 @@ namespace betareborn
                                     var43 = (var40 * 16 + var41) * 128 + var42;
                                     if (var42 >= 0 && var42 < 128)
                                     {
-                                        if (var3[var43] == Block.lavaMoving.blockID || var3[var43] == Block.lavaStill.blockID)
+                                        if (var3[var43] == Block.lavaMoving.id || var3[var43] == Block.lavaStill.id)
                                         {
                                             var55 = true;
                                         }
@@ -157,7 +157,7 @@ namespace betareborn
                                         if (var48 > -0.7D && var56 * var56 + var48 * var48 + var44 * var44 < 1.0D)
                                         {
                                             byte var50 = var3[var46];
-                                            if (var50 == Block.netherrack.blockID || var50 == Block.dirt.blockID || var50 == Block.grass.blockID)
+                                            if (var50 == Block.netherrack.id || var50 == Block.dirt.id || var50 == Block.grass.id)
                                             {
                                                 var3[var46] = 0;
                                             }

@@ -50,17 +50,17 @@ namespace betareborn.Blocks
             return -1;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             if (!var1.multiplayerWorld && var1.getBlockTileEntity(var2, var3, var4) == null)
             {
@@ -73,12 +73,12 @@ namespace betareborn.Blocks
             }
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return 0;
         }
 
-        public override void dropBlockAsItemWithChance(World var1, int var2, int var3, int var4, int var5, float var6)
+        public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
         {
             if (!var1.multiplayerWorld)
             {
@@ -90,7 +90,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (!var1.multiplayerWorld && var1.getBlockTileEntity(var2, var3, var4) == null)
             {
@@ -122,7 +122,7 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void setBlockBoundsBasedOnState(IBlockAccess var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
         {
             TileEntityPiston var5 = func_31034_c(var1, var2, var3, var4);
             if (var5 != null)
@@ -133,7 +133,7 @@ namespace betareborn.Blocks
                     return;
                 }
 
-                var6.setBlockBoundsBasedOnState(var1, var2, var3, var4);
+                var6.updateBoundingBox(var1, var2, var3, var4);
                 float var7 = var5.getProgress(0.0F);
                 if (var5.isExtending())
                 {
@@ -153,7 +153,7 @@ namespace betareborn.Blocks
 
         public Box getPushedBlockCollisionShape(World var1, int var2, int var3, int var4, int var5, float var6, int var7)
         {
-            if (var5 != 0 && var5 != blockID)
+            if (var5 != 0 && var5 != id)
             {
                 Box var8 = Block.blocksList[var5].getCollisionBoundingBoxFromPool(var1, var2, var3, var4);
                 if (var8 == null)
@@ -177,7 +177,7 @@ namespace betareborn.Blocks
             }
         }
 
-        private TileEntityPiston func_31034_c(IBlockAccess var1, int var2, int var3, int var4)
+        private TileEntityPiston func_31034_c(BlockView var1, int var2, int var3, int var4)
         {
             TileEntity var5 = var1.getBlockTileEntity(var2, var3, var4);
             return var5 != null && var5 is TileEntityPiston ? (TileEntityPiston)var5 : null;

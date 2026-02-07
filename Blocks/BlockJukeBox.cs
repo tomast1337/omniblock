@@ -15,12 +15,12 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return blockIndexInTexture + (var1 == 1 ? 1 : 0);
+            return textureId + (var1 == 1 ? 1 : 0);
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            if (var1.getBlockMetadata(var2, var3, var4) == 0)
+            if (var1.getBlockMeta(var2, var3, var4) == 0)
             {
                 return false;
             }
@@ -38,7 +38,7 @@ namespace betareborn.Blocks
                 TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)var1.getBlockTileEntity(var2, var3, var4);
                 var6.recordId = var5;
                 var6.markDirty();
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 1);
+                var1.setBlockMeta(var2, var3, var4, 1);
             }
         }
 
@@ -54,7 +54,7 @@ namespace betareborn.Blocks
                     var1.playRecord((String)null, var2, var3, var4);
                     var5.recordId = 0;
                     var5.markDirty();
-                    var1.setBlockMetadataWithNotify(var2, var3, var4, 0);
+                    var1.setBlockMeta(var2, var3, var4, 0);
                     float var8 = 0.7F;
                     double var9 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
                     double var11 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.2D + 0.6D;
@@ -72,11 +72,11 @@ namespace betareborn.Blocks
             base.onBlockRemoval(var1, var2, var3, var4);
         }
 
-        public override void dropBlockAsItemWithChance(World var1, int var2, int var3, int var4, int var5, float var6)
+        public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
         {
             if (!var1.multiplayerWorld)
             {
-                base.dropBlockAsItemWithChance(var1, var2, var3, var4, var5, var6);
+                base.dropStacks(var1, var2, var3, var4, var5, var6);
             }
         }
 

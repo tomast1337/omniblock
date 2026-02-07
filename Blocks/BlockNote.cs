@@ -13,10 +13,10 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return blockIndexInTexture;
+            return textureId;
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (var5 > 0 && Block.blocksList[var5].canProvidePower())
             {
@@ -35,7 +35,7 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             if (var1.multiplayerWorld)
             {

@@ -15,8 +15,8 @@ namespace betareborn.Blocks
 
         private void func_30003_j(World var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
-            var1.setBlockAndMetadata(var2, var3, var4, blockID + 1, var5);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
+            var1.setBlockAndMetadata(var2, var3, var4, id + 1, var5);
             var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
             var1.markBlockNeedsUpdate(var2, var3, var4);
         }
@@ -25,7 +25,7 @@ namespace betareborn.Blocks
         {
             int var6 = getFlowDecay(var1, var2, var3, var4);
             sbyte var7 = 1;
-            if (blockMaterial == Material.LAVA && !var1.worldProvider.isHellWorld)
+            if (blockMaterial == Material.LAVA && !var1.dimension.isHellWorld)
             {
                 var7 = 2;
             }
@@ -65,7 +65,7 @@ namespace betareborn.Blocks
                     {
                         var10 = 0;
                     }
-                    else if (var1.getMaterial(var2, var3 - 1, var4) == blockMaterial && var1.getBlockMetadata(var2, var3, var4) == 0)
+                    else if (var1.getMaterial(var2, var3 - 1, var4) == blockMaterial && var1.getBlockMeta(var2, var3, var4) == 0)
                     {
                         var10 = 0;
                     }
@@ -86,9 +86,9 @@ namespace betareborn.Blocks
                     }
                     else
                     {
-                        var1.setBlockMetadataWithNotify(var2, var3, var4, var10);
-                        var1.scheduleBlockUpdate(var2, var3, var4, blockID, tickRate());
-                        var1.notifyBlocksOfNeighborChange(var2, var3, var4, blockID);
+                        var1.setBlockMeta(var2, var3, var4, var10);
+                        var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
+                        var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
                     }
                 }
                 else if (var8)
@@ -105,11 +105,11 @@ namespace betareborn.Blocks
             {
                 if (var6 >= 8)
                 {
-                    var1.setBlockAndMetadataWithNotify(var2, var3 - 1, var4, blockID, var6);
+                    var1.setBlockAndMetadataWithNotify(var2, var3 - 1, var4, id, var6);
                 }
                 else
                 {
-                    var1.setBlockAndMetadataWithNotify(var2, var3 - 1, var4, blockID, var6 + 8);
+                    var1.setBlockAndMetadataWithNotify(var2, var3 - 1, var4, id, var6 + 8);
                 }
             }
             else if (var6 >= 0 && (var6 == 0 || blockBlocksFlow(var1, var2, var3 - 1, var4)))
@@ -162,11 +162,11 @@ namespace betareborn.Blocks
                     }
                     else
                     {
-                        Block.blocksList[var6].dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
+                        Block.blocksList[var6].dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     }
                 }
 
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, blockID, var5);
+                var1.setBlockAndMetadataWithNotify(var2, var3, var4, id, var5);
             }
 
         }
@@ -201,7 +201,7 @@ namespace betareborn.Blocks
                         ++var11;
                     }
 
-                    if (!blockBlocksFlow(var1, var9, var3, var11) && (var1.getMaterial(var9, var3, var11) != blockMaterial || var1.getBlockMetadata(var9, var3, var11) != 0))
+                    if (!blockBlocksFlow(var1, var9, var3, var11) && (var1.getMaterial(var9, var3, var11) != blockMaterial || var1.getBlockMeta(var9, var3, var11) != 0))
                     {
                         if (!blockBlocksFlow(var1, var9, var3 - 1, var11))
                         {
@@ -252,7 +252,7 @@ namespace betareborn.Blocks
                     ++var8;
                 }
 
-                if (!blockBlocksFlow(var1, var6, var3, var8) && (var1.getMaterial(var6, var3, var8) != blockMaterial || var1.getBlockMetadata(var6, var3, var8) != 0))
+                if (!blockBlocksFlow(var1, var6, var3, var8) && (var1.getMaterial(var6, var3, var8) != blockMaterial || var1.getBlockMeta(var6, var3, var8) != 0))
                 {
                     if (!blockBlocksFlow(var1, var6, var3 - 1, var8))
                     {
@@ -286,7 +286,7 @@ namespace betareborn.Blocks
         private bool blockBlocksFlow(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3, var4);
-            if (var5 != Block.doorWood.blockID && var5 != Block.doorSteel.blockID && var5 != Block.signPost.blockID && var5 != Block.ladder.blockID && var5 != Block.reed.blockID)
+            if (var5 != Block.doorWood.id && var5 != Block.doorSteel.id && var5 != Block.signPost.id && var5 != Block.ladder.id && var5 != Block.reed.id)
             {
                 if (var5 == 0)
                 {
@@ -336,9 +336,9 @@ namespace betareborn.Blocks
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
         {
             base.onBlockAdded(var1, var2, var3, var4);
-            if (var1.getBlockId(var2, var3, var4) == blockID)
+            if (var1.getBlockId(var2, var3, var4) == id)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, blockID, tickRate());
+                var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
             }
 
         }

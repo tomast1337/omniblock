@@ -288,7 +288,7 @@ namespace betareborn.Entities
                 {
                     for (int var8 = 0; var8 <= 4; ++var8)
                     {
-                        if ((var7 < 1 || var8 < 1 || var7 > 3 || var8 > 3) && worldObj.isBlockNormalCube(var4 + var7, var6 - 1, var5 + var8) && !worldObj.isBlockNormalCube(var4 + var7, var6, var5 + var8) && !worldObj.isBlockNormalCube(var4 + var7, var6 + 1, var5 + var8))
+                        if ((var7 < 1 || var8 < 1 || var7 > 3 || var8 > 3) && worldObj.shouldSuffocate(var4 + var7, var6 - 1, var5 + var8) && !worldObj.shouldSuffocate(var4 + var7, var6, var5 + var8) && !worldObj.shouldSuffocate(var4 + var7, var6 + 1, var5 + var8))
                         {
                             setPositionAndAnglesKeepPrevAngles((double)((float)(var4 + var7) + 0.5F), (double)var6, (double)((float)(var5 + var8) + 0.5F), rotationYaw, rotationPitch);
                             return;

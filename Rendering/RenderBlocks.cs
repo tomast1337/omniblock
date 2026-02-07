@@ -8,7 +8,7 @@ namespace betareborn.Rendering
 {
     public class RenderBlocks
     {
-        private IBlockAccess blockAccess;
+        private BlockView blockAccess;
         private Tessellator? tessellator;
         private int overrideBlockTexture = -1;
         private bool flipTexture = false;
@@ -75,12 +75,12 @@ namespace betareborn.Rendering
         private bool field_22357_ad;
         private bool field_22355_ae;
 
-        public RenderBlocks(IBlockAccess var1)
+        public RenderBlocks(BlockView var1)
         {
             blockAccess = var1;
         }
 
-        public RenderBlocks(IBlockAccess var1, Tessellator t)
+        public RenderBlocks(BlockView var1, Tessellator t)
         {
             blockAccess = var1;
             tessellator = t;
@@ -117,16 +117,16 @@ namespace betareborn.Rendering
         public bool renderBlockByRenderType(Block var1, int var2, int var3, int var4)
         {
             int var5 = var1.getRenderType();
-            var1.setBlockBoundsBasedOnState(blockAccess, var2, var3, var4);
+            var1.updateBoundingBox(blockAccess, var2, var3, var4);
             return var5 == 0 ? renderStandardBlock(var1, var2, var3, var4) : (var5 == 4 ? renderBlockFluids(var1, var2, var3, var4) : (var5 == 13 ? renderBlockCactus(var1, var2, var3, var4) : (var5 == 1 ? renderBlockReed(var1, var2, var3, var4) : (var5 == 6 ? renderBlockCrops(var1, var2, var3, var4) : (var5 == 2 ? renderBlockTorch(var1, var2, var3, var4) : (var5 == 3 ? renderBlockFire(var1, var2, var3, var4) : (var5 == 5 ? renderBlockRedstoneWire(var1, var2, var3, var4) : (var5 == 8 ? renderBlockLadder(var1, var2, var3, var4) : (var5 == 7 ? renderBlockDoor(var1, var2, var3, var4) : (var5 == 9 ? renderBlockMinecartTrack((BlockRail)var1, var2, var3, var4) : (var5 == 10 ? renderBlockStairs(var1, var2, var3, var4) : (var5 == 11 ? renderBlockFence(var1, var2, var3, var4) : (var5 == 12 ? renderBlockLever(var1, var2, var3, var4) : (var5 == 14 ? renderBlockBed(var1, var2, var3, var4) : (var5 == 15 ? renderBlockRepeater(var1, var2, var3, var4) : (var5 == 16 ? func_31074_b(var1, var2, var3, var4, false) : (var5 == 17 ? func_31080_c(var1, var2, var3, var4, true) : false)))))))))))))))));
         }
 
         private bool renderBlockBed(Block var1, int var2, int var3, int var4)
         {
             Tessellator var5 = getTessellator();
-            int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
-            int var7 = BlockBed.getDirectionFromMetadata(var6);
-            bool var8 = BlockBed.isBlockFootOfBed(var6);
+            int var6 = blockAccess.getBlockMeta(var2, var3, var4);
+            int var7 = BlockBed.getDirection(var6);
+            bool var8 = BlockBed.isHeadOfBed(var6);
             float var9 = 0.5F;
             float var10 = 1.0F;
             float var11 = 0.8F;
@@ -283,10 +283,10 @@ namespace betareborn.Rendering
 
         public bool renderBlockTorch(Block var1, int var2, int var3, int var4)
         {
-            int var5 = blockAccess.getBlockMetadata(var2, var3, var4);
+            int var5 = blockAccess.getBlockMeta(var2, var3, var4);
             Tessellator var6 = getTessellator();
             float var7 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var7 = 1.0F;
             }
@@ -321,13 +321,13 @@ namespace betareborn.Rendering
 
         private bool renderBlockRepeater(Block var1, int var2, int var3, int var4)
         {
-            int var5 = blockAccess.getBlockMetadata(var2, var3, var4);
+            int var5 = blockAccess.getBlockMeta(var2, var3, var4);
             int var6 = var5 & 3;
             int var7 = (var5 & 12) >> 2;
             renderStandardBlock(var1, var2, var3, var4);
             Tessellator var8 = getTessellator();
             float var9 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var9 = (var9 + 1.0F) * 0.5F;
             }
@@ -427,7 +427,7 @@ namespace betareborn.Rendering
 
         private bool func_31074_b(Block var1, int var2, int var3, int var4, bool var5)
         {
-            int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
+            int var6 = blockAccess.getBlockMeta(var2, var3, var4);
             bool var7 = var5 || (var6 & 8) != 0;
             int var8 = BlockPistonBase.func_31044_d(var6);
             if (var7)
@@ -439,36 +439,36 @@ namespace betareborn.Rendering
                         field_31086_h = 3;
                         field_31085_i = 3;
                         field_31084_j = 3;
-                        var1.setBlockBounds(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
+                        var1.setBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
                         break;
                     case 1:
-                        var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F);
+                        var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F);
                         break;
                     case 2:
                         field_31085_i = 1;
                         field_31084_j = 2;
-                        var1.setBlockBounds(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F);
+                        var1.setBoundingBox(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F);
                         break;
                     case 3:
                         field_31085_i = 2;
                         field_31084_j = 1;
                         field_31083_k = 3;
                         field_31082_l = 3;
-                        var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F);
+                        var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F);
                         break;
                     case 4:
                         field_31087_g = 1;
                         field_31086_h = 2;
                         field_31083_k = 2;
                         field_31082_l = 1;
-                        var1.setBlockBounds(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                        var1.setBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                         break;
                     case 5:
                         field_31087_g = 2;
                         field_31086_h = 1;
                         field_31083_k = 1;
                         field_31082_l = 2;
-                        var1.setBlockBounds(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F);
+                        var1.setBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F);
                         break;
                 }
 
@@ -479,7 +479,7 @@ namespace betareborn.Rendering
                 field_31084_j = 0;
                 field_31083_k = 0;
                 field_31082_l = 0;
-                var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             }
             else
             {
@@ -605,7 +605,7 @@ namespace betareborn.Rendering
 
         private bool func_31080_c(Block var1, int var2, int var3, int var4, bool var5)
         {
-            int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
+            int var6 = blockAccess.getBlockMeta(var2, var3, var4);
             int var7 = BlockPistonExtension.func_31050_c(var6);
             float var11 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
             float var12 = var5 ? 1.0F : 0.5F;
@@ -617,7 +617,7 @@ namespace betareborn.Rendering
                     field_31086_h = 3;
                     field_31085_i = 3;
                     field_31084_j = 3;
-                    var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+                    var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
                     renderStandardBlock(var1, var2, var3, var4);
                     func_31076_a((double)((float)var2 + 6.0F / 16.0F), (double)((float)var2 + 10.0F / 16.0F), (double)((float)var3 + 0.25F), (double)((float)var3 + 0.25F + var12), (double)((float)var4 + 10.0F / 16.0F), (double)((float)var4 + 10.0F / 16.0F), var11 * 0.8F, var13);
                     func_31076_a((double)((float)var2 + 10.0F / 16.0F), (double)((float)var2 + 6.0F / 16.0F), (double)((float)var3 + 0.25F), (double)((float)var3 + 0.25F + var12), (double)((float)var4 + 6.0F / 16.0F), (double)((float)var4 + 6.0F / 16.0F), var11 * 0.8F, var13);
@@ -625,7 +625,7 @@ namespace betareborn.Rendering
                     func_31076_a((double)((float)var2 + 10.0F / 16.0F), (double)((float)var2 + 10.0F / 16.0F), (double)((float)var3 + 0.25F), (double)((float)var3 + 0.25F + var12), (double)((float)var4 + 10.0F / 16.0F), (double)((float)var4 + 6.0F / 16.0F), var11 * 0.6F, var13);
                     break;
                 case 1:
-                    var1.setBlockBounds(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                    var1.setBoundingBox(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                     renderStandardBlock(var1, var2, var3, var4);
                     func_31076_a((double)((float)var2 + 6.0F / 16.0F), (double)((float)var2 + 10.0F / 16.0F), (double)((float)var3 - 0.25F + 1.0F - var12), (double)((float)var3 - 0.25F + 1.0F), (double)((float)var4 + 10.0F / 16.0F), (double)((float)var4 + 10.0F / 16.0F), var11 * 0.8F, var13);
                     func_31076_a((double)((float)var2 + 10.0F / 16.0F), (double)((float)var2 + 6.0F / 16.0F), (double)((float)var3 - 0.25F + 1.0F - var12), (double)((float)var3 - 0.25F + 1.0F), (double)((float)var4 + 6.0F / 16.0F), (double)((float)var4 + 6.0F / 16.0F), var11 * 0.8F, var13);
@@ -635,7 +635,7 @@ namespace betareborn.Rendering
                 case 2:
                     field_31085_i = 1;
                     field_31084_j = 2;
-                    var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
+                    var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
                     renderStandardBlock(var1, var2, var3, var4);
                     func_31081_b((double)((float)var2 + 6.0F / 16.0F), (double)((float)var2 + 6.0F / 16.0F), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var4 + 0.25F), (double)((float)var4 + 0.25F + var12), var11 * 0.6F, var13);
                     func_31081_b((double)((float)var2 + 10.0F / 16.0F), (double)((float)var2 + 10.0F / 16.0F), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var4 + 0.25F), (double)((float)var4 + 0.25F + var12), var11 * 0.6F, var13);
@@ -647,7 +647,7 @@ namespace betareborn.Rendering
                     field_31084_j = 1;
                     field_31083_k = 3;
                     field_31082_l = 3;
-                    var1.setBlockBounds(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
+                    var1.setBoundingBox(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
                     renderStandardBlock(var1, var2, var3, var4);
                     func_31081_b((double)((float)var2 + 6.0F / 16.0F), (double)((float)var2 + 6.0F / 16.0F), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var4 - 0.25F + 1.0F - var12), (double)((float)var4 - 0.25F + 1.0F), var11 * 0.6F, var13);
                     func_31081_b((double)((float)var2 + 10.0F / 16.0F), (double)((float)var2 + 10.0F / 16.0F), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var4 - 0.25F + 1.0F - var12), (double)((float)var4 - 0.25F + 1.0F), var11 * 0.6F, var13);
@@ -659,7 +659,7 @@ namespace betareborn.Rendering
                     field_31086_h = 2;
                     field_31083_k = 2;
                     field_31082_l = 1;
-                    var1.setBlockBounds(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
+                    var1.setBoundingBox(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
                     renderStandardBlock(var1, var2, var3, var4);
                     func_31077_c((double)((float)var2 + 0.25F), (double)((float)var2 + 0.25F + var12), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var4 + 10.0F / 16.0F), (double)((float)var4 + 6.0F / 16.0F), var11 * 0.5F, var13);
                     func_31077_c((double)((float)var2 + 0.25F), (double)((float)var2 + 0.25F + var12), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var4 + 6.0F / 16.0F), (double)((float)var4 + 10.0F / 16.0F), var11, var13);
@@ -671,7 +671,7 @@ namespace betareborn.Rendering
                     field_31086_h = 1;
                     field_31083_k = 1;
                     field_31082_l = 2;
-                    var1.setBlockBounds(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                    var1.setBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                     renderStandardBlock(var1, var2, var3, var4);
                     func_31077_c((double)((float)var2 - 0.25F + 1.0F - var12), (double)((float)var2 - 0.25F + 1.0F), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var3 + 6.0F / 16.0F), (double)((float)var4 + 10.0F / 16.0F), (double)((float)var4 + 6.0F / 16.0F), var11 * 0.5F, var13);
                     func_31077_c((double)((float)var2 - 0.25F + 1.0F - var12), (double)((float)var2 - 0.25F + 1.0F), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var3 + 10.0F / 16.0F), (double)((float)var4 + 6.0F / 16.0F), (double)((float)var4 + 10.0F / 16.0F), var11, var13);
@@ -686,20 +686,20 @@ namespace betareborn.Rendering
             field_31084_j = 0;
             field_31083_k = 0;
             field_31082_l = 0;
-            var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             return true;
         }
 
         public bool renderBlockLever(Block var1, int var2, int var3, int var4)
         {
-            int var5 = blockAccess.getBlockMetadata(var2, var3, var4);
+            int var5 = blockAccess.getBlockMeta(var2, var3, var4);
             int var6 = var5 & 7;
             bool var7 = (var5 & 8) > 0;
             Tessellator var8 = getTessellator();
             bool var9 = overrideBlockTexture >= 0;
             if (!var9)
             {
-                overrideBlockTexture = Block.cobblestone.blockIndexInTexture;
+                overrideBlockTexture = Block.cobblestone.textureId;
             }
 
             float var10 = 0.25F;
@@ -707,27 +707,27 @@ namespace betareborn.Rendering
             float var12 = 3.0F / 16.0F;
             if (var6 == 5)
             {
-                var1.setBlockBounds(0.5F - var11, 0.0F, 0.5F - var10, 0.5F + var11, var12, 0.5F + var10);
+                var1.setBoundingBox(0.5F - var11, 0.0F, 0.5F - var10, 0.5F + var11, var12, 0.5F + var10);
             }
             else if (var6 == 6)
             {
-                var1.setBlockBounds(0.5F - var10, 0.0F, 0.5F - var11, 0.5F + var10, var12, 0.5F + var11);
+                var1.setBoundingBox(0.5F - var10, 0.0F, 0.5F - var11, 0.5F + var10, var12, 0.5F + var11);
             }
             else if (var6 == 4)
             {
-                var1.setBlockBounds(0.5F - var11, 0.5F - var10, 1.0F - var12, 0.5F + var11, 0.5F + var10, 1.0F);
+                var1.setBoundingBox(0.5F - var11, 0.5F - var10, 1.0F - var12, 0.5F + var11, 0.5F + var10, 1.0F);
             }
             else if (var6 == 3)
             {
-                var1.setBlockBounds(0.5F - var11, 0.5F - var10, 0.0F, 0.5F + var11, 0.5F + var10, var12);
+                var1.setBoundingBox(0.5F - var11, 0.5F - var10, 0.0F, 0.5F + var11, 0.5F + var10, var12);
             }
             else if (var6 == 2)
             {
-                var1.setBlockBounds(1.0F - var12, 0.5F - var10, 0.5F - var11, 1.0F, 0.5F + var10, 0.5F + var11);
+                var1.setBoundingBox(1.0F - var12, 0.5F - var10, 0.5F - var11, 1.0F, 0.5F + var10, 0.5F + var11);
             }
             else if (var6 == 1)
             {
-                var1.setBlockBounds(0.0F, 0.5F - var10, 0.5F - var11, var12, 0.5F + var10, 0.5F + var11);
+                var1.setBoundingBox(0.0F, 0.5F - var10, 0.5F - var11, var12, 0.5F + var10, 0.5F + var11);
             }
 
             renderStandardBlock(var1, var2, var3, var4);
@@ -737,7 +737,7 @@ namespace betareborn.Rendering
             }
 
             float var13 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -921,7 +921,7 @@ namespace betareborn.Rendering
             double var29;
             double var31;
             double var33;
-            if (!blockAccess.isBlockNormalCube(var2, var3 - 1, var4) && !Block.fire.canBlockCatchFire(blockAccess, var2, var3 - 1, var4))
+            if (!blockAccess.shouldSuffocate(var2, var3 - 1, var4) && !Block.fire.canBlockCatchFire(blockAccess, var2, var3 - 1, var4))
             {
                 float var37 = 0.2F;
                 float var20 = 1.0F / 16.0F;
@@ -1102,8 +1102,8 @@ namespace betareborn.Rendering
         public bool renderBlockRedstoneWire(Block var1, int var2, int var3, int var4)
         {
             Tessellator var5 = getTessellator();
-            int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
-            int var7 = var1.getBlockTextureFromSideAndMetadata(1, var6);
+            int var6 = blockAccess.getBlockMeta(var2, var3, var4);
+            int var7 = var1.getTexture(1, var6);
             if (overrideBlockTexture >= 0)
             {
                 var7 = overrideBlockTexture;
@@ -1136,28 +1136,28 @@ namespace betareborn.Rendering
             double var17 = (double)(((float)var13 + 15.99F) / 256.0F);
             double var19 = (double)((float)var14 / 256.0F);
             double var21 = (double)(((float)var14 + 15.99F) / 256.0F);
-            bool var26 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 - 1, var3, var4, 1) || !blockAccess.isBlockNormalCube(var2 - 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 - 1, var3 - 1, var4, -1);
-            bool var27 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 + 1, var3, var4, 3) || !blockAccess.isBlockNormalCube(var2 + 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 + 1, var3 - 1, var4, -1);
-            bool var28 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3, var4 - 1, 2) || !blockAccess.isBlockNormalCube(var2, var3, var4 - 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 - 1, var4 - 1, -1);
-            bool var29 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3, var4 + 1, 0) || !blockAccess.isBlockNormalCube(var2, var3, var4 + 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 - 1, var4 + 1, -1);
-            if (!blockAccess.isBlockNormalCube(var2, var3 + 1, var4))
+            bool var26 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 - 1, var3, var4, 1) || !blockAccess.shouldSuffocate(var2 - 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 - 1, var3 - 1, var4, -1);
+            bool var27 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 + 1, var3, var4, 3) || !blockAccess.shouldSuffocate(var2 + 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 + 1, var3 - 1, var4, -1);
+            bool var28 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3, var4 - 1, 2) || !blockAccess.shouldSuffocate(var2, var3, var4 - 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 - 1, var4 - 1, -1);
+            bool var29 = BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3, var4 + 1, 0) || !blockAccess.shouldSuffocate(var2, var3, var4 + 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 - 1, var4 + 1, -1);
+            if (!blockAccess.shouldSuffocate(var2, var3 + 1, var4))
             {
-                if (blockAccess.isBlockNormalCube(var2 - 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 - 1, var3 + 1, var4, -1))
+                if (blockAccess.shouldSuffocate(var2 - 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 - 1, var3 + 1, var4, -1))
                 {
                     var26 = true;
                 }
 
-                if (blockAccess.isBlockNormalCube(var2 + 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 + 1, var3 + 1, var4, -1))
+                if (blockAccess.shouldSuffocate(var2 + 1, var3, var4) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2 + 1, var3 + 1, var4, -1))
                 {
                     var27 = true;
                 }
 
-                if (blockAccess.isBlockNormalCube(var2, var3, var4 - 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 + 1, var4 - 1, -1))
+                if (blockAccess.shouldSuffocate(var2, var3, var4 - 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 + 1, var4 - 1, -1))
                 {
                     var28 = true;
                 }
 
-                if (blockAccess.isBlockNormalCube(var2, var3, var4 + 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 + 1, var4 + 1, -1))
+                if (blockAccess.shouldSuffocate(var2, var3, var4 + 1) && BlockRedstoneWire.isPowerProviderOrWire(blockAccess, var2, var3 + 1, var4 + 1, -1))
                 {
                     var29 = true;
                 }
@@ -1266,13 +1266,13 @@ namespace betareborn.Rendering
                 var5.addVertexWithUV((double)var31, (double)((float)var3 + 0.015625F), (double)var34, var17, var19 + 1.0D / 16.0D);
             }
 
-            if (!blockAccess.isBlockNormalCube(var2, var3 + 1, var4))
+            if (!blockAccess.shouldSuffocate(var2, var3 + 1, var4))
             {
                 var15 = (double)((float)(var13 + 16) / 256.0F);
                 var17 = (double)(((float)(var13 + 16) + 15.99F) / 256.0F);
                 var19 = (double)((float)var14 / 256.0F);
                 var21 = (double)(((float)var14 + 15.99F) / 256.0F);
-                if (blockAccess.isBlockNormalCube(var2 - 1, var3, var4) && blockAccess.getBlockId(var2 - 1, var3 + 1, var4) == Block.redstoneWire.blockID)
+                if (blockAccess.shouldSuffocate(var2 - 1, var3, var4) && blockAccess.getBlockId(var2 - 1, var3 + 1, var4) == Block.redstoneWire.id)
                 {
                     var5.setColorOpaque_F(var8 * var10, var8 * var11, var8 * var12);
                     var5.addVertexWithUV((double)((float)var2 + 0.015625F), (double)((float)(var3 + 1) + 7.0F / 320.0F), (double)(var4 + 1), var17, var19);
@@ -1286,7 +1286,7 @@ namespace betareborn.Rendering
                     var5.addVertexWithUV((double)((float)var2 + 0.015625F), (double)((float)(var3 + 1) + 7.0F / 320.0F), (double)(var4 + 0), var17, var21 + 1.0D / 16.0D);
                 }
 
-                if (blockAccess.isBlockNormalCube(var2 + 1, var3, var4) && blockAccess.getBlockId(var2 + 1, var3 + 1, var4) == Block.redstoneWire.blockID)
+                if (blockAccess.shouldSuffocate(var2 + 1, var3, var4) && blockAccess.getBlockId(var2 + 1, var3 + 1, var4) == Block.redstoneWire.id)
                 {
                     var5.setColorOpaque_F(var8 * var10, var8 * var11, var8 * var12);
                     var5.addVertexWithUV((double)((float)(var2 + 1) - 0.015625F), (double)(var3 + 0), (double)(var4 + 1), var15, var21);
@@ -1300,7 +1300,7 @@ namespace betareborn.Rendering
                     var5.addVertexWithUV((double)((float)(var2 + 1) - 0.015625F), (double)(var3 + 0), (double)(var4 + 0), var15, var19 + 1.0D / 16.0D);
                 }
 
-                if (blockAccess.isBlockNormalCube(var2, var3, var4 - 1) && blockAccess.getBlockId(var2, var3 + 1, var4 - 1) == Block.redstoneWire.blockID)
+                if (blockAccess.shouldSuffocate(var2, var3, var4 - 1) && blockAccess.getBlockId(var2, var3 + 1, var4 - 1) == Block.redstoneWire.id)
                 {
                     var5.setColorOpaque_F(var8 * var10, var8 * var11, var8 * var12);
                     var5.addVertexWithUV((double)(var2 + 1), (double)(var3 + 0), (double)((float)var4 + 0.015625F), var15, var21);
@@ -1314,7 +1314,7 @@ namespace betareborn.Rendering
                     var5.addVertexWithUV((double)(var2 + 0), (double)(var3 + 0), (double)((float)var4 + 0.015625F), var15, var19 + 1.0D / 16.0D);
                 }
 
-                if (blockAccess.isBlockNormalCube(var2, var3, var4 + 1) && blockAccess.getBlockId(var2, var3 + 1, var4 + 1) == Block.redstoneWire.blockID)
+                if (blockAccess.shouldSuffocate(var2, var3, var4 + 1) && blockAccess.getBlockId(var2, var3 + 1, var4 + 1) == Block.redstoneWire.id)
                 {
                     var5.setColorOpaque_F(var8 * var10, var8 * var11, var8 * var12);
                     var5.addVertexWithUV((double)(var2 + 1), (double)((float)(var3 + 1) + 7.0F / 320.0F), (double)((float)(var4 + 1) - 0.015625F), var17, var19);
@@ -1335,8 +1335,8 @@ namespace betareborn.Rendering
         public bool renderBlockMinecartTrack(BlockRail var1, int var2, int var3, int var4)
         {
             Tessellator var5 = getTessellator();
-            int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
-            int var7 = var1.getBlockTextureFromSideAndMetadata(0, var6);
+            int var6 = blockAccess.getBlockMeta(var2, var3, var4);
+            int var7 = var1.getTexture(0, var6);
             if (overrideBlockTexture >= 0)
             {
                 var7 = overrideBlockTexture;
@@ -1447,7 +1447,7 @@ namespace betareborn.Rendering
             double var12 = (double)(((float)var8 + 15.99F) / 256.0F);
             double var14 = (double)((float)var9 / 256.0F);
             double var16 = (double)(((float)var9 + 15.99F) / 256.0F);
-            int var18 = blockAccess.getBlockMetadata(var2, var3, var4);
+            int var18 = blockAccess.getBlockMeta(var2, var3, var4);
             float var19 = 0.0F;
             float var20 = 0.05F;
             if (var18 == 5)
@@ -1507,7 +1507,7 @@ namespace betareborn.Rendering
                 var15 += ((double)((float)(var17 >> 24 & 15L) / 15.0F) - 0.5D) * 0.5D;
             }
 
-            renderCrossedSquares(var1, blockAccess.getBlockMetadata(var2, var3, var4), var19, var20, var15);
+            renderCrossedSquares(var1, blockAccess.getBlockMeta(var2, var3, var4), var19, var20, var15);
             return true;
         }
 
@@ -1516,7 +1516,7 @@ namespace betareborn.Rendering
             Tessellator var5 = getTessellator();
             float var6 = var1.getBlockBrightness(blockAccess, var2, var3, var4);
             var5.setColorOpaque_F(var6, var6, var6);
-            func_1245_b(var1, blockAccess.getBlockMetadata(var2, var3, var4), (double)var2, (double)((float)var3 - 1.0F / 16.0F), (double)var4);
+            func_1245_b(var1, blockAccess.getBlockMeta(var2, var3, var4), (double)var2, (double)((float)var3 - 1.0F / 16.0F), (double)var4);
             return true;
         }
 
@@ -1572,7 +1572,7 @@ namespace betareborn.Rendering
         public void renderCrossedSquares(Block var1, int var2, double var3, double var5, double var7)
         {
             Tessellator var9 = getTessellator();
-            int var10 = var1.getBlockTextureFromSideAndMetadata(0, var2);
+            int var10 = var1.getTexture(0, var2);
             if (overrideBlockTexture >= 0)
             {
                 var10 = overrideBlockTexture;
@@ -1609,7 +1609,7 @@ namespace betareborn.Rendering
         public void func_1245_b(Block var1, int var2, double var3, double var5, double var7)
         {
             Tessellator var9 = getTessellator();
-            int var10 = var1.getBlockTextureFromSideAndMetadata(0, var2);
+            int var10 = var1.getTexture(0, var2);
             if (overrideBlockTexture >= 0)
             {
                 var10 = overrideBlockTexture;
@@ -1687,7 +1687,7 @@ namespace betareborn.Rendering
                 double var18 = 0.0D;
                 double var20 = 1.0D;
                 Material var22 = var1.blockMaterial;
-                int var23 = blockAccess.getBlockMetadata(var2, var3, var4);
+                int var23 = blockAccess.getBlockMeta(var2, var3, var4);
                 float var24 = func_1224_a(var2, var3, var4, var22);
                 float var25 = func_1224_a(var2, var3, var4 + 1, var22);
                 float var26 = func_1224_a(var2 + 1, var3, var4 + 1, var22);
@@ -1700,11 +1700,11 @@ namespace betareborn.Rendering
                 if (renderAllFaces || var10)
                 {
                     var13 = true;
-                    var28 = var1.getBlockTextureFromSideAndMetadata(1, var23);
+                    var28 = var1.getTexture(1, var23);
                     float var29 = (float)BlockFluid.func_293_a(blockAccess, var2, var3, var4, var22);
                     if (var29 > -999.0F)
                     {
-                        var28 = var1.getBlockTextureFromSideAndMetadata(2, var23);
+                        var28 = var1.getTexture(2, var23);
                     }
 
                     int var30 = (var28 & 15) << 4;
@@ -1763,7 +1763,7 @@ namespace betareborn.Rendering
                         ++var53;
                     }
 
-                    int var54 = var1.getBlockTextureFromSideAndMetadata(var28 + 2, var23);
+                    int var54 = var1.getTexture(var28 + 2, var23);
                     int var33 = (var54 & 15) << 4;
                     int var55 = var54 & 240;
                     if (renderAllFaces || var12[var28])
@@ -1863,7 +1863,7 @@ namespace betareborn.Rendering
                 }
                 else
                 {
-                    int var12 = blockAccess.getBlockMetadata(var8, var2, var10);
+                    int var12 = blockAccess.getBlockMeta(var8, var2, var10);
                     if (var12 >= 8 || var12 == 0)
                     {
                         var6 += BlockFluid.getPercentAir(var12) * 10.0F;
@@ -1981,7 +1981,7 @@ namespace betareborn.Rendering
             field_22339_T = Block.canBlockGrass[blockAccess.getBlockId(var2, var3 + 1, var4 - 1)];
             field_22355_ae = Block.canBlockGrass[blockAccess.getBlockId(var2, var3 - 1, var4 + 1)];
             field_22361_ab = Block.canBlockGrass[blockAccess.getBlockId(var2, var3 - 1, var4 - 1)];
-            if (var1.blockIndexInTexture == 3)
+            if (var1.textureId == 3)
             {
                 var18 = false;
                 var17 = var18;
@@ -2807,25 +2807,25 @@ namespace betareborn.Rendering
             bool var5 = false;
             float var6 = 6.0F / 16.0F;
             float var7 = 10.0F / 16.0F;
-            var1.setBlockBounds(var6, 0.0F, var6, var7, 1.0F, var7);
+            var1.setBoundingBox(var6, 0.0F, var6, var7, 1.0F, var7);
             renderStandardBlock(var1, var2, var3, var4);
             var5 = true;
             bool var8 = false;
             bool var9 = false;
-            if (blockAccess.getBlockId(var2 - 1, var3, var4) == var1.blockID || blockAccess.getBlockId(var2 + 1, var3, var4) == var1.blockID)
+            if (blockAccess.getBlockId(var2 - 1, var3, var4) == var1.id || blockAccess.getBlockId(var2 + 1, var3, var4) == var1.id)
             {
                 var8 = true;
             }
 
-            if (blockAccess.getBlockId(var2, var3, var4 - 1) == var1.blockID || blockAccess.getBlockId(var2, var3, var4 + 1) == var1.blockID)
+            if (blockAccess.getBlockId(var2, var3, var4 - 1) == var1.id || blockAccess.getBlockId(var2, var3, var4 + 1) == var1.id)
             {
                 var9 = true;
             }
 
-            bool var10 = blockAccess.getBlockId(var2 - 1, var3, var4) == var1.blockID;
-            bool var11 = blockAccess.getBlockId(var2 + 1, var3, var4) == var1.blockID;
-            bool var12 = blockAccess.getBlockId(var2, var3, var4 - 1) == var1.blockID;
-            bool var13 = blockAccess.getBlockId(var2, var3, var4 + 1) == var1.blockID;
+            bool var10 = blockAccess.getBlockId(var2 - 1, var3, var4) == var1.id;
+            bool var11 = blockAccess.getBlockId(var2 + 1, var3, var4) == var1.id;
+            bool var12 = blockAccess.getBlockId(var2, var3, var4 - 1) == var1.id;
+            bool var13 = blockAccess.getBlockId(var2, var3, var4 + 1) == var1.id;
             if (!var8 && !var9)
             {
                 var8 = true;
@@ -2841,14 +2841,14 @@ namespace betareborn.Rendering
             float var19 = var13 ? 1.0F : var7;
             if (var8)
             {
-                var1.setBlockBounds(var16, var14, var6, var17, var15, var7);
+                var1.setBoundingBox(var16, var14, var6, var17, var15, var7);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
 
             if (var9)
             {
-                var1.setBlockBounds(var6, var14, var18, var7, var15, var19);
+                var1.setBoundingBox(var6, var14, var18, var7, var15, var19);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
@@ -2857,60 +2857,60 @@ namespace betareborn.Rendering
             var15 = 9.0F / 16.0F;
             if (var8)
             {
-                var1.setBlockBounds(var16, var14, var6, var17, var15, var7);
+                var1.setBoundingBox(var16, var14, var6, var17, var15, var7);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
 
             if (var9)
             {
-                var1.setBlockBounds(var6, var14, var18, var7, var15, var19);
+                var1.setBoundingBox(var6, var14, var18, var7, var15, var19);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
 
-            var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             return var5;
         }
 
         public bool renderBlockStairs(Block var1, int var2, int var3, int var4)
         {
             bool var5 = false;
-            int var6 = blockAccess.getBlockMetadata(var2, var3, var4);
+            int var6 = blockAccess.getBlockMeta(var2, var3, var4);
             if (var6 == 0)
             {
-                var1.setBlockBounds(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
+                var1.setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
                 renderStandardBlock(var1, var2, var3, var4);
-                var1.setBlockBounds(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                var1.setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
             else if (var6 == 1)
             {
-                var1.setBlockBounds(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
+                var1.setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
                 renderStandardBlock(var1, var2, var3, var4);
-                var1.setBlockBounds(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
+                var1.setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
             else if (var6 == 2)
             {
-                var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
+                var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
                 renderStandardBlock(var1, var2, var3, var4);
-                var1.setBlockBounds(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
+                var1.setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
             else if (var6 == 3)
             {
-                var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
+                var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
                 renderStandardBlock(var1, var2, var3, var4);
-                var1.setBlockBounds(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
+                var1.setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
                 renderStandardBlock(var1, var2, var3, var4);
                 var5 = true;
             }
 
-            var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             return var5;
         }
 
@@ -2930,7 +2930,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -2944,7 +2944,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -2958,7 +2958,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -2980,7 +2980,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -3002,7 +3002,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -3024,7 +3024,7 @@ namespace betareborn.Rendering
                 var13 = var12;
             }
 
-            if (Block.lightValue[var1.blockID] > 0)
+            if (Block.lightValue[var1.id] > 0)
             {
                 var13 = 1.0F;
             }
@@ -3726,12 +3726,12 @@ namespace betareborn.Rendering
                         {
                             if (var9 == 0)
                             {
-                                var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
+                                var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
                             }
 
                             if (var9 == 1)
                             {
-                                var1.setBlockBounds(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
+                                var1.setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
                             }
 
                             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
@@ -3769,23 +3769,23 @@ namespace betareborn.Rendering
                             var7 = 2.0F / 16.0F;
                             if (var9 == 0)
                             {
-                                var1.setBlockBounds(0.5F - var7, 0.0F, 0.0F, 0.5F + var7, 1.0F, var7 * 2.0F);
+                                var1.setBoundingBox(0.5F - var7, 0.0F, 0.0F, 0.5F + var7, 1.0F, var7 * 2.0F);
                             }
 
                             if (var9 == 1)
                             {
-                                var1.setBlockBounds(0.5F - var7, 0.0F, 1.0F - var7 * 2.0F, 0.5F + var7, 1.0F, 1.0F);
+                                var1.setBoundingBox(0.5F - var7, 0.0F, 1.0F - var7 * 2.0F, 0.5F + var7, 1.0F, 1.0F);
                             }
 
                             var7 = 1.0F / 16.0F;
                             if (var9 == 2)
                             {
-                                var1.setBlockBounds(0.5F - var7, 1.0F - var7 * 3.0F, -var7 * 2.0F, 0.5F + var7, 1.0F - var7, 1.0F + var7 * 2.0F);
+                                var1.setBoundingBox(0.5F - var7, 1.0F - var7 * 3.0F, -var7 * 2.0F, 0.5F + var7, 1.0F - var7, 1.0F + var7 * 2.0F);
                             }
 
                             if (var9 == 3)
                             {
-                                var1.setBlockBounds(0.5F - var7, 0.5F - var7 * 3.0F, -var7 * 2.0F, 0.5F + var7, 0.5F - var7, 1.0F + var7 * 2.0F);
+                                var1.setBoundingBox(0.5F - var7, 0.5F - var7 * 3.0F, -var7 * 2.0F, 0.5F + var7, 0.5F - var7, 1.0F + var7 * 2.0F);
                             }
 
                             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
@@ -3816,7 +3816,7 @@ namespace betareborn.Rendering
                             GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
                         }
 
-                        var1.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                        var1.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                     }
                 }
             }
@@ -3831,27 +3831,27 @@ namespace betareborn.Rendering
                 GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
                 var4.startDrawingQuads();
                 var4.setNormal(0.0F, -1.0F, 0.0F);
-                renderBottomFace(var1, 0.0D, 0.0D, 0.0D, var1.getBlockTextureFromSideAndMetadata(0, var2));
+                renderBottomFace(var1, 0.0D, 0.0D, 0.0D, var1.getTexture(0, var2));
                 var4.draw();
                 var4.startDrawingQuads();
                 var4.setNormal(0.0F, 1.0F, 0.0F);
-                renderTopFace(var1, 0.0D, 0.0D, 0.0D, var1.getBlockTextureFromSideAndMetadata(1, var2));
+                renderTopFace(var1, 0.0D, 0.0D, 0.0D, var1.getTexture(1, var2));
                 var4.draw();
                 var4.startDrawingQuads();
                 var4.setNormal(0.0F, 0.0F, -1.0F);
-                renderEastFace(var1, 0.0D, 0.0D, 0.0D, var1.getBlockTextureFromSideAndMetadata(2, var2));
+                renderEastFace(var1, 0.0D, 0.0D, 0.0D, var1.getTexture(2, var2));
                 var4.draw();
                 var4.startDrawingQuads();
                 var4.setNormal(0.0F, 0.0F, 1.0F);
-                renderWestFace(var1, 0.0D, 0.0D, 0.0D, var1.getBlockTextureFromSideAndMetadata(3, var2));
+                renderWestFace(var1, 0.0D, 0.0D, 0.0D, var1.getTexture(3, var2));
                 var4.draw();
                 var4.startDrawingQuads();
                 var4.setNormal(-1.0F, 0.0F, 0.0F);
-                renderNorthFace(var1, 0.0D, 0.0D, 0.0D, var1.getBlockTextureFromSideAndMetadata(4, var2));
+                renderNorthFace(var1, 0.0D, 0.0D, 0.0D, var1.getTexture(4, var2));
                 var4.draw();
                 var4.startDrawingQuads();
                 var4.setNormal(1.0F, 0.0F, 0.0F);
-                renderSouthFace(var1, 0.0D, 0.0D, 0.0D, var1.getBlockTextureFromSideAndMetadata(5, var2));
+                renderSouthFace(var1, 0.0D, 0.0D, 0.0D, var1.getTexture(5, var2));
                 var4.draw();
                 GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
             }

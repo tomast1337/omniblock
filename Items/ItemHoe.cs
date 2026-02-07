@@ -17,7 +17,7 @@ namespace betareborn.Items
         {
             int var8 = var3.getBlockId(var4, var5, var6);
             int var9 = var3.getBlockId(var4, var5 + 1, var6);
-            if ((var7 == 0 || var9 != 0 || var8 != Block.grass.blockID) && var8 != Block.dirt.blockID)
+            if ((var7 == 0 || var9 != 0 || var8 != Block.grass.id) && var8 != Block.dirt.id)
             {
                 return false;
             }
@@ -31,7 +31,7 @@ namespace betareborn.Items
                 }
                 else
                 {
-                    var3.setBlockWithNotify(var4, var5, var6, var10.blockID);
+                    var3.setBlockWithNotify(var4, var5, var6, var10.id);
                     var1.damageItem(1, var2);
                     return true;
                 }

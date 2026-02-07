@@ -15,50 +15,50 @@ namespace betareborn.Blocks
         public BlockRedstoneRepeater(int var1, bool var2) : base(var1, 6, Material.PISTON_BREAKABLE)
         {
             isRepeaterPowered = var2;
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
-            return !var1.isBlockNormalCube(var2, var3 - 1, var4) ? false : base.canPlaceBlockAt(var1, var2, var3, var4);
+            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canPlaceBlockAt(var1, var2, var3, var4);
         }
 
         public override bool canBlockStay(World var1, int var2, int var3, int var4)
         {
-            return !var1.isBlockNormalCube(var2, var3 - 1, var4) ? false : base.canBlockStay(var1, var2, var3, var4);
+            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canBlockStay(var1, var2, var3, var4);
         }
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            int var6 = var1.getBlockMetadata(var2, var3, var4);
+            int var6 = var1.getBlockMeta(var2, var3, var4);
             bool var7 = func_22022_g(var1, var2, var3, var4, var6);
             if (isRepeaterPowered && !var7)
             {
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.redstoneRepeaterIdle.blockID, var6);
+                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.redstoneRepeaterIdle.id, var6);
             }
             else if (!isRepeaterPowered)
             {
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.redstoneRepeaterActive.blockID, var6);
+                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.redstoneRepeaterActive.id, var6);
                 if (!var7)
                 {
                     int var8 = (var6 & 12) >> 2;
-                    var1.scheduleBlockUpdate(var2, var3, var4, Block.redstoneRepeaterActive.blockID, field_22023_b[var8] * 2);
+                    var1.scheduleBlockUpdate(var2, var3, var4, Block.redstoneRepeaterActive.id, field_22023_b[var8] * 2);
                 }
             }
 
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
             return var1 == 0 ? (isRepeaterPowered ? 99 : 115) : (var1 == 1 ? (isRepeaterPowered ? 147 : 131) : 5);
         }
 
-        public override bool shouldSideBeRendered(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool shouldSideBeRendered(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return var5 != 0 && var5 != 1;
         }
@@ -70,7 +70,7 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return getBlockTextureFromSideAndMetadata(var1, 0);
+            return getTexture(var1, 0);
         }
 
         public override bool isIndirectlyPoweringTo(World var1, int var2, int var3, int var4, int var5)
@@ -78,7 +78,7 @@ namespace betareborn.Blocks
             return isPoweringTo(var1, var2, var3, var4, var5);
         }
 
-        public override bool isPoweringTo(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (!isRepeaterPowered)
             {
@@ -86,30 +86,30 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4) & 3;
+                int var6 = var1.getBlockMeta(var2, var3, var4) & 3;
                 return var6 == 0 && var5 == 3 ? true : (var6 == 1 && var5 == 4 ? true : (var6 == 2 && var5 == 2 ? true : var6 == 3 && var5 == 5));
             }
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (!canBlockStay(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
+                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
             else
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 bool var7 = func_22022_g(var1, var2, var3, var4, var6);
                 int var8 = (var6 & 12) >> 2;
                 if (isRepeaterPowered && !var7)
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, blockID, field_22023_b[var8] * 2);
+                    var1.scheduleBlockUpdate(var2, var3, var4, id, field_22023_b[var8] * 2);
                 }
                 else if (!isRepeaterPowered && var7)
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, blockID, field_22023_b[var8] * 2);
+                    var1.scheduleBlockUpdate(var2, var3, var4, id, field_22023_b[var8] * 2);
                 }
 
             }
@@ -121,24 +121,24 @@ namespace betareborn.Blocks
             switch (var6)
             {
                 case 0:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 + 1, 3) || var1.getBlockId(var2, var3, var4 + 1) == Block.redstoneWire.blockID && var1.getBlockMetadata(var2, var3, var4 + 1) > 0;
+                    return var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 + 1, 3) || var1.getBlockId(var2, var3, var4 + 1) == Block.redstoneWire.id && var1.getBlockMeta(var2, var3, var4 + 1) > 0;
                 case 1:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3, var4, 4) || var1.getBlockId(var2 - 1, var3, var4) == Block.redstoneWire.blockID && var1.getBlockMetadata(var2 - 1, var3, var4) > 0;
+                    return var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3, var4, 4) || var1.getBlockId(var2 - 1, var3, var4) == Block.redstoneWire.id && var1.getBlockMeta(var2 - 1, var3, var4) > 0;
                 case 2:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 - 1, 2) || var1.getBlockId(var2, var3, var4 - 1) == Block.redstoneWire.blockID && var1.getBlockMetadata(var2, var3, var4 - 1) > 0;
+                    return var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 - 1, 2) || var1.getBlockId(var2, var3, var4 - 1) == Block.redstoneWire.id && var1.getBlockMeta(var2, var3, var4 - 1) > 0;
                 case 3:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3, var4, 5) || var1.getBlockId(var2 + 1, var3, var4) == Block.redstoneWire.blockID && var1.getBlockMetadata(var2 + 1, var3, var4) > 0;
+                    return var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3, var4, 5) || var1.getBlockId(var2 + 1, var3, var4) == Block.redstoneWire.id && var1.getBlockMeta(var2 + 1, var3, var4) > 0;
                 default:
                     return false;
             }
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
-            int var6 = var1.getBlockMetadata(var2, var3, var4);
+            int var6 = var1.getBlockMeta(var2, var3, var4);
             int var7 = (var6 & 12) >> 2;
             var7 = var7 + 1 << 2 & 12;
-            var1.setBlockMetadataWithNotify(var2, var3, var4, var7 | var6 & 3);
+            var1.setBlockMeta(var2, var3, var4, var7 | var6 & 3);
             return true;
         }
 
@@ -150,31 +150,31 @@ namespace betareborn.Blocks
         public override void onBlockPlacedBy(World var1, int var2, int var3, int var4, EntityLiving var5)
         {
             int var6 = ((MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
-            var1.setBlockMetadataWithNotify(var2, var3, var4, var6);
+            var1.setBlockMeta(var2, var3, var4, var6);
             bool var7 = func_22022_g(var1, var2, var3, var4, var6);
             if (var7)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, blockID, 1);
+                var1.scheduleBlockUpdate(var2, var3, var4, id, 1);
             }
 
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
         {
-            var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, blockID);
-            var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, blockID);
-            var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, blockID);
-            var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, blockID);
-            var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
-            var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, blockID);
+            var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
+            var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
+            var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
+            var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
+            var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+            var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return Item.redstoneRepeater.id;
         }
@@ -183,7 +183,7 @@ namespace betareborn.Blocks
         {
             if (isRepeaterPowered)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 double var7 = (double)((float)var2 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
                 double var9 = (double)((float)var3 + 0.4F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
                 double var11 = (double)((float)var4 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;

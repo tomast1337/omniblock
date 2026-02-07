@@ -97,14 +97,14 @@ namespace betareborn.Blocks
         public static readonly Block stairCompactCobblestone = (new BlockStairs(67, cobblestone)).setBlockName("stairsStone").disableNeighborNotifyOnMetadataChange();
         public static readonly Block signWall = (new BlockSign(68, TileEntitySign.Class, false)).setHardness(1.0F).setStepSound(soundWoodFootstep).setBlockName("sign").disableStats().disableNeighborNotifyOnMetadataChange();
         public static readonly Block lever = (new BlockLever(69, 96)).setHardness(0.5F).setStepSound(soundWoodFootstep).setBlockName("lever").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block pressurePlateStone = (new BlockPressurePlate(70, stone.blockIndexInTexture, EnumMobType.mobs, Material.STONE)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block pressurePlateStone = (new BlockPressurePlate(70, stone.textureId, EnumMobType.mobs, Material.STONE)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
         public static readonly Block doorSteel = (new BlockDoor(71, Material.METAL)).setHardness(5.0F).setStepSound(soundMetalFootstep).setBlockName("doorIron").disableStats().disableNeighborNotifyOnMetadataChange();
-        public static readonly Block pressurePlatePlanks = (new BlockPressurePlate(72, planks.blockIndexInTexture, EnumMobType.everything, Material.WOOD)).setHardness(0.5F).setStepSound(soundWoodFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block pressurePlatePlanks = (new BlockPressurePlate(72, planks.textureId, EnumMobType.everything, Material.WOOD)).setHardness(0.5F).setStepSound(soundWoodFootstep).setBlockName("pressurePlate").disableNeighborNotifyOnMetadataChange();
         public static readonly Block oreRedstone = (new BlockRedstoneOre(73, 51, false)).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreRedstone").disableNeighborNotifyOnMetadataChange();
         public static readonly Block oreRedstoneGlowing = (new BlockRedstoneOre(74, 51, true)).setLightValue(10.0F / 16.0F).setHardness(3.0F).setResistance(5.0F).setStepSound(soundStoneFootstep).setBlockName("oreRedstone").disableNeighborNotifyOnMetadataChange();
         public static readonly Block torchRedstoneIdle = (new BlockRedstoneTorch(75, 115, false)).setHardness(0.0F).setStepSound(soundWoodFootstep).setBlockName("notGate").disableNeighborNotifyOnMetadataChange();
         public static readonly Block torchRedstoneActive = (new BlockRedstoneTorch(76, 99, true)).setHardness(0.0F).setLightValue(0.5F).setStepSound(soundWoodFootstep).setBlockName("notGate").disableNeighborNotifyOnMetadataChange();
-        public static readonly Block button = (new BlockButton(77, stone.blockIndexInTexture)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("button").disableNeighborNotifyOnMetadataChange();
+        public static readonly Block button = (new BlockButton(77, stone.textureId)).setHardness(0.5F).setStepSound(soundStoneFootstep).setBlockName("button").disableNeighborNotifyOnMetadataChange();
         public static readonly Block snow = (new BlockSnow(78, 66)).setHardness(0.1F).setStepSound(soundClothFootstep).setBlockName("snow");
         public static readonly Block ice = (new BlockIce(79, 67)).setHardness(0.5F).setLightOpacity(3).setStepSound(soundGlassFootstep).setBlockName("ice");
         public static readonly Block blockSnow = (new BlockSnowBlock(80, 66)).setHardness(0.2F).setStepSound(soundClothFootstep).setBlockName("snow");
@@ -124,8 +124,8 @@ namespace betareborn.Blocks
         public static readonly Block redstoneRepeaterActive = (new BlockRedstoneRepeater(94, true)).setHardness(0.0F).setLightValue(10.0F / 16.0F).setStepSound(soundWoodFootstep).setBlockName("diode").disableStats().disableNeighborNotifyOnMetadataChange();
         public static readonly Block lockedChest = (new BlockLockedChest(95)).setHardness(0.0F).setLightValue(1.0F).setStepSound(soundWoodFootstep).setBlockName("lockedchest").setTickOnLoad(true).disableNeighborNotifyOnMetadataChange();
         public static readonly Block trapdoor = (new BlockTrapDoor(96, Material.WOOD)).setHardness(3.0F).setStepSound(soundWoodFootstep).setBlockName("trapdoor").disableStats().disableNeighborNotifyOnMetadataChange();
-        public int blockIndexInTexture;
-        public readonly int blockID;
+        public int textureId;
+        public readonly int id;
         public float blockHardness;
         public float blockResistance;
         protected bool blockConstructorCalled;
@@ -157,10 +157,10 @@ namespace betareborn.Blocks
             {
                 blockMaterial = var2;
                 blocksList[var1] = this;
-                blockID = var1;
-                setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                opaqueCubeLookup[var1] = isOpaqueCube();
-                lightOpacity[var1] = isOpaqueCube() ? 255 : 0;
+                id = var1;
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                opaqueCubeLookup[var1] = isOpaque();
+                lightOpacity[var1] = isOpaque() ? 255 : 0;
                 canBlockGrass[var1] = !var2.blocksVision();
                 isBlockContainer[var1] = false;
             }
@@ -168,7 +168,7 @@ namespace betareborn.Blocks
 
         protected Block disableNeighborNotifyOnMetadataChange()
         {
-            field_28032_t[blockID] = true;
+            field_28032_t[id] = true;
             return this;
         }
 
@@ -178,7 +178,7 @@ namespace betareborn.Blocks
 
         protected Block(int var1, int var2, Material var3) : this(var1, var3)
         {
-            blockIndexInTexture = var2;
+            textureId = var2;
         }
 
         protected Block setStepSound(StepSound var1)
@@ -189,13 +189,13 @@ namespace betareborn.Blocks
 
         protected Block setLightOpacity(int var1)
         {
-            lightOpacity[blockID] = var1;
+            lightOpacity[id] = var1;
             return this;
         }
 
         protected Block setLightValue(float var1)
         {
-            lightValue[blockID] = (int)(15.0F * var1);
+            lightValue[id] = (int)(15.0F * var1);
             return this;
         }
 
@@ -205,7 +205,7 @@ namespace betareborn.Blocks
             return this;
         }
 
-        public virtual bool renderAsNormalBlock()
+        public virtual bool isFullCube()
         {
             return true;
         }
@@ -239,11 +239,11 @@ namespace betareborn.Blocks
 
         protected Block setTickOnLoad(bool var1)
         {
-            tickOnLoad[blockID] = var1;
+            tickOnLoad[id] = var1;
             return this;
         }
 
-        public void setBlockBounds(float var1, float var2, float var3, float var4, float var5, float var6)
+        public void setBoundingBox(float var1, float var2, float var3, float var4, float var5, float var6)
         {
             minX = (double)var1;
             minY = (double)var2;
@@ -253,34 +253,34 @@ namespace betareborn.Blocks
             maxZ = (double)var6;
         }
 
-        public virtual float getBlockBrightness(IBlockAccess var1, int var2, int var3, int var4)
+        public virtual float getBlockBrightness(BlockView var1, int var2, int var3, int var4)
         {
-            return var1.getBrightness(var2, var3, var4, lightValue[blockID]);
+            return var1.getNaturalBrightness(var2, var3, var4, lightValue[id]);
         }
 
-        public virtual bool shouldSideBeRendered(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public virtual bool shouldSideBeRendered(BlockView var1, int var2, int var3, int var4, int var5)
         {
-            return var5 == 0 && minY > 0.0D ? true : (var5 == 1 && maxY < 1.0D ? true : (var5 == 2 && minZ > 0.0D ? true : (var5 == 3 && maxZ < 1.0D ? true : (var5 == 4 && minX > 0.0D ? true : (var5 == 5 && maxX < 1.0D ? true : !var1.isBlockOpaqueCube(var2, var3, var4))))));
+            return var5 == 0 && minY > 0.0D ? true : (var5 == 1 && maxY < 1.0D ? true : (var5 == 2 && minZ > 0.0D ? true : (var5 == 3 && maxZ < 1.0D ? true : (var5 == 4 && minX > 0.0D ? true : (var5 == 5 && maxX < 1.0D ? true : !var1.isOpaque(var2, var3, var4))))));
         }
 
-        public virtual bool getIsBlockSolid(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public virtual bool getIsBlockSolid(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return var1.getMaterial(var2, var3, var4).isSolid();
         }
 
-        public virtual int getBlockTexture(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public virtual int getBlockTexture(BlockView var1, int var2, int var3, int var4, int var5)
         {
-            return getBlockTextureFromSideAndMetadata(var5, var1.getBlockMetadata(var2, var3, var4));
+            return getTexture(var5, var1.getBlockMeta(var2, var3, var4));
         }
 
-        public virtual int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public virtual int getTexture(int var1, int var2)
         {
             return getBlockTextureFromSide(var1);
         }
 
         public virtual int getBlockTextureFromSide(int var1)
         {
-            return blockIndexInTexture;
+            return textureId;
         }
 
         public virtual Box getSelectedBoundingBoxFromPool(World var1, int var2, int var3, int var4)
@@ -303,7 +303,7 @@ namespace betareborn.Blocks
             return Box.createCached((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)var3 + maxY, (double)var4 + maxZ);
         }
 
-        public virtual bool isOpaqueCube()
+        public virtual bool isOpaque()
         {
             return true;
         }
@@ -330,7 +330,7 @@ namespace betareborn.Blocks
         {
         }
 
-        public virtual void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public virtual void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
         }
 
@@ -352,9 +352,9 @@ namespace betareborn.Blocks
             return 1;
         }
 
-        public virtual int idDropped(int var1, java.util.Random var2)
+        public virtual int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return blockID;
+            return id;
         }
 
         public float blockStrength(EntityPlayer var1)
@@ -364,10 +364,10 @@ namespace betareborn.Blocks
 
         public void dropBlockAsItem(World var1, int var2, int var3, int var4, int var5)
         {
-            dropBlockAsItemWithChance(var1, var2, var3, var4, var5, 1.0F);
+            dropStacks(var1, var2, var3, var4, var5, 1.0F);
         }
 
-        public virtual void dropBlockAsItemWithChance(World var1, int var2, int var3, int var4, int var5, float var6)
+        public virtual void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
         {
             if (!var1.multiplayerWorld)
             {
@@ -377,7 +377,7 @@ namespace betareborn.Blocks
                 {
                     if (var1.random.nextFloat() <= var6)
                     {
-                        int var9 = idDropped(var5, var1.random);
+                        int var9 = getDroppedItemId(var5, var1.random);
                         if (var9 > 0)
                         {
                             dropBlockAsItem_do(var1, var2, var3, var4, new ItemStack(var9, 1, damageDropped(var5)));
@@ -414,7 +414,7 @@ namespace betareborn.Blocks
 
         public virtual MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
         {
-            setBlockBoundsBasedOnState(var1, var2, var3, var4);
+            updateBoundingBox(var1, var2, var3, var4);
             var5 = var5.addVector((double)(-var2), (double)(-var3), (double)(-var4));
             var6 = var6.addVector((double)(-var2), (double)(-var3), (double)(-var4));
             Vec3D var7 = var5.getIntermediateWithXValue(var6, minX);
@@ -560,7 +560,7 @@ namespace betareborn.Blocks
             return var5 == 0 || blocksList[var5].blockMaterial.isReplaceable();
         }
 
-        public virtual bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public virtual bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             return false;
         }
@@ -581,7 +581,7 @@ namespace betareborn.Blocks
         {
         }
 
-        public virtual void setBlockBoundsBasedOnState(IBlockAccess var1, int var2, int var3, int var4)
+        public virtual void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
         {
         }
 
@@ -590,12 +590,12 @@ namespace betareborn.Blocks
             return 16777215;
         }
 
-        public virtual int colorMultiplier(IBlockAccess var1, int var2, int var3, int var4)
+        public virtual int colorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             return 16777215;
         }
 
-        public virtual bool isPoweringTo(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public virtual bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return false;
         }
@@ -620,7 +620,7 @@ namespace betareborn.Blocks
 
         public virtual void harvestBlock(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
         {
-            var2.addStat(StatList.mineBlockStatArray[blockID], 1);
+            var2.addStat(StatList.mineBlockStatArray[id], 1);
             dropBlockAsItem(var1, var3, var4, var5, var6);
         }
 
@@ -664,20 +664,20 @@ namespace betareborn.Blocks
             return this;
         }
 
-        public virtual int getMobilityFlag()
+        public virtual int getPistonBehavior()
         {
             return blockMaterial.getPistonBehavior();
         }
 
         static Block()
         {
-            Item.itemsList[cloth.blockID] = (new ItemCloth(cloth.blockID - 256)).setItemName("cloth");
-            Item.itemsList[wood.blockID] = (new ItemLog(wood.blockID - 256)).setItemName("log");
-            Item.itemsList[stairSingle.blockID] = (new ItemSlab(stairSingle.blockID - 256)).setItemName("stoneSlab");
-            Item.itemsList[sapling.blockID] = (new ItemSapling(sapling.blockID - 256)).setItemName("sapling");
-            Item.itemsList[leaves.blockID] = (new ItemLeaves(leaves.blockID - 256)).setItemName("leaves");
-            Item.itemsList[pistonBase.blockID] = new ItemPiston(pistonBase.blockID - 256);
-            Item.itemsList[pistonStickyBase.blockID] = new ItemPiston(pistonStickyBase.blockID - 256);
+            Item.itemsList[cloth.id] = (new ItemCloth(cloth.id - 256)).setItemName("cloth");
+            Item.itemsList[wood.id] = (new ItemLog(wood.id - 256)).setItemName("log");
+            Item.itemsList[stairSingle.id] = (new ItemSlab(stairSingle.id - 256)).setItemName("stoneSlab");
+            Item.itemsList[sapling.id] = (new ItemSapling(sapling.id - 256)).setItemName("sapling");
+            Item.itemsList[leaves.id] = (new ItemLeaves(leaves.id - 256)).setItemName("leaves");
+            Item.itemsList[pistonBase.id] = new ItemPiston(pistonBase.id - 256);
+            Item.itemsList[pistonStickyBase.id] = new ItemPiston(pistonStickyBase.id - 256);
 
             for (int var0 = 0; var0 < 256; ++var0)
             {

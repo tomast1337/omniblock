@@ -45,13 +45,13 @@ namespace betareborn
                     {
                         for (int var9 = -var7; var9 <= var7; ++var9)
                         {
-                            eligibleChunksForSpawning.add(new ChunkCoordIntPair(var8 + var5, var9 + var6));
+                            eligibleChunksForSpawning.add(new ChunkPos(var8 + var5, var9 + var6));
                         }
                     }
                 }
 
                 var3 = 0;
-                ChunkCoordinates var35 = var0.getSpawnPoint();
+                Vec3i var35 = var0.getSpawnPoint();
                 EnumCreatureType[] var36 = EnumCreatureType.values;
                 var6 = var36.Length;
 
@@ -64,8 +64,8 @@ namespace betareborn
 
                         while (var39.hasNext())
                         {
-                            ChunkCoordIntPair var10 = (ChunkCoordIntPair)var39.next();
-                            BiomeGenBase var11 = var0.getWorldChunkManager().getBiomeGenAtChunkCoord(var10);
+                            ChunkPos var10 = (ChunkPos)var39.next();
+                            Biome var11 = var0.getBiomeSource().getBiome(var10);
                             List var12 = var11.getSpawnableList(var38);
 
                             if (var12 == null || var12.isEmpty())
@@ -95,12 +95,12 @@ namespace betareborn
                                 }
                             }
 
-                            ChunkPosition var41 = getRandomSpawningPointInChunk(var0, var10.chunkXPos * 16, var10.chunkZPos * 16);
+                            ChunkPosition var41 = getRandomSpawningPointInChunk(var0, var10.x * 16, var10.z * 16);
                             int var42 = var41.x;
                             int var18 = var41.y;
                             int var19 = var41.z;
 
-                            if (var0.isBlockNormalCube(var42, var18, var19))
+                            if (var0.shouldSuffocate(var42, var18, var19))
                             {
                                 continue;
                             }
@@ -177,7 +177,7 @@ namespace betareborn
 
         private static bool canCreatureTypeSpawnAtLocation(EnumCreatureType var0, World var1, int var2, int var3, int var4)
         {
-            return var0.getCreatureMaterial() == Material.WATER ? var1.getMaterial(var2, var3, var4).isFluid() && !var1.isBlockNormalCube(var2, var3 + 1, var4) : var1.isBlockNormalCube(var2, var3 - 1, var4) && !var1.isBlockNormalCube(var2, var3, var4) && !var1.getMaterial(var2, var3, var4).isFluid() && !var1.isBlockNormalCube(var2, var3 + 1, var4);
+            return var0.getCreatureMaterial() == Material.WATER ? var1.getMaterial(var2, var3, var4).isFluid() && !var1.shouldSuffocate(var2, var3 + 1, var4) : var1.shouldSuffocate(var2, var3 - 1, var4) && !var1.shouldSuffocate(var2, var3, var4) && !var1.getMaterial(var2, var3, var4).isFluid() && !var1.shouldSuffocate(var2, var3 + 1, var4);
         }
 
         private static void creatureSpecificInit(EntityLiving var0, World var1, float var2, float var3, float var4)
@@ -239,7 +239,7 @@ namespace betareborn
                     int var12 = var0.random.nextInt(var6.Length);
 
                     int var13;
-                    for (var13 = var11; var13 > 2 && !var0.isBlockNormalCube(var9, var13 - 1, var10); --var13)
+                    for (var13 = var11; var13 > 2 && !var0.shouldSuffocate(var9, var13 - 1, var10); --var13)
                     {
                     }
 
@@ -274,10 +274,10 @@ namespace betareborn
                                 PathPoint var19 = var18.func_22328_c();
                                 if (java.lang.Math.abs((double)var19.xCoord - var5.posX) < 1.5D && java.lang.Math.abs((double)var19.zCoord - var5.posZ) < 1.5D && java.lang.Math.abs((double)var19.yCoord - var5.posY) < 1.5D)
                                 {
-                                    ChunkCoordinates var20 = BlockBed.getNearestEmptyChunkCoordinates(var0, MathHelper.floor_double(var5.posX), MathHelper.floor_double(var5.posY), MathHelper.floor_double(var5.posZ), 1);
+                                    Vec3i var20 = BlockBed.findWakeUpPosition(var0, MathHelper.floor_double(var5.posX), MathHelper.floor_double(var5.posY), MathHelper.floor_double(var5.posZ), 1);
                                     if (var20 == null)
                                     {
-                                        var20 = new ChunkCoordinates(var9, var13 + 1, var10);
+                                        var20 = new Vec3i(var9, var13 + 1, var10);
                                     }
 
                                     var17.setPositionAndAnglesKeepPrevAngles((double)((float)var20.x + 0.5F), (double)var20.y, (double)((float)var20.z + 0.5F), 0.0F, 0.0F);

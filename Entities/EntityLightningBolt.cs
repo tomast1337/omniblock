@@ -25,7 +25,7 @@ namespace betareborn.Entities
                 int var10 = MathHelper.floor_double(var6);
                 if (var1.getBlockId(var8, var9, var10) == 0 && Block.fire.canPlaceBlockAt(var1, var8, var9, var10))
                 {
-                    var1.setBlockWithNotify(var8, var9, var10, Block.fire.blockID);
+                    var1.setBlockWithNotify(var8, var9, var10, Block.fire.id);
                 }
 
                 for (var8 = 0; var8 < 4; ++var8)
@@ -35,7 +35,7 @@ namespace betareborn.Entities
                     int var11 = MathHelper.floor_double(var6) + rand.nextInt(3) - 1;
                     if (var1.getBlockId(var9, var10, var11) == 0 && Block.fire.canPlaceBlockAt(var1, var9, var10, var11))
                     {
-                        var1.setBlockWithNotify(var9, var10, var11, Block.fire.blockID);
+                        var1.setBlockWithNotify(var9, var10, var11, Block.fire.id);
                     }
                 }
             }
@@ -70,7 +70,7 @@ namespace betareborn.Entities
                         int var3 = MathHelper.floor_double(posZ);
                         if (worldObj.getBlockId(var1, var2, var3) == 0 && Block.fire.canPlaceBlockAt(worldObj, var1, var2, var3))
                         {
-                            worldObj.setBlockWithNotify(var1, var2, var3, Block.fire.blockID);
+                            worldObj.setBlockWithNotify(var1, var2, var3, Block.fire.id);
                         }
                     }
                 }

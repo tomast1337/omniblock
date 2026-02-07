@@ -12,18 +12,18 @@ namespace betareborn.Blocks
 
         public BlockChest(int var1) : base(var1, Material.WOOD)
         {
-            blockIndexInTexture = 26;
+            textureId = 26;
         }
 
-        public override int getBlockTexture(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override int getBlockTexture(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (var5 == 1)
             {
-                return blockIndexInTexture - 1;
+                return textureId - 1;
             }
             else if (var5 == 0)
             {
-                return blockIndexInTexture - 1;
+                return textureId - 1;
             }
             else
             {
@@ -35,9 +35,9 @@ namespace betareborn.Blocks
                 int var11;
                 int var12;
                 sbyte var13;
-                if (var6 != blockID && var7 != blockID)
+                if (var6 != id && var7 != id)
                 {
-                    if (var8 != blockID && var9 != blockID)
+                    if (var8 != id && var9 != id)
                     {
                         sbyte var14 = 3;
                         if (Block.opaqueCubeLookup[var6] && !Block.opaqueCubeLookup[var7])
@@ -60,18 +60,18 @@ namespace betareborn.Blocks
                             var14 = 4;
                         }
 
-                        return var5 == var14 ? blockIndexInTexture + 1 : blockIndexInTexture;
+                        return var5 == var14 ? textureId + 1 : textureId;
                     }
                     else if (var5 != 4 && var5 != 5)
                     {
                         var10 = 0;
-                        if (var8 == blockID)
+                        if (var8 == id)
                         {
                             var10 = -1;
                         }
 
-                        var11 = var1.getBlockId(var8 == blockID ? var2 - 1 : var2 + 1, var3, var4 - 1);
-                        var12 = var1.getBlockId(var8 == blockID ? var2 - 1 : var2 + 1, var3, var4 + 1);
+                        var11 = var1.getBlockId(var8 == id ? var2 - 1 : var2 + 1, var3, var4 - 1);
+                        var12 = var1.getBlockId(var8 == id ? var2 - 1 : var2 + 1, var3, var4 + 1);
                         if (var5 == 3)
                         {
                             var10 = -1 - var10;
@@ -88,23 +88,23 @@ namespace betareborn.Blocks
                             var13 = 2;
                         }
 
-                        return (var5 == var13 ? blockIndexInTexture + 16 : blockIndexInTexture + 32) + var10;
+                        return (var5 == var13 ? textureId + 16 : textureId + 32) + var10;
                     }
                     else
                     {
-                        return blockIndexInTexture;
+                        return textureId;
                     }
                 }
                 else if (var5 != 2 && var5 != 3)
                 {
                     var10 = 0;
-                    if (var6 == blockID)
+                    if (var6 == id)
                     {
                         var10 = -1;
                     }
 
-                    var11 = var1.getBlockId(var2 - 1, var3, var6 == blockID ? var4 - 1 : var4 + 1);
-                    var12 = var1.getBlockId(var2 + 1, var3, var6 == blockID ? var4 - 1 : var4 + 1);
+                    var11 = var1.getBlockId(var2 - 1, var3, var6 == id ? var4 - 1 : var4 + 1);
+                    var12 = var1.getBlockId(var2 + 1, var3, var6 == id ? var4 - 1 : var4 + 1);
                     if (var5 == 4)
                     {
                         var10 = -1 - var10;
@@ -121,39 +121,39 @@ namespace betareborn.Blocks
                         var13 = 4;
                     }
 
-                    return (var5 == var13 ? blockIndexInTexture + 16 : blockIndexInTexture + 32) + var10;
+                    return (var5 == var13 ? textureId + 16 : textureId + 32) + var10;
                 }
                 else
                 {
-                    return blockIndexInTexture;
+                    return textureId;
                 }
             }
         }
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return var1 == 1 ? blockIndexInTexture - 1 : (var1 == 0 ? blockIndexInTexture - 1 : (var1 == 3 ? blockIndexInTexture + 1 : blockIndexInTexture));
+            return var1 == 1 ? textureId - 1 : (var1 == 0 ? textureId - 1 : (var1 == 3 ? textureId + 1 : textureId));
         }
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
             int var5 = 0;
-            if (var1.getBlockId(var2 - 1, var3, var4) == blockID)
+            if (var1.getBlockId(var2 - 1, var3, var4) == id)
             {
                 ++var5;
             }
 
-            if (var1.getBlockId(var2 + 1, var3, var4) == blockID)
+            if (var1.getBlockId(var2 + 1, var3, var4) == id)
             {
                 ++var5;
             }
 
-            if (var1.getBlockId(var2, var3, var4 - 1) == blockID)
+            if (var1.getBlockId(var2, var3, var4 - 1) == id)
             {
                 ++var5;
             }
 
-            if (var1.getBlockId(var2, var3, var4 + 1) == blockID)
+            if (var1.getBlockId(var2, var3, var4 + 1) == id)
             {
                 ++var5;
             }
@@ -163,7 +163,7 @@ namespace betareborn.Blocks
 
         private bool isThereANeighborChest(World var1, int var2, int var3, int var4)
         {
-            return var1.getBlockId(var2, var3, var4) != blockID ? false : (var1.getBlockId(var2 - 1, var3, var4) == blockID ? true : (var1.getBlockId(var2 + 1, var3, var4) == blockID ? true : (var1.getBlockId(var2, var3, var4 - 1) == blockID ? true : var1.getBlockId(var2, var3, var4 + 1) == blockID)));
+            return var1.getBlockId(var2, var3, var4) != id ? false : (var1.getBlockId(var2 - 1, var3, var4) == id ? true : (var1.getBlockId(var2 + 1, var3, var4) == id ? true : (var1.getBlockId(var2, var3, var4 - 1) == id ? true : var1.getBlockId(var2, var3, var4 + 1) == id)));
         }
 
         public override void onBlockRemoval(World var1, int var2, int var3, int var4)
@@ -201,47 +201,47 @@ namespace betareborn.Blocks
             base.onBlockRemoval(var1, var2, var3, var4);
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             java.lang.Object var6 = (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4);
-            if (var1.isBlockNormalCube(var2, var3 + 1, var4))
+            if (var1.shouldSuffocate(var2, var3 + 1, var4))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2 - 1, var3, var4) == blockID && var1.isBlockNormalCube(var2 - 1, var3 + 1, var4))
+            else if (var1.getBlockId(var2 - 1, var3, var4) == id && var1.shouldSuffocate(var2 - 1, var3 + 1, var4))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2 + 1, var3, var4) == blockID && var1.isBlockNormalCube(var2 + 1, var3 + 1, var4))
+            else if (var1.getBlockId(var2 + 1, var3, var4) == id && var1.shouldSuffocate(var2 + 1, var3 + 1, var4))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2, var3, var4 - 1) == blockID && var1.isBlockNormalCube(var2, var3 + 1, var4 - 1))
+            else if (var1.getBlockId(var2, var3, var4 - 1) == id && var1.shouldSuffocate(var2, var3 + 1, var4 - 1))
             {
                 return true;
             }
-            else if (var1.getBlockId(var2, var3, var4 + 1) == blockID && var1.isBlockNormalCube(var2, var3 + 1, var4 + 1))
+            else if (var1.getBlockId(var2, var3, var4 + 1) == id && var1.shouldSuffocate(var2, var3 + 1, var4 + 1))
             {
                 return true;
             }
             else
             {
-                if (var1.getBlockId(var2 - 1, var3, var4) == blockID)
+                if (var1.getBlockId(var2 - 1, var3, var4) == id)
                 {
                     var6 = new InventoryLargeChest("Large chest", (TileEntityChest)var1.getBlockTileEntity(var2 - 1, var3, var4), (IInventory)var6);
                 }
 
-                if (var1.getBlockId(var2 + 1, var3, var4) == blockID)
+                if (var1.getBlockId(var2 + 1, var3, var4) == id)
                 {
                     var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)var1.getBlockTileEntity(var2 + 1, var3, var4));
                 }
 
-                if (var1.getBlockId(var2, var3, var4 - 1) == blockID)
+                if (var1.getBlockId(var2, var3, var4 - 1) == id)
                 {
                     var6 = new InventoryLargeChest("Large chest", (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4 - 1), (IInventory)var6);
                 }
 
-                if (var1.getBlockId(var2, var3, var4 + 1) == blockID)
+                if (var1.getBlockId(var2, var3, var4 + 1) == id)
                 {
                     var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)var1.getBlockTileEntity(var2, var3, var4 + 1));
                 }

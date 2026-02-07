@@ -18,7 +18,7 @@ namespace betareborn.Blocks
             return 1;
         }
 
-        public override bool shouldSideBeRendered(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool shouldSideBeRendered(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return base.shouldSideBeRendered(var1, var2, var3, var4, 1 - var5);
         }
@@ -29,7 +29,7 @@ namespace betareborn.Blocks
             Material var7 = var1.getMaterial(var3, var4 - 1, var5);
             if (var7.blocksMovement() || var7.isFluid())
             {
-                var1.setBlockWithNotify(var3, var4, var5, Block.waterMoving.blockID);
+                var1.setBlockWithNotify(var3, var4, var5, Block.waterMoving.id);
             }
 
         }
@@ -41,15 +41,15 @@ namespace betareborn.Blocks
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11 - Block.lightOpacity[blockID])
+            if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11 - Block.lightOpacity[id])
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, Block.waterStill.blockID);
+                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                var1.setBlockWithNotify(var2, var3, var4, Block.waterStill.id);
             }
 
         }
 
-        public override int getMobilityFlag()
+        public override int getPistonBehavior()
         {
             return 0;
         }

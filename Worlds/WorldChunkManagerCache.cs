@@ -4,16 +4,16 @@ namespace betareborn.Worlds
 {
     public sealed class WorldChunkManagerCache
     {
-        private readonly ConcurrentDictionary<int, WorldChunkManager> _perThread
+        private readonly ConcurrentDictionary<int, BiomeSource> _perThread
             = new();
 
-        public WorldChunkManager get(World world)
+        public BiomeSource get(World world)
         {
             int tid = Environment.CurrentManagedThreadId;
 
             return _perThread.GetOrAdd(
                 tid,
-                _ => new WorldChunkManager(world)
+                _ => new BiomeSource(world)
             );
         }
 

@@ -15,7 +15,7 @@ namespace betareborn.Blocks
             return new TileEntityMobSpawner();
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return 0;
         }
@@ -25,7 +25,7 @@ namespace betareborn.Blocks
             return 0;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }

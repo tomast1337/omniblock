@@ -15,10 +15,10 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            base.onNeighborBlockChange(var1, var2, var3, var4, var5);
-            if (var1.getBlockId(var2, var3, var4) == blockID)
+            base.neighborUpdate(var1, var2, var3, var4, var5);
+            if (var1.getBlockId(var2, var3, var4) == id)
             {
                 func_30004_j(var1, var2, var3, var4);
             }
@@ -27,11 +27,11 @@ namespace betareborn.Blocks
 
         private void func_30004_j(World var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
             var1.editingBlocks = true;
-            var1.setBlockAndMetadata(var2, var3, var4, blockID - 1, var5);
+            var1.setBlockAndMetadata(var2, var3, var4, id - 1, var5);
             var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
-            var1.scheduleBlockUpdate(var2, var3, var4, blockID - 1, tickRate());
+            var1.scheduleBlockUpdate(var2, var3, var4, id - 1, tickRate());
             var1.editingBlocks = false;
         }
 
@@ -51,7 +51,7 @@ namespace betareborn.Blocks
                     {
                         if (func_301_k(var1, var2 - 1, var3, var4) || func_301_k(var1, var2 + 1, var3, var4) || func_301_k(var1, var2, var3, var4 - 1) || func_301_k(var1, var2, var3, var4 + 1) || func_301_k(var1, var2, var3 - 1, var4) || func_301_k(var1, var2, var3 + 1, var4))
                         {
-                            var1.setBlockWithNotify(var2, var3, var4, Block.fire.blockID);
+                            var1.setBlockWithNotify(var2, var3, var4, Block.fire.id);
                             return;
                         }
                     }

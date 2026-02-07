@@ -64,10 +64,10 @@ namespace betareborn.Items
                         var10 = 1;
                     }
 
-                    int var12 = (var3.isBlockNormalCube(var4 - var10, var5, var6 - var11) ? 1 : 0) + (var3.isBlockNormalCube(var4 - var10, var5 + 1, var6 - var11) ? 1 : 0);
-                    int var13 = (var3.isBlockNormalCube(var4 + var10, var5, var6 + var11) ? 1 : 0) + (var3.isBlockNormalCube(var4 + var10, var5 + 1, var6 + var11) ? 1 : 0);
-                    bool var14 = var3.getBlockId(var4 - var10, var5, var6 - var11) == var8.blockID || var3.getBlockId(var4 - var10, var5 + 1, var6 - var11) == var8.blockID;
-                    bool var15 = var3.getBlockId(var4 + var10, var5, var6 + var11) == var8.blockID || var3.getBlockId(var4 + var10, var5 + 1, var6 + var11) == var8.blockID;
+                    int var12 = (var3.shouldSuffocate(var4 - var10, var5, var6 - var11) ? 1 : 0) + (var3.shouldSuffocate(var4 - var10, var5 + 1, var6 - var11) ? 1 : 0);
+                    int var13 = (var3.shouldSuffocate(var4 + var10, var5, var6 + var11) ? 1 : 0) + (var3.shouldSuffocate(var4 + var10, var5 + 1, var6 + var11) ? 1 : 0);
+                    bool var14 = var3.getBlockId(var4 - var10, var5, var6 - var11) == var8.id || var3.getBlockId(var4 - var10, var5 + 1, var6 - var11) == var8.id;
+                    bool var15 = var3.getBlockId(var4 + var10, var5, var6 + var11) == var8.id || var3.getBlockId(var4 + var10, var5 + 1, var6 + var11) == var8.id;
                     bool var16 = false;
                     if (var14 && !var15)
                     {
@@ -85,11 +85,11 @@ namespace betareborn.Items
                     }
 
                     var3.editingBlocks = true;
-                    var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.blockID, var9);
-                    var3.setBlockAndMetadataWithNotify(var4, var5 + 1, var6, var8.blockID, var9 + 8);
+                    var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.id, var9);
+                    var3.setBlockAndMetadataWithNotify(var4, var5 + 1, var6, var8.id, var9 + 8);
                     var3.editingBlocks = false;
-                    var3.notifyBlocksOfNeighborChange(var4, var5, var6, var8.blockID);
-                    var3.notifyBlocksOfNeighborChange(var4, var5 + 1, var6, var8.blockID);
+                    var3.notifyBlocksOfNeighborChange(var4, var5, var6, var8.id);
+                    var3.notifyBlocksOfNeighborChange(var4, var5 + 1, var6, var8.id);
                     --var1.count;
                     return true;
                 }

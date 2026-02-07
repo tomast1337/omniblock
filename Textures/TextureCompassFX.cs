@@ -61,11 +61,11 @@ namespace betareborn.Textures
             double var20 = 0.0D;
             if (mc.theWorld != null && mc.thePlayer != null)
             {
-                ChunkCoordinates var21 = mc.theWorld.getSpawnPoint();
+                Vec3i var21 = mc.theWorld.getSpawnPoint();
                 double var23 = (double)var21.x - mc.thePlayer.posX;
                 double var25 = (double)var21.z - mc.thePlayer.posZ;
                 var20 = (double)(mc.thePlayer.rotationYaw - 90.0F) * Math.PI / 180.0D - java.lang.Math.atan2(var25, var23);
-                if (mc.theWorld.worldProvider.isNether)
+                if (mc.theWorld.dimension.isNether)
                 {
                     var20 = java.lang.Math.random() * (double)((float)Math.PI) * 2.0D;
                 }

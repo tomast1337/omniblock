@@ -43,7 +43,7 @@ namespace betareborn.Textures
             {
                 float var3 = mc.theWorld.getCelestialAngle(1.0F);
                 var1 = (double)(-var3 * (float)Math.PI * 2.0F);
-                if (mc.theWorld.worldProvider.isNether)
+                if (mc.theWorld.dimension.isNether)
                 {
                     var1 = java.lang.Math.random() * (double)((float)Math.PI) * 2.0D;
                 }

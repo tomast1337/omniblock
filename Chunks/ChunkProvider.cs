@@ -26,12 +26,12 @@ namespace betareborn.Chunks
 
         public bool chunkExists(int var1, int var2)
         {
-            return chunkMap.ContainsKey(ChunkCoordIntPair.chunkXZ2Int(var1, var2));
+            return chunkMap.ContainsKey(ChunkPos.chunkXZ2Int(var1, var2));
         }
 
         public Chunk prepareChunk(int var1, int var2)
         {
-            int var3 = ChunkCoordIntPair.chunkXZ2Int(var1, var2);
+            int var3 = ChunkPos.chunkXZ2Int(var1, var2);
             droppedChunksSet.Remove(var3);
             chunkMap.TryGetValue(var3, out Chunk? var4);
             if (var4 == null)
@@ -83,7 +83,7 @@ namespace betareborn.Chunks
 
         public Chunk provideChunk(int var1, int var2)
         {
-            chunkMap.TryGetValue(ChunkCoordIntPair.chunkXZ2Int(var1, var2), out Chunk? var3);
+            chunkMap.TryGetValue(ChunkPos.chunkXZ2Int(var1, var2), out Chunk? var3);
             return var3 == null ? prepareChunk(var1, var2) : var3;
         }
 
@@ -275,7 +275,7 @@ namespace betareborn.Chunks
 
                 if (!nearAnyPlayer)
                 {
-                    int chunkKey = ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition);
+                    int chunkKey = ChunkPos.chunkXZ2Int(chunk.xPosition, chunk.zPosition);
                     droppedChunksSet.Add(chunkKey);
                 }
             }

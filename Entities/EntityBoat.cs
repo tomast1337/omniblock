@@ -92,7 +92,7 @@ namespace betareborn.Entities
                     int var3;
                     for (var3 = 0; var3 < 3; ++var3)
                     {
-                        dropItemWithOffset(Block.planks.blockID, 1, 0.0F);
+                        dropItemWithOffset(Block.planks.id, 1, 0.0F);
                     }
 
                     for (var3 = 0; var3 < 2; ++var3)
@@ -307,7 +307,7 @@ namespace betareborn.Entities
                         int var22;
                         for (var22 = 0; var22 < 3; ++var22)
                         {
-                            dropItemWithOffset(Block.planks.blockID, 1, 0.0F);
+                            dropItemWithOffset(Block.planks.id, 1, 0.0F);
                         }
 
                         for (var22 = 0; var22 < 2; ++var22)
@@ -373,7 +373,7 @@ namespace betareborn.Entities
                     int var25 = MathHelper.floor_double(posX + ((double)(var24 % 2) - 0.5D) * 0.8D);
                     int var26 = MathHelper.floor_double(posY);
                     int var20 = MathHelper.floor_double(posZ + ((double)(var24 / 2) - 0.5D) * 0.8D);
-                    if (worldObj.getBlockId(var25, var26, var20) == Block.snow.blockID)
+                    if (worldObj.getBlockId(var25, var26, var20) == Block.snow.id)
                     {
                         worldObj.setBlockWithNotify(var25, var26, var20, 0);
                     }

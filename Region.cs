@@ -44,7 +44,7 @@ namespace betareborn
 
                 removeEmptyPendingSaves();
 
-                Dictionary<ChunkCoordIntPair, ChunkDataToSave> chunkState = [];
+                Dictionary<ChunkPos, ChunkDataToSave> chunkState = [];
 
                 foreach (var kvm in region.chunkData)
                 {
@@ -87,7 +87,7 @@ namespace betareborn
                 return true;
             }
 
-            private void saveChunk(ChunkCoordIntPair chunkCoord, ChunkDataToSave chunk)
+            private void saveChunk(ChunkPos chunkCoord, ChunkDataToSave chunk)
             {
                 if (!chunk.chunkData.modified.isDirtyAt(chunk.snapshotEpoch))
                 {
@@ -98,7 +98,7 @@ namespace betareborn
 
                 try
                 {
-                    outputStream = RegionFileCache.getChunkOutputStream(worldDir, chunkCoord.chunkXPos, chunkCoord.chunkZPos);
+                    outputStream = RegionFileCache.getChunkOutputStream(worldDir, chunkCoord.x, chunkCoord.z);
 
                     writeChunkData(outputStream, chunk.chunkData);
                     chunk.chunkData.modified.completeSave(chunk.snapshotEpoch);
@@ -623,7 +623,7 @@ namespace betareborn
         }
 
         public static readonly Cache RegionCache = new(32);
-        private readonly Dictionary<ChunkCoordIntPair, ChunkData> chunkData = [];
+        private readonly Dictionary<ChunkPos, ChunkData> chunkData = [];
 
         public Region(java.io.File worldDir, int regionX, int regionZ)
         {
@@ -634,8 +634,8 @@ namespace betareborn
             {
                 for (int z = 0; z < 32; z++)
                 {
-                    ChunkCoordIntPair chunkPos = new(xOffset + x, zOffset + z);
-                    ChunkDataStream chunkStream = RegionFileCache.getChunkInputStream(worldDir, chunkPos.chunkXPos, chunkPos.chunkZPos);
+                    ChunkPos chunkPos = new(xOffset + x, zOffset + z);
+                    ChunkDataStream chunkStream = RegionFileCache.getChunkInputStream(worldDir, chunkPos.x, chunkPos.z);
 
                     if (chunkStream != null)
                     {
@@ -645,7 +645,7 @@ namespace betareborn
                         }
                         catch (Exception e)
                         {
-                            System.Console.WriteLine($"Failed to load chunk at: {chunkPos.chunkXPos}, {chunkPos.chunkZPos}, {e}");
+                            System.Console.WriteLine($"Failed to load chunk at: {chunkPos.x}, {chunkPos.z}, {e}");
                         }
                         finally
                         {
@@ -741,7 +741,7 @@ namespace betareborn
         private void writeInternal(int chunkX, int chunkZ, NBTTagCompound nbt, bool markModified)
         {
             byte[] nbtBytes = getNbtByteArray(nbt);
-            ChunkCoordIntPair chunkKey = new(chunkX, chunkZ);
+            ChunkPos chunkKey = new(chunkX, chunkZ);
             byte[] compressBuffer = ArrayPool<byte>.Shared.Rent(LZ4Codec.MaximumOutputSize(nbtBytes.Length));
             byte[] compressedBytes;
             try
@@ -778,7 +778,7 @@ namespace betareborn
             }
         }
 
-        private void insertChunkData(ChunkDataStream chunkStream, ChunkCoordIntPair chunkPos)
+        private void insertChunkData(ChunkDataStream chunkStream, ChunkPos chunkPos)
         {
             byte compressionType = chunkStream.getCompressionType();
 
@@ -789,7 +789,7 @@ namespace betareborn
             else if (compressionType == 2)
             {
                 NBTTagCompound chunkNBT = CompressedStreamTools.func_1141_a(chunkStream.getInputStream());
-                writeInternal(chunkPos.chunkXPos, chunkPos.chunkZPos, chunkNBT, false);
+                writeInternal(chunkPos.x, chunkPos.z, chunkNBT, false);
             }
             else
             {

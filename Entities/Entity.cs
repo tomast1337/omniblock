@@ -529,7 +529,7 @@ namespace betareborn.Entities
                     var26 = MathHelper.floor_double(posY - (double)0.2F - (double)yOffset);
                     var39 = MathHelper.floor_double(posZ);
                     var28 = worldObj.getBlockId(var38, var26, var39);
-                    if (worldObj.getBlockId(var38, var26 - 1, var39) == Block.fence.blockID)
+                    if (worldObj.getBlockId(var38, var26 - 1, var39) == Block.fence.id)
                     {
                         var28 = worldObj.getBlockId(var38, var26 - 1, var39);
                     }
@@ -538,7 +538,7 @@ namespace betareborn.Entities
                     {
                         ++nextStepDistance;
                         StepSound var29 = Block.blocksList[var28].stepSound;
-                        if (worldObj.getBlockId(var38, var26 + 1, var39) == Block.snow.blockID)
+                        if (worldObj.getBlockId(var38, var26 + 1, var39) == Block.snow.id)
                         {
                             var29 = Block.snow.stepSound;
                             worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
@@ -672,7 +672,7 @@ namespace betareborn.Entities
             int var7 = worldObj.getBlockId(var4, var5, var6);
             if (var7 != 0 && Block.blocksList[var7].blockMaterial == var1)
             {
-                float var8 = BlockFluid.getPercentAir(worldObj.getBlockMetadata(var4, var5, var6)) - 1.0F / 9.0F;
+                float var8 = BlockFluid.getPercentAir(worldObj.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
                 float var9 = (float)(var5 + 1) - var8;
                 return var2 < (double)var9;
             }
@@ -720,7 +720,7 @@ namespace betareborn.Entities
             int var6 = MathHelper.floor_double(posZ);
             if (worldObj.checkChunksExist(MathHelper.floor_double(boundingBox.minX), MathHelper.floor_double(boundingBox.minY), MathHelper.floor_double(boundingBox.minZ), MathHelper.floor_double(boundingBox.maxX), MathHelper.floor_double(boundingBox.maxY), MathHelper.floor_double(boundingBox.maxZ)))
             {
-                float var7 = worldObj.getLightBrightness(var2, var5, var6);
+                float var7 = worldObj.getLuminance(var2, var5, var6);
                 if (var7 < entityBrightness)
                 {
                     var7 = entityBrightness;
@@ -1033,7 +1033,7 @@ namespace betareborn.Entities
                 int var5 = MathHelper.floor_double(posX + (double)var2);
                 int var6 = MathHelper.floor_double(posY + (double)getEyeHeight() + (double)var3);
                 int var7 = MathHelper.floor_double(posZ + (double)var4);
-                if (worldObj.isBlockNormalCube(var5, var6, var7))
+                if (worldObj.shouldSuffocate(var5, var6, var7))
                 {
                     return true;
                 }
@@ -1291,14 +1291,14 @@ namespace betareborn.Entities
             double var10 = var1 - (double)var7;
             double var12 = var3 - (double)var8;
             double var14 = var5 - (double)var9;
-            if (worldObj.isBlockNormalCube(var7, var8, var9))
+            if (worldObj.shouldSuffocate(var7, var8, var9))
             {
-                bool var16 = !worldObj.isBlockNormalCube(var7 - 1, var8, var9);
-                bool var17 = !worldObj.isBlockNormalCube(var7 + 1, var8, var9);
-                bool var18 = !worldObj.isBlockNormalCube(var7, var8 - 1, var9);
-                bool var19 = !worldObj.isBlockNormalCube(var7, var8 + 1, var9);
-                bool var20 = !worldObj.isBlockNormalCube(var7, var8, var9 - 1);
-                bool var21 = !worldObj.isBlockNormalCube(var7, var8, var9 + 1);
+                bool var16 = !worldObj.shouldSuffocate(var7 - 1, var8, var9);
+                bool var17 = !worldObj.shouldSuffocate(var7 + 1, var8, var9);
+                bool var18 = !worldObj.shouldSuffocate(var7, var8 - 1, var9);
+                bool var19 = !worldObj.shouldSuffocate(var7, var8 + 1, var9);
+                bool var20 = !worldObj.shouldSuffocate(var7, var8, var9 - 1);
+                bool var21 = !worldObj.shouldSuffocate(var7, var8, var9 + 1);
                 int var22 = -1;
                 double var23 = 9999.0D;
                 if (var16 && var10 < var23)

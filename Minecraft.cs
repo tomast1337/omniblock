@@ -1075,19 +1075,19 @@ namespace betareborn
             if (objectMouseOver != null)
             {
                 int var1 = theWorld.getBlockId(objectMouseOver.blockX, objectMouseOver.blockY, objectMouseOver.blockZ);
-                if (var1 == Block.grass.blockID)
+                if (var1 == Block.grass.id)
                 {
-                    var1 = Block.dirt.blockID;
+                    var1 = Block.dirt.id;
                 }
 
-                if (var1 == Block.stairDouble.blockID)
+                if (var1 == Block.stairDouble.id)
                 {
-                    var1 = Block.stairSingle.blockID;
+                    var1 = Block.stairSingle.id;
                 }
 
-                if (var1 == Block.bedrock.blockID)
+                if (var1 == Block.bedrock.id)
                 {
-                    var1 = Block.stone.blockID;
+                    var1 = Block.stone.id;
                 }
 
                 thePlayer.inventory.setCurrentItem(var1, playerController is PlayerControllerTest);
@@ -1707,7 +1707,7 @@ namespace betareborn
             int var4 = var2 * 2 / 16 + 1;
             var4 *= var4;
             IChunkProvider var5 = theWorld.getIChunkProvider();
-            ChunkCoordinates var6 = theWorld.getSpawnPoint();
+            Vec3i var6 = theWorld.getSpawnPoint();
             if (thePlayer != null)
             {
                 var6.x = (int)thePlayer.posX;
@@ -1782,13 +1782,13 @@ namespace betareborn
 
         public void respawn(bool var1, int var2)
         {
-            if (!theWorld.multiplayerWorld && !theWorld.worldProvider.canRespawnHere())
+            if (!theWorld.multiplayerWorld && !theWorld.dimension.hasWorldSpawn())
             {
                 usePortal();
             }
 
-            ChunkCoordinates var3 = null;
-            ChunkCoordinates var4 = null;
+            Vec3i var3 = null;
+            Vec3i var4 = null;
             bool var5 = true;
             if (thePlayer != null && !var1)
             {

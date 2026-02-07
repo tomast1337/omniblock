@@ -24,7 +24,7 @@ namespace betareborn
             trackY = var4;
             trackZ = var5;
             int var6 = var2.getBlockId(var3, var4, var5);
-            int var7 = var2.getBlockMetadata(var3, var4, var5);
+            int var7 = var2.getBlockMeta(var3, var4, var5);
             if (BlockRail.isPoweredBlockRail((BlockRail)Block.blocksList[var6]))
             {
                 isPoweredRail = true;
@@ -271,10 +271,10 @@ namespace betareborn
             int var7 = var6;
             if (isPoweredRail)
             {
-                var7 = worldObj.getBlockMetadata(trackX, trackY, trackZ) & 8 | var6;
+                var7 = worldObj.getBlockMeta(trackX, trackY, trackZ) & 8 | var6;
             }
 
-            worldObj.setBlockMetadataWithNotify(trackX, trackY, trackZ, var7);
+            worldObj.setBlockMeta(trackX, trackY, trackZ, var7);
         }
 
         private bool func_786_c(int var1, int var2, int var3)
@@ -427,12 +427,12 @@ namespace betareborn
             int var8 = var7;
             if (isPoweredRail)
             {
-                var8 = worldObj.getBlockMetadata(trackX, trackY, trackZ) & 8 | var7;
+                var8 = worldObj.getBlockMeta(trackX, trackY, trackZ) & 8 | var7;
             }
 
-            if (var2 || worldObj.getBlockMetadata(trackX, trackY, trackZ) != var8)
+            if (var2 || worldObj.getBlockMeta(trackX, trackY, trackZ) != var8)
             {
-                worldObj.setBlockMetadataWithNotify(trackX, trackY, trackZ, var8);
+                worldObj.setBlockMeta(trackX, trackY, trackZ, var8);
 
                 for (int var9 = 0; var9 < connectedTracks.size(); ++var9)
                 {

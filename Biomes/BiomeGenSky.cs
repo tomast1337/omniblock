@@ -2,7 +2,7 @@ using betareborn.Entities;
 
 namespace betareborn.Biomes
 {
-    public class BiomeGenSky : BiomeGenBase
+    public class BiomeGenSky : Biome
     {
 
         public BiomeGenSky()

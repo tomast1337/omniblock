@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace betareborn.Worlds
 {
-    public class World : java.lang.Object, IBlockAccess
+    public class World : java.lang.Object, BlockView
     {
         public static readonly Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(World).TypeHandle);
         private const int AUTOSAVE_PERIOD = 40;
@@ -43,7 +43,7 @@ namespace betareborn.Worlds
         public int difficultySetting;
         public java.util.Random random;
         public bool isNewWorld;
-        public readonly WorldProvider worldProvider;
+        public readonly WorldProvider dimension;
         protected List<IWorldAccess> worldAccesses;
         protected IChunkProvider chunkProvider;
         protected readonly ISaveHandler saveHandler;
@@ -62,9 +62,9 @@ namespace betareborn.Worlds
         private readonly List<Entity> field_1012_M;
         public bool multiplayerWorld;
 
-        public WorldChunkManager getWorldChunkManager()
+        public BiomeSource getBiomeSource()
         {
-            return worldProvider.worldChunkMgr;
+            return dimension.worldChunkMgr;
         }
 
         public World(ISaveHandler var1, string var2, WorldProvider var3, long var4)
@@ -101,7 +101,7 @@ namespace betareborn.Worlds
             multiplayerWorld = false;
             saveHandler = var1;
             worldInfo = new WorldInfo(var4, var2);
-            worldProvider = var3;
+            dimension = var3;
             field_28108_z = new MapStorage(var1);
             var3.registerWorld(this);
             chunkProvider = getChunkProvider();
@@ -145,7 +145,7 @@ namespace betareborn.Worlds
             saveHandler = var1.saveHandler;
             worldInfo = new WorldInfo(var1.worldInfo);
             field_28108_z = new MapStorage(saveHandler);
-            worldProvider = var2;
+            dimension = var2;
             var2.registerWorld(this);
             chunkProvider = getChunkProvider();
             calculateInitialSkylight();
@@ -194,15 +194,15 @@ namespace betareborn.Worlds
             isNewWorld = worldInfo == null;
             if (var5 != null)
             {
-                worldProvider = var5;
+                dimension = var5;
             }
             else if (worldInfo != null && worldInfo.getDimension() == -1)
             {
-                worldProvider = WorldProvider.getProviderForDimension(-1);
+                dimension = WorldProvider.getProviderForDimension(-1);
             }
             else
             {
-                worldProvider = WorldProvider.getProviderForDimension(0);
+                dimension = WorldProvider.getProviderForDimension(0);
             }
 
             bool var6 = false;
@@ -216,7 +216,7 @@ namespace betareborn.Worlds
                 worldInfo.setWorldName(var2);
             }
 
-            worldProvider.registerWorld(this);
+            dimension.registerWorld(this);
             chunkProvider = getChunkProvider();
             if (var6)
             {
@@ -229,8 +229,8 @@ namespace betareborn.Worlds
 
         protected virtual IChunkProvider getChunkProvider()
         {
-            IChunkLoader var1 = saveHandler.getChunkLoader(worldProvider);
-            return new ChunkProvider(this, (McRegionChunkLoader)var1, worldProvider.getChunkProvider());
+            IChunkLoader var1 = saveHandler.getChunkLoader(dimension);
+            return new ChunkProvider(this, (McRegionChunkLoader)var1, dimension.getChunkProvider());
         }
 
         protected void getInitialSpawnLocation()
@@ -240,7 +240,7 @@ namespace betareborn.Worlds
             byte var2 = 64;
 
             int var3;
-            for (var3 = 0; !worldProvider.canCoordinateBeSpawn(var1, var3); var3 += random.nextInt(64) - random.nextInt(64))
+            for (var3 = 0; !dimension.canCoordinateBeSpawn(var1, var3); var3 += random.nextInt(64) - random.nextInt(64))
             {
                 var1 += random.nextInt(64) - random.nextInt(64);
             }
@@ -271,7 +271,7 @@ namespace betareborn.Worlds
         public int getFirstUncoveredBlock(int var1, int var2)
         {
             int var3;
-            for (var3 = 63; !isAirBlock(var1, var3 + 1, var2); ++var3)
+            for (var3 = 63; !isAir(var1, var3 + 1, var2); ++var3)
             {
             }
 
@@ -369,7 +369,7 @@ namespace betareborn.Worlds
             return var1 >= -32000000 && var3 >= -32000000 && var1 < 32000000 && var3 <= 32000000 ? (var2 < 0 ? 0 : (var2 >= 128 ? 0 : getChunkFromChunkCoords(var1 >> 4, var3 >> 4).getBlockID(var1 & 15, var2, var3 & 15))) : 0;
         }
 
-        public bool isAirBlock(int var1, int var2, int var3)
+        public bool isAir(int var1, int var2, int var3)
         {
             return getBlockId(var1, var2, var3) == 0;
         }
@@ -483,7 +483,7 @@ namespace betareborn.Worlds
             return var4 == 0 ? Material.AIR : Block.blocksList[var4].blockMaterial;
         }
 
-        public int getBlockMetadata(int var1, int var2, int var3)
+        public int getBlockMeta(int var1, int var2, int var3)
         {
             if (var1 >= -32000000 && var3 >= -32000000 && var1 < 32000000 && var3 <= 32000000)
             {
@@ -509,7 +509,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public void setBlockMetadataWithNotify(int var1, int var2, int var3, int var4)
+        public void setBlockMeta(int var1, int var2, int var3, int var4)
         {
             if (setBlockMetadata(var1, var2, var3, var4))
             {
@@ -641,7 +641,7 @@ namespace betareborn.Worlds
                 Block var5 = Block.blocksList[getBlockId(var1, var2, var3)];
                 if (var5 != null)
                 {
-                    var5.onNeighborBlockChange(this, var1, var2, var3, var4);
+                    var5.neighborUpdate(this, var1, var2, var3, var4);
                 }
 
             }
@@ -681,7 +681,7 @@ namespace betareborn.Worlds
                 if (var4)
                 {
                     int var5 = getBlockId(var1, var2, var3);
-                    if (var5 == Block.stairSingle.blockID || var5 == Block.tilledField.blockID || var5 == Block.stairCompactCobblestone.blockID || var5 == Block.stairCompactPlanks.blockID)
+                    if (var5 == Block.stairSingle.id || var5 == Block.tilledField.id || var5 == Block.stairCompactCobblestone.id || var5 == Block.stairCompactPlanks.id)
                     {
                         int var6 = getBlockLightValue_do(var1, var2 + 1, var3, false);
                         int var7 = getBlockLightValue_do(var1 + 1, var2, var3, false);
@@ -787,7 +787,7 @@ namespace betareborn.Worlds
 
         public void neighborLightPropagationChanged(EnumSkyBlock var1, int var2, int var3, int var4, int var5)
         {
-            if (!worldProvider.hasNoSky || var1 != EnumSkyBlock.Sky)
+            if (!dimension.hasNoSky || var1 != EnumSkyBlock.Sky)
             {
                 if (blockExists(var2, var3, var4))
                 {
@@ -872,7 +872,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public float getBrightness(int var1, int var2, int var3, int var4)
+        public float getNaturalBrightness(int var1, int var2, int var3, int var4)
         {
             int var5 = getBlockLightValue(var1, var2, var3);
             if (var5 < var4)
@@ -880,12 +880,12 @@ namespace betareborn.Worlds
                 var5 = var4;
             }
 
-            return worldProvider.lightBrightnessTable[var5];
+            return dimension.lightBrightnessTable[var5];
         }
 
-        public float getLightBrightness(int var1, int var2, int var3)
+        public float getLuminance(int var1, int var2, int var3)
         {
-            return worldProvider.lightBrightnessTable[getBlockLightValue(var1, var2, var3)];
+            return dimension.lightBrightnessTable[getBlockLightValue(var1, var2, var3)];
         }
 
         public bool isDaytime()
@@ -916,7 +916,7 @@ namespace betareborn.Worlds
                     int var9 = MathHelper.floor_double(var1.yCoord);
                     int var10 = MathHelper.floor_double(var1.zCoord);
                     int var11 = getBlockId(var8, var9, var10);
-                    int var12 = getBlockMetadata(var8, var9, var10);
+                    int var12 = getBlockMeta(var8, var9, var10);
                     Block var13 = Block.blocksList[var11];
                     if ((!var4 || var13 == null || var13.getCollisionBoundingBoxFromPool(this, var8, var9, var10) != null) && var11 > 0 && var13.canCollideCheck(var12, var3))
                     {
@@ -1078,7 +1078,7 @@ namespace betareborn.Worlds
                         }
 
                         int var35 = getBlockId(var8, var9, var10);
-                        int var36 = getBlockMetadata(var8, var9, var10);
+                        int var36 = getBlockMeta(var8, var9, var10);
                         Block var37 = Block.blocksList[var35];
                         if ((!var4 || var37 == null || var37.getCollisionBoundingBoxFromPool(this, var8, var9, var10) != null) && var35 > 0 && var37.canCollideCheck(var36, var3))
                         {
@@ -1310,8 +1310,8 @@ namespace betareborn.Worlds
 
             int var5 = MathHelper.floor_double(var1.posX);
             int var6 = MathHelper.floor_double(var1.posZ);
-            float var7 = (float)getWorldChunkManager().getTemperature(var5, var6);
-            int var8 = getWorldChunkManager().getBiomeGenAt(var5, var6).getSkyColorByTemp(var7);
+            float var7 = (float)getBiomeSource().getTemperature(var5, var6);
+            int var8 = getBiomeSource().getBiome(var5, var6).getSkyColorByTemp(var7);
             float var9 = (float)(var8 >> 16 & 255) / 255.0F;
             float var10 = (float)(var8 >> 8 & 255) / 255.0F;
             float var11 = (float)(var8 & 255) / 255.0F;
@@ -1359,7 +1359,7 @@ namespace betareborn.Worlds
 
         public float getCelestialAngle(float var1)
         {
-            return worldProvider.calculateCelestialAngle(worldInfo.getWorldTime(), var1);
+            return dimension.calculateCelestialAngle(worldInfo.getWorldTime(), var1);
         }
 
         public Vector3D<double> func_628_d(float var1)
@@ -1410,7 +1410,7 @@ namespace betareborn.Worlds
         public Vector3D<double> getFogColor(float var1)
         {
             float var2 = getCelestialAngle(var1);
-            return worldProvider.func_4096_a(var2, var1);
+            return dimension.func_4096_a(var2, var1);
         }
 
         public int findTopSolidBlock(int var1, int var2)
@@ -1791,7 +1791,7 @@ namespace betareborn.Worlds
                         for (int var10 = var6; var10 < var7; ++var10)
                         {
                             int var11 = getBlockId(var8, var9, var10);
-                            if (var11 == Block.fire.blockID || var11 == Block.lavaMoving.blockID || var11 == Block.lavaStill.blockID)
+                            if (var11 == Block.fire.id || var11 == Block.lavaMoving.id || var11 == Block.lavaStill.id)
                             {
                                 return true;
                             }
@@ -1829,7 +1829,7 @@ namespace betareborn.Worlds
                             Block var15 = Block.blocksList[getBlockId(var12, var13, var14)];
                             if (var15 != null && var15.blockMaterial == var2)
                             {
-                                double var16 = (double)((float)(var13 + 1) - BlockFluid.getPercentAir(getBlockMetadata(var12, var13, var14)));
+                                double var16 = (double)((float)(var13 + 1) - BlockFluid.getPercentAir(getBlockMeta(var12, var13, var14)));
                                 if ((double)var7 >= var16)
                                 {
                                     var10 = true;
@@ -1898,7 +1898,7 @@ namespace betareborn.Worlds
                         Block var12 = Block.blocksList[getBlockId(var9, var10, var11)];
                         if (var12 != null && var12.blockMaterial == var2)
                         {
-                            int var13 = getBlockMetadata(var9, var10, var11);
+                            int var13 = getBlockMeta(var9, var10, var11);
                             double var14 = (double)(var10 + 1);
                             if (var13 < 8)
                             {
@@ -1993,7 +1993,7 @@ namespace betareborn.Worlds
                 ++var2;
             }
 
-            if (getBlockId(var2, var3, var4) == Block.fire.blockID)
+            if (getBlockId(var2, var3, var4) == Block.fire.id)
             {
                 func_28107_a(var1, 1004, var2, var3, var4, 0);
                 setBlockWithNotify(var2, var3, var4, 0);
@@ -2069,16 +2069,16 @@ namespace betareborn.Worlds
 
         }
 
-        public bool isBlockOpaqueCube(int var1, int var2, int var3)
+        public bool isOpaque(int var1, int var2, int var3)
         {
             Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.isOpaqueCube();
+            return var4 == null ? false : var4.isOpaque();
         }
 
-        public bool isBlockNormalCube(int var1, int var2, int var3)
+        public bool shouldSuffocate(int var1, int var2, int var3)
         {
             Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.blockMaterial.suffocates() && var4.renderAsNormalBlock();
+            return var4 == null ? false : var4.blockMaterial.suffocates() && var4.isFullCube();
         }
 
         public void saveWorldIndirectly(IProgressUpdate var1)
@@ -2135,7 +2135,7 @@ namespace betareborn.Worlds
 
         public void scheduleLightingUpdate_do(EnumSkyBlock var1, int var2, int var3, int var4, int var5, int var6, int var7, bool var8)
         {
-            if (!worldProvider.hasNoSky || var1 != EnumSkyBlock.Sky)
+            if (!dimension.hasNoSky || var1 != EnumSkyBlock.Sky)
             {
                 ++lightingUpdatesScheduled;
 
@@ -2283,7 +2283,7 @@ namespace betareborn.Worlds
 
         protected virtual void updateWeather()
         {
-            if (!worldProvider.hasNoSky)
+            if (!dimension.hasNoSky)
             {
                 if (field_27168_F > 0)
                 {
@@ -2404,7 +2404,7 @@ namespace betareborn.Worlds
                 {
                     for (var7 = -var5; var7 <= var5; ++var7)
                     {
-                        positionsToUpdate.add(new ChunkCoordIntPair(var6 + var3, var7 + var4));
+                        positionsToUpdate.add(new ChunkPos(var6 + var3, var7 + var4));
                     }
                 }
             }
@@ -2418,10 +2418,10 @@ namespace betareborn.Worlds
 
             while (var12.hasNext())
             {
-                ChunkCoordIntPair var13 = (ChunkCoordIntPair)var12.next();
-                var3 = var13.chunkXPos * 16;
-                var4 = var13.chunkZPos * 16;
-                Chunk var14 = getChunkFromChunkCoords(var13.chunkXPos, var13.chunkZPos);
+                ChunkPos var13 = (ChunkPos)var12.next();
+                var3 = var13.x * 16;
+                var4 = var13.z * 16;
+                Chunk var14 = getChunkFromChunkCoords(var13.x, var13.z);
                 int var8;
                 int var9;
                 int var10;
@@ -2468,18 +2468,18 @@ namespace betareborn.Worlds
                     var7 = var6 & 15;
                     var8 = var6 >> 8 & 15;
                     var9 = findTopSolidBlock(var7 + var3, var8 + var4);
-                    if (getWorldChunkManager().getBiomeGenAt(var7 + var3, var8 + var4).getEnableSnow() && var9 >= 0 && var9 < 128 && var14.getSavedLightValue(EnumSkyBlock.Block, var7, var9, var8) < 10)
+                    if (getBiomeSource().getBiome(var7 + var3, var8 + var4).getEnableSnow() && var9 >= 0 && var9 < 128 && var14.getSavedLightValue(EnumSkyBlock.Block, var7, var9, var8) < 10)
                     {
                         var10 = var14.getBlockID(var7, var9 - 1, var8);
                         var15 = var14.getBlockID(var7, var9, var8);
-                        if (func_27161_C() && var15 == 0 && Block.snow.canPlaceBlockAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ice.blockID && Block.blocksList[var10].blockMaterial.blocksMovement())
+                        if (func_27161_C() && var15 == 0 && Block.snow.canPlaceBlockAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ice.id && Block.blocksList[var10].blockMaterial.blocksMovement())
                         {
-                            setBlockWithNotify(var7 + var3, var9, var8 + var4, Block.snow.blockID);
+                            setBlockWithNotify(var7 + var3, var9, var8 + var4, Block.snow.id);
                         }
 
-                        if (var10 == Block.waterStill.blockID && var14.getBlockMetadata(var7, var9 - 1, var8) == 0)
+                        if (var10 == Block.waterStill.id && var14.getBlockMetadata(var7, var9 - 1, var8) == 0)
                         {
-                            setBlockWithNotify(var7 + var3, var9 - 1, var8 + var4, Block.ice.blockID);
+                            setBlockWithNotify(var7 + var3, var9 - 1, var8 + var4, Block.ice.id);
                         }
                     }
                 }
@@ -2733,7 +2733,7 @@ namespace betareborn.Worlds
 
         public bool isBlockIndirectlyProvidingPowerTo(int var1, int var2, int var3, int var4)
         {
-            if (isBlockNormalCube(var1, var2, var3))
+            if (shouldSuffocate(var1, var2, var3))
             {
                 return isBlockGettingPowered(var1, var2, var3);
             }
@@ -2864,12 +2864,12 @@ namespace betareborn.Worlds
             return worldInfo.getWorldTime();
         }
 
-        public ChunkCoordinates getSpawnPoint()
+        public Vec3i getSpawnPoint()
         {
-            return new ChunkCoordinates(worldInfo.getSpawnX(), worldInfo.getSpawnY(), worldInfo.getSpawnZ());
+            return new Vec3i(worldInfo.getSpawnX(), worldInfo.getSpawnY(), worldInfo.getSpawnZ());
         }
 
-        public void setSpawnPoint(ChunkCoordinates var1)
+        public void setSpawnPoint(Vec3i var1)
         {
             worldInfo.setSpawn(var1.x, var1.y, var1.z);
         }
@@ -3084,7 +3084,7 @@ namespace betareborn.Worlds
             }
             else
             {
-                BiomeGenBase var4 = getWorldChunkManager().getBiomeGenAt(var1, var3);
+                Biome var4 = getBiomeSource().getBiome(var1, var3);
                 return var4.getEnableSnow() ? false : var4.canSpawnLightningBolt();
             }
         }

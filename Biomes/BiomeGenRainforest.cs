@@ -2,7 +2,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Biomes
 {
-    public class BiomeGenRainforest : BiomeGenBase
+    public class BiomeGenRainforest : Biome
     {
 
         public override WorldGenerator getRandomWorldGenForTrees(java.util.Random var1)

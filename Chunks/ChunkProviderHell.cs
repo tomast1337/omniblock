@@ -85,12 +85,12 @@ namespace betareborn.Chunks
                                     int var51 = 0;
                                     if (var11 * 8 + var30 < var5)
                                     {
-                                        var51 = Block.lavaStill.blockID;
+                                        var51 = Block.lavaStill.id;
                                     }
 
                                     if (var46 > 0.0D)
                                     {
-                                        var51 = Block.netherrack.blockID;
+                                        var51 = Block.netherrack.id;
                                     }
 
                                     var3[var42] = (byte)var51;
@@ -129,19 +129,19 @@ namespace betareborn.Chunks
                     bool var10 = field_4161_q[var7 + var8 * 16] + hellRNG.nextDouble() * 0.2D > 0.0D;
                     int var11 = (int)(field_4160_r[var7 + var8 * 16] / 3.0D + 3.0D + hellRNG.nextDouble() * 0.25D);
                     int var12 = -1;
-                    byte var13 = (byte)Block.netherrack.blockID;
-                    byte var14 = (byte)Block.netherrack.blockID;
+                    byte var13 = (byte)Block.netherrack.id;
+                    byte var14 = (byte)Block.netherrack.id;
 
                     for (int var15 = 127; var15 >= 0; --var15)
                     {
                         int var16 = (var8 * 16 + var7) * 128 + var15;
                         if (var15 >= 127 - hellRNG.nextInt(5))
                         {
-                            var3[var16] = (byte)Block.bedrock.blockID;
+                            var3[var16] = (byte)Block.bedrock.id;
                         }
                         else if (var15 <= 0 + hellRNG.nextInt(5))
                         {
-                            var3[var16] = (byte)Block.bedrock.blockID;
+                            var3[var16] = (byte)Block.bedrock.id;
                         }
                         else
                         {
@@ -150,43 +150,43 @@ namespace betareborn.Chunks
                             {
                                 var12 = -1;
                             }
-                            else if (var17 == Block.netherrack.blockID)
+                            else if (var17 == Block.netherrack.id)
                             {
                                 if (var12 == -1)
                                 {
                                     if (var11 <= 0)
                                     {
                                         var13 = 0;
-                                        var14 = (byte)Block.netherrack.blockID;
+                                        var14 = (byte)Block.netherrack.id;
                                     }
                                     else if (var15 >= var4 - 4 && var15 <= var4 + 1)
                                     {
-                                        var13 = (byte)Block.netherrack.blockID;
-                                        var14 = (byte)Block.netherrack.blockID;
+                                        var13 = (byte)Block.netherrack.id;
+                                        var14 = (byte)Block.netherrack.id;
                                         if (var10)
                                         {
-                                            var13 = (byte)Block.gravel.blockID;
+                                            var13 = (byte)Block.gravel.id;
                                         }
 
                                         if (var10)
                                         {
-                                            var14 = (byte)Block.netherrack.blockID;
+                                            var14 = (byte)Block.netherrack.id;
                                         }
 
                                         if (var9)
                                         {
-                                            var13 = (byte)Block.slowSand.blockID;
+                                            var13 = (byte)Block.slowSand.id;
                                         }
 
                                         if (var9)
                                         {
-                                            var14 = (byte)Block.slowSand.blockID;
+                                            var14 = (byte)Block.slowSand.id;
                                         }
                                     }
 
                                     if (var15 < var4 && var13 == 0)
                                     {
-                                        var13 = (byte)Block.lavaStill.blockID;
+                                        var13 = (byte)Block.lavaStill.id;
                                     }
 
                                     var12 = var11;
@@ -380,7 +380,7 @@ namespace betareborn.Chunks
                 var7 = var4 + hellRNG.nextInt(16) + 8;
                 var8 = hellRNG.nextInt(120) + 4;
                 var9 = var5 + hellRNG.nextInt(16) + 8;
-                (new WorldGenHellLava(Block.lavaMoving.blockID)).generate(worldObj, hellRNG, var7, var8, var9);
+                (new WorldGenHellLava(Block.lavaMoving.id)).generate(worldObj, hellRNG, var7, var8, var9);
             }
 
             var6 = hellRNG.nextInt(hellRNG.nextInt(10) + 1) + 1;
@@ -417,7 +417,7 @@ namespace betareborn.Chunks
                 var7 = var4 + hellRNG.nextInt(16) + 8;
                 var8 = hellRNG.nextInt(128);
                 var9 = var5 + hellRNG.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.mushroomBrown.blockID)).generate(worldObj, hellRNG, var7, var8, var9);
+                (new WorldGenFlowers(Block.mushroomBrown.id)).generate(worldObj, hellRNG, var7, var8, var9);
             }
 
             if (hellRNG.nextInt(1) == 0)
@@ -425,7 +425,7 @@ namespace betareborn.Chunks
                 var7 = var4 + hellRNG.nextInt(16) + 8;
                 var8 = hellRNG.nextInt(128);
                 var9 = var5 + hellRNG.nextInt(16) + 8;
-                (new WorldGenFlowers(Block.mushroomRed.blockID)).generate(worldObj, hellRNG, var7, var8, var9);
+                (new WorldGenFlowers(Block.mushroomRed.id)).generate(worldObj, hellRNG, var7, var8, var9);
             }
 
             BlockSand.fallInstantly = false;

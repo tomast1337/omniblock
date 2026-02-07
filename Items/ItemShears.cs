@@ -14,7 +14,7 @@ namespace betareborn.Items
 
         public override bool onBlockDestroyed(ItemStack var1, int var2, int var3, int var4, int var5, EntityLiving var6)
         {
-            if (var2 == Block.leaves.blockID || var2 == Block.web.blockID)
+            if (var2 == Block.leaves.id || var2 == Block.web.id)
             {
                 var1.damageItem(1, var6);
             }
@@ -24,12 +24,12 @@ namespace betareborn.Items
 
         public override bool canHarvestBlock(Block var1)
         {
-            return var1.blockID == Block.web.blockID;
+            return var1.id == Block.web.id;
         }
 
         public override float getStrVsBlock(ItemStack var1, Block var2)
         {
-            return var2.blockID != Block.web.blockID && var2.blockID != Block.leaves.blockID ? (var2.blockID == Block.cloth.blockID ? 5.0F : base.getStrVsBlock(var1, var2)) : 15.0F;
+            return var2.id != Block.web.id && var2.id != Block.leaves.id ? (var2.id == Block.cloth.id ? 5.0F : base.getStrVsBlock(var1, var2)) : 15.0F;
         }
     }
 

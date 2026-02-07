@@ -107,7 +107,7 @@ namespace betareborn.Entities
             int var15 = worldObj.getBlockId(xTile, yTile, zTile);
             if (var15 > 0)
             {
-                Block.blocksList[var15].setBlockBoundsBasedOnState(worldObj, xTile, yTile, zTile);
+                Block.blocksList[var15].updateBoundingBox(worldObj, xTile, yTile, zTile);
                 Box var2 = Block.blocksList[var15].getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
                 if (var2 != null && var2.contains(Vec3D.createVector(posX, posY, posZ)))
                 {
@@ -123,7 +123,7 @@ namespace betareborn.Entities
             if (inGround)
             {
                 var15 = worldObj.getBlockId(xTile, yTile, zTile);
-                int var18 = worldObj.getBlockMetadata(xTile, yTile, zTile);
+                int var18 = worldObj.getBlockMeta(xTile, yTile, zTile);
                 if (var15 == inTile && var18 == field_28019_h)
                 {
                     ++ticksInGround;
@@ -212,7 +212,7 @@ namespace betareborn.Entities
                         yTile = var3.blockY;
                         zTile = var3.blockZ;
                         inTile = worldObj.getBlockId(xTile, yTile, zTile);
-                        field_28019_h = worldObj.getBlockMetadata(xTile, yTile, zTile);
+                        field_28019_h = worldObj.getBlockMeta(xTile, yTile, zTile);
                         motionX = (double)((float)(var3.hitVec.xCoord - posX));
                         motionY = (double)((float)(var3.hitVec.yCoord - posY));
                         motionZ = (double)((float)(var3.hitVec.zCoord - posZ));

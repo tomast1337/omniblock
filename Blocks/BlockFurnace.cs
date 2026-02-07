@@ -16,12 +16,12 @@ namespace betareborn.Blocks
         public BlockFurnace(int var1, bool var2) : base(var1, Material.STONE)
         {
             isActive = var2;
-            blockIndexInTexture = 45;
+            textureId = 45;
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.stoneOvenIdle.blockID;
+            return Block.stoneOvenIdle.id;
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
@@ -59,24 +59,24 @@ namespace betareborn.Blocks
                     var9 = 4;
                 }
 
-                var1.setBlockMetadataWithNotify(var2, var3, var4, var9);
+                var1.setBlockMeta(var2, var3, var4, var9);
             }
         }
 
-        public override int getBlockTexture(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override int getBlockTexture(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (var5 == 1)
             {
-                return blockIndexInTexture + 17;
+                return textureId + 17;
             }
             else if (var5 == 0)
             {
-                return blockIndexInTexture + 17;
+                return textureId + 17;
             }
             else
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
-                return var5 != var6 ? blockIndexInTexture : (isActive ? blockIndexInTexture + 16 : blockIndexInTexture - 1);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
+                return var5 != var6 ? textureId : (isActive ? textureId + 16 : textureId - 1);
             }
         }
 
@@ -84,7 +84,7 @@ namespace betareborn.Blocks
         {
             if (isActive)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 float var7 = (float)var2 + 0.5F;
                 float var8 = (float)var3 + 0.0F + var5.nextFloat() * 6.0F / 16.0F;
                 float var9 = (float)var4 + 0.5F;
@@ -116,10 +116,10 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return var1 == 1 ? blockIndexInTexture + 17 : (var1 == 0 ? blockIndexInTexture + 17 : (var1 == 3 ? blockIndexInTexture - 1 : blockIndexInTexture));
+            return var1 == 1 ? textureId + 17 : (var1 == 0 ? textureId + 17 : (var1 == 3 ? textureId - 1 : textureId));
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             if (var1.multiplayerWorld)
             {
@@ -135,20 +135,20 @@ namespace betareborn.Blocks
 
         public static void updateFurnaceBlockState(bool var0, World var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
             TileEntity var6 = var1.getBlockTileEntity(var2, var3, var4);
             keepFurnaceInventory = true;
             if (var0)
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.stoneOvenActive.blockID);
+                var1.setBlockWithNotify(var2, var3, var4, Block.stoneOvenActive.id);
             }
             else
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.stoneOvenIdle.blockID);
+                var1.setBlockWithNotify(var2, var3, var4, Block.stoneOvenIdle.id);
             }
 
             keepFurnaceInventory = false;
-            var1.setBlockMetadataWithNotify(var2, var3, var4, var5);
+            var1.setBlockMeta(var2, var3, var4, var5);
             var6.cancelRemoval();
             var1.setBlockTileEntity(var2, var3, var4, var6);
         }
@@ -163,22 +163,22 @@ namespace betareborn.Blocks
             int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 2);
+                var1.setBlockMeta(var2, var3, var4, 2);
             }
 
             if (var6 == 1)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 5);
+                var1.setBlockMeta(var2, var3, var4, 5);
             }
 
             if (var6 == 2)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 3);
+                var1.setBlockMeta(var2, var3, var4, 3);
             }
 
             if (var6 == 3)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 4);
+                var1.setBlockMeta(var2, var3, var4, 4);
             }
 
         }

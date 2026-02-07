@@ -26,7 +26,7 @@ namespace betareborn.Chunks
             }
             else
             {
-                ChunkCoordIntPair var3 = new ChunkCoordIntPair(var1, var2);
+                ChunkPos var3 = new ChunkPos(var1, var2);
                 return chunkMapping.containsKey(var3);
             }
         }
@@ -39,13 +39,13 @@ namespace betareborn.Chunks
                 var3.onChunkUnload();
             }
 
-            chunkMapping.remove(new ChunkCoordIntPair(var1, var2));
+            chunkMapping.remove(new ChunkPos(var1, var2));
             field_889_c.remove(var3);
         }
 
         public Chunk prepareChunk(int var1, int var2)
         {
-            ChunkCoordIntPair var3 = new ChunkCoordIntPair(var1, var2);
+            ChunkPos var3 = new ChunkPos(var1, var2);
             byte[] var4 = new byte[-Short.MIN_VALUE];
             Chunk var5 = new Chunk(worldObj, var4, var1, var2);
             Arrays.fill(var5.skylightMap.data, (byte)255);
@@ -56,7 +56,7 @@ namespace betareborn.Chunks
 
         public Chunk provideChunk(int var1, int var2)
         {
-            ChunkCoordIntPair var3 = new ChunkCoordIntPair(var1, var2);
+            ChunkPos var3 = new ChunkPos(var1, var2);
             Chunk var4 = (Chunk)chunkMapping.get(var3);
             return var4 == null ? blankChunk : var4;
         }

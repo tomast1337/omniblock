@@ -1,11 +1,11 @@
 namespace betareborn
 {
-    public class NoiseGeneratorOctaves2 : NoiseGenerator
+    public class OctaveSimplexNoiseSampler : NoiseGenerator
     {
         private readonly NoiseGenerator2[] field_4234_a;
         private readonly int field_4233_b;
 
-        public NoiseGeneratorOctaves2(java.util.Random var1, int var2)
+        public OctaveSimplexNoiseSampler(java.util.Random var1, int var2)
         {
             field_4233_b = var2;
             field_4234_a = new NoiseGenerator2[var2];
@@ -17,7 +17,7 @@ namespace betareborn
 
         }
 
-        public double[] func_4112_a(double[] var1, double var2, double var4, int var6, int var7, double var8, double var10, double var12)
+        public double[] sample(double[] var1, double var2, double var4, int var6, int var7, double var8, double var10, double var12)
         {
             return func_4111_a(var1, var2, var4, var6, var7, var8, var10, var12, 0.5D);
         }

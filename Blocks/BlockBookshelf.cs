@@ -10,7 +10,7 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return var1 <= 1 ? 4 : blockIndexInTexture;
+            return var1 <= 1 ? 4 : textureId;
         }
 
         public override int quantityDropped(java.util.Random var1)

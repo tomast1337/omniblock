@@ -5,7 +5,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Chunks
 {
-    public class ChunkCache : java.lang.Object, IBlockAccess
+    public class ChunkCache : java.lang.Object, BlockView
     {
         private readonly int chunkX;
         private readonly int chunkZ;
@@ -68,7 +68,7 @@ namespace betareborn.Chunks
             return chunkArray[var4][var5].getChunkBlockTileEntity(var1 & 15, var2, var3 & 15);
         }
 
-        public float getBrightness(int var1, int var2, int var3, int var4)
+        public float getNaturalBrightness(int var1, int var2, int var3, int var4)
         {
             int var5 = getLightValue(var1, var2, var3);
             if (var5 < var4)
@@ -76,12 +76,12 @@ namespace betareborn.Chunks
                 var5 = var4;
             }
 
-            return worldObj.worldProvider.lightBrightnessTable[var5];
+            return worldObj.dimension.lightBrightnessTable[var5];
         }
 
-        public float getLightBrightness(int var1, int var2, int var3)
+        public float getLuminance(int var1, int var2, int var3)
         {
-            return worldObj.worldProvider.lightBrightnessTable[getLightValue(var1, var2, var3)];
+            return worldObj.dimension.lightBrightnessTable[getLightValue(var1, var2, var3)];
         }
 
         public int getLightValue(int var1, int var2, int var3)
@@ -98,7 +98,7 @@ namespace betareborn.Chunks
                 if (var4)
                 {
                     var5 = getBlockId(var1, var2, var3);
-                    if (var5 == Block.stairSingle.blockID || var5 == Block.tilledField.blockID || var5 == Block.stairCompactPlanks.blockID || var5 == Block.stairCompactCobblestone.blockID)
+                    if (var5 == Block.stairSingle.id || var5 == Block.tilledField.id || var5 == Block.stairCompactPlanks.id || var5 == Block.stairCompactCobblestone.id)
                     {
                         var6 = getLightValueExt(var1, var2 + 1, var3, false);
                         int var7 = getLightValueExt(var1 + 1, var2, var3, false);
@@ -156,7 +156,7 @@ namespace betareborn.Chunks
             }
         }
 
-        public int getBlockMetadata(int var1, int var2, int var3)
+        public int getBlockMeta(int var1, int var2, int var3)
         {
             if (var2 < 0)
             {
@@ -180,21 +180,21 @@ namespace betareborn.Chunks
             return var4 == 0 ? Material.AIR : Block.blocksList[var4].blockMaterial;
         }
 
-        public WorldChunkManager getWorldChunkManager()
+        public BiomeSource getBiomeSource()
         {
-            return worldObj.getWorldChunkManager();
+            return worldObj.getBiomeSource();
         }
 
-        public bool isBlockOpaqueCube(int var1, int var2, int var3)
+        public bool isOpaque(int var1, int var2, int var3)
         {
             Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.isOpaqueCube();
+            return var4 == null ? false : var4.isOpaque();
         }
 
-        public bool isBlockNormalCube(int var1, int var2, int var3)
+        public bool shouldSuffocate(int var1, int var2, int var3)
         {
             Block var4 = Block.blocksList[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.blockMaterial.blocksMovement() && var4.renderAsNormalBlock();
+            return var4 == null ? false : var4.blockMaterial.blocksMovement() && var4.isFullCube();
         }
     }
 

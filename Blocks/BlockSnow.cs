@@ -11,40 +11,40 @@ namespace betareborn.Blocks
 
         public BlockSnow(int var1, int var2) : base(var1, var2, Material.SNOW_LAYER)
         {
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
             setTickOnLoad(true);
         }
 
         public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4) & 7;
+            int var5 = var1.getBlockMeta(var2, var3, var4) & 7;
             return var5 >= 3 ? Box.createCached((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)((float)var3 + 0.5F), (double)var4 + maxZ) : null;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
 
-        public override void setBlockBoundsBasedOnState(IBlockAccess var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4) & 7;
+            int var5 = var1.getBlockMeta(var2, var3, var4) & 7;
             float var6 = (float)(2 * (1 + var5)) / 16.0F;
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, var6, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, var6, 1.0F);
         }
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockId(var2, var3 - 1, var4);
-            return var5 != 0 && Block.blocksList[var5].isOpaqueCube() ? var1.getMaterial(var2, var3 - 1, var4).blocksMovement() : false;
+            return var5 != 0 && Block.blocksList[var5].isOpaque() ? var1.getMaterial(var2, var3 - 1, var4).blocksMovement() : false;
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             func_314_h(var1, var2, var3, var4);
         }
@@ -53,7 +53,7 @@ namespace betareborn.Blocks
         {
             if (!canPlaceBlockAt(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
+                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
                 return false;
             }
@@ -74,10 +74,10 @@ namespace betareborn.Blocks
             var15.delayBeforeCanPickup = 10;
             var1.spawnEntity(var15);
             var1.setBlockWithNotify(var3, var4, var5, 0);
-            var2.addStat(StatList.mineBlockStatArray[blockID], 1);
+            var2.addStat(StatList.mineBlockStatArray[id], 1);
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return Item.snowball.id;
         }
@@ -91,13 +91,13 @@ namespace betareborn.Blocks
         {
             if (var1.getSavedLightValue(EnumSkyBlock.Block, var2, var3, var4) > 11)
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
+                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
         }
 
-        public override bool shouldSideBeRendered(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool shouldSideBeRendered(BlockView var1, int var2, int var3, int var4, int var5)
         {
             return var5 == 1 ? true : base.shouldSideBeRendered(var1, var2, var3, var4, var5);
         }

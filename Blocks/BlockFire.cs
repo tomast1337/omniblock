@@ -15,15 +15,15 @@ namespace betareborn.Blocks
 
         protected override void initializeBlock()
         {
-            setBurnRate(Block.planks.blockID, 5, 20);
-            setBurnRate(Block.fence.blockID, 5, 20);
-            setBurnRate(Block.stairCompactPlanks.blockID, 5, 20);
-            setBurnRate(Block.wood.blockID, 5, 5);
-            setBurnRate(Block.leaves.blockID, 30, 60);
-            setBurnRate(Block.bookShelf.blockID, 30, 20);
-            setBurnRate(Block.tnt.blockID, 15, 100);
-            setBurnRate(Block.tallGrass.blockID, 60, 100);
-            setBurnRate(Block.cloth.blockID, 30, 60);
+            setBurnRate(Block.planks.id, 5, 20);
+            setBurnRate(Block.fence.id, 5, 20);
+            setBurnRate(Block.stairCompactPlanks.id, 5, 20);
+            setBurnRate(Block.wood.id, 5, 5);
+            setBurnRate(Block.leaves.id, 30, 60);
+            setBurnRate(Block.bookShelf.id, 30, 20);
+            setBurnRate(Block.tnt.id, 15, 100);
+            setBurnRate(Block.tallGrass.id, 60, 100);
+            setBurnRate(Block.cloth.id, 30, 60);
         }
 
         private void setBurnRate(int var1, int var2, int var3)
@@ -37,12 +37,12 @@ namespace betareborn.Blocks
             return null;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
@@ -64,7 +64,7 @@ namespace betareborn.Blocks
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            bool var6 = var1.getBlockId(var2, var3 - 1, var4) == Block.netherrack.blockID;
+            bool var6 = var1.getBlockId(var2, var3 - 1, var4) == Block.netherrack.id;
             if (!canPlaceBlockAt(var1, var2, var3, var4))
             {
                 var1.setBlockWithNotify(var2, var3, var4, 0);
@@ -72,16 +72,16 @@ namespace betareborn.Blocks
 
             if (var6 || !var1.func_27161_C() || !var1.canBlockBeRainedOn(var2, var3, var4) && !var1.canBlockBeRainedOn(var2 - 1, var3, var4) && !var1.canBlockBeRainedOn(var2 + 1, var3, var4) && !var1.canBlockBeRainedOn(var2, var3, var4 - 1) && !var1.canBlockBeRainedOn(var2, var3, var4 + 1))
             {
-                int var7 = var1.getBlockMetadata(var2, var3, var4);
+                int var7 = var1.getBlockMeta(var2, var3, var4);
                 if (var7 < 15)
                 {
                     var1.setBlockMetadata(var2, var3, var4, var7 + var5.nextInt(3) / 2);
                 }
 
-                var1.scheduleBlockUpdate(var2, var3, var4, blockID, tickRate());
+                var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
                 if (!var6 && !func_263_h(var1, var2, var3, var4))
                 {
-                    if (!var1.isBlockNormalCube(var2, var3 - 1, var4) || var7 > 3)
+                    if (!var1.shouldSuffocate(var2, var3 - 1, var4) || var7 > 3)
                     {
                         var1.setBlockWithNotify(var2, var3, var4, 0);
                     }
@@ -126,7 +126,7 @@ namespace betareborn.Blocks
                                                 var14 = 15;
                                             }
 
-                                            var1.setBlockAndMetadataWithNotify(var8, var10, var9, blockID, var14);
+                                            var1.setBlockAndMetadataWithNotify(var8, var10, var9, id, var14);
                                         }
                                     }
                                 }
@@ -147,7 +147,7 @@ namespace betareborn.Blocks
             int var8 = abilityToCatchFire[var1.getBlockId(var2, var3, var4)];
             if (var6.nextInt(var5) < var8)
             {
-                bool var9 = var1.getBlockId(var2, var3, var4) == Block.tnt.blockID;
+                bool var9 = var1.getBlockId(var2, var3, var4) == Block.tnt.id;
                 if (var6.nextInt(var7 + 10) < 5 && !var1.canBlockBeRainedOn(var2, var3, var4))
                 {
                     int var10 = var7 + var6.nextInt(5) / 4;
@@ -156,7 +156,7 @@ namespace betareborn.Blocks
                         var10 = 15;
                     }
 
-                    var1.setBlockAndMetadataWithNotify(var2, var3, var4, blockID, var10);
+                    var1.setBlockAndMetadataWithNotify(var2, var3, var4, id, var10);
                 }
                 else
                 {
@@ -179,7 +179,7 @@ namespace betareborn.Blocks
         private int getChanceOfNeighborsEncouragingFire(World var1, int var2, int var3, int var4)
         {
             sbyte var5 = 0;
-            if (!var1.isAirBlock(var2, var3, var4))
+            if (!var1.isAir(var2, var3, var4))
             {
                 return 0;
             }
@@ -200,7 +200,7 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public bool canBlockCatchFire(IBlockAccess var1, int var2, int var3, int var4)
+        public bool canBlockCatchFire(BlockView var1, int var2, int var3, int var4)
         {
             return chanceToEncourageFire[var1.getBlockId(var2, var3, var4)] > 0;
         }
@@ -213,12 +213,12 @@ namespace betareborn.Blocks
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
-            return var1.isBlockNormalCube(var2, var3 - 1, var4) || func_263_h(var1, var2, var3, var4);
+            return var1.shouldSuffocate(var2, var3 - 1, var4) || func_263_h(var1, var2, var3, var4);
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            if (!var1.isBlockNormalCube(var2, var3 - 1, var4) && !func_263_h(var1, var2, var3, var4))
+            if (!var1.shouldSuffocate(var2, var3 - 1, var4) && !func_263_h(var1, var2, var3, var4))
             {
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
@@ -226,15 +226,15 @@ namespace betareborn.Blocks
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
         {
-            if (var1.getBlockId(var2, var3 - 1, var4) != Block.obsidian.blockID || !Block.portal.tryToCreatePortal(var1, var2, var3, var4))
+            if (var1.getBlockId(var2, var3 - 1, var4) != Block.obsidian.id || !Block.portal.tryToCreatePortal(var1, var2, var3, var4))
             {
-                if (!var1.isBlockNormalCube(var2, var3 - 1, var4) && !func_263_h(var1, var2, var3, var4))
+                if (!var1.shouldSuffocate(var2, var3 - 1, var4) && !func_263_h(var1, var2, var3, var4))
                 {
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
                 else
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, blockID, tickRate());
+                    var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
                 }
             }
         }
@@ -250,7 +250,7 @@ namespace betareborn.Blocks
             float var7;
             float var8;
             float var9;
-            if (!var1.isBlockNormalCube(var2, var3 - 1, var4) && !Block.fire.canBlockCatchFire(var1, var2, var3 - 1, var4))
+            if (!var1.shouldSuffocate(var2, var3 - 1, var4) && !Block.fire.canBlockCatchFire(var1, var2, var3 - 1, var4))
             {
                 if (Block.fire.canBlockCatchFire(var1, var2 - 1, var3, var4))
                 {

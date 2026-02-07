@@ -6,34 +6,34 @@ using java.util;
 
 namespace betareborn.Biomes
 {
-    public class BiomeGenBase
+    public class Biome
     {
-        public static readonly BiomeGenBase rainforest = (new BiomeGenRainforest()).setColor(588342).setBiomeName("Rainforest").func_4124_a(2094168);
-        public static readonly BiomeGenBase swampland = (new BiomeGenSwamp()).setColor(522674).setBiomeName("Swampland").func_4124_a(9154376);
-        public static readonly BiomeGenBase seasonalForest = (new BiomeGenBase()).setColor(10215459).setBiomeName("Seasonal Forest");
-        public static readonly BiomeGenBase forest = (new BiomeGenForest()).setColor(353825).setBiomeName("Forest").func_4124_a(5159473);
-        public static readonly BiomeGenBase savanna = (new BiomeGenDesert()).setColor(14278691).setBiomeName("Savanna");
-        public static readonly BiomeGenBase shrubland = (new BiomeGenBase()).setColor(10595616).setBiomeName("Shrubland");
-        public static readonly BiomeGenBase taiga = (new BiomeGenTaiga()).setColor(3060051).setBiomeName("Taiga").setEnableSnow().func_4124_a(8107825);
-        public static readonly BiomeGenBase desert = (new BiomeGenDesert()).setColor(16421912).setBiomeName("Desert").setDisableRain();
-        public static readonly BiomeGenBase plains = (new BiomeGenDesert()).setColor(16767248).setBiomeName("Plains");
-        public static readonly BiomeGenBase iceDesert = (new BiomeGenDesert()).setColor(16772499).setBiomeName("Ice Desert").setEnableSnow().setDisableRain().func_4124_a(12899129);
-        public static readonly BiomeGenBase tundra = (new BiomeGenBase()).setColor(5762041).setBiomeName("Tundra").setEnableSnow().func_4124_a(12899129);
-        public static readonly BiomeGenBase hell = (new BiomeGenHell()).setColor(16711680).setBiomeName("Hell").setDisableRain();
-        public static readonly BiomeGenBase sky = (new BiomeGenSky()).setColor(8421631).setBiomeName("Sky").setDisableRain();
+        public static readonly Biome rainforest = (new BiomeGenRainforest()).setColor(588342).setBiomeName("Rainforest").func_4124_a(2094168);
+        public static readonly Biome swampland = (new BiomeGenSwamp()).setColor(522674).setBiomeName("Swampland").func_4124_a(9154376);
+        public static readonly Biome seasonalForest = (new Biome()).setColor(10215459).setBiomeName("Seasonal Forest");
+        public static readonly Biome forest = (new BiomeGenForest()).setColor(353825).setBiomeName("Forest").func_4124_a(5159473);
+        public static readonly Biome savanna = (new BiomeGenDesert()).setColor(14278691).setBiomeName("Savanna");
+        public static readonly Biome shrubland = (new Biome()).setColor(10595616).setBiomeName("Shrubland");
+        public static readonly Biome taiga = (new BiomeGenTaiga()).setColor(3060051).setBiomeName("Taiga").setEnableSnow().func_4124_a(8107825);
+        public static readonly Biome desert = (new BiomeGenDesert()).setColor(16421912).setBiomeName("Desert").setDisableRain();
+        public static readonly Biome plains = (new BiomeGenDesert()).setColor(16767248).setBiomeName("Plains");
+        public static readonly Biome iceDesert = (new BiomeGenDesert()).setColor(16772499).setBiomeName("Ice Desert").setEnableSnow().setDisableRain().func_4124_a(12899129);
+        public static readonly Biome tundra = (new Biome()).setColor(5762041).setBiomeName("Tundra").setEnableSnow().func_4124_a(12899129);
+        public static readonly Biome hell = (new BiomeGenHell()).setColor(16711680).setBiomeName("Hell").setDisableRain();
+        public static readonly Biome sky = (new BiomeGenSky()).setColor(8421631).setBiomeName("Sky").setDisableRain();
         public String biomeName;
         public int color;
-        public byte topBlock = (byte)Block.grass.blockID;
-        public byte fillerBlock = (byte)Block.dirt.blockID;
+        public byte topBlock = (byte)Block.grass.id;
+        public byte fillerBlock = (byte)Block.dirt.id;
         public int field_6502_q = 5169201;
         protected java.util.List spawnableMonsterList = new ArrayList();
         protected java.util.List spawnableCreatureList = new ArrayList();
         protected java.util.List spawnableWaterCreatureList = new ArrayList();
         private bool enableSnow;
         private bool enableRain = true;
-        private static BiomeGenBase[] biomeLookupTable = new BiomeGenBase[4096];
+        private static Biome[] biomeLookupTable = new Biome[4096];
 
-        protected BiomeGenBase()
+        protected Biome()
         {
             spawnableMonsterList.add(new SpawnListEntry(EntitySpider.Class, 10));
             spawnableMonsterList.add(new SpawnListEntry(EntityZombie.Class, 10));
@@ -47,7 +47,7 @@ namespace betareborn.Biomes
             spawnableWaterCreatureList.add(new SpawnListEntry(EntitySquid.Class, 10));
         }
 
-        private BiomeGenBase setDisableRain()
+        private Biome setDisableRain()
         {
             enableRain = false;
             return this;
@@ -63,8 +63,8 @@ namespace betareborn.Biomes
                 }
             }
 
-            desert.topBlock = desert.fillerBlock = (byte)Block.sand.blockID;
-            iceDesert.topBlock = iceDesert.fillerBlock = (byte)Block.sand.blockID;
+            desert.topBlock = desert.fillerBlock = (byte)Block.sand.id;
+            iceDesert.topBlock = iceDesert.fillerBlock = (byte)Block.sand.id;
         }
 
         public virtual WorldGenerator getRandomWorldGenForTrees(java.util.Random var1)
@@ -72,38 +72,38 @@ namespace betareborn.Biomes
             return (WorldGenerator)(var1.nextInt(10) == 0 ? new WorldGenBigTree() : new WorldGenTrees());
         }
 
-        protected BiomeGenBase setEnableSnow()
+        protected Biome setEnableSnow()
         {
             enableSnow = true;
             return this;
         }
 
-        protected BiomeGenBase setBiomeName(String var1)
+        protected Biome setBiomeName(String var1)
         {
             biomeName = var1;
             return this;
         }
 
-        protected BiomeGenBase func_4124_a(int var1)
+        protected Biome func_4124_a(int var1)
         {
             field_6502_q = var1;
             return this;
         }
 
-        protected BiomeGenBase setColor(int var1)
+        protected Biome setColor(int var1)
         {
             color = var1;
             return this;
         }
 
-        public static BiomeGenBase getBiomeFromLookup(double var0, double var2)
+        public static Biome getBiome(double var0, double var2)
         {
             int var4 = (int)(var0 * 63.0D);
             int var5 = (int)(var2 * 63.0D);
             return biomeLookupTable[var4 + var5 * 64];
         }
 
-        public static BiomeGenBase getBiome(float var0, float var1)
+        public static Biome getBiome(float var0, float var1)
         {
             var1 *= var0;
             return var0 < 0.1F ? tundra : (var1 < 0.2F ? (var0 < 0.5F ? tundra : (var0 < 0.95F ? savanna : desert)) : (var1 > 0.5F && var0 < 0.7F ? swampland : (var0 < 0.5F ? taiga : (var0 < 0.97F ? (var1 < 0.35F ? shrubland : forest) : (var1 < 0.45F ? plains : (var1 < 0.9F ? seasonalForest : rainforest))))));
@@ -141,7 +141,7 @@ namespace betareborn.Biomes
         }
 
 
-        static BiomeGenBase()
+        static Biome()
         {
             generateBiomeLookup();
         }

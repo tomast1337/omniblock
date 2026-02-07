@@ -11,11 +11,11 @@ namespace betareborn.Blocks
         {
             float var3 = 0.0F;
             float var4 = 0.0F;
-            setBlockBounds(0.0F + var4, 0.0F + var3, 0.0F + var4, 1.0F + var4, 1.0F + var3, 1.0F + var4);
+            setBoundingBox(0.0F + var4, 0.0F + var3, 0.0F + var4, 1.0F + var4, 1.0F + var3, 1.0F + var4);
             setTickOnLoad(true);
         }
 
-        public override int colorMultiplier(IBlockAccess var1, int var2, int var3, int var4)
+        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             return 16777215;
         }
@@ -33,15 +33,15 @@ namespace betareborn.Blocks
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return var1 != 0 && var1 != 1 ? blockIndexInTexture + 1 : blockIndexInTexture;
+            return var1 != 0 && var1 != 1 ? textureId + 1 : textureId;
         }
 
         protected int getFlowDecay(World var1, int var2, int var3, int var4)
         {
-            return var1.getMaterial(var2, var3, var4) != blockMaterial ? -1 : var1.getBlockMetadata(var2, var3, var4);
+            return var1.getMaterial(var2, var3, var4) != blockMaterial ? -1 : var1.getBlockMeta(var2, var3, var4);
         }
 
-        protected int getEffectiveFlowDecay(IBlockAccess var1, int var2, int var3, int var4)
+        protected int getEffectiveFlowDecay(BlockView var1, int var2, int var3, int var4)
         {
             if (var1.getMaterial(var2, var3, var4) != blockMaterial)
             {
@@ -49,7 +49,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var5 = var1.getBlockMetadata(var2, var3, var4);
+                int var5 = var1.getBlockMeta(var2, var3, var4);
                 if (var5 >= 8)
                 {
                     var5 = 0;
@@ -59,12 +59,12 @@ namespace betareborn.Blocks
             }
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
@@ -74,13 +74,13 @@ namespace betareborn.Blocks
             return var2 && var1 == 0;
         }
 
-        public override bool getIsBlockSolid(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool getIsBlockSolid(BlockView var1, int var2, int var3, int var4, int var5)
         {
             Material var6 = var1.getMaterial(var2, var3, var4);
             return var6 == blockMaterial ? false : (var6 == Material.ICE ? false : (var5 == 1 ? true : base.getIsBlockSolid(var1, var2, var3, var4, var5)));
         }
 
-        public override bool shouldSideBeRendered(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool shouldSideBeRendered(BlockView var1, int var2, int var3, int var4, int var5)
         {
             Material var6 = var1.getMaterial(var2, var3, var4);
             return var6 == blockMaterial ? false : (var6 == Material.ICE ? false : (var5 == 1 ? true : base.shouldSideBeRendered(var1, var2, var3, var4, var5)));
@@ -106,7 +106,7 @@ namespace betareborn.Blocks
             return 0;
         }
 
-        private Vector3D<double> getFlowVector(IBlockAccess var1, int var2, int var3, int var4)
+        private Vector3D<double> getFlowVector(BlockView var1, int var2, int var3, int var4)
         {
             Vector3D<double> var5 = new(0.0);
             int var6 = getEffectiveFlowDecay(var1, var2, var3, var4);
@@ -156,7 +156,7 @@ namespace betareborn.Blocks
                 }
             }
 
-            if (var1.getBlockMetadata(var2, var3, var4) >= 8)
+            if (var1.getBlockMeta(var2, var3, var4) >= 8)
             {
                 bool var13 = false;
                 if (var13 || getIsBlockSolid(var1, var2, var3, var4 - 1, 2))
@@ -224,10 +224,10 @@ namespace betareborn.Blocks
             return blockMaterial == Material.WATER ? 5 : (blockMaterial == Material.LAVA ? 30 : 0);
         }
 
-        public override float getBlockBrightness(IBlockAccess var1, int var2, int var3, int var4)
+        public override float getBlockBrightness(BlockView var1, int var2, int var3, int var4)
         {
-            float var5 = var1.getLightBrightness(var2, var3, var4);
-            float var6 = var1.getLightBrightness(var2, var3 + 1, var4);
+            float var5 = var1.getLuminance(var2, var3, var4);
+            float var6 = var1.getLuminance(var2, var3 + 1, var4);
             return var5 > var6 ? var5 : var6;
         }
 
@@ -245,14 +245,14 @@ namespace betareborn.Blocks
         {
             if (blockMaterial == Material.WATER && var5.nextInt(64) == 0)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 if (var6 > 0 && var6 < 8)
                 {
                     var1.playSoundEffect((double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), "liquid.water", var5.nextFloat() * 0.25F + 12.0F / 16.0F, var5.nextFloat() * 1.0F + 0.5F);
                 }
             }
 
-            if (blockMaterial == Material.LAVA && var1.getMaterial(var2, var3 + 1, var4) == Material.AIR && !var1.isBlockOpaqueCube(var2, var3 + 1, var4) && var5.nextInt(100) == 0)
+            if (blockMaterial == Material.LAVA && var1.getMaterial(var2, var3 + 1, var4) == Material.AIR && !var1.isOpaque(var2, var3 + 1, var4) && var5.nextInt(100) == 0)
             {
                 double var12 = (double)((float)var2 + var5.nextFloat());
                 double var8 = (double)var3 + maxY;
@@ -262,7 +262,7 @@ namespace betareborn.Blocks
 
         }
 
-        public static double func_293_a(IBlockAccess var0, int var1, int var2, int var3, Material var4)
+        public static double func_293_a(BlockView var0, int var1, int var2, int var3, Material var4)
         {
             Vector3D<double> var5 = new(0.0);
             if (var4 == Material.WATER)
@@ -283,14 +283,14 @@ namespace betareborn.Blocks
             checkForHarden(var1, var2, var3, var4);
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             checkForHarden(var1, var2, var3, var4);
         }
 
         private void checkForHarden(World var1, int var2, int var3, int var4)
         {
-            if (var1.getBlockId(var2, var3, var4) == blockID)
+            if (var1.getBlockId(var2, var3, var4) == id)
             {
                 if (blockMaterial == Material.LAVA)
                 {
@@ -322,14 +322,14 @@ namespace betareborn.Blocks
 
                     if (var5)
                     {
-                        int var6 = var1.getBlockMetadata(var2, var3, var4);
+                        int var6 = var1.getBlockMeta(var2, var3, var4);
                         if (var6 == 0)
                         {
-                            var1.setBlockWithNotify(var2, var3, var4, Block.obsidian.blockID);
+                            var1.setBlockWithNotify(var2, var3, var4, Block.obsidian.id);
                         }
                         else if (var6 <= 4)
                         {
-                            var1.setBlockWithNotify(var2, var3, var4, Block.cobblestone.blockID);
+                            var1.setBlockWithNotify(var2, var3, var4, Block.cobblestone.id);
                         }
 
                         triggerLavaMixEffects(var1, var2, var3, var4);

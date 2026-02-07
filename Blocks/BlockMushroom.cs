@@ -7,7 +7,7 @@ namespace betareborn.Blocks
         public BlockMushroom(int var1, int var2) : base(var1, var2)
         {
             float var3 = 0.2F;
-            setBlockBounds(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
+            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
             setTickOnLoad(true);
         }
 
@@ -18,13 +18,13 @@ namespace betareborn.Blocks
                 int var6 = var2 + var5.nextInt(3) - 1;
                 int var7 = var3 + var5.nextInt(2) - var5.nextInt(2);
                 int var8 = var4 + var5.nextInt(3) - 1;
-                if (var1.isAirBlock(var6, var7, var8) && canBlockStay(var1, var6, var7, var8))
+                if (var1.isAir(var6, var7, var8) && canBlockStay(var1, var6, var7, var8))
                 {
                     int var10000 = var2 + (var5.nextInt(3) - 1);
                     var10000 = var4 + (var5.nextInt(3) - 1);
-                    if (var1.isAirBlock(var6, var7, var8) && canBlockStay(var1, var6, var7, var8))
+                    if (var1.isAir(var6, var7, var8) && canBlockStay(var1, var6, var7, var8))
                     {
-                        var1.setBlockWithNotify(var6, var7, var8, blockID);
+                        var1.setBlockWithNotify(var6, var7, var8, id);
                     }
                 }
             }

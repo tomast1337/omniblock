@@ -37,32 +37,32 @@ namespace betareborn.Blocks
             base.onEntityWalking(var1, var2, var3, var4, var5);
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             func_320_h(var1, var2, var3, var4);
-            return base.blockActivated(var1, var2, var3, var4, var5);
+            return base.onUse(var1, var2, var3, var4, var5);
         }
 
         private void func_320_h(World var1, int var2, int var3, int var4)
         {
             func_319_i(var1, var2, var3, var4);
-            if (blockID == Block.oreRedstone.blockID)
+            if (id == Block.oreRedstone.id)
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.oreRedstoneGlowing.blockID);
+                var1.setBlockWithNotify(var2, var3, var4, Block.oreRedstoneGlowing.id);
             }
 
         }
 
         public override void updateTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            if (blockID == Block.oreRedstoneGlowing.blockID)
+            if (id == Block.oreRedstoneGlowing.id)
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.oreRedstone.blockID);
+                var1.setBlockWithNotify(var2, var3, var4, Block.oreRedstone.id);
             }
 
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return Item.redstone.id;
         }
@@ -91,32 +91,32 @@ namespace betareborn.Blocks
                 double var9 = (double)((float)var2 + var5.nextFloat());
                 double var11 = (double)((float)var3 + var5.nextFloat());
                 double var13 = (double)((float)var4 + var5.nextFloat());
-                if (var8 == 0 && !var1.isBlockOpaqueCube(var2, var3 + 1, var4))
+                if (var8 == 0 && !var1.isOpaque(var2, var3 + 1, var4))
                 {
                     var11 = (double)(var3 + 1) + var6;
                 }
 
-                if (var8 == 1 && !var1.isBlockOpaqueCube(var2, var3 - 1, var4))
+                if (var8 == 1 && !var1.isOpaque(var2, var3 - 1, var4))
                 {
                     var11 = (double)(var3 + 0) - var6;
                 }
 
-                if (var8 == 2 && !var1.isBlockOpaqueCube(var2, var3, var4 + 1))
+                if (var8 == 2 && !var1.isOpaque(var2, var3, var4 + 1))
                 {
                     var13 = (double)(var4 + 1) + var6;
                 }
 
-                if (var8 == 3 && !var1.isBlockOpaqueCube(var2, var3, var4 - 1))
+                if (var8 == 3 && !var1.isOpaque(var2, var3, var4 - 1))
                 {
                     var13 = (double)(var4 + 0) - var6;
                 }
 
-                if (var8 == 4 && !var1.isBlockOpaqueCube(var2 + 1, var3, var4))
+                if (var8 == 4 && !var1.isOpaque(var2 + 1, var3, var4))
                 {
                     var9 = (double)(var2 + 1) + var6;
                 }
 
-                if (var8 == 5 && !var1.isBlockOpaqueCube(var2 - 1, var3, var4))
+                if (var8 == 5 && !var1.isOpaque(var2 - 1, var3, var4))
                 {
                     var9 = (double)(var2 + 0) - var6;
                 }

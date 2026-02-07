@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     {
         public BlockSponge(int var1) : base(var1, Material.SPONGE)
         {
-            blockIndexInTexture = 48;
+            textureId = 48;
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)

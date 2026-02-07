@@ -89,7 +89,7 @@ namespace betareborn.TileEntities
 
         public virtual int getPushedBlockData()
         {
-            return world.getBlockMetadata(x, y, z);
+            return world.getBlockMeta(x, y, z);
         }
 
         public void markDirty()

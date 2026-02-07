@@ -50,7 +50,7 @@ namespace betareborn.Rendering
         private void renderEntityOnFire(Entity var1, double var2, double var4, double var6, float var8)
         {
             GLManager.GL.Disable(GLEnum.Lighting);
-            int var9 = Block.fire.blockIndexInTexture;
+            int var9 = Block.fire.textureId;
             int var10 = (var9 & 15) << 4;
             int var11 = var9 & 240;
             float var12 = (float)var10 / 256.0F;
@@ -167,9 +167,9 @@ namespace betareborn.Rendering
         private void renderShadowOnBlock(Block var1, double var2, double var4, double var6, int var8, int var9, int var10, float var11, float var12, double var13, double var15, double var17)
         {
             Tessellator var19 = Tessellator.instance;
-            if (var1.renderAsNormalBlock())
+            if (var1.isFullCube())
             {
-                double var20 = ((double)var11 - (var4 - ((double)var9 + var15)) / 2.0D) * 0.5D * (double)getWorldFromRenderManager().getLightBrightness(var8, var9, var10);
+                double var20 = ((double)var11 - (var4 - ((double)var9 + var15)) / 2.0D) * 0.5D * (double)getWorldFromRenderManager().getLuminance(var8, var9, var10);
                 if (var20 >= 0.0D)
                 {
                     if (var20 > 1.0D)

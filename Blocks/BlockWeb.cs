@@ -16,7 +16,7 @@ namespace betareborn.Blocks
             var5.isInWeb = true;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
@@ -31,12 +31,12 @@ namespace betareborn.Blocks
             return 1;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return Item.silk.id;
         }

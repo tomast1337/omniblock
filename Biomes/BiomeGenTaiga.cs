@@ -3,7 +3,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Biomes
 {
-    public class BiomeGenTaiga : BiomeGenBase
+    public class BiomeGenTaiga : Biome
     {
 
         public BiomeGenTaiga()

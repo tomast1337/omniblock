@@ -7,17 +7,17 @@ namespace betareborn.Blocks
         public BlockTallGrass(int var1, int var2) : base(var1, var2)
         {
             float var3 = 0.4F;
-            setBlockBounds(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 0.8F, 0.5F + var3);
+            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 0.8F, 0.5F + var3);
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
-            return var2 == 1 ? blockIndexInTexture : (var2 == 2 ? blockIndexInTexture + 16 + 1 : (var2 == 0 ? blockIndexInTexture + 16 : blockIndexInTexture));
+            return var2 == 1 ? textureId : (var2 == 2 ? textureId + 16 + 1 : (var2 == 0 ? textureId + 16 : textureId));
         }
 
-        public override int colorMultiplier(IBlockAccess var1, int var2, int var3, int var4)
+        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
             if (var5 == 0)
             {
                 return 16777215;
@@ -29,14 +29,14 @@ namespace betareborn.Blocks
                 var2 = (int)((long)var2 + (var6 >> 14 & 31L));
                 var3 = (int)((long)var3 + (var6 >> 19 & 31L));
                 var4 = (int)((long)var4 + (var6 >> 24 & 31L));
-                var1.getWorldChunkManager().func_4069_a(var2, var4, 1, 1);
-                double var8 = var1.getWorldChunkManager().temperature[0];
-                double var10 = var1.getWorldChunkManager().humidity[0];
+                var1.getBiomeSource().getBiomesInArea(var2, var4, 1, 1);
+                double var8 = var1.getBiomeSource().temperatureMap[0];
+                double var10 = var1.getBiomeSource().downfallMap[0];
                 return ColorizerGrass.getGrassColor(var8, var10);
             }
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return var2.nextInt(8) == 0 ? Item.seeds.id : -1;
         }

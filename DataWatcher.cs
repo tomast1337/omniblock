@@ -118,7 +118,7 @@ namespace betareborn
                     var0.writeShort(var4.getItemDamage());
                     break;
                 case 6:
-                    ChunkCoordinates var3 = (ChunkCoordinates)var1.getObject();
+                    Vec3i var3 = (Vec3i)var1.getObject();
                     var0.writeInt(var3.x);
                     var0.writeInt(var3.y);
                     var0.writeInt(var3.z);
@@ -164,7 +164,7 @@ namespace betareborn
                         int var6 = var0.readInt();
                         int var7 = var0.readInt();
                         int var8 = var0.readInt();
-                        var5 = new WatchableObject(var3, var4, new ChunkCoordinates(var6, var7, var8));
+                        var5 = new WatchableObject(var3, var4, new Vec3i(var6, var7, var8));
                         break;
                 }
 
@@ -197,7 +197,7 @@ namespace betareborn
             dataTypes.put(typeof(Float), Integer.valueOf(3));
             dataTypes.put(typeof(JString), Integer.valueOf(4));
             dataTypes.put(typeof(ItemStack), Integer.valueOf(5));
-            dataTypes.put(typeof(ChunkCoordinates), Integer.valueOf(6));
+            dataTypes.put(typeof(Vec3i), Integer.valueOf(6));
         }
     }
 

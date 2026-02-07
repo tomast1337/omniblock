@@ -11,18 +11,18 @@ namespace betareborn.Blocks
         public static bool isRailBlockAt(World var0, int var1, int var2, int var3)
         {
             int var4 = var0.getBlockId(var1, var2, var3);
-            return var4 == Block.rail.blockID || var4 == Block.railPowered.blockID || var4 == Block.railDetector.blockID;
+            return var4 == Block.rail.id || var4 == Block.railPowered.id || var4 == Block.railDetector.id;
         }
 
         public static bool isRailBlock(int var0)
         {
-            return var0 == Block.rail.blockID || var0 == Block.railPowered.blockID || var0 == Block.railDetector.blockID;
+            return var0 == Block.rail.id || var0 == Block.railPowered.id || var0 == Block.railDetector.id;
         }
 
         public BlockRail(int var1, int var2, bool var3) : base(var1, var2, Material.PISTON_BREAKABLE)
         {
             isPowered = var3;
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
         }
 
         public bool getIsPowered()
@@ -35,49 +35,49 @@ namespace betareborn.Blocks
             return null;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
         public override MovingObjectPosition collisionRayTrace(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
         {
-            setBlockBoundsBasedOnState(var1, var2, var3, var4);
+            updateBoundingBox(var1, var2, var3, var4);
             return base.collisionRayTrace(var1, var2, var3, var4, var5, var6);
         }
 
-        public override void setBlockBoundsBasedOnState(IBlockAccess var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
         {
-            int var5 = var1.getBlockMetadata(var2, var3, var4);
+            int var5 = var1.getBlockMeta(var2, var3, var4);
             if (var5 >= 2 && var5 <= 5)
             {
-                setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
             }
             else
             {
-                setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
             }
 
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
             if (isPowered)
             {
-                if (blockID == Block.railPowered.blockID && (var2 & 8) == 0)
+                if (id == Block.railPowered.id && (var2 & 8) == 0)
                 {
-                    return blockIndexInTexture - 16;
+                    return textureId - 16;
                 }
             }
             else if (var2 >= 6)
             {
-                return blockIndexInTexture - 16;
+                return textureId - 16;
             }
 
-            return blockIndexInTexture;
+            return textureId;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
@@ -94,7 +94,7 @@ namespace betareborn.Blocks
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
-            return var1.isBlockNormalCube(var2, var3 - 1, var4);
+            return var1.shouldSuffocate(var2, var3 - 1, var4);
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
@@ -106,11 +106,11 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (!var1.multiplayerWorld)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 int var7 = var6;
                 if (isPowered)
                 {
@@ -118,58 +118,58 @@ namespace betareborn.Blocks
                 }
 
                 bool var8 = false;
-                if (!var1.isBlockNormalCube(var2, var3 - 1, var4))
+                if (!var1.shouldSuffocate(var2, var3 - 1, var4))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 2 && !var1.isBlockNormalCube(var2 + 1, var3, var4))
+                if (var7 == 2 && !var1.shouldSuffocate(var2 + 1, var3, var4))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 3 && !var1.isBlockNormalCube(var2 - 1, var3, var4))
+                if (var7 == 3 && !var1.shouldSuffocate(var2 - 1, var3, var4))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 4 && !var1.isBlockNormalCube(var2, var3, var4 - 1))
+                if (var7 == 4 && !var1.shouldSuffocate(var2, var3, var4 - 1))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 5 && !var1.isBlockNormalCube(var2, var3, var4 + 1))
+                if (var7 == 5 && !var1.shouldSuffocate(var2, var3, var4 + 1))
                 {
                     var8 = true;
                 }
 
                 if (var8)
                 {
-                    dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
+                    dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                     var1.setBlockWithNotify(var2, var3, var4, 0);
                 }
-                else if (blockID == Block.railPowered.blockID)
+                else if (id == Block.railPowered.id)
                 {
                     bool var9 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
                     var9 = var9 || func_27044_a(var1, var2, var3, var4, var6, true, 0) || func_27044_a(var1, var2, var3, var4, var6, false, 0);
                     bool var10 = false;
                     if (var9 && (var6 & 8) == 0)
                     {
-                        var1.setBlockMetadataWithNotify(var2, var3, var4, var7 | 8);
+                        var1.setBlockMeta(var2, var3, var4, var7 | 8);
                         var10 = true;
                     }
                     else if (!var9 && (var6 & 8) != 0)
                     {
-                        var1.setBlockMetadataWithNotify(var2, var3, var4, var7);
+                        var1.setBlockMeta(var2, var3, var4, var7);
                         var10 = true;
                     }
 
                     if (var10)
                     {
-                        var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
+                        var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
                         if (var7 == 2 || var7 == 3 || var7 == 4 || var7 == 5)
                         {
-                            var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, blockID);
+                            var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
                         }
                     }
                 }
@@ -286,9 +286,9 @@ namespace betareborn.Blocks
         private bool func_27043_a(World var1, int var2, int var3, int var4, bool var5, int var6, int var7)
         {
             int var8 = var1.getBlockId(var2, var3, var4);
-            if (var8 == Block.railPowered.blockID)
+            if (var8 == Block.railPowered.id)
             {
-                int var9 = var1.getBlockMetadata(var2, var3, var4);
+                int var9 = var1.getBlockMeta(var2, var3, var4);
                 int var10 = var9 & 7;
                 if (var7 == 1 && (var10 == 0 || var10 == 4 || var10 == 5))
                 {
@@ -314,7 +314,7 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override int getMobilityFlag()
+        public override int getPistonBehavior()
         {
             return 0;
         }

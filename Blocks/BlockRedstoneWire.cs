@@ -15,12 +15,12 @@ namespace betareborn.Blocks
 
         public BlockRedstoneWire(int var1, int var2) : base(var1, var2, Material.PISTON_BREAKABLE)
         {
-            setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F);
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F);
         }
 
-        public override int getBlockTextureFromSideAndMetadata(int var1, int var2)
+        public override int getTexture(int var1, int var2)
         {
-            return blockIndexInTexture;
+            return textureId;
         }
 
         public override Box getCollisionBoundingBoxFromPool(World var1, int var2, int var3, int var4)
@@ -28,12 +28,12 @@ namespace betareborn.Blocks
             return null;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }
@@ -43,14 +43,14 @@ namespace betareborn.Blocks
             return 5;
         }
 
-        public override int colorMultiplier(IBlockAccess var1, int var2, int var3, int var4)
+        public override int colorMultiplier(BlockView var1, int var2, int var3, int var4)
         {
             return 8388608;
         }
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
         {
-            return var1.isBlockNormalCube(var2, var3 - 1, var4);
+            return var1.shouldSuffocate(var2, var3 - 1, var4);
         }
 
         private void updateAndPropagateCurrentStrength(World var1, int var2, int var3, int var4)
@@ -62,14 +62,14 @@ namespace betareborn.Blocks
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {
                 ChunkPosition var7 = (ChunkPosition)var5.get(var6);
-                var1.notifyBlocksOfNeighborChange(var7.x, var7.y, var7.z, blockID);
+                var1.notifyBlocksOfNeighborChange(var7.x, var7.y, var7.z, id);
             }
 
         }
 
         private void func_21030_a(World var1, int var2, int var3, int var4, int var5, int var6, int var7)
         {
-            int var8 = var1.getBlockMetadata(var2, var3, var4);
+            int var8 = var1.getBlockMeta(var2, var3, var4);
             int var9 = 0;
             wiresProvidePower = false;
             bool var10 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4);
@@ -112,14 +112,14 @@ namespace betareborn.Blocks
                         var9 = getMaxCurrentStrength(var1, var12, var3, var13, var9);
                     }
 
-                    if (var1.isBlockNormalCube(var12, var3, var13) && !var1.isBlockNormalCube(var2, var3 + 1, var4))
+                    if (var1.shouldSuffocate(var12, var3, var13) && !var1.shouldSuffocate(var2, var3 + 1, var4))
                     {
                         if (var12 != var5 || var3 + 1 != var6 || var13 != var7)
                         {
                             var9 = getMaxCurrentStrength(var1, var12, var3 + 1, var13, var9);
                         }
                     }
-                    else if (!var1.isBlockNormalCube(var12, var3, var13) && (var12 != var5 || var3 - 1 != var6 || var13 != var7))
+                    else if (!var1.shouldSuffocate(var12, var3, var13) && (var12 != var5 || var3 - 1 != var6 || var13 != var7))
                     {
                         var9 = getMaxCurrentStrength(var1, var12, var3 - 1, var13, var9);
                     }
@@ -138,7 +138,7 @@ namespace betareborn.Blocks
             if (var8 != var9)
             {
                 var1.editingBlocks = true;
-                var1.setBlockMetadataWithNotify(var2, var3, var4, var9);
+                var1.setBlockMeta(var2, var3, var4, var9);
                 var1.markBlocksDirty(var2, var3, var4, var2, var3, var4);
                 var1.editingBlocks = false;
 
@@ -167,14 +167,14 @@ namespace betareborn.Blocks
                         ++var13;
                     }
 
-                    if (var1.isBlockNormalCube(var12, var3, var13))
+                    if (var1.shouldSuffocate(var12, var3, var13))
                     {
                         var14 += 2;
                     }
 
                     bool var15 = false;
                     int var16 = getMaxCurrentStrength(var1, var12, var3, var13, -1);
-                    var9 = var1.getBlockMetadata(var2, var3, var4);
+                    var9 = var1.getBlockMeta(var2, var3, var4);
                     if (var9 > 0)
                     {
                         --var9;
@@ -186,7 +186,7 @@ namespace betareborn.Blocks
                     }
 
                     var16 = getMaxCurrentStrength(var1, var12, var14, var13, -1);
-                    var9 = var1.getBlockMetadata(var2, var3, var4);
+                    var9 = var1.getBlockMeta(var2, var3, var4);
                     if (var9 > 0)
                     {
                         --var9;
@@ -214,15 +214,15 @@ namespace betareborn.Blocks
 
         private void notifyWireNeighborsOfNeighborChange(World var1, int var2, int var3, int var4)
         {
-            if (var1.getBlockId(var2, var3, var4) == blockID)
+            if (var1.getBlockId(var2, var3, var4) == id)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, blockID);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2 - 1, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2 + 1, var3, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4 - 1, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3, var4 + 1, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
             }
         }
 
@@ -232,13 +232,13 @@ namespace betareborn.Blocks
             if (!var1.multiplayerWorld)
             {
                 updateAndPropagateCurrentStrength(var1, var2, var3, var4);
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
+                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
                 notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2, var3, var4 - 1);
                 notifyWireNeighborsOfNeighborChange(var1, var2, var3, var4 + 1);
-                if (var1.isBlockNormalCube(var2 - 1, var3, var4))
+                if (var1.shouldSuffocate(var2 - 1, var3, var4))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3 + 1, var4);
                 }
@@ -247,7 +247,7 @@ namespace betareborn.Blocks
                     notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3 - 1, var4);
                 }
 
-                if (var1.isBlockNormalCube(var2 + 1, var3, var4))
+                if (var1.shouldSuffocate(var2 + 1, var3, var4))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3 + 1, var4);
                 }
@@ -256,7 +256,7 @@ namespace betareborn.Blocks
                     notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3 - 1, var4);
                 }
 
-                if (var1.isBlockNormalCube(var2, var3, var4 - 1))
+                if (var1.shouldSuffocate(var2, var3, var4 - 1))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2, var3 + 1, var4 - 1);
                 }
@@ -265,7 +265,7 @@ namespace betareborn.Blocks
                     notifyWireNeighborsOfNeighborChange(var1, var2, var3 - 1, var4 - 1);
                 }
 
-                if (var1.isBlockNormalCube(var2, var3, var4 + 1))
+                if (var1.shouldSuffocate(var2, var3, var4 + 1))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2, var3 + 1, var4 + 1);
                 }
@@ -282,14 +282,14 @@ namespace betareborn.Blocks
             base.onBlockRemoval(var1, var2, var3, var4);
             if (!var1.multiplayerWorld)
             {
-                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, blockID);
-                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, blockID);
+                var1.notifyBlocksOfNeighborChange(var2, var3 + 1, var4, id);
+                var1.notifyBlocksOfNeighborChange(var2, var3 - 1, var4, id);
                 updateAndPropagateCurrentStrength(var1, var2, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3, var4);
                 notifyWireNeighborsOfNeighborChange(var1, var2, var3, var4 - 1);
                 notifyWireNeighborsOfNeighborChange(var1, var2, var3, var4 + 1);
-                if (var1.isBlockNormalCube(var2 - 1, var3, var4))
+                if (var1.shouldSuffocate(var2 - 1, var3, var4))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3 + 1, var4);
                 }
@@ -298,7 +298,7 @@ namespace betareborn.Blocks
                     notifyWireNeighborsOfNeighborChange(var1, var2 - 1, var3 - 1, var4);
                 }
 
-                if (var1.isBlockNormalCube(var2 + 1, var3, var4))
+                if (var1.shouldSuffocate(var2 + 1, var3, var4))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3 + 1, var4);
                 }
@@ -307,7 +307,7 @@ namespace betareborn.Blocks
                     notifyWireNeighborsOfNeighborChange(var1, var2 + 1, var3 - 1, var4);
                 }
 
-                if (var1.isBlockNormalCube(var2, var3, var4 - 1))
+                if (var1.shouldSuffocate(var2, var3, var4 - 1))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2, var3 + 1, var4 - 1);
                 }
@@ -316,7 +316,7 @@ namespace betareborn.Blocks
                     notifyWireNeighborsOfNeighborChange(var1, var2, var3 - 1, var4 - 1);
                 }
 
-                if (var1.isBlockNormalCube(var2, var3, var4 + 1))
+                if (var1.shouldSuffocate(var2, var3, var4 + 1))
                 {
                     notifyWireNeighborsOfNeighborChange(var1, var2, var3 + 1, var4 + 1);
                 }
@@ -330,22 +330,22 @@ namespace betareborn.Blocks
 
         private int getMaxCurrentStrength(World var1, int var2, int var3, int var4, int var5)
         {
-            if (var1.getBlockId(var2, var3, var4) != blockID)
+            if (var1.getBlockId(var2, var3, var4) != id)
             {
                 return var5;
             }
             else
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 return var6 > var5 ? var6 : var5;
             }
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (!var1.multiplayerWorld)
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
+                int var6 = var1.getBlockMeta(var2, var3, var4);
                 bool var7 = canPlaceBlockAt(var1, var2, var3, var4);
                 if (!var7)
                 {
@@ -357,11 +357,11 @@ namespace betareborn.Blocks
                     updateAndPropagateCurrentStrength(var1, var2, var3, var4);
                 }
 
-                base.onNeighborBlockChange(var1, var2, var3, var4, var5);
+                base.neighborUpdate(var1, var2, var3, var4, var5);
             }
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
             return Item.redstone.id;
         }
@@ -371,13 +371,13 @@ namespace betareborn.Blocks
             return !wiresProvidePower ? false : isPoweringTo(var1, var2, var3, var4, var5);
         }
 
-        public override bool isPoweringTo(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringTo(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (!wiresProvidePower)
             {
                 return false;
             }
-            else if (var1.getBlockMetadata(var2, var3, var4) == 0)
+            else if (var1.getBlockMeta(var2, var3, var4) == 0)
             {
                 return false;
             }
@@ -387,28 +387,28 @@ namespace betareborn.Blocks
             }
             else
             {
-                bool var6 = isPowerProviderOrWire(var1, var2 - 1, var3, var4, 1) || !var1.isBlockNormalCube(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 - 1, var4, -1);
-                bool var7 = isPowerProviderOrWire(var1, var2 + 1, var3, var4, 3) || !var1.isBlockNormalCube(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 - 1, var4, -1);
-                bool var8 = isPowerProviderOrWire(var1, var2, var3, var4 - 1, 2) || !var1.isBlockNormalCube(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 - 1, -1);
-                bool var9 = isPowerProviderOrWire(var1, var2, var3, var4 + 1, 0) || !var1.isBlockNormalCube(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 + 1, -1);
-                if (!var1.isBlockNormalCube(var2, var3 + 1, var4))
+                bool var6 = isPowerProviderOrWire(var1, var2 - 1, var3, var4, 1) || !var1.shouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 - 1, var4, -1);
+                bool var7 = isPowerProviderOrWire(var1, var2 + 1, var3, var4, 3) || !var1.shouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 - 1, var4, -1);
+                bool var8 = isPowerProviderOrWire(var1, var2, var3, var4 - 1, 2) || !var1.shouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 - 1, -1);
+                bool var9 = isPowerProviderOrWire(var1, var2, var3, var4 + 1, 0) || !var1.shouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 - 1, var4 + 1, -1);
+                if (!var1.shouldSuffocate(var2, var3 + 1, var4))
                 {
-                    if (var1.isBlockNormalCube(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 + 1, var4, -1))
+                    if (var1.shouldSuffocate(var2 - 1, var3, var4) && isPowerProviderOrWire(var1, var2 - 1, var3 + 1, var4, -1))
                     {
                         var6 = true;
                     }
 
-                    if (var1.isBlockNormalCube(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 + 1, var4, -1))
+                    if (var1.shouldSuffocate(var2 + 1, var3, var4) && isPowerProviderOrWire(var1, var2 + 1, var3 + 1, var4, -1))
                     {
                         var7 = true;
                     }
 
-                    if (var1.isBlockNormalCube(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 - 1, -1))
+                    if (var1.shouldSuffocate(var2, var3, var4 - 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 - 1, -1))
                     {
                         var8 = true;
                     }
 
-                    if (var1.isBlockNormalCube(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 + 1, -1))
+                    if (var1.shouldSuffocate(var2, var3, var4 + 1) && isPowerProviderOrWire(var1, var2, var3 + 1, var4 + 1, -1))
                     {
                         var9 = true;
                     }
@@ -425,7 +425,7 @@ namespace betareborn.Blocks
 
         public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            int var6 = var1.getBlockMetadata(var2, var3, var4);
+            int var6 = var1.getBlockMeta(var2, var3, var4);
             if (var6 > 0)
             {
                 double var7 = (double)var2 + 0.5D + ((double)var5.nextFloat() - 0.5D) * 0.2D;
@@ -455,10 +455,10 @@ namespace betareborn.Blocks
 
         }
 
-        public static bool isPowerProviderOrWire(IBlockAccess var0, int var1, int var2, int var3, int var4)
+        public static bool isPowerProviderOrWire(BlockView var0, int var1, int var2, int var3, int var4)
         {
             int var5 = var0.getBlockId(var1, var2, var3);
-            if (var5 == Block.redstoneWire.blockID)
+            if (var5 == Block.redstoneWire.id)
             {
                 return true;
             }
@@ -470,13 +470,13 @@ namespace betareborn.Blocks
             {
                 return true;
             }
-            else if (var5 != Block.redstoneRepeaterIdle.blockID && var5 != Block.redstoneRepeaterActive.blockID)
+            else if (var5 != Block.redstoneRepeaterIdle.id && var5 != Block.redstoneRepeaterActive.id)
             {
                 return false;
             }
             else
             {
-                int var6 = var0.getBlockMetadata(var1, var2, var3);
+                int var6 = var0.getBlockMeta(var1, var2, var3);
                 return var4 == ModelBed.field_22279_b[var6 & 3];
             }
         }

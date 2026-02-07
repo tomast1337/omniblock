@@ -119,7 +119,7 @@ namespace betareborn.TileEntities
                 progress = lastProgess = 1.0F;
                 world.removeBlockTileEntity(x, y, z);
                 markRemoved();
-                if (world.getBlockId(x, y, z) == Block.pistonMoving.blockID)
+                if (world.getBlockId(x, y, z) == Block.pistonMoving.id)
                 {
                     world.setBlockAndMetadataWithNotify(x, y, z, pushedBlockId, pushedBlockData);
                 }
@@ -135,7 +135,7 @@ namespace betareborn.TileEntities
                 pushEntities(1.0F, 0.25F);
                 world.removeBlockTileEntity(x, y, z);
                 markRemoved();
-                if (world.getBlockId(x, y, z) == Block.pistonMoving.blockID)
+                if (world.getBlockId(x, y, z) == Block.pistonMoving.id)
                 {
                     world.setBlockAndMetadataWithNotify(x, y, z, pushedBlockId, pushedBlockData);
                 }

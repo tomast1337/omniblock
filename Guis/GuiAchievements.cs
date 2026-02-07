@@ -206,40 +206,40 @@ namespace betareborn.Guis
                     var21.setSeed((long)(1234 + var12 + var24));
                     var21.nextInt();
                     int var25 = var21.nextInt(1 + var13 + var22) + (var13 + var22) / 2;
-                    int var26 = Block.sand.blockIndexInTexture;
+                    int var26 = Block.sand.textureId;
                     if (var25 <= 37 && var13 + var22 != 35)
                     {
                         if (var25 == 22)
                         {
                             if (var21.nextInt(2) == 0)
                             {
-                                var26 = Block.oreDiamond.blockIndexInTexture;
+                                var26 = Block.oreDiamond.textureId;
                             }
                             else
                             {
-                                var26 = Block.oreRedstone.blockIndexInTexture;
+                                var26 = Block.oreRedstone.textureId;
                             }
                         }
                         else if (var25 == 10)
                         {
-                            var26 = Block.oreIron.blockIndexInTexture;
+                            var26 = Block.oreIron.textureId;
                         }
                         else if (var25 == 8)
                         {
-                            var26 = Block.oreCoal.blockIndexInTexture;
+                            var26 = Block.oreCoal.textureId;
                         }
                         else if (var25 > 4)
                         {
-                            var26 = Block.stone.blockIndexInTexture;
+                            var26 = Block.stone.textureId;
                         }
                         else if (var25 > 0)
                         {
-                            var26 = Block.dirt.blockIndexInTexture;
+                            var26 = Block.dirt.textureId;
                         }
                     }
                     else
                     {
-                        var26 = Block.bedrock.blockIndexInTexture;
+                        var26 = Block.bedrock.textureId;
                     }
 
                     drawTexturedModalRect(var10 + var24 * 16 - var14, var11 + var22 * 16 - var15, var26 % 16 << 4, var26 >> 4 << 4, 16, 16);

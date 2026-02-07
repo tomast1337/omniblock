@@ -7,10 +7,10 @@ namespace betareborn.Blocks
     {
         public BlockFlower(int var1, int var2) : base(var1, Material.PLANT)
         {
-            blockIndexInTexture = var2;
+            textureId = var2;
             setTickOnLoad(true);
             float var3 = 0.2F;
-            setBlockBounds(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 3.0F, 0.5F + var3);
+            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 3.0F, 0.5F + var3);
         }
 
         public override bool canPlaceBlockAt(World var1, int var2, int var3, int var4)
@@ -20,12 +20,12 @@ namespace betareborn.Blocks
 
         protected virtual bool canThisPlantGrowOnThisBlockID(int var1)
         {
-            return var1 == Block.grass.blockID || var1 == Block.dirt.blockID || var1 == Block.tilledField.blockID;
+            return var1 == Block.grass.id || var1 == Block.dirt.id || var1 == Block.tilledField.id;
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
-            base.onNeighborBlockChange(var1, var2, var3, var4, var5);
+            base.neighborUpdate(var1, var2, var3, var4, var5);
             func_268_h(var1, var2, var3, var4);
         }
 
@@ -38,7 +38,7 @@ namespace betareborn.Blocks
         {
             if (!canBlockStay(var1, var2, var3, var4))
             {
-                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMetadata(var2, var3, var4));
+                dropBlockAsItem(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
                 var1.setBlockWithNotify(var2, var3, var4, 0);
             }
 
@@ -54,12 +54,12 @@ namespace betareborn.Blocks
             return null;
         }
 
-        public override bool isOpaqueCube()
+        public override bool isOpaque()
         {
             return false;
         }
 
-        public override bool renderAsNormalBlock()
+        public override bool isFullCube()
         {
             return false;
         }

@@ -1,6 +1,6 @@
 namespace betareborn.Biomes
 {
-    public class BiomeGenSwamp : BiomeGenBase
+    public class BiomeGenSwamp : Biome
     {
     }
 }

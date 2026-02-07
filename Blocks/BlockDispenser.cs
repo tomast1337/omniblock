@@ -12,7 +12,7 @@ namespace betareborn.Blocks
 
         public BlockDispenser(int var1) : base(var1, Material.STONE)
         {
-            blockIndexInTexture = 45;
+            textureId = 45;
         }
 
         public override int tickRate()
@@ -20,9 +20,9 @@ namespace betareborn.Blocks
             return 4;
         }
 
-        public override int idDropped(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Block.dispenser.blockID;
+            return Block.dispenser.id;
         }
 
         public override void onBlockAdded(World var1, int var2, int var3, int var4)
@@ -60,33 +60,33 @@ namespace betareborn.Blocks
                     var9 = 4;
                 }
 
-                var1.setBlockMetadataWithNotify(var2, var3, var4, var9);
+                var1.setBlockMeta(var2, var3, var4, var9);
             }
         }
 
-        public override int getBlockTexture(IBlockAccess var1, int var2, int var3, int var4, int var5)
+        public override int getBlockTexture(BlockView var1, int var2, int var3, int var4, int var5)
         {
             if (var5 == 1)
             {
-                return blockIndexInTexture + 17;
+                return textureId + 17;
             }
             else if (var5 == 0)
             {
-                return blockIndexInTexture + 17;
+                return textureId + 17;
             }
             else
             {
-                int var6 = var1.getBlockMetadata(var2, var3, var4);
-                return var5 != var6 ? blockIndexInTexture : blockIndexInTexture + 1;
+                int var6 = var1.getBlockMeta(var2, var3, var4);
+                return var5 != var6 ? textureId : textureId + 1;
             }
         }
 
         public override int getBlockTextureFromSide(int var1)
         {
-            return var1 == 1 ? blockIndexInTexture + 17 : (var1 == 0 ? blockIndexInTexture + 17 : (var1 == 3 ? blockIndexInTexture + 1 : blockIndexInTexture));
+            return var1 == 1 ? textureId + 17 : (var1 == 0 ? textureId + 17 : (var1 == 3 ? textureId + 1 : textureId));
         }
 
-        public override bool blockActivated(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
         {
             if (var1.multiplayerWorld)
             {
@@ -102,7 +102,7 @@ namespace betareborn.Blocks
 
         private void dispenseItem(World var1, int var2, int var3, int var4, java.util.Random var5)
         {
-            int var6 = var1.getBlockMetadata(var2, var3, var4);
+            int var6 = var1.getBlockMeta(var2, var3, var4);
             int var9 = 0;
             int var10 = 0;
             if (var6 == 3)
@@ -174,14 +174,14 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onNeighborBlockChange(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
         {
             if (var5 > 0 && Block.blocksList[var5].canProvidePower())
             {
                 bool var6 = var1.isBlockIndirectlyGettingPowered(var2, var3, var4) || var1.isBlockIndirectlyGettingPowered(var2, var3 + 1, var4);
                 if (var6)
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, blockID, tickRate());
+                    var1.scheduleBlockUpdate(var2, var3, var4, id, tickRate());
                 }
             }
 
@@ -206,22 +206,22 @@ namespace betareborn.Blocks
             int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 2);
+                var1.setBlockMeta(var2, var3, var4, 2);
             }
 
             if (var6 == 1)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 5);
+                var1.setBlockMeta(var2, var3, var4, 5);
             }
 
             if (var6 == 2)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 3);
+                var1.setBlockMeta(var2, var3, var4, 3);
             }
 
             if (var6 == 3)
             {
-                var1.setBlockMetadataWithNotify(var2, var3, var4, 4);
+                var1.setBlockMeta(var2, var3, var4, 4);
             }
 
         }

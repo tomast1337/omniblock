@@ -13,7 +13,7 @@ namespace betareborn.Items
 
         public override bool onItemUse(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
         {
-            if (var3.getBlockId(var4, var5, var6) != Block.snow.blockID)
+            if (var3.getBlockId(var4, var5, var6) != Block.snow.id)
             {
                 if (var7 == 0)
                 {
@@ -45,7 +45,7 @@ namespace betareborn.Items
                     ++var4;
                 }
 
-                if (!var3.isAirBlock(var4, var5, var6))
+                if (!var3.isAir(var4, var5, var6))
                 {
                     return false;
                 }
@@ -54,7 +54,7 @@ namespace betareborn.Items
             if (Block.redstoneWire.canPlaceBlockAt(var3, var4, var5, var6))
             {
                 --var1.count;
-                var3.setBlockWithNotify(var4, var5, var6, Block.redstoneWire.blockID);
+                var3.setBlockWithNotify(var4, var5, var6, Block.redstoneWire.id);
             }
 
             return true;
