@@ -52,7 +52,6 @@ namespace betareborn.Entities
         protected double newPosZ;
         protected double newRotationYaw;
         protected double newRotationPitch;
-        float field_9348_ae = 0.0F;
         protected int field_9346_af = 0;
         protected int entityAge = 0;
         protected float moveStrafing;
@@ -202,6 +201,12 @@ namespace betareborn.Entities
             prevRenderYawOffset = renderYawOffset;
             prevRotationYaw = rotationYaw;
             prevRotationPitch = rotationPitch;
+        }
+
+        //TODO: will this still work properly when we implement the server?
+        public override void moveEntity(double var1, double var3, double var5)
+        {
+            if (!isMultiplayerEntity || this is EntityPlayerSP) base.moveEntity(var1, var3, var5);
         }
 
         public void animateSpawn()

@@ -5,7 +5,6 @@ using betareborn.Entities;
 using betareborn.Guis;
 using betareborn.Items;
 using betareborn.Packets;
-using betareborn.Stats;
 using betareborn.TileEntities;
 using betareborn.Worlds;
 using java.io;
@@ -28,9 +27,9 @@ namespace betareborn
         {
 
             mc = var1;
-            Socket var4 = new Socket(InetAddress.getByName(var2), var3);
-
-            netManager = new NetworkManager(var4, "Client", this);
+            Socket socket = new Socket(InetAddress.getByName(var2), var3);
+            socket.setTcpNoDelay(true);
+            netManager = new NetworkManager(socket, "Client", this);
         }
 
         public void processReadPackets()
