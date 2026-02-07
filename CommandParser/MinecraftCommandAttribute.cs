@@ -4,10 +4,18 @@
     public class MinecraftCommandAttribute : Attribute {
         public string Name { get; }
         public string[] Aliases { get; }
+        public string Description { get; }
+        public string Usage { get; }
 
-        public MinecraftCommandAttribute(string name, params string[] aliases) {
+
+        public MinecraftCommandAttribute(string name,string description = "", string usage = "", params string[] aliases) {
             Name = name.ToLower();
             Aliases = aliases.Select(a => a.ToLower()).ToArray();
+            Description = description;
+            if (usage == "") {
+                usage = $"/{Name}";
+            }
+            Usage = usage;
         }
     }
 
@@ -20,6 +28,9 @@
             RawCommand = rawCommand;
         }
 
-        public void Reply(string message) => Console.WriteLine(message);
+        public void Reply(string message) {
+            Console.WriteLine(message);
+            Game.ingameGUI.addChatMessage(message);
+        }
     }
 }

@@ -433,26 +433,31 @@ namespace betareborn.Guis
             chatMessageList.clear();
         }
 
-        public void addChatMessage(String var1)
+        public void addChatMessage(String message) {
+            foreach (String line in message.Split("\n")) {
+                addWrappedChatMessage(line);
+            }
+        }
+
+        private void addWrappedChatMessage(String message)
         {
-            while (mc.fontRenderer.getStringWidth(var1) > 320)
+            while (mc.fontRenderer.getStringWidth(message) > 320)
             {
-                int var2;
-                for (var2 = 1; var2 < var1.Length && mc.fontRenderer.getStringWidth(var1.Substring(0, var2 + 1)) <= 320; ++var2)
+                int i;
+                for (i = 1; i < message.Length && mc.fontRenderer.getStringWidth(message.Substring(0, i + 1)) <= 320; ++i)
                 {
                 }
 
-                addChatMessage(var1.Substring(0, var2));
-                var1 = var1.Substring(var2);
+                chatMessageList.add(0, new ChatLine(message.Substring(0, i)));
+                message = message.Substring(i);
             }
 
-            chatMessageList.add(0, new ChatLine(var1));
+            chatMessageList.add(0, new ChatLine(message));
 
             while (chatMessageList.size() > 50)
             {
                 chatMessageList.remove(chatMessageList.size() - 1);
             }
-
         }
 
         public void setRecordPlayingMessage(String var1)
