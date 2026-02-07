@@ -325,7 +325,7 @@ namespace betareborn.Entities
                         else
                         {
                             short var29 = 500;
-                            if (worldObj.canBlockBeRainedOn(MathHelper.floor_double(posX), MathHelper.floor_double(posY) + 1, MathHelper.floor_double(posZ)))
+                            if (worldObj.isRaining(MathHelper.floor_double(posX), MathHelper.floor_double(posY) + 1, MathHelper.floor_double(posZ)))
                             {
                                 var29 = 300;
                             }

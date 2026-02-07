@@ -7,7 +7,7 @@ namespace betareborn.Blocks
     public class BlockFarmland : Block
     {
 
-        public BlockFarmland(int var1) : base(var1, Material.SOIL)
+        public BlockFarmland(int id) : base(id, Material.SOIL)
         {
             textureId = 87;
             setTickRandomly(true);
@@ -15,9 +15,9 @@ namespace betareborn.Blocks
             setOpacity(255);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            return Box.createCached((double)(var2 + 0), (double)(var3 + 0), (double)(var4 + 0), (double)(var2 + 1), (double)(var3 + 1), (double)(var4 + 1));
+            return Box.createCached((double)(x + 0), (double)(y + 0), (double)(z + 0), (double)(x + 1), (double)(y + 1), (double)(z + 1));
         }
 
         public override bool isOpaque()
@@ -30,53 +30,53 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            return var1 == 1 && var2 > 0 ? textureId - 1 : (var1 == 1 ? textureId : 2);
+            return side == 1 && meta > 0 ? textureId - 1 : (side == 1 ? textureId : 2);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var5.nextInt(5) == 0)
+            if (random.nextInt(5) == 0)
             {
-                if (!isWaterNearby(var1, var2, var3, var4) && !var1.canBlockBeRainedOn(var2, var3 + 1, var4))
+                if (!isWaterNearby(world, x, y, z) && !world.isRaining(x, y + 1, z))
                 {
-                    int var6 = var1.getBlockMeta(var2, var3, var4);
+                    int var6 = world.getBlockMeta(x, y, z);
                     if (var6 > 0)
                     {
-                        var1.setBlockMeta(var2, var3, var4, var6 - 1);
+                        world.setBlockMeta(x, y, z, var6 - 1);
                     }
-                    else if (!isCropsNearby(var1, var2, var3, var4))
+                    else if (!hasCrop(world, x, y, z))
                     {
-                        var1.setBlockWithNotify(var2, var3, var4, Block.DIRT.id);
+                        world.setBlockWithNotify(x, y, z, Block.DIRT.id);
                     }
                 }
                 else
                 {
-                    var1.setBlockMeta(var2, var3, var4, 7);
+                    world.setBlockMeta(x, y, z, 7);
                 }
             }
 
         }
 
-        public override void onSteppedOn(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onSteppedOn(World world, int x, int y, int z, Entity entity)
         {
-            if (var1.random.nextInt(4) == 0)
+            if (world.random.nextInt(4) == 0)
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.DIRT.id);
+                world.setBlockWithNotify(x, y, z, Block.DIRT.id);
             }
 
         }
 
-        private bool isCropsNearby(World var1, int var2, int var3, int var4)
+        private static bool hasCrop(World world, int x, int y, int z)
         {
             sbyte var5 = 0;
 
-            for (int var6 = var2 - var5; var6 <= var2 + var5; ++var6)
+            for (int var6 = x - var5; var6 <= x + var5; ++var6)
             {
-                for (int var7 = var4 - var5; var7 <= var4 + var5; ++var7)
+                for (int var7 = z - var5; var7 <= z + var5; ++var7)
                 {
-                    if (var1.getBlockId(var6, var3 + 1, var7) == Block.WHEAT.id)
+                    if (world.getBlockId(var6, y + 1, var7) == Block.WHEAT.id)
                     {
                         return true;
                     }
@@ -86,15 +86,15 @@ namespace betareborn.Blocks
             return false;
         }
 
-        private bool isWaterNearby(World var1, int var2, int var3, int var4)
+        private static bool isWaterNearby(World world, int x, int y, int z)
         {
-            for (int var5 = var2 - 4; var5 <= var2 + 4; ++var5)
+            for (int var5 = x - 4; var5 <= x + 4; ++var5)
             {
-                for (int var6 = var3; var6 <= var3 + 1; ++var6)
+                for (int var6 = y; var6 <= y + 1; ++var6)
                 {
-                    for (int var7 = var4 - 4; var7 <= var4 + 4; ++var7)
+                    for (int var7 = z - 4; var7 <= z + 4; ++var7)
                     {
-                        if (var1.getMaterial(var5, var6, var7) == Material.WATER)
+                        if (world.getMaterial(var5, var6, var7) == Material.WATER)
                         {
                             return true;
                         }
@@ -105,20 +105,20 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            base.neighborUpdate(var1, var2, var3, var4, var5);
-            Material var6 = var1.getMaterial(var2, var3 + 1, var4);
+            base.neighborUpdate(world, x, y, z, id);
+            Material var6 = world.getMaterial(x, y + 1, z);
             if (var6.isSolid())
             {
-                var1.setBlockWithNotify(var2, var3, var4, Block.DIRT.id);
+                world.setBlockWithNotify(x, y, z, Block.DIRT.id);
             }
 
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Block.DIRT.getDroppedItemId(0, var2);
+            return Block.DIRT.getDroppedItemId(0, random);
         }
     }
 

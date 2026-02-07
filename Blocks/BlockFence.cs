@@ -6,18 +6,18 @@ namespace betareborn.Blocks
     public class BlockFence : Block
     {
 
-        public BlockFence(int var1, int var2) : base(var1, var2, Material.WOOD)
+        public BlockFence(int id, int texture) : base(id, texture, Material.WOOD)
         {
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return var1.getBlockId(var2, var3 - 1, var4) == id ? true : (!var1.getMaterial(var2, var3 - 1, var4).isSolid() ? false : base.canPlaceAt(var1, var2, var3, var4));
+            return world.getBlockId(x, y - 1, z) == id ? true : (!world.getMaterial(x, y - 1, z).isSolid() ? false : base.canPlaceAt(world, x, y, z));
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            return Box.createCached((double)var2, (double)var3, (double)var4, (double)(var2 + 1), (double)((float)var3 + 1.5F), (double)(var4 + 1));
+            return Box.createCached((double)x, (double)y, (double)z, (double)(x + 1), (double)((float)y + 1.5F), (double)(z + 1));
         }
 
         public override bool isOpaque()

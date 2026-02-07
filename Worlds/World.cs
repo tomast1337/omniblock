@@ -2446,14 +2446,14 @@ namespace betareborn.Worlds
                     }
                 }
 
-                if (random.nextInt(100000) == 0 && func_27161_C() && func_27160_B())
+                if (random.nextInt(100000) == 0 && isRaining() && func_27160_B())
                 {
                     field_9437_g = field_9437_g * 3 + 1013904223;
                     var6 = field_9437_g >> 2;
                     var7 = var3 + (var6 & 15);
                     var8 = var4 + (var6 >> 8 & 15);
                     var9 = findTopSolidBlock(var7, var8);
-                    if (canBlockBeRainedOn(var7, var9, var8))
+                    if (isRaining(var7, var9, var8))
                     {
                         addWeatherEffect(new EntityLightningBolt(this, (double)var7, (double)var9, (double)var8));
                         field_27168_F = 2;
@@ -2472,7 +2472,7 @@ namespace betareborn.Worlds
                     {
                         var10 = var14.getBlockID(var7, var9 - 1, var8);
                         var15 = var14.getBlockID(var7, var9, var8);
-                        if (func_27161_C() && var15 == 0 && Block.SNOW.canPlaceAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ICE.id && Block.BLOCKS[var10].material.blocksMovement())
+                        if (isRaining() && var15 == 0 && Block.SNOW.canPlaceAt(this, var7 + var3, var9, var8 + var4) && var10 != 0 && var10 != Block.ICE.id && Block.BLOCKS[var10].material.blocksMovement())
                         {
                             setBlockWithNotify(var7 + var3, var9, var8 + var4, Block.SNOW.id);
                         }
@@ -3063,14 +3063,14 @@ namespace betareborn.Worlds
             return (double)func_27166_f(1.0F) > 0.9D;
         }
 
-        public bool func_27161_C()
+        public bool isRaining()
         {
             return (double)func_27162_g(1.0F) > 0.2D;
         }
 
-        public bool canBlockBeRainedOn(int var1, int var2, int var3)
+        public bool isRaining(int var1, int var2, int var3)
         {
-            if (!func_27161_C())
+            if (!isRaining())
             {
                 return false;
             }

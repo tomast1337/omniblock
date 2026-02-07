@@ -921,7 +921,7 @@ namespace betareborn.Rendering
             double var29;
             double var31;
             double var33;
-            if (!blockAccess.shouldSuffocate(var2, var3 - 1, var4) && !Block.FIRE.canBlockCatchFire(blockAccess, var2, var3 - 1, var4))
+            if (!blockAccess.shouldSuffocate(var2, var3 - 1, var4) && !Block.FIRE.isFlammable(blockAccess, var2, var3 - 1, var4))
             {
                 float var37 = 0.2F;
                 float var20 = 1.0F / 16.0F;
@@ -940,7 +940,7 @@ namespace betareborn.Rendering
                     var10 = var21;
                 }
 
-                if (Block.FIRE.canBlockCatchFire(blockAccess, var2 - 1, var3, var4))
+                if (Block.FIRE.isFlammable(blockAccess, var2 - 1, var3, var4))
                 {
                     var5.addVertexWithUV((double)((float)var2 + var37), (double)((float)var3 + var18 + var20), (double)(var4 + 1), var12, var14);
                     var5.addVertexWithUV((double)(var2 + 0), (double)((float)(var3 + 0) + var20), (double)(var4 + 1), var12, var16);
@@ -952,7 +952,7 @@ namespace betareborn.Rendering
                     var5.addVertexWithUV((double)((float)var2 + var37), (double)((float)var3 + var18 + var20), (double)(var4 + 1), var12, var14);
                 }
 
-                if (Block.FIRE.canBlockCatchFire(blockAccess, var2 + 1, var3, var4))
+                if (Block.FIRE.isFlammable(blockAccess, var2 + 1, var3, var4))
                 {
                     var5.addVertexWithUV((double)((float)(var2 + 1) - var37), (double)((float)var3 + var18 + var20), (double)(var4 + 0), var10, var14);
                     var5.addVertexWithUV((double)(var2 + 1 - 0), (double)((float)(var3 + 0) + var20), (double)(var4 + 0), var10, var16);
@@ -964,7 +964,7 @@ namespace betareborn.Rendering
                     var5.addVertexWithUV((double)((float)(var2 + 1) - var37), (double)((float)var3 + var18 + var20), (double)(var4 + 0), var10, var14);
                 }
 
-                if (Block.FIRE.canBlockCatchFire(blockAccess, var2, var3, var4 - 1))
+                if (Block.FIRE.isFlammable(blockAccess, var2, var3, var4 - 1))
                 {
                     var5.addVertexWithUV((double)(var2 + 0), (double)((float)var3 + var18 + var20), (double)((float)var4 + var37), var12, var14);
                     var5.addVertexWithUV((double)(var2 + 0), (double)((float)(var3 + 0) + var20), (double)(var4 + 0), var12, var16);
@@ -976,7 +976,7 @@ namespace betareborn.Rendering
                     var5.addVertexWithUV((double)(var2 + 0), (double)((float)var3 + var18 + var20), (double)((float)var4 + var37), var12, var14);
                 }
 
-                if (Block.FIRE.canBlockCatchFire(blockAccess, var2, var3, var4 + 1))
+                if (Block.FIRE.isFlammable(blockAccess, var2, var3, var4 + 1))
                 {
                     var5.addVertexWithUV((double)(var2 + 1), (double)((float)var3 + var18 + var20), (double)((float)(var4 + 1) - var37), var10, var14);
                     var5.addVertexWithUV((double)(var2 + 1), (double)((float)(var3 + 0) + var20), (double)(var4 + 1 - 0), var10, var16);
@@ -988,7 +988,7 @@ namespace betareborn.Rendering
                     var5.addVertexWithUV((double)(var2 + 1), (double)((float)var3 + var18 + var20), (double)((float)(var4 + 1) - var37), var10, var14);
                 }
 
-                if (Block.FIRE.canBlockCatchFire(blockAccess, var2, var3 + 1, var4))
+                if (Block.FIRE.isFlammable(blockAccess, var2, var3 + 1, var4))
                 {
                     var21 = (double)var2 + 0.5D + 0.5D;
                     var23 = (double)var2 + 0.5D - 0.5D;

@@ -650,7 +650,7 @@ namespace betareborn.Entities
 
         public bool isWet()
         {
-            return inWater || worldObj.canBlockBeRainedOn(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+            return inWater || worldObj.isRaining(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
         }
 
         public virtual bool isInWater()
