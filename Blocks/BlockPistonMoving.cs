@@ -7,7 +7,7 @@ namespace betareborn.Blocks
 {
     public class BlockPistonMoving : BlockContainer
     {
-        public BlockPistonMoving(int var1) : base(var1, Material.PISTON)
+        public BlockPistonMoving(int id) : base(id, Material.PISTON)
         {
             setHardness(-1.0F);
         }
@@ -17,30 +17,30 @@ namespace betareborn.Blocks
             return null;
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            TileEntity var5 = var1.getBlockTileEntity(var2, var3, var4);
+            TileEntity var5 = world.getBlockTileEntity(x, y, z);
             if (var5 != null && var5 is TileEntityPiston)
             {
                 ((TileEntityPiston)var5).finish();
             }
             else
             {
-                base.onBreak(var1, var2, var3, var4);
+                base.onBreak(world, x, y, z);
             }
 
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
             return false;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World world, int x, int y, int z, int side)
         {
             return false;
         }
@@ -60,11 +60,11 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (!var1.isRemote && var1.getBlockTileEntity(var2, var3, var4) == null)
+            if (!world.isRemote && world.getBlockTileEntity(x, y, z) == null)
             {
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                world.setBlockWithNotify(x, y, z, 0);
                 return true;
             }
             else
@@ -73,39 +73,39 @@ namespace betareborn.Blocks
             }
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return 0;
         }
 
-        public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
+        public override void dropStacks(World world, int x, int y, int z, int meta, float luck)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                TileEntityPiston var7 = func_31034_c(var1, var2, var3, var4);
+                TileEntityPiston var7 = getPistonBlockEntity(world, x, y, z);
                 if (var7 != null)
                 {
-                    Block.BLOCKS[var7.getPushedBlockId()].dropStacks(var1, var2, var3, var4, var7.getPushedBlockData());
+                    Block.BLOCKS[var7.getPushedBlockId()].dropStacks(world, x, y, z, var7.getPushedBlockData());
                 }
             }
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (!var1.isRemote && var1.getBlockTileEntity(var2, var3, var4) == null)
+            if (!world.isRemote && world.getBlockTileEntity(x, y, z) == null)
             {
             }
 
         }
 
-        public static TileEntity func_31036_a(int var0, int var1, int var2, bool var3, bool var4)
+        public static TileEntity createPistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source)
         {
-            return new TileEntityPiston(var0, var1, var2, var3, var4);
+            return new TileEntityPiston(blockId, blockMeta, facing, extending, source);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            TileEntityPiston var5 = func_31034_c(var1, var2, var3, var4);
+            TileEntityPiston var5 = getPistonBlockEntity(world, x, y, z);
             if (var5 == null)
             {
                 return null;
@@ -118,13 +118,13 @@ namespace betareborn.Blocks
                     var6 = 1.0F - var6;
                 }
 
-                return getPushedBlockCollisionShape(var1, var2, var3, var4, var5.getPushedBlockId(), var6, var5.getFacing());
+                return getPushedBlockCollisionShape(world, x, y, z, var5.getPushedBlockId(), var6, var5.getFacing());
             }
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            TileEntityPiston var5 = func_31034_c(var1, var2, var3, var4);
+            TileEntityPiston var5 = getPistonBlockEntity(blockView, x, y, z);
             if (var5 != null)
             {
                 Block var6 = Block.BLOCKS[var5.getPushedBlockId()];
@@ -133,7 +133,7 @@ namespace betareborn.Blocks
                     return;
                 }
 
-                var6.updateBoundingBox(var1, var2, var3, var4);
+                var6.updateBoundingBox(blockView, x, y, z);
                 float var7 = var5.getProgress(0.0F);
                 if (var5.isExtending())
                 {
@@ -141,33 +141,33 @@ namespace betareborn.Blocks
                 }
 
                 int var8 = var5.getFacing();
-                minX = var6.minX - (double)((float)PistonBlockTextures.field_31056_b[var8] * var7);
-                minY = var6.minY - (double)((float)PistonBlockTextures.field_31059_c[var8] * var7);
-                minZ = var6.minZ - (double)((float)PistonBlockTextures.field_31058_d[var8] * var7);
-                maxX = var6.maxX - (double)((float)PistonBlockTextures.field_31056_b[var8] * var7);
-                maxY = var6.maxY - (double)((float)PistonBlockTextures.field_31059_c[var8] * var7);
-                maxZ = var6.maxZ - (double)((float)PistonBlockTextures.field_31058_d[var8] * var7);
+                minX = var6.minX - (double)((float)PistonConstants.HEAD_OFFSET_X[var8] * var7);
+                minY = var6.minY - (double)((float)PistonConstants.HEAD_OFFSET_Y[var8] * var7);
+                minZ = var6.minZ - (double)((float)PistonConstants.HEAD_OFFSET_Z[var8] * var7);
+                maxX = var6.maxX - (double)((float)PistonConstants.HEAD_OFFSET_X[var8] * var7);
+                maxY = var6.maxY - (double)((float)PistonConstants.HEAD_OFFSET_Y[var8] * var7);
+                maxZ = var6.maxZ - (double)((float)PistonConstants.HEAD_OFFSET_Z[var8] * var7);
             }
 
         }
 
-        public Box getPushedBlockCollisionShape(World var1, int var2, int var3, int var4, int var5, float var6, int var7)
+        public Box getPushedBlockCollisionShape(World world, int x, int y, int z, int blockId, float sizeMultiplier, int facing)
         {
-            if (var5 != 0 && var5 != id)
+            if (blockId != 0 && blockId != id)
             {
-                Box var8 = Block.BLOCKS[var5].getCollisionShape(var1, var2, var3, var4);
+                Box var8 = Block.BLOCKS[blockId].getCollisionShape(world, x, y, z);
                 if (var8 == null)
                 {
                     return null;
                 }
                 else
                 {
-                    var8.minX -= (double)((float)PistonBlockTextures.field_31056_b[var7] * var6);
-                    var8.maxX -= (double)((float)PistonBlockTextures.field_31056_b[var7] * var6);
-                    var8.minY -= (double)((float)PistonBlockTextures.field_31059_c[var7] * var6);
-                    var8.maxY -= (double)((float)PistonBlockTextures.field_31059_c[var7] * var6);
-                    var8.minZ -= (double)((float)PistonBlockTextures.field_31058_d[var7] * var6);
-                    var8.maxZ -= (double)((float)PistonBlockTextures.field_31058_d[var7] * var6);
+                    var8.minX -= (double)((float)PistonConstants.HEAD_OFFSET_X[facing] * sizeMultiplier);
+                    var8.maxX -= (double)((float)PistonConstants.HEAD_OFFSET_X[facing] * sizeMultiplier);
+                    var8.minY -= (double)((float)PistonConstants.HEAD_OFFSET_Y[facing] * sizeMultiplier);
+                    var8.maxY -= (double)((float)PistonConstants.HEAD_OFFSET_Y[facing] * sizeMultiplier);
+                    var8.minZ -= (double)((float)PistonConstants.HEAD_OFFSET_Z[facing] * sizeMultiplier);
+                    var8.maxZ -= (double)((float)PistonConstants.HEAD_OFFSET_Z[facing] * sizeMultiplier);
                     return var8;
                 }
             }
@@ -177,9 +177,9 @@ namespace betareborn.Blocks
             }
         }
 
-        private TileEntityPiston func_31034_c(BlockView var1, int var2, int var3, int var4)
+        private TileEntityPiston getPistonBlockEntity(BlockView blockView, int x, int y, int z)
         {
-            TileEntity var5 = var1.getBlockTileEntity(var2, var3, var4);
+            TileEntity var5 = blockView.getBlockTileEntity(x, y, z);
             return var5 != null && var5 is TileEntityPiston ? (TileEntityPiston)var5 : null;
         }
     }

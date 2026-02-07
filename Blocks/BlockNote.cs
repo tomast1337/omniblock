@@ -7,26 +7,26 @@ namespace betareborn.Blocks
 {
     public class BlockNote : BlockContainer
     {
-        public BlockNote(int var1) : base(var1, 74, Material.WOOD)
+        public BlockNote(int id) : base(id, 74, Material.WOOD)
         {
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
             return textureId;
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
+            if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
             {
-                bool var6 = var1.isBlockGettingPowered(var2, var3, var4);
-                TileEntityNote var7 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
+                bool var6 = world.isBlockGettingPowered(x, y, z);
+                TileEntityNote var7 = (TileEntityNote)world.getBlockTileEntity(x, y, z);
                 if (var7.powered != var6)
                 {
                     if (var6)
                     {
-                        var7.playNote(var1, var2, var3, var4);
+                        var7.playNote(world, x, y, z);
                     }
 
                     var7.powered = var6;
@@ -35,27 +35,27 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (var1.isRemote)
+            if (world.isRemote)
             {
                 return true;
             }
             else
             {
-                TileEntityNote var6 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
+                TileEntityNote var6 = (TileEntityNote)world.getBlockTileEntity(x, y, z);
                 var6.cycleNote();
-                var6.playNote(var1, var2, var3, var4);
+                var6.playNote(world, x, y, z);
                 return true;
             }
         }
 
-        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                TileEntityNote var6 = (TileEntityNote)var1.getBlockTileEntity(var2, var3, var4);
-                var6.playNote(var1, var2, var3, var4);
+                TileEntityNote var6 = (TileEntityNote)world.getBlockTileEntity(x, y, z);
+                var6.playNote(world, x, y, z);
             }
         }
 
@@ -64,32 +64,32 @@ namespace betareborn.Blocks
             return new TileEntityNote();
         }
 
-        public override void onBlockAction(World var1, int var2, int var3, int var4, int var5, int var6)
+        public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
         {
-            float var7 = (float)java.lang.Math.pow(2.0D, (double)(var6 - 12) / 12.0D);
+            float var7 = (float)java.lang.Math.pow(2.0D, (double)(data2 - 12) / 12.0D);
             string var8 = "harp";
-            if (var5 == 1)
+            if (data1 == 1)
             {
                 var8 = "bd";
             }
 
-            if (var5 == 2)
+            if (data1 == 2)
             {
                 var8 = "snare";
             }
 
-            if (var5 == 3)
+            if (data1 == 3)
             {
                 var8 = "hat";
             }
 
-            if (var5 == 4)
+            if (data1 == 4)
             {
                 var8 = "bassattack";
             }
 
-            var1.playSound((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "note." + var8, 3.0F, var7);
-            var1.addParticle("note", (double)var2 + 0.5D, (double)var3 + 1.2D, (double)var4 + 0.5D, (double)var6 / 24.0D, 0.0D, 0.0D);
+            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "note." + var8, 3.0F, var7);
+            world.addParticle("note", (double)x + 0.5D, (double)y + 1.2D, (double)z + 0.5D, (double)data2 / 24.0D, 0.0D, 0.0D);
         }
     }
 

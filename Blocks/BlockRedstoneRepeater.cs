@@ -121,13 +121,13 @@ namespace betareborn.Blocks
             switch (var6)
             {
                 case 0:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 + 1, 3) || var1.getBlockId(var2, var3, var4 + 1) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2, var3, var4 + 1) > 0;
+                    return var1.isPoweringSide(var2, var3, var4 + 1, 3) || var1.getBlockId(var2, var3, var4 + 1) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2, var3, var4 + 1) > 0;
                 case 1:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3, var4, 4) || var1.getBlockId(var2 - 1, var3, var4) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2 - 1, var3, var4) > 0;
+                    return var1.isPoweringSide(var2 - 1, var3, var4, 4) || var1.getBlockId(var2 - 1, var3, var4) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2 - 1, var3, var4) > 0;
                 case 2:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 - 1, 2) || var1.getBlockId(var2, var3, var4 - 1) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2, var3, var4 - 1) > 0;
+                    return var1.isPoweringSide(var2, var3, var4 - 1, 2) || var1.getBlockId(var2, var3, var4 - 1) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2, var3, var4 - 1) > 0;
                 case 3:
-                    return var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3, var4, 5) || var1.getBlockId(var2 + 1, var3, var4) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2 + 1, var3, var4) > 0;
+                    return var1.isPoweringSide(var2 + 1, var3, var4, 5) || var1.getBlockId(var2 + 1, var3, var4) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2 + 1, var3, var4) > 0;
                 default:
                     return false;
             }

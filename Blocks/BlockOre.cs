@@ -6,21 +6,21 @@ namespace betareborn.Blocks
     public class BlockOre : Block
     {
 
-        public BlockOre(int var1, int var2) : base(var1, var2, Material.STONE)
+        public BlockOre(int id, int textureId) : base(id, textureId, Material.STONE)
         {
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return id == Block.COAL_ORE.id ? Item.coal.id : (id == Block.DIAMOND_ORE.id ? Item.diamond.id : (id == Block.LAPIS_ORE.id ? Item.dyePowder.id : id));
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
-            return id == Block.LAPIS_ORE.id ? 4 + var1.nextInt(5) : 1;
+            return id == Block.LAPIS_ORE.id ? 4 + random.nextInt(5) : 1;
         }
 
-        protected override int getDroppedItemMeta(int var1)
+        protected override int getDroppedItemMeta(int blockMeta)
         {
             return id == Block.LAPIS_ORE.id ? 4 : 0;
         }

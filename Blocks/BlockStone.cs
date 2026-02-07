@@ -4,11 +4,11 @@ namespace betareborn.Blocks
 {
     public class BlockStone : Block
     {
-        public BlockStone(int var1, int var2) : base(var1, var2, Material.STONE)
+        public BlockStone(int id, int textureId) : base(id, textureId, Material.STONE)
         {
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Block.COBBLESTONE.id;
         }

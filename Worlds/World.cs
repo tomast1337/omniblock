@@ -647,12 +647,12 @@ namespace betareborn.Worlds
             }
         }
 
-        public bool canBlockSeeTheSky(int var1, int var2, int var3)
+        public bool hasSkyLight(int var1, int var2, int var3)
         {
             return getChunkFromChunkCoords(var1 >> 4, var3 >> 4).canBlockSeeTheSky(var1 & 15, var2, var3 & 15);
         }
 
-        public int getFullBlockLightValue(int var1, int var2, int var3)
+        public int getBrightness(int var1, int var2, int var3)
         {
             if (var2 < 0)
             {
@@ -2435,7 +2435,7 @@ namespace betareborn.Worlds
                     var10 = var14.getBlockID(var7, var9, var8);
                     var7 += var3;
                     var8 += var4;
-                    if (var10 == 0 && getFullBlockLightValue(var7, var9, var8) <= random.nextInt(8) && getBrightness(LightType.Sky, var7, var9, var8) <= 0)
+                    if (var10 == 0 && getBrightness(var7, var9, var8) <= random.nextInt(8) && getBrightness(LightType.Sky, var7, var9, var8) <= 0)
                     {
                         EntityPlayer var11 = getClosestPlayer((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D, 8.0D);
                         if (var11 != null && var11.getSquaredDistance((double)var7 + 0.5D, (double)var9 + 0.5D, (double)var8 + 0.5D) > 4.0D)
@@ -2731,7 +2731,7 @@ namespace betareborn.Worlds
             return isBlockProvidingPowerTo(var1, var2 - 1, var3, 0) ? true : (isBlockProvidingPowerTo(var1, var2 + 1, var3, 1) ? true : (isBlockProvidingPowerTo(var1, var2, var3 - 1, 2) ? true : (isBlockProvidingPowerTo(var1, var2, var3 + 1, 3) ? true : (isBlockProvidingPowerTo(var1 - 1, var2, var3, 4) ? true : isBlockProvidingPowerTo(var1 + 1, var2, var3, 5)))));
         }
 
-        public bool isBlockIndirectlyProvidingPowerTo(int var1, int var2, int var3, int var4)
+        public bool isPoweringSide(int var1, int var2, int var3, int var4)
         {
             if (shouldSuffocate(var1, var2, var3))
             {
@@ -2746,7 +2746,7 @@ namespace betareborn.Worlds
 
         public bool isPowered(int var1, int var2, int var3)
         {
-            return isBlockIndirectlyProvidingPowerTo(var1, var2 - 1, var3, 0) ? true : (isBlockIndirectlyProvidingPowerTo(var1, var2 + 1, var3, 1) ? true : (isBlockIndirectlyProvidingPowerTo(var1, var2, var3 - 1, 2) ? true : (isBlockIndirectlyProvidingPowerTo(var1, var2, var3 + 1, 3) ? true : (isBlockIndirectlyProvidingPowerTo(var1 - 1, var2, var3, 4) ? true : isBlockIndirectlyProvidingPowerTo(var1 + 1, var2, var3, 5)))));
+            return isPoweringSide(var1, var2 - 1, var3, 0) ? true : (isPoweringSide(var1, var2 + 1, var3, 1) ? true : (isPoweringSide(var1, var2, var3 - 1, 2) ? true : (isPoweringSide(var1, var2, var3 + 1, 3) ? true : (isPoweringSide(var1 - 1, var2, var3, 4) ? true : isPoweringSide(var1 + 1, var2, var3, 5)))));
         }
 
         public EntityPlayer getClosestPlayerToEntity(Entity var1, double var2)
@@ -3074,7 +3074,7 @@ namespace betareborn.Worlds
             {
                 return false;
             }
-            else if (!canBlockSeeTheSky(var1, var2, var3))
+            else if (!hasSkyLight(var1, var2, var3))
             {
                 return false;
             }

@@ -35,7 +35,7 @@ namespace betareborn.Entities
             if (worldObj.isDaytime())
             {
                 float var1 = getEntityBrightness(1.0F);
-                if (var1 > 0.5F && worldObj.canBlockSeeTheSky(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) && rand.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F)
+                if (var1 > 0.5F && worldObj.hasSkyLight(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) && rand.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F)
                 {
                     fire = 300;
                 }

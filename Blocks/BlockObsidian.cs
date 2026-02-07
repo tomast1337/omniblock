@@ -2,16 +2,16 @@ namespace betareborn.Blocks
 {
     public class BlockObsidian : BlockStone
     {
-        public BlockObsidian(int var1, int var2) : base(var1, var2)
+        public BlockObsidian(int id, int textureId) : base(id, textureId)
         {
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 1;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Block.OBSIDIAN.id;
         }

@@ -2,31 +2,30 @@ using betareborn.Entities;
 using betareborn.Materials;
 using betareborn.TileEntities;
 using betareborn.Worlds;
-using java.util;
 
 namespace betareborn.Blocks
 {
     public class BlockPistonBase : Block
     {
-        private bool isSticky;
-        private bool field_31048_b;
+        private bool sticky;
+        private bool deaf;
 
-        public BlockPistonBase(int var1, int var2, bool var3) : base(var1, var2, Material.PISTON)
+        public BlockPistonBase(int id, int textureId, bool sticky) : base(id, textureId, Material.PISTON)
         {
-            isSticky = var3;
+            this.sticky = sticky;
             setSoundGroup(soundStoneFootstep);
             setHardness(0.5F);
         }
 
-        public int func_31040_i()
+        public int getTopTexture()
         {
-            return isSticky ? 106 : 107;
+            return sticky ? 106 : 107;
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            int var3 = func_31044_d(var2);
-            return var3 > 5 ? textureId : (var1 == var3 ? (!isPowered(var2) && minX <= 0.0D && minY <= 0.0D && minZ <= 0.0D && maxX >= 1.0D && maxY >= 1.0D && maxZ >= 1.0D ? textureId : 110) : (var1 == PistonBlockTextures.field_31057_a[var3] ? 109 : 108));
+            int var3 = getFacing(meta);
+            return var3 > 5 ? textureId : (side == var3 ? (!isExtended(meta) && minX <= 0.0D && minY <= 0.0D && minZ <= 0.0D && maxX >= 1.0D && maxY >= 1.0D && maxZ >= 1.0D ? textureId : 110) : (side == PistonConstants.field_31057_a[var3] ? 109 : 108));
         }
 
         public override int getRenderType()
@@ -39,105 +38,105 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
             return false;
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = func_31039_c(var1, var2, var3, var4, (EntityPlayer)var5);
-            var1.setBlockMeta(var2, var3, var4, var6);
-            if (!var1.isRemote)
+            int var6 = getFacingForPlacement(world, x, y, z, (EntityPlayer)placer);
+            world.setBlockMeta(x, y, z, var6);
+            if (!world.isRemote)
             {
-                func_31043_h(var1, var2, var3, var4);
+                checkExtended(world, x, y, z);
             }
 
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (!var1.isRemote && !field_31048_b)
+            if (!world.isRemote && !deaf)
             {
-                func_31043_h(var1, var2, var3, var4);
+                checkExtended(world, x, y, z);
             }
 
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            if (!var1.isRemote && var1.getBlockTileEntity(var2, var3, var4) == null)
+            if (!world.isRemote && world.getBlockTileEntity(x, y, z) == null)
             {
-                func_31043_h(var1, var2, var3, var4);
+                checkExtended(world, x, y, z);
             }
 
         }
 
-        private void func_31043_h(World var1, int var2, int var3, int var4)
+        private void checkExtended(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
-            int var6 = func_31044_d(var5);
-            bool var7 = func_31041_f(var1, var2, var3, var4, var6);
+            int var5 = world.getBlockMeta(x, y, z);
+            int var6 = getFacing(var5);
+            bool var7 = shouldExtend(world, x, y, z, var6);
             if (var5 != 7)
             {
-                if (var7 && !isPowered(var5))
+                if (var7 && !isExtended(var5))
                 {
-                    if (func_31045_h(var1, var2, var3, var4, var6))
+                    if (canExtend(world, x, y, z, var6))
                     {
-                        var1.setBlockMetadata(var2, var3, var4, var6 | 8);
-                        var1.playNoteBlockActionAt(var2, var3, var4, 0, var6);
+                        world.setBlockMetadata(x, y, z, var6 | 8);
+                        world.playNoteBlockActionAt(x, y, z, 0, var6);
                     }
                 }
-                else if (!var7 && isPowered(var5))
+                else if (!var7 && isExtended(var5))
                 {
-                    var1.setBlockMetadata(var2, var3, var4, var6);
-                    var1.playNoteBlockActionAt(var2, var3, var4, 1, var6);
+                    world.setBlockMetadata(x, y, z, var6);
+                    world.playNoteBlockActionAt(x, y, z, 1, var6);
                 }
 
             }
         }
 
-        private bool func_31041_f(World var1, int var2, int var3, int var4, int var5)
+        private bool shouldExtend(World world, int x, int y, int z, int facing)
         {
-            return var5 != 0 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3 - 1, var4, 0) ? true : (var5 != 1 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 1, var4, 1) ? true : (var5 != 2 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 - 1, 2) ? true : (var5 != 3 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 + 1, 3) ? true : (var5 != 5 && var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3, var4, 5) ? true : (var5 != 4 && var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3, var4, 4) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4, 0) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 2, var4, 1) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 1, var4 - 1, 2) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2, var3 + 1, var4 + 1, 3) ? true : (var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3 + 1, var4, 4) ? true : var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3 + 1, var4, 5)))))))))));
+            return facing != 0 && world.isPoweringSide(x, y - 1, z, 0) ? true : (facing != 1 && world.isPoweringSide(x, y + 1, z, 1) ? true : (facing != 2 && world.isPoweringSide(x, y, z - 1, 2) ? true : (facing != 3 && world.isPoweringSide(x, y, z + 1, 3) ? true : (facing != 5 && world.isPoweringSide(x + 1, y, z, 5) ? true : (facing != 4 && world.isPoweringSide(x - 1, y, z, 4) ? true : (world.isPoweringSide(x, y, z, 0) ? true : (world.isPoweringSide(x, y + 2, z, 1) ? true : (world.isPoweringSide(x, y + 1, z - 1, 2) ? true : (world.isPoweringSide(x, y + 1, z + 1, 3) ? true : (world.isPoweringSide(x - 1, y + 1, z, 4) ? true : world.isPoweringSide(x + 1, y + 1, z, 5)))))))))));
         }
 
-        public override void onBlockAction(World var1, int var2, int var3, int var4, int var5, int var6)
+        public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
         {
-            field_31048_b = true;
-            if (var5 == 0)
+            deaf = true;
+            if (data1 == 0)
             {
-                if (func_31047_i(var1, var2, var3, var4, var6))
+                if (push(world, x, y, z, data2))
                 {
-                    var1.setBlockMeta(var2, var3, var4, var6 | 8);
-                    var1.playSound((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "tile.piston.out", 0.5F, var1.random.nextFloat() * 0.25F + 0.6F);
+                    world.setBlockMeta(x, y, z, data2 | 8);
+                    world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "tile.piston.out", 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
                 }
             }
-            else if (var5 == 1)
+            else if (data1 == 1)
             {
-                TileEntity var8 = var1.getBlockTileEntity(var2 + PistonBlockTextures.field_31056_b[var6], var3 + PistonBlockTextures.field_31059_c[var6], var4 + PistonBlockTextures.field_31058_d[var6]);
+                TileEntity var8 = world.getBlockTileEntity(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2]);
                 if (var8 != null && var8 is TileEntityPiston)
                 {
                     ((TileEntityPiston)var8).finish();
                 }
 
-                var1.setBlockAndMetadata(var2, var3, var4, Block.MOVING_PISTON.id, var6);
-                var1.setBlockTileEntity(var2, var3, var4, BlockPistonMoving.func_31036_a(id, var6, var6, false, true));
-                if (isSticky)
+                world.setBlockAndMetadata(x, y, z, Block.MOVING_PISTON.id, data2);
+                world.setBlockTileEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(id, data2, data2, false, true));
+                if (sticky)
                 {
-                    int var9 = var2 + PistonBlockTextures.field_31056_b[var6] * 2;
-                    int var10 = var3 + PistonBlockTextures.field_31059_c[var6] * 2;
-                    int var11 = var4 + PistonBlockTextures.field_31058_d[var6] * 2;
-                    int var12 = var1.getBlockId(var9, var10, var11);
-                    int var13 = var1.getBlockMeta(var9, var10, var11);
+                    int var9 = x + PistonConstants.HEAD_OFFSET_X[data2] * 2;
+                    int var10 = y + PistonConstants.HEAD_OFFSET_Y[data2] * 2;
+                    int var11 = z + PistonConstants.HEAD_OFFSET_Z[data2] * 2;
+                    int var12 = world.getBlockId(var9, var10, var11);
+                    int var13 = world.getBlockMeta(var9, var10, var11);
                     bool var14 = false;
                     if (var12 == Block.MOVING_PISTON.id)
                     {
-                        TileEntity var15 = var1.getBlockTileEntity(var9, var10, var11);
+                        TileEntity var15 = world.getBlockTileEntity(var9, var10, var11);
                         if (var15 != null && var15 is TileEntityPiston)
                         {
                             TileEntityPiston var16 = (TileEntityPiston)var15;
-                            if (var16.getFacing() == var6 && var16.isExtending())
+                            if (var16.getFacing() == data2 && var16.isExtending())
                             {
                                 var16.finish();
                                 var12 = var16.getPushedBlockId();
@@ -147,46 +146,46 @@ namespace betareborn.Blocks
                         }
                     }
 
-                    if (var14 || var12 <= 0 || !canPushBlock(var12, var1, var9, var10, var11, false) || Block.BLOCKS[var12].getPistonBehavior() != 0 && var12 != Block.PISTON.id && var12 != Block.STICKY_PISTON.id)
+                    if (var14 || var12 <= 0 || !canMoveBlock(var12, world, var9, var10, var11, false) || Block.BLOCKS[var12].getPistonBehavior() != 0 && var12 != Block.PISTON.id && var12 != Block.STICKY_PISTON.id)
                     {
                         if (!var14)
                         {
-                            field_31048_b = false;
-                            var1.setBlockWithNotify(var2 + PistonBlockTextures.field_31056_b[var6], var3 + PistonBlockTextures.field_31059_c[var6], var4 + PistonBlockTextures.field_31058_d[var6], 0);
-                            field_31048_b = true;
+                            deaf = false;
+                            world.setBlockWithNotify(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
+                            deaf = true;
                         }
                     }
                     else
                     {
-                        field_31048_b = false;
-                        var1.setBlockWithNotify(var9, var10, var11, 0);
-                        field_31048_b = true;
-                        var2 += PistonBlockTextures.field_31056_b[var6];
-                        var3 += PistonBlockTextures.field_31059_c[var6];
-                        var4 += PistonBlockTextures.field_31058_d[var6];
-                        var1.setBlockAndMetadata(var2, var3, var4, Block.MOVING_PISTON.id, var13);
-                        var1.setBlockTileEntity(var2, var3, var4, BlockPistonMoving.func_31036_a(var12, var13, var6, false, false));
+                        deaf = false;
+                        world.setBlockWithNotify(var9, var10, var11, 0);
+                        deaf = true;
+                        x += PistonConstants.HEAD_OFFSET_X[data2];
+                        y += PistonConstants.HEAD_OFFSET_Y[data2];
+                        z += PistonConstants.HEAD_OFFSET_Z[data2];
+                        world.setBlockAndMetadata(x, y, z, Block.MOVING_PISTON.id, var13);
+                        world.setBlockTileEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(var12, var13, data2, false, false));
                     }
                 }
                 else
                 {
-                    field_31048_b = false;
-                    var1.setBlockWithNotify(var2 + PistonBlockTextures.field_31056_b[var6], var3 + PistonBlockTextures.field_31059_c[var6], var4 + PistonBlockTextures.field_31058_d[var6], 0);
-                    field_31048_b = true;
+                    deaf = false;
+                    world.setBlockWithNotify(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
+                    deaf = true;
                 }
 
-                var1.playSound((double)var2 + 0.5D, (double)var3 + 0.5D, (double)var4 + 0.5D, "tile.piston.in", 0.5F, var1.random.nextFloat() * 0.15F + 0.6F);
+                world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "tile.piston.in", 0.5F, world.random.nextFloat() * 0.15F + 0.6F);
             }
 
-            field_31048_b = false;
+            deaf = false;
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
-            if (isPowered(var5))
+            int var5 = blockView.getBlockMeta(x, y, z);
+            if (isExtended(var5))
             {
-                switch (func_31044_d(var5))
+                switch (getFacing(var5))
                 {
                     case 0:
                         setBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
@@ -220,10 +219,10 @@ namespace betareborn.Blocks
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        public override void addIntersectingBoundingBox(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
+        public override void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-            base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+            base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
         }
 
         public override bool isFullCube()
@@ -231,76 +230,76 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public static int func_31044_d(int var0)
+        public static int getFacing(int meta)
         {
-            return var0 & 7;
+            return meta & 7;
         }
 
-        public static bool isPowered(int var0)
+        public static bool isExtended(int meta)
         {
-            return (var0 & 8) != 0;
+            return (meta & 8) != 0;
         }
 
-        private static int func_31039_c(World var0, int var1, int var2, int var3, EntityPlayer var4)
+        private static int getFacingForPlacement(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (MathHelper.abs((float)var4.posX - (float)var1) < 2.0F && MathHelper.abs((float)var4.posZ - (float)var3) < 2.0F)
+            if (MathHelper.abs((float)player.posX - (float)x) < 2.0F && MathHelper.abs((float)player.posZ - (float)z) < 2.0F)
             {
-                double var5 = var4.posY + 1.82D - (double)var4.yOffset;
-                if (var5 - (double)var2 > 2.0D)
+                double var5 = player.posY + 1.82D - (double)player.yOffset;
+                if (var5 - (double)y > 2.0D)
                 {
                     return 1;
                 }
 
-                if ((double)var2 - var5 > 0.0D)
+                if ((double)y - var5 > 0.0D)
                 {
                     return 0;
                 }
             }
 
-            int var7 = MathHelper.floor_double((double)(var4.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+            int var7 = MathHelper.floor_double((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             return var7 == 0 ? 2 : (var7 == 1 ? 5 : (var7 == 2 ? 3 : (var7 == 3 ? 4 : 0)));
         }
 
-        private static bool canPushBlock(int var0, World var1, int var2, int var3, int var4, bool var5)
+        private static bool canMoveBlock(int id, World world, int x, int y, int z, bool allowBreaking)
         {
-            if (var0 == Block.OBSIDIAN.id)
+            if (id == Block.OBSIDIAN.id)
             {
                 return false;
             }
             else
             {
-                if (var0 != Block.PISTON.id && var0 != Block.STICKY_PISTON.id)
+                if (id != Block.PISTON.id && id != Block.STICKY_PISTON.id)
                 {
-                    if (Block.BLOCKS[var0].getHardness() == -1.0F)
+                    if (Block.BLOCKS[id].getHardness() == -1.0F)
                     {
                         return false;
                     }
 
-                    if (Block.BLOCKS[var0].getPistonBehavior() == 2)
+                    if (Block.BLOCKS[id].getPistonBehavior() == 2)
                     {
                         return false;
                     }
 
-                    if (!var5 && Block.BLOCKS[var0].getPistonBehavior() == 1)
+                    if (!allowBreaking && Block.BLOCKS[id].getPistonBehavior() == 1)
                     {
                         return false;
                     }
                 }
-                else if (isPowered(var1.getBlockMeta(var2, var3, var4)))
+                else if (isExtended(world.getBlockMeta(x, y, z)))
                 {
                     return false;
                 }
 
-                TileEntity var6 = var1.getBlockTileEntity(var2, var3, var4);
+                TileEntity var6 = world.getBlockTileEntity(x, y, z);
                 return var6 == null;
             }
         }
 
-        private static bool func_31045_h(World var0, int var1, int var2, int var3, int var4)
+        private static bool canExtend(World world, int x, int y, int z, int dir)
         {
-            int var5 = var1 + PistonBlockTextures.field_31056_b[var4];
-            int var6 = var2 + PistonBlockTextures.field_31059_c[var4];
-            int var7 = var3 + PistonBlockTextures.field_31058_d[var4];
+            int var5 = x + PistonConstants.HEAD_OFFSET_X[dir];
+            int var6 = y + PistonConstants.HEAD_OFFSET_Y[dir];
+            int var7 = z + PistonConstants.HEAD_OFFSET_Z[dir];
             int var8 = 0;
 
             while (true)
@@ -312,10 +311,10 @@ namespace betareborn.Blocks
                         return false;
                     }
 
-                    int var9 = var0.getBlockId(var5, var6, var7);
+                    int var9 = world.getBlockId(var5, var6, var7);
                     if (var9 != 0)
                     {
-                        if (!canPushBlock(var9, var0, var5, var6, var7, true))
+                        if (!canMoveBlock(var9, world, var5, var6, var7, true))
                         {
                             return false;
                         }
@@ -327,9 +326,9 @@ namespace betareborn.Blocks
                                 return false;
                             }
 
-                            var5 += PistonBlockTextures.field_31056_b[var4];
-                            var6 += PistonBlockTextures.field_31059_c[var4];
-                            var7 += PistonBlockTextures.field_31058_d[var4];
+                            var5 += PistonConstants.HEAD_OFFSET_X[dir];
+                            var6 += PistonConstants.HEAD_OFFSET_Y[dir];
+                            var7 += PistonConstants.HEAD_OFFSET_Z[dir];
                             ++var8;
                             continue;
                         }
@@ -340,11 +339,11 @@ namespace betareborn.Blocks
             }
         }
 
-        private bool func_31047_i(World var1, int var2, int var3, int var4, int var5)
+        private bool push(World world, int x, int y, int z, int dir)
         {
-            int var6 = var2 + PistonBlockTextures.field_31056_b[var5];
-            int var7 = var3 + PistonBlockTextures.field_31059_c[var5];
-            int var8 = var4 + PistonBlockTextures.field_31058_d[var5];
+            int var6 = x + PistonConstants.HEAD_OFFSET_X[dir];
+            int var7 = y + PistonConstants.HEAD_OFFSET_Y[dir];
+            int var8 = z + PistonConstants.HEAD_OFFSET_Z[dir];
             int var9 = 0;
 
             while (true)
@@ -357,10 +356,10 @@ namespace betareborn.Blocks
                         return false;
                     }
 
-                    var10 = var1.getBlockId(var6, var7, var8);
+                    var10 = world.getBlockId(var6, var7, var8);
                     if (var10 != 0)
                     {
-                        if (!canPushBlock(var10, var1, var6, var7, var8, true))
+                        if (!canMoveBlock(var10, world, var6, var7, var8, true))
                         {
                             return false;
                         }
@@ -372,34 +371,34 @@ namespace betareborn.Blocks
                                 return false;
                             }
 
-                            var6 += PistonBlockTextures.field_31056_b[var5];
-                            var7 += PistonBlockTextures.field_31059_c[var5];
-                            var8 += PistonBlockTextures.field_31058_d[var5];
+                            var6 += PistonConstants.HEAD_OFFSET_X[dir];
+                            var7 += PistonConstants.HEAD_OFFSET_Y[dir];
+                            var8 += PistonConstants.HEAD_OFFSET_Z[dir];
                             ++var9;
                             continue;
                         }
 
-                        Block.BLOCKS[var10].dropStacks(var1, var6, var7, var8, var1.getBlockMeta(var6, var7, var8));
-                        var1.setBlockWithNotify(var6, var7, var8, 0);
+                        Block.BLOCKS[var10].dropStacks(world, var6, var7, var8, world.getBlockMeta(var6, var7, var8));
+                        world.setBlockWithNotify(var6, var7, var8, 0);
                     }
                 }
 
-                while (var6 != var2 || var7 != var3 || var8 != var4)
+                while (var6 != x || var7 != y || var8 != z)
                 {
-                    var9 = var6 - PistonBlockTextures.field_31056_b[var5];
-                    var10 = var7 - PistonBlockTextures.field_31059_c[var5];
-                    int var11 = var8 - PistonBlockTextures.field_31058_d[var5];
-                    int var12 = var1.getBlockId(var9, var10, var11);
-                    int var13 = var1.getBlockMeta(var9, var10, var11);
-                    if (var12 == id && var9 == var2 && var10 == var3 && var11 == var4)
+                    var9 = var6 - PistonConstants.HEAD_OFFSET_X[dir];
+                    var10 = var7 - PistonConstants.HEAD_OFFSET_Y[dir];
+                    int var11 = var8 - PistonConstants.HEAD_OFFSET_Z[dir];
+                    int var12 = world.getBlockId(var9, var10, var11);
+                    int var13 = world.getBlockMeta(var9, var10, var11);
+                    if (var12 == id && var9 == x && var10 == y && var11 == z)
                     {
-                        var1.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, var5 | (isSticky ? 8 : 0));
-                        var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(Block.PISTON_HEAD.id, var5 | (isSticky ? 8 : 0), var5, true, false));
+                        world.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, dir | (sticky ? 8 : 0));
+                        world.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(Block.PISTON_HEAD.id, dir | (sticky ? 8 : 0), dir, true, false));
                     }
                     else
                     {
-                        var1.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, var13);
-                        var1.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.func_31036_a(var12, var13, var5, true, false));
+                        world.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, var13);
+                        world.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(var12, var13, dir, true, false));
                     }
 
                     var6 = var9;

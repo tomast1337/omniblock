@@ -5,51 +5,51 @@ namespace betareborn.Blocks
 {
     public class BlockPlant : Block
     {
-        public BlockPlant(int var1, int var2) : base(var1, Material.PLANT)
+        public BlockPlant(int id, int textureId) : base(id, Material.PLANT)
         {
-            textureId = var2;
+            base.textureId = textureId;
             setTickRandomly(true);
             float var3 = 0.2F;
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 3.0F, 0.5F + var3);
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return base.canPlaceAt(var1, var2, var3, var4) && canPlantOnTop(var1.getBlockId(var2, var3 - 1, var4));
+            return base.canPlaceAt(world, x, y, z) && canPlantOnTop(world.getBlockId(x, y - 1, z));
         }
 
-        protected virtual bool canPlantOnTop(int var1)
+        protected virtual bool canPlantOnTop(int id)
         {
-            return var1 == Block.GRASS_BLOCK.id || var1 == Block.DIRT.id || var1 == Block.FARMLAND.id;
+            return id == Block.GRASS_BLOCK.id || id == Block.DIRT.id || id == Block.FARMLAND.id;
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            base.neighborUpdate(var1, var2, var3, var4, var5);
-            func_268_h(var1, var2, var3, var4);
+            base.neighborUpdate(world, x, y, z, id);
+            breakIfCannotGrow(world, x, y, z);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            func_268_h(var1, var2, var3, var4);
+            breakIfCannotGrow(world, x, y, z);
         }
 
-        protected void func_268_h(World var1, int var2, int var3, int var4)
+        protected void breakIfCannotGrow(World world, int x, int y, int z)
         {
-            if (!canGrow(var1, var2, var3, var4))
+            if (!canGrow(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override bool canGrow(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World world, int x, int y, int z)
         {
-            return (var1.getFullBlockLightValue(var2, var3, var4) >= 8 || var1.canBlockSeeTheSky(var2, var3, var4)) && canPlantOnTop(var1.getBlockId(var2, var3 - 1, var4));
+            return (world.getBrightness(x, y, z) >= 8 || world.hasSkyLight(x, y, z)) && canPlantOnTop(world.getBlockId(x, y - 1, z));
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }

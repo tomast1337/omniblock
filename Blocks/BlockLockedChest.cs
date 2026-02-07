@@ -6,27 +6,27 @@ namespace betareborn.Blocks
     public class BlockLockedChest : Block
     {
 
-        public BlockLockedChest(int var1) : base(var1, Material.WOOD)
+        public BlockLockedChest(int id) : base(id, Material.WOOD)
         {
             textureId = 26;
         }
 
-        public override int getTexture(BlockView var1, int var2, int var3, int var4, int var5)
+        public override int getTexture(BlockView blockView, int x, int y, int z, int side)
         {
-            if (var5 == 1)
+            if (side == 1)
             {
                 return textureId - 1;
             }
-            else if (var5 == 0)
+            else if (side == 0)
             {
                 return textureId - 1;
             }
             else
             {
-                int var6 = var1.getBlockId(var2, var3, var4 - 1);
-                int var7 = var1.getBlockId(var2, var3, var4 + 1);
-                int var8 = var1.getBlockId(var2 - 1, var3, var4);
-                int var9 = var1.getBlockId(var2 + 1, var3, var4);
+                int var6 = blockView.getBlockId(x, y, z - 1);
+                int var7 = blockView.getBlockId(x, y, z + 1);
+                int var8 = blockView.getBlockId(x - 1, y, z);
+                int var9 = blockView.getBlockId(x + 1, y, z);
                 sbyte var10 = 3;
                 if (Block.BLOCKS_OPAQUE[var6] && !Block.BLOCKS_OPAQUE[var7])
                 {
@@ -48,23 +48,23 @@ namespace betareborn.Blocks
                     var10 = 4;
                 }
 
-                return var5 == var10 ? textureId + 1 : textureId;
+                return side == var10 ? textureId + 1 : textureId;
             }
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 1 ? textureId - 1 : (var1 == 0 ? textureId - 1 : (var1 == 3 ? textureId + 1 : textureId));
+            return side == 1 ? textureId - 1 : (side == 0 ? textureId - 1 : (side == 3 ? textureId + 1 : textureId));
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
             return true;
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            var1.setBlockWithNotify(var2, var3, var4, 0);
+            world.setBlockWithNotify(x, y, z, 0);
         }
     }
 

@@ -4,41 +4,41 @@ namespace betareborn.Blocks
 {
     public class BlockMushroom : BlockPlant
     {
-        public BlockMushroom(int var1, int var2) : base(var1, var2)
+        public BlockMushroom(int i, int j) : base(i, j)
         {
             float var3 = 0.2F;
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
             setTickRandomly(true);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var5.nextInt(100) == 0)
+            if (random.nextInt(100) == 0)
             {
-                int var6 = var2 + var5.nextInt(3) - 1;
-                int var7 = var3 + var5.nextInt(2) - var5.nextInt(2);
-                int var8 = var4 + var5.nextInt(3) - 1;
-                if (var1.isAir(var6, var7, var8) && canGrow(var1, var6, var7, var8))
+                int var6 = x + random.nextInt(3) - 1;
+                int var7 = y + random.nextInt(2) - random.nextInt(2);
+                int var8 = z + random.nextInt(3) - 1;
+                if (world.isAir(var6, var7, var8) && canGrow(world, var6, var7, var8))
                 {
-                    int var10000 = var2 + (var5.nextInt(3) - 1);
-                    var10000 = var4 + (var5.nextInt(3) - 1);
-                    if (var1.isAir(var6, var7, var8) && canGrow(var1, var6, var7, var8))
+                    int var10000 = x + (random.nextInt(3) - 1);
+                    var10000 = z + (random.nextInt(3) - 1);
+                    if (world.isAir(var6, var7, var8) && canGrow(world, var6, var7, var8))
                     {
-                        var1.setBlockWithNotify(var6, var7, var8, id);
+                        world.setBlockWithNotify(var6, var7, var8, id);
                     }
                 }
             }
 
         }
 
-        protected override bool canPlantOnTop(int var1)
+        protected override bool canPlantOnTop(int id)
         {
-            return Block.BLOCKS_OPAQUE[var1];
+            return Block.BLOCKS_OPAQUE[id];
         }
 
-        public override bool canGrow(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World world, int x, int y, int z)
         {
-            return var3 >= 0 && var3 < 128 ? var1.getFullBlockLightValue(var2, var3, var4) < 13 && canPlantOnTop(var1.getBlockId(var2, var3 - 1, var4)) : false;
+            return y >= 0 && y < 128 ? world.getBrightness(x, y, z) < 13 && canPlantOnTop(world.getBlockId(x, y - 1, z)) : false;
         }
     }
 

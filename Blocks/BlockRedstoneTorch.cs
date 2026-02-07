@@ -99,7 +99,7 @@ namespace betareborn.Blocks
         private bool func_30002_h(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMeta(var2, var3, var4);
-            return var5 == 5 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3 - 1, var4, 0) ? true : (var5 == 3 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 - 1, 2) ? true : (var5 == 4 && var1.isBlockIndirectlyProvidingPowerTo(var2, var3, var4 + 1, 3) ? true : (var5 == 1 && var1.isBlockIndirectlyProvidingPowerTo(var2 - 1, var3, var4, 4) ? true : var5 == 2 && var1.isBlockIndirectlyProvidingPowerTo(var2 + 1, var3, var4, 5))));
+            return var5 == 5 && var1.isPoweringSide(var2, var3 - 1, var4, 0) ? true : (var5 == 3 && var1.isPoweringSide(var2, var3, var4 - 1, 2) ? true : (var5 == 4 && var1.isPoweringSide(var2, var3, var4 + 1, 3) ? true : (var5 == 1 && var1.isPoweringSide(var2 - 1, var3, var4, 4) ? true : var5 == 2 && var1.isPoweringSide(var2 + 1, var3, var4, 5))));
         }
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)

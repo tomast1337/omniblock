@@ -1,54 +1,53 @@
 using betareborn.Materials;
 using betareborn.Worlds;
-using java.util;
 
 namespace betareborn.Blocks
 {
     public class BlockPistonExtension : Block
     {
-        private int field_31053_a = -1;
+        private int pistonHeadSprite = -1;
 
-        public BlockPistonExtension(int var1, int var2) : base(var1, var2, Material.PISTON)
+        public BlockPistonExtension(int id, int textureId) : base(id, textureId, Material.PISTON)
         {
             setSoundGroup(soundStoneFootstep);
             setHardness(0.5F);
         }
 
-        public void func_31052_a_(int var1)
+        public void setSprite(int sprite)
         {
-            field_31053_a = var1;
+            pistonHeadSprite = sprite;
         }
 
-        public void func_31051_a()
+        public void clearSprite()
         {
-            field_31053_a = -1;
+            pistonHeadSprite = -1;
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            base.onBreak(var1, var2, var3, var4);
-            int var5 = var1.getBlockMeta(var2, var3, var4);
-            int var6 = PistonBlockTextures.field_31057_a[func_31050_c(var5)];
-            var2 += PistonBlockTextures.field_31056_b[var6];
-            var3 += PistonBlockTextures.field_31059_c[var6];
-            var4 += PistonBlockTextures.field_31058_d[var6];
-            int var7 = var1.getBlockId(var2, var3, var4);
+            base.onBreak(world, x, y, z);
+            int var5 = world.getBlockMeta(x, y, z);
+            int var6 = PistonConstants.field_31057_a[getFacing(var5)];
+            x += PistonConstants.HEAD_OFFSET_X[var6];
+            y += PistonConstants.HEAD_OFFSET_Y[var6];
+            z += PistonConstants.HEAD_OFFSET_Z[var6];
+            int var7 = world.getBlockId(x, y, z);
             if (var7 == Block.PISTON.id || var7 == Block.STICKY_PISTON.id)
             {
-                var5 = var1.getBlockMeta(var2, var3, var4);
-                if (BlockPistonBase.isPowered(var5))
+                var5 = world.getBlockMeta(x, y, z);
+                if (BlockPistonBase.isExtended(var5))
                 {
-                    Block.BLOCKS[var7].dropStacks(var1, var2, var3, var4, var5);
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    Block.BLOCKS[var7].dropStacks(world, x, y, z, var5);
+                    world.setBlockWithNotify(x, y, z, 0);
                 }
             }
 
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            int var3 = func_31050_c(var2);
-            return var1 == var3 ? (field_31053_a >= 0 ? field_31053_a : ((var2 & 8) != 0 ? textureId - 1 : textureId)) : (var1 == PistonBlockTextures.field_31057_a[var3] ? 107 : 108);
+            int var3 = getFacing(meta);
+            return side == var3 ? (pistonHeadSprite >= 0 ? pistonHeadSprite : ((meta & 8) != 0 ? textureId - 1 : textureId)) : (side == PistonConstants.field_31057_a[var3] ? 107 : 108);
         }
 
         public override int getRenderType()
@@ -66,71 +65,71 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
             return false;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World world, int x, int y, int z, int side)
         {
             return false;
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 0;
         }
 
-        public override void addIntersectingBoundingBox(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
+        public override void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
         {
-            int var7 = var1.getBlockMeta(var2, var3, var4);
-            switch (func_31050_c(var7))
+            int var7 = world.getBlockMeta(x, y, z);
+            switch (getFacing(var7))
             {
                 case 0:
                     setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     setBoundingBox(6.0F / 16.0F, 0.25F, 6.0F / 16.0F, 10.0F / 16.0F, 1.0F, 10.0F / 16.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     break;
                 case 1:
                     setBoundingBox(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     setBoundingBox(6.0F / 16.0F, 0.0F, 6.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F, 10.0F / 16.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     break;
                 case 2:
                     setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     setBoundingBox(0.25F, 6.0F / 16.0F, 0.25F, 12.0F / 16.0F, 10.0F / 16.0F, 1.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     break;
                 case 3:
                     setBoundingBox(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     setBoundingBox(0.25F, 6.0F / 16.0F, 0.0F, 12.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     break;
                 case 4:
                     setBoundingBox(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     setBoundingBox(6.0F / 16.0F, 0.25F, 0.25F, 10.0F / 16.0F, 12.0F / 16.0F, 1.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     break;
                 case 5:
                     setBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     setBoundingBox(0.0F, 6.0F / 16.0F, 0.25F, 12.0F / 16.0F, 10.0F / 16.0F, 12.0F / 16.0F);
-                    base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                    base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                     break;
             }
 
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
-            switch (func_31050_c(var5))
+            int var5 = blockView.getBlockMeta(x, y, z);
+            switch (getFacing(var5))
             {
                 case 0:
                     setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
@@ -154,24 +153,24 @@ namespace betareborn.Blocks
 
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            int var6 = func_31050_c(var1.getBlockMeta(var2, var3, var4));
-            int var7 = var1.getBlockId(var2 - PistonBlockTextures.field_31056_b[var6], var3 - PistonBlockTextures.field_31059_c[var6], var4 - PistonBlockTextures.field_31058_d[var6]);
+            int var6 = getFacing(world.getBlockMeta(x, y, z));
+            int var7 = world.getBlockId(x - PistonConstants.HEAD_OFFSET_X[var6], y - PistonConstants.HEAD_OFFSET_Y[var6], z - PistonConstants.HEAD_OFFSET_Z[var6]);
             if (var7 != Block.PISTON.id && var7 != Block.STICKY_PISTON.id)
             {
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                world.setBlockWithNotify(x, y, z, 0);
             }
             else
             {
-                Block.BLOCKS[var7].neighborUpdate(var1, var2 - PistonBlockTextures.field_31056_b[var6], var3 - PistonBlockTextures.field_31059_c[var6], var4 - PistonBlockTextures.field_31058_d[var6], var5);
+                Block.BLOCKS[var7].neighborUpdate(world, x - PistonConstants.HEAD_OFFSET_X[var6], y - PistonConstants.HEAD_OFFSET_Y[var6], z - PistonConstants.HEAD_OFFSET_Z[var6], id);
             }
 
         }
 
-        public static int func_31050_c(int var0)
+        public static int getFacing(int meta)
         {
-            return var0 & 7;
+            return meta & 7;
         }
     }
 

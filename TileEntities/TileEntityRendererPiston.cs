@@ -39,9 +39,9 @@ namespace betareborn.TileEntities
                 }
                 else if (var1.isSource() && !var1.isExtending())
                 {
-                    Block.PISTON_HEAD.func_31052_a_(((BlockPistonBase)var9).func_31040_i());
+                    Block.PISTON_HEAD.setSprite(((BlockPistonBase)var9).getTopTexture());
                     field_31071_b.func_31079_a(Block.PISTON_HEAD, var1.x, var1.y, var1.z, var1.getProgress(var8) < 0.5F);
-                    Block.PISTON_HEAD.func_31051_a();
+                    Block.PISTON_HEAD.clearSprite();
                     var10.setTranslationD((double)((float)var2 - (float)var1.x), (double)((float)var4 - (float)var1.y), (double)((float)var6 - (float)var1.z));
                     field_31071_b.func_31078_d(var9, var1.x, var1.y, var1.z);
                 }

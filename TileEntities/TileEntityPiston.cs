@@ -67,17 +67,17 @@ namespace betareborn.TileEntities
 
         public float getRenderOffsetX(float tickDelta)
         {
-            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonBlockTextures.field_31056_b[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonBlockTextures.field_31056_b[facing];
+            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonConstants.HEAD_OFFSET_X[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonConstants.HEAD_OFFSET_X[facing];
         }
 
         public float getRenderOffsetY(float tickDelta)
         {
-            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonBlockTextures.field_31059_c[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonBlockTextures.field_31059_c[facing];
+            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonConstants.HEAD_OFFSET_Y[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonConstants.HEAD_OFFSET_Y[facing];
         }
 
         public float getRenderOffsetZ(float tickDelta)
         {
-            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonBlockTextures.field_31058_d[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonBlockTextures.field_31058_d[facing];
+            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonConstants.HEAD_OFFSET_Z[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonConstants.HEAD_OFFSET_Z[facing];
         }
 
         private void pushEntities(float collisionShapeSizeMultiplier, float entityMoveMultiplier)
@@ -101,9 +101,9 @@ namespace betareborn.TileEntities
                     foreach (Entity var6 in pushedEntities)
                     {
                         var6.moveEntity(
-                            (double)(entityMoveMultiplier * (float)PistonBlockTextures.field_31056_b[facing]),
-                            (double)(entityMoveMultiplier * (float)PistonBlockTextures.field_31059_c[facing]),
-                            (double)(entityMoveMultiplier * (float)PistonBlockTextures.field_31058_d[facing])
+                            (double)(entityMoveMultiplier * (float)PistonConstants.HEAD_OFFSET_X[facing]),
+                            (double)(entityMoveMultiplier * (float)PistonConstants.HEAD_OFFSET_Y[facing]),
+                            (double)(entityMoveMultiplier * (float)PistonConstants.HEAD_OFFSET_Z[facing])
                         );
                     }
                     pushedEntities.Clear();

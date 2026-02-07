@@ -429,7 +429,7 @@ namespace betareborn.Rendering
         {
             int var6 = blockAccess.getBlockMeta(var2, var3, var4);
             bool var7 = var5 || (var6 & 8) != 0;
-            int var8 = BlockPistonBase.func_31044_d(var6);
+            int var8 = BlockPistonBase.getFacing(var6);
             if (var7)
             {
                 switch (var8)
@@ -606,7 +606,7 @@ namespace betareborn.Rendering
         private bool func_31080_c(Block var1, int var2, int var3, int var4, bool var5)
         {
             int var6 = blockAccess.getBlockMeta(var2, var3, var4);
-            int var7 = BlockPistonExtension.func_31050_c(var6);
+            int var7 = BlockPistonExtension.getFacing(var6);
             float var11 = var1.getLuminance(blockAccess, var2, var3, var4);
             float var12 = var5 ? 1.0F : 0.5F;
             double var13 = var5 ? 16.0D : 8.0D;
