@@ -672,7 +672,7 @@ namespace betareborn.Entities
             int var7 = worldObj.getBlockId(var4, var5, var6);
             if (var7 != 0 && Block.BLOCKS[var7].material == var1)
             {
-                float var8 = BlockFluid.getPercentAir(worldObj.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
+                float var8 = BlockFluid.getFluidHeightFromMeta(worldObj.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
                 float var9 = (float)(var5 + 1) - var8;
                 return var2 < (double)var9;
             }

@@ -55,7 +55,7 @@ namespace betareborn.Entities
             Material var1 = worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
             if (var1.isFluid() || var1.isSolid())
             {
-                double var2 = (double)((float)(MathHelper.floor_double(posY) + 1) - BlockFluid.getPercentAir(worldObj.getBlockMeta(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ))));
+                double var2 = (double)((float)(MathHelper.floor_double(posY) + 1) - BlockFluid.getFluidHeightFromMeta(worldObj.getBlockMeta(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ))));
                 if (posY < var2)
                 {
                     setEntityDead();

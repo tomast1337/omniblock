@@ -179,7 +179,7 @@ namespace betareborn.TileEntities
                 if (var1 != burnTime > 0)
                 {
                     var2 = true;
-                    BlockFurnace.updateFurnaceBlockState(burnTime > 0, world, x, y, z);
+                    BlockFurnace.updateLitState(burnTime > 0, world, x, y, z);
                 }
             }
 

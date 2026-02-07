@@ -1829,7 +1829,7 @@ namespace betareborn.Worlds
                             Block var15 = Block.BLOCKS[getBlockId(var12, var13, var14)];
                             if (var15 != null && var15.material == var2)
                             {
-                                double var16 = (double)((float)(var13 + 1) - BlockFluid.getPercentAir(getBlockMeta(var12, var13, var14)));
+                                double var16 = (double)((float)(var13 + 1) - BlockFluid.getFluidHeightFromMeta(getBlockMeta(var12, var13, var14)));
                                 if ((double)var7 >= var16)
                                 {
                                     var10 = true;

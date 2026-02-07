@@ -5,27 +5,27 @@ namespace betareborn.Blocks
 {
     public class BlockFlowing : BlockFluid
     {
-        int numAdjacentSources = 0;
-        bool[] isOptimalFlowDirection = new bool[4];
-        int[] flowCost = new int[4];
+        int adjacentSources = 0;
+        bool[] spread = new bool[4];
+        int[] distanceToGap = new int[4];
 
-        public BlockFlowing(int var1, Material var2) : base(var1, var2)
+        public BlockFlowing(int id, Material material) : base(id, material)
         {
         }
 
-        private void func_30003_j(World var1, int var2, int var3, int var4)
+        private void convertToSource(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
-            var1.setBlockAndMetadata(var2, var3, var4, id + 1, var5);
-            var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
-            var1.markBlockNeedsUpdate(var2, var3, var4);
+            int var5 = world.getBlockMeta(x, y, z);
+            world.setBlockAndMetadata(x, y, z, id + 1, var5);
+            world.setBlocksDirty(x, y, z, x, y, z);
+            world.markBlockNeedsUpdate(x, y, z);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = getFlowDecay(var1, var2, var3, var4);
+            int var6 = getLiquidState(world, x, y, z);
             sbyte var7 = 1;
-            if (material == Material.LAVA && !var1.dimension.isHellWorld)
+            if (material == Material.LAVA && !world.dimension.isHellWorld)
             {
                 var7 = 2;
             }
@@ -35,20 +35,20 @@ namespace betareborn.Blocks
             if (var6 > 0)
             {
                 int var9 = -100;
-                numAdjacentSources = 0;
-                int var12 = getSmallestFlowDecay(var1, var2 - 1, var3, var4, var9);
-                var12 = getSmallestFlowDecay(var1, var2 + 1, var3, var4, var12);
-                var12 = getSmallestFlowDecay(var1, var2, var3, var4 - 1, var12);
-                var12 = getSmallestFlowDecay(var1, var2, var3, var4 + 1, var12);
+                adjacentSources = 0;
+                int var12 = getLowestDepth(world, x - 1, y, z, var9);
+                var12 = getLowestDepth(world, x + 1, y, z, var12);
+                var12 = getLowestDepth(world, x, y, z - 1, var12);
+                var12 = getLowestDepth(world, x, y, z + 1, var12);
                 var10 = var12 + var7;
                 if (var10 >= 8 || var12 < 0)
                 {
                     var10 = -1;
                 }
 
-                if (getFlowDecay(var1, var2, var3 + 1, var4) >= 0)
+                if (getLiquidState(world, x, y + 1, z) >= 0)
                 {
-                    int var11 = getFlowDecay(var1, var2, var3 + 1, var4);
+                    int var11 = getLiquidState(world, x, y + 1, z);
                     if (var11 >= 8)
                     {
                         var10 = var11;
@@ -59,19 +59,19 @@ namespace betareborn.Blocks
                     }
                 }
 
-                if (numAdjacentSources >= 2 && material == Material.WATER)
+                if (adjacentSources >= 2 && material == Material.WATER)
                 {
-                    if (var1.getMaterial(var2, var3 - 1, var4).isSolid())
+                    if (world.getMaterial(x, y - 1, z).isSolid())
                     {
                         var10 = 0;
                     }
-                    else if (var1.getMaterial(var2, var3 - 1, var4) == material && var1.getBlockMeta(var2, var3, var4) == 0)
+                    else if (world.getMaterial(x, y - 1, z) == material && world.getBlockMeta(x, y, z) == 0)
                     {
                         var10 = 0;
                     }
                 }
 
-                if (material == Material.LAVA && var6 < 8 && var10 < 8 && var10 > var6 && var5.nextInt(4) != 0)
+                if (material == Material.LAVA && var6 < 8 && var10 < 8 && var10 > var6 && random.nextInt(4) != 0)
                 {
                     var10 = var6;
                     var8 = false;
@@ -82,39 +82,39 @@ namespace betareborn.Blocks
                     var6 = var10;
                     if (var10 < 0)
                     {
-                        var1.setBlockWithNotify(var2, var3, var4, 0);
+                        world.setBlockWithNotify(x, y, z, 0);
                     }
                     else
                     {
-                        var1.setBlockMeta(var2, var3, var4, var10);
-                        var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
-                        var1.notifyNeighbors(var2, var3, var4, id);
+                        world.setBlockMeta(x, y, z, var10);
+                        world.scheduleBlockUpdate(x, y, z, id, getTickRate());
+                        world.notifyNeighbors(x, y, z, id);
                     }
                 }
                 else if (var8)
                 {
-                    func_30003_j(var1, var2, var3, var4);
+                    convertToSource(world, x, y, z);
                 }
             }
             else
             {
-                func_30003_j(var1, var2, var3, var4);
+                convertToSource(world, x, y, z);
             }
 
-            if (liquidCanDisplaceBlock(var1, var2, var3 - 1, var4))
+            if (canSpreadTo(world, x, y - 1, z))
             {
                 if (var6 >= 8)
                 {
-                    var1.setBlockAndMetadataWithNotify(var2, var3 - 1, var4, id, var6);
+                    world.setBlockAndMetadataWithNotify(x, y - 1, z, id, var6);
                 }
                 else
                 {
-                    var1.setBlockAndMetadataWithNotify(var2, var3 - 1, var4, id, var6 + 8);
+                    world.setBlockAndMetadataWithNotify(x, y - 1, z, id, var6 + 8);
                 }
             }
-            else if (var6 >= 0 && (var6 == 0 || blockBlocksFlow(var1, var2, var3 - 1, var4)))
+            else if (var6 >= 0 && (var6 == 0 || isLiquidBreaking(world, x, y - 1, z)))
             {
-                bool[] var13 = getOptimalFlowDirections(var1, var2, var3, var4);
+                bool[] var13 = getSpread(world, x, y, z);
                 var10 = var6 + var7;
                 if (var6 >= 8)
                 {
@@ -128,62 +128,62 @@ namespace betareborn.Blocks
 
                 if (var13[0])
                 {
-                    flowIntoBlock(var1, var2 - 1, var3, var4, var10);
+                    spreadTo(world, x - 1, y, z, var10);
                 }
 
                 if (var13[1])
                 {
-                    flowIntoBlock(var1, var2 + 1, var3, var4, var10);
+                    spreadTo(world, x + 1, y, z, var10);
                 }
 
                 if (var13[2])
                 {
-                    flowIntoBlock(var1, var2, var3, var4 - 1, var10);
+                    spreadTo(world, x, y, z - 1, var10);
                 }
 
                 if (var13[3])
                 {
-                    flowIntoBlock(var1, var2, var3, var4 + 1, var10);
+                    spreadTo(world, x, y, z + 1, var10);
                 }
             }
 
         }
 
-        private void flowIntoBlock(World var1, int var2, int var3, int var4, int var5)
+        private void spreadTo(World world, int x, int y, int z, int depth)
         {
-            if (liquidCanDisplaceBlock(var1, var2, var3, var4))
+            if (canSpreadTo(world, x, y, z))
             {
-                int var6 = var1.getBlockId(var2, var3, var4);
+                int var6 = world.getBlockId(x, y, z);
                 if (var6 > 0)
                 {
                     if (material == Material.LAVA)
                     {
-                        triggerLavaMixEffects(var1, var2, var3, var4);
+                        fizz(world, x, y, z);
                     }
                     else
                     {
-                        Block.BLOCKS[var6].dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
+                        Block.BLOCKS[var6].dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
                     }
                 }
 
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, id, var5);
+                world.setBlockAndMetadataWithNotify(x, y, z, id, depth);
             }
 
         }
 
-        private int calculateFlowCost(World var1, int var2, int var3, int var4, int var5, int var6)
+        private int getDistanceToGap(World world, int x, int y, int z, int distance, int fromDirection)
         {
             int var7 = 1000;
 
             for (int var8 = 0; var8 < 4; ++var8)
             {
-                if ((var8 != 0 || var6 != 1) && (var8 != 1 || var6 != 0) && (var8 != 2 || var6 != 3) && (var8 != 3 || var6 != 2))
+                if ((var8 != 0 || fromDirection != 1) && (var8 != 1 || fromDirection != 0) && (var8 != 2 || fromDirection != 3) && (var8 != 3 || fromDirection != 2))
                 {
-                    int var9 = var2;
-                    int var11 = var4;
+                    int var9 = x;
+                    int var11 = z;
                     if (var8 == 0)
                     {
-                        var9 = var2 - 1;
+                        var9 = x - 1;
                     }
 
                     if (var8 == 1)
@@ -193,7 +193,7 @@ namespace betareborn.Blocks
 
                     if (var8 == 2)
                     {
-                        var11 = var4 - 1;
+                        var11 = z - 1;
                     }
 
                     if (var8 == 3)
@@ -201,16 +201,16 @@ namespace betareborn.Blocks
                         ++var11;
                     }
 
-                    if (!blockBlocksFlow(var1, var9, var3, var11) && (var1.getMaterial(var9, var3, var11) != material || var1.getBlockMeta(var9, var3, var11) != 0))
+                    if (!isLiquidBreaking(world, var9, y, var11) && (world.getMaterial(var9, y, var11) != material || world.getBlockMeta(var9, y, var11) != 0))
                     {
-                        if (!blockBlocksFlow(var1, var9, var3 - 1, var11))
+                        if (!isLiquidBreaking(world, var9, y - 1, var11))
                         {
-                            return var5;
+                            return distance;
                         }
 
-                        if (var5 < 4)
+                        if (distance < 4)
                         {
-                            int var12 = calculateFlowCost(var1, var9, var3, var11, var5 + 1, var8);
+                            int var12 = getDistanceToGap(world, var9, y, var11, distance + 1, var8);
                             if (var12 < var7)
                             {
                                 var7 = var12;
@@ -223,18 +223,18 @@ namespace betareborn.Blocks
             return var7;
         }
 
-        private bool[] getOptimalFlowDirections(World var1, int var2, int var3, int var4)
+        private bool[] getSpread(World world, int x, int y, int z)
         {
             int var5;
             int var6;
             for (var5 = 0; var5 < 4; ++var5)
             {
-                flowCost[var5] = 1000;
-                var6 = var2;
-                int var8 = var4;
+                distanceToGap[var5] = 1000;
+                var6 = x;
+                int var8 = z;
                 if (var5 == 0)
                 {
-                    var6 = var2 - 1;
+                    var6 = x - 1;
                 }
 
                 if (var5 == 1)
@@ -244,7 +244,7 @@ namespace betareborn.Blocks
 
                 if (var5 == 2)
                 {
-                    var8 = var4 - 1;
+                    var8 = z - 1;
                 }
 
                 if (var5 == 3)
@@ -252,40 +252,40 @@ namespace betareborn.Blocks
                     ++var8;
                 }
 
-                if (!blockBlocksFlow(var1, var6, var3, var8) && (var1.getMaterial(var6, var3, var8) != material || var1.getBlockMeta(var6, var3, var8) != 0))
+                if (!isLiquidBreaking(world, var6, y, var8) && (world.getMaterial(var6, y, var8) != material || world.getBlockMeta(var6, y, var8) != 0))
                 {
-                    if (!blockBlocksFlow(var1, var6, var3 - 1, var8))
+                    if (!isLiquidBreaking(world, var6, y - 1, var8))
                     {
-                        flowCost[var5] = 0;
+                        distanceToGap[var5] = 0;
                     }
                     else
                     {
-                        flowCost[var5] = calculateFlowCost(var1, var6, var3, var8, 1, var5);
+                        distanceToGap[var5] = getDistanceToGap(world, var6, y, var8, 1, var5);
                     }
                 }
             }
 
-            var5 = flowCost[0];
+            var5 = distanceToGap[0];
 
             for (var6 = 1; var6 < 4; ++var6)
             {
-                if (flowCost[var6] < var5)
+                if (distanceToGap[var6] < var5)
                 {
-                    var5 = flowCost[var6];
+                    var5 = distanceToGap[var6];
                 }
             }
 
             for (var6 = 0; var6 < 4; ++var6)
             {
-                isOptimalFlowDirection[var6] = flowCost[var6] == var5;
+                spread[var6] = distanceToGap[var6] == var5;
             }
 
-            return isOptimalFlowDirection;
+            return spread;
         }
 
-        private bool blockBlocksFlow(World var1, int var2, int var3, int var4)
+        private bool isLiquidBreaking(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockId(var2, var3, var4);
+            int var5 = world.getBlockId(x, y, z);
             if (var5 != Block.DOOR.id && var5 != Block.IRON_DOOR.id && var5 != Block.SIGN.id && var5 != Block.LADDER.id && var5 != Block.SUGAR_CANE.id)
             {
                 if (var5 == 0)
@@ -304,18 +304,18 @@ namespace betareborn.Blocks
             }
         }
 
-        protected int getSmallestFlowDecay(World var1, int var2, int var3, int var4, int var5)
+        protected int getLowestDepth(World world, int x, int y, int z, int depth)
         {
-            int var6 = getFlowDecay(var1, var2, var3, var4);
+            int var6 = getLiquidState(world, x, y, z);
             if (var6 < 0)
             {
-                return var5;
+                return depth;
             }
             else
             {
                 if (var6 == 0)
                 {
-                    ++numAdjacentSources;
+                    ++adjacentSources;
                 }
 
                 if (var6 >= 8)
@@ -323,22 +323,22 @@ namespace betareborn.Blocks
                     var6 = 0;
                 }
 
-                return var5 >= 0 && var6 >= var5 ? var5 : var6;
+                return depth >= 0 && var6 >= depth ? depth : var6;
             }
         }
 
-        private bool liquidCanDisplaceBlock(World var1, int var2, int var3, int var4)
+        private bool canSpreadTo(World world, int x, int y, int z)
         {
-            Material var5 = var1.getMaterial(var2, var3, var4);
-            return var5 == material ? false : (var5 == Material.LAVA ? false : !blockBlocksFlow(var1, var2, var3, var4));
+            Material var5 = world.getMaterial(x, y, z);
+            return var5 == material ? false : (var5 == Material.LAVA ? false : !isLiquidBreaking(world, x, y, z));
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            base.onPlaced(var1, var2, var3, var4);
-            if (var1.getBlockId(var2, var3, var4) == id)
+            base.onPlaced(world, x, y, z);
+            if (world.getBlockId(x, y, z) == id)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
+                world.scheduleBlockUpdate(x, y, z, id, getTickRate());
             }
 
         }

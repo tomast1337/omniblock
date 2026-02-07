@@ -1701,7 +1701,7 @@ namespace betareborn.Rendering
                 {
                     var13 = true;
                     var28 = var1.getTexture(1, var23);
-                    float var29 = (float)BlockFluid.func_293_a(blockAccess, var2, var3, var4, var22);
+                    float var29 = (float)BlockFluid.getFlowingAngle(blockAccess, var2, var3, var4, var22);
                     if (var29 > -999.0F)
                     {
                         var28 = var1.getTexture(2, var23);
@@ -1866,11 +1866,11 @@ namespace betareborn.Rendering
                     int var12 = blockAccess.getBlockMeta(var8, var2, var10);
                     if (var12 >= 8 || var12 == 0)
                     {
-                        var6 += BlockFluid.getPercentAir(var12) * 10.0F;
+                        var6 += BlockFluid.getFluidHeightFromMeta(var12) * 10.0F;
                         var5 += 10;
                     }
 
-                    var6 += BlockFluid.getPercentAir(var12);
+                    var6 += BlockFluid.getFluidHeightFromMeta(var12);
                     ++var5;
                 }
             }
