@@ -168,7 +168,7 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            TileEntityChest var5 = (TileEntityChest)world.getBlockTileEntity(x, y, z);
+            TileEntityChest var5 = (TileEntityChest)world.getBlockEntity(x, y, z);
 
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {
@@ -203,7 +203,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            java.lang.Object var6 = (TileEntityChest)world.getBlockTileEntity(x, y, z);
+            java.lang.Object var6 = (TileEntityChest)world.getBlockEntity(x, y, z);
             if (world.shouldSuffocate(x, y + 1, z))
             {
                 return true;
@@ -228,22 +228,22 @@ namespace betareborn.Blocks
             {
                 if (world.getBlockId(x - 1, y, z) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockTileEntity(x - 1, y, z), (IInventory)var6);
+                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockEntity(x - 1, y, z), (IInventory)var6);
                 }
 
                 if (world.getBlockId(x + 1, y, z) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockTileEntity(x + 1, y, z));
+                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockEntity(x + 1, y, z));
                 }
 
                 if (world.getBlockId(x, y, z - 1) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockTileEntity(x, y, z - 1), (IInventory)var6);
+                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockEntity(x, y, z - 1), (IInventory)var6);
                 }
 
                 if (world.getBlockId(x, y, z + 1) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockTileEntity(x, y, z + 1));
+                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockEntity(x, y, z + 1));
                 }
 
                 if (world.isRemote)

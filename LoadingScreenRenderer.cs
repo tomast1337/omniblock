@@ -2,7 +2,7 @@ using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn
 {
-    public class LoadingScreenRenderer : IProgressUpdate
+    public class LoadingScreenRenderer : LoadingDisplay
     {
 
         private string field_1004_a = "";

@@ -102,7 +102,7 @@ namespace betareborn.Worlds
                             if (var15 == 1)
                             {
                                 var1.setBlockWithNotify(var12, var4, var14, Block.CHEST.id);
-                                TileEntityChest var16 = (TileEntityChest)var1.getBlockTileEntity(var12, var4, var14);
+                                TileEntityChest var16 = (TileEntityChest)var1.getBlockEntity(var12, var4, var14);
 
                                 for (int var17 = 0; var17 < 8; ++var17)
                                 {
@@ -118,7 +118,7 @@ namespace betareborn.Worlds
                 }
 
                 var1.setBlockWithNotify(var3, var4, var5, Block.SPAWNER.id);
-                TileEntityMobSpawner var19 = (TileEntityMobSpawner)var1.getBlockTileEntity(var3, var4, var5);
+                TileEntityMobSpawner var19 = (TileEntityMobSpawner)var1.getBlockEntity(var3, var4, var5);
                 var19.setSpawnedEntityId(pickMobSpawner(var2));
                 return true;
             }

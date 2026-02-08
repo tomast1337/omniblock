@@ -66,7 +66,7 @@ namespace betareborn.Items
                     }
 
                     --var1.count;
-                    TileEntitySign var8 = (TileEntitySign)var3.getBlockTileEntity(var4, var5, var6);
+                    TileEntitySign var8 = (TileEntitySign)var3.getBlockEntity(var4, var5, var6);
                     if (var8 != null)
                     {
                         var2.displayGUIEditSign(var8);

@@ -65,7 +65,7 @@ namespace betareborn
             return var2 != null && var2.getSaveVersion() == 0;
         }
 
-        public override bool convertMapFormat(String var1, IProgressUpdate var2)
+        public override bool convertMapFormat(String var1, LoadingDisplay var2)
         {
             var2.setLoadingProgress(0);
             ArrayList var3 = new ArrayList();
@@ -131,7 +131,7 @@ namespace betareborn
 
         }
 
-        private void func_22181_a(java.io.File var1, ArrayList var2, int var3, int var4, IProgressUpdate var5)
+        private void func_22181_a(java.io.File var1, ArrayList var2, int var3, int var4, LoadingDisplay var5)
         {
             Collections.sort(var2);
             byte[] var6 = new byte[4096];
@@ -178,7 +178,7 @@ namespace betareborn
             RegionFileCache.func_22192_a();
         }
 
-        private void func_22182_a(ArrayList var1, int var2, int var3, IProgressUpdate var4)
+        private void func_22182_a(ArrayList var1, int var2, int var3, LoadingDisplay var4)
         {
             Iterator var5 = var1.iterator();
 

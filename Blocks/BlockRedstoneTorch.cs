@@ -17,7 +17,7 @@ namespace betareborn.Blocks
         {
             if (var5)
             {
-                torchUpdates.Add(new RedstoneUpdateInfo(var2, var3, var4, var1.getWorldTime()));
+                torchUpdates.Add(new RedstoneUpdateInfo(var2, var3, var4, var1.getTime()));
             }
 
             int var6 = 0;
@@ -105,7 +105,7 @@ namespace betareborn.Blocks
         {
             bool var6 = shouldUnpower(world, x, y, z);
 
-            while (torchUpdates.Count > 0 && world.getWorldTime() - torchUpdates[0].updateTime > 100L)
+            while (torchUpdates.Count > 0 && world.getTime() - torchUpdates[0].updateTime > 100L)
             {
                 torchUpdates.RemoveAt(0);
             }

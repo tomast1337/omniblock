@@ -178,7 +178,7 @@ namespace betareborn
             return false;
         }
 
-        public virtual bool convertMapFormat(String var1, IProgressUpdate var2)
+        public virtual bool convertMapFormat(String var1, LoadingDisplay var2)
         {
             return false;
         }

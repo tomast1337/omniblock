@@ -789,7 +789,7 @@ namespace betareborn.Entities
 
         public static Vec3i func_25060_a(World var0, Vec3i var1)
         {
-            IChunkProvider var2 = var0.getIChunkProvider();
+            ChunkSource var2 = var0.getIChunkProvider();
             var2.prepareChunk(var1.x - 3 >> 4, var1.z - 3 >> 4);
             var2.prepareChunk(var1.x + 3 >> 4, var1.z - 3 >> 4);
             var2.prepareChunk(var1.x - 3 >> 4, var1.z + 3 >> 4);

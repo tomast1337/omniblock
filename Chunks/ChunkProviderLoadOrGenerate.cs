@@ -2,10 +2,10 @@ using betareborn.Worlds;
 
 namespace betareborn.Chunks
 {
-    public class ChunkProviderLoadOrGenerate : java.lang.Object, IChunkProvider
+    public class ChunkProviderLoadOrGenerate : java.lang.Object, ChunkSource
     {
         private readonly Chunk blankChunk;
-        private readonly IChunkProvider chunkProvider;
+        private readonly ChunkSource chunkProvider;
         private readonly IChunkLoader chunkLoader;
         private readonly Chunk[] chunks;
         private readonly World worldObj;
@@ -48,10 +48,10 @@ namespace betareborn.Chunks
 
         public Chunk prepareChunk(int var1, int var2)
         {
-            return provideChunk(var1, var2);
+            return getChunk(var1, var2);
         }
 
-        public Chunk provideChunk(int var1, int var2)
+        public Chunk getChunk(int var1, int var2)
         {
             if (var1 == lastQueriedChunkXPos && var2 == lastQueriedChunkZPos && lastQueriedChunk != null)
             {
@@ -84,7 +84,7 @@ namespace betareborn.Chunks
                         }
                         else
                         {
-                            var6 = chunkProvider.provideChunk(var1, var2);
+                            var6 = chunkProvider.getChunk(var1, var2);
                             var6.fill();
                         }
                     }
@@ -98,22 +98,22 @@ namespace betareborn.Chunks
 
                     if (!chunks[var5].terrainPopulated && chunkExists(var1 + 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 + 1, var2))
                     {
-                        populate(this, var1, var2);
+                        decorate(this, var1, var2);
                     }
 
-                    if (chunkExists(var1 - 1, var2) && !provideChunk(var1 - 1, var2).terrainPopulated && chunkExists(var1 - 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 - 1, var2))
+                    if (chunkExists(var1 - 1, var2) && !getChunk(var1 - 1, var2).terrainPopulated && chunkExists(var1 - 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 - 1, var2))
                     {
-                        populate(this, var1 - 1, var2);
+                        decorate(this, var1 - 1, var2);
                     }
 
-                    if (chunkExists(var1, var2 - 1) && !provideChunk(var1, var2 - 1).terrainPopulated && chunkExists(var1 + 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 + 1, var2))
+                    if (chunkExists(var1, var2 - 1) && !getChunk(var1, var2 - 1).terrainPopulated && chunkExists(var1 + 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 + 1, var2))
                     {
-                        populate(this, var1, var2 - 1);
+                        decorate(this, var1, var2 - 1);
                     }
 
-                    if (chunkExists(var1 - 1, var2 - 1) && !provideChunk(var1 - 1, var2 - 1).terrainPopulated && chunkExists(var1 - 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 - 1, var2))
+                    if (chunkExists(var1 - 1, var2 - 1) && !getChunk(var1 - 1, var2 - 1).terrainPopulated && chunkExists(var1 - 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 - 1, var2))
                     {
-                        populate(this, var1 - 1, var2 - 1);
+                        decorate(this, var1 - 1, var2 - 1);
                     }
                 }
 
@@ -137,7 +137,7 @@ namespace betareborn.Chunks
                     Chunk var3 = chunkLoader.loadChunk(worldObj, var1, var2);
                     if (var3 != null)
                     {
-                        var3.lastSaveTime = worldObj.getWorldTime();
+                        var3.lastSaveTime = worldObj.getTime();
                     }
 
                     return var3;
@@ -156,7 +156,7 @@ namespace betareborn.Chunks
             {
                 try
                 {
-                    chunkLoader.saveExtraChunkData(worldObj, var1);
+                    chunkLoader.saveEntities(worldObj, var1);
                 }
                 catch (java.lang.Exception var3)
                 {
@@ -172,7 +172,7 @@ namespace betareborn.Chunks
             {
                 try
                 {
-                    var1.lastSaveTime = worldObj.getWorldTime();
+                    var1.lastSaveTime = worldObj.getTime();
                     chunkLoader.saveChunk(worldObj, var1, null, -1);
                 }
                 catch (java.io.IOException var3)
@@ -183,22 +183,22 @@ namespace betareborn.Chunks
             }
         }
 
-        public void populate(IChunkProvider var1, int var2, int var3)
+        public void decorate(ChunkSource var1, int var2, int var3)
         {
-            Chunk var4 = provideChunk(var2, var3);
+            Chunk var4 = getChunk(var2, var3);
             if (!var4.terrainPopulated)
             {
                 var4.terrainPopulated = true;
                 if (chunkProvider != null)
                 {
-                    chunkProvider.populate(var1, var2, var3);
+                    chunkProvider.decorate(var1, var2, var3);
                     var4.markDirty();
                 }
             }
 
         }
 
-        public bool saveChunks(bool var1, IProgressUpdate var2)
+        public bool save(bool var1, LoadingDisplay var2)
         {
             int var3 = 0;
             int var4 = 0;
@@ -254,20 +254,20 @@ namespace betareborn.Chunks
                     return true;
                 }
 
-                chunkLoader.saveExtraData();
+                chunkLoader.flush();
             }
 
             return true;
         }
 
-        public bool unload100OldestChunks()
+        public bool tick()
         {
             if (chunkLoader != null)
             {
-                chunkLoader.func_814_a();
+                chunkLoader.tick();
             }
 
-            return chunkProvider.unload100OldestChunks();
+            return chunkProvider.tick();
         }
 
         public bool canSave()
@@ -279,7 +279,7 @@ namespace betareborn.Chunks
         {
         }
 
-        public string makeString()
+        public string getDebugInfo()
         {
             return "ChunkCache: " + chunks.Length;
         }

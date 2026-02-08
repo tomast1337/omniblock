@@ -65,7 +65,7 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z)
         {
-            if (!world.isRemote && world.getBlockTileEntity(x, y, z) == null)
+            if (!world.isRemote && world.getBlockEntity(x, y, z) == null)
             {
                 checkExtended(world, x, y, z);
             }
@@ -114,7 +114,7 @@ namespace betareborn.Blocks
             }
             else if (data1 == 1)
             {
-                BlockEntity var8 = world.getBlockTileEntity(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2]);
+                BlockEntity var8 = world.getBlockEntity(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2]);
                 if (var8 != null && var8 is TileEntityPiston)
                 {
                     ((TileEntityPiston)var8).finish();
@@ -132,7 +132,7 @@ namespace betareborn.Blocks
                     bool var14 = false;
                     if (var12 == Block.MOVING_PISTON.id)
                     {
-                        BlockEntity var15 = world.getBlockTileEntity(var9, var10, var11);
+                        BlockEntity var15 = world.getBlockEntity(var9, var10, var11);
                         if (var15 != null && var15 is TileEntityPiston)
                         {
                             TileEntityPiston var16 = (TileEntityPiston)var15;
@@ -290,7 +290,7 @@ namespace betareborn.Blocks
                     return false;
                 }
 
-                BlockEntity var6 = world.getBlockTileEntity(x, y, z);
+                BlockEntity var6 = world.getBlockEntity(x, y, z);
                 return var6 == null;
             }
         }

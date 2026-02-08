@@ -24,7 +24,7 @@ namespace betareborn.Worlds
 
         public override void tick(int _)
         {
-            setWorldTime(getWorldTime() + 1L);
+            setWorldTime(getTime() + 1L);
             int var1 = calculateSkylightSubtracted(1.0F);
             int var2;
             if (var1 != skylightSubtracted)
@@ -74,7 +74,7 @@ namespace betareborn.Worlds
 
         }
 
-        protected override IChunkProvider getChunkProvider()
+        protected override ChunkSource getChunkProvider()
         {
             field_20915_C = new ChunkProviderClient(this);
             return field_20915_C;

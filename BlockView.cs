@@ -8,7 +8,7 @@ namespace betareborn
     {
         int getBlockId(int x, int y, int z);
 
-        BlockEntity getBlockTileEntity(int x, int y, int z);
+        BlockEntity getBlockEntity(int x, int y, int z);
 
         float getNaturalBrightness(int x, int y, int z, int blockLight);
 

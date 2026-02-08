@@ -59,15 +59,15 @@ namespace betareborn
             Region.RegionCache.writeChunkNBT(worldDir, var2.x, var2.z, var4);
         }
 
-        public void saveExtraChunkData(World var1, Chunk var2)
+        public void saveEntities(World var1, Chunk var2)
         {
         }
 
-        public void func_814_a()
+        public void tick()
         {
         }
 
-        public void saveExtraData()
+        public void flush()
         {
         }
 

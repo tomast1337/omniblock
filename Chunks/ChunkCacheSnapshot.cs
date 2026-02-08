@@ -34,7 +34,7 @@ namespace betareborn.Chunks
             {
                 for (int var11 = chunkZ; var11 <= var9; ++var11)
                 {
-                    chunkArray[var10 - chunkX][var11 - chunkZ] = new(var1.getChunkFromChunkCoords(var10, var11));
+                    chunkArray[var10 - chunkX][var11 - chunkZ] = new(var1.getChunk(var10, var11));
                 }
             }
 
@@ -93,7 +93,7 @@ namespace betareborn.Chunks
             }
         }
 
-        public BlockEntity getBlockTileEntity(int var1, int var2, int var3)
+        public BlockEntity getBlockEntity(int var1, int var2, int var3)
         {
             throw new NotImplementedException();
         }

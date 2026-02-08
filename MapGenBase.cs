@@ -7,7 +7,7 @@ namespace betareborn
         protected int field_1306_a = 8;
         protected java.util.Random rand = new();
 
-        public virtual void func_867_a(IChunkProvider var1, World var2, int var3, int var4, byte[] var5)
+        public virtual void func_867_a(ChunkSource var1, World var2, int var3, int var4, byte[] var5)
         {
             int var6 = field_1306_a;
             rand.setSeed(var2.getSeed());

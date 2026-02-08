@@ -45,7 +45,7 @@ namespace betareborn.Worlds
         public bool isNewWorld;
         public readonly WorldProvider dimension;
         protected List<IWorldAccess> worldAccesses;
-        protected IChunkProvider chunkProvider;
+        protected ChunkSource chunkProvider;
         protected readonly ISaveHandler saveHandler;
         protected WorldInfo worldInfo;
         public bool findingSpawnPoint;
@@ -227,10 +227,10 @@ namespace betareborn.Worlds
             func_27163_E();
         }
 
-        protected virtual IChunkProvider getChunkProvider()
+        protected virtual ChunkSource getChunkProvider()
         {
             IChunkLoader var1 = saveHandler.getChunkLoader(dimension);
-            return new ChunkProvider(this, (McRegionChunkLoader)var1, dimension.getChunkProvider());
+            return new ChunkCache(this, (McRegionChunkLoader)var1, dimension.getChunkProvider());
         }
 
         protected void getInitialSpawnLocation()
@@ -310,7 +310,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void saveWorld(bool var1, IProgressUpdate var2)
+        public void saveWorld(bool var1, LoadingDisplay var2)
         {
             if (chunkProvider.canSave())
             {
@@ -328,7 +328,7 @@ namespace betareborn.Worlds
                 }
 
                 Profiler.Start("saveChunks");
-                chunkProvider.saveChunks(var1, var2);
+                chunkProvider.save(var1, var2);
                 Profiler.Stop("saveChunks");
             }
         }
@@ -360,13 +360,13 @@ namespace betareborn.Worlds
                     saveLevel();
                 }
 
-                return chunkProvider.saveChunks(false, (IProgressUpdate)null);
+                return chunkProvider.save(false, (LoadingDisplay)null);
             }
         }
 
         public int getBlockId(int var1, int var2, int var3)
         {
-            return var1 >= -32000000 && var3 >= -32000000 && var1 < 32000000 && var3 <= 32000000 ? (var2 < 0 ? 0 : (var2 >= 128 ? 0 : getChunkFromChunkCoords(var1 >> 4, var3 >> 4).getBlockID(var1 & 15, var2, var3 & 15))) : 0;
+            return var1 >= -32000000 && var3 >= -32000000 && var1 < 32000000 && var3 <= 32000000 ? (var2 < 0 ? 0 : (var2 >= 128 ? 0 : getChunk(var1 >> 4, var3 >> 4).getBlockID(var1 & 15, var2, var3 & 15))) : 0;
         }
 
         public bool isAir(int var1, int var2, int var3)
@@ -421,12 +421,12 @@ namespace betareborn.Worlds
 
         public Chunk getChunkFromBlockCoords(int var1, int var2)
         {
-            return getChunkFromChunkCoords(var1 >> 4, var2 >> 4);
+            return getChunk(var1 >> 4, var2 >> 4);
         }
 
-        public Chunk getChunkFromChunkCoords(int var1, int var2)
+        public Chunk getChunk(int var1, int var2)
         {
-            return chunkProvider.provideChunk(var1, var2);
+            return chunkProvider.getChunk(var1, var2);
         }
 
         public virtual bool setBlockAndMetadata(int var1, int var2, int var3, int var4, int var5)
@@ -443,7 +443,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    Chunk var6 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                    Chunk var6 = getChunk(var1 >> 4, var3 >> 4);
                     return var6.setBlock(var1 & 15, var2, var3 & 15, var4, var5);
                 }
             }
@@ -467,7 +467,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                    Chunk var5 = getChunk(var1 >> 4, var3 >> 4);
                     return var5.setBlock(var1 & 15, var2, var3 & 15, var4);
                 }
             }
@@ -497,7 +497,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    Chunk var4 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                    Chunk var4 = getChunk(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
                     return var4.getBlockMeta(var1, var2, var3);
@@ -540,7 +540,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                    Chunk var5 = getChunk(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
                     var5.setBlockMeta(var1, var2, var3, var4);
@@ -649,7 +649,7 @@ namespace betareborn.Worlds
 
         public bool hasSkyLight(int var1, int var2, int var3)
         {
-            return getChunkFromChunkCoords(var1 >> 4, var3 >> 4).isAboveMaxHeight(var1 & 15, var2, var3 & 15);
+            return getChunk(var1 >> 4, var3 >> 4).isAboveMaxHeight(var1 & 15, var2, var3 & 15);
         }
 
         public int getBrightness(int var1, int var2, int var3)
@@ -665,7 +665,7 @@ namespace betareborn.Worlds
                     var2 = 127;
                 }
 
-                return getChunkFromChunkCoords(var1 >> 4, var3 >> 4).getLight(var1 & 15, var2, var3 & 15, 0);
+                return getChunk(var1 >> 4, var3 >> 4).getLight(var1 & 15, var2, var3 & 15, 0);
             }
         }
 
@@ -723,7 +723,7 @@ namespace betareborn.Worlds
                         var2 = 127;
                     }
 
-                    Chunk var11 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                    Chunk var11 = getChunk(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
                     return var11.getLight(var1, var2, var3, skylightSubtracted);
@@ -753,7 +753,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    Chunk var4 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                    Chunk var4 = getChunk(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
                     return var4.isAboveMaxHeight(var1, var2, var3);
@@ -775,7 +775,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    Chunk var3 = getChunkFromChunkCoords(var1 >> 4, var2 >> 4);
+                    Chunk var3 = getChunk(var1 >> 4, var2 >> 4);
                     return var3.getHeight(var1 & 15, var2 & 15);
                 }
             }
@@ -838,7 +838,7 @@ namespace betareborn.Worlds
                 }
                 else
                 {
-                    Chunk var7 = getChunkFromChunkCoords(var5, var6);
+                    Chunk var7 = getChunk(var5, var6);
                     return var7.getLight(var1, var2 & 15, var3, var4 & 15);
                 }
             }
@@ -858,7 +858,7 @@ namespace betareborn.Worlds
                     {
                         if (chunkExists(var2 >> 4, var4 >> 4))
                         {
-                            Chunk var6 = getChunkFromChunkCoords(var2 >> 4, var4 >> 4);
+                            Chunk var6 = getChunk(var2 >> 4, var4 >> 4);
                             var6.setLight(var1, var2 & 15, var3, var4 & 15, var5);
 
                             for (int var7 = 0; var7 < worldAccesses.Count; ++var7)
@@ -1168,7 +1168,7 @@ namespace betareborn.Worlds
                     updateAllPlayersSleepingFlag();
                 }
 
-                getChunkFromChunkCoords(var2, var3).addEntity(var1);
+                getChunk(var2, var3).addEntity(var1);
                 loadedEntityList.Add(var1);
                 obtainEntitySkin(var1);
                 return true;
@@ -1517,7 +1517,7 @@ namespace betareborn.Worlds
                 var4 = var2.chunkCoordZ;
                 if (var2.addedToChunk && chunkExists(var3, var4))
                 {
-                    getChunkFromChunkCoords(var3, var4).removeEntity(var2);
+                    getChunk(var3, var4).removeEntity(var2);
                 }
             }
 
@@ -1557,7 +1557,7 @@ namespace betareborn.Worlds
                     var4 = var2.chunkCoordZ;
                     if (var2.addedToChunk && chunkExists(var3, var4))
                     {
-                        getChunkFromChunkCoords(var3, var4).removeEntity(var2);
+                        getChunk(var3, var4).removeEntity(var2);
                     }
 
                     loadedEntityList.RemoveAt(var1--);
@@ -1580,7 +1580,7 @@ namespace betareborn.Worlds
                 if (var5.isRemoved())
                 {
                     loadedTileEntityList.RemoveAt(i);
-                    Chunk var7 = getChunkFromChunkCoords(var5.x >> 4, var5.z >> 4);
+                    Chunk var7 = getChunk(var5.x >> 4, var5.z >> 4);
                     if (var7 != null)
                     {
                         var7.removeBlockEntityAt(var5.x & 15, var5.y, var5.z & 15);
@@ -1599,7 +1599,7 @@ namespace betareborn.Worlds
                         {
                             loadedTileEntityList.Add(var8);
                         }
-                        Chunk var9 = getChunkFromChunkCoords(var8.x >> 4, var8.z >> 4);
+                        Chunk var9 = getChunk(var8.x >> 4, var8.z >> 4);
                         if (var9 != null)
                         {
                             var9.setBlockEntity(var8.x & 15, var8.y, var8.z & 15, var8);
@@ -1687,13 +1687,13 @@ namespace betareborn.Worlds
                 {
                     if (var1.addedToChunk && chunkExists(var1.chunkCoordX, var1.chunkCoordZ))
                     {
-                        getChunkFromChunkCoords(var1.chunkCoordX, var1.chunkCoordZ).removeEntity(var1, var1.chunkCoordY);
+                        getChunk(var1.chunkCoordX, var1.chunkCoordZ).removeEntity(var1, var1.chunkCoordY);
                     }
 
                     if (chunkExists(var6, var8))
                     {
                         var1.addedToChunk = true;
-                        getChunkFromChunkCoords(var6, var8).addEntity(var1);
+                        getChunk(var6, var8).addEntity(var1);
                     }
                     else
                     {
@@ -2013,12 +2013,12 @@ namespace betareborn.Worlds
 
         public string func_21119_g()
         {
-            return chunkProvider.makeString();
+            return chunkProvider.getDebugInfo();
         }
 
-        public BlockEntity getBlockTileEntity(int var1, int var2, int var3)
+        public BlockEntity getBlockEntity(int var1, int var2, int var3)
         {
-            Chunk var4 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+            Chunk var4 = getChunk(var1 >> 4, var3 >> 4);
             return var4 != null ? var4.getBlockEntity(var1 & 15, var2, var3 & 15) : null;
         }
 
@@ -2036,7 +2036,7 @@ namespace betareborn.Worlds
                 else
                 {
                     loadedTileEntityList.Add(var4);
-                    Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                    Chunk var5 = getChunk(var1 >> 4, var3 >> 4);
                     if (var5 != null)
                     {
                         var5.setBlockEntity(var1 & 15, var2, var3 & 15, var4);
@@ -2048,7 +2048,7 @@ namespace betareborn.Worlds
 
         public void removeBlockTileEntity(int var1, int var2, int var3)
         {
-            BlockEntity var4 = getBlockTileEntity(var1, var2, var3);
+            BlockEntity var4 = getBlockEntity(var1, var2, var3);
             if (var4 != null && field_31055_L)
             {
                 var4.markRemoved();
@@ -2060,7 +2060,7 @@ namespace betareborn.Worlds
                     loadedTileEntityList.Remove(var4);
                 }
 
-                Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
+                Chunk var5 = getChunk(var1 >> 4, var3 >> 4);
                 if (var5 != null)
                 {
                     var5.removeBlockEntityAt(var1 & 15, var2, var3 & 15);
@@ -2081,7 +2081,7 @@ namespace betareborn.Worlds
             return var4 == null ? false : var4.material.suffocates() && var4.isFullCube();
         }
 
-        public void saveWorldIndirectly(IProgressUpdate var1)
+        public void saveWorldIndirectly(LoadingDisplay var1)
         {
             saveWorld(true, var1);
         }
@@ -2235,7 +2235,7 @@ namespace betareborn.Worlds
             SpawnerAnimals.performSpawning(this, spawnHostileMobs, spawnPeacefulMobs);
             Profiler.Stop("performSpawning");
             Profiler.Start("unload100OldestChunks");
-            chunkProvider.unload100OldestChunks();
+            chunkProvider.tick();
             Profiler.Stop("unload100OldestChunks");
 
             Profiler.Start("updateSkylightSubtracted");
@@ -2255,7 +2255,7 @@ namespace betareborn.Worlds
             if (var2 % (long)autosavePeriod == 0L)
             {
                 Profiler.PushGroup("autosave");
-                saveWorld(false, (IProgressUpdate)null);
+                saveWorld(false, (LoadingDisplay)null);
                 Profiler.PopGroup();
 
                 chunkProvider.markChunksForUnload(renderDistance);
@@ -2421,7 +2421,7 @@ namespace betareborn.Worlds
                 ChunkPos var13 = (ChunkPos)var12.next();
                 var3 = var13.x * 16;
                 var4 = var13.z * 16;
-                Chunk var14 = getChunkFromChunkCoords(var13.x, var13.z);
+                Chunk var14 = getChunk(var13.x, var13.z);
                 int var8;
                 int var9;
                 int var10;
@@ -2573,7 +2573,7 @@ namespace betareborn.Worlds
                 {
                     if (chunkExists(var7, var8))
                     {
-                        getChunkFromChunkCoords(var7, var8).collectOtherEntities(var1, var2, field_1012_M);
+                        getChunk(var7, var8).collectOtherEntities(var1, var2, field_1012_M);
                     }
                 }
             }
@@ -2595,7 +2595,7 @@ namespace betareborn.Worlds
                 {
                     if (chunkExists(var8, var9))
                     {
-                        getChunkFromChunkCoords(var8, var9).collectEntitiesByClass(var1, var2, var7);
+                        getChunk(var8, var9).collectEntitiesByClass(var1, var2, var7);
                     }
                 }
             }
@@ -2656,7 +2656,7 @@ namespace betareborn.Worlds
 
         public void func_656_j()
         {
-            while (chunkProvider.unload100OldestChunks())
+            while (chunkProvider.tick())
             {
             }
 
@@ -2700,7 +2700,7 @@ namespace betareborn.Worlds
             int var11 = var4 + var7;
             int var12 = var5 + var7;
             int var13 = var6 + var7;
-            ChunkCache var14 = new(this, var8, var9, var10, var11, var12, var13);
+            WorldRegion var14 = new(this, var8, var9, var10, var11, var12, var13);
             return (new Pathfinder(var14)).createEntityPathTo(var1, var2, var3);
         }
 
@@ -2716,7 +2716,7 @@ namespace betareborn.Worlds
             int var13 = var6 + var9;
             int var14 = var7 + var9;
             int var15 = var8 + var9;
-            ChunkCache var16 = new(this, var10, var11, var12, var13, var14, var15);
+            WorldRegion var16 = new(this, var10, var11, var12, var13, var14, var15);
             return (new Pathfinder(var16)).createEntityPathTo(var1, var2, var3, var4, var5);
         }
 
@@ -2833,7 +2833,7 @@ namespace betareborn.Worlds
                         var20 = 16;
                     }
 
-                    var12 = getChunkFromChunkCoords(var15, var18).loadFromPacket(var7, var16, var13, var19, var17, var14, var20, var12);
+                    var12 = getChunk(var15, var18).loadFromPacket(var7, var16, var13, var19, var17, var14, var20, var12);
                     setBlocksDirty(var15 * 16 + var16, var13, var18 * 16 + var19, var15 * 16 + var17, var14, var18 * 16 + var20);
                 }
             }
@@ -2859,7 +2859,7 @@ namespace betareborn.Worlds
             return worldInfo.getRandomSeed();
         }
 
-        public long getWorldTime()
+        public long getTime()
         {
             return worldInfo.getWorldTime();
         }
@@ -2884,7 +2884,7 @@ namespace betareborn.Worlds
             {
                 for (int var6 = var3 - var4; var6 <= var3 + var4; ++var6)
                 {
-                    getChunkFromChunkCoords(var5, var6);
+                    getChunk(var5, var6);
                 }
             }
 
@@ -2922,7 +2922,7 @@ namespace betareborn.Worlds
                 var4 = var2.chunkCoordZ;
                 if (var2.addedToChunk && chunkExists(var3, var4))
                 {
-                    getChunkFromChunkCoords(var3, var4).removeEntity(var2);
+                    getChunk(var3, var4).removeEntity(var2);
                 }
             }
 
@@ -2953,7 +2953,7 @@ namespace betareborn.Worlds
                     var4 = var2.chunkCoordZ;
                     if (var2.addedToChunk && chunkExists(var3, var4))
                     {
-                        getChunkFromChunkCoords(var3, var4).removeEntity(var2);
+                        getChunk(var3, var4).removeEntity(var2);
                     }
 
                     loadedEntityList.RemoveAt(var1--);
@@ -2963,7 +2963,7 @@ namespace betareborn.Worlds
 
         }
 
-        public IChunkProvider getIChunkProvider()
+        public ChunkSource getIChunkProvider()
         {
             return chunkProvider;
         }

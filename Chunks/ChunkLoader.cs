@@ -133,7 +133,7 @@ namespace betareborn.Chunks
             //var1.checkSessionLock();
             var2.setInteger("xPos", var0.x);
             var2.setInteger("zPos", var0.z);
-            var2.setLong("LastUpdate", var1.getWorldTime());
+            var2.setLong("LastUpdate", var1.getTime());
             var2.setByteArray("Blocks", var0.blocks);
             var2.setByteArray("Data", var0.meta.bytes);
             var2.setByteArray("SkyLight", var0.skyLight.bytes);
@@ -238,15 +238,15 @@ namespace betareborn.Chunks
             return var4;
         }
 
-        public void func_814_a()
+        public void tick()
         {
         }
 
-        public void saveExtraData()
+        public void flush()
         {
         }
 
-        public void saveExtraChunkData(World var1, Chunk var2)
+        public void saveEntities(World var1, Chunk var2)
         {
         }
 

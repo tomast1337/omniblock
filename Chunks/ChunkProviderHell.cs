@@ -3,7 +3,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Chunks
 {
-    public class ChunkProviderHell : IChunkProvider
+    public class ChunkProviderHell : ChunkSource
     {
 
         private java.util.Random hellRNG;
@@ -214,10 +214,10 @@ namespace betareborn.Chunks
 
         public Chunk prepareChunk(int var1, int var2)
         {
-            return provideChunk(var1, var2);
+            return getChunk(var1, var2);
         }
 
-        public Chunk provideChunk(int var1, int var2)
+        public Chunk getChunk(int var1, int var2)
         {
             hellRNG.setSeed((long)var1 * 341873128712L + (long)var2 * 132897987541L);
             byte[] var3 = new byte[-java.lang.Short.MIN_VALUE];
@@ -365,7 +365,7 @@ namespace betareborn.Chunks
             return true;
         }
 
-        public void populate(IChunkProvider var1, int var2, int var3)
+        public void decorate(ChunkSource var1, int var2, int var3)
         {
             BlockSand.fallInstantly = true;
             int var4 = var2 * 16;
@@ -431,12 +431,12 @@ namespace betareborn.Chunks
             BlockSand.fallInstantly = false;
         }
 
-        public bool saveChunks(bool var1, IProgressUpdate var2)
+        public bool save(bool var1, LoadingDisplay var2)
         {
             return true;
         }
 
-        public bool unload100OldestChunks()
+        public bool tick()
         {
             return false;
         }
@@ -446,7 +446,7 @@ namespace betareborn.Chunks
             return true;
         }
 
-        public String makeString()
+        public String getDebugInfo()
         {
             return "HellRandomLevelSource";
         }

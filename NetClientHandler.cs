@@ -322,7 +322,7 @@ namespace betareborn
 
         public override void handleMultiBlockChange(Packet52MultiBlockChange var1)
         {
-            Chunk var2 = worldClient.getChunkFromChunkCoords(var1.xPosition, var1.zPosition);
+            Chunk var2 = worldClient.getChunk(var1.xPosition, var1.zPosition);
             int var3 = var1.xPosition * 16;
             int var4 = var1.zPosition * 16;
 
@@ -680,7 +680,7 @@ namespace betareborn
         {
             if (mc.theWorld.blockExists(var1.x, var1.y, var1.z))
             {
-                BlockEntity var2 = mc.theWorld.getBlockTileEntity(var1.x, var1.y, var1.z);
+                BlockEntity var2 = mc.theWorld.getBlockEntity(var1.x, var1.y, var1.z);
                 if (var2 is TileEntitySign)
                 {
                     TileEntitySign var3 = (TileEntitySign)var2;

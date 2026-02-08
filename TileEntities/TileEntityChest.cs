@@ -108,7 +108,7 @@ namespace betareborn.TileEntities
 
         public bool canPlayerUse(EntityPlayer player)
         {
-            return world.getBlockTileEntity(x, y, z) != this ? false : player.getSquaredDistance((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
+            return world.getBlockEntity(x, y, z) != this ? false : player.getSquaredDistance((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
         }
     }
 

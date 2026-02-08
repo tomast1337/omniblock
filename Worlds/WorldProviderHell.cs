@@ -33,7 +33,7 @@ namespace betareborn.Worlds
 
         }
 
-        public override IChunkProvider getChunkProvider()
+        public override ChunkSource getChunkProvider()
         {
             return new ChunkProviderHell(worldObj, worldObj.getSeed());
         }

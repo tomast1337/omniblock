@@ -21,7 +21,7 @@ namespace betareborn
 
         bool isOldMapFormat(String var1);
 
-        bool convertMapFormat(String var1, IProgressUpdate var2);
+        bool convertMapFormat(String var1, LoadingDisplay var2);
     }
 
 }

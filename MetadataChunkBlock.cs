@@ -59,7 +59,7 @@ namespace betareborn
                             var14 = var1.doChunksNearChunkExist(var10, 0, var11, 1);
                             if (var14)
                             {
-                                Chunk var15 = var1.getChunkFromChunkCoords(var10 >> 4, var11 >> 4);
+                                Chunk var15 = var1.getChunk(var10 >> 4, var11 >> 4);
                                 if (var15.isEmpty())
                                 {
                                     var14 = false;

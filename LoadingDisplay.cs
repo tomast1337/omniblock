@@ -1,6 +1,6 @@
 namespace betareborn
 {
-    public interface IProgressUpdate
+    public interface LoadingDisplay
     {
         void func_594_b(string var1);
 

@@ -526,7 +526,7 @@ namespace betareborn.Entities
             double var7 = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var1;
             double var9 = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var1;
             double var11 = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var1;
-            IChunkProvider var13 = mc.theWorld.getIChunkProvider();
+            ChunkSource var13 = mc.theWorld.getIChunkProvider();
             int var16;
             if (var13 is ChunkProviderLoadOrGenerate)
             {

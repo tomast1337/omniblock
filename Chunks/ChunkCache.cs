@@ -1,201 +1,307 @@
-using betareborn.Blocks;
-using betareborn.Materials;
-using betareborn.TileEntities;
+using betareborn.Entities;
+using betareborn.Profiling;
 using betareborn.Worlds;
+using java.lang;
 
 namespace betareborn.Chunks
 {
-    public class ChunkCache : java.lang.Object, BlockView
+    public class ChunkCache : java.lang.Object, ChunkSource
     {
-        private readonly int chunkX;
-        private readonly int chunkZ;
-        private readonly Chunk[][] chunkArray;
-        private readonly World worldObj;
+        private readonly HashSet<int> chunksToUnload = [];
+        private readonly Chunk empty;
+        private readonly ChunkSource generator;
+        private readonly McRegionChunkLoader storage;
+        private readonly Dictionary<int, Chunk> chunkByPos = [];
+        private readonly List<Chunk> chunks = [];
+        private readonly World world;
+        private int lastRenderDistance = 0;
 
-        public ChunkCache(World var1, int var2, int var3, int var4, int var5, int var6, int var7)
+        public ChunkCache(World world, McRegionChunkLoader storage, ChunkSource generator)
         {
-            worldObj = var1;
-            chunkX = var2 >> 4;
-            chunkZ = var4 >> 4;
-            int var8 = var5 >> 4;
-            int var9 = var7 >> 4;
-            chunkArray = new Chunk[var8 - chunkX + 1][];
-            for (int i = 0; i < chunkArray.Length; i++)
-            {
-                chunkArray[i] = new Chunk[var9 - chunkZ + 1];
-            }
+            empty = new EmptyChunk(world, new byte[-Short.MIN_VALUE], 0, 0);
+            this.world = world;
+            this.storage = storage;
+            this.generator = generator;
+        }
 
-            for (int var10 = chunkX; var10 <= var8; ++var10)
+        public bool chunkExists(int x, int z)
+        {
+            return chunkByPos.ContainsKey(ChunkPos.chunkXZ2Int(x, z));
+        }
+
+        public Chunk prepareChunk(int chunkX, int chunkZ)
+        {
+            int var3 = ChunkPos.chunkXZ2Int(chunkX, chunkZ);
+            chunksToUnload.Remove(var3);
+            chunkByPos.TryGetValue(var3, out Chunk? var4);
+            if (var4 == null)
             {
-                for (int var11 = chunkZ; var11 <= var9; ++var11)
+                var4 = loadChunkFromStorage(chunkX, chunkZ);
+                if (var4 == null)
                 {
-                    chunkArray[var10 - chunkX][var11 - chunkZ] = var1.getChunkFromChunkCoords(var10, var11);
-                }
-            }
-
-        }
-
-        public int getBlockId(int var1, int var2, int var3)
-        {
-            if (var2 < 0)
-            {
-                return 0;
-            }
-            else if (var2 >= 128)
-            {
-                return 0;
-            }
-            else
-            {
-                int var4 = (var1 >> 4) - chunkX;
-                int var5 = (var3 >> 4) - chunkZ;
-                if (var4 >= 0 && var4 < chunkArray.Length && var5 >= 0 && var5 < chunkArray[var4].Length)
-                {
-                    Chunk var6 = chunkArray[var4][var5];
-                    return var6 == null ? 0 : var6.getBlockID(var1 & 15, var2, var3 & 15);
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        }
-
-        public BlockEntity getBlockTileEntity(int var1, int var2, int var3)
-        {
-            int var4 = (var1 >> 4) - chunkX;
-            int var5 = (var3 >> 4) - chunkZ;
-            return chunkArray[var4][var5].getBlockEntity(var1 & 15, var2, var3 & 15);
-        }
-
-        public float getNaturalBrightness(int var1, int var2, int var3, int var4)
-        {
-            int var5 = getLightValue(var1, var2, var3);
-            if (var5 < var4)
-            {
-                var5 = var4;
-            }
-
-            return worldObj.dimension.lightBrightnessTable[var5];
-        }
-
-        public float getLuminance(int var1, int var2, int var3)
-        {
-            return worldObj.dimension.lightBrightnessTable[getLightValue(var1, var2, var3)];
-        }
-
-        public int getLightValue(int var1, int var2, int var3)
-        {
-            return getLightValueExt(var1, var2, var3, true);
-        }
-
-        public int getLightValueExt(int var1, int var2, int var3, bool var4)
-        {
-            if (var1 >= -32000000 && var3 >= -32000000 && var1 < 32000000 && var3 <= 32000000)
-            {
-                int var5;
-                int var6;
-                if (var4)
-                {
-                    var5 = getBlockId(var1, var2, var3);
-                    if (var5 == Block.SLAB.id || var5 == Block.FARMLAND.id || var5 == Block.WOODEN_STAIRS.id || var5 == Block.COBBLESTONE_STAIRS.id)
+                    if (generator == null)
                     {
-                        var6 = getLightValueExt(var1, var2 + 1, var3, false);
-                        int var7 = getLightValueExt(var1 + 1, var2, var3, false);
-                        int var8 = getLightValueExt(var1 - 1, var2, var3, false);
-                        int var9 = getLightValueExt(var1, var2, var3 + 1, false);
-                        int var10 = getLightValueExt(var1, var2, var3 - 1, false);
-                        if (var7 > var6)
-                        {
-                            var6 = var7;
-                        }
-
-                        if (var8 > var6)
-                        {
-                            var6 = var8;
-                        }
-
-                        if (var9 > var6)
-                        {
-                            var6 = var9;
-                        }
-
-                        if (var10 > var6)
-                        {
-                            var6 = var10;
-                        }
-
-                        return var6;
+                        var4 = empty;
+                    }
+                    else
+                    {
+                        var4 = generator.getChunk(chunkX, chunkZ);
                     }
                 }
 
-                if (var2 < 0)
+                chunkByPos[var3] = var4;
+                chunks.Add(var4);
+                if (var4 != null)
                 {
-                    return 0;
+                    var4.populateBlockLight();
+                    var4.load();
                 }
-                else if (var2 >= 128)
+
+                if (!var4.terrainPopulated && chunkExists(chunkX + 1, chunkZ + 1) && chunkExists(chunkX, chunkZ + 1) && chunkExists(chunkX + 1, chunkZ))
                 {
-                    var5 = 15 - worldObj.skylightSubtracted;
-                    if (var5 < 0)
+                    decorate(this, chunkX, chunkZ);
+                }
+
+                if (chunkExists(chunkX - 1, chunkZ) && !getChunk(chunkX - 1, chunkZ).terrainPopulated && chunkExists(chunkX - 1, chunkZ + 1) && chunkExists(chunkX, chunkZ + 1) && chunkExists(chunkX - 1, chunkZ))
+                {
+                    decorate(this, chunkX - 1, chunkZ);
+                }
+
+                if (chunkExists(chunkX, chunkZ - 1) && !getChunk(chunkX, chunkZ - 1).terrainPopulated && chunkExists(chunkX + 1, chunkZ - 1) && chunkExists(chunkX, chunkZ - 1) && chunkExists(chunkX + 1, chunkZ))
+                {
+                    decorate(this, chunkX, chunkZ - 1);
+                }
+
+                if (chunkExists(chunkX - 1, chunkZ - 1) && !getChunk(chunkX - 1, chunkZ - 1).terrainPopulated && chunkExists(chunkX - 1, chunkZ - 1) && chunkExists(chunkX, chunkZ - 1) && chunkExists(chunkX - 1, chunkZ))
+                {
+                    decorate(this, chunkX - 1, chunkZ - 1);
+                }
+            }
+
+            return var4;
+        }
+
+        public Chunk getChunk(int chunkX, int chunkZ)
+        {
+            chunkByPos.TryGetValue(ChunkPos.chunkXZ2Int(chunkX, chunkZ), out Chunk? var3);
+            return var3 == null ? prepareChunk(chunkX, chunkZ) : var3;
+        }
+
+        private Chunk loadChunkFromStorage(int chunkX, int chunkZ)
+        {
+            if (storage == null)
+            {
+                return null;
+            }
+            else
+            {
+                try
+                {
+                    Chunk var3 = storage.loadChunk(world, chunkX, chunkZ);
+                    if (var3 != null)
                     {
-                        var5 = 0;
+                        var3.lastSaveTime = world.getTime();
                     }
 
-                    return var5;
+                    return var3;
                 }
-                else
+                catch (java.lang.Exception var4)
                 {
-                    var5 = (var1 >> 4) - chunkX;
-                    var6 = (var3 >> 4) - chunkZ;
-                    return chunkArray[var5][var6].getLight(var1 & 15, var2, var3 & 15, worldObj.skylightSubtracted);
+                    var4.printStackTrace();
+                    return null;
                 }
             }
-            else
+        }
+
+        private void saveEntities(Chunk chunk)
+        {
+            if (storage != null)
             {
-                return 15;
+                try
+                {
+                    storage.saveEntities(world, chunk);
+                }
+                catch (java.lang.Exception var3)
+                {
+                    var3.printStackTrace();
+                }
+
             }
         }
 
-        public int getBlockMeta(int var1, int var2, int var3)
+        private void saveChunk(Chunk chunk)
         {
-            if (var2 < 0)
+            if (storage != null)
             {
-                return 0;
+                try
+                {
+                    chunk.lastSaveTime = world.getTime();
+                    storage.saveChunk(world, chunk, null, -1);
+                }
+                catch (java.io.IOException var3)
+                {
+                    var3.printStackTrace();
+                }
+
             }
-            else if (var2 >= 128)
+        }
+
+        public void decorate(ChunkSource source, int x, int z)
+        {
+            Chunk var4 = getChunk(x, z);
+            if (!var4.terrainPopulated)
             {
-                return 0;
+                var4.terrainPopulated = true;
+                if (generator != null)
+                {
+                    generator.decorate(source, x, z);
+                    var4.markDirty();
+                }
             }
-            else
+
+        }
+
+        public bool save(bool saveEntities, LoadingDisplay display)
+        {
+            Profiler.PushGroup("saveChunks");
+            Profiler.Start("collectDirty");
+
+            int numSaved = 0;
+            int totalChecked = 0;
+            int totalNeedsSaving = 0;
+            const int MAX_CHUNKS_PER_SAVE = 24;
+
+            for (int var4 = 0; var4 < chunks.Count; ++var4)
             {
-                int var4 = (var1 >> 4) - chunkX;
-                int var5 = (var3 >> 4) - chunkZ;
-                return chunkArray[var4][var5].getBlockMeta(var1 & 15, var2, var3 & 15);
+                totalChecked++;
+                Chunk chunk = chunks[var4];
+
+                if (saveEntities && !chunk.empty)
+                {
+                    this.saveEntities(chunk);
+                }
+
+                if (chunk.shouldSave(saveEntities))
+                {
+                    totalNeedsSaving++;
+                    Profiler.Stop("collectDirty");
+                    Profiler.Start("saveChunk");
+
+                    saveChunk(chunk);
+                    chunk.dirty = false;
+                    ++numSaved;
+
+                    Profiler.Stop("saveChunk");
+                    Profiler.Start("collectDirty");
+
+                    if (numSaved == MAX_CHUNKS_PER_SAVE && !saveEntities)
+                    {
+                        Profiler.Stop("collectDirty");
+                        Profiler.PopGroup();
+
+                        Region.RegionCache.autosaveChunks(storage.worldDir, MAX_CHUNKS_PER_SAVE);
+
+                        return false;
+                    }
+                }
+            }
+
+            Profiler.Stop("collectDirty");
+
+            if (saveEntities)
+            {
+                if (storage == null)
+                {
+                    Profiler.PopGroup();
+                    return true;
+                }
+
+                storage.flush();
+                storage.flushToDisk();
+            }
+
+            Region.RegionCache.autosaveChunks(storage.worldDir, MAX_CHUNKS_PER_SAVE);
+
+            Profiler.PopGroup();
+            return true;
+        }
+
+        public bool tick()
+        {
+            for (int var1 = 0; var1 < 100; ++var1)
+            {
+                if (chunksToUnload.Count != 0)
+                {
+                    int var2 = chunksToUnload.First();
+                    Chunk var3 = chunkByPos[var2];
+                    var3.unload();
+                    saveChunk(var3);
+                    saveEntities(var3);
+                    chunksToUnload.Remove(var2);
+                    chunkByPos.Remove(var2);
+                    chunks.Remove(var3);
+                }
+            }
+
+            storage?.tick();
+
+            return generator.tick();
+        }
+
+        public void markChunksForUnload(int renderDistanceChunks)
+        {
+            foreach (Chunk chunk in chunks)
+            {
+                var players = world.playerEntities;
+                bool nearAnyPlayer = false;
+
+                int chunkCenterX = chunk.x * 16 + 8;
+                int chunkCenterZ = chunk.z * 16 + 8;
+
+                const int chunkBuffer = 4;
+                int unloadDistance = (renderDistanceChunks + chunkBuffer) * 16;
+
+                for (int i = 0; i < players.size(); i++)
+                {
+                    EntityPlayer player = (EntityPlayer)players.get(i);
+                    int dx = (int)player.posX - chunkCenterX;
+                    int dz = (int)player.posZ - chunkCenterZ;
+
+                    if (dx * dx + dz * dz < unloadDistance * unloadDistance)
+                    {
+                        nearAnyPlayer = true;
+                        break;
+                    }
+                }
+
+                if (!nearAnyPlayer)
+                {
+                    int chunkKey = ChunkPos.chunkXZ2Int(chunk.x, chunk.z);
+                    chunksToUnload.Add(chunkKey);
+                }
+            }
+
+            if (renderDistanceChunks != lastRenderDistance)
+            {
+                //Might want to do a dynamic calculation at some point
+                Region.RegionCache.setMaxLoadedRegions(storage.worldDir, 32);
+            }
+
+            for (int i = 0; i < world.playerEntities.size(); i++)
+            {
+                var player = (EntityPlayer)world.playerEntities.get(i);
+                Region.RegionCache.loadNearbyRegions(storage.worldDir, (int)player.posX, (int)player.posZ, renderDistanceChunks);
             }
         }
 
-        public Material getMaterial(int var1, int var2, int var3)
+        public bool canSave()
         {
-            int var4 = getBlockId(var1, var2, var3);
-            return var4 == 0 ? Material.AIR : Block.BLOCKS[var4].material;
+            return true;
         }
 
-        public BiomeSource getBiomeSource()
+        public string getDebugInfo()
         {
-            return worldObj.getBiomeSource();
-        }
-
-        public bool isOpaque(int var1, int var2, int var3)
-        {
-            Block var4 = Block.BLOCKS[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.isOpaque();
-        }
-
-        public bool shouldSuffocate(int var1, int var2, int var3)
-        {
-            Block var4 = Block.BLOCKS[getBlockId(var1, var2, var3)];
-            return var4 == null ? false : var4.material.blocksMovement() && var4.isFullCube();
+            return "ServerChunkCache: " + chunkByPos.Count + " Drop: " + chunksToUnload.Count;
         }
     }
-
 }

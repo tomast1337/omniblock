@@ -39,7 +39,7 @@ namespace betareborn.Worlds
             worldChunkMgr = new BiomeSource(worldObj);
         }
 
-        public virtual IChunkProvider getChunkProvider()
+        public virtual ChunkSource getChunkProvider()
         {
             return new ChunkProviderGenerate(worldObj, worldObj.getSeed());
         }

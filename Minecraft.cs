@@ -1123,7 +1123,7 @@ namespace betareborn
             int var3;
             if (thePlayer != null)
             {
-                IChunkProvider var1 = theWorld.getIChunkProvider();
+                ChunkSource var1 = theWorld.getIChunkProvider();
                 if (var1 is ChunkProviderLoadOrGenerate)
                 {
                     ChunkProviderLoadOrGenerate var2 = (ChunkProviderLoadOrGenerate)var1;
@@ -1664,7 +1664,7 @@ namespace betareborn
                     var1.emptyMethod1();
                 }
 
-                IChunkProvider var4 = var1.getIChunkProvider();
+                ChunkSource var4 = var1.getIChunkProvider();
                 if (var4 is ChunkProviderLoadOrGenerate)
                 {
                     ChunkProviderLoadOrGenerate var5 = (ChunkProviderLoadOrGenerate)var4;
@@ -1706,7 +1706,7 @@ namespace betareborn
             int var3 = 0;
             int var4 = var2 * 2 / 16 + 1;
             var4 *= var4;
-            IChunkProvider var5 = theWorld.getIChunkProvider();
+            ChunkSource var5 = theWorld.getIChunkProvider();
             Vec3i var6 = theWorld.getSpawnPoint();
             if (thePlayer != null)
             {
@@ -1809,7 +1809,7 @@ namespace betareborn
                 var5 = false;
             }
 
-            IChunkProvider var6 = theWorld.getIChunkProvider();
+            ChunkSource var6 = theWorld.getIChunkProvider();
             if (var6 is ChunkProviderLoadOrGenerate)
             {
                 ChunkProviderLoadOrGenerate var7 = (ChunkProviderLoadOrGenerate)var6;

@@ -35,7 +35,7 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)world.getBlockTileEntity(x, y, z);
+                TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)world.getBlockEntity(x, y, z);
                 var6.recordId = id;
                 var6.markDirty();
                 world.setBlockMeta(x, y, z, 1);
@@ -46,7 +46,7 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                TileEntityRecordPlayer var5 = (TileEntityRecordPlayer)world.getBlockTileEntity(x, y, z);
+                TileEntityRecordPlayer var5 = (TileEntityRecordPlayer)world.getBlockEntity(x, y, z);
                 int var6 = var5.recordId;
                 if (var6 != 0)
                 {

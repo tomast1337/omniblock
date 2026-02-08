@@ -658,12 +658,12 @@ namespace betareborn.Chunks
             {
                 if (saveEntities)
                 {
-                    if (lastSaveHadEntities && world.getWorldTime() != lastSaveTime)
+                    if (lastSaveHadEntities && world.getTime() != lastSaveTime)
                     {
                         return true;
                     }
                 }
-                else if (lastSaveHadEntities && world.getWorldTime() >= lastSaveTime + 600L)
+                else if (lastSaveHadEntities && world.getTime() >= lastSaveTime + 600L)
                 {
                     return true;
                 }

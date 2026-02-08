@@ -127,7 +127,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                TileEntityFurnace var6 = (TileEntityFurnace)world.getBlockTileEntity(x, y, z);
+                TileEntityFurnace var6 = (TileEntityFurnace)world.getBlockEntity(x, y, z);
                 player.displayGUIFurnace(var6);
                 return true;
             }
@@ -136,7 +136,7 @@ namespace betareborn.Blocks
         public static void updateLitState(bool lit, World world, int x, int y, int z)
         {
             int var5 = world.getBlockMeta(x, y, z);
-            BlockEntity var6 = world.getBlockTileEntity(x, y, z);
+            BlockEntity var6 = world.getBlockEntity(x, y, z);
             ignoreBlockRemoval = true;
             if (lit)
             {
@@ -187,7 +187,7 @@ namespace betareborn.Blocks
         {
             if (!ignoreBlockRemoval)
             {
-                TileEntityFurnace var5 = (TileEntityFurnace)world.getBlockTileEntity(x, y, z);
+                TileEntityFurnace var5 = (TileEntityFurnace)world.getBlockEntity(x, y, z);
 
                 for (int var6 = 0; var6 < var5.size(); ++var6)
                 {

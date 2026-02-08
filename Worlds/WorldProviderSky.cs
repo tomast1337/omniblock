@@ -14,7 +14,7 @@ namespace betareborn.Worlds
             worldType = 1;
         }
 
-        public override IChunkProvider getChunkProvider()
+        public override ChunkSource getChunkProvider()
         {
             return new ChunkProviderSky(worldObj, worldObj.getSeed());
         }

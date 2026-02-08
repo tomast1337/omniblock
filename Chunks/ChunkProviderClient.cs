@@ -4,7 +4,7 @@ using java.util;
 
 namespace betareborn.Chunks
 {
-    public class ChunkProviderClient : IChunkProvider
+    public class ChunkProviderClient : ChunkSource
     {
 
         private Chunk blankChunk;
@@ -33,7 +33,7 @@ namespace betareborn.Chunks
 
         public void func_539_c(int var1, int var2)
         {
-            Chunk var3 = provideChunk(var1, var2);
+            Chunk var3 = getChunk(var1, var2);
             if (!var3.isEmpty())
             {
                 var3.unload();
@@ -54,19 +54,19 @@ namespace betareborn.Chunks
             return var5;
         }
 
-        public Chunk provideChunk(int var1, int var2)
+        public Chunk getChunk(int var1, int var2)
         {
             ChunkPos var3 = new ChunkPos(var1, var2);
             Chunk var4 = (Chunk)chunkMapping.get(var3);
             return var4 == null ? blankChunk : var4;
         }
 
-        public bool saveChunks(bool var1, IProgressUpdate var2)
+        public bool save(bool var1, LoadingDisplay var2)
         {
             return true;
         }
 
-        public bool unload100OldestChunks()
+        public bool tick()
         {
             return false;
         }
@@ -76,7 +76,7 @@ namespace betareborn.Chunks
             return false;
         }
 
-        public void populate(IChunkProvider var1, int var2, int var3)
+        public void decorate(ChunkSource var1, int var2, int var3)
         {
         }
 
@@ -84,7 +84,7 @@ namespace betareborn.Chunks
         {
         }
 
-        public string makeString()
+        public string getDebugInfo()
         {
             return "MultiplayerChunkCache: " + chunkMapping.size();
         }
