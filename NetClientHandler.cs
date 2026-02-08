@@ -1,6 +1,5 @@
 using betareborn.Blocks;
 using betareborn.Chunks;
-using betareborn.Containers;
 using betareborn.Entities;
 using betareborn.Guis;
 using betareborn.Items;
@@ -12,6 +11,7 @@ using java.io;
 using java.net;
 using betareborn.Blocks.BlockEntities;
 using betareborn.Inventorys;
+using betareborn.Screens;
 
 namespace betareborn
 {
@@ -593,25 +593,25 @@ namespace betareborn
             {
                 InventoryBasic var2 = new InventoryBasic(var1.windowTitle, var1.slotsCount);
                 mc.thePlayer.displayGUIChest(var2);
-                mc.thePlayer.craftingInventory.windowId = var1.windowId;
+                mc.thePlayer.craftingInventory.syncId = var1.windowId;
             }
             else if (var1.inventoryType == 2)
             {
                 BlockEntityFurnace var3 = new BlockEntityFurnace();
                 mc.thePlayer.displayGUIFurnace(var3);
-                mc.thePlayer.craftingInventory.windowId = var1.windowId;
+                mc.thePlayer.craftingInventory.syncId = var1.windowId;
             }
             else if (var1.inventoryType == 3)
             {
                 BlockEntityDispenser var4 = new BlockEntityDispenser();
                 mc.thePlayer.displayGUIDispenser(var4);
-                mc.thePlayer.craftingInventory.windowId = var1.windowId;
+                mc.thePlayer.craftingInventory.syncId = var1.windowId;
             }
             else if (var1.inventoryType == 1)
             {
                 EntityPlayerSP var5 = mc.thePlayer;
                 mc.thePlayer.displayWorkbenchGUI(MathHelper.floor_double(var5.posX), MathHelper.floor_double(var5.posY), MathHelper.floor_double(var5.posZ));
-                mc.thePlayer.craftingInventory.windowId = var1.windowId;
+                mc.thePlayer.craftingInventory.syncId = var1.windowId;
             }
 
         }
@@ -630,23 +630,23 @@ namespace betareborn
                     var1.myItemStack.animationsToGo = 5;
                 }
 
-                mc.thePlayer.inventorySlots.putStackInSlot(var1.itemSlot, var1.myItemStack);
+                mc.thePlayer.inventorySlots.setStackInSlot(var1.itemSlot, var1.myItemStack);
             }
-            else if (var1.windowId == mc.thePlayer.craftingInventory.windowId)
+            else if (var1.windowId == mc.thePlayer.craftingInventory.syncId)
             {
-                mc.thePlayer.craftingInventory.putStackInSlot(var1.itemSlot, var1.myItemStack);
+                mc.thePlayer.craftingInventory.setStackInSlot(var1.itemSlot, var1.myItemStack);
             }
 
         }
 
         public override void func_20089_a(Packet106Transaction var1)
         {
-            Container var2 = null;
+            ScreenHandler var2 = null;
             if (var1.windowId == 0)
             {
                 var2 = mc.thePlayer.inventorySlots;
             }
-            else if (var1.windowId == mc.thePlayer.craftingInventory.windowId)
+            else if (var1.windowId == mc.thePlayer.craftingInventory.syncId)
             {
                 var2 = mc.thePlayer.craftingInventory;
             }
@@ -655,11 +655,11 @@ namespace betareborn
             {
                 if (var1.field_20030_c)
                 {
-                    var2.func_20113_a(var1.field_20028_b);
+                    var2.onAcknowledgementAccepted(var1.field_20028_b);
                 }
                 else
                 {
-                    var2.func_20110_b(var1.field_20028_b);
+                    var2.onAcknowledgementDenied(var1.field_20028_b);
                     addToSendQueue(new Packet106Transaction(var1.windowId, var1.field_20028_b, true));
                 }
             }
@@ -670,11 +670,11 @@ namespace betareborn
         {
             if (var1.windowId == 0)
             {
-                mc.thePlayer.inventorySlots.putStacksInSlots(var1.itemStack);
+                mc.thePlayer.inventorySlots.updateSlotStacks(var1.itemStack);
             }
-            else if (var1.windowId == mc.thePlayer.craftingInventory.windowId)
+            else if (var1.windowId == mc.thePlayer.craftingInventory.syncId)
             {
-                mc.thePlayer.craftingInventory.putStacksInSlots(var1.itemStack);
+                mc.thePlayer.craftingInventory.updateSlotStacks(var1.itemStack);
             }
 
         }
@@ -702,9 +702,9 @@ namespace betareborn
         public override void func_20090_a(Packet105UpdateProgressbar var1)
         {
             registerPacket(var1);
-            if (mc.thePlayer.craftingInventory != null && mc.thePlayer.craftingInventory.windowId == var1.windowId)
+            if (mc.thePlayer.craftingInventory != null && mc.thePlayer.craftingInventory.syncId == var1.windowId)
             {
-                mc.thePlayer.craftingInventory.func_20112_a(var1.progressBar, var1.progressBarValue);
+                mc.thePlayer.craftingInventory.setProperty(var1.progressBar, var1.progressBarValue);
             }
 
         }

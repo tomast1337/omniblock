@@ -1,5 +1,5 @@
-using betareborn.Containers;
 using betareborn.Inventorys;
+using betareborn.Screens;
 
 namespace betareborn.Guis
 {
@@ -10,7 +10,7 @@ namespace betareborn.Guis
         private IInventory lowerChestInventory;
         private int inventoryRows = 0;
 
-        public GuiChest(IInventory var1, IInventory var2) : base(new ContainerChest(var1, var2))
+        public GuiChest(IInventory var1, IInventory var2) : base(new GenericContainerScreenHandler(var1, var2))
         {
             upperChestInventory = var1;
             lowerChestInventory = var2;

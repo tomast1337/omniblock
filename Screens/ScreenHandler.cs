@@ -1,79 +1,120 @@
 using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
+using java.lang;
 using java.util;
 
-namespace betareborn.Containers
+namespace betareborn.Screens
 {
-    public abstract class Container : java.lang.Object
+    public abstract class ScreenHandler : java.lang.Object
     {
-        public List field_20123_d = new ArrayList();
+        public List trackedStacks = new ArrayList();
         public List slots = new ArrayList();
-        public int windowId = 0;
-        private short field_20917_a = 0;
-        protected List field_20121_g = new ArrayList();
-        private Set field_20918_b = new HashSet();
+        public int syncId = 0;
+        private short revision = 0;
+        protected List listeners = new ArrayList();
+        private Set players = new HashSet();
 
         protected void addSlot(Slot var1)
         {
             var1.slotNumber = slots.size();
             slots.add(var1);
-            field_20123_d.add((Object)null);
+            trackedStacks.add(null);
         }
 
-        public virtual void updateCraftingResults()
+        public virtual void addListener(ScreenHandlerListener listener)
+        {
+            if (listeners.contains(listener))
+            {
+                throw new IllegalArgumentException("Listener already listening");
+            }
+            else
+            {
+                listeners.add(listener);
+                listener.onContentsUpdate(this, getStacks());
+                sendContentUpdates();
+            }
+        }
+
+        public List getStacks()
+        {
+            ArrayList var1 = new ArrayList();
+
+            for (int var2 = 0; var2 < slots.size(); var2++)
+            {
+                var1.add(((Slot)slots.get(var2)).getStack());
+            }
+
+            return var1;
+        }
+
+        public virtual void sendContentUpdates()
         {
             for (int var1 = 0; var1 < slots.size(); ++var1)
             {
                 ItemStack var2 = ((Slot)slots.get(var1)).getStack();
-                ItemStack var3 = (ItemStack)field_20123_d.get(var1);
+                ItemStack var3 = (ItemStack)trackedStacks.get(var1);
                 if (!ItemStack.areItemStacksEqual(var3, var2))
                 {
                     var3 = var2 == null ? null : var2.copy();
-                    field_20123_d.set(var1, var3);
+                    trackedStacks.set(var1, var3);
 
-                    for (int var4 = 0; var4 < field_20121_g.size(); ++var4)
+                    for (int var4 = 0; var4 < listeners.size(); ++var4)
                     {
-                        ((ICrafting)field_20121_g.get(var4)).func_20159_a(this, var1, var3);
+                        ((ScreenHandlerListener)listeners.get(var4)).onSlotUpdate(this, var1, var3);
                     }
                 }
             }
 
         }
 
-        public Slot getSlot(int var1)
+        public Slot getSlot(IInventory inventory, int index)
         {
-            return (Slot)slots.get(var1);
+            for (int var3 = 0; var3 < slots.size(); var3++)
+            {
+                Slot var4 = (Slot)slots.get(var3);
+                if (var4.equals(inventory, index))
+                {
+                    return var4;
+                }
+            }
+
+            return null;
         }
 
-        public virtual ItemStack getStackInSlot(int var1)
+        public Slot getSlot(int index)
         {
-            Slot var2 = (Slot)slots.get(var1);
+            return (Slot)slots.get(index);
+        }
+
+        public virtual ItemStack quickMove(int slot)
+        {
+            Slot var2 = (Slot)slots.get(slot);
             return var2 != null ? var2.getStack() : null;
         }
 
-        public ItemStack func_27280_a(int var1, int var2, bool var3, EntityPlayer var4)
+        public ItemStack onSlotClick(int index, int button, bool shift, EntityPlayer player)
         {
             ItemStack var5 = null;
-            if (var2 == 0 || var2 == 1)
+            if (button == 0 || button == 1)
             {
-                InventoryPlayer var6 = var4.inventory;
-                if (var1 == -999)
+                InventoryPlayer var6 = player.inventory;
+                if (index == -999)
                 {
-                    if (var6.getItemStack() != null && var1 == -999)
+                    if (var6.getItemStack() != null && index == -999)
                     {
-                        if (var2 == 0)
+                        if (button == 0)
                         {
-                            var4.dropPlayerItem(var6.getItemStack());
-                            var6.setItemStack((ItemStack)null);
+                            player.dropPlayerItem(var6.getItemStack());
+                            var6.setItemStack(null);
                         }
 
-                        if (var2 == 1)
+                        if (button == 1)
                         {
-                            var4.dropPlayerItem(var6.getItemStack().splitStack(1));
+                            player.dropPlayerItem(var6.getItemStack().splitStack(1));
                             if (var6.getItemStack().count == 0)
                             {
-                                var6.setItemStack((ItemStack)null);
+                                var6.setItemStack(null);
                             }
                         }
                     }
@@ -81,30 +122,30 @@ namespace betareborn.Containers
                 else
                 {
                     int var10;
-                    if (var3)
+                    if (shift)
                     {
-                        ItemStack var7 = getStackInSlot(var1);
+                        ItemStack var7 = quickMove(index);
                         if (var7 != null)
                         {
                             int var8 = var7.count;
                             var5 = var7.copy();
-                            Slot var9 = (Slot)slots.get(var1);
+                            Slot var9 = (Slot)slots.get(index);
                             if (var9 != null && var9.getStack() != null)
                             {
                                 var10 = var9.getStack().count;
                                 if (var10 < var8)
                                 {
-                                    func_27280_a(var1, var2, var3, var4);
+                                    onSlotClick(index, button, shift, player);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        Slot var12 = (Slot)slots.get(var1);
+                        Slot var12 = (Slot)slots.get(index);
                         if (var12 != null)
                         {
-                            var12.onSlotChanged();
+                            var12.markDirty();
                             ItemStack var13 = var12.getStack();
                             ItemStack var14 = var6.getItemStack();
                             if (var13 != null)
@@ -116,30 +157,30 @@ namespace betareborn.Containers
                             {
                                 if (var14 != null && var12.isItemValid(var14))
                                 {
-                                    var10 = var2 == 0 ? var14.count : 1;
+                                    var10 = button == 0 ? var14.count : 1;
                                     if (var10 > var12.getSlotStackLimit())
                                     {
                                         var10 = var12.getSlotStackLimit();
                                     }
 
-                                    var12.putStack(var14.splitStack(var10));
+                                    var12.setStack(var14.splitStack(var10));
                                     if (var14.count == 0)
                                     {
-                                        var6.setItemStack((ItemStack)null);
+                                        var6.setItemStack(null);
                                     }
                                 }
                             }
                             else if (var14 == null)
                             {
-                                var10 = var2 == 0 ? var13.count : (var13.count + 1) / 2;
+                                var10 = button == 0 ? var13.count : (var13.count + 1) / 2;
                                 ItemStack var11 = var12.decrStackSize(var10);
                                 var6.setItemStack(var11);
                                 if (var13.count == 0)
                                 {
-                                    var12.putStack((ItemStack)null);
+                                    var12.setStack(null);
                                 }
 
-                                var12.onPickupFromSlot(var6.getItemStack());
+                                var12.onTakeItem(var6.getItemStack());
                             }
                             else if (var12.isItemValid(var14))
                             {
@@ -147,13 +188,13 @@ namespace betareborn.Containers
                                 {
                                     if (var14.count <= var12.getSlotStackLimit())
                                     {
-                                        var12.putStack(var14);
+                                        var12.setStack(var14);
                                         var6.setItemStack(var13);
                                     }
                                 }
                                 else
                                 {
-                                    var10 = var2 == 0 ? var14.count : 1;
+                                    var10 = button == 0 ? var14.count : 1;
                                     if (var10 > var12.getSlotStackLimit() - var13.count)
                                     {
                                         var10 = var12.getSlotStackLimit() - var13.count;
@@ -167,7 +208,7 @@ namespace betareborn.Containers
                                     var14.splitStack(var10);
                                     if (var14.count == 0)
                                     {
-                                        var6.setItemStack((ItemStack)null);
+                                        var6.setItemStack(null);
                                     }
 
                                     var13.count += var10;
@@ -182,10 +223,10 @@ namespace betareborn.Containers
                                     var13.splitStack(var10);
                                     if (var13.count == 0)
                                     {
-                                        var12.putStack((ItemStack)null);
+                                        var12.setStack(null);
                                     }
 
-                                    var12.onPickupFromSlot(var6.getItemStack());
+                                    var12.onTakeItem(var6.getItemStack());
                                 }
                             }
                         }
@@ -196,90 +237,107 @@ namespace betareborn.Containers
             return var5;
         }
 
-        public virtual void onCraftGuiClosed(EntityPlayer var1)
+        public virtual void onClosed(EntityPlayer player)
         {
-            InventoryPlayer var2 = var1.inventory;
+            InventoryPlayer var2 = player.inventory;
             if (var2.getItemStack() != null)
             {
-                var1.dropPlayerItem(var2.getItemStack());
-                var2.setItemStack((ItemStack)null);
+                player.dropPlayerItem(var2.getItemStack());
+                var2.setItemStack(null);
             }
 
         }
 
-        public virtual void onCraftMatrixChanged(IInventory var1)
+        public virtual void onSlotUpdate(IInventory inventory)
         {
-            updateCraftingResults();
+            sendContentUpdates();
         }
 
-        public void putStackInSlot(int var1, ItemStack var2)
+        public void setStackInSlot(int index, ItemStack stack)
         {
-            getSlot(var1).putStack(var2);
+            getSlot(index).setStack(stack);
         }
 
-        public void putStacksInSlots(ItemStack[] var1)
+        public void updateSlotStacks(ItemStack[] stacks)
         {
-            for (int var2 = 0; var2 < var1.Length; ++var2)
+            for (int var2 = 0; var2 < stacks.Length; ++var2)
             {
-                getSlot(var2).putStack(var1[var2]);
+                getSlot(var2).setStack(stacks[var2]);
             }
 
         }
 
-        public virtual void func_20112_a(int var1, int var2)
+        public virtual void setProperty(int id, int value)
         {
         }
 
-        public short func_20111_a(InventoryPlayer var1)
+        public short nextRevision(InventoryPlayer inventory)
         {
-            ++field_20917_a;
-            return field_20917_a;
+            ++revision;
+            return revision;
         }
 
-        public void func_20113_a(short var1)
-        {
-        }
-
-        public void func_20110_b(short var1)
+        public void onAcknowledgementAccepted(short actionType)
         {
         }
 
-        public abstract bool isUsableByPlayer(EntityPlayer var1);
-
-        protected void func_28125_a(ItemStack var1, int var2, int var3, bool var4)
+        public void onAcknowledgementDenied(short actionType)
         {
-            int var5 = var2;
-            if (var4)
+        }
+
+        public bool canOpen(EntityPlayer player)
+        {
+            return !players.contains(player);
+        }
+
+        public void updatePlayerList(EntityPlayer player, bool remove)
+        {
+            if (remove)
             {
-                var5 = var3 - 1;
+                players.remove(player);
+            }
+            else
+            {
+                players.add(player);
+            }
+        }
+
+        public abstract bool canUse(EntityPlayer player);
+
+        protected void insertItem(ItemStack stack, int start, int end, bool fromLast)
+        {
+            int var5 = start;
+            if (fromLast)
+            {
+                var5 = end - 1;
             }
 
             Slot var6;
             ItemStack var7;
-            if (var1.isStackable())
+            if (stack.isStackable())
             {
-                while (var1.count > 0 && (!var4 && var5 < var3 || var4 && var5 >= var2))
+                while (stack.count > 0 && (!fromLast && var5 < end || fromLast && var5 >= start))
                 {
                     var6 = (Slot)slots.get(var5);
                     var7 = var6.getStack();
-                    if (var7 != null && var7.itemID == var1.itemID && (!var1.getHasSubtypes() || var1.getItemDamage() == var7.getItemDamage()))
+                    if (var7 != null && var7.itemID == stack.itemID && (!stack.getHasSubtypes() || stack.getItemDamage() == var7.getItemDamage()))
                     {
-                        int var8 = var7.count + var1.count;
-                        if (var8 <= var1.getMaxCount())
+                        int var8 = var7.count + stack.count;
+                        if (var8 <= stack.getMaxCount())
                         {
-                            var1.count = 0;
+                            stack.count = 0;
                             var7.count = var8;
-                            var6.onSlotChanged();
+                            var6.markDirty();
                         }
-                        else if (var7.count < var1.getMaxCount())
+                        else if (var7.count < stack.getMaxCount())
                         {
-                            var1.count -= var1.getMaxCount() - var7.count;
-                            var7.count = var1.getMaxCount();
-                            var6.onSlotChanged();
+                            stack.count -= stack.getMaxCount() - var7.count;
+                            var7.count = stack.getMaxCount();
+                            var6.markDirty();
                         }
                     }
 
-                    if (var4)
+                    if (fromLast)
                     {
                         --var5;
                     }
@@ -290,30 +348,30 @@ namespace betareborn.Containers
                 }
             }
 
-            if (var1.count > 0)
+            if (stack.count > 0)
             {
-                if (var4)
+                if (fromLast)
                 {
-                    var5 = var3 - 1;
+                    var5 = end - 1;
                 }
                 else
                 {
-                    var5 = var2;
+                    var5 = start;
                 }
 
-                while (!var4 && var5 < var3 || var4 && var5 >= var2)
+                while (!fromLast && var5 < end || fromLast && var5 >= start)
                 {
                     var6 = (Slot)slots.get(var5);
                     var7 = var6.getStack();
                     if (var7 == null)
                     {
-                        var6.putStack(var1.copy());
-                        var6.onSlotChanged();
-                        var1.count = 0;
+                        var6.setStack(stack.copy());
+                        var6.markDirty();
+                        stack.count = 0;
                         break;
                     }
 
-                    if (var4)
+                    if (fromLast)
                     {
                         --var5;
                     }

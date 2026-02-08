@@ -19,7 +19,7 @@ namespace betareborn
             return false;
         }
 
-        public override void onPickupFromSlot(ItemStack var1)
+        public override void onTakeItem(ItemStack var1)
         {
             var1.onCrafting(thePlayer.worldObj, thePlayer);
             if (var1.itemID == Item.ingotIron.id)
@@ -32,7 +32,7 @@ namespace betareborn
                 thePlayer.increaseStat(Achievements.COOK_FISH, 1);
             }
 
-            base.onPickupFromSlot(var1);
+            base.onTakeItem(var1);
         }
     }
 

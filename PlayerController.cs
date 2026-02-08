@@ -117,12 +117,12 @@ namespace betareborn
 
         public virtual ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)
         {
-            return var5.craftingInventory.func_27280_a(var2, var3, var4, var5);
+            return var5.craftingInventory.onSlotClick(var2, var3, var4, var5);
         }
 
         public virtual void func_20086_a(int var1, EntityPlayer var2)
         {
-            var2.craftingInventory.onCraftGuiClosed(var2);
+            var2.craftingInventory.onClosed(var2);
             var2.craftingInventory = var2.inventorySlots;
         }
     }

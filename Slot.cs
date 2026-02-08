@@ -19,9 +19,9 @@ namespace betareborn
             yDisplayPosition = var4;
         }
 
-        public virtual void onPickupFromSlot(ItemStack var1)
+        public virtual void onTakeItem(ItemStack var1)
         {
-            onSlotChanged();
+            markDirty();
         }
 
         public virtual bool isItemValid(ItemStack var1)
@@ -34,18 +34,18 @@ namespace betareborn
             return inventory.getStack(slotIndex);
         }
 
-        public bool getHasStack()
+        public bool hasStack()
         {
             return getStack() != null;
         }
 
-        public void putStack(ItemStack var1)
+        public void setStack(ItemStack var1)
         {
             inventory.setStack(slotIndex, var1);
-            onSlotChanged();
+            markDirty();
         }
 
-        public void onSlotChanged()
+        public void markDirty()
         {
             inventory.markDirty();
         }
@@ -63,6 +63,11 @@ namespace betareborn
         public ItemStack decrStackSize(int var1)
         {
             return inventory.removeStack(slotIndex, var1);
+        }
+
+        public bool equals(IInventory inventory, int index)
+        {
+            return inventory == this.inventory && index == slotIndex;
         }
     }
 

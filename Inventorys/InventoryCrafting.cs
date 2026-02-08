@@ -1,6 +1,6 @@
-using betareborn.Containers;
 using betareborn.Entities;
 using betareborn.Items;
+using betareborn.Screens;
 
 namespace betareborn.Inventorys
 {
@@ -8,9 +8,9 @@ namespace betareborn.Inventorys
     {
         private ItemStack[] stackList;
         private int field_21104_b;
-        private Container eventHandler;
+        private ScreenHandler eventHandler;
 
-        public InventoryCrafting(Container var1, int var2, int var3)
+        public InventoryCrafting(ScreenHandler var1, int var2, int var3)
         {
             int var4 = var2 * var3;
             stackList = new ItemStack[var4];
@@ -55,7 +55,7 @@ namespace betareborn.Inventorys
                 {
                     var3 = stackList[var1];
                     stackList[var1] = null;
-                    eventHandler.onCraftMatrixChanged(this);
+                    eventHandler.onSlotUpdate(this);
                     return var3;
                 }
                 else
@@ -66,7 +66,7 @@ namespace betareborn.Inventorys
                         stackList[var1] = null;
                     }
 
-                    eventHandler.onCraftMatrixChanged(this);
+                    eventHandler.onSlotUpdate(this);
                     return var3;
                 }
             }
@@ -79,7 +79,7 @@ namespace betareborn.Inventorys
         public void setStack(int var1, ItemStack var2)
         {
             stackList[var1] = var2;
-            eventHandler.onCraftMatrixChanged(this);
+            eventHandler.onSlotUpdate(this);
         }
 
         public int getMaxCountPerStack()

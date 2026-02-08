@@ -1,15 +1,15 @@
 using betareborn.Blocks;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 using betareborn.Chunks;
-using betareborn.Containers;
+using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.NBT;
+using betareborn.Screens;
 using betareborn.Stats;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
 using java.lang;
-using betareborn.Blocks.BlockEntities;
-using betareborn.Blocks.Materials;
-using betareborn.Inventorys;
 
 namespace betareborn.Entities
 {
@@ -17,8 +17,8 @@ namespace betareborn.Entities
     {
         public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityPlayer).TypeHandle);
         public InventoryPlayer inventory;
-        public Container inventorySlots;
-        public Container craftingInventory;
+        public ScreenHandler inventorySlots;
+        public ScreenHandler craftingInventory;
         public byte field_9371_f = 0;
         public int score = 0;
         public float field_775_e;
@@ -52,7 +52,7 @@ namespace betareborn.Entities
         public EntityPlayer(World var1) : base(var1)
         {
             inventory = new InventoryPlayer(this);
-            inventorySlots = new ContainerPlayer(inventory, !var1.isRemote);
+            inventorySlots = new PlayerScreenHandler(inventory, !var1.isRemote);
             craftingInventory = inventorySlots;
             yOffset = 1.62F;
             Vec3i var2 = var1.getSpawnPoint();
@@ -102,7 +102,7 @@ namespace betareborn.Entities
             }
 
             base.onUpdate();
-            if (!worldObj.isRemote && craftingInventory != null && !craftingInventory.isUsableByPlayer(this))
+            if (!worldObj.isRemote && craftingInventory != null && !craftingInventory.canUse(this))
             {
                 closeScreen();
                 craftingInventory = inventorySlots;
@@ -640,10 +640,10 @@ namespace betareborn.Entities
         public override void setEntityDead()
         {
             base.setEntityDead();
-            inventorySlots.onCraftGuiClosed(this);
+            inventorySlots.onClosed(this);
             if (craftingInventory != null)
             {
-                craftingInventory.onCraftGuiClosed(this);
+                craftingInventory.onClosed(this);
             }
 
         }

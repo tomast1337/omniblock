@@ -1,16 +1,16 @@
 using betareborn.Blocks;
-using betareborn.Containers;
 using betareborn.Inventorys;
 using betareborn.Items;
+using betareborn.Screens;
 
 namespace betareborn
 {
     class SlotArmor : Slot
     {
         readonly int armorType;
-        readonly ContainerPlayer inventory;
+        readonly PlayerScreenHandler inventory;
 
-        public SlotArmor(ContainerPlayer var1, IInventory var2, int var3, int var4, int var5, int var6) : base(var2, var3, var4, var5)
+        public SlotArmor(PlayerScreenHandler var1, IInventory var2, int var3, int var4, int var5, int var6) : base(var2, var3, var4, var5)
         {
             inventory = var1;
             armorType = var6;

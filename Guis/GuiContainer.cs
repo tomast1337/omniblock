@@ -1,7 +1,7 @@
-using betareborn.Containers;
 using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.Rendering;
+using betareborn.Screens;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Guis
@@ -12,9 +12,9 @@ namespace betareborn.Guis
         private static RenderItem itemRenderer = new RenderItem();
         protected int xSize = 176;
         protected int ySize = 166;
-        public Container inventorySlots;
+        public ScreenHandler inventorySlots;
 
-        public GuiContainer(Container var1)
+        public GuiContainer(ScreenHandler var1)
         {
             inventorySlots = var1;
         }
@@ -73,7 +73,7 @@ namespace betareborn.Guis
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);
             drawGuiContainerForegroundLayer();
-            if (var12.getItemStack() == null && var6 != null && var6.getHasStack())
+            if (var12.getItemStack() == null && var6 != null && var6.hasStack())
             {
                 String var13 = ("" + StringTranslate.getInstance().translateNamedKey(var6.getStack().getItemName())).Trim();
                 if (var13.Length > 0)
@@ -166,7 +166,7 @@ namespace betareborn.Guis
                 if (var8 != -1)
                 {
                     bool var9 = var8 != -999 && (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
-                    mc.playerController.func_27174_a(inventorySlots.windowId, var8, var3, var9, mc.thePlayer);
+                    mc.playerController.func_27174_a(inventorySlots.syncId, var8, var3, var9, mc.thePlayer);
                 }
             }
 
@@ -193,7 +193,7 @@ namespace betareborn.Guis
         {
             if (mc.thePlayer != null)
             {
-                mc.playerController.func_20086_a(inventorySlots.windowId, mc.thePlayer);
+                mc.playerController.func_20086_a(inventorySlots.syncId, mc.thePlayer);
             }
         }
 

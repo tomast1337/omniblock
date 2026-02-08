@@ -212,7 +212,7 @@ namespace betareborn
 
         public override ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)
         {
-            short var6 = var5.craftingInventory.func_20111_a(var5.inventory);
+            short var6 = var5.craftingInventory.nextRevision(var5.inventory);
             ItemStack var7 = base.func_27174_a(var1, var2, var3, var4, var5);
             netClientHandler.addToSendQueue(new Packet102WindowClick(var1, var2, var3, var4, var7, var6));
             return var7;

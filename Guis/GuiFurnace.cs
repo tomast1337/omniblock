@@ -1,6 +1,6 @@
-using betareborn.Containers;
 using betareborn.Blocks.BlockEntities;
 using betareborn.Inventorys;
+using betareborn.Screens;
 
 namespace betareborn.Guis
 {
@@ -9,7 +9,7 @@ namespace betareborn.Guis
 
         private BlockEntityFurnace furnaceInventory;
 
-        public GuiFurnace(InventoryPlayer playerInventory, BlockEntityFurnace furnace) : base(new ContainerFurnace(playerInventory, furnace))
+        public GuiFurnace(InventoryPlayer playerInventory, BlockEntityFurnace furnace) : base(new FurnaceScreenHandler(playerInventory, furnace))
         {
             furnaceInventory = furnace;
         }

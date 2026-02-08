@@ -170,7 +170,7 @@ namespace betareborn.Entities
 
         public override void closeScreen()
         {
-            sendQueue.addToSendQueue(new Packet101CloseWindow(craftingInventory.windowId));
+            sendQueue.addToSendQueue(new Packet101CloseWindow(craftingInventory.syncId));
             inventory.setItemStack(null);
             base.closeScreen();
         }

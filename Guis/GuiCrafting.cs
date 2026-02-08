@@ -1,5 +1,5 @@
-using betareborn.Containers;
 using betareborn.Inventorys;
+using betareborn.Screens;
 using betareborn.Worlds;
 
 namespace betareborn.Guis
@@ -7,14 +7,14 @@ namespace betareborn.Guis
     public class GuiCrafting : GuiContainer
     {
 
-        public GuiCrafting(InventoryPlayer var1, World var2, int var3, int var4, int var5) : base(new ContainerWorkbench(var1, var2, var3, var4, var5))
+        public GuiCrafting(InventoryPlayer var1, World var2, int var3, int var4, int var5) : base(new CraftingScreenHandler(var1, var2, var3, var4, var5))
         {
         }
 
         public override void onGuiClosed()
         {
             base.onGuiClosed();
-            inventorySlots.onCraftGuiClosed(mc.thePlayer);
+            inventorySlots.onClosed(mc.thePlayer);
         }
 
         protected override void drawGuiContainerForegroundLayer()
