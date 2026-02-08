@@ -147,7 +147,7 @@ namespace betareborn
             Display.setTitle("Minecraft Beta 1.7.3");
 
             mcDataDir = getMinecraftDir();
-            saveLoader = new SaveConverterMcRegion(new java.io.File(mcDataDir, "saves"));
+            saveLoader = new RegionWorldStorageSource(new java.io.File(mcDataDir, "saves"));
             gameSettings = new GameSettings(this, mcDataDir);
             Profiler.Enabled = gameSettings.debugMode;
 

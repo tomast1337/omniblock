@@ -34,7 +34,7 @@ namespace betareborn.Worlds.Storage
                 WorldProperties var4 = getProperties(var3);
                 if (var4 != null)
                 {
-                    var1.add(new SaveFormatComparator(var3, "", var4.getLastTimePlayed(), var4.getSizeOnDisk(), false));
+                    var1.add(new WorldSaveInfo(var3, "", var4.getLastTimePlayed(), var4.getSizeOnDisk(), false));
                 }
             }
 

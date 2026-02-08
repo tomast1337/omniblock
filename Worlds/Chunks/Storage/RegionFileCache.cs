@@ -33,7 +33,7 @@ namespace betareborn.Worlds.Chunks.Storage
 
                 if (cache.size() >= 256)
                 {
-                    func_22192_a();
+                    flush();
                 }
 
                 var6 = new RegionFile(var4);
@@ -42,7 +42,7 @@ namespace betareborn.Worlds.Chunks.Storage
             }
         }
 
-        public static void func_22192_a()
+        public static void flush()
         {
             lock (l)
             {

@@ -48,12 +48,12 @@ namespace betareborn.Guis
 
         protected String getSaveFileName(int var1)
         {
-            return ((SaveFormatComparator)saveList.get(var1)).getFileName();
+            return ((WorldSaveInfo)saveList.get(var1)).getFileName();
         }
 
         protected String getSaveName(int var1)
         {
-            String var2 = ((SaveFormatComparator)saveList.get(var1)).getDisplayName();
+            String var2 = ((WorldSaveInfo)saveList.get(var1)).getDisplayName();
             if (var2 == null || MathHelper.stringNullOrLengthZero(var2))
             {
                 StringTranslate var3 = StringTranslate.getInstance();

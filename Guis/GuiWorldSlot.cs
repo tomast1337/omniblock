@@ -1,3 +1,4 @@
+using betareborn.Worlds.Storage;
 using java.util;
 
 namespace betareborn.Guis
@@ -48,7 +49,7 @@ namespace betareborn.Guis
 
         protected override void drawSlot(int var1, int var2, int var3, int var4, Tessellator var5)
         {
-            SaveFormatComparator var6 = (SaveFormatComparator)GuiSelectWorld.getSize(parentWorldGui).get(var1);
+            WorldSaveInfo var6 = (WorldSaveInfo)GuiSelectWorld.getSize(parentWorldGui).get(var1);
             String var7 = var6.getDisplayName();
             if (var7 == null || MathHelper.stringNullOrLengthZero(var7))
             {
@@ -56,11 +57,11 @@ namespace betareborn.Guis
             }
 
             String var8 = var6.getFileName();
-            var8 = var8 + " (" + GuiSelectWorld.getDateFormatter(parentWorldGui).format(new Date(var6.func_22163_e()));
-            long var9 = var6.func_22159_c();
+            var8 = var8 + " (" + GuiSelectWorld.getDateFormatter(parentWorldGui).format(new Date(var6.getLastPlayed()));
+            long var9 = var6.getSize();
             var8 = var8 + ", " + (float)(var9 / 1024L * 100L / 1024L) / 100.0F + " MB)";
             String var11 = "";
-            if (var6.func_22161_d())
+            if (var6.isSameVersion())
             {
                 var11 = GuiSelectWorld.func_22088_h(parentWorldGui) + " " + var11;
             }

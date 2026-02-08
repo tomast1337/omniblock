@@ -1,16 +1,15 @@
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks.Storage;
 using betareborn.Worlds.Dimensions;
-using betareborn.Worlds.Storage;
 using java.util;
 
-namespace betareborn
+namespace betareborn.Worlds.Storage
 {
 
-    public class SaveOldDir : AlphaWorldStorage
+    public class RegionWorldStorage : AlphaWorldStorage
     {
 
-        public SaveOldDir(java.io.File var1, String var2, bool var3) : base(var1, var2, var3)
+        public RegionWorldStorage(java.io.File var1, string var2, bool var3) : base(var1, var2, var3)
         {
         }
 

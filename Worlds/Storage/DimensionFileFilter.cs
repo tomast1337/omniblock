@@ -1,14 +1,14 @@
 using java.io;
 using java.util.regex;
 
-namespace betareborn.Chunks
+namespace betareborn.Worlds.Storage
 {
-    public class ChunkFolderPattern : FileFilter
+    public class DimensionFileFilter : FileFilter
     {
 
-        public static readonly Pattern field_22392_a = Pattern.compile("[0-9a-z]|([0-9a-z][0-9a-z])");
+        public static readonly Pattern PATTERN = Pattern.compile("[0-9a-z]|([0-9a-z][0-9a-z])");
 
-        private ChunkFolderPattern()
+        private DimensionFileFilter()
         {
         }
 
@@ -16,7 +16,7 @@ namespace betareborn.Chunks
         {
             if (var1.isDirectory())
             {
-                Matcher var2 = field_22392_a.matcher(var1.getName());
+                Matcher var2 = PATTERN.matcher(var1.getName());
                 return var2.matches();
             }
             else
@@ -25,7 +25,7 @@ namespace betareborn.Chunks
             }
         }
 
-        public ChunkFolderPattern(Empty2 var1) : this()
+        public DimensionFileFilter(Empty2 var1) : this()
         {
         }
     }
