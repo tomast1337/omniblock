@@ -11,20 +11,20 @@ namespace betareborn.Screens.Slots
         public int xDisplayPosition;
         public int yDisplayPosition;
 
-        public Slot(IInventory var1, int var2, int var3, int var4)
+        public Slot(IInventory inv, int index, int x, int y)
         {
-            inventory = var1;
-            slotIndex = var2;
-            xDisplayPosition = var3;
-            yDisplayPosition = var4;
+            inventory = inv;
+            slotIndex = index;
+            xDisplayPosition = x;
+            yDisplayPosition = y;
         }
 
-        public virtual void onTakeItem(ItemStack var1)
+        public virtual void onTakeItem(ItemStack stack)
         {
             markDirty();
         }
 
-        public virtual bool isItemValid(ItemStack var1)
+        public virtual bool canInsert(ItemStack stack)
         {
             return true;
         }
@@ -50,19 +50,19 @@ namespace betareborn.Screens.Slots
             inventory.markDirty();
         }
 
-        public virtual int getSlotStackLimit()
+        public virtual int getMaxItemCount()
         {
             return inventory.getMaxCountPerStack();
         }
 
-        public int getBackgroundIconIndex()
+        public int getBackgroundTextureId()
         {
             return -1;
         }
 
-        public ItemStack decrStackSize(int var1)
+        public ItemStack takeStack(int amount)
         {
-            return inventory.removeStack(slotIndex, var1);
+            return inventory.removeStack(slotIndex, amount);
         }
 
         public bool equals(IInventory inventory, int index)

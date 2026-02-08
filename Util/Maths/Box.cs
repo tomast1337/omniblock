@@ -1,4 +1,6 @@
-namespace betareborn
+using betareborn.Util.Hit;
+
+namespace betareborn.Util.Maths
 {
     public struct Box
     {
@@ -192,7 +194,7 @@ namespace betareborn
 
         public bool intersects(Box box)
         {
-            return box.maxX > minX && box.minX < maxX ? (box.maxY > minY && box.minY < maxY ? box.maxZ > minZ && box.minZ < maxZ : false) : false;
+            return box.maxX > minX && box.minX < maxX ? box.maxY > minY && box.minY < maxY ? box.maxZ > minZ && box.minZ < maxZ : false : false;
         }
 
         public Box translate(double x, double y, double z)
@@ -208,7 +210,7 @@ namespace betareborn
 
         public bool contains(Vec3D pos)
         {
-            return pos.xCoord > minX && pos.xCoord < maxX ? (pos.yCoord > minY && pos.yCoord < maxY ? pos.zCoord > minZ && pos.zCoord < maxZ : false) : false;
+            return pos.xCoord > minX && pos.xCoord < maxX ? pos.yCoord > minY && pos.yCoord < maxY ? pos.zCoord > minZ && pos.zCoord < maxZ : false : false;
         }
 
         public double getAverageSizeLength()

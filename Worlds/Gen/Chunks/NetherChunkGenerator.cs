@@ -1,4 +1,5 @@
 using betareborn.Blocks;
+using betareborn.Util.Maths.Noise;
 using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Gen.Carvers;
 using betareborn.Worlds.Gen.Features;

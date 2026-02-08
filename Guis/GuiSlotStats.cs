@@ -136,7 +136,7 @@ namespace betareborn.Guis
             string var5;
             if (var1 != null)
             {
-                var5 = var1.func_27084_a(GuiStats.func_27142_c(field_27269_g).writeStat(var1));
+                var5 = var1.format(GuiStats.func_27142_c(field_27269_g).writeStat(var1));
                 field_27269_g.drawString(GuiStats.func_27133_h(field_27269_g), var5, var2 - GuiStats.func_27137_i(field_27269_g).getStringWidth(var5), var3 + 5, var4 ? 16777215 : 9474192);
             }
             else

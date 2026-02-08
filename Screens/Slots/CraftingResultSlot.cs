@@ -17,7 +17,7 @@ namespace betareborn.Screens.Slots
             craftMatrix = var2;
         }
 
-        public override bool isItemValid(ItemStack var1)
+        public override bool canInsert(ItemStack var1)
         {
             return false;
         }

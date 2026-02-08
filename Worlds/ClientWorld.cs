@@ -1,6 +1,8 @@
 using betareborn.Chunks;
 using betareborn.Entities;
 using betareborn.Packets;
+using betareborn.Util;
+using betareborn.Util.Maths;
 using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Dimensions;
 using betareborn.Worlds.Storage;
@@ -14,7 +16,7 @@ namespace betareborn.Worlds
         private readonly LinkedList blockResets = new LinkedList();
         private readonly NetClientHandler networkHandler;
         private MultiplayerChunkCache chunkCache;
-        private readonly MCHash entitiesByNetworkId = new MCHash();
+        private readonly IntHashMap entitiesByNetworkId = new IntHashMap();
         private readonly Set forcedEntities = new HashSet();
         private readonly Set pendingEntities = new HashSet();
 

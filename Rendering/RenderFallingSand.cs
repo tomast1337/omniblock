@@ -1,5 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Entities;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 using Silk.NET.OpenGL.Legacy;
 

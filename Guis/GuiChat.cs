@@ -1,3 +1,5 @@
+using betareborn.Util;
+
 namespace betareborn.Guis
 {
     public class GuiChat : GuiScreen

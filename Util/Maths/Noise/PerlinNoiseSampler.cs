@@ -1,17 +1,17 @@
-namespace betareborn
+namespace betareborn.Util.Maths.Noise
 {
-    public class NoiseGeneratorPerlin : NoiseGenerator
+    public class PerlinNoiseSampler : NoiseSampler
     {
         private readonly int[] permutations;
         public double xCoord;
         public double yCoord;
         public double zCoord;
 
-        public NoiseGeneratorPerlin() : this(new())
+        public PerlinNoiseSampler() : this(new())
         {
         }
 
-        public NoiseGeneratorPerlin(java.util.Random var1)
+        public PerlinNoiseSampler(java.util.Random var1)
         {
             permutations = new int[512];
             xCoord = var1.nextDouble() * 256.0D;
@@ -42,17 +42,17 @@ namespace betareborn
             int var13 = (int)var7;
             int var14 = (int)var9;
             int var15 = (int)var11;
-            if (var7 < (double)var13)
+            if (var7 < var13)
             {
                 --var13;
             }
 
-            if (var9 < (double)var14)
+            if (var9 < var14)
             {
                 --var14;
             }
 
-            if (var11 < (double)var15)
+            if (var11 < var15)
             {
                 --var15;
             }
@@ -60,9 +60,9 @@ namespace betareborn
             int var16 = var13 & 255;
             int var17 = var14 & 255;
             int var18 = var15 & 255;
-            var7 -= (double)var13;
-            var9 -= (double)var14;
-            var11 -= (double)var15;
+            var7 -= var13;
+            var9 -= var14;
+            var11 -= var15;
             double var19 = var7 * var7 * var7 * (var7 * (var7 * 6.0D - 15.0D) + 10.0D);
             double var21 = var9 * var9 * var9 * (var9 * (var9 * 6.0D - 15.0D) + 10.0D);
             double var23 = var11 * var11 * var11 * (var11 * (var11 * 6.0D - 15.0D) + 10.0D);
@@ -83,8 +83,8 @@ namespace betareborn
         public double func_4110_a(int var1, double var2, double var4)
         {
             int var6 = var1 & 15;
-            double var7 = (double)(1 - ((var6 & 8) >> 3)) * var2;
-            double var9 = var6 < 4 ? 0.0D : (var6 != 12 && var6 != 14 ? var4 : var2);
+            double var7 = (1 - ((var6 & 8) >> 3)) * var2;
+            double var9 = var6 < 4 ? 0.0D : var6 != 12 && var6 != 14 ? var4 : var2;
             return ((var6 & 1) == 0 ? var7 : -var7) + ((var6 & 2) == 0 ? var9 : -var9);
         }
 
@@ -92,7 +92,7 @@ namespace betareborn
         {
             int var8 = var1 & 15;
             double var9 = var8 < 8 ? var2 : var4;
-            double var11 = var8 < 4 ? var4 : (var8 != 12 && var8 != 14 ? var6 : var2);
+            double var11 = var8 < 4 ? var4 : var8 != 12 && var8 != 14 ? var6 : var2;
             return ((var8 & 1) == 0 ? var9 : -var9) + ((var8 & 2) == 0 ? var11 : -var11);
         }
 
@@ -127,28 +127,28 @@ namespace betareborn
 
                 for (int var30 = 0; var30 < var8; ++var30)
                 {
-                    var31 = (var2 + (double)var30) * var11 + xCoord;
+                    var31 = (var2 + var30) * var11 + xCoord;
                     int var78 = (int)var31;
-                    if (var31 < (double)var78)
+                    if (var31 < var78)
                     {
                         --var78;
                     }
 
                     int var34 = var78 & 255;
-                    var31 -= (double)var78;
+                    var31 -= var78;
                     var35 = var31 * var31 * var31 * (var31 * (var31 * 6.0D - 15.0D) + 10.0D);
 
                     for (var37 = 0; var37 < var10; ++var37)
                     {
-                        var38 = (var6 + (double)var37) * var15 + zCoord;
+                        var38 = (var6 + var37) * var15 + zCoord;
                         var40 = (int)var38;
-                        if (var38 < (double)var40)
+                        if (var38 < var40)
                         {
                             --var40;
                         }
 
                         var41 = var40 & 255;
-                        var38 -= (double)var40;
+                        var38 -= var40;
                         var42 = var38 * var38 * var38 * (var38 * (var38 * 6.0D - 15.0D) + 10.0D);
                         var19 = permutations[var34] + 0;
                         int var66 = permutations[var19] + var41;
@@ -181,41 +181,41 @@ namespace betareborn
 
                 for (var37 = 0; var37 < var8; ++var37)
                 {
-                    var38 = (var2 + (double)var37) * var11 + xCoord;
+                    var38 = (var2 + var37) * var11 + xCoord;
                     var40 = (int)var38;
-                    if (var38 < (double)var40)
+                    if (var38 < var40)
                     {
                         --var40;
                     }
 
                     var41 = var40 & 255;
-                    var38 -= (double)var40;
+                    var38 -= var40;
                     var42 = var38 * var38 * var38 * (var38 * (var38 * 6.0D - 15.0D) + 10.0D);
 
                     for (int var44 = 0; var44 < var10; ++var44)
                     {
-                        double var45 = (var6 + (double)var44) * var15 + zCoord;
+                        double var45 = (var6 + var44) * var15 + zCoord;
                         int var47 = (int)var45;
-                        if (var45 < (double)var47)
+                        if (var45 < var47)
                         {
                             --var47;
                         }
 
                         int var48 = var47 & 255;
-                        var45 -= (double)var47;
+                        var45 -= var47;
                         double var49 = var45 * var45 * var45 * (var45 * (var45 * 6.0D - 15.0D) + 10.0D);
 
                         for (int var51 = 0; var51 < var9; ++var51)
                         {
-                            double var52 = (var4 + (double)var51) * var13 + yCoord;
+                            double var52 = (var4 + var51) * var13 + yCoord;
                             int var54 = (int)var52;
-                            if (var52 < (double)var54)
+                            if (var52 < var54)
                             {
                                 --var54;
                             }
 
                             int var55 = var54 & 255;
-                            var52 -= (double)var54;
+                            var52 -= var54;
                             double var56 = var52 * var52 * var52 * (var52 * (var52 * 6.0D - 15.0D) + 10.0D);
                             if (var51 == 0 || var55 != var22)
                             {

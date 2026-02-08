@@ -12,7 +12,7 @@ namespace betareborn.Guis
         {
             field_27274_a = var1;
             field_27273_c = new ArrayList();
-            Iterator var2 = Stats.Stats.field_25185_d.iterator();
+            Iterator var2 = Stats.Stats.BLOCKS_MINED_STATS.iterator();
 
             while (var2.hasNext())
             {
@@ -23,11 +23,11 @@ namespace betareborn.Guis
                 {
                     var4 = true;
                 }
-                else if (Stats.Stats.field_25172_A[var5] != null && GuiStats.func_27142_c(var1).writeStat(Stats.Stats.field_25172_A[var5]) > 0)
+                else if (Stats.Stats.USED[var5] != null && GuiStats.func_27142_c(var1).writeStat(Stats.Stats.USED[var5]) > 0)
                 {
                     var4 = true;
                 }
-                else if (Stats.Stats.field_25158_z[var5] != null && GuiStats.func_27142_c(var1).writeStat(Stats.Stats.field_25158_z[var5]) > 0)
+                else if (Stats.Stats.CRAFTED[var5] != null && GuiStats.func_27142_c(var1).writeStat(Stats.Stats.CRAFTED[var5]) > 0)
                 {
                     var4 = true;
                 }
@@ -78,8 +78,8 @@ namespace betareborn.Guis
             StatCrafting var6 = func_27264_b(var1);
             int var7 = var6.func_25072_b();
             GuiStats.func_27148_a(field_27274_a, var2 + 40, var3, var7);
-            func_27265_a((StatCrafting)Stats.Stats.field_25158_z[var7], var2 + 115, var3, var1 % 2 == 0);
-            func_27265_a((StatCrafting)Stats.Stats.field_25172_A[var7], var2 + 165, var3, var1 % 2 == 0);
+            func_27265_a((StatCrafting)Stats.Stats.CRAFTED[var7], var2 + 115, var3, var1 % 2 == 0);
+            func_27265_a((StatCrafting)Stats.Stats.USED[var7], var2 + 165, var3, var1 % 2 == 0);
             func_27265_a(var6, var2 + 215, var3, var1 % 2 == 0);
         }
 

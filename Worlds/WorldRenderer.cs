@@ -1,6 +1,7 @@
 using betareborn.Chunks;
 using betareborn.Profiling;
 using betareborn.Rendering;
+using betareborn.Util.Maths;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 

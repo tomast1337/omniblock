@@ -5,6 +5,8 @@ using betareborn.Worlds;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 using betareborn.Blocks.BlockEntities;
+using betareborn.Util.Maths;
+using betareborn.Util.Hit;
 
 namespace betareborn.Rendering
 {

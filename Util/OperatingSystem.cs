@@ -1,6 +1,6 @@
-namespace betareborn
+namespace betareborn.Util
 {
-    internal enum EnumOS1
+    public enum OperatingSystem
     {
         linux,
         solaris,
@@ -8,4 +8,5 @@ namespace betareborn
         macos,
         unknown
     }
+
 }

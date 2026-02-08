@@ -1,6 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Items;
 using betareborn.Stats;
+using betareborn.Stats.Achievements;
 
 namespace betareborn
 {
@@ -9,8 +10,8 @@ namespace betareborn
         public readonly int column;
         public readonly int row;
         public readonly Achievement parent;
-        private readonly String translationKey;
-        private IStatStringFormat statStringFormatter;
+        private readonly string translationKey;
+        private AchievementStatFormatter translationHelper;
         public readonly ItemStack icon;
         private bool _isChallenge;
 
@@ -77,12 +78,12 @@ namespace betareborn
 
         public string getTranslatedDescription()
         {
-            return statStringFormatter != null ? statStringFormatter.formatString(translationKey) : translationKey;
+            return translationHelper != null ? translationHelper.formatString(translationKey) : translationKey;
         }
 
-        public Achievement setStatStringFormatter(IStatStringFormat var1)
+        public Achievement setStatStringFormatter(AchievementStatFormatter var1)
         {
-            statStringFormatter = var1;
+            translationHelper = var1;
             return this;
         }
 
@@ -96,7 +97,7 @@ namespace betareborn
             return registerAchievement();
         }
 
-        public override StatBase func_27082_h()
+        public override StatBase setLocalOnly()
         {
             return m_66876377();
         }

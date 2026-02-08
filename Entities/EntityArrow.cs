@@ -1,6 +1,8 @@
 using betareborn.Blocks;
 using betareborn.Items;
 using betareborn.NBT;
+using betareborn.Util.Hit;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 using java.lang;
 

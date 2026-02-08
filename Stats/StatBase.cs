@@ -1,3 +1,4 @@
+using betareborn.Stats.Achievements;
 using java.lang;
 using java.text;
 using java.util;
@@ -10,26 +11,26 @@ namespace betareborn.Stats
         public readonly string statName;
         public bool localOnly;
         public string statGuid;
-        private readonly IStatType field_26902_a;
-        private static NumberFormat field_26903_b = NumberFormat.getIntegerInstance(Locale.US);
-        public static IStatType field_27087_i = new StatTypeSimple();
-        private static DecimalFormat field_26904_c = new DecimalFormat("########0.00");
-        public static IStatType field_27086_j = new StatTypeTime();
-        public static IStatType field_27085_k = new StatTypeDistance();
+        private readonly StatFormatter formatter;
+        private static NumberFormat DEFAULT_NUMBER_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
+        public static StatFormatter INTEGER_FORMAT = new IntegerStatFormatter();
+        private static DecimalFormat DEFAULT_DECIMAL_FORMAT = new DecimalFormat("########0.00");
+        public static StatFormatter TIME_PROVIDER = new TimeStatFormatter();
+        public static StatFormatter DISTANCE_PROVIDER = new DistanceStatFormatter();
 
-        public StatBase(int var1, string var2, IStatType var3)
+        public StatBase(int var1, string var2, StatFormatter var3)
         {
             localOnly = false;
             statId = var1;
             statName = var2;
-            field_26902_a = var3;
+            formatter = var3;
         }
 
-        public StatBase(int var1, string var2) : this(var1, var2, field_27087_i)
+        public StatBase(int var1, string var2) : this(var1, var2, INTEGER_FORMAT)
         {
         }
 
-        public virtual StatBase func_27082_h()
+        public virtual StatBase setLocalOnly()
         {
             localOnly = true;
             return this;
@@ -37,14 +38,14 @@ namespace betareborn.Stats
 
         public virtual StatBase registerStat()
         {
-            if (Stats.field_25169_C.containsKey(Integer.valueOf(statId)))
+            if (Stats.ID_TO_STAT.containsKey(Integer.valueOf(statId)))
             {
-                throw new RuntimeException("Duplicate stat id: \"" + ((StatBase)Stats.field_25169_C.get(Integer.valueOf(statId))).statName + "\" and \"" + statName + "\" at id " + statId);
+                throw new RuntimeException("Duplicate stat id: \"" + ((StatBase)Stats.ID_TO_STAT.get(Integer.valueOf(statId))).statName + "\" and \"" + statName + "\" at id " + statId);
             }
             else
             {
-                Stats.field_25188_a.add(this);
-                Stats.field_25169_C.put(Integer.valueOf(statId), this);
+                Stats.ALL_STATS.add(this);
+                Stats.ID_TO_STAT.put(Integer.valueOf(statId), this);
                 statGuid = AchievementMap.getGuid(statId);
                 return this;
             }
@@ -55,9 +56,9 @@ namespace betareborn.Stats
             return false;
         }
 
-        public string func_27084_a(int var1)
+        public string format(int var1)
         {
-            return field_26902_a.func_27192_a(var1);
+            return formatter.format(var1);
         }
 
         public override string toString()
@@ -65,14 +66,14 @@ namespace betareborn.Stats
             return statName;
         }
 
-        public static NumberFormat func_27083_i()
+        public static NumberFormat defaultNumberFormat()
         {
-            return field_26903_b;
+            return DEFAULT_NUMBER_FORMAT;
         }
 
-        public static DecimalFormat func_27081_j()
+        public static DecimalFormat defaultDecimalFormat()
         {
-            return field_26904_c;
+            return DEFAULT_DECIMAL_FORMAT;
         }
     }
 

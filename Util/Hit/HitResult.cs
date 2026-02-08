@@ -1,6 +1,7 @@
 using betareborn.Entities;
+using betareborn.Util.Maths;
 
-namespace betareborn
+namespace betareborn.Util.Hit
 {
     public class HitResult : java.lang.Object
     {

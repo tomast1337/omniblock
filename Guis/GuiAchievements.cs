@@ -1,6 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Rendering;
 using betareborn.Stats;
+using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Guis

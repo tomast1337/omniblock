@@ -2,6 +2,7 @@ using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Entities;
 using betareborn.Items;
+using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering

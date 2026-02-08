@@ -1,5 +1,6 @@
 using betareborn.Entities;
 using betareborn.Models;
+using betareborn.Util.Maths;
 using java.lang;
 using Silk.NET.OpenGL.Legacy;
 

@@ -1,6 +1,6 @@
 using java.lang;
 
-namespace betareborn.Chunks
+namespace betareborn.Util.Maths
 {
     public readonly record struct ChunkPos
     {

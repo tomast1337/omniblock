@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using betareborn.Blocks;
-using betareborn.Chunks;
 using betareborn.Entities;
 using betareborn.Guis;
 using betareborn.Items;
@@ -12,6 +11,8 @@ using betareborn.Rendering;
 using betareborn.Stats;
 using betareborn.Textures;
 using betareborn.Threading;
+using betareborn.Util.Hit;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Chunks.Storage;
@@ -357,20 +358,20 @@ namespace betareborn
             }
         }
 
-        private static EnumOS2 getOs()
+        private static Util.OperatingSystem getOs()
         {
             string var0 = java.lang.System.getProperty("os.name").ToLower();
             return var0.Contains("win")
-                ? EnumOS2.windows
+                ? Util.OperatingSystem.windows
                 : (var0.Contains("mac")
-                    ? EnumOS2.macos
+                    ? Util.OperatingSystem.macos
                     : (var0.Contains("solaris")
-                        ? EnumOS2.solaris
+                        ? Util.OperatingSystem.solaris
                         : (var0.Contains("sunos")
-                            ? EnumOS2.solaris
+                            ? Util.OperatingSystem.solaris
                             : (var0.Contains("linux")
-                                ? EnumOS2.linux
-                                : (var0.Contains("unix") ? EnumOS2.linux : EnumOS2.unknown)))));
+                                ? Util.OperatingSystem.linux
+                                : (var0.Contains("unix") ? Util.OperatingSystem.linux : Util.OperatingSystem.unknown)))));
         }
 
         public WorldStorageSource getSaveLoader()

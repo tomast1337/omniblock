@@ -4,6 +4,8 @@ using betareborn.Blocks.Materials;
 using betareborn.Chunks;
 using betareborn.Profiling;
 using betareborn.Rendering;
+using betareborn.Util.Hit;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
 using Silk.NET.Maths;

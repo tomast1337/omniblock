@@ -15,7 +15,7 @@ namespace betareborn.Guis
 
         public override int getSize()
         {
-            return Stats.Stats.field_25187_b.size();
+            return Stats.Stats.GENERAL_STATS.size();
         }
 
         protected override void elementClicked(int var1, bool var2)
@@ -39,9 +39,9 @@ namespace betareborn.Guis
 
         protected override void drawSlot(int var1, int var2, int var3, int var4, Tessellator var5)
         {
-            StatBase var6 = (StatBase)Stats.Stats.field_25187_b.get(var1);
+            StatBase var6 = (StatBase)Stats.Stats.GENERAL_STATS.get(var1);
             field_27276_a.drawString(GuiStats.func_27145_b(field_27276_a), var6.statName, var2 + 2, var3 + 1, var1 % 2 == 0 ? 16777215 : 9474192);
-            String var7 = var6.func_27084_a(GuiStats.func_27142_c(field_27276_a).writeStat(var6));
+            String var7 = var6.format(GuiStats.func_27142_c(field_27276_a).writeStat(var6));
             field_27276_a.drawString(GuiStats.func_27140_d(field_27276_a), var7, var2 + 2 + 213 - GuiStats.func_27146_e(field_27276_a).getStringWidth(var7), var3 + 1, var1 % 2 == 0 ? 16777215 : 9474192);
         }
     }

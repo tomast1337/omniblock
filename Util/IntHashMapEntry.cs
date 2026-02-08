@@ -1,15 +1,15 @@
 using java.lang;
 
-namespace betareborn
+namespace betareborn.Util
 {
-    internal class MCHashEntry : java.lang.Object
+    internal class IntHashMapEntry : java.lang.Object
     {
         public readonly int hashEntry;
         public java.lang.Object valueEntry;
-        public MCHashEntry nextEntry;
+        public IntHashMapEntry nextEntry;
         public readonly int slotHash;
 
-        public MCHashEntry(int var1, int var2, java.lang.Object var3, MCHashEntry var4)
+        public IntHashMapEntry(int var1, int var2, java.lang.Object var3, IntHashMapEntry var4)
         {
             valueEntry = var3;
             nextEntry = var4;
@@ -29,13 +29,13 @@ namespace betareborn
 
         public override bool equals(object var1)
         {
-            if (var1 is not MCHashEntry)
+            if (var1 is not IntHashMapEntry)
             {
                 return false;
             }
             else
             {
-                MCHashEntry var2 = (MCHashEntry)var1;
+                IntHashMapEntry var2 = (IntHashMapEntry)var1;
                 Integer var3 = Integer.valueOf(getHash());
                 Integer var4 = Integer.valueOf(var2.getHash());
                 if (var3 == var4 || var3 != null && var3.equals(var4))
@@ -54,7 +54,7 @@ namespace betareborn
 
         public override int hashCode()
         {
-            return MCHash.getHash(hashEntry);
+            return IntHashMap.getHash(hashEntry);
         }
 
         public override string toString()

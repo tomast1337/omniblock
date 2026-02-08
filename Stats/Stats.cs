@@ -8,40 +8,40 @@ namespace betareborn.Stats
 {
     public class Stats : java.lang.Object
     {
-        public static Map field_25169_C = new HashMap();
-        public static List field_25188_a = new ArrayList();
-        public static List field_25187_b = new ArrayList();
-        public static List field_25186_c = new ArrayList();
-        public static List field_25185_d = new ArrayList();
-        public static StatBase startGameStat = (new StatBasic(1000, StatCollector.translateToLocal("stat.startGame"))).func_27082_h().registerStat();
-        public static StatBase createWorldStat = (new StatBasic(1001, StatCollector.translateToLocal("stat.createWorld"))).func_27082_h().registerStat();
-        public static StatBase loadWorldStat = (new StatBasic(1002, StatCollector.translateToLocal("stat.loadWorld"))).func_27082_h().registerStat();
-        public static StatBase joinMultiplayerStat = (new StatBasic(1003, StatCollector.translateToLocal("stat.joinMultiplayer"))).func_27082_h().registerStat();
-        public static StatBase leaveGameStat = (new StatBasic(1004, StatCollector.translateToLocal("stat.leaveGame"))).func_27082_h().registerStat();
-        public static StatBase minutesPlayedStat = (new StatBasic(1100, StatCollector.translateToLocal("stat.playOneMinute"), StatBase.field_27086_j)).func_27082_h().registerStat();
-        public static StatBase distanceWalkedStat = (new StatBasic(2000, StatCollector.translateToLocal("stat.walkOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceSwumStat = (new StatBasic(2001, StatCollector.translateToLocal("stat.swimOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceFallenStat = (new StatBasic(2002, StatCollector.translateToLocal("stat.fallOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceClimbedStat = (new StatBasic(2003, StatCollector.translateToLocal("stat.climbOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceFlownStat = (new StatBasic(2004, StatCollector.translateToLocal("stat.flyOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceDoveStat = (new StatBasic(2005, StatCollector.translateToLocal("stat.diveOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceByMinecartStat = (new StatBasic(2006, StatCollector.translateToLocal("stat.minecartOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceByBoatStat = (new StatBasic(2007, StatCollector.translateToLocal("stat.boatOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase distanceByPigStat = (new StatBasic(2008, StatCollector.translateToLocal("stat.pigOneCm"), StatBase.field_27085_k)).func_27082_h().registerStat();
-        public static StatBase jumpStat = (new StatBasic(2010, StatCollector.translateToLocal("stat.jump"))).func_27082_h().registerStat();
-        public static StatBase dropStat = (new StatBasic(2011, StatCollector.translateToLocal("stat.drop"))).func_27082_h().registerStat();
+        public static Map ID_TO_STAT = new HashMap();
+        public static List ALL_STATS = new ArrayList();
+        public static List GENERAL_STATS = new ArrayList();
+        public static List ITEM_STATS = new ArrayList();
+        public static List BLOCKS_MINED_STATS = new ArrayList();
+        public static StatBase startGameStat = (new StatBasic(1000, StatCollector.translateToLocal("stat.startGame"))).setLocalOnly().registerStat();
+        public static StatBase createWorldStat = (new StatBasic(1001, StatCollector.translateToLocal("stat.createWorld"))).setLocalOnly().registerStat();
+        public static StatBase loadWorldStat = (new StatBasic(1002, StatCollector.translateToLocal("stat.loadWorld"))).setLocalOnly().registerStat();
+        public static StatBase joinMultiplayerStat = (new StatBasic(1003, StatCollector.translateToLocal("stat.joinMultiplayer"))).setLocalOnly().registerStat();
+        public static StatBase leaveGameStat = (new StatBasic(1004, StatCollector.translateToLocal("stat.leaveGame"))).setLocalOnly().registerStat();
+        public static StatBase minutesPlayedStat = (new StatBasic(1100, StatCollector.translateToLocal("stat.playOneMinute"), StatBase.TIME_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceWalkedStat = (new StatBasic(2000, StatCollector.translateToLocal("stat.walkOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceSwumStat = (new StatBasic(2001, StatCollector.translateToLocal("stat.swimOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceFallenStat = (new StatBasic(2002, StatCollector.translateToLocal("stat.fallOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceClimbedStat = (new StatBasic(2003, StatCollector.translateToLocal("stat.climbOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceFlownStat = (new StatBasic(2004, StatCollector.translateToLocal("stat.flyOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceDoveStat = (new StatBasic(2005, StatCollector.translateToLocal("stat.diveOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceByMinecartStat = (new StatBasic(2006, StatCollector.translateToLocal("stat.minecartOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceByBoatStat = (new StatBasic(2007, StatCollector.translateToLocal("stat.boatOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase distanceByPigStat = (new StatBasic(2008, StatCollector.translateToLocal("stat.pigOneCm"), StatBase.DISTANCE_PROVIDER)).setLocalOnly().registerStat();
+        public static StatBase jumpStat = (new StatBasic(2010, StatCollector.translateToLocal("stat.jump"))).setLocalOnly().registerStat();
+        public static StatBase dropStat = (new StatBasic(2011, StatCollector.translateToLocal("stat.drop"))).setLocalOnly().registerStat();
         public static StatBase damageDealtStat = (new StatBasic(2020, StatCollector.translateToLocal("stat.damageDealt"))).registerStat();
         public static StatBase damageTakenStat = (new StatBasic(2021, StatCollector.translateToLocal("stat.damageTaken"))).registerStat();
         public static StatBase deathsStat = (new StatBasic(2022, StatCollector.translateToLocal("stat.deaths"))).registerStat();
         public static StatBase mobKillsStat = (new StatBasic(2023, StatCollector.translateToLocal("stat.mobKills"))).registerStat();
         public static StatBase playerKillsStat = (new StatBasic(2024, StatCollector.translateToLocal("stat.playerKills"))).registerStat();
         public static StatBase fishCaughtStat = (new StatBasic(2025, StatCollector.translateToLocal("stat.fishCaught"))).registerStat();
-        public static StatBase[] mineBlockStatArray = func_25153_a("stat.mineBlock", 16777216);
-        public static StatBase[] field_25158_z;
-        public static StatBase[] field_25172_A;
-        public static StatBase[] field_25170_B;
-        private static bool field_25166_D;
-        private static bool field_25164_E;
+        public static StatBase[] mineBlockStatArray = initBlocksMined("stat.mineBlock", 16777216);
+        public static StatBase[] CRAFTED;
+        public static StatBase[] USED;
+        public static StatBase[] BROKEN;
+        private static bool hasBasicItemStatsInitialized = false;
+        private static bool hasExtendedItemStatsInitialized = false;
 
         public static void func_27360_a()
         {
@@ -49,23 +49,23 @@ namespace betareborn.Stats
 
         public static void initializeItemStats()
         {
-            field_25172_A = func_25155_a(field_25172_A, "stat.useItem", 16908288, 0, Block.BLOCKS.Length);
-            field_25170_B = func_25149_b(field_25170_B, "stat.breakItem", 16973824, 0, Block.BLOCKS.Length);
-            field_25166_D = true;
-            func_25157_c();
+            USED = initItemUsedStats(USED, "stat.useItem", 16908288, 0, Block.BLOCKS.Length);
+            BROKEN = initializeBrokenItemStats(BROKEN, "stat.breakItem", 16973824, 0, Block.BLOCKS.Length);
+            hasBasicItemStatsInitialized = true;
+            initializeCraftedItemStats();
         }
 
-        public static void func_25151_b()
+        public static void initializeExtendedItemStats()
         {
-            field_25172_A = func_25155_a(field_25172_A, "stat.useItem", 16908288, Block.BLOCKS.Length, 32000);
-            field_25170_B = func_25149_b(field_25170_B, "stat.breakItem", 16973824, Block.BLOCKS.Length, 32000);
-            field_25164_E = true;
-            func_25157_c();
+            USED = initItemUsedStats(USED, "stat.useItem", 16908288, Block.BLOCKS.Length, 32000);
+            BROKEN = initializeBrokenItemStats(BROKEN, "stat.breakItem", 16973824, Block.BLOCKS.Length, 32000);
+            hasExtendedItemStatsInitialized = true;
+            initializeCraftedItemStats();
         }
 
-        public static void func_25157_c()
+        public static void initializeCraftedItemStats()
         {
-            if (field_25166_D && field_25164_E)
+            if (hasBasicItemStatsInitialized && hasExtendedItemStatsInitialized)
             {
                 HashSet var0 = new HashSet();
                 Iterator var1 = CraftingManager.getInstance().getRecipeList().iterator();
@@ -84,7 +84,7 @@ namespace betareborn.Stats
                     var0.add(Integer.valueOf(var4.itemID));
                 }
 
-                field_25158_z = new StatBase[32000];
+                CRAFTED = new StatBase[32000];
                 var1 = var0.iterator();
 
                 while (var1.hasNext())
@@ -93,15 +93,15 @@ namespace betareborn.Stats
                     if (Item.itemsList[var5.intValue()] != null)
                     {
                         string var3 = StatCollector.translateToLocalFormatted("stat.craftItem", [Item.itemsList[var5.intValue()].getStatName()]);
-                        field_25158_z[var5.intValue()] = (new StatCrafting(16842752 + var5.intValue(), var3, var5.intValue())).registerStat();
+                        CRAFTED[var5.intValue()] = (new StatCrafting(16842752 + var5.intValue(), var3, var5.intValue())).registerStat();
                     }
                 }
 
-                replaceAllSimilarBlocks(field_25158_z);
+                replaceAllSimilarBlocks(CRAFTED);
             }
         }
 
-        private static StatBase[] func_25153_a(string var0, int var1)
+        private static StatBase[] initBlocksMined(string var0, int var1)
         {
             StatBase[] var2 = new StatBase[256];
 
@@ -111,7 +111,7 @@ namespace betareborn.Stats
                 {
                     string var4 = StatCollector.translateToLocalFormatted(var0, [Block.BLOCKS[var3].translateBlockName()]);
                     var2[var3] = (new StatCrafting(var1 + var3, var4, var3)).registerStat();
-                    field_25185_d.add((StatCrafting)var2[var3]);
+                    BLOCKS_MINED_STATS.add((StatCrafting)var2[var3]);
                 }
             }
 
@@ -119,7 +119,7 @@ namespace betareborn.Stats
             return var2;
         }
 
-        private static StatBase[] func_25155_a(StatBase[] var0, string var1, int var2, int var3, int var4)
+        private static StatBase[] initItemUsedStats(StatBase[] var0, string var1, int var2, int var3, int var4)
         {
             if (var0 == null)
             {
@@ -134,7 +134,7 @@ namespace betareborn.Stats
                     var0[var5] = (new StatCrafting(var2 + var5, var6, var5)).registerStat();
                     if (var5 >= Block.BLOCKS.Length)
                     {
-                        field_25186_c.add((StatCrafting)var0[var5]);
+                        ITEM_STATS.add((StatCrafting)var0[var5]);
                     }
                 }
             }
@@ -143,7 +143,7 @@ namespace betareborn.Stats
             return var0;
         }
 
-        private static StatBase[] func_25149_b(StatBase[] var0, string var1, int var2, int var3, int var4)
+        private static StatBase[] initializeBrokenItemStats(StatBase[] var0, string var1, int var2, int var3, int var4)
         {
             if (var0 == null)
             {
@@ -186,23 +186,21 @@ namespace betareborn.Stats
             }
             else
             {
-                field_25188_a.remove(var0[var1]);
-                field_25185_d.remove(var0[var1]);
-                field_25187_b.remove(var0[var1]);
+                ALL_STATS.remove(var0[var1]);
+                BLOCKS_MINED_STATS.remove(var0[var1]);
+                GENERAL_STATS.remove(var0[var1]);
                 var0[var1] = var0[var2];
             }
         }
 
-        public static StatBase func_27361_a(int var0)
+        public static StatBase getStatById(int var0)
         {
-            return (StatBase)field_25169_C.get(Integer.valueOf(var0));
+            return (StatBase)ID_TO_STAT.get(Integer.valueOf(var0));
         }
 
         static Stats()
         {
-            Achievements.initialize();
-            field_25166_D = false;
-            field_25164_E = false;
+            betareborn.Achievements.initialize();
         }
     }
 

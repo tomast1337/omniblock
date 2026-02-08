@@ -1,6 +1,8 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Entities;
+using betareborn.Util.Hit;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 
 namespace betareborn.Items

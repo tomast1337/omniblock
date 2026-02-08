@@ -156,12 +156,12 @@ namespace betareborn.Screens
 
                             if (var13 == null)
                             {
-                                if (var14 != null && var12.isItemValid(var14))
+                                if (var14 != null && var12.canInsert(var14))
                                 {
                                     var10 = button == 0 ? var14.count : 1;
-                                    if (var10 > var12.getSlotStackLimit())
+                                    if (var10 > var12.getMaxItemCount())
                                     {
-                                        var10 = var12.getSlotStackLimit();
+                                        var10 = var12.getMaxItemCount();
                                     }
 
                                     var12.setStack(var14.splitStack(var10));
@@ -174,7 +174,7 @@ namespace betareborn.Screens
                             else if (var14 == null)
                             {
                                 var10 = button == 0 ? var13.count : (var13.count + 1) / 2;
-                                ItemStack var11 = var12.decrStackSize(var10);
+                                ItemStack var11 = var12.takeStack(var10);
                                 var6.setItemStack(var11);
                                 if (var13.count == 0)
                                 {
@@ -183,11 +183,11 @@ namespace betareborn.Screens
 
                                 var12.onTakeItem(var6.getItemStack());
                             }
-                            else if (var12.isItemValid(var14))
+                            else if (var12.canInsert(var14))
                             {
                                 if (var13.itemID != var14.itemID || var13.getHasSubtypes() && var13.getItemDamage() != var14.getItemDamage())
                                 {
-                                    if (var14.count <= var12.getSlotStackLimit())
+                                    if (var14.count <= var12.getMaxItemCount())
                                     {
                                         var12.setStack(var14);
                                         var6.setItemStack(var13);
@@ -196,9 +196,9 @@ namespace betareborn.Screens
                                 else
                                 {
                                     var10 = button == 0 ? var14.count : 1;
-                                    if (var10 > var12.getSlotStackLimit() - var13.count)
+                                    if (var10 > var12.getMaxItemCount() - var13.count)
                                     {
-                                        var10 = var12.getSlotStackLimit() - var13.count;
+                                        var10 = var12.getMaxItemCount() - var13.count;
                                     }
 
                                     if (var10 > var14.getMaxCount() - var13.count)

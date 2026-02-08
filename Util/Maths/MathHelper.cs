@@ -1,4 +1,4 @@
-namespace betareborn
+namespace betareborn.Util.Maths
 {
     public class MathHelper : java.lang.Object
     {
@@ -27,13 +27,13 @@ namespace betareborn
         public static int floor_float(float var0)
         {
             int var1 = (int)var0;
-            return var0 < (float)var1 ? var1 - 1 : var1;
+            return var0 < var1 ? var1 - 1 : var1;
         }
 
         public static int floor_double(double var0)
         {
             int var2 = (int)var0;
-            return var0 < (double)var2 ? var2 - 1 : var2;
+            return var0 < var2 ? var2 - 1 : var2;
         }
 
         public static float abs(float var0)
@@ -70,7 +70,7 @@ namespace betareborn
         {
             for (int var0 = 0; var0 < 65536; ++var0)
             {
-                SIN_TABLE[var0] = (float)java.lang.Math.sin((double)var0 * Math.PI * 2.0D / 65536.0D);
+                SIN_TABLE[var0] = (float)java.lang.Math.sin(var0 * Math.PI * 2.0D / 65536.0D);
             }
 
         }

@@ -1,6 +1,7 @@
 using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
+using betareborn.Util.Maths.Noise;
 using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Gen.Carvers;
 using betareborn.Worlds.Gen.Features;

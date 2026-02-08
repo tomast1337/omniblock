@@ -1,6 +1,8 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Entities;
+using betareborn.Util;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 
 namespace betareborn
@@ -9,7 +11,7 @@ namespace betareborn
     {
         private readonly BlockView worldMap;
         private readonly Path path = new();
-        private readonly MCHash pointMap = new();
+        private readonly IntHashMap pointMap = new();
         private readonly PathPoint[] pathOptions = new PathPoint[32];
 
         public Pathfinder(BlockView var1)

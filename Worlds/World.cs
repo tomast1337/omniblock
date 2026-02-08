@@ -1,6 +1,5 @@
 using betareborn.Biomes;
 using betareborn.Blocks;
-using betareborn.Chunks;
 using betareborn.Entities;
 using betareborn.NBT;
 using betareborn.Profiling;
@@ -16,6 +15,8 @@ using System.Runtime.InteropServices;
 using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Worlds.Biomes.Source;
+using betareborn.Util.Maths;
+using betareborn.Util.Hit;
 
 namespace betareborn.Worlds
 {

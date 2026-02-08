@@ -1,18 +1,18 @@
-namespace betareborn
+namespace betareborn.Util.Maths.Noise
 {
-    public class OctaveSimplexNoiseSampler : NoiseGenerator
+    public class OctaveSimplexNoiseSampler : NoiseSampler
     {
-        private readonly NoiseGenerator2[] field_4234_a;
+        private readonly SimplexNoiseSampler[] field_4234_a;
         private readonly int field_4233_b;
 
         public OctaveSimplexNoiseSampler(java.util.Random var1, int var2)
         {
             field_4233_b = var2;
-            field_4234_a = new NoiseGenerator2[var2];
+            field_4234_a = new SimplexNoiseSampler[var2];
 
             for (int var3 = 0; var3 < var2; ++var3)
             {
-                field_4234_a[var3] = new NoiseGenerator2(var1);
+                field_4234_a[var3] = new SimplexNoiseSampler(var1);
             }
 
         }

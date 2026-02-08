@@ -2,6 +2,8 @@ using betareborn.Blocks.Materials;
 using betareborn.Items;
 using betareborn.NBT;
 using betareborn.Stats;
+using betareborn.Util.Hit;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 
 namespace betareborn.Entities

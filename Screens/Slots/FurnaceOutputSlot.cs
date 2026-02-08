@@ -14,7 +14,7 @@ namespace betareborn.Screens.Slots
             thePlayer = var1;
         }
 
-        public override bool isItemValid(ItemStack var1)
+        public override bool canInsert(ItemStack var1)
         {
             return false;
         }

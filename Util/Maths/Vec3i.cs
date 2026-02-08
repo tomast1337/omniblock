@@ -1,6 +1,6 @@
 using java.lang;
 
-namespace betareborn.Chunks
+namespace betareborn.Util.Maths
 {
     public class Vec3i : java.lang.Object, Comparable
     {
@@ -46,7 +46,7 @@ namespace betareborn.Chunks
 
         public int compareChunkCoordinate(Vec3i var1)
         {
-            return y == var1.y ? (z == var1.z ? x - var1.x : z - var1.z) : y - var1.y;
+            return y == var1.y ? z == var1.z ? x - var1.x : z - var1.z : y - var1.y;
         }
 
         public double getSqDistanceTo(int var1, int var2, int var3)
@@ -54,7 +54,7 @@ namespace betareborn.Chunks
             int var4 = x - var1;
             int var5 = y - var2;
             int var6 = z - var3;
-            return java.lang.Math.sqrt((double)(var4 * var4 + var5 * var5 + var6 * var6));
+            return java.lang.Math.sqrt(var4 * var4 + var5 * var5 + var6 * var6);
         }
 
         public int CompareTo(object? var1)

@@ -1,5 +1,6 @@
 using betareborn.Biomes;
-using betareborn.Chunks;
+using betareborn.Util.Maths;
+using betareborn.Util.Maths.Noise;
 
 namespace betareborn.Worlds.Biomes.Source
 {

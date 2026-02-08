@@ -1,5 +1,5 @@
 using betareborn.Biomes;
-using betareborn.Chunks;
+using betareborn.Util.Maths;
 using java.util;
 
 namespace betareborn.Worlds.Biomes.Source

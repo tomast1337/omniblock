@@ -1,16 +1,17 @@
 using java.lang;
+using OperatingSystem = betareborn.Util.OperatingSystem;
 
 namespace betareborn
 {
     public class EnumOSMappingHelper
     {
-        public static readonly int[] enumOSMappingArray = new int[System.Enum.GetValues<EnumOS2>().Length];
+        public static readonly int[] enumOSMappingArray = new int[System.Enum.GetValues<OperatingSystem>().Length];
 
         static EnumOSMappingHelper()
         {
             try
             {
-                enumOSMappingArray[(int)EnumOS2.linux] = 1;
+                enumOSMappingArray[(int)Util.OperatingSystem.linux] = 1;
             }
             catch (NoSuchFieldError var4)
             {
@@ -18,7 +19,7 @@ namespace betareborn
 
             try
             {
-                enumOSMappingArray[(int)EnumOS2.solaris] = 2;
+                enumOSMappingArray[(int)Util.OperatingSystem.solaris] = 2;
             }
             catch (NoSuchFieldError var3)
             {
@@ -26,7 +27,7 @@ namespace betareborn
 
             try
             {
-                enumOSMappingArray[(int)EnumOS2.windows] = 3;
+                enumOSMappingArray[(int)Util.OperatingSystem.windows] = 3;
             }
             catch (NoSuchFieldError var2)
             {
@@ -34,7 +35,7 @@ namespace betareborn
 
             try
             {
-                enumOSMappingArray[(int)EnumOS2.macos] = 4;
+                enumOSMappingArray[(int)Util.OperatingSystem.macos] = 4;
             }
             catch (NoSuchFieldError var1)
             {

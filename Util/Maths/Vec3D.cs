@@ -1,4 +1,4 @@
-namespace betareborn
+namespace betareborn.Util.Maths
 {
     public class Vec3D : java.lang.Object
     {

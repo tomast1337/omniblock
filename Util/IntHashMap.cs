@@ -1,11 +1,11 @@
 using java.lang;
 
-namespace betareborn
+namespace betareborn.Util
 {
-    public class MCHash : java.lang.Object
+    public class IntHashMap : java.lang.Object
     {
         [NonSerialized]
-        private MCHashEntry[] slots = new MCHashEntry[16];
+        private IntHashMapEntry[] slots = new IntHashMapEntry[16];
         [NonSerialized]
         private int count;
         private int threshold = 12;
@@ -28,7 +28,7 @@ namespace betareborn
         {
             int var2 = computeHash(var1);
 
-            for (MCHashEntry var3 = slots[getSlotIndex(var2, slots.Length)]; var3 != null; var3 = var3.nextEntry)
+            for (IntHashMapEntry var3 = slots[getSlotIndex(var2, slots.Length)]; var3 != null; var3 = var3.nextEntry)
             {
                 if (var3.hashEntry == var1)
                 {
@@ -44,7 +44,7 @@ namespace betareborn
             int var3 = computeHash(var1);
             int var4 = getSlotIndex(var3, slots.Length);
 
-            for (MCHashEntry var5 = slots[var4]; var5 != null; var5 = var5.nextEntry)
+            for (IntHashMapEntry var5 = slots[var4]; var5 != null; var5 = var5.nextEntry)
             {
                 if (var5.hashEntry == var1)
                 {
@@ -58,7 +58,7 @@ namespace betareborn
 
         private void grow(int var1)
         {
-            MCHashEntry[] var2 = slots;
+            IntHashMapEntry[] var2 = slots;
             int var3 = var2.Length;
             if (var3 == 1073741824)
             {
@@ -66,26 +66,26 @@ namespace betareborn
             }
             else
             {
-                MCHashEntry[] var4 = new MCHashEntry[var1];
+                IntHashMapEntry[] var4 = new IntHashMapEntry[var1];
                 copyTo(var4);
                 slots = var4;
-                threshold = (int)((float)var1 * growFactor);
+                threshold = (int)(var1 * growFactor);
             }
         }
 
-        private void copyTo(MCHashEntry[] var1)
+        private void copyTo(IntHashMapEntry[] var1)
         {
-            MCHashEntry[] var2 = slots;
+            IntHashMapEntry[] var2 = slots;
             int var3 = var1.Length;
 
             for (int var4 = 0; var4 < var2.Length; ++var4)
             {
-                MCHashEntry var5 = var2[var4];
+                IntHashMapEntry var5 = var2[var4];
                 if (var5 != null)
                 {
                     var2[var4] = null;
 
-                    MCHashEntry var6;
+                    IntHashMapEntry var6;
                     do
                     {
                         var6 = var5.nextEntry;
@@ -101,18 +101,18 @@ namespace betareborn
 
         public java.lang.Object removeObject(int var1)
         {
-            MCHashEntry var2 = removeEntry(var1);
+            IntHashMapEntry var2 = removeEntry(var1);
             return var2 == null ? null : var2.valueEntry;
         }
 
-        MCHashEntry removeEntry(int var1)
+        IntHashMapEntry removeEntry(int var1)
         {
             int var2 = computeHash(var1);
             int var3 = getSlotIndex(var2, slots.Length);
-            MCHashEntry var4 = slots[var3];
+            IntHashMapEntry var4 = slots[var3];
 
-            MCHashEntry var5;
-            MCHashEntry var6;
+            IntHashMapEntry var5;
+            IntHashMapEntry var6;
             for (var5 = var4; var5 != null; var5 = var6)
             {
                 var6 = var5.nextEntry;
@@ -141,7 +141,7 @@ namespace betareborn
         public void clearMap()
         {
             ++versionStamp;
-            MCHashEntry[] var1 = slots;
+            IntHashMapEntry[] var1 = slots;
 
             for (int var2 = 0; var2 < var1.Length; ++var2)
             {
@@ -153,8 +153,8 @@ namespace betareborn
 
         private void insert(int var1, int var2, java.lang.Object var3, int var4)
         {
-            MCHashEntry var5 = slots[var4];
-            slots[var4] = new MCHashEntry(var1, var2, var3, var5);
+            IntHashMapEntry var5 = slots[var4];
+            slots[var4] = new IntHashMapEntry(var1, var2, var3, var5);
             if (count++ >= threshold)
             {
                 grow(2 * slots.Length);

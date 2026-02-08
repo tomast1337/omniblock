@@ -12,6 +12,7 @@ using java.net;
 using betareborn.Blocks.BlockEntities;
 using betareborn.Inventorys;
 using betareborn.Screens;
+using betareborn.Util.Maths;
 
 namespace betareborn
 {
@@ -770,7 +771,7 @@ namespace betareborn
 
         public override void func_27245_a(Packet200Statistic var1)
         {
-            ((EntityClientPlayerMP)mc.thePlayer).func_27027_b(Stats.Stats.func_27361_a(var1.field_27052_a), var1.field_27051_b);
+            ((EntityClientPlayerMP)mc.thePlayer).func_27027_b(Stats.Stats.getStatById(var1.field_27052_a), var1.field_27051_b);
         }
 
         public override bool isServerHandler()

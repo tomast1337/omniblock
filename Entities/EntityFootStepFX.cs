@@ -1,4 +1,5 @@
 using betareborn.Rendering;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 using Silk.NET.OpenGL.Legacy;
 

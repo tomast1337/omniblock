@@ -1,4 +1,4 @@
-namespace betareborn.Chunks
+namespace betareborn.Util.Maths
 {
     public class BlockPos : java.lang.Object
     {

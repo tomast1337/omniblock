@@ -1,19 +1,19 @@
-namespace betareborn
+namespace betareborn.Util.Maths.Noise
 {
-    public class OctavePerlinNoiseSampler : NoiseGenerator
+    public class OctavePerlinNoiseSampler : NoiseSampler
     {
 
-        private NoiseGeneratorPerlin[] generatorCollection;
+        private PerlinNoiseSampler[] generatorCollection;
         private int field_1191_b;
 
         public OctavePerlinNoiseSampler(java.util.Random var1, int var2)
         {
             field_1191_b = var2;
-            generatorCollection = new NoiseGeneratorPerlin[var2];
+            generatorCollection = new PerlinNoiseSampler[var2];
 
             for (int var3 = 0; var3 < var2; ++var3)
             {
-                generatorCollection[var3] = new NoiseGeneratorPerlin(var1);
+                generatorCollection[var3] = new PerlinNoiseSampler(var1);
             }
 
         }
@@ -59,7 +59,7 @@ namespace betareborn
 
         public double[] create(double[] var1, int var2, int var3, int var4, int var5, double var6, double var8, double var10)
         {
-            return create(var1, (double)var2, 10.0D, (double)var3, var4, 1, var5, var6, 1.0D, var8);
+            return create(var1, var2, 10.0D, var3, var4, 1, var5, var6, 1.0D, var8);
         }
     }
 

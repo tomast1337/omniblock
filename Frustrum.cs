@@ -1,3 +1,5 @@
+using betareborn.Util.Maths;
+
 namespace betareborn
 {
     public class Frustrum : ICamera

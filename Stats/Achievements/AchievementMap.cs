@@ -2,7 +2,7 @@ using java.io;
 using java.lang;
 using java.util;
 
-namespace betareborn
+namespace betareborn.Stats.Achievements
 {
     public class AchievementMap : java.lang.Object
     {

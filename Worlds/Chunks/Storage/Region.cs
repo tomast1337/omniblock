@@ -1,5 +1,5 @@
-﻿using betareborn.Chunks;
-using betareborn.NBT;
+﻿using betareborn.NBT;
+using betareborn.Util.Maths;
 using java.io;
 using K4os.Compression.LZ4;
 using Silk.NET.Maths;

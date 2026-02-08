@@ -106,7 +106,7 @@ namespace betareborn.Guis
             ItemStack var4 = var1.getStack();
             if (var4 == null)
             {
-                int var5 = var1.getBackgroundIconIndex();
+                int var5 = var1.getBackgroundTextureId();
                 if (var5 >= 0)
                 {
                     GLManager.GL.Disable(GLEnum.Lighting);

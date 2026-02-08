@@ -2,7 +2,7 @@ using ikvm.io;
 using java.io;
 using System.Reflection;
 
-namespace betareborn
+namespace betareborn.Util
 {
     public class ChatAllowedCharacters : java.lang.Object
     {

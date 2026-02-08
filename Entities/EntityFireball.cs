@@ -1,4 +1,6 @@
 using betareborn.NBT;
+using betareborn.Util.Hit;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 
 namespace betareborn.Entities

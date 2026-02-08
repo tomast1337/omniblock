@@ -1,7 +1,9 @@
+using betareborn.Stats.Achievements;
+
 namespace betareborn.Stats
 {
 
-    public class StatStringFormatKeyInv : IStatStringFormat
+    public class StatStringFormatKeyInv : AchievementStatFormatter
     {
         readonly Minecraft theGame;
         private static readonly StringTranslate localizedName = StringTranslate.getInstance();

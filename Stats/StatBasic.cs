@@ -2,7 +2,7 @@ namespace betareborn.Stats
 {
     public class StatBasic : StatBase
     {
-        public StatBasic(int var1, string var2, IStatType var3) : base(var1, var2, var3)
+        public StatBasic(int var1, string var2, StatFormatter var3) : base(var1, var2, var3)
         {
         }
 
@@ -13,7 +13,7 @@ namespace betareborn.Stats
         public override StatBase registerStat()
         {
             base.registerStat();
-            Stats.field_25187_b.add(this);
+            Stats.GENERAL_STATS.add(this);
             return this;
         }
     }

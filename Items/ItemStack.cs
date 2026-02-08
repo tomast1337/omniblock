@@ -77,7 +77,7 @@ namespace betareborn.Items
             bool var7 = getItem().onItemUse(this, var1, var2, var3, var4, var5, var6);
             if (var7)
             {
-                var1.increaseStat(Stats.Stats.field_25172_A[itemID], 1);
+                var1.increaseStat(Stats.Stats.USED[itemID], 1);
             }
 
             return var7;
@@ -162,7 +162,7 @@ namespace betareborn.Items
                 {
                     if (var2 is EntityPlayer)
                     {
-                        ((EntityPlayer)var2).increaseStat(Stats.Stats.field_25170_B[itemID], 1);
+                        ((EntityPlayer)var2).increaseStat(Stats.Stats.BROKEN[itemID], 1);
                     }
 
                     --count;
@@ -182,7 +182,7 @@ namespace betareborn.Items
             bool var3 = Item.itemsList[itemID].hitEntity(this, var1, var2);
             if (var3)
             {
-                var2.increaseStat(Stats.Stats.field_25172_A[itemID], 1);
+                var2.increaseStat(Stats.Stats.USED[itemID], 1);
             }
 
         }
@@ -192,7 +192,7 @@ namespace betareborn.Items
             bool var6 = Item.itemsList[itemID].onBlockDestroyed(this, var1, var2, var3, var4, var5);
             if (var6)
             {
-                var5.increaseStat(Stats.Stats.field_25172_A[itemID], 1);
+                var5.increaseStat(Stats.Stats.USED[itemID], 1);
             }
 
         }
@@ -263,7 +263,7 @@ namespace betareborn.Items
 
         public void onCrafting(World var1, EntityPlayer var2)
         {
-            var2.increaseStat(Stats.Stats.field_25158_z[itemID], count);
+            var2.increaseStat(Stats.Stats.CRAFTED[itemID], count);
             Item.itemsList[itemID].onCreated(this, var1, var2);
         }
 

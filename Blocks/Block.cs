@@ -5,6 +5,8 @@ using betareborn.Worlds;
 using java.lang;
 using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
+using betareborn.Util.Maths;
+using betareborn.Util.Hit;
 
 namespace betareborn.Blocks
 {

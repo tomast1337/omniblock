@@ -1,3 +1,5 @@
+using betareborn.Util.Maths;
+
 namespace betareborn.Models
 {
     public class ModelBiped : ModelBase

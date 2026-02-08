@@ -18,12 +18,12 @@ namespace betareborn
         }
 
 
-        public override int getSlotStackLimit()
+        public override int getMaxItemCount()
         {
             return 1;
         }
 
-        public override bool isItemValid(ItemStack var1)
+        public override bool canInsert(ItemStack var1)
         {
             return var1.getItem() is ItemArmor ? ((ItemArmor)var1.getItem()).armorType == armorType : (var1.getItem().id == Block.PUMPKIN.id ? armorType == 0 : false);
         }

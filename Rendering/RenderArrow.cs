@@ -1,4 +1,5 @@
 using betareborn.Entities;
+using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering
