@@ -1,5 +1,5 @@
 using betareborn.Blocks;
-using betareborn.Materials;
+using betareborn.Blocks.Materials;
 using betareborn.Models;
 using betareborn.Worlds;
 using Silk.NET.Maths;

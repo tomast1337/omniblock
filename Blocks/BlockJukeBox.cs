@@ -1,8 +1,8 @@
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -35,7 +35,7 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                TileEntityRecordPlayer var6 = (TileEntityRecordPlayer)world.getBlockEntity(x, y, z);
+                BlockEntityRecordPlayer var6 = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
                 var6.recordId = id;
                 var6.markDirty();
                 world.setBlockMeta(x, y, z, 1);
@@ -46,7 +46,7 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                TileEntityRecordPlayer var5 = (TileEntityRecordPlayer)world.getBlockEntity(x, y, z);
+                BlockEntityRecordPlayer var5 = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
                 int var6 = var5.recordId;
                 if (var6 != 0)
                 {
@@ -82,7 +82,7 @@ namespace betareborn.Blocks
 
         protected override BlockEntity getBlockEntity()
         {
-            return new TileEntityRecordPlayer();
+            return new BlockEntityRecordPlayer();
         }
     }
 

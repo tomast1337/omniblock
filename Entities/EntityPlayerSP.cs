@@ -1,9 +1,9 @@
 using betareborn.Guis;
 using betareborn.NBT;
 using betareborn.Stats;
-using betareborn.TileEntities;
 using betareborn.Worlds;
 using java.lang;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Entities
 {
@@ -139,7 +139,7 @@ namespace betareborn.Entities
             mc.displayGuiScreen(null);
         }
 
-        public override void displayGUIEditSign(TileEntitySign var1)
+        public override void displayGUIEditSign(BlockEntitySign var1)
         {
             mc.displayGuiScreen(new GuiEditSign(var1));
         }
@@ -154,12 +154,12 @@ namespace betareborn.Entities
             mc.displayGuiScreen(new GuiCrafting(inventory, worldObj, var1, var2, var3));
         }
 
-        public override void displayGUIFurnace(TileEntityFurnace var1)
+        public override void displayGUIFurnace(BlockEntityFurnace var1)
         {
             mc.displayGuiScreen(new GuiFurnace(inventory, var1));
         }
 
-        public override void displayGUIDispenser(TileEntityDispenser var1)
+        public override void displayGUIDispenser(BlockEntityDispenser var1)
         {
             mc.displayGuiScreen(new GuiDispenser(inventory, var1));
         }

@@ -1,7 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Entities;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Items
 {
@@ -66,7 +66,7 @@ namespace betareborn.Items
                     }
 
                     --var1.count;
-                    TileEntitySign var8 = (TileEntitySign)var3.getBlockEntity(var4, var5, var6);
+                    BlockEntitySign var8 = (BlockEntitySign)var3.getBlockEntity(var4, var5, var6);
                     if (var8 != null)
                     {
                         var2.displayGUIEditSign(var8);

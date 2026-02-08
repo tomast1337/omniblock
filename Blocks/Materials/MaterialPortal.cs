@@ -1,11 +1,10 @@
-namespace betareborn.Materials
+namespace betareborn.Blocks.Materials
 {
-    public class MaterialTransparent : Material
+    public class MaterialPortal : Material
     {
 
-        public MaterialTransparent(MapColor var1) : base(var1)
+        public MaterialPortal(MapColor var1) : base(var1)
         {
-            setReplaceable();
         }
 
         public override bool isSolid()

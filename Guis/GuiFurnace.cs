@@ -1,14 +1,14 @@
 using betareborn.Containers;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Guis
 {
     public class GuiFurnace : GuiContainer
     {
 
-        private TileEntityFurnace furnaceInventory;
+        private BlockEntityFurnace furnaceInventory;
 
-        public GuiFurnace(InventoryPlayer playerInventory, TileEntityFurnace furnace) : base(new ContainerFurnace(playerInventory, furnace))
+        public GuiFurnace(InventoryPlayer playerInventory, BlockEntityFurnace furnace) : base(new ContainerFurnace(playerInventory, furnace))
         {
             furnaceInventory = furnace;
         }

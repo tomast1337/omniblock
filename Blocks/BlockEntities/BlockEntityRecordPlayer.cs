@@ -1,8 +1,8 @@
 using betareborn.NBT;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntityRecordPlayer : BlockEntity
+    public class BlockEntityRecordPlayer : BlockEntity
     {
         public int recordId;
 

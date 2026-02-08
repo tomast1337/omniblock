@@ -1,5 +1,5 @@
 using betareborn.Blocks;
-using betareborn.Materials;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Items
 {

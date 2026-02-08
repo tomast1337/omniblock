@@ -1,13 +1,13 @@
 using betareborn.Blocks;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntitySignRenderer : TileEntitySpecialRenderer
+    public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
     {
 
         private SignModel signModel = new SignModel();
 
-        public void renderTileEntitySignAt(TileEntitySign var1, double var2, double var4, double var6, float var8)
+        public void renderTileEntitySignAt(BlockEntitySign var1, double var2, double var4, double var6, float var8)
         {
             Block var9 = var1.getBlock();
             GLManager.GL.PushMatrix();
@@ -16,7 +16,7 @@ namespace betareborn.TileEntities
             if (var9 == Block.SIGN)
             {
                 GLManager.GL.Translate((float)var2 + 0.5F, (float)var4 + 12.0F / 16.0F * var10, (float)var6 + 0.5F);
-                float var11 = (float)(var1.getPushedBlockData() * 360) / 16.0F;
+                float var11 = var1.getPushedBlockData() * 360 / 16.0F;
                 GLManager.GL.Rotate(-var11, 0.0F, 1.0F, 0.0F);
                 signModel.signStick.showModel = true;
             }
@@ -60,7 +60,7 @@ namespace betareborn.TileEntities
 
             for (int var14 = 0; var14 < var1.texts.Length; ++var14)
             {
-                String var15 = var1.texts[var14];
+                string var15 = var1.texts[var14];
                 if (var14 == var1.currentRow)
                 {
                     var15 = "> " + var15 + " <";
@@ -79,7 +79,7 @@ namespace betareborn.TileEntities
 
         public override void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8)
         {
-            renderTileEntitySignAt((TileEntitySign)var1, var2, var4, var6, var8);
+            renderTileEntitySignAt((BlockEntitySign)var1, var2, var4, var6, var8);
         }
     }
 

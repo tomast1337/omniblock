@@ -2,10 +2,8 @@ using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Chunks;
 using betareborn.Entities;
-using betareborn.Materials;
 using betareborn.NBT;
 using betareborn.Profiling;
-using betareborn.TileEntities;
 using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Chunks.Light;
 using betareborn.Worlds.Chunks.Storage;
@@ -15,6 +13,8 @@ using java.lang;
 using java.util;
 using Silk.NET.Maths;
 using System.Runtime.InteropServices;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Worlds
 {

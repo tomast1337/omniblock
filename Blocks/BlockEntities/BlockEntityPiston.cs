@@ -2,11 +2,11 @@ using betareborn.Blocks;
 using betareborn.Entities;
 using betareborn.NBT;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntityPiston : BlockEntity
+    public class BlockEntityPiston : BlockEntity
     {
-        public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntityPiston).TypeHandle);
+        public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(BlockEntityPiston).TypeHandle);
 
         private int pushedBlockId;
         private int pushedBlockData;
@@ -17,11 +17,11 @@ namespace betareborn.TileEntities
         private float progress;
         private static readonly List<Entity> pushedEntities = [];
 
-        public TileEntityPiston()
+        public BlockEntityPiston()
         {
         }
 
-        public TileEntityPiston(int pushedBlockId, int pushedBlockData, int facing, bool extending, bool source)
+        public BlockEntityPiston(int pushedBlockId, int pushedBlockData, int facing, bool extending, bool source)
         {
             this.pushedBlockId = pushedBlockId;
             this.pushedBlockData = pushedBlockData;
@@ -67,17 +67,17 @@ namespace betareborn.TileEntities
 
         public float getRenderOffsetX(float tickDelta)
         {
-            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonConstants.HEAD_OFFSET_X[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonConstants.HEAD_OFFSET_X[facing];
+            return extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_X[facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_X[facing];
         }
 
         public float getRenderOffsetY(float tickDelta)
         {
-            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonConstants.HEAD_OFFSET_Y[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonConstants.HEAD_OFFSET_Y[facing];
+            return extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_Y[facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_Y[facing];
         }
 
         public float getRenderOffsetZ(float tickDelta)
         {
-            return extending ? (getProgress(tickDelta) - 1.0F) * (float)PistonConstants.HEAD_OFFSET_Z[facing] : (1.0F - getProgress(tickDelta)) * (float)PistonConstants.HEAD_OFFSET_Z[facing];
+            return extending ? (getProgress(tickDelta) - 1.0F) * PistonConstants.HEAD_OFFSET_Z[facing] : (1.0F - getProgress(tickDelta)) * PistonConstants.HEAD_OFFSET_Z[facing];
         }
 
         private void pushEntities(float collisionShapeSizeMultiplier, float entityMoveMultiplier)
@@ -94,16 +94,16 @@ namespace betareborn.TileEntities
             Box var3 = Block.MOVING_PISTON.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
             if (var3 != null)
             {
-                var var4 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, var3);
+                var var4 = world.getEntitiesWithinAABBExcludingEntity(null, var3);
                 if (var4.Count > 0)
                 {
                     pushedEntities.AddRange(var4);
                     foreach (Entity var6 in pushedEntities)
                     {
                         var6.moveEntity(
-                            (double)(entityMoveMultiplier * (float)PistonConstants.HEAD_OFFSET_X[facing]),
-                            (double)(entityMoveMultiplier * (float)PistonConstants.HEAD_OFFSET_Y[facing]),
-                            (double)(entityMoveMultiplier * (float)PistonConstants.HEAD_OFFSET_Z[facing])
+                            (double)(entityMoveMultiplier * PistonConstants.HEAD_OFFSET_X[facing]),
+                            (double)(entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Y[facing]),
+                            (double)(entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Z[facing])
                         );
                     }
                     pushedEntities.Clear();

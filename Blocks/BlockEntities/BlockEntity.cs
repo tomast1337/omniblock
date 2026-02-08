@@ -1,11 +1,10 @@
-using betareborn.Blocks;
 using betareborn.NBT;
 using betareborn.Packets;
 using betareborn.Worlds;
 using java.lang;
 using java.util;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
     public class BlockEntity : java.lang.Object
     {
@@ -103,9 +102,9 @@ namespace betareborn.TileEntities
 
         public double distanceFrom(double x, double y, double z)
         {
-            double var7 = (double)this.x + 0.5D - x;
-            double var9 = (double)this.y + 0.5D - y;
-            double var11 = (double)this.z + 0.5D - z;
+            double var7 = this.x + 0.5D - x;
+            double var9 = this.y + 0.5D - y;
+            double var11 = this.z + 0.5D - z;
             return var7 * var7 + var9 * var9 + var11 * var11;
         }
 
@@ -136,14 +135,14 @@ namespace betareborn.TileEntities
 
         static BlockEntity()
         {
-            create(new TileEntityFurnace().getClass(), "Furnace");
-            create(new TileEntityChest().getClass(), "Chest");
-            create(new TileEntityRecordPlayer().getClass(), "RecordPlayer");
-            create(new TileEntityDispenser().getClass(), "Trap");
-            create(new TileEntitySign().getClass(), "Sign");
-            create(new TileEntityMobSpawner().getClass(), "MobSpawner");
-            create(new TileEntityNote().getClass(), "Music");
-            create(new TileEntityPiston().getClass(), "Piston");
+            create(new BlockEntityFurnace().getClass(), "Furnace");
+            create(new BlockEntityChest().getClass(), "Chest");
+            create(new BlockEntityRecordPlayer().getClass(), "RecordPlayer");
+            create(new BlockEntityDispenser().getClass(), "Trap");
+            create(new BlockEntitySign().getClass(), "Sign");
+            create(new BlockEntityMobSpawner().getClass(), "MobSpawner");
+            create(new BlockEntityNote().getClass(), "Music");
+            create(new BlockEntityPiston().getClass(), "Piston");
         }
     }
 }

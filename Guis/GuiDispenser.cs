@@ -1,12 +1,12 @@
 using betareborn.Containers;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Guis
 {
     public class GuiDispenser : GuiContainer
     {
 
-        public GuiDispenser(InventoryPlayer var1, TileEntityDispenser var2) : base(new ContainerDispenser(var1, var2))
+        public GuiDispenser(InventoryPlayer var1, BlockEntityDispenser var2) : base(new ContainerDispenser(var1, var2))
         {
         }
 

@@ -1,5 +1,5 @@
 using betareborn.Blocks;
-using betareborn.Materials;
+using betareborn.Blocks.Materials;
 using betareborn.Worlds;
 
 namespace betareborn.Entities

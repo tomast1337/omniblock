@@ -1,7 +1,7 @@
 using betareborn.Entities;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -115,9 +115,9 @@ namespace betareborn.Blocks
             else if (data1 == 1)
             {
                 BlockEntity var8 = world.getBlockEntity(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2]);
-                if (var8 != null && var8 is TileEntityPiston)
+                if (var8 != null && var8 is BlockEntityPiston)
                 {
-                    ((TileEntityPiston)var8).finish();
+                    ((BlockEntityPiston)var8).finish();
                 }
 
                 world.setBlockAndMetadata(x, y, z, Block.MOVING_PISTON.id, data2);
@@ -133,9 +133,9 @@ namespace betareborn.Blocks
                     if (var12 == Block.MOVING_PISTON.id)
                     {
                         BlockEntity var15 = world.getBlockEntity(var9, var10, var11);
-                        if (var15 != null && var15 is TileEntityPiston)
+                        if (var15 != null && var15 is BlockEntityPiston)
                         {
-                            TileEntityPiston var16 = (TileEntityPiston)var15;
+                            BlockEntityPiston var16 = (BlockEntityPiston)var15;
                             if (var16.getFacing() == data2 && var16.isExtending())
                             {
                                 var16.finish();

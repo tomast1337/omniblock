@@ -1,10 +1,10 @@
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
 using betareborn.Stats;
-using betareborn.TileEntities;
 using betareborn.Worlds;
 using java.lang;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -89,12 +89,12 @@ namespace betareborn.Blocks
         public static readonly Block FARMLAND = (new BlockFarmland(60)).setHardness(0.6F).setSoundGroup(soundGravelFootstep).setBlockName("farmland");
         public static readonly Block FURNACE = (new BlockFurnace(61, false)).setHardness(3.5F).setSoundGroup(soundStoneFootstep).setBlockName("furnace").ignoreMetaUpdates();
         public static readonly Block LIT_FURNACE = (new BlockFurnace(62, true)).setHardness(3.5F).setSoundGroup(soundStoneFootstep).setLuminance(14.0F / 16.0F).setBlockName("furnace").ignoreMetaUpdates();
-        public static readonly Block SIGN = (new BlockSign(63, TileEntitySign.Class, true)).setHardness(1.0F).setSoundGroup(soundWoodFootstep).setBlockName("sign").disableStats().ignoreMetaUpdates();
+        public static readonly Block SIGN = (new BlockSign(63, BlockEntitySign.Class, true)).setHardness(1.0F).setSoundGroup(soundWoodFootstep).setBlockName("sign").disableStats().ignoreMetaUpdates();
         public static readonly Block DOOR = (new BlockDoor(64, Material.WOOD)).setHardness(3.0F).setSoundGroup(soundWoodFootstep).setBlockName("doorWood").disableStats().ignoreMetaUpdates();
         public static readonly Block LADDER = (new BlockLadder(65, 83)).setHardness(0.4F).setSoundGroup(soundWoodFootstep).setBlockName("ladder").ignoreMetaUpdates();
         public static readonly Block RAIL = (new BlockRail(66, 128, false)).setHardness(0.7F).setSoundGroup(soundMetalFootstep).setBlockName("rail").ignoreMetaUpdates();
         public static readonly Block COBBLESTONE_STAIRS = (new BlockStairs(67, COBBLESTONE)).setBlockName("stairsStone").ignoreMetaUpdates();
-        public static readonly Block WALL_SIGN = (new BlockSign(68, TileEntitySign.Class, false)).setHardness(1.0F).setSoundGroup(soundWoodFootstep).setBlockName("sign").disableStats().ignoreMetaUpdates();
+        public static readonly Block WALL_SIGN = (new BlockSign(68, BlockEntitySign.Class, false)).setHardness(1.0F).setSoundGroup(soundWoodFootstep).setBlockName("sign").disableStats().ignoreMetaUpdates();
         public static readonly Block LEVER = (new BlockLever(69, 96)).setHardness(0.5F).setSoundGroup(soundWoodFootstep).setBlockName("lever").ignoreMetaUpdates();
         public static readonly Block STONE_PRESSURE_PLATE = (new BlockPressurePlate(70, STONE.textureId, PressurePlateActiviationRule.MOBS, Material.STONE)).setHardness(0.5F).setSoundGroup(soundStoneFootstep).setBlockName("pressurePlate").ignoreMetaUpdates();
         public static readonly Block IRON_DOOR = (new BlockDoor(71, Material.METAL)).setHardness(5.0F).setSoundGroup(soundMetalFootstep).setBlockName("doorIron").disableStats().ignoreMetaUpdates();

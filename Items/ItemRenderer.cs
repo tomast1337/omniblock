@@ -1,7 +1,7 @@
 using betareborn.Blocks;
+using betareborn.Blocks.Materials;
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Rendering

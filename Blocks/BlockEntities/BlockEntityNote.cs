@@ -1,10 +1,10 @@
-using betareborn.Materials;
+using betareborn.Blocks.Materials;
 using betareborn.NBT;
 using betareborn.Worlds;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntityNote : BlockEntity
+    public class BlockEntityNote : BlockEntity
     {
         public sbyte note = 0;
         public bool powered = false;

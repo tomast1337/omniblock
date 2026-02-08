@@ -5,12 +5,12 @@ using betareborn.Entities;
 using betareborn.Guis;
 using betareborn.Items;
 using betareborn.Packets;
-using betareborn.TileEntities;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Storage;
 using java.io;
 using java.net;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn
 {
@@ -596,13 +596,13 @@ namespace betareborn
             }
             else if (var1.inventoryType == 2)
             {
-                TileEntityFurnace var3 = new TileEntityFurnace();
+                BlockEntityFurnace var3 = new BlockEntityFurnace();
                 mc.thePlayer.displayGUIFurnace(var3);
                 mc.thePlayer.craftingInventory.windowId = var1.windowId;
             }
             else if (var1.inventoryType == 3)
             {
-                TileEntityDispenser var4 = new TileEntityDispenser();
+                BlockEntityDispenser var4 = new BlockEntityDispenser();
                 mc.thePlayer.displayGUIDispenser(var4);
                 mc.thePlayer.craftingInventory.windowId = var1.windowId;
             }
@@ -683,9 +683,9 @@ namespace betareborn
             if (mc.theWorld.blockExists(var1.x, var1.y, var1.z))
             {
                 BlockEntity var2 = mc.theWorld.getBlockEntity(var1.x, var1.y, var1.z);
-                if (var2 is TileEntitySign)
+                if (var2 is BlockEntitySign)
                 {
-                    TileEntitySign var3 = (TileEntitySign)var2;
+                    BlockEntitySign var3 = (BlockEntitySign)var2;
 
                     for (int var4 = 0; var4 < 4; ++var4)
                     {

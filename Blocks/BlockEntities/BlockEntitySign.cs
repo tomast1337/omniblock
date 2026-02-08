@@ -2,11 +2,11 @@ using betareborn.NBT;
 using betareborn.Packets;
 using java.lang;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntitySign : BlockEntity
+    public class BlockEntitySign : BlockEntity
     {
-        public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntitySign).TypeHandle);
+        public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(BlockEntitySign).TypeHandle);
         public string[] texts = ["", "", "", ""];
         public int currentRow = -1;
         private bool editable = true;

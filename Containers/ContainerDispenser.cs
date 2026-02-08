@@ -1,13 +1,13 @@
 using betareborn.Entities;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Containers
 {
     public class ContainerDispenser : Container
     {
-        private TileEntityDispenser field_21149_a;
+        private BlockEntityDispenser field_21149_a;
 
-        public ContainerDispenser(IInventory var1, TileEntityDispenser var2)
+        public ContainerDispenser(IInventory var1, BlockEntityDispenser var2)
         {
             field_21149_a = var2;
 

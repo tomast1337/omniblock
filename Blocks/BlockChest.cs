@@ -1,8 +1,8 @@
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -168,7 +168,7 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            TileEntityChest var5 = (TileEntityChest)world.getBlockEntity(x, y, z);
+            BlockEntityChest var5 = (BlockEntityChest)world.getBlockEntity(x, y, z);
 
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {
@@ -203,7 +203,7 @@ namespace betareborn.Blocks
 
         public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            java.lang.Object var6 = (TileEntityChest)world.getBlockEntity(x, y, z);
+            java.lang.Object var6 = (BlockEntityChest)world.getBlockEntity(x, y, z);
             if (world.shouldSuffocate(x, y + 1, z))
             {
                 return true;
@@ -228,22 +228,22 @@ namespace betareborn.Blocks
             {
                 if (world.getBlockId(x - 1, y, z) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockEntity(x - 1, y, z), (IInventory)var6);
+                    var6 = new InventoryLargeChest("Large chest", (BlockEntityChest)world.getBlockEntity(x - 1, y, z), (IInventory)var6);
                 }
 
                 if (world.getBlockId(x + 1, y, z) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockEntity(x + 1, y, z));
+                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (BlockEntityChest)world.getBlockEntity(x + 1, y, z));
                 }
 
                 if (world.getBlockId(x, y, z - 1) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (TileEntityChest)world.getBlockEntity(x, y, z - 1), (IInventory)var6);
+                    var6 = new InventoryLargeChest("Large chest", (BlockEntityChest)world.getBlockEntity(x, y, z - 1), (IInventory)var6);
                 }
 
                 if (world.getBlockId(x, y, z + 1) == id)
                 {
-                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (TileEntityChest)world.getBlockEntity(x, y, z + 1));
+                    var6 = new InventoryLargeChest("Large chest", (IInventory)var6, (BlockEntityChest)world.getBlockEntity(x, y, z + 1));
                 }
 
                 if (world.isRemote)
@@ -260,7 +260,7 @@ namespace betareborn.Blocks
 
         protected override BlockEntity getBlockEntity()
         {
-            return new TileEntityChest();
+            return new BlockEntityChest();
         }
     }
 

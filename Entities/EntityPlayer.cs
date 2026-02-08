@@ -2,13 +2,13 @@ using betareborn.Blocks;
 using betareborn.Chunks;
 using betareborn.Containers;
 using betareborn.Items;
-using betareborn.Materials;
 using betareborn.NBT;
 using betareborn.Stats;
-using betareborn.TileEntities;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
 using java.lang;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Entities
 {
@@ -540,15 +540,15 @@ namespace betareborn.Entities
             base.damageEntity(var1);
         }
 
-        public virtual void displayGUIFurnace(TileEntityFurnace var1)
+        public virtual void displayGUIFurnace(BlockEntityFurnace var1)
         {
         }
 
-        public virtual void displayGUIDispenser(TileEntityDispenser var1)
+        public virtual void displayGUIDispenser(BlockEntityDispenser var1)
         {
         }
 
-        public virtual void displayGUIEditSign(TileEntitySign var1)
+        public virtual void displayGUIEditSign(BlockEntitySign var1)
         {
         }
 

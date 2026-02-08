@@ -1,4 +1,4 @@
-namespace betareborn.Materials
+namespace betareborn.Blocks.Materials
 {
     public class MaterialLiquid : Material
     {

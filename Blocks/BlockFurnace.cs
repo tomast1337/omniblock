@@ -1,8 +1,8 @@
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -127,7 +127,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                TileEntityFurnace var6 = (TileEntityFurnace)world.getBlockEntity(x, y, z);
+                BlockEntityFurnace var6 = (BlockEntityFurnace)world.getBlockEntity(x, y, z);
                 player.displayGUIFurnace(var6);
                 return true;
             }
@@ -155,7 +155,7 @@ namespace betareborn.Blocks
 
         protected override BlockEntity getBlockEntity()
         {
-            return new TileEntityFurnace();
+            return new BlockEntityFurnace();
         }
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
@@ -187,7 +187,7 @@ namespace betareborn.Blocks
         {
             if (!ignoreBlockRemoval)
             {
-                TileEntityFurnace var5 = (TileEntityFurnace)world.getBlockEntity(x, y, z);
+                BlockEntityFurnace var5 = (BlockEntityFurnace)world.getBlockEntity(x, y, z);
 
                 for (int var6 = 0; var6 < var5.size(); ++var6)
                 {

@@ -1,18 +1,18 @@
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Containers
 {
     public class ContainerFurnace : Container
     {
 
-        private TileEntityFurnace furnace;
+        private BlockEntityFurnace furnace;
         private int cookTime = 0;
         private int burnTime = 0;
         private int itemBurnTime = 0;
 
-        public ContainerFurnace(InventoryPlayer var1, TileEntityFurnace var2)
+        public ContainerFurnace(InventoryPlayer var1, BlockEntityFurnace var2)
         {
             furnace = var2;
             addSlot(new Slot(var2, 0, 56, 17));

@@ -1,7 +1,7 @@
+using betareborn.Blocks.Materials;
 using betareborn.Chunks;
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
 using betareborn.Models;
 using betareborn.Worlds;
 using java.util;

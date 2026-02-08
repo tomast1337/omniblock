@@ -1,8 +1,8 @@
 using betareborn.Entities;
 using betareborn.NBT;
-using betareborn.TileEntities;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Worlds.Chunks.Storage
 {

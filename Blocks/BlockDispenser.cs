@@ -1,8 +1,8 @@
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -94,7 +94,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                TileEntityDispenser var6 = (TileEntityDispenser)world.getBlockEntity(x, y, z);
+                BlockEntityDispenser var6 = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
                 player.displayGUIDispenser(var6);
                 return true;
             }
@@ -122,7 +122,7 @@ namespace betareborn.Blocks
                 var9 = -1;
             }
 
-            TileEntityDispenser var11 = (TileEntityDispenser)world.getBlockEntity(x, y, z);
+            BlockEntityDispenser var11 = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
             ItemStack var12 = var11.getItemToDispose();
             double var13 = (double)x + (double)var9 * 0.6D + 0.5D;
             double var15 = (double)y + 0.5D;
@@ -198,7 +198,7 @@ namespace betareborn.Blocks
 
         protected override BlockEntity getBlockEntity()
         {
-            return new TileEntityDispenser();
+            return new BlockEntityDispenser();
         }
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
@@ -228,7 +228,7 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            TileEntityDispenser var5 = (TileEntityDispenser)world.getBlockEntity(x, y, z);
+            BlockEntityDispenser var5 = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
 
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {

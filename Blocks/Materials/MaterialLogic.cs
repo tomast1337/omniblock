@@ -1,9 +1,9 @@
-namespace betareborn.Materials
+namespace betareborn.Blocks.Materials
 {
-    public class MaterialPortal : Material
+    public class MaterialLogic : Material
     {
 
-        public MaterialPortal(MapColor var1) : base(var1)
+        public MaterialLogic(MapColor var1) : base(var1)
         {
         }
 

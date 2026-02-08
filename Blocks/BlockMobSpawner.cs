@@ -1,5 +1,5 @@
-using betareborn.Materials;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -12,7 +12,7 @@ namespace betareborn.Blocks
 
         protected override BlockEntity getBlockEntity()
         {
-            return new TileEntityMobSpawner();
+            return new BlockEntityMobSpawner();
         }
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)

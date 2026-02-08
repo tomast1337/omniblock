@@ -1,7 +1,7 @@
 using betareborn.Entities;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -21,7 +21,7 @@ namespace betareborn.Blocks
             if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
             {
                 bool var6 = world.isBlockGettingPowered(x, y, z);
-                TileEntityNote var7 = (TileEntityNote)world.getBlockEntity(x, y, z);
+                BlockEntityNote var7 = (BlockEntityNote)world.getBlockEntity(x, y, z);
                 if (var7.powered != var6)
                 {
                     if (var6)
@@ -43,7 +43,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                TileEntityNote var6 = (TileEntityNote)world.getBlockEntity(x, y, z);
+                BlockEntityNote var6 = (BlockEntityNote)world.getBlockEntity(x, y, z);
                 var6.cycleNote();
                 var6.playNote(world, x, y, z);
                 return true;
@@ -54,14 +54,14 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                TileEntityNote var6 = (TileEntityNote)world.getBlockEntity(x, y, z);
+                BlockEntityNote var6 = (BlockEntityNote)world.getBlockEntity(x, y, z);
                 var6.playNote(world, x, y, z);
             }
         }
 
         protected override BlockEntity getBlockEntity()
         {
-            return new TileEntityNote();
+            return new BlockEntityNote();
         }
 
         public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)

@@ -1,8 +1,8 @@
 using betareborn.Items;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
 using java.lang;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {

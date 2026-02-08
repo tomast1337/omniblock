@@ -1,6 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Packets;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Guis
 {
@@ -8,12 +8,12 @@ namespace betareborn.Guis
     {
 
         protected String screenTitle = "Edit sign message:";
-        private TileEntitySign entitySign;
+        private BlockEntitySign entitySign;
         private int updateCounter;
         private int editLine = 0;
         private static readonly String allowedCharacters = ChatAllowedCharacters.allowedCharacters;
 
-        public GuiEditSign(TileEntitySign var1)
+        public GuiEditSign(BlockEntitySign var1)
         {
             entitySign = var1;
         }
@@ -121,7 +121,7 @@ namespace betareborn.Guis
                 entitySign.currentRow = editLine;
             }
 
-            TileEntityRenderer.instance.renderTileEntityAt(entitySign, -0.5D, -0.75D, -0.5D, 0.0F);
+            BlockEntityRenderer.instance.renderTileEntityAt(entitySign, -0.5D, -0.75D, -0.5D, 0.0F);
             entitySign.currentRow = -1;
             GLManager.GL.PopMatrix();
             base.drawScreen(var1, var2, var3);

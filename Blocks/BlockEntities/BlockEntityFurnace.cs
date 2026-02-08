@@ -1,12 +1,12 @@
 using betareborn.Blocks;
+using betareborn.Blocks.Materials;
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Materials;
 using betareborn.NBT;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntityFurnace : BlockEntity, IInventory
+    public class BlockEntityFurnace : BlockEntity, IInventory
     {
         private ItemStack[] inventory = new ItemStack[3];
         public int burnTime = 0;
@@ -199,7 +199,7 @@ namespace betareborn.TileEntities
             else
             {
                 ItemStack var1 = SmeltingRecipeManager.getInstance().craft(inventory[0].getItem().id);
-                return var1 == null ? false : (inventory[2] == null ? true : (!inventory[2].isItemEqual(var1) ? false : (inventory[2].count < getMaxCountPerStack() && inventory[2].count < inventory[2].getMaxCount() ? true : inventory[2].count < var1.getMaxCount())));
+                return var1 == null ? false : inventory[2] == null ? true : !inventory[2].isItemEqual(var1) ? false : inventory[2].count < getMaxCountPerStack() && inventory[2].count < inventory[2].getMaxCount() ? true : inventory[2].count < var1.getMaxCount();
             }
         }
 
@@ -235,13 +235,13 @@ namespace betareborn.TileEntities
             else
             {
                 int var2 = itemStack.getItem().id;
-                return var2 < 256 && Block.BLOCKS[var2].material == Material.WOOD ? 300 : (var2 == Item.stick.id ? 100 : (var2 == Item.coal.id ? 1600 : (var2 == Item.bucketLava.id ? 20000 : (var2 == Block.SAPLING.id ? 100 : 0))));
+                return var2 < 256 && Block.BLOCKS[var2].material == Material.WOOD ? 300 : var2 == Item.stick.id ? 100 : var2 == Item.coal.id ? 1600 : var2 == Item.bucketLava.id ? 20000 : var2 == Block.SAPLING.id ? 100 : 0;
             }
         }
 
         public bool canPlayerUse(EntityPlayer player)
         {
-            return world.getBlockEntity(x, y, z) != this ? false : player.getSquaredDistance((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
+            return world.getBlockEntity(x, y, z) != this ? false : player.getSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
         }
     }
 

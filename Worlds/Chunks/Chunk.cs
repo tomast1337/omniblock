@@ -1,7 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Chunks;
 using betareborn.Entities;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Worlds.Chunks
 {

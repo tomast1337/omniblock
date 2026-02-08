@@ -2,20 +2,21 @@ using betareborn.Entities;
 using betareborn.Items;
 using betareborn.NBT;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntityChest : BlockEntity, IInventory
+    public class BlockEntityDispenser : BlockEntity, IInventory
     {
-        private ItemStack[] inventory = new ItemStack[36];
+        private ItemStack[] inventory = new ItemStack[9];
+        private readonly java.util.Random random = new();
 
         public int size()
         {
-            return 27;
+            return 9;
         }
 
-        public ItemStack getStack(int var1)
+        public ItemStack getStack(int slot)
         {
-            return inventory[var1];
+            return inventory[slot];
         }
 
         public ItemStack removeStack(int slot, int amount)
@@ -48,6 +49,29 @@ namespace betareborn.TileEntities
             }
         }
 
+        public ItemStack getItemToDispose()
+        {
+            int var1 = -1;
+            int var2 = 1;
+
+            for (int var3 = 0; var3 < inventory.Length; ++var3)
+            {
+                if (inventory[var3] != null && random.nextInt(var2++) == 0)
+                {
+                    var1 = var3;
+                }
+            }
+
+            if (var1 >= 0)
+            {
+                return removeStack(var1, 1);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public void setStack(int slot, ItemStack stack)
         {
             inventory[slot] = stack;
@@ -61,7 +85,7 @@ namespace betareborn.TileEntities
 
         public string getName()
         {
-            return "Chest";
+            return "Trap";
         }
 
         public override void readNbt(NBTTagCompound nbt)
@@ -108,8 +132,7 @@ namespace betareborn.TileEntities
 
         public bool canPlayerUse(EntityPlayer player)
         {
-            return world.getBlockEntity(x, y, z) != this ? false : player.getSquaredDistance((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D) <= 64.0D;
+            return world.getBlockEntity(x, y, z) != this ? false : player.getSquaredDistance(x + 0.5D, y + 0.5D, z + 0.5D) <= 64.0D;
         }
     }
-
 }

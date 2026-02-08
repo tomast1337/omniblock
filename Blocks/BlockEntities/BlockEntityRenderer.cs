@@ -4,12 +4,12 @@ using betareborn.Worlds;
 using java.lang;
 using java.util;
 
-namespace betareborn.TileEntities
+namespace betareborn.Blocks.BlockEntities
 {
-    public class TileEntityRenderer
+    public class BlockEntityRenderer
     {
         private Map specialRendererMap = new HashMap();
-        public static TileEntityRenderer instance = new TileEntityRenderer();
+        public static BlockEntityRenderer instance = new BlockEntityRenderer();
         private FontRenderer fontRenderer;
         public static double staticPlayerX;
         public static double staticPlayerY;
@@ -23,24 +23,24 @@ namespace betareborn.TileEntities
         public double playerY;
         public double playerZ;
 
-        private TileEntityRenderer()
+        private BlockEntityRenderer()
         {
-            specialRendererMap.put(TileEntitySign.Class, new TileEntitySignRenderer());
-            specialRendererMap.put(TileEntityMobSpawner.Class, new TileEntityMobSpawnerRenderer());
-            specialRendererMap.put(TileEntityPiston.Class, new TileEntityRendererPiston());
+            specialRendererMap.put(BlockEntitySign.Class, new BlockEntitySignRenderer());
+            specialRendererMap.put(BlockEntityMobSpawner.Class, new BlockEntityMobSpawnerRenderer());
+            specialRendererMap.put(BlockEntityPiston.Class, new BlockEntityRendererPiston());
             Iterator var1 = specialRendererMap.values().iterator();
 
             while (var1.hasNext())
             {
-                TileEntitySpecialRenderer var2 = (TileEntitySpecialRenderer)var1.next();
+                BlockEntitySpecialRenderer var2 = (BlockEntitySpecialRenderer)var1.next();
                 var2.setTileEntityRenderer(this);
             }
 
         }
 
-        public TileEntitySpecialRenderer getSpecialRendererForClass(Class var1)
+        public BlockEntitySpecialRenderer getSpecialRendererForClass(Class var1)
         {
-            TileEntitySpecialRenderer var2 = (TileEntitySpecialRenderer)specialRendererMap.get(var1);
+            BlockEntitySpecialRenderer var2 = (BlockEntitySpecialRenderer)specialRendererMap.get(var1);
             if (var2 == null && var1 != BlockEntity.Class)
             {
                 var2 = getSpecialRendererForClass(var1.getSuperclass());
@@ -55,7 +55,7 @@ namespace betareborn.TileEntities
             return getSpecialRendererForEntity(var1) != null;
         }
 
-        public TileEntitySpecialRenderer getSpecialRendererForEntity(BlockEntity var1)
+        public BlockEntitySpecialRenderer getSpecialRendererForEntity(BlockEntity var1)
         {
             return var1 == null ? null : getSpecialRendererForClass(var1.getClass());
         }
@@ -83,14 +83,14 @@ namespace betareborn.TileEntities
             {
                 float var3 = worldObj.getLuminance(var1.x, var1.y, var1.z);
                 GLManager.GL.Color3(var3, var3, var3);
-                renderTileEntityAt(var1, (double)var1.x - staticPlayerX, (double)var1.y - staticPlayerY, (double)var1.z - staticPlayerZ, var2);
+                renderTileEntityAt(var1, var1.x - staticPlayerX, var1.y - staticPlayerY, var1.z - staticPlayerZ, var2);
             }
 
         }
 
         public void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8)
         {
-            TileEntitySpecialRenderer var9 = getSpecialRendererForEntity(var1);
+            BlockEntitySpecialRenderer var9 = getSpecialRendererForEntity(var1);
             if (var9 != null)
             {
                 var9.renderTileEntityAt(var1, var2, var4, var6, var8);
@@ -105,7 +105,7 @@ namespace betareborn.TileEntities
 
             while (var2.hasNext())
             {
-                TileEntitySpecialRenderer var3 = (TileEntitySpecialRenderer)var2.next();
+                BlockEntitySpecialRenderer var3 = (BlockEntitySpecialRenderer)var2.next();
                 if (var3 != null)
                 {
                     var3.func_31069_a(var1);

@@ -1,10 +1,10 @@
 using betareborn.Blocks;
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.TileEntities;
 using betareborn.Worlds;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
+using betareborn.Blocks.BlockEntities;
 
 namespace betareborn.Rendering
 {
@@ -195,7 +195,7 @@ namespace betareborn.Rendering
             }
             else
             {
-                TileEntityRenderer.instance.cacheActiveRenderInfo(worldObj, renderEngine, mc.fontRenderer, mc.renderViewEntity, var3);
+                BlockEntityRenderer.instance.cacheActiveRenderInfo(worldObj, renderEngine, mc.fontRenderer, mc.renderViewEntity, var3);
                 RenderManager.instance.cacheActiveRenderInfo(worldObj, renderEngine, mc.fontRenderer, mc.renderViewEntity, mc.gameSettings, var3);
                 countEntitiesTotal = 0;
                 countEntitiesRendered = 0;
@@ -204,9 +204,9 @@ namespace betareborn.Rendering
                 RenderManager.renderPosX = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var3;
                 RenderManager.renderPosY = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var3;
                 RenderManager.renderPosZ = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var3;
-                TileEntityRenderer.staticPlayerX = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var3;
-                TileEntityRenderer.staticPlayerY = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var3;
-                TileEntityRenderer.staticPlayerZ = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var3;
+                BlockEntityRenderer.staticPlayerX = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var3;
+                BlockEntityRenderer.staticPlayerY = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var3;
+                BlockEntityRenderer.staticPlayerZ = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var3;
                 List<Entity> var5 = worldObj.getLoadedEntityList();
                 countEntitiesTotal = var5.Count;
 
@@ -248,7 +248,7 @@ namespace betareborn.Rendering
 
                 for (var6 = 0; var6 < tileEntities.Count; ++var6)
                 {
-                    TileEntityRenderer.instance.renderTileEntity(tileEntities[var6], var3);
+                    BlockEntityRenderer.instance.renderTileEntity(tileEntities[var6], var3);
                 }
 
             }

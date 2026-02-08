@@ -1,7 +1,7 @@
 using betareborn.Biomes;
 using betareborn.Blocks;
+using betareborn.Blocks.Materials;
 using betareborn.Chunks;
-using betareborn.Materials;
 using betareborn.Profiling;
 using betareborn.Rendering;
 using betareborn.Worlds;

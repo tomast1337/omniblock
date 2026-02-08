@@ -1,6 +1,6 @@
 using betareborn.Blocks;
+using betareborn.Blocks.Materials;
 using betareborn.Entities;
-using betareborn.Materials;
 using betareborn.Stats;
 using betareborn.Worlds;
 using java.lang;

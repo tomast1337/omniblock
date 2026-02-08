@@ -1,7 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Items;
-using betareborn.Materials;
-using betareborn.TileEntities;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Worlds.Gen.Features
 {
@@ -102,7 +102,7 @@ namespace betareborn.Worlds.Gen.Features
                             if (var15 == 1)
                             {
                                 var1.setBlockWithNotify(var12, var4, var14, Block.CHEST.id);
-                                TileEntityChest var16 = (TileEntityChest)var1.getBlockEntity(var12, var4, var14);
+                                BlockEntityChest var16 = (BlockEntityChest)var1.getBlockEntity(var12, var4, var14);
 
                                 for (int var17 = 0; var17 < 8; ++var17)
                                 {
@@ -118,7 +118,7 @@ namespace betareborn.Worlds.Gen.Features
                 }
 
                 var1.setBlockWithNotify(var3, var4, var5, Block.SPAWNER.id);
-                TileEntityMobSpawner var19 = (TileEntityMobSpawner)var1.getBlockEntity(var3, var4, var5);
+                BlockEntityMobSpawner var19 = (BlockEntityMobSpawner)var1.getBlockEntity(var3, var4, var5);
                 var19.setSpawnedEntityId(pickMobSpawner(var2));
                 return true;
             }

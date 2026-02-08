@@ -1,7 +1,7 @@
 using betareborn.Entities;
-using betareborn.Materials;
-using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks
 {
@@ -24,9 +24,9 @@ namespace betareborn.Blocks
         public override void onBreak(World world, int x, int y, int z)
         {
             BlockEntity var5 = world.getBlockEntity(x, y, z);
-            if (var5 != null && var5 is TileEntityPiston)
+            if (var5 != null && var5 is BlockEntityPiston)
             {
-                ((TileEntityPiston)var5).finish();
+                ((BlockEntityPiston)var5).finish();
             }
             else
             {
@@ -82,7 +82,7 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                TileEntityPiston var7 = getPistonBlockEntity(world, x, y, z);
+                BlockEntityPiston var7 = getPistonBlockEntity(world, x, y, z);
                 if (var7 != null)
                 {
                     Block.BLOCKS[var7.getPushedBlockId()].dropStacks(world, x, y, z, var7.getPushedBlockData());
@@ -100,12 +100,12 @@ namespace betareborn.Blocks
 
         public static BlockEntity createPistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source)
         {
-            return new TileEntityPiston(blockId, blockMeta, facing, extending, source);
+            return new BlockEntityPiston(blockId, blockMeta, facing, extending, source);
         }
 
         public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            TileEntityPiston var5 = getPistonBlockEntity(world, x, y, z);
+            BlockEntityPiston var5 = getPistonBlockEntity(world, x, y, z);
             if (var5 == null)
             {
                 return null;
@@ -124,7 +124,7 @@ namespace betareborn.Blocks
 
         public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            TileEntityPiston var5 = getPistonBlockEntity(blockView, x, y, z);
+            BlockEntityPiston var5 = getPistonBlockEntity(blockView, x, y, z);
             if (var5 != null)
             {
                 Block var6 = Block.BLOCKS[var5.getPushedBlockId()];
@@ -177,10 +177,10 @@ namespace betareborn.Blocks
             }
         }
 
-        private TileEntityPiston getPistonBlockEntity(BlockView blockView, int x, int y, int z)
+        private BlockEntityPiston getPistonBlockEntity(BlockView blockView, int x, int y, int z)
         {
             BlockEntity var5 = blockView.getBlockEntity(x, y, z);
-            return var5 != null && var5 is TileEntityPiston ? (TileEntityPiston)var5 : null;
+            return var5 != null && var5 is BlockEntityPiston ? (BlockEntityPiston)var5 : null;
         }
     }
 

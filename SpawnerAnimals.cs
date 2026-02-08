@@ -1,8 +1,8 @@
 using betareborn.Biomes;
 using betareborn.Blocks;
+using betareborn.Blocks.Materials;
 using betareborn.Chunks;
 using betareborn.Entities;
-using betareborn.Materials;
 using betareborn.Worlds;
 using java.lang;
 using java.util;
