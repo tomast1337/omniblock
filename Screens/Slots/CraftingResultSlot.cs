@@ -3,15 +3,15 @@ using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
 
-namespace betareborn
+namespace betareborn.Screens.Slots
 {
-    public class SlotCrafting : Slot
+    public class CraftingResultSlot : Slot
     {
 
         private readonly IInventory craftMatrix;
         private EntityPlayer thePlayer;
 
-        public SlotCrafting(EntityPlayer var1, IInventory var2, IInventory var3, int var4, int var5, int var6) : base(var3, var4, var5, var6)
+        public CraftingResultSlot(EntityPlayer var1, IInventory var2, IInventory var3, int var4, int var5, int var6) : base(var3, var4, var5, var6)
         {
             thePlayer = var1;
             craftMatrix = var2;

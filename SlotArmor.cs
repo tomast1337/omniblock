@@ -2,6 +2,7 @@ using betareborn.Blocks;
 using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.Screens;
+using betareborn.Screens.Slots;
 
 namespace betareborn
 {

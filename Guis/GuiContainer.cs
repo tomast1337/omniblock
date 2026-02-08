@@ -2,6 +2,7 @@ using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.Rendering;
 using betareborn.Screens;
+using betareborn.Screens.Slots;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Guis

@@ -2,6 +2,7 @@ using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.Recipes;
+using betareborn.Screens.Slots;
 
 namespace betareborn.Screens
 {
@@ -22,7 +23,7 @@ namespace betareborn.Screens
             craftingResult = new InventoryCraftResult();
             this.isLocal = false;
             this.isLocal = isLocal;
-            addSlot(new SlotCrafting(inventoryPlayer.player, craftingInput, craftingResult, 0, 144, 36));
+            addSlot(new CraftingResultSlot(inventoryPlayer.player, craftingInput, craftingResult, 0, 144, 36));
 
             int var3;
             int var4;

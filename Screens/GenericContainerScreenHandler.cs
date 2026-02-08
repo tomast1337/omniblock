@@ -1,6 +1,7 @@
 using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
+using betareborn.Screens.Slots;
 
 namespace betareborn.Screens
 {

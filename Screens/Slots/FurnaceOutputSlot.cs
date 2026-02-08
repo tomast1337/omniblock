@@ -2,14 +2,14 @@ using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
 
-namespace betareborn
+namespace betareborn.Screens.Slots
 {
-    public class SlotFurnace : Slot
+    public class FurnaceOutputSlot : Slot
     {
 
         private EntityPlayer thePlayer;
 
-        public SlotFurnace(EntityPlayer var1, IInventory var2, int var3, int var4, int var5) : base(var2, var3, var4, var5)
+        public FurnaceOutputSlot(EntityPlayer var1, IInventory var2, int var3, int var4, int var5) : base(var2, var3, var4, var5)
         {
             thePlayer = var1;
         }

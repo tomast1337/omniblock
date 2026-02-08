@@ -2,6 +2,7 @@ using betareborn.Blocks.BlockEntities;
 using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
+using betareborn.Screens.Slots;
 
 namespace betareborn.Screens
 {
@@ -18,7 +19,7 @@ namespace betareborn.Screens
             furnaceBlockEntity = furnace;
             addSlot(new Slot(furnace, 0, 56, 17));
             addSlot(new Slot(furnace, 1, 56, 53));
-            addSlot(new SlotFurnace(playerInventory.player, furnace, 2, 116, 35));
+            addSlot(new FurnaceOutputSlot(playerInventory.player, furnace, 2, 116, 35));
 
             int var3;
             for (var3 = 0; var3 < 3; ++var3)

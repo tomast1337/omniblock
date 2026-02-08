@@ -1,7 +1,7 @@
 using betareborn.Inventorys;
 using betareborn.Items;
 
-namespace betareborn
+namespace betareborn.Screens.Slots
 {
     public class Slot : java.lang.Object
     {
