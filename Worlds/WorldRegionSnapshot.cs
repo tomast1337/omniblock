@@ -1,10 +1,10 @@
 ﻿using betareborn.Blocks;
-using betareborn.Worlds;
 using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Worlds.Biomes.Source;
+using betareborn.Chunks;
 
-namespace betareborn.Chunks
+namespace betareborn.Worlds
 {
     public class WorldRegionSnapshot : BlockView, IDisposable
     {
