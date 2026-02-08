@@ -1439,29 +1439,23 @@ namespace betareborn
         {
             changeWorld1((World)null);
             java.lang.System.gc();
-            if (saveLoader.needsConversion(var1))
+            WorldStorage var5 = saveLoader.get(var1, false);
+            World var6 = null;
+            var6 = new World(var5, var2, var3);
+            if (var6.isNewWorld)
             {
-                convertMapFormat(var1, var2);
+                statFileWriter.readStat(Stats.Stats.createWorldStat, 1);
+                statFileWriter.readStat(Stats.Stats.startGameStat, 1);
+                changeWorld2(var6, "Generating level");
             }
             else
             {
-                WorldStorage var5 = saveLoader.get(var1, false);
-                World var6 = null;
-                var6 = new World(var5, var2, var3);
-                if (var6.isNewWorld)
-                {
-                    statFileWriter.readStat(Stats.Stats.createWorldStat, 1);
-                    statFileWriter.readStat(Stats.Stats.startGameStat, 1);
-                    changeWorld2(var6, "Generating level");
-                }
-                else
-                {
-                    statFileWriter.readStat(Stats.Stats.loadWorldStat, 1);
-                    statFileWriter.readStat(Stats.Stats.startGameStat, 1);
-                    changeWorld2(var6, "Loading level");
-                }
+                statFileWriter.readStat(Stats.Stats.loadWorldStat, 1);
+                statFileWriter.readStat(Stats.Stats.startGameStat, 1);
+                changeWorld2(var6, "Loading level");
             }
         }
+
 
         public void usePortal()
         {
@@ -1666,13 +1660,7 @@ namespace betareborn
             systemTime = 0L;
         }
 
-        private void convertMapFormat(string var1, string var2)
-        {
-            loadingScreen.printText("Converting World to " + saveLoader.getName());
-            loadingScreen.displayLoadingString("This may take a while :)");
-            saveLoader.convert(var1, loadingScreen);
-            startWorld(var1, var2, 0L);
-        }
+
 
         private void func_6255_d(string var1)
         {

@@ -8,7 +8,7 @@ namespace betareborn.Worlds.Storage
         private readonly string displayName;
         private readonly long lastPlayed;
         private readonly long size;
-        private readonly bool sameVersion;
+        private readonly bool isUnsupported;
 
         public WorldSaveInfo(string var1, string var2, long var3, long var5, bool var7)
         {
@@ -16,7 +16,7 @@ namespace betareborn.Worlds.Storage
             displayName = var2;
             lastPlayed = var3;
             size = var5;
-            sameVersion = var7;
+            isUnsupported = var7;
         }
 
         public string getFileName()
@@ -34,9 +34,9 @@ namespace betareborn.Worlds.Storage
             return size;
         }
 
-        public bool isSameVersion()
+        public bool getIsUnsupported()
         {
-            return sameVersion;
+            return isUnsupported;
         }
 
         public long getLastPlayed()

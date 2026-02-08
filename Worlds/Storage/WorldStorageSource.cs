@@ -19,9 +19,7 @@ namespace betareborn.Worlds.Storage
 
         void rename(string var1, string var2);
 
-        bool needsConversion(string var1);
 
-        bool convert(string var1, LoadingDisplay var2);
     }
 
 }

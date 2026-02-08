@@ -21,7 +21,8 @@ namespace betareborn.Guis
         protected override void elementClicked(int var1, bool var2)
         {
             GuiSelectWorld.onElementSelected(parentWorldGui, var1);
-            bool var3 = GuiSelectWorld.getSelectedWorld(parentWorldGui) >= 0 && GuiSelectWorld.getSelectedWorld(parentWorldGui) < getSize();
+            WorldSaveInfo var4 = (WorldSaveInfo)GuiSelectWorld.getSize(parentWorldGui).get(var1);
+            bool var3 = GuiSelectWorld.getSelectedWorld(parentWorldGui) >= 0 && GuiSelectWorld.getSelectedWorld(parentWorldGui) < getSize() && !var4.getIsUnsupported();
             GuiSelectWorld.getSelectButton(parentWorldGui).enabled = var3;
             GuiSelectWorld.getRenameButton(parentWorldGui).enabled = var3;
             GuiSelectWorld.getDeleteButton(parentWorldGui).enabled = var3;
@@ -53,7 +54,7 @@ namespace betareborn.Guis
             String var7 = var6.getDisplayName();
             if (var7 == null || MathHelper.stringNullOrLengthZero(var7))
             {
-                var7 = GuiSelectWorld.func_22087_f(parentWorldGui) + " " + (var1 + 1);
+                var7 = GuiSelectWorld.getWorldNameHeader(parentWorldGui) + " " + (var1 + 1);
             }
 
             String var8 = var6.getFileName();
@@ -61,9 +62,9 @@ namespace betareborn.Guis
             long var9 = var6.getSize();
             var8 = var8 + ", " + (float)(var9 / 1024L * 100L / 1024L) / 100.0F + " MB)";
             String var11 = "";
-            if (var6.isSameVersion())
+            if (var6.getIsUnsupported())
             {
-                var11 = GuiSelectWorld.func_22088_h(parentWorldGui) + " " + var11;
+                var11 = GuiSelectWorld.getUnsupportedFormatMessage(parentWorldGui) + " " + var11;
             }
 
             parentWorldGui.drawString(parentWorldGui.fontRenderer, var7, var2 + 2, var3 + 1, 16777215);

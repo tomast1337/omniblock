@@ -14,8 +14,8 @@ namespace betareborn.Guis
         private int selectedWorld;
         private List saveList;
         private GuiWorldSlot worldSlotContainer;
-        private String field_22098_o;
-        private String field_22097_p;
+        private String worldNameHeader;
+        private String unsupportedFormatMessage;
         private bool deleting;
         private GuiButton buttonRename;
         private GuiButton buttonSelect;
@@ -30,8 +30,8 @@ namespace betareborn.Guis
         {
             StringTranslate var1 = StringTranslate.getInstance();
             screenTitle = var1.translateKey("selectWorld.title");
-            field_22098_o = var1.translateKey("selectWorld.world");
-            field_22097_p = var1.translateKey("selectWorld.conversion");
+            worldNameHeader = var1.translateKey("selectWorld.world");
+            unsupportedFormatMessage = "Unsupported Format!";
             loadSaves();
             worldSlotContainer = new GuiWorldSlot(this);
             worldSlotContainer.registerScrollButtons(controlList, 4, 5);
@@ -192,9 +192,9 @@ namespace betareborn.Guis
             return var0.buttonDelete;
         }
 
-        public static String func_22087_f(GuiSelectWorld var0)
+        public static String getWorldNameHeader(GuiSelectWorld var0)
         {
-            return var0.field_22098_o;
+            return var0.worldNameHeader;
         }
 
         public static DateFormat getDateFormatter(GuiSelectWorld var0)
@@ -202,9 +202,9 @@ namespace betareborn.Guis
             return var0.dateFormatter;
         }
 
-        public static String func_22088_h(GuiSelectWorld var0)
+        public static String getUnsupportedFormatMessage(GuiSelectWorld var0)
         {
-            return var0.field_22097_p;
+            return var0.unsupportedFormatMessage;
         }
     }
 
