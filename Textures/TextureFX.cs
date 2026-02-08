@@ -10,11 +10,17 @@ namespace betareborn.Textures
         public bool anaglyphEnabled = false;
         public int textureId = 0;
         public int tileSize = 1;
-        public int tileImage = 0;
+        public FXImage tileImage = FXImage.Terrain;
 
-        public TextureFX(int var1)
+        public enum FXImage
         {
-            iconIndex = var1;
+            Terrain,
+            Items
+        }
+
+        public TextureFX(int iconIdx)
+        {
+            iconIndex = iconIdx;
         }
 
         public virtual void onTick()
@@ -23,11 +29,11 @@ namespace betareborn.Textures
 
         public void bindImage(RenderEngine var1)
         {
-            if (tileImage == 0)
+            if (tileImage == FXImage.Terrain)
             {
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var1.getTexture("/terrain.png"));
             }
-            else if (tileImage == 1)
+            else if (tileImage == FXImage.Items)
             {
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var1.getTexture("/gui/items.png"));
 

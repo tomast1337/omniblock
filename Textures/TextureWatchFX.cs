@@ -1,4 +1,3 @@
-using betareborn.Guis;
 using betareborn.Items;
 using java.awt.image;
 using java.io;
@@ -18,7 +17,7 @@ namespace betareborn.Textures
         public TextureWatchFX(Minecraft var1) : base(Item.pocketSundial.getIconFromDamage(0))
         {
             mc = var1;
-            tileImage = 1;
+            tileImage = FXImage.Items;
 
             try
             {

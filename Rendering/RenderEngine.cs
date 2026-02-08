@@ -18,7 +18,7 @@ namespace betareborn.Rendering
         private readonly HashMap textureNameToImageMap = [];
         private readonly IntBuffer singleIntBuffer = GLAllocation.createDirectIntBuffer(1);
         private readonly ByteBuffer imageData = GLAllocation.createDirectByteBuffer(1048576);
-        private readonly java.util.List textureList = new ArrayList();
+        private readonly List<TextureFX> textureList = [];
         private readonly Map urlToImageDataMap = new HashMap();
         private readonly GameSettings options;
         private bool clampTexture = false;
@@ -205,7 +205,8 @@ namespace betareborn.Rendering
 
             if (isTerrain)
             {
-                TextureAtlas[] mips = GenerateMipmaps(bufferedImageToTextureAtlas(var1), 16);
+                int tileSize = var1.getWidth() / 16;
+                TextureAtlas[] mips = GenerateMipmaps(bufferedImageToTextureAtlas(var1), tileSize);
 
                 int mipCount = options.useMipmaps ? mips.Length : 1;
 
@@ -430,7 +431,7 @@ namespace betareborn.Rendering
 
         public void registerTextureFX(TextureFX var1)
         {
-            textureList.add(var1);
+            textureList.Add(var1);
             var1.onTick();
         }
 
@@ -441,9 +442,9 @@ namespace betareborn.Rendering
             int var3;
             int var4;
 
-            for (var1 = 0; var1 < textureList.size(); ++var1)
+            for (var1 = 0; var1 < textureList.Count; ++var1)
             {
-                var2 = (TextureFX)textureList.get(var1);
+                var2 = textureList[var1];
                 var2.onTick();
                 imageData.clear();
                 imageData.put(var2.imageData);
@@ -452,24 +453,28 @@ namespace betareborn.Rendering
                 BufferHelper.UsePointer(imageData, (p =>
                 {
                     var ptr = (byte*)p;
+                    int fxPixelSize = (int)System.Math.Sqrt(var2.imageData.Length / 4);
                     for (var3 = 0; var3 < var2.tileSize; ++var3)
                     {
                         for (var4 = 0; var4 < var2.tileSize; ++var4)
                         {
                             GLManager.GL.TexSubImage2D(GLEnum.Texture2D, 0,
-                                var2.iconIndex % 16 * 16 + var3 * 16,
-                                var2.iconIndex / 16 * 16 + var4 * 16,
-                                16, 16, GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
+                                var2.iconIndex % 16 * fxPixelSize + var3 * fxPixelSize,
+                                var2.iconIndex / 16 * fxPixelSize + var4 * fxPixelSize,
+                                (uint)fxPixelSize, (uint)fxPixelSize, GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
                         }
                     }
                 }));
 
-                UpdateTileMipmaps(var2.iconIndex, var2.imageData, var2.tileSize);
+                if (var2.tileImage == TextureFX.FXImage.Terrain)
+                {
+                    UpdateTileMipmaps(var2.iconIndex, var2.imageData, var2.tileSize);
+                }
             }
 
-            for (var1 = 0; var1 < textureList.size(); ++var1)
+            for (var1 = 0; var1 < textureList.Count; ++var1)
             {
-                var2 = (TextureFX)textureList.get(var1);
+                var2 = textureList[var1];
                 if (var2.textureId > 0)
                 {
                     imageData.clear();
@@ -479,16 +484,22 @@ namespace betareborn.Rendering
                     BufferHelper.UsePointer(imageData, (p =>
                     {
                         var ptr = (byte*)p;
-                        GLManager.GL.TexSubImage2D(GLEnum.Texture2D, 0, 0, 0, 16, 16, GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
+                        int fxPixelSize = (int)System.Math.Sqrt(var2.imageData.Length / 4);
+                        GLManager.GL.TexSubImage2D(GLEnum.Texture2D, 0, 0, 0, (uint)fxPixelSize, (uint)fxPixelSize, GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
                     }));
 
-                    UpdateSingleTextureMipmaps((uint)var2.textureId, var2.imageData);
+                    // UpdateSingleTextureMipmaps((uint)var2.textureId, var2.imageData);
                 }
             }
         }
 
         private unsafe void UpdateTileMipmaps(int tileIndex, byte[] tileData, int tileSize)
         {
+            if (!options.useMipmaps)
+            {
+                return;
+            }
+
             int totalPixels = tileData.Length / 4;
             int pixelSize = (int)System.Math.Sqrt(totalPixels);
 
@@ -512,7 +523,7 @@ namespace betareborn.Rendering
                 int mipTileX = (tileIndex % 16) * mipTileSize;
                 int mipTileY = (tileIndex / 16) * mipTileSize;
 
-                byte[] mipData = new byte[tileMipmaps[mipLevel].Length * 4];
+                Span<byte> mipData = new(new byte[tileMipmaps[mipLevel].Length * 4]);
                 for (int i = 0; i < tileMipmaps[mipLevel].Length; i++)
                 {
                     mipData[i * 4 + 0] = tileMipmaps[mipLevel][i].R;
@@ -521,13 +532,10 @@ namespace betareborn.Rendering
                     mipData[i * 4 + 3] = tileMipmaps[mipLevel][i].A;
                 }
 
-                fixed (byte* ptr = mipData)
-                {
-                    GLManager.GL.TexSubImage2D(GLEnum.Texture2D, mipLevel,
-                        mipTileX, mipTileY,
-                        (uint)mipTileSize, (uint)mipTileSize,
-                        GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
-                }
+                GLManager.GL.TexSubImage2D<byte>(GLEnum.Texture2D, mipLevel,
+                    mipTileX, mipTileY,
+                    (uint)mipTileSize, (uint)mipTileSize,
+                    GLEnum.Rgba, GLEnum.UnsignedByte, mipData);
             }
         }
 
@@ -551,7 +559,10 @@ namespace betareborn.Rendering
         {
             GLManager.GL.BindTexture(GLEnum.Texture2D, textureId);
 
-            TextureAtlasMipmapGenerator.Color[] pixels = new TextureAtlasMipmapGenerator.Color[imageData.Length / 4];
+            int totalPixels = imageData.Length / 4;
+            int tileSize = (int)System.Math.Sqrt(totalPixels);
+
+            TextureAtlasMipmapGenerator.Color[] pixels = new TextureAtlasMipmapGenerator.Color[totalPixels];
             for (int i = 0; i < pixels.Length; i++)
             {
                 pixels[i] = new TextureAtlasMipmapGenerator.Color(
@@ -562,11 +573,11 @@ namespace betareborn.Rendering
                 );
             }
 
-            TextureAtlasMipmapGenerator.Color[][] mipmaps = GenerateSingleTileMipmaps(pixels, 16);
+            TextureAtlasMipmapGenerator.Color[][] mipmaps = GenerateSingleTileMipmaps(pixels, tileSize);
 
             for (int mipLevel = 1; mipLevel < mipmaps.Length; mipLevel++)
             {
-                int mipSize = 16 >> mipLevel;
+                int mipSize = tileSize >> mipLevel;
                 byte[] mipData = new byte[mipmaps[mipLevel].Length * 4];
 
                 for (int i = 0; i < mipmaps[mipLevel].Length; i++)

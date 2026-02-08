@@ -1,5 +1,4 @@
 using betareborn.Chunks;
-using betareborn.Guis;
 using betareborn.Items;
 using java.awt.image;
 using java.io;
@@ -18,7 +17,7 @@ namespace betareborn.Textures
         public TextureCompassFX(Minecraft var1) : base(Item.compass.getIconFromDamage(0))
         {
             mc = var1;
-            tileImage = 1;
+            tileImage = FXImage.Items;
 
             try
             {
