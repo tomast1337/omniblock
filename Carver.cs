@@ -7,10 +7,10 @@ namespace betareborn
         protected int field_1306_a = 8;
         protected java.util.Random rand = new();
 
-        public virtual void func_867_a(ChunkSource var1, World var2, int var3, int var4, byte[] var5)
+        public virtual void carve(ChunkSource source, World world, int var3, int var4, byte[] var5)
         {
             int var6 = field_1306_a;
-            rand.setSeed(var2.getSeed());
+            rand.setSeed(world.getSeed());
             long var7 = rand.nextLong() / 2L * 2L + 1L;
             long var9 = rand.nextLong() / 2L * 2L + 1L;
 
@@ -18,8 +18,8 @@ namespace betareborn
             {
                 for (int var12 = var4 - var6; var12 <= var4 + var6; ++var12)
                 {
-                    rand.setSeed((long)var11 * var7 + (long)var12 * var9 ^ var2.getSeed());
-                    func_868_a(var2, var11, var12, var3, var4, var5);
+                    rand.setSeed((long)var11 * var7 + (long)var12 * var9 ^ world.getSeed());
+                    func_868_a(world, var11, var12, var3, var4, var5);
                 }
             }
 

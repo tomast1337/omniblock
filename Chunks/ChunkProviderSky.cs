@@ -189,7 +189,7 @@ namespace betareborn.Chunks
             double[] var5 = field_28081_p.getBiomeSource().temperatureMap;
             func_28071_a(var1, var2, var3, field_28075_v, var5);
             func_28072_a(var1, var2, var3, field_28075_v);
-            field_28076_u.func_867_a(this, field_28081_p, var1, var2, var3);
+            field_28076_u.carve(this, field_28081_p, var1, var2, var3);
             var4.populateHeightMap();
             return var4;
         }

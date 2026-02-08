@@ -242,7 +242,7 @@ namespace betareborn.Chunks
             double[] var5 = world.getBiomeSource().temperatureMap;
             buildTerrain(chunkX, chunkZ, var3, biomes, var5);
             buildSurfaces(chunkX, chunkZ, var3, biomes);
-            cave.func_867_a(this, world, chunkX, chunkZ, var3);
+            cave.carve(this, world, chunkX, chunkZ, var3);
             var4.populateHeightMap();
             return var4;
         }

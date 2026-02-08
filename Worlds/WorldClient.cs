@@ -8,16 +8,16 @@ namespace betareborn.Worlds
     public class WorldClient : World
     {
 
-        private LinkedList field_1057_z = new LinkedList();
-        private NetClientHandler sendQueue;
-        private ChunkProviderClient field_20915_C;
-        private MCHash field_1055_D = new MCHash();
-        private Set field_20914_E = new HashSet();
-        private Set field_1053_F = new HashSet();
+        private LinkedList blockResets = new LinkedList();
+        private NetClientHandler networkHandler;
+        private MultiplayerChunkCache chunkCache;
+        private MCHash entitiesByNetworkId = new MCHash();
+        private Set forcedEntities = new HashSet();
+        private Set pendingEntities = new HashSet();
 
         public WorldClient(NetClientHandler var1, long var2, int var4) : base(new SaveHandlerMP(), "MpServer", WorldProvider.getProviderForDimension(var4), var2)
         {
-            sendQueue = var1;
+            networkHandler = var1;
             setSpawnPoint(new Vec3i(8, 64, 8));
             field_28108_z = var1.field_28118_b;
         }
@@ -37,25 +37,25 @@ namespace betareborn.Worlds
                 }
             }
 
-            for (var2 = 0; var2 < 10 && !field_1053_F.isEmpty(); ++var2)
+            for (var2 = 0; var2 < 10 && !pendingEntities.isEmpty(); ++var2)
             {
-                Entity var3 = (Entity)field_1053_F.iterator().next();
+                Entity var3 = (Entity)pendingEntities.iterator().next();
                 if (!loadedEntityList.Contains(var3))
                 {
                     spawnEntity(var3);
                 }
             }
 
-            sendQueue.processReadPackets();
+            networkHandler.processReadPackets();
 
-            for (var2 = 0; var2 < field_1057_z.size(); ++var2)
+            for (var2 = 0; var2 < blockResets.size(); ++var2)
             {
-                WorldBlockPositionType var4 = (WorldBlockPositionType)field_1057_z.get(var2);
+                WorldBlockPositionType var4 = (WorldBlockPositionType)blockResets.get(var2);
                 if (--var4.field_1206_d == 0)
                 {
                     base.setBlockAndMetadata(var4.field_1202_a, var4.field_1201_b, var4.field_1207_c, var4.field_1205_e, var4.field_1204_f);
                     base.markBlockNeedsUpdate(var4.field_1202_a, var4.field_1201_b, var4.field_1207_c);
-                    field_1057_z.remove(var2--);
+                    blockResets.remove(var2--);
                 }
             }
 
@@ -63,12 +63,12 @@ namespace betareborn.Worlds
 
         public void func_711_c(int var1, int var2, int var3, int var4, int var5, int var6)
         {
-            for (int var7 = 0; var7 < field_1057_z.size(); ++var7)
+            for (int var7 = 0; var7 < blockResets.size(); ++var7)
             {
-                WorldBlockPositionType var8 = (WorldBlockPositionType)field_1057_z.get(var7);
+                WorldBlockPositionType var8 = (WorldBlockPositionType)blockResets.get(var7);
                 if (var8.field_1202_a >= var1 && var8.field_1201_b >= var2 && var8.field_1207_c >= var3 && var8.field_1202_a <= var4 && var8.field_1201_b <= var5 && var8.field_1207_c <= var6)
                 {
-                    field_1057_z.remove(var7--);
+                    blockResets.remove(var7--);
                 }
             }
 
@@ -76,8 +76,8 @@ namespace betareborn.Worlds
 
         protected override ChunkSource getChunkProvider()
         {
-            field_20915_C = new ChunkProviderClient(this);
-            return field_20915_C;
+            chunkCache = new MultiplayerChunkCache(this);
+            return chunkCache;
         }
 
         public override void setSpawnLocation()
@@ -102,11 +102,11 @@ namespace betareborn.Worlds
         {
             if (var3)
             {
-                field_20915_C.loadChunk(var1, var2);
+                chunkCache.loadChunk(var1, var2);
             }
             else
             {
-                field_20915_C.func_539_c(var1, var2);
+                chunkCache.unloadChunk(var1, var2);
             }
 
             if (!var3)
@@ -119,10 +119,10 @@ namespace betareborn.Worlds
         public override bool spawnEntity(Entity var1)
         {
             bool var2 = base.spawnEntity(var1);
-            field_20914_E.add(var1);
+            forcedEntities.add(var1);
             if (!var2)
             {
-                field_1053_F.add(var1);
+                pendingEntities.add(var1);
             }
 
             return var2;
@@ -131,15 +131,15 @@ namespace betareborn.Worlds
         public override void setEntityDead(Entity var1)
         {
             base.setEntityDead(var1);
-            field_20914_E.remove(var1);
+            forcedEntities.remove(var1);
         }
 
         protected override void obtainEntitySkin(Entity var1)
         {
             base.obtainEntitySkin(var1);
-            if (field_1053_F.contains(var1))
+            if (pendingEntities.contains(var1))
             {
-                field_1053_F.remove(var1);
+                pendingEntities.remove(var1);
             }
 
         }
@@ -147,9 +147,9 @@ namespace betareborn.Worlds
         protected override void releaseEntitySkin(Entity var1)
         {
             base.releaseEntitySkin(var1);
-            if (field_20914_E.contains(var1))
+            if (forcedEntities.contains(var1))
             {
-                field_1053_F.add(var1);
+                pendingEntities.add(var1);
             }
 
         }
@@ -162,27 +162,27 @@ namespace betareborn.Worlds
                 setEntityDead(var3);
             }
 
-            field_20914_E.add(var2);
+            forcedEntities.add(var2);
             var2.entityId = var1;
             if (!spawnEntity(var2))
             {
-                field_1053_F.add(var2);
+                pendingEntities.add(var2);
             }
 
-            field_1055_D.addKey(var1, var2);
+            entitiesByNetworkId.addKey(var1, var2);
         }
 
         public Entity func_709_b(int var1)
         {
-            return (Entity)field_1055_D.lookup(var1);
+            return (Entity)entitiesByNetworkId.lookup(var1);
         }
 
         public Entity removeEntityFromWorld(int var1)
         {
-            Entity var2 = (Entity)field_1055_D.removeObject(var1);
+            Entity var2 = (Entity)entitiesByNetworkId.removeObject(var1);
             if (var2 != null)
             {
-                field_20914_E.remove(var2);
+                forcedEntities.remove(var2);
                 setEntityDead(var2);
             }
 
@@ -195,7 +195,7 @@ namespace betareborn.Worlds
             int var6 = getBlockMeta(var1, var2, var3);
             if (base.setBlockMetadata(var1, var2, var3, var4))
             {
-                field_1057_z.add(new WorldBlockPositionType(this, var1, var2, var3, var5, var6));
+                blockResets.add(new WorldBlockPositionType(this, var1, var2, var3, var5, var6));
                 return true;
             }
             else
@@ -210,7 +210,7 @@ namespace betareborn.Worlds
             int var7 = getBlockMeta(var1, var2, var3);
             if (base.setBlockAndMetadata(var1, var2, var3, var4, var5))
             {
-                field_1057_z.add(new WorldBlockPositionType(this, var1, var2, var3, var6, var7));
+                blockResets.add(new WorldBlockPositionType(this, var1, var2, var3, var6, var7));
                 return true;
             }
             else
@@ -225,7 +225,7 @@ namespace betareborn.Worlds
             int var6 = getBlockMeta(var1, var2, var3);
             if (base.setBlock(var1, var2, var3, var4))
             {
-                field_1057_z.add(new WorldBlockPositionType(this, var1, var2, var3, var5, var6));
+                blockResets.add(new WorldBlockPositionType(this, var1, var2, var3, var5, var6));
                 return true;
             }
             else
@@ -250,7 +250,7 @@ namespace betareborn.Worlds
 
         public override void sendQuittingDisconnectingPacket()
         {
-            sendQueue.func_28117_a(new Packet255KickDisconnect("Quitting"));
+            networkHandler.func_28117_a(new Packet255KickDisconnect("Quitting"));
         }
 
         protected override void updateWeather()

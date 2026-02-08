@@ -35,7 +35,7 @@ namespace betareborn.Worlds
 
         public override ChunkSource getChunkProvider()
         {
-            return new ChunkProviderHell(worldObj, worldObj.getSeed());
+            return new NetherChunkGenerator(worldObj, worldObj.getSeed());
         }
 
         public override bool canCoordinateBeSpawn(int var1, int var2)
