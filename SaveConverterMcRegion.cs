@@ -1,27 +1,29 @@
 using betareborn.Chunks;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks.Storage;
+using betareborn.Worlds.Storage;
 using java.io;
 using java.util;
 using java.util.zip;
 
 namespace betareborn
 {
-    public class SaveConverterMcRegion : SaveFormatOld
+    public class SaveConverterMcRegion : AlphaWorldStorageSource
     {
 
         public SaveConverterMcRegion(java.io.File var1) : base(var1)
         {
         }
 
-        public override String func_22178_a()
+        public override String getName()
         {
             return "Scaevolus\' McRegion";
         }
 
-        public override List func_22176_b()
+        public override List getAll()
         {
             ArrayList var1 = new ArrayList();
-            java.io.File[] var2 = field_22180_a.listFiles();
+            java.io.File[] var2 = dir.listFiles();
             java.io.File[] var3 = var2;
             int var4 = var2.Length;
 
@@ -31,7 +33,7 @@ namespace betareborn
                 if (var6.isDirectory())
                 {
                     String var7 = var6.getName();
-                    WorldInfo var8 = func_22173_b(var7);
+                    WorldProperties var8 = getProperties(var7);
                     if (var8 != null)
                     {
                         bool var9 = var8.getSaveVersion() != 19132;
@@ -49,30 +51,30 @@ namespace betareborn
             return var1;
         }
 
-        public override void flushCache()
+        public override void flush()
         {
             RegionFileCache.func_22192_a();
         }
 
-        public override ISaveHandler getSaveLoader(String var1, bool var2)
+        public override WorldStorage get(String var1, bool var2)
         {
-            return new SaveOldDir(field_22180_a, var1, var2);
+            return new SaveOldDir(dir, var1, var2);
         }
 
-        public override bool isOldMapFormat(String var1)
+        public override bool needsConversion(String var1)
         {
-            WorldInfo var2 = func_22173_b(var1);
+            WorldProperties var2 = getProperties(var1);
             return var2 != null && var2.getSaveVersion() == 0;
         }
 
-        public override bool convertMapFormat(String var1, LoadingDisplay var2)
+        public override bool convert(String var1, LoadingDisplay var2)
         {
             var2.setLoadingProgress(0);
             ArrayList var3 = new ArrayList();
             ArrayList var4 = new ArrayList();
             ArrayList var5 = new ArrayList();
             ArrayList var6 = new ArrayList();
-            java.io.File var7 = new java.io.File(field_22180_a, var1);
+            java.io.File var7 = new java.io.File(dir, var1);
             java.io.File var8 = new java.io.File(var7, "DIM-1");
             java.lang.System.@out.println("Scanning folders...");
             func_22183_a(var7, var3, var4);
@@ -85,10 +87,10 @@ namespace betareborn
             java.lang.System.@out.println("Total conversion count is " + var9);
             func_22181_a(var7, var3, 0, var9, var2);
             func_22181_a(var8, var5, var3.size(), var9, var2);
-            WorldInfo var10 = func_22173_b(var1);
+            WorldProperties var10 = getProperties(var1);
             var10.setSaveVersion(19132);
-            ISaveHandler var11 = getSaveLoader(var1, false);
-            var11.saveWorldInfo(var10);
+            WorldStorage var11 = get(var1, false);
+            var11.save(var10);
             func_22182_a(var4, var3.size() + var5.size(), var9, var2);
             if (var8.exists())
             {

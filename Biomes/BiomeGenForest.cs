@@ -1,6 +1,7 @@
 using betareborn.Entities;
 using betareborn.Worlds;
 using betareborn.Worlds.Gen;
+using betareborn.Worlds.Gen.Features;
 
 namespace betareborn.Biomes
 {

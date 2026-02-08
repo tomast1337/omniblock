@@ -1,7 +1,7 @@
 using betareborn.Blocks;
-using betareborn.Chunks;
 using betareborn.Entities;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
 using java.lang;
 
 namespace betareborn.Items
@@ -41,7 +41,7 @@ namespace betareborn.Items
                 var4.field_28180_b = var2.getWorldInfo().getSpawnX();
                 var4.field_28179_c = var2.getWorldInfo().getSpawnZ();
                 var4.field_28177_e = 3;
-                var4.field_28178_d = (sbyte)var2.dimension.worldType;
+                var4.field_28178_d = (sbyte)var2.dimension.id;
                 var4.markDirty();
                 var2.setItemData(var3, var4);
             }
@@ -51,7 +51,7 @@ namespace betareborn.Items
 
         public void func_28011_a(World var1, Entity var2, MapData var3)
         {
-            if (var1.dimension.worldType == var3.field_28178_d)
+            if (var1.dimension.id == var3.field_28178_d)
             {
                 short var4 = 128;
                 short var5 = 128;
@@ -61,7 +61,7 @@ namespace betareborn.Items
                 int var9 = MathHelper.floor_double(var2.posX - (double)var7) / var6 + var4 / 2;
                 int var10 = MathHelper.floor_double(var2.posZ - (double)var8) / var6 + var5 / 2;
                 int var11 = 128 / var6;
-                if (var1.dimension.hasNoSky)
+                if (var1.dimension.hasCeiling)
                 {
                     var11 /= 2;
                 }
@@ -98,7 +98,7 @@ namespace betareborn.Items
                                 int var34;
                                 int var35;
                                 int var38;
-                                if (var1.dimension.hasNoSky)
+                                if (var1.dimension.hasCeiling)
                                 {
                                     var33 = var21 + var22 * 231871;
                                     var33 = var33 * var33 * 31287121 + var33 * 11;
@@ -293,7 +293,7 @@ namespace betareborn.Items
             var5.field_28180_b = MathHelper.floor_double(var3.posX);
             var5.field_28179_c = MathHelper.floor_double(var3.posZ);
             var5.field_28177_e = 3;
-            var5.field_28178_d = (sbyte)var2.dimension.worldType;
+            var5.field_28178_d = (sbyte)var2.dimension.id;
             var5.markDirty();
         }
     }

@@ -312,7 +312,7 @@ namespace betareborn.Rendering
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 RenderHelper.disableStandardItemLighting();
-                float[] var18 = worldObj.dimension.calcSunriseSunsetColors(worldObj.getCelestialAngle(var1), var1);
+                float[] var18 = worldObj.dimension.getBackgroundColor(worldObj.getCelestialAngle(var1), var1);
                 float var9;
                 float var10;
                 float var11;
@@ -389,7 +389,7 @@ namespace betareborn.Rendering
                 GLManager.GL.Enable(GLEnum.AlphaTest);
                 GLManager.GL.Enable(GLEnum.Fog);
                 GLManager.GL.PopMatrix();
-                if (worldObj.dimension.func_28112_c())
+                if (worldObj.dimension.hasGround())
                 {
                     GLManager.GL.Color3(var3 * 0.2F + 0.04F, var4 * 0.2F + 0.04F, var5 * 0.6F + 0.1F);
                 }

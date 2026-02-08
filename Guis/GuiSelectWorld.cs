@@ -1,3 +1,4 @@
+using betareborn.Worlds.Storage;
 using java.text;
 using java.util;
 
@@ -39,8 +40,8 @@ namespace betareborn.Guis
 
         private void loadSaves()
         {
-            ISaveFormat var1 = mc.getSaveLoader();
-            saveList = var1.func_22176_b();
+            WorldStorageSource var1 = mc.getSaveLoader();
+            saveList = var1.getAll();
             Collections.sort(saveList);
             selectedWorld = -1;
         }
@@ -143,9 +144,9 @@ namespace betareborn.Guis
                 deleting = false;
                 if (var1)
                 {
-                    ISaveFormat var3 = mc.getSaveLoader();
-                    var3.flushCache();
-                    var3.func_22172_c(getSaveFileName(var2));
+                    WorldStorageSource var3 = mc.getSaveLoader();
+                    var3.flush();
+                    var3.delete(getSaveFileName(var2));
                     loadSaves();
                 }
 

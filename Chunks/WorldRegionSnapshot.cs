@@ -38,8 +38,8 @@ namespace betareborn.Chunks
                 }
             }
 
-            lightTable = new float[var1.dimension.lightBrightnessTable.Length];
-            Buffer.BlockCopy(var1.dimension.lightBrightnessTable, 0, lightTable, 0, sizeof(float) * lightTable.Length);
+            lightTable = new float[var1.dimension.lightLevelToLuminance.Length];
+            Buffer.BlockCopy(var1.dimension.lightLevelToLuminance, 0, lightTable, 0, sizeof(float) * lightTable.Length);
             skylightSubtracted = var1.skylightSubtracted;
         }
 

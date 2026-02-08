@@ -103,7 +103,7 @@ namespace betareborn.Items
 
                         if (var2.isAir(var25, var26, var27) || !var2.getMaterial(var25, var26, var27).isSolid())
                         {
-                            if (var2.dimension.isHellWorld && isFull == Block.FLOWING_WATER.id)
+                            if (var2.dimension.evaporatesWater && isFull == Block.FLOWING_WATER.id)
                             {
                                 var2.playSound(var7 + 0.5D, var9 + 0.5D, var11 + 0.5D, "random.fizz", 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 

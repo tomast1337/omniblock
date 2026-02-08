@@ -1,4 +1,5 @@
 using betareborn.Worlds;
+using betareborn.Worlds.Storage;
 
 namespace betareborn.Guis
 {
@@ -27,8 +28,8 @@ namespace betareborn.Guis
             controlList.clear();
             controlList.add(new GuiButton(0, width / 2 - 100, height / 4 + 96 + 12, var1.translateKey("selectWorld.renameButton")));
             controlList.add(new GuiButton(1, width / 2 - 100, height / 4 + 120 + 12, var1.translateKey("gui.cancel")));
-            ISaveFormat var2 = mc.getSaveLoader();
-            WorldInfo var3 = var2.func_22173_b(field_22113_i);
+            WorldStorageSource var2 = mc.getSaveLoader();
+            WorldProperties var3 = var2.getProperties(field_22113_i);
             String var4 = var3.getWorldName();
             field_22114_h = new GuiTextField(this, fontRenderer, width / 2 - 100, 60, 200, 20, var4);
             field_22114_h.isFocused = true;
@@ -50,8 +51,8 @@ namespace betareborn.Guis
                 }
                 else if (var1.id == 0)
                 {
-                    ISaveFormat var2 = mc.getSaveLoader();
-                    var2.func_22170_a(field_22113_i, field_22114_h.getText().Trim());
+                    WorldStorageSource var2 = mc.getSaveLoader();
+                    var2.rename(field_22113_i, field_22114_h.getText().Trim());
                     mc.displayGuiScreen(field_22112_a);
                 }
 

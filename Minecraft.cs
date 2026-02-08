@@ -13,6 +13,10 @@ using betareborn.Stats;
 using betareborn.Textures;
 using betareborn.Threading;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
+using betareborn.Worlds.Chunks.Storage;
+using betareborn.Worlds.Dimensions;
+using betareborn.Worlds.Storage;
 using ImGuiNET;
 using java.lang;
 using Silk.NET.Input;
@@ -62,7 +66,7 @@ namespace betareborn
         public MouseHelper mouseHelper;
         public TexturePackList texturePackList;
         private java.io.File mcDataDir;
-        private ISaveFormat saveLoader;
+        private WorldStorageSource saveLoader;
         public static long[] frameTimes = new long[512];
         public static long[] tickTimes = new long[512];
         public static int numRecordedFrameTimes = 0;
@@ -369,7 +373,7 @@ namespace betareborn
                                 : (var0.Contains("unix") ? EnumOS2.linux : EnumOS2.unknown)))));
         }
 
-        public ISaveFormat getSaveLoader()
+        public WorldStorageSource getSaveLoader()
         {
             return saveLoader;
         }
@@ -1437,13 +1441,13 @@ namespace betareborn
         {
             changeWorld1((World)null);
             java.lang.System.gc();
-            if (saveLoader.isOldMapFormat(var1))
+            if (saveLoader.needsConversion(var1))
             {
                 convertMapFormat(var1, var2);
             }
             else
             {
-                ISaveHandler var5 = saveLoader.getSaveLoader(var1, false);
+                WorldStorage var5 = saveLoader.get(var1, false);
                 World var6 = null;
                 var6 = new World(var5, var2, var3);
                 if (var6.isNewWorld)
@@ -1491,7 +1495,7 @@ namespace betareborn
                 }
 
                 var7 = null;
-                var7 = new World(theWorld, WorldProvider.getProviderForDimension(-1));
+                var7 = new World(theWorld, Dimension.fromId(-1));
                 changeWorld(var7, "Entering the Nether", thePlayer);
             }
             else
@@ -1506,7 +1510,7 @@ namespace betareborn
                 }
 
                 var7 = null;
-                var7 = new World(theWorld, WorldProvider.getProviderForDimension(0));
+                var7 = new World(theWorld, Dimension.fromId(0));
                 changeWorld(var7, "Leaving the Nether", thePlayer);
             }
 
@@ -1516,7 +1520,7 @@ namespace betareborn
                 thePlayer.setPositionAndAnglesKeepPrevAngles(var1, thePlayer.posY, var3, thePlayer.rotationYaw,
                     thePlayer.rotationPitch);
                 theWorld.updateEntityWithOptionalForce(thePlayer, false);
-                (new Teleporter()).func_4107_a(theWorld, thePlayer);
+                (new PortalForcer()).moveToPortal(theWorld, thePlayer);
             }
         }
 
@@ -1593,7 +1597,7 @@ namespace betareborn
                 }
 
                 Console.WriteLine("Saved chunks");
-                saveLoader.flushCache();
+                saveLoader.flush();
 
                 Region.RegionCache.deleteSaveHandler();
             }
@@ -1666,9 +1670,9 @@ namespace betareborn
 
         private void convertMapFormat(string var1, string var2)
         {
-            loadingScreen.printText("Converting World to " + saveLoader.func_22178_a());
+            loadingScreen.printText("Converting World to " + saveLoader.getName());
             loadingScreen.displayLoadingString("This may take a while :)");
-            saveLoader.convertMapFormat(var1, loadingScreen);
+            saveLoader.convert(var1, loadingScreen);
             startWorld(var1, var2, 0L);
         }
 

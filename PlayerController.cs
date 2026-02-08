@@ -102,7 +102,7 @@ namespace betareborn
 
         public virtual EntityPlayer createPlayer(World var1)
         {
-            return new EntityPlayerSP(mc, var1, mc.session, var1.dimension.worldType);
+            return new EntityPlayerSP(mc, var1, mc.session, var1.dimension.id);
         }
 
         public virtual void interactWithEntity(EntityPlayer var1, Entity var2)

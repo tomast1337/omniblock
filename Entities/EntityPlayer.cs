@@ -7,6 +7,7 @@ using betareborn.NBT;
 using betareborn.Stats;
 using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
 using java.lang;
 
 namespace betareborn.Entities

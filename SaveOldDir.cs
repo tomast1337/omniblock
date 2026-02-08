@@ -1,20 +1,23 @@
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks.Storage;
+using betareborn.Worlds.Dimensions;
+using betareborn.Worlds.Storage;
 using java.util;
 
 namespace betareborn
 {
 
-    public class SaveOldDir : SaveHandler
+    public class SaveOldDir : AlphaWorldStorage
     {
 
         public SaveOldDir(java.io.File var1, String var2, bool var3) : base(var1, var2, var3)
         {
         }
 
-        public override ChunkStorage getChunkLoader(WorldProvider var1)
+        public override ChunkStorage getChunkStorage(Dimension var1)
         {
-            java.io.File var2 = getSaveDirectory();
-            if (var1 is WorldProviderHell)
+            java.io.File var2 = getDirectory();
+            if (var1 is NetherDimension)
             {
                 java.io.File var3 = new(var2, "DIM-1");
                 var3.mkdirs();
@@ -26,10 +29,10 @@ namespace betareborn
             }
         }
 
-        public override void saveWorldInfoAndPlayer(WorldInfo var1, List var2)
+        public override void save(WorldProperties var1, List var2)
         {
             var1.setSaveVersion(19132);
-            base.saveWorldInfoAndPlayer(var1, var2);
+            base.save(var1, var2);
         }
     }
 

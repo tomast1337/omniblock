@@ -2,6 +2,7 @@ using betareborn.Blocks;
 using betareborn.Materials;
 using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
 
 namespace betareborn.Chunks
 {
@@ -76,12 +77,12 @@ namespace betareborn.Chunks
                 var5 = blockLight;
             }
 
-            return world.dimension.lightBrightnessTable[var5];
+            return world.dimension.lightLevelToLuminance[var5];
         }
 
         public float getLuminance(int x, int y, int z)
         {
-            return world.dimension.lightBrightnessTable[getRawBrightness(x, y, z)];
+            return world.dimension.lightLevelToLuminance[getRawBrightness(x, y, z)];
         }
 
         public int getRawBrightness(int x, int y, int z)

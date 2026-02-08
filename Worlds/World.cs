@@ -6,6 +6,11 @@ using betareborn.Materials;
 using betareborn.NBT;
 using betareborn.Profiling;
 using betareborn.TileEntities;
+using betareborn.Worlds.Chunks;
+using betareborn.Worlds.Chunks.Light;
+using betareborn.Worlds.Chunks.Storage;
+using betareborn.Worlds.Dimensions;
+using betareborn.Worlds.Storage;
 using java.lang;
 using java.util;
 using Silk.NET.Maths;
@@ -18,7 +23,7 @@ namespace betareborn.Worlds
         public static readonly Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(World).TypeHandle);
         private const int AUTOSAVE_PERIOD = 40;
         public bool scheduledUpdatesAreImmediate;
-        private readonly List<MetadataChunkBlock> lightingToUpdate;
+        private readonly List<LightUpdate> lightingToUpdate;
         public List<Entity> loadedEntityList;
         private readonly List<Entity> unloadedEntityList;
         private readonly TreeSet scheduledTickTreeSet;
@@ -43,14 +48,14 @@ namespace betareborn.Worlds
         public int difficultySetting;
         public java.util.Random random;
         public bool isNewWorld;
-        public readonly WorldProvider dimension;
+        public readonly Dimension dimension;
         protected List<IWorldAccess> worldAccesses;
         protected ChunkSource chunkProvider;
-        protected readonly ISaveHandler saveHandler;
-        protected WorldInfo worldInfo;
+        protected readonly WorldStorage saveHandler;
+        protected WorldProperties worldInfo;
         public bool findingSpawnPoint;
         private bool allPlayersSleeping;
-        public MapStorage persistentStateManager;
+        public PersistentStateManager persistentStateManager;
         private readonly List<Box> collidingBoundingBoxes;
         private bool field_31055_L;
         private int lightingUpdatesCounter;
@@ -64,10 +69,10 @@ namespace betareborn.Worlds
 
         public BiomeSource getBiomeSource()
         {
-            return dimension.worldChunkMgr;
+            return dimension.biomeSource;
         }
 
-        public World(ISaveHandler var1, string var2, WorldProvider var3, long var4)
+        public World(WorldStorage var1, string var2, Dimension var3, long var4)
         {
             scheduledUpdatesAreImmediate = false;
             lightingToUpdate = [];
@@ -100,16 +105,16 @@ namespace betareborn.Worlds
             field_1012_M = [];
             isRemote = false;
             saveHandler = var1;
-            worldInfo = new WorldInfo(var4, var2);
+            worldInfo = new WorldProperties(var4, var2);
             dimension = var3;
-            persistentStateManager = new MapStorage(var1);
-            var3.registerWorld(this);
+            persistentStateManager = new PersistentStateManager(var1);
+            var3.setWorld(this);
             chunkProvider = createChunkCache();
             calculateInitialSkylight();
             func_27163_E();
         }
 
-        public World(World var1, WorldProvider var2)
+        public World(World var1, Dimension var2)
         {
             scheduledUpdatesAreImmediate = false;
             lightingToUpdate = [];
@@ -143,20 +148,20 @@ namespace betareborn.Worlds
             isRemote = false;
             lockTimestamp = var1.lockTimestamp;
             saveHandler = var1.saveHandler;
-            worldInfo = new WorldInfo(var1.worldInfo);
-            persistentStateManager = new MapStorage(saveHandler);
+            worldInfo = new WorldProperties(var1.worldInfo);
+            persistentStateManager = new PersistentStateManager(saveHandler);
             dimension = var2;
-            var2.registerWorld(this);
+            var2.setWorld(this);
             chunkProvider = createChunkCache();
             calculateInitialSkylight();
             func_27163_E();
         }
 
-        public World(ISaveHandler var1, string var2, long var3) : this(var1, var2, var3, null)
+        public World(WorldStorage var1, string var2, long var3) : this(var1, var2, var3, null)
         {
         }
 
-        public World(ISaveHandler var1, string var2, long var3, WorldProvider var5)
+        public World(WorldStorage var1, string var2, long var3, Dimension var5)
         {
             scheduledUpdatesAreImmediate = false;
             lightingToUpdate = [];
@@ -189,8 +194,8 @@ namespace betareborn.Worlds
             field_1012_M = [];
             isRemote = false;
             saveHandler = var1;
-            persistentStateManager = new MapStorage(var1);
-            worldInfo = var1.loadWorldInfo();
+            persistentStateManager = new PersistentStateManager(var1);
+            worldInfo = var1.loadProperties();
             isNewWorld = worldInfo == null;
             if (var5 != null)
             {
@@ -198,17 +203,17 @@ namespace betareborn.Worlds
             }
             else if (worldInfo != null && worldInfo.getDimension() == -1)
             {
-                dimension = WorldProvider.getProviderForDimension(-1);
+                dimension = Dimension.fromId(-1);
             }
             else
             {
-                dimension = WorldProvider.getProviderForDimension(0);
+                dimension = Dimension.fromId(0);
             }
 
             bool var6 = false;
             if (worldInfo == null)
             {
-                worldInfo = new WorldInfo(var3, var2);
+                worldInfo = new WorldProperties(var3, var2);
                 var6 = true;
             }
             else
@@ -216,7 +221,7 @@ namespace betareborn.Worlds
                 worldInfo.setWorldName(var2);
             }
 
-            dimension.registerWorld(this);
+            dimension.setWorld(this);
             chunkProvider = createChunkCache();
             if (var6)
             {
@@ -229,8 +234,8 @@ namespace betareborn.Worlds
 
         protected virtual ChunkSource createChunkCache()
         {
-            ChunkStorage var1 = saveHandler.getChunkLoader(dimension);
-            return new ChunkCache(this, (RegionChunkStorage)var1, dimension.getChunkProvider());
+            ChunkStorage var1 = saveHandler.getChunkStorage(dimension);
+            return new ChunkCache(this, (RegionChunkStorage)var1, dimension.createChunkGenerator());
         }
 
         protected void getInitialSpawnLocation()
@@ -240,7 +245,7 @@ namespace betareborn.Worlds
             byte var2 = 64;
 
             int var3;
-            for (var3 = 0; !dimension.canCoordinateBeSpawn(var1, var3); var3 += random.nextInt(64) - random.nextInt(64))
+            for (var3 = 0; !dimension.isValidSpawnPoint(var1, var3); var3 += random.nextInt(64) - random.nextInt(64))
             {
                 var1 += random.nextInt(64) - random.nextInt(64);
             }
@@ -259,7 +264,7 @@ namespace betareborn.Worlds
             int var1 = worldInfo.getSpawnX();
 
             int var2;
-            for (var2 = worldInfo.getSpawnZ(); getFirstUncoveredBlock(var1, var2) == 0; var2 += random.nextInt(8) - random.nextInt(8))
+            for (var2 = worldInfo.getSpawnZ(); getSpawnBlockId(var1, var2) == 0; var2 += random.nextInt(8) - random.nextInt(8))
             {
                 var1 += random.nextInt(8) - random.nextInt(8);
             }
@@ -268,7 +273,7 @@ namespace betareborn.Worlds
             worldInfo.setSpawnZ(var2);
         }
 
-        public int getFirstUncoveredBlock(int var1, int var2)
+        public int getSpawnBlockId(int var1, int var2)
         {
             int var3;
             for (var3 = 63; !isAir(var1, var3 + 1, var2); ++var3)
@@ -331,7 +336,7 @@ namespace betareborn.Worlds
             //checkSessionLock();
             Profiler.Stop("checkSessionLock");
             Profiler.Start("saveWorldInfoAndPlayer");
-            saveHandler.saveWorldInfoAndPlayer(worldInfo, playerEntities);
+            saveHandler.save(worldInfo, playerEntities);
             Profiler.Stop("saveWorldInfoAndPlayer");
 
             Profiler.Start("saveAllData");
@@ -779,7 +784,7 @@ namespace betareborn.Worlds
 
         public void neighborLightPropagationChanged(LightType var1, int var2, int var3, int var4, int var5)
         {
-            if (!dimension.hasNoSky || var1 != LightType.Sky)
+            if (!dimension.hasCeiling || var1 != LightType.Sky)
             {
                 if (blockExists(var2, var3, var4))
                 {
@@ -872,12 +877,12 @@ namespace betareborn.Worlds
                 var5 = var4;
             }
 
-            return dimension.lightBrightnessTable[var5];
+            return dimension.lightLevelToLuminance[var5];
         }
 
         public float getLuminance(int var1, int var2, int var3)
         {
-            return dimension.lightBrightnessTable[getLightLevel(var1, var2, var3)];
+            return dimension.lightLevelToLuminance[getLightLevel(var1, var2, var3)];
         }
 
         public bool isDaytime()
@@ -1351,7 +1356,7 @@ namespace betareborn.Worlds
 
         public float getCelestialAngle(float var1)
         {
-            return dimension.calculateCelestialAngle(worldInfo.getWorldTime(), var1);
+            return dimension.getTimeOfDay(worldInfo.getWorldTime(), var1);
         }
 
         public Vector3D<double> func_628_d(float var1)
@@ -1402,7 +1407,7 @@ namespace betareborn.Worlds
         public Vector3D<double> getFogColor(float var1)
         {
             float var2 = getCelestialAngle(var1);
-            return dimension.func_4096_a(var2, var1);
+            return dimension.getFogColor(var2, var1);
         }
 
         public int findTopSolidBlock(int var1, int var2)
@@ -2103,10 +2108,10 @@ namespace betareborn.Worlds
                         }
 
                         int lastIndex = lightingToUpdate.Count - 1;
-                        MetadataChunkBlock mcb = lightingToUpdate[lastIndex];
+                        LightUpdate mcb = lightingToUpdate[lastIndex];
 
                         lightingToUpdate.RemoveAt(lastIndex);
-                        mcb.func_4127_a(this);
+                        mcb.updateLight(this);
                     }
 
                     var2 = false;
@@ -2127,7 +2132,7 @@ namespace betareborn.Worlds
 
         public void scheduleLightingUpdate_do(LightType var1, int var2, int var3, int var4, int var5, int var6, int var7, bool var8)
         {
-            if (!dimension.hasNoSky || var1 != LightType.Sky)
+            if (!dimension.hasCeiling || var1 != LightType.Sky)
             {
                 ++lightingUpdatesScheduled;
 
@@ -2161,15 +2166,15 @@ namespace betareborn.Worlds
 
                             for (int var13 = 0; var13 < var12; ++var13)
                             {
-                                ref MetadataChunkBlock var14 = ref span[lightingToUpdate.Count - var13 - 1];
-                                if (var14.field_1299_a == var1 && var14.func_866_a(var2, var3, var4, var5, var6, var7))
+                                ref LightUpdate var14 = ref span[lightingToUpdate.Count - var13 - 1];
+                                if (var14.lightType == var1 && var14.expand(var2, var3, var4, var5, var6, var7))
                                 {
                                     return;
                                 }
                             }
                         }
 
-                        lightingToUpdate.Add(new MetadataChunkBlock(var1, var2, var3, var4, var5, var6, var7));
+                        lightingToUpdate.Add(new LightUpdate(var1, var2, var3, var4, var5, var6, var7));
                         var12 = 1000000;
                         if (lightingToUpdate.Count > 1000000)
                         {
@@ -2275,7 +2280,7 @@ namespace betareborn.Worlds
 
         protected virtual void updateWeather()
         {
-            if (!dimension.hasNoSky)
+            if (!dimension.hasCeiling)
             {
                 if (field_27168_F > 0)
                 {
@@ -2838,7 +2843,7 @@ namespace betareborn.Worlds
 
         public void checkSessionLock()
         {
-            saveHandler.func_22150_b();
+            saveHandler.checkSessionLock();
         }
 
         public void setWorldTime(long var1)
@@ -2970,7 +2975,7 @@ namespace betareborn.Worlds
 
         }
 
-        public WorldInfo getWorldInfo()
+        public WorldProperties getWorldInfo()
         {
             return worldInfo;
         }

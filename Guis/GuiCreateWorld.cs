@@ -1,3 +1,4 @@
+using betareborn.Worlds.Storage;
 using java.lang;
 
 namespace betareborn.Guis
@@ -56,9 +57,9 @@ namespace betareborn.Guis
             folderName = generateUnusedFolderName(mc.getSaveLoader(), folderName);
         }
 
-        public static string generateUnusedFolderName(ISaveFormat var0, string var1)
+        public static string generateUnusedFolderName(WorldStorageSource var0, string var1)
         {
-            while (var0.func_22173_b(var1) != null)
+            while (var0.getProperties(var1) != null)
             {
                 var1 = var1 + "-";
             }

@@ -25,7 +25,7 @@ namespace betareborn.Blocks
         {
             int var6 = getLiquidState(world, x, y, z);
             sbyte var7 = 1;
-            if (material == Material.LAVA && !world.dimension.isHellWorld)
+            if (material == Material.LAVA && !world.dimension.evaporatesWater)
             {
                 var7 = 2;
             }

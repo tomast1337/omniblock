@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using betareborn.Worlds.Chunks;
+using System.Buffers;
 
 namespace betareborn.Chunks
 {

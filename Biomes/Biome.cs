@@ -2,6 +2,7 @@ using betareborn.Blocks;
 using betareborn.Entities;
 using betareborn.Worlds;
 using betareborn.Worlds.Gen;
+using betareborn.Worlds.Gen.Features;
 using java.awt;
 
 namespace betareborn.Biomes

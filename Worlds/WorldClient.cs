@@ -1,6 +1,9 @@
 using betareborn.Chunks;
 using betareborn.Entities;
 using betareborn.Packets;
+using betareborn.Worlds.Chunks;
+using betareborn.Worlds.Dimensions;
+using betareborn.Worlds.Storage;
 using java.util;
 
 namespace betareborn.Worlds
@@ -15,7 +18,7 @@ namespace betareborn.Worlds
         private readonly Set forcedEntities = new HashSet();
         private readonly Set pendingEntities = new HashSet();
 
-        public WorldClient(NetClientHandler netHandler, long seed, int dimId) : base(new SaveHandlerMP(), "MpServer", WorldProvider.getProviderForDimension(dimId), seed)
+        public WorldClient(NetClientHandler netHandler, long seed, int dimId) : base(new EmptyWorldStorage(), "MpServer", Dimension.fromId(dimId), seed)
         {
             networkHandler = netHandler;
             setSpawnPoint(new Vec3i(8, 64, 8));
@@ -255,7 +258,7 @@ namespace betareborn.Worlds
 
         protected override void updateWeather()
         {
-            if (!dimension.hasNoSky)
+            if (!dimension.hasCeiling)
             {
                 if (field_27168_F > 0)
                 {

@@ -7,6 +7,8 @@ using betareborn.Items;
 using betareborn.Packets;
 using betareborn.TileEntities;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
+using betareborn.Worlds.Storage;
 using java.io;
 using java.net;
 
@@ -20,7 +22,7 @@ namespace betareborn
         private Minecraft mc;
         private WorldClient worldClient;
         private bool field_1210_g = false;
-        public MapStorage clientPersistentStateManager = new MapStorage((ISaveHandler)null);
+        public PersistentStateManager clientPersistentStateManager = new PersistentStateManager((WorldStorage)null);
         java.util.Random rand = new();
 
         public NetClientHandler(Minecraft var1, String var2, int var3)

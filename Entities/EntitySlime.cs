@@ -1,7 +1,7 @@
-using betareborn.Chunks;
 using betareborn.Items;
 using betareborn.NBT;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
 
 namespace betareborn.Entities
 {

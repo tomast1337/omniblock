@@ -5,6 +5,7 @@ using betareborn.Materials;
 using betareborn.Profiling;
 using betareborn.Rendering;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
