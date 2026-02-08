@@ -47,7 +47,7 @@ namespace betareborn.Worlds
         public bool pauseTicking;
         private readonly long lockTimestamp;
         protected int autosavePeriod;
-        public int difficultySetting;
+        public int difficulty;
         public java.util.Random random;
         public bool isNewWorld;
         public readonly Dimension dimension;
@@ -1204,7 +1204,7 @@ namespace betareborn.Worlds
                 var1.mountEntity((Entity)null);
             }
 
-            var1.setEntityDead();
+            var1.markDead();
             if (var1 is EntityPlayer)
             {
                 playerEntities.remove((EntityPlayer)var1);
@@ -2218,7 +2218,7 @@ namespace betareborn.Worlds
             if (isAllPlayersFullyAsleep())
             {
                 bool var1 = false;
-                if (spawnHostileMobs && difficultySetting >= 1)
+                if (spawnHostileMobs && difficulty >= 1)
                 {
                     var1 = SpawnerAnimals.performSleepSpawning(this, playerEntities);
                 }
@@ -2962,7 +2962,7 @@ namespace betareborn.Worlds
 
         }
 
-        public ChunkSource getIChunkProvider()
+        public ChunkSource getChunkSource()
         {
             return chunkProvider;
         }
@@ -2990,7 +2990,7 @@ namespace betareborn.Worlds
             while (var1.hasNext())
             {
                 EntityPlayer var2 = (EntityPlayer)var1.next();
-                if (!var2.isPlayerSleeping())
+                if (!var2.isSleeping())
                 {
                     allPlayersSleeping = false;
                     break;
@@ -3007,9 +3007,9 @@ namespace betareborn.Worlds
             while (var1.hasNext())
             {
                 EntityPlayer var2 = (EntityPlayer)var1.next();
-                if (var2.isPlayerSleeping())
+                if (var2.isSleeping())
                 {
-                    var2.wakeUpPlayer(false, false, true);
+                    var2.wakeUp(false, false, true);
                 }
             }
 

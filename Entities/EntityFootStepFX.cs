@@ -1,4 +1,4 @@
-using betareborn.Rendering;
+using betareborn.Client.Rendering;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using Silk.NET.OpenGL.Legacy;
@@ -55,7 +55,7 @@ namespace betareborn.Entities
             ++field_27018_a;
             if (field_27018_a == field_27020_o)
             {
-                setEntityDead();
+                markDead();
             }
 
         }

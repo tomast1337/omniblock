@@ -49,7 +49,7 @@ namespace betareborn.Entities
             prevPosZ = posZ;
             if (particleAge++ >= particleMaxAge)
             {
-                setEntityDead();
+                markDead();
             }
 
             moveEntity(motionX, motionY, motionZ);

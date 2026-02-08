@@ -1,4 +1,5 @@
 using betareborn.Blocks;
+using betareborn.Client.Network;
 using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Packets;
@@ -17,10 +18,10 @@ namespace betareborn
         private float field_9441_h = 0.0F;
         private int blockHitDelay = 0;
         private bool isHittingBlock = false;
-        private NetClientHandler netClientHandler;
+        private ClientNetworkHandler netClientHandler;
         private int currentPlayerItem = 0;
 
-        public PlayerControllerMP(Minecraft var1, NetClientHandler var2) : base(var1)
+        public PlayerControllerMP(Minecraft var1, ClientNetworkHandler var2) : base(var1)
         {
             netClientHandler = var2;
         }
@@ -34,14 +35,14 @@ namespace betareborn
         {
             int var5 = mc.theWorld.getBlockId(var1, var2, var3);
             bool var6 = base.sendBlockRemoved(var1, var2, var3, var4);
-            ItemStack var7 = mc.thePlayer.getCurrentEquippedItem();
+            ItemStack var7 = mc.thePlayer.getHand();
             if (var7 != null)
             {
                 var7.onDestroyBlock(var5, var1, var2, var3, mc.thePlayer);
                 if (var7.count == 0)
                 {
-                    var7.func_1097_a(mc.thePlayer);
-                    mc.thePlayer.destroyCurrentEquippedItem();
+                    var7.onRemoved(mc.thePlayer);
+                    mc.thePlayer.clearStackInHand();
                 }
             }
 
@@ -200,14 +201,14 @@ namespace betareborn
         {
             syncCurrentPlayItem();
             netClientHandler.addToSendQueue(new Packet7UseEntity(var1.entityId, var2.entityId, 1));
-            var1.attackTargetEntityWithCurrentItem(var2);
+            var1.attack(var2);
         }
 
         public override void interactWithEntity(EntityPlayer var1, Entity var2)
         {
             syncCurrentPlayItem();
             netClientHandler.addToSendQueue(new Packet7UseEntity(var1.entityId, var2.entityId, 0));
-            var1.useCurrentItemOnEntity(var2);
+            var1.interact(var2);
         }
 
         public override ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)

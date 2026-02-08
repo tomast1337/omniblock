@@ -24,7 +24,7 @@ namespace betareborn.Entities
 
         public EntityFireball(World var1) : base(var1)
         {
-            setSize(1.0F, 1.0F);
+            setBoundingBoxSpacing(1.0F, 1.0F);
         }
 
         protected override void entityInit()
@@ -40,7 +40,7 @@ namespace betareborn.Entities
 
         public EntityFireball(World var1, double var2, double var4, double var6, double var8, double var10, double var12) : base(var1)
         {
-            setSize(1.0F, 1.0F);
+            setBoundingBoxSpacing(1.0F, 1.0F);
             setPositionAndAnglesKeepPrevAngles(var2, var4, var6, rotationYaw, rotationPitch);
             setPosition(var2, var4, var6);
             double var14 = (double)MathHelper.sqrt_double(var8 * var8 + var10 * var10 + var12 * var12);
@@ -52,7 +52,7 @@ namespace betareborn.Entities
         public EntityFireball(World var1, EntityLiving var2, double var3, double var5, double var7) : base(var1)
         {
             field_9397_j = var2;
-            setSize(1.0F, 1.0F);
+            setBoundingBoxSpacing(1.0F, 1.0F);
             setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY, var2.posZ, var2.rotationYaw, var2.rotationPitch);
             setPosition(posX, posY, posZ);
             yOffset = 0.0F;
@@ -83,7 +83,7 @@ namespace betareborn.Entities
                     ++field_9396_k;
                     if (field_9396_k == 1200)
                     {
-                        setEntityDead();
+                        markDead();
                     }
 
                     return;
@@ -144,14 +144,14 @@ namespace betareborn.Entities
             {
                 if (!worldObj.isRemote)
                 {
-                    if (var3.entity != null && var3.entity.attackEntityFrom(field_9397_j, 0))
+                    if (var3.entity != null && var3.entity.damage(field_9397_j, 0))
                     {
                     }
 
                     worldObj.newExplosion((Entity)null, posX, posY, posZ, 1.0F, true);
                 }
 
-                setEntityDead();
+                markDead();
             }
 
             posX += motionX;
@@ -203,7 +203,7 @@ namespace betareborn.Entities
             setPosition(posX, posY, posZ);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setShort("xTile", (short)field_9402_e);
             var1.setShort("yTile", (short)field_9401_f);
@@ -213,7 +213,7 @@ namespace betareborn.Entities
             var1.setByte("inGround", (sbyte)(field_9398_i ? 1 : 0));
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             field_9402_e = var1.getShort("xTile");
             field_9401_f = var1.getShort("yTile");
@@ -233,7 +233,7 @@ namespace betareborn.Entities
             return 1.0F;
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             setBeenAttacked();
             if (var1 != null)
@@ -257,7 +257,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }

@@ -32,7 +32,7 @@ namespace betareborn.Entities
         public void setSlimeSize(int var1)
         {
             dataWatcher.updateObject(16, new java.lang.Byte((byte)var1));
-            setSize(0.6F * (float)var1, 0.6F * (float)var1);
+            setBoundingBoxSpacing(0.6F * (float)var1, 0.6F * (float)var1);
             health = var1 * var1;
             setPosition(posX, posY, posZ);
         }
@@ -42,15 +42,15 @@ namespace betareborn.Entities
             return dataWatcher.getWatchableObjectByte(16);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
             var1.setInteger("Size", getSlimeSize() - 1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
             setSlimeSize(var1.getInteger("Size") + 1);
         }
 
@@ -83,7 +83,7 @@ namespace betareborn.Entities
             field_768_a *= 0.6F;
         }
 
-        public override void updatePlayerActionState()
+        public override void tickLiving()
         {
             func_27021_X();
             EntityPlayer var1 = worldObj.getClosestPlayerToEntity(this, 16.0D);
@@ -121,7 +121,7 @@ namespace betareborn.Entities
 
         }
 
-        public override void setEntityDead()
+        public override void markDead()
         {
             int var1 = getSlimeSize();
             if (!worldObj.isRemote && var1 > 1 && health == 0)
@@ -137,13 +137,13 @@ namespace betareborn.Entities
                 }
             }
 
-            base.setEntityDead();
+            base.markDead();
         }
 
         public override void onCollideWithPlayer(EntityPlayer var1)
         {
             int var2 = getSlimeSize();
-            if (var2 > 1 && canEntityBeSeen(var1) && (double)getDistanceToEntity(var1) < 0.6D * (double)var2 && var1.attackEntityFrom(this, var2))
+            if (var2 > 1 && canEntityBeSeen(var1) && (double)getDistanceToEntity(var1) < 0.6D * (double)var2 && var1.damage(this, var2))
             {
                 worldObj.playSoundAtEntity(this, "mob.slimeattack", 1.0F, (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
             }
@@ -168,7 +168,7 @@ namespace betareborn.Entities
         public override bool canSpawn()
         {
             Chunk var1 = worldObj.getChunkFromBlockCoords(MathHelper.floor_double(posX), MathHelper.floor_double(posZ));
-            return (getSlimeSize() == 1 || worldObj.difficultySetting > 0) && rand.nextInt(10) == 0 && var1.getSlimeRandom(987234911L).nextInt(10) == 0 && posY < 16.0D;
+            return (getSlimeSize() == 1 || worldObj.difficulty > 0) && rand.nextInt(10) == 0 && var1.getSlimeRandom(987234911L).nextInt(10) == 0 && posY < 16.0D;
         }
 
         protected override float getSoundVolume()

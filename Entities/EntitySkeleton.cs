@@ -31,7 +31,7 @@ namespace betareborn.Entities
             return "mob.skeletonhurt";
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
             if (worldObj.isDaytime())
             {
@@ -42,7 +42,7 @@ namespace betareborn.Entities
                 }
             }
 
-            base.onLivingUpdate();
+            base.tickMovement();
         }
 
         protected override void attackEntity(Entity var1, float var2)
@@ -69,14 +69,14 @@ namespace betareborn.Entities
 
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         protected override int getDropItemId()

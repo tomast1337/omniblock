@@ -15,7 +15,7 @@ namespace betareborn.Entities
             health = 20;
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
             float var1 = getEntityBrightness(1.0F);
             if (var1 > 0.5F)
@@ -23,15 +23,15 @@ namespace betareborn.Entities
                 entityAge += 2;
             }
 
-            base.onLivingUpdate();
+            base.tickMovement();
         }
 
         public override void onUpdate()
         {
             base.onUpdate();
-            if (!worldObj.isRemote && worldObj.difficultySetting == 0)
+            if (!worldObj.isRemote && worldObj.difficulty == 0)
             {
-                setEntityDead();
+                markDead();
             }
 
         }
@@ -42,9 +42,9 @@ namespace betareborn.Entities
             return var1 != null && canEntityBeSeen(var1) ? var1 : null;
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
-            if (base.attackEntityFrom(var1, var2))
+            if (base.damage(var1, var2))
             {
                 if (riddenByEntity != var1 && ridingEntity != var1)
                 {
@@ -71,7 +71,7 @@ namespace betareborn.Entities
             if (attackTime <= 0 && var2 < 2.0F && var1.boundingBox.maxY > boundingBox.minY && var1.boundingBox.minY < boundingBox.maxY)
             {
                 attackTime = 20;
-                var1.attackEntityFrom(this, attackStrength);
+                var1.damage(this, attackStrength);
             }
 
         }
@@ -81,14 +81,14 @@ namespace betareborn.Entities
             return 0.5F - worldObj.getLuminance(var1, var2, var3);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         public override bool canSpawn()

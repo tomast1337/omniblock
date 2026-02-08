@@ -107,12 +107,12 @@ namespace betareborn
 
         public virtual void interactWithEntity(EntityPlayer var1, Entity var2)
         {
-            var1.useCurrentItemOnEntity(var2);
+            var1.interact(var2);
         }
 
         public virtual void attackEntity(EntityPlayer var1, Entity var2)
         {
-            var1.attackTargetEntityWithCurrentItem(var2);
+            var1.attack(var2);
         }
 
         public virtual ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)

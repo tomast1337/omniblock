@@ -1,4 +1,5 @@
 using betareborn.Blocks;
+using betareborn.Client;
 
 namespace betareborn.Blocks.BlockEntities
 {
@@ -18,7 +19,7 @@ namespace betareborn.Blocks.BlockEntities
                 GLManager.GL.Translate((float)var2 + 0.5F, (float)var4 + 12.0F / 16.0F * var10, (float)var6 + 0.5F);
                 float var11 = var1.getPushedBlockData() * 360 / 16.0F;
                 GLManager.GL.Rotate(-var11, 0.0F, 1.0F, 0.0F);
-                signModel.signStick.showModel = true;
+                signModel.signStick.visible = true;
             }
             else
             {
@@ -42,7 +43,7 @@ namespace betareborn.Blocks.BlockEntities
                 GLManager.GL.Translate((float)var2 + 0.5F, (float)var4 + 12.0F / 16.0F * var10, (float)var6 + 0.5F);
                 GLManager.GL.Rotate(-var12, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Translate(0.0F, -(5.0F / 16.0F), -(7.0F / 16.0F));
-                signModel.signStick.showModel = false;
+                signModel.signStick.visible = false;
             }
 
             bindTextureByName("/item/sign.png");

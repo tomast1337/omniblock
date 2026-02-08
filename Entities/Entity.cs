@@ -124,12 +124,12 @@ namespace betareborn.Entities
             }
         }
 
-        public virtual void setEntityDead()
+        public virtual void markDead()
         {
             isDead = true;
         }
 
-        protected virtual void setSize(float var1, float var2)
+        protected virtual void setBoundingBoxSpacing(float var1, float var2)
         {
             width = var1;
             height = var2;
@@ -248,7 +248,7 @@ namespace betareborn.Entities
                 {
                     if (fire % 20 == 0)
                     {
-                        attackEntityFrom((Entity)null, 1);
+                        damage((Entity)null, 1);
                     }
 
                     --fire;
@@ -278,7 +278,7 @@ namespace betareborn.Entities
         {
             if (!isImmuneToFire)
             {
-                attackEntityFrom((Entity)null, 4);
+                damage((Entity)null, 4);
                 fire = 600;
             }
 
@@ -286,7 +286,7 @@ namespace betareborn.Entities
 
         protected virtual void kill()
         {
-            setEntityDead();
+            markDead();
         }
 
         public bool isOffsetPositionInLiquid(double var1, double var3, double var5)
@@ -615,7 +615,7 @@ namespace betareborn.Entities
             {
                 if (fallDistance > 0.0F)
                 {
-                    fall(fallDistance);
+                    onLanding(fallDistance);
                     fallDistance = 0.0F;
                 }
             }
@@ -635,16 +635,16 @@ namespace betareborn.Entities
         {
             if (!isImmuneToFire)
             {
-                attackEntityFrom((Entity)null, var1);
+                damage((Entity)null, var1);
             }
 
         }
 
-        protected virtual void fall(float var1)
+        protected virtual void onLanding(float var1)
         {
             if (riddenByEntity != null)
             {
-                riddenByEntity.fall(var1);
+                riddenByEntity.onLanding(var1);
             }
 
         }
@@ -852,7 +852,7 @@ namespace betareborn.Entities
             beenAttacked = true;
         }
 
-        public virtual bool attackEntityFrom(Entity var1, int var2)
+        public virtual bool damage(Entity var1, int var2)
         {
             setBeenAttacked();
             return false;
@@ -868,7 +868,7 @@ namespace betareborn.Entities
             return false;
         }
 
-        public virtual void addToPlayerScore(Entity var1, int var2)
+        public virtual void updateKilledAchievement(Entity var1, int var2)
         {
         }
 
@@ -917,7 +917,7 @@ namespace betareborn.Entities
             var1.setShort("Fire", (short)fire);
             var1.setShort("Air", (short)air);
             var1.setBoolean("OnGround", onGround);
-            writeEntityToNBT(var1);
+            writeNbt(var1);
         }
 
         public void readFromNBT(NBTTagCompound var1)
@@ -954,7 +954,7 @@ namespace betareborn.Entities
             onGround = var1.getBoolean("OnGround");
             setPosition(posX, posY, posZ);
             setRotation(rotationYaw, rotationPitch);
-            readEntityFromNBT(var1);
+            readNbt(var1);
         }
 
         protected string getEntityString()
@@ -962,9 +962,9 @@ namespace betareborn.Entities
             return EntityRegistry.getId(this);
         }
 
-        public abstract void readEntityFromNBT(NBTTagCompound var1);
+        public abstract void readNbt(NBTTagCompound var1);
 
-        public abstract void writeEntityToNBT(NBTTagCompound var1);
+        public abstract void writeNbt(NBTTagCompound var1);
 
         protected NBTTagList newDoubleNBTList(params double[] var1)
         {
@@ -996,7 +996,7 @@ namespace betareborn.Entities
             return var2;
         }
 
-        public virtual float getShadowSize()
+        public virtual float getShadowRadius()
         {
             return height / 2.0F;
         }
@@ -1024,7 +1024,7 @@ namespace betareborn.Entities
             return !isDead;
         }
 
-        public virtual bool isEntityInsideOpaqueBlock()
+        public virtual bool isInsideWall()
         {
             for (int var1 = 0; var1 < 8; ++var1)
             {
@@ -1206,7 +1206,7 @@ namespace betareborn.Entities
             return null;
         }
 
-        public virtual void setInPortal()
+        public virtual void tickPortalCooldown()
         {
         }
 
@@ -1229,7 +1229,7 @@ namespace betareborn.Entities
         {
         }
 
-        public virtual void outfitWithItem(int var1, int var2, int var3)
+        public virtual void setEquipmentStack(int var1, int var2, int var3)
         {
         }
 
@@ -1280,7 +1280,7 @@ namespace betareborn.Entities
 
         }
 
-        public virtual void onKillEntity(EntityLiving var1)
+        public virtual void onKillOther(EntityLiving var1)
         {
         }
 

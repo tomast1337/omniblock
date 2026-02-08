@@ -12,7 +12,7 @@ namespace betareborn.Entities
         public EntitySpider(World var1) : base(var1)
         {
             texture = "/mob/spider.png";
-            setSize(1.4F, 0.9F);
+            setBoundingBoxSpacing(1.4F, 0.9F);
             moveSpeed = 0.8F;
         }
 
@@ -84,14 +84,14 @@ namespace betareborn.Entities
             }
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         protected override int getDropItemId()

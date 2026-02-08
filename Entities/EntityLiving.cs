@@ -41,12 +41,12 @@ namespace betareborn.Entities
         public int deathTime = 0;
         public int attackTime = 0;
         public float cameraPitch;
-        public float field_9328_R;
+        public float tilt;
         protected bool unused_flag = false;
         public int field_9326_T = -1;
         public float field_9325_U = (float)(java.lang.Math.random() * (double)0.9F + (double)0.1F);
-        public float field_705_Q;
-        public float field_704_R;
+        public float lastWalkAnimationSpeed;
+        public float walkAnimationSpeed;
         public float field_703_S;
         protected int newPosRotationIncrements;
         protected double newPosX;
@@ -129,9 +129,9 @@ namespace betareborn.Entities
                 playLivingSound();
             }
 
-            if (isEntityAlive() && isEntityInsideOpaqueBlock())
+            if (isEntityAlive() && isInsideWall())
             {
-                attackEntityFrom(null, 1);
+                damage(null, 1);
             }
 
             if (isImmuneToFire || worldObj.isRemote)
@@ -155,7 +155,7 @@ namespace betareborn.Entities
                         worldObj.addParticle("bubble", posX + (double)var2, posY + (double)var3, posZ + (double)var4, motionX, motionY, motionZ);
                     }
 
-                    attackEntityFrom(null, 2);
+                    damage(null, 2);
                 }
 
                 fire = 0;
@@ -165,7 +165,7 @@ namespace betareborn.Entities
                 air = maxAir;
             }
 
-            cameraPitch = field_9328_R;
+            cameraPitch = tilt;
             if (attackTime > 0)
             {
                 --attackTime;
@@ -187,7 +187,7 @@ namespace betareborn.Entities
                 if (deathTime > 20)
                 {
                     onEntityDeath();
-                    setEntityDead();
+                    markDead();
 
                     for (var1 = 0; var1 < 20; ++var1)
                     {
@@ -245,7 +245,7 @@ namespace betareborn.Entities
         public override void onUpdate()
         {
             base.onUpdate();
-            onLivingUpdate();
+            tickMovement();
             double var1 = posX - prevPosX;
             double var3 = posZ - prevPosZ;
             float var5 = MathHelper.sqrt_double(var1 * var1 + var3 * var3);
@@ -349,9 +349,9 @@ namespace betareborn.Entities
             field_9360_w += var7;
         }
 
-        protected override void setSize(float var1, float var2)
+        protected override void setBoundingBoxSpacing(float var1, float var2)
         {
-            base.setSize(var1, var2);
+            base.setBoundingBoxSpacing(var1, var2);
         }
 
         public virtual void heal(int var1)
@@ -368,7 +368,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             if (worldObj.isRemote)
             {
@@ -383,7 +383,7 @@ namespace betareborn.Entities
                 }
                 else
                 {
-                    field_704_R = 1.5F;
+                    walkAnimationSpeed = 1.5F;
                     bool var3 = true;
                     if ((float)heartsLife > (float)heartsHalvesLife / 2.0F)
                     {
@@ -392,7 +392,7 @@ namespace betareborn.Entities
                             return false;
                         }
 
-                        damageEntity(var2 - field_9346_af);
+                        applyDamage(var2 - field_9346_af);
                         field_9346_af = var2;
                         var3 = false;
                     }
@@ -401,7 +401,7 @@ namespace betareborn.Entities
                         field_9346_af = var2;
                         prevHealth = health;
                         heartsLife = heartsHalvesLife;
-                        damageEntity(var2);
+                        applyDamage(var2);
                         hurtTime = maxHurtTime = 10;
                     }
 
@@ -436,7 +436,7 @@ namespace betareborn.Entities
                             worldObj.playSoundAtEntity(this, getDeathSound(), getSoundVolume(), (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
                         }
 
-                        onDeath(var1);
+                        onKilledBy(var1);
                     }
                     else if (var3)
                     {
@@ -454,7 +454,7 @@ namespace betareborn.Entities
             attackedAtYaw = 0.0F;
         }
 
-        protected virtual void damageEntity(int var1)
+        protected virtual void applyDamage(int var1)
         {
             health -= var1;
         }
@@ -496,16 +496,16 @@ namespace betareborn.Entities
 
         }
 
-        public virtual void onDeath(Entity var1)
+        public virtual void onKilledBy(Entity var1)
         {
             if (scoreValue >= 0 && var1 != null)
             {
-                var1.addToPlayerScore(this, scoreValue);
+                var1.updateKilledAchievement(this, scoreValue);
             }
 
             if (var1 != null)
             {
-                var1.onKillEntity(this);
+                var1.onKillOther(this);
             }
 
             unused_flag = true;
@@ -537,13 +537,13 @@ namespace betareborn.Entities
             return 0;
         }
 
-        protected override void fall(float var1)
+        protected override void onLanding(float var1)
         {
-            base.fall(var1);
+            base.onLanding(var1);
             int var2 = (int)java.lang.Math.ceil((double)(var1 - 3.0F));
             if (var2 > 0)
             {
-                attackEntityFrom(null, var2);
+                damage(null, var2);
                 int var3 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(posY - (double)0.2F - (double)yOffset), MathHelper.floor_double(posZ));
                 if (var3 > 0)
                 {
@@ -554,7 +554,7 @@ namespace betareborn.Entities
 
         }
 
-        public virtual void moveEntityWithHeading(float var1, float var2)
+        public virtual void travel(float var1, float var2)
         {
             double var3;
             if (isInWater())
@@ -658,7 +658,7 @@ namespace betareborn.Entities
                 motionZ *= (double)var8;
             }
 
-            field_705_Q = field_704_R;
+            lastWalkAnimationSpeed = walkAnimationSpeed;
             var3 = posX - prevPosX;
             double var11 = posZ - prevPosZ;
             float var7 = MathHelper.sqrt_double(var3 * var3 + var11 * var11) * 4.0F;
@@ -667,8 +667,8 @@ namespace betareborn.Entities
                 var7 = 1.0F;
             }
 
-            field_704_R += (var7 - field_704_R) * 0.4F;
-            field_703_S += field_704_R;
+            walkAnimationSpeed += (var7 - walkAnimationSpeed) * 0.4F;
+            field_703_S += walkAnimationSpeed;
         }
 
         public virtual bool isOnLadder()
@@ -679,7 +679,7 @@ namespace betareborn.Entities
             return worldObj.getBlockId(var1, var2, var3) == Block.LADDER.id;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setShort("Health", (short)health);
             var1.setShort("HurtTime", (short)hurtTime);
@@ -687,7 +687,7 @@ namespace betareborn.Entities
             var1.setShort("AttackTime", (short)attackTime);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             health = var1.getShort("Health");
             if (!var1.hasKey("Health"))
@@ -710,7 +710,7 @@ namespace betareborn.Entities
             return false;
         }
 
-        public virtual void onLivingUpdate()
+        public virtual void tickMovement()
         {
             if (newPosRotationIncrements > 0)
             {
@@ -761,7 +761,7 @@ namespace betareborn.Entities
             }
             else if (!isMultiplayerEntity)
             {
-                updatePlayerActionState();
+                tickLiving();
             }
 
             bool var14 = isInWater();
@@ -785,7 +785,7 @@ namespace betareborn.Entities
             moveStrafing *= 0.98F;
             moveForward *= 0.98F;
             randomYawVelocity *= 0.9F;
-            moveEntityWithHeading(moveStrafing, moveForward);
+            travel(moveStrafing, moveForward);
             var var15 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand((double)0.2F, 0.0D, (double)0.2F));
             if (var15 != null && var15.Count > 0)
             {
@@ -827,7 +827,7 @@ namespace betareborn.Entities
                 double var8 = var2 * var2 + var4 * var4 + var6 * var6;
                 if (var8 > 16384.0D)
                 {
-                    setEntityDead();
+                    markDead();
                 }
 
                 if (entityAge > 600 && rand.nextInt(800) == 0)
@@ -838,14 +838,14 @@ namespace betareborn.Entities
                     }
                     else
                     {
-                        setEntityDead();
+                        markDead();
                     }
                 }
             }
 
         }
 
-        public virtual void updatePlayerActionState()
+        public virtual void tickLiving()
         {
             ++entityAge;
             EntityPlayer var1 = worldObj.getClosestPlayerToEntity(this, -1.0D);
@@ -968,7 +968,7 @@ namespace betareborn.Entities
 
         protected override void kill()
         {
-            attackEntityFrom(null, 4);
+            damage(null, 4);
         }
 
         public float getSwingProgress(float var1)
@@ -1050,18 +1050,18 @@ namespace betareborn.Entities
         {
             if (var1 == 2)
             {
-                field_704_R = 1.5F;
+                walkAnimationSpeed = 1.5F;
                 heartsLife = heartsHalvesLife;
                 hurtTime = maxHurtTime = 10;
                 attackedAtYaw = 0.0F;
                 worldObj.playSoundAtEntity(this, getHurtSound(), getSoundVolume(), (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
-                attackEntityFrom(null, 0);
+                damage(null, 0);
             }
             else if (var1 == 3)
             {
                 worldObj.playSoundAtEntity(this, getDeathSound(), getSoundVolume(), (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
                 health = 0;
-                onDeath(null);
+                onKilledBy(null);
             }
             else
             {
@@ -1070,12 +1070,12 @@ namespace betareborn.Entities
 
         }
 
-        public virtual bool isPlayerSleeping()
+        public virtual bool isSleeping()
         {
             return false;
         }
 
-        public virtual int getItemIcon(ItemStack var1)
+        public virtual int getItemStackTextureId(ItemStack var1)
         {
             return var1.getIconIndex();
         }

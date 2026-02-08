@@ -70,7 +70,7 @@ namespace betareborn.Items
                     BlockEntitySign var8 = (BlockEntitySign)var3.getBlockEntity(var4, var5, var6);
                     if (var8 != null)
                     {
-                        var2.displayGUIEditSign(var8);
+                        var2.openEditSignScreen(var8);
                     }
 
                     return true;

@@ -12,11 +12,11 @@ namespace betareborn.Entities
         {
         }
 
-        protected override void fall(float var1)
+        protected override void onLanding(float var1)
         {
         }
 
-        public override void moveEntityWithHeading(float var1, float var2)
+        public override void travel(float var1, float var2)
         {
             if (isInWater())
             {
@@ -66,7 +66,7 @@ namespace betareborn.Entities
                 motionZ *= (double)var3;
             }
 
-            field_705_Q = field_704_R;
+            lastWalkAnimationSpeed = walkAnimationSpeed;
             double var10 = posX - prevPosX;
             double var9 = posZ - prevPosZ;
             float var7 = MathHelper.sqrt_double(var10 * var10 + var9 * var9) * 4.0F;
@@ -75,8 +75,8 @@ namespace betareborn.Entities
                 var7 = 1.0F;
             }
 
-            field_704_R += (var7 - field_704_R) * 0.4F;
-            field_703_S += field_704_R;
+            walkAnimationSpeed += (var7 - walkAnimationSpeed) * 0.4F;
+            field_703_S += walkAnimationSpeed;
         }
 
         public override bool isOnLadder()

@@ -16,14 +16,14 @@ namespace betareborn.Entities
             return true;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         public override bool canSpawn()

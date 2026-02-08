@@ -1,5 +1,5 @@
+using betareborn.Client.Rendering;
 using betareborn.Profiling;
-using betareborn.Rendering;
 using betareborn.Util.Maths;
 using betareborn.Worlds.Chunks;
 using Silk.NET.Maths;
@@ -54,7 +54,7 @@ namespace betareborn.Worlds
         private readonly List<Vector3D<int>> chunkVersionsToRemove = [];
         private readonly List<ChunkToMeshInfo> dirtyChunks = [];
         private readonly List<ChunkToMeshInfo> lightingUpdates = [];
-        private readonly Rendering.Shader chunkShader;
+        private readonly Client.Rendering.Shader chunkShader;
         private int lastRenderDistance;
         private Vector3D<double> lastViewPos;
         private int currentIndex = 0;
@@ -172,7 +172,7 @@ namespace betareborn.Worlds
             LoadNewMeshes(viewPos, MAX_CHUNKS_PER_FRAME);
 
             GLManager.GL.UseProgram(0);
-            Rendering.VertexArray.Unbind();
+            Client.Rendering.VertexArray.Unbind();
         }
 
         public void SetFogMode(int mode)
@@ -222,7 +222,7 @@ namespace betareborn.Worlds
             translucentRenderers.Clear();
 
             GLManager.GL.UseProgram(0);
-            Rendering.VertexArray.Unbind();
+            Client.Rendering.VertexArray.Unbind();
         }
 
         private void ProcessOneMeshUpdate(ICamera camera)

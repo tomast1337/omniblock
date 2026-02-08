@@ -13,7 +13,7 @@ namespace betareborn.Entities
         {
             fuse = 0;
             preventEntitySpawning = true;
-            setSize(0.98F, 0.98F);
+            setBoundingBoxSpacing(0.98F, 0.98F);
             yOffset = height / 2.0F;
         }
 
@@ -65,12 +65,12 @@ namespace betareborn.Entities
             {
                 if (!worldObj.isRemote)
                 {
-                    setEntityDead();
+                    markDead();
                     explode();
                 }
                 else
                 {
-                    setEntityDead();
+                    markDead();
                 }
             }
             else
@@ -86,17 +86,17 @@ namespace betareborn.Entities
             worldObj.createExplosion((Entity)null, posX, posY, posZ, var1);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setByte("Fuse", (sbyte)fuse);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             fuse = var1.getByte("Fuse");
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }

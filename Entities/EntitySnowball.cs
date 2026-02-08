@@ -22,7 +22,7 @@ namespace betareborn.Entities
 
         public EntitySnowball(World var1) : base(var1)
         {
-            setSize(0.25F, 0.25F);
+            setBoundingBoxSpacing(0.25F, 0.25F);
         }
 
         protected override void entityInit()
@@ -39,7 +39,7 @@ namespace betareborn.Entities
         public EntitySnowball(World var1, EntityLiving var2) : base(var1)
         {
             thrower = var2;
-            setSize(0.25F, 0.25F);
+            setBoundingBoxSpacing(0.25F, 0.25F);
             setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
             posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
             posY -= (double)0.1F;
@@ -56,7 +56,7 @@ namespace betareborn.Entities
         public EntitySnowball(World var1, double var2, double var4, double var6) : base(var1)
         {
             ticksInGroundSnowball = 0;
-            setSize(0.25F, 0.25F);
+            setBoundingBoxSpacing(0.25F, 0.25F);
             setPosition(var2, var4, var6);
             yOffset = 0.0F;
         }
@@ -115,7 +115,7 @@ namespace betareborn.Entities
                     ++ticksInGroundSnowball;
                     if (ticksInGroundSnowball == 1200)
                     {
-                        setEntityDead();
+                        markDead();
                     }
 
                     return;
@@ -177,7 +177,7 @@ namespace betareborn.Entities
 
             if (var3 != null)
             {
-                if (var3.entity != null && var3.entity.attackEntityFrom(thrower, 0))
+                if (var3.entity != null && var3.entity.damage(thrower, 0))
                 {
                 }
 
@@ -186,7 +186,7 @@ namespace betareborn.Entities
                     worldObj.addParticle("snowballpoof", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
                 }
 
-                setEntityDead();
+                markDead();
             }
 
             posX += motionX;
@@ -236,7 +236,7 @@ namespace betareborn.Entities
             setPosition(posX, posY, posZ);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setShort("xTile", (short)xTileSnowball);
             var1.setShort("yTile", (short)yTileSnowball);
@@ -246,7 +246,7 @@ namespace betareborn.Entities
             var1.setByte("inGround", (sbyte)(inGroundSnowball ? 1 : 0));
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             xTileSnowball = var1.getShort("xTile");
             yTileSnowball = var1.getShort("yTile");
@@ -261,13 +261,13 @@ namespace betareborn.Entities
             if (inGroundSnowball && thrower == var1 && shakeSnowball <= 0 && var1.inventory.addItemStackToInventory(new ItemStack(Item.arrow, 1)))
             {
                 worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                var1.onItemPickup(this, 1);
-                setEntityDead();
+                var1.sendPickup(this, 1);
+                markDead();
             }
 
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }

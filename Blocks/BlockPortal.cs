@@ -190,7 +190,7 @@ namespace betareborn.Blocks
         {
             if (entity.ridingEntity == null && entity.riddenByEntity == null)
             {
-                entity.setInPortal();
+                entity.tickPortalCooldown();
             }
 
         }

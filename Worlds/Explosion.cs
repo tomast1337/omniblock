@@ -108,7 +108,7 @@ namespace betareborn.Worlds
                     var19 /= var39;
                     double var40 = (double)worldObj.func_675_a(var31, var33.boundingBox);
                     double var41 = (1.0D - var13) * var40;
-                    var33.attackEntityFrom(exploder, (int)((var41 * var41 + var41) / 2.0D * 8.0D * explosionSize + 1.0D));
+                    var33.damage(exploder, (int)((var41 * var41 + var41) / 2.0D * 8.0D * explosionSize + 1.0D));
                     var33.motionX += var15 * var41;
                     var33.motionY += var17 * var41;
                     var33.motionZ += var19 * var41;

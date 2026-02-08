@@ -31,7 +31,7 @@ namespace betareborn.Entities
             boatTimeSinceHit = 0;
             boatRockDirection = 1;
             preventEntitySpawning = true;
-            setSize(1.5F, 0.6F);
+            setBoundingBoxSpacing(1.5F, 0.6F);
             yOffset = height / 2.0F;
         }
 
@@ -75,7 +75,7 @@ namespace betareborn.Entities
             return (double)height * 0.0D - (double)0.3F;
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             if (!worldObj.isRemote && !isDead)
             {
@@ -101,7 +101,7 @@ namespace betareborn.Entities
                         dropItemWithOffset(Item.stick.id, 1, 0.0F);
                     }
 
-                    setEntityDead();
+                    markDead();
                 }
 
                 return true;
@@ -303,7 +303,7 @@ namespace betareborn.Entities
                 {
                     if (!worldObj.isRemote)
                     {
-                        setEntityDead();
+                        markDead();
 
                         int var22;
                         for (var22 = 0; var22 < 3; ++var22)
@@ -398,15 +398,15 @@ namespace betareborn.Entities
             }
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }

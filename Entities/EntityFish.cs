@@ -44,7 +44,7 @@ namespace betareborn.Entities
             ticksInAir = 0;
             ticksCatchable = 0;
             bobber = null;
-            setSize(0.25F, 0.25F);
+            setBoundingBoxSpacing(0.25F, 0.25F);
             ignoreFrustumCheck = true;
         }
 
@@ -68,7 +68,7 @@ namespace betareborn.Entities
             ignoreFrustumCheck = true;
             angler = var2;
             angler.fishEntity = this;
-            setSize(0.25F, 0.25F);
+            setBoundingBoxSpacing(0.25F, 0.25F);
             setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + 1.62D - (double)var2.yOffset, var2.posZ, var2.rotationYaw, var2.rotationPitch);
             posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
             posY -= (double)0.1F;
@@ -163,10 +163,10 @@ namespace betareborn.Entities
             {
                 if (!worldObj.isRemote)
                 {
-                    ItemStack var1 = angler.getCurrentEquippedItem();
+                    ItemStack var1 = angler.getHand();
                     if (angler.isDead || !angler.isEntityAlive() || var1 == null || var1.getItem() != Item.fishingRod || getDistanceSqToEntity(angler) > 1024.0D)
                     {
-                        setEntityDead();
+                        markDead();
                         angler.fishEntity = null;
                         return;
                     }
@@ -198,7 +198,7 @@ namespace betareborn.Entities
                         ++ticksInGround;
                         if (ticksInGround == 1200)
                         {
-                            setEntityDead();
+                            markDead();
                         }
 
                         return;
@@ -260,7 +260,7 @@ namespace betareborn.Entities
                 {
                     if (var3.entity != null)
                     {
-                        if (var3.entity.attackEntityFrom(angler, 0))
+                        if (var3.entity.damage(angler, 0))
                         {
                             bobber = var3.entity;
                         }
@@ -380,7 +380,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setShort("xTile", (short)xTile);
             var1.setShort("yTile", (short)yTile);
@@ -390,7 +390,7 @@ namespace betareborn.Entities
             var1.setByte("inGround", (sbyte)(inGround ? 1 : 0));
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             xTile = var1.getShort("xTile");
             yTile = var1.getShort("yTile");
@@ -400,7 +400,7 @@ namespace betareborn.Entities
             inGround = var1.getByte("inGround") == 1;
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }
@@ -441,7 +441,7 @@ namespace betareborn.Entities
                 var1 = 2;
             }
 
-            setEntityDead();
+            markDead();
             angler.fishEntity = null;
             return var1;
         }

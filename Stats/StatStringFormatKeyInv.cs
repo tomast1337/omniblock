@@ -1,3 +1,4 @@
+using betareborn.Client;
 using betareborn.Stats.Achievements;
 
 namespace betareborn.Stats

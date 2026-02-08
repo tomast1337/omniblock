@@ -23,7 +23,7 @@ namespace betareborn.Entities
             field_695_c = 0;
             direction = 0;
             yOffset = 0.0F;
-            setSize(0.5F, 0.5F);
+            setBoundingBoxSpacing(0.5F, 0.5F);
         }
 
         public EntityPainting(World var1, int var2, int var3, int var4, int var5) : this(var1)
@@ -160,7 +160,7 @@ namespace betareborn.Entities
                 field_695_c = 0;
                 if (!func_410_i())
                 {
-                    setEntityDead();
+                    markDead();
                     worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
                 }
             }
@@ -243,11 +243,11 @@ namespace betareborn.Entities
             return true;
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             if (!isDead && !worldObj.isRemote)
             {
-                setEntityDead();
+                markDead();
                 setBeenAttacked();
                 worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
             }
@@ -255,7 +255,7 @@ namespace betareborn.Entities
             return true;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setByte("Dir", (sbyte)direction);
             var1.setString("Motive", art.title);
@@ -264,7 +264,7 @@ namespace betareborn.Entities
             var1.setInteger("TileZ", zPosition);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             direction = var1.getByte("Dir");
             xPosition = var1.getInteger("TileX");
@@ -295,7 +295,7 @@ namespace betareborn.Entities
         {
             if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
-                setEntityDead();
+                markDead();
                 worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
             }
 
@@ -305,7 +305,7 @@ namespace betareborn.Entities
         {
             if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
-                setEntityDead();
+                markDead();
                 worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
             }
 

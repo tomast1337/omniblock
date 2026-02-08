@@ -20,7 +20,7 @@ namespace betareborn.Entities
             return false;
         }
 
-        public override void updatePlayerActionState()
+        public override void tickLiving()
         {
             hasAttacked = isMovementCeased();
             float var1 = 16.0F;
@@ -148,7 +148,7 @@ namespace betareborn.Entities
             }
             else
             {
-                base.updatePlayerActionState();
+                base.tickLiving();
                 pathToEntity = null;
             }
         }

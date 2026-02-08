@@ -21,7 +21,7 @@ namespace betareborn.Entities
         {
             blockID = var8;
             preventEntitySpawning = true;
-            setSize(0.98F, 0.98F);
+            setBoundingBoxSpacing(0.98F, 0.98F);
             yOffset = height / 2.0F;
             setPosition(var2, var4, var6);
             motionX = 0.0D;
@@ -50,7 +50,7 @@ namespace betareborn.Entities
         {
             if (blockID == 0)
             {
-                setEntityDead();
+                markDead();
             }
             else
             {
@@ -76,7 +76,7 @@ namespace betareborn.Entities
                     motionX *= (double)0.7F;
                     motionZ *= (double)0.7F;
                     motionY *= -0.5D;
-                    setEntityDead();
+                    markDead();
                     if ((!worldObj.canBlockBePlacedAt(blockID, var1, var2, var3, true, 1) || BlockSand.canFallThrough(worldObj, var1, var2 - 1, var3) || !worldObj.setBlockWithNotify(var1, var2, var3, blockID)) && !worldObj.isRemote)
                     {
                         dropItem(blockID, 1);
@@ -85,23 +85,23 @@ namespace betareborn.Entities
                 else if (fallTime > 100 && !worldObj.isRemote)
                 {
                     dropItem(blockID, 1);
-                    setEntityDead();
+                    markDead();
                 }
 
             }
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setByte("Tile", (sbyte)blockID);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             blockID = var1.getByte("Tile") & 255;
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }

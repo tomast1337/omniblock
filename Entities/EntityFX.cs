@@ -23,7 +23,7 @@ namespace betareborn.Entities
 
         public EntityFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12) : base(var1)
         {
-            setSize(0.2F, 0.2F);
+            setBoundingBoxSpacing(0.2F, 0.2F);
             yOffset = height / 2.0F;
             setPosition(var2, var4, var6);
             particleRed = particleGreen = particleBlue = 1.0F;
@@ -52,7 +52,7 @@ namespace betareborn.Entities
 
         public EntityFX func_405_d(float var1)
         {
-            setSize(0.2F * var1, 0.2F * var1);
+            setBoundingBoxSpacing(0.2F * var1, 0.2F * var1);
             particleScale *= var1;
             return this;
         }
@@ -73,7 +73,7 @@ namespace betareborn.Entities
             prevPosZ = posZ;
             if (particleAge++ >= particleMaxAge)
             {
-                setEntityDead();
+                markDead();
             }
 
             motionY -= 0.04D * (double)particleGravity;
@@ -112,11 +112,11 @@ namespace betareborn.Entities
             return 0;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
         }
     }

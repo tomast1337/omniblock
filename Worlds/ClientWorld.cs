@@ -1,4 +1,5 @@
 using betareborn.Chunks;
+using betareborn.Client.Network;
 using betareborn.Entities;
 using betareborn.Packets;
 using betareborn.Util;
@@ -14,13 +15,13 @@ namespace betareborn.Worlds
     {
 
         private readonly LinkedList blockResets = new LinkedList();
-        private readonly NetClientHandler networkHandler;
+        private readonly ClientNetworkHandler networkHandler;
         private MultiplayerChunkCache chunkCache;
         private readonly IntHashMap entitiesByNetworkId = new IntHashMap();
         private readonly Set forcedEntities = new HashSet();
         private readonly Set pendingEntities = new HashSet();
 
-        public ClientWorld(NetClientHandler netHandler, long seed, int dimId) : base(new EmptyWorldStorage(), "MpServer", Dimension.fromId(dimId), seed)
+        public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId) : base(new EmptyWorldStorage(), "MpServer", Dimension.fromId(dimId), seed)
         {
             networkHandler = netHandler;
             setSpawnPoint(new Vec3i(8, 64, 8));

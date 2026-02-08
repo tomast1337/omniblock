@@ -1,15 +1,17 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using betareborn.Blocks;
+using betareborn.Client;
+using betareborn.Client.Guis;
+using betareborn.Client.Models;
+using betareborn.Client.Network;
+using betareborn.Client.Rendering;
+using betareborn.Client.Textures;
 using betareborn.Entities;
-using betareborn.Guis;
 using betareborn.Items;
 using betareborn.Launcher;
-using betareborn.Models;
 using betareborn.Profiling;
-using betareborn.Rendering;
 using betareborn.Stats;
-using betareborn.Textures;
 using betareborn.Threading;
 using betareborn.Util.Hit;
 using betareborn.Util.Maths;
@@ -581,7 +583,7 @@ namespace betareborn
                             Display.update();
                         }
 
-                        if (thePlayer != null && thePlayer.isEntityInsideOpaqueBlock())
+                        if (thePlayer != null && thePlayer.isInsideWall())
                         {
                             gameSettings.thirdPersonView = false;
                         }
@@ -923,7 +925,7 @@ namespace betareborn
             {
                 if (var1 == 0)
                 {
-                    thePlayer.swingItem();
+                    thePlayer.swingHand();
                 }
 
                 bool var2 = true;
@@ -963,7 +965,7 @@ namespace betareborn
                         if (playerController.sendPlaceBlock(thePlayer, theWorld, var7, var3, var4, var5, var6))
                         {
                             var2 = false;
-                            thePlayer.swingItem();
+                            thePlayer.swingHand();
                         }
 
                         if (var7 == null)
@@ -1144,12 +1146,12 @@ namespace betareborn
                 {
                     displayGuiScreen((GuiScreen)null);
                 }
-                else if (thePlayer.isPlayerSleeping() && theWorld != null && theWorld.isRemote)
+                else if (thePlayer.isSleeping() && theWorld != null && theWorld.isRemote)
                 {
                     displayGuiScreen(new GuiSleepMP());
                 }
             }
-            else if (currentScreen != null && currentScreen is GuiSleepMP && !thePlayer.isPlayerSleeping())
+            else if (currentScreen != null && currentScreen is GuiSleepMP && !thePlayer.isSleeping())
             {
                 displayGuiScreen((GuiScreen)null);
             }
@@ -1187,10 +1189,10 @@ namespace betareborn
                     }
                 }
 
-                theWorld.difficultySetting = gameSettings.difficulty;
+                theWorld.difficulty = gameSettings.difficulty;
                 if (theWorld.isRemote)
                 {
-                    theWorld.difficultySetting = 3;
+                    theWorld.difficulty = 3;
                 }
 
                 Profiler.Start("entityRendererUpdate");
@@ -1372,7 +1374,7 @@ namespace betareborn
 
                             if (Keyboard.getEventKey() == gameSettings.keyBindDrop.keyCode)
                             {
-                                thePlayer.dropCurrentItem();
+                                thePlayer.dropSelectedItem();
                             }
 
                             if (Keyboard.getEventKey() == gameSettings.keyBindChat.keyCode)
@@ -1671,7 +1673,7 @@ namespace betareborn
             int var3 = 0;
             int var4 = var2 * 2 / 16 + 1;
             var4 *= var4;
-            ChunkSource var5 = theWorld.getIChunkProvider();
+            ChunkSource var5 = theWorld.getChunkSource();
             Vec3i var6 = theWorld.getSpawnPoint();
             if (thePlayer != null)
             {
@@ -1751,13 +1753,13 @@ namespace betareborn
             bool var5 = true;
             if (thePlayer != null && !var1)
             {
-                var3 = thePlayer.getPlayerSpawnCoordinate();
+                var3 = thePlayer.getSpawnPos();
                 if (var3 != null)
                 {
-                    var4 = EntityPlayer.func_25060_a(theWorld, var3);
+                    var4 = EntityPlayer.findRespawnPosition(theWorld, var3);
                     if (var4 == null)
                     {
-                        thePlayer.addChatMessage("tile.bed.notValid");
+                        thePlayer.sendMessage("tile.bed.notValid");
                     }
                 }
             }
@@ -1784,7 +1786,7 @@ namespace betareborn
             thePlayer.preparePlayerToSpawn();
             if (var5)
             {
-                thePlayer.setPlayerSpawnCoordinate(var3);
+                thePlayer.setSpawnPos(var3);
                 thePlayer.setPositionAndAnglesKeepPrevAngles((double)((float)var4.x + 0.5F), (double)((float)var4.y + 0.1F),
                     (double)((float)var4.z + 0.5F), 0.0F, 0.0F);
             }
@@ -1793,7 +1795,7 @@ namespace betareborn
             theWorld.spawnPlayerWithLoadedChunks(thePlayer);
             thePlayer.movementInput = new MovementInputFromOptions(gameSettings);
             thePlayer.entityId = var8;
-            thePlayer.func_6420_o();
+            thePlayer.spawn();
             playerController.func_6473_b(thePlayer);
             func_6255_d("Respawning");
             if (currentScreen is GuiGameOver)
@@ -1842,7 +1844,7 @@ namespace betareborn
             var8.start();
         }
 
-        public NetClientHandler getSendQueue()
+        public ClientNetworkHandler getSendQueue()
         {
             return thePlayer is EntityClientPlayerMP ? ((EntityClientPlayerMP)thePlayer).sendQueue : null;
         }

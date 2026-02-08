@@ -356,7 +356,7 @@ namespace betareborn.Blocks
 
         public float getHardness(EntityPlayer player)
         {
-            return hardness < 0.0F ? 0.0F : (!player.canHarvest(this) ? 1.0F / hardness / 100.0F : player.getCurrentPlayerStrVsBlock(this) / hardness / 30.0F);
+            return hardness < 0.0F ? 0.0F : (!player.canHarvest(this) ? 1.0F / hardness / 100.0F : player.getBlockBreakingSpeed(this) / hardness / 30.0F);
         }
 
         public void dropStacks(World world, int x, int y, int z, int meta)

@@ -19,14 +19,14 @@ namespace betareborn.Entities
             return worldObj.getBlockId(var1, var2 - 1, var3) == Block.GRASS_BLOCK.id ? 10.0F : worldObj.getLuminance(var1, var2, var3) - 0.5F;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         public override bool canSpawn()

@@ -113,7 +113,7 @@ namespace betareborn.Blocks
 
         public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
-            entity.attackEntityFrom((Entity)null, 1);
+            entity.damage((Entity)null, 1);
         }
     }
 

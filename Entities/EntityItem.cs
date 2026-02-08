@@ -20,7 +20,7 @@ namespace betareborn.Entities
 
         public EntityItem(World var1, double var2, double var4, double var6, ItemStack var8) : base(var1)
         {
-            setSize(0.25F, 0.25F);
+            setBoundingBoxSpacing(0.25F, 0.25F);
             yOffset = height / 2.0F;
             setPosition(var2, var4, var6);
             item = var8;
@@ -37,7 +37,7 @@ namespace betareborn.Entities
 
         public EntityItem(World var1) : base(var1)
         {
-            setSize(0.25F, 0.25F);
+            setBoundingBoxSpacing(0.25F, 0.25F);
             yOffset = height / 2.0F;
         }
 
@@ -90,7 +90,7 @@ namespace betareborn.Entities
             ++age;
             if (age >= 6000)
             {
-                setEntityDead();
+                markDead();
             }
 
         }
@@ -102,29 +102,29 @@ namespace betareborn.Entities
 
         protected override void dealFireDamage(int var1)
         {
-            attackEntityFrom((Entity)null, var1);
+            damage((Entity)null, var1);
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             setBeenAttacked();
             health -= var2;
             if (health <= 0)
             {
-                setEntityDead();
+                markDead();
             }
 
             return false;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setShort("Health", (short)((byte)health));
             var1.setShort("Age", (short)age);
             var1.setCompoundTag("Item", item.writeToNBT(new NBTTagCompound()));
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             health = var1.getShort("Health") & 255;
             age = var1.getShort("Age");
@@ -141,19 +141,19 @@ namespace betareborn.Entities
                 {
                     if (item.itemID == Block.LOG.id)
                     {
-                        var1.triggerAchievement(Achievements.MINE_WOOD);
+                        var1.incrementStat(Achievements.MINE_WOOD);
                     }
 
                     if (item.itemID == Item.leather.id)
                     {
-                        var1.triggerAchievement(Achievements.KILL_COW);
+                        var1.incrementStat(Achievements.KILL_COW);
                     }
 
                     worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                    var1.onItemPickup(this, var2);
+                    var1.sendPickup(this, var2);
                     if (item.count <= 0)
                     {
-                        setEntityDead();
+                        markDead();
                     }
                 }
 

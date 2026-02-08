@@ -33,18 +33,18 @@ namespace betareborn.Entities
 
         public override bool canSpawn()
         {
-            return worldObj.difficultySetting > 0 && worldObj.checkIfAABBIsClear(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).Count == 0 && !worldObj.getIsAnyLiquid(boundingBox);
+            return worldObj.difficulty > 0 && worldObj.checkIfAABBIsClear(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).Count == 0 && !worldObj.getIsAnyLiquid(boundingBox);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
             var1.setShort("Anger", (short)angerLevel);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
             angerLevel = var1.getShort("Anger");
         }
 
@@ -53,12 +53,12 @@ namespace betareborn.Entities
             return angerLevel == 0 ? null : base.findPlayerToAttack();
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
-            base.onLivingUpdate();
+            base.tickMovement();
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             if (var1 is EntityPlayer)
             {
@@ -77,7 +77,7 @@ namespace betareborn.Entities
                 becomeAngryAt(var1);
             }
 
-            return base.attackEntityFrom(var1, var2);
+            return base.damage(var1, var2);
         }
 
         private void becomeAngryAt(Entity var1)

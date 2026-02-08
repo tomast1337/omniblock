@@ -11,7 +11,7 @@ namespace betareborn.Entities
         public EntityPig(World var1) : base(var1)
         {
             texture = "/mob/pig.png";
-            setSize(0.9F, 0.9F);
+            setBoundingBoxSpacing(0.9F, 0.9F);
         }
 
         protected override void entityInit()
@@ -19,15 +19,15 @@ namespace betareborn.Entities
             dataWatcher.addObject(16, java.lang.Byte.valueOf((byte)0));
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
             var1.setBoolean("Saddle", getSaddled());
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
             setSaddled(var1.getBoolean("Saddle"));
         }
 
@@ -89,16 +89,16 @@ namespace betareborn.Entities
                 EntityPigZombie var2 = new EntityPigZombie(worldObj);
                 var2.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, rotationYaw, rotationPitch);
                 worldObj.spawnEntity(var2);
-                setEntityDead();
+                markDead();
             }
         }
 
-        protected override void fall(float var1)
+        protected override void onLanding(float var1)
         {
-            base.fall(var1);
+            base.onLanding(var1);
             if (var1 > 5.0F && riddenByEntity is EntityPlayer)
             {
-                ((EntityPlayer)riddenByEntity).triggerAchievement(Achievements.KILL_PIG);
+                ((EntityPlayer)riddenByEntity).incrementStat(Achievements.KILL_PIG);
             }
 
         }

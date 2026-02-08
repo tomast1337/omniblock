@@ -142,7 +142,7 @@ namespace betareborn.Inventorys
             }
         }
 
-        public void decrementAnimations()
+        public void inventoryTick()
         {
             for (int var1 = 0; var1 < mainInventory.Length; ++var1)
             {
@@ -405,7 +405,7 @@ namespace betareborn.Inventorys
                     armorInventory[var2].damageItem(var1, player);
                     if (armorInventory[var2].count == 0)
                     {
-                        armorInventory[var2].func_1097_a(player);
+                        armorInventory[var2].onRemoved(player);
                         armorInventory[var2] = null;
                     }
                 }
@@ -413,14 +413,14 @@ namespace betareborn.Inventorys
 
         }
 
-        public void dropAllItems()
+        public void dropInventory()
         {
             int var1;
             for (var1 = 0; var1 < mainInventory.Length; ++var1)
             {
                 if (mainInventory[var1] != null)
                 {
-                    player.dropPlayerItemWithRandomChoice(mainInventory[var1], true);
+                    player.dropItem(mainInventory[var1], true);
                     mainInventory[var1] = null;
                 }
             }
@@ -429,7 +429,7 @@ namespace betareborn.Inventorys
             {
                 if (armorInventory[var1] != null)
                 {
-                    player.dropPlayerItemWithRandomChoice(armorInventory[var1], true);
+                    player.dropItem(armorInventory[var1], true);
                     armorInventory[var1] = null;
                 }
             }
@@ -444,7 +444,7 @@ namespace betareborn.Inventorys
         public void setItemStack(ItemStack var1)
         {
             itemStack = var1;
-            player.onItemStackChanged(var1);
+            player.onCursorStackChanged(var1);
         }
 
         public ItemStack getItemStack()

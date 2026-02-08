@@ -1,4 +1,5 @@
-using betareborn.Rendering;
+using betareborn.Client;
+using betareborn.Client.Rendering;
 using betareborn.Worlds;
 
 namespace betareborn.Blocks.BlockEntities

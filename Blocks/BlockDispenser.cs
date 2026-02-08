@@ -96,7 +96,7 @@ namespace betareborn.Blocks
             else
             {
                 BlockEntityDispenser var6 = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
-                player.displayGUIDispenser(var6);
+                player.openDispenserScreen(var6);
                 return true;
             }
         }

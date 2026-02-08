@@ -1,3 +1,5 @@
+using betareborn.Client;
+
 namespace betareborn
 {
     public class MouseHelper

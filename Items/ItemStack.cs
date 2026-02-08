@@ -207,7 +207,7 @@ namespace betareborn.Items
             return Item.itemsList[itemID].canHarvestBlock(var1);
         }
 
-        public void func_1097_a(EntityPlayer var1)
+        public void onRemoved(EntityPlayer var1)
         {
         }
 

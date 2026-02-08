@@ -253,7 +253,7 @@ namespace betareborn.Blocks
                 }
                 else
                 {
-                    player.displayGUIChest((IInventory)var6);
+                    player.openChestScreen((IInventory)var6);
                     return true;
                 }
             }

@@ -1,3 +1,4 @@
+using betareborn.Client;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn

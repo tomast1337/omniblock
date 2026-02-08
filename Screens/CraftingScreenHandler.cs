@@ -68,7 +68,7 @@ namespace betareborn.Screens
                     ItemStack var3 = input.getStack(var2);
                     if (var3 != null)
                     {
-                        player.dropPlayerItem(var3);
+                        player.dropItem(var3);
                     }
                 }
 

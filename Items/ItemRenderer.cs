@@ -1,7 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
+using betareborn.Client.Rendering;
 using betareborn.Entities;
-using betareborn.Rendering;
 using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
@@ -43,7 +43,7 @@ namespace betareborn.Items
                 }
 
                 Tessellator var3 = Tessellator.instance;
-                int var4 = var1.getItemIcon(var2);
+                int var4 = var1.getItemStackTextureId(var2);
                 float var5 = (var4 % 16 * 16 + 0.0F) / 256.0F;
                 float var6 = (var4 % 16 * 16 + 15.99F) / 256.0F;
                 float var7 = (var4 / 16 * 16 + 0.0F) / 256.0F;
@@ -317,7 +317,7 @@ namespace betareborn.Items
                 renderFireInFirstPerson(var1);
             }
 
-            if (mc.thePlayer.isEntityInsideOpaqueBlock())
+            if (mc.thePlayer.isInsideWall())
             {
                 var2 = MathHelper.floor_double(mc.thePlayer.posX);
                 int var3 = MathHelper.floor_double(mc.thePlayer.posY);

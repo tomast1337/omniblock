@@ -21,8 +21,8 @@ namespace betareborn.Entities
         public ScreenHandler craftingInventory;
         public byte field_9371_f = 0;
         public int score = 0;
-        public float field_775_e;
-        public float field_774_f;
+        public float prevStepBobbingAmount;
+        public float stepBobbingAmount;
         public bool isSwinging = false;
         public int swingProgressInt = 0;
         public string username;
@@ -35,11 +35,11 @@ namespace betareborn.Entities
         public double field_20062_v;
         public double field_20061_w;
         protected bool sleeping;
-        public Vec3i bedChunkCoordinates;
+        public Vec3i sleepingPos;
         private int sleepTimer;
-        public float field_22063_x;
-        public float field_22062_y;
-        public float field_22061_z;
+        public float sleepOffsetX;
+        public float sleepOffsetY;
+        public float sleepOffsetZ;
         private Vec3i playerSpawnCoordinate;
         private Vec3i startMinecartRidingCoordinate;
         public int timeUntilPortal = 20;
@@ -72,7 +72,7 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            if (isPlayerSleeping())
+            if (isSleeping())
             {
                 ++sleepTimer;
                 if (sleepTimer > 100)
@@ -82,13 +82,13 @@ namespace betareborn.Entities
 
                 if (!worldObj.isRemote)
                 {
-                    if (!isInBed())
+                    if (!isSleepingInBed())
                     {
-                        wakeUpPlayer(true, true, false);
+                        wakeUp(true, true, false);
                     }
                     else if (worldObj.isDaytime())
                     {
-                        wakeUpPlayer(false, true, true);
+                        wakeUp(false, true, true);
                     }
                 }
             }
@@ -158,7 +158,7 @@ namespace betareborn.Entities
 
         protected override bool isMovementBlocked()
         {
-            return health <= 0 || isPlayerSleeping();
+            return health <= 0 || isSleeping();
         }
 
         public virtual void closeScreen()
@@ -178,21 +178,21 @@ namespace betareborn.Entities
             double var3 = posY;
             double var5 = posZ;
             base.updateRidden();
-            field_775_e = field_774_f;
-            field_774_f = 0.0F;
-            addMountedMovementStat(posX - var1, posY - var3, posZ - var5);
+            prevStepBobbingAmount = stepBobbingAmount;
+            stepBobbingAmount = 0.0F;
+            increaseRidingMotionStats(posX - var1, posY - var3, posZ - var5);
         }
 
         public override void preparePlayerToSpawn()
         {
             yOffset = 1.62F;
-            setSize(0.6F, 1.8F);
+            setBoundingBoxSpacing(0.6F, 1.8F);
             base.preparePlayerToSpawn();
             health = 20;
             deathTime = 0;
         }
 
-        public override void updatePlayerActionState()
+        public override void tickLiving()
         {
             if (isSwinging)
             {
@@ -211,16 +211,16 @@ namespace betareborn.Entities
             swingProgress = (float)swingProgressInt / 8.0F;
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
-            if (worldObj.difficultySetting == 0 && health < 20 && ticksExisted % 20 * 12 == 0)
+            if (worldObj.difficulty == 0 && health < 20 && ticksExisted % 20 * 12 == 0)
             {
                 heal(1);
             }
 
-            inventory.decrementAnimations();
-            field_775_e = field_774_f;
-            base.onLivingUpdate();
+            inventory.inventoryTick();
+            prevStepBobbingAmount = stepBobbingAmount;
+            base.tickMovement();
             float var1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
             float var2 = (float)java.lang.Math.atan(-motionY * (double)0.2F) * 15.0F;
             if (var1 > 0.1F)
@@ -238,8 +238,8 @@ namespace betareborn.Entities
                 var2 = 0.0F;
             }
 
-            field_774_f += (var1 - field_774_f) * 0.4F;
-            field_9328_R += (var2 - field_9328_R) * 0.8F;
+            stepBobbingAmount += (var1 - stepBobbingAmount) * 0.4F;
+            tilt += (var2 - tilt) * 0.8F;
             if (health > 0)
             {
                 var var3 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(1.0D, 0.0D, 1.0D));
@@ -250,7 +250,7 @@ namespace betareborn.Entities
                         Entity var5 = var3[var4];
                         if (!var5.isDead)
                         {
-                            collideWithPlayer(var5);
+                            collideWithEntity(var5);
                         }
                     }
                 }
@@ -258,9 +258,9 @@ namespace betareborn.Entities
 
         }
 
-        private void collideWithPlayer(Entity var1)
+        private void collideWithEntity(Entity entity)
         {
-            var1.onCollideWithPlayer(this);
+            entity.onCollideWithPlayer(this);
         }
 
         public int getScore()
@@ -268,19 +268,19 @@ namespace betareborn.Entities
             return score;
         }
 
-        public override void onDeath(Entity var1)
+        public override void onKilledBy(Entity adversary)
         {
-            base.onDeath(var1);
-            setSize(0.2F, 0.2F);
+            base.onKilledBy(adversary);
+            setBoundingBoxSpacing(0.2F, 0.2F);
             setPosition(posX, posY, posZ);
             motionY = (double)0.1F;
             if (username.Equals("Notch"))
             {
-                dropPlayerItemWithRandomChoice(new ItemStack(Item.appleRed, 1), true);
+                dropItem(new ItemStack(Item.appleRed, 1), true);
             }
 
-            inventory.dropAllItems();
-            if (var1 != null)
+            inventory.dropInventory();
+            if (adversary != null)
             {
                 motionX = (double)(-MathHelper.cos((attackedAtYaw + rotationYaw) * (float)java.lang.Math.PI / 180.0F) * 0.1F);
                 motionZ = (double)(-MathHelper.sin((attackedAtYaw + rotationYaw) * (float)java.lang.Math.PI / 180.0F) * 0.1F);
@@ -294,10 +294,10 @@ namespace betareborn.Entities
             increaseStat(Stats.Stats.deathsStat, 1);
         }
 
-        public override void addToPlayerScore(Entity var1, int var2)
+        public override void updateKilledAchievement(Entity entityKilled, int score)
         {
-            score += var2;
-            if (var1 is EntityPlayer)
+            this.score += score;
+            if (entityKilled is EntityPlayer)
             {
                 increaseStat(Stats.Stats.playerKillsStat, 1);
             }
@@ -308,25 +308,25 @@ namespace betareborn.Entities
 
         }
 
-        public virtual void dropCurrentItem()
+        public virtual void dropSelectedItem()
         {
-            dropPlayerItemWithRandomChoice(inventory.removeStack(inventory.currentItem, 1), false);
+            dropItem(inventory.removeStack(inventory.currentItem, 1), false);
         }
 
-        public void dropPlayerItem(ItemStack var1)
+        public void dropItem(ItemStack stack)
         {
-            dropPlayerItemWithRandomChoice(var1, false);
+            dropItem(stack, false);
         }
 
-        public void dropPlayerItemWithRandomChoice(ItemStack var1, bool var2)
+        public void dropItem(ItemStack stack, bool throwRandomly)
         {
-            if (var1 != null)
+            if (stack != null)
             {
-                EntityItem var3 = new EntityItem(worldObj, posX, posY - (double)0.3F + (double)getEyeHeight(), posZ, var1);
+                EntityItem var3 = new EntityItem(worldObj, posX, posY - (double)0.3F + (double)getEyeHeight(), posZ, stack);
                 var3.delayBeforeCanPickup = 40;
                 float var4 = 0.1F;
                 float var5;
-                if (var2)
+                if (throwRandomly)
                 {
                     var5 = rand.nextFloat() * 0.5F;
                     float var6 = rand.nextFloat() * (float)java.lang.Math.PI * 2.0F;
@@ -348,19 +348,19 @@ namespace betareborn.Entities
                     var3.motionZ += java.lang.Math.sin((double)var5) * (double)var4;
                 }
 
-                joinEntityItemWithWorld(var3);
+                spawnItem(var3);
                 increaseStat(Stats.Stats.dropStat, 1);
             }
         }
 
-        protected virtual void joinEntityItemWithWorld(EntityItem var1)
+        protected virtual void spawnItem(EntityItem itemEntity)
         {
-            worldObj.spawnEntity(var1);
+            worldObj.spawnEntity(itemEntity);
         }
 
-        public float getCurrentPlayerStrVsBlock(Block var1)
+        public float getBlockBreakingSpeed(Block block)
         {
-            float var2 = inventory.getStrVsBlock(var1);
+            float var2 = inventory.getStrVsBlock(block);
             if (isInsideOfMaterial(Material.WATER))
             {
                 var2 /= 5.0F;
@@ -374,57 +374,57 @@ namespace betareborn.Entities
             return var2;
         }
 
-        public bool canHarvest(Block var1)
+        public bool canHarvest(Block block)
         {
-            return inventory.canHarvestBlock(var1);
+            return inventory.canHarvestBlock(block);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound nbt)
         {
-            base.readEntityFromNBT(var1);
-            NBTTagList var2 = var1.getTagList("Inventory");
+            base.readNbt(nbt);
+            NBTTagList var2 = nbt.getTagList("Inventory");
             inventory.readFromNBT(var2);
-            dimension = var1.getInteger("Dimension");
-            sleeping = var1.getBoolean("Sleeping");
-            sleepTimer = var1.getShort("SleepTimer");
+            dimension = nbt.getInteger("Dimension");
+            sleeping = nbt.getBoolean("Sleeping");
+            sleepTimer = nbt.getShort("SleepTimer");
             if (sleeping)
             {
-                bedChunkCoordinates = new Vec3i(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
-                wakeUpPlayer(true, true, false);
+                sleepingPos = new Vec3i(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+                wakeUp(true, true, false);
             }
 
-            if (var1.hasKey("SpawnX") && var1.hasKey("SpawnY") && var1.hasKey("SpawnZ"))
+            if (nbt.hasKey("SpawnX") && nbt.hasKey("SpawnY") && nbt.hasKey("SpawnZ"))
             {
-                playerSpawnCoordinate = new Vec3i(var1.getInteger("SpawnX"), var1.getInteger("SpawnY"), var1.getInteger("SpawnZ"));
+                playerSpawnCoordinate = new Vec3i(nbt.getInteger("SpawnX"), nbt.getInteger("SpawnY"), nbt.getInteger("SpawnZ"));
             }
 
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound nbt)
         {
-            base.writeEntityToNBT(var1);
-            var1.setTag("Inventory", inventory.writeToNBT(new NBTTagList()));
-            var1.setInteger("Dimension", dimension);
-            var1.setBoolean("Sleeping", sleeping);
-            var1.setShort("SleepTimer", (short)sleepTimer);
+            base.writeNbt(nbt);
+            nbt.setTag("Inventory", inventory.writeToNBT(new NBTTagList()));
+            nbt.setInteger("Dimension", dimension);
+            nbt.setBoolean("Sleeping", sleeping);
+            nbt.setShort("SleepTimer", (short)sleepTimer);
             if (playerSpawnCoordinate != null)
             {
-                var1.setInteger("SpawnX", playerSpawnCoordinate.x);
-                var1.setInteger("SpawnY", playerSpawnCoordinate.y);
-                var1.setInteger("SpawnZ", playerSpawnCoordinate.z);
+                nbt.setInteger("SpawnX", playerSpawnCoordinate.x);
+                nbt.setInteger("SpawnY", playerSpawnCoordinate.y);
+                nbt.setInteger("SpawnZ", playerSpawnCoordinate.z);
             }
 
         }
 
-        public virtual void displayGUIChest(IInventory var1)
+        public virtual void openChestScreen(IInventory inventory)
         {
         }
 
-        public virtual void displayWorkbenchGUI(int var1, int var2, int var3)
+        public virtual void openCraftingScreen(int x, int y, int z)
         {
         }
 
-        public virtual void onItemPickup(Entity var1, int var2)
+        public virtual void sendPickup(Entity item, int count)
         {
         }
 
@@ -433,12 +433,12 @@ namespace betareborn.Entities
             return 0.12F;
         }
 
-        protected virtual void resetHeight()
+        protected virtual void resetEyeHeight()
         {
             yOffset = 1.62F;
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity damageSource, int amount)
         {
             entityAge = 0;
             if (health <= 0)
@@ -447,71 +447,71 @@ namespace betareborn.Entities
             }
             else
             {
-                if (isPlayerSleeping() && !worldObj.isRemote)
+                if (isSleeping() && !worldObj.isRemote)
                 {
-                    wakeUpPlayer(true, true, false);
+                    wakeUp(true, true, false);
                 }
 
-                if (var1 is EntityMob || var1 is EntityArrow)
+                if (damageSource is EntityMob || damageSource is EntityArrow)
                 {
-                    if (worldObj.difficultySetting == 0)
+                    if (worldObj.difficulty == 0)
                     {
-                        var2 = 0;
+                        amount = 0;
                     }
 
-                    if (worldObj.difficultySetting == 1)
+                    if (worldObj.difficulty == 1)
                     {
-                        var2 = var2 / 3 + 1;
+                        amount = amount / 3 + 1;
                     }
 
-                    if (worldObj.difficultySetting == 3)
+                    if (worldObj.difficulty == 3)
                     {
-                        var2 = var2 * 3 / 2;
+                        amount = amount * 3 / 2;
                     }
                 }
 
-                if (var2 == 0)
+                if (amount == 0)
                 {
                     return false;
                 }
                 else
                 {
-                    java.lang.Object var3 = var1;
-                    if (var1 is EntityArrow && ((EntityArrow)var1).owner != null)
+                    java.lang.Object var3 = damageSource;
+                    if (damageSource is EntityArrow && ((EntityArrow)damageSource).owner != null)
                     {
-                        var3 = ((EntityArrow)var1).owner;
+                        var3 = ((EntityArrow)damageSource).owner;
                     }
 
                     if (var3 is EntityLiving)
                     {
-                        alertWolves((EntityLiving)var3, false);
+                        commandWolvesToAttack((EntityLiving)var3, false);
                     }
 
-                    increaseStat(Stats.Stats.damageTakenStat, var2);
-                    return base.attackEntityFrom(var1, var2);
+                    increaseStat(Stats.Stats.damageTakenStat, amount);
+                    return base.damage(damageSource, amount);
                 }
             }
         }
 
-        protected bool func_27025_G()
+        protected bool isPvpEnabled()
         {
             return false;
         }
 
-        protected void alertWolves(EntityLiving var1, bool var2)
+        protected void commandWolvesToAttack(EntityLiving entity, bool sitting)
         {
-            if (!(var1 is EntityCreeper) && !(var1 is EntityGhast))
+            if (!(entity is EntityCreeper) && !(entity is EntityGhast))
             {
-                if (var1 is EntityWolf)
+                if (entity is EntityWolf)
                 {
-                    EntityWolf var3 = (EntityWolf)var1;
+                    EntityWolf var3 = (EntityWolf)entity;
                     if (var3.isWolfTamed() && username.Equals(var3.getWolfOwner()))
                     {
                         return;
                     }
                 }
 
-                if (!(var1 is EntityPlayer) || func_27025_G())
+                if (!(entity is EntityPlayer) || isPvpEnabled())
                 {
                     var var7 = worldObj.getEntitiesWithinAABB(EntityWolf.Class, new Box(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
 
@@ -522,61 +522,61 @@ namespace betareborn.Entities
                         if (!var6.isWolfTamed()) continue;
                         if (var6.getTarget() != null) continue;
                         if (!username.Equals(var6.getWolfOwner())) continue;
-                        if (var2 && var6.isWolfSitting()) continue;
+                        if (sitting && var6.isWolfSitting()) continue;
 
                         var6.setWolfSitting(false);
-                        var6.setTarget(var1);
+                        var6.setTarget(entity);
                     }
                 }
             }
         }
 
-        protected override void damageEntity(int var1)
+        protected override void applyDamage(int amount)
         {
             int var2 = 25 - inventory.getTotalArmorValue();
-            int var3 = var1 * var2 + damageRemainder;
-            inventory.damageArmor(var1);
-            var1 = var3 / 25;
+            int var3 = amount * var2 + damageRemainder;
+            inventory.damageArmor(amount);
+            amount = var3 / 25;
             damageRemainder = var3 % 25;
-            base.damageEntity(var1);
+            base.applyDamage(amount);
         }
 
-        public virtual void displayGUIFurnace(BlockEntityFurnace var1)
+        public virtual void openFurnaceScreen(BlockEntityFurnace furnace)
         {
         }
 
-        public virtual void displayGUIDispenser(BlockEntityDispenser var1)
+        public virtual void openDispenserScreen(BlockEntityDispenser dispenser)
         {
         }
 
-        public virtual void displayGUIEditSign(BlockEntitySign var1)
+        public virtual void openEditSignScreen(BlockEntitySign sign)
         {
         }
 
-        public void useCurrentItemOnEntity(Entity var1)
+        public void interact(Entity entity)
         {
-            if (!var1.interact(this))
+            if (!entity.interact(this))
             {
-                ItemStack var2 = getCurrentEquippedItem();
-                if (var2 != null && var1 is EntityLiving)
+                ItemStack var2 = getHand();
+                if (var2 != null && entity is EntityLiving)
                 {
-                    var2.useItemOnEntity((EntityLiving)var1);
+                    var2.useItemOnEntity((EntityLiving)entity);
                     if (var2.count <= 0)
                     {
-                        var2.func_1097_a(this);
-                        destroyCurrentEquippedItem();
+                        var2.onRemoved(this);
+                        clearStackInHand();
                     }
                 }
 
             }
         }
 
-        public ItemStack getCurrentEquippedItem()
+        public ItemStack getHand()
         {
             return inventory.getCurrentItem();
         }
 
-        public void destroyCurrentEquippedItem()
+        public void clearStackInHand()
         {
             inventory.setStack(inventory.currentItem, (ItemStack)null);
         }
@@ -586,15 +586,15 @@ namespace betareborn.Entities
             return (double)(yOffset - 0.5F);
         }
 
-        public virtual void swingItem()
+        public virtual void swingHand()
         {
             swingProgressInt = -1;
             isSwinging = true;
         }
 
-        public void attackTargetEntityWithCurrentItem(Entity var1)
+        public void attack(Entity target)
         {
-            int var2 = inventory.getDamageVsEntity(var1);
+            int var2 = inventory.getDamageVsEntity(target);
             if (var2 > 0)
             {
                 if (motionY < 0.0D)
@@ -602,23 +602,23 @@ namespace betareborn.Entities
                     ++var2;
                 }
 
-                var1.attackEntityFrom(this, var2);
-                ItemStack var3 = getCurrentEquippedItem();
-                if (var3 != null && var1 is EntityLiving)
+                target.damage(this, var2);
+                ItemStack var3 = getHand();
+                if (var3 != null && target is EntityLiving)
                 {
-                    var3.hitEntity((EntityLiving)var1, this);
+                    var3.hitEntity((EntityLiving)target, this);
                     if (var3.count <= 0)
                     {
-                        var3.func_1097_a(this);
-                        destroyCurrentEquippedItem();
+                        var3.onRemoved(this);
+                        clearStackInHand();
                     }
                 }
 
-                if (var1 is EntityLiving)
+                if (target is EntityLiving)
                 {
-                    if (var1.isEntityAlive())
+                    if (target.isEntityAlive())
                     {
-                        alertWolves((EntityLiving)var1, true);
+                        commandWolvesToAttack((EntityLiving)target, true);
                     }
 
                     increaseStat(Stats.Stats.damageDealtStat, var2);
@@ -627,19 +627,19 @@ namespace betareborn.Entities
 
         }
 
-        public virtual void respawnPlayer()
+        public virtual void respawn()
         {
         }
 
-        public abstract void func_6420_o();
+        public abstract void spawn();
 
-        public void onItemStackChanged(ItemStack var1)
+        public void onCursorStackChanged(ItemStack stack)
         {
         }
 
-        public override void setEntityDead()
+        public override void markDead()
         {
-            base.setEntityDead();
+            base.markDead();
             inventorySlots.onClosed(this);
             if (craftingInventory != null)
             {
@@ -648,16 +648,16 @@ namespace betareborn.Entities
 
         }
 
-        public override bool isEntityInsideOpaqueBlock()
+        public override bool isInsideWall()
         {
-            return !sleeping && base.isEntityInsideOpaqueBlock();
+            return !sleeping && base.isInsideWall();
         }
 
-        public EnumStatus sleepInBedAt(int var1, int var2, int var3)
+        public EnumStatus trySleep(int x, int y, int z)
         {
             if (!worldObj.isRemote)
             {
-                if (isPlayerSleeping() || !isEntityAlive())
+                if (isSleeping() || !isEntityAlive())
                 {
                     return EnumStatus.OTHER_PROBLEM;
                 }
@@ -672,17 +672,17 @@ namespace betareborn.Entities
                     return EnumStatus.NOT_POSSIBLE_NOW;
                 }
 
-                if (java.lang.Math.abs(posX - (double)var1) > 3.0D || java.lang.Math.abs(posY - (double)var2) > 2.0D || java.lang.Math.abs(posZ - (double)var3) > 3.0D)
+                if (java.lang.Math.abs(posX - (double)x) > 3.0D || java.lang.Math.abs(posY - (double)y) > 2.0D || java.lang.Math.abs(posZ - (double)z) > 3.0D)
                 {
                     return EnumStatus.TOO_FAR_AWAY;
                 }
             }
 
-            setSize(0.2F, 0.2F);
+            setBoundingBoxSpacing(0.2F, 0.2F);
             yOffset = 0.2F;
-            if (worldObj.blockExists(var1, var2, var3))
+            if (worldObj.blockExists(x, y, z))
             {
-                int var4 = worldObj.getBlockMeta(var1, var2, var3);
+                int var4 = worldObj.getBlockMeta(x, y, z);
                 int var5 = BlockBed.getDirection(var4);
                 float var6 = 0.5F;
                 float var7 = 0.5F;
@@ -702,17 +702,17 @@ namespace betareborn.Entities
                         break;
                 }
 
-                func_22052_e(var5);
-                setPosition((double)((float)var1 + var6), (double)((float)var2 + 15.0F / 16.0F), (double)((float)var3 + var7));
+                calculateSleepOffset(var5);
+                setPosition((double)((float)x + var6), (double)((float)y + 15.0F / 16.0F), (double)((float)z + var7));
             }
             else
             {
-                setPosition((double)((float)var1 + 0.5F), (double)((float)var2 + 15.0F / 16.0F), (double)((float)var3 + 0.5F));
+                setPosition((double)((float)x + 0.5F), (double)((float)y + 15.0F / 16.0F), (double)((float)z + 0.5F));
             }
 
             sleeping = true;
             sleepTimer = 0;
-            bedChunkCoordinates = new Vec3i(var1, var2, var3);
+            sleepingPos = new Vec3i(x, y, z);
             motionX = motionZ = motionY = 0.0D;
             if (!worldObj.isRemote)
             {
@@ -722,34 +722,34 @@ namespace betareborn.Entities
             return EnumStatus.OK;
         }
 
-        private void func_22052_e(int var1)
+        private void calculateSleepOffset(int bedDir)
         {
-            field_22063_x = 0.0F;
-            field_22061_z = 0.0F;
-            switch (var1)
+            sleepOffsetX = 0.0F;
+            sleepOffsetZ = 0.0F;
+            switch (bedDir)
             {
                 case 0:
-                    field_22061_z = -1.8F;
+                    sleepOffsetZ = -1.8F;
                     break;
                 case 1:
-                    field_22063_x = 1.8F;
+                    sleepOffsetX = 1.8F;
                     break;
                 case 2:
-                    field_22061_z = 1.8F;
+                    sleepOffsetZ = 1.8F;
                     break;
                 case 3:
-                    field_22063_x = -1.8F;
+                    sleepOffsetX = -1.8F;
                     break;
             }
 
         }
 
-        public void wakeUpPlayer(bool var1, bool var2, bool var3)
+        public void wakeUp(bool resetSleepTimer, bool updateSleepingPlayers, bool setSpawnPos)
         {
-            setSize(0.6F, 1.8F);
-            resetHeight();
-            Vec3i var4 = bedChunkCoordinates;
-            Vec3i var5 = bedChunkCoordinates;
+            setBoundingBoxSpacing(0.6F, 1.8F);
+            resetEyeHeight();
+            Vec3i var4 = sleepingPos;
+            Vec3i var5 = sleepingPos;
             if (var4 != null && worldObj.getBlockId(var4.x, var4.y, var4.z) == Block.BED.id)
             {
                 BlockBed.updateState(worldObj, var4.x, var4.y, var4.z, false);
@@ -763,12 +763,12 @@ namespace betareborn.Entities
             }
 
             sleeping = false;
-            if (!worldObj.isRemote && var2)
+            if (!worldObj.isRemote && updateSleepingPlayers)
             {
                 worldObj.updateAllPlayersSleepingFlag();
             }
 
-            if (var1)
+            if (resetSleepTimer)
             {
                 sleepTimer = 0;
             }
@@ -777,41 +777,41 @@ namespace betareborn.Entities
                 sleepTimer = 100;
             }
 
-            if (var3)
+            if (setSpawnPos)
             {
-                setPlayerSpawnCoordinate(bedChunkCoordinates);
+                this.setSpawnPos(sleepingPos);
             }
 
         }
 
-        private bool isInBed()
+        private bool isSleepingInBed()
         {
-            return worldObj.getBlockId(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z) == Block.BED.id;
+            return worldObj.getBlockId(sleepingPos.x, sleepingPos.y, sleepingPos.z) == Block.BED.id;
         }
 
-        public static Vec3i func_25060_a(World var0, Vec3i var1)
+        public static Vec3i findRespawnPosition(World world, Vec3i spawnPos)
         {
-            ChunkSource var2 = var0.getIChunkProvider();
-            var2.loadChunk(var1.x - 3 >> 4, var1.z - 3 >> 4);
-            var2.loadChunk(var1.x + 3 >> 4, var1.z - 3 >> 4);
-            var2.loadChunk(var1.x - 3 >> 4, var1.z + 3 >> 4);
-            var2.loadChunk(var1.x + 3 >> 4, var1.z + 3 >> 4);
-            if (var0.getBlockId(var1.x, var1.y, var1.z) != Block.BED.id)
+            ChunkSource var2 = world.getChunkSource();
+            var2.loadChunk(spawnPos.x - 3 >> 4, spawnPos.z - 3 >> 4);
+            var2.loadChunk(spawnPos.x + 3 >> 4, spawnPos.z - 3 >> 4);
+            var2.loadChunk(spawnPos.x - 3 >> 4, spawnPos.z + 3 >> 4);
+            var2.loadChunk(spawnPos.x + 3 >> 4, spawnPos.z + 3 >> 4);
+            if (world.getBlockId(spawnPos.x, spawnPos.y, spawnPos.z) != Block.BED.id)
             {
                 return null;
             }
             else
             {
-                Vec3i var3 = BlockBed.findWakeUpPosition(var0, var1.x, var1.y, var1.z, 0);
+                Vec3i var3 = BlockBed.findWakeUpPosition(world, spawnPos.x, spawnPos.y, spawnPos.z, 0);
                 return var3;
             }
         }
 
-        public float getBedOrientationInDegrees()
+        public float getSleepingRotation()
         {
-            if (bedChunkCoordinates != null)
+            if (sleepingPos != null)
             {
-                int var1 = worldObj.getBlockMeta(bedChunkCoordinates.x, bedChunkCoordinates.y, bedChunkCoordinates.z);
+                int var1 = worldObj.getBlockMeta(sleepingPos.x, sleepingPos.y, sleepingPos.z);
                 int var2 = BlockBed.getDirection(var1);
                 switch (var2)
                 {
@@ -829,7 +829,7 @@ namespace betareborn.Entities
             return 0.0F;
         }
 
-        public override bool isPlayerSleeping()
+        public override bool isSleeping()
         {
             return sleeping;
         }
@@ -839,25 +839,25 @@ namespace betareborn.Entities
             return sleeping && sleepTimer >= 100;
         }
 
-        public int func_22060_M()
+        public int getSleepTimer()
         {
             return sleepTimer;
         }
 
-        public virtual void addChatMessage(string var1)
+        public virtual void sendMessage(string msg)
         {
         }
 
-        public Vec3i getPlayerSpawnCoordinate()
+        public Vec3i getSpawnPos()
         {
             return playerSpawnCoordinate;
         }
 
-        public void setPlayerSpawnCoordinate(Vec3i var1)
+        public void setSpawnPos(Vec3i spawnPos)
         {
-            if (var1 != null)
+            if (spawnPos != null)
             {
-                playerSpawnCoordinate = new Vec3i(var1);
+                playerSpawnCoordinate = new Vec3i(spawnPos);
             }
             else
             {
@@ -866,39 +866,38 @@ namespace betareborn.Entities
 
         }
 
-        public void triggerAchievement(StatBase var1)
+        public void incrementStat(StatBase stat)
         {
-            increaseStat(var1, 1);
+            increaseStat(stat, 1);
         }
 
-        public virtual void increaseStat(StatBase var1, int var2)
+        public virtual void increaseStat(StatBase stat, int amount)
         {
         }
 
         protected override void jump()
         {
             base.jump();
-            // motionY = (double)0.42F*5; // fun
             increaseStat(Stats.Stats.jumpStat, 1);
         }
 
-        public override void moveEntityWithHeading(float var1, float var2)
+        public override void travel(float x, float z)
         {
             double var3 = posX;
             double var5 = posY;
             double var7 = posZ;
-            base.moveEntityWithHeading(var1, var2);
-            addMovementStat(posX - var3, posY - var5, posZ - var7);
+            base.travel(x, z);
+            updateMovementStat(posX - var3, posY - var5, posZ - var7);
         }
 
-        private void addMovementStat(double var1, double var3, double var5)
+        private void updateMovementStat(double x, double y, double z)
         {
             if (ridingEntity == null)
             {
                 int var7;
                 if (isInsideOfMaterial(Material.WATER))
                 {
-                    var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
+                    var7 = java.lang.Math.round(MathHelper.sqrt_double(x * x + y * y + z * z) * 100.0F);
                     if (var7 > 0)
                     {
                         increaseStat(Stats.Stats.distanceDoveStat, var7);
@@ -906,7 +905,7 @@ namespace betareborn.Entities
                 }
                 else if (isInWater())
                 {
-                    var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var5 * var5) * 100.0F);
+                    var7 = java.lang.Math.round(MathHelper.sqrt_double(x * x + z * z) * 100.0F);
                     if (var7 > 0)
                     {
                         increaseStat(Stats.Stats.distanceSwumStat, var7);
@@ -914,14 +913,14 @@ namespace betareborn.Entities
                 }
                 else if (isOnLadder())
                 {
-                    if (var3 > 0.0D)
+                    if (y > 0.0D)
                     {
-                        increaseStat(Stats.Stats.distanceClimbedStat, (int)java.lang.Math.round(var3 * 100.0D));
+                        increaseStat(Stats.Stats.distanceClimbedStat, (int)java.lang.Math.round(y * 100.0D));
                     }
                 }
                 else if (onGround)
                 {
-                    var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var5 * var5) * 100.0F);
+                    var7 = java.lang.Math.round(MathHelper.sqrt_double(x * x + z * z) * 100.0F);
                     if (var7 > 0)
                     {
                         increaseStat(Stats.Stats.distanceWalkedStat, var7);
@@ -929,7 +928,7 @@ namespace betareborn.Entities
                 }
                 else
                 {
-                    var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var5 * var5) * 100.0F);
+                    var7 = java.lang.Math.round(MathHelper.sqrt_double(x * x + z * z) * 100.0F);
                     if (var7 > 25)
                     {
                         increaseStat(Stats.Stats.distanceFlownStat, var7);
@@ -939,11 +938,11 @@ namespace betareborn.Entities
             }
         }
 
-        private void addMountedMovementStat(double var1, double var3, double var5)
+        private void increaseRidingMotionStats(double x, double y, double z)
         {
             if (ridingEntity != null)
             {
-                int var7 = java.lang.Math.round(MathHelper.sqrt_double(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
+                int var7 = java.lang.Math.round(MathHelper.sqrt_double(x * x + y * y + z * z) * 100.0F);
                 if (var7 > 0)
                 {
                     if (ridingEntity is EntityMinecart)
@@ -971,37 +970,37 @@ namespace betareborn.Entities
 
         }
 
-        protected override void fall(float var1)
+        protected override void onLanding(float fallDistance)
         {
-            if (var1 >= 2.0F)
+            if (fallDistance >= 2.0F)
             {
-                increaseStat(Stats.Stats.distanceFallenStat, (int)java.lang.Math.round((double)var1 * 100.0D));
+                increaseStat(Stats.Stats.distanceFallenStat, (int)java.lang.Math.round((double)fallDistance * 100.0D));
             }
 
-            base.fall(var1);
+            base.onLanding(fallDistance);
         }
 
-        public override void onKillEntity(EntityLiving var1)
+        public override void onKillOther(EntityLiving other)
         {
-            if (var1 is EntityMob)
+            if (other is EntityMob)
             {
-                triggerAchievement(Achievements.KILL_ENEMY);
+                incrementStat(Achievements.KILL_ENEMY);
             }
 
         }
 
-        public override int getItemIcon(ItemStack var1)
+        public override int getItemStackTextureId(ItemStack stack)
         {
-            int var2 = base.getItemIcon(var1);
-            if (var1.itemID == Item.fishingRod.id && fishEntity != null)
+            int var2 = base.getItemStackTextureId(stack);
+            if (stack.itemID == Item.fishingRod.id && fishEntity != null)
             {
-                var2 = var1.getIconIndex() + 16;
+                var2 = stack.getIconIndex() + 16;
             }
 
             return var2;
         }
 
-        public override void setInPortal()
+        public override void tickPortalCooldown()
         {
             if (timeUntilPortal > 0)
             {

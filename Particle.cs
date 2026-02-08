@@ -1,4 +1,4 @@
-using betareborn.Guis;
+using betareborn.Client.Guis;
 
 namespace betareborn
 {

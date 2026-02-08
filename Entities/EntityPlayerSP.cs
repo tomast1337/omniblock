@@ -1,4 +1,3 @@
-using betareborn.Guis;
 using betareborn.NBT;
 using betareborn.Stats;
 using betareborn.Worlds;
@@ -6,6 +5,7 @@ using java.lang;
 using betareborn.Blocks.BlockEntities;
 using betareborn.Inventorys;
 using betareborn.Util.Maths;
+using betareborn.Client.Guis;
 
 namespace betareborn.Entities
 {
@@ -35,15 +35,15 @@ namespace betareborn.Entities
             base.moveEntity(var1, var3, var5);
         }
 
-        public override void updatePlayerActionState()
+        public override void tickLiving()
         {
-            base.updatePlayerActionState();
+            base.tickLiving();
             moveStrafing = movementInput.moveStrafe;
             moveForward = movementInput.moveForward;
             isJumping = movementInput.jump;
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
             if (!mc.statFileWriter.hasAchievementUnlocked(Achievements.OPEN_INVENTORY))
             {
@@ -110,7 +110,7 @@ namespace betareborn.Entities
             pushOutOfBlocks(posX - (double)width * 0.35D, boundingBox.minY + 0.5D, posZ - (double)width * 0.35D);
             pushOutOfBlocks(posX + (double)width * 0.35D, boundingBox.minY + 0.5D, posZ - (double)width * 0.35D);
             pushOutOfBlocks(posX + (double)width * 0.35D, boundingBox.minY + 0.5D, posZ + (double)width * 0.35D);
-            base.onLivingUpdate();
+            base.tickMovement();
         }
 
         public void resetPlayerKeyState()
@@ -123,15 +123,15 @@ namespace betareborn.Entities
             movementInput.checkKeyForMovementInput(var1, var2);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
             var1.setInteger("Score", score);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
             score = var1.getInteger("Score");
         }
 
@@ -141,32 +141,32 @@ namespace betareborn.Entities
             mc.displayGuiScreen(null);
         }
 
-        public override void displayGUIEditSign(BlockEntitySign var1)
+        public override void openEditSignScreen(BlockEntitySign var1)
         {
             mc.displayGuiScreen(new GuiEditSign(var1));
         }
 
-        public override void displayGUIChest(IInventory var1)
+        public override void openChestScreen(IInventory var1)
         {
             mc.displayGuiScreen(new GuiChest(inventory, var1));
         }
 
-        public override void displayWorkbenchGUI(int var1, int var2, int var3)
+        public override void openCraftingScreen(int var1, int var2, int var3)
         {
             mc.displayGuiScreen(new GuiCrafting(inventory, worldObj, var1, var2, var3));
         }
 
-        public override void displayGUIFurnace(BlockEntityFurnace var1)
+        public override void openFurnaceScreen(BlockEntityFurnace var1)
         {
             mc.displayGuiScreen(new GuiFurnace(inventory, var1));
         }
 
-        public override void displayGUIDispenser(BlockEntityDispenser var1)
+        public override void openDispenserScreen(BlockEntityDispenser var1)
         {
             mc.displayGuiScreen(new GuiDispenser(inventory, var1));
         }
 
-        public override void onItemPickup(Entity var1, int var2)
+        public override void sendPickup(Entity var1, int var2)
         {
             mc.effectRenderer.addEffect(new EntityPickupFX(mc.theWorld, var1, this, -0.5F));
         }
@@ -202,22 +202,22 @@ namespace betareborn.Entities
                 field_9346_af = var2;
                 prevHealth = health;
                 heartsLife = heartsHalvesLife;
-                damageEntity(var2);
+                applyDamage(var2);
                 hurtTime = maxHurtTime = 10;
             }
 
         }
 
-        public override void respawnPlayer()
+        public override void respawn()
         {
             mc.respawn(false, 0);
         }
 
-        public override void func_6420_o()
+        public override void spawn()
         {
         }
 
-        public override void addChatMessage(string var1)
+        public override void sendMessage(string var1)
         {
             mc.ingameGUI.addChatMessageTranslate(var1);
         }

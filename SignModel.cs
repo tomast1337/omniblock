@@ -1,16 +1,16 @@
-using betareborn.Models;
+using betareborn.Client.Models;
 
 namespace betareborn
 {
     public class SignModel
     {
-        public ModelRenderer signBoard = new ModelRenderer(0, 0);
-        public ModelRenderer signStick;
+        public ModelPart signBoard = new ModelPart(0, 0);
+        public ModelPart signStick;
 
         public SignModel()
         {
             signBoard.addBox(-12.0F, -14.0F, -1.0F, 24, 12, 2, 0.0F);
-            signStick = new ModelRenderer(0, 14);
+            signStick = new ModelPart(0, 14);
             signStick.addBox(-1.0F, -2.0F, -1.0F, 2, 14, 2, 0.0F);
         }
 

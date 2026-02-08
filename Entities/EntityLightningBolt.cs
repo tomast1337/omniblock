@@ -19,7 +19,7 @@ namespace betareborn.Entities
             field_27028_b = 2;
             field_27029_a = rand.nextLong();
             field_27030_c = rand.nextInt(3) + 1;
-            if (var1.difficultySetting >= 2 && var1.doChunksNearChunkExist(MathHelper.floor_double(var2), MathHelper.floor_double(var4), MathHelper.floor_double(var6), 10))
+            if (var1.difficulty >= 2 && var1.doChunksNearChunkExist(MathHelper.floor_double(var2), MathHelper.floor_double(var4), MathHelper.floor_double(var6), 10))
             {
                 int var8 = MathHelper.floor_double(var2);
                 int var9 = MathHelper.floor_double(var4);
@@ -57,7 +57,7 @@ namespace betareborn.Entities
             {
                 if (field_27030_c == 0)
                 {
-                    setEntityDead();
+                    markDead();
                 }
                 else if (field_27028_b < -rand.nextInt(10))
                 {
@@ -97,11 +97,11 @@ namespace betareborn.Entities
         {
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
         }
 

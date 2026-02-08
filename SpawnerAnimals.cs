@@ -281,7 +281,7 @@ namespace betareborn
                                     var17.setPositionAndAnglesKeepPrevAngles((double)((float)var20.x + 0.5F), (double)var20.y, (double)((float)var20.z + 0.5F), 0.0F, 0.0F);
                                     var0.spawnEntity(var17);
                                     creatureSpecificInit(var17, var0, (float)var20.x + 0.5F, (float)var20.y, (float)var20.z + 0.5F);
-                                    var5.wakeUpPlayer(true, false, false);
+                                    var5.wakeUp(true, false, false);
                                     var17.playLivingSound();
                                     var2 = true;
                                     var7 = true;

@@ -15,7 +15,7 @@ namespace betareborn.Entities
             attackStrength = 5;
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
             if (worldObj.isDaytime())
             {
@@ -26,7 +26,7 @@ namespace betareborn.Entities
                 }
             }
 
-            base.onLivingUpdate();
+            base.tickMovement();
         }
 
         protected override String getLivingSound()

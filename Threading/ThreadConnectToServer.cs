@@ -1,4 +1,5 @@
-using betareborn.Guis;
+using betareborn.Client.Guis;
+using betareborn.Client.Network;
 using betareborn.Packets;
 using java.net;
 
@@ -24,7 +25,7 @@ namespace betareborn.Threading
         {
             try
             {
-                GuiConnecting.setNetClientHandler(connectingGui, new NetClientHandler(mc, hostName, port));
+                GuiConnecting.setNetClientHandler(connectingGui, new ClientNetworkHandler(mc, hostName, port));
                 if (GuiConnecting.isCancelled(connectingGui))
                 {
                     return;

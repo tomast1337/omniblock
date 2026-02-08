@@ -25,7 +25,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                player.displayWorkbenchGUI(x, y, z);
+                player.openCraftingScreen(x, y, z);
                 return true;
             }
         }

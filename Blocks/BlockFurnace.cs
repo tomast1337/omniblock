@@ -129,7 +129,7 @@ namespace betareborn.Blocks
             else
             {
                 BlockEntityFurnace var6 = (BlockEntityFurnace)world.getBlockEntity(x, y, z);
-                player.displayGUIFurnace(var6);
+                player.openFurnaceScreen(var6);
                 return true;
             }
         }

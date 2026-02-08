@@ -1,5 +1,6 @@
+using betareborn.Client;
+using betareborn.Client.Rendering;
 using betareborn.Entities;
-using betareborn.Rendering;
 using java.awt.image;
 using java.util;
 using Silk.NET.OpenGL.Legacy;

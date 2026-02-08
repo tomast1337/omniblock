@@ -20,7 +20,7 @@ namespace betareborn.Entities
         public EntityWolf(World var1) : base(var1)
         {
             texture = "/mob/wolf.png";
-            setSize(0.8F, 0.8F);
+            setBoundingBoxSpacing(0.8F, 0.8F);
             moveSpeed = 1.1F;
             health = 8;
         }
@@ -43,9 +43,9 @@ namespace betareborn.Entities
             return isWolfTamed() ? "/mob/wolf_tame.png" : (isWolfAngry() ? "/mob/wolf_angry.png" : base.getEntityTexture());
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
             var1.setBoolean("Angry", isWolfAngry());
             var1.setBoolean("Sitting", isWolfSitting());
             if (getWolfOwner() == null)
@@ -59,9 +59,9 @@ namespace betareborn.Entities
 
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
             setWolfAngry(var1.getBoolean("Angry"));
             setWolfSitting(var1.getBoolean("Sitting"));
             string var2 = var1.getString("Owner");
@@ -103,9 +103,9 @@ namespace betareborn.Entities
             return -1;
         }
 
-        public override void updatePlayerActionState()
+        public override void tickLiving()
         {
-            base.updatePlayerActionState();
+            base.tickLiving();
             if (!hasAttacked && !hasPath() && isWolfTamed() && ridingEntity == null)
             {
                 EntityPlayer var3 = worldObj.getPlayerEntityByName(getWolfOwner());
@@ -143,9 +143,9 @@ namespace betareborn.Entities
 
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
-            base.onLivingUpdate();
+            base.tickMovement();
             looksWithInterest = false;
             if (hasCurrentTarget() && !hasPath() && !isWolfAngry())
             {
@@ -309,7 +309,7 @@ namespace betareborn.Entities
             return isWolfSitting() || field_25052_g;
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             setWolfSitting(false);
             if (var1 != null && !(var1 is EntityPlayer) && !(var1 is EntityArrow))
@@ -317,7 +317,7 @@ namespace betareborn.Entities
                 var2 = (var2 + 1) / 2;
             }
 
-            if (!base.attackEntityFrom((Entity)var1, var2))
+            if (!base.damage((Entity)var1, var2))
             {
                 return false;
             }
@@ -397,7 +397,7 @@ namespace betareborn.Entities
                     var3 = 4;
                 }
 
-                var1.attackEntityFrom(this, var3);
+                var1.damage(this, var3);
             }
 
         }

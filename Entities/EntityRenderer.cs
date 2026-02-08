@@ -1,9 +1,10 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Chunks;
+using betareborn.Client;
+using betareborn.Client.Rendering;
 using betareborn.Items;
 using betareborn.Profiling;
-using betareborn.Rendering;
 using betareborn.Util.Hit;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
@@ -205,8 +206,8 @@ namespace betareborn.Entities
                 EntityPlayer var2 = (EntityPlayer)mc.renderViewEntity;
                 float var3 = var2.distanceWalkedModified - var2.prevDistanceWalkedModified;
                 float var4 = -(var2.distanceWalkedModified + var3 * var1);
-                float var5 = var2.field_775_e + (var2.field_774_f - var2.field_775_e) * var1;
-                float var6 = var2.cameraPitch + (var2.field_9328_R - var2.cameraPitch) * var1;
+                float var5 = var2.prevStepBobbingAmount + (var2.stepBobbingAmount - var2.prevStepBobbingAmount) * var1;
+                float var6 = var2.cameraPitch + (var2.tilt - var2.cameraPitch) * var1;
                 GLManager.GL.Translate(MathHelper.sin(var4 * (float)java.lang.Math.PI) * var5 * 0.5F, -java.lang.Math.abs(MathHelper.cos(var4 * (float)java.lang.Math.PI) * var5), 0.0F);
                 GLManager.GL.Rotate(MathHelper.sin(var4 * (float)java.lang.Math.PI) * var5 * 3.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(java.lang.Math.abs(MathHelper.cos(var4 * (float)java.lang.Math.PI - 0.2F) * var5) * 5.0F, 1.0F, 0.0F, 0.0F);
@@ -222,7 +223,7 @@ namespace betareborn.Entities
             double var6 = var2.prevPosY + (var2.posY - var2.prevPosY) * (double)var1 - (double)var3;
             double var8 = var2.prevPosZ + (var2.posZ - var2.prevPosZ) * (double)var1;
             GLManager.GL.Rotate(field_22230_A + (field_22220_z - field_22230_A) * var1, 0.0F, 0.0F, 1.0F);
-            if (var2.isPlayerSleeping())
+            if (var2.isSleeping())
             {
                 var3 = (float)((double)var3 + 1.0D);
                 GLManager.GL.Translate(0.0F, 0.3F, 0.0F);
@@ -354,13 +355,13 @@ namespace betareborn.Entities
                 setupViewBobbing(var1);
             }
 
-            if (!mc.gameSettings.thirdPersonView && !mc.renderViewEntity.isPlayerSleeping() && !mc.gameSettings.hideGUI)
+            if (!mc.gameSettings.thirdPersonView && !mc.renderViewEntity.isSleeping() && !mc.gameSettings.hideGUI)
             {
                 itemRenderer.renderItemInFirstPerson(var1);
             }
 
             GLManager.GL.PopMatrix();
-            if (!mc.gameSettings.thirdPersonView && !mc.renderViewEntity.isPlayerSleeping())
+            if (!mc.gameSettings.thirdPersonView && !mc.renderViewEntity.isSleeping())
             {
                 itemRenderer.renderOverlays(var1);
                 hurtCameraEffect(var1);
@@ -530,7 +531,7 @@ namespace betareborn.Entities
             double var7 = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var1;
             double var9 = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var1;
             double var11 = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var1;
-            ChunkSource var13 = mc.theWorld.getIChunkProvider();
+            ChunkSource var13 = mc.theWorld.getChunkSource();
 
             Profiler.Start("updateFog");
             GLManager.GL.Viewport(0, 0, (uint)mc.displayWidth, (uint)mc.displayHeight);

@@ -1,4 +1,4 @@
-using betareborn.Guis;
+using betareborn.Client.Guis;
 using betareborn.Stats;
 using java.util;
 using java.util.function;

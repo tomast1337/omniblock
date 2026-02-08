@@ -20,7 +20,7 @@ namespace betareborn.Entities
         public EntityGhast(World var1) : base(var1)
         {
             texture = "/mob/ghast.png";
-            setSize(4.0F, 4.0F);
+            setBoundingBoxSpacing(4.0F, 4.0F);
             isImmuneToFire = true;
         }
 
@@ -37,11 +37,11 @@ namespace betareborn.Entities
             texture = var1 == 1 ? "/mob/ghast_fire.png" : "/mob/ghast.png";
         }
 
-        public override void updatePlayerActionState()
+        public override void tickLiving()
         {
-            if (!worldObj.isRemote && worldObj.difficultySetting == 0)
+            if (!worldObj.isRemote && worldObj.difficulty == 0)
             {
-                setEntityDead();
+                markDead();
             }
 
             func_27021_X();
@@ -188,7 +188,7 @@ namespace betareborn.Entities
 
         public override bool canSpawn()
         {
-            return rand.nextInt(20) == 0 && base.canSpawn() && worldObj.difficultySetting > 0;
+            return rand.nextInt(20) == 0 && base.canSpawn() && worldObj.difficulty > 0;
         }
 
         public override int getMaxSpawnedInChunk()

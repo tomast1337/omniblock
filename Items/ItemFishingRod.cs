@@ -28,7 +28,7 @@ namespace betareborn.Items
             {
                 int var4 = var3.fishEntity.catchFish();
                 var1.damageItem(var4, var3);
-                var3.swingItem();
+                var3.swingHand();
             }
             else
             {
@@ -38,7 +38,7 @@ namespace betareborn.Items
                     var2.spawnEntity(new EntityFish(var2, var3));
                 }
 
-                var3.swingItem();
+                var3.swingHand();
             }
 
             return var1;

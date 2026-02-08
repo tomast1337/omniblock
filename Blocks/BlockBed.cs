@@ -1,7 +1,7 @@
 using betareborn.Blocks.Materials;
+using betareborn.Client.Models;
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Models;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using java.util;
@@ -69,9 +69,9 @@ namespace betareborn.Blocks
                         while (var8.hasNext())
                         {
                             EntityPlayer var9 = (EntityPlayer)var8.next();
-                            if (var9.isPlayerSleeping())
+                            if (var9.isSleeping())
                             {
-                                Vec3i var10 = var9.bedChunkCoordinates;
+                                Vec3i var10 = var9.sleepingPos;
                                 if (var10.x == x && var10.y == y && var10.z == z)
                                 {
                                     var14 = var9;
@@ -81,14 +81,14 @@ namespace betareborn.Blocks
 
                         if (var14 != null)
                         {
-                            player.addChatMessage("tile.bed.occupied");
+                            player.sendMessage("tile.bed.occupied");
                             return true;
                         }
 
                         updateState(world, x, y, z, false);
                     }
 
-                    EnumStatus var15 = player.sleepInBedAt(x, y, z);
+                    EnumStatus var15 = player.trySleep(x, y, z);
                     if (var15 == EnumStatus.OK)
                     {
                         updateState(world, x, y, z, true);
@@ -98,7 +98,7 @@ namespace betareborn.Blocks
                     {
                         if (var15 == EnumStatus.NOT_POSSIBLE_NOW)
                         {
-                            player.addChatMessage("tile.bed.noSleep");
+                            player.sendMessage("tile.bed.noSleep");
                         }
 
                         return true;

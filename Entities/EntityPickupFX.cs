@@ -1,4 +1,4 @@
-using betareborn.Rendering;
+using betareborn.Client.Rendering;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 
@@ -50,7 +50,7 @@ namespace betareborn.Entities
             ++field_678_p;
             if (field_678_p == field_677_q)
             {
-                setEntityDead();
+                markDead();
             }
 
         }

@@ -61,7 +61,7 @@ namespace betareborn.Entities
             posZ = field_4084_r + motionZ * (double)var1;
             if (particleAge++ >= particleMaxAge)
             {
-                setEntityDead();
+                markDead();
             }
 
         }

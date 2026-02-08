@@ -13,7 +13,7 @@ namespace betareborn.Entities
             particleGreen = 1.0F;
             particleBlue = 1.0F;
             particleTextureIndex = 32;
-            setSize(0.02F, 0.02F);
+            setBoundingBoxSpacing(0.02F, 0.02F);
             particleScale *= rand.nextFloat() * 0.6F + 0.2F;
             motionX = var8 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
             motionY = var10 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
@@ -33,12 +33,12 @@ namespace betareborn.Entities
             motionZ *= (double)0.85F;
             if (worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) != Material.WATER)
             {
-                setEntityDead();
+                markDead();
             }
 
             if (particleMaxAge-- <= 0)
             {
-                setEntityDead();
+                markDead();
             }
 
         }

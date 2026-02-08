@@ -11,17 +11,17 @@ namespace betareborn.Entities
         public EntityCow(World var1) : base(var1)
         {
             this.texture = "/mob/cow.png";
-            this.setSize(0.9F, 1.3F);
+            this.setBoundingBoxSpacing(0.9F, 1.3F);
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         protected override string getLivingSound()

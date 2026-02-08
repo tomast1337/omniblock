@@ -29,15 +29,15 @@ namespace betareborn
             int var5 = mc.theWorld.getBlockId(var1, var2, var3);
             int var6 = mc.theWorld.getBlockMeta(var1, var2, var3);
             bool var7 = base.sendBlockRemoved(var1, var2, var3, var4);
-            ItemStack var8 = mc.thePlayer.getCurrentEquippedItem();
+            ItemStack var8 = mc.thePlayer.getHand();
             bool var9 = mc.thePlayer.canHarvest(Block.BLOCKS[var5]);
             if (var8 != null)
             {
                 var8.onDestroyBlock(var5, var1, var2, var3, mc.thePlayer);
                 if (var8.count == 0)
                 {
-                    var8.func_1097_a(mc.thePlayer);
-                    mc.thePlayer.destroyCurrentEquippedItem();
+                    var8.onRemoved(mc.thePlayer);
+                    mc.thePlayer.clearStackInHand();
                 }
             }
 

@@ -70,7 +70,7 @@ namespace betareborn.Screens
                 ItemStack var3 = craftingInput.getStack(var2);
                 if (var3 != null)
                 {
-                    player.dropPlayerItem(var3);
+                    player.dropItem(var3);
                     craftingInput.setStack(var2, null);
                 }
             }

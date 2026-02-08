@@ -41,7 +41,7 @@ namespace betareborn.Entities
             prevPosZ = posZ;
             if (particleAge++ >= particleMaxAge)
             {
-                setEntityDead();
+                markDead();
             }
 
             float var1 = (float)particleAge / (float)particleMaxAge;

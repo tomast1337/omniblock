@@ -28,18 +28,18 @@ namespace betareborn.Entities
         public EntitySquid(World var1) : base(var1)
         {
             texture = "/mob/squid.png";
-            setSize(0.95F, 0.95F);
+            setBoundingBoxSpacing(0.95F, 0.95F);
             field_21080_l = 1.0F / (rand.nextFloat() + 1.0F) * 0.2F;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         protected override String getLivingSound()
@@ -88,9 +88,9 @@ namespace betareborn.Entities
             return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.6F, 0.0D), Material.WATER, this);
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
-            base.onLivingUpdate();
+            base.tickMovement();
             field_21088_b = field_21089_a;
             field_21086_f = field_21087_c;
             field_21084_h = field_21085_g;
@@ -158,12 +158,12 @@ namespace betareborn.Entities
 
         }
 
-        public override void moveEntityWithHeading(float var1, float var2)
+        public override void travel(float var1, float var2)
         {
             moveEntity(motionX, motionY, motionZ);
         }
 
-        public override void updatePlayerActionState()
+        public override void tickLiving()
         {
             if (rand.nextInt(50) == 0 || !inWater || randomMotionVecX == 0.0F && randomMotionVecY == 0.0F && randomMotionVecZ == 0.0F)
             {

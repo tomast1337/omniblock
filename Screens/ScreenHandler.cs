@@ -106,13 +106,13 @@ namespace betareborn.Screens
                     {
                         if (button == 0)
                         {
-                            player.dropPlayerItem(var6.getItemStack());
+                            player.dropItem(var6.getItemStack());
                             var6.setItemStack(null);
                         }
 
                         if (button == 1)
                         {
-                            player.dropPlayerItem(var6.getItemStack().splitStack(1));
+                            player.dropItem(var6.getItemStack().splitStack(1));
                             if (var6.getItemStack().count == 0)
                             {
                                 var6.setItemStack(null);
@@ -243,7 +243,7 @@ namespace betareborn.Screens
             InventoryPlayer var2 = player.inventory;
             if (var2.getItemStack() != null)
             {
-                player.dropPlayerItem(var2.getItemStack());
+                player.dropItem(var2.getItemStack());
                 var2.setItemStack(null);
             }
 

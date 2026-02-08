@@ -52,7 +52,7 @@ namespace betareborn.Entities
             minecartRockDirection = 1;
             field_856_i = false;
             preventEntitySpawning = true;
-            setSize(0.98F, 0.7F);
+            setBoundingBoxSpacing(0.98F, 0.7F);
             yOffset = height / 2.0F;
         }
 
@@ -97,7 +97,7 @@ namespace betareborn.Entities
             return (double)height * 0.0D - (double)0.3F;
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
             if (!worldObj.isRemote && !isDead)
             {
@@ -112,7 +112,7 @@ namespace betareborn.Entities
                         riddenByEntity.mountEntity(this);
                     }
 
-                    setEntityDead();
+                    markDead();
                     dropItemWithOffset(Item.minecartEmpty.id, 1, 0.0F);
                     if (minecartType == 1)
                     {
@@ -175,7 +175,7 @@ namespace betareborn.Entities
             return !isDead;
         }
 
-        public override void setEntityDead()
+        public override void markDead()
         {
             for (int var1 = 0; var1 < size(); ++var1)
             {
@@ -205,7 +205,7 @@ namespace betareborn.Entities
                 }
             }
 
-            base.setEntityDead();
+            base.markDead();
         }
 
         public override void onUpdate()
@@ -750,7 +750,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setInteger("Type", minecartType);
             if (minecartType == 2)
@@ -779,7 +779,7 @@ namespace betareborn.Entities
 
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             minecartType = var1.getInteger("Type");
             if (minecartType == 2)
@@ -806,7 +806,7 @@ namespace betareborn.Entities
 
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }
@@ -976,7 +976,7 @@ namespace betareborn.Entities
             {
                 if (!worldObj.isRemote)
                 {
-                    var1.displayGUIChest(this);
+                    var1.openChestScreen(this);
                 }
             }
             else if (minecartType == 2)

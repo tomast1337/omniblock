@@ -24,9 +24,9 @@ namespace betareborn.Entities
             dataWatcher.addObject(17, java.lang.Byte.valueOf(0));
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
             if (dataWatcher.getWatchableObjectByte(17) == 1)
             {
                 var1.setBoolean("powered", true);
@@ -34,9 +34,9 @@ namespace betareborn.Entities
 
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
             dataWatcher.updateObject(17, java.lang.Byte.valueOf((byte)(var1.getBoolean("powered") ? 1 : 0)));
         }
 
@@ -103,9 +103,9 @@ namespace betareborn.Entities
             return "mob.creeperdeath";
         }
 
-        public override void onDeath(Entity var1)
+        public override void onKilledBy(Entity var1)
         {
-            base.onDeath(var1);
+            base.onKilledBy(var1);
             if (var1 is EntitySkeleton)
             {
                 dropItem(Item.record13.id + rand.nextInt(2), 1);
@@ -138,7 +138,7 @@ namespace betareborn.Entities
                             worldObj.createExplosion(this, posX, posY, posZ, 3.0F);
                         }
 
-                        setEntityDead();
+                        markDead();
                     }
 
                     hasAttacked = true;

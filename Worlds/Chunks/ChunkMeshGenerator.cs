@@ -1,5 +1,5 @@
 ﻿using betareborn.Blocks;
-using betareborn.Rendering;
+using betareborn.Client.Rendering;
 using Silk.NET.Maths;
 using System.Collections.Concurrent;
 

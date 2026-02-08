@@ -26,12 +26,12 @@ namespace betareborn.Entities
 
         public EntityArrow(World var1) : base(var1)
         {
-            setSize(0.5F, 0.5F);
+            setBoundingBoxSpacing(0.5F, 0.5F);
         }
 
         public EntityArrow(World var1, double var2, double var4, double var6) : base(var1)
         {
-            setSize(0.5F, 0.5F);
+            setBoundingBoxSpacing(0.5F, 0.5F);
             setPosition(var2, var4, var6);
             yOffset = 0.0F;
         }
@@ -40,7 +40,7 @@ namespace betareborn.Entities
         {
             owner = var2;
             doesArrowBelongToPlayer = var2 is EntityPlayer;
-            setSize(0.5F, 0.5F);
+            setBoundingBoxSpacing(0.5F, 0.5F);
             setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
             posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
             posY -= (double)0.1F;
@@ -131,7 +131,7 @@ namespace betareborn.Entities
                     ++ticksInGround;
                     if (ticksInGround == 1200)
                     {
-                        setEntityDead();
+                        markDead();
                     }
 
                 }
@@ -193,10 +193,10 @@ namespace betareborn.Entities
                 {
                     if (var3.entity != null)
                     {
-                        if (var3.entity.attackEntityFrom(owner, 4))
+                        if (var3.entity.damage(owner, 4))
                         {
                             worldObj.playSoundAtEntity(this, "random.drr", 1.0F, 1.2F / (rand.nextFloat() * 0.2F + 0.9F));
-                            setEntityDead();
+                            markDead();
                         }
                         else
                         {
@@ -276,7 +276,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
             var1.setShort("xTile", (short)xTile);
             var1.setShort("yTile", (short)yTile);
@@ -288,7 +288,7 @@ namespace betareborn.Entities
             var1.setBoolean("player", doesArrowBelongToPlayer);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
             xTile = var1.getShort("xTile");
             yTile = var1.getShort("yTile");
@@ -307,14 +307,14 @@ namespace betareborn.Entities
                 if (inGround && doesArrowBelongToPlayer && arrowShake <= 0 && var1.inventory.addItemStackToInventory(new ItemStack(Item.arrow, 1)))
                 {
                     worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                    var1.onItemPickup(this, 1);
-                    setEntityDead();
+                    var1.sendPickup(this, 1);
+                    markDead();
                 }
 
             }
         }
 
-        public override float getShadowSize()
+        public override float getShadowRadius()
         {
             return 0.0F;
         }

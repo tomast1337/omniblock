@@ -13,7 +13,7 @@ namespace betareborn.Entities
             attackStrength = 50;
             health *= 10;
             yOffset *= 6.0F;
-            setSize(width * 6.0F, height * 6.0F);
+            setBoundingBoxSpacing(width * 6.0F, height * 6.0F);
         }
 
         protected override float getBlockPathWeight(int var1, int var2, int var3)

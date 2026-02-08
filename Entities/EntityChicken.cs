@@ -19,14 +19,14 @@ namespace betareborn.Entities
         public EntityChicken(World var1) : base(var1)
         {
             texture = "/mob/chicken.png";
-            setSize(0.3F, 0.4F);
+            setBoundingBoxSpacing(0.3F, 0.4F);
             health = 4;
             timeUntilNextEgg = rand.nextInt(6000) + 6000;
         }
 
-        public override void onLivingUpdate()
+        public override void tickMovement()
         {
-            base.onLivingUpdate();
+            base.tickMovement();
             field_756_e = field_752_b;
             field_757_d = destPos;
             destPos = (float)((double)destPos + (double)(onGround ? -1 : 4) * 0.3D);
@@ -61,18 +61,18 @@ namespace betareborn.Entities
 
         }
 
-        protected override void fall(float var1)
+        protected override void onLanding(float var1)
         {
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
         }
 
         protected override string getLivingSound()

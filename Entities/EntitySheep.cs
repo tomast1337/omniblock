@@ -14,7 +14,7 @@ namespace betareborn.Entities
         public EntitySheep(World var1) : base(var1)
         {
             texture = "/mob/sheep.png";
-            setSize(0.9F, 1.3F);
+            setBoundingBoxSpacing(0.9F, 1.3F);
         }
 
         protected override void entityInit()
@@ -23,9 +23,9 @@ namespace betareborn.Entities
             dataWatcher.addObject(16, new java.lang.Byte((byte)0));
         }
 
-        public override bool attackEntityFrom(Entity var1, int var2)
+        public override bool damage(Entity var1, int var2)
         {
-            return base.attackEntityFrom(var1, var2);
+            return base.damage(var1, var2);
         }
 
         protected override void dropFewItems()
@@ -67,16 +67,16 @@ namespace betareborn.Entities
             return false;
         }
 
-        public override void writeEntityToNBT(NBTTagCompound var1)
+        public override void writeNbt(NBTTagCompound var1)
         {
-            base.writeEntityToNBT(var1);
+            base.writeNbt(var1);
             var1.setBoolean("Sheared", getSheared());
             var1.setByte("Color", (sbyte)getFleeceColor());
         }
 
-        public override void readEntityFromNBT(NBTTagCompound var1)
+        public override void readNbt(NBTTagCompound var1)
         {
-            base.readEntityFromNBT(var1);
+            base.readNbt(var1);
             setSheared(var1.getBoolean("Sheared"));
             setFleeceColor(var1.getByte("Color"));
         }

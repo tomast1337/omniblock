@@ -57,7 +57,7 @@ namespace betareborn.Entities
             prevPosZ = posZ;
             if (particleAge++ >= particleMaxAge)
             {
-                setEntityDead();
+                markDead();
             }
 
             particleTextureIndex = 7 - particleAge * 8 / particleMaxAge;
