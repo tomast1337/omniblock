@@ -20,11 +20,12 @@ Contributions are welcome, but this is a personal project with no guarantees on 
 
 Use Allman style formatting for braces:
 
+```
 if (...)
-
 {
 
 }
+```
 
 References to Minecraft object should be called mc, not theMinecraft, minecraft, or game
 
