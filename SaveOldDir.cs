@@ -11,18 +11,18 @@ namespace betareborn
         {
         }
 
-        public override IChunkLoader getChunkLoader(WorldProvider var1)
+        public override ChunkStorage getChunkLoader(WorldProvider var1)
         {
             java.io.File var2 = getSaveDirectory();
             if (var1 is WorldProviderHell)
             {
                 java.io.File var3 = new(var2, "DIM-1");
                 var3.mkdirs();
-                return new McRegionChunkLoader(var3);
+                return new RegionChunkStorage(var3);
             }
             else
             {
-                return new McRegionChunkLoader(var2);
+                return new RegionChunkStorage(var2);
             }
         }
 

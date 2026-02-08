@@ -3,7 +3,7 @@ using betareborn.Worlds;
 
 namespace betareborn
 {
-    public class MapGenCaves : MapGenBase
+    public class CaveCarver : Carver
     {
 
         protected void func_870_a(int var1, int var2, byte[] var3, double var4, double var6, double var8)

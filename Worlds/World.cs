@@ -229,8 +229,8 @@ namespace betareborn.Worlds
 
         protected virtual ChunkSource getChunkProvider()
         {
-            IChunkLoader var1 = saveHandler.getChunkLoader(dimension);
-            return new ChunkCache(this, (McRegionChunkLoader)var1, dimension.getChunkProvider());
+            ChunkStorage var1 = saveHandler.getChunkLoader(dimension);
+            return new ChunkCache(this, (RegionChunkStorage)var1, dimension.getChunkProvider());
         }
 
         protected void getInitialSpawnLocation()
@@ -416,7 +416,7 @@ namespace betareborn.Worlds
 
         private bool chunkExists(int var1, int var2)
         {
-            return chunkProvider.chunkExists(var1, var2);
+            return chunkProvider.isChunkLoaded(var1, var2);
         }
 
         public Chunk getChunkFromBlockCoords(int var1, int var2)

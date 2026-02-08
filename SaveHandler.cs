@@ -84,17 +84,17 @@ namespace betareborn
             }
         }
 
-        public virtual IChunkLoader getChunkLoader(WorldProvider var1)
+        public virtual ChunkStorage getChunkLoader(WorldProvider var1)
         {
             if (var1 is WorldProviderHell)
             {
                 java.io.File var2 = new java.io.File(saveDirectory, "DIM-1");
                 var2.mkdirs();
-                return new ChunkLoader(var2, true);
+                return new AlphaChunkStorage(var2, true);
             }
             else
             {
-                return new ChunkLoader(saveDirectory, true);
+                return new AlphaChunkStorage(saveDirectory, true);
             }
         }
 

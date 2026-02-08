@@ -7,13 +7,13 @@ using java.lang;
 
 namespace betareborn.Chunks
 {
-    public class ChunkLoader : IChunkLoader
+    public class AlphaChunkStorage : ChunkStorage
     {
 
         private java.io.File saveDir;
         private bool createIfNecessary;
 
-        public ChunkLoader(java.io.File var1, bool var2)
+        public AlphaChunkStorage(java.io.File var1, bool var2)
         {
             saveDir = var1;
             createIfNecessary = var2;
@@ -71,13 +71,13 @@ namespace betareborn.Chunks
                         return null;
                     }
 
-                    Chunk var7 = loadChunkIntoWorldFromCompound(var1, var6.getCompoundTag("Level"));
+                    Chunk var7 = loadChunkFromNbt(var1, var6.getCompoundTag("Level"));
                     if (!var7.chunkPosEquals(var2, var3))
                     {
                         java.lang.System.@out.println("Chunk file at " + var2 + "," + var3 + " is in the wrong location; relocating. (Expected " + var2 + ", " + var3 + ", got " + var7.x + ", " + var7.z + ")");
                         var6.setInteger("xPos", var2);
                         var6.setInteger("zPos", var3);
-                        var7 = loadChunkIntoWorldFromCompound(var1, var6.getCompoundTag("Level"));
+                        var7 = loadChunkFromNbt(var1, var6.getCompoundTag("Level"));
                     }
 
                     var7.fill();
@@ -177,7 +177,7 @@ namespace betareborn.Chunks
             var2.setTag("TileEntities", var8);
         }
 
-        public static Chunk loadChunkIntoWorldFromCompound(World var0, NBTTagCompound var1)
+        public static Chunk loadChunkFromNbt(World var0, NBTTagCompound var1)
         {
             int var2 = var1.getInteger("xPos");
             int var3 = var1.getInteger("zPos");

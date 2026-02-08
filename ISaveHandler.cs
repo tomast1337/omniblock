@@ -9,7 +9,7 @@ namespace betareborn
 
         void func_22150_b();
 
-        IChunkLoader getChunkLoader(WorldProvider var1);
+        ChunkStorage getChunkLoader(WorldProvider var1);
 
         void saveWorldInfoAndPlayer(WorldInfo var1, List var2);
 

@@ -3,7 +3,7 @@ using betareborn.Worlds;
 
 namespace betareborn
 {
-    public interface IChunkLoader
+    public interface ChunkStorage
     {
         Chunk loadChunk(World world, int chunkX, int chunkZ);
 

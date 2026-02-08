@@ -16,7 +16,7 @@ namespace betareborn
         {
         }
 
-        public IChunkLoader getChunkLoader(WorldProvider var1)
+        public ChunkStorage getChunkLoader(WorldProvider var1)
         {
             return null;
         }

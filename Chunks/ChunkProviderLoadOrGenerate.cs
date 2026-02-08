@@ -6,7 +6,7 @@ namespace betareborn.Chunks
     {
         private readonly Chunk blankChunk;
         private readonly ChunkSource chunkProvider;
-        private readonly IChunkLoader chunkLoader;
+        private readonly ChunkStorage chunkLoader;
         private readonly Chunk[] chunks;
         private readonly World worldObj;
         int lastQueriedChunkXPos;
@@ -27,7 +27,7 @@ namespace betareborn.Chunks
             return var1 >= curChunkX - var3 && var2 >= curChunkY - var3 && var1 <= curChunkX + var3 && var2 <= curChunkY + var3;
         }
 
-        public bool chunkExists(int var1, int var2)
+        public bool isChunkLoaded(int var1, int var2)
         {
             if (!canChunkExist(var1, var2))
             {
@@ -46,7 +46,7 @@ namespace betareborn.Chunks
             }
         }
 
-        public Chunk prepareChunk(int var1, int var2)
+        public Chunk loadChunk(int var1, int var2)
         {
             return getChunk(var1, var2);
         }
@@ -66,7 +66,7 @@ namespace betareborn.Chunks
                 int var3 = var1 & 31;
                 int var4 = var2 & 31;
                 int var5 = var3 + var4 * 32;
-                if (!chunkExists(var1, var2))
+                if (!isChunkLoaded(var1, var2))
                 {
                     if (chunks[var5] != null)
                     {
@@ -96,22 +96,22 @@ namespace betareborn.Chunks
                         chunks[var5].load();
                     }
 
-                    if (!chunks[var5].terrainPopulated && chunkExists(var1 + 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 + 1, var2))
+                    if (!chunks[var5].terrainPopulated && isChunkLoaded(var1 + 1, var2 + 1) && isChunkLoaded(var1, var2 + 1) && isChunkLoaded(var1 + 1, var2))
                     {
                         decorate(this, var1, var2);
                     }
 
-                    if (chunkExists(var1 - 1, var2) && !getChunk(var1 - 1, var2).terrainPopulated && chunkExists(var1 - 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 - 1, var2))
+                    if (isChunkLoaded(var1 - 1, var2) && !getChunk(var1 - 1, var2).terrainPopulated && isChunkLoaded(var1 - 1, var2 + 1) && isChunkLoaded(var1, var2 + 1) && isChunkLoaded(var1 - 1, var2))
                     {
                         decorate(this, var1 - 1, var2);
                     }
 
-                    if (chunkExists(var1, var2 - 1) && !getChunk(var1, var2 - 1).terrainPopulated && chunkExists(var1 + 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 + 1, var2))
+                    if (isChunkLoaded(var1, var2 - 1) && !getChunk(var1, var2 - 1).terrainPopulated && isChunkLoaded(var1 + 1, var2 - 1) && isChunkLoaded(var1, var2 - 1) && isChunkLoaded(var1 + 1, var2))
                     {
                         decorate(this, var1, var2 - 1);
                     }
 
-                    if (chunkExists(var1 - 1, var2 - 1) && !getChunk(var1 - 1, var2 - 1).terrainPopulated && chunkExists(var1 - 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 - 1, var2))
+                    if (isChunkLoaded(var1 - 1, var2 - 1) && !getChunk(var1 - 1, var2 - 1).terrainPopulated && isChunkLoaded(var1 - 1, var2 - 1) && isChunkLoaded(var1, var2 - 1) && isChunkLoaded(var1 - 1, var2))
                     {
                         decorate(this, var1 - 1, var2 - 1);
                     }

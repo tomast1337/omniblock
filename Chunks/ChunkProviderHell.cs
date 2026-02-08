@@ -7,19 +7,19 @@ namespace betareborn.Chunks
     {
 
         private java.util.Random hellRNG;
-        private NoiseGeneratorOctaves field_4169_i;
-        private NoiseGeneratorOctaves field_4168_j;
-        private NoiseGeneratorOctaves field_4167_k;
-        private NoiseGeneratorOctaves field_4166_l;
-        private NoiseGeneratorOctaves field_4165_m;
-        public NoiseGeneratorOctaves field_4177_a;
-        public NoiseGeneratorOctaves field_4176_b;
+        private OctavePerlinNoiseSampler field_4169_i;
+        private OctavePerlinNoiseSampler field_4168_j;
+        private OctavePerlinNoiseSampler field_4167_k;
+        private OctavePerlinNoiseSampler field_4166_l;
+        private OctavePerlinNoiseSampler field_4165_m;
+        public OctavePerlinNoiseSampler field_4177_a;
+        public OctavePerlinNoiseSampler field_4176_b;
         private World worldObj;
         private double[] field_4163_o;
         private double[] field_4162_p = new double[256];
         private double[] field_4161_q = new double[256];
         private double[] field_4160_r = new double[256];
-        private MapGenBase field_4159_s = new MapGenCavesHell();
+        private Carver field_4159_s = new MapGenCavesHell();
         double[] field_4175_c;
         double[] field_4174_d;
         double[] field_4173_e;
@@ -30,13 +30,13 @@ namespace betareborn.Chunks
         {
             worldObj = var1;
             hellRNG = new(var2);
-            field_4169_i = new NoiseGeneratorOctaves(hellRNG, 16);
-            field_4168_j = new NoiseGeneratorOctaves(hellRNG, 16);
-            field_4167_k = new NoiseGeneratorOctaves(hellRNG, 8);
-            field_4166_l = new NoiseGeneratorOctaves(hellRNG, 4);
-            field_4165_m = new NoiseGeneratorOctaves(hellRNG, 4);
-            field_4177_a = new NoiseGeneratorOctaves(hellRNG, 10);
-            field_4176_b = new NoiseGeneratorOctaves(hellRNG, 16);
+            field_4169_i = new OctavePerlinNoiseSampler(hellRNG, 16);
+            field_4168_j = new OctavePerlinNoiseSampler(hellRNG, 16);
+            field_4167_k = new OctavePerlinNoiseSampler(hellRNG, 8);
+            field_4166_l = new OctavePerlinNoiseSampler(hellRNG, 4);
+            field_4165_m = new OctavePerlinNoiseSampler(hellRNG, 4);
+            field_4177_a = new OctavePerlinNoiseSampler(hellRNG, 10);
+            field_4176_b = new OctavePerlinNoiseSampler(hellRNG, 16);
         }
 
         public void func_4059_a(int var1, int var2, byte[] var3)
@@ -117,9 +117,9 @@ namespace betareborn.Chunks
         {
             byte var4 = 64;
             double var5 = 1.0D / 32.0D;
-            field_4162_p = field_4166_l.generateNoiseOctaves(field_4162_p, (double)(var1 * 16), (double)(var2 * 16), 0.0D, 16, 16, 1, var5, var5, 1.0D);
-            field_4161_q = field_4166_l.generateNoiseOctaves(field_4161_q, (double)(var1 * 16), 109.0134D, (double)(var2 * 16), 16, 1, 16, var5, 1.0D, var5);
-            field_4160_r = field_4165_m.generateNoiseOctaves(field_4160_r, (double)(var1 * 16), (double)(var2 * 16), 0.0D, 16, 16, 1, var5 * 2.0D, var5 * 2.0D, var5 * 2.0D);
+            field_4162_p = field_4166_l.create(field_4162_p, (double)(var1 * 16), (double)(var2 * 16), 0.0D, 16, 16, 1, var5, var5, 1.0D);
+            field_4161_q = field_4166_l.create(field_4161_q, (double)(var1 * 16), 109.0134D, (double)(var2 * 16), 16, 1, 16, var5, 1.0D, var5);
+            field_4160_r = field_4165_m.create(field_4160_r, (double)(var1 * 16), (double)(var2 * 16), 0.0D, 16, 16, 1, var5 * 2.0D, var5 * 2.0D, var5 * 2.0D);
 
             for (int var7 = 0; var7 < 16; ++var7)
             {
@@ -212,7 +212,7 @@ namespace betareborn.Chunks
 
         }
 
-        public Chunk prepareChunk(int var1, int var2)
+        public Chunk loadChunk(int var1, int var2)
         {
             return getChunk(var1, var2);
         }
@@ -237,11 +237,11 @@ namespace betareborn.Chunks
 
             double var8 = 684.412D;
             double var10 = 2053.236D;
-            field_4172_f = field_4177_a.generateNoiseOctaves(field_4172_f, (double)var2, (double)var3, (double)var4, var5, 1, var7, 1.0D, 0.0D, 1.0D);
-            field_4171_g = field_4176_b.generateNoiseOctaves(field_4171_g, (double)var2, (double)var3, (double)var4, var5, 1, var7, 100.0D, 0.0D, 100.0D);
-            field_4175_c = field_4167_k.generateNoiseOctaves(field_4175_c, (double)var2, (double)var3, (double)var4, var5, var6, var7, var8 / 80.0D, var10 / 60.0D, var8 / 80.0D);
-            field_4174_d = field_4169_i.generateNoiseOctaves(field_4174_d, (double)var2, (double)var3, (double)var4, var5, var6, var7, var8, var10, var8);
-            field_4173_e = field_4168_j.generateNoiseOctaves(field_4173_e, (double)var2, (double)var3, (double)var4, var5, var6, var7, var8, var10, var8);
+            field_4172_f = field_4177_a.create(field_4172_f, (double)var2, (double)var3, (double)var4, var5, 1, var7, 1.0D, 0.0D, 1.0D);
+            field_4171_g = field_4176_b.create(field_4171_g, (double)var2, (double)var3, (double)var4, var5, 1, var7, 100.0D, 0.0D, 100.0D);
+            field_4175_c = field_4167_k.create(field_4175_c, (double)var2, (double)var3, (double)var4, var5, var6, var7, var8 / 80.0D, var10 / 60.0D, var8 / 80.0D);
+            field_4174_d = field_4169_i.create(field_4174_d, (double)var2, (double)var3, (double)var4, var5, var6, var7, var8, var10, var8);
+            field_4173_e = field_4168_j.create(field_4173_e, (double)var2, (double)var3, (double)var4, var5, var6, var7, var8, var10, var8);
             int var12 = 0;
             int var13 = 0;
             double[] var14 = new double[var6];
@@ -360,7 +360,7 @@ namespace betareborn.Chunks
             return var1;
         }
 
-        public bool chunkExists(int var1, int var2)
+        public bool isChunkLoaded(int var1, int var2)
         {
             return true;
         }

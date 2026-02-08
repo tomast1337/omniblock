@@ -5,20 +5,20 @@ using betareborn.Worlds;
 
 namespace betareborn.Chunks
 {
-    public class ChunkCacheSnapshot : BlockView, IDisposable
+    public class WorldRegionSnapshot : BlockView, IDisposable
     {
         private readonly int chunkX;
         private readonly int chunkZ;
         private readonly ChunkSnapshot[][] chunkArray;
         private readonly float[] lightTable;
         private readonly int skylightSubtracted;
-        private readonly BiomeSource worldChunkManager;
+        private readonly BiomeSource biomeSource;
         private bool isLit = false;
 
-        public ChunkCacheSnapshot(World var1, int var2, int var3, int var4, int var5, int var6, int var7)
+        public WorldRegionSnapshot(World var1, int var2, int var3, int var4, int var5, int var6, int var7)
         {
             //TODO: OPTIMIZE THIS
-            worldChunkManager = new(var1);
+            biomeSource = new(var1);
 
             chunkX = var2 >> 4;
             chunkZ = var4 >> 4;
@@ -197,7 +197,7 @@ namespace betareborn.Chunks
 
         public BiomeSource getBiomeSource()
         {
-            return worldChunkManager;
+            return biomeSource;
         }
 
         public bool shouldSuffocate(int var1, int var2, int var3)

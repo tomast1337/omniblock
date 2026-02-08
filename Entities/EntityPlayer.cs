@@ -790,10 +790,10 @@ namespace betareborn.Entities
         public static Vec3i func_25060_a(World var0, Vec3i var1)
         {
             ChunkSource var2 = var0.getIChunkProvider();
-            var2.prepareChunk(var1.x - 3 >> 4, var1.z - 3 >> 4);
-            var2.prepareChunk(var1.x + 3 >> 4, var1.z - 3 >> 4);
-            var2.prepareChunk(var1.x - 3 >> 4, var1.z + 3 >> 4);
-            var2.prepareChunk(var1.x + 3 >> 4, var1.z + 3 >> 4);
+            var2.loadChunk(var1.x - 3 >> 4, var1.z - 3 >> 4);
+            var2.loadChunk(var1.x + 3 >> 4, var1.z - 3 >> 4);
+            var2.loadChunk(var1.x - 3 >> 4, var1.z + 3 >> 4);
+            var2.loadChunk(var1.x + 3 >> 4, var1.z + 3 >> 4);
             if (var0.getBlockId(var1.x, var1.y, var1.z) != Block.BED.id)
             {
                 return null;

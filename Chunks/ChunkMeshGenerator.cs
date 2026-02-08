@@ -19,7 +19,7 @@ namespace betareborn.Chunks
 
         private class MeshBuildTask
         {
-            public required ChunkCacheSnapshot Cache;
+            public required WorldRegionSnapshot Cache;
             public Vector3D<int> Pos;
             public long Version;
         }
@@ -54,7 +54,7 @@ namespace betareborn.Chunks
                 return;
             }
 
-            ChunkCacheSnapshot cache = new(world, pos.X - 1, pos.Y - 1, pos.Z - 1,
+            WorldRegionSnapshot cache = new(world, pos.X - 1, pos.Y - 1, pos.Z - 1,
                 pos.X + SubChunkRenderer.SIZE + 1, pos.Y + SubChunkRenderer.SIZE + 1, pos.Z + SubChunkRenderer.SIZE + 1);
 
             MeshBuildTask task = new() { Cache = cache, Pos = pos, Version = version };
@@ -122,7 +122,7 @@ namespace betareborn.Chunks
             }
         }
 
-        private static MeshBuildResult MeshChunk(Vector3D<int> pos, long version, ChunkCacheSnapshot cache)
+        private static MeshBuildResult MeshChunk(Vector3D<int> pos, long version, WorldRegionSnapshot cache)
         {
             int minX = pos.X;
             int minY = pos.Y;

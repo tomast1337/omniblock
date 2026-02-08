@@ -1,12 +1,12 @@
 namespace betareborn
 {
-    public class NoiseGeneratorOctaves : NoiseGenerator
+    public class OctavePerlinNoiseSampler : NoiseGenerator
     {
 
         private NoiseGeneratorPerlin[] generatorCollection;
         private int field_1191_b;
 
-        public NoiseGeneratorOctaves(java.util.Random var1, int var2)
+        public OctavePerlinNoiseSampler(java.util.Random var1, int var2)
         {
             field_1191_b = var2;
             generatorCollection = new NoiseGeneratorPerlin[var2];
@@ -32,7 +32,7 @@ namespace betareborn
             return var5;
         }
 
-        public double[] generateNoiseOctaves(double[] var1, double var2, double var4, double var6, int var8, int var9, int var10, double var11, double var13, double var15)
+        public double[] create(double[] var1, double var2, double var4, double var6, int var8, int var9, int var10, double var11, double var13, double var15)
         {
             if (var1 == null)
             {
@@ -57,9 +57,9 @@ namespace betareborn
             return var1;
         }
 
-        public double[] func_4109_a(double[] var1, int var2, int var3, int var4, int var5, double var6, double var8, double var10)
+        public double[] create(double[] var1, int var2, int var3, int var4, int var5, double var6, double var8, double var10)
         {
-            return generateNoiseOctaves(var1, (double)var2, 10.0D, (double)var3, var4, 1, var5, var6, 1.0D, var8);
+            return create(var1, (double)var2, 10.0D, (double)var3, var4, 1, var5, var6, 1.0D, var8);
         }
     }
 

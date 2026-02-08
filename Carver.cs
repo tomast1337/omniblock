@@ -2,7 +2,7 @@ using betareborn.Worlds;
 
 namespace betareborn
 {
-    public class MapGenBase
+    public class Carver
     {
         protected int field_1306_a = 8;
         protected java.util.Random rand = new();

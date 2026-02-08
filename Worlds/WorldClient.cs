@@ -102,7 +102,7 @@ namespace betareborn.Worlds
         {
             if (var3)
             {
-                field_20915_C.prepareChunk(var1, var2);
+                field_20915_C.loadChunk(var1, var2);
             }
             else
             {

@@ -18,7 +18,7 @@ namespace betareborn.Chunks
             worldObj = var1;
         }
 
-        public bool chunkExists(int var1, int var2)
+        public bool isChunkLoaded(int var1, int var2)
         {
             if (this != null)
             {
@@ -43,7 +43,7 @@ namespace betareborn.Chunks
             field_889_c.remove(var3);
         }
 
-        public Chunk prepareChunk(int var1, int var2)
+        public Chunk loadChunk(int var1, int var2)
         {
             ChunkPos var3 = new ChunkPos(var1, var2);
             byte[] var4 = new byte[-Short.MIN_VALUE];

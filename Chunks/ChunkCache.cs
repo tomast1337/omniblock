@@ -10,13 +10,13 @@ namespace betareborn.Chunks
         private readonly HashSet<int> chunksToUnload = [];
         private readonly Chunk empty;
         private readonly ChunkSource generator;
-        private readonly McRegionChunkLoader storage;
+        private readonly RegionChunkStorage storage;
         private readonly Dictionary<int, Chunk> chunkByPos = [];
         private readonly List<Chunk> chunks = [];
         private readonly World world;
         private int lastRenderDistance = 0;
 
-        public ChunkCache(World world, McRegionChunkLoader storage, ChunkSource generator)
+        public ChunkCache(World world, RegionChunkStorage storage, ChunkSource generator)
         {
             empty = new EmptyChunk(world, new byte[-Short.MIN_VALUE], 0, 0);
             this.world = world;
@@ -24,12 +24,12 @@ namespace betareborn.Chunks
             this.generator = generator;
         }
 
-        public bool chunkExists(int x, int z)
+        public bool isChunkLoaded(int x, int z)
         {
             return chunkByPos.ContainsKey(ChunkPos.chunkXZ2Int(x, z));
         }
 
-        public Chunk prepareChunk(int chunkX, int chunkZ)
+        public Chunk loadChunk(int chunkX, int chunkZ)
         {
             int var3 = ChunkPos.chunkXZ2Int(chunkX, chunkZ);
             chunksToUnload.Remove(var3);
@@ -57,22 +57,22 @@ namespace betareborn.Chunks
                     var4.load();
                 }
 
-                if (!var4.terrainPopulated && chunkExists(chunkX + 1, chunkZ + 1) && chunkExists(chunkX, chunkZ + 1) && chunkExists(chunkX + 1, chunkZ))
+                if (!var4.terrainPopulated && isChunkLoaded(chunkX + 1, chunkZ + 1) && isChunkLoaded(chunkX, chunkZ + 1) && isChunkLoaded(chunkX + 1, chunkZ))
                 {
                     decorate(this, chunkX, chunkZ);
                 }
 
-                if (chunkExists(chunkX - 1, chunkZ) && !getChunk(chunkX - 1, chunkZ).terrainPopulated && chunkExists(chunkX - 1, chunkZ + 1) && chunkExists(chunkX, chunkZ + 1) && chunkExists(chunkX - 1, chunkZ))
+                if (isChunkLoaded(chunkX - 1, chunkZ) && !getChunk(chunkX - 1, chunkZ).terrainPopulated && isChunkLoaded(chunkX - 1, chunkZ + 1) && isChunkLoaded(chunkX, chunkZ + 1) && isChunkLoaded(chunkX - 1, chunkZ))
                 {
                     decorate(this, chunkX - 1, chunkZ);
                 }
 
-                if (chunkExists(chunkX, chunkZ - 1) && !getChunk(chunkX, chunkZ - 1).terrainPopulated && chunkExists(chunkX + 1, chunkZ - 1) && chunkExists(chunkX, chunkZ - 1) && chunkExists(chunkX + 1, chunkZ))
+                if (isChunkLoaded(chunkX, chunkZ - 1) && !getChunk(chunkX, chunkZ - 1).terrainPopulated && isChunkLoaded(chunkX + 1, chunkZ - 1) && isChunkLoaded(chunkX, chunkZ - 1) && isChunkLoaded(chunkX + 1, chunkZ))
                 {
                     decorate(this, chunkX, chunkZ - 1);
                 }
 
-                if (chunkExists(chunkX - 1, chunkZ - 1) && !getChunk(chunkX - 1, chunkZ - 1).terrainPopulated && chunkExists(chunkX - 1, chunkZ - 1) && chunkExists(chunkX, chunkZ - 1) && chunkExists(chunkX - 1, chunkZ))
+                if (isChunkLoaded(chunkX - 1, chunkZ - 1) && !getChunk(chunkX - 1, chunkZ - 1).terrainPopulated && isChunkLoaded(chunkX - 1, chunkZ - 1) && isChunkLoaded(chunkX, chunkZ - 1) && isChunkLoaded(chunkX - 1, chunkZ))
                 {
                     decorate(this, chunkX - 1, chunkZ - 1);
                 }
@@ -84,7 +84,7 @@ namespace betareborn.Chunks
         public Chunk getChunk(int chunkX, int chunkZ)
         {
             chunkByPos.TryGetValue(ChunkPos.chunkXZ2Int(chunkX, chunkZ), out Chunk? var3);
-            return var3 == null ? prepareChunk(chunkX, chunkZ) : var3;
+            return var3 == null ? loadChunk(chunkX, chunkZ) : var3;
         }
 
         private Chunk loadChunkFromStorage(int chunkX, int chunkZ)
