@@ -16,6 +16,17 @@ We do not support or condone piracy. Please purchase Minecraft from https://www.
 
 Contributions are welcome, but this is a personal project with no guarantees on review or merge timelines. Feel free to submit contributions, though they may or may not be reviewed or merged depending on the maintainer's availability and discretion.
 
+## Coding Style
+
+Use Allman style formatting for braces:
+
+if (...)
+{
+
+}
+
+References to Minecraft object should be called mc, not theMinecraft, minecraft, or game
+
 ## License
 
 This project is shared openly for collaboration. All code is derivative of Minecraft and subject to Mojang's rights.
