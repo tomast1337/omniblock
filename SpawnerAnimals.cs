@@ -14,12 +14,12 @@ namespace betareborn
         private static Set eligibleChunksForSpawning = new HashSet();
         protected static readonly Class[] nightSpawnEntities = new Class[] { EntitySpider.Class, EntityZombie.Class, EntitySkeleton.Class };
 
-        protected static ChunkPosition getRandomSpawningPointInChunk(World var0, int var1, int var2)
+        protected static BlockPos getRandomSpawningPointInChunk(World var0, int var1, int var2)
         {
             int var3 = var1 + var0.random.nextInt(16);
             int var4 = var0.random.nextInt(128);
             int var5 = var2 + var0.random.nextInt(16);
-            return new ChunkPosition(var3, var4, var5);
+            return new BlockPos(var3, var4, var5);
         }
 
         public static int performSpawning(World var0, bool var1, bool var2)
@@ -95,7 +95,7 @@ namespace betareborn
                                 }
                             }
 
-                            ChunkPosition var41 = getRandomSpawningPointInChunk(var0, var10.x * 16, var10.z * 16);
+                            BlockPos var41 = getRandomSpawningPointInChunk(var0, var10.x * 16, var10.z * 16);
                             int var42 = var41.x;
                             int var18 = var41.y;
                             int var19 = var41.z;

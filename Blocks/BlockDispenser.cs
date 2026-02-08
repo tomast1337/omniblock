@@ -6,7 +6,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockDispenser : BlockContainer
+    public class BlockDispenser : BlockWithEntity
     {
         private java.util.Random random = new();
 
@@ -196,7 +196,7 @@ namespace betareborn.Blocks
 
         }
 
-        protected override TileEntity getBlockEntity()
+        protected override BlockEntity getBlockEntity()
         {
             return new TileEntityDispenser();
         }

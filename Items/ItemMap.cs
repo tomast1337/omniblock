@@ -119,7 +119,7 @@ namespace betareborn.Items
                                     {
                                         for (var34 = 0; var34 < var6; ++var34)
                                         {
-                                            var35 = var27.getHeightValue(var33 + var28, var34 + var29) + 1;
+                                            var35 = var27.getHeight(var33 + var28, var34 + var29) + 1;
                                             int var36 = 0;
                                             if (var35 > 1)
                                             {

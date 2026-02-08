@@ -4,7 +4,7 @@ using java.lang;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntitySign : TileEntity
+    public class TileEntitySign : BlockEntity
     {
         public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntitySign).TypeHandle);
         public string[] texts = ["", "", "", ""];

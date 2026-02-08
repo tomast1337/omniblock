@@ -61,7 +61,7 @@ namespace betareborn.Blocks
 
             for (int var6 = 0; var6 < var5.size(); ++var6)
             {
-                ChunkPosition var7 = (ChunkPosition)var5.get(var6);
+                BlockPos var7 = (BlockPos)var5.get(var6);
                 var1.notifyNeighbors(var7.x, var7.y, var7.z, id);
             }
 
@@ -200,13 +200,13 @@ namespace betareborn.Blocks
 
                 if (var8 == 0 || var9 == 0)
                 {
-                    field_21031_b.add(new ChunkPosition(var2, var3, var4));
-                    field_21031_b.add(new ChunkPosition(var2 - 1, var3, var4));
-                    field_21031_b.add(new ChunkPosition(var2 + 1, var3, var4));
-                    field_21031_b.add(new ChunkPosition(var2, var3 - 1, var4));
-                    field_21031_b.add(new ChunkPosition(var2, var3 + 1, var4));
-                    field_21031_b.add(new ChunkPosition(var2, var3, var4 - 1));
-                    field_21031_b.add(new ChunkPosition(var2, var3, var4 + 1));
+                    field_21031_b.add(new BlockPos(var2, var3, var4));
+                    field_21031_b.add(new BlockPos(var2 - 1, var3, var4));
+                    field_21031_b.add(new BlockPos(var2 + 1, var3, var4));
+                    field_21031_b.add(new BlockPos(var2, var3 - 1, var4));
+                    field_21031_b.add(new BlockPos(var2, var3 + 1, var4));
+                    field_21031_b.add(new BlockPos(var2, var3, var4 - 1));
+                    field_21031_b.add(new BlockPos(var2, var3, var4 + 1));
                 }
             }
 

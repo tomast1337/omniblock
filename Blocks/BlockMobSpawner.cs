@@ -3,14 +3,14 @@ using betareborn.TileEntities;
 
 namespace betareborn.Blocks
 {
-    public class BlockMobSpawner : BlockContainer
+    public class BlockMobSpawner : BlockWithEntity
     {
 
         public BlockMobSpawner(int id, int textureId) : base(id, textureId, Material.STONE)
         {
         }
 
-        protected override TileEntity getBlockEntity()
+        protected override BlockEntity getBlockEntity()
         {
             return new TileEntityMobSpawner();
         }

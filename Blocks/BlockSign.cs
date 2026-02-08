@@ -6,7 +6,7 @@ using java.lang;
 
 namespace betareborn.Blocks
 {
-    public class BlockSign : BlockContainer
+    public class BlockSign : BlockWithEntity
     {
         //TODO: SIGNS ARE NOT BEING RENDERED?
         private Class blockEntityClazz;
@@ -82,11 +82,11 @@ namespace betareborn.Blocks
             return false;
         }
 
-        protected override TileEntity getBlockEntity()
+        protected override BlockEntity getBlockEntity()
         {
             try
             {
-                return (TileEntity)blockEntityClazz.newInstance();
+                return (BlockEntity)blockEntityClazz.newInstance();
             }
             catch (java.lang.Exception var2)
             {

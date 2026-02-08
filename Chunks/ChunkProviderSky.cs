@@ -190,7 +190,7 @@ namespace betareborn.Chunks
             func_28071_a(var1, var2, var3, field_28075_v, var5);
             func_28072_a(var1, var2, var3, field_28075_v);
             field_28076_u.func_867_a(this, field_28081_p, var1, var2, var3);
-            var4.func_1024_c();
+            var4.populateHeightMap();
             return var4;
         }
 
@@ -320,10 +320,10 @@ namespace betareborn.Chunks
             int var4 = var2 * 16;
             int var5 = var3 * 16;
             Biome var6 = field_28081_p.getBiomeSource().getBiome(var4 + 16, var5 + 16);
-            field_28087_j.setSeed(field_28081_p.getRandomSeed());
+            field_28087_j.setSeed(field_28081_p.getSeed());
             long var7 = field_28087_j.nextLong() / 2L * 2L + 1L;
             long var9 = field_28087_j.nextLong() / 2L * 2L + 1L;
-            field_28087_j.setSeed((long)var2 * var7 + (long)var3 * var9 ^ field_28081_p.getRandomSeed());
+            field_28087_j.setSeed((long)var2 * var7 + (long)var3 * var9 ^ field_28081_p.getSeed());
             double var11 = 0.25D;
             int var13;
             int var14;
@@ -478,7 +478,7 @@ namespace betareborn.Chunks
                 var17 = var5 + field_28087_j.nextInt(16) + 8;
                 WorldGenerator var18 = var6.getRandomWorldGenForTrees(field_28087_j);
                 var18.func_517_a(1.0D, 1.0D, 1.0D);
-                var18.generate(field_28081_p, field_28087_j, var16, field_28081_p.getHeightValue(var16, var17), var17);
+                var18.generate(field_28081_p, field_28087_j, var16, field_28081_p.getTopY(var16, var17), var17);
             }
 
             int var23;

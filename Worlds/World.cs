@@ -23,8 +23,8 @@ namespace betareborn.Worlds
         private readonly List<Entity> unloadedEntityList;
         private readonly TreeSet scheduledTickTreeSet;
         private readonly Set scheduledTickSet;
-        public List<TileEntity> loadedTileEntityList;
-        private readonly List<TileEntity> field_30900_E;
+        public List<BlockEntity> loadedTileEntityList;
+        private readonly List<BlockEntity> field_30900_E;
         public List playerEntities;
         public List weatherEffects;
         private readonly long field_1019_F;
@@ -444,7 +444,7 @@ namespace betareborn.Worlds
                 else
                 {
                     Chunk var6 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
-                    return var6.setBlockIDWithMetadata(var1 & 15, var2, var3 & 15, var4, var5);
+                    return var6.setBlock(var1 & 15, var2, var3 & 15, var4, var5);
                 }
             }
             else
@@ -468,7 +468,7 @@ namespace betareborn.Worlds
                 else
                 {
                     Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
-                    return var5.setBlockID(var1 & 15, var2, var3 & 15, var4);
+                    return var5.setBlock(var1 & 15, var2, var3 & 15, var4);
                 }
             }
             else
@@ -500,7 +500,7 @@ namespace betareborn.Worlds
                     Chunk var4 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
-                    return var4.getBlockMetadata(var1, var2, var3);
+                    return var4.getBlockMeta(var1, var2, var3);
                 }
             }
             else
@@ -543,7 +543,7 @@ namespace betareborn.Worlds
                     Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
-                    var5.setBlockMetadata(var1, var2, var3, var4);
+                    var5.setBlockMeta(var1, var2, var3, var4);
                     return true;
                 }
             }
@@ -649,7 +649,7 @@ namespace betareborn.Worlds
 
         public bool hasSkyLight(int var1, int var2, int var3)
         {
-            return getChunkFromChunkCoords(var1 >> 4, var3 >> 4).canBlockSeeTheSky(var1 & 15, var2, var3 & 15);
+            return getChunkFromChunkCoords(var1 >> 4, var3 >> 4).isAboveMaxHeight(var1 & 15, var2, var3 & 15);
         }
 
         public int getBrightness(int var1, int var2, int var3)
@@ -665,7 +665,7 @@ namespace betareborn.Worlds
                     var2 = 127;
                 }
 
-                return getChunkFromChunkCoords(var1 >> 4, var3 >> 4).getBlockLightValue(var1 & 15, var2, var3 & 15, 0);
+                return getChunkFromChunkCoords(var1 >> 4, var3 >> 4).getLight(var1 & 15, var2, var3 & 15, 0);
             }
         }
 
@@ -726,7 +726,7 @@ namespace betareborn.Worlds
                     Chunk var11 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
-                    return var11.getBlockLightValue(var1, var2, var3, skylightSubtracted);
+                    return var11.getLight(var1, var2, var3, skylightSubtracted);
                 }
             }
             else
@@ -756,7 +756,7 @@ namespace betareborn.Worlds
                     Chunk var4 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
                     var1 &= 15;
                     var3 &= 15;
-                    return var4.canBlockSeeTheSky(var1, var2, var3);
+                    return var4.isAboveMaxHeight(var1, var2, var3);
                 }
             }
             else
@@ -765,7 +765,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public int getHeightValue(int var1, int var2)
+        public int getTopY(int var1, int var2)
         {
             if (var1 >= -32000000 && var2 >= -32000000 && var1 < 32000000 && var2 <= 32000000)
             {
@@ -776,7 +776,7 @@ namespace betareborn.Worlds
                 else
                 {
                     Chunk var3 = getChunkFromChunkCoords(var1 >> 4, var2 >> 4);
-                    return var3.getHeightValue(var1 & 15, var2 & 15);
+                    return var3.getHeight(var1 & 15, var2 & 15);
                 }
             }
             else
@@ -809,7 +809,7 @@ namespace betareborn.Worlds
 
                     if (getBrightness(var1, var2, var3, var4) != var5)
                     {
-                        scheduleLightingUpdate(var1, var2, var3, var4, var2, var3, var4);
+                        queueLightUpdate(var1, var2, var3, var4, var2, var3, var4);
                     }
 
                 }
@@ -839,7 +839,7 @@ namespace betareborn.Worlds
                 else
                 {
                     Chunk var7 = getChunkFromChunkCoords(var5, var6);
-                    return var7.getSavedLightValue(var1, var2 & 15, var3, var4 & 15);
+                    return var7.getLight(var1, var2 & 15, var3, var4 & 15);
                 }
             }
             else
@@ -859,7 +859,7 @@ namespace betareborn.Worlds
                         if (chunkExists(var2 >> 4, var4 >> 4))
                         {
                             Chunk var6 = getChunkFromChunkCoords(var2 >> 4, var4 >> 4);
-                            var6.setLightValue(var1, var2 & 15, var3, var4 & 15, var5);
+                            var6.setLight(var1, var2 & 15, var3, var4 & 15, var5);
 
                             for (int var7 = 0; var7 < worldAccesses.Count; ++var7)
                             {
@@ -1572,7 +1572,7 @@ namespace betareborn.Worlds
 
             for (int i = loadedTileEntityList.Count - 1; i >= 0; i--)
             {
-                TileEntity var5 = loadedTileEntityList[i];
+                BlockEntity var5 = loadedTileEntityList[i];
                 if (!var5.isRemoved())
                 {
                     var5.tick();
@@ -1583,7 +1583,7 @@ namespace betareborn.Worlds
                     Chunk var7 = getChunkFromChunkCoords(var5.x >> 4, var5.z >> 4);
                     if (var7 != null)
                     {
-                        var7.removeChunkBlockTileEntity(var5.x & 15, var5.y, var5.z & 15);
+                        var7.removeBlockEntityAt(var5.x & 15, var5.y, var5.z & 15);
                     }
                 }
             }
@@ -1591,7 +1591,7 @@ namespace betareborn.Worlds
             field_31055_L = false;
             if (field_30900_E.Count > 0)
             {
-                foreach (TileEntity var8 in field_30900_E)
+                foreach (BlockEntity var8 in field_30900_E)
                 {
                     if (!var8.isRemoved())
                     {
@@ -1602,7 +1602,7 @@ namespace betareborn.Worlds
                         Chunk var9 = getChunkFromChunkCoords(var8.x >> 4, var8.z >> 4);
                         if (var9 != null)
                         {
-                            var9.setChunkBlockTileEntity(var8.x & 15, var8.y, var8.z & 15, var8);
+                            var9.setBlockEntity(var8.x & 15, var8.y, var8.z & 15, var8);
                         }
                         markBlockNeedsUpdate(var8.x, var8.y, var8.z);
                     }
@@ -1613,7 +1613,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void func_31054_a(IEnumerable<TileEntity> var1)
+        public void processBlockUpdates(IEnumerable<BlockEntity> var1)
         {
             if (field_31055_L)
             {
@@ -1687,7 +1687,7 @@ namespace betareborn.Worlds
                 {
                     if (var1.addedToChunk && chunkExists(var1.chunkCoordX, var1.chunkCoordZ))
                     {
-                        getChunkFromChunkCoords(var1.chunkCoordX, var1.chunkCoordZ).removeEntityAtIndex(var1, var1.chunkCoordY);
+                        getChunkFromChunkCoords(var1.chunkCoordX, var1.chunkCoordZ).removeEntity(var1, var1.chunkCoordY);
                     }
 
                     if (chunkExists(var6, var8))
@@ -2016,13 +2016,13 @@ namespace betareborn.Worlds
             return chunkProvider.makeString();
         }
 
-        public TileEntity getBlockTileEntity(int var1, int var2, int var3)
+        public BlockEntity getBlockTileEntity(int var1, int var2, int var3)
         {
             Chunk var4 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
-            return var4 != null ? var4.getChunkBlockTileEntity(var1 & 15, var2, var3 & 15) : null;
+            return var4 != null ? var4.getBlockEntity(var1 & 15, var2, var3 & 15) : null;
         }
 
-        public void setBlockTileEntity(int var1, int var2, int var3, TileEntity var4)
+        public void setBlockTileEntity(int var1, int var2, int var3, BlockEntity var4)
         {
             if (!var4.isRemoved())
             {
@@ -2039,7 +2039,7 @@ namespace betareborn.Worlds
                     Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
                     if (var5 != null)
                     {
-                        var5.setChunkBlockTileEntity(var1 & 15, var2, var3 & 15, var4);
+                        var5.setBlockEntity(var1 & 15, var2, var3 & 15, var4);
                     }
                 }
             }
@@ -2048,7 +2048,7 @@ namespace betareborn.Worlds
 
         public void removeBlockTileEntity(int var1, int var2, int var3)
         {
-            TileEntity var4 = getBlockTileEntity(var1, var2, var3);
+            BlockEntity var4 = getBlockTileEntity(var1, var2, var3);
             if (var4 != null && field_31055_L)
             {
                 var4.markRemoved();
@@ -2063,7 +2063,7 @@ namespace betareborn.Worlds
                 Chunk var5 = getChunkFromChunkCoords(var1 >> 4, var3 >> 4);
                 if (var5 != null)
                 {
-                    var5.removeChunkBlockTileEntity(var1 & 15, var2, var3 & 15);
+                    var5.removeBlockEntityAt(var1 & 15, var2, var3 & 15);
                 }
             }
 
@@ -2128,7 +2128,7 @@ namespace betareborn.Worlds
             }
         }
 
-        public void scheduleLightingUpdate(LightType var1, int var2, int var3, int var4, int var5, int var6, int var7)
+        public void queueLightUpdate(LightType var1, int var2, int var3, int var4, int var5, int var6, int var7)
         {
             scheduleLightingUpdate_do(var1, var2, var3, var4, var5, var6, var7, true);
         }
@@ -2150,7 +2150,7 @@ namespace betareborn.Worlds
                     int var10 = (var7 + var4) / 2;
                     if (blockExists(var9, 64, var10))
                     {
-                        if (getChunkFromBlockCoords(var9, var10).func_21167_h())
+                        if (getChunkFromBlockCoords(var9, var10).isEmpty())
                         {
                             return;
                         }
@@ -2468,7 +2468,7 @@ namespace betareborn.Worlds
                     var7 = var6 & 15;
                     var8 = var6 >> 8 & 15;
                     var9 = findTopSolidBlock(var7 + var3, var8 + var4);
-                    if (getBiomeSource().getBiome(var7 + var3, var8 + var4).getEnableSnow() && var9 >= 0 && var9 < 128 && var14.getSavedLightValue(LightType.Block, var7, var9, var8) < 10)
+                    if (getBiomeSource().getBiome(var7 + var3, var8 + var4).getEnableSnow() && var9 >= 0 && var9 < 128 && var14.getLight(LightType.Block, var7, var9, var8) < 10)
                     {
                         var10 = var14.getBlockID(var7, var9 - 1, var8);
                         var15 = var14.getBlockID(var7, var9, var8);
@@ -2477,7 +2477,7 @@ namespace betareborn.Worlds
                             setBlockWithNotify(var7 + var3, var9, var8 + var4, Block.SNOW.id);
                         }
 
-                        if (var10 == Block.WATER.id && var14.getBlockMetadata(var7, var9 - 1, var8) == 0)
+                        if (var10 == Block.WATER.id && var14.getBlockMeta(var7, var9 - 1, var8) == 0)
                         {
                             setBlockWithNotify(var7 + var3, var9 - 1, var8 + var4, Block.ICE.id);
                         }
@@ -2573,7 +2573,7 @@ namespace betareborn.Worlds
                 {
                     if (chunkExists(var7, var8))
                     {
-                        getChunkFromChunkCoords(var7, var8).getEntitiesWithinAABBForEntity(var1, var2, field_1012_M);
+                        getChunkFromChunkCoords(var7, var8).collectOtherEntities(var1, var2, field_1012_M);
                     }
                 }
             }
@@ -2595,7 +2595,7 @@ namespace betareborn.Worlds
                 {
                     if (chunkExists(var8, var9))
                     {
-                        getChunkFromChunkCoords(var8, var9).getEntitiesOfTypeWithinAAAB(var1, var2, var7);
+                        getChunkFromChunkCoords(var8, var9).collectEntitiesByClass(var1, var2, var7);
                     }
                 }
             }
@@ -2608,11 +2608,11 @@ namespace betareborn.Worlds
             return loadedEntityList;
         }
 
-        public void updateBlockEntity(int var1, int var2, int var3, TileEntity var4)
+        public void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
         {
             if (blockExists(var1, var2, var3))
             {
-                getChunkFromBlockCoords(var1, var3).setChunkModified();
+                getChunkFromBlockCoords(var1, var3).markDirty();
             }
 
             for (int var5 = 0; var5 < worldAccesses.Count; ++var5)
@@ -2638,7 +2638,7 @@ namespace betareborn.Worlds
             return var2;
         }
 
-        public void func_636_a(List<Entity> var1)
+        public void addEntities(List<Entity> var1)
         {
             loadedEntityList.AddRange(var1);
 
@@ -2649,7 +2649,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void func_632_b(List<Entity> var1)
+        public void unloadEntities(List<Entity> var1)
         {
             unloadedEntityList.AddRange(var1);
         }
@@ -2833,7 +2833,7 @@ namespace betareborn.Worlds
                         var20 = 16;
                     }
 
-                    var12 = getChunkFromChunkCoords(var15, var18).setChunkData(var7, var16, var13, var19, var17, var14, var20, var12);
+                    var12 = getChunkFromChunkCoords(var15, var18).loadFromPacket(var7, var16, var13, var19, var17, var14, var20, var12);
                     setBlocksDirty(var15 * 16 + var16, var13, var18 * 16 + var19, var15 * 16 + var17, var14, var18 * 16 + var20);
                 }
             }
@@ -2854,7 +2854,7 @@ namespace betareborn.Worlds
             worldInfo.setWorldTime(var1);
         }
 
-        public long getRandomSeed()
+        public long getSeed()
         {
             return worldInfo.getRandomSeed();
         }

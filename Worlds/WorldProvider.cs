@@ -41,7 +41,7 @@ namespace betareborn.Worlds
 
         public virtual IChunkProvider getChunkProvider()
         {
-            return new ChunkProviderGenerate(worldObj, worldObj.getRandomSeed());
+            return new ChunkProviderGenerate(worldObj, worldObj.getSeed());
         }
 
         public virtual bool canCoordinateBeSpawn(int var1, int var2)

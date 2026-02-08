@@ -4,7 +4,7 @@ using betareborn.NBT;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntityDispenser : TileEntity, IInventory
+    public class TileEntityDispenser : BlockEntity, IInventory
     {
         private ItemStack[] inventory = new ItemStack[9];
         private readonly java.util.Random random = new();

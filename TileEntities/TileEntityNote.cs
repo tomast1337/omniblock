@@ -4,7 +4,7 @@ using betareborn.Worlds;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntityNote : TileEntity
+    public class TileEntityNote : BlockEntity
     {
         public sbyte note = 0;
         public bool powered = false;

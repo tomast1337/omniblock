@@ -53,26 +53,26 @@ namespace betareborn.Chunks
                 chunkList.Add(var4);
                 if (var4 != null)
                 {
-                    var4.func_4143_d();
-                    var4.onChunkLoad();
+                    var4.populateBlockLight();
+                    var4.load();
                 }
 
-                if (!var4.isTerrainPopulated && chunkExists(var1 + 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 + 1, var2))
+                if (!var4.terrainPopulated && chunkExists(var1 + 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 + 1, var2))
                 {
                     populate(this, var1, var2);
                 }
 
-                if (chunkExists(var1 - 1, var2) && !provideChunk(var1 - 1, var2).isTerrainPopulated && chunkExists(var1 - 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 - 1, var2))
+                if (chunkExists(var1 - 1, var2) && !provideChunk(var1 - 1, var2).terrainPopulated && chunkExists(var1 - 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 - 1, var2))
                 {
                     populate(this, var1 - 1, var2);
                 }
 
-                if (chunkExists(var1, var2 - 1) && !provideChunk(var1, var2 - 1).isTerrainPopulated && chunkExists(var1 + 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 + 1, var2))
+                if (chunkExists(var1, var2 - 1) && !provideChunk(var1, var2 - 1).terrainPopulated && chunkExists(var1 + 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 + 1, var2))
                 {
                     populate(this, var1, var2 - 1);
                 }
 
-                if (chunkExists(var1 - 1, var2 - 1) && !provideChunk(var1 - 1, var2 - 1).isTerrainPopulated && chunkExists(var1 - 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 - 1, var2))
+                if (chunkExists(var1 - 1, var2 - 1) && !provideChunk(var1 - 1, var2 - 1).terrainPopulated && chunkExists(var1 - 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 - 1, var2))
                 {
                     populate(this, var1 - 1, var2 - 1);
                 }
@@ -149,13 +149,13 @@ namespace betareborn.Chunks
         public void populate(IChunkProvider var1, int var2, int var3)
         {
             Chunk var4 = provideChunk(var2, var3);
-            if (!var4.isTerrainPopulated)
+            if (!var4.terrainPopulated)
             {
-                var4.isTerrainPopulated = true;
+                var4.terrainPopulated = true;
                 if (chunkProvider != null)
                 {
                     chunkProvider.populate(var1, var2, var3);
-                    var4.setChunkModified();
+                    var4.markDirty();
                 }
             }
 
@@ -176,12 +176,12 @@ namespace betareborn.Chunks
                 totalChecked++;
                 Chunk chunk = chunkList[var4];
 
-                if (force && !chunk.neverSave)
+                if (force && !chunk.empty)
                 {
                     saveSingleExtraChunkData(chunk);
                 }
 
-                if (chunk.needsSaving(force))
+                if (chunk.shouldSave(force))
                 {
                     totalNeedsSaving++;
                     Profiler.Stop("collectDirty");
@@ -233,7 +233,7 @@ namespace betareborn.Chunks
                 {
                     int var2 = droppedChunksSet.First();
                     Chunk var3 = chunkMap[var2];
-                    var3.onChunkUnload();
+                    var3.unload();
                     saveSingleChunk(var3);
                     saveSingleExtraChunkData(var3);
                     droppedChunksSet.Remove(var2);
@@ -254,8 +254,8 @@ namespace betareborn.Chunks
                 var players = worldObj.playerEntities;
                 bool nearAnyPlayer = false;
 
-                int chunkCenterX = chunk.xPosition * 16 + 8;
-                int chunkCenterZ = chunk.zPosition * 16 + 8;
+                int chunkCenterX = chunk.x * 16 + 8;
+                int chunkCenterZ = chunk.z * 16 + 8;
 
                 const int chunkBuffer = 4;
                 int unloadDistance = (renderDistanceChunks + chunkBuffer) * 16;
@@ -275,7 +275,7 @@ namespace betareborn.Chunks
 
                 if (!nearAnyPlayer)
                 {
-                    int chunkKey = ChunkPos.chunkXZ2Int(chunk.xPosition, chunk.zPosition);
+                    int chunkKey = ChunkPos.chunkXZ2Int(chunk.x, chunk.z);
                     droppedChunksSet.Add(chunkKey);
                 }
             }

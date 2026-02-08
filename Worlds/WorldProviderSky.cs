@@ -16,7 +16,7 @@ namespace betareborn.Worlds
 
         public override IChunkProvider getChunkProvider()
         {
-            return new ChunkProviderSky(worldObj, worldObj.getRandomSeed());
+            return new ChunkProviderSky(worldObj, worldObj.getSeed());
         }
 
         public override float calculateCelestialAngle(long var1, float var3)

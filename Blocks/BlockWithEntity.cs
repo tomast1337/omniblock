@@ -4,15 +4,15 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public abstract class BlockContainer : Block
+    public abstract class BlockWithEntity : Block
     {
 
-        protected BlockContainer(int var1, Material var2) : base(var1, var2)
+        protected BlockWithEntity(int var1, Material var2) : base(var1, var2)
         {
             BLOCKS_WITH_ENTITY[var1] = true;
         }
 
-        protected BlockContainer(int var1, int var2, Material var3) : base(var1, var2, var3)
+        protected BlockWithEntity(int var1, int var2, Material var3) : base(var1, var2, var3)
         {
             BLOCKS_WITH_ENTITY[var1] = true;
         }
@@ -29,7 +29,7 @@ namespace betareborn.Blocks
             var1.removeBlockTileEntity(var2, var3, var4);
         }
 
-        protected abstract TileEntity getBlockEntity();
+        protected abstract BlockEntity getBlockEntity();
     }
 
 }

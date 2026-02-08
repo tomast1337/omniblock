@@ -10,7 +10,7 @@ namespace betareborn.Rendering
 {
     public class RenderGlobal : IWorldAccess
     {
-        public List<TileEntity> tileEntities = [];
+        public List<BlockEntity> tileEntities = [];
         private World worldObj;
         private readonly RenderEngine renderEngine;
         private readonly Minecraft mc;
@@ -869,7 +869,7 @@ namespace betareborn.Rendering
             worldRenderer.UpdateAllRenderers();
         }
 
-        public void doNothingWithTileEntity(int var1, int var2, int var3, TileEntity var4)
+        public void doNothingWithTileEntity(int var1, int var2, int var3, BlockEntity var4)
         {
         }
 

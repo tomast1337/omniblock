@@ -37,7 +37,7 @@ namespace betareborn.TileEntities
             GLManager.GL.PopMatrix();
         }
 
-        public override void renderTileEntityAt(TileEntity var1, double var2, double var4, double var6, float var8)
+        public override void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8)
         {
             renderTileEntityMobSpawner((TileEntityMobSpawner)var1, var2, var4, var6, var8);
         }

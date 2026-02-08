@@ -34,9 +34,9 @@ namespace betareborn.Chunks
         public void func_539_c(int var1, int var2)
         {
             Chunk var3 = provideChunk(var1, var2);
-            if (!var3.func_21167_h())
+            if (!var3.isEmpty())
             {
-                var3.onChunkUnload();
+                var3.unload();
             }
 
             chunkMapping.remove(new ChunkPos(var1, var2));
@@ -48,9 +48,9 @@ namespace betareborn.Chunks
             ChunkPos var3 = new ChunkPos(var1, var2);
             byte[] var4 = new byte[-Short.MIN_VALUE];
             Chunk var5 = new Chunk(worldObj, var4, var1, var2);
-            Arrays.fill(var5.skylightMap.data, (byte)255);
+            Arrays.fill(var5.skyLight.bytes, (byte)255);
             chunkMapping.put(var3, var5);
-            var5.isChunkLoaded = true;
+            var5.loaded = true;
             return var5;
         }
 

@@ -6,7 +6,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockJukeBox : BlockContainer
+    public class BlockJukeBox : BlockWithEntity
     {
 
         public BlockJukeBox(int id, int textureId) : base(id, textureId, Material.WOOD)
@@ -80,7 +80,7 @@ namespace betareborn.Blocks
             }
         }
 
-        protected override TileEntity getBlockEntity()
+        protected override BlockEntity getBlockEntity()
         {
             return new TileEntityRecordPlayer();
         }

@@ -6,7 +6,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockFurnace : BlockContainer
+    public class BlockFurnace : BlockWithEntity
     {
 
         private java.util.Random random = new();
@@ -136,7 +136,7 @@ namespace betareborn.Blocks
         public static void updateLitState(bool lit, World world, int x, int y, int z)
         {
             int var5 = world.getBlockMeta(x, y, z);
-            TileEntity var6 = world.getBlockTileEntity(x, y, z);
+            BlockEntity var6 = world.getBlockTileEntity(x, y, z);
             ignoreBlockRemoval = true;
             if (lit)
             {
@@ -153,7 +153,7 @@ namespace betareborn.Blocks
             world.setBlockTileEntity(x, y, z, var6);
         }
 
-        protected override TileEntity getBlockEntity()
+        protected override BlockEntity getBlockEntity()
         {
             return new TileEntityFurnace();
         }

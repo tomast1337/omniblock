@@ -334,7 +334,7 @@ namespace betareborn
                 int var9 = var6 >> 12 & 15;
                 int var10 = var6 >> 8 & 15;
                 int var11 = var6 & 255;
-                var2.setBlockIDWithMetadata(var9, var11, var10, var7, var8);
+                var2.setBlock(var9, var11, var10, var7, var8);
                 worldClient.func_711_c(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
                 worldClient.setBlocksDirty(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
             }
@@ -680,7 +680,7 @@ namespace betareborn
         {
             if (mc.theWorld.blockExists(var1.x, var1.y, var1.z))
             {
-                TileEntity var2 = mc.theWorld.getBlockTileEntity(var1.x, var1.y, var1.z);
+                BlockEntity var2 = mc.theWorld.getBlockTileEntity(var1.x, var1.y, var1.z);
                 if (var2 is TileEntitySign)
                 {
                     TileEntitySign var3 = (TileEntitySign)var2;

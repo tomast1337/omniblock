@@ -2,7 +2,7 @@ using betareborn.NBT;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntityRecordPlayer : TileEntity
+    public class TileEntityRecordPlayer : BlockEntity
     {
         public int recordId;
 

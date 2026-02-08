@@ -167,7 +167,7 @@ namespace betareborn.Entities
         public override bool canSpawn()
         {
             Chunk var1 = worldObj.getChunkFromBlockCoords(MathHelper.floor_double(posX), MathHelper.floor_double(posZ));
-            return (getSlimeSize() == 1 || worldObj.difficultySetting > 0) && rand.nextInt(10) == 0 && var1.func_997_a(987234911L).nextInt(10) == 0 && posY < 16.0D;
+            return (getSlimeSize() == 1 || worldObj.difficultySetting > 0) && rand.nextInt(10) == 0 && var1.getSlimeRandom(987234911L).nextInt(10) == 0 && posY < 16.0D;
         }
 
         protected override float getSoundVolume()

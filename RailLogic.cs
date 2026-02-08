@@ -43,53 +43,53 @@ namespace betareborn
             connectedTracks.clear();
             if (var1 == 0)
             {
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ - 1));
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ + 1));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ - 1));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ + 1));
             }
             else if (var1 == 1)
             {
-                connectedTracks.add(new ChunkPosition(trackX - 1, trackY, trackZ));
-                connectedTracks.add(new ChunkPosition(trackX + 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX - 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX + 1, trackY, trackZ));
             }
             else if (var1 == 2)
             {
-                connectedTracks.add(new ChunkPosition(trackX - 1, trackY, trackZ));
-                connectedTracks.add(new ChunkPosition(trackX + 1, trackY + 1, trackZ));
+                connectedTracks.add(new BlockPos(trackX - 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX + 1, trackY + 1, trackZ));
             }
             else if (var1 == 3)
             {
-                connectedTracks.add(new ChunkPosition(trackX - 1, trackY + 1, trackZ));
-                connectedTracks.add(new ChunkPosition(trackX + 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX - 1, trackY + 1, trackZ));
+                connectedTracks.add(new BlockPos(trackX + 1, trackY, trackZ));
             }
             else if (var1 == 4)
             {
-                connectedTracks.add(new ChunkPosition(trackX, trackY + 1, trackZ - 1));
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ + 1));
+                connectedTracks.add(new BlockPos(trackX, trackY + 1, trackZ - 1));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ + 1));
             }
             else if (var1 == 5)
             {
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ - 1));
-                connectedTracks.add(new ChunkPosition(trackX, trackY + 1, trackZ + 1));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ - 1));
+                connectedTracks.add(new BlockPos(trackX, trackY + 1, trackZ + 1));
             }
             else if (var1 == 6)
             {
-                connectedTracks.add(new ChunkPosition(trackX + 1, trackY, trackZ));
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ + 1));
+                connectedTracks.add(new BlockPos(trackX + 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ + 1));
             }
             else if (var1 == 7)
             {
-                connectedTracks.add(new ChunkPosition(trackX - 1, trackY, trackZ));
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ + 1));
+                connectedTracks.add(new BlockPos(trackX - 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ + 1));
             }
             else if (var1 == 8)
             {
-                connectedTracks.add(new ChunkPosition(trackX - 1, trackY, trackZ));
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ - 1));
+                connectedTracks.add(new BlockPos(trackX - 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ - 1));
             }
             else if (var1 == 9)
             {
-                connectedTracks.add(new ChunkPosition(trackX + 1, trackY, trackZ));
-                connectedTracks.add(new ChunkPosition(trackX, trackY, trackZ - 1));
+                connectedTracks.add(new BlockPos(trackX + 1, trackY, trackZ));
+                connectedTracks.add(new BlockPos(trackX, trackY, trackZ - 1));
             }
 
         }
@@ -98,10 +98,10 @@ namespace betareborn
         {
             for (int var1 = 0; var1 < connectedTracks.size(); ++var1)
             {
-                RailLogic var2 = getMinecartTrackLogic((ChunkPosition)connectedTracks.get(var1));
+                RailLogic var2 = getMinecartTrackLogic((BlockPos)connectedTracks.get(var1));
                 if (var2 != null && var2.isConnectedTo(this))
                 {
-                    connectedTracks.set(var1, new ChunkPosition(var2.trackX, var2.trackY, var2.trackZ));
+                    connectedTracks.set(var1, new BlockPos(var2.trackX, var2.trackY, var2.trackZ));
                 }
                 else
                 {
@@ -116,7 +116,7 @@ namespace betareborn
             return BlockRail.isRail(worldObj, var1, var2, var3) ? true : (BlockRail.isRail(worldObj, var1, var2 + 1, var3) ? true : BlockRail.isRail(worldObj, var1, var2 - 1, var3));
         }
 
-        private RailLogic getMinecartTrackLogic(ChunkPosition var1)
+        private RailLogic getMinecartTrackLogic(BlockPos var1)
         {
             return BlockRail.isRail(worldObj, var1.x, var1.y, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y, var1.z) : (BlockRail.isRail(worldObj, var1.x, var1.y + 1, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y + 1, var1.z) : (BlockRail.isRail(worldObj, var1.x, var1.y - 1, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y - 1, var1.z) : null));
         }
@@ -125,7 +125,7 @@ namespace betareborn
         {
             for (int var2 = 0; var2 < connectedTracks.size(); ++var2)
             {
-                ChunkPosition var3 = (ChunkPosition)connectedTracks.get(var2);
+                BlockPos var3 = (BlockPos)connectedTracks.get(var2);
                 if (var3.x == var1.trackX && var3.z == var1.trackZ)
                 {
                     return true;
@@ -139,7 +139,7 @@ namespace betareborn
         {
             for (int var4 = 0; var4 < connectedTracks.size(); ++var4)
             {
-                ChunkPosition var5 = (ChunkPosition)connectedTracks.get(var4);
+                BlockPos var5 = (BlockPos)connectedTracks.get(var4);
                 if (var5.x == var1 && var5.z == var3)
                 {
                     return true;
@@ -191,14 +191,14 @@ namespace betareborn
             }
             else
             {
-                ChunkPosition var2 = (ChunkPosition)connectedTracks.get(0);
+                BlockPos var2 = (BlockPos)connectedTracks.get(0);
                 return var1.trackY == trackY && var2.y == trackY ? true : true;
             }
         }
 
         private void func_788_d(RailLogic var1)
         {
-            connectedTracks.add(new ChunkPosition(var1.trackX, var1.trackY, var1.trackZ));
+            connectedTracks.add(new BlockPos(var1.trackX, var1.trackY, var1.trackZ));
             bool var2 = isInTrack(trackX, trackY, trackZ - 1);
             bool var3 = isInTrack(trackX, trackY, trackZ + 1);
             bool var4 = isInTrack(trackX - 1, trackY, trackZ);
@@ -279,7 +279,7 @@ namespace betareborn
 
         private bool func_786_c(int var1, int var2, int var3)
         {
-            RailLogic var4 = getMinecartTrackLogic(new ChunkPosition(var1, var2, var3));
+            RailLogic var4 = getMinecartTrackLogic(new BlockPos(var1, var2, var3));
             if (var4 == null)
             {
                 return false;
@@ -436,7 +436,7 @@ namespace betareborn
 
                 for (int var9 = 0; var9 < connectedTracks.size(); ++var9)
                 {
-                    RailLogic var10 = getMinecartTrackLogic((ChunkPosition)connectedTracks.get(var9));
+                    RailLogic var10 = getMinecartTrackLogic((BlockPos)connectedTracks.get(var9));
                     if (var10 != null)
                     {
                         var10.func_785_b();

@@ -72,15 +72,15 @@ namespace betareborn.Chunks
                     }
 
                     Chunk var7 = loadChunkIntoWorldFromCompound(var1, var6.getCompoundTag("Level"));
-                    if (!var7.isAtLocation(var2, var3))
+                    if (!var7.chunkPosEquals(var2, var3))
                     {
-                        java.lang.System.@out.println("Chunk file at " + var2 + "," + var3 + " is in the wrong location; relocating. (Expected " + var2 + ", " + var3 + ", got " + var7.xPosition + ", " + var7.zPosition + ")");
+                        java.lang.System.@out.println("Chunk file at " + var2 + "," + var3 + " is in the wrong location; relocating. (Expected " + var2 + ", " + var3 + ", got " + var7.x + ", " + var7.z + ")");
                         var6.setInteger("xPos", var2);
                         var6.setInteger("zPos", var3);
                         var7 = loadChunkIntoWorldFromCompound(var1, var6.getCompoundTag("Level"));
                     }
 
-                    var7.func_25124_i();
+                    var7.fill();
                     return var7;
                 }
                 catch (java.lang.Exception var8)
@@ -95,7 +95,7 @@ namespace betareborn.Chunks
         public void saveChunk(World var1, Chunk var2, Action onSave, long _)
         {
             var1.checkSessionLock();
-            java.io.File var3 = chunkFileForXZ(var2.xPosition, var2.zPosition);
+            java.io.File var3 = chunkFileForXZ(var2.x, var2.z);
             if (var3.exists())
             {
                 WorldInfo var4 = var1.getWorldInfo();
@@ -131,16 +131,16 @@ namespace betareborn.Chunks
         public static void storeChunkInCompound(Chunk var0, World var1, NBTTagCompound var2)
         {
             //var1.checkSessionLock();
-            var2.setInteger("xPos", var0.xPosition);
-            var2.setInteger("zPos", var0.zPosition);
+            var2.setInteger("xPos", var0.x);
+            var2.setInteger("zPos", var0.z);
             var2.setLong("LastUpdate", var1.getWorldTime());
             var2.setByteArray("Blocks", var0.blocks);
-            var2.setByteArray("Data", var0.data.data);
-            var2.setByteArray("SkyLight", var0.skylightMap.data);
-            var2.setByteArray("BlockLight", var0.blocklightMap.data);
-            var2.setByteArray("HeightMap", var0.heightMap);
-            var2.setBoolean("TerrainPopulated", var0.isTerrainPopulated);
-            var0.hasEntities = false;
+            var2.setByteArray("Data", var0.meta.bytes);
+            var2.setByteArray("SkyLight", var0.skyLight.bytes);
+            var2.setByteArray("BlockLight", var0.blockLight.bytes);
+            var2.setByteArray("HeightMap", var0.heightmap);
+            var2.setBoolean("TerrainPopulated", var0.terrainPopulated);
+            var0.lastSaveHadEntities = false;
             NBTTagList var3 = new NBTTagList();
 
             //Iterator var5;
@@ -152,7 +152,7 @@ namespace betareborn.Chunks
                 foreach (var var6 in var0.entities[var4])
                 {
                     //Entity var6 = (Entity)var5.next();
-                    var0.hasEntities = true;
+                    var0.lastSaveHadEntities = true;
                     var7 = new NBTTagCompound();
                     if (var6.addEntityID(var7))
                     {
@@ -166,7 +166,7 @@ namespace betareborn.Chunks
             //var5 = var0.chunkTileEntityMap.values().iterator();
 
             //while (var5.hasNext())
-            foreach (var var9 in var0.chunkTileEntityMap.Values)
+            foreach (var var9 in var0.blockEntities.Values)
             {
                 //TileEntity var9 = (TileEntity)var5.next();
                 var7 = new NBTTagCompound();
@@ -183,27 +183,27 @@ namespace betareborn.Chunks
             int var3 = var1.getInteger("zPos");
             Chunk var4 = new Chunk(var0, var2, var3);
             var4.blocks = var1.getByteArray("Blocks");
-            var4.data = new NibbleArray(var1.getByteArray("Data"));
-            var4.skylightMap = new NibbleArray(var1.getByteArray("SkyLight"));
-            var4.blocklightMap = new NibbleArray(var1.getByteArray("BlockLight"));
-            var4.heightMap = var1.getByteArray("HeightMap");
-            var4.isTerrainPopulated = var1.getBoolean("TerrainPopulated");
-            if (!var4.data.isValid())
+            var4.meta = new ChunkNibbleArray(var1.getByteArray("Data"));
+            var4.skyLight = new ChunkNibbleArray(var1.getByteArray("SkyLight"));
+            var4.blockLight = new ChunkNibbleArray(var1.getByteArray("BlockLight"));
+            var4.heightmap = var1.getByteArray("HeightMap");
+            var4.terrainPopulated = var1.getBoolean("TerrainPopulated");
+            if (!var4.meta.isArrayInitialized())
             {
-                var4.data = new NibbleArray(var4.blocks.Length);
+                var4.meta = new ChunkNibbleArray(var4.blocks.Length);
             }
 
-            if (var4.heightMap == null || !var4.skylightMap.isValid())
+            if (var4.heightmap == null || !var4.skyLight.isArrayInitialized())
             {
-                var4.heightMap = new byte[256];
-                var4.skylightMap = new NibbleArray(var4.blocks.Length);
-                var4.func_1024_c();
+                var4.heightmap = new byte[256];
+                var4.skyLight = new ChunkNibbleArray(var4.blocks.Length);
+                var4.populateHeightMap();
             }
 
-            if (!var4.blocklightMap.isValid())
+            if (!var4.blockLight.isArrayInitialized())
             {
-                var4.blocklightMap = new NibbleArray(var4.blocks.Length);
-                var4.func_1014_a();
+                var4.blockLight = new ChunkNibbleArray(var4.blocks.Length);
+                var4.populateLight();
             }
 
             NBTTagList var5 = var1.getTagList("Entities");
@@ -213,7 +213,7 @@ namespace betareborn.Chunks
                 {
                     NBTTagCompound var7 = (NBTTagCompound)var5.tagAt(var6);
                     Entity var8 = EntityRegistry.getEntityFromNbt(var7, var0);
-                    var4.hasEntities = true;
+                    var4.lastSaveHadEntities = true;
                     if (var8 != null)
                     {
                         var4.addEntity(var8);
@@ -227,10 +227,10 @@ namespace betareborn.Chunks
                 for (int var11 = 0; var11 < var10.tagCount(); ++var11)
                 {
                     NBTTagCompound var12 = (NBTTagCompound)var10.tagAt(var11);
-                    TileEntity var9 = TileEntity.createFromNbt(var12);
+                    BlockEntity var9 = BlockEntity.createFromNbt(var12);
                     if (var9 != null)
                     {
-                        var4.addTileEntity(var9);
+                        var4.addBlockEntity(var9);
                     }
                 }
             }

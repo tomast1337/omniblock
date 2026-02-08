@@ -2,20 +2,20 @@ using betareborn.Blocks;
 
 namespace betareborn.Chunks
 {
-    public class ChunkBlockMap
+    public class BlockSource
     {
-        private static byte[] field_26003_a = new byte[256];
+        private static byte[] BLOCKS = new byte[256];
 
-        public static void func_26002_a(byte[] var0)
+        public static void fill(byte[] blocks)
         {
-            for (int var1 = 0; var1 < var0.Length; ++var1)
+            for (int var1 = 0; var1 < blocks.Length; ++var1)
             {
-                var0[var1] = field_26003_a[var0[var1] & 255];
+                blocks[var1] = BLOCKS[blocks[var1] & 255];
             }
 
         }
 
-        static ChunkBlockMap()
+        static BlockSource()
         {
             try
             {
@@ -27,7 +27,7 @@ namespace betareborn.Chunks
                         var1 = 0;
                     }
 
-                    field_26003_a[var0] = var1;
+                    BLOCKS[var0] = var1;
                 }
             }
             catch (java.lang.Exception var2)

@@ -5,14 +5,14 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockPistonMoving : BlockContainer
+    public class BlockPistonMoving : BlockWithEntity
     {
         public BlockPistonMoving(int id) : base(id, Material.PISTON)
         {
             setHardness(-1.0F);
         }
 
-        protected override TileEntity getBlockEntity()
+        protected override BlockEntity getBlockEntity()
         {
             return null;
         }
@@ -23,7 +23,7 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            TileEntity var5 = world.getBlockTileEntity(x, y, z);
+            BlockEntity var5 = world.getBlockTileEntity(x, y, z);
             if (var5 != null && var5 is TileEntityPiston)
             {
                 ((TileEntityPiston)var5).finish();
@@ -98,7 +98,7 @@ namespace betareborn.Blocks
 
         }
 
-        public static TileEntity createPistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source)
+        public static BlockEntity createPistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source)
         {
             return new TileEntityPiston(blockId, blockMeta, facing, extending, source);
         }
@@ -179,7 +179,7 @@ namespace betareborn.Blocks
 
         private TileEntityPiston getPistonBlockEntity(BlockView blockView, int x, int y, int z)
         {
-            TileEntity var5 = blockView.getBlockTileEntity(x, y, z);
+            BlockEntity var5 = blockView.getBlockTileEntity(x, y, z);
             return var5 != null && var5 is TileEntityPiston ? (TileEntityPiston)var5 : null;
         }
     }

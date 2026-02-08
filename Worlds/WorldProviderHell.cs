@@ -35,7 +35,7 @@ namespace betareborn.Worlds
 
         public override IChunkProvider getChunkProvider()
         {
-            return new ChunkProviderHell(worldObj, worldObj.getRandomSeed());
+            return new ChunkProviderHell(worldObj, worldObj.getSeed());
         }
 
         public override bool canCoordinateBeSpawn(int var1, int var2)

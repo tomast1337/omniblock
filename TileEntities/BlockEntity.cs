@@ -7,9 +7,9 @@ using java.util;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntity : java.lang.Object
+    public class BlockEntity : java.lang.Object
     {
-        public static readonly Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntity).TypeHandle);
+        public static readonly Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(BlockEntity).TypeHandle);
         private static readonly Map idToClass = new HashMap();
         private static readonly Map classToId = new HashMap();
         public World world;
@@ -58,16 +58,16 @@ namespace betareborn.TileEntities
         {
         }
 
-        public static TileEntity createFromNbt(NBTTagCompound nbt)
+        public static BlockEntity createFromNbt(NBTTagCompound nbt)
         {
-            TileEntity var1 = null;
+            BlockEntity var1 = null;
 
             try
             {
                 Class var2 = (Class)idToClass.get(nbt.getString("id"));
                 if (var2 != null)
                 {
-                    var1 = (TileEntity)var2.newInstance();
+                    var1 = (BlockEntity)var2.newInstance();
                 }
             }
             catch (java.lang.Exception var3)
@@ -134,7 +134,7 @@ namespace betareborn.TileEntities
             removed = false;
         }
 
-        static TileEntity()
+        static BlockEntity()
         {
             create(new TileEntityFurnace().getClass(), "Furnace");
             create(new TileEntityChest().getClass(), "Chest");

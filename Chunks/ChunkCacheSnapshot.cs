@@ -93,7 +93,7 @@ namespace betareborn.Chunks
             }
         }
 
-        public TileEntity getBlockTileEntity(int var1, int var2, int var3)
+        public BlockEntity getBlockTileEntity(int var1, int var2, int var3)
         {
             throw new NotImplementedException();
         }

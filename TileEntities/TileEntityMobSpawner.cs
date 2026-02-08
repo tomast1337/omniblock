@@ -3,7 +3,7 @@ using betareborn.NBT;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntityMobSpawner : TileEntity
+    public class TileEntityMobSpawner : BlockEntity
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntityMobSpawner).TypeHandle);
 

@@ -32,15 +32,15 @@ namespace betareborn
                 else
                 {
                     Chunk var6 = ChunkLoader.loadChunkIntoWorldFromCompound(var1, var4.getCompoundTag("Level"));
-                    if (!var6.isAtLocation(var2, var3))
+                    if (!var6.chunkPosEquals(var2, var3))
                     {
-                        java.lang.System.@out.println("Chunk file at " + var2 + "," + var3 + " is in the wrong location; relocating. (Expected " + var2 + ", " + var3 + ", got " + var6.xPosition + ", " + var6.zPosition + ")");
+                        java.lang.System.@out.println("Chunk file at " + var2 + "," + var3 + " is in the wrong location; relocating. (Expected " + var2 + ", " + var3 + ", got " + var6.x + ", " + var6.z + ")");
                         var4.setInteger("xPos", var2);
                         var4.setInteger("zPos", var3);
                         var6 = ChunkLoader.loadChunkIntoWorldFromCompound(var1, var4.getCompoundTag("Level"));
                     }
 
-                    var6.func_25124_i();
+                    var6.fill();
                     return var6;
                 }
             }
@@ -56,7 +56,7 @@ namespace betareborn
             NBTTagCompound var5 = new();
             var4.setTag("Level", var5);
             ChunkLoader.storeChunkInCompound(var2, var1, var5);
-            Region.RegionCache.writeChunkNBT(worldDir, var2.xPosition, var2.zPosition, var4);
+            Region.RegionCache.writeChunkNBT(worldDir, var2.x, var2.z, var4);
         }
 
         public void saveExtraChunkData(World var1, Chunk var2)

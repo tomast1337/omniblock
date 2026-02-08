@@ -42,7 +42,7 @@ namespace betareborn.Chunks
                 int var3 = var1 & 31;
                 int var4 = var2 & 31;
                 int var5 = var3 + var4 * 32;
-                return chunks[var5] != null && (chunks[var5] == blankChunk || chunks[var5].isAtLocation(var1, var2));
+                return chunks[var5] != null && (chunks[var5] == blankChunk || chunks[var5].chunkPosEquals(var1, var2));
             }
         }
 
@@ -70,7 +70,7 @@ namespace betareborn.Chunks
                 {
                     if (chunks[var5] != null)
                     {
-                        chunks[var5].onChunkUnload();
+                        chunks[var5].unload();
                         saveChunk(chunks[var5]);
                         saveExtraChunkData(chunks[var5]);
                     }
@@ -85,33 +85,33 @@ namespace betareborn.Chunks
                         else
                         {
                             var6 = chunkProvider.provideChunk(var1, var2);
-                            var6.func_25124_i();
+                            var6.fill();
                         }
                     }
 
                     chunks[var5] = var6;
-                    var6.func_4143_d();
+                    var6.populateBlockLight();
                     if (chunks[var5] != null)
                     {
-                        chunks[var5].onChunkLoad();
+                        chunks[var5].load();
                     }
 
-                    if (!chunks[var5].isTerrainPopulated && chunkExists(var1 + 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 + 1, var2))
+                    if (!chunks[var5].terrainPopulated && chunkExists(var1 + 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 + 1, var2))
                     {
                         populate(this, var1, var2);
                     }
 
-                    if (chunkExists(var1 - 1, var2) && !provideChunk(var1 - 1, var2).isTerrainPopulated && chunkExists(var1 - 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 - 1, var2))
+                    if (chunkExists(var1 - 1, var2) && !provideChunk(var1 - 1, var2).terrainPopulated && chunkExists(var1 - 1, var2 + 1) && chunkExists(var1, var2 + 1) && chunkExists(var1 - 1, var2))
                     {
                         populate(this, var1 - 1, var2);
                     }
 
-                    if (chunkExists(var1, var2 - 1) && !provideChunk(var1, var2 - 1).isTerrainPopulated && chunkExists(var1 + 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 + 1, var2))
+                    if (chunkExists(var1, var2 - 1) && !provideChunk(var1, var2 - 1).terrainPopulated && chunkExists(var1 + 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 + 1, var2))
                     {
                         populate(this, var1, var2 - 1);
                     }
 
-                    if (chunkExists(var1 - 1, var2 - 1) && !provideChunk(var1 - 1, var2 - 1).isTerrainPopulated && chunkExists(var1 - 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 - 1, var2))
+                    if (chunkExists(var1 - 1, var2 - 1) && !provideChunk(var1 - 1, var2 - 1).terrainPopulated && chunkExists(var1 - 1, var2 - 1) && chunkExists(var1, var2 - 1) && chunkExists(var1 - 1, var2))
                     {
                         populate(this, var1 - 1, var2 - 1);
                     }
@@ -186,13 +186,13 @@ namespace betareborn.Chunks
         public void populate(IChunkProvider var1, int var2, int var3)
         {
             Chunk var4 = provideChunk(var2, var3);
-            if (!var4.isTerrainPopulated)
+            if (!var4.terrainPopulated)
             {
-                var4.isTerrainPopulated = true;
+                var4.terrainPopulated = true;
                 if (chunkProvider != null)
                 {
                     chunkProvider.populate(var1, var2, var3);
-                    var4.setChunkModified();
+                    var4.markDirty();
                 }
             }
 
@@ -207,7 +207,7 @@ namespace betareborn.Chunks
             {
                 for (var5 = 0; var5 < chunks.Length; ++var5)
                 {
-                    if (chunks[var5] != null && chunks[var5].needsSaving(var1))
+                    if (chunks[var5] != null && chunks[var5].shouldSave(var1))
                     {
                         ++var4;
                     }
@@ -220,15 +220,15 @@ namespace betareborn.Chunks
             {
                 if (chunks[var6] != null)
                 {
-                    if (var1 && !chunks[var6].neverSave)
+                    if (var1 && !chunks[var6].empty)
                     {
                         saveExtraChunkData(chunks[var6]);
                     }
 
-                    if (chunks[var6].needsSaving(var1))
+                    if (chunks[var6].shouldSave(var1))
                     {
                         saveChunk(chunks[var6]);
-                        chunks[var6].isModified = false;
+                        chunks[var6].dirty = false;
                         ++var3;
                         if (var3 == 2 && !var1)
                         {

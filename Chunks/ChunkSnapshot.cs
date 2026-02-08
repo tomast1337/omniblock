@@ -5,9 +5,9 @@ namespace betareborn.Chunks
     public class ChunkSnapshot : IDisposable
     {
         private readonly byte[] blocks;
-        private readonly NibbleArray data;
-        public readonly NibbleArray skylightMap;
-        public readonly NibbleArray blocklightMap;
+        private readonly ChunkNibbleArray data;
+        public readonly ChunkNibbleArray skylightMap;
+        public readonly ChunkNibbleArray blocklightMap;
         private bool disposed = false;
         private bool isLit = false;
 
@@ -16,12 +16,12 @@ namespace betareborn.Chunks
             blocks = ArrayPool<byte>.Shared.Rent(32768);
             Buffer.BlockCopy(toSnapshot.blocks, 0, blocks, 0, toSnapshot.blocks.Length);
 
-            data = createNibbleArray(toSnapshot.data.data);
-            skylightMap = createNibbleArray(toSnapshot.skylightMap.data);
-            blocklightMap = createNibbleArray(toSnapshot.blocklightMap.data);
+            data = createNibbleArray(toSnapshot.meta.bytes);
+            skylightMap = createNibbleArray(toSnapshot.skyLight.bytes);
+            blocklightMap = createNibbleArray(toSnapshot.blockLight.bytes);
         }
 
-        private static NibbleArray createNibbleArray(byte[] toCopy)
+        private static ChunkNibbleArray createNibbleArray(byte[] toCopy)
         {
             byte[] bytes = ArrayPool<byte>.Shared.Rent(toCopy.Length);
             Buffer.BlockCopy(toCopy, 0, bytes, 0, toCopy.Length);
@@ -70,9 +70,9 @@ namespace betareborn.Chunks
 
             GC.SuppressFinalize(this);
             ArrayPool<byte>.Shared.Return(blocks);
-            ArrayPool<byte>.Shared.Return(data.data);
-            ArrayPool<byte>.Shared.Return(skylightMap.data);
-            ArrayPool<byte>.Shared.Return(blocklightMap.data);
+            ArrayPool<byte>.Shared.Return(data.bytes);
+            ArrayPool<byte>.Shared.Return(skylightMap.bytes);
+            ArrayPool<byte>.Shared.Return(blocklightMap.bytes);
             disposed = true;
         }
     }

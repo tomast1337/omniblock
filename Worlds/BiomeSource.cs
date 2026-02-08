@@ -19,9 +19,9 @@ namespace betareborn.Worlds
 
         public BiomeSource(World world)
         {
-            temperatureSampler = new OctaveSimplexNoiseSampler(new java.util.Random(world.getRandomSeed() * 9871L), 4);
-            downfallSampler = new OctaveSimplexNoiseSampler(new java.util.Random(world.getRandomSeed() * 39811L), 4);
-            weirdnessSampler = new OctaveSimplexNoiseSampler(new java.util.Random(world.getRandomSeed() * 543321L), 2);
+            temperatureSampler = new OctaveSimplexNoiseSampler(new java.util.Random(world.getSeed() * 9871L), 4);
+            downfallSampler = new OctaveSimplexNoiseSampler(new java.util.Random(world.getSeed() * 39811L), 4);
+            weirdnessSampler = new OctaveSimplexNoiseSampler(new java.util.Random(world.getSeed() * 543321L), 2);
         }
 
         public virtual Biome getBiome(ChunkPos chunkPos)

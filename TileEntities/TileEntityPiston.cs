@@ -4,7 +4,7 @@ using betareborn.NBT;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntityPiston : TileEntity
+    public class TileEntityPiston : BlockEntity
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(TileEntityPiston).TypeHandle);
 

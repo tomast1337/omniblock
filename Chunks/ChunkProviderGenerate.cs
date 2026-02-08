@@ -243,7 +243,7 @@ namespace betareborn.Chunks
             generateTerrain(var1, var2, var3, biomesForGeneration, var5);
             replaceBlocksForBiome(var1, var2, var3, biomesForGeneration);
             field_902_u.func_867_a(this, worldObj, var1, var2, var3);
-            var4.func_1024_c();
+            var4.populateHeightMap();
             return var4;
         }
 
@@ -378,10 +378,10 @@ namespace betareborn.Chunks
             int var4 = var2 * 16;
             int var5 = var3 * 16;
             Biome var6 = worldObj.getBiomeSource().getBiome(var4 + 16, var5 + 16);
-            rand.setSeed(worldObj.getRandomSeed());
+            rand.setSeed(worldObj.getSeed());
             long var7 = rand.nextLong() / 2L * 2L + 1L;
             long var9 = rand.nextLong() / 2L * 2L + 1L;
-            rand.setSeed((long)var2 * var7 + (long)var3 * var9 ^ worldObj.getRandomSeed());
+            rand.setSeed((long)var2 * var7 + (long)var3 * var9 ^ worldObj.getSeed());
             double var11 = 0.25D;
             int var13;
             int var14;
@@ -536,7 +536,7 @@ namespace betareborn.Chunks
                 var17 = var5 + rand.nextInt(16) + 8;
                 WorldGenerator var18 = var6.getRandomWorldGenForTrees(rand);
                 var18.func_517_a(1.0D, 1.0D, 1.0D);
-                var18.generate(worldObj, rand, var16, worldObj.getHeightValue(var16, var17), var17);
+                var18.generate(worldObj, rand, var16, worldObj.getTopY(var16, var17), var17);
             }
 
             byte var27 = 0;

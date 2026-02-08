@@ -72,7 +72,7 @@ namespace betareborn
 
                                 if (var14 > 0.0F)
                                 {
-                                    destroyedBlockPositions.add(new ChunkPosition(var22, var23, var24));
+                                    destroyedBlockPositions.add(new BlockPos(var22, var23, var24));
                                 }
 
                                 var15 += var6 * (double)var21;
@@ -123,7 +123,7 @@ namespace betareborn
             {
                 for (int var34 = var32.size() - 1; var34 >= 0; --var34)
                 {
-                    ChunkPosition var35 = (ChunkPosition)var32.get(var34);
+                    BlockPos var35 = (BlockPos)var32.get(var34);
                     int var36 = var35.x;
                     int var37 = var35.y;
                     int var16 = var35.z;
@@ -146,7 +146,7 @@ namespace betareborn
 
             for (int var3 = var2.size() - 1; var3 >= 0; --var3)
             {
-                ChunkPosition var4 = (ChunkPosition)var2.get(var3);
+                BlockPos var4 = (BlockPos)var2.get(var3);
                 int var5 = var4.x;
                 int var6 = var4.y;
                 int var7 = var4.z;

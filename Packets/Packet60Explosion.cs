@@ -32,7 +32,7 @@ namespace betareborn.Packets
                 int var8 = (sbyte)var1.readByte() + var4;
                 int var9 = (sbyte)var1.readByte() + var5;
 
-                this.destroyedBlockPositions.add(new ChunkPosition(var7, var8, var9));
+                this.destroyedBlockPositions.add(new BlockPos(var7, var8, var9));
             }
 
         }
@@ -51,7 +51,7 @@ namespace betareborn.Packets
 
             while (var5.hasNext())
             {
-                ChunkPosition var6 = (ChunkPosition)var5.next();
+                BlockPos var6 = (BlockPos)var5.next();
                 int var7 = var6.x - var2;
                 int var8 = var6.y - var3;
                 int var9 = var6.z - var4;

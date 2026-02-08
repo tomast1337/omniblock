@@ -6,7 +6,7 @@ using betareborn.NBT;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntityFurnace : TileEntity, IInventory
+    public class TileEntityFurnace : BlockEntity, IInventory
     {
         private ItemStack[] inventory = new ItemStack[3];
         public int burnTime = 0;

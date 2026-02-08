@@ -7,7 +7,7 @@ namespace betareborn.TileEntities
     {
         protected TileEntityRenderer tileEntityRenderer;
 
-        public abstract void renderTileEntityAt(TileEntity var1, double var2, double var4, double var6, float var8);
+        public abstract void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8);
 
         protected void bindTextureByName(String var1)
         {

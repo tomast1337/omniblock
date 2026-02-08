@@ -60,7 +60,7 @@ namespace betareborn
                             if (var14)
                             {
                                 Chunk var15 = var1.getChunkFromChunkCoords(var10 >> 4, var11 >> 4);
-                                if (var15.func_21167_h())
+                                if (var15.isEmpty())
                                 {
                                     var14 = false;
                                 }

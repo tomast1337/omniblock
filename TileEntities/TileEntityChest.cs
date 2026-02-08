@@ -4,7 +4,7 @@ using betareborn.NBT;
 
 namespace betareborn.TileEntities
 {
-    public class TileEntityChest : TileEntity, IInventory
+    public class TileEntityChest : BlockEntity, IInventory
     {
         private ItemStack[] inventory = new ItemStack[36];
 

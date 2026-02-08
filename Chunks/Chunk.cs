@@ -7,37 +7,37 @@ namespace betareborn.Chunks
 {
     public class Chunk : java.lang.Object
     {
-        public static bool isLit;
+        public static bool hasSkyLight;
         public byte[] blocks;
-        public bool isChunkLoaded;
-        public World worldObj;
-        public NibbleArray data;
-        public NibbleArray skylightMap;
-        public NibbleArray blocklightMap;
-        public byte[] heightMap;
-        public int lowestBlockHeight;
-        public readonly int xPosition;
-        public readonly int zPosition;
-        public Dictionary<ChunkPosition, TileEntity> chunkTileEntityMap;
+        public bool loaded;
+        public World world;
+        public ChunkNibbleArray meta;
+        public ChunkNibbleArray skyLight;
+        public ChunkNibbleArray blockLight;
+        public byte[] heightmap;
+        public int minHeightmapValue;
+        public readonly int x;
+        public readonly int z;
+        public Dictionary<BlockPos, BlockEntity> blockEntities;
         public List<Entity>[] entities;
-        public bool isTerrainPopulated;
-        public bool isModified;
-        public bool neverSave;
-        public bool hasEntities;
+        public bool terrainPopulated;
+        public bool dirty;
+        public bool empty;
+        public bool lastSaveHadEntities;
         public long lastSaveTime;
 
-        public Chunk(World var1, int var2, int var3)
+        public Chunk(World world, int x, int z)
         {
-            chunkTileEntityMap = [];
+            blockEntities = [];
             entities = new List<Entity>[8];
-            isTerrainPopulated = false;
-            isModified = false;
-            hasEntities = false;
+            terrainPopulated = false;
+            dirty = false;
+            lastSaveHadEntities = false;
             lastSaveTime = 0L;
-            worldObj = var1;
-            xPosition = var2;
-            zPosition = var3;
-            heightMap = new byte[256];
+            this.world = world;
+            this.x = x;
+            this.z = z;
+            heightmap = new byte[256];
 
             for (int var4 = 0; var4 < entities.Length; ++var4)
             {
@@ -46,29 +46,29 @@ namespace betareborn.Chunks
 
         }
 
-        public Chunk(World var1, byte[] var2, int var3, int var4) : this(var1, var3, var4)
+        public Chunk(World world, byte[] blocks, int x, int z) : this(world, x, z)
         {
-            blocks = var2;
-            data = new NibbleArray(var2.Length);
-            skylightMap = new NibbleArray(var2.Length);
-            blocklightMap = new NibbleArray(var2.Length);
+            this.blocks = blocks;
+            meta = new ChunkNibbleArray(blocks.Length);
+            skyLight = new ChunkNibbleArray(blocks.Length);
+            blockLight = new ChunkNibbleArray(blocks.Length);
         }
 
-        public virtual bool isAtLocation(int var1, int var2)
+        public virtual bool chunkPosEquals(int x, int z)
         {
-            return var1 == xPosition && var2 == zPosition;
+            return x == this.x && z == this.z;
         }
 
-        public virtual int getHeightValue(int var1, int var2)
+        public virtual int getHeight(int x, int z)
         {
-            return heightMap[var2 << 4 | var1] & 255;
+            return heightmap[z << 4 | x] & 255;
         }
 
-        public virtual void func_1014_a()
+        public virtual void populateLight()
         {
         }
 
-        public virtual void generateHeightMap()
+        public virtual void populateHeightMapOnly()
         {
             int var1 = 127;
 
@@ -82,7 +82,7 @@ namespace betareborn.Chunks
                     {
                     }
 
-                    heightMap[var3 << 4 | var2] = (byte)var4;
+                    heightmap[var3 << 4 | var2] = (byte)var4;
                     if (var4 < var1)
                     {
                         var1 = var4;
@@ -90,11 +90,11 @@ namespace betareborn.Chunks
                 }
             }
 
-            lowestBlockHeight = var1;
-            isModified = true;
+            minHeightmapValue = var1;
+            dirty = true;
         }
 
-        public virtual void func_1024_c()
+        public virtual void populateHeightMap()
         {
             int var1 = 127;
 
@@ -111,13 +111,13 @@ namespace betareborn.Chunks
                     {
                     }
 
-                    heightMap[var3 << 4 | var2] = (byte)var4;
+                    heightmap[var3 << 4 | var2] = (byte)var4;
                     if (var4 < var1)
                     {
                         var1 = var4;
                     }
 
-                    if (!worldObj.dimension.hasNoSky)
+                    if (!world.dimension.hasNoSky)
                     {
                         int var6 = 15;
                         int var7 = 127;
@@ -127,7 +127,7 @@ namespace betareborn.Chunks
                             var6 -= Block.BLOCK_LIGHT_OPACITY[blocks[var5 + var7] & 255];
                             if (var6 > 0)
                             {
-                                skylightMap.setNibble(var2, var7, var3, var6);
+                                skyLight.setNibble(var2, var7, var3, var6);
                             }
 
                             --var7;
@@ -136,73 +136,73 @@ namespace betareborn.Chunks
                 }
             }
 
-            lowestBlockHeight = var1;
+            minHeightmapValue = var1;
 
             for (var2 = 0; var2 < 16; ++var2)
             {
                 for (var3 = 0; var3 < 16; ++var3)
                 {
-                    func_996_c(var2, var3);
+                    lightGaps(var2, var3);
                 }
             }
 
-            isModified = true;
+            dirty = true;
         }
 
-        public virtual void func_4143_d()
+        public virtual void populateBlockLight()
         {
         }
 
-        private void func_996_c(int var1, int var2)
+        private void lightGaps(int x, int z)
         {
-            int var3 = getHeightValue(var1, var2);
-            int var4 = xPosition * 16 + var1;
-            int var5 = zPosition * 16 + var2;
-            func_1020_f(var4 - 1, var5, var3);
-            func_1020_f(var4 + 1, var5, var3);
-            func_1020_f(var4, var5 - 1, var3);
-            func_1020_f(var4, var5 + 1, var3);
+            int var3 = getHeight(x, z);
+            int var4 = this.x * 16 + x;
+            int var5 = this.z * 16 + z;
+            lightGap(var4 - 1, var5, var3);
+            lightGap(var4 + 1, var5, var3);
+            lightGap(var4, var5 - 1, var3);
+            lightGap(var4, var5 + 1, var3);
         }
 
-        private void func_1020_f(int var1, int var2, int var3)
+        private void lightGap(int x, int y, int z)
         {
-            int var4 = worldObj.getHeightValue(var1, var2);
-            if (var4 > var3)
+            int var4 = world.getTopY(x, y);
+            if (var4 > z)
             {
-                worldObj.scheduleLightingUpdate(LightType.Sky, var1, var3, var2, var1, var4, var2);
-                isModified = true;
+                world.queueLightUpdate(LightType.Sky, x, z, y, x, var4, y);
+                dirty = true;
             }
-            else if (var4 < var3)
+            else if (var4 < z)
             {
-                worldObj.scheduleLightingUpdate(LightType.Sky, var1, var4, var2, var1, var3, var2);
-                isModified = true;
+                world.queueLightUpdate(LightType.Sky, x, var4, y, x, z, y);
+                dirty = true;
             }
 
         }
 
-        private void func_1003_g(int var1, int var2, int var3)
+        private void updateHeightMap(int localX, int y, int localZ)
         {
-            int var4 = heightMap[var3 << 4 | var1] & 255;
+            int var4 = heightmap[localZ << 4 | localX] & 255;
             int var5 = var4;
-            if (var2 > var4)
+            if (y > var4)
             {
-                var5 = var2;
+                var5 = y;
             }
 
-            for (int var6 = var1 << 11 | var3 << 7; var5 > 0 && Block.BLOCK_LIGHT_OPACITY[blocks[var6 + var5 - 1] & 255] == 0; --var5)
+            for (int var6 = localX << 11 | localZ << 7; var5 > 0 && Block.BLOCK_LIGHT_OPACITY[blocks[var6 + var5 - 1] & 255] == 0; --var5)
             {
             }
 
             if (var5 != var4)
             {
-                worldObj.markBlocksDirtyVertical(var1, var3, var5, var4);
-                heightMap[var3 << 4 | var1] = (byte)var5;
+                world.markBlocksDirtyVertical(localX, localZ, var5, var4);
+                heightmap[localZ << 4 | localX] = (byte)var5;
                 int var7;
                 int var8;
                 int var9;
-                if (var5 < lowestBlockHeight)
+                if (var5 < minHeightmapValue)
                 {
-                    lowestBlockHeight = var5;
+                    minHeightmapValue = var5;
                 }
                 else
                 {
@@ -212,42 +212,42 @@ namespace betareborn.Chunks
                     {
                         for (var9 = 0; var9 < 16; ++var9)
                         {
-                            if ((heightMap[var9 << 4 | var8] & 255) < var7)
+                            if ((heightmap[var9 << 4 | var8] & 255) < var7)
                             {
-                                var7 = heightMap[var9 << 4 | var8] & 255;
+                                var7 = heightmap[var9 << 4 | var8] & 255;
                             }
                         }
                     }
 
-                    lowestBlockHeight = var7;
+                    minHeightmapValue = var7;
                 }
 
-                var7 = xPosition * 16 + var1;
-                var8 = zPosition * 16 + var3;
+                var7 = x * 16 + localX;
+                var8 = z * 16 + localZ;
                 if (var5 < var4)
                 {
                     for (var9 = var5; var9 < var4; ++var9)
                     {
-                        skylightMap.setNibble(var1, var9, var3, 15);
+                        skyLight.setNibble(localX, var9, localZ, 15);
                     }
                 }
                 else
                 {
-                    worldObj.scheduleLightingUpdate(LightType.Sky, var7, var4, var8, var7, var5, var8);
+                    world.queueLightUpdate(LightType.Sky, var7, var4, var8, var7, var5, var8);
 
                     for (var9 = var4; var9 < var5; ++var9)
                     {
-                        skylightMap.setNibble(var1, var9, var3, 0);
+                        skyLight.setNibble(localX, var9, localZ, 0);
                     }
                 }
 
                 var9 = 15;
 
                 int var10;
-                for (var10 = var5; var5 > 0 && var9 > 0; skylightMap.setNibble(var1, var5, var3, var9))
+                for (var10 = var5; var5 > 0 && var9 > 0; skyLight.setNibble(localX, var5, localZ, var9))
                 {
                     --var5;
-                    int var11 = Block.BLOCK_LIGHT_OPACITY[getBlockID(var1, var5, var3)];
+                    int var11 = Block.BLOCK_LIGHT_OPACITY[getBlockID(localX, var5, localZ)];
                     if (var11 == 0)
                     {
                         var11 = 1;
@@ -260,165 +260,165 @@ namespace betareborn.Chunks
                     }
                 }
 
-                while (var5 > 0 && Block.BLOCK_LIGHT_OPACITY[getBlockID(var1, var5 - 1, var3)] == 0)
+                while (var5 > 0 && Block.BLOCK_LIGHT_OPACITY[getBlockID(localX, var5 - 1, localZ)] == 0)
                 {
                     --var5;
                 }
 
                 if (var5 != var10)
                 {
-                    worldObj.scheduleLightingUpdate(LightType.Sky, var7 - 1, var5, var8 - 1, var7 + 1, var10, var8 + 1);
+                    world.queueLightUpdate(LightType.Sky, var7 - 1, var5, var8 - 1, var7 + 1, var10, var8 + 1);
                 }
 
-                isModified = true;
+                dirty = true;
             }
         }
 
-        public virtual int getBlockID(int var1, int var2, int var3)
+        public virtual int getBlockID(int x, int y, int z)
         {
-            return blocks[var1 << 11 | var3 << 7 | var2] & 255;
+            return blocks[x << 11 | z << 7 | y] & 255;
         }
 
-        public virtual bool setBlockIDWithMetadata(int var1, int var2, int var3, int var4, int var5)
+        public virtual bool setBlock(int x, int y, int z, int rawId, int meta)
         {
-            byte var6 = (byte)var4;
-            int var7 = heightMap[var3 << 4 | var1] & 255;
-            int var8 = blocks[var1 << 11 | var3 << 7 | var2] & 255;
-            if (var8 == var4 && data.getNibble(var1, var2, var3) == var5)
+            byte var6 = (byte)rawId;
+            int var7 = heightmap[z << 4 | x] & 255;
+            int var8 = blocks[x << 11 | z << 7 | y] & 255;
+            if (var8 == rawId && this.meta.getNibble(x, y, z) == meta)
             {
                 return false;
             }
             else
             {
-                int var9 = xPosition * 16 + var1;
-                int var10 = zPosition * 16 + var3;
-                blocks[var1 << 11 | var3 << 7 | var2] = (byte)(var6 & 255);
-                if (var8 != 0 && !worldObj.isRemote)
+                int var9 = this.x * 16 + x;
+                int var10 = this.z * 16 + z;
+                blocks[x << 11 | z << 7 | y] = (byte)(var6 & 255);
+                if (var8 != 0 && !world.isRemote)
                 {
-                    Block.BLOCKS[var8].onBreak(worldObj, var9, var2, var10);
+                    Block.BLOCKS[var8].onBreak(world, var9, y, var10);
                 }
 
-                data.setNibble(var1, var2, var3, var5);
-                if (!worldObj.dimension.hasNoSky)
+                this.meta.setNibble(x, y, z, meta);
+                if (!world.dimension.hasNoSky)
                 {
                     if (Block.BLOCK_LIGHT_OPACITY[var6 & 255] != 0)
                     {
-                        if (var2 >= var7)
+                        if (y >= var7)
                         {
-                            func_1003_g(var1, var2 + 1, var3);
+                            updateHeightMap(x, y + 1, z);
                         }
                     }
-                    else if (var2 == var7 - 1)
+                    else if (y == var7 - 1)
                     {
-                        func_1003_g(var1, var2, var3);
+                        updateHeightMap(x, y, z);
                     }
 
-                    worldObj.scheduleLightingUpdate(LightType.Sky, var9, var2, var10, var9, var2, var10);
+                    world.queueLightUpdate(LightType.Sky, var9, y, var10, var9, y, var10);
                 }
 
-                worldObj.scheduleLightingUpdate(LightType.Block, var9, var2, var10, var9, var2, var10);
-                func_996_c(var1, var3);
-                data.setNibble(var1, var2, var3, var5);
-                if (var4 != 0)
+                world.queueLightUpdate(LightType.Block, var9, y, var10, var9, y, var10);
+                lightGaps(x, z);
+                this.meta.setNibble(x, y, z, meta);
+                if (rawId != 0)
                 {
-                    Block.BLOCKS[var4].onPlaced(worldObj, var9, var2, var10);
+                    Block.BLOCKS[rawId].onPlaced(world, var9, y, var10);
                 }
 
-                isModified = true;
+                dirty = true;
                 return true;
             }
         }
 
-        public virtual bool setBlockID(int var1, int var2, int var3, int var4)
+        public virtual bool setBlock(int x, int y, int z, int rawId)
         {
-            byte var5 = (byte)var4;
-            int var6 = heightMap[var3 << 4 | var1] & 255;
-            int var7 = blocks[var1 << 11 | var3 << 7 | var2] & 255;
-            if (var7 == var4)
+            byte var5 = (byte)rawId;
+            int var6 = heightmap[z << 4 | x] & 255;
+            int var7 = blocks[x << 11 | z << 7 | y] & 255;
+            if (var7 == rawId)
             {
                 return false;
             }
             else
             {
-                int var8 = xPosition * 16 + var1;
-                int var9 = zPosition * 16 + var3;
-                blocks[var1 << 11 | var3 << 7 | var2] = (byte)(var5 & 255);
+                int var8 = this.x * 16 + x;
+                int var9 = this.z * 16 + z;
+                blocks[x << 11 | z << 7 | y] = (byte)(var5 & 255);
                 if (var7 != 0)
                 {
-                    Block.BLOCKS[var7].onBreak(worldObj, var8, var2, var9);
+                    Block.BLOCKS[var7].onBreak(world, var8, y, var9);
                 }
 
-                data.setNibble(var1, var2, var3, 0);
+                meta.setNibble(x, y, z, 0);
                 if (Block.BLOCK_LIGHT_OPACITY[var5 & 255] != 0)
                 {
-                    if (var2 >= var6)
+                    if (y >= var6)
                     {
-                        func_1003_g(var1, var2 + 1, var3);
+                        updateHeightMap(x, y + 1, z);
                     }
                 }
-                else if (var2 == var6 - 1)
+                else if (y == var6 - 1)
                 {
-                    func_1003_g(var1, var2, var3);
+                    updateHeightMap(x, y, z);
                 }
 
-                worldObj.scheduleLightingUpdate(LightType.Sky, var8, var2, var9, var8, var2, var9);
-                worldObj.scheduleLightingUpdate(LightType.Block, var8, var2, var9, var8, var2, var9);
-                func_996_c(var1, var3);
-                if (var4 != 0 && !worldObj.isRemote)
+                world.queueLightUpdate(LightType.Sky, var8, y, var9, var8, y, var9);
+                world.queueLightUpdate(LightType.Block, var8, y, var9, var8, y, var9);
+                lightGaps(x, z);
+                if (rawId != 0 && !world.isRemote)
                 {
-                    Block.BLOCKS[var4].onPlaced(worldObj, var8, var2, var9);
+                    Block.BLOCKS[rawId].onPlaced(world, var8, y, var9);
                 }
 
-                isModified = true;
+                dirty = true;
                 return true;
             }
         }
 
-        public virtual int getBlockMetadata(int var1, int var2, int var3)
+        public virtual int getBlockMeta(int x, int y, int z)
         {
-            return data.getNibble(var1, var2, var3);
+            return meta.getNibble(x, y, z);
         }
 
-        public virtual void setBlockMetadata(int var1, int var2, int var3, int var4)
+        public virtual void setBlockMeta(int x, int y, int z, int meta)
         {
-            isModified = true;
-            data.setNibble(var1, var2, var3, var4);
+            dirty = true;
+            this.meta.setNibble(x, y, z, meta);
         }
 
-        public virtual int getSavedLightValue(LightType var1, int var2, int var3, int var4)
+        public virtual int getLight(LightType lightType, int x, int y, int z)
         {
-            return var1 == LightType.Sky ? skylightMap.getNibble(var2, var3, var4) : (var1 == LightType.Block ? blocklightMap.getNibble(var2, var3, var4) : 0);
+            return lightType == LightType.Sky ? skyLight.getNibble(x, y, z) : (lightType == LightType.Block ? blockLight.getNibble(x, y, z) : 0);
         }
 
-        public virtual void setLightValue(LightType var1, int var2, int var3, int var4, int var5)
+        public virtual void setLight(LightType lightType, int x, int y, int z, int value)
         {
-            isModified = true;
-            if (var1 == LightType.Sky)
+            dirty = true;
+            if (lightType == LightType.Sky)
             {
-                skylightMap.setNibble(var2, var3, var4, var5);
+                skyLight.setNibble(x, y, z, value);
             }
             else
             {
-                if (var1 != LightType.Block)
+                if (lightType != LightType.Block)
                 {
                     return;
                 }
 
-                blocklightMap.setNibble(var2, var3, var4, var5);
+                blockLight.setNibble(x, y, z, value);
             }
 
         }
 
-        public virtual int getBlockLightValue(int var1, int var2, int var3, int var4)
+        public virtual int getLight(int x, int y, int z, int ambientDarkness)
         {
-            int var5 = skylightMap.getNibble(var1, var2, var3);
+            int var5 = skyLight.getNibble(x, y, z);
             if (var5 > 0)
             {
-                isLit = true;
+                hasSkyLight = true;
             }
 
-            var5 -= var4;
-            int var6 = blocklightMap.getNibble(var1, var2, var3);
+            var5 -= ambientDarkness;
+            int var6 = blockLight.getNibble(x, y, z);
             if (var6 > var5)
             {
                 var5 = var6;
@@ -427,18 +427,18 @@ namespace betareborn.Chunks
             return var5;
         }
 
-        public virtual void addEntity(Entity var1)
+        public virtual void addEntity(Entity entity)
         {
-            hasEntities = true;
-            int var2 = MathHelper.floor_double(var1.posX / 16.0D);
-            int var3 = MathHelper.floor_double(var1.posZ / 16.0D);
-            if (var2 != xPosition || var3 != zPosition)
+            lastSaveHadEntities = true;
+            int var2 = MathHelper.floor_double(entity.posX / 16.0D);
+            int var3 = MathHelper.floor_double(entity.posZ / 16.0D);
+            if (var2 != x || var3 != z)
             {
-                java.lang.System.@out.println("Wrong location! " + var1);
+                java.lang.System.@out.println("Wrong location! " + entity);
                 java.lang.Thread.dumpStack();
             }
 
-            int var4 = MathHelper.floor_double(var1.posY / 16.0D);
+            int var4 = MathHelper.floor_double(entity.posY / 16.0D);
             if (var4 < 0)
             {
                 var4 = 0;
@@ -449,60 +449,58 @@ namespace betareborn.Chunks
                 var4 = entities.Length - 1;
             }
 
-            var1.addedToChunk = true;
-            var1.chunkCoordX = xPosition;
-            var1.chunkCoordY = var4;
-            var1.chunkCoordZ = zPosition;
-            entities[var4].Add(var1);
+            entity.addedToChunk = true;
+            entity.chunkCoordX = x;
+            entity.chunkCoordY = var4;
+            entity.chunkCoordZ = z;
+            entities[var4].Add(entity);
         }
 
-        public virtual void removeEntity(Entity var1)
+        public virtual void removeEntity(Entity entity)
         {
-            removeEntityAtIndex(var1, var1.chunkCoordY);
+            removeEntity(entity, entity.chunkCoordY);
         }
 
-        public virtual void removeEntityAtIndex(Entity var1, int var2)
+        public virtual void removeEntity(Entity entity, int chunkSlice)
         {
-            if (var2 < 0)
+            if (chunkSlice < 0)
             {
-                var2 = 0;
+                chunkSlice = 0;
             }
 
-            if (var2 >= entities.Length)
+            if (chunkSlice >= entities.Length)
             {
-                var2 = entities.Length - 1;
+                chunkSlice = entities.Length - 1;
             }
 
-            entities[var2].Remove(var1);
+            entities[chunkSlice].Remove(entity);
         }
 
-        public virtual bool canBlockSeeTheSky(int var1, int var2, int var3)
+        public virtual bool isAboveMaxHeight(int x, int y, int z)
         {
-            return var2 >= (heightMap[var3 << 4 | var1] & 255);
+            return y >= (heightmap[z << 4 | x] & 255);
         }
 
-        public virtual TileEntity getChunkBlockTileEntity(int var1, int var2, int var3)
+        public virtual BlockEntity getBlockEntity(int x, int y, int z)
         {
-            ChunkPosition var4 = new(var1, var2, var3);
-            chunkTileEntityMap.TryGetValue(var4, out TileEntity? var5);
-            //TileEntity? var5 = (TileEntity)chunkTileEntityMap.get(var4);
+            BlockPos var4 = new(x, y, z);
+            blockEntities.TryGetValue(var4, out BlockEntity? var5);
             if (var5 == null)
             {
-                int var6 = getBlockID(var1, var2, var3);
+                int var6 = getBlockID(x, y, z);
                 if (!Block.BLOCKS_WITH_ENTITY[var6])
                 {
                     return null;
                 }
 
-                BlockContainer var7 = (BlockContainer)Block.BLOCKS[var6];
-                var7.onPlaced(worldObj, xPosition * 16 + var1, var2, zPosition * 16 + var3);
-                //var5 = (TileEntity)chunkTileEntityMap.get(var4);
-                chunkTileEntityMap.TryGetValue(var4, out var5);
+                BlockWithEntity var7 = (BlockWithEntity)Block.BLOCKS[var6];
+                var7.onPlaced(world, this.x * 16 + x, y, this.z * 16 + z);
+                blockEntities.TryGetValue(var4, out var5);
             }
 
             if (var5 != null && var5.isRemoved())
             {
-                chunkTileEntityMap.Remove(var4);
+                blockEntities.Remove(var4);
                 return null;
             }
             else
@@ -511,30 +509,30 @@ namespace betareborn.Chunks
             }
         }
 
-        public virtual void addTileEntity(TileEntity var1)
+        public virtual void addBlockEntity(BlockEntity blockEntity)
         {
-            int var2 = var1.x - xPosition * 16;
-            int var3 = var1.y;
-            int var4 = var1.z - zPosition * 16;
-            setChunkBlockTileEntity(var2, var3, var4, var1);
-            if (isChunkLoaded)
+            int var2 = blockEntity.x - x * 16;
+            int var3 = blockEntity.y;
+            int var4 = blockEntity.z - z * 16;
+            setBlockEntity(var2, var3, var4, blockEntity);
+            if (loaded)
             {
-                worldObj.loadedTileEntityList.Add(var1);
+                world.loadedTileEntityList.Add(blockEntity);
             }
 
         }
 
-        public virtual void setChunkBlockTileEntity(int var1, int var2, int var3, TileEntity var4)
+        public virtual void setBlockEntity(int x, int y, int z, BlockEntity blockEntity)
         {
-            ChunkPosition var5 = new(var1, var2, var3);
-            var4.world = worldObj;
-            var4.x = xPosition * 16 + var1;
-            var4.y = var2;
-            var4.z = zPosition * 16 + var3;
-            if (getBlockID(var1, var2, var3) != 0 && Block.BLOCKS[getBlockID(var1, var2, var3)] is BlockContainer)
+            BlockPos var5 = new(x, y, z);
+            blockEntity.world = world;
+            blockEntity.x = this.x * 16 + x;
+            blockEntity.y = y;
+            blockEntity.z = this.z * 16 + z;
+            if (getBlockID(x, y, z) != 0 && Block.BLOCKS[getBlockID(x, y, z)] is BlockWithEntity)
             {
-                var4.cancelRemoval();
-                chunkTileEntityMap[var5] = var4;
+                blockEntity.cancelRemoval();
+                blockEntities[var5] = blockEntity;
             }
             else
             {
@@ -542,66 +540,58 @@ namespace betareborn.Chunks
             }
         }
 
-        public virtual void removeChunkBlockTileEntity(int var1, int var2, int var3)
+        public virtual void removeBlockEntityAt(int localX, int y, int localZ)
         {
-            ChunkPosition var4 = new(var1, var2, var3);
-            if (isChunkLoaded)
+            BlockPos var4 = new(localX, y, localZ);
+            if (loaded)
             {
-                chunkTileEntityMap.TryGetValue(var4, out TileEntity? var5);
-                //TileEntity var5 = chunkTileEntityMap.Remove(var4);
+                blockEntities.TryGetValue(var4, out BlockEntity? var5);
                 if (var5 != null)
                 {
-                    chunkTileEntityMap.Remove(var4);
+                    blockEntities.Remove(var4);
                     var5.markRemoved();
                 }
             }
 
         }
 
-        public virtual void onChunkLoad()
+        public virtual void load()
         {
-            isChunkLoaded = true;
-            worldObj.func_31054_a(chunkTileEntityMap.Values);
+            loaded = true;
+            world.processBlockUpdates(blockEntities.Values);
 
             for (int var1 = 0; var1 < entities.Length; ++var1)
             {
-                worldObj.func_636_a(entities[var1]);
+                world.addEntities(entities[var1]);
             }
 
         }
 
-        public virtual void onChunkUnload()
+        public virtual void unload()
         {
-            isChunkLoaded = false;
-            //Iterator var1 = chunkTileEntityMap.values().iterator();
+            loaded = false;
 
-            //while (var1.hasNext())
-            //{
-            //    TileEntity var2 = (TileEntity)var1.next();
-            //    var2.func_31005_i();
-            //}
-
-            foreach (var var2 in chunkTileEntityMap.Values)
+            foreach (var var2 in blockEntities.Values)
             {
                 var2.markRemoved();
             }
 
             for (int var3 = 0; var3 < entities.Length; ++var3)
             {
-                worldObj.func_632_b(entities[var3]);
+                world.unloadEntities(entities[var3]);
             }
 
         }
 
-        public virtual void setChunkModified()
+        public virtual void markDirty()
         {
-            isModified = true;
+            dirty = true;
         }
 
-        public virtual void getEntitiesWithinAABBForEntity(Entity var1, Box var2, List<Entity> var3)
+        public virtual void collectOtherEntities(Entity except, Box box, List<Entity> result)
         {
-            int var4 = MathHelper.floor_double((var2.minY - 2.0D) / 16.0D);
-            int var5 = MathHelper.floor_double((var2.maxY + 2.0D) / 16.0D);
+            int var4 = MathHelper.floor_double((box.minY - 2.0D) / 16.0D);
+            int var5 = MathHelper.floor_double((box.maxY + 2.0D) / 16.0D);
             if (var4 < 0)
             {
                 var4 = 0;
@@ -619,19 +609,19 @@ namespace betareborn.Chunks
                 for (int var8 = 0; var8 < var7.Count; ++var8)
                 {
                     Entity var9 = var7[var8];
-                    if (var9 != var1 && var9.boundingBox.intersects(var2))
+                    if (var9 != except && var9.boundingBox.intersects(box))
                     {
-                        var3.Add(var9);
+                        result.Add(var9);
                     }
                 }
             }
 
         }
 
-        public virtual void getEntitiesOfTypeWithinAAAB(java.lang.Class var1, Box var2, List<Entity> var3)
+        public virtual void collectEntitiesByClass(java.lang.Class entityClass, Box box, List<Entity> result)
         {
-            int var4 = MathHelper.floor_double((var2.minY - 2.0D) / 16.0D);
-            int var5 = MathHelper.floor_double((var2.maxY + 2.0D) / 16.0D);
+            int var4 = MathHelper.floor_double((box.minY - 2.0D) / 16.0D);
+            int var5 = MathHelper.floor_double((box.maxY + 2.0D) / 16.0D);
             if (var4 < 0)
             {
                 var4 = 0;
@@ -649,107 +639,173 @@ namespace betareborn.Chunks
                 for (int var8 = 0; var8 < var7.Count; ++var8)
                 {
                     Entity var9 = var7[var8];
-                    if (var1.isAssignableFrom(var9.getClass()) && var9.boundingBox.intersects(var2))
+                    if (entityClass.isAssignableFrom(var9.getClass()) && var9.boundingBox.intersects(box))
                     {
-                        var3.Add(var9);
+                        result.Add(var9);
                     }
                 }
             }
 
         }
 
-        public virtual bool needsSaving(bool var1)
+        public virtual bool shouldSave(bool saveEntities)
         {
-            if (neverSave)
+            if (empty)
             {
                 return false;
             }
             else
             {
-                if (var1)
+                if (saveEntities)
                 {
-                    if (hasEntities && worldObj.getWorldTime() != lastSaveTime)
+                    if (lastSaveHadEntities && world.getWorldTime() != lastSaveTime)
                     {
                         return true;
                     }
                 }
-                else if (hasEntities && worldObj.getWorldTime() >= lastSaveTime + 600L)
+                else if (lastSaveHadEntities && world.getWorldTime() >= lastSaveTime + 600L)
                 {
                     return true;
                 }
 
-                return isModified;
+                return dirty;
             }
         }
 
-        public virtual int setChunkData(byte[] var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8)
+        public virtual int loadFromPacket(byte[] bytes, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int offset)
         {
             int var9;
             int var10;
             int var11;
             int var12;
-            for (var9 = var2; var9 < var5; ++var9)
+            for (var9 = minX; var9 < maxX; ++var9)
             {
-                for (var10 = var4; var10 < var7; ++var10)
+                for (var10 = minZ; var10 < maxZ; ++var10)
                 {
-                    var11 = var9 << 11 | var10 << 7 | var3;
-                    var12 = var6 - var3;
-                    java.lang.System.arraycopy(var1, var8, blocks, var11, var12);
-                    var8 += var12;
+                    var11 = var9 << 11 | var10 << 7 | minY;
+                    var12 = maxY - minY;
+                    Buffer.BlockCopy(bytes, offset, blocks, var11, var12);
+                    offset += var12;
                 }
             }
 
-            generateHeightMap();
+            populateHeightMapOnly();
 
-            for (var9 = var2; var9 < var5; ++var9)
+            for (var9 = minX; var9 < maxX; ++var9)
             {
-                for (var10 = var4; var10 < var7; ++var10)
+                for (var10 = minZ; var10 < maxZ; ++var10)
                 {
-                    var11 = (var9 << 11 | var10 << 7 | var3) >> 1;
-                    var12 = (var6 - var3) / 2;
-                    java.lang.System.arraycopy(var1, var8, data.data, var11, var12);
-                    var8 += var12;
+                    var11 = (var9 << 11 | var10 << 7 | minY) >> 1;
+                    var12 = (maxY - minY) / 2;
+                    Buffer.BlockCopy(bytes, offset, meta.bytes, var11, var12);
+                    offset += var12;
                 }
             }
 
-            for (var9 = var2; var9 < var5; ++var9)
+            for (var9 = minX; var9 < maxX; ++var9)
             {
-                for (var10 = var4; var10 < var7; ++var10)
+                for (var10 = minZ; var10 < maxZ; ++var10)
                 {
-                    var11 = (var9 << 11 | var10 << 7 | var3) >> 1;
-                    var12 = (var6 - var3) / 2;
-                    java.lang.System.arraycopy(var1, var8, blocklightMap.data, var11, var12);
-                    var8 += var12;
+                    var11 = (var9 << 11 | var10 << 7 | minY) >> 1;
+                    var12 = (maxY - minY) / 2;
+                    Buffer.BlockCopy(bytes, offset, blockLight.bytes, var11, var12);
+                    offset += var12;
                 }
             }
 
-            for (var9 = var2; var9 < var5; ++var9)
+            for (var9 = minX; var9 < maxX; ++var9)
             {
-                for (var10 = var4; var10 < var7; ++var10)
+                for (var10 = minZ; var10 < maxZ; ++var10)
                 {
-                    var11 = (var9 << 11 | var10 << 7 | var3) >> 1;
-                    var12 = (var6 - var3) / 2;
-                    java.lang.System.arraycopy(var1, var8, skylightMap.data, var11, var12);
-                    var8 += var12;
+                    var11 = (var9 << 11 | var10 << 7 | minY) >> 1;
+                    var12 = (maxY - minY) / 2;
+                    Buffer.BlockCopy(bytes, offset, skyLight.bytes, var11, var12);
+                    offset += var12;
                 }
             }
 
-            return var8;
+            return offset;
         }
 
-        public virtual java.util.Random func_997_a(long var1)
+        public int toPacket(byte[] bytes, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int offset)
         {
-            return new java.util.Random(worldObj.getRandomSeed() + (long)(xPosition * xPosition * 4987142) + (long)(xPosition * 5947611) + (long)(zPosition * zPosition) * 4392871L + (long)(zPosition * 389711) ^ var1);
+            int var9 = maxX - minX;
+            int var10 = maxY - minY;
+            int var11 = maxZ - minZ;
+            if (var9 * var10 * var11 == blocks.Length)
+            {
+                Buffer.BlockCopy(blocks, 0, bytes, offset, blocks.Length);
+                offset += blocks.Length;
+                Buffer.BlockCopy(meta.bytes, 0, bytes, offset, meta.bytes.Length);
+                offset += meta.bytes.Length;
+                Buffer.BlockCopy(blockLight.bytes, 0, bytes, offset, blockLight.bytes.Length);
+                offset += blockLight.bytes.Length;
+                Buffer.BlockCopy(skyLight.bytes, 0, bytes, offset, skyLight.bytes.Length);
+                return offset + skyLight.bytes.Length;
+            }
+            else
+            {
+                for (int var12 = minX; var12 < maxX; var12++)
+                {
+                    for (int var13 = minZ; var13 < maxZ; var13++)
+                    {
+                        int var14 = var12 << 11 | var13 << 7 | minY;
+                        int var15 = maxY - minY;
+                        Buffer.BlockCopy(blocks, var14, bytes, offset, var15);
+                        offset += var15;
+                    }
+                }
+
+                for (int var19 = minX; var19 < maxX; var19++)
+                {
+                    for (int var22 = minZ; var22 < maxZ; var22++)
+                    {
+                        int var25 = (var19 << 11 | var22 << 7 | minY) >> 1;
+                        int var28 = (maxY - minY) / 2;
+                        Buffer.BlockCopy(meta.bytes, var25, bytes, offset, var28);
+                        offset += var28;
+                    }
+                }
+
+                for (int var20 = minX; var20 < maxX; var20++)
+                {
+                    for (int var23 = minZ; var23 < maxZ; var23++)
+                    {
+                        int var26 = (var20 << 11 | var23 << 7 | minY) >> 1;
+                        int var29 = (maxY - minY) / 2;
+                        Buffer.BlockCopy(blockLight.bytes, var26, bytes, offset, var29);
+                        offset += var29;
+                    }
+                }
+
+                for (int var21 = minX; var21 < maxX; var21++)
+                {
+                    for (int var24 = minZ; var24 < maxZ; var24++)
+                    {
+                        int var27 = (var21 << 11 | var24 << 7 | minY) >> 1;
+                        int var30 = (maxY - minY) / 2;
+                        Buffer.BlockCopy(skyLight.bytes, var27, bytes, offset, var30);
+                        offset += var30;
+                    }
+                }
+
+                return offset;
+            }
         }
 
-        public virtual bool func_21167_h()
+        public virtual java.util.Random getSlimeRandom(long scrambler)
+        {
+            return new java.util.Random(world.getSeed() + (long)(x * x * 4987142) + (long)(x * 5947611) + (long)(z * z) * 4392871L + (long)(z * 389711) ^ scrambler);
+        }
+
+        public virtual bool isEmpty()
         {
             return false;
         }
 
-        public void func_25124_i()
+        public void fill()
         {
-            ChunkBlockMap.func_26002_a(blocks);
+            BlockSource.fill(blocks);
         }
     }
 }

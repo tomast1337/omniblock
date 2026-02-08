@@ -61,11 +61,11 @@ namespace betareborn.Chunks
             }
         }
 
-        public TileEntity getBlockTileEntity(int var1, int var2, int var3)
+        public BlockEntity getBlockTileEntity(int var1, int var2, int var3)
         {
             int var4 = (var1 >> 4) - chunkX;
             int var5 = (var3 >> 4) - chunkZ;
-            return chunkArray[var4][var5].getChunkBlockTileEntity(var1 & 15, var2, var3 & 15);
+            return chunkArray[var4][var5].getBlockEntity(var1 & 15, var2, var3 & 15);
         }
 
         public float getNaturalBrightness(int var1, int var2, int var3, int var4)
@@ -147,7 +147,7 @@ namespace betareborn.Chunks
                 {
                     var5 = (var1 >> 4) - chunkX;
                     var6 = (var3 >> 4) - chunkZ;
-                    return chunkArray[var5][var6].getBlockLightValue(var1 & 15, var2, var3 & 15, worldObj.skylightSubtracted);
+                    return chunkArray[var5][var6].getLight(var1 & 15, var2, var3 & 15, worldObj.skylightSubtracted);
                 }
             }
             else
@@ -170,7 +170,7 @@ namespace betareborn.Chunks
             {
                 int var4 = (var1 >> 4) - chunkX;
                 int var5 = (var3 >> 4) - chunkZ;
-                return chunkArray[var4][var5].getBlockMetadata(var1 & 15, var2, var3 & 15);
+                return chunkArray[var4][var5].getBlockMeta(var1 & 15, var2, var3 & 15);
             }
         }
 

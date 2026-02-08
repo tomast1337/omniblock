@@ -21,7 +21,7 @@ namespace betareborn
 
         void playRecord(string var1, int var2, int var3, int var4);
 
-        void doNothingWithTileEntity(int var1, int var2, int var3, TileEntity var4);
+        void doNothingWithTileEntity(int var1, int var2, int var3, BlockEntity var4);
 
         void func_28136_a(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6);
     }

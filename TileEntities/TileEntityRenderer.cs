@@ -41,7 +41,7 @@ namespace betareborn.TileEntities
         public TileEntitySpecialRenderer getSpecialRendererForClass(Class var1)
         {
             TileEntitySpecialRenderer var2 = (TileEntitySpecialRenderer)specialRendererMap.get(var1);
-            if (var2 == null && var1 != TileEntity.Class)
+            if (var2 == null && var1 != BlockEntity.Class)
             {
                 var2 = getSpecialRendererForClass(var1.getSuperclass());
                 specialRendererMap.put(var1, var2);
@@ -50,12 +50,12 @@ namespace betareborn.TileEntities
             return var2;
         }
 
-        public bool hasSpecialRenderer(TileEntity var1)
+        public bool hasSpecialRenderer(BlockEntity var1)
         {
             return getSpecialRendererForEntity(var1) != null;
         }
 
-        public TileEntitySpecialRenderer getSpecialRendererForEntity(TileEntity var1)
+        public TileEntitySpecialRenderer getSpecialRendererForEntity(BlockEntity var1)
         {
             return var1 == null ? null : getSpecialRendererForClass(var1.getClass());
         }
@@ -77,7 +77,7 @@ namespace betareborn.TileEntities
             playerZ = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var5;
         }
 
-        public void renderTileEntity(TileEntity var1, float var2)
+        public void renderTileEntity(BlockEntity var1, float var2)
         {
             if (var1.distanceFrom(playerX, playerY, playerZ) < 4096.0D)
             {
@@ -88,7 +88,7 @@ namespace betareborn.TileEntities
 
         }
 
-        public void renderTileEntityAt(TileEntity var1, double var2, double var4, double var6, float var8)
+        public void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8)
         {
             TileEntitySpecialRenderer var9 = getSpecialRendererForEntity(var1);
             if (var9 != null)

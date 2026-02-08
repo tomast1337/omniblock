@@ -5,7 +5,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Blocks
 {
-    public class BlockNote : BlockContainer
+    public class BlockNote : BlockWithEntity
     {
         public BlockNote(int id) : base(id, 74, Material.WOOD)
         {
@@ -59,7 +59,7 @@ namespace betareborn.Blocks
             }
         }
 
-        protected override TileEntity getBlockEntity()
+        protected override BlockEntity getBlockEntity()
         {
             return new TileEntityNote();
         }
