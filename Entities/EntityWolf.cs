@@ -123,7 +123,7 @@ namespace betareborn.Entities
             }
             else if (playerToAttack == null && !hasPath() && !isWolfTamed() && worldObj.random.nextInt(100) == 0)
             {
-                var var1 = worldObj.getEntitiesWithinAABB(EntitySheep.Class, Box.createCached(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                var var1 = worldObj.getEntitiesWithinAABB(EntitySheep.Class, new Box(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
                 if (var1.Count > 0)
                 {
                     setTarget(var1[worldObj.random.nextInt(var1.Count)]);
@@ -337,7 +337,7 @@ namespace betareborn.Entities
 
                     if (var1 is EntityLiving)
                     {
-                        var var3 = worldObj.getEntitiesWithinAABB(typeof(EntityWolf), Box.createCached(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                        var var3 = worldObj.getEntitiesWithinAABB(typeof(EntityWolf), new Box(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
 
                         foreach (var var5 in var3)
                         {

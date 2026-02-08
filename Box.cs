@@ -18,11 +18,6 @@ namespace betareborn
             maxY = y2;
             maxZ = z2;
         }
-        
-        public static Box createCached(double x1, double y1, double z1, double x2, double y2, double z2)
-        {
-            return new Box(x1, y1, z1, x2, y2, z2);
-        }
 
         public Box stretch(double x, double y, double z)
         {
@@ -62,7 +57,7 @@ namespace betareborn
                 var17 += z;
             }
 
-            return createCached(var7, var9, var11, var13, var15, var17);
+            return new Box(var7, var9, var11, var13, var15, var17);
         }
 
         public Box expand(double x, double y, double z)
@@ -73,12 +68,12 @@ namespace betareborn
             double var13 = maxX + x;
             double var15 = maxY + y;
             double var17 = maxZ + z;
-            return createCached(var7, var9, var11, var13, var15, var17);
+            return new Box(var7, var9, var11, var13, var15, var17);
         }
 
         public Box offset(double x, double y, double z)
         {
-            return createCached(minX + x, minY + y, minZ + z, maxX + x, maxY + y, maxZ + z);
+            return new Box(minX + x, minY + y, minZ + z, maxX + x, maxY + y, maxZ + z);
         }
 
         public double getXOffset(Box box, double x)
@@ -232,12 +227,12 @@ namespace betareborn
             double var13 = maxX - x;
             double var15 = maxY - y;
             double var17 = maxZ - z;
-            return createCached(var7, var9, var11, var13, var15, var17);
+            return new Box(var7, var9, var11, var13, var15, var17);
         }
 
         public Box copy()
         {
-            return createCached(minX, minY, minZ, maxX, maxY, maxZ);
+            return new Box(minX, minY, minZ, maxX, maxY, maxZ);
         }
 
         public HitResult raycast(Vec3D min, Vec3D max)

@@ -244,7 +244,7 @@ namespace betareborn.Worlds
                     continue;
                 }
 
-                var aabb = Box.createCached(
+                var aabb = new Box(
                     info.Pos.X, info.Pos.Y, info.Pos.Z,
                     info.Pos.X + SubChunkRenderer.SIZE,
                     info.Pos.Y + SubChunkRenderer.SIZE,

@@ -59,7 +59,7 @@ namespace betareborn.Blocks
             bool var6 = (meta & 8) != 0;
             bool var7 = false;
             float var8 = 2.0F / 16.0F;
-            var var9 = world.getEntitiesWithinAABB(EntityMinecart.Class, Box.createCached((double)((float)x + var8), (double)y, (double)((float)z + var8), (double)((float)(x + 1) - var8), (double)y + 0.25D, (double)((float)(z + 1) - var8)));
+            var var9 = world.getEntitiesWithinAABB(EntityMinecart.Class, new Box((double)((float)x + var8), (double)y, (double)((float)z + var8), (double)((float)(x + 1) - var8), (double)y + 0.25D, (double)((float)(z + 1) - var8)));
             if (var9.Count > 0)
             {
                 var7 = true;
