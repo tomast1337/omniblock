@@ -153,7 +153,7 @@ namespace betareborn.Entities
                 var17 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
                 if (var3 != null)
                 {
-                    var17 = Vec3D.createVector(var3.hitVec.xCoord, var3.hitVec.yCoord, var3.hitVec.zCoord);
+                    var17 = Vec3D.createVector(var3.pos.xCoord, var3.pos.yCoord, var3.pos.zCoord);
                 }
 
                 Entity var4 = null;
@@ -171,7 +171,7 @@ namespace betareborn.Entities
                         HitResult var12 = var11.raycast(var16, var17);
                         if (var12 != null)
                         {
-                            double var13 = var16.distanceTo(var12.hitVec);
+                            double var13 = var16.distanceTo(var12.pos);
                             if (var13 < var6 || var6 == 0.0D)
                             {
                                 var4 = var9;
@@ -189,9 +189,9 @@ namespace betareborn.Entities
                 float var19;
                 if (var3 != null)
                 {
-                    if (var3.entityHit != null)
+                    if (var3.entity != null)
                     {
-                        if (var3.entityHit.attackEntityFrom(owner, 4))
+                        if (var3.entity.attackEntityFrom(owner, 4))
                         {
                             worldObj.playSoundAtEntity(this, "random.drr", 1.0F, 1.2F / (rand.nextFloat() * 0.2F + 0.9F));
                             setEntityDead();
@@ -213,9 +213,9 @@ namespace betareborn.Entities
                         zTile = var3.blockZ;
                         inTile = worldObj.getBlockId(xTile, yTile, zTile);
                         field_28019_h = worldObj.getBlockMeta(xTile, yTile, zTile);
-                        motionX = (double)((float)(var3.hitVec.xCoord - posX));
-                        motionY = (double)((float)(var3.hitVec.yCoord - posY));
-                        motionZ = (double)((float)(var3.hitVec.zCoord - posZ));
+                        motionX = (double)((float)(var3.pos.xCoord - posX));
+                        motionY = (double)((float)(var3.pos.yCoord - posY));
+                        motionZ = (double)((float)(var3.pos.zCoord - posZ));
                         var19 = MathHelper.sqrt_double(motionX * motionX + motionY * motionY + motionZ * motionZ);
                         posX -= motionX / (double)var19 * (double)0.05F;
                         posY -= motionY / (double)var19 * (double)0.05F;

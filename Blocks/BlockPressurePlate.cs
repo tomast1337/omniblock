@@ -7,11 +7,11 @@ namespace betareborn.Blocks
     public class BlockPressurePlate : Block
     {
 
-        private EnumMobType triggerMobType;
+        private readonly PressurePlateActiviationRule activationRule;
 
-        public BlockPressurePlate(int var1, int var2, EnumMobType var3, Material var4) : base(var1, var2, var4)
+        public BlockPressurePlate(int id, int textureId, PressurePlateActiviationRule rule, Material material) : base(id, textureId, material)
         {
-            triggerMobType = var3;
+            activationRule = rule;
             setTickRandomly(true);
             float var5 = 1.0F / 16.0F;
             setBoundingBox(var5, 0.0F, var5, 1.0F - var5, 0.03125F, 1.0F - var5);
@@ -22,7 +22,7 @@ namespace betareborn.Blocks
             return 20;
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
@@ -37,72 +37,72 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return var1.shouldSuffocate(var2, var3 - 1, var4);
+            return world.shouldSuffocate(x, y - 1, z);
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
             bool var6 = false;
-            if (!var1.shouldSuffocate(var2, var3 - 1, var4))
+            if (!world.shouldSuffocate(x, y - 1, z))
             {
                 var6 = true;
             }
 
             if (var6)
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                if (var1.getBlockMeta(var2, var3, var4) != 0)
+                if (world.getBlockMeta(x, y, z) != 0)
                 {
-                    setStateIfMobInteractsWithPlate(var1, var2, var3, var4);
+                    updatePlateState(world, x, y, z);
                 }
             }
         }
 
-        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                if (var1.getBlockMeta(var2, var3, var4) != 1)
+                if (world.getBlockMeta(x, y, z) != 1)
                 {
-                    setStateIfMobInteractsWithPlate(var1, var2, var3, var4);
+                    updatePlateState(world, x, y, z);
                 }
             }
         }
 
-        private void setStateIfMobInteractsWithPlate(World var1, int var2, int var3, int var4)
+        private void updatePlateState(World world, int x, int y, int z)
         {
-            bool var5 = var1.getBlockMeta(var2, var3, var4) == 1;
+            bool var5 = world.getBlockMeta(x, y, z) == 1;
             bool var6 = false;
             float var7 = 2.0F / 16.0F;
             List<Entity> var8 = null;
-            if (triggerMobType == EnumMobType.everything)
+            if (activationRule == PressurePlateActiviationRule.EVERYTHING)
             {
-                var8 = var1.getEntitiesWithinAABBExcludingEntity((Entity)null, Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
+                var8 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
             }
 
-            if (triggerMobType == EnumMobType.mobs)
+            if (activationRule == PressurePlateActiviationRule.MOBS)
             {
-                var8 = var1.getEntitiesWithinAABB(EntityLiving.Class, Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
+                var8 = world.getEntitiesWithinAABB(EntityLiving.Class, Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
             }
 
-            if (triggerMobType == EnumMobType.players)
+            if (activationRule == PressurePlateActiviationRule.PLAYERS)
             {
-                var8 = var1.getEntitiesWithinAABB(EntityPlayer.Class, Box.createCached((double)((float)var2 + var7), (double)var3, (double)((float)var4 + var7), (double)((float)(var2 + 1) - var7), (double)var3 + 0.25D, (double)((float)(var4 + 1) - var7)));
+                var8 = world.getEntitiesWithinAABB(EntityPlayer.Class, Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
             }
 
             if (var8.Count > 0)
@@ -112,44 +112,44 @@ namespace betareborn.Blocks
 
             if (var6 && !var5)
             {
-                var1.setBlockMeta(var2, var3, var4, 1);
-                var1.notifyNeighbors(var2, var3, var4, id);
-                var1.notifyNeighbors(var2, var3 - 1, var4, id);
-                var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
-                var1.playSound((double)var2 + 0.5D, (double)var3 + 0.1D, (double)var4 + 0.5D, "random.click", 0.3F, 0.6F);
+                world.setBlockMeta(x, y, z, 1);
+                world.notifyNeighbors(x, y, z, id);
+                world.notifyNeighbors(x, y - 1, z, id);
+                world.setBlocksDirty(x, y, z, x, y, z);
+                world.playSound((double)x + 0.5D, (double)y + 0.1D, (double)z + 0.5D, "random.click", 0.3F, 0.6F);
             }
 
             if (!var6 && var5)
             {
-                var1.setBlockMeta(var2, var3, var4, 0);
-                var1.notifyNeighbors(var2, var3, var4, id);
-                var1.notifyNeighbors(var2, var3 - 1, var4, id);
-                var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
-                var1.playSound((double)var2 + 0.5D, (double)var3 + 0.1D, (double)var4 + 0.5D, "random.click", 0.3F, 0.5F);
+                world.setBlockMeta(x, y, z, 0);
+                world.notifyNeighbors(x, y, z, id);
+                world.notifyNeighbors(x, y - 1, z, id);
+                world.setBlocksDirty(x, y, z, x, y, z);
+                world.playSound((double)x + 0.5D, (double)y + 0.1D, (double)z + 0.5D, "random.click", 0.3F, 0.5F);
             }
 
             if (var6)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
+                world.scheduleBlockUpdate(x, y, z, id, getTickRate());
             }
 
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
+            int var5 = world.getBlockMeta(x, y, z);
             if (var5 > 0)
             {
-                var1.notifyNeighbors(var2, var3, var4, id);
-                var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                world.notifyNeighbors(x, y, z, id);
+                world.notifyNeighbors(x, y - 1, z, id);
             }
 
-            base.onBreak(var1, var2, var3, var4);
+            base.onBreak(world, x, y, z);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            bool var5 = var1.getBlockMeta(var2, var3, var4) == 1;
+            bool var5 = blockView.getBlockMeta(x, y, z) == 1;
             float var6 = 1.0F / 16.0F;
             if (var5)
             {
@@ -162,14 +162,14 @@ namespace betareborn.Blocks
 
         }
 
-        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
         {
-            return var1.getBlockMeta(var2, var3, var4) > 0;
+            return blockView.getBlockMeta(x, y, z) > 0;
         }
 
-        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)
         {
-            return var1.getBlockMeta(var2, var3, var4) == 0 ? false : var5 == 1;
+            return world.getBlockMeta(x, y, z) == 0 ? false : side == 1;
         }
 
         public override bool canEmitRedstonePower()

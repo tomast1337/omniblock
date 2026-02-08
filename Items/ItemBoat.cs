@@ -36,7 +36,7 @@ namespace betareborn.Items
             }
             else
             {
-                if (var24.typeOfHit == EnumMovingObjectType.TILE)
+                if (var24.type == HitResultType.TILE)
                 {
                     int var25 = var24.blockX;
                     int var26 = var24.blockY;

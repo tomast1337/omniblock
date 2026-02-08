@@ -610,32 +610,32 @@ namespace betareborn.Rendering
                 int var17 = var2.blockX;
                 int var18 = var2.blockY;
                 int var11 = var2.blockZ;
-                if (var2.sideHit == 0)
+                if (var2.side == 0)
                 {
                     --var18;
                 }
 
-                if (var2.sideHit == 1)
+                if (var2.side == 1)
                 {
                     ++var18;
                 }
 
-                if (var2.sideHit == 2)
+                if (var2.side == 2)
                 {
                     --var11;
                 }
 
-                if (var2.sideHit == 3)
+                if (var2.side == 3)
                 {
                     ++var11;
                 }
 
-                if (var2.sideHit == 4)
+                if (var2.side == 4)
                 {
                     --var17;
                 }
 
-                if (var2.sideHit == 5)
+                if (var2.side == 5)
                 {
                     ++var17;
                 }
@@ -647,7 +647,7 @@ namespace betareborn.Rendering
 
         public void drawSelectionBox(EntityPlayer var1, HitResult var2, int var3, ItemStack var4, float var5)
         {
-            if (var3 == 0 && var2.typeOfHit == EnumMovingObjectType.TILE)
+            if (var3 == 0 && var2.type == HitResultType.TILE)
             {
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);

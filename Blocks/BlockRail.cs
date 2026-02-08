@@ -6,31 +6,31 @@ namespace betareborn.Blocks
     public class BlockRail : Block
     {
 
-        private readonly bool isPowered;
+        private readonly bool alwaysStraight;
 
-        public static bool isRailBlockAt(World var0, int var1, int var2, int var3)
+        public static bool isRail(World world, int x, int y, int z)
         {
-            int var4 = var0.getBlockId(var1, var2, var3);
+            int var4 = world.getBlockId(x, y, z);
             return var4 == Block.RAIL.id || var4 == Block.POWERED_RAIL.id || var4 == Block.DETECTOR_RAIL.id;
         }
 
-        public static bool isRailBlock(int var0)
+        public static bool isRail(int id)
         {
-            return var0 == Block.RAIL.id || var0 == Block.POWERED_RAIL.id || var0 == Block.DETECTOR_RAIL.id;
+            return id == Block.RAIL.id || id == Block.POWERED_RAIL.id || id == Block.DETECTOR_RAIL.id;
         }
 
-        public BlockRail(int var1, int var2, bool var3) : base(var1, var2, Material.PISTON_BREAKABLE)
+        public BlockRail(int id, int textureId, bool alwaysStraight) : base(id, textureId, Material.PISTON_BREAKABLE)
         {
-            isPowered = var3;
+            this.alwaysStraight = alwaysStraight;
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
         }
 
-        public bool getIsPowered()
+        public bool isAlwaysStraight()
         {
-            return isPowered;
+            return alwaysStraight;
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
@@ -40,15 +40,15 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.raycast(var1, var2, var3, var4, var5, var6);
+            updateBoundingBox(world, x, y, z);
+            return base.raycast(world, x, y, z, startPos, endPos);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
+            int var5 = blockView.getBlockMeta(x, y, z);
             if (var5 >= 2 && var5 <= 5)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
@@ -60,16 +60,16 @@ namespace betareborn.Blocks
 
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            if (isPowered)
+            if (alwaysStraight)
             {
-                if (id == Block.POWERED_RAIL.id && (var2 & 8) == 0)
+                if (id == Block.POWERED_RAIL.id && (meta & 8) == 0)
                 {
                     return textureId - 16;
                 }
             }
-            else if (var2 >= 6)
+            else if (meta >= 6)
             {
                 return textureId - 16;
             }
@@ -87,224 +87,219 @@ namespace betareborn.Blocks
             return 9;
         }
 
-        public int quantityDropped(Random var1)
+        public override bool canPlaceAt(World var1, int x, int y, int z)
         {
-            return 1;
+            return var1.shouldSuffocate(x, y - 1, z);
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            return var1.shouldSuffocate(var2, var3 - 1, var4);
-        }
-
-        public override void onPlaced(World var1, int var2, int var3, int var4)
-        {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                func_4031_h(var1, var2, var3, var4, true);
+                updateShape(world, x, y, z, true);
             }
 
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
+                int var6 = world.getBlockMeta(x, y, z);
                 int var7 = var6;
-                if (isPowered)
+                if (alwaysStraight)
                 {
                     var7 = var6 & 7;
                 }
 
                 bool var8 = false;
-                if (!var1.shouldSuffocate(var2, var3 - 1, var4))
+                if (!world.shouldSuffocate(x, y - 1, z))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 2 && !var1.shouldSuffocate(var2 + 1, var3, var4))
+                if (var7 == 2 && !world.shouldSuffocate(x + 1, y, z))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 3 && !var1.shouldSuffocate(var2 - 1, var3, var4))
+                if (var7 == 3 && !world.shouldSuffocate(x - 1, y, z))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 4 && !var1.shouldSuffocate(var2, var3, var4 - 1))
+                if (var7 == 4 && !world.shouldSuffocate(x, y, z - 1))
                 {
                     var8 = true;
                 }
 
-                if (var7 == 5 && !var1.shouldSuffocate(var2, var3, var4 + 1))
+                if (var7 == 5 && !world.shouldSuffocate(x, y, z + 1))
                 {
                     var8 = true;
                 }
 
                 if (var8)
                 {
-                    dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                    world.setBlockWithNotify(x, y, z, 0);
                 }
-                else if (id == Block.POWERED_RAIL.id)
+                else if (base.id == Block.POWERED_RAIL.id)
                 {
-                    bool var9 = var1.isPowered(var2, var3, var4) || var1.isPowered(var2, var3 + 1, var4);
-                    var9 = var9 || func_27044_a(var1, var2, var3, var4, var6, true, 0) || func_27044_a(var1, var2, var3, var4, var6, false, 0);
+                    bool var9 = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
+                    var9 = var9 || isPoweredByConnectedRails(world, x, y, z, var6, true, 0) || isPoweredByConnectedRails(world, x, y, z, var6, false, 0);
                     bool var10 = false;
                     if (var9 && (var6 & 8) == 0)
                     {
-                        var1.setBlockMeta(var2, var3, var4, var7 | 8);
+                        world.setBlockMeta(x, y, z, var7 | 8);
                         var10 = true;
                     }
                     else if (!var9 && (var6 & 8) != 0)
                     {
-                        var1.setBlockMeta(var2, var3, var4, var7);
+                        world.setBlockMeta(x, y, z, var7);
                         var10 = true;
                     }
 
                     if (var10)
                     {
-                        var1.notifyNeighbors(var2, var3 - 1, var4, id);
+                        world.notifyNeighbors(x, y - 1, z, base.id);
                         if (var7 == 2 || var7 == 3 || var7 == 4 || var7 == 5)
                         {
-                            var1.notifyNeighbors(var2, var3 + 1, var4, id);
+                            world.notifyNeighbors(x, y + 1, z, base.id);
                         }
                     }
                 }
-                else if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower() && !isPowered && RailLogic.getNAdjacentTracks(new RailLogic(this, var1, var2, var3, var4)) == 3)
+                else if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower() && !alwaysStraight && RailLogic.getNAdjacentTracks(new RailLogic(this, world, x, y, z)) == 3)
                 {
-                    func_4031_h(var1, var2, var3, var4, false);
+                    updateShape(world, x, y, z, false);
                 }
 
             }
         }
 
-        private void func_4031_h(World var1, int var2, int var3, int var4, bool var5)
+        private void updateShape(World world, int x, int y, int z, bool force)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                (new RailLogic(this, var1, var2, var3, var4)).func_792_a(var1.isPowered(var2, var3, var4), var5);
+                (new RailLogic(this, world, x, y, z)).updateState(world.isPowered(x, y, z), force);
             }
         }
 
-        private bool func_27044_a(World var1, int var2, int var3, int var4, int var5, bool var6, int var7)
+        private bool isPoweredByConnectedRails(World world, int x, int y, int z, int meta, bool towardsNegative, int depth)
         {
-            if (var7 >= 8)
+            if (depth >= 8)
             {
                 return false;
             }
             else
             {
-                int var8 = var5 & 7;
+                int var8 = meta & 7;
                 bool var9 = true;
                 switch (var8)
                 {
                     case 0:
-                        if (var6)
+                        if (towardsNegative)
                         {
-                            ++var4;
+                            ++z;
                         }
                         else
                         {
-                            --var4;
+                            --z;
                         }
                         break;
                     case 1:
-                        if (var6)
+                        if (towardsNegative)
                         {
-                            --var2;
+                            --x;
                         }
                         else
                         {
-                            ++var2;
+                            ++x;
                         }
                         break;
                     case 2:
-                        if (var6)
+                        if (towardsNegative)
                         {
-                            --var2;
+                            --x;
                         }
                         else
                         {
-                            ++var2;
-                            ++var3;
+                            ++x;
+                            ++y;
                             var9 = false;
                         }
 
                         var8 = 1;
                         break;
                     case 3:
-                        if (var6)
+                        if (towardsNegative)
                         {
-                            --var2;
-                            ++var3;
+                            --x;
+                            ++y;
                             var9 = false;
                         }
                         else
                         {
-                            ++var2;
+                            ++x;
                         }
 
                         var8 = 1;
                         break;
                     case 4:
-                        if (var6)
+                        if (towardsNegative)
                         {
-                            ++var4;
+                            ++z;
                         }
                         else
                         {
-                            --var4;
-                            ++var3;
+                            --z;
+                            ++y;
                             var9 = false;
                         }
 
                         var8 = 0;
                         break;
                     case 5:
-                        if (var6)
+                        if (towardsNegative)
                         {
-                            ++var4;
-                            ++var3;
+                            ++z;
+                            ++y;
                             var9 = false;
                         }
                         else
                         {
-                            --var4;
+                            --z;
                         }
 
                         var8 = 0;
                         break;
                 }
 
-                return func_27043_a(var1, var2, var3, var4, var6, var7, var8) ? true : var9 && func_27043_a(var1, var2, var3 - 1, var4, var6, var7, var8);
+                return isPoweredByRail(world, x, y, z, towardsNegative, depth, var8) ? true : var9 && isPoweredByRail(world, x, y - 1, z, towardsNegative, depth, var8);
             }
         }
 
-        private bool func_27043_a(World var1, int var2, int var3, int var4, bool var5, int var6, int var7)
+        private bool isPoweredByRail(World world, int x, int y, int z, bool towardsNegative, int depth, int shape)
         {
-            int var8 = var1.getBlockId(var2, var3, var4);
+            int var8 = world.getBlockId(x, y, z);
             if (var8 == Block.POWERED_RAIL.id)
             {
-                int var9 = var1.getBlockMeta(var2, var3, var4);
+                int var9 = world.getBlockMeta(x, y, z);
                 int var10 = var9 & 7;
-                if (var7 == 1 && (var10 == 0 || var10 == 4 || var10 == 5))
+                if (shape == 1 && (var10 == 0 || var10 == 4 || var10 == 5))
                 {
                     return false;
                 }
 
-                if (var7 == 0 && (var10 == 1 || var10 == 2 || var10 == 3))
+                if (shape == 0 && (var10 == 1 || var10 == 2 || var10 == 3))
                 {
                     return false;
                 }
 
                 if ((var9 & 8) != 0)
                 {
-                    if (!var1.isPowered(var2, var3, var4) && !var1.isPowered(var2, var3 + 1, var4))
+                    if (!world.isPowered(x, y, z) && !world.isPowered(x, y + 1, z))
                     {
-                        return func_27044_a(var1, var2, var3, var4, var9, var5, var6 + 1);
+                        return isPoweredByConnectedRails(world, x, y, z, var9, towardsNegative, depth + 1);
                     }
 
                     return true;
@@ -317,11 +312,6 @@ namespace betareborn.Blocks
         public override int getPistonBehavior()
         {
             return 0;
-        }
-
-        public static bool isPoweredBlockRail(BlockRail var0)
-        {
-            return var0.isPowered;
         }
     }
 

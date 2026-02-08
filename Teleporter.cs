@@ -289,7 +289,7 @@ namespace betareborn
 
             for (var20 = 0; var20 < 4; ++var20)
             {
-                var1.editingBlocks = true;
+                var1.pauseTicking = true;
 
                 for (var21 = 0; var21 < 4; ++var21)
                 {
@@ -303,7 +303,7 @@ namespace betareborn
                     }
                 }
 
-                var1.editingBlocks = false;
+                var1.pauseTicking = false;
 
                 for (var21 = 0; var21 < 4; ++var21)
                 {

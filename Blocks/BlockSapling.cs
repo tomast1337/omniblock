@@ -4,44 +4,44 @@ namespace betareborn.Blocks
 {
     public class BlockSapling : BlockPlant
     {
-        public BlockSapling(int var1, int var2) : base(var1, var2)
+        public BlockSapling(int i, int j) : base(i, j)
         {
             float var3 = 0.4F;
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                base.onTick(var1, var2, var3, var4, var5);
-                if (var1.getLightLevel(var2, var3 + 1, var4) >= 9 && var5.nextInt(30) == 0)
+                base.onTick(world, x, y, z, random);
+                if (world.getLightLevel(x, y + 1, z) >= 9 && random.nextInt(30) == 0)
                 {
-                    int var6 = var1.getBlockMeta(var2, var3, var4);
+                    int var6 = world.getBlockMeta(x, y, z);
                     if ((var6 & 8) == 0)
                     {
-                        var1.setBlockMeta(var2, var3, var4, var6 | 8);
+                        world.setBlockMeta(x, y, z, var6 | 8);
                     }
                     else
                     {
-                        growTree(var1, var2, var3, var4, var5);
+                        generate(world, x, y, z, random);
                     }
                 }
 
             }
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            var2 &= 3;
-            return var2 == 1 ? 63 : (var2 == 2 ? 79 : base.getTexture(var1, var2));
+            meta &= 3;
+            return meta == 1 ? 63 : (meta == 2 ? 79 : base.getTexture(side, meta));
         }
 
-        public void growTree(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public void generate(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4) & 3;
-            var1.setBlock(var2, var3, var4, 0);
-            Object var7 = null;
+            int var6 = world.getBlockMeta(x, y, z) & 3;
+            world.setBlock(x, y, z, 0);
+            object var7 = null;
             if (var6 == 1)
             {
                 var7 = new WorldGenTaiga2();
@@ -53,22 +53,22 @@ namespace betareborn.Blocks
             else
             {
                 var7 = new WorldGenTrees();
-                if (var5.nextInt(10) == 0)
+                if (random.nextInt(10) == 0)
                 {
                     var7 = new WorldGenBigTree();
                 }
             }
 
-            if (!((WorldGenerator)var7).generate(var1, var5, var2, var3, var4))
+            if (!((WorldGenerator)var7).generate(world, random, x, y, z))
             {
-                var1.setBlockAndMetadata(var2, var3, var4, id, var6);
+                world.setBlockAndMetadata(x, y, z, id, var6);
             }
 
         }
 
-        protected override int getDroppedItemMeta(int var1)
+        protected override int getDroppedItemMeta(int blockMeta)
         {
-            return var1 & 3;
+            return blockMeta & 3;
         }
     }
 

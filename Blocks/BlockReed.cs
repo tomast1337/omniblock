@@ -7,72 +7,72 @@ namespace betareborn.Blocks
     public class BlockReed : Block
     {
 
-        public BlockReed(int var1, int var2) : base(var1, Material.PLANT)
+        public BlockReed(int id, int textureId) : base(id, Material.PLANT)
         {
-            textureId = var2;
+            base.textureId = textureId;
             float var3 = 6.0F / 16.0F;
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 1.0F, 0.5F + var3);
             setTickRandomly(true);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var1.isAir(var2, var3 + 1, var4))
+            if (world.isAir(x, y + 1, z))
             {
                 int var6;
-                for (var6 = 1; var1.getBlockId(var2, var3 - var6, var4) == id; ++var6)
+                for (var6 = 1; world.getBlockId(x, y - var6, z) == id; ++var6)
                 {
                 }
 
                 if (var6 < 3)
                 {
-                    int var7 = var1.getBlockMeta(var2, var3, var4);
+                    int var7 = world.getBlockMeta(x, y, z);
                     if (var7 == 15)
                     {
-                        var1.setBlockWithNotify(var2, var3 + 1, var4, id);
-                        var1.setBlockMeta(var2, var3, var4, 0);
+                        world.setBlockWithNotify(x, y + 1, z, id);
+                        world.setBlockMeta(x, y, z, 0);
                     }
                     else
                     {
-                        var1.setBlockMeta(var2, var3, var4, var7 + 1);
+                        world.setBlockMeta(x, y, z, var7 + 1);
                     }
                 }
             }
 
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockId(var2, var3 - 1, var4);
-            return var5 == id ? true : (var5 != Block.GRASS_BLOCK.id && var5 != Block.DIRT.id ? false : (var1.getMaterial(var2 - 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2 + 1, var3 - 1, var4) == Material.WATER ? true : (var1.getMaterial(var2, var3 - 1, var4 - 1) == Material.WATER ? true : var1.getMaterial(var2, var3 - 1, var4 + 1) == Material.WATER))));
+            int var5 = world.getBlockId(x, y - 1, z);
+            return var5 == id ? true : (var5 != Block.GRASS_BLOCK.id && var5 != Block.DIRT.id ? false : (world.getMaterial(x - 1, y - 1, z) == Material.WATER ? true : (world.getMaterial(x + 1, y - 1, z) == Material.WATER ? true : (world.getMaterial(x, y - 1, z - 1) == Material.WATER ? true : world.getMaterial(x, y - 1, z + 1) == Material.WATER))));
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            checkBlockCoordValid(var1, var2, var3, var4);
+            breakIfCannotGrow(world, x, y, z);
         }
 
-        protected void checkBlockCoordValid(World var1, int var2, int var3, int var4)
+        protected void breakIfCannotGrow(World world, int x, int y, int z)
         {
-            if (!canGrow(var1, var2, var3, var4))
+            if (!canGrow(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override bool canGrow(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World world, int x, int y, int z)
         {
-            return canPlaceAt(var1, var2, var3, var4);
+            return canPlaceAt(world, x, y, z);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.reed.id;
         }

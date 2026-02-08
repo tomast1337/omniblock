@@ -226,7 +226,7 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z)
         {
-            if (world.getBlockId(x, y - 1, z) != Block.OBSIDIAN.id || !Block.NETHER_PORTAL.tryToCreatePortal(world, x, y, z))
+            if (world.getBlockId(x, y - 1, z) != Block.OBSIDIAN.id || !Block.NETHER_PORTAL.create(world, x, y, z))
             {
                 if (!world.shouldSuffocate(x, y - 1, z) && !areBlocksAroundFlammable(world, x, y, z))
                 {

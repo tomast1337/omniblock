@@ -93,7 +93,7 @@ namespace betareborn.Entities
                     Vec3D var6 = mc.renderViewEntity.getPosition(var1);
                     if (mc.objectMouseOver != null)
                     {
-                        var4 = mc.objectMouseOver.hitVec.distanceTo(var6);
+                        var4 = mc.objectMouseOver.pos.distanceTo(var6);
                     }
 
                     if (mc.playerController is PlayerControllerTest)
@@ -135,7 +135,7 @@ namespace betareborn.Entities
                             }
                             else if (var17 != null)
                             {
-                                double var18 = var6.distanceTo(var17.hitVec);
+                                double var18 = var6.distanceTo(var17.pos);
                                 if (var18 < var11 || var11 == 0.0D)
                                 {
                                     pointedEntity = var14;
@@ -268,7 +268,7 @@ namespace betareborn.Entities
                         HitResult var24 = mc.theWorld.rayTraceBlocks(Vec3D.createVector(var4 + (double)var21, var6 + (double)var22, var8 + (double)var23), Vec3D.createVector(var4 - var14 + (double)var21 + (double)var23, var6 - var18 + (double)var22, var8 - var16 + (double)var23));
                         if (var24 != null)
                         {
-                            double var25 = var24.hitVec.distanceTo(Vec3D.createVector(var4, var6, var8));
+                            double var25 = var24.pos.distanceTo(Vec3D.createVector(var4, var6, var8));
                             if (var25 < var27)
                             {
                                 var27 = var25;

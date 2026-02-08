@@ -28,11 +28,11 @@ namespace betareborn.Blocks
         private void func_30004_j(World var1, int var2, int var3, int var4)
         {
             int var5 = var1.getBlockMeta(var2, var3, var4);
-            var1.editingBlocks = true;
+            var1.pauseTicking = true;
             var1.setBlockAndMetadata(var2, var3, var4, id - 1, var5);
             var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
             var1.scheduleBlockUpdate(var2, var3, var4, id - 1, getTickRate());
-            var1.editingBlocks = false;
+            var1.pauseTicking = false;
         }
 
         public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)

@@ -1,6 +1,6 @@
 namespace betareborn
 {
-    public enum EnumMovingObjectType
+    public enum HitResultType
     {
         TILE,
         ENTITY

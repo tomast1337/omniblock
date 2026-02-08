@@ -138,7 +138,7 @@ namespace betareborn.Entities
             var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
             if (var3 != null)
             {
-                var2 = Vec3D.createVector(var3.hitVec.xCoord, var3.hitVec.yCoord, var3.hitVec.zCoord);
+                var2 = Vec3D.createVector(var3.pos.xCoord, var3.pos.yCoord, var3.pos.zCoord);
             }
 
             if (!worldObj.isRemote)
@@ -157,7 +157,7 @@ namespace betareborn.Entities
                         HitResult var12 = var11.raycast(var15, var2);
                         if (var12 != null)
                         {
-                            double var13 = var15.distanceTo(var12.hitVec);
+                            double var13 = var15.distanceTo(var12.pos);
                             if (var13 < var6 || var6 == 0.0D)
                             {
                                 var4 = var9;
@@ -175,7 +175,7 @@ namespace betareborn.Entities
 
             if (var3 != null)
             {
-                if (var3.entityHit != null && var3.entityHit.attackEntityFrom(field_20051_g, 0))
+                if (var3.entity != null && var3.entity.attackEntityFrom(field_20051_g, 0))
                 {
                 }
 

@@ -8,13 +8,13 @@ namespace betareborn.Blocks
     public class BlockRedstoneRepeater : Block
     {
 
-        public static readonly double[] field_22024_a = new double[] { -0.0625D, 1.0D / 16.0D, 0.1875D, 0.3125D };
-        private static readonly int[] field_22023_b = new int[] { 1, 2, 3, 4 };
-        private readonly bool isRepeaterPowered;
+        public static readonly double[] RENDER_OFFSET = new double[] { -0.0625D, 1.0D / 16.0D, 0.1875D, 0.3125D };
+        private static readonly int[] DELAY = new int[] { 1, 2, 3, 4 };
+        private readonly bool lit;
 
-        public BlockRedstoneRepeater(int var1, bool var2) : base(var1, 6, Material.PISTON_BREAKABLE)
+        public BlockRedstoneRepeater(int id, bool lit) : base(id, 6, Material.PISTON_BREAKABLE)
         {
-            isRepeaterPowered = var2;
+            this.lit = lit;
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
         }
 
@@ -23,44 +23,44 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canPlaceAt(var1, var2, var3, var4);
+            return !world.shouldSuffocate(x, y - 1, z) ? false : base.canPlaceAt(world, x, y, z);
         }
 
-        public override bool canGrow(World var1, int var2, int var3, int var4)
+        public override bool canGrow(World world, int x, int y, int z)
         {
-            return !var1.shouldSuffocate(var2, var3 - 1, var4) ? false : base.canGrow(var1, var2, var3, var4);
+            return !world.shouldSuffocate(x, y - 1, z) ? false : base.canGrow(world, x, y, z);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
-            bool var7 = func_22022_g(var1, var2, var3, var4, var6);
-            if (isRepeaterPowered && !var7)
+            int var6 = world.getBlockMeta(x, y, z);
+            bool var7 = isPowered(world, x, y, z, var6);
+            if (lit && !var7)
             {
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.REPEATER.id, var6);
+                world.setBlockAndMetadataWithNotify(x, y, z, Block.REPEATER.id, var6);
             }
-            else if (!isRepeaterPowered)
+            else if (!lit)
             {
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.POWERED_REPEATER.id, var6);
+                world.setBlockAndMetadataWithNotify(x, y, z, Block.POWERED_REPEATER.id, var6);
                 if (!var7)
                 {
                     int var8 = (var6 & 12) >> 2;
-                    var1.scheduleBlockUpdate(var2, var3, var4, Block.POWERED_REPEATER.id, field_22023_b[var8] * 2);
+                    world.scheduleBlockUpdate(x, y, z, Block.POWERED_REPEATER.id, DELAY[var8] * 2);
                 }
             }
 
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            return var1 == 0 ? (isRepeaterPowered ? 99 : 115) : (var1 == 1 ? (isRepeaterPowered ? 147 : 131) : 5);
+            return side == 0 ? (lit ? 99 : 115) : (side == 1 ? (lit ? 147 : 131) : 5);
         }
 
-        public override bool isSideVisible(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
         {
-            return var5 != 0 && var5 != 1;
+            return side != 0 && side != 1;
         }
 
         public override int getRenderType()
@@ -68,77 +68,77 @@ namespace betareborn.Blocks
             return 15;
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return getTexture(var1, 0);
+            return getTexture(side, 0);
         }
 
-        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)
         {
-            return isPoweringSide(var1, var2, var3, var4, var5);
+            return isPoweringSide(world, x, y, z, side);
         }
 
-        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
         {
-            if (!isRepeaterPowered)
+            if (!lit)
             {
                 return false;
             }
             else
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4) & 3;
-                return var6 == 0 && var5 == 3 ? true : (var6 == 1 && var5 == 4 ? true : (var6 == 2 && var5 == 2 ? true : var6 == 3 && var5 == 5));
+                int var6 = blockView.getBlockMeta(x, y, z) & 3;
+                return var6 == 0 && side == 3 ? true : (var6 == 1 && side == 4 ? true : (var6 == 2 && side == 2 ? true : var6 == 3 && side == 5));
             }
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (!canGrow(var1, var2, var3, var4))
+            if (!canGrow(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
             else
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                bool var7 = func_22022_g(var1, var2, var3, var4, var6);
+                int var6 = world.getBlockMeta(x, y, z);
+                bool var7 = isPowered(world, x, y, z, var6);
                 int var8 = (var6 & 12) >> 2;
-                if (isRepeaterPowered && !var7)
+                if (lit && !var7)
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, id, field_22023_b[var8] * 2);
+                    world.scheduleBlockUpdate(x, y, z, base.id, DELAY[var8] * 2);
                 }
-                else if (!isRepeaterPowered && var7)
+                else if (!lit && var7)
                 {
-                    var1.scheduleBlockUpdate(var2, var3, var4, id, field_22023_b[var8] * 2);
+                    world.scheduleBlockUpdate(x, y, z, base.id, DELAY[var8] * 2);
                 }
 
             }
         }
 
-        private bool func_22022_g(World var1, int var2, int var3, int var4, int var5)
+        private bool isPowered(World world, int x, int y, int z, int meta)
         {
-            int var6 = var5 & 3;
+            int var6 = meta & 3;
             switch (var6)
             {
                 case 0:
-                    return var1.isPoweringSide(var2, var3, var4 + 1, 3) || var1.getBlockId(var2, var3, var4 + 1) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2, var3, var4 + 1) > 0;
+                    return world.isPoweringSide(x, y, z + 1, 3) || world.getBlockId(x, y, z + 1) == Block.REDSTONE_WIRE.id && world.getBlockMeta(x, y, z + 1) > 0;
                 case 1:
-                    return var1.isPoweringSide(var2 - 1, var3, var4, 4) || var1.getBlockId(var2 - 1, var3, var4) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2 - 1, var3, var4) > 0;
+                    return world.isPoweringSide(x - 1, y, z, 4) || world.getBlockId(x - 1, y, z) == Block.REDSTONE_WIRE.id && world.getBlockMeta(x - 1, y, z) > 0;
                 case 2:
-                    return var1.isPoweringSide(var2, var3, var4 - 1, 2) || var1.getBlockId(var2, var3, var4 - 1) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2, var3, var4 - 1) > 0;
+                    return world.isPoweringSide(x, y, z - 1, 2) || world.getBlockId(x, y, z - 1) == Block.REDSTONE_WIRE.id && world.getBlockMeta(x, y, z - 1) > 0;
                 case 3:
-                    return var1.isPoweringSide(var2 + 1, var3, var4, 5) || var1.getBlockId(var2 + 1, var3, var4) == Block.REDSTONE_WIRE.id && var1.getBlockMeta(var2 + 1, var3, var4) > 0;
+                    return world.isPoweringSide(x + 1, y, z, 5) || world.getBlockId(x + 1, y, z) == Block.REDSTONE_WIRE.id && world.getBlockMeta(x + 1, y, z) > 0;
                 default:
                     return false;
             }
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = world.getBlockMeta(x, y, z);
             int var7 = (var6 & 12) >> 2;
             var7 = var7 + 1 << 2 & 12;
-            var1.setBlockMeta(var2, var3, var4, var7 | var6 & 3);
+            world.setBlockMeta(x, y, z, var7 | var6 & 3);
             return true;
         }
 
@@ -147,26 +147,26 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = ((MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
-            var1.setBlockMeta(var2, var3, var4, var6);
-            bool var7 = func_22022_g(var1, var2, var3, var4, var6);
+            int var6 = ((MathHelper.floor_double((double)(placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
+            world.setBlockMeta(x, y, z, var6);
+            bool var7 = isPowered(world, x, y, z, var6);
             if (var7)
             {
-                var1.scheduleBlockUpdate(var2, var3, var4, id, 1);
+                world.scheduleBlockUpdate(x, y, z, id, 1);
             }
 
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            var1.notifyNeighbors(var2 + 1, var3, var4, id);
-            var1.notifyNeighbors(var2 - 1, var3, var4, id);
-            var1.notifyNeighbors(var2, var3, var4 + 1, id);
-            var1.notifyNeighbors(var2, var3, var4 - 1, id);
-            var1.notifyNeighbors(var2, var3 - 1, var4, id);
-            var1.notifyNeighbors(var2, var3 + 1, var4, id);
+            world.notifyNeighbors(x + 1, y, z, id);
+            world.notifyNeighbors(x - 1, y, z, id);
+            world.notifyNeighbors(x, y, z + 1, id);
+            world.notifyNeighbors(x, y, z - 1, id);
+            world.notifyNeighbors(x, y - 1, z, id);
+            world.notifyNeighbors(x, y + 1, z, id);
         }
 
         public override bool isOpaque()
@@ -174,22 +174,22 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.redstoneRepeater.id;
         }
 
-        public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void randomDisplayTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (isRepeaterPowered)
+            if (lit)
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                double var7 = (double)((float)var2 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
-                double var9 = (double)((float)var3 + 0.4F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
-                double var11 = (double)((float)var4 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
+                int var6 = world.getBlockMeta(x, y, z);
+                double var7 = (double)((float)x + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
+                double var9 = (double)((float)y + 0.4F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
+                double var11 = (double)((float)z + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
                 double var13 = 0.0D;
                 double var15 = 0.0D;
-                if (var5.nextInt(2) == 0)
+                if (random.nextInt(2) == 0)
                 {
                     switch (var6 & 3)
                     {
@@ -213,21 +213,21 @@ namespace betareborn.Blocks
                     switch (var6 & 3)
                     {
                         case 0:
-                            var15 = field_22024_a[var17];
+                            var15 = RENDER_OFFSET[var17];
                             break;
                         case 1:
-                            var13 = -field_22024_a[var17];
+                            var13 = -RENDER_OFFSET[var17];
                             break;
                         case 2:
-                            var15 = -field_22024_a[var17];
+                            var15 = -RENDER_OFFSET[var17];
                             break;
                         case 3:
-                            var13 = field_22024_a[var17];
+                            var13 = RENDER_OFFSET[var17];
                             break;
                     }
                 }
 
-                var1.addParticle("reddust", var7 + var13, var9, var11 + var15, 0.0D, 0.0D, 0.0D);
+                world.addParticle("reddust", var7 + var13, var9, var11 + var15, 0.0D, 0.0D, 0.0D);
             }
         }
     }

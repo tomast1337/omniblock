@@ -137,10 +137,10 @@ namespace betareborn.Blocks
 
             if (var8 != var9)
             {
-                var1.editingBlocks = true;
+                var1.pauseTicking = true;
                 var1.setBlockMeta(var2, var3, var4, var9);
                 var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
-                var1.editingBlocks = false;
+                var1.pauseTicking = false;
 
                 for (var11 = 0; var11 < 4; ++var11)
                 {

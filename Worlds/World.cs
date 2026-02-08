@@ -37,7 +37,7 @@ namespace betareborn.Worlds
         protected float thunderingStrength;
         protected int field_27168_F;
         public int field_27172_i;
-        public bool editingBlocks;
+        public bool pauseTicking;
         private readonly long lockTimestamp;
         protected int autosavePeriod;
         public int difficultySetting;
@@ -85,7 +85,7 @@ namespace betareborn.Worlds
             field_9436_h = 1013904223;
             field_27168_F = 0;
             field_27172_i = 0;
-            editingBlocks = false;
+            pauseTicking = false;
             lockTimestamp = java.lang.System.currentTimeMillis();
             autosavePeriod = AUTOSAVE_PERIOD;
             random = new();
@@ -127,7 +127,7 @@ namespace betareborn.Worlds
             field_9436_h = 1013904223;
             field_27168_F = 0;
             field_27172_i = 0;
-            editingBlocks = false;
+            pauseTicking = false;
             lockTimestamp = java.lang.System.currentTimeMillis();
             autosavePeriod = AUTOSAVE_PERIOD;
             random = new();
@@ -174,7 +174,7 @@ namespace betareborn.Worlds
             field_9436_h = 1013904223;
             field_27168_F = 0;
             field_27172_i = 0;
-            editingBlocks = false;
+            pauseTicking = false;
             lockTimestamp = java.lang.System.currentTimeMillis();
             autosavePeriod = AUTOSAVE_PERIOD;
             random = new java.util.Random();
@@ -636,7 +636,7 @@ namespace betareborn.Worlds
 
         private void notifyBlockOfNeighborChange(int var1, int var2, int var3, int var4)
         {
-            if (!editingBlocks && !isRemote)
+            if (!pauseTicking && !isRemote)
             {
                 Block var5 = Block.BLOCKS[getBlockId(var1, var2, var3)];
                 if (var5 != null)

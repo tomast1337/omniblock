@@ -8,47 +8,47 @@ namespace betareborn.Blocks
     {
         public static bool fallInstantly = false;
 
-        public BlockSand(int var1, int var2) : base(var1, var2, Material.SAND)
+        public BlockSand(int id, int textureId) : base(id, textureId, Material.SAND)
         {
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.getTickRate());
+            world.scheduleBlockUpdate(x, y, z, id, getTickRate());
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            var1.scheduleBlockUpdate(var2, var3, var4, this.id, this.getTickRate());
+            world.scheduleBlockUpdate(x, y, z, base.id, getTickRate());
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            this.tryToFall(var1, var2, var3, var4);
+            processFall(world, x, y, z);
         }
 
-        private void tryToFall(World var1, int var2, int var3, int var4)
+        private void processFall(World world, int x, int y, int z)
         {
-            if (canFallBelow(var1, var2, var3 - 1, var4) && var3 >= 0)
+            if (canFallThrough(world, x, y - 1, z) && y >= 0)
             {
                 sbyte var8 = 32;
-                if (!fallInstantly && var1.checkChunksExist(var2 - var8, var3 - var8, var4 - var8, var2 + var8, var3 + var8, var4 + var8))
+                if (!fallInstantly && world.checkChunksExist(x - var8, y - var8, z - var8, x + var8, y + var8, z + var8))
                 {
-                    EntityFallingSand var9 = new EntityFallingSand(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), this.id);
-                    var1.spawnEntity(var9);
+                    EntityFallingSand var9 = new EntityFallingSand(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), id);
+                    world.spawnEntity(var9);
                 }
                 else
                 {
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    world.setBlockWithNotify(x, y, z, 0);
 
-                    while (canFallBelow(var1, var2, var3 - 1, var4) && var3 > 0)
+                    while (canFallThrough(world, x, y - 1, z) && y > 0)
                     {
-                        --var3;
+                        --y;
                     }
 
-                    if (var3 > 0)
+                    if (y > 0)
                     {
-                        var1.setBlockWithNotify(var2, var3, var4, this.id);
+                        world.setBlockWithNotify(x, y, z, id);
                     }
                 }
             }
@@ -60,9 +60,9 @@ namespace betareborn.Blocks
             return 3;
         }
 
-        public static bool canFallBelow(World var0, int var1, int var2, int var3)
+        public static bool canFallThrough(World world, int x, int y, int z)
         {
-            int var4 = var0.getBlockId(var1, var2, var3);
+            int var4 = world.getBlockId(x, y, z);
             if (var4 == 0)
             {
                 return true;

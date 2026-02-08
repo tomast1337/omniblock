@@ -4,29 +4,29 @@ namespace betareborn
 {
     public class HitResult : java.lang.Object
     {
-        public EnumMovingObjectType typeOfHit;
+        public HitResultType type;
         public int blockX;
         public int blockY;
         public int blockZ;
-        public int sideHit;
-        public Vec3D hitVec;
-        public Entity entityHit;
+        public int side;
+        public Vec3D pos;
+        public Entity entity;
 
-        public HitResult(int var1, int var2, int var3, int var4, Vec3D var5)
+        public HitResult(int blockX, int blockY, int blockZ, int side, Vec3D pos)
         {
-            typeOfHit = EnumMovingObjectType.TILE;
-            blockX = var1;
-            blockY = var2;
-            blockZ = var3;
-            sideHit = var4;
-            hitVec = Vec3D.createVector(var5.xCoord, var5.yCoord, var5.zCoord);
+            type = HitResultType.TILE;
+            this.blockX = blockX;
+            this.blockY = blockY;
+            this.blockZ = blockZ;
+            this.side = side;
+            this.pos = Vec3D.createVector(pos.xCoord, pos.yCoord, pos.zCoord);
         }
 
-        public HitResult(Entity var1)
+        public HitResult(Entity entity)
         {
-            typeOfHit = EnumMovingObjectType.ENTITY;
-            entityHit = var1;
-            hitVec = Vec3D.createVector(var1.posX, var1.posY, var1.posZ);
+            type = HitResultType.ENTITY;
+            this.entity = entity;
+            pos = Vec3D.createVector(entity.posX, entity.posY, entity.posZ);
         }
     }
 

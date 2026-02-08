@@ -76,7 +76,7 @@ namespace betareborn.Entities
                     motionZ *= (double)0.7F;
                     motionY *= -0.5D;
                     setEntityDead();
-                    if ((!worldObj.canBlockBePlacedAt(blockID, var1, var2, var3, true, 1) || BlockSand.canFallBelow(worldObj, var1, var2 - 1, var3) || !worldObj.setBlockWithNotify(var1, var2, var3, blockID)) && !worldObj.isRemote)
+                    if ((!worldObj.canBlockBePlacedAt(blockID, var1, var2, var3, true, 1) || BlockSand.canFallThrough(worldObj, var1, var2 - 1, var3) || !worldObj.setBlockWithNotify(var1, var2, var3, blockID)) && !worldObj.isRemote)
                     {
                         dropItem(blockID, 1);
                     }

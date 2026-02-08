@@ -1,7 +1,6 @@
 using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Materials;
-using betareborn.Stats;
 using betareborn.Worlds;
 
 namespace betareborn.Blocks
@@ -9,16 +8,16 @@ namespace betareborn.Blocks
     public class BlockSnow : Block
     {
 
-        public BlockSnow(int var1, int var2) : base(var1, var2, Material.SNOW_LAYER)
+        public BlockSnow(int id, int textureId) : base(id, textureId, Material.SNOW_LAYER)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
             setTickRandomly(true);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4) & 7;
-            return var5 >= 3 ? Box.createCached((double)var2 + minX, (double)var3 + minY, (double)var4 + minZ, (double)var2 + maxX, (double)((float)var3 + 0.5F), (double)var4 + maxZ) : null;
+            int var5 = world.getBlockMeta(x, y, z) & 7;
+            return var5 >= 3 ? Box.createCached((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)((float)y + 0.5F), (double)z + maxZ) : null;
         }
 
         public override bool isOpaque()
@@ -31,30 +30,30 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4) & 7;
+            int var5 = blockView.getBlockMeta(x, y, z) & 7;
             float var6 = (float)(2 * (1 + var5)) / 16.0F;
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, var6, 1.0F);
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockId(var2, var3 - 1, var4);
-            return var5 != 0 && Block.BLOCKS[var5].isOpaque() ? var1.getMaterial(var2, var3 - 1, var4).blocksMovement() : false;
+            int var5 = world.getBlockId(x, y - 1, z);
+            return var5 != 0 && Block.BLOCKS[var5].isOpaque() ? world.getMaterial(x, y - 1, z).blocksMovement() : false;
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            func_314_h(var1, var2, var3, var4);
+            breakIfCannotPlace(world, x, y, z);
         }
 
-        private bool func_314_h(World var1, int var2, int var3, int var4)
+        private bool breakIfCannotPlace(World world, int x, int y, int z)
         {
-            if (!canPlaceAt(var1, var2, var3, var4))
+            if (!canPlaceAt(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
                 return false;
             }
             else
@@ -63,43 +62,43 @@ namespace betareborn.Blocks
             }
         }
 
-        public override void afterBreak(World var1, EntityPlayer var2, int var3, int var4, int var5, int var6)
+        public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
         {
             int var7 = Item.snowball.id;
             float var8 = 0.7F;
-            double var9 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            double var11 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            double var13 = (double)(var1.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            EntityItem var15 = new EntityItem(var1, (double)var3 + var9, (double)var4 + var11, (double)var5 + var13, new ItemStack(var7, 1, 0));
+            double var9 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+            double var11 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+            double var13 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
+            EntityItem var15 = new EntityItem(world, (double)x + var9, (double)y + var11, (double)z + var13, new ItemStack(var7, 1, 0));
             var15.delayBeforeCanPickup = 10;
-            var1.spawnEntity(var15);
-            var1.setBlockWithNotify(var3, var4, var5, 0);
-            var2.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
+            world.spawnEntity(var15);
+            world.setBlockWithNotify(x, y, z, 0);
+            player.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.snowball.id;
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 0;
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var1.getBrightness(LightType.Block, var2, var3, var4) > 11)
+            if (world.getBrightness(LightType.Block, x, y, z) > 11)
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override bool isSideVisible(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
         {
-            return var5 == 1 ? true : base.isSideVisible(var1, var2, var3, var4, var5);
+            return side == 1 ? true : base.isSideVisible(blockView, x, y, z, side);
         }
     }
 

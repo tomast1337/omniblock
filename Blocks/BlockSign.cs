@@ -8,36 +8,36 @@ namespace betareborn.Blocks
 {
     public class BlockSign : BlockContainer
     {
+        //TODO: SIGNS ARE NOT BEING RENDERED?
+        private Class blockEntityClazz;
+        private bool standing;
 
-        private Class signEntityClass;
-        private bool isFreestanding;
-
-        public BlockSign(int var1, Class var2, bool var3) : base(var1, Material.WOOD)
+        public BlockSign(int id, Class blockEntityClazz, bool standing) : base(id, Material.WOOD)
         {
-            isFreestanding = var3;
+            this.standing = standing;
             textureId = 4;
-            signEntityClass = var2;
+            this.blockEntityClazz = blockEntityClazz;
             float var4 = 0.25F;
             float var5 = 1.0F;
             setBoundingBox(0.5F - var4, 0.0F, 0.5F - var4, 0.5F + var4, var5, 0.5F + var4);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
 
-        public override Box getBoundingBox(World var1, int var2, int var3, int var4)
+        public override Box getBoundingBox(World world, int x, int y, int z)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.getBoundingBox(var1, var2, var3, var4);
+            updateBoundingBox(world, x, y, z);
+            return base.getBoundingBox(world, x, y, z);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            if (!isFreestanding)
+            if (!standing)
             {
-                int var5 = var1.getBlockMeta(var2, var3, var4);
+                int var5 = blockView.getBlockMeta(x, y, z);
                 float var6 = 9.0F / 32.0F;
                 float var7 = 25.0F / 32.0F;
                 float var8 = 0.0F;
@@ -86,7 +86,7 @@ namespace betareborn.Blocks
         {
             try
             {
-                return (TileEntity)signEntityClass.newInstance();
+                return (TileEntity)blockEntityClazz.newInstance();
             }
             catch (java.lang.Exception var2)
             {
@@ -94,41 +94,41 @@ namespace betareborn.Blocks
             }
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.sign.id;
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
             bool var6 = false;
-            if (isFreestanding)
+            if (standing)
             {
-                if (!var1.getMaterial(var2, var3 - 1, var4).isSolid())
+                if (!world.getMaterial(x, y - 1, z).isSolid())
                 {
                     var6 = true;
                 }
             }
             else
             {
-                int var7 = var1.getBlockMeta(var2, var3, var4);
+                int var7 = world.getBlockMeta(x, y, z);
                 var6 = true;
-                if (var7 == 2 && var1.getMaterial(var2, var3, var4 + 1).isSolid())
+                if (var7 == 2 && world.getMaterial(x, y, z + 1).isSolid())
                 {
                     var6 = false;
                 }
 
-                if (var7 == 3 && var1.getMaterial(var2, var3, var4 - 1).isSolid())
+                if (var7 == 3 && world.getMaterial(x, y, z - 1).isSolid())
                 {
                     var6 = false;
                 }
 
-                if (var7 == 4 && var1.getMaterial(var2 + 1, var3, var4).isSolid())
+                if (var7 == 4 && world.getMaterial(x + 1, y, z).isSolid())
                 {
                     var6 = false;
                 }
 
-                if (var7 == 5 && var1.getMaterial(var2 - 1, var3, var4).isSolid())
+                if (var7 == 5 && world.getMaterial(x - 1, y, z).isSolid())
                 {
                     var6 = false;
                 }
@@ -136,11 +136,11 @@ namespace betareborn.Blocks
 
             if (var6)
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
-            base.neighborUpdate(var1, var2, var3, var4, var5);
+            base.neighborUpdate(world, x, y, z, id);
         }
     }
 

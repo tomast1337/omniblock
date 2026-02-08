@@ -25,7 +25,7 @@ namespace betareborn
             trackZ = var5;
             int var6 = var2.getBlockId(var3, var4, var5);
             int var7 = var2.getBlockMeta(var3, var4, var5);
-            if (BlockRail.isPoweredBlockRail((BlockRail)Block.BLOCKS[var6]))
+            if (((BlockRail)Block.BLOCKS[var6]).isAlwaysStraight())
             {
                 isPoweredRail = true;
                 var7 &= -9;
@@ -113,12 +113,12 @@ namespace betareborn
 
         private bool isMinecartTrack(int var1, int var2, int var3)
         {
-            return BlockRail.isRailBlockAt(worldObj, var1, var2, var3) ? true : (BlockRail.isRailBlockAt(worldObj, var1, var2 + 1, var3) ? true : BlockRail.isRailBlockAt(worldObj, var1, var2 - 1, var3));
+            return BlockRail.isRail(worldObj, var1, var2, var3) ? true : (BlockRail.isRail(worldObj, var1, var2 + 1, var3) ? true : BlockRail.isRail(worldObj, var1, var2 - 1, var3));
         }
 
         private RailLogic getMinecartTrackLogic(ChunkPosition var1)
         {
-            return BlockRail.isRailBlockAt(worldObj, var1.x, var1.y, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y, var1.z) : (BlockRail.isRailBlockAt(worldObj, var1.x, var1.y + 1, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y + 1, var1.z) : (BlockRail.isRailBlockAt(worldObj, var1.x, var1.y - 1, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y - 1, var1.z) : null));
+            return BlockRail.isRail(worldObj, var1.x, var1.y, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y, var1.z) : (BlockRail.isRail(worldObj, var1.x, var1.y + 1, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y + 1, var1.z) : (BlockRail.isRail(worldObj, var1.x, var1.y - 1, var1.z) ? new RailLogic(rail, worldObj, var1.x, var1.y - 1, var1.z) : null));
         }
 
         private bool isConnectedTo(RailLogic var1)
@@ -239,12 +239,12 @@ namespace betareborn
 
             if (var6 == 0)
             {
-                if (BlockRail.isRailBlockAt(worldObj, trackX, trackY + 1, trackZ - 1))
+                if (BlockRail.isRail(worldObj, trackX, trackY + 1, trackZ - 1))
                 {
                     var6 = 4;
                 }
 
-                if (BlockRail.isRailBlockAt(worldObj, trackX, trackY + 1, trackZ + 1))
+                if (BlockRail.isRail(worldObj, trackX, trackY + 1, trackZ + 1))
                 {
                     var6 = 5;
                 }
@@ -252,12 +252,12 @@ namespace betareborn
 
             if (var6 == 1)
             {
-                if (BlockRail.isRailBlockAt(worldObj, trackX + 1, trackY + 1, trackZ))
+                if (BlockRail.isRail(worldObj, trackX + 1, trackY + 1, trackZ))
                 {
                     var6 = 2;
                 }
 
-                if (BlockRail.isRailBlockAt(worldObj, trackX - 1, trackY + 1, trackZ))
+                if (BlockRail.isRail(worldObj, trackX - 1, trackY + 1, trackZ))
                 {
                     var6 = 3;
                 }
@@ -291,7 +291,7 @@ namespace betareborn
             }
         }
 
-        public void func_792_a(bool var1, bool var2)
+        public void updateState(bool var1, bool var2)
         {
             bool var3 = func_786_c(trackX, trackY, trackZ - 1);
             bool var4 = func_786_c(trackX, trackY, trackZ + 1);
@@ -394,12 +394,12 @@ namespace betareborn
 
             if (var7 == 0)
             {
-                if (BlockRail.isRailBlockAt(worldObj, trackX, trackY + 1, trackZ - 1))
+                if (BlockRail.isRail(worldObj, trackX, trackY + 1, trackZ - 1))
                 {
                     var7 = 4;
                 }
 
-                if (BlockRail.isRailBlockAt(worldObj, trackX, trackY + 1, trackZ + 1))
+                if (BlockRail.isRail(worldObj, trackX, trackY + 1, trackZ + 1))
                 {
                     var7 = 5;
                 }
@@ -407,12 +407,12 @@ namespace betareborn
 
             if (var7 == 1)
             {
-                if (BlockRail.isRailBlockAt(worldObj, trackX + 1, trackY + 1, trackZ))
+                if (BlockRail.isRail(worldObj, trackX + 1, trackY + 1, trackZ))
                 {
                     var7 = 2;
                 }
 
-                if (BlockRail.isRailBlockAt(worldObj, trackX - 1, trackY + 1, trackZ))
+                if (BlockRail.isRail(worldObj, trackX - 1, trackY + 1, trackZ))
                 {
                     var7 = 3;
                 }

@@ -6,6 +6,7 @@ using java.lang;
 
 namespace betareborn.Entities
 {
+    //TODO: BREAKING MINECART CRASHES THE GAME!!
     public class EntityMinecart : Entity, IInventory
     {
         public static readonly Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityMinecart).TypeHandle);
@@ -257,7 +258,7 @@ namespace betareborn.Entities
                 int var1 = MathHelper.floor_double(posX);
                 int var2 = MathHelper.floor_double(posY);
                 int var3 = MathHelper.floor_double(posZ);
-                if (BlockRail.isRailBlockAt(worldObj, var1, var2 - 1, var3))
+                if (BlockRail.isRail(worldObj, var1, var2 - 1, var3))
                 {
                     --var2;
                 }
@@ -266,7 +267,7 @@ namespace betareborn.Entities
                 bool var6 = false;
                 var7 = 1.0D / 128.0D;
                 int var9 = worldObj.getBlockId(var1, var2, var3);
-                if (BlockRail.isRailBlock(var9))
+                if (BlockRail.isRail(var9))
                 {
                     Vec3D var10 = func_514_g(posX, posY, posZ);
                     int var11 = worldObj.getBlockMeta(var1, var2, var3);
@@ -279,7 +280,7 @@ namespace betareborn.Entities
                         var13 = !var12;
                     }
 
-                    if (((BlockRail)Block.BLOCKS[var9]).getIsPowered())
+                    if (((BlockRail)Block.BLOCKS[var9]).isAlwaysStraight())
                     {
                         var11 &= 7;
                     }
@@ -627,20 +628,20 @@ namespace betareborn.Entities
             int var9 = MathHelper.floor_double(var1);
             int var10 = MathHelper.floor_double(var3);
             int var11 = MathHelper.floor_double(var5);
-            if (BlockRail.isRailBlockAt(worldObj, var9, var10 - 1, var11))
+            if (BlockRail.isRail(worldObj, var9, var10 - 1, var11))
             {
                 --var10;
             }
 
             int var12 = worldObj.getBlockId(var9, var10, var11);
-            if (!BlockRail.isRailBlock(var12))
+            if (!BlockRail.isRail(var12))
             {
                 return null;
             }
             else
             {
                 int var13 = worldObj.getBlockMeta(var9, var10, var11);
-                if (((BlockRail)Block.BLOCKS[var12]).getIsPowered())
+                if (((BlockRail)Block.BLOCKS[var12]).isAlwaysStraight())
                 {
                     var13 &= 7;
                 }
@@ -677,17 +678,17 @@ namespace betareborn.Entities
             int var7 = MathHelper.floor_double(var1);
             int var8 = MathHelper.floor_double(var3);
             int var9 = MathHelper.floor_double(var5);
-            if (BlockRail.isRailBlockAt(worldObj, var7, var8 - 1, var9))
+            if (BlockRail.isRail(worldObj, var7, var8 - 1, var9))
             {
                 --var8;
             }
 
             int var10 = worldObj.getBlockId(var7, var8, var9);
-            if (BlockRail.isRailBlock(var10))
+            if (BlockRail.isRail(var10))
             {
                 int var11 = worldObj.getBlockMeta(var7, var8, var9);
                 var3 = (double)var8;
-                if (((BlockRail)Block.BLOCKS[var10]).getIsPowered())
+                if (((BlockRail)Block.BLOCKS[var10]).isAlwaysStraight())
                 {
                     var11 &= 7;
                 }

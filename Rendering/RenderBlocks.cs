@@ -342,19 +342,19 @@ namespace betareborn.Rendering
             {
                 case 0:
                     var18 = -0.3125D;
-                    var14 = BlockRedstoneRepeater.field_22024_a[var7];
+                    var14 = BlockRedstoneRepeater.RENDER_OFFSET[var7];
                     break;
                 case 1:
                     var16 = 0.3125D;
-                    var12 = -BlockRedstoneRepeater.field_22024_a[var7];
+                    var12 = -BlockRedstoneRepeater.RENDER_OFFSET[var7];
                     break;
                 case 2:
                     var18 = 0.3125D;
-                    var14 = -BlockRedstoneRepeater.field_22024_a[var7];
+                    var14 = -BlockRedstoneRepeater.RENDER_OFFSET[var7];
                     break;
                 case 3:
                     var16 = -0.3125D;
-                    var12 = BlockRedstoneRepeater.field_22024_a[var7];
+                    var12 = BlockRedstoneRepeater.RENDER_OFFSET[var7];
                     break;
             }
 
@@ -1342,7 +1342,7 @@ namespace betareborn.Rendering
                 var7 = overrideBlockTexture;
             }
 
-            if (var1.getIsPowered())
+            if (var1.isAlwaysStraight())
             {
                 var6 &= 7;
             }

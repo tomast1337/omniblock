@@ -6,12 +6,12 @@ namespace betareborn.Blocks
     public class BlockTorch : Block
     {
 
-        public BlockTorch(int var1, int var2) : base(var1, var2, Material.PISTON_BREAKABLE)
+        public BlockTorch(int id, int textureId) : base(id, textureId, Material.PISTON_BREAKABLE)
         {
             setTickRandomly(true);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
@@ -31,129 +31,129 @@ namespace betareborn.Blocks
             return 2;
         }
 
-        private bool func_31032_h(World var1, int var2, int var3, int var4)
+        private bool canPlaceOn(World world, int x, int y, int z)
         {
-            return var1.shouldSuffocate(var2, var3, var4) || var1.getBlockId(var2, var3, var4) == Block.FENCE.id;
+            return world.shouldSuffocate(x, y, z) || world.getBlockId(x, y, z) == Block.FENCE.id;
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return var1.shouldSuffocate(var2 - 1, var3, var4) ? true : (var1.shouldSuffocate(var2 + 1, var3, var4) ? true : (var1.shouldSuffocate(var2, var3, var4 - 1) ? true : (var1.shouldSuffocate(var2, var3, var4 + 1) ? true : func_31032_h(var1, var2, var3 - 1, var4))));
+            return world.shouldSuffocate(x - 1, y, z) ? true : (world.shouldSuffocate(x + 1, y, z) ? true : (world.shouldSuffocate(x, y, z - 1) ? true : (world.shouldSuffocate(x, y, z + 1) ? true : canPlaceOn(world, x, y - 1, z))));
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, int var5)
+        public override void onPlaced(World world, int x, int y, int z, int direction)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
-            if (var5 == 1 && func_31032_h(var1, var2, var3 - 1, var4))
+            int var6 = world.getBlockMeta(x, y, z);
+            if (direction == 1 && canPlaceOn(world, x, y - 1, z))
             {
                 var6 = 5;
             }
 
-            if (var5 == 2 && var1.shouldSuffocate(var2, var3, var4 + 1))
+            if (direction == 2 && world.shouldSuffocate(x, y, z + 1))
             {
                 var6 = 4;
             }
 
-            if (var5 == 3 && var1.shouldSuffocate(var2, var3, var4 - 1))
+            if (direction == 3 && world.shouldSuffocate(x, y, z - 1))
             {
                 var6 = 3;
             }
 
-            if (var5 == 4 && var1.shouldSuffocate(var2 + 1, var3, var4))
+            if (direction == 4 && world.shouldSuffocate(x + 1, y, z))
             {
                 var6 = 2;
             }
 
-            if (var5 == 5 && var1.shouldSuffocate(var2 - 1, var3, var4))
+            if (direction == 5 && world.shouldSuffocate(x - 1, y, z))
             {
                 var6 = 1;
             }
 
-            var1.setBlockMeta(var2, var3, var4, var6);
+            world.setBlockMeta(x, y, z, var6);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            base.onTick(var1, var2, var3, var4, var5);
-            if (var1.getBlockMeta(var2, var3, var4) == 0)
+            base.onTick(world, x, y, z, random);
+            if (world.getBlockMeta(x, y, z) == 0)
             {
-                onPlaced(var1, var2, var3, var4);
+                onPlaced(world, x, y, z);
             }
 
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            if (var1.shouldSuffocate(var2 - 1, var3, var4))
+            if (world.shouldSuffocate(x - 1, y, z))
             {
-                var1.setBlockMeta(var2, var3, var4, 1);
+                world.setBlockMeta(x, y, z, 1);
             }
-            else if (var1.shouldSuffocate(var2 + 1, var3, var4))
+            else if (world.shouldSuffocate(x + 1, y, z))
             {
-                var1.setBlockMeta(var2, var3, var4, 2);
+                world.setBlockMeta(x, y, z, 2);
             }
-            else if (var1.shouldSuffocate(var2, var3, var4 - 1))
+            else if (world.shouldSuffocate(x, y, z - 1))
             {
-                var1.setBlockMeta(var2, var3, var4, 3);
+                world.setBlockMeta(x, y, z, 3);
             }
-            else if (var1.shouldSuffocate(var2, var3, var4 + 1))
+            else if (world.shouldSuffocate(x, y, z + 1))
             {
-                var1.setBlockMeta(var2, var3, var4, 4);
+                world.setBlockMeta(x, y, z, 4);
             }
-            else if (func_31032_h(var1, var2, var3 - 1, var4))
+            else if (canPlaceOn(world, x, y - 1, z))
             {
-                var1.setBlockMeta(var2, var3, var4, 5);
+                world.setBlockMeta(x, y, z, 5);
             }
 
-            dropTorchIfCantStay(var1, var2, var3, var4);
+            breakIfCannotPlaceAt(world, x, y, z);
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (dropTorchIfCantStay(var1, var2, var3, var4))
+            if (breakIfCannotPlaceAt(world, x, y, z))
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
+                int var6 = world.getBlockMeta(x, y, z);
                 bool var7 = false;
-                if (!var1.shouldSuffocate(var2 - 1, var3, var4) && var6 == 1)
+                if (!world.shouldSuffocate(x - 1, y, z) && var6 == 1)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2 + 1, var3, var4) && var6 == 2)
+                if (!world.shouldSuffocate(x + 1, y, z) && var6 == 2)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2, var3, var4 - 1) && var6 == 3)
+                if (!world.shouldSuffocate(x, y, z - 1) && var6 == 3)
                 {
                     var7 = true;
                 }
 
-                if (!var1.shouldSuffocate(var2, var3, var4 + 1) && var6 == 4)
+                if (!world.shouldSuffocate(x, y, z + 1) && var6 == 4)
                 {
                     var7 = true;
                 }
 
-                if (!func_31032_h(var1, var2, var3 - 1, var4) && var6 == 5)
+                if (!canPlaceOn(world, x, y - 1, z) && var6 == 5)
                 {
                     var7 = true;
                 }
 
                 if (var7)
                 {
-                    dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                    world.setBlockWithNotify(x, y, z, 0);
                 }
             }
 
         }
 
-        private bool dropTorchIfCantStay(World var1, int var2, int var3, int var4)
+        private bool breakIfCannotPlaceAt(World world, int x, int y, int z)
         {
-            if (!canPlaceAt(var1, var2, var3, var4))
+            if (!canPlaceAt(world, x, y, z))
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
                 return false;
             }
             else
@@ -162,9 +162,9 @@ namespace betareborn.Blocks
             }
         }
 
-        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
         {
-            int var7 = var1.getBlockMeta(var2, var3, var4) & 7;
+            int var7 = world.getBlockMeta(x, y, z) & 7;
             float var8 = 0.15F;
             if (var7 == 1)
             {
@@ -188,41 +188,41 @@ namespace betareborn.Blocks
                 setBoundingBox(0.5F - var8, 0.0F, 0.5F - var8, 0.5F + var8, 0.6F, 0.5F + var8);
             }
 
-            return base.raycast(var1, var2, var3, var4, var5, var6);
+            return base.raycast(world, x, y, z, startPos, endPos);
         }
 
-        public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void randomDisplayTick(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
-            double var7 = (double)((float)var2 + 0.5F);
-            double var9 = (double)((float)var3 + 0.7F);
-            double var11 = (double)((float)var4 + 0.5F);
+            int var6 = world.getBlockMeta(x, y, z);
+            double var7 = (double)((float)x + 0.5F);
+            double var9 = (double)((float)y + 0.7F);
+            double var11 = (double)((float)z + 0.5F);
             double var13 = (double)0.22F;
             double var15 = (double)0.27F;
             if (var6 == 1)
             {
-                var1.addParticle("smoke", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
-                var1.addParticle("flame", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                world.addParticle("smoke", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                world.addParticle("flame", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
             }
             else if (var6 == 2)
             {
-                var1.addParticle("smoke", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
-                var1.addParticle("flame", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                world.addParticle("smoke", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                world.addParticle("flame", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
             }
             else if (var6 == 3)
             {
-                var1.addParticle("smoke", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
-                var1.addParticle("flame", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
+                world.addParticle("smoke", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
+                world.addParticle("flame", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
             }
             else if (var6 == 4)
             {
-                var1.addParticle("smoke", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
-                var1.addParticle("flame", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
+                world.addParticle("smoke", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
+                world.addParticle("flame", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
             }
             else
             {
-                var1.addParticle("smoke", var7, var9, var11, 0.0D, 0.0D, 0.0D);
-                var1.addParticle("flame", var7, var9, var11, 0.0D, 0.0D, 0.0D);
+                world.addParticle("smoke", var7, var9, var11, 0.0D, 0.0D, 0.0D);
+                world.addParticle("flame", var7, var9, var11, 0.0D, 0.0D, 0.0D);
             }
 
         }

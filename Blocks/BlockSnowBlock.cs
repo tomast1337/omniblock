@@ -7,27 +7,27 @@ namespace betareborn.Blocks
     public class BlockSnowBlock : Block
     {
 
-        public BlockSnowBlock(int var1, int var2) : base(var1, var2, Material.SNOW_BLOCK)
+        public BlockSnowBlock(int id, int textureId) : base(id, textureId, Material.SNOW_BLOCK)
         {
             setTickRandomly(true);
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.snowball.id;
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 4;
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (var1.getBrightness(LightType.Block, var2, var3, var4) > 11)
+            if (world.getBrightness(LightType.Block, x, y, z) > 11)
             {
-                dropStacks(var1, var2, var3, var4, var1.getBlockMeta(var2, var3, var4));
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }

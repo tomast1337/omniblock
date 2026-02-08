@@ -1,31 +1,30 @@
 using betareborn.Worlds;
-using java.util;
 
 namespace betareborn.Blocks
 {
     public class BlockRedstoneTorch : BlockTorch
     {
 
-        private bool torchActive = false;
-        private static List torchUpdates = new ArrayList();
+        private bool lit = false;
+        private static List<RedstoneUpdateInfo> torchUpdates = [];
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            return var1 == 1 ? Block.REDSTONE_WIRE.getTexture(var1, var2) : base.getTexture(var1, var2);
+            return side == 1 ? Block.REDSTONE_WIRE.getTexture(side, meta) : base.getTexture(side, meta);
         }
 
-        private bool checkForBurnout(World var1, int var2, int var3, int var4, bool var5)
+        private bool isBurnedOut(World var1, int var2, int var3, int var4, bool var5)
         {
             if (var5)
             {
-                torchUpdates.add(new RedstoneUpdateInfo(var2, var3, var4, var1.getWorldTime()));
+                torchUpdates.Add(new RedstoneUpdateInfo(var2, var3, var4, var1.getWorldTime()));
             }
 
             int var6 = 0;
 
-            for (int var7 = 0; var7 < torchUpdates.size(); ++var7)
+            for (int var7 = 0; var7 < torchUpdates.Capacity; ++var7)
             {
-                RedstoneUpdateInfo var8 = (RedstoneUpdateInfo)torchUpdates.get(var7);
+                RedstoneUpdateInfo var8 = torchUpdates[var7];
                 if (var8.x == var2 && var8.y == var3 && var8.z == var4)
                 {
                     ++var6;
@@ -39,9 +38,9 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public BlockRedstoneTorch(int var1, int var2, bool var3) : base(var1, var2)
+        public BlockRedstoneTorch(int id, int textureId, bool lit) : base(id, textureId)
         {
-            torchActive = var3;
+            this.lit = lit;
             setTickRandomly(true);
         }
 
@@ -50,105 +49,105 @@ namespace betareborn.Blocks
             return 2;
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            if (var1.getBlockMeta(var2, var3, var4) == 0)
+            if (world.getBlockMeta(x, y, z) == 0)
             {
-                base.onPlaced(var1, var2, var3, var4);
+                base.onPlaced(world, x, y, z);
             }
 
-            if (torchActive)
+            if (lit)
             {
-                var1.notifyNeighbors(var2, var3 - 1, var4, id);
-                var1.notifyNeighbors(var2, var3 + 1, var4, id);
-                var1.notifyNeighbors(var2 - 1, var3, var4, id);
-                var1.notifyNeighbors(var2 + 1, var3, var4, id);
-                var1.notifyNeighbors(var2, var3, var4 - 1, id);
-                var1.notifyNeighbors(var2, var3, var4 + 1, id);
-            }
-
-        }
-
-        public override void onBreak(World var1, int var2, int var3, int var4)
-        {
-            if (torchActive)
-            {
-                var1.notifyNeighbors(var2, var3 - 1, var4, id);
-                var1.notifyNeighbors(var2, var3 + 1, var4, id);
-                var1.notifyNeighbors(var2 - 1, var3, var4, id);
-                var1.notifyNeighbors(var2 + 1, var3, var4, id);
-                var1.notifyNeighbors(var2, var3, var4 - 1, id);
-                var1.notifyNeighbors(var2, var3, var4 + 1, id);
+                world.notifyNeighbors(x, y - 1, z, id);
+                world.notifyNeighbors(x, y + 1, z, id);
+                world.notifyNeighbors(x - 1, y, z, id);
+                world.notifyNeighbors(x + 1, y, z, id);
+                world.notifyNeighbors(x, y, z - 1, id);
+                world.notifyNeighbors(x, y, z + 1, id);
             }
 
         }
 
-        public override bool isPoweringSide(BlockView var1, int var2, int var3, int var4, int var5)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            if (!torchActive)
+            if (lit)
+            {
+                world.notifyNeighbors(x, y - 1, z, id);
+                world.notifyNeighbors(x, y + 1, z, id);
+                world.notifyNeighbors(x - 1, y, z, id);
+                world.notifyNeighbors(x + 1, y, z, id);
+                world.notifyNeighbors(x, y, z - 1, id);
+                world.notifyNeighbors(x, y, z + 1, id);
+            }
+
+        }
+
+        public override bool isPoweringSide(BlockView blockView, int x, int y, int z, int side)
+        {
+            if (!lit)
             {
                 return false;
             }
             else
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                return var6 == 5 && var5 == 1 ? false : (var6 == 3 && var5 == 3 ? false : (var6 == 4 && var5 == 2 ? false : (var6 == 1 && var5 == 5 ? false : var6 != 2 || var5 != 4)));
+                int var6 = blockView.getBlockMeta(x, y, z);
+                return var6 == 5 && side == 1 ? false : (var6 == 3 && side == 3 ? false : (var6 == 4 && side == 2 ? false : (var6 == 1 && side == 5 ? false : var6 != 2 || side != 4)));
             }
         }
 
-        private bool func_30002_h(World var1, int var2, int var3, int var4)
+        private bool shouldUnpower(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
-            return var5 == 5 && var1.isPoweringSide(var2, var3 - 1, var4, 0) ? true : (var5 == 3 && var1.isPoweringSide(var2, var3, var4 - 1, 2) ? true : (var5 == 4 && var1.isPoweringSide(var2, var3, var4 + 1, 3) ? true : (var5 == 1 && var1.isPoweringSide(var2 - 1, var3, var4, 4) ? true : var5 == 2 && var1.isPoweringSide(var2 + 1, var3, var4, 5))));
+            int var5 = world.getBlockMeta(x, y, z);
+            return var5 == 5 && world.isPoweringSide(x, y - 1, z, 0) ? true : (var5 == 3 && world.isPoweringSide(x, y, z - 1, 2) ? true : (var5 == 4 && world.isPoweringSide(x, y, z + 1, 3) ? true : (var5 == 1 && world.isPoweringSide(x - 1, y, z, 4) ? true : var5 == 2 && world.isPoweringSide(x + 1, y, z, 5))));
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            bool var6 = func_30002_h(var1, var2, var3, var4);
+            bool var6 = shouldUnpower(world, x, y, z);
 
-            while (torchUpdates.size() > 0 && var1.getWorldTime() - ((RedstoneUpdateInfo)torchUpdates.get(0)).updateTime > 100L)
+            while (torchUpdates.Count > 0 && world.getWorldTime() - torchUpdates[0].updateTime > 100L)
             {
-                torchUpdates.remove(0);
+                torchUpdates.RemoveAt(0);
             }
 
-            if (torchActive)
+            if (lit)
             {
                 if (var6)
                 {
-                    var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.REDSTONE_TORCH.id, var1.getBlockMeta(var2, var3, var4));
-                    if (checkForBurnout(var1, var2, var3, var4, true))
+                    world.setBlockAndMetadataWithNotify(x, y, z, Block.REDSTONE_TORCH.id, world.getBlockMeta(x, y, z));
+                    if (isBurnedOut(world, x, y, z, true))
                     {
-                        var1.playSound((double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F), "random.fizz", 0.5F, 2.6F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.8F);
+                        world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "random.fizz", 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
 
                         for (int var7 = 0; var7 < 5; ++var7)
                         {
-                            double var8 = (double)var2 + var5.nextDouble() * 0.6D + 0.2D;
-                            double var10 = (double)var3 + var5.nextDouble() * 0.6D + 0.2D;
-                            double var12 = (double)var4 + var5.nextDouble() * 0.6D + 0.2D;
-                            var1.addParticle("smoke", var8, var10, var12, 0.0D, 0.0D, 0.0D);
+                            double var8 = (double)x + random.nextDouble() * 0.6D + 0.2D;
+                            double var10 = (double)y + random.nextDouble() * 0.6D + 0.2D;
+                            double var12 = (double)z + random.nextDouble() * 0.6D + 0.2D;
+                            world.addParticle("smoke", var8, var10, var12, 0.0D, 0.0D, 0.0D);
                         }
                     }
                 }
             }
-            else if (!var6 && !checkForBurnout(var1, var2, var3, var4, false))
+            else if (!var6 && !isBurnedOut(world, x, y, z, false))
             {
-                var1.setBlockAndMetadataWithNotify(var2, var3, var4, Block.LIT_REDSTONE_TORCH.id, var1.getBlockMeta(var2, var3, var4));
+                world.setBlockAndMetadataWithNotify(x, y, z, Block.LIT_REDSTONE_TORCH.id, world.getBlockMeta(x, y, z));
             }
 
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            base.neighborUpdate(var1, var2, var3, var4, var5);
-            var1.scheduleBlockUpdate(var2, var3, var4, id, getTickRate());
+            base.neighborUpdate(world, x, y, z, id);
+            world.scheduleBlockUpdate(x, y, z, base.id, getTickRate());
         }
 
-        public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)
+        public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)
         {
-            return var5 == 0 ? isPoweringSide(var1, var2, var3, var4, var5) : false;
+            return side == 0 ? isPoweringSide(world, x, y, z, side) : false;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Block.LIT_REDSTONE_TORCH.id;
         }
@@ -158,35 +157,35 @@ namespace betareborn.Blocks
             return true;
         }
 
-        public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void randomDisplayTick(World world, int x, int y, int z, java.util.Random random)
         {
-            if (torchActive)
+            if (lit)
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                double var7 = (double)((float)var2 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
-                double var9 = (double)((float)var3 + 0.7F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
-                double var11 = (double)((float)var4 + 0.5F) + (double)(var5.nextFloat() - 0.5F) * 0.2D;
+                int var6 = world.getBlockMeta(x, y, z);
+                double var7 = (double)((float)x + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
+                double var9 = (double)((float)y + 0.7F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
+                double var11 = (double)((float)z + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
                 double var13 = (double)0.22F;
                 double var15 = (double)0.27F;
                 if (var6 == 1)
                 {
-                    var1.addParticle("reddust", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("reddust", var7 - var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
                 }
                 else if (var6 == 2)
                 {
-                    var1.addParticle("reddust", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("reddust", var7 + var15, var9 + var13, var11, 0.0D, 0.0D, 0.0D);
                 }
                 else if (var6 == 3)
                 {
-                    var1.addParticle("reddust", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("reddust", var7, var9 + var13, var11 - var15, 0.0D, 0.0D, 0.0D);
                 }
                 else if (var6 == 4)
                 {
-                    var1.addParticle("reddust", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("reddust", var7, var9 + var13, var11 + var15, 0.0D, 0.0D, 0.0D);
                 }
                 else
                 {
-                    var1.addParticle("reddust", var7, var9, var11, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("reddust", var7, var9, var11, 0.0D, 0.0D, 0.0D);
                 }
 
             }

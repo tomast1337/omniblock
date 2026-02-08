@@ -40,7 +40,7 @@ namespace betareborn.Items
             }
             else
             {
-                if (var24.typeOfHit == EnumMovingObjectType.TILE)
+                if (var24.type == HitResultType.TILE)
                 {
                     int var25 = var24.blockX;
                     int var26 = var24.blockY;
@@ -71,32 +71,32 @@ namespace betareborn.Items
                             return new ItemStack(Item.bucketEmpty);
                         }
 
-                        if (var24.sideHit == 0)
+                        if (var24.side == 0)
                         {
                             --var26;
                         }
 
-                        if (var24.sideHit == 1)
+                        if (var24.side == 1)
                         {
                             ++var26;
                         }
 
-                        if (var24.sideHit == 2)
+                        if (var24.side == 2)
                         {
                             --var27;
                         }
 
-                        if (var24.sideHit == 3)
+                        if (var24.side == 3)
                         {
                             ++var27;
                         }
 
-                        if (var24.sideHit == 4)
+                        if (var24.side == 4)
                         {
                             --var25;
                         }
 
-                        if (var24.sideHit == 5)
+                        if (var24.side == 5)
                         {
                             ++var25;
                         }
@@ -121,7 +121,7 @@ namespace betareborn.Items
                         }
                     }
                 }
-                else if (isFull == 0 && var24.entityHit is EntityCow)
+                else if (isFull == 0 && var24.entity is EntityCow)
                 {
                     return new ItemStack(Item.bucketMilk);
                 }

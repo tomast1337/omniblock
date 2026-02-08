@@ -84,10 +84,10 @@ namespace betareborn.Items
                         var9 += 4;
                     }
 
-                    var3.editingBlocks = true;
+                    var3.pauseTicking = true;
                     var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.id, var9);
                     var3.setBlockAndMetadataWithNotify(var4, var5 + 1, var6, var8.id, var9 + 8);
-                    var3.editingBlocks = false;
+                    var3.pauseTicking = false;
                     var3.notifyNeighbors(var4, var5, var6, var8.id);
                     var3.notifyNeighbors(var4, var5 + 1, var6, var8.id);
                     --var1.count;

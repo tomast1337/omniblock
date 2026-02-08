@@ -18,7 +18,7 @@ namespace betareborn.Items
         public override bool onItemUse(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
         {
             int var8 = var3.getBlockId(var4, var5, var6);
-            if (BlockRail.isRailBlock(var8))
+            if (BlockRail.isRail(var8))
             {
                 if (!var3.isRemote)
                 {

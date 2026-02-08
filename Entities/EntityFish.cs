@@ -221,7 +221,7 @@ namespace betareborn.Entities
                 var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
                 if (var3 != null)
                 {
-                    var2 = Vec3D.createVector(var3.hitVec.xCoord, var3.hitVec.yCoord, var3.hitVec.zCoord);
+                    var2 = Vec3D.createVector(var3.pos.xCoord, var3.pos.yCoord, var3.pos.zCoord);
                 }
 
                 Entity var4 = null;
@@ -239,7 +239,7 @@ namespace betareborn.Entities
                         HitResult var12 = var11.raycast(var20, var2);
                         if (var12 != null)
                         {
-                            var13 = var20.distanceTo(var12.hitVec);
+                            var13 = var20.distanceTo(var12.pos);
                             if (var13 < var6 || var6 == 0.0D)
                             {
                                 var4 = var9;
@@ -256,11 +256,11 @@ namespace betareborn.Entities
 
                 if (var3 != null)
                 {
-                    if (var3.entityHit != null)
+                    if (var3.entity != null)
                     {
-                        if (var3.entityHit.attackEntityFrom(angler, 0))
+                        if (var3.entity.attackEntityFrom(angler, 0))
                         {
-                            bobber = var3.entityHit;
+                            bobber = var3.entity;
                         }
                     }
                     else

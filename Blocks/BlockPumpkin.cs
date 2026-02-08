@@ -7,57 +7,57 @@ namespace betareborn.Blocks
     public class BlockPumpkin : Block
     {
 
-        private bool blockType;
+        private bool lit;
 
-        public BlockPumpkin(int var1, int var2, bool var3) : base(var1, Material.PUMPKIN)
+        public BlockPumpkin(int id, int textureId, bool lit) : base(id, Material.PUMPKIN)
         {
-            textureId = var2;
+            this.textureId = textureId;
             setTickRandomly(true);
-            blockType = var3;
+            this.lit = lit;
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            if (var1 == 1)
+            if (side == 1)
             {
                 return textureId;
             }
-            else if (var1 == 0)
+            else if (side == 0)
             {
                 return textureId;
             }
             else
             {
                 int var3 = textureId + 1 + 16;
-                if (blockType)
+                if (lit)
                 {
                     ++var3;
                 }
 
-                return var2 == 2 && var1 == 2 ? var3 : (var2 == 3 && var1 == 5 ? var3 : (var2 == 0 && var1 == 3 ? var3 : (var2 == 1 && var1 == 4 ? var3 : textureId + 16)));
+                return meta == 2 && side == 2 ? var3 : (meta == 3 && side == 5 ? var3 : (meta == 0 && side == 3 ? var3 : (meta == 1 && side == 4 ? var3 : textureId + 16)));
             }
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 1 ? textureId : (var1 == 0 ? textureId : (var1 == 3 ? textureId + 1 + 16 : textureId + 16));
+            return side == 1 ? textureId : (side == 0 ? textureId : (side == 3 ? textureId + 1 + 16 : textureId + 16));
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            base.onPlaced(var1, var2, var3, var4);
+            base.onPlaced(world, x, y, z);
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockId(var2, var3, var4);
-            return (var5 == 0 || Block.BLOCKS[var5].material.isReplaceable()) && var1.shouldSuffocate(var2, var3 - 1, var4);
+            int var5 = world.getBlockId(x, y, z);
+            return (var5 == 0 || Block.BLOCKS[var5].material.isReplaceable()) && world.shouldSuffocate(x, y - 1, z);
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 2.5D) & 3;
-            var1.setBlockMeta(var2, var3, var4, var6);
+            int var6 = MathHelper.floor_double((double)(placer.rotationYaw * 4.0F / 360.0F) + 2.5D) & 3;
+            world.setBlockMeta(x, y, z, var6);
         }
     }
 

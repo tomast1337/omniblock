@@ -902,14 +902,14 @@ namespace betareborn
 
                 if (var1 != 0 || leftClickCounter <= 0)
                 {
-                    if (var2 && objectMouseOver != null && objectMouseOver.typeOfHit == EnumMovingObjectType.TILE &&
+                    if (var2 && objectMouseOver != null && objectMouseOver.type == HitResultType.TILE &&
                         var1 == 0)
                     {
                         int var3 = objectMouseOver.blockX;
                         int var4 = objectMouseOver.blockY;
                         int var5 = objectMouseOver.blockZ;
-                        playerController.sendBlockRemoving(var3, var4, var5, objectMouseOver.sideHit);
-                        effectRenderer.addBlockHitEffects(var3, var4, var5, objectMouseOver.sideHit);
+                        playerController.sendBlockRemoving(var3, var4, var5, objectMouseOver.side);
+                        effectRenderer.addBlockHitEffects(var3, var4, var5, objectMouseOver.side);
                     }
                     else
                     {
@@ -936,27 +936,27 @@ namespace betareborn
                         leftClickCounter = 10;
                     }
                 }
-                else if (objectMouseOver.typeOfHit == EnumMovingObjectType.ENTITY)
+                else if (objectMouseOver.type == HitResultType.ENTITY)
                 {
                     if (var1 == 0)
                     {
-                        playerController.attackEntity(thePlayer, objectMouseOver.entityHit);
+                        playerController.attackEntity(thePlayer, objectMouseOver.entity);
                     }
 
                     if (var1 == 1)
                     {
-                        playerController.interactWithEntity(thePlayer, objectMouseOver.entityHit);
+                        playerController.interactWithEntity(thePlayer, objectMouseOver.entity);
                     }
                 }
-                else if (objectMouseOver.typeOfHit == EnumMovingObjectType.TILE)
+                else if (objectMouseOver.type == HitResultType.TILE)
                 {
                     int var3 = objectMouseOver.blockX;
                     int var4 = objectMouseOver.blockY;
                     int var5 = objectMouseOver.blockZ;
-                    int var6 = objectMouseOver.sideHit;
+                    int var6 = objectMouseOver.side;
                     if (var1 == 0)
                     {
-                        playerController.clickBlock(var3, var4, var5, objectMouseOver.sideHit);
+                        playerController.clickBlock(var3, var4, var5, objectMouseOver.side);
                     }
                     else
                     {

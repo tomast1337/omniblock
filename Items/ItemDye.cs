@@ -35,7 +35,7 @@ namespace betareborn.Items
                 {
                     if (!var3.isRemote)
                     {
-                        ((BlockSapling)Block.SAPLING).growTree(var3, var4, var5, var6, var3.random);
+                        ((BlockSapling)Block.SAPLING).generate(var3, var4, var5, var6, var3.random);
                         --var1.count;
                     }
                     return true;
