@@ -21,6 +21,7 @@ Contributions are welcome, but this is a personal project with no guarantees on 
 Use Allman style formatting for braces:
 
 if (...)
+
 {
 
 }
