@@ -1,3 +1,4 @@
+using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Entities;
 using betareborn.Worlds;
@@ -5,23 +6,23 @@ using betareborn.Worlds.Gen;
 using betareborn.Worlds.Gen.Features;
 using java.awt;
 
-namespace betareborn.Biomes
+namespace betareborn.Worlds.Biomes
 {
     public class Biome
     {
-        public static readonly Biome RAINFOREST = (new BiomeGenRainforest()).setColor(588342).setBiomeName("Rainforest").func_4124_a(2094168);
-        public static readonly Biome SWAMPLAND = (new BiomeGenSwamp()).setColor(522674).setBiomeName("Swampland").func_4124_a(9154376);
-        public static readonly Biome SEASONAL_FOREST = (new Biome()).setColor(10215459).setBiomeName("Seasonal Forest");
-        public static readonly Biome FOREST = (new BiomeGenForest()).setColor(353825).setBiomeName("Forest").func_4124_a(5159473);
-        public static readonly Biome SAVANNA = (new BiomeGenDesert()).setColor(14278691).setBiomeName("Savanna");
-        public static readonly Biome SHRUBLAND = (new Biome()).setColor(10595616).setBiomeName("Shrubland");
-        public static readonly Biome TAIGA = (new BiomeGenTaiga()).setColor(3060051).setBiomeName("Taiga").setEnableSnow().func_4124_a(8107825);
-        public static readonly Biome DESERT = (new BiomeGenDesert()).setColor(16421912).setBiomeName("Desert").setDisableRain();
-        public static readonly Biome PLAINS = (new BiomeGenDesert()).setColor(16767248).setBiomeName("Plains");
-        public static readonly Biome ICE_DESERT = (new BiomeGenDesert()).setColor(16772499).setBiomeName("Ice Desert").setEnableSnow().setDisableRain().func_4124_a(12899129);
-        public static readonly Biome TUNDRA = (new Biome()).setColor(5762041).setBiomeName("Tundra").setEnableSnow().func_4124_a(12899129);
-        public static readonly Biome HELL = (new BiomeGenHell()).setColor(16711680).setBiomeName("Hell").setDisableRain();
-        public static readonly Biome SKY = (new BiomeGenSky()).setColor(8421631).setBiomeName("Sky").setDisableRain();
+        public static readonly Biome RAINFOREST = new BiomeGenRainforest().setColor(588342).setBiomeName("Rainforest").func_4124_a(2094168);
+        public static readonly Biome SWAMPLAND = new BiomeGenSwamp().setColor(522674).setBiomeName("Swampland").func_4124_a(9154376);
+        public static readonly Biome SEASONAL_FOREST = new Biome().setColor(10215459).setBiomeName("Seasonal Forest");
+        public static readonly Biome FOREST = new BiomeGenForest().setColor(353825).setBiomeName("Forest").func_4124_a(5159473);
+        public static readonly Biome SAVANNA = new BiomeGenDesert().setColor(14278691).setBiomeName("Savanna");
+        public static readonly Biome SHRUBLAND = new Biome().setColor(10595616).setBiomeName("Shrubland");
+        public static readonly Biome TAIGA = new BiomeGenTaiga().setColor(3060051).setBiomeName("Taiga").setEnableSnow().func_4124_a(8107825);
+        public static readonly Biome DESERT = new BiomeGenDesert().setColor(16421912).setBiomeName("Desert").setDisableRain();
+        public static readonly Biome PLAINS = new BiomeGenDesert().setColor(16767248).setBiomeName("Plains");
+        public static readonly Biome ICE_DESERT = new BiomeGenDesert().setColor(16772499).setBiomeName("Ice Desert").setEnableSnow().setDisableRain().func_4124_a(12899129);
+        public static readonly Biome TUNDRA = new Biome().setColor(5762041).setBiomeName("Tundra").setEnableSnow().func_4124_a(12899129);
+        public static readonly Biome HELL = new BiomeGenHell().setColor(16711680).setBiomeName("Hell").setDisableRain();
+        public static readonly Biome SKY = new BiomeGenSky().setColor(8421631).setBiomeName("Sky").setDisableRain();
         public string name;
         public int grassColor;
         public byte topBlockId = (byte)Block.GRASS_BLOCK.id;
@@ -60,7 +61,7 @@ namespace betareborn.Biomes
             {
                 for (int var1 = 0; var1 < 64; ++var1)
                 {
-                    BIOMES[var0 + var1 * 64] = locateBiome((float)var0 / 63.0F, (float)var1 / 63.0F);
+                    BIOMES[var0 + var1 * 64] = locateBiome(var0 / 63.0F, var1 / 63.0F);
                 }
             }
 
@@ -70,7 +71,7 @@ namespace betareborn.Biomes
 
         public virtual Feature getRandomWorldGenForTrees(java.util.Random var1)
         {
-            return (Feature)(var1.nextInt(10) == 0 ? new LargeOakTreeFeature() : new OakTreeFeature());
+            return var1.nextInt(10) == 0 ? new LargeOakTreeFeature() : new OakTreeFeature();
         }
 
         protected Biome setEnableSnow()
@@ -79,7 +80,7 @@ namespace betareborn.Biomes
             return this;
         }
 
-        protected Biome setBiomeName(String var1)
+        protected Biome setBiomeName(string var1)
         {
             name = var1;
             return this;
@@ -107,7 +108,7 @@ namespace betareborn.Biomes
         public static Biome locateBiome(float temp, float downfall)
         {
             downfall *= temp;
-            return temp < 0.1F ? TUNDRA : (downfall < 0.2F ? (temp < 0.5F ? TUNDRA : (temp < 0.95F ? SAVANNA : DESERT)) : (downfall > 0.5F && temp < 0.7F ? SWAMPLAND : (temp < 0.5F ? TAIGA : (temp < 0.97F ? (downfall < 0.35F ? SHRUBLAND : FOREST) : (downfall < 0.45F ? PLAINS : (downfall < 0.9F ? SEASONAL_FOREST : RAINFOREST))))));
+            return temp < 0.1F ? TUNDRA : downfall < 0.2F ? temp < 0.5F ? TUNDRA : temp < 0.95F ? SAVANNA : DESERT : downfall > 0.5F && temp < 0.7F ? SWAMPLAND : temp < 0.5F ? TAIGA : temp < 0.97F ? downfall < 0.35F ? SHRUBLAND : FOREST : downfall < 0.45F ? PLAINS : downfall < 0.9F ? SEASONAL_FOREST : RAINFOREST;
         }
 
         public virtual int getSkyColorByTemp(float var1)
@@ -128,7 +129,7 @@ namespace betareborn.Biomes
 
         public List<SpawnListEntry> getSpawnableList(EnumCreatureType var1)
         {
-            return var1 == EnumCreatureType.monster ? spawnableMonsterList : (var1 == EnumCreatureType.creature ? spawnableCreatureList : (var1 == EnumCreatureType.waterCreature ? spawnableWaterCreatureList : null));
+            return var1 == EnumCreatureType.monster ? spawnableMonsterList : var1 == EnumCreatureType.creature ? spawnableCreatureList : var1 == EnumCreatureType.waterCreature ? spawnableWaterCreatureList : null;
         }
 
         public bool getEnableSnow()

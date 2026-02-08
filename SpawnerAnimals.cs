@@ -1,9 +1,9 @@
-using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Entities;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
+using betareborn.Worlds.Biomes;
 using java.lang;
 using java.util;
 

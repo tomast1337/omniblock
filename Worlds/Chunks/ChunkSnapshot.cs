@@ -1,7 +1,6 @@
-﻿using betareborn.Worlds.Chunks;
-using System.Buffers;
+﻿using System.Buffers;
 
-namespace betareborn.Chunks
+namespace betareborn.Worlds.Chunks
 {
     public class ChunkSnapshot : IDisposable
     {

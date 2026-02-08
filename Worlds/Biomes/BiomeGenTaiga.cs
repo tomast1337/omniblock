@@ -3,7 +3,7 @@ using betareborn.Worlds;
 using betareborn.Worlds.Gen;
 using betareborn.Worlds.Gen.Features;
 
-namespace betareborn.Biomes
+namespace betareborn.Worlds.Biomes
 {
     public class BiomeGenTaiga : Biome
     {
@@ -15,7 +15,7 @@ namespace betareborn.Biomes
 
         public override Feature getRandomWorldGenForTrees(java.util.Random var1)
         {
-            return (Feature)(var1.nextInt(3) == 0 ? new PineTreeFeature() : new SpruceTreeFeature());
+            return var1.nextInt(3) == 0 ? new PineTreeFeature() : new SpruceTreeFeature();
         }
     }
 

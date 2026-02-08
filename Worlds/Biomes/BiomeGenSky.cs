@@ -1,6 +1,6 @@
 using betareborn.Entities;
 
-namespace betareborn.Biomes
+namespace betareborn.Worlds.Biomes
 {
     public class BiomeGenSky : Biome
     {

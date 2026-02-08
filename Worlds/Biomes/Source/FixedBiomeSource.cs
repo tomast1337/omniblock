@@ -1,4 +1,3 @@
-using betareborn.Biomes;
 using betareborn.Util.Maths;
 using java.util;
 

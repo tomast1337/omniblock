@@ -1,11 +1,11 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Entities;
-using betareborn.Items;
+using betareborn.Rendering;
 using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn.Rendering
+namespace betareborn.Items
 {
     public class ItemRenderer
     {
@@ -44,10 +44,10 @@ namespace betareborn.Rendering
 
                 Tessellator var3 = Tessellator.instance;
                 int var4 = var1.getItemIcon(var2);
-                float var5 = ((float)(var4 % 16 * 16) + 0.0F) / 256.0F;
-                float var6 = ((float)(var4 % 16 * 16) + 15.99F) / 256.0F;
-                float var7 = ((float)(var4 / 16 * 16) + 0.0F) / 256.0F;
-                float var8 = ((float)(var4 / 16 * 16) + 15.99F) / 256.0F;
+                float var5 = (var4 % 16 * 16 + 0.0F) / 256.0F;
+                float var6 = (var4 % 16 * 16 + 15.99F) / 256.0F;
+                float var7 = (var4 / 16 * 16 + 0.0F) / 256.0F;
+                float var8 = (var4 / 16 * 16 + 15.99F) / 256.0F;
                 float var9 = 1.0F;
                 float var10 = 0.0F;
                 float var11 = 0.3F;
@@ -82,7 +82,7 @@ namespace betareborn.Rendering
                 float var17;
                 for (var14 = 0; var14 < 16; ++var14)
                 {
-                    var15 = (float)var14 / 16.0F;
+                    var15 = var14 / 16.0F;
                     var16 = var6 + (var5 - var6) * var15 - 0.001953125F;
                     var17 = var9 * var15;
                     var3.addVertexWithUV((double)var17, 0.0D, (double)(0.0F - var13), (double)var16, (double)var8);
@@ -97,7 +97,7 @@ namespace betareborn.Rendering
 
                 for (var14 = 0; var14 < 16; ++var14)
                 {
-                    var15 = (float)var14 / 16.0F;
+                    var15 = var14 / 16.0F;
                     var16 = var6 + (var5 - var6) * var15 - 0.001953125F;
                     var17 = var9 * var15 + 1.0F / 16.0F;
                     var3.addVertexWithUV((double)var17, 1.0D, (double)(0.0F - var13), (double)var16, (double)var7);
@@ -112,7 +112,7 @@ namespace betareborn.Rendering
 
                 for (var14 = 0; var14 < 16; ++var14)
                 {
-                    var15 = (float)var14 / 16.0F;
+                    var15 = var14 / 16.0F;
                     var16 = var8 + (var7 - var8) * var15 - 0.001953125F;
                     var17 = var9 * var15 + 1.0F / 16.0F;
                     var3.addVertexWithUV(0.0D, (double)var17, 0.0D, (double)var6, (double)var16);
@@ -127,7 +127,7 @@ namespace betareborn.Rendering
 
                 for (var14 = 0; var14 < 16; ++var14)
                 {
-                    var15 = (float)var14 / 16.0F;
+                    var15 = var14 / 16.0F;
                     var16 = var8 + (var7 - var8) * var15 - 0.001953125F;
                     var17 = var9 * var15;
                     var3.addVertexWithUV((double)var9, (double)var17, 0.0D, (double)var5, (double)var16);
@@ -161,9 +161,9 @@ namespace betareborn.Rendering
             if (var5 != null)
             {
                 int var7 = Item.itemsList[var5.itemID].getColorFromDamage(var5.getItemDamage());
-                var8 = (float)(var7 >> 16 & 255) / 255.0F;
-                var9 = (float)(var7 >> 8 & 255) / 255.0F;
-                var10 = (float)(var7 & 255) / 255.0F;
+                var8 = (var7 >> 16 & 255) / 255.0F;
+                var9 = (var7 >> 8 & 255) / 255.0F;
+                var10 = (var7 & 255) / 255.0F;
                 GLManager.GL.Color4(var6 * var8, var6 * var9, var6 * var10, 1.0F);
             }
             else
@@ -203,11 +203,11 @@ namespace betareborn.Rendering
                 {
                     int var21 = var17 * 2 - 1;
                     GLManager.GL.PushMatrix();
-                    GLManager.GL.Translate(-0.0F, -0.6F, 1.1F * (float)var21);
-                    GLManager.GL.Rotate((float)(-45 * var21), 1.0F, 0.0F, 0.0F);
+                    GLManager.GL.Translate(-0.0F, -0.6F, 1.1F * var21);
+                    GLManager.GL.Rotate(-45 * var21, 1.0F, 0.0F, 0.0F);
                     GLManager.GL.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
                     GLManager.GL.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
-                    GLManager.GL.Rotate((float)(-65 * var21), 0.0F, 1.0F, 0.0F);
+                    GLManager.GL.Rotate(-65 * var21, 0.0F, 1.0F, 0.0F);
                     Render var11 = RenderManager.instance.getEntityRenderObject(mc.thePlayer);
                     RenderPlayer var12 = (RenderPlayer)var11;
                     float var13 = 1.0F;
@@ -234,10 +234,10 @@ namespace betareborn.Rendering
                 GLManager.GL.Normal3(0.0F, 0.0F, -1.0F);
                 var19.startDrawingQuads();
                 byte var20 = 7;
-                var19.addVertexWithUV((double)(0 - var20), (double)(128 + var20), 0.0D, 0.0D, 1.0D);
-                var19.addVertexWithUV((double)(128 + var20), (double)(128 + var20), 0.0D, 1.0D, 1.0D);
-                var19.addVertexWithUV((double)(128 + var20), (double)(0 - var20), 0.0D, 1.0D, 0.0D);
-                var19.addVertexWithUV((double)(0 - var20), (double)(0 - var20), 0.0D, 0.0D, 0.0D);
+                var19.addVertexWithUV(0 - var20, 128 + var20, 0.0D, 0.0D, 1.0D);
+                var19.addVertexWithUV(128 + var20, 128 + var20, 0.0D, 1.0D, 1.0D);
+                var19.addVertexWithUV(128 + var20, 0 - var20, 0.0D, 1.0D, 0.0D);
+                var19.addVertexWithUV(0 - var20, 0 - var20, 0.0D, 0.0D, 0.0D);
                 var19.draw();
                 MapData var22 = Item.mapItem.func_28012_a(var5, mc.theWorld);
                 field_28131_f.func_28157_a(mc.thePlayer, mc.renderEngine, var22);
@@ -333,12 +333,12 @@ namespace betareborn.Rendering
                 {
                     for (int var7 = 0; var7 < 8; ++var7)
                     {
-                        float var8 = ((float)((var7 >> 0) % 2) - 0.5F) * mc.thePlayer.width * 0.9F;
-                        float var9 = ((float)((var7 >> 1) % 2) - 0.5F) * mc.thePlayer.height * 0.2F;
-                        float var10 = ((float)((var7 >> 2) % 2) - 0.5F) * mc.thePlayer.width * 0.9F;
-                        int var11 = MathHelper.floor_float((float)var2 + var8);
-                        int var12 = MathHelper.floor_float((float)var3 + var9);
-                        int var13 = MathHelper.floor_float((float)var4 + var10);
+                        float var8 = ((var7 >> 0) % 2 - 0.5F) * mc.thePlayer.width * 0.9F;
+                        float var9 = ((var7 >> 1) % 2 - 0.5F) * mc.thePlayer.height * 0.2F;
+                        float var10 = ((var7 >> 2) % 2 - 0.5F) * mc.thePlayer.width * 0.9F;
+                        int var11 = MathHelper.floor_float(var2 + var8);
+                        int var12 = MathHelper.floor_float(var3 + var9);
+                        int var13 = MathHelper.floor_float(var4 + var10);
                         if (mc.theWorld.shouldSuffocate(var11, var12, var13))
                         {
                             var6 = mc.theWorld.getBlockId(var11, var12, var13);
@@ -375,10 +375,10 @@ namespace betareborn.Rendering
             float var8 = 1.0F;
             float var9 = -0.5F;
             float var10 = 0.0078125F;
-            float var11 = (float)(var2 % 16) / 256.0F - var10;
-            float var12 = ((float)(var2 % 16) + 15.99F) / 256.0F + var10;
-            float var13 = (float)(var2 / 16) / 256.0F - var10;
-            float var14 = ((float)(var2 / 16) + 15.99F) / 256.0F + var10;
+            float var11 = var2 % 16 / 256.0F - var10;
+            float var12 = (var2 % 16 + 15.99F) / 256.0F + var10;
+            float var13 = var2 / 16 / 256.0F - var10;
+            float var14 = (var2 / 16 + 15.99F) / 256.0F + var10;
             var3.startDrawingQuads();
             var3.addVertexWithUV((double)var5, (double)var7, (double)var9, (double)var12, (double)var14);
             var3.addVertexWithUV((double)var6, (double)var7, (double)var9, (double)var11, (double)var14);
@@ -430,17 +430,17 @@ namespace betareborn.Rendering
                 int var5 = Block.FIRE.textureId + var4 * 16;
                 int var6 = (var5 & 15) << 4;
                 int var7 = var5 & 240;
-                float var8 = (float)var6 / 256.0F;
-                float var9 = ((float)var6 + 15.99F) / 256.0F;
-                float var10 = (float)var7 / 256.0F;
-                float var11 = ((float)var7 + 15.99F) / 256.0F;
+                float var8 = var6 / 256.0F;
+                float var9 = (var6 + 15.99F) / 256.0F;
+                float var10 = var7 / 256.0F;
+                float var11 = (var7 + 15.99F) / 256.0F;
                 float var12 = (0.0F - var3) / 2.0F;
                 float var13 = var12 + var3;
                 float var14 = 0.0F - var3 / 2.0F;
                 float var15 = var14 + var3;
                 float var16 = -0.5F;
-                GLManager.GL.Translate((float)(-(var4 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
-                GLManager.GL.Rotate((float)(var4 * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Translate(-(var4 * 2 - 1) * 0.24F, -0.3F, 0.0F);
+                GLManager.GL.Rotate((var4 * 2 - 1) * 10.0F, 0.0F, 1.0F, 0.0F);
                 var2.startDrawingQuads();
                 var2.addVertexWithUV((double)var12, (double)var14, (double)var16, (double)var9, (double)var11);
                 var2.addVertexWithUV((double)var13, (double)var14, (double)var16, (double)var8, (double)var11);

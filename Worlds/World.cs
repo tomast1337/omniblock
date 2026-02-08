@@ -1,4 +1,3 @@
-using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Entities;
 using betareborn.NBT;
@@ -17,6 +16,7 @@ using betareborn.Blocks.Materials;
 using betareborn.Worlds.Biomes.Source;
 using betareborn.Util.Maths;
 using betareborn.Util.Hit;
+using betareborn.Worlds.Biomes;
 
 namespace betareborn.Worlds
 {

@@ -1,12 +1,13 @@
-using betareborn.Biomes;
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Chunks;
+using betareborn.Items;
 using betareborn.Profiling;
 using betareborn.Rendering;
 using betareborn.Util.Hit;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
+using betareborn.Worlds.Biomes;
 using betareborn.Worlds.Chunks;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;

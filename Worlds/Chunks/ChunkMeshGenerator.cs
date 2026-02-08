@@ -1,10 +1,9 @@
 ﻿using betareborn.Blocks;
 using betareborn.Rendering;
-using betareborn.Worlds;
 using Silk.NET.Maths;
 using System.Collections.Concurrent;
 
-namespace betareborn.Chunks
+namespace betareborn.Worlds.Chunks
 {
     public class ChunkMeshGenerator
     {

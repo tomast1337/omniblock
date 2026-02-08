@@ -1,7 +1,7 @@
-using betareborn.Chunks;
 using betareborn.Profiling;
 using betareborn.Rendering;
 using betareborn.Util.Maths;
+using betareborn.Worlds.Chunks;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
