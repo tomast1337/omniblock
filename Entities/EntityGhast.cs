@@ -146,7 +146,7 @@ namespace betareborn.Entities
             double var9 = (waypointX - posX) / var7;
             double var11 = (waypointY - posY) / var7;
             double var13 = (waypointZ - posZ) / var7;
-            Box var15 = boundingBox.copy();
+            Box var15 = boundingBox;
 
             for (int var16 = 1; (double)var16 < var7; ++var16)
             {

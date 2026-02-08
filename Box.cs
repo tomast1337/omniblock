@@ -230,11 +230,6 @@ namespace betareborn
             return new Box(var7, var9, var11, var13, var15, var17);
         }
 
-        public Box copy()
-        {
-            return new Box(minX, minY, minZ, maxX, maxY, maxZ);
-        }
-
         public HitResult raycast(Vec3D min, Vec3D max)
         {
             Vec3D var3 = min.getIntermediateWithXValue(max, minX);
@@ -358,16 +353,6 @@ namespace betareborn
         private bool containsInXYPlane(Vec3D pos)
         {
             return pos == null ? false : pos.xCoord >= minX && pos.xCoord <= maxX && pos.yCoord >= minY && pos.yCoord <= maxY;
-        }
-
-        public void clone(Box other)
-        {
-            minX = other.minX;
-            minY = other.minY;
-            minZ = other.minZ;
-            maxX = other.maxX;
-            maxY = other.maxY;
-            maxZ = other.maxZ;
         }
 
         public override string ToString()

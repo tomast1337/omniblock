@@ -323,7 +323,7 @@ namespace betareborn.Entities
                 double var11 = var1;
                 double var13 = var3;
                 double var15 = var5;
-                Box var17 = boundingBox.copy();
+                Box var17 = boundingBox;
                 bool var18 = onGround && isSneaking();
                 if (var18)
                 {
@@ -416,8 +416,8 @@ namespace betareborn.Entities
                     var1 = var11;
                     var3 = (double)stepHeight;
                     var5 = var15;
-                    Box var27 = boundingBox.copy();
-                    boundingBox.clone(var17);
+                    Box var27 = boundingBox;
+                    boundingBox = var17;
                     var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.stretch(var11, var3, var15));
 
                     for (var28 = 0; var28 < var35.Count; ++var28)
@@ -482,7 +482,7 @@ namespace betareborn.Entities
                         var1 = var37;
                         var3 = var23;
                         var5 = var25;
-                        boundingBox.clone(var27);
+                        boundingBox = var27;
                     }
                     else
                     {
