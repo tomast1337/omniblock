@@ -108,8 +108,8 @@ namespace betareborn.Entities
             if (var15 > 0)
             {
                 Block.BLOCKS[var15].updateBoundingBox(worldObj, xTile, yTile, zTile);
-                Box var2 = Block.BLOCKS[var15].getCollisionShape(worldObj, xTile, yTile, zTile);
-                if (var2 != null && var2.contains(Vec3D.createVector(posX, posY, posZ)))
+                Box? var2 = Block.BLOCKS[var15].getCollisionShape(worldObj, xTile, yTile, zTile);
+                if (var2 != null && var2.Value.contains(Vec3D.createVector(posX, posY, posZ)))
                 {
                     inGround = true;
                 }

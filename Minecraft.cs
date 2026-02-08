@@ -519,7 +519,6 @@ namespace betareborn
                     }
                     try
                     {
-                        Box.resetCacheCount();
                         Vec3D.initialize();
                         if (Display.isCloseRequested())
                         {
@@ -727,7 +726,6 @@ namespace betareborn
             try
             {
                 java.lang.System.gc();
-                Box.clearCache();
                 Vec3D.cleanUp();
             }
             catch (Throwable var3)

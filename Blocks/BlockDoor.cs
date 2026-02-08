@@ -69,7 +69,7 @@ namespace betareborn.Blocks
             return base.getBoundingBox(world, x, y, z);
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             updateBoundingBox(world, x, y, z);
             return base.getCollisionShape(world, x, y, z);

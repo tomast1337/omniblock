@@ -86,7 +86,7 @@ namespace betareborn.Blocks
             return var6 == material ? false : (var6 == Material.ICE ? false : (side == 1 ? true : base.isSideVisible(blockView, x, y, z, side)));
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }

@@ -512,7 +512,7 @@ namespace betareborn.Entities
 
                 if (!(var1 is EntityPlayer) || func_27025_G())
                 {
-                    var var7 = worldObj.getEntitiesWithinAABB(EntityWolf.Class, Box.createCached(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                    var var7 = worldObj.getEntitiesWithinAABB(EntityWolf.Class, new Box(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
 
                     foreach (Entity var5 in var7)
                     {

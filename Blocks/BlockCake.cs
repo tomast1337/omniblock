@@ -28,13 +28,13 @@ namespace betareborn.Blocks
             setBoundingBox(var1, 0.0F, var1, 1.0F - var1, var2, 1.0F - var1);
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             int var5 = world.getBlockMeta(x, y, z);
             float var6 = 1.0F / 16.0F;
             float var7 = (float)(1 + var5 * 2) / 16.0F;
             float var8 = 0.5F;
-            return Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8 - var6), (double)((float)(z + 1) - var6));
+            return new Box((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8 - var6), (double)((float)(z + 1) - var6));
         }
 
         public override Box getBoundingBox(World world, int x, int y, int z)
@@ -43,7 +43,7 @@ namespace betareborn.Blocks
             float var6 = 1.0F / 16.0F;
             float var7 = (float)(1 + var5 * 2) / 16.0F;
             float var8 = 0.5F;
-            return Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8), (double)((float)(z + 1) - var6));
+            return new Box((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8), (double)((float)(z + 1) - var6));
         }
 
         public override int getTexture(int side, int meta)

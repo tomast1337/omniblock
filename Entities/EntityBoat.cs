@@ -43,12 +43,12 @@ namespace betareborn.Entities
         {
         }
 
-        public override Box getCollisionBox(Entity var1)
+        public override Box? getCollisionBox(Entity var1)
         {
             return var1.boundingBox;
         }
 
-        public override Box getBoundingBox()
+        public override Box? getBoundingBox()
         {
             return boundingBox;
         }
@@ -166,7 +166,7 @@ namespace betareborn.Entities
             {
                 double var5 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var4 + 0) / (double)var1 - 0.125D;
                 double var7 = boundingBox.minY + (boundingBox.maxY - boundingBox.minY) * (double)(var4 + 1) / (double)var1 - 0.125D;
-                Box var9 = Box.createCached(boundingBox.minX, var5, boundingBox.minZ, boundingBox.maxX, var7, boundingBox.maxZ);
+                Box var9 = new Box(boundingBox.minX, var5, boundingBox.minZ, boundingBox.maxX, var7, boundingBox.maxZ);
                 if (worldObj.isAABBInMaterial(var9, Material.WATER))
                 {
                     var2 += 1.0D / (double)var1;

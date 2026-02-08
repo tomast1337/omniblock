@@ -22,7 +22,7 @@ namespace betareborn.Blocks
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             return base.getCollisionShape(world, x, y, z);
         }

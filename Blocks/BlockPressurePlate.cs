@@ -22,7 +22,7 @@ namespace betareborn.Blocks
             return 20;
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
@@ -92,17 +92,17 @@ namespace betareborn.Blocks
             List<Entity> var8 = null;
             if (activationRule == PressurePlateActiviationRule.EVERYTHING)
             {
-                var8 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
+                var8 = world.getEntitiesWithinAABBExcludingEntity((Entity)null, new Box((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
             }
 
             if (activationRule == PressurePlateActiviationRule.MOBS)
             {
-                var8 = world.getEntitiesWithinAABB(EntityLiving.Class, Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
+                var8 = world.getEntitiesWithinAABB(EntityLiving.Class, new Box((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
             }
 
             if (activationRule == PressurePlateActiviationRule.PLAYERS)
             {
-                var8 = world.getEntitiesWithinAABB(EntityPlayer.Class, Box.createCached((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
+                var8 = world.getEntitiesWithinAABB(EntityPlayer.Class, new Box((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
             }
 
             if (var8.Count > 0)

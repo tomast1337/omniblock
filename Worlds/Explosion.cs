@@ -90,7 +90,7 @@ namespace betareborn.Worlds
             int var29 = MathHelper.floor_double(explosionY + explosionSize + 1.0D);
             int var7 = MathHelper.floor_double(explosionZ - explosionSize - 1.0D);
             int var30 = MathHelper.floor_double(explosionZ + explosionSize + 1.0D);
-            var var9 = worldObj.getEntitiesWithinAABBExcludingEntity(exploder, Box.createCached(var3, var5, var7, var4, var29, var30));
+            var var9 = worldObj.getEntitiesWithinAABBExcludingEntity(exploder, new Box(var3, var5, var7, var4, var29, var30));
             Vec3D var31 = Vec3D.createVector(explosionX, explosionY, explosionZ);
 
             for (int var11 = 0; var11 < var9.Count; ++var11)

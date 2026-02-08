@@ -30,7 +30,7 @@ namespace betareborn.Entities
         public float rotationPitch;
         public float prevRotationYaw;
         public float prevRotationPitch;
-        public readonly Box boundingBox = Box.create(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+        public Box boundingBox = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         public bool onGround = false;
         public bool isCollidedHorizontally;
         public bool isCollidedVertically;
@@ -147,7 +147,7 @@ namespace betareborn.Entities
             posZ = var5;
             float var7 = width / 2.0F;
             float var8 = height;
-            boundingBox.set(var1 - (double)var7, var3 - (double)yOffset + (double)ySize, var5 - (double)var7, var1 + (double)var7, var3 - (double)yOffset + (double)ySize + (double)var8, var5 + (double)var7);
+            boundingBox = new Box(var1 - (double)var7, var3 - (double)yOffset + (double)ySize, var5 - (double)var7, var1 + (double)var7, var3 - (double)yOffset + (double)ySize + (double)var8, var5 + (double)var7);
         }
 
         public void func_346_d(float var1, float var2)
@@ -323,7 +323,7 @@ namespace betareborn.Entities
                 double var11 = var1;
                 double var13 = var3;
                 double var15 = var5;
-                Box var17 = boundingBox.copy();
+                Box var17 = boundingBox;
                 bool var18 = onGround && isSneaking();
                 if (var18)
                 {
@@ -416,8 +416,8 @@ namespace betareborn.Entities
                     var1 = var11;
                     var3 = (double)stepHeight;
                     var5 = var15;
-                    Box var27 = boundingBox.copy();
-                    boundingBox.clone(var17);
+                    Box var27 = boundingBox;
+                    boundingBox = var17;
                     var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.stretch(var11, var3, var15));
 
                     for (var28 = 0; var28 < var35.Count; ++var28)
@@ -482,7 +482,7 @@ namespace betareborn.Entities
                         var1 = var37;
                         var3 = var23;
                         var5 = var25;
-                        boundingBox.clone(var27);
+                        boundingBox = var27;
                     }
                     else
                     {
@@ -625,7 +625,7 @@ namespace betareborn.Entities
 
         }
 
-        public virtual Box getBoundingBox()
+        public virtual Box? getBoundingBox()
         {
             return null;
         }
@@ -1047,7 +1047,7 @@ namespace betareborn.Entities
             return false;
         }
 
-        public virtual Box getCollisionBox(Entity var1)
+        public virtual Box? getCollisionBox(Entity var1)
         {
             return null;
         }

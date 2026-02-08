@@ -63,12 +63,12 @@ namespace betareborn.Entities
         {
         }
 
-        public override Box getCollisionBox(Entity var1)
+        public override Box? getCollisionBox(Entity var1)
         {
             return var1.boundingBox;
         }
 
-        public override Box getBoundingBox()
+        public override Box? getBoundingBox()
         {
             return null;
         }

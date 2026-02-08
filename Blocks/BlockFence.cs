@@ -15,9 +15,9 @@ namespace betareborn.Blocks
             return world.getBlockId(x, y - 1, z) == id ? true : (!world.getMaterial(x, y - 1, z).isSolid() ? false : base.canPlaceAt(world, x, y, z));
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
-            return Box.createCached((double)x, (double)y, (double)z, (double)(x + 1), (double)((float)y + 1.5F), (double)(z + 1));
+            return new Box((double)x, (double)y, (double)z, (double)(x + 1), (double)((float)y + 1.5F), (double)(z + 1));
         }
 
         public override bool isOpaque()

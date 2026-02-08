@@ -14,10 +14,10 @@ namespace betareborn.Blocks
             setTickRandomly(true);
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             int var5 = world.getBlockMeta(x, y, z) & 7;
-            return var5 >= 3 ? Box.createCached((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)((float)y + 0.5F), (double)z + maxZ) : null;
+            return var5 >= 3 ? new Box((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)((float)y + 0.5F), (double)z + maxZ) : null;
         }
 
         public override bool isOpaque()

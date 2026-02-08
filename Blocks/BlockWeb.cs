@@ -21,7 +21,7 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }

@@ -281,22 +281,21 @@ namespace betareborn.Blocks
 
         public virtual Box getBoundingBox(World world, int x, int y, int z)
         {
-            return Box.createCached((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)y + maxY, (double)z + maxZ);
+            return new Box((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)y + maxY, (double)z + maxZ);
         }
 
         public virtual void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
         {
-            Box var7 = getCollisionShape(world, x, y, z);
-            if (var7 != null && box.intersects(var7))
+            Box? var7 = getCollisionShape(world, x, y, z);
+            if (var7 != null && box.intersects(var7.Value))
             {
-                boxes.Add(var7);
+                boxes.Add(var7.Value);
             }
-
         }
 
-        public virtual Box getCollisionShape(World world, int x, int y, int z)
+        public virtual Box? getCollisionShape(World world, int x, int y, int z)
         {
-            return Box.createCached((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)y + maxY, (double)z + maxZ);
+            return new Box((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)y + maxY, (double)z + maxZ);
         }
 
         public virtual bool isOpaque()
