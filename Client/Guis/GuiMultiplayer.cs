@@ -25,7 +25,7 @@ namespace betareborn.Client.Guis
             controlList.clear();
             controlList.add(new GuiButton(0, width / 2 - 100, height / 4 + 96 + 12, var1.translateKey("multiplayer.connect")));
             controlList.add(new GuiButton(1, width / 2 - 100, height / 4 + 120 + 12, var1.translateKey("gui.cancel")));
-            string var2 = mc.gameSettings.lastServer.Replace("_", ":");
+            string var2 = mc.options.lastServer.Replace("_", ":");
             ((GuiButton)controlList.get(0)).enabled = var2.Length > 0;
             field_22111_h = new GuiTextField(this, fontRenderer, width / 2 - 100, height / 4 - 10 + 50 + 18, 200, 20, var2);
             field_22111_h.isFocused = true;
@@ -48,8 +48,8 @@ namespace betareborn.Client.Guis
                 else if (var1.id == 0)
                 {
                     string var2 = field_22111_h.getText().Trim();
-                    mc.gameSettings.lastServer = var2.Replace(":", "_");
-                    mc.gameSettings.saveOptions();
+                    mc.options.lastServer = var2.Replace(":", "_");
+                    mc.options.saveOptions();
                     string[] var3 = var2.Split(":");
                     if (var2.StartsWith("["))
                     {
@@ -110,7 +110,7 @@ namespace betareborn.Client.Guis
             field_22111_h.mouseClicked(var1, var2, var3);
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             TranslationStorage var4 = TranslationStorage.getInstance();
             drawDefaultBackground();
@@ -119,7 +119,7 @@ namespace betareborn.Client.Guis
             drawString(fontRenderer, var4.translateKey("multiplayer.info2"), width / 2 - 140, height / 4 - 60 + 60 + 9, 10526880);
             drawString(fontRenderer, var4.translateKey("multiplayer.ipinfo"), width / 2 - 140, height / 4 - 60 + 60 + 36, 10526880);
             field_22111_h.drawTextBox();
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

@@ -27,7 +27,7 @@ namespace betareborn.Client.Guis
             mc.player.craftingInventory = inventorySlots;
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             int var4 = (width - xSize) / 2;
@@ -89,7 +89,7 @@ namespace betareborn.Client.Guis
             }
 
             GLManager.GL.PopMatrix();
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.GL.Enable(GLEnum.DepthTest);
         }
@@ -184,7 +184,7 @@ namespace betareborn.Client.Guis
 
         protected override void keyTyped(char eventChar, int eventKey)
         {
-            if (eventKey == 1 || eventKey == mc.gameSettings.keyBindInventory.keyCode)
+            if (eventKey == 1 || eventKey == mc.options.keyBindInventory.keyCode)
             {
                 mc.player.closeScreen();
             }

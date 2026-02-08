@@ -168,7 +168,7 @@ namespace betareborn.Client.Rendering
         public void loadRenderers()
         {
             Block.LEAVES.setGraphicsLevel(true);
-            renderDistance = mc.gameSettings.renderDistance;
+            renderDistance = mc.options.renderDistance;
 
             worldRenderer?.Dispose();
             worldRenderer = new(worldObj, 2);
@@ -198,7 +198,7 @@ namespace betareborn.Client.Rendering
             else
             {
                 BlockEntityRenderer.instance.cacheActiveRenderInfo(worldObj, renderEngine, mc.fontRenderer, mc.camera, var3);
-                RenderManager.instance.cacheActiveRenderInfo(worldObj, renderEngine, mc.fontRenderer, mc.camera, mc.gameSettings, var3);
+                RenderManager.instance.cacheActiveRenderInfo(worldObj, renderEngine, mc.fontRenderer, mc.camera, mc.options, var3);
                 countEntitiesTotal = 0;
                 countEntitiesRendered = 0;
                 countEntitiesHidden = 0;
@@ -227,7 +227,7 @@ namespace betareborn.Client.Rendering
                 for (var6 = 0; var6 < var5.Count; ++var6)
                 {
                     var7 = var5[var6];
-                    if (var7.isInRangeToRenderVec3D(var1) && (var7.ignoreFrustumCheck || var2.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != mc.camera || mc.gameSettings.thirdPersonView || mc.camera.isSleeping()))
+                    if (var7.isInRangeToRenderVec3D(var1) && (var7.ignoreFrustumCheck || var2.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != mc.camera || mc.options.thirdPersonView || mc.camera.isSleeping()))
                     {
                         int var8 = MathHelper.floor_double(var7.posY);
                         if (var8 < 0)
@@ -263,7 +263,7 @@ namespace betareborn.Client.Rendering
 
         public int sortAndRender(EntityLiving var1, int pass, double var3, ICamera cam)
         {
-            if (mc.gameSettings.renderDistance != renderDistance)
+            if (mc.options.renderDistance != renderDistance)
             {
                 loadRenderers();
             }
@@ -276,7 +276,7 @@ namespace betareborn.Client.Rendering
 
             if (pass == 0)
             {
-                worldRenderer.Render(cam, new(var33, var7, var9), renderDistance, worldObj.getTime(), (float)var3, mc.gameSettings.environmentAnimation);
+                worldRenderer.Render(cam, new(var33, var7, var9), renderDistance, worldObj.getTime(), (float)var3, mc.options.environmentAnimation);
             }
             else
             {

@@ -6,9 +6,9 @@ namespace betareborn
     {
 
         private bool[] movementKeyStates = new bool[10];
-        private GameSettings gameSettings;
+        private GameOptions gameSettings;
 
-        public MovementInputFromOptions(GameSettings var1)
+        public MovementInputFromOptions(GameOptions var1)
         {
             gameSettings = var1;
         }

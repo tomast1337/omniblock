@@ -26,9 +26,9 @@ namespace betareborn.Client.Guis
             fontRenderer.drawString("Crafting", 86, 16, 4210752);
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
             xSize_lo = var1;
             ySize_lo = var2;
         }

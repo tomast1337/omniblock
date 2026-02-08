@@ -22,7 +22,7 @@ namespace betareborn.Client.Guis
         {
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             drawCenteredString(fontRenderer, "Out of memory!", width / 2, height / 4 - 60 + 20, 16777215);
@@ -33,7 +33,7 @@ namespace betareborn.Client.Guis
             drawString(fontRenderer, "downloading the game and playing it offline.", width / 2 - 140, height / 4 - 60 + 60 + 45, 10526880);
             drawString(fontRenderer, "To prevent level corruption, the current game has quit.", width / 2 - 140, height / 4 - 60 + 60 + 63, 10526880);
             drawString(fontRenderer, "Please restart the game.", width / 2 - 140, height / 4 - 60 + 60 + 81, 10526880);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

@@ -50,7 +50,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.LoadIdentity();
             achievementWindowWidth = theGame.displayWidth;
             achievementWindowHeight = theGame.displayHeight;
-            ScaledResolution var1 = new ScaledResolution(theGame.gameSettings, theGame.displayWidth, theGame.displayHeight);
+            ScaledResolution var1 = new ScaledResolution(theGame.options, theGame.displayWidth, theGame.displayHeight);
             achievementWindowWidth = var1.getScaledWidth();
             achievementWindowHeight = var1.getScaledHeight();
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);

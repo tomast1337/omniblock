@@ -27,7 +27,7 @@ namespace betareborn.Client.Guis
 
         }
 
-        public void func_25087_a(float var1)
+        public void render(float var1)
         {
             field_25089_b.textureManager.bindTexture(field_25089_b.textureManager.getTexture("/gui/particles.png"));
 

@@ -145,7 +145,7 @@ namespace betareborn.Client.Guis
             textboxSeed.mouseClicked(var1, var2, var3);
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             TranslationStorage var4 = TranslationStorage.getInstance();
             drawDefaultBackground();
@@ -156,7 +156,7 @@ namespace betareborn.Client.Guis
             drawString(fontRenderer, var4.translateKey("selectWorld.seedInfo"), width / 2 - 100, 140, 10526880);
             textboxWorldName.drawTextBox();
             textboxSeed.drawTextBox();
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
 
         public override void selectNextField()

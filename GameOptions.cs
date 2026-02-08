@@ -6,7 +6,7 @@ using java.lang;
 
 namespace betareborn
 {
-    public class GameSettings : java.lang.Object
+    public class GameOptions : java.lang.Object
     {
         private static readonly string[] RENDER_DISTANCES = ["options.renderDistance.far", "options.renderDistance.normal", "options.renderDistance.short", "options.renderDistance.tiny"];
         private static readonly string[] DIFFICULTIES = ["options.difficulty.peaceful", "options.difficulty.easy", "options.difficulty.normal", "options.difficulty.hard"];
@@ -44,7 +44,7 @@ namespace betareborn
         public string lastServer = "";
         public bool field_22275_C = false;
         public bool smoothCamera = false;
-        public bool field_22273_E = false;
+        public bool debugCamera = false;
         public float field_22272_F = 1.0F;
         public float field_22271_G = 1.0F;
         public int guiScale = 1;
@@ -55,7 +55,7 @@ namespace betareborn
         public bool debugMode = false;
         public bool environmentAnimation = true;
 
-        public GameSettings(Minecraft var1, java.io.File var2)
+        public GameOptions(Minecraft var1, java.io.File var2)
         {
             keyBindings = [keyBindForward, keyBindLeft, keyBindBack, keyBindRight, keyBindJump, keyBindSneak, keyBindDrop, keyBindInventory, keyBindChat, keyBindToggleFog];
             mc = var1;
@@ -64,7 +64,7 @@ namespace betareborn
             INITIAL_MSAA = msaaLevel;
         }
 
-        public GameSettings()
+        public GameOptions()
         {
         }
 

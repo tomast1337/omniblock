@@ -78,7 +78,7 @@ namespace betareborn.Client.Guis
 
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             drawCenteredString(fontRenderer, screenTitle, width / 2, 40, 16777215);
@@ -125,7 +125,7 @@ namespace betareborn.Client.Guis
             BlockEntityRenderer.instance.renderTileEntityAt(entitySign, -0.5D, -0.75D, -0.5D, 0.0F);
             entitySign.currentRow = -1;
             GLManager.GL.PopMatrix();
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

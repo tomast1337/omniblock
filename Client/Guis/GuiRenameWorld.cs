@@ -77,14 +77,14 @@ namespace betareborn.Client.Guis
             field_22114_h.mouseClicked(var1, var2, var3);
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             TranslationStorage var4 = TranslationStorage.getInstance();
             drawDefaultBackground();
             drawCenteredString(fontRenderer, var4.translateKey("selectWorld.renameTitle"), width / 2, height / 4 - 60 + 20, 16777215);
             drawString(fontRenderer, var4.translateKey("selectWorld.enterName"), width / 2 - 100, 47, 10526880);
             field_22114_h.drawTextBox();
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

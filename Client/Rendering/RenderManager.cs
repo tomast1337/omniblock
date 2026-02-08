@@ -22,7 +22,7 @@ namespace betareborn.Client.Rendering
         public EntityLiving livingPlayer;
         public float playerViewY;
         public float playerViewX;
-        public GameSettings options;
+        public GameOptions options;
         public double field_1222_l;
         public double field_1221_m;
         public double field_1220_n;
@@ -86,7 +86,7 @@ namespace betareborn.Client.Rendering
             return getEntityClassRenderObject(var1.getClass());
         }
 
-        public void cacheActiveRenderInfo(World var1, TextureManager var2, FontRenderer var3, EntityLiving var4, GameSettings var5, float var6)
+        public void cacheActiveRenderInfo(World var1, TextureManager var2, FontRenderer var3, EntityLiving var4, GameOptions var5, float var6)
         {
             worldObj = var1;
             renderEngine = var2;

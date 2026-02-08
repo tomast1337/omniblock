@@ -8,7 +8,7 @@ namespace betareborn
         public double field_25120_b;
         public int scaleFactor;
 
-        public ScaledResolution(GameSettings var1, int var2, int var3)
+        public ScaledResolution(GameOptions var1, int var2, int var3)
         {
             scaledWidth = var2;
             scaledHeight = var3;

@@ -54,7 +54,7 @@ namespace betareborn.Client.Guis
 
         protected override void keyTyped(char eventChar, int eventKey)
         {
-            if (eventKey == mc.gameSettings.keyBindInventory.keyCode)
+            if (eventKey == mc.options.keyBindInventory.keyCode)
             {
                 mc.displayGuiScreen(null);
                 mc.setIngameFocus();
@@ -66,7 +66,7 @@ namespace betareborn.Client.Guis
 
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             if (Mouse.isButtonDown(0))
             {
@@ -367,7 +367,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.DepthFunc(GLEnum.Lequal);
             GLManager.GL.Disable(GLEnum.DepthTest);
             GLManager.GL.Enable(GLEnum.Texture2D);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
             if (var27 != null)
             {
                 string var31 = var27.statName;

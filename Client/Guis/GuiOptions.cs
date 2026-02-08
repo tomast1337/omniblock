@@ -7,10 +7,10 @@ namespace betareborn.Client.Guis
 
         private GuiScreen parentScreen;
         protected string screenTitle = "Options";
-        private GameSettings options;
+        private GameOptions options;
         private static EnumOptions[] field_22135_k = new EnumOptions[] { EnumOptions.MUSIC, EnumOptions.SOUND, EnumOptions.INVERT_MOUSE, EnumOptions.SENSITIVITY, EnumOptions.DIFFICULTY };
 
-        public GuiOptions(GuiScreen var1, GameSettings var2)
+        public GuiOptions(GuiScreen var1, GameOptions var2)
         {
             parentScreen = var1;
             options = var2;
@@ -56,30 +56,30 @@ namespace betareborn.Client.Guis
 
                 if (var1.id == 101)
                 {
-                    mc.gameSettings.saveOptions();
+                    mc.options.saveOptions();
                     mc.displayGuiScreen(new GuiVideoSettings(this, options));
                 }
 
                 if (var1.id == 100)
                 {
-                    mc.gameSettings.saveOptions();
+                    mc.options.saveOptions();
                     mc.displayGuiScreen(new GuiControls(this, options));
                 }
 
                 if (var1.id == 200)
                 {
-                    mc.gameSettings.saveOptions();
+                    mc.options.saveOptions();
                     mc.displayGuiScreen(parentScreen);
                 }
 
             }
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             drawCenteredString(fontRenderer, screenTitle, width / 2, 20, 16777215);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

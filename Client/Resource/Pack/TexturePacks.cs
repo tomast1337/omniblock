@@ -21,7 +21,7 @@ namespace betareborn.Client.Resource.Pack
                 texturePackDir.mkdirs();
             }
 
-            currentTexturePack = var1.gameSettings.skin;
+            currentTexturePack = var1.options.skin;
             updateAvaliableTexturePacks();
             selectedTexturePack.func_6482_a();
         }
@@ -37,8 +37,8 @@ namespace betareborn.Client.Resource.Pack
                 selectedTexturePack.closeTexturePackFile();
                 currentTexturePack = var1.texturePackFileName;
                 selectedTexturePack = var1;
-                mc.gameSettings.skin = currentTexturePack;
-                mc.gameSettings.saveOptions();
+                mc.options.skin = currentTexturePack;
+                mc.options.saveOptions();
                 selectedTexturePack.func_6482_a();
                 return true;
             }

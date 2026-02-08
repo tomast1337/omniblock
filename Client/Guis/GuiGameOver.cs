@@ -41,7 +41,7 @@ namespace betareborn.Client.Guis
 
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawGradientRect(0, 0, width, height, 1615855616, -1602211792);
             GLManager.GL.PushMatrix();
@@ -49,7 +49,7 @@ namespace betareborn.Client.Guis
             drawCenteredString(fontRenderer, "Game over!", width / 2 / 2, 30, 16777215);
             GLManager.GL.PopMatrix();
             drawCenteredString(fontRenderer, "Score: &e" + mc.player.getScore(), width / 2, 100, 16777215);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
 
         public override bool doesGuiPauseGame()

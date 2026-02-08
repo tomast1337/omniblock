@@ -64,7 +64,7 @@ namespace betareborn
         public GuiIngame ingameGUI;
         public bool skipRenderWorld = false;
         public HitResult objectMouseOver = null;
-        public GameSettings gameSettings;
+        public GameOptions options;
         public SoundManager sndManager = new SoundManager();
         public MouseHelper mouseHelper;
         public TexturePacks texturePackList;
@@ -151,13 +151,13 @@ namespace betareborn
 
             mcDataDir = getMinecraftDir();
             saveLoader = new RegionWorldStorageSource(new java.io.File(mcDataDir, "saves"));
-            gameSettings = new GameSettings(this, mcDataDir);
-            Profiler.Enabled = gameSettings.debugMode;
+            options = new GameOptions(this, mcDataDir);
+            Profiler.Enabled = options.debugMode;
 
             try
             {
                 int[] msaaValues = [0, 2, 4, 8];
-                Display.MSAA_Samples = msaaValues[gameSettings.msaaLevel];
+                Display.MSAA_Samples = msaaValues[options.msaaLevel];
                 Display.create();
                 GLManager.Init(Display.getGL()!);
             }
@@ -166,8 +166,8 @@ namespace betareborn
                 Console.WriteLine(var6);
             }
             texturePackList = new TexturePacks(this, mcDataDir);
-            textureManager = new TextureManager(texturePackList, gameSettings);
-            fontRenderer = new FontRenderer(gameSettings, textureManager);
+            textureManager = new TextureManager(texturePackList, options);
+            fontRenderer = new FontRenderer(options, textureManager);
             WaterColors.setcolorMap(textureManager.func_28149_a("/misc/watercolor.png"));
             GrassColors.func_28181_a(textureManager.func_28149_a("/misc/grasscolor.png"));
             FoliageColors.func_28152_a(textureManager.func_28149_a("/misc/foliagecolor.png"));
@@ -183,12 +183,12 @@ namespace betareborn
             if (anisotropicFiltering)
             {
                 GLManager.GL.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAnisotropy);
-                GameSettings.MaxAnisotropy = maxAnisotropy;
+                GameOptions.MaxAnisotropy = maxAnisotropy;
                 Console.WriteLine($"Max Anisotropy: {maxAnisotropy}");
             }
             else
             {
-                GameSettings.MaxAnisotropy = 1.0f;
+                GameOptions.MaxAnisotropy = 1.0f;
             }
 
             try
@@ -221,7 +221,7 @@ namespace betareborn
             GLManager.GL.LoadIdentity();
             GLManager.GL.MatrixMode(GLEnum.Modelview);
             checkGLError("Startup");
-            sndManager.loadSoundSettings(gameSettings);
+            sndManager.loadSoundSettings(options);
             textureManager.registerTextureFX(textureLavaFX);
             textureManager.registerTextureFX(textureWaterFX);
             textureManager.registerTextureFX(new TexturePortalFX());
@@ -259,7 +259,7 @@ namespace betareborn
 
         private void loadScreen()
         {
-            ScaledResolution var1 = new ScaledResolution(gameSettings, displayWidth, displayHeight);
+            ScaledResolution var1 = new ScaledResolution(options, displayWidth, displayHeight);
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
@@ -414,7 +414,7 @@ namespace betareborn
                 if (var1 != null)
                 {
                     setIngameNotInFocus();
-                    ScaledResolution var2 = new ScaledResolution(gameSettings, displayWidth, displayHeight);
+                    ScaledResolution var2 = new ScaledResolution(options, displayWidth, displayHeight);
                     int var3 = var2.getScaledWidth();
                     int var4 = var2.getScaledHeight();
                     ((GuiScreen)var1).setWorldAndResolution(this, var3, var4);
@@ -514,7 +514,7 @@ namespace betareborn
 
                 while (running)
                 {
-                    if (gameSettings.debugMode)
+                    if (options.debugMode)
                     {
                         Profiler.Update(timer.deltaTime);
                         Profiler.Record("frame Time", timer.deltaTime * 1000.0f);
@@ -540,7 +540,7 @@ namespace betareborn
                         }
 
                         long var23 = java.lang.System.nanoTime();
-                        if (gameSettings.debugMode)
+                        if (options.debugMode)
                         {
                             Profiler.PushGroup("runTicks");
                         }
@@ -561,7 +561,7 @@ namespace betareborn
                             }
                         }
 
-                        if (gameSettings.debugMode)
+                        if (options.debugMode)
                         {
                             Profiler.PopGroup();
                         }
@@ -573,9 +573,9 @@ namespace betareborn
                         GLManager.GL.Enable(GLEnum.Texture2D);
                         if (world != null)
                         {
-                            if (gameSettings.debugMode) Profiler.Start("updateLighting");
+                            if (options.debugMode) Profiler.Start("updateLighting");
                             world.updatingLighting();
-                            if (gameSettings.debugMode) Profiler.Stop("updateLighting");
+                            if (options.debugMode) Profiler.Stop("updateLighting");
                         }
 
                         if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
@@ -585,7 +585,7 @@ namespace betareborn
 
                         if (player != null && player.isInsideWall())
                         {
-                            gameSettings.thirdPersonView = false;
+                            options.thirdPersonView = false;
                         }
 
                         if (!skipRenderWorld)
@@ -595,12 +595,12 @@ namespace betareborn
                                 playerController.setPartialTime(timer.renderPartialTicks);
                             }
 
-                            if (gameSettings.debugMode) Profiler.PushGroup("render");
+                            if (options.debugMode) Profiler.PushGroup("render");
                             gameRenderer.onFrameUpdate(timer.renderPartialTicks);
-                            if (gameSettings.debugMode) Profiler.PopGroup();
+                            if (options.debugMode) Profiler.PopGroup();
                         }
 
-                        if (imGuiController != null && timer.deltaTime > 0.0f && gameSettings.showDebugInfo && gameSettings.debugMode)
+                        if (imGuiController != null && timer.deltaTime > 0.0f && options.showDebugInfo && options.debugMode)
                         {
                             imGuiController.Update(timer.deltaTime);
                             ProfilerRenderer.Draw();
@@ -635,7 +635,7 @@ namespace betareborn
                             java.lang.Thread.sleep(10L);
                         }
 
-                        if (gameSettings.showDebugInfo)
+                        if (options.showDebugInfo)
                         {
                             displayDebugInfo(var24);
                         }
@@ -697,7 +697,7 @@ namespace betareborn
                     }
                     finally
                     {
-                        if (gameSettings.debugMode)
+                        if (options.debugMode)
                         {
                             Profiler.CaptureFrame();
                             Profiler.PopGroup();
@@ -1063,7 +1063,7 @@ namespace betareborn
 
             if (currentScreen != null)
             {
-                ScaledResolution var3 = new ScaledResolution(gameSettings, var1, var2);
+                ScaledResolution var3 = new ScaledResolution(options, var1, var2);
                 int var4 = var3.getScaledWidth();
                 int var5 = var3.getScaledHeight();
                 currentScreen.setWorldAndResolution(this, var4, var5);
@@ -1167,7 +1167,7 @@ namespace betareborn
                 currentScreen.handleInput();
                 if (currentScreen != null)
                 {
-                    currentScreen.field_25091_h.func_25088_a();
+                    currentScreen.particlesGui.func_25088_a();
                     currentScreen.updateScreen();
                 }
             }
@@ -1189,7 +1189,7 @@ namespace betareborn
                     }
                 }
 
-                world.difficulty = gameSettings.difficulty;
+                world.difficulty = options.difficulty;
                 if (world.isRemote)
                 {
                     world.difficulty = 3;
@@ -1224,8 +1224,8 @@ namespace betareborn
                 Profiler.PushGroup("theWorld.tick");
                 if (!isGamePaused || isMultiplayerWorld())
                 {
-                    world.setAllowedMobSpawns(gameSettings.difficulty > 0, true);
-                    var renderDistance = gameSettings.renderDistance switch
+                    world.setAllowedMobSpawns(options.difficulty > 0, true);
+                    var renderDistance = options.renderDistance switch
                     {
                         0 => 16,
                         1 => 8,
@@ -1265,7 +1265,7 @@ namespace betareborn
                     if (var3 != 0)
                     {
                         player.inventory.changeCurrentItem(var3);
-                        if (gameSettings.field_22275_C)
+                        if (options.field_22275_C)
                         {
                             if (var3 > 0)
                             {
@@ -1277,7 +1277,7 @@ namespace betareborn
                                 var3 = -1;
                             }
 
-                            gameSettings.field_22272_F += (float)var3 * 0.25F;
+                            options.field_22272_F += (float)var3 * 0.25F;
                         }
                     }
 
@@ -1349,40 +1349,40 @@ namespace betareborn
 
                             if (Keyboard.getEventKey() == Keyboard.KEY_F1)
                             {
-                                gameSettings.hideGUI = !gameSettings.hideGUI;
+                                options.hideGUI = !options.hideGUI;
                             }
 
                             if (Keyboard.getEventKey() == Keyboard.KEY_F3)
                             {
-                                gameSettings.showDebugInfo = !gameSettings.showDebugInfo;
+                                options.showDebugInfo = !options.showDebugInfo;
                             }
 
                             if (Keyboard.getEventKey() == Keyboard.KEY_F5)
                             {
-                                gameSettings.thirdPersonView = !gameSettings.thirdPersonView;
+                                options.thirdPersonView = !options.thirdPersonView;
                             }
 
                             if (Keyboard.getEventKey() == Keyboard.KEY_F8)
                             {
-                                gameSettings.smoothCamera = !gameSettings.smoothCamera;
+                                options.smoothCamera = !options.smoothCamera;
                             }
 
-                            if (Keyboard.getEventKey() == gameSettings.keyBindInventory.keyCode)
+                            if (Keyboard.getEventKey() == options.keyBindInventory.keyCode)
                             {
                                 displayGuiScreen(new GuiInventory(player));
                             }
 
-                            if (Keyboard.getEventKey() == gameSettings.keyBindDrop.keyCode)
+                            if (Keyboard.getEventKey() == options.keyBindDrop.keyCode)
                             {
                                 player.dropSelectedItem();
                             }
 
-                            if (Keyboard.getEventKey() == gameSettings.keyBindChat.keyCode)
+                            if (Keyboard.getEventKey() == options.keyBindChat.keyCode)
                             {
                                 displayGuiScreen(new GuiChat());
                             }
 
-                            if (Keyboard.getEventKey() == gameSettings.keyBindCommand.keyCode)
+                            if (Keyboard.getEventKey() == options.keyBindCommand.keyCode)
                             {
                                 displayGuiScreen(new GuiChat("/"));
                             }
@@ -1396,9 +1396,9 @@ namespace betareborn
                             }
                         }
 
-                        if (Keyboard.getEventKey() == gameSettings.keyBindToggleFog.keyCode)
+                        if (Keyboard.getEventKey() == options.keyBindToggleFog.keyCode)
                         {
-                            gameSettings.setOptionValue(EnumOptions.RENDER_DISTANCE,
+                            options.setOptionValue(EnumOptions.RENDER_DISTANCE,
                                 !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1 : -1);
                         }
                     }
@@ -1429,7 +1429,7 @@ namespace betareborn
         {
             java.lang.System.@out.println("FORCING RELOAD!");
             sndManager = new SoundManager();
-            sndManager.loadSoundSettings(gameSettings);
+            sndManager.loadSoundSettings(options);
             //downloadResourcesThread.reloadResources();
         }
 
@@ -1629,7 +1629,7 @@ namespace betareborn
                     playerController.flipPlayer(player);
                 }
 
-                player.movementInput = new MovementInputFromOptions(gameSettings);
+                player.movementInput = new MovementInputFromOptions(options);
                 if (renderGlobal != null)
                 {
                     renderGlobal.changeWorld(var1);
@@ -1793,7 +1793,7 @@ namespace betareborn
 
             playerController.flipPlayer(player);
             world.spawnPlayerWithLoadedChunks(player);
-            player.movementInput = new MovementInputFromOptions(gameSettings);
+            player.movementInput = new MovementInputFromOptions(options);
             player.entityId = var8;
             player.spawn();
             playerController.func_6473_b(player);
@@ -1890,7 +1890,7 @@ namespace betareborn
 
         public static bool isGuiEnabled()
         {
-            return INSTANCE == null || !INSTANCE.gameSettings.hideGUI;
+            return INSTANCE == null || !INSTANCE.options.hideGUI;
         }
 
         public static bool isFancyGraphicsEnabled()
@@ -1905,7 +1905,7 @@ namespace betareborn
 
         public static bool isDebugInfoEnabled()
         {
-            return INSTANCE != null && INSTANCE.gameSettings.showDebugInfo;
+            return INSTANCE != null && INSTANCE.options.showDebugInfo;
         }
 
         public bool lineIsCommand(string var1) => (var1.StartsWith("/"));

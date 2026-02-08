@@ -33,7 +33,7 @@ namespace betareborn.Client.Guis
 
         public void renderGameOverlay(float var1, bool var2, int var3, int var4)
         {
-            ScaledResolution var5 = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+            ScaledResolution var5 = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
             int var6 = var5.getScaledWidth();
             int var7 = var5.getScaledHeight();
             FontRenderer var8 = mc.fontRenderer;
@@ -45,7 +45,7 @@ namespace betareborn.Client.Guis
             }
 
             ItemStack var9 = mc.player.inventory.armorItemInSlot(3);
-            if (!mc.gameSettings.thirdPersonView && var9 != null && var9.itemID == Block.PUMPKIN.id)
+            if (!mc.options.thirdPersonView && var9 != null && var9.itemID == Block.PUMPKIN.id)
             {
                 renderPumpkinBlur(var6, var7);
             }
@@ -196,7 +196,7 @@ namespace betareborn.Client.Guis
             }
 
             string var23;
-            if (mc.gameSettings.showDebugInfo)
+            if (mc.options.showDebugInfo)
             {
                 GLManager.GL.PushMatrix();
                 if (Minecraft.hasPaidCheckTime > 0L)

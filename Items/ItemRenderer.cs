@@ -20,7 +20,7 @@ namespace betareborn.Items
         public ItemRenderer(Minecraft var1)
         {
             mc = var1;
-            field_28131_f = new MapItemRenderer(var1.fontRenderer, var1.gameSettings, var1.textureManager);
+            field_28131_f = new MapItemRenderer(var1.fontRenderer, var1.options, var1.textureManager);
         }
 
         public void renderItem(EntityLiving var1, ItemStack var2)

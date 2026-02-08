@@ -97,12 +97,12 @@ namespace betareborn.Client.Guis
             }
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawRect(2, height - 14, width - 2, height - 2, java.lang.Integer.MIN_VALUE);
             drawString(fontRenderer, "> " + message + (updateCounter / 6 % 2 == 0 ? "_" : ""), 4, height - 12,
                 14737632);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
 
         protected override void mouseClicked(int var1, int var2, int var3)

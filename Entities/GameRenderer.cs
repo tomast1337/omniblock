@@ -17,7 +17,7 @@ namespace betareborn.Entities
     public class GameRenderer
     {
         public static int anaglyphField;
-        private Minecraft mc;
+        private Minecraft client;
         private float viewDistane = 0.0F;
         public ItemRenderer itemRenderer;
         private int ticks;
@@ -51,7 +51,7 @@ namespace betareborn.Entities
 
         public GameRenderer(Minecraft mc)
         {
-            this.mc = mc;
+            this.client = mc;
             itemRenderer = new ItemRenderer(mc);
         }
 
@@ -63,13 +63,13 @@ namespace betareborn.Entities
             prevThirdPersonPitch = thirdPersonPitch;
             prevCameraRoll = cameraRoll;
             prevCameraRollAmount = cameraRollAmount;
-            if (mc.camera == null)
+            if (client.camera == null)
             {
-                mc.camera = mc.player;
+                client.camera = client.player;
             }
 
-            float var1 = mc.world.getLuminance(MathHelper.floor_double(mc.camera.posX), MathHelper.floor_double(mc.camera.posY), MathHelper.floor_double(mc.camera.posZ));
-            float var2 = (float)(3 - mc.gameSettings.renderDistance) / 3.0F;
+            float var1 = client.world.getLuminance(MathHelper.floor_double(client.camera.posX), MathHelper.floor_double(client.camera.posY), MathHelper.floor_double(client.camera.posZ));
+            float var2 = (float)(3 - client.options.renderDistance) / 3.0F;
             float var3 = var1 * (1.0F - var2) + var2;
             viewBob += (var3 - viewBob) * 0.1F;
             ++ticks;
@@ -79,28 +79,28 @@ namespace betareborn.Entities
 
         public void tick(float var1)
         {
-            if (mc.renderGlobal != null)
+            if (client.renderGlobal != null)
             {
-                mc.renderGlobal.tick(mc.camera, var1);
+                client.renderGlobal.tick(client.camera, var1);
             }
         }
 
         public void updateTargetedEntity(float tickDelta)
         {
-            if (mc.camera != null)
+            if (client.camera != null)
             {
-                if (mc.world != null)
+                if (client.world != null)
                 {
-                    double var2 = (double)mc.playerController.getBlockReachDistance();
-                    mc.objectMouseOver = mc.camera.rayTrace(var2, tickDelta);
+                    double var2 = (double)client.playerController.getBlockReachDistance();
+                    client.objectMouseOver = client.camera.rayTrace(var2, tickDelta);
                     double var4 = var2;
-                    Vec3D var6 = mc.camera.getPosition(tickDelta);
-                    if (mc.objectMouseOver != null)
+                    Vec3D var6 = client.camera.getPosition(tickDelta);
+                    if (client.objectMouseOver != null)
                     {
-                        var4 = mc.objectMouseOver.pos.distanceTo(var6);
+                        var4 = client.objectMouseOver.pos.distanceTo(var6);
                     }
 
-                    if (mc.playerController is PlayerControllerTest)
+                    if (client.playerController is PlayerControllerTest)
                     {
                         var2 = 32.0D;
                     }
@@ -114,11 +114,11 @@ namespace betareborn.Entities
                         var2 = var4;
                     }
 
-                    Vec3D var7 = mc.camera.getLook(tickDelta);
+                    Vec3D var7 = client.camera.getLook(tickDelta);
                     Vec3D var8 = var6.addVector(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2);
                     targetedEntity = null;
                     float var9 = 1.0F;
-                    var var10 = mc.world.getEntitiesWithinAABBExcludingEntity(mc.camera, mc.camera.boundingBox.stretch(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2).expand((double)var9, (double)var9, (double)var9));
+                    var var10 = client.world.getEntitiesWithinAABBExcludingEntity(client.camera, client.camera.boundingBox.stretch(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2).expand((double)var9, (double)var9, (double)var9));
                     double var11 = 0.0D;
 
                     for (int var13 = 0; var13 < var10.Count; ++var13)
@@ -149,9 +149,9 @@ namespace betareborn.Entities
                         }
                     }
 
-                    if (targetedEntity != null && !(mc.playerController is PlayerControllerTest))
+                    if (targetedEntity != null && !(client.playerController is PlayerControllerTest))
                     {
-                        mc.objectMouseOver = new HitResult(targetedEntity);
+                        client.objectMouseOver = new HitResult(targetedEntity);
                     }
 
                 }
@@ -160,7 +160,7 @@ namespace betareborn.Entities
 
         private float getFov(float tickDelta)
         {
-            EntityLiving var2 = mc.camera;
+            EntityLiving var2 = client.camera;
             float var3 = 70.0F;
             if (var2.isInsideOfMaterial(Material.WATER))
             {
@@ -178,7 +178,7 @@ namespace betareborn.Entities
 
         private void applyDamageTiltEffect(float tickDelta)
         {
-            EntityLiving var2 = mc.camera;
+            EntityLiving var2 = client.camera;
             float var3 = (float)var2.hurtTime - tickDelta;
             float var4;
             if (var2.health <= 0)
@@ -200,9 +200,9 @@ namespace betareborn.Entities
 
         private void applyViewBobbing(float tickDelta)
         {
-            if (mc.camera is EntityPlayer)
+            if (client.camera is EntityPlayer)
             {
-                EntityPlayer var2 = (EntityPlayer)mc.camera;
+                EntityPlayer var2 = (EntityPlayer)client.camera;
                 float var3 = var2.distanceWalkedModified - var2.prevDistanceWalkedModified;
                 float var4 = -(var2.distanceWalkedModified + var3 * tickDelta);
                 float var5 = var2.prevStepBobbingAmount + (var2.stepBobbingAmount - var2.prevStepBobbingAmount) * tickDelta;
@@ -216,7 +216,7 @@ namespace betareborn.Entities
 
         private void applyCameraTransform(float tickDelta)
         {
-            EntityLiving var2 = mc.camera;
+            EntityLiving var2 = client.camera;
             float var3 = var2.yOffset - 1.62F;
             double var4 = var2.prevPosX + (var2.posX - var2.prevPosX) * (double)tickDelta;
             double var6 = var2.prevPosY + (var2.posY - var2.prevPosY) * (double)tickDelta - (double)var3;
@@ -226,12 +226,12 @@ namespace betareborn.Entities
             {
                 var3 = (float)((double)var3 + 1.0D);
                 GLManager.GL.Translate(0.0F, 0.3F, 0.0F);
-                if (!mc.gameSettings.field_22273_E)
+                if (!client.options.debugCamera)
                 {
-                    int var10 = mc.world.getBlockId(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
+                    int var10 = client.world.getBlockId(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
                     if (var10 == Block.BED.id)
                     {
-                        int var11 = mc.world.getBlockMeta(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
+                        int var11 = client.world.getBlockMeta(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
                         int var12 = var11 & 3;
                         GLManager.GL.Rotate((float)(var12 * 90), 0.0F, 1.0F, 0.0F);
                     }
@@ -240,12 +240,12 @@ namespace betareborn.Entities
                     GLManager.GL.Rotate(var2.prevRotationPitch + (var2.rotationPitch - var2.prevRotationPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
                 }
             }
-            else if (mc.gameSettings.thirdPersonView)
+            else if (client.options.thirdPersonView)
             {
                 double var27 = (double)(prevThirdPersonDistance + (thirdPersonDistance - prevThirdPersonDistance) * tickDelta);
                 float var13;
                 float var28;
-                if (mc.gameSettings.field_22273_E)
+                if (client.options.debugCamera)
                 {
                     var28 = prevThirdPersonYaw + (thirdPersonYaw - prevThirdPersonYaw) * tickDelta;
                     var13 = prevThirdPersonPitch + (thirdPersonPitch - prevThirdPersonPitch) * tickDelta;
@@ -269,7 +269,7 @@ namespace betareborn.Entities
                         var21 *= 0.1F;
                         var22 *= 0.1F;
                         var23 *= 0.1F;
-                        HitResult var24 = mc.world.rayTraceBlocks(Vec3D.createVector(var4 + (double)var21, var6 + (double)var22, var8 + (double)var23), Vec3D.createVector(var4 - var14 + (double)var21 + (double)var23, var6 - var18 + (double)var22, var8 - var16 + (double)var23));
+                        HitResult var24 = client.world.rayTraceBlocks(Vec3D.createVector(var4 + (double)var21, var6 + (double)var22, var8 + (double)var23), Vec3D.createVector(var4 - var14 + (double)var21 + (double)var23, var6 - var18 + (double)var22, var8 - var16 + (double)var23));
                         if (var24 != null)
                         {
                             double var25 = var24.pos.distanceTo(Vec3D.createVector(var4, var6, var8));
@@ -292,7 +292,7 @@ namespace betareborn.Entities
                 GLManager.GL.Translate(0.0F, 0.0F, -0.1F);
             }
 
-            if (!mc.gameSettings.field_22273_E)
+            if (!client.options.debugCamera)
             {
                 GLManager.GL.Rotate(var2.prevRotationPitch + (var2.rotationPitch - var2.prevRotationPitch) * tickDelta, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(var2.prevRotationYaw + (var2.rotationYaw - var2.prevRotationYaw) * tickDelta + 180.0F, 0.0F, 1.0F, 0.0F);
@@ -306,7 +306,7 @@ namespace betareborn.Entities
 
         private void renderWorld(float tickDelta)
         {
-            viewDistane = (float)(256 >> mc.gameSettings.renderDistance);
+            viewDistane = (float)(256 >> client.options.renderDistance);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
 
@@ -314,23 +314,23 @@ namespace betareborn.Entities
             {
                 GLManager.GL.Translate((float)cameraYaw, (float)(-cameraPitch), 0.0F);
                 GLManager.GL.Scale(cameraZoom, cameraZoom, 1.0D);
-                GLU.gluPerspective(getFov(tickDelta), (float)mc.displayWidth / (float)mc.displayHeight, 0.05F, viewDistane * 2.0F);
+                GLU.gluPerspective(getFov(tickDelta), (float)client.displayWidth / (float)client.displayHeight, 0.05F, viewDistane * 2.0F);
             }
             else
             {
-                GLU.gluPerspective(getFov(tickDelta), (float)mc.displayWidth / (float)mc.displayHeight, 0.05F, viewDistane * 2.0F);
+                GLU.gluPerspective(getFov(tickDelta), (float)client.displayWidth / (float)client.displayHeight, 0.05F, viewDistane * 2.0F);
             }
 
             GLManager.GL.MatrixMode(GLEnum.Modelview);
             GLManager.GL.LoadIdentity();
 
             applyDamageTiltEffect(tickDelta);
-            if (mc.gameSettings.viewBobbing)
+            if (client.options.viewBobbing)
             {
                 applyViewBobbing(tickDelta);
             }
 
-            float var4 = mc.player.prevTimeInPortal + (mc.player.timeInPortal - mc.player.prevTimeInPortal) * tickDelta;
+            float var4 = client.player.prevTimeInPortal + (client.player.timeInPortal - client.player.prevTimeInPortal) * tickDelta;
             if (var4 > 0.0F)
             {
                 float var5 = 5.0F / (var4 * var4 + 5.0F) - var4 * 0.04F;
@@ -349,24 +349,24 @@ namespace betareborn.Entities
 
             GLManager.GL.PushMatrix();
             applyDamageTiltEffect(tickDelta);
-            if (mc.gameSettings.viewBobbing)
+            if (client.options.viewBobbing)
             {
                 applyViewBobbing(tickDelta);
             }
 
-            if (!mc.gameSettings.thirdPersonView && !mc.camera.isSleeping() && !mc.gameSettings.hideGUI)
+            if (!client.options.thirdPersonView && !client.camera.isSleeping() && !client.options.hideGUI)
             {
                 itemRenderer.renderItemInFirstPerson(tickDelta);
             }
 
             GLManager.GL.PopMatrix();
-            if (!mc.gameSettings.thirdPersonView && !mc.camera.isSleeping())
+            if (!client.options.thirdPersonView && !client.camera.isSleeping())
             {
                 itemRenderer.renderOverlays(tickDelta);
                 applyDamageTiltEffect(tickDelta);
             }
 
-            if (mc.gameSettings.viewBobbing)
+            if (client.options.viewBobbing)
             {
                 applyViewBobbing(tickDelta);
             }
@@ -379,7 +379,7 @@ namespace betareborn.Entities
             {
                 if (java.lang.System.currentTimeMillis() - prevFrameTime > 500L)
                 {
-                    mc.displayInGameMenu();
+                    client.displayInGameMenu();
                 }
             }
             else
@@ -387,52 +387,52 @@ namespace betareborn.Entities
                 prevFrameTime = java.lang.System.currentTimeMillis();
             }
 
-            if (mc.inGameHasFocus)
+            if (client.inGameHasFocus)
             {
-                mc.mouseHelper.mouseXYChange();
-                float var2 = mc.gameSettings.mouseSensitivity * 0.6F + 0.2F;
+                client.mouseHelper.mouseXYChange();
+                float var2 = client.options.mouseSensitivity * 0.6F + 0.2F;
                 float var3 = var2 * var2 * var2 * 8.0F;
-                float var4 = (float)mc.mouseHelper.deltaX * var3;
-                float var5 = (float)mc.mouseHelper.deltaY * var3;
+                float var4 = (float)client.mouseHelper.deltaX * var3;
+                float var5 = (float)client.mouseHelper.deltaY * var3;
                 //we flip var6 because something is funky with the controls/mouse
                 int var6 = -1;
-                if (mc.gameSettings.invertMouse)
+                if (client.options.invertMouse)
                 {
                     var6 = 1;
                 }
 
-                if (mc.gameSettings.smoothCamera)
+                if (client.options.smoothCamera)
                 {
                     var4 = mouseFilterXAxis.func_22386_a(var4, 0.05F * var3);
                     var5 = mouseFilterYAxis.func_22386_a(var5, 0.05F * var3);
                 }
 
-                mc.player.func_346_d(var4, var5 * (float)var6);
+                client.player.func_346_d(var4, var5 * (float)var6);
             }
 
-            if (!mc.skipRenderWorld)
+            if (!client.skipRenderWorld)
             {
-                ScaledResolution var13 = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+                ScaledResolution var13 = new ScaledResolution(client.options, client.displayWidth, client.displayHeight);
                 int var14 = var13.getScaledWidth();
                 int var15 = var13.getScaledHeight();
-                int var16 = Mouse.getX() * var14 / mc.displayWidth;
-                int var17 = var15 - Mouse.getY() * var15 / mc.displayHeight - 1;
+                int var16 = Mouse.getX() * var14 / client.displayWidth;
+                int var17 = var15 - Mouse.getY() * var15 / client.displayHeight - 1;
                 short var7 = 200;
-                if (mc.gameSettings.limitFramerate == 1)
+                if (client.options.limitFramerate == 1)
                 {
                     var7 = 120;
                 }
 
-                if (mc.gameSettings.limitFramerate == 2)
+                if (client.options.limitFramerate == 2)
                 {
                     var7 = 40;
                 }
 
                 long var8;
-                if (mc.world != null)
+                if (client.world != null)
                 {
                     Profiler.PushGroup("renderWorld");
-                    if (mc.gameSettings.limitFramerate == 0)
+                    if (client.options.limitFramerate == 0)
                     {
                         renderFrame(tickDelta, 0L);
                     }
@@ -442,7 +442,7 @@ namespace betareborn.Entities
                     }
                     Profiler.PopGroup();
 
-                    if (mc.gameSettings.limitFramerate == 2)
+                    if (client.options.limitFramerate == 2)
                     {
                         var8 = (lastFrameTime + (long)(1000000000 / var7) - java.lang.System.nanoTime()) / 1000000L;
                         if (var8 > 0L && var8 < 500L)
@@ -460,21 +460,21 @@ namespace betareborn.Entities
 
                     Profiler.Start("renderGameOverlay");
                     lastFrameTime = java.lang.System.nanoTime();
-                    if (!mc.gameSettings.hideGUI || mc.currentScreen != null)
+                    if (!client.options.hideGUI || client.currentScreen != null)
                     {
-                        mc.ingameGUI.renderGameOverlay(tickDelta, mc.currentScreen != null, var16, var17);
+                        client.ingameGUI.renderGameOverlay(tickDelta, client.currentScreen != null, var16, var17);
                     }
                     Profiler.Stop("renderGameOverlay");
                 }
                 else
                 {
-                    GLManager.GL.Viewport(0, 0, (uint)mc.displayWidth, (uint)mc.displayHeight);
+                    GLManager.GL.Viewport(0, 0, (uint)client.displayWidth, (uint)client.displayHeight);
                     GLManager.GL.MatrixMode(GLEnum.Projection);
                     GLManager.GL.LoadIdentity();
                     GLManager.GL.MatrixMode(GLEnum.Modelview);
                     GLManager.GL.LoadIdentity();
                     setupHudRender();
-                    if (mc.gameSettings.limitFramerate == 2)
+                    if (client.options.limitFramerate == 2)
                     {
                         var8 = (lastFrameTime + (long)(1000000000 / var7) - java.lang.System.nanoTime()) / 1000000L;
                         if (var8 < 0L)
@@ -498,13 +498,13 @@ namespace betareborn.Entities
                     lastFrameTime = java.lang.System.nanoTime();
                 }
 
-                if (mc.currentScreen != null)
+                if (client.currentScreen != null)
                 {
                     GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-                    mc.currentScreen.drawScreen(var16, var17, tickDelta);
-                    if (mc.currentScreen != null && mc.currentScreen.field_25091_h != null)
+                    client.currentScreen.render(var16, var17, tickDelta);
+                    if (client.currentScreen != null && client.currentScreen.particlesGui != null)
                     {
-                        mc.currentScreen.field_25091_h.func_25087_a(tickDelta);
+                        client.currentScreen.particlesGui.render(tickDelta);
                     }
                 }
 
@@ -515,32 +515,32 @@ namespace betareborn.Entities
         {
             GLManager.GL.Enable(GLEnum.CullFace);
             GLManager.GL.Enable(GLEnum.DepthTest);
-            if (mc.camera == null)
+            if (client.camera == null)
             {
-                mc.camera = mc.player;
+                client.camera = client.player;
             }
 
             Profiler.Start("getMouseOver");
             updateTargetedEntity(tickDelta);
             Profiler.Stop("getMouseOver");
 
-            EntityLiving var4 = mc.camera;
-            RenderGlobal var5 = mc.renderGlobal;
-            ParticleManager var6 = mc.particleManager;
+            EntityLiving var4 = client.camera;
+            RenderGlobal var5 = client.renderGlobal;
+            ParticleManager var6 = client.particleManager;
             double var7 = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)tickDelta;
             double var9 = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)tickDelta;
             double var11 = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)tickDelta;
-            ChunkSource var13 = mc.world.getChunkSource();
+            ChunkSource var13 = client.world.getChunkSource();
 
             Profiler.Start("updateFog");
-            GLManager.GL.Viewport(0, 0, (uint)mc.displayWidth, (uint)mc.displayHeight);
+            GLManager.GL.Viewport(0, 0, (uint)client.displayWidth, (uint)client.displayHeight);
             updateSkyAndFogColors(tickDelta);
             Profiler.Stop("updateFog");
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             GLManager.GL.Enable(GLEnum.CullFace);
             renderWorld(tickDelta);
             ClippingHelperImpl.getInstance();
-            if (mc.gameSettings.renderDistance < 2)
+            if (client.options.renderDistance < 2)
             {
                 applyFog(-1);
                 var5.renderSky(tickDelta);
@@ -554,7 +554,7 @@ namespace betareborn.Entities
 
             applyFog(0);
             GLManager.GL.Enable(GLEnum.Fog);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/terrain.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/terrain.png"));
             RenderHelper.disableStandardItemLighting();
 
             Profiler.Start("sortAndRender");
@@ -578,12 +578,12 @@ namespace betareborn.Entities
             Profiler.Stop("renderParticles");
 
             EntityPlayer var21;
-            if (mc.objectMouseOver != null && var4.isInsideOfMaterial(Material.WATER) && var4 is EntityPlayer)
+            if (client.objectMouseOver != null && var4.isInsideOfMaterial(Material.WATER) && var4 is EntityPlayer)
             {
                 var21 = (EntityPlayer)var4;
                 GLManager.GL.Disable(GLEnum.AlphaTest);
-                var5.drawBlockBreaking(var21, mc.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
-                var5.drawSelectionBox(var21, mc.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
+                var5.drawBlockBreaking(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
+                var5.drawSelectionBox(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
                 GLManager.GL.Enable(GLEnum.AlphaTest);
             }
 
@@ -591,7 +591,7 @@ namespace betareborn.Entities
             applyFog(0);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.Disable(GLEnum.CullFace);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/terrain.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/terrain.png"));
 
             Profiler.Start("sortAndRender2");
 
@@ -606,12 +606,12 @@ namespace betareborn.Entities
             GLManager.GL.DepthMask(true);
             GLManager.GL.Enable(GLEnum.CullFace);
             GLManager.GL.Disable(GLEnum.Blend);
-            if (cameraZoom == 1.0D && var4 is EntityPlayer && mc.objectMouseOver != null && !var4.isInsideOfMaterial(Material.WATER))
+            if (cameraZoom == 1.0D && var4 is EntityPlayer && client.objectMouseOver != null && !var4.isInsideOfMaterial(Material.WATER))
             {
                 var21 = (EntityPlayer)var4;
                 GLManager.GL.Disable(GLEnum.AlphaTest);
-                var5.drawBlockBreaking(var21, mc.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
-                var5.drawSelectionBox(var21, mc.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
+                var5.drawBlockBreaking(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
+                var5.drawSelectionBox(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
                 GLManager.GL.Enable(GLEnum.AlphaTest);
             }
 
@@ -635,13 +635,13 @@ namespace betareborn.Entities
 
         private void renderRain()
         {
-            float var1 = mc.world.getRainGradient(1.0F);
+            float var1 = client.world.getRainGradient(1.0F);
 
             if (var1 != 0.0F)
             {
                 random.setSeed((long)ticks * 312987231L);
-                EntityLiving var2 = mc.camera;
-                World var3 = mc.world;
+                EntityLiving var2 = client.camera;
+                World var3 = client.world;
                 int var4 = MathHelper.floor_double(var2.posX);
                 int var5 = MathHelper.floor_double(var2.posY);
                 int var6 = MathHelper.floor_double(var2.posZ);
@@ -665,7 +665,7 @@ namespace betareborn.Entities
                         {
                             if (Block.BLOCKS[var19].material == Material.LAVA)
                             {
-                                mc.particleManager.addEffect(new EntitySmokeFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21), 0.0D, 0.0D, 0.0D));
+                                client.particleManager.addEffect(new EntitySmokeFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21), 0.0D, 0.0D, 0.0D));
                             }
                             else
                             {
@@ -677,7 +677,7 @@ namespace betareborn.Entities
                                     var12 = (double)((float)var17 + var21);
                                 }
 
-                                mc.particleManager.addEffect(new EntityRainFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21)));
+                                client.particleManager.addEffect(new EntityRainFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21)));
                             }
                         }
                     }
@@ -688,11 +688,11 @@ namespace betareborn.Entities
                     rainSoundCounter = 0;
                     if (var10 > var2.posY + 1.0D && var3.findTopSolidBlock(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posZ)) > MathHelper.floor_double(var2.posY))
                     {
-                        mc.world.playSound(var8, var10, var12, "ambient.weather.rain", 0.1F, 0.5F);
+                        client.world.playSound(var8, var10, var12, "ambient.weather.rain", 0.1F, 0.5F);
                     }
                     else
                     {
-                        mc.world.playSound(var8, var10, var12, "ambient.weather.rain", 0.2F, 1.0F);
+                        client.world.playSound(var8, var10, var12, "ambient.weather.rain", 0.2F, 1.0F);
                     }
                 }
 
@@ -701,11 +701,11 @@ namespace betareborn.Entities
 
         protected void renderSnow(float tickDelta)
         {
-            float var2 = mc.world.getRainGradient(tickDelta);
+            float var2 = client.world.getRainGradient(tickDelta);
             if (var2 > 0.0F)
             {
-                EntityLiving var3 = mc.camera;
-                World var4 = mc.world;
+                EntityLiving var3 = client.camera;
+                World var4 = client.world;
                 int var5 = MathHelper.floor_double(var3.posX);
                 int var6 = MathHelper.floor_double(var3.posY);
                 int var7 = MathHelper.floor_double(var3.posZ);
@@ -715,7 +715,7 @@ namespace betareborn.Entities
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/environment/snow.png"));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/environment/snow.png"));
                 double var9 = var3.lastTickPosX + (var3.posX - var3.lastTickPosX) * (double)tickDelta;
                 double var11 = var3.lastTickPosY + (var3.posY - var3.lastTickPosY) * (double)tickDelta;
                 double var13 = var3.lastTickPosZ + (var3.posZ - var3.lastTickPosZ) * (double)tickDelta;
@@ -793,7 +793,7 @@ namespace betareborn.Entities
                     }
                 }
 
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/environment/rain.png"));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/environment/rain.png"));
                 var16 = 10;
 
                 var18 = 0;
@@ -853,7 +853,7 @@ namespace betareborn.Entities
 
         public void setupHudRender()
         {
-            ScaledResolution var1 = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+            ScaledResolution var1 = new ScaledResolution(client.options, client.displayWidth, client.displayHeight);
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
@@ -865,11 +865,11 @@ namespace betareborn.Entities
 
         private void updateSkyAndFogColors(float tickDelta)
         {
-            World var2 = mc.world;
-            EntityLiving var3 = mc.camera;
-            float var4 = 1.0F / (float)(4 - mc.gameSettings.renderDistance);
+            World var2 = client.world;
+            EntityLiving var3 = client.camera;
+            float var4 = 1.0F / (float)(4 - client.options.renderDistance);
             var4 = 1.0F - (float)java.lang.Math.pow((double)var4, 0.25D);
-            Vector3D<double> var5 = var2.func_4079_a(mc.camera, tickDelta);
+            Vector3D<double> var5 = var2.func_4079_a(client.camera, tickDelta);
             float var6 = (float)var5.X;
             float var7 = (float)var5.Y;
             float var8 = (float)var5.Z;
@@ -931,52 +931,52 @@ namespace betareborn.Entities
 
         private void applyFog(int mode)
         {
-            EntityLiving var3 = mc.camera;
+            EntityLiving var3 = client.camera;
             GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(fogColorRed, fogColorGreen, fogColorBlue, 1.0F));
-            mc.renderGlobal.worldRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
+            client.renderGlobal.worldRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
             GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             if (cloudFog)
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                mc.renderGlobal.worldRenderer.SetFogMode(1);
-                mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
+                client.renderGlobal.worldRenderer.SetFogMode(1);
+                client.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.WATER))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                mc.renderGlobal.worldRenderer.SetFogMode(1);
-                mc.renderGlobal.worldRenderer.SetFogDensity(0.1f);
+                client.renderGlobal.worldRenderer.SetFogMode(1);
+                client.renderGlobal.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.LAVA))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-                mc.renderGlobal.worldRenderer.SetFogMode(1);
-                mc.renderGlobal.worldRenderer.SetFogDensity(2.0f);
+                client.renderGlobal.worldRenderer.SetFogMode(1);
+                client.renderGlobal.worldRenderer.SetFogDensity(2.0f);
             }
             else
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
                 GLManager.GL.Fog(GLEnum.FogStart, viewDistane * 0.25F);
                 GLManager.GL.Fog(GLEnum.FogEnd, viewDistane);
-                mc.renderGlobal.worldRenderer.SetFogMode(0);
-                mc.renderGlobal.worldRenderer.SetFogStart(viewDistane * 0.25f);
-                mc.renderGlobal.worldRenderer.SetFogEnd(viewDistane);
+                client.renderGlobal.worldRenderer.SetFogMode(0);
+                client.renderGlobal.worldRenderer.SetFogStart(viewDistane * 0.25f);
+                client.renderGlobal.worldRenderer.SetFogEnd(viewDistane);
                 if (mode < 0)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     GLManager.GL.Fog(GLEnum.FogEnd, viewDistane * 0.8F);
-                    mc.renderGlobal.worldRenderer.SetFogStart(0.0f);
-                    mc.renderGlobal.worldRenderer.SetFogEnd(viewDistane * 0.8f);
+                    client.renderGlobal.worldRenderer.SetFogStart(0.0f);
+                    client.renderGlobal.worldRenderer.SetFogEnd(viewDistane * 0.8f);
                 }
 
-                if (mc.world.dimension.isNether)
+                if (client.world.dimension.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                    mc.renderGlobal.worldRenderer.SetFogStart(0.0f);
+                    client.renderGlobal.worldRenderer.SetFogStart(0.0f);
                 }
             }
 

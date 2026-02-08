@@ -89,11 +89,11 @@ namespace betareborn.Client.Guis
             }
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             field_27155_p.drawScreen(var1, var2, var3);
             drawCenteredString(fontRenderer, field_27154_i, width / 2, 20, 16777215);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
 
         private void func_27138_c(int var1, int var2, int var3)

@@ -21,13 +21,13 @@ namespace betareborn.Client.Rendering
         private readonly ByteBuffer imageData = GLAllocation.createDirectByteBuffer(1048576);
         private readonly List<TextureFX> textureList = [];
         private readonly Map urlToImageDataMap = new HashMap();
-        private readonly GameSettings options;
+        private readonly GameOptions options;
         private bool clampTexture = false;
         private bool blurTexture = false;
         private readonly TexturePacks texturePack;
         private readonly BufferedImage missingTextureImage = new(64, 64, 2);
 
-        public TextureManager(TexturePacks var1, GameSettings var2)
+        public TextureManager(TexturePacks var1, GameOptions var2)
         {
             texturePack = var1;
             options = var2;
@@ -251,7 +251,7 @@ namespace betareborn.Client.Rendering
                 if (GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic"))
                 {
                     float aniso = options.anisotropicLevel == 0 ? 1.0f : (float)System.Math.Pow(2, options.anisotropicLevel);
-                    aniso = System.Math.Clamp(aniso, 1.0f, GameSettings.MaxAnisotropy);
+                    aniso = System.Math.Clamp(aniso, 1.0f, GameOptions.MaxAnisotropy);
 
                     GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMaxAnisotropy, aniso);
                 }

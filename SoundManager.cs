@@ -9,7 +9,7 @@ namespace betareborn
         private readonly SoundPool soundPoolStreaming = new();
         private readonly SoundPool soundPoolMusic = new();
         private readonly int field_587_e = 0;
-        private GameSettings options;
+        private GameOptions options;
         private static bool loaded = false;
         private readonly java.util.Random rand = new();
         private readonly int ticksBeforeMusic = 0;
@@ -19,7 +19,7 @@ namespace betareborn
             ticksBeforeMusic = rand.nextInt(12000);
         }
 
-        public void loadSoundSettings(GameSettings var1)
+        public void loadSoundSettings(GameOptions var1)
         {
             soundPoolStreaming.field_1657_b = false;
             options = var1;

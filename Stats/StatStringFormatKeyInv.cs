@@ -18,7 +18,7 @@ namespace betareborn.Stats
 
         public String formatString(String key)
         {
-            return localizedName.translateKeyFormat(key, Keyboard.getKeyName(theGame.gameSettings.keyBindInventory.keyCode));
+            return localizedName.translateKeyFormat(key, Keyboard.getKeyName(theGame.options.keyBindInventory.keyCode));
         }
     }
 

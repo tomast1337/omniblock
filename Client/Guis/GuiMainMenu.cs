@@ -107,7 +107,7 @@ namespace betareborn.Client.Guis
         {
             if (var1.id == 0)
             {
-                mc.displayGuiScreen(new GuiOptions(this, mc.gameSettings));
+                mc.displayGuiScreen(new GuiOptions(this, mc.options));
             }
 
             if (var1.id == 1)
@@ -131,7 +131,7 @@ namespace betareborn.Client.Guis
             }
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             Tessellator var4 = Tessellator.instance;
@@ -157,7 +157,7 @@ namespace betareborn.Client.Guis
             drawString(fontRenderer, var9, width - fontRenderer.getStringWidth(var9) - 2, height - 20, 16777215);
             string var10 = "Not approved by or associated with Mojang Studios or Microsoft.";
             drawString(fontRenderer, var10, width - fontRenderer.getStringWidth(var10) - 2, height - 10, 16777215);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

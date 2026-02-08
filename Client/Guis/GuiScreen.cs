@@ -14,10 +14,10 @@ namespace betareborn.Client.Guis
         protected java.util.List controlList = new ArrayList();
         public bool field_948_f = false;
         public FontRenderer fontRenderer;
-        public GuiParticle field_25091_h;
+        public GuiParticle particlesGui;
         private GuiButton selectedButton = null;
 
-        public virtual void drawScreen(int var1, int var2, float var3)
+        public virtual void render(int var1, int var2, float var3)
         {
             for (int var4 = 0; var4 < controlList.size(); ++var4)
             {
@@ -89,7 +89,7 @@ namespace betareborn.Client.Guis
 
         public void setWorldAndResolution(Minecraft var1, int var2, int var3)
         {
-            field_25091_h = new GuiParticle(var1);
+            particlesGui = new GuiParticle(var1);
             mc = var1;
             fontRenderer = var1.fontRenderer;
             width = var2;

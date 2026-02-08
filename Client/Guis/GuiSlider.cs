@@ -35,8 +35,8 @@ namespace betareborn.Client.Guis
                         sliderValue = 1.0F;
                     }
 
-                    var1.gameSettings.setOptionFloatValue(idFloat, sliderValue);
-                    displayString = var1.gameSettings.getKeyBinding(idFloat);
+                    var1.options.setOptionFloatValue(idFloat, sliderValue);
+                    displayString = var1.options.getKeyBinding(idFloat);
                 }
 
                 GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -60,8 +60,8 @@ namespace betareborn.Client.Guis
                     sliderValue = 1.0F;
                 }
 
-                var1.gameSettings.setOptionFloatValue(idFloat, sliderValue);
-                displayString = var1.gameSettings.getKeyBinding(idFloat);
+                var1.options.setOptionFloatValue(idFloat, sliderValue);
+                displayString = var1.options.getKeyBinding(idFloat);
                 dragging = true;
                 return true;
             }

@@ -41,7 +41,7 @@ namespace betareborn
             else
             {
                 field_1007_c = var1;
-                ScaledResolution var2 = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+                ScaledResolution var2 = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
                 GLManager.GL.MatrixMode(GLEnum.Projection);
                 GLManager.GL.LoadIdentity();
@@ -85,7 +85,7 @@ namespace betareborn
                 if (var2 - field_1006_d >= 20L)
                 {
                     field_1006_d = var2;
-                    ScaledResolution var4 = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+                    ScaledResolution var4 = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
                     int var5 = var4.getScaledWidth();
                     int var6 = var4.getScaledHeight();
                     GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);

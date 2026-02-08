@@ -7,10 +7,10 @@ namespace betareborn.Client.Guis
 
         private GuiScreen field_22110_h;
         protected string field_22107_a = "Video Settings";
-        private GameSettings guiGameSettings;
+        private GameOptions guiGameSettings;
         private static EnumOptions[] field_22108_k = new EnumOptions[] { EnumOptions.RENDER_DISTANCE, EnumOptions.FRAMERATE_LIMIT, EnumOptions.VIEW_BOBBING, EnumOptions.GUI_SCALE, EnumOptions.ANISOTROPIC, EnumOptions.MIPMAPS, EnumOptions.MSAA, EnumOptions.ENVIRONMENT_ANIMATION, EnumOptions.DEBUG_MODE };
 
-        public GuiVideoSettings(GuiScreen var1, GameSettings var2)
+        public GuiVideoSettings(GuiScreen var1, GameOptions var2)
         {
             field_22110_h = var1;
             guiGameSettings = var2;
@@ -54,22 +54,22 @@ namespace betareborn.Client.Guis
 
                 if (var1.id == 200)
                 {
-                    mc.gameSettings.saveOptions();
+                    mc.options.saveOptions();
                     mc.displayGuiScreen(field_22110_h);
                 }
 
-                ScaledResolution var2 = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+                ScaledResolution var2 = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
                 int var3 = var2.getScaledWidth();
                 int var4 = var2.getScaledHeight();
                 setWorldAndResolution(mc, var3, var4);
             }
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             drawCenteredString(fontRenderer, field_22107_a, width / 2, 20, 16777215);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

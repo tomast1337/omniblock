@@ -187,7 +187,7 @@ public class GameCommands
     [MinecraftCommand("dis", description: "sets render distance", usage: "/dist <number>")]
     public void Distance(CommandContext ctx, int dist)
     {
-        ctx.Game.gameSettings.renderDistance = dist;
+        ctx.Game.options.renderDistance = dist;
     }
 
     [MinecraftCommand("help", description: "this command", usage: "/help <command>")]

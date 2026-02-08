@@ -70,7 +70,7 @@ namespace betareborn.Client.Guis
             base.mouseMovedOrUp(var1, var2, var3);
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             guiTexturePackSlot.drawScreen(var1, var2, var3);
             if (field_6454_o <= 0)
@@ -82,7 +82,7 @@ namespace betareborn.Client.Guis
             TranslationStorage var4 = TranslationStorage.getInstance();
             drawCenteredString(fontRenderer, var4.translateKey("texturePack.title"), width / 2, 16, 16777215);
             drawCenteredString(fontRenderer, var4.translateKey("texturePack.folderInfo"), width / 2 - 77, height - 26, 8421504);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
 
         public override void updateScreen()

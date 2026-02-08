@@ -18,7 +18,7 @@ namespace betareborn.Client
         private readonly IntBuffer buffer;
         private readonly ByteBuffer byteBuffer = GLAllocation.createDirectByteBuffer(1024 * sizeof(int));
 
-        public FontRenderer(GameSettings var1, TextureManager var3)
+        public FontRenderer(GameOptions var1, TextureManager var3)
         {
             buffer = byteBuffer.asIntBuffer();
 

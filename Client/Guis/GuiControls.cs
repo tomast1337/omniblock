@@ -7,10 +7,10 @@ namespace betareborn.Client.Guis
 
         private GuiScreen parentScreen;
         protected string screenTitle = "Controls";
-        private GameSettings options;
+        private GameOptions options;
         private int buttonId = -1;
 
-        public GuiControls(GuiScreen var1, GameSettings var2)
+        public GuiControls(GuiScreen var1, GameOptions var2)
         {
             parentScreen = var1;
             options = var2;
@@ -69,7 +69,7 @@ namespace betareborn.Client.Guis
 
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             drawCenteredString(fontRenderer, screenTitle, width / 2, 20, 16777215);
@@ -80,7 +80,7 @@ namespace betareborn.Client.Guis
                 drawString(fontRenderer, options.getKeyBindingDescription(var5), var4 + var5 % 2 * 160 + 70 + 6, height / 6 + 24 * (var5 >> 1) + 7, -1);
             }
 
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 }

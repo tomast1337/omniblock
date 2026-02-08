@@ -32,7 +32,7 @@ namespace betareborn.Client.Guis
         {
             if (var1.id == 0)
             {
-                mc.displayGuiScreen(new GuiOptions(this, mc.gameSettings));
+                mc.displayGuiScreen(new GuiOptions(this, mc.options));
             }
 
             if (var1.id == 1)
@@ -70,7 +70,7 @@ namespace betareborn.Client.Guis
             ++updateCounter;
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             bool var4 = !mc.world.func_650_a(updateCounter2++);
@@ -83,7 +83,7 @@ namespace betareborn.Client.Guis
             }
 
             drawCenteredString(fontRenderer, "Game menu", width / 2, 40, 16777215);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
     }
 

@@ -157,11 +157,11 @@ namespace betareborn.Client.Guis
 
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             worldSlotContainer.drawScreen(var1, var2, var3);
             drawCenteredString(fontRenderer, screenTitle, width / 2, 20, 16777215);
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
 
         public static List getSize(GuiSelectWorld var0)

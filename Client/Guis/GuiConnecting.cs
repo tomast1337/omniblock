@@ -53,7 +53,7 @@ namespace betareborn.Client.Guis
 
         }
 
-        public override void drawScreen(int var1, int var2, float var3)
+        public override void render(int var1, int var2, float var3)
         {
             drawDefaultBackground();
             TranslationStorage var4 = TranslationStorage.getInstance();
@@ -68,7 +68,7 @@ namespace betareborn.Client.Guis
                 drawCenteredString(fontRenderer, clientHandler.field_1209_a, width / 2, height / 2 - 10, 16777215);
             }
 
-            base.drawScreen(var1, var2, var3);
+            base.render(var1, var2, var3);
         }
 
         public static ClientNetworkHandler setNetClientHandler(GuiConnecting var0, ClientNetworkHandler var1)
