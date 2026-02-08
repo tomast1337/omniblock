@@ -133,7 +133,7 @@ namespace betareborn.Rendering
             float var12 = 0.6F;
             float var25 = var1.getLuminance(blockAccess, var2, var3, var4);
             var5.setColorOpaque_F(var9 * var25, var9 * var25, var9 * var25);
-            int var26 = var1.getTexture(blockAccess, var2, var3, var4, 0);
+            int var26 = var1.getTextureId(blockAccess, var2, var3, var4, 0);
             int var27 = (var26 & 15) << 4;
             int var28 = var26 & 240;
             double var29 = (double)((float)var27 / 256.0F);
@@ -151,7 +151,7 @@ namespace betareborn.Rendering
             var5.addVertexWithUV(var39, var41, var45, var31, var35);
             float var64 = var1.getLuminance(blockAccess, var2, var3 + 1, var4);
             var5.setColorOpaque_F(var10 * var64, var10 * var64, var10 * var64);
-            var27 = var1.getTexture(blockAccess, var2, var3, var4, 1);
+            var27 = var1.getTextureId(blockAccess, var2, var3, var4, 1);
             var28 = (var27 & 15) << 4;
             int var67 = var27 & 240;
             double var30 = (double)((float)var28 / 256.0F);
@@ -235,7 +235,7 @@ namespace betareborn.Rendering
 
                 var5.setColorOpaque_F(var11 * var66, var11 * var66, var11 * var66);
                 flipTexture = var65 == 2;
-                renderEastFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 2));
+                renderEastFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 2));
             }
 
             if (var26 != 3 && (renderAllFaces || var1.isSideVisible(blockAccess, var2, var3, var4 + 1, 3)))
@@ -248,7 +248,7 @@ namespace betareborn.Rendering
 
                 var5.setColorOpaque_F(var11 * var66, var11 * var66, var11 * var66);
                 flipTexture = var65 == 3;
-                renderWestFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 3));
+                renderWestFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 3));
             }
 
             if (var26 != 4 && (renderAllFaces || var1.isSideVisible(blockAccess, var2 - 1, var3, var4, 4)))
@@ -261,7 +261,7 @@ namespace betareborn.Rendering
 
                 var5.setColorOpaque_F(var12 * var66, var12 * var66, var12 * var66);
                 flipTexture = var65 == 4;
-                renderNorthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 4));
+                renderNorthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 4));
             }
 
             if (var26 != 5 && (renderAllFaces || var1.isSideVisible(blockAccess, var2 + 1, var3, var4, 5)))
@@ -274,7 +274,7 @@ namespace betareborn.Rendering
 
                 var5.setColorOpaque_F(var12 * var66, var12 * var66, var12 * var66);
                 flipTexture = var65 == 5;
-                renderSouthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 5));
+                renderSouthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 5));
             }
 
             flipTexture = false;
@@ -2073,7 +2073,7 @@ namespace betareborn.Rendering
                 colorRedTopRight *= var12;
                 colorGreenTopRight *= var12;
                 colorBlueTopRight *= var12;
-                renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 0));
+                renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 0));
                 var8 = true;
             }
 
@@ -2151,7 +2151,7 @@ namespace betareborn.Rendering
                 colorRedTopRight *= var12;
                 colorGreenTopRight *= var12;
                 colorBlueTopRight *= var12;
-                renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 1));
+                renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 1));
                 var8 = true;
             }
 
@@ -2230,7 +2230,7 @@ namespace betareborn.Rendering
                 colorRedTopRight *= var12;
                 colorGreenTopRight *= var12;
                 colorBlueTopRight *= var12;
-                var19 = var1.getTexture(blockAccess, var2, var3, var4, 2);
+                var19 = var1.getTextureId(blockAccess, var2, var3, var4, 2);
                 renderEastFace(var1, (double)var2, (double)var3, (double)var4, var19);
                 if (fancyGrass && var19 == 3 && overrideBlockTexture < 0)
                 {
@@ -2326,8 +2326,8 @@ namespace betareborn.Rendering
                 colorRedTopRight *= var12;
                 colorGreenTopRight *= var12;
                 colorBlueTopRight *= var12;
-                var19 = var1.getTexture(blockAccess, var2, var3, var4, 3);
-                renderWestFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 3));
+                var19 = var1.getTextureId(blockAccess, var2, var3, var4, 3);
+                renderWestFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 3));
                 if (fancyGrass && var19 == 3 && overrideBlockTexture < 0)
                 {
                     colorRedTopLeft *= var5;
@@ -2422,7 +2422,7 @@ namespace betareborn.Rendering
                 colorRedTopRight *= var12;
                 colorGreenTopRight *= var12;
                 colorBlueTopRight *= var12;
-                var19 = var1.getTexture(blockAccess, var2, var3, var4, 4);
+                var19 = var1.getTextureId(blockAccess, var2, var3, var4, 4);
                 renderNorthFace(var1, (double)var2, (double)var3, (double)var4, var19);
                 if (fancyGrass && var19 == 3 && overrideBlockTexture < 0)
                 {
@@ -2518,7 +2518,7 @@ namespace betareborn.Rendering
                 colorRedTopRight *= var12;
                 colorGreenTopRight *= var12;
                 colorBlueTopRight *= var12;
-                var19 = var1.getTexture(blockAccess, var2, var3, var4, 5);
+                var19 = var1.getTextureId(blockAccess, var2, var3, var4, 5);
                 renderSouthFace(var1, (double)var2, (double)var3, (double)var4, var19);
                 if (fancyGrass && var19 == 3 && overrideBlockTexture < 0)
                 {
@@ -2584,7 +2584,7 @@ namespace betareborn.Rendering
             {
                 var27 = var1.getLuminance(blockAccess, var2, var3 - 1, var4);
                 var8.setColorOpaque_F(var17 * var27, var20 * var27, var23 * var27);
-                renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 0));
+                renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 0));
                 var9 = true;
             }
 
@@ -2597,7 +2597,7 @@ namespace betareborn.Rendering
                 }
 
                 var8.setColorOpaque_F(var14 * var27, var15 * var27, var16 * var27);
-                renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 1));
+                renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 1));
                 var9 = true;
             }
 
@@ -2611,7 +2611,7 @@ namespace betareborn.Rendering
                 }
 
                 var8.setColorOpaque_F(var18 * var27, var21 * var27, var24 * var27);
-                var28 = var1.getTexture(blockAccess, var2, var3, var4, 2);
+                var28 = var1.getTextureId(blockAccess, var2, var3, var4, 2);
                 renderEastFace(var1, (double)var2, (double)var3, (double)var4, var28);
                 if (fancyGrass && var28 == 3 && overrideBlockTexture < 0)
                 {
@@ -2631,7 +2631,7 @@ namespace betareborn.Rendering
                 }
 
                 var8.setColorOpaque_F(var18 * var27, var21 * var27, var24 * var27);
-                var28 = var1.getTexture(blockAccess, var2, var3, var4, 3);
+                var28 = var1.getTextureId(blockAccess, var2, var3, var4, 3);
                 renderWestFace(var1, (double)var2, (double)var3, (double)var4, var28);
                 if (fancyGrass && var28 == 3 && overrideBlockTexture < 0)
                 {
@@ -2651,7 +2651,7 @@ namespace betareborn.Rendering
                 }
 
                 var8.setColorOpaque_F(var19 * var27, var22 * var27, var25 * var27);
-                var28 = var1.getTexture(blockAccess, var2, var3, var4, 4);
+                var28 = var1.getTextureId(blockAccess, var2, var3, var4, 4);
                 renderNorthFace(var1, (double)var2, (double)var3, (double)var4, var28);
                 if (fancyGrass && var28 == 3 && overrideBlockTexture < 0)
                 {
@@ -2671,7 +2671,7 @@ namespace betareborn.Rendering
                 }
 
                 var8.setColorOpaque_F(var19 * var27, var22 * var27, var25 * var27);
-                var28 = var1.getTexture(blockAccess, var2, var3, var4, 5);
+                var28 = var1.getTextureId(blockAccess, var2, var3, var4, 5);
                 renderSouthFace(var1, (double)var2, (double)var3, (double)var4, var28);
                 if (fancyGrass && var28 == 3 && overrideBlockTexture < 0)
                 {
@@ -2722,7 +2722,7 @@ namespace betareborn.Rendering
             {
                 var28 = var1.getLuminance(blockAccess, var2, var3 - 1, var4);
                 var8.setColorOpaque_F(var14 * var28, var18 * var28, var22 * var28);
-                renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 0));
+                renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 0));
                 var9 = true;
             }
 
@@ -2735,7 +2735,7 @@ namespace betareborn.Rendering
                 }
 
                 var8.setColorOpaque_F(var15 * var28, var19 * var28, var23 * var28);
-                renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 1));
+                renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 1));
                 var9 = true;
             }
 
@@ -2749,7 +2749,7 @@ namespace betareborn.Rendering
 
                 var8.setColorOpaque_F(var16 * var28, var20 * var28, var24 * var28);
                 var8.setTranslationF(0.0F, 0.0F, var26);
-                renderEastFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 2));
+                renderEastFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 2));
                 var8.setTranslationF(0.0F, 0.0F, -var26);
                 var9 = true;
             }
@@ -2764,7 +2764,7 @@ namespace betareborn.Rendering
 
                 var8.setColorOpaque_F(var16 * var28, var20 * var28, var24 * var28);
                 var8.setTranslationF(0.0F, 0.0F, -var26);
-                renderWestFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 3));
+                renderWestFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 3));
                 var8.setTranslationF(0.0F, 0.0F, var26);
                 var9 = true;
             }
@@ -2779,7 +2779,7 @@ namespace betareborn.Rendering
 
                 var8.setColorOpaque_F(var17 * var28, var21 * var28, var25 * var28);
                 var8.setTranslationF(var26, 0.0F, 0.0F);
-                renderNorthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 4));
+                renderNorthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 4));
                 var8.setTranslationF(-var26, 0.0F, 0.0F);
                 var9 = true;
             }
@@ -2794,7 +2794,7 @@ namespace betareborn.Rendering
 
                 var8.setColorOpaque_F(var17 * var28, var21 * var28, var25 * var28);
                 var8.setTranslationF(-var26, 0.0F, 0.0F);
-                renderSouthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 5));
+                renderSouthFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 5));
                 var8.setTranslationF(var26, 0.0F, 0.0F);
                 var9 = true;
             }
@@ -2936,7 +2936,7 @@ namespace betareborn.Rendering
             }
 
             var5.setColorOpaque_F(var8 * var13, var8 * var13, var8 * var13);
-            renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 0));
+            renderBottomFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 0));
             var7 = true;
             var13 = var1.getLuminance(blockAccess, var2, var3 + 1, var4);
             if (var6.maxY < 1.0D)
@@ -2950,7 +2950,7 @@ namespace betareborn.Rendering
             }
 
             var5.setColorOpaque_F(var9 * var13, var9 * var13, var9 * var13);
-            renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTexture(blockAccess, var2, var3, var4, 1));
+            renderTopFace(var1, (double)var2, (double)var3, (double)var4, var1.getTextureId(blockAccess, var2, var3, var4, 1));
             var7 = true;
             var13 = var1.getLuminance(blockAccess, var2, var3, var4 - 1);
             if (var6.minZ > 0.0D)
@@ -2964,7 +2964,7 @@ namespace betareborn.Rendering
             }
 
             var5.setColorOpaque_F(var10 * var13, var10 * var13, var10 * var13);
-            int var14 = var1.getTexture(blockAccess, var2, var3, var4, 2);
+            int var14 = var1.getTextureId(blockAccess, var2, var3, var4, 2);
             if (var14 < 0)
             {
                 flipTexture = true;
@@ -2986,7 +2986,7 @@ namespace betareborn.Rendering
             }
 
             var5.setColorOpaque_F(var10 * var13, var10 * var13, var10 * var13);
-            var14 = var1.getTexture(blockAccess, var2, var3, var4, 3);
+            var14 = var1.getTextureId(blockAccess, var2, var3, var4, 3);
             if (var14 < 0)
             {
                 flipTexture = true;
@@ -3008,7 +3008,7 @@ namespace betareborn.Rendering
             }
 
             var5.setColorOpaque_F(var11 * var13, var11 * var13, var11 * var13);
-            var14 = var1.getTexture(blockAccess, var2, var3, var4, 4);
+            var14 = var1.getTextureId(blockAccess, var2, var3, var4, 4);
             if (var14 < 0)
             {
                 flipTexture = true;
@@ -3030,7 +3030,7 @@ namespace betareborn.Rendering
             }
 
             var5.setColorOpaque_F(var11 * var13, var11 * var13, var11 * var13);
-            var14 = var1.getTexture(blockAccess, var2, var3, var4, 5);
+            var14 = var1.getTextureId(blockAccess, var2, var3, var4, 5);
             if (var14 < 0)
             {
                 flipTexture = true;

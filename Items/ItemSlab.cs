@@ -23,7 +23,7 @@ namespace betareborn.Items
 
         public override String getItemNameIS(ItemStack var1)
         {
-            return base.getItemName() + "." + BlockStep.field_22037_a[var1.getItemDamage()];
+            return base.getItemName() + "." + BlockSlab.names[var1.getItemDamage()];
         }
     }
 

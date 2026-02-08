@@ -7,25 +7,25 @@ namespace betareborn.Blocks
     public class BlockWorkbench : Block
     {
 
-        public BlockWorkbench(int var1) : base(var1, Material.WOOD)
+        public BlockWorkbench(int id) : base(id, Material.WOOD)
         {
             textureId = 59;
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 1 ? textureId - 16 : (var1 == 0 ? Block.PLANKS.getTexture(0) : (var1 != 2 && var1 != 4 ? textureId : textureId + 1));
+            return side == 1 ? textureId - 16 : (side == 0 ? Block.PLANKS.getTexture(0) : (side != 2 && side != 4 ? textureId : textureId + 1));
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (var1.isRemote)
+            if (world.isRemote)
             {
                 return true;
             }
             else
             {
-                var5.displayWorkbenchGUI(var2, var3, var4);
+                player.displayWorkbenchGUI(x, y, z);
                 return true;
             }
         }

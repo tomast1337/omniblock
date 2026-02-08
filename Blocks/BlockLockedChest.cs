@@ -11,7 +11,7 @@ namespace betareborn.Blocks
             textureId = 26;
         }
 
-        public override int getTexture(BlockView blockView, int x, int y, int z, int side)
+        public override int getTextureId(BlockView blockView, int x, int y, int z, int side)
         {
             if (side == 1)
             {

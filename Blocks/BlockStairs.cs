@@ -1,31 +1,30 @@
 using betareborn.Entities;
 using betareborn.Worlds;
-using java.util;
 
 namespace betareborn.Blocks
 {
     public class BlockStairs : Block
     {
 
-        private Block modelBlock;
+        private Block baseBlock;
 
-        public BlockStairs(int var1, Block var2) : base(var1, var2.textureId, var2.material)
+        public BlockStairs(int id, Block block) : base(id, block.textureId, block.material)
         {
-            modelBlock = var2;
-            setHardness(var2.hardness);
-            setResistance(var2.resistance / 3.0F);
-            setSoundGroup(var2.soundGroup);
+            baseBlock = block;
+            setHardness(block.hardness);
+            setResistance(block.resistance / 3.0F);
+            setSoundGroup(block.soundGroup);
             setOpacity(255);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            return base.getCollisionShape(var1, var2, var3, var4);
+            return base.getCollisionShape(world, x, y, z);
         }
 
         public override bool isOpaque()
@@ -43,188 +42,188 @@ namespace betareborn.Blocks
             return 10;
         }
 
-        public override bool isSideVisible(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
         {
-            return base.isSideVisible(var1, var2, var3, var4, var5);
+            return base.isSideVisible(blockView, x, y, z, side);
         }
 
-        public override void addIntersectingBoundingBox(World var1, int var2, int var3, int var4, Box var5, List<Box> var6)
+        public override void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
         {
-            int var7 = var1.getBlockMeta(var2, var3, var4);
+            int var7 = world.getBlockMeta(x, y, z);
             if (var7 == 0)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                 setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
             }
             else if (var7 == 1)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                 setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
             }
             else if (var7 == 2)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                 setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
             }
             else if (var7 == 3)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                 setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 0.5F, 1.0F);
-                base.addIntersectingBoundingBox(var1, var2, var3, var4, var5, var6);
+                base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
             }
 
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        public override void randomDisplayTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void randomDisplayTick(World world, int x, int y, int z, java.util.Random random)
         {
-            modelBlock.randomDisplayTick(var1, var2, var3, var4, var5);
+            baseBlock.randomDisplayTick(world, x, y, z, random);
         }
 
-        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
-            modelBlock.onBlockBreakStart(var1, var2, var3, var4, var5);
+            baseBlock.onBlockBreakStart(world, x, y, z, player);
         }
 
-        public override void onMetadataChange(World var1, int var2, int var3, int var4, int var5)
+        public override void onMetadataChange(World world, int x, int y, int z, int meta)
         {
-            modelBlock.onMetadataChange(var1, var2, var3, var4, var5);
+            baseBlock.onMetadataChange(world, x, y, z, meta);
         }
 
-        public override float getLuminance(BlockView var1, int var2, int var3, int var4)
+        public override float getLuminance(BlockView blockView, int x, int y, int z)
         {
-            return modelBlock.getLuminance(var1, var2, var3, var4);
+            return baseBlock.getLuminance(blockView, x, y, z);
         }
 
-        public override float getBlastResistance(Entity var1)
+        public override float getBlastResistance(Entity entity)
         {
-            return modelBlock.getBlastResistance(var1);
+            return baseBlock.getBlastResistance(entity);
         }
 
         public override int getRenderLayer()
         {
-            return modelBlock.getRenderLayer();
+            return baseBlock.getRenderLayer();
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return modelBlock.getDroppedItemId(var1, var2);
+            return baseBlock.getDroppedItemId(blockMeta, random);
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
-            return modelBlock.getDroppedItemCount(var1);
+            return baseBlock.getDroppedItemCount(random);
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            return modelBlock.getTexture(var1, var2);
+            return baseBlock.getTexture(side, meta);
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return modelBlock.getTexture(var1);
+            return baseBlock.getTexture(side);
         }
 
-        public override int getTexture(BlockView var1, int var2, int var3, int var4, int var5)
+        public override int getTextureId(BlockView blockView, int x, int y, int z, int side)
         {
-            return modelBlock.getTexture(var1, var2, var3, var4, var5);
+            return baseBlock.getTextureId(blockView, x, y, z, side);
         }
 
         public override int getTickRate()
         {
-            return modelBlock.getTickRate();
+            return baseBlock.getTickRate();
         }
 
-        public override Box getBoundingBox(World var1, int var2, int var3, int var4)
+        public override Box getBoundingBox(World world, int x, int y, int z)
         {
-            return modelBlock.getBoundingBox(var1, var2, var3, var4);
+            return baseBlock.getBoundingBox(world, x, y, z);
         }
 
-        public override void applyVelocity(World var1, int var2, int var3, int var4, Entity var5, Vec3D var6)
+        public override void applyVelocity(World world, int x, int y, int z, Entity entity, Vec3D velocity)
         {
-            modelBlock.applyVelocity(var1, var2, var3, var4, var5, var6);
+            baseBlock.applyVelocity(world, x, y, z, entity, velocity);
         }
 
         public override bool hasCollision()
         {
-            return modelBlock.hasCollision();
+            return baseBlock.hasCollision();
         }
 
-        public override bool hasCollision(int var1, bool var2)
+        public override bool hasCollision(int meta, bool allowLiquids)
         {
-            return modelBlock.hasCollision(var1, var2);
+            return baseBlock.hasCollision(meta, allowLiquids);
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return modelBlock.canPlaceAt(var1, var2, var3, var4);
+            return baseBlock.canPlaceAt(world, x, y, z);
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            neighborUpdate(var1, var2, var3, var4, 0);
-            modelBlock.onPlaced(var1, var2, var3, var4);
+            neighborUpdate(world, x, y, z, 0);
+            baseBlock.onPlaced(world, x, y, z);
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            modelBlock.onBreak(var1, var2, var3, var4);
+            baseBlock.onBreak(world, x, y, z);
         }
 
-        public override void dropStacks(World var1, int var2, int var3, int var4, int var5, float var6)
+        public override void dropStacks(World world, int x, int y, int z, int meta, float luck)
         {
-            modelBlock.dropStacks(var1, var2, var3, var4, var5, var6);
+            baseBlock.dropStacks(world, x, y, z, meta, luck);
         }
 
-        public override void onSteppedOn(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onSteppedOn(World world, int x, int y, int z, Entity entity)
         {
-            modelBlock.onSteppedOn(var1, var2, var3, var4, var5);
+            baseBlock.onSteppedOn(world, x, y, z, entity);
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            modelBlock.onTick(var1, var2, var3, var4, var5);
+            baseBlock.onTick(world, x, y, z, random);
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            return modelBlock.onUse(var1, var2, var3, var4, var5);
+            return baseBlock.onUse(world, x, y, z, player);
         }
 
-        public override void onDestroyedByExplosion(World var1, int var2, int var3, int var4)
+        public override void onDestroyedByExplosion(World world, int x, int y, int z)
         {
-            modelBlock.onDestroyedByExplosion(var1, var2, var3, var4);
+            baseBlock.onDestroyedByExplosion(world, x, y, z);
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, EntityLiving var5)
+        public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(var5.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+            int var6 = MathHelper.floor_double((double)(placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)
             {
-                var1.setBlockMeta(var2, var3, var4, 2);
+                world.setBlockMeta(x, y, z, 2);
             }
 
             if (var6 == 1)
             {
-                var1.setBlockMeta(var2, var3, var4, 1);
+                world.setBlockMeta(x, y, z, 1);
             }
 
             if (var6 == 2)
             {
-                var1.setBlockMeta(var2, var3, var4, 3);
+                world.setBlockMeta(x, y, z, 3);
             }
 
             if (var6 == 3)
             {
-                var1.setBlockMeta(var2, var3, var4, 0);
+                world.setBlockMeta(x, y, z, 0);
             }
 
         }

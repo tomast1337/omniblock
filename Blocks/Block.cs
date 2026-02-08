@@ -69,8 +69,8 @@ namespace betareborn.Blocks
         public static readonly BlockPlant RED_MUSHROOM = (BlockPlant)(new BlockMushroom(40, 28)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("mushroom");
         public static readonly Block GOLD_BLOCK = (new BlockOreStorage(41, 23)).setHardness(3.0F).setResistance(10.0F).setSoundGroup(soundMetalFootstep).setBlockName("blockGold");
         public static readonly Block IRON_BLOCK = (new BlockOreStorage(42, 22)).setHardness(5.0F).setResistance(10.0F).setSoundGroup(soundMetalFootstep).setBlockName("blockIron");
-        public static readonly Block DOUBLE_SLAB = (new BlockStep(43, true)).setHardness(2.0F).setResistance(10.0F).setSoundGroup(soundStoneFootstep).setBlockName("stoneSlab");
-        public static readonly Block SLAB = (new BlockStep(44, false)).setHardness(2.0F).setResistance(10.0F).setSoundGroup(soundStoneFootstep).setBlockName("stoneSlab");
+        public static readonly Block DOUBLE_SLAB = (new BlockSlab(43, true)).setHardness(2.0F).setResistance(10.0F).setSoundGroup(soundStoneFootstep).setBlockName("stoneSlab");
+        public static readonly Block SLAB = (new BlockSlab(44, false)).setHardness(2.0F).setResistance(10.0F).setSoundGroup(soundStoneFootstep).setBlockName("stoneSlab");
         public static readonly Block BRICKS = (new Block(45, 7, Material.STONE)).setHardness(2.0F).setResistance(10.0F).setSoundGroup(soundStoneFootstep).setBlockName("brick");
         public static readonly Block TNT = (new BlockTNT(46, 8)).setHardness(0.0F).setSoundGroup(soundGrassFootstep).setBlockName("tnt");
         public static readonly Block BOOKSHELF = (new BlockBookshelf(47, 35)).setHardness(1.5F).setSoundGroup(soundWoodFootstep).setBlockName("bookshelf");
@@ -264,7 +264,7 @@ namespace betareborn.Blocks
             return blockView.getMaterial(x, y, z).isSolid();
         }
 
-        public virtual int getTexture(BlockView blockView, int x, int y, int z, int side)
+        public virtual int getTextureId(BlockView blockView, int x, int y, int z, int side)
         {
             return getTexture(side, blockView.getBlockMeta(x, y, z));
         }

@@ -7,10 +7,10 @@ namespace betareborn.Blocks
     public class BlockTrapDoor : Block
     {
 
-        public BlockTrapDoor(int var1, Material var2) : base(var1, var2)
+        public BlockTrapDoor(int id, Material material) : base(id, material)
         {
             textureId = 84;
-            if (var2 == Material.METAL)
+            if (material == Material.METAL)
             {
                 ++textureId;
             }
@@ -35,21 +35,21 @@ namespace betareborn.Blocks
             return 0;
         }
 
-        public override Box getBoundingBox(World var1, int var2, int var3, int var4)
+        public override Box getBoundingBox(World world, int x, int y, int z)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.getBoundingBox(var1, var2, var3, var4);
+            updateBoundingBox(world, x, y, z);
+            return base.getBoundingBox(world, x, y, z);
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.getCollisionShape(var1, var2, var3, var4);
+            updateBoundingBox(world, x, y, z);
+            return base.getCollisionShape(world, x, y, z);
         }
 
-        public override void updateBoundingBox(BlockView var1, int var2, int var3, int var4)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            setBlockBoundsForBlockRender(var1.getBlockMeta(var2, var3, var4));
+            updateBoundingBox(blockView.getBlockMeta(x, y, z));
         }
 
         public override void setupRenderBoundingBox()
@@ -58,28 +58,28 @@ namespace betareborn.Blocks
             setBoundingBox(0.0F, 0.5F - var1 / 2.0F, 0.0F, 1.0F, 0.5F + var1 / 2.0F, 1.0F);
         }
 
-        public void setBlockBoundsForBlockRender(int var1)
+        public void updateBoundingBox(int meta)
         {
             float var2 = 3.0F / 16.0F;
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, var2, 1.0F);
-            if (isTrapdoorOpen(var1))
+            if (isOpen(meta))
             {
-                if ((var1 & 3) == 0)
+                if ((meta & 3) == 0)
                 {
                     setBoundingBox(0.0F, 0.0F, 1.0F - var2, 1.0F, 1.0F, 1.0F);
                 }
 
-                if ((var1 & 3) == 1)
+                if ((meta & 3) == 1)
                 {
                     setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, var2);
                 }
 
-                if ((var1 & 3) == 2)
+                if ((meta & 3) == 2)
                 {
                     setBoundingBox(1.0F - var2, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 }
 
-                if ((var1 & 3) == 3)
+                if ((meta & 3) == 3)
                 {
                     setBoundingBox(0.0F, 0.0F, 0.0F, var2, 1.0F, 1.0F);
                 }
@@ -87,12 +87,12 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
-            onUse(var1, var2, var3, var4, var5);
+            onUse(world, x, y, z, player);
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
             if (material == Material.METAL)
             {
@@ -100,34 +100,34 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                var1.worldEvent(var5, 1003, var2, var3, var4, 0);
+                int var6 = world.getBlockMeta(x, y, z);
+                world.setBlockMeta(x, y, z, var6 ^ 4);
+                world.worldEvent(player, 1003, x, y, z, 0);
                 return true;
             }
         }
 
-        public void onPoweredBlockChange(World var1, int var2, int var3, int var4, bool var5)
+        public void setOpen(World world, int x, int y, int z, bool open)
         {
-            int var6 = var1.getBlockMeta(var2, var3, var4);
+            int var6 = world.getBlockMeta(x, y, z);
             bool var7 = (var6 & 4) > 0;
-            if (var7 != var5)
+            if (var7 != open)
             {
-                var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                var1.worldEvent((EntityPlayer)null, 1003, var2, var3, var4, 0);
+                world.setBlockMeta(x, y, z, var6 ^ 4);
+                world.worldEvent((EntityPlayer)null, 1003, x, y, z, 0);
             }
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                int var7 = var2;
-                int var8 = var4;
+                int var6 = world.getBlockMeta(x, y, z);
+                int var7 = x;
+                int var8 = z;
                 if ((var6 & 3) == 0)
                 {
-                    var8 = var4 + 1;
+                    var8 = z + 1;
                 }
 
                 if ((var6 & 3) == 1)
@@ -137,7 +137,7 @@ namespace betareborn.Blocks
 
                 if ((var6 & 3) == 2)
                 {
-                    var7 = var2 + 1;
+                    var7 = x + 1;
                 }
 
                 if ((var6 & 3) == 3)
@@ -145,92 +145,92 @@ namespace betareborn.Blocks
                     --var7;
                 }
 
-                if (!var1.shouldSuffocate(var7, var3, var8))
+                if (!world.shouldSuffocate(var7, y, var8))
                 {
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
-                    dropStacks(var1, var2, var3, var4, var6);
+                    world.setBlockWithNotify(x, y, z, 0);
+                    dropStacks(world, x, y, z, var6);
                 }
 
-                if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower())
+                if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
                 {
-                    bool var9 = var1.isPowered(var2, var3, var4);
-                    onPoweredBlockChange(var1, var2, var3, var4, var9);
+                    bool var9 = world.isPowered(x, y, z);
+                    setOpen(world, x, y, z, var9);
                 }
 
             }
         }
 
-        public override HitResult raycast(World var1, int var2, int var3, int var4, Vec3D var5, Vec3D var6)
+        public override HitResult raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
         {
-            updateBoundingBox(var1, var2, var3, var4);
-            return base.raycast(var1, var2, var3, var4, var5, var6);
+            updateBoundingBox(world, x, y, z);
+            return base.raycast(world, x, y, z, startPos, endPos);
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4, int var5)
+        public override void onPlaced(World world, int x, int y, int z, int direction)
         {
             sbyte var6 = 0;
-            if (var5 == 2)
+            if (direction == 2)
             {
                 var6 = 0;
             }
 
-            if (var5 == 3)
+            if (direction == 3)
             {
                 var6 = 1;
             }
 
-            if (var5 == 4)
+            if (direction == 4)
             {
                 var6 = 2;
             }
 
-            if (var5 == 5)
+            if (direction == 5)
             {
                 var6 = 3;
             }
 
-            var1.setBlockMeta(var2, var3, var4, var6);
+            world.setBlockMeta(x, y, z, var6);
         }
 
-        public override bool canPlaceAt(World var1, int var2, int var3, int var4, int var5)
+        public override bool canPlaceAt(World world, int x, int y, int z, int side)
         {
-            if (var5 == 0)
+            if (side == 0)
             {
                 return false;
             }
-            else if (var5 == 1)
+            else if (side == 1)
             {
                 return false;
             }
             else
             {
-                if (var5 == 2)
+                if (side == 2)
                 {
-                    ++var4;
+                    ++z;
                 }
 
-                if (var5 == 3)
+                if (side == 3)
                 {
-                    --var4;
+                    --z;
                 }
 
-                if (var5 == 4)
+                if (side == 4)
                 {
-                    ++var2;
+                    ++x;
                 }
 
-                if (var5 == 5)
+                if (side == 5)
                 {
-                    --var2;
+                    --x;
                 }
 
-                return var1.shouldSuffocate(var2, var3, var4);
+                return world.shouldSuffocate(x, y, z);
             }
         }
 
-        public static bool isTrapdoorOpen(int var0)
+        public static bool isOpen(int meta)
         {
-            return (var0 & 4) != 0;
+            return (meta & 4) != 0;
         }
     }
 

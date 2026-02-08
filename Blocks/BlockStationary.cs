@@ -5,53 +5,53 @@ namespace betareborn.Blocks
 {
     public class BlockStationary : BlockFluid
     {
-        public BlockStationary(int var1, Material var2) : base(var1, var2)
+        public BlockStationary(int id, Material material) : base(id, material)
         {
             setTickRandomly(false);
-            if (var2 == Material.LAVA)
+            if (material == Material.LAVA)
             {
                 setTickRandomly(true);
             }
 
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            base.neighborUpdate(var1, var2, var3, var4, var5);
-            if (var1.getBlockId(var2, var3, var4) == id)
+            base.neighborUpdate(world, x, y, z, id);
+            if (world.getBlockId(x, y, z) == base.id)
             {
-                func_30004_j(var1, var2, var3, var4);
+                convertToFlowing(world, x, y, z);
             }
 
         }
 
-        private void func_30004_j(World var1, int var2, int var3, int var4)
+        private void convertToFlowing(World world, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
-            var1.pauseTicking = true;
-            var1.setBlockAndMetadata(var2, var3, var4, id - 1, var5);
-            var1.setBlocksDirty(var2, var3, var4, var2, var3, var4);
-            var1.scheduleBlockUpdate(var2, var3, var4, id - 1, getTickRate());
-            var1.pauseTicking = false;
+            int var5 = world.getBlockMeta(x, y, z);
+            world.pauseTicking = true;
+            world.setBlockAndMetadata(x, y, z, id - 1, var5);
+            world.setBlocksDirty(x, y, z, x, y, z);
+            world.scheduleBlockUpdate(x, y, z, id - 1, getTickRate());
+            world.pauseTicking = false;
         }
 
-        public override void onTick(World var1, int var2, int var3, int var4, java.util.Random var5)
+        public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
             if (material == Material.LAVA)
             {
-                int var6 = var5.nextInt(3);
+                int var6 = random.nextInt(3);
 
                 for (int var7 = 0; var7 < var6; ++var7)
                 {
-                    var2 += var5.nextInt(3) - 1;
-                    ++var3;
-                    var4 += var5.nextInt(3) - 1;
-                    int var8 = var1.getBlockId(var2, var3, var4);
+                    x += random.nextInt(3) - 1;
+                    ++y;
+                    z += random.nextInt(3) - 1;
+                    int var8 = world.getBlockId(x, y, z);
                     if (var8 == 0)
                     {
-                        if (func_301_k(var1, var2 - 1, var3, var4) || func_301_k(var1, var2 + 1, var3, var4) || func_301_k(var1, var2, var3, var4 - 1) || func_301_k(var1, var2, var3, var4 + 1) || func_301_k(var1, var2, var3 - 1, var4) || func_301_k(var1, var2, var3 + 1, var4))
+                        if (isFlammable(world, x - 1, y, z) || isFlammable(world, x + 1, y, z) || isFlammable(world, x, y, z - 1) || isFlammable(world, x, y, z + 1) || isFlammable(world, x, y - 1, z) || isFlammable(world, x, y + 1, z))
                         {
-                            var1.setBlockWithNotify(var2, var3, var4, Block.FIRE.id);
+                            world.setBlockWithNotify(x, y, z, Block.FIRE.id);
                             return;
                         }
                     }
@@ -64,9 +64,9 @@ namespace betareborn.Blocks
 
         }
 
-        private bool func_301_k(World var1, int var2, int var3, int var4)
+        private bool isFlammable(World world, int x, int y, int z)
         {
-            return var1.getMaterial(var2, var3, var4).isBurnable();
+            return world.getMaterial(x, y, z).isBurnable();
         }
     }
 

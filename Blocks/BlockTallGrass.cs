@@ -4,41 +4,41 @@ namespace betareborn.Blocks
 {
     public class BlockTallGrass : BlockPlant
     {
-        public BlockTallGrass(int var1, int var2) : base(var1, var2)
+        public BlockTallGrass(int i, int j) : base(i, j)
         {
             float var3 = 0.4F;
             setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 0.8F, 0.5F + var3);
         }
 
-        public override int getTexture(int var1, int var2)
+        public override int getTexture(int side, int meta)
         {
-            return var2 == 1 ? textureId : (var2 == 2 ? textureId + 16 + 1 : (var2 == 0 ? textureId + 16 : textureId));
+            return meta == 1 ? textureId : (meta == 2 ? textureId + 16 + 1 : (meta == 0 ? textureId + 16 : textureId));
         }
 
-        public override int getColorMultiplier(BlockView var1, int var2, int var3, int var4)
+        public override int getColorMultiplier(BlockView blockView, int x, int y, int z)
         {
-            int var5 = var1.getBlockMeta(var2, var3, var4);
+            int var5 = blockView.getBlockMeta(x, y, z);
             if (var5 == 0)
             {
                 return 16777215;
             }
             else
             {
-                long var6 = (long)(var2 * 3129871 + var4 * 6129781 + var3);
+                long var6 = (long)(x * 3129871 + z * 6129781 + y);
                 var6 = var6 * var6 * 42317861L + var6 * 11L;
-                var2 = (int)((long)var2 + (var6 >> 14 & 31L));
-                var3 = (int)((long)var3 + (var6 >> 19 & 31L));
-                var4 = (int)((long)var4 + (var6 >> 24 & 31L));
-                var1.getBiomeSource().getBiomesInArea(var2, var4, 1, 1);
-                double var8 = var1.getBiomeSource().temperatureMap[0];
-                double var10 = var1.getBiomeSource().downfallMap[0];
+                x = (int)((long)x + (var6 >> 14 & 31L));
+                y = (int)((long)y + (var6 >> 19 & 31L));
+                z = (int)((long)z + (var6 >> 24 & 31L));
+                blockView.getBiomeSource().getBiomesInArea(x, z, 1, 1);
+                double var8 = blockView.getBiomeSource().temperatureMap[0];
+                double var10 = blockView.getBiomeSource().downfallMap[0];
                 return GrassColors.getColor(var8, var10);
             }
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return var2.nextInt(8) == 0 ? Item.seeds.id : -1;
+            return random.nextInt(8) == 0 ? Item.seeds.id : -1;
         }
     }
 

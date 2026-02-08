@@ -7,79 +7,79 @@ namespace betareborn.Blocks
 {
     public class BlockTNT : Block
     {
-        public BlockTNT(int var1, int var2) : base(var1, var2, Material.TNT)
+        public BlockTNT(int id, int textureId) : base(id, textureId, Material.TNT)
         {
         }
 
-        public override int getTexture(int var1)
+        public override int getTexture(int side)
         {
-            return var1 == 0 ? textureId + 2 : (var1 == 1 ? textureId + 1 : textureId);
+            return side == 0 ? textureId + 2 : (side == 1 ? textureId + 1 : textureId);
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            base.onPlaced(var1, var2, var3, var4);
-            if (var1.isPowered(var2, var3, var4))
+            base.onPlaced(world, x, y, z);
+            if (world.isPowered(x, y, z))
             {
-                onMetadataChange(var1, var2, var3, var4, 1);
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                onMetadataChange(world, x, y, z, 1);
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override void neighborUpdate(World var1, int var2, int var3, int var4, int var5)
+        public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            if (var5 > 0 && Block.BLOCKS[var5].canEmitRedstonePower() && var1.isPowered(var2, var3, var4))
+            if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower() && world.isPowered(x, y, z))
             {
-                onMetadataChange(var1, var2, var3, var4, 1);
-                var1.setBlockWithNotify(var2, var3, var4, 0);
+                onMetadataChange(world, x, y, z, 1);
+                world.setBlockWithNotify(x, y, z, 0);
             }
 
         }
 
-        public override int getDroppedItemCount(java.util.Random var1)
+        public override int getDroppedItemCount(java.util.Random random)
         {
             return 0;
         }
 
-        public override void onDestroyedByExplosion(World var1, int var2, int var3, int var4)
+        public override void onDestroyedByExplosion(World world, int x, int y, int z)
         {
-            EntityTNTPrimed var5 = new EntityTNTPrimed(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F));
-            var5.fuse = var1.random.nextInt(var5.fuse / 4) + var5.fuse / 8;
-            var1.spawnEntity(var5);
+            EntityTNTPrimed var5 = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
+            var5.fuse = world.random.nextInt(var5.fuse / 4) + var5.fuse / 8;
+            world.spawnEntity(var5);
         }
 
-        public override void onMetadataChange(World var1, int var2, int var3, int var4, int var5)
+        public override void onMetadataChange(World world, int x, int y, int z, int meta)
         {
-            if (!var1.isRemote)
+            if (!world.isRemote)
             {
-                if ((var5 & 1) == 0)
+                if ((meta & 1) == 0)
                 {
-                    dropStack(var1, var2, var3, var4, new ItemStack(Block.TNT.id, 1, 0));
+                    dropStack(world, x, y, z, new ItemStack(Block.TNT.id, 1, 0));
                 }
                 else
                 {
-                    EntityTNTPrimed var6 = new EntityTNTPrimed(var1, (double)((float)var2 + 0.5F), (double)((float)var3 + 0.5F), (double)((float)var4 + 0.5F));
-                    var1.spawnEntity(var6);
-                    var1.playSoundAtEntity(var6, "random.fuse", 1.0F, 1.0F);
+                    EntityTNTPrimed var6 = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
+                    world.spawnEntity(var6);
+                    world.playSoundAtEntity(var6, "random.fuse", 1.0F, 1.0F);
                 }
 
             }
         }
 
-        public override void onBlockBreakStart(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (var5.getCurrentEquippedItem() != null && var5.getCurrentEquippedItem().itemID == Item.flintAndSteel.id)
+            if (player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().itemID == Item.flintAndSteel.id)
             {
-                var1.setBlockMetadata(var2, var3, var4, 1);
+                world.setBlockMetadata(x, y, z, 1);
             }
 
-            base.onBlockBreakStart(var1, var2, var3, var4, var5);
+            base.onBlockBreakStart(world, x, y, z, player);
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            return base.onUse(var1, var2, var3, var4, var5);
+            return base.onUse(world, x, y, z, player);
         }
     }
 

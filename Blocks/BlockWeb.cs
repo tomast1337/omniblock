@@ -7,13 +7,13 @@ namespace betareborn.Blocks
 {
     public class BlockWeb : Block
     {
-        public BlockWeb(int var1, int var2) : base(var1, var2, Material.COBWEB)
+        public BlockWeb(int id, int texturePosition) : base(id, texturePosition, Material.COBWEB)
         {
         }
 
-        public override void onEntityCollision(World var1, int var2, int var3, int var4, Entity var5)
+        public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
-            var5.isInWeb = true;
+            entity.isInWeb = true;
         }
 
         public override bool isOpaque()
@@ -21,7 +21,7 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box getCollisionShape(World world, int x, int y, int z)
         {
             return null;
         }
@@ -36,7 +36,7 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override int getDroppedItemId(int var1, java.util.Random var2)
+        public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
             return Item.silk.id;
         }

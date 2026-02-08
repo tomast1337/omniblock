@@ -5,22 +5,22 @@ namespace betareborn.Blocks
 {
     public class BlockSponge : Block
     {
-        public BlockSponge(int var1) : base(var1, Material.SPONGE)
+        public BlockSponge(int id) : base(id, Material.SPONGE)
         {
             textureId = 48;
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
             sbyte var5 = 2;
 
-            for (int var6 = var2 - var5; var6 <= var2 + var5; ++var6)
+            for (int var6 = x - var5; var6 <= x + var5; ++var6)
             {
-                for (int var7 = var3 - var5; var7 <= var3 + var5; ++var7)
+                for (int var7 = y - var5; var7 <= y + var5; ++var7)
                 {
-                    for (int var8 = var4 - var5; var8 <= var4 + var5; ++var8)
+                    for (int var8 = z - var5; var8 <= z + var5; ++var8)
                     {
-                        if (var1.getMaterial(var6, var7, var8) == Material.WATER)
+                        if (world.getMaterial(var6, var7, var8) == Material.WATER)
                         {
                         }
                     }
@@ -29,17 +29,17 @@ namespace betareborn.Blocks
 
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
             sbyte var5 = 2;
 
-            for (int var6 = var2 - var5; var6 <= var2 + var5; ++var6)
+            for (int var6 = x - var5; var6 <= x + var5; ++var6)
             {
-                for (int var7 = var3 - var5; var7 <= var3 + var5; ++var7)
+                for (int var7 = y - var5; var7 <= y + var5; ++var7)
                 {
-                    for (int var8 = var4 - var5; var8 <= var4 + var5; ++var8)
+                    for (int var8 = z - var5; var8 <= z + var5; ++var8)
                     {
-                        var1.notifyNeighbors(var6, var7, var8, var1.getBlockId(var6, var7, var8));
+                        world.notifyNeighbors(var6, var7, var8, world.getBlockId(var6, var7, var8));
                     }
                 }
             }
