@@ -20,7 +20,7 @@ namespace betareborn
         private Minecraft mc;
         private WorldClient worldClient;
         private bool field_1210_g = false;
-        public MapStorage field_28118_b = new MapStorage((ISaveHandler)null);
+        public MapStorage clientPersistentStateManager = new MapStorage((ISaveHandler)null);
         java.util.Random rand = new();
 
         public NetClientHandler(Minecraft var1, String var2, int var3)
@@ -32,7 +32,7 @@ namespace betareborn
             netManager = new NetworkManager(socket, "Client", this);
         }
 
-        public void processReadPackets()
+        public void tick()
         {
             if (!disconnected)
             {
@@ -317,7 +317,7 @@ namespace betareborn
 
         public override void handlePreChunk(Packet50PreChunk var1)
         {
-            worldClient.doPreChunk(var1.xPosition, var1.yPosition, var1.mode);
+            worldClient.updateChunk(var1.xPosition, var1.yPosition, var1.mode);
         }
 
         public override void handleMultiBlockChange(Packet52MultiBlockChange var1)
@@ -335,7 +335,7 @@ namespace betareborn
                 int var10 = var6 >> 8 & 15;
                 int var11 = var6 & 255;
                 var2.setBlock(var9, var11, var10, var7, var8);
-                worldClient.func_711_c(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
+                worldClient.clearBlockResets(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
                 worldClient.setBlocksDirty(var9 + var3, var11, var10 + var4, var9 + var3, var11, var10 + var4);
             }
 
@@ -343,7 +343,7 @@ namespace betareborn
 
         public override void handleMapChunk(Packet51MapChunk var1)
         {
-            worldClient.func_711_c(var1.xPosition, var1.yPosition, var1.zPosition, var1.xPosition + var1.xSize - 1, var1.yPosition + var1.ySize - 1, var1.zPosition + var1.zSize - 1);
+            worldClient.clearBlockResets(var1.xPosition, var1.yPosition, var1.zPosition, var1.xPosition + var1.xSize - 1, var1.yPosition + var1.ySize - 1, var1.zPosition + var1.zSize - 1);
             worldClient.setChunkData(var1.xPosition, var1.yPosition, var1.zPosition, var1.xSize, var1.ySize, var1.zSize, var1.chunk);
         }
 

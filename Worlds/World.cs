@@ -50,7 +50,7 @@ namespace betareborn.Worlds
         protected WorldInfo worldInfo;
         public bool findingSpawnPoint;
         private bool allPlayersSleeping;
-        public MapStorage field_28108_z;
+        public MapStorage persistentStateManager;
         private readonly List<Box> collidingBoundingBoxes;
         private bool field_31055_L;
         private int lightingUpdatesCounter;
@@ -102,9 +102,9 @@ namespace betareborn.Worlds
             saveHandler = var1;
             worldInfo = new WorldInfo(var4, var2);
             dimension = var3;
-            field_28108_z = new MapStorage(var1);
+            persistentStateManager = new MapStorage(var1);
             var3.registerWorld(this);
-            chunkProvider = getChunkProvider();
+            chunkProvider = createChunkCache();
             calculateInitialSkylight();
             func_27163_E();
         }
@@ -144,10 +144,10 @@ namespace betareborn.Worlds
             lockTimestamp = var1.lockTimestamp;
             saveHandler = var1.saveHandler;
             worldInfo = new WorldInfo(var1.worldInfo);
-            field_28108_z = new MapStorage(saveHandler);
+            persistentStateManager = new MapStorage(saveHandler);
             dimension = var2;
             var2.registerWorld(this);
-            chunkProvider = getChunkProvider();
+            chunkProvider = createChunkCache();
             calculateInitialSkylight();
             func_27163_E();
         }
@@ -189,7 +189,7 @@ namespace betareborn.Worlds
             field_1012_M = [];
             isRemote = false;
             saveHandler = var1;
-            field_28108_z = new MapStorage(var1);
+            persistentStateManager = new MapStorage(var1);
             worldInfo = var1.loadWorldInfo();
             isNewWorld = worldInfo == null;
             if (var5 != null)
@@ -217,7 +217,7 @@ namespace betareborn.Worlds
             }
 
             dimension.registerWorld(this);
-            chunkProvider = getChunkProvider();
+            chunkProvider = createChunkCache();
             if (var6)
             {
                 getInitialSpawnLocation();
@@ -227,7 +227,7 @@ namespace betareborn.Worlds
             func_27163_E();
         }
 
-        protected virtual ChunkSource getChunkProvider()
+        protected virtual ChunkSource createChunkCache()
         {
             ChunkStorage var1 = saveHandler.getChunkLoader(dimension);
             return new ChunkCache(this, (RegionChunkStorage)var1, dimension.getChunkProvider());
@@ -249,7 +249,7 @@ namespace betareborn.Worlds
             findingSpawnPoint = false;
         }
 
-        public virtual void setSpawnLocation()
+        public virtual void updateSpawnPosition()
         {
             if (worldInfo.getSpawnY() <= 0)
             {
@@ -291,14 +291,6 @@ namespace betareborn.Worlds
                 {
                     var1.readFromNBT(var2);
                     worldInfo.setPlayerNBTTagCompound((NBTTagCompound)null);
-                }
-
-                if (chunkProvider is ChunkProviderLoadOrGenerate)
-                {
-                    ChunkProviderLoadOrGenerate var3 = (ChunkProviderLoadOrGenerate)chunkProvider;
-                    int var4 = MathHelper.floor_float((float)((int)var1.posX)) >> 4;
-                    int var5 = MathHelper.floor_float((float)((int)var1.posZ)) >> 4;
-                    var3.setCurrentChunkOver(var4, var5);
                 }
 
                 spawnEntity(var1);
@@ -343,7 +335,7 @@ namespace betareborn.Worlds
             Profiler.Stop("saveWorldInfoAndPlayer");
 
             Profiler.Start("saveAllData");
-            field_28108_z.saveAllData();
+            persistentStateManager.saveAllData();
             Profiler.Stop("saveAllData");
         }
 
@@ -3091,17 +3083,17 @@ namespace betareborn.Worlds
 
         public void setItemData(string var1, MapDataBase var2)
         {
-            field_28108_z.setData(var1, var2);
+            persistentStateManager.setData(var1, var2);
         }
 
         public MapDataBase loadItemData(Class var1, string var2)
         {
-            return field_28108_z.loadData(var1, new(var2));
+            return persistentStateManager.loadData(var1, new(var2));
         }
 
         public int getUniqueDataId(string var1)
         {
-            return field_28108_z.getUniqueDataId(var1);
+            return persistentStateManager.getUniqueDataId(var1);
         }
 
         public void worldEvent(int var1, int var2, int var3, int var4, int var5)

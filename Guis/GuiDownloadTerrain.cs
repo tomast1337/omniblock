@@ -33,7 +33,7 @@ namespace betareborn.Guis
 
             if (netHandler != null)
             {
-                netHandler.processReadPackets();
+                netHandler.tick();
             }
 
         }

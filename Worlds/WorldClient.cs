@@ -8,18 +8,18 @@ namespace betareborn.Worlds
     public class WorldClient : World
     {
 
-        private LinkedList blockResets = new LinkedList();
-        private NetClientHandler networkHandler;
+        private readonly LinkedList blockResets = new LinkedList();
+        private readonly NetClientHandler networkHandler;
         private MultiplayerChunkCache chunkCache;
-        private MCHash entitiesByNetworkId = new MCHash();
-        private Set forcedEntities = new HashSet();
-        private Set pendingEntities = new HashSet();
+        private readonly MCHash entitiesByNetworkId = new MCHash();
+        private readonly Set forcedEntities = new HashSet();
+        private readonly Set pendingEntities = new HashSet();
 
-        public WorldClient(NetClientHandler var1, long var2, int var4) : base(new SaveHandlerMP(), "MpServer", WorldProvider.getProviderForDimension(var4), var2)
+        public WorldClient(NetClientHandler netHandler, long seed, int dimId) : base(new SaveHandlerMP(), "MpServer", WorldProvider.getProviderForDimension(dimId), seed)
         {
-            networkHandler = var1;
+            networkHandler = netHandler;
             setSpawnPoint(new Vec3i(8, 64, 8));
-            field_28108_z = var1.field_28118_b;
+            persistentStateManager = netHandler.clientPersistentStateManager;
         }
 
         public override void tick(int _)
@@ -46,7 +46,7 @@ namespace betareborn.Worlds
                 }
             }
 
-            networkHandler.processReadPackets();
+            networkHandler.tick();
 
             for (var2 = 0; var2 < blockResets.size(); ++var2)
             {
@@ -61,7 +61,7 @@ namespace betareborn.Worlds
 
         }
 
-        public void func_711_c(int var1, int var2, int var3, int var4, int var5, int var6)
+        public void clearBlockResets(int var1, int var2, int var3, int var4, int var5, int var6)
         {
             for (int var7 = 0; var7 < blockResets.size(); ++var7)
             {
@@ -74,13 +74,13 @@ namespace betareborn.Worlds
 
         }
 
-        protected override ChunkSource getChunkProvider()
+        protected override ChunkSource createChunkCache()
         {
             chunkCache = new MultiplayerChunkCache(this);
             return chunkCache;
         }
 
-        public override void setSpawnLocation()
+        public override void updateSpawnPosition()
         {
             setSpawnPoint(new Vec3i(8, 64, 8));
         }
@@ -93,36 +93,36 @@ namespace betareborn.Worlds
         {
         }
 
-        public override bool TickUpdates(bool var1)
+        public override bool TickUpdates(bool flush)
         {
             return false;
         }
 
-        public void doPreChunk(int var1, int var2, bool var3)
+        public void updateChunk(int chunkX, int chunkZ, bool load)
         {
-            if (var3)
+            if (load)
             {
-                chunkCache.loadChunk(var1, var2);
+                chunkCache.loadChunk(chunkX, chunkZ);
             }
             else
             {
-                chunkCache.unloadChunk(var1, var2);
+                chunkCache.unloadChunk(chunkX, chunkZ);
             }
 
-            if (!var3)
+            if (!load)
             {
-                setBlocksDirty(var1 * 16, 0, var2 * 16, var1 * 16 + 15, 128, var2 * 16 + 15);
+                setBlocksDirty(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, 128, chunkZ * 16 + 15);
             }
 
         }
 
-        public override bool spawnEntity(Entity var1)
+        public override bool spawnEntity(Entity entity)
         {
-            bool var2 = base.spawnEntity(var1);
-            forcedEntities.add(var1);
+            bool var2 = base.spawnEntity(entity);
+            forcedEntities.add(entity);
             if (!var2)
             {
-                pendingEntities.add(var1);
+                pendingEntities.add(entity);
             }
 
             return var2;
@@ -236,7 +236,7 @@ namespace betareborn.Worlds
 
         public bool func_714_c(int var1, int var2, int var3, int var4, int var5)
         {
-            func_711_c(var1, var2, var3, var1, var2, var3);
+            clearBlockResets(var1, var2, var3, var1, var2, var3);
             if (base.setBlockAndMetadata(var1, var2, var3, var4, var5))
             {
                 notifyBlockChange(var1, var2, var3, var4);

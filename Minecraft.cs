@@ -1120,18 +1120,6 @@ namespace betareborn
             entityRenderer.tick(partialTicks);
 
             Profiler.Start("chunkProviderLoadOrGenerateSetCurrentChunkOver");
-            int var3;
-            if (thePlayer != null)
-            {
-                ChunkSource var1 = theWorld.getIChunkProvider();
-                if (var1 is ChunkProviderLoadOrGenerate)
-                {
-                    ChunkProviderLoadOrGenerate var2 = (ChunkProviderLoadOrGenerate)var1;
-                    var3 = MathHelper.floor_float((float)((int)thePlayer.posX)) >> 4;
-                    int var4 = MathHelper.floor_float((float)((int)thePlayer.posZ)) >> 4;
-                    var2.setCurrentChunkOver(var3, var4);
-                }
-            }
 
             Profiler.Stop("chunkProviderLoadOrGenerateSetCurrentChunkOver");
 
@@ -1664,15 +1652,6 @@ namespace betareborn
                     var1.emptyMethod1();
                 }
 
-                ChunkSource var4 = var1.getIChunkProvider();
-                if (var4 is ChunkProviderLoadOrGenerate)
-                {
-                    ChunkProviderLoadOrGenerate var5 = (ChunkProviderLoadOrGenerate)var4;
-                    int var6 = MathHelper.floor_float((float)((int)thePlayer.posX)) >> 4;
-                    int var7 = MathHelper.floor_float((float)((int)thePlayer.posZ)) >> 4;
-                    var5.setCurrentChunkOver(var6, var7);
-                }
-
                 var1.spawnPlayerWithLoadedChunks(thePlayer);
                 if (var1.isNewWorld)
                 {
@@ -1712,12 +1691,6 @@ namespace betareborn
             {
                 var6.x = (int)thePlayer.posX;
                 var6.z = (int)thePlayer.posZ;
-            }
-
-            if (var5 is ChunkProviderLoadOrGenerate)
-            {
-                ChunkProviderLoadOrGenerate var7 = (ChunkProviderLoadOrGenerate)var5;
-                var7.setCurrentChunkOver(var6.x >> 4, var6.z >> 4);
             }
 
             for (int var10 = -var2; var10 <= var2; var10 += 16)
@@ -1809,14 +1782,7 @@ namespace betareborn
                 var5 = false;
             }
 
-            ChunkSource var6 = theWorld.getIChunkProvider();
-            if (var6 is ChunkProviderLoadOrGenerate)
-            {
-                ChunkProviderLoadOrGenerate var7 = (ChunkProviderLoadOrGenerate)var6;
-                var7.setCurrentChunkOver(var4.x >> 4, var4.z >> 4);
-            }
-
-            theWorld.setSpawnLocation();
+            theWorld.updateSpawnPosition();
             theWorld.updateEntityList();
             int var8 = 0;
             if (thePlayer != null)

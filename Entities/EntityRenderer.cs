@@ -527,14 +527,6 @@ namespace betareborn.Entities
             double var9 = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var1;
             double var11 = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var1;
             ChunkSource var13 = mc.theWorld.getIChunkProvider();
-            int var16;
-            if (var13 is ChunkProviderLoadOrGenerate)
-            {
-                ChunkProviderLoadOrGenerate var14 = (ChunkProviderLoadOrGenerate)var13;
-                int var15 = MathHelper.floor_float((float)((int)var7)) >> 4;
-                var16 = MathHelper.floor_float((float)((int)var11)) >> 4;
-                var14.setCurrentChunkOver(var15, var16);
-            }
 
             Profiler.Start("updateFog");
             GLManager.GL.Viewport(0, 0, (uint)mc.displayWidth, (uint)mc.displayHeight);

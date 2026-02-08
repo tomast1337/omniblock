@@ -20,7 +20,7 @@ namespace betareborn.Guis
         {
             if (clientHandler != null)
             {
-                clientHandler.processReadPackets();
+                clientHandler.tick();
             }
 
         }

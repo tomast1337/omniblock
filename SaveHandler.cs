@@ -1,4 +1,3 @@
-using betareborn.Chunks;
 using betareborn.NBT;
 using betareborn.Worlds;
 using java.io;
@@ -84,18 +83,9 @@ namespace betareborn
             }
         }
 
-        public virtual ChunkStorage getChunkLoader(WorldProvider var1)
+        public virtual ChunkStorage getChunkLoader(WorldProvider worldProvider)
         {
-            if (var1 is WorldProviderHell)
-            {
-                java.io.File var2 = new java.io.File(saveDirectory, "DIM-1");
-                var2.mkdirs();
-                return new AlphaChunkStorage(var2, true);
-            }
-            else
-            {
-                return new AlphaChunkStorage(saveDirectory, true);
-            }
+            throw new IllegalStateException();
         }
 
         public WorldInfo loadWorldInfo()
