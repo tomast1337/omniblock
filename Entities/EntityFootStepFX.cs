@@ -10,9 +10,9 @@ namespace betareborn.Entities
 
         private int field_27018_a = 0;
         private int field_27020_o = 0;
-        private RenderEngine field_27019_p;
+        private TextureManager field_27019_p;
 
-        public EntityFootStepFX(RenderEngine var1, World var2, double var3, double var5, double var7) : base(var2, var3, var5, var7, 0.0D, 0.0D, 0.0D)
+        public EntityFootStepFX(TextureManager var1, World var2, double var3, double var5, double var7) : base(var2, var3, var5, var7, 0.0D, 0.0D, 0.0D)
         {
             field_27019_p = var1;
             motionX = motionY = motionZ = 0.0D;

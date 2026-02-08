@@ -1,4 +1,5 @@
 using betareborn.Client;
+using betareborn.Client.Resource.Language;
 using betareborn.Stats;
 using java.io;
 using java.lang;
@@ -69,7 +70,7 @@ namespace betareborn
 
         public string getKeyBindingDescription(int var1)
         {
-            StringTranslate var2 = StringTranslate.getInstance();
+            TranslationStorage var2 = TranslationStorage.getInstance();
             return var2.translateKey(keyBindings[var1].keyDescription);
         }
 
@@ -206,7 +207,7 @@ namespace betareborn
 
         public string getKeyBinding(EnumOptions var1)
         {
-            StringTranslate var2 = StringTranslate.getInstance();
+            TranslationStorage var2 = TranslationStorage.getInstance();
             string var3 = var2.translateKey(var1.getEnumString()) + ": ";
             if (var1.getEnumFloat())
             {

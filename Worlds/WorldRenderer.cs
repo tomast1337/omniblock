@@ -1,4 +1,5 @@
 using betareborn.Client.Rendering;
+using betareborn.Client.Resource;
 using betareborn.Profiling;
 using betareborn.Util.Maths;
 using betareborn.Worlds.Chunks;

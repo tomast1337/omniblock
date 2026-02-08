@@ -3,14 +3,14 @@ using java.io;
 using javax.imageio;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn.Client.Textures
+namespace betareborn.Client.Resource.Pack
 {
-    public class TexturePackDefault : TexturePackBase
+    public class BuiltInTexturePack : TexturePack
     {
         private int texturePackName = -1;
         private readonly BufferedImage texturePackThumbnail;
 
-        public TexturePackDefault()
+        public BuiltInTexturePack()
         {
             texturePackFileName = "Default";
             firstDescriptionLine = "The default look of Minecraft";
@@ -26,7 +26,7 @@ namespace betareborn.Client.Textures
 
         }
 
-        public override void func_6484_b(Minecraft var1)
+        public override void unload(Minecraft var1)
         {
             if (texturePackThumbnail != null)
             {

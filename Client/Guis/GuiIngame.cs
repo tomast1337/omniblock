@@ -1,6 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Client.Rendering;
+using betareborn.Client.Resource.Language;
 using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.Util.Maths;
@@ -471,7 +472,7 @@ namespace betareborn.Client.Guis
 
         public void addChatMessageTranslate(string var1)
         {
-            StringTranslate var2 = StringTranslate.getInstance();
+            TranslationStorage var2 = TranslationStorage.getInstance();
             string var3 = var2.translateKey(var1);
             addChatMessage(var3);
         }

@@ -4,7 +4,7 @@ using betareborn.Worlds.Chunks;
 using java.lang;
 using java.util;
 
-namespace betareborn.Chunks
+namespace betareborn.Client.Chunks
 {
     public class MultiplayerChunkCache : ChunkSource
     {
@@ -48,7 +48,7 @@ namespace betareborn.Chunks
             ChunkPos var3 = new ChunkPos(x, z);
             byte[] var4 = new byte[-Short.MIN_VALUE];
             Chunk var5 = new Chunk(world, var4, x, z);
-            Arrays.fill(var5.skyLight.bytes, (byte)255);
+            Arrays.fill(var5.skyLight.bytes, 255);
 
             if (chunkByPos.ContainsKey(var3))
             {

@@ -1,4 +1,5 @@
 using betareborn.Client.Network;
+using betareborn.Client.Resource.Language;
 using betareborn.Packets;
 
 namespace betareborn.Client.Guis
@@ -9,7 +10,7 @@ namespace betareborn.Client.Guis
         public override void initGui()
         {
             Keyboard.enableRepeatEvents(true);
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             controlList.add(new GuiButton(1, width / 2 - 100, height - 40, var1.translateKey("multiplayer.stopSleeping")));
         }
 

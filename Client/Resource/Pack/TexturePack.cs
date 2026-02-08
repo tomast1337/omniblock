@@ -1,6 +1,6 @@
-namespace betareborn.Client.Textures
+namespace betareborn.Client.Resource.Pack
 {
-    public abstract class TexturePackBase : java.lang.Object
+    public abstract class TexturePack : java.lang.Object
     {
         public string texturePackFileName;
         public string firstDescriptionLine;
@@ -19,7 +19,7 @@ namespace betareborn.Client.Textures
         {
         }
 
-        public virtual void func_6484_b(Minecraft var1)
+        public virtual void unload(Minecraft var1)
         {
         }
 

@@ -1,3 +1,4 @@
+using betareborn.Client.Resource;
 using betareborn.Items;
 using betareborn.Util.Maths;
 using java.awt.image;

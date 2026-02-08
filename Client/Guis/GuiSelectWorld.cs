@@ -1,3 +1,4 @@
+using betareborn.Client.Resource.Language;
 using betareborn.Util.Maths;
 using betareborn.Worlds.Storage;
 using java.text;
@@ -29,7 +30,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             screenTitle = var1.translateKey("selectWorld.title");
             worldNameHeader = var1.translateKey("selectWorld.world");
             unsupportedFormatMessage = "Unsupported Format!";
@@ -57,7 +58,7 @@ namespace betareborn.Client.Guis
             string var2 = ((WorldSaveInfo)saveList.get(var1)).getDisplayName();
             if (var2 == null || MathHelper.stringNullOrLengthZero(var2))
             {
-                StringTranslate var3 = StringTranslate.getInstance();
+                TranslationStorage var3 = TranslationStorage.getInstance();
                 var2 = var3.translateKey("selectWorld.world") + " " + (var1 + 1);
             }
 
@@ -66,7 +67,7 @@ namespace betareborn.Client.Guis
 
         public void initButtons()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             controlList.add(buttonSelect = new GuiButton(1, width / 2 - 154, height - 52, 150, 20, var1.translateKey("selectWorld.select")));
             controlList.add(buttonRename = new GuiButton(6, width / 2 - 154, height - 28, 70, 20, var1.translateKey("selectWorld.rename")));
             controlList.add(buttonDelete = new GuiButton(2, width / 2 - 74, height - 28, 70, 20, var1.translateKey("selectWorld.delete")));
@@ -87,7 +88,7 @@ namespace betareborn.Client.Guis
                     if (var2 != null)
                     {
                         deleting = true;
-                        StringTranslate var3 = StringTranslate.getInstance();
+                        TranslationStorage var3 = TranslationStorage.getInstance();
                         string var4 = var3.translateKey("selectWorld.deleteQuestion");
                         string var5 = "\'" + var2 + "\' " + var3.translateKey("selectWorld.deleteWarning");
                         string var6 = var3.translateKey("selectWorld.deleteButton");

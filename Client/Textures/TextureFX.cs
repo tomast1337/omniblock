@@ -27,7 +27,7 @@ namespace betareborn.Client.Textures
         {
         }
 
-        public void bindImage(RenderEngine var1)
+        public void bindImage(TextureManager var1)
         {
             if (tileImage == FXImage.Terrain)
             {

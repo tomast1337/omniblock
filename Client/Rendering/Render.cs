@@ -19,7 +19,7 @@ namespace betareborn.Client.Rendering
 
         protected void loadTexture(string var1)
         {
-            RenderEngine var2 = renderManager.renderEngine;
+            TextureManager var2 = renderManager.renderEngine;
             var2.bindTexture(var2.getTexture(var1));
         }
 
@@ -119,7 +119,7 @@ namespace betareborn.Client.Rendering
         {
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            RenderEngine var10 = renderManager.renderEngine;
+            TextureManager var10 = renderManager.renderEngine;
             var10.bindTexture(var10.getTexture("%clamp%/misc/shadow.png"));
             World var11 = getWorldFromRenderManager();
             GLManager.GL.DepthMask(false);

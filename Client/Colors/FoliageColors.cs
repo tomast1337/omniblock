@@ -1,4 +1,4 @@
-namespace betareborn
+namespace betareborn.Client.Colors
 {
     public class FoliageColors : java.lang.Object
     {

@@ -1,3 +1,4 @@
+using betareborn.Client.Resource.Language;
 using System.Diagnostics;
 
 namespace betareborn.Client.Guis
@@ -17,7 +18,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             controlList.add(new GuiSmallButton(5, width / 2 - 154, height - 48, var1.translateKey("texturePack.openFolder")));
             controlList.add(new GuiSmallButton(6, width / 2 + 4, height - 48, var1.translateKey("gui.done")));
             mc.texturePackList.updateAvaliableTexturePacks();
@@ -78,7 +79,7 @@ namespace betareborn.Client.Guis
                 field_6454_o += 20;
             }
 
-            StringTranslate var4 = StringTranslate.getInstance();
+            TranslationStorage var4 = TranslationStorage.getInstance();
             drawCenteredString(fontRenderer, var4.translateKey("texturePack.title"), width / 2, 16, 16777215);
             drawCenteredString(fontRenderer, var4.translateKey("texturePack.folderInfo"), width / 2 - 77, height - 26, 8421504);
             base.drawScreen(var1, var2, var3);

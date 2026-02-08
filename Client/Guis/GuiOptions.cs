@@ -1,3 +1,5 @@
+using betareborn.Client.Resource.Language;
+
 namespace betareborn.Client.Guis
 {
     public class GuiOptions : GuiScreen
@@ -16,7 +18,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             screenTitle = var1.translateKey("options.title");
             int var2 = 0;
             EnumOptions[] var3 = field_22135_k;

@@ -1,3 +1,5 @@
+using betareborn.Client.Resource.Language;
+
 namespace betareborn.Client.Guis
 {
     public class GuiConnectFailed : GuiScreen
@@ -8,7 +10,7 @@ namespace betareborn.Client.Guis
 
         public GuiConnectFailed(string var1, string var2, params object[] var3)
         {
-            StringTranslate var4 = StringTranslate.getInstance();
+            TranslationStorage var4 = TranslationStorage.getInstance();
             errorMessage = var4.translateKey(var1);
             if (var3 != null)
             {
@@ -31,7 +33,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             controlList.clear();
             controlList.add(new GuiButton(0, width / 2 - 100, height / 4 + 120 + 12, var1.translateKey("gui.toMenu")));
         }

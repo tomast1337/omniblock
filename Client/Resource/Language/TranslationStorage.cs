@@ -1,11 +1,11 @@
-namespace betareborn
+namespace betareborn.Client.Resource.Language
 {
-    public class StringTranslate : java.lang.Object
+    public class TranslationStorage : java.lang.Object
     {
-        private static readonly StringTranslate instance = new();
+        private static readonly TranslationStorage instance = new();
         private readonly java.util.Properties translateTable = new();
 
-        private StringTranslate()
+        private TranslationStorage()
         {
             try
             {
@@ -19,7 +19,7 @@ namespace betareborn
 
         }
 
-        public static StringTranslate getInstance()
+        public static TranslationStorage getInstance()
         {
             return instance;
         }

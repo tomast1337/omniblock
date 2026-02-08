@@ -1,4 +1,5 @@
 using betareborn.Client.Rendering;
+using betareborn.Client.Resource;
 using betareborn.Util;
 using java.awt.image;
 using java.io;
@@ -17,7 +18,7 @@ namespace betareborn.Client
         private readonly IntBuffer buffer;
         private readonly ByteBuffer byteBuffer = GLAllocation.createDirectByteBuffer(1024 * sizeof(int));
 
-        public FontRenderer(GameSettings var1, RenderEngine var3)
+        public FontRenderer(GameSettings var1, TextureManager var3)
         {
             buffer = byteBuffer.asIntBuffer();
 

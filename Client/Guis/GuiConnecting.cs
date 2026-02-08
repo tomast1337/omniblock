@@ -1,4 +1,5 @@
 using betareborn.Client.Network;
+using betareborn.Client.Resource.Language;
 using betareborn.Threading;
 using betareborn.Worlds;
 
@@ -32,7 +33,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             controlList.clear();
             controlList.add(new GuiButton(0, width / 2 - 100, height / 4 + 120 + 12, var1.translateKey("gui.cancel")));
         }
@@ -55,7 +56,7 @@ namespace betareborn.Client.Guis
         public override void drawScreen(int var1, int var2, float var3)
         {
             drawDefaultBackground();
-            StringTranslate var4 = StringTranslate.getInstance();
+            TranslationStorage var4 = TranslationStorage.getInstance();
             if (clientHandler == null)
             {
                 drawCenteredString(fontRenderer, var4.translateKey("connect.connecting"), width / 2, height / 2 - 50, 16777215);

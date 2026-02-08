@@ -16,7 +16,7 @@ namespace betareborn.Client.Rendering
         public static double renderPosX;
         public static double renderPosY;
         public static double renderPosZ;
-        public RenderEngine renderEngine;
+        public TextureManager renderEngine;
         public ItemRenderer itemRenderer;
         public World worldObj;
         public EntityLiving livingPlayer;
@@ -86,7 +86,7 @@ namespace betareborn.Client.Rendering
             return getEntityClassRenderObject(var1.getClass());
         }
 
-        public void cacheActiveRenderInfo(World var1, RenderEngine var2, FontRenderer var3, EntityLiving var4, GameSettings var5, float var6)
+        public void cacheActiveRenderInfo(World var1, TextureManager var2, FontRenderer var3, EntityLiving var4, GameSettings var5, float var6)
         {
             worldObj = var1;
             renderEngine = var2;

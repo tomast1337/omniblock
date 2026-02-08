@@ -1,4 +1,4 @@
-namespace betareborn
+namespace betareborn.Client.Colors
 {
     public class GrassColors : java.lang.Object
     {

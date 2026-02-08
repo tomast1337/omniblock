@@ -136,7 +136,7 @@ namespace betareborn.Client.Rendering
             GLManager.GL.PopMatrix();
         }
 
-        public void drawItemIntoGui(FontRenderer var1, RenderEngine var2, int var3, int var4, int var5, int var6, int var7)
+        public void drawItemIntoGui(FontRenderer var1, TextureManager var2, int var3, int var4, int var5, int var6, int var7)
         {
             float var11;
             if (var3 < 256 && RenderBlocks.renderItemIn3d(Block.BLOCKS[var3].getRenderType()))
@@ -193,7 +193,7 @@ namespace betareborn.Client.Rendering
             GLManager.GL.Enable(GLEnum.CullFace);
         }
 
-        public void renderItemIntoGUI(FontRenderer var1, RenderEngine var2, ItemStack var3, int var4, int var5)
+        public void renderItemIntoGUI(FontRenderer var1, TextureManager var2, ItemStack var3, int var4, int var5)
         {
             if (var3 != null)
             {
@@ -201,7 +201,7 @@ namespace betareborn.Client.Rendering
             }
         }
 
-        public void renderItemOverlayIntoGUI(FontRenderer var1, RenderEngine var2, ItemStack var3, int var4, int var5)
+        public void renderItemOverlayIntoGUI(FontRenderer var1, TextureManager var2, ItemStack var3, int var4, int var5)
         {
             if (var3 != null)
             {

@@ -1,3 +1,4 @@
+using betareborn.Client.Resource;
 using ikvm.io;
 using java.io;
 using System.Reflection;

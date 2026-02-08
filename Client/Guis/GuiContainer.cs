@@ -1,4 +1,5 @@
 using betareborn.Client.Rendering;
+using betareborn.Client.Resource.Language;
 using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.Screens;
@@ -76,7 +77,7 @@ namespace betareborn.Client.Guis
             drawGuiContainerForegroundLayer();
             if (var12.getItemStack() == null && var6 != null && var6.hasStack())
             {
-                string var13 = ("" + StringTranslate.getInstance().translateNamedKey(var6.getStack().getItemName())).Trim();
+                string var13 = ("" + TranslationStorage.getInstance().translateNamedKey(var6.getStack().getItemName())).Trim();
                 if (var13.Length > 0)
                 {
                     var9 = var1 - var4 + 12;

@@ -1,4 +1,5 @@
 using betareborn.Blocks.Materials;
+using betareborn.Client.Colors;
 using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Worlds;

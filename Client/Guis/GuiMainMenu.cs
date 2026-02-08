@@ -1,3 +1,5 @@
+using betareborn.Client.Resource;
+using betareborn.Client.Resource.Language;
 using betareborn.Util.Maths;
 using java.io;
 using java.util;
@@ -74,7 +76,7 @@ namespace betareborn.Client.Guis
                 splashText = "Happy new year!";
             }
 
-            StringTranslate translator = StringTranslate.getInstance();
+            TranslationStorage translator = TranslationStorage.getInstance();
             int var4 = height / 4 + 48;
 
             controlList.add(new GuiButton(1, width / 2 - 100, var4, translator.translateKey("menu.singleplayer")));

@@ -1,3 +1,5 @@
+using betareborn.Client.Resource.Language;
+
 namespace betareborn.Client.Guis
 {
     public class GuiControls : GuiScreen
@@ -21,7 +23,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             int var2 = func_20080_j();
 
             for (int var3 = 0; var3 < options.keyBindings.Length; ++var3)

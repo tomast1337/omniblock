@@ -1,18 +1,18 @@
 using java.util;
 
-namespace betareborn.Client.Textures
+namespace betareborn.Client.Resource.Pack
 {
-    public class TexturePackList : java.lang.Object
+    public class TexturePacks : java.lang.Object
     {
         private List availTexturePacks = new ArrayList();
-        private readonly TexturePackBase defaultTexturePack = new TexturePackDefault();
-        public TexturePackBase selectedTexturePack;
+        private readonly TexturePack defaultTexturePack = new BuiltInTexturePack();
+        public TexturePack selectedTexturePack;
         private readonly Map field_6538_d = new HashMap();
         private readonly Minecraft mc;
         private readonly java.io.File texturePackDir;
         private string currentTexturePack;
 
-        public TexturePackList(Minecraft var1, java.io.File var2)
+        public TexturePacks(Minecraft var1, java.io.File var2)
         {
             mc = var1;
             texturePackDir = new java.io.File(var2, "texturepacks");
@@ -26,7 +26,7 @@ namespace betareborn.Client.Textures
             selectedTexturePack.func_6482_a();
         }
 
-        public bool setTexturePack(TexturePackBase var1)
+        public bool setTexturePack(TexturePack var1)
         {
             if (var1 == selectedTexturePack)
             {
@@ -66,7 +66,7 @@ namespace betareborn.Client.Textures
                         {
                             if (!field_6538_d.containsKey(var7))
                             {
-                                TexturePackCustom var8 = new(var6)
+                                ZippedTexturePack var8 = new(var6)
                                 {
                                     field_6488_d = var7
                                 };
@@ -74,7 +74,7 @@ namespace betareborn.Client.Textures
                                 var8.func_6485_a(mc);
                             }
 
-                            TexturePackBase var12 = (TexturePackBase)field_6538_d.get(var7);
+                            TexturePack var12 = (TexturePack)field_6538_d.get(var7);
                             if (var12.texturePackFileName.Equals(currentTexturePack))
                             {
                                 selectedTexturePack = var12;
@@ -97,8 +97,8 @@ namespace betareborn.Client.Textures
 
             while (var10.hasNext())
             {
-                TexturePackBase var11 = (TexturePackBase)var10.next();
-                var11.func_6484_b(mc);
+                TexturePack var11 = (TexturePack)var10.next();
+                var11.unload(mc);
                 field_6538_d.remove(var11.field_6488_d);
             }
 

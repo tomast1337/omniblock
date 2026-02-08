@@ -15,7 +15,7 @@ namespace betareborn.Blocks.BlockEntities
         public static double staticPlayerX;
         public static double staticPlayerY;
         public static double staticPlayerZ;
-        public RenderEngine renderEngine;
+        public TextureManager renderEngine;
         public World worldObj;
         public EntityLiving entityLivingPlayer;
         public float playerYaw;
@@ -61,7 +61,7 @@ namespace betareborn.Blocks.BlockEntities
             return var1 == null ? null : getSpecialRendererForClass(var1.getClass());
         }
 
-        public void cacheActiveRenderInfo(World var1, RenderEngine var2, FontRenderer var3, EntityLiving var4, float var5)
+        public void cacheActiveRenderInfo(World var1, TextureManager var2, FontRenderer var3, EntityLiving var4, float var5)
         {
             if (worldObj != var1)
             {

@@ -1,4 +1,5 @@
 using betareborn.Client.Network;
+using betareborn.Client.Resource.Language;
 using betareborn.Packets;
 
 namespace betareborn.Client.Guis
@@ -46,7 +47,7 @@ namespace betareborn.Client.Guis
         public override void drawScreen(int var1, int var2, float var3)
         {
             drawBackground(0);
-            StringTranslate var4 = StringTranslate.getInstance();
+            TranslationStorage var4 = TranslationStorage.getInstance();
             drawCenteredString(fontRenderer, var4.translateKey("multiplayer.downloadingTerrain"), width / 2, height / 2 - 50, 16777215);
             base.drawScreen(var1, var2, var3);
         }

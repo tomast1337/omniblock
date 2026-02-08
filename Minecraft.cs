@@ -2,10 +2,12 @@
 using Avalonia.Controls;
 using betareborn.Blocks;
 using betareborn.Client;
+using betareborn.Client.Colors;
 using betareborn.Client.Guis;
 using betareborn.Client.Models;
 using betareborn.Client.Network;
 using betareborn.Client.Rendering;
+using betareborn.Client.Resource.Pack;
 using betareborn.Client.Textures;
 using betareborn.Entities;
 using betareborn.Items;
@@ -47,7 +49,7 @@ namespace betareborn
         public string minecraftUri;
         public bool hideQuitButton = false;
         public volatile bool isGamePaused = false;
-        public RenderEngine renderEngine;
+        public TextureManager renderEngine;
         public FontRenderer fontRenderer;
         public GuiScreen currentScreen = null;
         public LoadingScreenRenderer loadingScreen;
@@ -67,7 +69,7 @@ namespace betareborn
         public GameSettings gameSettings;
         public SoundManager sndManager = new SoundManager();
         public MouseHelper mouseHelper;
-        public TexturePackList texturePackList;
+        public TexturePacks texturePackList;
         private java.io.File mcDataDir;
         private WorldStorageSource saveLoader;
         public static long[] frameTimes = new long[512];
@@ -165,10 +167,10 @@ namespace betareborn
             {
                 Console.WriteLine(var6);
             }
-            texturePackList = new TexturePackList(this, mcDataDir);
-            renderEngine = new RenderEngine(texturePackList, gameSettings);
+            texturePackList = new TexturePacks(this, mcDataDir);
+            renderEngine = new TextureManager(texturePackList, gameSettings);
             fontRenderer = new FontRenderer(gameSettings, renderEngine);
-            ColorizerWater.func_28182_a(renderEngine.func_28149_a("/misc/watercolor.png"));
+            WaterColors.setcolorMap(renderEngine.func_28149_a("/misc/watercolor.png"));
             GrassColors.func_28181_a(renderEngine.func_28149_a("/misc/grasscolor.png"));
             FoliageColors.func_28152_a(renderEngine.func_28149_a("/misc/foliagecolor.png"));
             entityRenderer = new EntityRenderer(this);

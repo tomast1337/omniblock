@@ -1,3 +1,4 @@
+using betareborn.Client.Resource.Language;
 using betareborn.Items;
 using betareborn.Stats;
 using java.util;
@@ -184,7 +185,7 @@ namespace betareborn.Client.Guis
                         var5 = func_27263_a(2);
                     }
 
-                    var5 = ("" + StringTranslate.getInstance().translateKey(var5)).Trim();
+                    var5 = ("" + TranslationStorage.getInstance().translateKey(var5)).Trim();
                     if (var5.Length > 0)
                     {
                         int var6 = var1 + 12;
@@ -203,7 +204,7 @@ namespace betareborn.Client.Guis
             if (var1 != null)
             {
                 Item var4 = Item.itemsList[var1.func_25072_b()];
-                string var5 = ("" + StringTranslate.getInstance().translateNamedKey(var4.getItemName())).Trim();
+                string var5 = ("" + TranslationStorage.getInstance().translateNamedKey(var4.getItemName())).Trim();
                 if (var5.Length > 0)
                 {
                     int var6 = var2 + 12;

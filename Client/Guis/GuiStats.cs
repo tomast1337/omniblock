@@ -1,4 +1,5 @@
 using betareborn.Client.Rendering;
+using betareborn.Client.Resource.Language;
 using betareborn.Items;
 using betareborn.Stats;
 using java.util;
@@ -39,7 +40,7 @@ namespace betareborn.Client.Guis
 
         public void func_27130_k()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             controlList.add(new GuiButton(0, width / 2 + 4, height - 28, 150, 20, var1.translateKey("gui.done")));
             controlList.add(new GuiButton(1, width / 2 - 154, height - 52, 100, 20, var1.translateKey("stat.generalButton")));
             List var10000 = controlList;

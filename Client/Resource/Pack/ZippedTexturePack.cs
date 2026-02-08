@@ -4,16 +4,16 @@ using java.util.zip;
 using javax.imageio;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn.Client.Textures
+namespace betareborn.Client.Resource.Pack
 {
-    public class TexturePackCustom : TexturePackBase
+    public class ZippedTexturePack : TexturePack
     {
         private ZipFile texturePackZipFile;
         private int texturePackName = -1;
         private BufferedImage texturePackThumbnail;
         private readonly java.io.File texturePackFile;
 
-        public TexturePackCustom(java.io.File var1)
+        public ZippedTexturePack(java.io.File var1)
         {
             texturePackFileName = var1.getName();
             texturePackFile = var1;
@@ -89,7 +89,7 @@ namespace betareborn.Client.Textures
 
         }
 
-        public override void func_6484_b(Minecraft var1)
+        public override void unload(Minecraft var1)
         {
             if (texturePackThumbnail != null)
             {

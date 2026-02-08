@@ -1,4 +1,4 @@
-using betareborn.Chunks;
+using betareborn.Client.Chunks;
 using betareborn.Client.Network;
 using betareborn.Entities;
 using betareborn.Packets;

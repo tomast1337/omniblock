@@ -1,4 +1,4 @@
-using betareborn.Client.Textures;
+using betareborn.Client.Resource.Pack;
 using java.util;
 
 namespace betareborn.Client.Guis
@@ -22,7 +22,7 @@ namespace betareborn.Client.Guis
         protected override void elementClicked(int var1, bool var2)
         {
             List var3 = GuiTexturePacks.func_22119_c(parentTexturePackGui).texturePackList.availableTexturePacks();
-            GuiTexturePacks.func_22122_d(parentTexturePackGui).texturePackList.setTexturePack((TexturePackBase)var3.get(var1));
+            GuiTexturePacks.func_22122_d(parentTexturePackGui).texturePackList.setTexturePack((TexturePack)var3.get(var1));
             GuiTexturePacks.func_22117_e(parentTexturePackGui).renderEngine.refreshTextures();
         }
 
@@ -44,7 +44,7 @@ namespace betareborn.Client.Guis
 
         protected override void drawSlot(int var1, int var2, int var3, int var4, Tessellator var5)
         {
-            TexturePackBase var6 = (TexturePackBase)GuiTexturePacks.func_22121_h(parentTexturePackGui).texturePackList.availableTexturePacks().get(var1);
+            TexturePack var6 = (TexturePack)GuiTexturePacks.func_22121_h(parentTexturePackGui).texturePackList.availableTexturePacks().get(var1);
             var6.bindThumbnailTexture(GuiTexturePacks.func_22123_i(parentTexturePackGui));
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             var5.startDrawingQuads();

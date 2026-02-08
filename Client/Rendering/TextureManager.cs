@@ -1,3 +1,4 @@
+using betareborn.Client.Resource.Pack;
 using betareborn.Client.Textures;
 using java.awt;
 using java.awt.image;
@@ -11,7 +12,7 @@ using static betareborn.Client.Textures.TextureAtlasMipmapGenerator;
 
 namespace betareborn.Client.Rendering
 {
-    public class RenderEngine : java.lang.Object
+    public class TextureManager : java.lang.Object
     {
         private readonly HashMap textureMap = [];
         private readonly HashMap field_28151_c = [];
@@ -23,10 +24,10 @@ namespace betareborn.Client.Rendering
         private readonly GameSettings options;
         private bool clampTexture = false;
         private bool blurTexture = false;
-        private readonly TexturePackList texturePack;
+        private readonly TexturePacks texturePack;
         private readonly BufferedImage missingTextureImage = new(64, 64, 2);
 
-        public RenderEngine(TexturePackList var1, GameSettings var2)
+        public TextureManager(TexturePacks var1, GameSettings var2)
         {
             texturePack = var1;
             options = var2;
@@ -40,7 +41,7 @@ namespace betareborn.Client.Rendering
 
         public int[] func_28149_a(string var1)
         {
-            TexturePackBase var2 = texturePack.selectedTexturePack;
+            TexturePack var2 = texturePack.selectedTexturePack;
             int[] var3 = (int[])field_28151_c.get(var1);
             if (var3 != null)
             {
@@ -112,7 +113,7 @@ namespace betareborn.Client.Rendering
 
         public int getTexture(string var1)
         {
-            TexturePackBase var2 = texturePack.selectedTexturePack;
+            TexturePack var2 = texturePack.selectedTexturePack;
             Integer var3 = (Integer)textureMap.get(var1);
             if (var3 != null)
             {
@@ -555,7 +556,7 @@ namespace betareborn.Client.Rendering
 
         public void refreshTextures()
         {
-            TexturePackBase var1 = texturePack.selectedTexturePack;
+            TexturePack var1 = texturePack.selectedTexturePack;
             Iterator var2 = textureNameToImageMap.keySet().iterator();
 
             BufferedImage var4;

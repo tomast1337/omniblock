@@ -14,7 +14,7 @@ namespace betareborn
         private GameSettings field_28161_c;
         private FontRenderer field_28160_d;
 
-        public MapItemRenderer(FontRenderer var1, GameSettings var2, RenderEngine var3)
+        public MapItemRenderer(FontRenderer var1, GameSettings var2, TextureManager var3)
         {
             field_28161_c = var2;
             field_28160_d = var1;
@@ -27,7 +27,7 @@ namespace betareborn
 
         }
 
-        public void func_28157_a(EntityPlayer var1, RenderEngine var2, MapData var3)
+        public void func_28157_a(EntityPlayer var1, TextureManager var2, MapData var3)
         {
             for (int var4 = 0; var4 < 16384; ++var4)
             {

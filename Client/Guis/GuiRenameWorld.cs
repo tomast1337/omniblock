@@ -1,3 +1,4 @@
+using betareborn.Client.Resource.Language;
 using betareborn.Worlds;
 using betareborn.Worlds.Storage;
 
@@ -23,7 +24,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
-            StringTranslate var1 = StringTranslate.getInstance();
+            TranslationStorage var1 = TranslationStorage.getInstance();
             Keyboard.enableRepeatEvents(true);
             controlList.clear();
             controlList.add(new GuiButton(0, width / 2 - 100, height / 4 + 96 + 12, var1.translateKey("selectWorld.renameButton")));
@@ -78,7 +79,7 @@ namespace betareborn.Client.Guis
 
         public override void drawScreen(int var1, int var2, float var3)
         {
-            StringTranslate var4 = StringTranslate.getInstance();
+            TranslationStorage var4 = TranslationStorage.getInstance();
             drawDefaultBackground();
             drawCenteredString(fontRenderer, var4.translateKey("selectWorld.renameTitle"), width / 2, height / 4 - 60 + 20, 16777215);
             drawString(fontRenderer, var4.translateKey("selectWorld.enterName"), width / 2 - 100, 47, 10526880);

@@ -12,10 +12,10 @@ namespace betareborn
     {
         protected World worldObj;
         private List[] fxLayers = new List[4];
-        private RenderEngine renderer;
+        private TextureManager renderer;
         private java.util.Random rand = new();
 
-        public EffectRenderer(World var1, RenderEngine var2)
+        public EffectRenderer(World var1, TextureManager var2)
         {
             if (var1 != null)
             {

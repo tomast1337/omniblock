@@ -14,7 +14,7 @@ namespace betareborn.Client.Rendering
     {
         public List<BlockEntity> tileEntities = [];
         private World worldObj;
-        private readonly RenderEngine renderEngine;
+        private readonly TextureManager renderEngine;
         private readonly Minecraft mc;
         private RenderBlocks globalRenderBlocks;
         private int cloudOffsetX = 0;
@@ -29,7 +29,7 @@ namespace betareborn.Client.Rendering
         public WorldRenderer worldRenderer;
         public float damagePartialTime;
 
-        public RenderGlobal(Minecraft var1, RenderEngine var2)
+        public RenderGlobal(Minecraft var1, TextureManager var2)
         {
             mc = var1;
             renderEngine = var2;

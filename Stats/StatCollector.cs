@@ -1,8 +1,10 @@
+using betareborn.Client.Resource.Language;
+
 namespace betareborn.Stats
 {
     public class StatCollector
     {
-        private static readonly StringTranslate localizedName = StringTranslate.getInstance();
+        private static readonly TranslationStorage localizedName = TranslationStorage.getInstance();
 
         public static string translateToLocal(string var0)
         {

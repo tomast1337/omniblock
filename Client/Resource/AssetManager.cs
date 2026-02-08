@@ -1,7 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Reflection;
 
-namespace betareborn
+namespace betareborn.Client.Resource
 {
     public class AssetManager
     {
