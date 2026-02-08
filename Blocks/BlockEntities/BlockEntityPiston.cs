@@ -91,10 +91,10 @@ namespace betareborn.Blocks.BlockEntities
                 collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
             }
 
-            Box var3 = Block.MOVING_PISTON.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
+            Box? var3 = Block.MOVING_PISTON.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
             if (var3 != null)
             {
-                var var4 = world.getEntitiesWithinAABBExcludingEntity(null, var3);
+                var var4 = world.getEntitiesWithinAABBExcludingEntity(null, var3.Value);
                 if (var4.Count > 0)
                 {
                     pushedEntities.AddRange(var4);

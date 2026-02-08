@@ -23,7 +23,7 @@ namespace betareborn.Blocks
             return textureId;
         }
 
-        public override Box getCollisionShape(World var1, int var2, int var3, int var4)
+        public override Box? getCollisionShape(World var1, int var2, int var3, int var4)
         {
             return null;
         }

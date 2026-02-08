@@ -10,7 +10,7 @@ namespace betareborn.Blocks
         {
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             int var5 = world.getBlockMeta(x, y, z);
             float var6 = 2.0F / 16.0F;

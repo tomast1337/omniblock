@@ -1255,16 +1255,16 @@ namespace betareborn.Worlds
 
             for (int var16 = 0; var16 < var15.Count; ++var16)
             {
-                Box var13 = var15[var16].getBoundingBox();
-                if (var13 != null && var13.intersects(var2))
+                Box? var13 = var15[var16].getBoundingBox();
+                if (var13 != null && var13.Value.intersects(var2))
                 {
-                    collidingBoundingBoxes.Add(var13);
+                    collidingBoundingBoxes.Add(var13.Value);
                 }
 
                 var13 = var1.getCollisionBox(var15[var16]);
-                if (var13 != null && var13.intersects(var2))
+                if (var13 != null && var13.Value.intersects(var2))
                 {
-                    collidingBoundingBoxes.Add(var13);
+                    collidingBoundingBoxes.Add(var13.Value);
                 }
             }
 
@@ -2665,13 +2665,13 @@ namespace betareborn.Worlds
             int var7 = getBlockId(var2, var3, var4);
             Block var8 = Block.BLOCKS[var7];
             Block var9 = Block.BLOCKS[var1];
-            Box var10 = var9.getCollisionShape(this, var2, var3, var4);
+            Box? var10 = var9.getCollisionShape(this, var2, var3, var4);
             if (var5)
             {
                 var10 = null;
             }
 
-            if (var10 != null && !checkIfAABBIsClear(var10))
+            if (var10 != null && !checkIfAABBIsClear(var10.Value))
             {
                 return false;
             }

@@ -1,61 +1,27 @@
 namespace betareborn
 {
-    public class Box : java.lang.Object
+    public struct Box
     {
-        private static readonly List<Box> cache = [];
-        private static int cacheCount = 0;
         public double minX;
         public double minY;
         public double minZ;
         public double maxX;
         public double maxY;
         public double maxZ;
-
-        public static Box create(double x1, double y1, double z1, double x2, double y2, double z2)
+        
+        public Box(double x1, double y1, double z1, double x2, double y2, double z2)
         {
-            return new Box(x1, y1, z1, x2, y2, z2);
+            minX = x1;
+            minY = y1;
+            minZ = z1;
+            maxX = x2;
+            maxY = y2;
+            maxZ = z2;
         }
-
-        public static void clearCache()
-        {
-            cache.Clear();
-            cacheCount = 0;
-        }
-
-        public static void resetCacheCount()
-        {
-            cacheCount = 0;
-        }
-
+        
         public static Box createCached(double x1, double y1, double z1, double x2, double y2, double z2)
         {
-            if (cacheCount >= cache.Count)
-            {
-                cache.Add(create(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D));
-            }
-
-            return cache[cacheCount++].set(x1, y1, z1, x2, y2, z2);
-        }
-
-        private Box(double x1, double y1, double z1, double x2, double y2, double z2)
-        {
-            minX = x1;
-            minY = y1;
-            minZ = z1;
-            maxX = x2;
-            maxY = y2;
-            maxZ = z2;
-        }
-
-        public Box set(double x1, double y1, double z1, double x2, double y2, double z2)
-        {
-            minX = x1;
-            minY = y1;
-            minZ = z1;
-            maxX = x2;
-            maxY = y2;
-            maxZ = z2;
-            return this;
+            return new Box(x1, y1, z1, x2, y2, z2);
         }
 
         public Box stretch(double x, double y, double z)
@@ -409,7 +375,7 @@ namespace betareborn
             maxZ = other.maxZ;
         }
 
-        public override string toString()
+        public override string ToString()
         {
             return "box[" + minX + ", " + minY + ", " + minZ + " -> " + maxX + ", " + maxY + ", " + maxZ + "]";
         }

@@ -30,7 +30,7 @@ namespace betareborn.Entities
         public float rotationPitch;
         public float prevRotationYaw;
         public float prevRotationPitch;
-        public readonly Box boundingBox = Box.create(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+        public Box boundingBox = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         public bool onGround = false;
         public bool isCollidedHorizontally;
         public bool isCollidedVertically;
@@ -147,7 +147,7 @@ namespace betareborn.Entities
             posZ = var5;
             float var7 = width / 2.0F;
             float var8 = height;
-            boundingBox.set(var1 - (double)var7, var3 - (double)yOffset + (double)ySize, var5 - (double)var7, var1 + (double)var7, var3 - (double)yOffset + (double)ySize + (double)var8, var5 + (double)var7);
+            boundingBox = new Box(var1 - (double)var7, var3 - (double)yOffset + (double)ySize, var5 - (double)var7, var1 + (double)var7, var3 - (double)yOffset + (double)ySize + (double)var8, var5 + (double)var7);
         }
 
         public void func_346_d(float var1, float var2)
@@ -625,7 +625,7 @@ namespace betareborn.Entities
 
         }
 
-        public virtual Box getBoundingBox()
+        public virtual Box? getBoundingBox()
         {
             return null;
         }
@@ -1047,7 +1047,7 @@ namespace betareborn.Entities
             return false;
         }
 
-        public virtual Box getCollisionBox(Entity var1)
+        public virtual Box? getCollisionBox(Entity var1)
         {
             return null;
         }

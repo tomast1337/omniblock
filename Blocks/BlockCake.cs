@@ -28,7 +28,7 @@ namespace betareborn.Blocks
             setBoundingBox(var1, 0.0F, var1, 1.0F - var1, var2, 1.0F - var1);
         }
 
-        public override Box getCollisionShape(World world, int x, int y, int z)
+        public override Box? getCollisionShape(World world, int x, int y, int z)
         {
             int var5 = world.getBlockMeta(x, y, z);
             float var6 = 1.0F / 16.0F;

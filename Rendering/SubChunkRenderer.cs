@@ -29,7 +29,7 @@ namespace betareborn.Rendering
 
             const float padding = 6.0f;
 
-            BoundingBox = Box.create
+            BoundingBox = new Box
             (
                 position.X - padding,
                 position.Y - padding,
