@@ -24,35 +24,35 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                if (!isHeadOfBed(var6))
+                int meta = world.getBlockMeta(x, y, z);
+                if (!isHeadOfBed(meta))
                 {
-                    int var7 = getDirection(var6);
-                    x += BED_OFFSETS[var7][0];
-                    z += BED_OFFSETS[var7][1];
+                    int direction = getDirection(meta);
+                    x += BED_OFFSETS[direction][0];
+                    z += BED_OFFSETS[direction][1];
                     if (world.getBlockId(x, y, z) != id)
                     {
                         return true;
                     }
 
-                    var6 = world.getBlockMeta(x, y, z);
+                    meta = world.getBlockMeta(x, y, z);
                 }
 
                 if (!world.dimension.hasWorldSpawn())
                 {
-                    double var16 = (double)x + 0.5D;
-                    double var17 = (double)y + 0.5D;
-                    double var11 = (double)z + 0.5D;
+                    double posX = (double)x + 0.5D;
+                    double posY = (double)y + 0.5D;
+                    double posZ = (double)z + 0.5D;
                     world.setBlock(x, y, z, 0);
-                    int var13 = getDirection(var6);
-                    x += BED_OFFSETS[var13][0];
-                    z += BED_OFFSETS[var13][1];
+                    int direction = getDirection(meta);
+                    x += BED_OFFSETS[direction][0];
+                    z += BED_OFFSETS[direction][1];
                     if (world.getBlockId(x, y, z) == id)
                     {
                         world.setBlock(x, y, z, 0);
-                        var16 = (var16 + (double)x + 0.5D) / 2.0D;
-                        var17 = (var17 + (double)y + 0.5D) / 2.0D;
-                        var11 = (var11 + (double)z + 0.5D) / 2.0D;
+                        posX = (posX + (double)x + 0.5D) / 2.0D;
+                        posY = (posY + (double)y + 0.5D) / 2.0D;
+                        posZ = (posZ + (double)z + 0.5D) / 2.0D;
                     }
 
                     world.createExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
@@ -60,25 +60,25 @@ namespace betareborn.Blocks
                 }
                 else
                 {
-                    if (isBedOccupied(var6))
+                    if (isBedOccupied(meta))
                     {
-                        EntityPlayer var14 = null;
-                        Iterator var8 = world.players.iterator();
+                        EntityPlayer occupant = null;
+                        Iterator playerIterator = world.players.iterator();
 
-                        while (var8.hasNext())
+                        while (playerIterator.hasNext())
                         {
-                            EntityPlayer var9 = (EntityPlayer)var8.next();
-                            if (var9.isSleeping())
+                            EntityPlayer otherPlayer = (EntityPlayer)playerIterator.next();
+                            if (otherPlayer.isSleeping())
                             {
-                                Vec3i var10 = var9.sleepingPos;
-                                if (var10.x == x && var10.y == y && var10.z == z)
+                                Vec3i sleepingPos = otherPlayer.sleepingPos;
+                                if (sleepingPos.x == x && sleepingPos.y == y && sleepingPos.z == z)
                                 {
-                                    var14 = var9;
+                                    occupant = otherPlayer;
                                 }
                             }
                         }
 
-                        if (var14 != null)
+                        if (occupant != null)
                         {
                             player.sendMessage("tile.bed.occupied");
                             return true;
@@ -87,15 +87,15 @@ namespace betareborn.Blocks
                         updateState(world, x, y, z, false);
                     }
 
-                    SleepAttemptResult var15 = player.trySleep(x, y, z);
-                    if (var15 == SleepAttemptResult.OK)
+                    SleepAttemptResult result = player.trySleep(x, y, z);
+                    if (result == SleepAttemptResult.OK)
                     {
                         updateState(world, x, y, z, true);
                         return true;
                     }
                     else
                     {
-                        if (var15 == SleepAttemptResult.NOT_POSSIBLE_NOW)
+                        if (result == SleepAttemptResult.NOT_POSSIBLE_NOW)
                         {
                             player.sendMessage("tile.bed.noSleep");
                         }
@@ -114,9 +114,11 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var3 = getDirection(meta);
-                int var4 = Facings.BED_FACINGS[var3][side];
-                return isHeadOfBed(meta) ? (var4 == 2 ? textureId + 2 + 16 : (var4 != 5 && var4 != 4 ? textureId + 1 : textureId + 1 + 16)) : (var4 == 3 ? textureId - 1 + 16 : (var4 != 5 && var4 != 4 ? textureId : textureId + 16));
+                int direction = getDirection(meta);
+                int sideFacing = Facings.BED_FACINGS[direction][side];
+                return isHeadOfBed(meta) ?
+                    (sideFacing == 2 ? textureId + 2 + 16 : (sideFacing != 5 && sideFacing != 4 ? textureId + 1 : textureId + 1 + 16)) :
+                    (sideFacing == 3 ? textureId - 1 + 16 : (sideFacing != 5 && sideFacing != 4 ? textureId : textureId + 16));
             }
         }
 
@@ -135,28 +137,28 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override void updateBoundingBox(BlockView var1, int x, int y, int z)
+        public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
             setDefaultShape();
         }
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            int var7 = getDirection(var6);
-            if (isHeadOfBed(var6))
+            int blockMeta = world.getBlockMeta(x, y, z);
+            int direction = getDirection(blockMeta);
+            if (isHeadOfBed(blockMeta))
             {
-                if (world.getBlockId(x - BED_OFFSETS[var7][0], y, z - BED_OFFSETS[var7][1]) != this.id)
+                if (world.getBlockId(x - BED_OFFSETS[direction][0], y, z - BED_OFFSETS[direction][1]) != this.id)
                 {
                     world.setBlock(x, y, z, 0);
                 }
             }
-            else if (world.getBlockId(x + BED_OFFSETS[var7][0], y, z + BED_OFFSETS[var7][1]) != this.id)
+            else if (world.getBlockId(x + BED_OFFSETS[direction][0], y, z + BED_OFFSETS[direction][1]) != this.id)
             {
                 world.setBlock(x, y, z, 0);
                 if (!world.isRemote)
                 {
-                    dropStacks(world, x, y, z, var6);
+                    dropStacks(world, x, y, z, blockMeta);
                 }
             }
 
@@ -189,40 +191,40 @@ namespace betareborn.Blocks
 
         public static void updateState(World world, int x, int y, int z, bool occupied)
         {
-            int var5 = world.getBlockMeta(x, y, z);
+            int blockMeta = world.getBlockMeta(x, y, z);
             if (occupied)
             {
-                var5 |= 4;
+                blockMeta |= 4;
             }
             else
             {
-                var5 &= -5;
+                blockMeta &= -5;
             }
 
-            world.setBlockMeta(x, y, z, var5);
+            world.setBlockMeta(x, y, z, blockMeta);
         }
 
         public static Vec3i findWakeUpPosition(World world, int x, int y, int z, int skip)
         {
-            int var5 = world.getBlockMeta(x, y, z);
-            int var6 = getDirection(var5);
+            int blockMeta = world.getBlockMeta(x, y, z);
+            int direction = getDirection(blockMeta);
 
-            for (int var7 = 0; var7 <= 1; ++var7)
+            for (int bedHalf = 0; bedHalf <= 1; ++bedHalf)
             {
-                int var8 = x - BED_OFFSETS[var6][0] * var7 - 1;
-                int var9 = z - BED_OFFSETS[var6][1] * var7 - 1;
-                int var10 = var8 + 2;
-                int var11 = var9 + 2;
+                int searchMinX = x - BED_OFFSETS[direction][0] * bedHalf - 1;
+                int searchMinZ = z - BED_OFFSETS[direction][1] * bedHalf - 1;
+                int searchMaxX = searchMinX + 2;
+                int searchMaxZ = searchMinZ + 2;
 
-                for (int var12 = var8; var12 <= var10; ++var12)
+                for (int checkX = searchMinX; checkX <= searchMaxX; ++checkX)
                 {
-                    for (int var13 = var9; var13 <= var11; ++var13)
+                    for (int checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
                     {
-                        if (world.shouldSuffocate(var12, y - 1, var13) && world.isAir(var12, y, var13) && world.isAir(var12, y + 1, var13))
+                        if (world.shouldSuffocate(checkX, y - 1, checkZ) && world.isAir(checkX, y, checkZ) && world.isAir(checkX, y + 1, checkZ))
                         {
                             if (skip <= 0)
                             {
-                                return new Vec3i(var12, y, var13);
+                                return new Vec3i(checkX, y, checkZ);
                             }
 
                             --skip;
