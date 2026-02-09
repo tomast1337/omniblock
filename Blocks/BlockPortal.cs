@@ -103,7 +103,7 @@ namespace betareborn.Blocks
                 {
                     for (var8 = 0; var8 < 3; ++var8)
                     {
-                        world.setBlockWithNotify(x + var5 * var7, y + var8, z + var6 * var7, Block.NETHER_PORTAL.id);
+                        world.setBlock(x + var5 * var7, y + var8, z + var6 * var7, Block.NETHER_PORTAL.id);
                     }
                 }
 
@@ -129,7 +129,7 @@ namespace betareborn.Blocks
 
             if (world.getBlockId(x, var8 - 1, z) != Block.OBSIDIAN.id)
             {
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
             else
             {
@@ -144,16 +144,16 @@ namespace betareborn.Blocks
                     bool var11 = world.getBlockId(x, y, z - 1) == base.id || world.getBlockId(x, y, z + 1) == base.id;
                     if (var10 && var11)
                     {
-                        world.setBlockWithNotify(x, y, z, 0);
+                        world.setBlock(x, y, z, 0);
                     }
                     else if ((world.getBlockId(x + var6, y, z + var7) != Block.OBSIDIAN.id || world.getBlockId(x - var6, y, z - var7) != base.id) && (world.getBlockId(x - var6, y, z - var7) != Block.OBSIDIAN.id || world.getBlockId(x + var6, y, z + var7) != base.id))
                     {
-                        world.setBlockWithNotify(x, y, z, 0);
+                        world.setBlock(x, y, z, 0);
                     }
                 }
                 else
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
             }
         }
@@ -188,7 +188,7 @@ namespace betareborn.Blocks
 
         public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
-            if (entity.ridingEntity == null && entity.riddenByEntity == null)
+            if (entity.vehicle == null && entity.passenger == null)
             {
                 entity.tickPortalCooldown();
             }

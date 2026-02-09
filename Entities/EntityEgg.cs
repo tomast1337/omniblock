@@ -40,17 +40,17 @@ namespace betareborn.Entities
         {
             field_20051_g = var2;
             setBoundingBoxSpacing(0.25F, 0.25F);
-            setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY + (double)var2.getEyeHeight(), var2.posZ, var2.rotationYaw, var2.rotationPitch);
-            posX -= (double)(MathHelper.cos(rotationYaw / 180.0F * (float)Math.PI) * 0.16F);
-            posY -= (double)0.1F;
-            posZ -= (double)(MathHelper.sin(rotationYaw / 180.0F * (float)Math.PI) * 0.16F);
-            setPosition(posX, posY, posZ);
-            yOffset = 0.0F;
+            setPositionAndAnglesKeepPrevAngles(var2.x, var2.y + (double)var2.getEyeHeight(), var2.z, var2.yaw, var2.pitch);
+            x -= (double)(MathHelper.cos(yaw / 180.0F * (float)Math.PI) * 0.16F);
+            y -= (double)0.1F;
+            z -= (double)(MathHelper.sin(yaw / 180.0F * (float)Math.PI) * 0.16F);
+            setPosition(x, y, z);
+            standingEyeHeight = 0.0F;
             float var3 = 0.4F;
-            motionX = (double)(-MathHelper.sin(rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float)Math.PI) * var3);
-            motionZ = (double)(MathHelper.cos(rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float)Math.PI) * var3);
-            motionY = (double)(-MathHelper.sin(rotationPitch / 180.0F * (float)Math.PI) * var3);
-            setEggHeading(motionX, motionY, motionZ, 1.5F, 1.0F);
+            velocityX = (double)(-MathHelper.sin(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * var3);
+            velocityZ = (double)(MathHelper.cos(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * var3);
+            velocityY = (double)(-MathHelper.sin(pitch / 180.0F * (float)Math.PI) * var3);
+            setEggHeading(velocityX, velocityY, velocityZ, 1.5F, 1.0F);
         }
 
         public EntityEgg(World var1, double var2, double var4, double var6) : base(var1)
@@ -58,7 +58,7 @@ namespace betareborn.Entities
             field_20050_h = 0;
             setBoundingBoxSpacing(0.25F, 0.25F);
             setPosition(var2, var4, var6);
-            yOffset = 0.0F;
+            standingEyeHeight = 0.0F;
         }
 
         public void setEggHeading(double var1, double var3, double var5, float var7, float var8)
@@ -67,40 +67,40 @@ namespace betareborn.Entities
             var1 /= (double)var9;
             var3 /= (double)var9;
             var5 /= (double)var9;
-            var1 += rand.nextGaussian() * (double)0.0075F * (double)var8;
-            var3 += rand.nextGaussian() * (double)0.0075F * (double)var8;
-            var5 += rand.nextGaussian() * (double)0.0075F * (double)var8;
+            var1 += random.nextGaussian() * (double)0.0075F * (double)var8;
+            var3 += random.nextGaussian() * (double)0.0075F * (double)var8;
+            var5 += random.nextGaussian() * (double)0.0075F * (double)var8;
             var1 *= (double)var7;
             var3 *= (double)var7;
             var5 *= (double)var7;
-            motionX = var1;
-            motionY = var3;
-            motionZ = var5;
+            velocityX = var1;
+            velocityY = var3;
+            velocityZ = var5;
             float var10 = MathHelper.sqrt_double(var1 * var1 + var5 * var5);
-            prevRotationYaw = rotationYaw = (float)(java.lang.Math.atan2(var1, var5) * 180.0D / (double)((float)Math.PI));
-            prevRotationPitch = rotationPitch = (float)(java.lang.Math.atan2(var3, (double)var10) * 180.0D / (double)((float)Math.PI));
+            prevYaw = yaw = (float)(java.lang.Math.atan2(var1, var5) * 180.0D / (double)((float)Math.PI));
+            prevPitch = pitch = (float)(java.lang.Math.atan2(var3, (double)var10) * 180.0D / (double)((float)Math.PI));
             field_20050_h = 0;
         }
 
         public override void setVelocity(double var1, double var3, double var5)
         {
-            motionX = var1;
-            motionY = var3;
-            motionZ = var5;
-            if (prevRotationPitch == 0.0F && prevRotationYaw == 0.0F)
+            velocityX = var1;
+            velocityY = var3;
+            velocityZ = var5;
+            if (prevPitch == 0.0F && prevYaw == 0.0F)
             {
                 float var7 = MathHelper.sqrt_double(var1 * var1 + var5 * var5);
-                prevRotationYaw = rotationYaw = (float)(java.lang.Math.atan2(var1, var5) * 180.0D / (double)((float)Math.PI));
-                prevRotationPitch = rotationPitch = (float)(java.lang.Math.atan2(var3, (double)var7) * 180.0D / (double)((float)Math.PI));
+                prevYaw = yaw = (float)(java.lang.Math.atan2(var1, var5) * 180.0D / (double)((float)Math.PI));
+                prevPitch = pitch = (float)(java.lang.Math.atan2(var3, (double)var7) * 180.0D / (double)((float)Math.PI));
             }
 
         }
 
         public override void onUpdate()
         {
-            lastTickPosX = posX;
-            lastTickPosY = posY;
-            lastTickPosZ = posZ;
+            lastTickX = x;
+            lastTickY = y;
+            lastTickZ = z;
             base.onUpdate();
             if (field_20057_a > 0)
             {
@@ -109,7 +109,7 @@ namespace betareborn.Entities
 
             if (field_20052_f)
             {
-                int var1 = worldObj.getBlockId(field_20056_b, field_20055_c, field_20054_d);
+                int var1 = world.getBlockId(field_20056_b, field_20055_c, field_20054_d);
                 if (var1 == field_20053_e)
                 {
                     ++field_20050_h;
@@ -122,9 +122,9 @@ namespace betareborn.Entities
                 }
 
                 field_20052_f = false;
-                motionX *= (double)(rand.nextFloat() * 0.2F);
-                motionY *= (double)(rand.nextFloat() * 0.2F);
-                motionZ *= (double)(rand.nextFloat() * 0.2F);
+                velocityX *= (double)(random.nextFloat() * 0.2F);
+                velocityY *= (double)(random.nextFloat() * 0.2F);
+                velocityZ *= (double)(random.nextFloat() * 0.2F);
                 field_20050_h = 0;
                 field_20049_i = 0;
             }
@@ -133,20 +133,20 @@ namespace betareborn.Entities
                 ++field_20049_i;
             }
 
-            Vec3D var15 = Vec3D.createVector(posX, posY, posZ);
-            Vec3D var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
-            HitResult var3 = worldObj.rayTraceBlocks(var15, var2);
-            var15 = Vec3D.createVector(posX, posY, posZ);
-            var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
+            Vec3D var15 = Vec3D.createVector(x, y, z);
+            Vec3D var2 = Vec3D.createVector(x + velocityX, y + velocityY, z + velocityZ);
+            HitResult var3 = world.raycast(var15, var2);
+            var15 = Vec3D.createVector(x, y, z);
+            var2 = Vec3D.createVector(x + velocityX, y + velocityY, z + velocityZ);
             if (var3 != null)
             {
                 var2 = Vec3D.createVector(var3.pos.xCoord, var3.pos.yCoord, var3.pos.zCoord);
             }
 
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
                 Entity var4 = null;
-                var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.stretch(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+                var var5 = world.getEntities(this, boundingBox.stretch(velocityX, velocityY, velocityZ).expand(1.0D, 1.0D, 1.0D));
                 double var6 = 0.0D;
 
                 for (int var8 = 0; var8 < var5.Count; ++var8)
@@ -181,57 +181,57 @@ namespace betareborn.Entities
                 {
                 }
 
-                if (!worldObj.isRemote && rand.nextInt(8) == 0)
+                if (!world.isRemote && random.nextInt(8) == 0)
                 {
                     byte var16 = 1;
-                    if (rand.nextInt(32) == 0)
+                    if (random.nextInt(32) == 0)
                     {
                         var16 = 4;
                     }
 
                     for (int var17 = 0; var17 < var16; ++var17)
                     {
-                        EntityChicken var21 = new EntityChicken(worldObj);
-                        var21.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, rotationYaw, 0.0F);
-                        worldObj.spawnEntity(var21);
+                        EntityChicken var21 = new EntityChicken(world);
+                        var21.setPositionAndAnglesKeepPrevAngles(x, y, z, yaw, 0.0F);
+                        world.spawnEntity(var21);
                     }
                 }
 
                 for (int var18 = 0; var18 < 8; ++var18)
                 {
-                    worldObj.addParticle("snowballpoof", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("snowballpoof", x, y, z, 0.0D, 0.0D, 0.0D);
                 }
 
                 markDead();
             }
 
-            posX += motionX;
-            posY += motionY;
-            posZ += motionZ;
-            float var20 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-            rotationYaw = (float)(java.lang.Math.atan2(motionX, motionZ) * 180.0D / (double)((float)Math.PI));
+            x += velocityX;
+            y += velocityY;
+            z += velocityZ;
+            float var20 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
+            yaw = (float)(java.lang.Math.atan2(velocityX, velocityZ) * 180.0D / (double)((float)Math.PI));
 
-            for (rotationPitch = (float)(java.lang.Math.atan2(motionY, (double)var20) * 180.0D / (double)((float)Math.PI)); rotationPitch - prevRotationPitch < -180.0F; prevRotationPitch -= 360.0F)
+            for (pitch = (float)(java.lang.Math.atan2(velocityY, (double)var20) * 180.0D / (double)((float)Math.PI)); pitch - prevPitch < -180.0F; prevPitch -= 360.0F)
             {
             }
 
-            while (rotationPitch - prevRotationPitch >= 180.0F)
+            while (pitch - prevPitch >= 180.0F)
             {
-                prevRotationPitch += 360.0F;
+                prevPitch += 360.0F;
             }
 
-            while (rotationYaw - prevRotationYaw < -180.0F)
+            while (yaw - prevYaw < -180.0F)
             {
-                prevRotationYaw -= 360.0F;
+                prevYaw -= 360.0F;
             }
 
-            while (rotationYaw - prevRotationYaw >= 180.0F)
+            while (yaw - prevYaw >= 180.0F)
             {
-                prevRotationYaw += 360.0F;
+                prevYaw += 360.0F;
             }
 
-            rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
-            rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
+            pitch = prevPitch + (pitch - prevPitch) * 0.2F;
+            yaw = prevYaw + (yaw - prevYaw) * 0.2F;
             float var19 = 0.99F;
             float var22 = 0.03F;
             if (isInWater())
@@ -239,17 +239,17 @@ namespace betareborn.Entities
                 for (int var7 = 0; var7 < 4; ++var7)
                 {
                     float var23 = 0.25F;
-                    worldObj.addParticle("bubble", posX - motionX * (double)var23, posY - motionY * (double)var23, posZ - motionZ * (double)var23, motionX, motionY, motionZ);
+                    world.addParticle("bubble", x - velocityX * (double)var23, y - velocityY * (double)var23, z - velocityZ * (double)var23, velocityX, velocityY, velocityZ);
                 }
 
                 var19 = 0.8F;
             }
 
-            motionX *= (double)var19;
-            motionY *= (double)var19;
-            motionZ *= (double)var19;
-            motionY -= (double)var22;
-            setPosition(posX, posY, posZ);
+            velocityX *= (double)var19;
+            velocityY *= (double)var19;
+            velocityZ *= (double)var19;
+            velocityY -= (double)var22;
+            setPosition(x, y, z);
         }
 
         public override void writeNbt(NBTTagCompound var1)
@@ -276,7 +276,7 @@ namespace betareborn.Entities
         {
             if (field_20052_f && field_20051_g == var1 && field_20057_a <= 0 && var1.inventory.addItemStackToInventory(new ItemStack(Item.ARROW, 1)))
             {
-                worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                world.playSound(this, "random.pop", 0.2F, ((random.nextFloat() - random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
                 var1.sendPickup(this, 1);
                 markDead();
             }

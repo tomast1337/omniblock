@@ -77,15 +77,15 @@ namespace betareborn.Items
                             {
                                 if (itemRand.nextInt(10) != 0)
                                 {
-                                    var3.setBlockAndMetadataWithNotify(var10, var11, var12, Block.GRASS.id, 1);
+                                    var3.setBlock(var10, var11, var12, Block.GRASS.id, 1);
                                 }
                                 else if (itemRand.nextInt(3) != 0)
                                 {
-                                    var3.setBlockWithNotify(var10, var11, var12, Block.DANDELION.id);
+                                    var3.setBlock(var10, var11, var12, Block.DANDELION.id);
                                 }
                                 else
                                 {
-                                    var3.setBlockWithNotify(var10, var11, var12, Block.ROSE.id);
+                                    var3.setBlock(var10, var11, var12, Block.ROSE.id);
                                 }
                             }
                         }

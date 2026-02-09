@@ -48,7 +48,7 @@ namespace betareborn.Entities
 
         public override bool interact(EntityPlayer var1)
         {
-            if (!getSaddled() || worldObj.isRemote || riddenByEntity != null && riddenByEntity != var1)
+            if (!getSaddled() || world.isRemote || passenger != null && passenger != var1)
             {
                 return false;
             }
@@ -61,7 +61,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return fire > 0 ? Item.COOKED_PORKCHOP.id : Item.RAW_PORKCHOP.id;
+            return fireTicks > 0 ? Item.COOKED_PORKCHOP.id : Item.RAW_PORKCHOP.id;
         }
 
         public bool getSaddled()
@@ -84,11 +84,11 @@ namespace betareborn.Entities
 
         public override void onStruckByLightning(EntityLightningBolt var1)
         {
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
-                EntityPigZombie var2 = new EntityPigZombie(worldObj);
-                var2.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, rotationYaw, rotationPitch);
-                worldObj.spawnEntity(var2);
+                EntityPigZombie var2 = new EntityPigZombie(world);
+                var2.setPositionAndAnglesKeepPrevAngles(x, y, z, yaw, pitch);
+                world.spawnEntity(var2);
                 markDead();
             }
         }
@@ -96,9 +96,9 @@ namespace betareborn.Entities
         protected override void onLanding(float var1)
         {
             base.onLanding(var1);
-            if (var1 > 5.0F && riddenByEntity is EntityPlayer)
+            if (var1 > 5.0F && passenger is EntityPlayer)
             {
-                ((EntityPlayer)riddenByEntity).incrementStat(Achievements.KILL_PIG);
+                ((EntityPlayer)passenger).incrementStat(Achievements.KILL_PIG);
             }
 
         }

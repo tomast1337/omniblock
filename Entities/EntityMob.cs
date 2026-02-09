@@ -29,7 +29,7 @@ namespace betareborn.Entities
         public override void onUpdate()
         {
             base.onUpdate();
-            if (!worldObj.isRemote && worldObj.difficulty == 0)
+            if (!world.isRemote && world.difficulty == 0)
             {
                 markDead();
             }
@@ -38,7 +38,7 @@ namespace betareborn.Entities
 
         protected override Entity findPlayerToAttack()
         {
-            EntityPlayer var1 = worldObj.getClosestPlayerToEntity(this, 16.0D);
+            EntityPlayer var1 = world.getClosestPlayer(this, 16.0D);
             return var1 != null && canEntityBeSeen(var1) ? var1 : null;
         }
 
@@ -46,7 +46,7 @@ namespace betareborn.Entities
         {
             if (base.damage(var1, var2))
             {
-                if (riddenByEntity != var1 && ridingEntity != var1)
+                if (passenger != var1 && vehicle != var1)
                 {
                     if (var1 != this)
                     {
@@ -78,7 +78,7 @@ namespace betareborn.Entities
 
         protected override float getBlockPathWeight(int var1, int var2, int var3)
         {
-            return 0.5F - worldObj.getLuminance(var1, var2, var3);
+            return 0.5F - world.getLuminance(var1, var2, var3);
         }
 
         public override void writeNbt(NBTTagCompound var1)
@@ -93,25 +93,25 @@ namespace betareborn.Entities
 
         public override bool canSpawn()
         {
-            int var1 = MathHelper.floor_double(posX);
+            int var1 = MathHelper.floor_double(x);
             int var2 = MathHelper.floor_double(boundingBox.minY);
-            int var3 = MathHelper.floor_double(posZ);
-            if (worldObj.getBrightness(LightType.Sky, var1, var2, var3) > rand.nextInt(32))
+            int var3 = MathHelper.floor_double(z);
+            if (world.getBrightness(LightType.Sky, var1, var2, var3) > random.nextInt(32))
             {
                 return false;
             }
             else
             {
-                int var4 = worldObj.getLightLevel(var1, var2, var3);
-                if (worldObj.func_27160_B())
+                int var4 = world.getLightLevel(var1, var2, var3);
+                if (world.isThundering())
                 {
-                    int var5 = worldObj.skylightSubtracted;
-                    worldObj.skylightSubtracted = 10;
-                    var4 = worldObj.getLightLevel(var1, var2, var3);
-                    worldObj.skylightSubtracted = var5;
+                    int var5 = world.ambientDarkness;
+                    world.ambientDarkness = 10;
+                    var4 = world.getLightLevel(var1, var2, var3);
+                    world.ambientDarkness = var5;
                 }
 
-                return var4 <= rand.nextInt(8) && base.canSpawn();
+                return var4 <= random.nextInt(8) && base.canSpawn();
             }
         }
     }

@@ -22,14 +22,14 @@ namespace betareborn.Entities
             blockID = var8;
             preventEntitySpawning = true;
             setBoundingBoxSpacing(0.98F, 0.98F);
-            yOffset = height / 2.0F;
+            standingEyeHeight = height / 2.0F;
             setPosition(var2, var4, var6);
-            motionX = 0.0D;
-            motionY = 0.0D;
-            motionZ = 0.0D;
-            prevPosX = var2;
-            prevPosY = var4;
-            prevPosZ = var6;
+            velocityX = 0.0D;
+            velocityY = 0.0D;
+            velocityZ = 0.0D;
+            prevX = var2;
+            prevY = var4;
+            prevZ = var6;
         }
 
         protected override bool canTriggerWalking()
@@ -54,35 +54,35 @@ namespace betareborn.Entities
             }
             else
             {
-                prevPosX = posX;
-                prevPosY = posY;
-                prevPosZ = posZ;
+                prevX = x;
+                prevY = y;
+                prevZ = z;
                 ++fallTime;
-                motionY -= (double)0.04F;
-                moveEntity(motionX, motionY, motionZ);
-                motionX *= (double)0.98F;
-                motionY *= (double)0.98F;
-                motionZ *= (double)0.98F;
-                int var1 = MathHelper.floor_double(posX);
-                int var2 = MathHelper.floor_double(posY);
-                int var3 = MathHelper.floor_double(posZ);
-                if (worldObj.getBlockId(var1, var2, var3) == blockID)
+                velocityY -= (double)0.04F;
+                moveEntity(velocityX, velocityY, velocityZ);
+                velocityX *= (double)0.98F;
+                velocityY *= (double)0.98F;
+                velocityZ *= (double)0.98F;
+                int var1 = MathHelper.floor_double(x);
+                int var2 = MathHelper.floor_double(y);
+                int var3 = MathHelper.floor_double(z);
+                if (world.getBlockId(var1, var2, var3) == blockID)
                 {
-                    worldObj.setBlockWithNotify(var1, var2, var3, 0);
+                    world.setBlock(var1, var2, var3, 0);
                 }
 
                 if (onGround)
                 {
-                    motionX *= (double)0.7F;
-                    motionZ *= (double)0.7F;
-                    motionY *= -0.5D;
+                    velocityX *= (double)0.7F;
+                    velocityZ *= (double)0.7F;
+                    velocityY *= -0.5D;
                     markDead();
-                    if ((!worldObj.canBlockBePlacedAt(blockID, var1, var2, var3, true, 1) || BlockSand.canFallThrough(worldObj, var1, var2 - 1, var3) || !worldObj.setBlockWithNotify(var1, var2, var3, blockID)) && !worldObj.isRemote)
+                    if ((!world.canPlace(blockID, var1, var2, var3, true, 1) || BlockSand.canFallThrough(world, var1, var2 - 1, var3) || !world.setBlock(var1, var2, var3, blockID)) && !world.isRemote)
                     {
                         dropItem(blockID, 1);
                     }
                 }
-                else if (fallTime > 100 && !worldObj.isRemote)
+                else if (fallTime > 100 && !world.isRemote)
                 {
                     dropItem(blockID, 1);
                     markDead();
@@ -108,7 +108,7 @@ namespace betareborn.Entities
 
         public World getWorld()
         {
-            return worldObj;
+            return world;
         }
     }
 

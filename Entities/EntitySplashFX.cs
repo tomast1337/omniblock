@@ -11,9 +11,9 @@ namespace betareborn.Entities
             ++particleTextureIndex;
             if (var10 == 0.0D && (var8 != 0.0D || var12 != 0.0D))
             {
-                motionX = var8;
-                motionY = var10 + 0.1D;
-                motionZ = var12;
+                velocityX = var8;
+                velocityY = var10 + 0.1D;
+                velocityZ = var12;
             }
 
         }

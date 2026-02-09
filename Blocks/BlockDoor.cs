@@ -181,7 +181,7 @@ namespace betareborn.Blocks
             {
                 if (world.getBlockId(x, y - 1, z) != base.id)
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
 
                 if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
@@ -194,17 +194,17 @@ namespace betareborn.Blocks
                 bool var7 = false;
                 if (world.getBlockId(x, y + 1, z) != base.id)
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                     var7 = true;
                 }
 
                 if (!world.shouldSuffocate(x, y - 1, z))
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                     var7 = true;
                     if (world.getBlockId(x, y + 1, z) == base.id)
                     {
-                        world.setBlockWithNotify(x, y + 1, z, 0);
+                        world.setBlock(x, y + 1, z, 0);
                     }
                 }
 

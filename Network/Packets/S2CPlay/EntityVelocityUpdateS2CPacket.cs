@@ -17,7 +17,7 @@ namespace betareborn.Network.Packets.S2CPlay
         {
         }
 
-        public EntityVelocityUpdateS2CPacket(Entity var1) : this(var1.entityId, var1.motionX, var1.motionY, var1.motionZ)
+        public EntityVelocityUpdateS2CPacket(Entity var1) : this(var1.entityId, var1.velocityX, var1.velocityY, var1.velocityZ)
         {
         }
 

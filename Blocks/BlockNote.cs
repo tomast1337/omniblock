@@ -20,7 +20,7 @@ namespace betareborn.Blocks
         {
             if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
             {
-                bool var6 = world.isBlockGettingPowered(x, y, z);
+                bool var6 = world.isStrongPowered(x, y, z);
                 BlockEntityNote var7 = (BlockEntityNote)world.getBlockEntity(x, y, z);
                 if (var7.powered != var6)
                 {

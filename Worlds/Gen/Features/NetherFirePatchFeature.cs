@@ -14,7 +14,7 @@ namespace betareborn.Worlds.Gen.Features
                 int var9 = var5 + var2.nextInt(8) - var2.nextInt(8);
                 if (var1.isAir(var7, var8, var9) && var1.getBlockId(var7, var8 - 1, var9) == Block.NETHERRACK.id)
                 {
-                    var1.setBlockWithNotify(var7, var8, var9, Block.FIRE.id);
+                    var1.setBlock(var7, var8, var9, Block.FIRE.id);
                 }
             }
 

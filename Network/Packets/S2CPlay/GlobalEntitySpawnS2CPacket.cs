@@ -22,9 +22,9 @@ namespace betareborn.Network.Packets.S2CPlay
         public GlobalEntitySpawnS2CPacket(Entity var1)
         {
             field_27054_a = var1.entityId;
-            field_27053_b = MathHelper.floor_double(var1.posX * 32.0D);
-            field_27057_c = MathHelper.floor_double(var1.posY * 32.0D);
-            field_27056_d = MathHelper.floor_double(var1.posZ * 32.0D);
+            field_27053_b = MathHelper.floor_double(var1.x * 32.0D);
+            field_27057_c = MathHelper.floor_double(var1.y * 32.0D);
+            field_27056_d = MathHelper.floor_double(var1.z * 32.0D);
             if (var1 is EntityLightningBolt)
             {
                 field_27055_e = 1;

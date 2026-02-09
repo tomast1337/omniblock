@@ -29,7 +29,7 @@ namespace betareborn.Entities
                 playerToAttack = findPlayerToAttack();
                 if (playerToAttack != null)
                 {
-                    pathToEntity = worldObj.getPathToEntity(this, playerToAttack, var1);
+                    pathToEntity = world.findPath(this, playerToAttack, var1);
                 }
             }
             else if (!playerToAttack.isEntityAlive())
@@ -49,28 +49,28 @@ namespace betareborn.Entities
                 }
             }
 
-            if (hasAttacked || playerToAttack == null || pathToEntity != null && rand.nextInt(20) != 0)
+            if (hasAttacked || playerToAttack == null || pathToEntity != null && random.nextInt(20) != 0)
             {
-                if (!hasAttacked && (pathToEntity == null && rand.nextInt(80) == 0 || rand.nextInt(80) == 0))
+                if (!hasAttacked && (pathToEntity == null && random.nextInt(80) == 0 || random.nextInt(80) == 0))
                 {
                     func_31026_E();
                 }
             }
             else
             {
-                pathToEntity = worldObj.getPathToEntity(this, playerToAttack, var1);
+                pathToEntity = world.findPath(this, playerToAttack, var1);
             }
 
             int var21 = MathHelper.floor_double(boundingBox.minY + 0.5D);
             bool var3 = isInWater();
             bool var4 = handleLavaMovement();
-            rotationPitch = 0.0F;
-            if (pathToEntity != null && rand.nextInt(100) != 0)
+            pitch = 0.0F;
+            if (pathToEntity != null && random.nextInt(100) != 0)
             {
                 Vec3D var5 = pathToEntity.getPosition(this);
                 double var6 = (double)(width * 2.0F);
 
-                while (var5 != null && var5.squareDistanceTo(posX, var5.yCoord, posZ) < var6 * var6)
+                while (var5 != null && var5.squareDistanceTo(x, var5.yCoord, z) < var6 * var6)
                 {
                     pathToEntity.incrementPathIndex();
                     if (pathToEntity.isFinished())
@@ -87,11 +87,11 @@ namespace betareborn.Entities
                 isJumping = false;
                 if (var5 != null)
                 {
-                    double var8 = var5.xCoord - posX;
-                    double var10 = var5.zCoord - posZ;
+                    double var8 = var5.xCoord - x;
+                    double var10 = var5.zCoord - z;
                     double var12 = var5.yCoord - (double)var21;
                     float var14 = (float)(java.lang.Math.atan2(var10, var8) * 180.0D / (double)((float)java.lang.Math.PI)) - 90.0F;
-                    float var15 = var14 - rotationYaw;
+                    float var15 = var14 - yaw;
 
                     for (moveForward = moveSpeed; var15 < -180.0F; var15 += 360.0F)
                     {
@@ -112,14 +112,14 @@ namespace betareborn.Entities
                         var15 = -30.0F;
                     }
 
-                    rotationYaw += var15;
+                    yaw += var15;
                     if (hasAttacked && playerToAttack != null)
                     {
-                        double var16 = playerToAttack.posX - posX;
-                        double var18 = playerToAttack.posZ - posZ;
-                        float var20 = rotationYaw;
-                        rotationYaw = (float)(java.lang.Math.atan2(var18, var16) * 180.0D / (double)((float)java.lang.Math.PI)) - 90.0F;
-                        var15 = (var20 - rotationYaw + 90.0F) * (float)java.lang.Math.PI / 180.0F;
+                        double var16 = playerToAttack.x - x;
+                        double var18 = playerToAttack.z - z;
+                        float var20 = yaw;
+                        yaw = (float)(java.lang.Math.atan2(var18, var16) * 180.0D / (double)((float)java.lang.Math.PI)) - 90.0F;
+                        var15 = (var20 - yaw + 90.0F) * (float)java.lang.Math.PI / 180.0F;
                         moveStrafing = -MathHelper.sin(var15) * moveForward * 1.0F;
                         moveForward = MathHelper.cos(var15) * moveForward * 1.0F;
                     }
@@ -135,12 +135,12 @@ namespace betareborn.Entities
                     faceEntity(playerToAttack, 30.0F, 30.0F);
                 }
 
-                if (isCollidedHorizontally && !hasPath())
+                if (horizontalCollison && !hasPath())
                 {
                     isJumping = true;
                 }
 
-                if (rand.nextFloat() < 0.8F && (var3 || var4))
+                if (random.nextFloat() < 0.8F && (var3 || var4))
                 {
                     isJumping = true;
                 }
@@ -163,9 +163,9 @@ namespace betareborn.Entities
 
             for (int var6 = 0; var6 < 10; ++var6)
             {
-                int var7 = MathHelper.floor_double(posX + (double)rand.nextInt(13) - 6.0D);
-                int var8 = MathHelper.floor_double(posY + (double)rand.nextInt(7) - 3.0D);
-                int var9 = MathHelper.floor_double(posZ + (double)rand.nextInt(13) - 6.0D);
+                int var7 = MathHelper.floor_double(x + (double)random.nextInt(13) - 6.0D);
+                int var8 = MathHelper.floor_double(y + (double)random.nextInt(7) - 3.0D);
+                int var9 = MathHelper.floor_double(z + (double)random.nextInt(13) - 6.0D);
                 float var10 = getBlockPathWeight(var7, var8, var9);
                 if (var10 > var5)
                 {
@@ -179,7 +179,7 @@ namespace betareborn.Entities
 
             if (var1)
             {
-                pathToEntity = worldObj.getEntityPathToXYZ(this, var2, var3, var4, 10.0F);
+                pathToEntity = world.findPath(this, var2, var3, var4, 10.0F);
             }
 
         }
@@ -204,9 +204,9 @@ namespace betareborn.Entities
 
         public override bool canSpawn()
         {
-            int var1 = MathHelper.floor_double(posX);
+            int var1 = MathHelper.floor_double(x);
             int var2 = MathHelper.floor_double(boundingBox.minY);
-            int var3 = MathHelper.floor_double(posZ);
+            int var3 = MathHelper.floor_double(z);
             return base.canSpawn() && getBlockPathWeight(var1, var2, var3) >= 0.0F;
         }
 

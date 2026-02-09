@@ -25,17 +25,17 @@ namespace betareborn.Worlds.Dimensions
             int var6 = 0;
             int var7 = 0;
             int var8 = 0;
-            int var9 = MathHelper.floor_double(entity.posX);
-            int var10 = MathHelper.floor_double(entity.posZ);
+            int var9 = MathHelper.floor_double(entity.x);
+            int var10 = MathHelper.floor_double(entity.z);
 
             double var18;
             for (int var11 = var9 - var3; var11 <= var9 + var3; ++var11)
             {
-                double var12 = var11 + 0.5D - entity.posX;
+                double var12 = var11 + 0.5D - entity.x;
 
                 for (int var14 = var10 - var3; var14 <= var10 + var3; ++var14)
                 {
-                    double var15 = var14 + 0.5D - entity.posZ;
+                    double var15 = var14 + 0.5D - entity.z;
 
                     for (int var17 = 127; var17 >= 0; --var17)
                     {
@@ -46,7 +46,7 @@ namespace betareborn.Worlds.Dimensions
                                 --var17;
                             }
 
-                            var18 = var17 + 0.5D - entity.posY;
+                            var18 = var17 + 0.5D - entity.y;
                             double var20 = var12 * var12 + var18 * var18 + var15 * var15;
                             if (var4 < 0.0D || var20 < var4)
                             {
@@ -85,8 +85,8 @@ namespace betareborn.Worlds.Dimensions
                     var18 += 0.5D;
                 }
 
-                entity.setPositionAndAnglesKeepPrevAngles(var22, var16, var18, entity.rotationYaw, 0.0F);
-                entity.motionX = entity.motionY = entity.motionZ = 0.0D;
+                entity.setPositionAndAnglesKeepPrevAngles(var22, var16, var18, entity.yaw, 0.0F);
+                entity.velocityX = entity.velocityY = entity.velocityZ = 0.0D;
                 return true;
             }
             else
@@ -99,9 +99,9 @@ namespace betareborn.Worlds.Dimensions
         {
             byte var3 = 16;
             double var4 = -1.0D;
-            int var6 = MathHelper.floor_double(entity.posX);
-            int var7 = MathHelper.floor_double(entity.posY);
-            int var8 = MathHelper.floor_double(entity.posZ);
+            int var6 = MathHelper.floor_double(entity.x);
+            int var7 = MathHelper.floor_double(entity.y);
+            int var8 = MathHelper.floor_double(entity.z);
             int var9 = var6;
             int var10 = var7;
             int var11 = var8;
@@ -125,11 +125,11 @@ namespace betareborn.Worlds.Dimensions
             double var33;
             for (var14 = var6 - var3; var14 <= var6 + var3; ++var14)
             {
-                var15 = var14 + 0.5D - entity.posX;
+                var15 = var14 + 0.5D - entity.x;
 
                 for (var17 = var8 - var3; var17 <= var8 + var3; ++var17)
                 {
-                    var18 = var17 + 0.5D - entity.posZ;
+                    var18 = var17 + 0.5D - entity.z;
 
                     for (var20 = 127; var20 >= 0; --var20)
                     {
@@ -170,7 +170,7 @@ namespace betareborn.Worlds.Dimensions
 
                                 if (validLocation)
                                 {
-                                    var32 = var20 + 0.5D - entity.posY;
+                                    var32 = var20 + 0.5D - entity.y;
                                     var33 = var15 * var15 + var32 * var32 + var18 * var18;
                                     if (var4 < 0.0D || var33 < var4)
                                     {
@@ -191,11 +191,11 @@ namespace betareborn.Worlds.Dimensions
             {
                 for (var14 = var6 - var3; var14 <= var6 + var3; ++var14)
                 {
-                    var15 = var14 + 0.5D - entity.posX;
+                    var15 = var14 + 0.5D - entity.x;
 
                     for (var17 = var8 - var3; var17 <= var8 + var3; ++var17)
                     {
-                        var18 = var17 + 0.5D - entity.posZ;
+                        var18 = var17 + 0.5D - entity.z;
 
                         for (var20 = 127; var20 >= 0; --var20)
                         {
@@ -228,7 +228,7 @@ namespace betareborn.Worlds.Dimensions
 
                                     if (validLocation)
                                     {
-                                        var32 = var20 + 0.5D - entity.posY;
+                                        var32 = var20 + 0.5D - entity.y;
                                         var33 = var15 * var15 + var32 * var32 + var18 * var18;
                                         if (var4 < 0.0D || var33 < var4)
                                         {
@@ -282,7 +282,7 @@ namespace betareborn.Worlds.Dimensions
                             var24 = var16 + var22;
                             var25 = var17 + (var21 - 1) * var19 - var20 * var31;
                             var34 = var22 < 0;
-                            world.setBlockWithNotify(var23, var24, var25, var34 ? Block.OBSIDIAN.id : 0);
+                            world.setBlock(var23, var24, var25, var34 ? Block.OBSIDIAN.id : 0);
                         }
                     }
                 }
@@ -300,7 +300,7 @@ namespace betareborn.Worlds.Dimensions
                         var24 = var16 + var22;
                         var25 = var17 + (var21 - 1) * var19;
                         var34 = var21 == 0 || var21 == 3 || var22 == -1 || var22 == 3;
-                        world.setBlockWithNotify(var23, var24, var25, var34 ? Block.OBSIDIAN.id : Block.NETHER_PORTAL.id);
+                        world.setBlock(var23, var24, var25, var34 ? Block.OBSIDIAN.id : Block.NETHER_PORTAL.id);
                     }
                 }
 

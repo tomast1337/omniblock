@@ -31,7 +31,7 @@ namespace betareborn.Items
                 }
                 else
                 {
-                    var3.setBlockWithNotify(var4, var5, var6, var10.id);
+                    var3.setBlock(var4, var5, var6, var10.id);
                     var1.damageItem(1, var2);
                     return true;
                 }

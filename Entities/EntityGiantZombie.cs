@@ -12,13 +12,13 @@ namespace betareborn.Entities
             moveSpeed = 0.5F;
             attackStrength = 50;
             health *= 10;
-            yOffset *= 6.0F;
+            standingEyeHeight *= 6.0F;
             setBoundingBoxSpacing(width * 6.0F, height * 6.0F);
         }
 
         protected override float getBlockPathWeight(int var1, int var2, int var3)
         {
-            return worldObj.getLuminance(var1, var2, var3) - 0.5F;
+            return world.getLuminance(var1, var2, var3) - 0.5F;
         }
     }
 

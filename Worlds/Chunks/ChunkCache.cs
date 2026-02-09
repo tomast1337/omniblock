@@ -254,7 +254,7 @@ namespace betareborn.Worlds.Chunks
         {
             foreach (Chunk chunk in chunks)
             {
-                var players = world.playerEntities;
+                var players = world.players;
                 bool nearAnyPlayer = false;
 
                 int chunkCenterX = chunk.x * 16 + 8;
@@ -266,8 +266,8 @@ namespace betareborn.Worlds.Chunks
                 for (int i = 0; i < players.size(); i++)
                 {
                     EntityPlayer player = (EntityPlayer)players.get(i);
-                    int dx = (int)player.posX - chunkCenterX;
-                    int dz = (int)player.posZ - chunkCenterZ;
+                    int dx = (int)player.x - chunkCenterX;
+                    int dz = (int)player.z - chunkCenterZ;
 
                     if (dx * dx + dz * dz < unloadDistance * unloadDistance)
                     {
@@ -289,10 +289,10 @@ namespace betareborn.Worlds.Chunks
                 Region.RegionCache.setMaxLoadedRegions(storage.worldDir, 32);
             }
 
-            for (int i = 0; i < world.playerEntities.size(); i++)
+            for (int i = 0; i < world.players.size(); i++)
             {
-                var player = (EntityPlayer)world.playerEntities.get(i);
-                Region.RegionCache.loadNearbyRegions(storage.worldDir, (int)player.posX, (int)player.posZ, renderDistanceChunks);
+                var player = (EntityPlayer)world.players.get(i);
+                Region.RegionCache.loadNearbyRegions(storage.worldDir, (int)player.x, (int)player.z, renderDistanceChunks);
             }
         }
 

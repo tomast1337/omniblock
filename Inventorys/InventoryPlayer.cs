@@ -148,7 +148,7 @@ namespace betareborn.Inventorys
             {
                 if (mainInventory[var1] != null)
                 {
-                    mainInventory[var1].inventoryTick(player.worldObj, player, var1, currentItem == var1);
+                    mainInventory[var1].inventoryTick(player.world, player, var1, currentItem == var1);
                 }
             }
 

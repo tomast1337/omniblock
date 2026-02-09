@@ -66,12 +66,12 @@ namespace betareborn.Client.Network
             double var4 = var1.yPosition / 32.0D;
             double var6 = var1.zPosition / 32.0D;
             EntityItem var8 = new EntityItem(worldClient, var2, var4, var6, new ItemStack(var1.itemID, var1.count, var1.itemDamage));
-            var8.motionX = var1.rotation / 128.0D;
-            var8.motionY = var1.pitch / 128.0D;
-            var8.motionZ = var1.roll / 128.0D;
-            var8.serverPosX = var1.xPosition;
-            var8.serverPosY = var1.yPosition;
-            var8.serverPosZ = var1.zPosition;
+            var8.velocityX = var1.rotation / 128.0D;
+            var8.velocityY = var1.pitch / 128.0D;
+            var8.velocityZ = var1.roll / 128.0D;
+            var8.trackedPosX = var1.xPosition;
+            var8.trackedPosY = var1.yPosition;
+            var8.trackedPosZ = var1.zPosition;
             worldClient.forceEntity(var1.entityId, var8);
         }
 
@@ -144,11 +144,11 @@ namespace betareborn.Client.Network
 
             if (var8 != null)
             {
-                ((Entity)var8).serverPosX = var1.xPosition;
-                ((Entity)var8).serverPosY = var1.yPosition;
-                ((Entity)var8).serverPosZ = var1.zPosition;
-                ((Entity)var8).rotationYaw = 0.0F;
-                ((Entity)var8).rotationPitch = 0.0F;
+                ((Entity)var8).trackedPosX = var1.xPosition;
+                ((Entity)var8).trackedPosY = var1.yPosition;
+                ((Entity)var8).trackedPosZ = var1.zPosition;
+                ((Entity)var8).yaw = 0.0F;
+                ((Entity)var8).pitch = 0.0F;
                 ((Entity)var8).entityId = var1.entityId;
                 worldClient.forceEntity(var1.entityId, (Entity)var8);
                 if (var1.field_28044_i > 0)
@@ -181,13 +181,13 @@ namespace betareborn.Client.Network
 
             if (var8 != null)
             {
-                var8.serverPosX = var1.field_27053_b;
-                var8.serverPosY = var1.field_27057_c;
-                var8.serverPosZ = var1.field_27056_d;
-                var8.rotationYaw = 0.0F;
-                var8.rotationPitch = 0.0F;
+                var8.trackedPosX = var1.field_27053_b;
+                var8.trackedPosY = var1.field_27057_c;
+                var8.trackedPosZ = var1.field_27056_d;
+                var8.yaw = 0.0F;
+                var8.pitch = 0.0F;
                 var8.entityId = var1.field_27054_a;
-                worldClient.addWeatherEffect(var8);
+                worldClient.spawnGlobalEntity(var8);
             }
 
         }
@@ -225,9 +225,9 @@ namespace betareborn.Client.Network
             float var8 = var1.rotation * 360 / 256.0F;
             float var9 = var1.pitch * 360 / 256.0F;
             OtherPlayerEntity var10 = new OtherPlayerEntity(mc.world, var1.name);
-            var10.prevPosX = var10.lastTickPosX = var10.serverPosX = var1.xPosition;
-            var10.prevPosY = var10.lastTickPosY = var10.serverPosY = var1.yPosition;
-            var10.prevPosZ = var10.lastTickPosZ = var10.serverPosZ = var1.zPosition;
+            var10.prevX = var10.lastTickX = var10.trackedPosX = var1.xPosition;
+            var10.prevY = var10.lastTickY = var10.trackedPosY = var1.yPosition;
+            var10.prevZ = var10.lastTickZ = var10.trackedPosZ = var1.zPosition;
             int var11 = var1.currentItem;
             if (var11 == 0)
             {
@@ -247,12 +247,12 @@ namespace betareborn.Client.Network
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null)
             {
-                var2.serverPosX = var1.xPosition;
-                var2.serverPosY = var1.yPosition;
-                var2.serverPosZ = var1.zPosition;
-                double var3 = var2.serverPosX / 32.0D;
-                double var5 = var2.serverPosY / 32.0D + 1.0D / 64.0D;
-                double var7 = var2.serverPosZ / 32.0D;
+                var2.trackedPosX = var1.xPosition;
+                var2.trackedPosY = var1.yPosition;
+                var2.trackedPosZ = var1.zPosition;
+                double var3 = var2.trackedPosX / 32.0D;
+                double var5 = var2.trackedPosY / 32.0D + 1.0D / 64.0D;
+                double var7 = var2.trackedPosZ / 32.0D;
                 float var9 = var1.yaw * 360 / 256.0F;
                 float var10 = var1.pitch * 360 / 256.0F;
                 var2.setPositionAndRotation2(var3, var5, var7, var9, var10, 3);
@@ -264,14 +264,14 @@ namespace betareborn.Client.Network
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null)
             {
-                var2.serverPosX += var1.xPosition;
-                var2.serverPosY += var1.yPosition;
-                var2.serverPosZ += var1.zPosition;
-                double var3 = var2.serverPosX / 32.0D;
-                double var5 = var2.serverPosY / 32.0D;
-                double var7 = var2.serverPosZ / 32.0D;
-                float var9 = var1.rotating ? var1.yaw * 360 / 256.0F : var2.rotationYaw;
-                float var10 = var1.rotating ? var1.pitch * 360 / 256.0F : var2.rotationPitch;
+                var2.trackedPosX += var1.xPosition;
+                var2.trackedPosY += var1.yPosition;
+                var2.trackedPosZ += var1.zPosition;
+                double var3 = var2.trackedPosX / 32.0D;
+                double var5 = var2.trackedPosY / 32.0D;
+                double var7 = var2.trackedPosZ / 32.0D;
+                float var9 = var1.rotating ? var1.yaw * 360 / 256.0F : var2.yaw;
+                float var10 = var1.rotating ? var1.pitch * 360 / 256.0F : var2.pitch;
                 var2.setPositionAndRotation2(var3, var5, var7, var9, var10, 3);
             }
         }
@@ -284,11 +284,11 @@ namespace betareborn.Client.Network
         public override void handleFlying(PlayerMovePacket var1)
         {
             ClientPlayerEntity var2 = mc.player;
-            double var3 = var2.posX;
-            double var5 = var2.posY;
-            double var7 = var2.posZ;
-            float var9 = var2.rotationYaw;
-            float var10 = var2.rotationPitch;
+            double var3 = var2.x;
+            double var5 = var2.y;
+            double var7 = var2.z;
+            float var9 = var2.yaw;
+            float var10 = var2.pitch;
             if (var1.moving)
             {
                 var3 = var1.xPosition;
@@ -302,19 +302,19 @@ namespace betareborn.Client.Network
                 var10 = var1.pitch;
             }
 
-            var2.ySize = 0.0F;
-            var2.motionX = var2.motionY = var2.motionZ = 0.0D;
+            var2.cameraOffset = 0.0F;
+            var2.velocityX = var2.velocityY = var2.velocityZ = 0.0D;
             var2.setPositionAndRotation(var3, var5, var7, var9, var10);
-            var1.xPosition = var2.posX;
+            var1.xPosition = var2.x;
             var1.yPosition = var2.boundingBox.minY;
-            var1.zPosition = var2.posZ;
-            var1.stance = var2.posY;
+            var1.zPosition = var2.z;
+            var1.stance = var2.y;
             netManager.sendPacket(var1);
             if (!field_1210_g)
             {
-                mc.player.prevPosX = mc.player.posX;
-                mc.player.prevPosY = mc.player.posY;
-                mc.player.prevPosZ = mc.player.posZ;
+                mc.player.prevX = mc.player.x;
+                mc.player.prevY = mc.player.y;
+                mc.player.prevZ = mc.player.z;
                 field_1210_g = true;
                 mc.displayGuiScreen(null);
             }
@@ -350,7 +350,7 @@ namespace betareborn.Client.Network
         public override void handleMapChunk(ChunkDataS2CPacket var1)
         {
             worldClient.clearBlockResets(var1.xPosition, var1.yPosition, var1.zPosition, var1.xPosition + var1.xSize - 1, var1.yPosition + var1.ySize - 1, var1.zPosition + var1.zSize - 1);
-            worldClient.setChunkData(var1.xPosition, var1.yPosition, var1.zPosition, var1.xSize, var1.ySize, var1.zSize, var1.chunk);
+            worldClient.handleChunkDataUpdate(var1.xPosition, var1.yPosition, var1.zPosition, var1.xSize, var1.ySize, var1.zSize, var1.chunk);
         }
 
         public override void handleBlockChange(BlockUpdateS2CPacket var1)
@@ -404,7 +404,7 @@ namespace betareborn.Client.Network
 
             if (var2 != null)
             {
-                worldClient.playSoundAtEntity(var2, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                worldClient.playSound(var2, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
                 mc.particleManager.addEffect(new EntityPickupFX(mc.world, var2, (Entity)var3, -0.5F));
                 worldClient.removeEntityFromWorld(var1.collectedEntityId);
             }
@@ -507,9 +507,9 @@ namespace betareborn.Client.Network
             float var8 = var1.yaw * 360 / 256.0F;
             float var9 = var1.pitch * 360 / 256.0F;
             EntityLiving var10 = (EntityLiving)EntityRegistry.create(var1.type, mc.world);
-            var10.serverPosX = var1.xPosition;
-            var10.serverPosY = var1.yPosition;
-            var10.serverPosZ = var1.zPosition;
+            var10.trackedPosX = var1.xPosition;
+            var10.trackedPosY = var1.yPosition;
+            var10.trackedPosZ = var1.zPosition;
             var10.entityId = var1.entityId;
             var10.setPositionAndRotation(var2, var4, var6, var8, var9);
             var10.isMultiplayerEntity = true;
@@ -524,13 +524,13 @@ namespace betareborn.Client.Network
 
         public override void handleUpdateTime(WorldTimeUpdateS2CPacket var1)
         {
-            mc.world.setWorldTime(var1.time);
+            mc.world.setTime(var1.time);
         }
 
         public override void handleSpawnPosition(PlayerSpawnPositionS2CPacket var1)
         {
             mc.player.setSpawnPos(new Vec3i(var1.xPosition, var1.yPosition, var1.zPosition));
-            mc.world.getWorldInfo().setSpawn(var1.xPosition, var1.yPosition, var1.zPosition);
+            mc.world.getProperties().setSpawn(var1.xPosition, var1.yPosition, var1.zPosition);
         }
 
         public override void func_6497_a(EntityVehicleSetS2CPacket var1)
@@ -573,7 +573,7 @@ namespace betareborn.Client.Network
             if (var1.field_28048_a != mc.player.dimension)
             {
                 field_1210_g = false;
-                worldClient = new ClientWorld(this, worldClient.getWorldInfo().getRandomSeed(), var1.field_28048_a);
+                worldClient = new ClientWorld(this, worldClient.getProperties().getRandomSeed(), var1.field_28048_a);
                 worldClient.isRemote = true;
                 mc.changeWorld1(worldClient);
                 mc.player.dimension = var1.field_28048_a;
@@ -613,7 +613,7 @@ namespace betareborn.Client.Network
             else if (var1.inventoryType == 1)
             {
                 ClientPlayerEntity var5 = mc.player;
-                mc.player.openCraftingScreen(MathHelper.floor_double(var5.posX), MathHelper.floor_double(var5.posY), MathHelper.floor_double(var5.posZ));
+                mc.player.openCraftingScreen(MathHelper.floor_double(var5.x), MathHelper.floor_double(var5.y), MathHelper.floor_double(var5.z));
                 mc.player.craftingInventory.syncId = var1.windowId;
             }
 
@@ -684,7 +684,7 @@ namespace betareborn.Client.Network
 
         public override void handleSignUpdate(UpdateSignPacket var1)
         {
-            if (mc.world.blockExists(var1.x, var1.y, var1.z))
+            if (mc.world.isPosLoaded(var1.x, var1.y, var1.z))
             {
                 BlockEntity var2 = mc.world.getBlockEntity(var1.x, var1.y, var1.z);
                 if (var2 is BlockEntitySign)
@@ -742,26 +742,26 @@ namespace betareborn.Client.Network
 
             if (var2 == 1)
             {
-                worldClient.getWorldInfo().setRaining(true);
-                worldClient.func_27158_h(1.0F);
+                worldClient.getProperties().setRaining(true);
+                worldClient.setRainGradient(1.0F);
             }
             else if (var2 == 2)
             {
-                worldClient.getWorldInfo().setRaining(false);
-                worldClient.func_27158_h(0.0F);
+                worldClient.getProperties().setRaining(false);
+                worldClient.setRainGradient(0.0F);
             }
 
         }
 
         public override void func_28116_a(MapUpdateS2CPacket var1)
         {
-            if (var1.field_28055_a == Item.MAP.id)
+            if (var1.itemRawId == Item.MAP.id)
             {
-                ItemMap.getMapState(var1.field_28054_b, mc.world).func_28171_a(var1.field_28056_c);
+                ItemMap.getMapState(var1.id, mc.world).func_28171_a(var1.updateData);
             }
             else
             {
-                java.lang.System.@out.println("Unknown itemid: " + var1.field_28054_b);
+                java.lang.System.@out.println("Unknown itemid: " + var1.id);
             }
 
         }

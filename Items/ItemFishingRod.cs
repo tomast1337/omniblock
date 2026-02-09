@@ -32,7 +32,7 @@ namespace betareborn.Items
             }
             else
             {
-                var2.playSoundAtEntity(var3, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+                var2.playSound(var3, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
                 if (!var2.isRemote)
                 {
                     var2.spawnEntity(new EntityFish(var2, var3));

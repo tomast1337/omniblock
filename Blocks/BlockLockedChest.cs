@@ -64,7 +64,7 @@ namespace betareborn.Blocks
 
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            world.setBlockWithNotify(x, y, z, 0);
+            world.setBlock(x, y, z, 0);
         }
     }
 

@@ -21,7 +21,7 @@ namespace betareborn
 
         public virtual void clickBlock(int var1, int var2, int var3, int var4)
         {
-            mc.world.onBlockHit(mc.player, var1, var2, var3, var4);
+            mc.world.extinguishFire(mc.player, var1, var2, var3, var4);
             sendBlockRemoved(var1, var2, var3, var4);
         }
 
@@ -31,7 +31,7 @@ namespace betareborn
             Block var6 = Block.BLOCKS[var5.getBlockId(var1, var2, var3)];
             var5.worldEvent(2001, var1, var2, var3, var6.id + var5.getBlockMeta(var1, var2, var3) * 256);
             int var7 = var5.getBlockMeta(var1, var2, var3);
-            bool var8 = var5.setBlockWithNotify(var1, var2, var3, 0);
+            bool var8 = var5.setBlock(var1, var2, var3, 0);
             if (var6 != null && var8)
             {
                 var6.onMetadataChange(var5, var1, var2, var3, var7);

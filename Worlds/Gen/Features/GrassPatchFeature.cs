@@ -30,7 +30,7 @@ namespace betareborn.Worlds.Gen.Features
                         int var10 = var5 + var2.nextInt(8) - var2.nextInt(8);
                         if (var1.isAir(var8, var9, var10) && ((BlockPlant)Block.BLOCKS[tallGrassBlockId]).canGrow(var1, var8, var9, var10))
                         {
-                            var1.setBlockAndMetadata(var8, var9, var10, tallGrassBlockId, tallGrassBlockMeta);
+                            var1.setBlockWithoutNotifyingNeighbors(var8, var9, var10, tallGrassBlockId, tallGrassBlockMeta);
                         }
                     }
 

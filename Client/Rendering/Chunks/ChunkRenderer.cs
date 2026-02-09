@@ -429,7 +429,7 @@ namespace betareborn.Client.Rendering.Chunks
                 return false;
             }
 
-            if (!world.checkChunksExist(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.SIZE + 1, chunkPos.Y + SubChunkRenderer.SIZE + 1, chunkPos.Z + SubChunkRenderer.SIZE + 1))
+            if (!world.isRegionLoaded(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.SIZE + 1, chunkPos.Y + SubChunkRenderer.SIZE + 1, chunkPos.Z + SubChunkRenderer.SIZE + 1))
             {
                 return false;
             }

@@ -349,7 +349,7 @@ namespace betareborn.Blocks
                 if (!var7)
                 {
                     dropStacks(var1, var2, var3, var4, var6);
-                    var1.setBlockWithNotify(var2, var3, var4, 0);
+                    var1.setBlock(var2, var3, var4, 0);
                 }
                 else
                 {

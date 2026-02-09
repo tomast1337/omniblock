@@ -14,12 +14,12 @@ namespace betareborn.Entities
 
         public EntitySnowShovelFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14) : base(var1, var2, var4, var6, var8, var10, var12)
         {
-            motionX *= (double)0.1F;
-            motionY *= (double)0.1F;
-            motionZ *= (double)0.1F;
-            motionX += var8;
-            motionY += var10;
-            motionZ += var12;
+            velocityX *= (double)0.1F;
+            velocityY *= (double)0.1F;
+            velocityZ *= (double)0.1F;
+            velocityX += var8;
+            velocityY += var10;
+            velocityZ += var12;
             particleRed = particleGreen = particleBlue = 1.0F - (float)(java.lang.Math.random() * (double)0.3F);
             particleScale *= 12.0F / 16.0F;
             particleScale *= var14;
@@ -48,24 +48,24 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
             if (particleAge++ >= particleMaxAge)
             {
                 markDead();
             }
 
             particleTextureIndex = 7 - particleAge * 8 / particleMaxAge;
-            motionY -= 0.03D;
-            moveEntity(motionX, motionY, motionZ);
-            motionX *= (double)0.99F;
-            motionY *= (double)0.99F;
-            motionZ *= (double)0.99F;
+            velocityY -= 0.03D;
+            moveEntity(velocityX, velocityY, velocityZ);
+            velocityX *= (double)0.99F;
+            velocityY *= (double)0.99F;
+            velocityZ *= (double)0.99F;
             if (onGround)
             {
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
             }
 
         }

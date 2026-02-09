@@ -42,7 +42,7 @@ namespace betareborn.Entities
 
         protected override void attackBlockedEntity(Entity var1, float var2)
         {
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
                 if (timeSinceIgnited > 0)
                 {
@@ -60,12 +60,12 @@ namespace betareborn.Entities
         public override void onUpdate()
         {
             lastActiveTime = timeSinceIgnited;
-            if (worldObj.isRemote)
+            if (world.isRemote)
             {
                 int var1 = getCreeperState();
                 if (var1 > 0 && timeSinceIgnited == 0)
                 {
-                    worldObj.playSoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
+                    world.playSound(this, "random.fuse", 1.0F, 0.5F);
                 }
 
                 timeSinceIgnited += var1;
@@ -108,21 +108,21 @@ namespace betareborn.Entities
             base.onKilledBy(var1);
             if (var1 is EntitySkeleton)
             {
-                dropItem(Item.RECORD_THIRTEEN.id + rand.nextInt(2), 1);
+                dropItem(Item.RECORD_THIRTEEN.id + random.nextInt(2), 1);
             }
 
         }
 
         protected override void attackEntity(Entity var1, float var2)
         {
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
                 int var3 = getCreeperState();
                 if (var3 <= 0 && var2 < 3.0F || var3 > 0 && var2 < 7.0F)
                 {
                     if (timeSinceIgnited == 0)
                     {
-                        worldObj.playSoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
+                        world.playSound(this, "random.fuse", 1.0F, 0.5F);
                     }
 
                     setCreeperState(1);
@@ -131,11 +131,11 @@ namespace betareborn.Entities
                     {
                         if (getPowered())
                         {
-                            worldObj.createExplosion(this, posX, posY, posZ, 6.0F);
+                            world.createExplosion(this, x, y, z, 6.0F);
                         }
                         else
                         {
-                            worldObj.createExplosion(this, posX, posY, posZ, 3.0F);
+                            world.createExplosion(this, x, y, z, 3.0F);
                         }
 
                         markDead();

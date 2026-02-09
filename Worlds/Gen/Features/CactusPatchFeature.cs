@@ -20,7 +20,7 @@ namespace betareborn.Worlds.Gen.Features
                     {
                         if (Block.CACTUS.canGrow(var1, var7, var8 + var11, var9))
                         {
-                            var1.setBlock(var7, var8 + var11, var9, Block.CACTUS.id);
+                            var1.setBlockWithoutNotifyingNeighbors(var7, var8 + var11, var9, Block.CACTUS.id);
                         }
                     }
                 }

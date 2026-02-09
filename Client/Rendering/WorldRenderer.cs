@@ -164,9 +164,9 @@ namespace betareborn.Client.Rendering
                 return;
             }
 
-            double var33 = view.lastTickPosX + (view.posX - view.lastTickPosX) * var3;
-            double var7 = view.lastTickPosY + (view.posY - view.lastTickPosY) * var3;
-            double var9 = view.lastTickPosZ + (view.posZ - view.lastTickPosZ) * var3;
+            double var33 = view.lastTickX + (view.x - view.lastTickX) * var3;
+            double var7 = view.lastTickY + (view.y - view.lastTickY) * var3;
+            double var9 = view.lastTickZ + (view.z - view.lastTickZ) * var3;
             chunkRenderer.Tick(new(var33, var7, var9));
         }
 
@@ -208,20 +208,20 @@ namespace betareborn.Client.Rendering
                 countEntitiesRendered = 0;
                 countEntitiesHidden = 0;
                 EntityLiving var4 = mc.camera;
-                EntityRenderDispatcher.offsetX = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var3;
-                EntityRenderDispatcher.offsetY = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var3;
-                EntityRenderDispatcher.offsetZ = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var3;
-                BlockEntityRenderer.staticPlayerX = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var3;
-                BlockEntityRenderer.staticPlayerY = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var3;
-                BlockEntityRenderer.staticPlayerZ = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var3;
-                List<Entity> var5 = worldObj.getLoadedEntityList();
+                EntityRenderDispatcher.offsetX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
+                EntityRenderDispatcher.offsetY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
+                EntityRenderDispatcher.offsetZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
+                BlockEntityRenderer.staticPlayerX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
+                BlockEntityRenderer.staticPlayerY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
+                BlockEntityRenderer.staticPlayerZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
+                List<Entity> var5 = worldObj.getEntities();
                 countEntitiesTotal = var5.Count;
 
                 int var6;
                 Entity var7;
-                for (var6 = 0; var6 < worldObj.weatherEffects.size(); ++var6)
+                for (var6 = 0; var6 < worldObj.globalEntities.size(); ++var6)
                 {
-                    var7 = (Entity)worldObj.weatherEffects.get(var6);
+                    var7 = (Entity)worldObj.globalEntities.get(var6);
                     ++countEntitiesRendered;
                     if (var7.isInRangeToRenderVec3D(var1))
                     {
@@ -234,7 +234,7 @@ namespace betareborn.Client.Rendering
                     var7 = var5[var6];
                     if (var7.isInRangeToRenderVec3D(var1) && (var7.ignoreFrustumCheck || var2.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != mc.camera || mc.options.thirdPersonView || mc.camera.isSleeping()))
                     {
-                        int var8 = MathHelper.floor_double(var7.posY);
+                        int var8 = MathHelper.floor_double(var7.y);
                         if (var8 < 0)
                         {
                             var8 = 0;
@@ -245,7 +245,7 @@ namespace betareborn.Client.Rendering
                             var8 = 127;
                         }
 
-                        if (worldObj.blockExists(MathHelper.floor_double(var7.posX), var8, MathHelper.floor_double(var7.posZ)))
+                        if (worldObj.isPosLoaded(MathHelper.floor_double(var7.x), var8, MathHelper.floor_double(var7.z)))
                         {
                             ++countEntitiesRendered;
                             EntityRenderDispatcher.instance.renderEntity(var7, var3);
@@ -273,9 +273,9 @@ namespace betareborn.Client.Rendering
                 loadRenderers();
             }
 
-            double var33 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * var3;
-            double var7 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * var3;
-            double var9 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * var3;
+            double var33 = var1.lastTickX + (var1.x - var1.lastTickX) * var3;
+            double var7 = var1.lastTickY + (var1.y - var1.lastTickY) * var3;
+            double var9 = var1.lastTickZ + (var1.z - var1.lastTickZ) * var3;
 
             Lighting.turnOff();
 
@@ -301,7 +301,7 @@ namespace betareborn.Client.Rendering
             if (!mc.world.dimension.isNether)
             {
                 GLManager.GL.Disable(GLEnum.Texture2D);
-                Vector3D<double> var2 = worldObj.func_4079_a(mc.camera, var1);
+                Vector3D<double> var2 = worldObj.getSkyColor(mc.camera, var1);
                 float var3 = (float)var2.X;
                 float var4 = (float)var2.Y;
                 float var5 = (float)var2.Z;
@@ -319,7 +319,7 @@ namespace betareborn.Client.Rendering
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 Lighting.turnOff();
-                float[] var18 = worldObj.dimension.getBackgroundColor(worldObj.getCelestialAngle(var1), var1);
+                float[] var18 = worldObj.dimension.getBackgroundColor(worldObj.getTime(var1), var1);
                 float var9;
                 float var10;
                 float var11;
@@ -330,7 +330,7 @@ namespace betareborn.Client.Rendering
                     GLManager.GL.ShadeModel(GLEnum.Smooth);
                     GLManager.GL.PushMatrix();
                     GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
-                    var8 = worldObj.getCelestialAngle(var1);
+                    var8 = worldObj.getTime(var1);
                     GLManager.GL.Rotate(var8 > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
                     var9 = var18[0];
                     var10 = var18[1];
@@ -366,7 +366,7 @@ namespace betareborn.Client.Rendering
                 GLManager.GL.Color4(1.0F, 1.0F, 1.0F, var7);
                 GLManager.GL.Translate(var8, var9, var10);
                 GLManager.GL.Rotate(0.0F, 0.0F, 0.0F, 1.0F);
-                GLManager.GL.Rotate(worldObj.getCelestialAngle(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
+                GLManager.GL.Rotate(worldObj.getTime(var1) * 360.0F, 1.0F, 0.0F, 0.0F);
                 var11 = 30.0F;
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)renderEngine.getTextureId("/terrain/sun.png"));
                 var17.startDrawingQuads();
@@ -384,7 +384,7 @@ namespace betareborn.Client.Rendering
                 var17.addVertexWithUV((double)-var11, -100.0D, (double)-var11, 1.0D, 0.0D);
                 var17.draw();
                 GLManager.GL.Disable(GLEnum.Texture2D);
-                var12 = worldObj.getStarBrightness(var1) * var7;
+                var12 = worldObj.calcualteSkyLightIntensity(var1) * var7;
                 if (var12 > 0.0F)
                 {
                     GLManager.GL.Color4(var12, var12, var12, var12);
@@ -423,12 +423,12 @@ namespace betareborn.Client.Rendering
         private void renderCloudsFancy(float var1)
         {
             GLManager.GL.Disable(GLEnum.CullFace);
-            float var2 = (float)(mc.camera.lastTickPosY + (mc.camera.posY - mc.camera.lastTickPosY) * (double)var1);
+            float var2 = (float)(mc.camera.lastTickY + (mc.camera.y - mc.camera.lastTickY) * (double)var1);
             Tessellator var3 = Tessellator.instance;
             float var4 = 12.0F;
             float var5 = 4.0F;
-            double var6 = (mc.camera.prevPosX + (mc.camera.posX - mc.camera.prevPosX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
-            double var8 = (mc.camera.prevPosZ + (mc.camera.posZ - mc.camera.prevPosZ) * (double)var1) / (double)var4 + (double)0.33F;
+            double var6 = (mc.camera.prevX + (mc.camera.x - mc.camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
+            double var8 = (mc.camera.prevZ + (mc.camera.z - mc.camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
             float var10 = worldObj.dimension.getCloudHeight() - var2 + 0.33F;
             int var11 = MathHelper.floor_double(var6 / 2048.0D);
             int var12 = MathHelper.floor_double(var8 / 2048.0D);
@@ -437,7 +437,7 @@ namespace betareborn.Client.Rendering
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)renderEngine.getTextureId("/environment/clouds.png"));
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            Vector3D<double> var13 = worldObj.func_628_d(var1);
+            Vector3D<double> var13 = worldObj.getCloudColor(var1);
             float var14 = (float)var13.X;
             float var15 = (float)var13.Y;
             float var16 = (float)var13.Z;
@@ -584,9 +584,9 @@ namespace betareborn.Client.Rendering
                     GLManager.GL.Disable(GLEnum.AlphaTest);
                     GLManager.GL.PolygonOffset(-3.0F, -3.0F);
                     GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
-                    double var10 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * (double)var5;
-                    double var12 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * (double)var5;
-                    double var14 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var5;
+                    double var10 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var5;
+                    double var12 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var5;
+                    double var14 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var5;
                     if (var9 == null)
                     {
                         var9 = Block.STONE;
@@ -667,9 +667,9 @@ namespace betareborn.Client.Rendering
                 if (var7 > 0)
                 {
                     Block.BLOCKS[var7].updateBoundingBox(worldObj, var2.blockX, var2.blockY, var2.blockZ);
-                    double var8 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * (double)var5;
-                    double var10 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * (double)var5;
-                    double var12 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var5;
+                    double var8 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var5;
+                    double var10 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var5;
+                    double var12 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var5;
                     drawOutlinedBoundingBox(Block.BLOCKS[var7].getBoundingBox(worldObj, var2.blockX, var2.blockY, var2.blockZ).expand((double)var6, (double)var6, (double)var6).offset(-var8, -var10, -var12));
                 }
 
@@ -730,17 +730,17 @@ namespace betareborn.Client.Rendering
             }
         }
 
-        public void markBlockAndNeighborsNeedsUpdate(int var1, int var2, int var3)
+        public void blockUpdate(int var1, int var2, int var3)
         {
             func_949_a(var1 - 1, var2 - 1, var3 - 1, var1 + 1, var2 + 1, var3 + 1);
         }
 
-        public void markBlockRangeNeedsUpdate(int var1, int var2, int var3, int var4, int var5, int var6)
+        public void setBlocksDirty(int var1, int var2, int var3, int var4, int var5, int var6)
         {
             func_949_a(var1 - 1, var2 - 1, var3 - 1, var4 + 1, var5 + 1, var6 + 1);
         }
 
-        public void playRecord(string var1, int var2, int var3, int var4)
+        public void playStreaming(string var1, int var2, int var3, int var4)
         {
             if (var1 != null)
             {
@@ -769,9 +769,9 @@ namespace betareborn.Client.Rendering
         {
             if (mc != null && mc.camera != null && mc.particleManager != null)
             {
-                double var14 = mc.camera.posX - var2;
-                double var16 = mc.camera.posY - var4;
-                double var18 = mc.camera.posZ - var6;
+                double var14 = mc.camera.x - var2;
+                double var16 = mc.camera.y - var4;
+                double var18 = mc.camera.z - var6;
                 double var20 = 16.0D;
                 if (var14 * var14 + var16 * var16 + var18 * var18 <= var20 * var20)
                 {
@@ -871,16 +871,16 @@ namespace betareborn.Client.Rendering
 
         }
 
-        public void updateAllRenderers()
+        public void notifyAmbientDarknessChanged()
         {
             chunkRenderer.UpdateAllRenderers();
         }
 
-        public void doNothingWithTileEntity(int var1, int var2, int var3, BlockEntity var4)
+        public void updateBlockEntity(int var1, int var2, int var3, BlockEntity var4)
         {
         }
 
-        public void func_28136_a(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
+        public void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
         {
             java.util.Random var7 = worldObj.random;
             int var16;
@@ -911,11 +911,11 @@ namespace betareborn.Client.Rendering
                 case 1005:
                     if (Item.ITEMS[var6] is ItemRecord)
                     {
-                        worldObj.playRecord(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5);
+                        worldObj.playStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5);
                     }
                     else
                     {
-                        worldObj.playRecord(null, var3, var4, var5);
+                        worldObj.playStreaming(null, var3, var4, var5);
                     }
                     break;
                 case 2000:

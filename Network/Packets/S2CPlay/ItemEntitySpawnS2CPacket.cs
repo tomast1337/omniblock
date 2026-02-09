@@ -30,12 +30,12 @@ namespace betareborn.Network.Packets.S2CPlay
             itemID = var1.item.itemID;
             count = var1.item.count;
             itemDamage = var1.item.getDamage();
-            xPosition = MathHelper.floor_double(var1.posX * 32.0D);
-            yPosition = MathHelper.floor_double(var1.posY * 32.0D);
-            zPosition = MathHelper.floor_double(var1.posZ * 32.0D);
-            rotation = (sbyte)(int)(var1.motionX * 128.0D);
-            pitch = (sbyte)(int)(var1.motionY * 128.0D);
-            roll = (sbyte)(int)(var1.motionZ * 128.0D);
+            xPosition = MathHelper.floor_double(var1.x * 32.0D);
+            yPosition = MathHelper.floor_double(var1.y * 32.0D);
+            zPosition = MathHelper.floor_double(var1.z * 32.0D);
+            rotation = (sbyte)(int)(var1.velocityX * 128.0D);
+            pitch = (sbyte)(int)(var1.velocityY * 128.0D);
+            roll = (sbyte)(int)(var1.velocityZ * 128.0D);
         }
 
         public override void read(DataInputStream var1)

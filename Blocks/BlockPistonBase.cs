@@ -84,13 +84,13 @@ namespace betareborn.Blocks
                 {
                     if (canExtend(world, x, y, z, var6))
                     {
-                        world.setBlockMetadata(x, y, z, var6 | 8);
+                        world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, var6 | 8);
                         world.playNoteBlockActionAt(x, y, z, 0, var6);
                     }
                 }
                 else if (!var7 && isExtended(var5))
                 {
-                    world.setBlockMetadata(x, y, z, var6);
+                    world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, var6);
                     world.playNoteBlockActionAt(x, y, z, 1, var6);
                 }
 
@@ -121,8 +121,8 @@ namespace betareborn.Blocks
                     ((BlockEntityPiston)var8).finish();
                 }
 
-                world.setBlockAndMetadata(x, y, z, Block.MOVING_PISTON.id, data2);
-                world.setBlockTileEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(id, data2, data2, false, true));
+                world.setBlockWithoutNotifyingNeighbors(x, y, z, Block.MOVING_PISTON.id, data2);
+                world.setBlockEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(id, data2, data2, false, true));
                 if (sticky)
                 {
                     int var9 = x + PistonConstants.HEAD_OFFSET_X[data2] * 2;
@@ -152,26 +152,26 @@ namespace betareborn.Blocks
                         if (!var14)
                         {
                             deaf = false;
-                            world.setBlockWithNotify(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
+                            world.setBlock(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
                             deaf = true;
                         }
                     }
                     else
                     {
                         deaf = false;
-                        world.setBlockWithNotify(var9, var10, var11, 0);
+                        world.setBlock(var9, var10, var11, 0);
                         deaf = true;
                         x += PistonConstants.HEAD_OFFSET_X[data2];
                         y += PistonConstants.HEAD_OFFSET_Y[data2];
                         z += PistonConstants.HEAD_OFFSET_Z[data2];
-                        world.setBlockAndMetadata(x, y, z, Block.MOVING_PISTON.id, var13);
-                        world.setBlockTileEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(var12, var13, data2, false, false));
+                        world.setBlockWithoutNotifyingNeighbors(x, y, z, Block.MOVING_PISTON.id, var13);
+                        world.setBlockEntity(x, y, z, BlockPistonMoving.createPistonBlockEntity(var12, var13, data2, false, false));
                     }
                 }
                 else
                 {
                     deaf = false;
-                    world.setBlockWithNotify(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
+                    world.setBlock(x + PistonConstants.HEAD_OFFSET_X[data2], y + PistonConstants.HEAD_OFFSET_Y[data2], z + PistonConstants.HEAD_OFFSET_Z[data2], 0);
                     deaf = true;
                 }
 
@@ -243,9 +243,9 @@ namespace betareborn.Blocks
 
         private static int getFacingForPlacement(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (MathHelper.abs((float)player.posX - (float)x) < 2.0F && MathHelper.abs((float)player.posZ - (float)z) < 2.0F)
+            if (MathHelper.abs((float)player.x - (float)x) < 2.0F && MathHelper.abs((float)player.z - (float)z) < 2.0F)
             {
-                double var5 = player.posY + 1.82D - (double)player.yOffset;
+                double var5 = player.y + 1.82D - (double)player.standingEyeHeight;
                 if (var5 - (double)y > 2.0D)
                 {
                     return 1;
@@ -257,7 +257,7 @@ namespace betareborn.Blocks
                 }
             }
 
-            int var7 = MathHelper.floor_double((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+            int var7 = MathHelper.floor_double((double)(player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
             return var7 == 0 ? 2 : (var7 == 1 ? 5 : (var7 == 2 ? 3 : (var7 == 3 ? 4 : 0)));
         }
 
@@ -380,7 +380,7 @@ namespace betareborn.Blocks
                         }
 
                         Block.BLOCKS[var10].dropStacks(world, var6, var7, var8, world.getBlockMeta(var6, var7, var8));
-                        world.setBlockWithNotify(var6, var7, var8, 0);
+                        world.setBlock(var6, var7, var8, 0);
                     }
                 }
 
@@ -393,13 +393,13 @@ namespace betareborn.Blocks
                     int var13 = world.getBlockMeta(var9, var10, var11);
                     if (var12 == id && var9 == x && var10 == y && var11 == z)
                     {
-                        world.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, dir | (sticky ? 8 : 0));
-                        world.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(Block.PISTON_HEAD.id, dir | (sticky ? 8 : 0), dir, true, false));
+                        world.setBlockWithoutNotifyingNeighbors(var6, var7, var8, Block.MOVING_PISTON.id, dir | (sticky ? 8 : 0));
+                        world.setBlockEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(Block.PISTON_HEAD.id, dir | (sticky ? 8 : 0), dir, true, false));
                     }
                     else
                     {
-                        world.setBlockAndMetadata(var6, var7, var8, Block.MOVING_PISTON.id, var13);
-                        world.setBlockTileEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(var12, var13, dir, true, false));
+                        world.setBlockWithoutNotifyingNeighbors(var6, var7, var8, Block.MOVING_PISTON.id, var13);
+                        world.setBlockEntity(var6, var7, var8, BlockPistonMoving.createPistonBlockEntity(var12, var13, dir, true, false));
                     }
 
                     var6 = var9;

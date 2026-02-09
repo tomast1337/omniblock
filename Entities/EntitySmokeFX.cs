@@ -14,12 +14,12 @@ namespace betareborn.Entities
 
         public EntitySmokeFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14) : base(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D)
         {
-            motionX *= (double)0.1F;
-            motionY *= (double)0.1F;
-            motionZ *= (double)0.1F;
-            motionX += var8;
-            motionY += var10;
-            motionZ += var12;
+            velocityX *= (double)0.1F;
+            velocityY *= (double)0.1F;
+            velocityZ *= (double)0.1F;
+            velocityX += var8;
+            velocityY += var10;
+            velocityZ += var12;
             particleRed = particleGreen = particleBlue = (float)(java.lang.Math.random() * (double)0.3F);
             particleScale *= 12.0F / 16.0F;
             particleScale *= var14;
@@ -48,30 +48,30 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
             if (particleAge++ >= particleMaxAge)
             {
                 markDead();
             }
 
             particleTextureIndex = 7 - particleAge * 8 / particleMaxAge;
-            motionY += 0.004D;
-            moveEntity(motionX, motionY, motionZ);
-            if (posY == prevPosY)
+            velocityY += 0.004D;
+            moveEntity(velocityX, velocityY, velocityZ);
+            if (y == prevY)
             {
-                motionX *= 1.1D;
-                motionZ *= 1.1D;
+                velocityX *= 1.1D;
+                velocityZ *= 1.1D;
             }
 
-            motionX *= (double)0.96F;
-            motionY *= (double)0.96F;
-            motionZ *= (double)0.96F;
+            velocityX *= (double)0.96F;
+            velocityY *= (double)0.96F;
+            velocityZ *= (double)0.96F;
             if (onGround)
             {
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
             }
 
         }

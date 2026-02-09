@@ -48,8 +48,8 @@ namespace betareborn.Blocks
             {
                 if (var5 == SLAB.id)
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
-                    world.setBlockAndMetadataWithNotify(x, y - 1, z, Block.DOUBLE_SLAB.id, var6);
+                    world.setBlock(x, y, z, 0);
+                    world.setBlock(x, y - 1, z, Block.DOUBLE_SLAB.id, var6);
                 }
 
             }

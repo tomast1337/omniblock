@@ -54,7 +54,7 @@ namespace betareborn.Blocks
             if (!canPlaceAt(world, x, y, z))
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
                 return false;
             }
             else
@@ -73,7 +73,7 @@ namespace betareborn.Blocks
             EntityItem var15 = new EntityItem(world, (double)x + var9, (double)y + var11, (double)z + var13, new ItemStack(var7, 1, 0));
             var15.delayBeforeCanPickup = 10;
             world.spawnEntity(var15);
-            world.setBlockWithNotify(x, y, z, 0);
+            world.setBlock(x, y, z, 0);
             player.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
         }
 
@@ -92,7 +92,7 @@ namespace betareborn.Blocks
             if (world.getBrightness(LightType.Block, x, y, z) > 11)
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
         }

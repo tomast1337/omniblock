@@ -29,7 +29,7 @@ namespace betareborn.Blocks
         {
             int var5 = world.getBlockMeta(x, y, z);
             world.pauseTicking = true;
-            world.setBlockAndMetadata(x, y, z, id - 1, var5);
+            world.setBlockWithoutNotifyingNeighbors(x, y, z, id - 1, var5);
             world.setBlocksDirty(x, y, z, x, y, z);
             world.scheduleBlockUpdate(x, y, z, id - 1, getTickRate());
             world.pauseTicking = false;
@@ -51,7 +51,7 @@ namespace betareborn.Blocks
                     {
                         if (isFlammable(world, x - 1, y, z) || isFlammable(world, x + 1, y, z) || isFlammable(world, x, y, z - 1) || isFlammable(world, x, y, z + 1) || isFlammable(world, x, y - 1, z) || isFlammable(world, x, y + 1, z))
                         {
-                            world.setBlockWithNotify(x, y, z, Block.FIRE.id);
+                            world.setBlock(x, y, z, Block.FIRE.id);
                             return;
                         }
                     }

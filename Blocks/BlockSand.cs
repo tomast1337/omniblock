@@ -32,14 +32,14 @@ namespace betareborn.Blocks
             if (canFallThrough(world, x, y - 1, z) && y >= 0)
             {
                 sbyte var8 = 32;
-                if (!fallInstantly && world.checkChunksExist(x - var8, y - var8, z - var8, x + var8, y + var8, z + var8))
+                if (!fallInstantly && world.isRegionLoaded(x - var8, y - var8, z - var8, x + var8, y + var8, z + var8))
                 {
                     EntityFallingSand var9 = new EntityFallingSand(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), id);
                     world.spawnEntity(var9);
                 }
                 else
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
 
                     while (canFallThrough(world, x, y - 1, z) && y > 0)
                     {
@@ -48,7 +48,7 @@ namespace betareborn.Blocks
 
                     if (y > 0)
                     {
-                        world.setBlockWithNotify(x, y, z, id);
+                        world.setBlock(x, y, z, id);
                     }
                 }
             }

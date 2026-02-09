@@ -21,13 +21,13 @@ namespace betareborn.Entities
         public EntityItem(World var1, double var2, double var4, double var6, ItemStack var8) : base(var1)
         {
             setBoundingBoxSpacing(0.25F, 0.25F);
-            yOffset = height / 2.0F;
+            standingEyeHeight = height / 2.0F;
             setPosition(var2, var4, var6);
             item = var8;
-            rotationYaw = (float)(java.lang.Math.random() * 360.0D);
-            motionX = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
-            motionY = (double)0.2F;
-            motionZ = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
+            yaw = (float)(java.lang.Math.random() * 360.0D);
+            velocityX = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
+            velocityY = (double)0.2F;
+            velocityZ = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
         }
 
         protected override bool canTriggerWalking()
@@ -38,7 +38,7 @@ namespace betareborn.Entities
         public EntityItem(World var1) : base(var1)
         {
             setBoundingBoxSpacing(0.25F, 0.25F);
-            yOffset = height / 2.0F;
+            standingEyeHeight = height / 2.0F;
         }
 
         protected override void entityInit()
@@ -53,37 +53,37 @@ namespace betareborn.Entities
                 --delayBeforeCanPickup;
             }
 
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
-            motionY -= (double)0.04F;
-            if (worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) == Material.LAVA)
+            prevX = x;
+            prevY = y;
+            prevZ = z;
+            velocityY -= (double)0.04F;
+            if (world.getMaterial(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z)) == Material.LAVA)
             {
-                motionY = (double)0.2F;
-                motionX = (double)((rand.nextFloat() - rand.nextFloat()) * 0.2F);
-                motionZ = (double)((rand.nextFloat() - rand.nextFloat()) * 0.2F);
-                worldObj.playSoundAtEntity(this, "random.fizz", 0.4F, 2.0F + rand.nextFloat() * 0.4F);
+                velocityY = (double)0.2F;
+                velocityX = (double)((random.nextFloat() - random.nextFloat()) * 0.2F);
+                velocityZ = (double)((random.nextFloat() - random.nextFloat()) * 0.2F);
+                world.playSound(this, "random.fizz", 0.4F, 2.0F + random.nextFloat() * 0.4F);
             }
 
-            pushOutOfBlocks(posX, (boundingBox.minY + boundingBox.maxY) / 2.0D, posZ);
-            moveEntity(motionX, motionY, motionZ);
+            pushOutOfBlocks(x, (boundingBox.minY + boundingBox.maxY) / 2.0D, z);
+            moveEntity(velocityX, velocityY, velocityZ);
             float var1 = 0.98F;
             if (onGround)
             {
                 var1 = 0.1F * 0.1F * 58.8F;
-                int var2 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
+                int var2 = world.getBlockId(MathHelper.floor_double(x), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(z));
                 if (var2 > 0)
                 {
                     var1 = Block.BLOCKS[var2].slipperiness * 0.98F;
                 }
             }
 
-            motionX *= (double)var1;
-            motionY *= (double)0.98F;
-            motionZ *= (double)var1;
+            velocityX *= (double)var1;
+            velocityY *= (double)0.98F;
+            velocityZ *= (double)var1;
             if (onGround)
             {
-                motionY *= -0.5D;
+                velocityY *= -0.5D;
             }
 
             ++field_803_e;
@@ -97,7 +97,7 @@ namespace betareborn.Entities
 
         public override bool handleWaterMovement()
         {
-            return worldObj.handleMaterialAcceleration(boundingBox, Material.WATER, this);
+            return world.updateMovementInFluid(boundingBox, Material.WATER, this);
         }
 
         protected override void dealFireDamage(int var1)
@@ -134,7 +134,7 @@ namespace betareborn.Entities
 
         public override void onCollideWithPlayer(EntityPlayer var1)
         {
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
                 int var2 = item.count;
                 if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(item))
@@ -149,7 +149,7 @@ namespace betareborn.Entities
                         var1.incrementStat(Achievements.KILL_COW);
                     }
 
-                    worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                    world.playSound(this, "random.pop", 0.2F, ((random.nextFloat() - random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
                     var1.sendPickup(this, var2);
                     if (item.count <= 0)
                     {

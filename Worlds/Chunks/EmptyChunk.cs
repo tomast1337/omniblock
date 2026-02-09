@@ -44,7 +44,7 @@ namespace betareborn.Worlds.Chunks
         {
         }
 
-        public override int getBlockID(int var1, int var2, int var3)
+        public override int getBlockId(int var1, int var2, int var3)
         {
             return 0;
         }

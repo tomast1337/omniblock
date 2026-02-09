@@ -15,10 +15,10 @@ namespace betareborn.Entities
 
         public EntityNoteFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14) : base(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D)
         {
-            motionX *= (double)0.01F;
-            motionY *= (double)0.01F;
-            motionZ *= (double)0.01F;
-            motionY += 0.2D;
+            velocityX *= (double)0.01F;
+            velocityY *= (double)0.01F;
+            velocityZ *= (double)0.01F;
+            velocityY += 0.2D;
             particleRed = MathHelper.sin(((float)var8 + 0.0F) * (float)Math.PI * 2.0F) * 0.65F + 0.35F;
             particleGreen = MathHelper.sin(((float)var8 + 1.0F / 3.0F) * (float)Math.PI * 2.0F) * 0.65F + 0.35F;
             particleBlue = MathHelper.sin(((float)var8 + 2.0F / 3.0F) * (float)Math.PI * 2.0F) * 0.65F + 0.35F;
@@ -49,28 +49,28 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
             if (particleAge++ >= particleMaxAge)
             {
                 markDead();
             }
 
-            moveEntity(motionX, motionY, motionZ);
-            if (posY == prevPosY)
+            moveEntity(velocityX, velocityY, velocityZ);
+            if (y == prevY)
             {
-                motionX *= 1.1D;
-                motionZ *= 1.1D;
+                velocityX *= 1.1D;
+                velocityZ *= 1.1D;
             }
 
-            motionX *= (double)0.66F;
-            motionY *= (double)0.66F;
-            motionZ *= (double)0.66F;
+            velocityX *= (double)0.66F;
+            velocityY *= (double)0.66F;
+            velocityZ *= (double)0.66F;
             if (onGround)
             {
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
             }
 
         }

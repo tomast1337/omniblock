@@ -709,11 +709,11 @@ namespace betareborn.Worlds.Gen.Chunks
                 {
                     var20 = var25 - (var4 + 8);
                     var21 = var19 - (var5 + 8);
-                    int var22 = world.findTopSolidBlock(var25, var19);
+                    int var22 = world.getTopSolidBlockY(var25, var19);
                     double var23 = temperatures[var20 * 16 + var21] - (var22 - 64) / 64.0D * 0.3D;
                     if (var23 < 0.5D && var22 > 0 && var22 < 128 && world.isAir(var25, var22, var19) && world.getMaterial(var25, var22 - 1, var19).blocksMovement() && world.getMaterial(var25, var22 - 1, var19) != Material.ICE)
                     {
-                        world.setBlockWithNotify(var25, var22, var19, Block.SNOW.id);
+                        world.setBlock(var25, var22, var19, Block.SNOW.id);
                     }
                 }
             }

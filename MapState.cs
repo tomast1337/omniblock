@@ -98,8 +98,8 @@ namespace betareborn
                 MapInfo var4 = (MapInfo)updateTrackers.get(var14);
                 if (!var4.player.isDead && var4.player.inventory.func_28018_c(var2))
                 {
-                    float var5 = (float)(var4.player.posX - (double)centerX) / (float)(1 << scale);
-                    float var6 = (float)(var4.player.posZ - (double)centerZ) / (float)(1 << scale);
+                    float var5 = (float)(var4.player.x - (double)centerX) / (float)(1 << scale);
+                    float var6 = (float)(var4.player.z - (double)centerZ) / (float)(1 << scale);
                     byte var7 = 64;
                     byte var8 = 64;
                     if (var5 >= (float)(-var7) && var6 >= (float)(-var8) && var5 <= (float)var7 && var6 <= (float)var8)
@@ -107,7 +107,7 @@ namespace betareborn
                         byte var9 = 0;
                         byte var10 = (byte)((int)((double)(var5 * 2.0F) + 0.5D));
                         byte var11 = (byte)((int)((double)(var6 * 2.0F) + 0.5D));
-                        byte var12 = (byte)((int)((double)(var1.rotationYaw * 16.0F / 360.0F) + 0.5D));
+                        byte var12 = (byte)((int)((double)(var1.yaw * 16.0F / 360.0F) + 0.5D));
                         if (dimension < 0)
                         {
                             int var13 = inventoryTicks / 10;

@@ -24,7 +24,7 @@ namespace betareborn
             func_597_c(var1);
         }
 
-        public void func_594_b(string var1)
+        public void progressStartNoAbort(string var1)
         {
             field_1005_e = true;
             func_597_c(field_1007_c);
@@ -53,7 +53,7 @@ namespace betareborn
             }
         }
 
-        public void displayLoadingString(string var1)
+        public void progressStage(string var1)
         {
             if (!mc.running)
             {

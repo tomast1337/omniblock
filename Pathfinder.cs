@@ -21,7 +21,7 @@ namespace betareborn
 
         public PathEntity createEntityPathTo(Entity var1, Entity var2, float var3)
         {
-            return createEntityPathTo(var1, var2.posX, var2.boundingBox.minY, var2.posZ, var3);
+            return createEntityPathTo(var1, var2.x, var2.boundingBox.minY, var2.z, var3);
         }
 
         public PathEntity createEntityPathTo(Entity var1, int var2, int var3, int var4, float var5)

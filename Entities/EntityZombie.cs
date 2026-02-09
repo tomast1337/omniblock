@@ -17,12 +17,12 @@ namespace betareborn.Entities
 
         public override void tickMovement()
         {
-            if (worldObj.isDaytime())
+            if (world.canMonsterSpawn())
             {
                 float var1 = getEntityBrightness(1.0F);
-                if (var1 > 0.5F && worldObj.hasSkyLight(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) && rand.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F)
+                if (var1 > 0.5F && world.hasSkyLight(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z)) && random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F)
                 {
-                    fire = 300;
+                    fireTicks = 300;
                 }
             }
 

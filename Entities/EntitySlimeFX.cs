@@ -28,9 +28,9 @@ namespace betareborn.Entities
             float var10 = ((float)(particleTextureIndex / 16) + particleTextureJitterY / 4.0F) / 16.0F;
             float var11 = var10 + 0.999F / 64.0F;
             float var12 = 0.1F * particleScale;
-            float var13 = (float)(prevPosX + (posX - prevPosX) * (double)var2 - interpPosX);
-            float var14 = (float)(prevPosY + (posY - prevPosY) * (double)var2 - interpPosY);
-            float var15 = (float)(prevPosZ + (posZ - prevPosZ) * (double)var2 - interpPosZ);
+            float var13 = (float)(prevX + (x - prevX) * (double)var2 - interpPosX);
+            float var14 = (float)(prevY + (y - prevY) * (double)var2 - interpPosY);
+            float var15 = (float)(prevZ + (z - prevZ) * (double)var2 - interpPosZ);
             float var16 = getEntityBrightness(var2);
             var1.setColorOpaque_F(var16 * particleRed, var16 * particleGreen, var16 * particleBlue);
             var1.addVertexWithUV((double)(var13 - var3 * var12 - var6 * var12), (double)(var14 - var4 * var12), (double)(var15 - var5 * var12 - var7 * var12), (double)var8, (double)var11);

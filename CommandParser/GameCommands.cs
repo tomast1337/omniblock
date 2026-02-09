@@ -95,7 +95,7 @@ public class GameCommands
 
         if (timeToSet.HasValue)
         {
-            ctx.Game.world.setWorldTime(timeToSet.Value);
+            ctx.Game.world.setTime(timeToSet.Value);
             ctx.Reply($"Time set to {timeValue} ({timeToSet.Value})");
         }
         else
@@ -114,7 +114,7 @@ public class GameCommands
     public void Summon(CommandContext ctx, string name)
     {
         var p = ctx.Game.player;
-        var ent = EntityRegistry.createEntityAt(name, ctx.Game.world, (float)p.posX, (float)p.posY, (float)p.posZ);
+        var ent = EntityRegistry.createEntityAt(name, ctx.Game.world, (float)p.x, (float)p.y, (float)p.z);
 
         if (ent == null)
         {
@@ -130,22 +130,22 @@ public class GameCommands
         {
             case "clear":
                 {
-                    ctx.Game.world.weatherEffects.clear();
-                    ctx.Game.world.getWorldInfo().setRaining(false);
-                    ctx.Game.world.getWorldInfo().setThundering(false);
+                    ctx.Game.world.globalEntities.clear();
+                    ctx.Game.world.getProperties().setRaining(false);
+                    ctx.Game.world.getProperties().setThundering(false);
                     Console.WriteLine("Clear Weather");
                     break;
                 }
             case "rain":
                 {
-                    ctx.Game.world.getWorldInfo().setRaining(true);
-                    ctx.Game.world.getWorldInfo().setThundering(false);
+                    ctx.Game.world.getProperties().setRaining(true);
+                    ctx.Game.world.getProperties().setThundering(false);
                     break;
                 }
             case "storm":
                 {
-                    ctx.Game.world.getWorldInfo().setRaining(true);
-                    ctx.Game.world.getWorldInfo().setThundering(true);
+                    ctx.Game.world.getProperties().setRaining(true);
+                    ctx.Game.world.getProperties().setThundering(true);
                     break;
                 }
         }
@@ -155,7 +155,7 @@ public class GameCommands
     public void KillAll(CommandContext ctx, string filter = "all")
     {
         var world = ctx.Game.world;
-        var entities = new List<Entity>(world.loadedEntityList);
+        var entities = new List<Entity>(world.entities);
         int count = 0;
         filter = filter.ToLower();
 
@@ -176,7 +176,7 @@ public class GameCommands
 
             if (shouldKill)
             {
-                world.setEntityDead(ent);
+                world.remove(ent);
                 count++;
             }
         }

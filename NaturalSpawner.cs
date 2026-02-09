@@ -9,7 +9,7 @@ using java.util;
 
 namespace betareborn
 {
-    public class SpawnerAnimals
+    public class NaturalSpawner
     {
         private static Set eligibleChunksForSpawning = new HashSet();
         protected static readonly Class[] nightSpawnEntities = new Class[] { EntitySpider.Class, EntityZombie.Class, EntitySkeleton.Class };
@@ -34,11 +34,11 @@ namespace betareborn
 
                 int var3;
                 int var6;
-                for (var3 = 0; var3 < var0.playerEntities.size(); ++var3)
+                for (var3 = 0; var3 < var0.players.size(); ++var3)
                 {
-                    EntityPlayer var4 = (EntityPlayer)var0.playerEntities.get(var3);
-                    int var5 = MathHelper.floor_double(var4.posX / 16.0D);
-                    var6 = MathHelper.floor_double(var4.posZ / 16.0D);
+                    EntityPlayer var4 = (EntityPlayer)var0.players.get(var3);
+                    int var5 = MathHelper.floor_double(var4.x / 16.0D);
+                    var6 = MathHelper.floor_double(var4.z / 16.0D);
                     byte var7 = 8;
 
                     for (int var8 = -var7; var8 <= var7; ++var8)
@@ -183,7 +183,7 @@ namespace betareborn
             if (var0 is EntitySpider && var1.random.nextInt(100) == 0)
             {
                 EntitySkeleton var5 = new EntitySkeleton(var1);
-                var5.setPositionAndAnglesKeepPrevAngles((double)var2, (double)var3, (double)var4, var0.rotationYaw, 0.0F);
+                var5.setPositionAndAnglesKeepPrevAngles((double)var2, (double)var3, (double)var4, var0.yaw, 0.0F);
                 var1.spawnEntity(var5);
                 var5.mountEntity(var0);
             }
@@ -194,7 +194,7 @@ namespace betareborn
 
         }
 
-        public static bool performSleepSpawning(World var0, List var1)
+        public static bool spawnMonstersAndWakePlayers(World var0, List var1)
         {
             bool var2 = false;
             Pathfinder var3 = new Pathfinder(var0);
@@ -222,9 +222,9 @@ namespace betareborn
 
                 for (int var8 = 0; var8 < 20 && !var7; ++var8)
                 {
-                    int var9 = MathHelper.floor_double(var5.posX) + var0.random.nextInt(32) - var0.random.nextInt(32);
-                    int var10 = MathHelper.floor_double(var5.posZ) + var0.random.nextInt(32) - var0.random.nextInt(32);
-                    int var11 = MathHelper.floor_double(var5.posY) + var0.random.nextInt(16) - var0.random.nextInt(16);
+                    int var9 = MathHelper.floor_double(var5.x) + var0.random.nextInt(32) - var0.random.nextInt(32);
+                    int var10 = MathHelper.floor_double(var5.z) + var0.random.nextInt(32) - var0.random.nextInt(32);
+                    int var11 = MathHelper.floor_double(var5.y) + var0.random.nextInt(16) - var0.random.nextInt(16);
                     if (var11 < 1)
                     {
                         var11 = 1;
@@ -270,9 +270,9 @@ namespace betareborn
                             if (var18 != null && var18.pathLength > 1)
                             {
                                 PathPoint var19 = var18.func_22328_c();
-                                if (java.lang.Math.abs((double)var19.xCoord - var5.posX) < 1.5D && java.lang.Math.abs((double)var19.zCoord - var5.posZ) < 1.5D && java.lang.Math.abs((double)var19.yCoord - var5.posY) < 1.5D)
+                                if (java.lang.Math.abs((double)var19.xCoord - var5.x) < 1.5D && java.lang.Math.abs((double)var19.zCoord - var5.z) < 1.5D && java.lang.Math.abs((double)var19.yCoord - var5.y) < 1.5D)
                                 {
-                                    Vec3i var20 = BlockBed.findWakeUpPosition(var0, MathHelper.floor_double(var5.posX), MathHelper.floor_double(var5.posY), MathHelper.floor_double(var5.posZ), 1);
+                                    Vec3i var20 = BlockBed.findWakeUpPosition(var0, MathHelper.floor_double(var5.x), MathHelper.floor_double(var5.y), MathHelper.floor_double(var5.z), 1);
                                     if (var20 == null)
                                     {
                                         var20 = new Vec3i(var9, var13 + 1, var10);

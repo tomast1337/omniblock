@@ -86,12 +86,12 @@ namespace betareborn.Blocks
                 int var6 = world.getBlockMeta(x, y, z) + 1;
                 if (var6 >= 6)
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
                 else
                 {
                     world.setBlockMeta(x, y, z, var6);
-                    world.markBlockAsNeedsUpdate(x, y, z);
+                    world.setBlocksDirty(x, y, z);
                 }
             }
 
@@ -107,7 +107,7 @@ namespace betareborn.Blocks
             if (!canGrow(world, x, y, z))
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
         }

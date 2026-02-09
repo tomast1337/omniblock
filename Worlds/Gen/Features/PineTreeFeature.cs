@@ -60,7 +60,7 @@ namespace betareborn.Worlds.Gen.Features
                     var11 = var1.getBlockId(var3, var4 - 1, var5);
                     if ((var11 == Block.GRASS_BLOCK.id || var11 == Block.DIRT.id) && var4 < 128 - var6 - 1)
                     {
-                        var1.setBlock(var3, var4 - 1, var5, Block.DIRT.id);
+                        var1.setBlockWithoutNotifyingNeighbors(var3, var4 - 1, var5, Block.DIRT.id);
                         var18 = 0;
 
                         for (var13 = var4 + var6; var13 >= var4 + var7; --var13)
@@ -74,7 +74,7 @@ namespace betareborn.Worlds.Gen.Features
                                     int var17 = var16 - var5;
                                     if ((java.lang.Math.abs(var15) != var18 || java.lang.Math.abs(var17) != var18 || var18 <= 0) && !Block.BLOCKS_OPAQUE[var1.getBlockId(var14, var13, var16)])
                                     {
-                                        var1.setBlockAndMetadata(var14, var13, var16, Block.LEAVES.id, 1);
+                                        var1.setBlockWithoutNotifyingNeighbors(var14, var13, var16, Block.LEAVES.id, 1);
                                     }
                                 }
                             }
@@ -94,7 +94,7 @@ namespace betareborn.Worlds.Gen.Features
                             var14 = var1.getBlockId(var3, var4 + var13, var5);
                             if (var14 == 0 || var14 == Block.LEAVES.id)
                             {
-                                var1.setBlockAndMetadata(var3, var4 + var13, var5, Block.LOG.id, 1);
+                                var1.setBlockWithoutNotifyingNeighbors(var3, var4 + var13, var5, Block.LOG.id, 1);
                             }
                         }
 

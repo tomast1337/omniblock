@@ -72,7 +72,7 @@ namespace betareborn.Blocks.Entities
                             return;
                         }
 
-                        int var10 = world.getEntitiesWithinAABB(var9.getClass(), new Box(x, y, z, x + 1, y + 1, z + 1).expand(8.0D, 4.0D, 8.0D)).Count;
+                        int var10 = world.collectEntitiesByClass(var9.getClass(), new Box(x, y, z, x + 1, y + 1, z + 1).expand(8.0D, 4.0D, 8.0D)).Count;
                         if (var10 >= 6)
                         {
                             resetDelay();

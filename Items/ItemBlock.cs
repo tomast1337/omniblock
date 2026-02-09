@@ -62,10 +62,10 @@ namespace betareborn.Items
             {
                 return false;
             }
-            else if (var3.canBlockBePlacedAt(blockID, var4, var5, var6, false, var7))
+            else if (var3.canPlace(blockID, var4, var5, var6, false, var7))
             {
                 Block var8 = Block.BLOCKS[blockID];
-                if (var3.setBlockAndMetadataWithNotify(var4, var5, var6, blockID, getPlacementMetadata(var1.getDamage())))
+                if (var3.setBlock(var4, var5, var6, blockID, getPlacementMetadata(var1.getDamage())))
                 {
                     Block.BLOCKS[blockID].onPlaced(var3, var4, var5, var6, var7);
                     Block.BLOCKS[blockID].onPlaced(var3, var4, var5, var6, var2);

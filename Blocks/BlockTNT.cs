@@ -22,7 +22,7 @@ namespace betareborn.Blocks
             if (world.isPowered(x, y, z))
             {
                 onMetadataChange(world, x, y, z, 1);
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
         }
@@ -32,7 +32,7 @@ namespace betareborn.Blocks
             if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower() && world.isPowered(x, y, z))
             {
                 onMetadataChange(world, x, y, z, 1);
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
         }
@@ -61,7 +61,7 @@ namespace betareborn.Blocks
                 {
                     EntityTNTPrimed var6 = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
                     world.spawnEntity(var6);
-                    world.playSoundAtEntity(var6, "random.fuse", 1.0F, 1.0F);
+                    world.playSound(var6, "random.fuse", 1.0F, 1.0F);
                 }
 
             }
@@ -71,7 +71,7 @@ namespace betareborn.Blocks
         {
             if (player.getHand() != null && player.getHand().itemID == Item.FLINT_AND_STEEL.id)
             {
-                world.setBlockMetadata(x, y, z, 1);
+                world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, 1);
             }
 
             base.onBlockBreakStart(world, x, y, z, player);

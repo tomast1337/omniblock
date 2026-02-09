@@ -14,20 +14,20 @@ namespace betareborn.Entities
             fuse = 0;
             preventEntitySpawning = true;
             setBoundingBoxSpacing(0.98F, 0.98F);
-            yOffset = height / 2.0F;
+            standingEyeHeight = height / 2.0F;
         }
 
         public EntityTNTPrimed(World var1, double var2, double var4, double var6) : base(var1)
         {
             setPosition(var2, var4, var6);
             float var8 = (float)(java.lang.Math.random() * (double)((float)Math.PI) * 2.0D);
-            motionX = (double)(-MathHelper.sin(var8 * (float)Math.PI / 180.0F) * 0.02F);
-            motionY = (double)0.2F;
-            motionZ = (double)(-MathHelper.cos(var8 * (float)Math.PI / 180.0F) * 0.02F);
+            velocityX = (double)(-MathHelper.sin(var8 * (float)Math.PI / 180.0F) * 0.02F);
+            velocityY = (double)0.2F;
+            velocityZ = (double)(-MathHelper.cos(var8 * (float)Math.PI / 180.0F) * 0.02F);
             fuse = 80;
-            prevPosX = var2;
-            prevPosY = var4;
-            prevPosZ = var6;
+            prevX = var2;
+            prevY = var4;
+            prevZ = var6;
         }
 
         protected override void entityInit()
@@ -46,24 +46,24 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
-            motionY -= (double)0.04F;
-            moveEntity(motionX, motionY, motionZ);
-            motionX *= (double)0.98F;
-            motionY *= (double)0.98F;
-            motionZ *= (double)0.98F;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
+            velocityY -= (double)0.04F;
+            moveEntity(velocityX, velocityY, velocityZ);
+            velocityX *= (double)0.98F;
+            velocityY *= (double)0.98F;
+            velocityZ *= (double)0.98F;
             if (onGround)
             {
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
-                motionY *= -0.5D;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
+                velocityY *= -0.5D;
             }
 
             if (fuse-- <= 0)
             {
-                if (!worldObj.isRemote)
+                if (!world.isRemote)
                 {
                     markDead();
                     explode();
@@ -75,7 +75,7 @@ namespace betareborn.Entities
             }
             else
             {
-                worldObj.addParticle("smoke", posX, posY + 0.5D, posZ, 0.0D, 0.0D, 0.0D);
+                world.addParticle("smoke", x, y + 0.5D, z, 0.0D, 0.0D, 0.0D);
             }
 
         }
@@ -83,7 +83,7 @@ namespace betareborn.Entities
         private void explode()
         {
             float var1 = 4.0F;
-            worldObj.createExplosion((Entity)null, posX, posY, posZ, var1);
+            world.createExplosion((Entity)null, x, y, z, var1);
         }
 
         public override void writeNbt(NBTTagCompound var1)

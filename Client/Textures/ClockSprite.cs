@@ -41,7 +41,7 @@ namespace betareborn.Client.Textures
             double var1 = 0.0D;
             if (mc.world != null && mc.player != null)
             {
-                float var3 = mc.world.getCelestialAngle(1.0F);
+                float var3 = mc.world.getTime(1.0F);
                 var1 = (double)(-var3 * (float)Math.PI * 2.0F);
                 if (mc.world.dimension.isNether)
                 {

@@ -25,7 +25,7 @@ namespace betareborn.Client.Rendering.Entitys
             Block var10 = Block.BLOCKS[var1.blockID];
             World var11 = var1.getWorld();
             GLManager.GL.Disable(GLEnum.Lighting);
-            renderBlocks.renderBlockFallingSand(var10, var11, MathHelper.floor_double(var1.posX), MathHelper.floor_double(var1.posY), MathHelper.floor_double(var1.posZ));
+            renderBlocks.renderBlockFallingSand(var10, var11, MathHelper.floor_double(var1.x), MathHelper.floor_double(var1.y), MathHelper.floor_double(var1.z));
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.GL.PopMatrix();
         }

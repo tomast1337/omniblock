@@ -28,7 +28,7 @@ namespace betareborn
 
         public override void flipPlayer(EntityPlayer var1)
         {
-            var1.rotationYaw = -180.0F;
+            var1.yaw = -180.0F;
         }
 
         public override bool sendBlockRemoved(int var1, int var2, int var3, int var4)

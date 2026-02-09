@@ -105,7 +105,7 @@ namespace betareborn.Blocks
                 if (var7)
                 {
                     dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
             }
 
@@ -116,7 +116,7 @@ namespace betareborn.Blocks
             if (!canPlaceAt(world, x, y, z))
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
                 return false;
             }
             else

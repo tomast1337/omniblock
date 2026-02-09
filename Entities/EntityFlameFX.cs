@@ -10,12 +10,12 @@ namespace betareborn.Entities
 
         public EntityFlameFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12) : base(var1, var2, var4, var6, var8, var10, var12)
         {
-            motionX = motionX * (double)0.01F + var8;
-            motionY = motionY * (double)0.01F + var10;
-            motionZ = motionZ * (double)0.01F + var12;
-            double var10000 = var2 + (double)((rand.nextFloat() - rand.nextFloat()) * 0.05F);
-            var10000 = var4 + (double)((rand.nextFloat() - rand.nextFloat()) * 0.05F);
-            var10000 = var6 + (double)((rand.nextFloat() - rand.nextFloat()) * 0.05F);
+            velocityX = velocityX * (double)0.01F + var8;
+            velocityY = velocityY * (double)0.01F + var10;
+            velocityZ = velocityZ * (double)0.01F + var12;
+            double var10000 = var2 + (double)((random.nextFloat() - random.nextFloat()) * 0.05F);
+            var10000 = var4 + (double)((random.nextFloat() - random.nextFloat()) * 0.05F);
+            var10000 = var6 + (double)((random.nextFloat() - random.nextFloat()) * 0.05F);
             field_672_a = particleScale;
             particleRed = particleGreen = particleBlue = 1.0F;
             particleMaxAge = (int)(8.0D / (java.lang.Math.random() * 0.8D + 0.2D)) + 4;
@@ -49,22 +49,22 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
             if (particleAge++ >= particleMaxAge)
             {
                 markDead();
             }
 
-            moveEntity(motionX, motionY, motionZ);
-            motionX *= (double)0.96F;
-            motionY *= (double)0.96F;
-            motionZ *= (double)0.96F;
+            moveEntity(velocityX, velocityY, velocityZ);
+            velocityX *= (double)0.96F;
+            velocityY *= (double)0.96F;
+            velocityZ *= (double)0.96F;
             if (onGround)
             {
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
             }
 
         }

@@ -65,7 +65,7 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote && world.getBlockEntity(x, y, z) == null)
             {
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
                 return true;
             }
             else

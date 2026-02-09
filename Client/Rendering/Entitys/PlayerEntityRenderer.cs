@@ -52,7 +52,7 @@ namespace betareborn.Client.Rendering.Entitys
             ItemStack var10 = var1.inventory.getCurrentItem();
             modelArmorChestplate.field_1278_i = modelArmor.field_1278_i = modelBipedMain.field_1278_i = var10 != null;
             modelArmorChestplate.isSneak = modelArmor.isSneak = modelBipedMain.isSneak = var1.isSneaking();
-            double var11 = var4 - var1.yOffset;
+            double var11 = var4 - var1.standingEyeHeight;
             if (var1.isSneaking() && !(var1 is ClientPlayerEntity))
             {
                 var11 -= 0.125D;
@@ -146,8 +146,8 @@ namespace betareborn.Client.Rendering.Entitys
             {
                 for (int var19 = 0; var19 < 2; ++var19)
                 {
-                    var5 = var1.prevRotationYaw + (var1.rotationYaw - var1.prevRotationYaw) * var2 - (var1.prevRenderYawOffset + (var1.renderYawOffset - var1.prevRenderYawOffset) * var2);
-                    float var6 = var1.prevRotationPitch + (var1.rotationPitch - var1.prevRotationPitch) * var2;
+                    var5 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var2 - (var1.prevRenderYawOffset + (var1.renderYawOffset - var1.prevRenderYawOffset) * var2);
+                    float var6 = var1.prevPitch + (var1.pitch - var1.prevPitch) * var2;
                     GLManager.GL.PushMatrix();
                     GLManager.GL.Rotate(var5, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Rotate(var6, 1.0F, 0.0F, 0.0F);
@@ -166,9 +166,9 @@ namespace betareborn.Client.Rendering.Entitys
             {
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Translate(0.0F, 0.0F, 2.0F / 16.0F);
-                double var20 = var1.field_20066_r + (var1.field_20063_u - var1.field_20066_r) * (double)var2 - (var1.prevPosX + (var1.posX - var1.prevPosX) * (double)var2);
-                double var22 = var1.field_20065_s + (var1.field_20062_v - var1.field_20065_s) * (double)var2 - (var1.prevPosY + (var1.posY - var1.prevPosY) * (double)var2);
-                double var8 = var1.field_20064_t + (var1.field_20061_w - var1.field_20064_t) * (double)var2 - (var1.prevPosZ + (var1.posZ - var1.prevPosZ) * (double)var2);
+                double var20 = var1.field_20066_r + (var1.field_20063_u - var1.field_20066_r) * (double)var2 - (var1.prevX + (var1.x - var1.prevX) * (double)var2);
+                double var22 = var1.field_20065_s + (var1.field_20062_v - var1.field_20065_s) * (double)var2 - (var1.prevY + (var1.y - var1.prevY) * (double)var2);
+                double var8 = var1.field_20064_t + (var1.field_20061_w - var1.field_20064_t) * (double)var2 - (var1.prevZ + (var1.z - var1.prevZ) * (double)var2);
                 float var10 = var1.prevRenderYawOffset + (var1.renderYawOffset - var1.prevRenderYawOffset) * var2;
                 double var11 = (double)MathHelper.sin(var10 * (float)Math.PI / 180.0F);
                 double var13 = (double)-MathHelper.cos(var10 * (float)Math.PI / 180.0F);
@@ -191,7 +191,7 @@ namespace betareborn.Client.Rendering.Entitys
                 }
 
                 float var18 = var1.prevStepBobbingAmount + (var1.stepBobbingAmount - var1.prevStepBobbingAmount) * var2;
-                var15 += MathHelper.sin((var1.prevDistanceWalkedModified + (var1.distanceWalkedModified - var1.prevDistanceWalkedModified) * var2) * 6.0F) * 32.0F * var18;
+                var15 += MathHelper.sin((var1.prevHorizontalSpeed + (var1.horizontalSpeed - var1.prevHorizontalSpeed) * var2) * 6.0F) * 32.0F * var18;
                 if (var1.isSneaking())
                 {
                     var15 += 25.0F;

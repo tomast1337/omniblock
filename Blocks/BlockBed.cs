@@ -43,13 +43,13 @@ namespace betareborn.Blocks
                     double var16 = (double)x + 0.5D;
                     double var17 = (double)y + 0.5D;
                     double var11 = (double)z + 0.5D;
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                     int var13 = getDirection(var6);
                     x += BED_OFFSETS[var13][0];
                     z += BED_OFFSETS[var13][1];
                     if (world.getBlockId(x, y, z) == id)
                     {
-                        world.setBlockWithNotify(x, y, z, 0);
+                        world.setBlock(x, y, z, 0);
                         var16 = (var16 + (double)x + 0.5D) / 2.0D;
                         var17 = (var17 + (double)y + 0.5D) / 2.0D;
                         var11 = (var11 + (double)z + 0.5D) / 2.0D;
@@ -63,7 +63,7 @@ namespace betareborn.Blocks
                     if (isBedOccupied(var6))
                     {
                         EntityPlayer var14 = null;
-                        Iterator var8 = world.playerEntities.iterator();
+                        Iterator var8 = world.players.iterator();
 
                         while (var8.hasNext())
                         {
@@ -148,12 +148,12 @@ namespace betareborn.Blocks
             {
                 if (world.getBlockId(x - BED_OFFSETS[var7][0], y, z - BED_OFFSETS[var7][1]) != this.id)
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
             }
             else if (world.getBlockId(x + BED_OFFSETS[var7][0], y, z + BED_OFFSETS[var7][1]) != this.id)
             {
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
                 if (!world.isRemote)
                 {
                     dropStacks(world, x, y, z, var6);

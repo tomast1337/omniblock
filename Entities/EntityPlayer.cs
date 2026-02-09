@@ -54,13 +54,13 @@ namespace betareborn.Entities
             inventory = new InventoryPlayer(this);
             inventorySlots = new PlayerScreenHandler(inventory, !var1.isRemote);
             craftingInventory = inventorySlots;
-            yOffset = 1.62F;
+            standingEyeHeight = 1.62F;
             Vec3i var2 = var1.getSpawnPoint();
             setPositionAndAnglesKeepPrevAngles((double)var2.x + 0.5D, (double)(var2.y + 1), (double)var2.z + 0.5D, 0.0F, 0.0F);
             health = 20;
             field_9351_C = "humanoid";
             field_9353_B = 180.0F;
-            fireResistance = 20;
+            fireImmunityTicks = 20;
             texture = "/mob/char.png";
         }
 
@@ -80,13 +80,13 @@ namespace betareborn.Entities
                     sleepTimer = 100;
                 }
 
-                if (!worldObj.isRemote)
+                if (!world.isRemote)
                 {
                     if (!isSleepingInBed())
                     {
                         wakeUp(true, true, false);
                     }
-                    else if (worldObj.isDaytime())
+                    else if (world.canMonsterSpawn())
                     {
                         wakeUp(false, true, true);
                     }
@@ -102,7 +102,7 @@ namespace betareborn.Entities
             }
 
             base.onUpdate();
-            if (!worldObj.isRemote && craftingInventory != null && !craftingInventory.canUse(this))
+            if (!world.isRemote && craftingInventory != null && !craftingInventory.canUse(this))
             {
                 closeScreen();
                 craftingInventory = inventorySlots;
@@ -111,45 +111,45 @@ namespace betareborn.Entities
             field_20066_r = field_20063_u;
             field_20065_s = field_20062_v;
             field_20064_t = field_20061_w;
-            double var1 = posX - field_20063_u;
-            double var3 = posY - field_20062_v;
-            double var5 = posZ - field_20061_w;
+            double var1 = x - field_20063_u;
+            double var3 = y - field_20062_v;
+            double var5 = z - field_20061_w;
             double var7 = 10.0D;
             if (var1 > var7)
             {
-                field_20066_r = field_20063_u = posX;
+                field_20066_r = field_20063_u = x;
             }
 
             if (var5 > var7)
             {
-                field_20064_t = field_20061_w = posZ;
+                field_20064_t = field_20061_w = z;
             }
 
             if (var3 > var7)
             {
-                field_20065_s = field_20062_v = posY;
+                field_20065_s = field_20062_v = y;
             }
 
             if (var1 < -var7)
             {
-                field_20066_r = field_20063_u = posX;
+                field_20066_r = field_20063_u = x;
             }
 
             if (var5 < -var7)
             {
-                field_20064_t = field_20061_w = posZ;
+                field_20064_t = field_20061_w = z;
             }
 
             if (var3 < -var7)
             {
-                field_20065_s = field_20062_v = posY;
+                field_20065_s = field_20062_v = y;
             }
 
             field_20063_u += var1 * 0.25D;
             field_20061_w += var5 * 0.25D;
             field_20062_v += var3 * 0.25D;
             increaseStat(Stats.Stats.minutesPlayedStat, 1);
-            if (ridingEntity == null)
+            if (vehicle == null)
             {
                 startMinecartRidingCoordinate = null;
             }
@@ -174,18 +174,18 @@ namespace betareborn.Entities
 
         public override void updateRidden()
         {
-            double var1 = posX;
-            double var3 = posY;
-            double var5 = posZ;
+            double var1 = x;
+            double var3 = y;
+            double var5 = z;
             base.updateRidden();
             prevStepBobbingAmount = stepBobbingAmount;
             stepBobbingAmount = 0.0F;
-            increaseRidingMotionStats(posX - var1, posY - var3, posZ - var5);
+            increaseRidingMotionStats(x - var1, y - var3, z - var5);
         }
 
         public override void preparePlayerToSpawn()
         {
-            yOffset = 1.62F;
+            standingEyeHeight = 1.62F;
             setBoundingBoxSpacing(0.6F, 1.8F);
             base.preparePlayerToSpawn();
             health = 20;
@@ -213,7 +213,7 @@ namespace betareborn.Entities
 
         public override void tickMovement()
         {
-            if (worldObj.difficulty == 0 && health < 20 && ticksExisted % 20 * 12 == 0)
+            if (world.difficulty == 0 && health < 20 && age % 20 * 12 == 0)
             {
                 heal(1);
             }
@@ -221,8 +221,8 @@ namespace betareborn.Entities
             inventory.inventoryTick();
             prevStepBobbingAmount = stepBobbingAmount;
             base.tickMovement();
-            float var1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-            float var2 = (float)java.lang.Math.atan(-motionY * (double)0.2F) * 15.0F;
+            float var1 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
+            float var2 = (float)java.lang.Math.atan(-velocityY * (double)0.2F) * 15.0F;
             if (var1 > 0.1F)
             {
                 var1 = 0.1F;
@@ -242,7 +242,7 @@ namespace betareborn.Entities
             tilt += (var2 - tilt) * 0.8F;
             if (health > 0)
             {
-                var var3 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(1.0D, 0.0D, 1.0D));
+                var var3 = world.getEntities(this, boundingBox.expand(1.0D, 0.0D, 1.0D));
                 if (var3 != null)
                 {
                     for (int var4 = 0; var4 < var3.Count; ++var4)
@@ -272,8 +272,8 @@ namespace betareborn.Entities
         {
             base.onKilledBy(adversary);
             setBoundingBoxSpacing(0.2F, 0.2F);
-            setPosition(posX, posY, posZ);
-            motionY = (double)0.1F;
+            setPosition(x, y, z);
+            velocityY = (double)0.1F;
             if (username.Equals("Notch"))
             {
                 dropItem(new ItemStack(Item.APPLE, 1), true);
@@ -282,15 +282,15 @@ namespace betareborn.Entities
             inventory.dropInventory();
             if (adversary != null)
             {
-                motionX = (double)(-MathHelper.cos((attackedAtYaw + rotationYaw) * (float)java.lang.Math.PI / 180.0F) * 0.1F);
-                motionZ = (double)(-MathHelper.sin((attackedAtYaw + rotationYaw) * (float)java.lang.Math.PI / 180.0F) * 0.1F);
+                velocityX = (double)(-MathHelper.cos((attackedAtYaw + yaw) * (float)java.lang.Math.PI / 180.0F) * 0.1F);
+                velocityZ = (double)(-MathHelper.sin((attackedAtYaw + yaw) * (float)java.lang.Math.PI / 180.0F) * 0.1F);
             }
             else
             {
-                motionX = motionZ = 0.0D;
+                velocityX = velocityZ = 0.0D;
             }
 
-            yOffset = 0.1F;
+            standingEyeHeight = 0.1F;
             increaseStat(Stats.Stats.deathsStat, 1);
         }
 
@@ -322,30 +322,30 @@ namespace betareborn.Entities
         {
             if (stack != null)
             {
-                EntityItem var3 = new EntityItem(worldObj, posX, posY - (double)0.3F + (double)getEyeHeight(), posZ, stack);
+                EntityItem var3 = new EntityItem(world, x, y - (double)0.3F + (double)getEyeHeight(), z, stack);
                 var3.delayBeforeCanPickup = 40;
                 float var4 = 0.1F;
                 float var5;
                 if (throwRandomly)
                 {
-                    var5 = rand.nextFloat() * 0.5F;
-                    float var6 = rand.nextFloat() * (float)java.lang.Math.PI * 2.0F;
-                    var3.motionX = (double)(-MathHelper.sin(var6) * var5);
-                    var3.motionZ = (double)(MathHelper.cos(var6) * var5);
-                    var3.motionY = (double)0.2F;
+                    var5 = random.nextFloat() * 0.5F;
+                    float var6 = random.nextFloat() * (float)java.lang.Math.PI * 2.0F;
+                    var3.velocityX = (double)(-MathHelper.sin(var6) * var5);
+                    var3.velocityZ = (double)(MathHelper.cos(var6) * var5);
+                    var3.velocityY = (double)0.2F;
                 }
                 else
                 {
                     var4 = 0.3F;
-                    var3.motionX = (double)(-MathHelper.sin(rotationYaw / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float)java.lang.Math.PI) * var4);
-                    var3.motionZ = (double)(MathHelper.cos(rotationYaw / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float)java.lang.Math.PI) * var4);
-                    var3.motionY = (double)(-MathHelper.sin(rotationPitch / 180.0F * (float)java.lang.Math.PI) * var4 + 0.1F);
+                    var3.velocityX = (double)(-MathHelper.sin(yaw / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(pitch / 180.0F * (float)java.lang.Math.PI) * var4);
+                    var3.velocityZ = (double)(MathHelper.cos(yaw / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(pitch / 180.0F * (float)java.lang.Math.PI) * var4);
+                    var3.velocityY = (double)(-MathHelper.sin(pitch / 180.0F * (float)java.lang.Math.PI) * var4 + 0.1F);
                     var4 = 0.02F;
-                    var5 = rand.nextFloat() * (float)java.lang.Math.PI * 2.0F;
-                    var4 *= rand.nextFloat();
-                    var3.motionX += java.lang.Math.cos((double)var5) * (double)var4;
-                    var3.motionY += (double)((rand.nextFloat() - rand.nextFloat()) * 0.1F);
-                    var3.motionZ += java.lang.Math.sin((double)var5) * (double)var4;
+                    var5 = random.nextFloat() * (float)java.lang.Math.PI * 2.0F;
+                    var4 *= random.nextFloat();
+                    var3.velocityX += java.lang.Math.cos((double)var5) * (double)var4;
+                    var3.velocityY += (double)((random.nextFloat() - random.nextFloat()) * 0.1F);
+                    var3.velocityZ += java.lang.Math.sin((double)var5) * (double)var4;
                 }
 
                 spawnItem(var3);
@@ -355,7 +355,7 @@ namespace betareborn.Entities
 
         protected virtual void spawnItem(EntityItem itemEntity)
         {
-            worldObj.spawnEntity(itemEntity);
+            world.spawnEntity(itemEntity);
         }
 
         public float getBlockBreakingSpeed(Block block)
@@ -389,7 +389,7 @@ namespace betareborn.Entities
             sleepTimer = nbt.getShort("SleepTimer");
             if (sleeping)
             {
-                sleepingPos = new Vec3i(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+                sleepingPos = new Vec3i(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z));
                 wakeUp(true, true, false);
             }
 
@@ -435,7 +435,7 @@ namespace betareborn.Entities
 
         protected virtual void resetEyeHeight()
         {
-            yOffset = 1.62F;
+            standingEyeHeight = 1.62F;
         }
 
         public override bool damage(Entity damageSource, int amount)
@@ -447,24 +447,24 @@ namespace betareborn.Entities
             }
             else
             {
-                if (isSleeping() && !worldObj.isRemote)
+                if (isSleeping() && !world.isRemote)
                 {
                     wakeUp(true, true, false);
                 }
 
                 if (damageSource is EntityMob || damageSource is EntityArrow)
                 {
-                    if (worldObj.difficulty == 0)
+                    if (world.difficulty == 0)
                     {
                         amount = 0;
                     }
 
-                    if (worldObj.difficulty == 1)
+                    if (world.difficulty == 1)
                     {
                         amount = amount / 3 + 1;
                     }
 
-                    if (worldObj.difficulty == 3)
+                    if (world.difficulty == 3)
                     {
                         amount = amount * 3 / 2;
                     }
@@ -513,7 +513,7 @@ namespace betareborn.Entities
 
                 if (!(entity is EntityPlayer) || isPvpEnabled())
                 {
-                    var var7 = worldObj.getEntitiesWithinAABB(EntityWolf.Class, new Box(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                    var var7 = world.collectEntitiesByClass(EntityWolf.Class, new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).expand(16.0D, 4.0D, 16.0D));
 
                     foreach (Entity var5 in var7)
                     {
@@ -583,7 +583,7 @@ namespace betareborn.Entities
 
         public override double getYOffset()
         {
-            return (double)(yOffset - 0.5F);
+            return (double)(standingEyeHeight - 0.5F);
         }
 
         public virtual void swingHand()
@@ -597,7 +597,7 @@ namespace betareborn.Entities
             int var2 = inventory.getDamageVsEntity(target);
             if (var2 > 0)
             {
-                if (motionY < 0.0D)
+                if (velocityY < 0.0D)
                 {
                     ++var2;
                 }
@@ -655,34 +655,34 @@ namespace betareborn.Entities
 
         public EnumStatus trySleep(int x, int y, int z)
         {
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
                 if (isSleeping() || !isEntityAlive())
                 {
                     return EnumStatus.OTHER_PROBLEM;
                 }
 
-                if (worldObj.dimension.isNether)
+                if (world.dimension.isNether)
                 {
                     return EnumStatus.NOT_POSSIBLE_HERE;
                 }
 
-                if (worldObj.isDaytime())
+                if (world.canMonsterSpawn())
                 {
                     return EnumStatus.NOT_POSSIBLE_NOW;
                 }
 
-                if (java.lang.Math.abs(posX - (double)x) > 3.0D || java.lang.Math.abs(posY - (double)y) > 2.0D || java.lang.Math.abs(posZ - (double)z) > 3.0D)
+                if (java.lang.Math.abs(base.x - (double)x) > 3.0D || java.lang.Math.abs(base.y - (double)y) > 2.0D || java.lang.Math.abs(base.z - (double)z) > 3.0D)
                 {
                     return EnumStatus.TOO_FAR_AWAY;
                 }
             }
 
             setBoundingBoxSpacing(0.2F, 0.2F);
-            yOffset = 0.2F;
-            if (worldObj.blockExists(x, y, z))
+            standingEyeHeight = 0.2F;
+            if (world.isPosLoaded(x, y, z))
             {
-                int var4 = worldObj.getBlockMeta(x, y, z);
+                int var4 = world.getBlockMeta(x, y, z);
                 int var5 = BlockBed.getDirection(var4);
                 float var6 = 0.5F;
                 float var7 = 0.5F;
@@ -713,10 +713,10 @@ namespace betareborn.Entities
             sleeping = true;
             sleepTimer = 0;
             sleepingPos = new Vec3i(x, y, z);
-            motionX = motionZ = motionY = 0.0D;
-            if (!worldObj.isRemote)
+            velocityX = velocityZ = velocityY = 0.0D;
+            if (!world.isRemote)
             {
-                worldObj.updateAllPlayersSleepingFlag();
+                world.updateSleepingPlayers();
             }
 
             return EnumStatus.OK;
@@ -750,22 +750,22 @@ namespace betareborn.Entities
             resetEyeHeight();
             Vec3i var4 = sleepingPos;
             Vec3i var5 = sleepingPos;
-            if (var4 != null && worldObj.getBlockId(var4.x, var4.y, var4.z) == Block.BED.id)
+            if (var4 != null && world.getBlockId(var4.x, var4.y, var4.z) == Block.BED.id)
             {
-                BlockBed.updateState(worldObj, var4.x, var4.y, var4.z, false);
-                var5 = BlockBed.findWakeUpPosition(worldObj, var4.x, var4.y, var4.z, 0);
+                BlockBed.updateState(world, var4.x, var4.y, var4.z, false);
+                var5 = BlockBed.findWakeUpPosition(world, var4.x, var4.y, var4.z, 0);
                 if (var5 == null)
                 {
                     var5 = new Vec3i(var4.x, var4.y + 1, var4.z);
                 }
 
-                setPosition((double)((float)var5.x + 0.5F), (double)((float)var5.y + yOffset + 0.1F), (double)((float)var5.z + 0.5F));
+                setPosition((double)((float)var5.x + 0.5F), (double)((float)var5.y + standingEyeHeight + 0.1F), (double)((float)var5.z + 0.5F));
             }
 
             sleeping = false;
-            if (!worldObj.isRemote && updateSleepingPlayers)
+            if (!world.isRemote && updateSleepingPlayers)
             {
-                worldObj.updateAllPlayersSleepingFlag();
+                world.updateSleepingPlayers();
             }
 
             if (resetSleepTimer)
@@ -786,7 +786,7 @@ namespace betareborn.Entities
 
         private bool isSleepingInBed()
         {
-            return worldObj.getBlockId(sleepingPos.x, sleepingPos.y, sleepingPos.z) == Block.BED.id;
+            return world.getBlockId(sleepingPos.x, sleepingPos.y, sleepingPos.z) == Block.BED.id;
         }
 
         public static Vec3i findRespawnPosition(World world, Vec3i spawnPos)
@@ -811,7 +811,7 @@ namespace betareborn.Entities
         {
             if (sleepingPos != null)
             {
-                int var1 = worldObj.getBlockMeta(sleepingPos.x, sleepingPos.y, sleepingPos.z);
+                int var1 = world.getBlockMeta(sleepingPos.x, sleepingPos.y, sleepingPos.z);
                 int var2 = BlockBed.getDirection(var1);
                 switch (var2)
                 {
@@ -883,16 +883,16 @@ namespace betareborn.Entities
 
         public override void travel(float x, float z)
         {
-            double var3 = posX;
-            double var5 = posY;
-            double var7 = posZ;
+            double var3 = base.x;
+            double var5 = y;
+            double var7 = base.z;
             base.travel(x, z);
-            updateMovementStat(posX - var3, posY - var5, posZ - var7);
+            updateMovementStat(base.x - var3, y - var5, base.z - var7);
         }
 
         private void updateMovementStat(double x, double y, double z)
         {
-            if (ridingEntity == null)
+            if (vehicle == null)
             {
                 int var7;
                 if (isInsideOfMaterial(Material.WATER))
@@ -940,28 +940,28 @@ namespace betareborn.Entities
 
         private void increaseRidingMotionStats(double x, double y, double z)
         {
-            if (ridingEntity != null)
+            if (vehicle != null)
             {
                 int var7 = java.lang.Math.round(MathHelper.sqrt_double(x * x + y * y + z * z) * 100.0F);
                 if (var7 > 0)
                 {
-                    if (ridingEntity is EntityMinecart)
+                    if (vehicle is EntityMinecart)
                     {
                         increaseStat(Stats.Stats.distanceByMinecartStat, var7);
                         if (startMinecartRidingCoordinate == null)
                         {
-                            startMinecartRidingCoordinate = new Vec3i(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+                            startMinecartRidingCoordinate = new Vec3i(MathHelper.floor_double(base.x), MathHelper.floor_double(base.y), MathHelper.floor_double(base.z));
                         }
-                        else if (startMinecartRidingCoordinate.getSqDistanceTo(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) >= 1000.0D)
+                        else if (startMinecartRidingCoordinate.getSqDistanceTo(MathHelper.floor_double(base.x), MathHelper.floor_double(base.y), MathHelper.floor_double(base.z)) >= 1000.0D)
                         {
                             increaseStat(Achievements.CRAFT_RAIL, 1);
                         }
                     }
-                    else if (ridingEntity is EntityBoat)
+                    else if (vehicle is EntityBoat)
                     {
                         increaseStat(Stats.Stats.distanceByBoatStat, var7);
                     }
-                    else if (ridingEntity is EntityPig)
+                    else if (vehicle is EntityPig)
                     {
                         increaseStat(Stats.Stats.distanceByPigStat, var7);
                     }

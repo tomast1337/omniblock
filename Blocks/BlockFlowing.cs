@@ -16,9 +16,9 @@ namespace betareborn.Blocks
         private void convertToSource(World world, int x, int y, int z)
         {
             int var5 = world.getBlockMeta(x, y, z);
-            world.setBlockAndMetadata(x, y, z, id + 1, var5);
+            world.setBlockWithoutNotifyingNeighbors(x, y, z, id + 1, var5);
             world.setBlocksDirty(x, y, z, x, y, z);
-            world.markBlockNeedsUpdate(x, y, z);
+            world.blockUpdateEvent(x, y, z);
         }
 
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
@@ -82,7 +82,7 @@ namespace betareborn.Blocks
                     var6 = var10;
                     if (var10 < 0)
                     {
-                        world.setBlockWithNotify(x, y, z, 0);
+                        world.setBlock(x, y, z, 0);
                     }
                     else
                     {
@@ -105,11 +105,11 @@ namespace betareborn.Blocks
             {
                 if (var6 >= 8)
                 {
-                    world.setBlockAndMetadataWithNotify(x, y - 1, z, id, var6);
+                    world.setBlock(x, y - 1, z, id, var6);
                 }
                 else
                 {
-                    world.setBlockAndMetadataWithNotify(x, y - 1, z, id, var6 + 8);
+                    world.setBlock(x, y - 1, z, id, var6 + 8);
                 }
             }
             else if (var6 >= 0 && (var6 == 0 || isLiquidBreaking(world, x, y - 1, z)))
@@ -166,7 +166,7 @@ namespace betareborn.Blocks
                     }
                 }
 
-                world.setBlockAndMetadataWithNotify(x, y, z, id, depth);
+                world.setBlock(x, y, z, id, depth);
             }
 
         }

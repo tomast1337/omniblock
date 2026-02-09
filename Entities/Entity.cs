@@ -15,73 +15,73 @@ namespace betareborn.Entities
         public int entityId = nextEntityID++;
         public double renderDistanceWeight = 1.0D;
         public bool preventEntitySpawning = false;
-        public Entity riddenByEntity;
-        public Entity ridingEntity;
-        public World worldObj;
-        public double prevPosX;
-        public double prevPosY;
-        public double prevPosZ;
-        public double posX;
-        public double posY;
-        public double posZ;
-        public double motionX;
-        public double motionY;
-        public double motionZ;
-        public float rotationYaw;
-        public float rotationPitch;
-        public float prevRotationYaw;
-        public float prevRotationPitch;
+        public Entity passenger;
+        public Entity vehicle;
+        public World world;
+        public double prevX;
+        public double prevY;
+        public double prevZ;
+        public double x;
+        public double y;
+        public double z;
+        public double velocityX;
+        public double velocityY;
+        public double velocityZ;
+        public float yaw;
+        public float pitch;
+        public float prevYaw;
+        public float prevPitch;
         public Box boundingBox = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         public bool onGround = false;
-        public bool isCollidedHorizontally;
-        public bool isCollidedVertically;
-        public bool isCollided = false;
-        public bool beenAttacked = false;
-        public bool isInWeb;
-        public bool field_9293_aM = true;
+        public bool horizontalCollison;
+        public bool verticalCollision;
+        public bool hasCollided = false;
+        public bool velocityModified = false;
+        public bool slowed;
+        public bool keepVelocityOnCollision = true;
         public bool isDead = false;
-        public float yOffset = 0.0F;
+        public float standingEyeHeight = 0.0F;
         public float width = 0.6F;
         public float height = 1.8F;
-        public float prevDistanceWalkedModified = 0.0F;
-        public float distanceWalkedModified = 0.0F;
+        public float prevHorizontalSpeed = 0.0F;
+        public float horizontalSpeed = 0.0F;
         protected float fallDistance = 0.0F;
-        private int nextStepDistance = 1;
-        public double lastTickPosX;
-        public double lastTickPosY;
-        public double lastTickPosZ;
-        public float ySize = 0.0F;
+        private int nextStepSoundDistance = 1;
+        public double lastTickX;
+        public double lastTickY;
+        public double lastTickZ;
+        public float cameraOffset = 0.0F;
         public float stepHeight = 0.0F;
         public bool noClip = false;
-        public float entityCollisionReduction = 0.0F;
-        protected java.util.Random rand = new();
-        public int ticksExisted = 0;
-        public int fireResistance = 1;
-        public int fire = 0;
+        public float pushSpeedReduction = 0.0F;
+        protected java.util.Random random = new();
+        public int age = 0;
+        public int fireImmunityTicks = 1;
+        public int fireTicks = 0;
         protected int maxAir = 300;
         protected bool inWater = false;
-        public int heartsLife = 0;
+        public int hearts = 0;
         public int air = 300;
-        private bool isFirstUpdate = true;
+        private bool firstTick = true;
         public string skinUrl;
         public string cloakUrl;
         protected bool isImmuneToFire = false;
         protected DataWatcher dataWatcher = new();
-        public float entityBrightness = 0.0F;
-        private double entityRiderPitchDelta;
-        private double entityRiderYawDelta;
-        public bool addedToChunk = false;
-        public int chunkCoordX;
-        public int chunkCoordY;
-        public int chunkCoordZ;
-        public int serverPosX;
-        public int serverPosY;
-        public int serverPosZ;
+        public float minBrightness = 0.0F;
+        private double vehiclePitchDelta;
+        private double vehicleYawDelta;
+        public bool isPersistent = false;
+        public int chunkX;
+        public int chunkSlice;
+        public int chunkZ;
+        public int trackedPosX;
+        public int trackedPosY;
+        public int trackedPosZ;
         public bool ignoreFrustumCheck;
 
         public Entity(World var1)
         {
-            worldObj = var1;
+            world = var1;
             setPosition(0.0D, 0.0D, 0.0D);
             dataWatcher.addObject(0, java.lang.Byte.valueOf(0));
             entityInit();
@@ -106,21 +106,21 @@ namespace betareborn.Entities
 
         public virtual void preparePlayerToSpawn()
         {
-            if (worldObj != null)
+            if (world != null)
             {
-                while (posY > 0.0D)
+                while (y > 0.0D)
                 {
-                    setPosition(posX, posY, posZ);
-                    if (worldObj.getCollidingBoundingBoxes(this, boundingBox).Count == 0)
+                    setPosition(x, y, z);
+                    if (world.getEntityCollisions(this, boundingBox).Count == 0)
                     {
                         break;
                     }
 
-                    ++posY;
+                    ++y;
                 }
 
-                motionX = motionY = motionZ = 0.0D;
-                rotationPitch = 0.0F;
+                velocityX = velocityY = velocityZ = 0.0D;
+                pitch = 0.0F;
             }
         }
 
@@ -137,38 +137,38 @@ namespace betareborn.Entities
 
         protected void setRotation(float var1, float var2)
         {
-            rotationYaw = var1 % 360.0F;
-            rotationPitch = var2 % 360.0F;
+            yaw = var1 % 360.0F;
+            pitch = var2 % 360.0F;
         }
 
         public void setPosition(double var1, double var3, double var5)
         {
-            posX = var1;
-            posY = var3;
-            posZ = var5;
+            x = var1;
+            y = var3;
+            z = var5;
             float var7 = width / 2.0F;
             float var8 = height;
-            boundingBox = new Box(var1 - (double)var7, var3 - (double)yOffset + (double)ySize, var5 - (double)var7, var1 + (double)var7, var3 - (double)yOffset + (double)ySize + (double)var8, var5 + (double)var7);
+            boundingBox = new Box(var1 - (double)var7, var3 - (double)standingEyeHeight + (double)cameraOffset, var5 - (double)var7, var1 + (double)var7, var3 - (double)standingEyeHeight + (double)cameraOffset + (double)var8, var5 + (double)var7);
         }
 
         public void func_346_d(float var1, float var2)
         {
-            float var3 = rotationPitch;
-            float var4 = rotationYaw;
-            rotationYaw = (float)((double)rotationYaw + (double)var1 * 0.15D);
-            rotationPitch = (float)((double)rotationPitch - (double)var2 * 0.15D);
-            if (rotationPitch < -90.0F)
+            float var3 = pitch;
+            float var4 = yaw;
+            yaw = (float)((double)yaw + (double)var1 * 0.15D);
+            pitch = (float)((double)pitch - (double)var2 * 0.15D);
+            if (pitch < -90.0F)
             {
-                rotationPitch = -90.0F;
+                pitch = -90.0F;
             }
 
-            if (rotationPitch > 90.0F)
+            if (pitch > 90.0F)
             {
-                rotationPitch = 90.0F;
+                pitch = 90.0F;
             }
 
-            prevRotationPitch += rotationPitch - var3;
-            prevRotationYaw += rotationYaw - var4;
+            prevPitch += pitch - var3;
+            prevYaw += yaw - var4;
         }
 
         public virtual void onUpdate()
@@ -178,29 +178,29 @@ namespace betareborn.Entities
 
         public virtual void onEntityUpdate()
         {
-            if (ridingEntity != null && ridingEntity.isDead)
+            if (vehicle != null && vehicle.isDead)
             {
-                ridingEntity = null;
+                vehicle = null;
             }
 
-            ++ticksExisted;
-            prevDistanceWalkedModified = distanceWalkedModified;
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
-            prevRotationPitch = rotationPitch;
-            prevRotationYaw = rotationYaw;
+            ++age;
+            prevHorizontalSpeed = horizontalSpeed;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
+            prevPitch = pitch;
+            prevYaw = yaw;
             if (handleWaterMovement())
             {
-                if (!inWater && !isFirstUpdate)
+                if (!inWater && !firstTick)
                 {
-                    float var1 = MathHelper.sqrt_double(motionX * motionX * (double)0.2F + motionY * motionY + motionZ * motionZ * (double)0.2F) * 0.2F;
+                    float var1 = MathHelper.sqrt_double(velocityX * velocityX * (double)0.2F + velocityY * velocityY + velocityZ * velocityZ * (double)0.2F) * 0.2F;
                     if (var1 > 1.0F)
                     {
                         var1 = 1.0F;
                     }
 
-                    worldObj.playSoundAtEntity(this, "random.splash", var1, 1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
+                    world.playSound(this, "random.splash", var1, 1.0F + (random.nextFloat() - random.nextFloat()) * 0.4F);
                     float var2 = (float)MathHelper.floor_double(boundingBox.minY);
 
                     int var3;
@@ -208,50 +208,50 @@ namespace betareborn.Entities
                     float var5;
                     for (var3 = 0; (float)var3 < 1.0F + width * 20.0F; ++var3)
                     {
-                        var4 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                        var5 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                        worldObj.addParticle("bubble", posX + (double)var4, (double)(var2 + 1.0F), posZ + (double)var5, motionX, motionY - (double)(rand.nextFloat() * 0.2F), motionZ);
+                        var4 = (random.nextFloat() * 2.0F - 1.0F) * width;
+                        var5 = (random.nextFloat() * 2.0F - 1.0F) * width;
+                        world.addParticle("bubble", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY - (double)(random.nextFloat() * 0.2F), velocityZ);
                     }
 
                     for (var3 = 0; (float)var3 < 1.0F + width * 20.0F; ++var3)
                     {
-                        var4 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                        var5 = (rand.nextFloat() * 2.0F - 1.0F) * width;
-                        worldObj.addParticle("splash", posX + (double)var4, (double)(var2 + 1.0F), posZ + (double)var5, motionX, motionY, motionZ);
+                        var4 = (random.nextFloat() * 2.0F - 1.0F) * width;
+                        var5 = (random.nextFloat() * 2.0F - 1.0F) * width;
+                        world.addParticle("splash", x + (double)var4, (double)(var2 + 1.0F), z + (double)var5, velocityX, velocityY, velocityZ);
                     }
                 }
 
                 fallDistance = 0.0F;
                 inWater = true;
-                fire = 0;
+                fireTicks = 0;
             }
             else
             {
                 inWater = false;
             }
 
-            if (worldObj.isRemote)
+            if (world.isRemote)
             {
-                fire = 0;
+                fireTicks = 0;
             }
-            else if (fire > 0)
+            else if (fireTicks > 0)
             {
                 if (isImmuneToFire)
                 {
-                    fire -= 4;
-                    if (fire < 0)
+                    fireTicks -= 4;
+                    if (fireTicks < 0)
                     {
-                        fire = 0;
+                        fireTicks = 0;
                     }
                 }
                 else
                 {
-                    if (fire % 20 == 0)
+                    if (fireTicks % 20 == 0)
                     {
                         damage((Entity)null, 1);
                     }
 
-                    --fire;
+                    --fireTicks;
                 }
             }
 
@@ -260,18 +260,18 @@ namespace betareborn.Entities
                 setOnFireFromLava();
             }
 
-            if (posY < -64.0D)
+            if (y < -64.0D)
             {
                 kill();
             }
 
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
-                setEntityFlag(0, fire > 0);
-                setEntityFlag(2, ridingEntity != null);
+                setEntityFlag(0, fireTicks > 0);
+                setEntityFlag(2, vehicle != null);
             }
 
-            isFirstUpdate = false;
+            firstTick = false;
         }
 
         protected void setOnFireFromLava()
@@ -279,7 +279,7 @@ namespace betareborn.Entities
             if (!isImmuneToFire)
             {
                 damage((Entity)null, 4);
-                fire = 600;
+                fireTicks = 600;
             }
 
         }
@@ -292,8 +292,8 @@ namespace betareborn.Entities
         public bool isOffsetPositionInLiquid(double var1, double var3, double var5)
         {
             Box var7 = boundingBox.offset(var1, var3, var5);
-            var var8 = worldObj.getCollidingBoundingBoxes(this, var7);
-            return var8.Count > 0 ? false : !worldObj.getIsAnyLiquid(var7);
+            var var8 = world.getEntityCollisions(this, var7);
+            return var8.Count > 0 ? false : !world.isBoxSubmergedInFluid(var7);
         }
 
         public virtual void moveEntity(double var1, double var3, double var5)
@@ -301,24 +301,24 @@ namespace betareborn.Entities
             if (noClip)
             {
                 boundingBox.translate(var1, var3, var5);
-                posX = (boundingBox.minX + boundingBox.maxX) / 2.0D;
-                posY = boundingBox.minY + (double)yOffset - (double)ySize;
-                posZ = (boundingBox.minZ + boundingBox.maxZ) / 2.0D;
+                x = (boundingBox.minX + boundingBox.maxX) / 2.0D;
+                y = boundingBox.minY + (double)standingEyeHeight - (double)cameraOffset;
+                z = (boundingBox.minZ + boundingBox.maxZ) / 2.0D;
             }
             else
             {
-                ySize *= 0.4F;
-                double var7 = posX;
-                double var9 = posZ;
-                if (isInWeb)
+                cameraOffset *= 0.4F;
+                double var7 = x;
+                double var9 = z;
+                if (slowed)
                 {
-                    isInWeb = false;
+                    slowed = false;
                     var1 *= 0.25D;
                     var3 *= (double)0.05F;
                     var5 *= 0.25D;
-                    motionX = 0.0D;
-                    motionY = 0.0D;
-                    motionZ = 0.0D;
+                    velocityX = 0.0D;
+                    velocityY = 0.0D;
+                    velocityZ = 0.0D;
                 }
 
                 double var11 = var1;
@@ -329,7 +329,7 @@ namespace betareborn.Entities
                 if (var18)
                 {
                     double var19;
-                    for (var19 = 0.05D; var1 != 0.0D && worldObj.getCollidingBoundingBoxes(this, boundingBox.offset(var1, -1.0D, 0.0D)).Count == 0; var11 = var1)
+                    for (var19 = 0.05D; var1 != 0.0D && world.getEntityCollisions(this, boundingBox.offset(var1, -1.0D, 0.0D)).Count == 0; var11 = var1)
                     {
                         if (var1 < var19 && var1 >= -var19)
                         {
@@ -345,7 +345,7 @@ namespace betareborn.Entities
                         }
                     }
 
-                    for (; var5 != 0.0D && worldObj.getCollidingBoundingBoxes(this, boundingBox.offset(0.0D, -1.0D, var5)).Count == 0; var15 = var5)
+                    for (; var5 != 0.0D && world.getEntityCollisions(this, boundingBox.offset(0.0D, -1.0D, var5)).Count == 0; var15 = var5)
                     {
                         if (var5 < var19 && var5 >= -var19)
                         {
@@ -362,7 +362,7 @@ namespace betareborn.Entities
                     }
                 }
 
-                var var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.stretch(var1, var3, var5));
+                var var35 = world.getEntityCollisions(this, boundingBox.stretch(var1, var3, var5));
 
                 for (int var20 = 0; var20 < var35.Count; ++var20)
                 {
@@ -370,7 +370,7 @@ namespace betareborn.Entities
                 }
 
                 boundingBox.translate(0.0D, var3, 0.0D);
-                if (!field_9293_aM && var13 != var3)
+                if (!keepVelocityOnCollision && var13 != var3)
                 {
                     var5 = 0.0D;
                     var3 = var5;
@@ -386,7 +386,7 @@ namespace betareborn.Entities
                 }
 
                 boundingBox.translate(var1, 0.0D, 0.0D);
-                if (!field_9293_aM && var11 != var1)
+                if (!keepVelocityOnCollision && var11 != var1)
                 {
                     var5 = 0.0D;
                     var3 = var5;
@@ -399,7 +399,7 @@ namespace betareborn.Entities
                 }
 
                 boundingBox.translate(0.0D, 0.0D, var5);
-                if (!field_9293_aM && var15 != var5)
+                if (!keepVelocityOnCollision && var15 != var5)
                 {
                     var5 = 0.0D;
                     var3 = var5;
@@ -409,7 +409,7 @@ namespace betareborn.Entities
                 double var23;
                 int var28;
                 double var37;
-                if (stepHeight > 0.0F && var36 && (var18 || ySize < 0.05F) && (var11 != var1 || var15 != var5))
+                if (stepHeight > 0.0F && var36 && (var18 || cameraOffset < 0.05F) && (var11 != var1 || var15 != var5))
                 {
                     var37 = var1;
                     var23 = var3;
@@ -419,7 +419,7 @@ namespace betareborn.Entities
                     var5 = var15;
                     Box var27 = boundingBox;
                     boundingBox = var17;
-                    var35 = worldObj.getCollidingBoundingBoxes(this, boundingBox.stretch(var11, var3, var15));
+                    var35 = world.getEntityCollisions(this, boundingBox.stretch(var11, var3, var15));
 
                     for (var28 = 0; var28 < var35.Count; ++var28)
                     {
@@ -427,7 +427,7 @@ namespace betareborn.Entities
                     }
 
                     boundingBox.translate(0.0D, var3, 0.0D);
-                    if (!field_9293_aM && var13 != var3)
+                    if (!keepVelocityOnCollision && var13 != var3)
                     {
                         var5 = 0.0D;
                         var3 = var5;
@@ -440,7 +440,7 @@ namespace betareborn.Entities
                     }
 
                     boundingBox.translate(var1, 0.0D, 0.0D);
-                    if (!field_9293_aM && var11 != var1)
+                    if (!keepVelocityOnCollision && var11 != var1)
                     {
                         var5 = 0.0D;
                         var3 = var5;
@@ -453,14 +453,14 @@ namespace betareborn.Entities
                     }
 
                     boundingBox.translate(0.0D, 0.0D, var5);
-                    if (!field_9293_aM && var15 != var5)
+                    if (!keepVelocityOnCollision && var15 != var5)
                     {
                         var5 = 0.0D;
                         var3 = var5;
                         var1 = var5;
                     }
 
-                    if (!field_9293_aM && var13 != var3)
+                    if (!keepVelocityOnCollision && var13 != var3)
                     {
                         var5 = 0.0D;
                         var3 = var5;
@@ -490,66 +490,66 @@ namespace betareborn.Entities
                         double var41 = boundingBox.minY - (double)((int)boundingBox.minY);
                         if (var41 > 0.0D)
                         {
-                            ySize = (float)((double)ySize + var41 + 0.01D);
+                            cameraOffset = (float)((double)cameraOffset + var41 + 0.01D);
                         }
                     }
                 }
 
-                posX = (boundingBox.minX + boundingBox.maxX) / 2.0D;
-                posY = boundingBox.minY + (double)yOffset - (double)ySize;
-                posZ = (boundingBox.minZ + boundingBox.maxZ) / 2.0D;
-                isCollidedHorizontally = var11 != var1 || var15 != var5;
-                isCollidedVertically = var13 != var3;
+                x = (boundingBox.minX + boundingBox.maxX) / 2.0D;
+                y = boundingBox.minY + (double)standingEyeHeight - (double)cameraOffset;
+                z = (boundingBox.minZ + boundingBox.maxZ) / 2.0D;
+                horizontalCollison = var11 != var1 || var15 != var5;
+                verticalCollision = var13 != var3;
                 onGround = var13 != var3 && var13 < 0.0D;
-                isCollided = isCollidedHorizontally || isCollidedVertically;
+                hasCollided = horizontalCollison || verticalCollision;
                 updateFallState(var3, onGround);
                 if (var11 != var1)
                 {
-                    motionX = 0.0D;
+                    velocityX = 0.0D;
                 }
 
                 if (var13 != var3)
                 {
-                    motionY = 0.0D;
+                    velocityY = 0.0D;
                 }
 
                 if (var15 != var5)
                 {
-                    motionZ = 0.0D;
+                    velocityZ = 0.0D;
                 }
 
-                var37 = posX - var7;
-                var23 = posZ - var9;
+                var37 = x - var7;
+                var23 = z - var9;
                 int var26;
                 int var38;
                 int var39;
-                if (canTriggerWalking() && !var18 && ridingEntity == null)
+                if (canTriggerWalking() && !var18 && vehicle == null)
                 {
-                    distanceWalkedModified = (float)((double)distanceWalkedModified + (double)MathHelper.sqrt_double(var37 * var37 + var23 * var23) * 0.6D);
-                    var38 = MathHelper.floor_double(posX);
-                    var26 = MathHelper.floor_double(posY - (double)0.2F - (double)yOffset);
-                    var39 = MathHelper.floor_double(posZ);
-                    var28 = worldObj.getBlockId(var38, var26, var39);
-                    if (worldObj.getBlockId(var38, var26 - 1, var39) == Block.FENCE.id)
+                    horizontalSpeed = (float)((double)horizontalSpeed + (double)MathHelper.sqrt_double(var37 * var37 + var23 * var23) * 0.6D);
+                    var38 = MathHelper.floor_double(x);
+                    var26 = MathHelper.floor_double(y - (double)0.2F - (double)standingEyeHeight);
+                    var39 = MathHelper.floor_double(z);
+                    var28 = world.getBlockId(var38, var26, var39);
+                    if (world.getBlockId(var38, var26 - 1, var39) == Block.FENCE.id)
                     {
-                        var28 = worldObj.getBlockId(var38, var26 - 1, var39);
+                        var28 = world.getBlockId(var38, var26 - 1, var39);
                     }
 
-                    if (distanceWalkedModified > (float)nextStepDistance && var28 > 0)
+                    if (horizontalSpeed > (float)nextStepSoundDistance && var28 > 0)
                     {
-                        ++nextStepDistance;
+                        ++nextStepSoundDistance;
                         BlockSoundGroup var29 = Block.BLOCKS[var28].soundGroup;
-                        if (worldObj.getBlockId(var38, var26 + 1, var39) == Block.SNOW.id)
+                        if (world.getBlockId(var38, var26 + 1, var39) == Block.SNOW.id)
                         {
                             var29 = Block.SNOW.soundGroup;
-                            worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
+                            world.playSound(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
                         }
                         else if (!Block.BLOCKS[var28].material.isFluid())
                         {
-                            worldObj.playSoundAtEntity(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
+                            world.playSound(this, var29.func_1145_d(), var29.getVolume() * 0.15F, var29.getPitch());
                         }
 
-                        Block.BLOCKS[var28].onSteppedOn(worldObj, var38, var26, var39, this);
+                        Block.BLOCKS[var28].onSteppedOn(world, var38, var26, var39, this);
                     }
                 }
 
@@ -559,7 +559,7 @@ namespace betareborn.Entities
                 var28 = MathHelper.floor_double(boundingBox.maxX - 0.001D);
                 int var40 = MathHelper.floor_double(boundingBox.maxY - 0.001D);
                 int var30 = MathHelper.floor_double(boundingBox.maxZ - 0.001D);
-                if (worldObj.checkChunksExist(var38, var26, var39, var28, var40, var30))
+                if (world.isRegionLoaded(var38, var26, var39, var28, var40, var30))
                 {
                     for (int var31 = var38; var31 <= var28; ++var31)
                     {
@@ -567,10 +567,10 @@ namespace betareborn.Entities
                         {
                             for (int var33 = var39; var33 <= var30; ++var33)
                             {
-                                int var34 = worldObj.getBlockId(var31, var32, var33);
+                                int var34 = world.getBlockId(var31, var32, var33);
                                 if (var34 > 0)
                                 {
-                                    Block.BLOCKS[var34].onEntityCollision(worldObj, var31, var32, var33, this);
+                                    Block.BLOCKS[var34].onEntityCollision(world, var31, var32, var33, this);
                                 }
                             }
                         }
@@ -578,27 +578,27 @@ namespace betareborn.Entities
                 }
 
                 bool var42 = isWet();
-                if (worldObj.isBoundingBoxBurning(boundingBox.contract(0.001D, 0.001D, 0.001D)))
+                if (world.isFireOrLavaInBox(boundingBox.contract(0.001D, 0.001D, 0.001D)))
                 {
                     dealFireDamage(1);
                     if (!var42)
                     {
-                        ++fire;
-                        if (fire == 0)
+                        ++fireTicks;
+                        if (fireTicks == 0)
                         {
-                            fire = 300;
+                            fireTicks = 300;
                         }
                     }
                 }
-                else if (fire <= 0)
+                else if (fireTicks <= 0)
                 {
-                    fire = -fireResistance;
+                    fireTicks = -fireImmunityTicks;
                 }
 
-                if (var42 && fire > 0)
+                if (var42 && fireTicks > 0)
                 {
-                    worldObj.playSoundAtEntity(this, "random.fizz", 0.7F, 1.6F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
-                    fire = -fireResistance;
+                    world.playSound(this, "random.fizz", 0.7F, 1.6F + (random.nextFloat() - random.nextFloat()) * 0.4F);
+                    fireTicks = -fireImmunityTicks;
                 }
 
             }
@@ -642,16 +642,16 @@ namespace betareborn.Entities
 
         protected virtual void onLanding(float var1)
         {
-            if (riddenByEntity != null)
+            if (passenger != null)
             {
-                riddenByEntity.onLanding(var1);
+                passenger.onLanding(var1);
             }
 
         }
 
         public bool isWet()
         {
-            return inWater || worldObj.isRaining(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+            return inWater || world.isRaining(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z));
         }
 
         public virtual bool isInWater()
@@ -661,19 +661,19 @@ namespace betareborn.Entities
 
         public virtual bool handleWaterMovement()
         {
-            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.4F, 0.0D).contract(0.001D, 0.001D, 0.001D), Material.WATER, this);
+            return world.updateMovementInFluid(boundingBox.expand(0.0D, (double)-0.4F, 0.0D).contract(0.001D, 0.001D, 0.001D), Material.WATER, this);
         }
 
         public bool isInsideOfMaterial(Material var1)
         {
-            double var2 = posY + (double)getEyeHeight();
-            int var4 = MathHelper.floor_double(posX);
+            double var2 = y + (double)getEyeHeight();
+            int var4 = MathHelper.floor_double(x);
             int var5 = MathHelper.floor_float((float)MathHelper.floor_double(var2));
-            int var6 = MathHelper.floor_double(posZ);
-            int var7 = worldObj.getBlockId(var4, var5, var6);
+            int var6 = MathHelper.floor_double(z);
+            int var7 = world.getBlockId(var4, var5, var6);
             if (var7 != 0 && Block.BLOCKS[var7].material == var1)
             {
-                float var8 = BlockFluid.getFluidHeightFromMeta(worldObj.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
+                float var8 = BlockFluid.getFluidHeightFromMeta(world.getBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
                 float var9 = (float)(var5 + 1) - var8;
                 return var2 < (double)var9;
             }
@@ -690,7 +690,7 @@ namespace betareborn.Entities
 
         public bool handleLavaMovement()
         {
-            return worldObj.isMaterialInBB(boundingBox.expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.LAVA);
+            return world.isMaterialInBox(boundingBox.expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.LAVA);
         }
 
         public void moveFlying(float var1, float var2, float var3)
@@ -706,102 +706,102 @@ namespace betareborn.Entities
                 var4 = var3 / var4;
                 var1 *= var4;
                 var2 *= var4;
-                float var5 = MathHelper.sin(rotationYaw * (float)java.lang.Math.PI / 180.0F);
-                float var6 = MathHelper.cos(rotationYaw * (float)java.lang.Math.PI / 180.0F);
-                motionX += (double)(var1 * var6 - var2 * var5);
-                motionZ += (double)(var2 * var6 + var1 * var5);
+                float var5 = MathHelper.sin(yaw * (float)java.lang.Math.PI / 180.0F);
+                float var6 = MathHelper.cos(yaw * (float)java.lang.Math.PI / 180.0F);
+                velocityX += (double)(var1 * var6 - var2 * var5);
+                velocityZ += (double)(var2 * var6 + var1 * var5);
             }
         }
 
         public virtual float getEntityBrightness(float var1)
         {
-            int var2 = MathHelper.floor_double(posX);
+            int var2 = MathHelper.floor_double(x);
             double var3 = (boundingBox.maxY - boundingBox.minY) * 0.66D;
-            int var5 = MathHelper.floor_double(posY - (double)yOffset + var3);
-            int var6 = MathHelper.floor_double(posZ);
-            if (worldObj.checkChunksExist(MathHelper.floor_double(boundingBox.minX), MathHelper.floor_double(boundingBox.minY), MathHelper.floor_double(boundingBox.minZ), MathHelper.floor_double(boundingBox.maxX), MathHelper.floor_double(boundingBox.maxY), MathHelper.floor_double(boundingBox.maxZ)))
+            int var5 = MathHelper.floor_double(y - (double)standingEyeHeight + var3);
+            int var6 = MathHelper.floor_double(z);
+            if (world.isRegionLoaded(MathHelper.floor_double(boundingBox.minX), MathHelper.floor_double(boundingBox.minY), MathHelper.floor_double(boundingBox.minZ), MathHelper.floor_double(boundingBox.maxX), MathHelper.floor_double(boundingBox.maxY), MathHelper.floor_double(boundingBox.maxZ)))
             {
-                float var7 = worldObj.getLuminance(var2, var5, var6);
-                if (var7 < entityBrightness)
+                float var7 = world.getLuminance(var2, var5, var6);
+                if (var7 < minBrightness)
                 {
-                    var7 = entityBrightness;
+                    var7 = minBrightness;
                 }
 
                 return var7;
             }
             else
             {
-                return entityBrightness;
+                return minBrightness;
             }
         }
 
         public void setWorld(World var1)
         {
-            worldObj = var1;
+            world = var1;
         }
 
         public void setPositionAndRotation(double x, double y, double z, float yaw, float pitch)
         {
-            prevPosX = posX = x;
-            prevPosY = posY = y;
-            prevPosZ = posZ = z;
-            prevRotationYaw = rotationYaw = yaw;
-            prevRotationPitch = rotationPitch = pitch;
-            ySize = 0.0F;
-            double var9 = (double)(prevRotationYaw - yaw);
+            prevX = this.x = x;
+            prevY = this.y = y;
+            prevZ = this.z = z;
+            prevYaw = this.yaw = yaw;
+            prevPitch = this.pitch = pitch;
+            cameraOffset = 0.0F;
+            double var9 = (double)(prevYaw - yaw);
             if (var9 < -180.0D)
             {
-                prevRotationYaw += 360.0F;
+                prevYaw += 360.0F;
             }
 
             if (var9 >= 180.0D)
             {
-                prevRotationYaw -= 360.0F;
+                prevYaw -= 360.0F;
             }
 
-            setPosition(posX, posY, posZ);
+            setPosition(this.x, this.y, this.z);
             setRotation(yaw, pitch);
         }
 
         public void setPositionAndAnglesKeepPrevAngles(double var1, double var3, double var5, float var7, float var8)
         {
-            lastTickPosX = prevPosX = posX = var1;
-            lastTickPosY = prevPosY = posY = var3 + (double)yOffset;
-            lastTickPosZ = prevPosZ = posZ = var5;
-            rotationYaw = var7;
-            rotationPitch = var8;
-            setPosition(posX, posY, posZ);
+            lastTickX = prevX = x = var1;
+            lastTickY = prevY = y = var3 + (double)standingEyeHeight;
+            lastTickZ = prevZ = z = var5;
+            yaw = var7;
+            pitch = var8;
+            setPosition(x, y, z);
         }
 
         public float getDistanceToEntity(Entity var1)
         {
-            float var2 = (float)(posX - var1.posX);
-            float var3 = (float)(posY - var1.posY);
-            float var4 = (float)(posZ - var1.posZ);
+            float var2 = (float)(x - var1.x);
+            float var3 = (float)(y - var1.y);
+            float var4 = (float)(z - var1.z);
             return MathHelper.sqrt_float(var2 * var2 + var3 * var3 + var4 * var4);
         }
 
         public double getSquaredDistance(double var1, double var3, double var5)
         {
-            double var7 = posX - var1;
-            double var9 = posY - var3;
-            double var11 = posZ - var5;
+            double var7 = x - var1;
+            double var9 = y - var3;
+            double var11 = z - var5;
             return var7 * var7 + var9 * var9 + var11 * var11;
         }
 
         public double getDistance(double var1, double var3, double var5)
         {
-            double var7 = posX - var1;
-            double var9 = posY - var3;
-            double var11 = posZ - var5;
+            double var7 = x - var1;
+            double var9 = y - var3;
+            double var11 = z - var5;
             return (double)MathHelper.sqrt_double(var7 * var7 + var9 * var9 + var11 * var11);
         }
 
         public double getDistanceSqToEntity(Entity var1)
         {
-            double var2 = posX - var1.posX;
-            double var4 = posY - var1.posY;
-            double var6 = posZ - var1.posZ;
+            double var2 = x - var1.x;
+            double var4 = y - var1.y;
+            double var6 = z - var1.z;
             return var2 * var2 + var4 * var4 + var6 * var6;
         }
 
@@ -811,10 +811,10 @@ namespace betareborn.Entities
 
         public virtual void applyEntityCollision(Entity var1)
         {
-            if (var1.riddenByEntity != this && var1.ridingEntity != this)
+            if (var1.passenger != this && var1.vehicle != this)
             {
-                double var2 = var1.posX - posX;
-                double var4 = var1.posZ - posZ;
+                double var2 = var1.x - x;
+                double var4 = var1.z - z;
                 double var6 = MathHelper.abs_max(var2, var4);
                 if (var6 >= (double)0.01F)
                 {
@@ -831,8 +831,8 @@ namespace betareborn.Entities
                     var4 *= var8;
                     var2 *= (double)0.05F;
                     var4 *= (double)0.05F;
-                    var2 *= (double)(1.0F - entityCollisionReduction);
-                    var4 *= (double)(1.0F - entityCollisionReduction);
+                    var2 *= (double)(1.0F - pushSpeedReduction);
+                    var4 *= (double)(1.0F - pushSpeedReduction);
                     addVelocity(-var2, 0.0D, -var4);
                     var1.addVelocity(var2, 0.0D, var4);
                 }
@@ -842,14 +842,14 @@ namespace betareborn.Entities
 
         public virtual void addVelocity(double var1, double var3, double var5)
         {
-            motionX += var1;
-            motionY += var3;
-            motionZ += var5;
+            velocityX += var1;
+            velocityY += var3;
+            velocityZ += var5;
         }
 
         protected void setBeenAttacked()
         {
-            beenAttacked = true;
+            velocityModified = true;
         }
 
         public virtual bool damage(Entity var1, int var2)
@@ -874,9 +874,9 @@ namespace betareborn.Entities
 
         public virtual bool isInRangeToRenderVec3D(Vec3D var1)
         {
-            double var2 = posX - var1.xCoord;
-            double var4 = posY - var1.yCoord;
-            double var6 = posZ - var1.zCoord;
+            double var2 = x - var1.xCoord;
+            double var4 = y - var1.yCoord;
+            double var6 = z - var1.zCoord;
             double var8 = var2 * var2 + var4 * var4 + var6 * var6;
             return isInRangeToRenderDist(var8);
         }
@@ -910,11 +910,11 @@ namespace betareborn.Entities
 
         public void writeToNBT(NBTTagCompound var1)
         {
-            var1.setTag("Pos", newDoubleNBTList([posX, posY + (double)ySize, posZ]));
-            var1.setTag("Motion", newDoubleNBTList([motionX, motionY, motionZ]));
-            var1.setTag("Rotation", newFloatNBTList([rotationYaw, rotationPitch]));
+            var1.setTag("Pos", newDoubleNBTList([x, y + (double)cameraOffset, z]));
+            var1.setTag("Motion", newDoubleNBTList([velocityX, velocityY, velocityZ]));
+            var1.setTag("Rotation", newFloatNBTList([yaw, pitch]));
             var1.setFloat("FallDistance", fallDistance);
-            var1.setShort("Fire", (short)fire);
+            var1.setShort("Fire", (short)fireTicks);
             var1.setShort("Air", (short)air);
             var1.setBoolean("OnGround", onGround);
             writeNbt(var1);
@@ -925,35 +925,35 @@ namespace betareborn.Entities
             NBTTagList var2 = var1.getTagList("Pos");
             NBTTagList var3 = var1.getTagList("Motion");
             NBTTagList var4 = var1.getTagList("Rotation");
-            motionX = ((NBTTagDouble)var3.tagAt(0)).doubleValue;
-            motionY = ((NBTTagDouble)var3.tagAt(1)).doubleValue;
-            motionZ = ((NBTTagDouble)var3.tagAt(2)).doubleValue;
-            if (java.lang.Math.abs(motionX) > 10.0D)
+            velocityX = ((NBTTagDouble)var3.tagAt(0)).doubleValue;
+            velocityY = ((NBTTagDouble)var3.tagAt(1)).doubleValue;
+            velocityZ = ((NBTTagDouble)var3.tagAt(2)).doubleValue;
+            if (java.lang.Math.abs(velocityX) > 10.0D)
             {
-                motionX = 0.0D;
+                velocityX = 0.0D;
             }
 
-            if (java.lang.Math.abs(motionY) > 10.0D)
+            if (java.lang.Math.abs(velocityY) > 10.0D)
             {
-                motionY = 0.0D;
+                velocityY = 0.0D;
             }
 
-            if (java.lang.Math.abs(motionZ) > 10.0D)
+            if (java.lang.Math.abs(velocityZ) > 10.0D)
             {
-                motionZ = 0.0D;
+                velocityZ = 0.0D;
             }
 
-            prevPosX = lastTickPosX = posX = ((NBTTagDouble)var2.tagAt(0)).doubleValue;
-            prevPosY = lastTickPosY = posY = ((NBTTagDouble)var2.tagAt(1)).doubleValue;
-            prevPosZ = lastTickPosZ = posZ = ((NBTTagDouble)var2.tagAt(2)).doubleValue;
-            prevRotationYaw = rotationYaw = ((NBTTagFloat)var4.tagAt(0)).floatValue;
-            prevRotationPitch = rotationPitch = ((NBTTagFloat)var4.tagAt(1)).floatValue;
+            prevX = lastTickX = x = ((NBTTagDouble)var2.tagAt(0)).doubleValue;
+            prevY = lastTickY = y = ((NBTTagDouble)var2.tagAt(1)).doubleValue;
+            prevZ = lastTickZ = z = ((NBTTagDouble)var2.tagAt(2)).doubleValue;
+            prevYaw = yaw = ((NBTTagFloat)var4.tagAt(0)).floatValue;
+            prevPitch = pitch = ((NBTTagFloat)var4.tagAt(1)).floatValue;
             fallDistance = var1.getFloat("FallDistance");
-            fire = var1.getShort("Fire");
+            fireTicks = var1.getShort("Fire");
             air = var1.getShort("Air");
             onGround = var1.getBoolean("OnGround");
-            setPosition(posX, posY, posZ);
-            setRotation(rotationYaw, rotationPitch);
+            setPosition(x, y, z);
+            setRotation(yaw, pitch);
             readNbt(var1);
         }
 
@@ -1013,9 +1013,9 @@ namespace betareborn.Entities
 
         public EntityItem entityDropItem(ItemStack var1, float var2)
         {
-            EntityItem var3 = new EntityItem(worldObj, posX, posY + (double)var2, posZ, var1);
+            EntityItem var3 = new EntityItem(world, x, y + (double)var2, z, var1);
             var3.delayBeforeCanPickup = 10;
-            worldObj.spawnEntity(var3);
+            world.spawnEntity(var3);
             return var3;
         }
 
@@ -1031,10 +1031,10 @@ namespace betareborn.Entities
                 float var2 = ((float)((var1 >> 0) % 2) - 0.5F) * width * 0.9F;
                 float var3 = ((float)((var1 >> 1) % 2) - 0.5F) * 0.1F;
                 float var4 = ((float)((var1 >> 2) % 2) - 0.5F) * width * 0.9F;
-                int var5 = MathHelper.floor_double(posX + (double)var2);
-                int var6 = MathHelper.floor_double(posY + (double)getEyeHeight() + (double)var3);
-                int var7 = MathHelper.floor_double(posZ + (double)var4);
-                if (worldObj.shouldSuffocate(var5, var6, var7))
+                int var5 = MathHelper.floor_double(x + (double)var2);
+                int var6 = MathHelper.floor_double(y + (double)getEyeHeight() + (double)var3);
+                int var7 = MathHelper.floor_double(z + (double)var4);
+                if (world.shouldSuffocate(var5, var6, var7))
                 {
                     return true;
                 }
@@ -1055,42 +1055,42 @@ namespace betareborn.Entities
 
         public virtual void updateRidden()
         {
-            if (ridingEntity.isDead)
+            if (vehicle.isDead)
             {
-                ridingEntity = null;
+                vehicle = null;
             }
             else
             {
-                motionX = 0.0D;
-                motionY = 0.0D;
-                motionZ = 0.0D;
+                velocityX = 0.0D;
+                velocityY = 0.0D;
+                velocityZ = 0.0D;
                 onUpdate();
-                if (ridingEntity != null)
+                if (vehicle != null)
                 {
-                    ridingEntity.updateRiderPosition();
-                    entityRiderYawDelta += (double)(ridingEntity.rotationYaw - ridingEntity.prevRotationYaw);
+                    vehicle.updateRiderPosition();
+                    vehicleYawDelta += (double)(vehicle.yaw - vehicle.prevYaw);
 
-                    for (entityRiderPitchDelta += (double)(ridingEntity.rotationPitch - ridingEntity.prevRotationPitch); entityRiderYawDelta >= 180.0D; entityRiderYawDelta -= 360.0D)
+                    for (vehiclePitchDelta += (double)(vehicle.pitch - vehicle.prevPitch); vehicleYawDelta >= 180.0D; vehicleYawDelta -= 360.0D)
                     {
                     }
 
-                    while (entityRiderYawDelta < -180.0D)
+                    while (vehicleYawDelta < -180.0D)
                     {
-                        entityRiderYawDelta += 360.0D;
+                        vehicleYawDelta += 360.0D;
                     }
 
-                    while (entityRiderPitchDelta >= 180.0D)
+                    while (vehiclePitchDelta >= 180.0D)
                     {
-                        entityRiderPitchDelta -= 360.0D;
+                        vehiclePitchDelta -= 360.0D;
                     }
 
-                    while (entityRiderPitchDelta < -180.0D)
+                    while (vehiclePitchDelta < -180.0D)
                     {
-                        entityRiderPitchDelta += 360.0D;
+                        vehiclePitchDelta += 360.0D;
                     }
 
-                    double var1 = entityRiderYawDelta * 0.5D;
-                    double var3 = entityRiderPitchDelta * 0.5D;
+                    double var1 = vehicleYawDelta * 0.5D;
+                    double var3 = vehiclePitchDelta * 0.5D;
                     float var5 = 10.0F;
                     if (var1 > (double)var5)
                     {
@@ -1112,22 +1112,22 @@ namespace betareborn.Entities
                         var3 = (double)(-var5);
                     }
 
-                    entityRiderYawDelta -= var1;
-                    entityRiderPitchDelta -= var3;
-                    rotationYaw = (float)((double)rotationYaw + var1);
-                    rotationPitch = (float)((double)rotationPitch + var3);
+                    vehicleYawDelta -= var1;
+                    vehiclePitchDelta -= var3;
+                    yaw = (float)((double)yaw + var1);
+                    pitch = (float)((double)pitch + var3);
                 }
             }
         }
 
         public virtual void updateRiderPosition()
         {
-            riddenByEntity.setPosition(posX, posY + getMountedYOffset() + riddenByEntity.getYOffset(), posZ);
+            passenger.setPosition(x, y + getMountedYOffset() + passenger.getYOffset(), z);
         }
 
         public virtual double getYOffset()
         {
-            return (double)yOffset;
+            return (double)standingEyeHeight;
         }
 
         public virtual double getMountedYOffset()
@@ -1137,38 +1137,38 @@ namespace betareborn.Entities
 
         public void mountEntity(Entity var1)
         {
-            entityRiderPitchDelta = 0.0D;
-            entityRiderYawDelta = 0.0D;
+            vehiclePitchDelta = 0.0D;
+            vehicleYawDelta = 0.0D;
             if (var1 == null)
             {
-                if (ridingEntity != null)
+                if (vehicle != null)
                 {
-                    setPositionAndAnglesKeepPrevAngles(ridingEntity.posX, ridingEntity.boundingBox.minY + (double)ridingEntity.height, ridingEntity.posZ, rotationYaw, rotationPitch);
-                    ridingEntity.riddenByEntity = null;
+                    setPositionAndAnglesKeepPrevAngles(vehicle.x, vehicle.boundingBox.minY + (double)vehicle.height, vehicle.z, yaw, pitch);
+                    vehicle.passenger = null;
                 }
 
-                ridingEntity = null;
+                vehicle = null;
             }
-            else if (ridingEntity == var1)
+            else if (vehicle == var1)
             {
-                ridingEntity.riddenByEntity = null;
-                ridingEntity = null;
-                setPositionAndAnglesKeepPrevAngles(var1.posX, var1.boundingBox.minY + (double)var1.height, var1.posZ, rotationYaw, rotationPitch);
+                vehicle.passenger = null;
+                vehicle = null;
+                setPositionAndAnglesKeepPrevAngles(var1.x, var1.boundingBox.minY + (double)var1.height, var1.z, yaw, pitch);
             }
             else
             {
-                if (ridingEntity != null)
+                if (vehicle != null)
                 {
-                    ridingEntity.riddenByEntity = null;
+                    vehicle.passenger = null;
                 }
 
-                if (var1.riddenByEntity != null)
+                if (var1.passenger != null)
                 {
-                    var1.riddenByEntity.ridingEntity = null;
+                    var1.passenger.vehicle = null;
                 }
 
-                ridingEntity = var1;
-                var1.riddenByEntity = this;
+                vehicle = var1;
+                var1.passenger = this;
             }
         }
 
@@ -1176,7 +1176,7 @@ namespace betareborn.Entities
         {
             setPosition(var1, var3, var5);
             setRotation(var7, var8);
-            var var10 = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+            var var10 = world.getEntityCollisions(this, boundingBox.contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
             if (var10.Count > 0)
             {
                 double var11 = 0.0D;
@@ -1212,9 +1212,9 @@ namespace betareborn.Entities
 
         public virtual void setVelocity(double var1, double var3, double var5)
         {
-            motionX = var1;
-            motionY = var3;
-            motionZ = var5;
+            velocityX = var1;
+            velocityY = var3;
+            velocityZ = var5;
         }
 
         public virtual void handleHealthUpdate(sbyte var1)
@@ -1235,12 +1235,12 @@ namespace betareborn.Entities
 
         public bool isOnFire()
         {
-            return fire > 0 || getEntityFlag(0);
+            return fireTicks > 0 || getEntityFlag(0);
         }
 
         public bool isRiding()
         {
-            return ridingEntity != null || getEntityFlag(2);
+            return vehicle != null || getEntityFlag(2);
         }
 
         public virtual bool isSneaking()
@@ -1272,10 +1272,10 @@ namespace betareborn.Entities
         public virtual void onStruckByLightning(EntityLightningBolt var1)
         {
             dealFireDamage(5);
-            ++fire;
-            if (fire == 0)
+            ++fireTicks;
+            if (fireTicks == 0)
             {
-                fire = 300;
+                fireTicks = 300;
             }
 
         }
@@ -1292,14 +1292,14 @@ namespace betareborn.Entities
             double var10 = var1 - (double)var7;
             double var12 = var3 - (double)var8;
             double var14 = var5 - (double)var9;
-            if (worldObj.shouldSuffocate(var7, var8, var9))
+            if (world.shouldSuffocate(var7, var8, var9))
             {
-                bool var16 = !worldObj.shouldSuffocate(var7 - 1, var8, var9);
-                bool var17 = !worldObj.shouldSuffocate(var7 + 1, var8, var9);
-                bool var18 = !worldObj.shouldSuffocate(var7, var8 - 1, var9);
-                bool var19 = !worldObj.shouldSuffocate(var7, var8 + 1, var9);
-                bool var20 = !worldObj.shouldSuffocate(var7, var8, var9 - 1);
-                bool var21 = !worldObj.shouldSuffocate(var7, var8, var9 + 1);
+                bool var16 = !world.shouldSuffocate(var7 - 1, var8, var9);
+                bool var17 = !world.shouldSuffocate(var7 + 1, var8, var9);
+                bool var18 = !world.shouldSuffocate(var7, var8 - 1, var9);
+                bool var19 = !world.shouldSuffocate(var7, var8 + 1, var9);
+                bool var20 = !world.shouldSuffocate(var7, var8, var9 - 1);
+                bool var21 = !world.shouldSuffocate(var7, var8, var9 + 1);
                 int var22 = -1;
                 double var23 = 9999.0D;
                 if (var16 && var10 < var23)
@@ -1338,35 +1338,35 @@ namespace betareborn.Entities
                     var22 = 5;
                 }
 
-                float var25 = rand.nextFloat() * 0.2F + 0.1F;
+                float var25 = random.nextFloat() * 0.2F + 0.1F;
                 if (var22 == 0)
                 {
-                    motionX = (double)(-var25);
+                    velocityX = (double)(-var25);
                 }
 
                 if (var22 == 1)
                 {
-                    motionX = (double)var25;
+                    velocityX = (double)var25;
                 }
 
                 if (var22 == 2)
                 {
-                    motionY = (double)(-var25);
+                    velocityY = (double)(-var25);
                 }
 
                 if (var22 == 3)
                 {
-                    motionY = (double)var25;
+                    velocityY = (double)var25;
                 }
 
                 if (var22 == 4)
                 {
-                    motionZ = (double)(-var25);
+                    velocityZ = (double)(-var25);
                 }
 
                 if (var22 == 5)
                 {
-                    motionZ = (double)var25;
+                    velocityZ = (double)var25;
                 }
             }
 

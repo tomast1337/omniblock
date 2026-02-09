@@ -72,10 +72,10 @@ namespace betareborn.Worlds.Gen.Features
 
                 if (var6 == 3 && var7 == 1)
                 {
-                    var1.setBlockWithNotify(var3, var4, var5, liquidBlockId);
-                    var1.scheduledUpdatesAreImmediate = true;
+                    var1.setBlock(var3, var4, var5, liquidBlockId);
+                    var1.instantBlockUpdateEnabled = true;
                     Block.BLOCKS[liquidBlockId].onTick(var1, var3, var4, var5, var2);
-                    var1.scheduledUpdatesAreImmediate = false;
+                    var1.instantBlockUpdateEnabled = false;
                 }
 
                 return true;

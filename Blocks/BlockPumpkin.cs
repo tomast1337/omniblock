@@ -57,7 +57,7 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(placer.rotationYaw * 4.0F / 360.0F) + 2.5D) & 3;
+            int var6 = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 2.5D) & 3;
             world.setBlockMeta(x, y, z, var6);
         }
     }

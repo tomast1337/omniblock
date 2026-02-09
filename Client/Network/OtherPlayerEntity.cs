@@ -19,7 +19,7 @@ namespace betareborn.Client.Network
         public OtherPlayerEntity(World var1, string var2) : base(var1)
         {
             username = var2;
-            yOffset = 0.0F;
+            standingEyeHeight = 0.0F;
             stepHeight = 0.0F;
             if (var2 != null && var2.Length > 0)
             {
@@ -33,7 +33,7 @@ namespace betareborn.Client.Network
 
         protected override void resetEyeHeight()
         {
-            yOffset = 0.0F;
+            standingEyeHeight = 0.0F;
         }
 
         public override bool damage(Entity var1, int var2)
@@ -56,8 +56,8 @@ namespace betareborn.Client.Network
             sleepOffsetY = 0.0F;
             base.onUpdate();
             lastWalkAnimationSpeed = walkAnimationSpeed;
-            double var1 = posX - prevPosX;
-            double var3 = posZ - prevPosZ;
+            double var1 = x - prevX;
+            double var3 = z - prevZ;
             float var5 = MathHelper.sqrt_double(var1 * var1 + var3 * var3) * 4.0F;
             if (var5 > 1.0F)
             {
@@ -78,12 +78,12 @@ namespace betareborn.Client.Network
             base.tickLiving();
             if (lerpSteps > 0)
             {
-                double var1 = posX + (lerpX - posX) / lerpSteps;
-                double var3 = posY + (lerpY - posY) / lerpSteps;
-                double var5 = posZ + (lerpZ - posZ) / lerpSteps;
+                double var1 = x + (lerpX - x) / lerpSteps;
+                double var3 = y + (lerpY - y) / lerpSteps;
+                double var5 = z + (lerpZ - z) / lerpSteps;
 
                 double var7;
-                for (var7 = lerpYaw - rotationYaw; var7 < -180.0D; var7 += 360.0D)
+                for (var7 = lerpYaw - yaw; var7 < -180.0D; var7 += 360.0D)
                 {
                 }
 
@@ -92,16 +92,16 @@ namespace betareborn.Client.Network
                     var7 -= 360.0D;
                 }
 
-                rotationYaw = (float)(rotationYaw + var7 / lerpSteps);
-                rotationPitch = (float)(rotationPitch + (lerpPitch - rotationPitch) / lerpSteps);
+                yaw = (float)(yaw + var7 / lerpSteps);
+                pitch = (float)(pitch + (lerpPitch - pitch) / lerpSteps);
                 --lerpSteps;
                 setPosition(var1, var3, var5);
-                setRotation(rotationYaw, rotationPitch);
+                setRotation(yaw, pitch);
             }
 
             prevStepBobbingAmount = stepBobbingAmount;
-            float var9 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-            float var2 = (float)java.lang.Math.atan(-motionY * (double)0.2F) * 15.0F;
+            float var9 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
+            float var2 = (float)java.lang.Math.atan(-velocityY * (double)0.2F) * 15.0F;
             if (var9 > 0.1F)
             {
                 var9 = 0.1F;

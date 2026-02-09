@@ -149,14 +149,14 @@ namespace betareborn.Client.Rendering.Items
         {
             float var2 = prevEquippedProgress + (equippedProgress - prevEquippedProgress) * var1;
             ClientPlayerEntity var3 = mc.player;
-            float var4 = var3.prevRotationPitch + (var3.rotationPitch - var3.prevRotationPitch) * var1;
+            float var4 = var3.prevPitch + (var3.pitch - var3.prevPitch) * var1;
             GLManager.GL.PushMatrix();
             GLManager.GL.Rotate(var4, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Rotate(var3.prevRotationYaw + (var3.rotationYaw - var3.prevRotationYaw) * var1, 0.0F, 1.0F, 0.0F);
+            GLManager.GL.Rotate(var3.prevYaw + (var3.yaw - var3.prevYaw) * var1, 0.0F, 1.0F, 0.0F);
             Lighting.turnOn();
             GLManager.GL.PopMatrix();
             ItemStack var5 = itemToRender;
-            float var6 = mc.world.getLuminance(MathHelper.floor_double(var3.posX), MathHelper.floor_double(var3.posY), MathHelper.floor_double(var3.posZ));
+            float var6 = mc.world.getLuminance(MathHelper.floor_double(var3.x), MathHelper.floor_double(var3.y), MathHelper.floor_double(var3.z));
             float var8;
             float var9;
             float var10;
@@ -321,9 +321,9 @@ namespace betareborn.Client.Rendering.Items
 
             if (mc.player.isInsideWall())
             {
-                var2 = MathHelper.floor_double(mc.player.posX);
-                int var3 = MathHelper.floor_double(mc.player.posY);
-                int var4 = MathHelper.floor_double(mc.player.posZ);
+                var2 = MathHelper.floor_double(mc.player.x);
+                int var3 = MathHelper.floor_double(mc.player.y);
+                int var4 = MathHelper.floor_double(mc.player.z);
                 int var5 = mc.textureManager.getTextureId("/terrain.png");
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var5);
                 int var6 = mc.world.getBlockId(var2, var3, var4);
@@ -405,8 +405,8 @@ namespace betareborn.Client.Rendering.Items
             float var7 = -1.0F;
             float var8 = 1.0F;
             float var9 = -0.5F;
-            float var10 = -mc.player.rotationYaw / 64.0F;
-            float var11 = mc.player.rotationPitch / 64.0F;
+            float var10 = -mc.player.yaw / 64.0F;
+            float var11 = mc.player.pitch / 64.0F;
             var2.startDrawingQuads();
             var2.addVertexWithUV((double)var5, (double)var7, (double)var9, (double)(var4 + var10), (double)(var4 + var11));
             var2.addVertexWithUV((double)var6, (double)var7, (double)var9, (double)(0.0F + var10), (double)(var4 + var11));

@@ -27,7 +27,7 @@ namespace betareborn.Blocks
             if (world.getBrightness(LightType.Block, x, y, z) > 11)
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
         }

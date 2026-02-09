@@ -21,7 +21,7 @@ namespace betareborn
 
         public override void flipPlayer(EntityPlayer var1)
         {
-            var1.rotationYaw = -180.0F;
+            var1.yaw = -180.0F;
         }
 
         public override bool sendBlockRemoved(int var1, int var2, int var3, int var4)
@@ -51,7 +51,7 @@ namespace betareborn
 
         public override void clickBlock(int var1, int var2, int var3, int var4)
         {
-            mc.world.onBlockHit(mc.player, var1, var2, var3, var4);
+            mc.world.extinguishFire(mc.player, var1, var2, var3, var4);
             int var5 = mc.world.getBlockId(var1, var2, var3);
             if (var5 > 0 && curBlockDamage == 0.0F)
             {

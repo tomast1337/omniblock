@@ -14,10 +14,10 @@ namespace betareborn.Entities
 
         public EntityHeartFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14) : base(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D)
         {
-            motionX *= (double)0.01F;
-            motionY *= (double)0.01F;
-            motionZ *= (double)0.01F;
-            motionY += 0.1D;
+            velocityX *= (double)0.01F;
+            velocityY *= (double)0.01F;
+            velocityZ *= (double)0.01F;
+            velocityY += 0.1D;
             particleScale *= 12.0F / 16.0F;
             particleScale *= var14;
             field_25022_a = particleScale;
@@ -45,28 +45,28 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
             if (particleAge++ >= particleMaxAge)
             {
                 markDead();
             }
 
-            moveEntity(motionX, motionY, motionZ);
-            if (posY == prevPosY)
+            moveEntity(velocityX, velocityY, velocityZ);
+            if (y == prevY)
             {
-                motionX *= 1.1D;
-                motionZ *= 1.1D;
+                velocityX *= 1.1D;
+                velocityZ *= 1.1D;
             }
 
-            motionX *= (double)0.86F;
-            motionY *= (double)0.86F;
-            motionZ *= (double)0.86F;
+            velocityX *= (double)0.86F;
+            velocityY *= (double)0.86F;
+            velocityZ *= (double)0.86F;
             if (onGround)
             {
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
             }
 
         }

@@ -24,7 +24,7 @@ namespace betareborn.Blocks
                     var10000 = z + (random.nextInt(3) - 1);
                     if (world.isAir(var6, var7, var8) && canGrow(world, var6, var7, var8))
                     {
-                        world.setBlockWithNotify(var6, var7, var8, id);
+                        world.setBlock(var6, var7, var8, id);
                     }
                 }
             }

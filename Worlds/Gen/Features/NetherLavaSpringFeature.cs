@@ -78,10 +78,10 @@ namespace betareborn.Worlds.Gen.Features
 
                 if (var6 == 4 && var7 == 1)
                 {
-                    var1.setBlockWithNotify(var3, var4, var5, lavaBlockId);
-                    var1.scheduledUpdatesAreImmediate = true;
+                    var1.setBlock(var3, var4, var5, lavaBlockId);
+                    var1.instantBlockUpdateEnabled = true;
                     Block.BLOCKS[lavaBlockId].onTick(var1, var3, var4, var5, var2);
-                    var1.scheduledUpdatesAreImmediate = false;
+                    var1.instantBlockUpdateEnabled = false;
                 }
 
                 return true;

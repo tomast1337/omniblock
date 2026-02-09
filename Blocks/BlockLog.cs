@@ -30,7 +30,7 @@ namespace betareborn.Blocks
         {
             sbyte var5 = 4;
             int var6 = var5 + 1;
-            if (world.checkChunksExist(x - var6, y - var6, z - var6, x + var6, y + var6, z + var6))
+            if (world.isRegionLoaded(x - var6, y - var6, z - var6, x + var6, y + var6, z + var6))
             {
                 for (int var7 = -var5; var7 <= var5; ++var7)
                 {
@@ -44,7 +44,7 @@ namespace betareborn.Blocks
                                 int var11 = world.getBlockMeta(x + var7, y + var8, z + var9);
                                 if ((var11 & 8) == 0)
                                 {
-                                    world.setBlockMetadata(x + var7, y + var8, z + var9, var11 | 8);
+                                    world.setBlockMetaWithoutNotifyingNeighbors(x + var7, y + var8, z + var9, var11 | 8);
                                 }
                             }
                         }

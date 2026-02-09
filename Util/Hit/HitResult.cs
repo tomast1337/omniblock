@@ -27,7 +27,7 @@ namespace betareborn.Util.Hit
         {
             type = HitResultType.ENTITY;
             this.entity = entity;
-            pos = Vec3D.createVector(entity.posX, entity.posY, entity.posZ);
+            pos = Vec3D.createVector(entity.x, entity.y, entity.z);
         }
     }
 

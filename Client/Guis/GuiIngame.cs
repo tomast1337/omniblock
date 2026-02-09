@@ -68,8 +68,8 @@ namespace betareborn.Client.Guis
             GLManager.GL.BlendFunc(GLEnum.OneMinusDstColor, GLEnum.OneMinusSrcColor);
             drawTexturedModalRect(var6 / 2 - 7, var7 / 2 - 7, 0, 0, 16, 16);
             GLManager.GL.Disable(GLEnum.Blend);
-            bool var12 = mc.player.heartsLife / 3 % 2 == 1;
-            if (mc.player.heartsLife < 10)
+            bool var12 = mc.player.hearts / 3 % 2 == 1;
+            if (mc.player.hearts < 10)
             {
                 var12 = false;
             }
@@ -217,10 +217,10 @@ namespace betareborn.Client.Guis
                 drawString(var8, var23, var6 - var8.getStringWidth(var23) - 2, 2, 14737632);
                 var23 = "Allocated memory: " + var29 * 100L / var24 + "% (" + var29 / 1024L / 1024L + "MB)";
                 drawString(var8, var23, var6 - var8.getStringWidth(var23) - 2, 12, 14737632);
-                drawString(var8, "x: " + mc.player.posX, 2, 64, 14737632);
-                drawString(var8, "y: " + mc.player.posY, 2, 72, 14737632);
-                drawString(var8, "z: " + mc.player.posZ, 2, 80, 14737632);
-                drawString(var8, "f: " + (MathHelper.floor_double((double)(mc.player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3), 2, 88, 14737632);
+                drawString(var8, "x: " + mc.player.x, 2, 64, 14737632);
+                drawString(var8, "y: " + mc.player.y, 2, 72, 14737632);
+                drawString(var8, "z: " + mc.player.z, 2, 80, 14737632);
+                drawString(var8, "f: " + (MathHelper.floor_double((double)(mc.player.yaw * 4.0F / 360.0F) + 0.5D) & 3), 2, 88, 14737632);
                 GLManager.GL.PopMatrix();
             }
 

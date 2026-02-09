@@ -46,7 +46,7 @@ namespace betareborn.Blocks
         {
             sbyte var5 = 1;
             int var6 = var5 + 1;
-            if (world.checkChunksExist(x - var6, y - var6, z - var6, x + var6, y + var6, z + var6))
+            if (world.isRegionLoaded(x - var6, y - var6, z - var6, x + var6, y + var6, z + var6))
             {
                 for (int var7 = -var5; var7 <= var5; ++var7)
                 {
@@ -58,7 +58,7 @@ namespace betareborn.Blocks
                             if (var10 == Block.LEAVES.id)
                             {
                                 int var11 = world.getBlockMeta(x + var7, y + var8, z + var9);
-                                world.setBlockMetadata(x + var7, y + var8, z + var9, var11 | 8);
+                                world.setBlockMetaWithoutNotifyingNeighbors(x + var7, y + var8, z + var9, var11 | 8);
                             }
                         }
                     }
@@ -85,7 +85,7 @@ namespace betareborn.Blocks
                     }
 
                     int var12;
-                    if (world.checkChunksExist(x - var8, y - var8, z - var8, x + var8, y + var8, z + var8))
+                    if (world.isRegionLoaded(x - var8, y - var8, z - var8, x + var8, y + var8, z + var8))
                     {
                         var12 = -var7;
 
@@ -171,7 +171,7 @@ namespace betareborn.Blocks
                     var12 = decayRegion[var11 * var10 + var11 * var9 + var11];
                     if (var12 >= 0)
                     {
-                        world.setBlockMetadata(x, y, z, var6 & -9);
+                        world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, var6 & -9);
                     }
                     else
                     {
@@ -185,7 +185,7 @@ namespace betareborn.Blocks
         private void breakLeaves(World world, int x, int y, int z)
         {
             dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-            world.setBlockWithNotify(x, y, z, 0);
+            world.setBlock(x, y, z, 0);
         }
 
         public override int getDroppedItemCount(java.util.Random random)

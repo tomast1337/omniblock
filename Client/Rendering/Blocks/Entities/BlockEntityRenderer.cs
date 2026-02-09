@@ -71,11 +71,11 @@ namespace betareborn.Client.Rendering.Blocks.Entities
             renderEngine = var2;
             entityLivingPlayer = var4;
             fontRenderer = var3;
-            playerYaw = var4.prevRotationYaw + (var4.rotationYaw - var4.prevRotationYaw) * var5;
-            playerPitch = var4.prevRotationPitch + (var4.rotationPitch - var4.prevRotationPitch) * var5;
-            playerX = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var5;
-            playerY = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var5;
-            playerZ = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var5;
+            playerYaw = var4.prevYaw + (var4.yaw - var4.prevYaw) * var5;
+            playerPitch = var4.prevPitch + (var4.pitch - var4.prevPitch) * var5;
+            playerX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var5;
+            playerY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var5;
+            playerZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var5;
         }
 
         public void renderTileEntity(BlockEntity var1, float var2)

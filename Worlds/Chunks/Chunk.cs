@@ -1,7 +1,7 @@
 using betareborn.Blocks;
+using betareborn.Blocks.Entities;
 using betareborn.Entities;
 using betareborn.Util.Maths;
-using betareborn.Blocks.Entities;
 
 namespace betareborn.Worlds.Chunks
 {
@@ -195,7 +195,7 @@ namespace betareborn.Worlds.Chunks
 
             if (var5 != var4)
             {
-                world.markBlocksDirtyVertical(localX, localZ, var5, var4);
+                world.setBlocksDirty(localX, localZ, var5, var4);
                 heightmap[localZ << 4 | localX] = (byte)var5;
                 int var7;
                 int var8;
@@ -247,7 +247,7 @@ namespace betareborn.Worlds.Chunks
                 for (var10 = var5; var5 > 0 && var9 > 0; skyLight.setNibble(localX, var5, localZ, var9))
                 {
                     --var5;
-                    int var11 = Block.BLOCK_LIGHT_OPACITY[getBlockID(localX, var5, localZ)];
+                    int var11 = Block.BLOCK_LIGHT_OPACITY[getBlockId(localX, var5, localZ)];
                     if (var11 == 0)
                     {
                         var11 = 1;
@@ -260,7 +260,7 @@ namespace betareborn.Worlds.Chunks
                     }
                 }
 
-                while (var5 > 0 && Block.BLOCK_LIGHT_OPACITY[getBlockID(localX, var5 - 1, localZ)] == 0)
+                while (var5 > 0 && Block.BLOCK_LIGHT_OPACITY[getBlockId(localX, var5 - 1, localZ)] == 0)
                 {
                     --var5;
                 }
@@ -274,7 +274,7 @@ namespace betareborn.Worlds.Chunks
             }
         }
 
-        public virtual int getBlockID(int x, int y, int z)
+        public virtual int getBlockId(int x, int y, int z)
         {
             return blocks[x << 11 | z << 7 | y] & 255;
         }
@@ -430,15 +430,15 @@ namespace betareborn.Worlds.Chunks
         public virtual void addEntity(Entity entity)
         {
             lastSaveHadEntities = true;
-            int var2 = MathHelper.floor_double(entity.posX / 16.0D);
-            int var3 = MathHelper.floor_double(entity.posZ / 16.0D);
+            int var2 = MathHelper.floor_double(entity.x / 16.0D);
+            int var3 = MathHelper.floor_double(entity.z / 16.0D);
             if (var2 != x || var3 != z)
             {
                 java.lang.System.@out.println("Wrong location! " + entity);
                 java.lang.Thread.dumpStack();
             }
 
-            int var4 = MathHelper.floor_double(entity.posY / 16.0D);
+            int var4 = MathHelper.floor_double(entity.y / 16.0D);
             if (var4 < 0)
             {
                 var4 = 0;
@@ -449,16 +449,16 @@ namespace betareborn.Worlds.Chunks
                 var4 = entities.Length - 1;
             }
 
-            entity.addedToChunk = true;
-            entity.chunkCoordX = x;
-            entity.chunkCoordY = var4;
-            entity.chunkCoordZ = z;
+            entity.isPersistent = true;
+            entity.chunkX = x;
+            entity.chunkSlice = var4;
+            entity.chunkZ = z;
             entities[var4].Add(entity);
         }
 
         public virtual void removeEntity(Entity entity)
         {
-            removeEntity(entity, entity.chunkCoordY);
+            removeEntity(entity, entity.chunkSlice);
         }
 
         public virtual void removeEntity(Entity entity, int chunkSlice)
@@ -487,7 +487,7 @@ namespace betareborn.Worlds.Chunks
             blockEntities.TryGetValue(var4, out BlockEntity? var5);
             if (var5 == null)
             {
-                int var6 = getBlockID(x, y, z);
+                int var6 = getBlockId(x, y, z);
                 if (!Block.BLOCKS_WITH_ENTITY[var6])
                 {
                     return null;
@@ -517,7 +517,7 @@ namespace betareborn.Worlds.Chunks
             setBlockEntity(var2, var3, var4, blockEntity);
             if (loaded)
             {
-                world.loadedTileEntityList.Add(blockEntity);
+                world.blockEntities.Add(blockEntity);
             }
 
         }
@@ -529,7 +529,7 @@ namespace betareborn.Worlds.Chunks
             blockEntity.x = this.x * 16 + x;
             blockEntity.y = y;
             blockEntity.z = this.z * 16 + z;
-            if (getBlockID(x, y, z) != 0 && Block.BLOCKS[getBlockID(x, y, z)] is BlockWithEntity)
+            if (getBlockId(x, y, z) != 0 && Block.BLOCKS[getBlockId(x, y, z)] is BlockWithEntity)
             {
                 blockEntity.cancelRemoval();
                 blockEntities[var5] = blockEntity;

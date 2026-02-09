@@ -89,7 +89,7 @@ namespace betareborn.Worlds.Gen.Features
                     {
                         if (var6[(var8 * 16 + var32) * 8 + var10])
                         {
-                            var1.setBlock(var3 + var8, var4 + var10, var5 + var32, var10 >= 4 ? 0 : waterBlockId);
+                            var1.setBlockWithoutNotifyingNeighbors(var3 + var8, var4 + var10, var5 + var32, var10 >= 4 ? 0 : waterBlockId);
                         }
                     }
                 }
@@ -103,7 +103,7 @@ namespace betareborn.Worlds.Gen.Features
                     {
                         if (var6[(var8 * 16 + var32) * 8 + var10] && var1.getBlockId(var3 + var8, var4 + var10 - 1, var5 + var32) == Block.DIRT.id && var1.getBrightness(LightType.Sky, var3 + var8, var4 + var10, var5 + var32) > 0)
                         {
-                            var1.setBlock(var3 + var8, var4 + var10 - 1, var5 + var32, Block.GRASS_BLOCK.id);
+                            var1.setBlockWithoutNotifyingNeighbors(var3 + var8, var4 + var10 - 1, var5 + var32, Block.GRASS_BLOCK.id);
                         }
                     }
                 }
@@ -120,7 +120,7 @@ namespace betareborn.Worlds.Gen.Features
                             var33 = !var6[(var8 * 16 + var32) * 8 + var10] && (var8 < 15 && var6[((var8 + 1) * 16 + var32) * 8 + var10] || var8 > 0 && var6[((var8 - 1) * 16 + var32) * 8 + var10] || var32 < 15 && var6[(var8 * 16 + var32 + 1) * 8 + var10] || var32 > 0 && var6[(var8 * 16 + (var32 - 1)) * 8 + var10] || var10 < 7 && var6[(var8 * 16 + var32) * 8 + var10 + 1] || var10 > 0 && var6[(var8 * 16 + var32) * 8 + (var10 - 1)]);
                             if (var33 && (var10 < 4 || var2.nextInt(2) != 0) && var1.getMaterial(var3 + var8, var4 + var10, var5 + var32).isSolid())
                             {
-                                var1.setBlock(var3 + var8, var4 + var10, var5 + var32, Block.STONE.id);
+                                var1.setBlockWithoutNotifyingNeighbors(var3 + var8, var4 + var10, var5 + var32, Block.STONE.id);
                             }
                         }
                     }

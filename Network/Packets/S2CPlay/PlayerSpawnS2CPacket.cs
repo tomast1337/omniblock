@@ -27,11 +27,11 @@ namespace betareborn.Network.Packets.S2CPlay
         {
             entityId = var1.entityId;
             name = var1.username;
-            xPosition = MathHelper.floor_double(var1.posX * 32.0D);
-            yPosition = MathHelper.floor_double(var1.posY * 32.0D);
-            zPosition = MathHelper.floor_double(var1.posZ * 32.0D);
-            rotation = (sbyte)(int)(var1.rotationYaw * 256.0F / 360.0F);
-            pitch = (sbyte)(int)(var1.rotationPitch * 256.0F / 360.0F);
+            xPosition = MathHelper.floor_double(var1.x * 32.0D);
+            yPosition = MathHelper.floor_double(var1.y * 32.0D);
+            zPosition = MathHelper.floor_double(var1.z * 32.0D);
+            rotation = (sbyte)(int)(var1.yaw * 256.0F / 360.0F);
+            pitch = (sbyte)(int)(var1.pitch * 256.0F / 360.0F);
             ItemStack var2 = var1.inventory.getCurrentItem();
             currentItem = var2 == null ? 0 : var2.itemID;
         }

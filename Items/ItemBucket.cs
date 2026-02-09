@@ -21,11 +21,11 @@ namespace betareborn.Items
         public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
             float var4 = 1.0F;
-            float var5 = var3.prevRotationPitch + (var3.rotationPitch - var3.prevRotationPitch) * var4;
-            float var6 = var3.prevRotationYaw + (var3.rotationYaw - var3.prevRotationYaw) * var4;
-            double var7 = var3.prevPosX + (var3.posX - var3.prevPosX) * (double)var4;
-            double var9 = var3.prevPosY + (var3.posY - var3.prevPosY) * (double)var4 + 1.62D - (double)var3.yOffset;
-            double var11 = var3.prevPosZ + (var3.posZ - var3.prevPosZ) * (double)var4;
+            float var5 = var3.prevPitch + (var3.pitch - var3.prevPitch) * var4;
+            float var6 = var3.prevYaw + (var3.yaw - var3.prevYaw) * var4;
+            double var7 = var3.prevX + (var3.x - var3.prevX) * (double)var4;
+            double var9 = var3.prevY + (var3.y - var3.prevY) * (double)var4 + 1.62D - (double)var3.standingEyeHeight;
+            double var11 = var3.prevZ + (var3.z - var3.prevZ) * (double)var4;
             Vec3D var13 = Vec3D.createVector(var7, var9, var11);
             float var14 = MathHelper.cos(-var6 * ((float)Math.PI / 180.0F) - (float)Math.PI);
             float var15 = MathHelper.sin(-var6 * ((float)Math.PI / 180.0F) - (float)Math.PI);
@@ -35,7 +35,7 @@ namespace betareborn.Items
             float var20 = var14 * var16;
             double var21 = 5.0D;
             Vec3D var23 = var13.addVector((double)var18 * var21, (double)var17 * var21, (double)var20 * var21);
-            HitResult var24 = var2.rayTraceBlocks_do(var13, var23, isFull == 0);
+            HitResult var24 = var2.raycast(var13, var23, isFull == 0);
             if (var24 == null)
             {
                 return var1;
@@ -47,7 +47,7 @@ namespace betareborn.Items
                     int var25 = var24.blockX;
                     int var26 = var24.blockY;
                     int var27 = var24.blockZ;
-                    if (!var2.func_6466_a(var3, var25, var26, var27))
+                    if (!var2.canInteract(var3, var25, var26, var27))
                     {
                         return var1;
                     }
@@ -56,13 +56,13 @@ namespace betareborn.Items
                     {
                         if (var2.getMaterial(var25, var26, var27) == Material.WATER && var2.getBlockMeta(var25, var26, var27) == 0)
                         {
-                            var2.setBlockWithNotify(var25, var26, var27, 0);
+                            var2.setBlock(var25, var26, var27, 0);
                             return new ItemStack(Item.WATER_BUCKET);
                         }
 
                         if (var2.getMaterial(var25, var26, var27) == Material.LAVA && var2.getBlockMeta(var25, var26, var27) == 0)
                         {
-                            var2.setBlockWithNotify(var25, var26, var27, 0);
+                            var2.setBlock(var25, var26, var27, 0);
                             return new ItemStack(Item.LAVA_BUCKET);
                         }
                     }
@@ -116,7 +116,7 @@ namespace betareborn.Items
                             }
                             else
                             {
-                                var2.setBlockAndMetadataWithNotify(var25, var26, var27, isFull, 0);
+                                var2.setBlock(var25, var26, var27, isFull, 0);
                             }
 
                             return new ItemStack(Item.BUCKET);

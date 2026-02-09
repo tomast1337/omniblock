@@ -41,7 +41,7 @@ namespace betareborn.Entities
         public EntityFireball(World var1, double var2, double var4, double var6, double var8, double var10, double var12) : base(var1)
         {
             setBoundingBoxSpacing(1.0F, 1.0F);
-            setPositionAndAnglesKeepPrevAngles(var2, var4, var6, rotationYaw, rotationPitch);
+            setPositionAndAnglesKeepPrevAngles(var2, var4, var6, yaw, pitch);
             setPosition(var2, var4, var6);
             double var14 = (double)MathHelper.sqrt_double(var8 * var8 + var10 * var10 + var12 * var12);
             field_9405_b = var8 / var14 * 0.1D;
@@ -53,13 +53,13 @@ namespace betareborn.Entities
         {
             field_9397_j = var2;
             setBoundingBoxSpacing(1.0F, 1.0F);
-            setPositionAndAnglesKeepPrevAngles(var2.posX, var2.posY, var2.posZ, var2.rotationYaw, var2.rotationPitch);
-            setPosition(posX, posY, posZ);
-            yOffset = 0.0F;
-            motionX = motionY = motionZ = 0.0D;
-            var3 += rand.nextGaussian() * 0.4D;
-            var5 += rand.nextGaussian() * 0.4D;
-            var7 += rand.nextGaussian() * 0.4D;
+            setPositionAndAnglesKeepPrevAngles(var2.x, var2.y, var2.z, var2.yaw, var2.pitch);
+            setPosition(x, y, z);
+            standingEyeHeight = 0.0F;
+            velocityX = velocityY = velocityZ = 0.0D;
+            var3 += random.nextGaussian() * 0.4D;
+            var5 += random.nextGaussian() * 0.4D;
+            var7 += random.nextGaussian() * 0.4D;
             double var9 = (double)MathHelper.sqrt_double(var3 * var3 + var5 * var5 + var7 * var7);
             field_9405_b = var3 / var9 * 0.1D;
             field_9404_c = var5 / var9 * 0.1D;
@@ -69,7 +69,7 @@ namespace betareborn.Entities
         public override void onUpdate()
         {
             base.onUpdate();
-            fire = 10;
+            fireTicks = 10;
             if (field_9406_a > 0)
             {
                 --field_9406_a;
@@ -77,7 +77,7 @@ namespace betareborn.Entities
 
             if (field_9398_i)
             {
-                int var1 = worldObj.getBlockId(field_9402_e, field_9401_f, field_9400_g);
+                int var1 = world.getBlockId(field_9402_e, field_9401_f, field_9400_g);
                 if (var1 == field_9399_h)
                 {
                     ++field_9396_k;
@@ -90,9 +90,9 @@ namespace betareborn.Entities
                 }
 
                 field_9398_i = false;
-                motionX *= (double)(rand.nextFloat() * 0.2F);
-                motionY *= (double)(rand.nextFloat() * 0.2F);
-                motionZ *= (double)(rand.nextFloat() * 0.2F);
+                velocityX *= (double)(random.nextFloat() * 0.2F);
+                velocityY *= (double)(random.nextFloat() * 0.2F);
+                velocityZ *= (double)(random.nextFloat() * 0.2F);
                 field_9396_k = 0;
                 field_9395_l = 0;
             }
@@ -101,18 +101,18 @@ namespace betareborn.Entities
                 ++field_9395_l;
             }
 
-            Vec3D var15 = Vec3D.createVector(posX, posY, posZ);
-            Vec3D var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
-            HitResult var3 = worldObj.rayTraceBlocks(var15, var2);
-            var15 = Vec3D.createVector(posX, posY, posZ);
-            var2 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
+            Vec3D var15 = Vec3D.createVector(x, y, z);
+            Vec3D var2 = Vec3D.createVector(x + velocityX, y + velocityY, z + velocityZ);
+            HitResult var3 = world.raycast(var15, var2);
+            var15 = Vec3D.createVector(x, y, z);
+            var2 = Vec3D.createVector(x + velocityX, y + velocityY, z + velocityZ);
             if (var3 != null)
             {
                 var2 = Vec3D.createVector(var3.pos.xCoord, var3.pos.yCoord, var3.pos.zCoord);
             }
 
             Entity var4 = null;
-            var var5 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.stretch(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+            var var5 = world.getEntities(this, boundingBox.stretch(velocityX, velocityY, velocityZ).expand(1.0D, 1.0D, 1.0D));
             double var6 = 0.0D;
 
             for (int var8 = 0; var8 < var5.Count; ++var8)
@@ -142,65 +142,65 @@ namespace betareborn.Entities
 
             if (var3 != null)
             {
-                if (!worldObj.isRemote)
+                if (!world.isRemote)
                 {
                     if (var3.entity != null && var3.entity.damage(field_9397_j, 0))
                     {
                     }
 
-                    worldObj.newExplosion((Entity)null, posX, posY, posZ, 1.0F, true);
+                    world.newExplosion((Entity)null, x, y, z, 1.0F, true);
                 }
 
                 markDead();
             }
 
-            posX += motionX;
-            posY += motionY;
-            posZ += motionZ;
-            float var16 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-            rotationYaw = (float)(java.lang.Math.atan2(motionX, motionZ) * 180.0D / (double)((float)Math.PI));
+            x += velocityX;
+            y += velocityY;
+            z += velocityZ;
+            float var16 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
+            yaw = (float)(java.lang.Math.atan2(velocityX, velocityZ) * 180.0D / (double)((float)Math.PI));
 
-            for (rotationPitch = (float)(java.lang.Math.atan2(motionY, (double)var16) * 180.0D / (double)((float)Math.PI)); rotationPitch - prevRotationPitch < -180.0F; prevRotationPitch -= 360.0F)
+            for (pitch = (float)(java.lang.Math.atan2(velocityY, (double)var16) * 180.0D / (double)((float)Math.PI)); pitch - prevPitch < -180.0F; prevPitch -= 360.0F)
             {
             }
 
-            while (rotationPitch - prevRotationPitch >= 180.0F)
+            while (pitch - prevPitch >= 180.0F)
             {
-                prevRotationPitch += 360.0F;
+                prevPitch += 360.0F;
             }
 
-            while (rotationYaw - prevRotationYaw < -180.0F)
+            while (yaw - prevYaw < -180.0F)
             {
-                prevRotationYaw -= 360.0F;
+                prevYaw -= 360.0F;
             }
 
-            while (rotationYaw - prevRotationYaw >= 180.0F)
+            while (yaw - prevYaw >= 180.0F)
             {
-                prevRotationYaw += 360.0F;
+                prevYaw += 360.0F;
             }
 
-            rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
-            rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
+            pitch = prevPitch + (pitch - prevPitch) * 0.2F;
+            yaw = prevYaw + (yaw - prevYaw) * 0.2F;
             float var17 = 0.95F;
             if (isInWater())
             {
                 for (int var18 = 0; var18 < 4; ++var18)
                 {
                     float var19 = 0.25F;
-                    worldObj.addParticle("bubble", posX - motionX * (double)var19, posY - motionY * (double)var19, posZ - motionZ * (double)var19, motionX, motionY, motionZ);
+                    world.addParticle("bubble", x - velocityX * (double)var19, y - velocityY * (double)var19, z - velocityZ * (double)var19, velocityX, velocityY, velocityZ);
                 }
 
                 var17 = 0.8F;
             }
 
-            motionX += field_9405_b;
-            motionY += field_9404_c;
-            motionZ += field_9403_d;
-            motionX *= (double)var17;
-            motionY *= (double)var17;
-            motionZ *= (double)var17;
-            worldObj.addParticle("smoke", posX, posY + 0.5D, posZ, 0.0D, 0.0D, 0.0D);
-            setPosition(posX, posY, posZ);
+            velocityX += field_9405_b;
+            velocityY += field_9404_c;
+            velocityZ += field_9403_d;
+            velocityX *= (double)var17;
+            velocityY *= (double)var17;
+            velocityZ *= (double)var17;
+            world.addParticle("smoke", x, y + 0.5D, z, 0.0D, 0.0D, 0.0D);
+            setPosition(x, y, z);
         }
 
         public override void writeNbt(NBTTagCompound var1)
@@ -241,12 +241,12 @@ namespace betareborn.Entities
                 Vec3D var3 = var1.getLookVec();
                 if (var3 != null)
                 {
-                    motionX = var3.xCoord;
-                    motionY = var3.yCoord;
-                    motionZ = var3.zCoord;
-                    field_9405_b = motionX * 0.1D;
-                    field_9404_c = motionY * 0.1D;
-                    field_9403_d = motionZ * 0.1D;
+                    velocityX = var3.xCoord;
+                    velocityY = var3.yCoord;
+                    velocityZ = var3.zCoord;
+                    field_9405_b = velocityX * 0.1D;
+                    field_9404_c = velocityY * 0.1D;
+                    field_9403_d = velocityZ * 0.1D;
                 }
 
                 return true;

@@ -41,7 +41,7 @@ namespace betareborn.Worlds
 
             lightTable = new float[var1.dimension.lightLevelToLuminance.Length];
             Buffer.BlockCopy(var1.dimension.lightLevelToLuminance, 0, lightTable, 0, sizeof(float) * lightTable.Length);
-            skylightSubtracted = var1.skylightSubtracted;
+            skylightSubtracted = var1.ambientDarkness;
         }
 
         public int getBlockId(int var1, int var2, int var3)

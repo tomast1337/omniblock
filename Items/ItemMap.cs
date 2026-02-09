@@ -1,6 +1,7 @@
 using betareborn.Blocks;
 using betareborn.Entities;
 using betareborn.Network.Packets;
+using betareborn.Network.Packets.S2CPlay;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
@@ -19,13 +20,13 @@ namespace betareborn.Items
         public static MapState getMapState(short mapId, World world)
         {
             (new StringBuilder()).append("map_").append(mapId).toString();
-            MapState var3 = (MapState)world.loadItemData(MapState.Class, "map_" + mapId);
+            MapState var3 = (MapState)world.getOrCreateState(MapState.Class, "map_" + mapId);
             if (var3 == null)
             {
-                int var4 = world.getUniqueDataId("map");
+                int var4 = world.getIdCount("map");
                 string var2 = "map_" + var4;
                 var3 = new MapState(var2);
-                world.setItemData(var2, var3);
+                world.setState(var2, var3);
             }
 
             return var3;
@@ -34,18 +35,18 @@ namespace betareborn.Items
         public MapState getSavedMapState(ItemStack stack, World world)
         {
             (new StringBuilder()).append("map_").append(stack.getDamage()).toString();
-            MapState var4 = (MapState)world.loadItemData(MapState.Class, "map_" + stack.getDamage());
+            MapState var4 = (MapState)world.getOrCreateState(MapState.Class, "map_" + stack.getDamage());
             if (var4 == null)
             {
-                stack.setDamage(world.getUniqueDataId("map"));
+                stack.setDamage(world.getIdCount("map"));
                 string var3 = "map_" + stack.getDamage();
                 var4 = new MapState(var3);
-                var4.centerX = world.getWorldInfo().getSpawnX();
-                var4.centerZ = world.getWorldInfo().getSpawnZ();
+                var4.centerX = world.getProperties().getSpawnX();
+                var4.centerZ = world.getProperties().getSpawnZ();
                 var4.scale = 3;
                 var4.dimension = (sbyte)world.dimension.id;
                 var4.markDirty();
-                world.setItemData(var3, var4);
+                world.setState(var3, var4);
             }
 
             return var4;
@@ -60,8 +61,8 @@ namespace betareborn.Items
                 int var6 = 1 << map.scale;
                 int var7 = map.centerX;
                 int var8 = map.centerZ;
-                int var9 = MathHelper.floor_double(entity.posX - (double)var7) / var6 + var4 / 2;
-                int var10 = MathHelper.floor_double(entity.posZ - (double)var8) / var6 + var5 / 2;
+                int var9 = MathHelper.floor_double(entity.x - (double)var7) / var6 + var4 / 2;
+                int var10 = MathHelper.floor_double(entity.z - (double)var8) / var6 + var5 / 2;
                 int var11 = 128 / var6;
                 if (world.dimension.hasCeiling)
                 {
@@ -91,7 +92,7 @@ namespace betareborn.Items
                                 byte var24 = 0;
                                 byte var25 = 0;
                                 int[] var26 = new int[256];
-                                Chunk var27 = world.getChunkFromBlockCoords(var21, var22);
+                                Chunk var27 = world.getChunkFromPos(var21, var22);
                                 int var28 = var21 & 15;
                                 int var29 = var22 & 15;
                                 int var30 = 0;
@@ -226,7 +227,7 @@ namespace betareborn.Items
             while (!exitLoop)
             {
                 var37 = true;
-                var36 = var27.getBlockID(var33 + var28, var35 - 1, var34 + var29);
+                var36 = var27.getBlockId(var33 + var28, var35 - 1, var34 + var29);
                 if (var36 == 0)
                 {
                     var37 = false;
@@ -239,7 +240,7 @@ namespace betareborn.Items
                 if (!var37)
                 {
                     --var35;
-                    var36 = var27.getBlockID(var33 + var28, var35 - 1, var34 + var29);
+                    var36 = var27.getBlockId(var33 + var28, var35 - 1, var34 + var29);
                 }
 
                 if (var37)
@@ -254,7 +255,7 @@ namespace betareborn.Items
 
                         while (true)
                         {
-                            int var43 = var27.getBlockID(var33 + var28, var38--, var34 + var29);
+                            int var43 = var27.getBlockId(var33 + var28, var38--, var34 + var29);
                             ++var30;
                             if (var38 <= 0 || var43 == 0 || !Block.BLOCKS[var43].material.isFluid())
                             {
@@ -288,12 +289,12 @@ namespace betareborn.Items
 
         public override void onCraft(ItemStack var1, World var2, EntityPlayer var3)
         {
-            var1.setDamage(var2.getUniqueDataId("map"));
+            var1.setDamage(var2.getIdCount("map"));
             string var4 = "map_" + var1.getDamage();
             MapState var5 = new MapState(var4);
-            var2.setItemData(var4, var5);
-            var5.centerX = MathHelper.floor_double(var3.posX);
-            var5.centerZ = MathHelper.floor_double(var3.posZ);
+            var2.setState(var4, var5);
+            var5.centerX = MathHelper.floor_double(var3.x);
+            var5.centerZ = MathHelper.floor_double(var3.z);
             var5.scale = 3;
             var5.dimension = (sbyte)var2.dimension.id;
             var5.markDirty();
@@ -301,10 +302,9 @@ namespace betareborn.Items
 
         public override Packet getUpdatePacket(ItemStack stack, World world, EntityPlayer player)
         {
-        //    byte[] var4 = getSavedMapState(stack, world).getPlayerMarkerPacket(player);
-        //    return var4 == null ? null : new MapUpdateS2CPacket((short)Item.MAP.id, (short)stack.getDamage(), var4);
-        //}
-        return null; }
+            byte[] var4 = getSavedMapState(stack, world).getPlayerMarkerPacket(player);
+            return var4 == null ? null : new MapUpdateS2CPacket((short)Item.MAP.id, (short)stack.getDamage(), var4);
+        }
     }
 
 }

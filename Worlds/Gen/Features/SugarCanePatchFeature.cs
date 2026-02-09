@@ -21,7 +21,7 @@ namespace betareborn.Worlds.Gen.Features
                     {
                         if (Block.SUGAR_CANE.canGrow(var1, var7, var8 + var11, var9))
                         {
-                            var1.setBlock(var7, var8 + var11, var9, Block.SUGAR_CANE.id);
+                            var1.setBlockWithoutNotifyingNeighbors(var7, var8 + var11, var9, Block.SUGAR_CANE.id);
                         }
                     }
                 }

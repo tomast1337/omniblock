@@ -21,18 +21,18 @@ namespace betareborn.Entities
             if (isInWater())
             {
                 moveFlying(var1, var2, 0.02F);
-                moveEntity(motionX, motionY, motionZ);
-                motionX *= (double)0.8F;
-                motionY *= (double)0.8F;
-                motionZ *= (double)0.8F;
+                moveEntity(velocityX, velocityY, velocityZ);
+                velocityX *= (double)0.8F;
+                velocityY *= (double)0.8F;
+                velocityZ *= (double)0.8F;
             }
             else if (handleLavaMovement())
             {
                 moveFlying(var1, var2, 0.02F);
-                moveEntity(motionX, motionY, motionZ);
-                motionX *= 0.5D;
-                motionY *= 0.5D;
-                motionZ *= 0.5D;
+                moveEntity(velocityX, velocityY, velocityZ);
+                velocityX *= 0.5D;
+                velocityY *= 0.5D;
+                velocityZ *= 0.5D;
             }
             else
             {
@@ -40,7 +40,7 @@ namespace betareborn.Entities
                 if (onGround)
                 {
                     var3 = 546.0F * 0.1F * 0.1F * 0.1F;
-                    int var4 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
+                    int var4 = world.getBlockId(MathHelper.floor_double(x), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(z));
                     if (var4 > 0)
                     {
                         var3 = Block.BLOCKS[var4].slipperiness * 0.91F;
@@ -53,22 +53,22 @@ namespace betareborn.Entities
                 if (onGround)
                 {
                     var3 = 546.0F * 0.1F * 0.1F * 0.1F;
-                    int var5 = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
+                    int var5 = world.getBlockId(MathHelper.floor_double(x), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(z));
                     if (var5 > 0)
                     {
                         var3 = Block.BLOCKS[var5].slipperiness * 0.91F;
                     }
                 }
 
-                moveEntity(motionX, motionY, motionZ);
-                motionX *= (double)var3;
-                motionY *= (double)var3;
-                motionZ *= (double)var3;
+                moveEntity(velocityX, velocityY, velocityZ);
+                velocityX *= (double)var3;
+                velocityY *= (double)var3;
+                velocityZ *= (double)var3;
             }
 
             lastWalkAnimationSpeed = walkAnimationSpeed;
-            double var10 = posX - prevPosX;
-            double var9 = posZ - prevPosZ;
+            double var10 = x - prevX;
+            double var9 = z - prevZ;
             float var7 = MathHelper.sqrt_double(var10 * var10 + var9 * var9) * 4.0F;
             if (var7 > 1.0F)
             {

@@ -10,13 +10,13 @@ namespace betareborn.Client.Rendering.Entitys
 
         public void renderArrow(EntityArrow var1, double var2, double var4, double var6, float var8, float var9)
         {
-            if (var1.prevRotationYaw != 0.0F || var1.prevRotationPitch != 0.0F)
+            if (var1.prevYaw != 0.0F || var1.prevPitch != 0.0F)
             {
                 loadTexture("/item/arrows.png");
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Translate((float)var2, (float)var4, (float)var6);
-                GLManager.GL.Rotate(var1.prevRotationYaw + (var1.rotationYaw - var1.prevRotationYaw) * var9 - 90.0F, 0.0F, 1.0F, 0.0F);
-                GLManager.GL.Rotate(var1.prevRotationPitch + (var1.rotationPitch - var1.prevRotationPitch) * var9, 0.0F, 0.0F, 1.0F);
+                GLManager.GL.Rotate(var1.prevYaw + (var1.yaw - var1.prevYaw) * var9 - 90.0F, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate(var1.prevPitch + (var1.pitch - var1.prevPitch) * var9, 0.0F, 0.0F, 1.0F);
                 Tessellator var10 = Tessellator.instance;
                 byte var11 = 0;
                 float var12 = 0.0F;

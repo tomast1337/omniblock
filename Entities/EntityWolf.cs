@@ -80,7 +80,7 @@ namespace betareborn.Entities
 
         protected override string getLivingSound()
         {
-            return isWolfAngry() ? "mob.wolf.growl" : (rand.nextInt(3) == 0 ? (isWolfTamed() && dataWatcher.getWatchableObjectInt(18) < 10 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark");
+            return isWolfAngry() ? "mob.wolf.growl" : (random.nextInt(3) == 0 ? (isWolfTamed() && dataWatcher.getWatchableObjectInt(18) < 10 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark");
         }
 
         protected override string getHurtSound()
@@ -106,9 +106,9 @@ namespace betareborn.Entities
         public override void tickLiving()
         {
             base.tickLiving();
-            if (!hasAttacked && !hasPath() && isWolfTamed() && ridingEntity == null)
+            if (!hasAttacked && !hasPath() && isWolfTamed() && vehicle == null)
             {
-                EntityPlayer var3 = worldObj.getPlayerEntityByName(getWolfOwner());
+                EntityPlayer var3 = world.getPlayer(getWolfOwner());
                 if (var3 != null)
                 {
                     float var2 = var3.getDistanceToEntity(this);
@@ -122,12 +122,12 @@ namespace betareborn.Entities
                     setWolfSitting(true);
                 }
             }
-            else if (playerToAttack == null && !hasPath() && !isWolfTamed() && worldObj.random.nextInt(100) == 0)
+            else if (playerToAttack == null && !hasPath() && !isWolfTamed() && world.random.nextInt(100) == 0)
             {
-                var var1 = worldObj.getEntitiesWithinAABB(EntitySheep.Class, new Box(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                var var1 = world.collectEntitiesByClass(EntitySheep.Class, new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).expand(16.0D, 4.0D, 16.0D));
                 if (var1.Count > 0)
                 {
-                    setTarget(var1[worldObj.random.nextInt(var1.Count)]);
+                    setTarget(var1[world.random.nextInt(var1.Count)]);
                 }
             }
 
@@ -136,7 +136,7 @@ namespace betareborn.Entities
                 setWolfSitting(false);
             }
 
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
                 dataWatcher.updateObject(18, java.lang.Integer.valueOf(health));
             }
@@ -173,7 +173,7 @@ namespace betareborn.Entities
                 field_25052_g = true;
                 timeWolfIsShaking = 0.0F;
                 prevTimeWolfIsShaking = 0.0F;
-                worldObj.func_9425_a(this, (byte)8);
+                world.broadcastEntityEvent(this, (byte)8);
             }
 
         }
@@ -207,7 +207,7 @@ namespace betareborn.Entities
             {
                 if (timeWolfIsShaking == 0.0F)
                 {
-                    worldObj.playSoundAtEntity(this, "mob.wolf.shake", getSoundVolume(), (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
+                    world.playSound(this, "mob.wolf.shake", getSoundVolume(), (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F);
                 }
 
                 prevTimeWolfIsShaking = timeWolfIsShaking;
@@ -227,9 +227,9 @@ namespace betareborn.Entities
 
                     for (int var3 = 0; var3 < var2; ++var3)
                     {
-                        float var4 = (rand.nextFloat() * 2.0F - 1.0F) * width * 0.5F;
-                        float var5 = (rand.nextFloat() * 2.0F - 1.0F) * width * 0.5F;
-                        worldObj.addParticle("splash", posX + (double)var4, (double)(var1 + 0.8F), posZ + (double)var5, motionX, motionY, motionZ);
+                        float var4 = (random.nextFloat() * 2.0F - 1.0F) * width * 0.5F;
+                        float var5 = (random.nextFloat() * 2.0F - 1.0F) * width * 0.5F;
+                        world.addParticle("splash", x + (double)var4, (double)(var1 + 0.8F), z + (double)var5, velocityX, velocityY, velocityZ);
                     }
                 }
             }
@@ -278,20 +278,20 @@ namespace betareborn.Entities
 
         private void getPathOrWalkableBlock(Entity var1, float var2)
         {
-            PathEntity var3 = worldObj.getPathToEntity(this, var1, 16.0F);
+            PathEntity var3 = world.findPath(this, var1, 16.0F);
             if (var3 == null && var2 > 12.0F)
             {
-                int var4 = MathHelper.floor_double(var1.posX) - 2;
-                int var5 = MathHelper.floor_double(var1.posZ) - 2;
+                int var4 = MathHelper.floor_double(var1.x) - 2;
+                int var5 = MathHelper.floor_double(var1.z) - 2;
                 int var6 = MathHelper.floor_double(var1.boundingBox.minY);
 
                 for (int var7 = 0; var7 <= 4; ++var7)
                 {
                     for (int var8 = 0; var8 <= 4; ++var8)
                     {
-                        if ((var7 < 1 || var8 < 1 || var7 > 3 || var8 > 3) && worldObj.shouldSuffocate(var4 + var7, var6 - 1, var5 + var8) && !worldObj.shouldSuffocate(var4 + var7, var6, var5 + var8) && !worldObj.shouldSuffocate(var4 + var7, var6 + 1, var5 + var8))
+                        if ((var7 < 1 || var8 < 1 || var7 > 3 || var8 > 3) && world.shouldSuffocate(var4 + var7, var6 - 1, var5 + var8) && !world.shouldSuffocate(var4 + var7, var6, var5 + var8) && !world.shouldSuffocate(var4 + var7, var6 + 1, var5 + var8))
                         {
-                            setPositionAndAnglesKeepPrevAngles((double)((float)(var4 + var7) + 0.5F), (double)var6, (double)((float)(var5 + var8) + 0.5F), rotationYaw, rotationPitch);
+                            setPositionAndAnglesKeepPrevAngles((double)((float)(var4 + var7) + 0.5F), (double)var6, (double)((float)(var5 + var8) + 0.5F), yaw, pitch);
                             return;
                         }
                     }
@@ -338,7 +338,7 @@ namespace betareborn.Entities
 
                     if (var1 is EntityLiving)
                     {
-                        var var3 = worldObj.getEntitiesWithinAABB(typeof(EntityWolf), new Box(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                        var var3 = world.collectEntitiesByClass(typeof(EntityWolf), new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).expand(16.0D, 4.0D, 16.0D));
 
                         foreach (var var5 in var3)
                         {
@@ -371,21 +371,21 @@ namespace betareborn.Entities
 
         protected override Entity findPlayerToAttack()
         {
-            return isWolfAngry() ? worldObj.getClosestPlayerToEntity(this, 16.0D) : null;
+            return isWolfAngry() ? world.getClosestPlayer(this, 16.0D) : null;
         }
 
         protected override void attackEntity(Entity var1, float var2)
         {
-            if (var2 > 2.0F && var2 < 6.0F && rand.nextInt(10) == 0)
+            if (var2 > 2.0F && var2 < 6.0F && random.nextInt(10) == 0)
             {
                 if (onGround)
                 {
-                    double var8 = var1.posX - posX;
-                    double var5 = var1.posZ - posZ;
+                    double var8 = var1.x - x;
+                    double var5 = var1.z - z;
                     float var7 = MathHelper.sqrt_double(var8 * var8 + var5 * var5);
-                    motionX = var8 / (double)var7 * 0.5D * (double)0.8F + motionX * (double)0.2F;
-                    motionZ = var5 / (double)var7 * 0.5D * (double)0.8F + motionZ * (double)0.2F;
-                    motionY = (double)0.4F;
+                    velocityX = var8 / (double)var7 * 0.5D * (double)0.8F + velocityX * (double)0.2F;
+                    velocityZ = var5 / (double)var7 * 0.5D * (double)0.8F + velocityZ * (double)0.2F;
+                    velocityY = (double)0.4F;
                 }
             }
             else if ((double)var2 < 1.5D && var1.boundingBox.maxY > boundingBox.minY && var1.boundingBox.minY < boundingBox.maxY)
@@ -415,9 +415,9 @@ namespace betareborn.Entities
                         var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                     }
 
-                    if (!worldObj.isRemote)
+                    if (!world.isRemote)
                     {
-                        if (rand.nextInt(3) == 0)
+                        if (random.nextInt(3) == 0)
                         {
                             setWolfTamed(true);
                             setPathToEntity((PathEntity)null);
@@ -425,12 +425,12 @@ namespace betareborn.Entities
                             health = 20;
                             setWolfOwner(var1.username);
                             showHeartsOrSmokeFX(true);
-                            worldObj.func_9425_a(this, (byte)7);
+                            world.broadcastEntityEvent(this, (byte)7);
                         }
                         else
                         {
                             showHeartsOrSmokeFX(false);
-                            worldObj.func_9425_a(this, (byte)6);
+                            world.broadcastEntityEvent(this, (byte)6);
                         }
                     }
 
@@ -457,7 +457,7 @@ namespace betareborn.Entities
 
                 if (var1.username.Equals(getWolfOwner(), StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!worldObj.isRemote)
+                    if (!world.isRemote)
                     {
                         setWolfSitting(!isWolfSitting());
                         isJumping = false;
@@ -481,10 +481,10 @@ namespace betareborn.Entities
 
             for (int var3 = 0; var3 < 7; ++var3)
             {
-                double var4 = rand.nextGaussian() * 0.02D;
-                double var6 = rand.nextGaussian() * 0.02D;
-                double var8 = rand.nextGaussian() * 0.02D;
-                worldObj.addParticle(var2, posX + (double)(rand.nextFloat() * width * 2.0F) - (double)width, posY + 0.5D + (double)(rand.nextFloat() * height), posZ + (double)(rand.nextFloat() * width * 2.0F) - (double)width, var4, var6, var8);
+                double var4 = random.nextGaussian() * 0.02D;
+                double var6 = random.nextGaussian() * 0.02D;
+                double var8 = random.nextGaussian() * 0.02D;
+                world.addParticle(var2, x + (double)(random.nextFloat() * width * 2.0F) - (double)width, y + 0.5D + (double)(random.nextFloat() * height), z + (double)(random.nextFloat() * width * 2.0F) - (double)width, var4, var6, var8);
             }
 
         }

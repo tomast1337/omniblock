@@ -17,7 +17,7 @@ namespace betareborn.Worlds.Gen.Features
             }
             else
             {
-                var1.setBlockWithNotify(var3, var4, var5, Block.GLOWSTONE.id);
+                var1.setBlock(var3, var4, var5, Block.GLOWSTONE.id);
 
                 for (int var6 = 0; var6 < 1500; ++var6)
                 {
@@ -69,7 +69,7 @@ namespace betareborn.Worlds.Gen.Features
 
                         if (var10 == 1)
                         {
-                            var1.setBlockWithNotify(var7, var8, var9, Block.GLOWSTONE.id);
+                            var1.setBlock(var7, var8, var9, Block.GLOWSTONE.id);
                         }
                     }
                 }

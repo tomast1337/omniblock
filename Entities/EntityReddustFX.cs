@@ -14,9 +14,9 @@ namespace betareborn.Entities
 
         public EntityReddustFX(World var1, double var2, double var4, double var6, float var8, float var9, float var10, float var11) : base(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D)
         {
-            motionX *= (double)0.1F;
-            motionY *= (double)0.1F;
-            motionZ *= (double)0.1F;
+            velocityX *= (double)0.1F;
+            velocityY *= (double)0.1F;
+            velocityZ *= (double)0.1F;
             if (var9 == 0.0F)
             {
                 var9 = 1.0F;
@@ -53,29 +53,29 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
             if (particleAge++ >= particleMaxAge)
             {
                 markDead();
             }
 
             particleTextureIndex = 7 - particleAge * 8 / particleMaxAge;
-            moveEntity(motionX, motionY, motionZ);
-            if (posY == prevPosY)
+            moveEntity(velocityX, velocityY, velocityZ);
+            if (y == prevY)
             {
-                motionX *= 1.1D;
-                motionZ *= 1.1D;
+                velocityX *= 1.1D;
+                velocityZ *= 1.1D;
             }
 
-            motionX *= (double)0.96F;
-            motionY *= (double)0.96F;
-            motionZ *= (double)0.96F;
+            velocityX *= (double)0.96F;
+            velocityY *= (double)0.96F;
+            velocityZ *= (double)0.96F;
             if (onGround)
             {
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
             }
 
         }

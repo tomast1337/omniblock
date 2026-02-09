@@ -65,7 +65,7 @@ namespace betareborn.Client.Rendering.Entitys
             float var18 = 0.5F;
             float var19 = 0.0F;
             float var20 = var1.height / var16;
-            float var21 = (float)(var1.posY - var1.boundingBox.minY);
+            float var21 = (float)(var1.y - var1.boundingBox.minY);
             GLManager.GL.Rotate(-dispatcher.playerViewY, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Translate(0.0F, 0.0F, -0.3F + (int)var20 * 0.02F);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -122,9 +122,9 @@ namespace betareborn.Client.Rendering.Entitys
             World var11 = getWorld();
             GLManager.GL.DepthMask(false);
             float var12 = shadowRadius;
-            double var13 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * (double)var9;
-            double var15 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * (double)var9 + (double)var1.getShadowRadius();
-            double var17 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var9;
+            double var13 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var9;
+            double var15 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var9 + (double)var1.getShadowRadius();
+            double var17 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var9;
             int var19 = MathHelper.floor_double(var13 - (double)var12);
             int var20 = MathHelper.floor_double(var13 + (double)var12);
             int var21 = MathHelper.floor_double(var15 - (double)var12);
@@ -276,7 +276,7 @@ namespace betareborn.Client.Rendering.Entitys
         {
             if (shadowRadius > 0.0F)
             {
-                double var10 = dispatcher.squareDistanceTo(var1.posX, var1.posY, var1.posZ);
+                double var10 = dispatcher.squareDistanceTo(var1.x, var1.y, var1.z);
                 float var12 = (float)((1.0D - var10 / 256.0D) * shadowDarkness);
                 if (var12 > 0.0F)
                 {

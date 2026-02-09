@@ -20,8 +20,8 @@ namespace betareborn.Blocks
 
         public override void onEntityCollision(World world, int x, int y, int z, Entity entity)
         {
-            entity.motionX *= 0.4D;
-            entity.motionZ *= 0.4D;
+            entity.velocityX *= 0.4D;
+            entity.velocityZ *= 0.4D;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace betareborn.Items
             {
                 ++var5;
                 BlockBed var8 = (BlockBed)Block.BED;
-                int var9 = MathHelper.floor_double((double)(var2.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+                int var9 = MathHelper.floor_double((double)(var2.yaw * 4.0F / 360.0F) + 0.5D) & 3;
                 sbyte var10 = 0;
                 sbyte var11 = 0;
                 if (var9 == 0)
@@ -47,8 +47,8 @@ namespace betareborn.Items
 
                 if (var3.isAir(var4, var5, var6) && var3.isAir(var4 + var10, var5, var6 + var11) && var3.shouldSuffocate(var4, var5 - 1, var6) && var3.shouldSuffocate(var4 + var10, var5 - 1, var6 + var11))
                 {
-                    var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.id, var9);
-                    var3.setBlockAndMetadataWithNotify(var4 + var10, var5, var6 + var11, var8.id, var9 + 8);
+                    var3.setBlock(var4, var5, var6, var8.id, var9);
+                    var3.setBlock(var4 + var10, var5, var6 + var11, var8.id, var9 + 8);
                     --var1.count;
                     return true;
                 }

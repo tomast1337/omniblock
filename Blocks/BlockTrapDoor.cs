@@ -149,7 +149,7 @@ namespace betareborn.Blocks
 
                 if (!world.shouldSuffocate(var7, y, var8))
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                     dropStacks(world, x, y, z, var6);
                 }
 

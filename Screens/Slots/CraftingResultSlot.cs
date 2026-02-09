@@ -24,7 +24,7 @@ namespace betareborn.Screens.Slots
 
         public override void onTakeItem(ItemStack var1)
         {
-            var1.onCraft(thePlayer.worldObj, thePlayer);
+            var1.onCraft(thePlayer.world, thePlayer);
             if (var1.itemID == Block.CRAFTING_TABLE.id)
             {
                 thePlayer.increaseStat(Achievements.BUILD_WORKBENCH, 1);

@@ -14,24 +14,24 @@ namespace betareborn.Entities
             particleBlue = 1.0F;
             particleTextureIndex = 32;
             setBoundingBoxSpacing(0.02F, 0.02F);
-            particleScale *= rand.nextFloat() * 0.6F + 0.2F;
-            motionX = var8 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
-            motionY = var10 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
-            motionZ = var12 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
+            particleScale *= random.nextFloat() * 0.6F + 0.2F;
+            velocityX = var8 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
+            velocityY = var10 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
+            velocityZ = var12 * (double)0.2F + (double)((float)(java.lang.Math.random() * 2.0D - 1.0D) * 0.02F);
             particleMaxAge = (int)(8.0D / (java.lang.Math.random() * 0.8D + 0.2D));
         }
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
-            motionY += 0.002D;
-            moveEntity(motionX, motionY, motionZ);
-            motionX *= (double)0.85F;
-            motionY *= (double)0.85F;
-            motionZ *= (double)0.85F;
-            if (worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) != Material.WATER)
+            prevX = x;
+            prevY = y;
+            prevZ = z;
+            velocityY += 0.002D;
+            moveEntity(velocityX, velocityY, velocityZ);
+            velocityX *= (double)0.85F;
+            velocityY *= (double)0.85F;
+            velocityZ *= (double)0.85F;
+            if (world.getMaterial(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z)) != Material.WATER)
             {
                 markDead();
             }

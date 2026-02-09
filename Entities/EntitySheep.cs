@@ -47,17 +47,17 @@ namespace betareborn.Entities
             ItemStack var2 = var1.inventory.getCurrentItem();
             if (var2 != null && var2.itemID == Item.SHEARS.id && !getSheared())
             {
-                if (!worldObj.isRemote)
+                if (!world.isRemote)
                 {
                     setSheared(true);
-                    int var3 = 2 + rand.nextInt(3);
+                    int var3 = 2 + random.nextInt(3);
 
                     for (int var4 = 0; var4 < var3; ++var4)
                     {
                         EntityItem var5 = entityDropItem(new ItemStack(Block.WOOL.id, 1, getFleeceColor()), 1.0F);
-                        var5.motionY += (double)(rand.nextFloat() * 0.05F);
-                        var5.motionX += (double)((rand.nextFloat() - rand.nextFloat()) * 0.1F);
-                        var5.motionZ += (double)((rand.nextFloat() - rand.nextFloat()) * 0.1F);
+                        var5.velocityY += (double)(random.nextFloat() * 0.05F);
+                        var5.velocityX += (double)((random.nextFloat() - random.nextFloat()) * 0.1F);
+                        var5.velocityZ += (double)((random.nextFloat() - random.nextFloat()) * 0.1F);
                     }
                 }
 

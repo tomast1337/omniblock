@@ -141,17 +141,17 @@ namespace betareborn.Blocks
             ignoreBlockRemoval = true;
             if (lit)
             {
-                world.setBlockWithNotify(x, y, z, Block.LIT_FURNACE.id);
+                world.setBlock(x, y, z, Block.LIT_FURNACE.id);
             }
             else
             {
-                world.setBlockWithNotify(x, y, z, Block.FURNACE.id);
+                world.setBlock(x, y, z, Block.FURNACE.id);
             }
 
             ignoreBlockRemoval = false;
             world.setBlockMeta(x, y, z, var5);
             var6.cancelRemoval();
-            world.setBlockTileEntity(x, y, z, var6);
+            world.setBlockEntity(x, y, z, var6);
         }
 
         protected override BlockEntity getBlockEntity()
@@ -161,7 +161,7 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+            int var6 = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
             if (var6 == 0)
             {
                 world.setBlockMeta(x, y, z, 2);
@@ -210,9 +210,9 @@ namespace betareborn.Blocks
                             var7.count -= var11;
                             EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemID, var11, var7.getDamage()));
                             float var13 = 0.05F;
-                            var12.motionX = (double)((float)random.nextGaussian() * var13);
-                            var12.motionY = (double)((float)random.nextGaussian() * var13 + 0.2F);
-                            var12.motionZ = (double)((float)random.nextGaussian() * var13);
+                            var12.velocityX = (double)((float)random.nextGaussian() * var13);
+                            var12.velocityY = (double)((float)random.nextGaussian() * var13 + 0.2F);
+                            var12.velocityZ = (double)((float)random.nextGaussian() * var13);
                             world.spawnEntity(var12);
                         }
                     }

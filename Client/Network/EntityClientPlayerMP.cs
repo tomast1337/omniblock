@@ -41,7 +41,7 @@ namespace betareborn.Client.Network
 
         public override void onUpdate()
         {
-            if (worldObj.blockExists(MathHelper.floor_double(posX), 64, MathHelper.floor_double(posZ)))
+            if (world.isPosLoaded(MathHelper.floor_double(x), 64, MathHelper.floor_double(z)))
             {
                 base.onUpdate();
                 func_4056_N();
@@ -71,40 +71,40 @@ namespace betareborn.Client.Network
                 wasSneaking = var1;
             }
 
-            double var2 = posX - oldPosX;
+            double var2 = x - oldPosX;
             double var4 = boundingBox.minY - field_9378_bz;
-            double var6 = posY - oldPosY;
-            double var8 = posZ - oldPosZ;
-            double var10 = (double)(rotationYaw - oldRotationYaw);
-            double var12 = (double)(rotationPitch - oldRotationPitch);
+            double var6 = y - oldPosY;
+            double var8 = z - oldPosZ;
+            double var10 = (double)(yaw - oldRotationYaw);
+            double var12 = (double)(pitch - oldRotationPitch);
             bool var14 = var4 != 0.0D || var6 != 0.0D || var2 != 0.0D || var8 != 0.0D;
             bool var15 = var10 != 0.0D || var12 != 0.0D;
-            if (ridingEntity != null)
+            if (vehicle != null)
             {
                 if (var15)
                 {
-                    sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(motionX, -999.0D, -999.0D, motionZ, onGround));
+                    sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(velocityX, -999.0D, -999.0D, velocityZ, onGround));
                 }
                 else
                 {
-                    sendQueue.addToSendQueue(new PlayerMoveFullPacket(motionX, -999.0D, -999.0D, motionZ, rotationYaw, rotationPitch, onGround));
+                    sendQueue.addToSendQueue(new PlayerMoveFullPacket(velocityX, -999.0D, -999.0D, velocityZ, yaw, pitch, onGround));
                 }
 
                 var14 = false;
             }
             else if (var14 && var15)
             {
-                sendQueue.addToSendQueue(new PlayerMoveFullPacket(posX, boundingBox.minY, posY, posZ, rotationYaw, rotationPitch, onGround));
+                sendQueue.addToSendQueue(new PlayerMoveFullPacket(x, boundingBox.minY, y, z, yaw, pitch, onGround));
                 field_12242_bI = 0;
             }
             else if (var14)
             {
-                sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(posX, boundingBox.minY, posY, posZ, onGround));
+                sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(x, boundingBox.minY, y, z, onGround));
                 field_12242_bI = 0;
             }
             else if (var15)
             {
-                sendQueue.addToSendQueue(new PlayerMoveLookAndOnGroundPacket(rotationYaw, rotationPitch, onGround));
+                sendQueue.addToSendQueue(new PlayerMoveLookAndOnGroundPacket(yaw, pitch, onGround));
                 field_12242_bI = 0;
             }
             else
@@ -123,16 +123,16 @@ namespace betareborn.Client.Network
             field_9382_bF = onGround;
             if (var14)
             {
-                oldPosX = posX;
+                oldPosX = x;
                 field_9378_bz = boundingBox.minY;
-                oldPosY = posY;
-                oldPosZ = posZ;
+                oldPosY = y;
+                oldPosZ = z;
             }
 
             if (var15)
             {
-                oldRotationYaw = rotationYaw;
-                oldRotationPitch = rotationPitch;
+                oldRotationYaw = yaw;
+                oldRotationPitch = pitch;
             }
 
         }

@@ -324,11 +324,11 @@ namespace betareborn.Blocks
                         int var6 = world.getBlockMeta(x, y, z);
                         if (var6 == 0)
                         {
-                            world.setBlockWithNotify(x, y, z, Block.OBSIDIAN.id);
+                            world.setBlock(x, y, z, Block.OBSIDIAN.id);
                         }
                         else if (var6 <= 4)
                         {
-                            world.setBlockWithNotify(x, y, z, Block.COBBLESTONE.id);
+                            world.setBlock(x, y, z, Block.COBBLESTONE.id);
                         }
 
                         fizz(world, x, y, z);

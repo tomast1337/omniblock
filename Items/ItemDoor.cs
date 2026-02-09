@@ -42,7 +42,7 @@ namespace betareborn.Items
                 }
                 else
                 {
-                    int var9 = MathHelper.floor_double((double)((var2.rotationYaw + 180.0F) * 4.0F / 360.0F) - 0.5D) & 3;
+                    int var9 = MathHelper.floor_double((double)((var2.yaw + 180.0F) * 4.0F / 360.0F) - 0.5D) & 3;
                     sbyte var10 = 0;
                     sbyte var11 = 0;
                     if (var9 == 0)
@@ -86,8 +86,8 @@ namespace betareborn.Items
                     }
 
                     var3.pauseTicking = true;
-                    var3.setBlockAndMetadataWithNotify(var4, var5, var6, var8.id, var9);
-                    var3.setBlockAndMetadataWithNotify(var4, var5 + 1, var6, var8.id, var9 + 8);
+                    var3.setBlock(var4, var5, var6, var8.id, var9);
+                    var3.setBlock(var4, var5 + 1, var6, var8.id, var9 + 8);
                     var3.pauseTicking = false;
                     var3.notifyNeighbors(var4, var5, var6, var8.id);
                     var3.notifyNeighbors(var4, var5 + 1, var6, var8.id);

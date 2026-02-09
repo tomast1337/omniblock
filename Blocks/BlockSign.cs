@@ -138,7 +138,7 @@ namespace betareborn.Blocks
             if (var6)
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
             base.neighborUpdate(world, x, y, z, id);

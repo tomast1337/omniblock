@@ -53,7 +53,7 @@ namespace betareborn.Entities
             prevTimeInPortal = timeInPortal;
             if (inPortal)
             {
-                if (!worldObj.isRemote && ridingEntity != null)
+                if (!world.isRemote && vehicle != null)
                 {
                     mountEntity((Entity)null);
                 }
@@ -65,17 +65,17 @@ namespace betareborn.Entities
 
                 if (timeInPortal == 0.0F)
                 {
-                    mc.sndManager.playSoundFX("portal.trigger", 1.0F, rand.nextFloat() * 0.4F + 0.8F);
+                    mc.sndManager.playSoundFX("portal.trigger", 1.0F, random.nextFloat() * 0.4F + 0.8F);
                 }
 
                 timeInPortal += 0.0125F;
                 if (timeInPortal >= 1.0F)
                 {
                     timeInPortal = 1.0F;
-                    if (!worldObj.isRemote)
+                    if (!world.isRemote)
                     {
                         timeUntilPortal = 10;
-                        mc.sndManager.playSoundFX("portal.travel", 1.0F, rand.nextFloat() * 0.4F + 0.8F);
+                        mc.sndManager.playSoundFX("portal.travel", 1.0F, random.nextFloat() * 0.4F + 0.8F);
                         mc.usePortal();
                     }
                 }
@@ -101,15 +101,15 @@ namespace betareborn.Entities
             }
 
             movementInput.updatePlayerMoveState(this);
-            if (movementInput.sneak && ySize < 0.2F)
+            if (movementInput.sneak && cameraOffset < 0.2F)
             {
-                ySize = 0.2F;
+                cameraOffset = 0.2F;
             }
 
-            pushOutOfBlocks(posX - (double)width * 0.35D, boundingBox.minY + 0.5D, posZ + (double)width * 0.35D);
-            pushOutOfBlocks(posX - (double)width * 0.35D, boundingBox.minY + 0.5D, posZ - (double)width * 0.35D);
-            pushOutOfBlocks(posX + (double)width * 0.35D, boundingBox.minY + 0.5D, posZ - (double)width * 0.35D);
-            pushOutOfBlocks(posX + (double)width * 0.35D, boundingBox.minY + 0.5D, posZ + (double)width * 0.35D);
+            pushOutOfBlocks(x - (double)width * 0.35D, boundingBox.minY + 0.5D, z + (double)width * 0.35D);
+            pushOutOfBlocks(x - (double)width * 0.35D, boundingBox.minY + 0.5D, z - (double)width * 0.35D);
+            pushOutOfBlocks(x + (double)width * 0.35D, boundingBox.minY + 0.5D, z - (double)width * 0.35D);
+            pushOutOfBlocks(x + (double)width * 0.35D, boundingBox.minY + 0.5D, z + (double)width * 0.35D);
             base.tickMovement();
         }
 
@@ -153,7 +153,7 @@ namespace betareborn.Entities
 
         public override void openCraftingScreen(int var1, int var2, int var3)
         {
-            mc.displayGuiScreen(new GuiCrafting(inventory, worldObj, var1, var2, var3));
+            mc.displayGuiScreen(new GuiCrafting(inventory, world, var1, var2, var3));
         }
 
         public override void openFurnaceScreen(BlockEntityFurnace var1)
@@ -194,14 +194,14 @@ namespace betareborn.Entities
                 health = var1;
                 if (var2 < 0)
                 {
-                    heartsLife = heartsHalvesLife / 2;
+                    hearts = heartsHalvesLife / 2;
                 }
             }
             else
             {
                 field_9346_af = var2;
                 prevHealth = health;
-                heartsLife = heartsHalvesLife;
+                hearts = heartsHalvesLife;
                 applyDamage(var2);
                 hurtTime = maxHurtTime = 10;
             }
@@ -249,7 +249,7 @@ namespace betareborn.Entities
 
         private bool isBlockTranslucent(int var1, int var2, int var3)
         {
-            return worldObj.shouldSuffocate(var1, var2, var3);
+            return world.shouldSuffocate(var1, var2, var3);
         }
 
         protected override bool pushOutOfBlocks(double var1, double var3, double var5)
@@ -294,22 +294,22 @@ namespace betareborn.Entities
                 float var21 = 0.1F;
                 if (var18 == 0)
                 {
-                    motionX = (double)(-var21);
+                    velocityX = (double)(-var21);
                 }
 
                 if (var18 == 1)
                 {
-                    motionX = (double)var21;
+                    velocityX = (double)var21;
                 }
 
                 if (var18 == 4)
                 {
-                    motionZ = (double)(-var21);
+                    velocityZ = (double)(-var21);
                 }
 
                 if (var18 == 5)
                 {
-                    motionZ = (double)var21;
+                    velocityZ = (double)var21;
                 }
             }
 

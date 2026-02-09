@@ -29,7 +29,7 @@ namespace betareborn.Entities
         {
             texture = "/mob/squid.png";
             setBoundingBoxSpacing(0.95F, 0.95F);
-            field_21080_l = 1.0F / (rand.nextFloat() + 1.0F) * 0.2F;
+            field_21080_l = 1.0F / (random.nextFloat() + 1.0F) * 0.2F;
         }
 
         public override void writeNbt(NBTTagCompound var1)
@@ -69,7 +69,7 @@ namespace betareborn.Entities
 
         protected override void dropFewItems()
         {
-            int var1 = rand.nextInt(3) + 1;
+            int var1 = random.nextInt(3) + 1;
 
             for (int var2 = 0; var2 < var1; ++var2)
             {
@@ -85,7 +85,7 @@ namespace betareborn.Entities
 
         public override bool isInWater()
         {
-            return worldObj.handleMaterialAcceleration(boundingBox.expand(0.0D, (double)-0.6F, 0.0D), Material.WATER, this);
+            return world.updateMovementInFluid(boundingBox.expand(0.0D, (double)-0.6F, 0.0D), Material.WATER, this);
         }
 
         public override void tickMovement()
@@ -99,9 +99,9 @@ namespace betareborn.Entities
             if (field_21085_g > (float)Math.PI * 2.0F)
             {
                 field_21085_g -= (float)Math.PI * 2.0F;
-                if (rand.nextInt(10) == 0)
+                if (random.nextInt(10) == 0)
                 {
-                    field_21080_l = 1.0F / (rand.nextFloat() + 1.0F) * 0.2F;
+                    field_21080_l = 1.0F / (random.nextFloat() + 1.0F) * 0.2F;
                 }
             }
 
@@ -131,26 +131,26 @@ namespace betareborn.Entities
 
                 if (!isMultiplayerEntity)
                 {
-                    motionX = (double)(randomMotionVecX * randomMotionSpeed);
-                    motionY = (double)(randomMotionVecY * randomMotionSpeed);
-                    motionZ = (double)(randomMotionVecZ * randomMotionSpeed);
+                    velocityX = (double)(randomMotionVecX * randomMotionSpeed);
+                    velocityY = (double)(randomMotionVecY * randomMotionSpeed);
+                    velocityZ = (double)(randomMotionVecZ * randomMotionSpeed);
                 }
 
-                var1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-                renderYawOffset += (-((float)java.lang.Math.atan2(motionX, motionZ)) * 180.0F / (float)Math.PI - renderYawOffset) * 0.1F;
-                rotationYaw = renderYawOffset;
+                var1 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
+                renderYawOffset += (-((float)java.lang.Math.atan2(velocityX, velocityZ)) * 180.0F / (float)Math.PI - renderYawOffset) * 0.1F;
+                yaw = renderYawOffset;
                 field_21087_c += (float)Math.PI * field_21079_m * 1.5F;
-                field_21089_a += (-((float)java.lang.Math.atan2((double)var1, motionY)) * 180.0F / (float)Math.PI - field_21089_a) * 0.1F;
+                field_21089_a += (-((float)java.lang.Math.atan2((double)var1, velocityY)) * 180.0F / (float)Math.PI - field_21089_a) * 0.1F;
             }
             else
             {
                 field_21083_i = MathHelper.abs(MathHelper.sin(field_21085_g)) * (float)Math.PI * 0.25F;
                 if (!isMultiplayerEntity)
                 {
-                    motionX = 0.0D;
-                    motionY -= 0.08D;
-                    motionY *= (double)0.98F;
-                    motionZ = 0.0D;
+                    velocityX = 0.0D;
+                    velocityY -= 0.08D;
+                    velocityY *= (double)0.98F;
+                    velocityZ = 0.0D;
                 }
 
                 field_21089_a = (float)((double)field_21089_a + (double)(-90.0F - field_21089_a) * 0.02D);
@@ -160,16 +160,16 @@ namespace betareborn.Entities
 
         public override void travel(float var1, float var2)
         {
-            moveEntity(motionX, motionY, motionZ);
+            moveEntity(velocityX, velocityY, velocityZ);
         }
 
         public override void tickLiving()
         {
-            if (rand.nextInt(50) == 0 || !inWater || randomMotionVecX == 0.0F && randomMotionVecY == 0.0F && randomMotionVecZ == 0.0F)
+            if (random.nextInt(50) == 0 || !inWater || randomMotionVecX == 0.0F && randomMotionVecY == 0.0F && randomMotionVecZ == 0.0F)
             {
-                float var1 = rand.nextFloat() * (float)Math.PI * 2.0F;
+                float var1 = random.nextFloat() * (float)Math.PI * 2.0F;
                 randomMotionVecX = MathHelper.cos(var1) * 0.2F;
-                randomMotionVecY = -0.1F + rand.nextFloat() * 0.2F;
+                randomMotionVecY = -0.1F + random.nextFloat() * 0.2F;
                 randomMotionVecZ = MathHelper.sin(var1) * 0.2F;
             }
 

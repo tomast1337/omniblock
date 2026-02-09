@@ -48,7 +48,7 @@ namespace betareborn.Blocks
                         return;
                     }
 
-                    world.setBlockWithNotify(x, y, z, Block.DIRT.id);
+                    world.setBlock(x, y, z, Block.DIRT.id);
                 }
                 else if (world.getLightLevel(x, y + 1, z) >= 9)
                 {
@@ -58,7 +58,7 @@ namespace betareborn.Blocks
                     int var9 = world.getBlockId(var6, var7 + 1, var8);
                     if (world.getBlockId(var6, var7, var8) == Block.DIRT.id && world.getLightLevel(var6, var7 + 1, var8) >= 4 && Block.BLOCK_LIGHT_OPACITY[var9] <= 2)
                     {
-                        world.setBlockWithNotify(var6, var7, var8, Block.GRASS_BLOCK.id);
+                        world.setBlock(var6, var7, var8, Block.GRASS_BLOCK.id);
                     }
                 }
 

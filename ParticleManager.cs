@@ -61,14 +61,14 @@ namespace betareborn
 
         public void renderParticles(Entity var1, float var2)
         {
-            float var3 = MathHelper.cos(var1.rotationYaw * (float)Math.PI / 180.0F);
-            float var4 = MathHelper.sin(var1.rotationYaw * (float)Math.PI / 180.0F);
-            float var5 = -var4 * MathHelper.sin(var1.rotationPitch * (float)Math.PI / 180.0F);
-            float var6 = var3 * MathHelper.sin(var1.rotationPitch * (float)Math.PI / 180.0F);
-            float var7 = MathHelper.cos(var1.rotationPitch * (float)Math.PI / 180.0F);
-            EntityFX.interpPosX = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * (double)var2;
-            EntityFX.interpPosY = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * (double)var2;
-            EntityFX.interpPosZ = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var2;
+            float var3 = MathHelper.cos(var1.yaw * (float)Math.PI / 180.0F);
+            float var4 = MathHelper.sin(var1.yaw * (float)Math.PI / 180.0F);
+            float var5 = -var4 * MathHelper.sin(var1.pitch * (float)Math.PI / 180.0F);
+            float var6 = var3 * MathHelper.sin(var1.pitch * (float)Math.PI / 180.0F);
+            float var7 = MathHelper.cos(var1.pitch * (float)Math.PI / 180.0F);
+            EntityFX.interpPosX = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var2;
+            EntityFX.interpPosY = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var2;
+            EntityFX.interpPosZ = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var2;
 
             for (int var8 = 0; var8 < 3; ++var8)
             {

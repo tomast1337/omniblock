@@ -29,7 +29,7 @@ namespace betareborn.Blocks
             Material var7 = world.getMaterial(x, y - 1, z);
             if (var7.blocksMovement() || var7.isFluid())
             {
-                world.setBlockWithNotify(x, y, z, Block.FLOWING_WATER.id);
+                world.setBlock(x, y, z, Block.FLOWING_WATER.id);
             }
 
         }
@@ -44,7 +44,7 @@ namespace betareborn.Blocks
             if (world.getBrightness(LightType.Block, x, y, z) > 11 - Block.BLOCK_LIGHT_OPACITY[id])
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, Block.WATER.id);
+                world.setBlock(x, y, z, Block.WATER.id);
             }
 
         }

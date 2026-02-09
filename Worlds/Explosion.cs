@@ -90,7 +90,7 @@ namespace betareborn.Worlds
             int var29 = MathHelper.floor_double(explosionY + explosionSize + 1.0D);
             int var7 = MathHelper.floor_double(explosionZ - explosionSize - 1.0D);
             int var30 = MathHelper.floor_double(explosionZ + explosionSize + 1.0D);
-            var var9 = worldObj.getEntitiesWithinAABBExcludingEntity(exploder, new Box(var3, var5, var7, var4, var29, var30));
+            var var9 = worldObj.getEntities(exploder, new Box(var3, var5, var7, var4, var29, var30));
             Vec3D var31 = Vec3D.createVector(explosionX, explosionY, explosionZ);
 
             for (int var11 = 0; var11 < var9.Count; ++var11)
@@ -99,19 +99,19 @@ namespace betareborn.Worlds
                 double var13 = var33.getDistance(explosionX, explosionY, explosionZ) / explosionSize;
                 if (var13 <= 1.0D)
                 {
-                    var15 = var33.posX - explosionX;
-                    var17 = var33.posY - explosionY;
-                    var19 = var33.posZ - explosionZ;
+                    var15 = var33.x - explosionX;
+                    var17 = var33.y - explosionY;
+                    var19 = var33.z - explosionZ;
                     double var39 = (double)MathHelper.sqrt_double(var15 * var15 + var17 * var17 + var19 * var19);
                     var15 /= var39;
                     var17 /= var39;
                     var19 /= var39;
-                    double var40 = (double)worldObj.func_675_a(var31, var33.boundingBox);
+                    double var40 = (double)worldObj.getVisibilityRatio(var31, var33.boundingBox);
                     double var41 = (1.0D - var13) * var40;
                     var33.damage(exploder, (int)((var41 * var41 + var41) / 2.0D * 8.0D * explosionSize + 1.0D));
-                    var33.motionX += var15 * var41;
-                    var33.motionY += var17 * var41;
-                    var33.motionZ += var19 * var41;
+                    var33.velocityX += var15 * var41;
+                    var33.velocityY += var17 * var41;
+                    var33.velocityZ += var19 * var41;
                 }
             }
 
@@ -130,7 +130,7 @@ namespace betareborn.Worlds
                     int var18 = worldObj.getBlockId(var36, var37 - 1, var16);
                     if (var38 == 0 && Block.BLOCKS_OPAQUE[var18] && ExplosionRNG.nextInt(3) == 0)
                     {
-                        worldObj.setBlockWithNotify(var36, var37, var16, Block.FIRE.id);
+                        worldObj.setBlock(var36, var37, var16, Block.FIRE.id);
                     }
                 }
             }
@@ -174,7 +174,7 @@ namespace betareborn.Worlds
                 if (var8 > 0)
                 {
                     Block.BLOCKS[var8].dropStacks(worldObj, var5, var6, var7, worldObj.getBlockMeta(var5, var6, var7), 0.3F);
-                    worldObj.setBlockWithNotify(var5, var6, var7, 0);
+                    worldObj.setBlock(var5, var6, var7, 0);
                     Block.BLOCKS[var8].onDestroyedByExplosion(worldObj, var5, var6, var7);
                 }
             }

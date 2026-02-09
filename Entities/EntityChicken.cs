@@ -21,7 +21,7 @@ namespace betareborn.Entities
             texture = "/mob/chicken.png";
             setBoundingBoxSpacing(0.3F, 0.4F);
             health = 4;
-            timeUntilNextEgg = rand.nextInt(6000) + 6000;
+            timeUntilNextEgg = random.nextInt(6000) + 6000;
         }
 
         public override void tickMovement()
@@ -46,17 +46,17 @@ namespace betareborn.Entities
             }
 
             field_755_h = (float)((double)field_755_h * 0.9D);
-            if (!onGround && motionY < 0.0D)
+            if (!onGround && velocityY < 0.0D)
             {
-                motionY *= 0.6D;
+                velocityY *= 0.6D;
             }
 
             field_752_b += field_755_h * 2.0F;
-            if (!worldObj.isRemote && --timeUntilNextEgg <= 0)
+            if (!world.isRemote && --timeUntilNextEgg <= 0)
             {
-                worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F);
+                world.playSound(this, "mob.chickenplop", 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F);
                 dropItem(Item.EGG.id, 1);
-                timeUntilNextEgg = rand.nextInt(6000) + 6000;
+                timeUntilNextEgg = random.nextInt(6000) + 6000;
             }
 
         }

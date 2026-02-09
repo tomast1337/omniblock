@@ -40,11 +40,11 @@ namespace betareborn.Blocks
             bool var7 = isPowered(world, x, y, z, var6);
             if (lit && !var7)
             {
-                world.setBlockAndMetadataWithNotify(x, y, z, Block.REPEATER.id, var6);
+                world.setBlock(x, y, z, Block.REPEATER.id, var6);
             }
             else if (!lit)
             {
-                world.setBlockAndMetadataWithNotify(x, y, z, Block.POWERED_REPEATER.id, var6);
+                world.setBlock(x, y, z, Block.POWERED_REPEATER.id, var6);
                 if (!var7)
                 {
                     int var8 = (var6 & 12) >> 2;
@@ -97,7 +97,7 @@ namespace betareborn.Blocks
             if (!canGrow(world, x, y, z))
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
             else
             {
@@ -150,7 +150,7 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = ((MathHelper.floor_double((double)(placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
+            int var6 = ((MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
             world.setBlockMeta(x, y, z, var6);
             bool var7 = isPowered(world, x, y, z, var6);
             if (var7)

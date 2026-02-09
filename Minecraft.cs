@@ -577,7 +577,7 @@ namespace betareborn
                         if (world != null)
                         {
                             if (options.debugMode) Profiler.Start("updateLighting");
-                            world.updatingLighting();
+                            world.doLightingUpdates();
                             if (options.debugMode) Profiler.Stop("updateLighting");
                         }
 
@@ -1188,7 +1188,7 @@ namespace betareborn
                     if (joinPlayerCounter == 30)
                     {
                         joinPlayerCounter = 0;
-                        world.joinEntityInSurroundings(player);
+                        world.loadChunksNearEntity(player);
                     }
                 }
 
@@ -1214,12 +1214,12 @@ namespace betareborn
                 Profiler.PushGroup("theWorldUpdateEntities");
                 if (!isGamePaused)
                 {
-                    if (world.field_27172_i > 0)
+                    if (world.lightningTicksLeft > 0)
                     {
-                        --world.field_27172_i;
+                        --world.lightningTicksLeft;
                     }
 
-                    world.updateEntities();
+                    world.tickEntities();
                 }
 
                 Profiler.PopGroup();
@@ -1227,7 +1227,7 @@ namespace betareborn
                 Profiler.PushGroup("theWorld.tick");
                 if (!isGamePaused || isMultiplayerWorld())
                 {
-                    world.setAllowedMobSpawns(options.difficulty > 0, true);
+                    world.allowSpawning(options.difficulty > 0, true);
                     var renderDistance = options.renderDistance switch
                     {
                         0 => 16,
@@ -1243,8 +1243,8 @@ namespace betareborn
 
                 if (!isGamePaused && world != null)
                 {
-                    world.randomDisplayUpdates(MathHelper.floor_double(player.posX),
-                        MathHelper.floor_double(player.posY), MathHelper.floor_double(player.posZ));
+                    world.displayTick(MathHelper.floor_double(player.x),
+                        MathHelper.floor_double(player.y), MathHelper.floor_double(player.z));
                 }
 
                 if (!isGamePaused)
@@ -1475,21 +1475,21 @@ namespace betareborn
                 player.dimension = -1;
             }
 
-            world.setEntityDead(player);
+            world.remove(player);
             player.isDead = false;
-            double var1 = player.posX;
-            double var3 = player.posZ;
+            double var1 = player.x;
+            double var3 = player.z;
             double var5 = 8.0D;
             World var7;
             if (player.dimension == -1)
             {
                 var1 /= var5;
                 var3 /= var5;
-                player.setPositionAndAnglesKeepPrevAngles(var1, player.posY, var3, player.rotationYaw,
-                    player.rotationPitch);
+                player.setPositionAndAnglesKeepPrevAngles(var1, player.y, var3, player.yaw,
+                    player.pitch);
                 if (player.isEntityAlive())
                 {
-                    world.updateEntityWithOptionalForce(player, false);
+                    world.updateEntity(player, false);
                 }
 
                 var7 = null;
@@ -1500,11 +1500,11 @@ namespace betareborn
             {
                 var1 *= var5;
                 var3 *= var5;
-                player.setPositionAndAnglesKeepPrevAngles(var1, player.posY, var3, player.rotationYaw,
-                    player.rotationPitch);
+                player.setPositionAndAnglesKeepPrevAngles(var1, player.y, var3, player.yaw,
+                    player.pitch);
                 if (player.isEntityAlive())
                 {
-                    world.updateEntityWithOptionalForce(player, false);
+                    world.updateEntity(player, false);
                 }
 
                 var7 = null;
@@ -1512,12 +1512,12 @@ namespace betareborn
                 changeWorld(var7, "Leaving the Nether", player);
             }
 
-            player.worldObj = world;
+            player.world = world;
             if (player.isEntityAlive())
             {
-                player.setPositionAndAnglesKeepPrevAngles(var1, player.posY, var3, player.rotationYaw,
-                    player.rotationPitch);
-                world.updateEntityWithOptionalForce(player, false);
+                player.setPositionAndAnglesKeepPrevAngles(var1, player.y, var3, player.yaw,
+                    player.pitch);
+                world.updateEntity(player, false);
                 (new PortalForcer()).moveToPortal(world, player);
             }
         }
@@ -1567,12 +1567,12 @@ namespace betareborn
             statFileWriter.syncStats();
             camera = null;
             loadingScreen.printText(var2);
-            loadingScreen.displayLoadingString("");
+            loadingScreen.progressStage("");
             sndManager.playStreaming((string)null, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
             if (world != null)
             {
-                world.saveWorldIndirectly(loadingScreen);
+                world.savingProgress(loadingScreen);
 
                 while (true)
                 {
@@ -1589,7 +1589,7 @@ namespace betareborn
                         ? $"Saving chunks ({toSave} left)"
                         : "Saving level data";
 
-                    loadingScreen.displayLoadingString(loadingString);
+                    loadingScreen.progressStage(loadingString);
 
                     java.lang.Thread.sleep(33);
                 }
@@ -1608,7 +1608,7 @@ namespace betareborn
                 {
                     if (var3 == null)
                     {
-                        player = (ClientPlayerEntity)var1.func_4085_a(ClientPlayerEntity.Class);
+                        player = (ClientPlayerEntity)var1.getPlayerForProxy(ClientPlayerEntity.Class);
                     }
                 }
                 else if (player != null)
@@ -1646,13 +1646,13 @@ namespace betareborn
                 playerController.func_6473_b(player);
                 if (var3 != null)
                 {
-                    var1.emptyMethod1();
+                    var1.saveWorldData();
                 }
 
-                var1.spawnPlayerWithLoadedChunks(player);
+                var1.addPlayer(player);
                 if (var1.isNewWorld)
                 {
-                    var1.saveWorldIndirectly(loadingScreen);
+                    var1.savingProgress(loadingScreen);
                 }
 
                 camera = player;
@@ -1671,7 +1671,7 @@ namespace betareborn
         private void func_6255_d(string var1)
         {
             loadingScreen.printText(var1);
-            loadingScreen.displayLoadingString("Building terrain");
+            loadingScreen.progressStage("Building terrain");
             short var2 = 128;
             int var3 = 0;
             int var4 = var2 * 2 / 16 + 1;
@@ -1680,8 +1680,8 @@ namespace betareborn
             Vec3i var6 = world.getSpawnPoint();
             if (player != null)
             {
-                var6.x = (int)player.posX;
-                var6.z = (int)player.posZ;
+                var6.x = (int)player.x;
+                var6.z = (int)player.z;
             }
 
             for (int var10 = -var2; var10 <= var2; var10 += 16)
@@ -1691,15 +1691,15 @@ namespace betareborn
                     loadingScreen.setLoadingProgress(var3++ * 100 / var4);
                     world.getBlockId(var6.x + var10, 64, var6.z + var8);
 
-                    while (world.updatingLighting())
+                    while (world.doLightingUpdates())
                     {
                     }
                 }
             }
 
-            loadingScreen.displayLoadingString("Simulating world for a bit");
+            loadingScreen.progressStage("Simulating world for a bit");
             bool var9 = true;
-            world.func_656_j();
+            world.tickChunks();
         }
 
         public void installResource(string var1, java.io.File var2)
@@ -1736,12 +1736,12 @@ namespace betareborn
 
         public string func_21002_o()
         {
-            return world.func_21119_g();
+            return world.getDebugInfo();
         }
 
         public string func_6245_o()
         {
-            return "P: " + particleManager.getStatistics() + ". T: " + world.func_687_d();
+            return "P: " + particleManager.getStatistics() + ". T: " + world.getEntityCount();
         }
 
         public void respawn(bool var1, int var2)
@@ -1774,12 +1774,12 @@ namespace betareborn
             }
 
             world.updateSpawnPosition();
-            world.updateEntityList();
+            world.updateEntityLists();
             int var8 = 0;
             if (player != null)
             {
                 var8 = player.entityId;
-                world.setEntityDead(player);
+                world.remove(player);
             }
 
             camera = null;
@@ -1795,7 +1795,7 @@ namespace betareborn
             }
 
             playerController.flipPlayer(player);
-            world.spawnPlayerWithLoadedChunks(player);
+            world.addPlayer(player);
             player.movementInput = new MovementInputFromOptions(options);
             player.entityId = var8;
             player.spawn();

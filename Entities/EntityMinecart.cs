@@ -53,7 +53,7 @@ namespace betareborn.Entities
             field_856_i = false;
             preventEntitySpawning = true;
             setBoundingBoxSpacing(0.98F, 0.7F);
-            yOffset = height / 2.0F;
+            standingEyeHeight = height / 2.0F;
         }
 
         protected override bool canTriggerWalking()
@@ -82,13 +82,13 @@ namespace betareborn.Entities
 
         public EntityMinecart(World var1, double var2, double var4, double var6, int var8) : base(var1)
         {
-            setPosition(var2, var4 + (double)yOffset, var6);
-            motionX = 0.0D;
-            motionY = 0.0D;
-            motionZ = 0.0D;
-            prevPosX = var2;
-            prevPosY = var4;
-            prevPosZ = var6;
+            setPosition(var2, var4 + (double)standingEyeHeight, var6);
+            velocityX = 0.0D;
+            velocityY = 0.0D;
+            velocityZ = 0.0D;
+            prevX = var2;
+            prevY = var4;
+            prevZ = var6;
             minecartType = var8;
         }
 
@@ -99,7 +99,7 @@ namespace betareborn.Entities
 
         public override bool damage(Entity var1, int var2)
         {
-            if (!worldObj.isRemote && !isDead)
+            if (!world.isRemote && !isDead)
             {
                 minecartRockDirection = -minecartRockDirection;
                 minecartTimeSinceHit = 10;
@@ -107,9 +107,9 @@ namespace betareborn.Entities
                 minecartCurrentDamage += var2 * 10;
                 if (minecartCurrentDamage > 40)
                 {
-                    if (riddenByEntity != null)
+                    if (passenger != null)
                     {
-                        riddenByEntity.mountEntity(this);
+                        passenger.mountEntity(this);
                     }
 
                     markDead();
@@ -123,25 +123,25 @@ namespace betareborn.Entities
                             ItemStack var5 = var3.getStack(var4);
                             if (var5 != null)
                             {
-                                float var6 = rand.nextFloat() * 0.8F + 0.1F;
-                                float var7 = rand.nextFloat() * 0.8F + 0.1F;
-                                float var8 = rand.nextFloat() * 0.8F + 0.1F;
+                                float var6 = random.nextFloat() * 0.8F + 0.1F;
+                                float var7 = random.nextFloat() * 0.8F + 0.1F;
+                                float var8 = random.nextFloat() * 0.8F + 0.1F;
 
                                 while (var5.count > 0)
                                 {
-                                    int var9 = rand.nextInt(21) + 10;
+                                    int var9 = random.nextInt(21) + 10;
                                     if (var9 > var5.count)
                                     {
                                         var9 = var5.count;
                                     }
 
                                     var5.count -= var9;
-                                    EntityItem var10 = new EntityItem(worldObj, posX + (double)var6, posY + (double)var7, posZ + (double)var8, new ItemStack(var5.itemID, var9, var5.getDamage()));
+                                    EntityItem var10 = new EntityItem(world, x + (double)var6, y + (double)var7, z + (double)var8, new ItemStack(var5.itemID, var9, var5.getDamage()));
                                     float var11 = 0.05F;
-                                    var10.motionX = (double)((float)rand.nextGaussian() * var11);
-                                    var10.motionY = (double)((float)rand.nextGaussian() * var11 + 0.2F);
-                                    var10.motionZ = (double)((float)rand.nextGaussian() * var11);
-                                    worldObj.spawnEntity(var10);
+                                    var10.velocityX = (double)((float)random.nextGaussian() * var11);
+                                    var10.velocityY = (double)((float)random.nextGaussian() * var11 + 0.2F);
+                                    var10.velocityZ = (double)((float)random.nextGaussian() * var11);
+                                    world.spawnEntity(var10);
                                 }
                             }
                         }
@@ -182,25 +182,25 @@ namespace betareborn.Entities
                 ItemStack var2 = getStack(var1);
                 if (var2 != null)
                 {
-                    float var3 = rand.nextFloat() * 0.8F + 0.1F;
-                    float var4 = rand.nextFloat() * 0.8F + 0.1F;
-                    float var5 = rand.nextFloat() * 0.8F + 0.1F;
+                    float var3 = random.nextFloat() * 0.8F + 0.1F;
+                    float var4 = random.nextFloat() * 0.8F + 0.1F;
+                    float var5 = random.nextFloat() * 0.8F + 0.1F;
 
                     while (var2.count > 0)
                     {
-                        int var6 = rand.nextInt(21) + 10;
+                        int var6 = random.nextInt(21) + 10;
                         if (var6 > var2.count)
                         {
                             var6 = var2.count;
                         }
 
                         var2.count -= var6;
-                        EntityItem var7 = new EntityItem(worldObj, posX + (double)var3, posY + (double)var4, posZ + (double)var5, new ItemStack(var2.itemID, var6, var2.getDamage()));
+                        EntityItem var7 = new EntityItem(world, x + (double)var3, y + (double)var4, z + (double)var5, new ItemStack(var2.itemID, var6, var2.getDamage()));
                         float var8 = 0.05F;
-                        var7.motionX = (double)((float)rand.nextGaussian() * var8);
-                        var7.motionY = (double)((float)rand.nextGaussian() * var8 + 0.2F);
-                        var7.motionZ = (double)((float)rand.nextGaussian() * var8);
-                        worldObj.spawnEntity(var7);
+                        var7.velocityX = (double)((float)random.nextGaussian() * var8);
+                        var7.velocityY = (double)((float)random.nextGaussian() * var8 + 0.2F);
+                        var7.velocityZ = (double)((float)random.nextGaussian() * var8);
+                        world.spawnEntity(var7);
                     }
                 }
             }
@@ -221,15 +221,15 @@ namespace betareborn.Entities
             }
 
             double var7;
-            if (worldObj.isRemote && field_9415_k > 0)
+            if (world.isRemote && field_9415_k > 0)
             {
                 if (field_9415_k > 0)
                 {
-                    double var46 = posX + (field_9414_l - posX) / (double)field_9415_k;
-                    double var47 = posY + (field_9413_m - posY) / (double)field_9415_k;
-                    double var5 = posZ + (field_9412_n - posZ) / (double)field_9415_k;
+                    double var46 = x + (field_9414_l - x) / (double)field_9415_k;
+                    double var47 = y + (field_9413_m - y) / (double)field_9415_k;
+                    double var5 = z + (field_9412_n - z) / (double)field_9415_k;
 
-                    for (var7 = field_9411_o - (double)rotationYaw; var7 < -180.0D; var7 += 360.0D)
+                    for (var7 = field_9411_o - (double)yaw; var7 < -180.0D; var7 += 360.0D)
                     {
                     }
 
@@ -238,29 +238,29 @@ namespace betareborn.Entities
                         var7 -= 360.0D;
                     }
 
-                    rotationYaw = (float)((double)rotationYaw + var7 / (double)field_9415_k);
-                    rotationPitch = (float)((double)rotationPitch + (field_9410_p - (double)rotationPitch) / (double)field_9415_k);
+                    yaw = (float)((double)yaw + var7 / (double)field_9415_k);
+                    pitch = (float)((double)pitch + (field_9410_p - (double)pitch) / (double)field_9415_k);
                     --field_9415_k;
                     setPosition(var46, var47, var5);
-                    setRotation(rotationYaw, rotationPitch);
+                    setRotation(yaw, pitch);
                 }
                 else
                 {
-                    setPosition(posX, posY, posZ);
-                    setRotation(rotationYaw, rotationPitch);
+                    setPosition(x, y, z);
+                    setRotation(yaw, pitch);
                 }
 
             }
             else
             {
-                prevPosX = posX;
-                prevPosY = posY;
-                prevPosZ = posZ;
-                motionY -= (double)0.04F;
-                int var1 = MathHelper.floor_double(posX);
-                int var2 = MathHelper.floor_double(posY);
-                int var3 = MathHelper.floor_double(posZ);
-                if (BlockRail.isRail(worldObj, var1, var2 - 1, var3))
+                prevX = x;
+                prevY = y;
+                prevZ = z;
+                velocityY -= (double)0.04F;
+                int var1 = MathHelper.floor_double(x);
+                int var2 = MathHelper.floor_double(y);
+                int var3 = MathHelper.floor_double(z);
+                if (BlockRail.isRail(world, var1, var2 - 1, var3))
                 {
                     --var2;
                 }
@@ -268,12 +268,12 @@ namespace betareborn.Entities
                 double var4 = 0.4D;
                 bool var6 = false;
                 var7 = 1.0D / 128.0D;
-                int var9 = worldObj.getBlockId(var1, var2, var3);
+                int var9 = world.getBlockId(var1, var2, var3);
                 if (BlockRail.isRail(var9))
                 {
-                    Vec3D var10 = func_514_g(posX, posY, posZ);
-                    int var11 = worldObj.getBlockMeta(var1, var2, var3);
-                    posY = (double)var2;
+                    Vec3D var10 = func_514_g(x, y, z);
+                    int var11 = world.getBlockMeta(var1, var2, var3);
+                    y = (double)var2;
                     bool var12 = false;
                     bool var13 = false;
                     if (var9 == Block.POWERED_RAIL.id)
@@ -289,58 +289,58 @@ namespace betareborn.Entities
 
                     if (var11 >= 2 && var11 <= 5)
                     {
-                        posY = (double)(var2 + 1);
+                        y = (double)(var2 + 1);
                     }
 
                     if (var11 == 2)
                     {
-                        motionX -= var7;
+                        velocityX -= var7;
                     }
 
                     if (var11 == 3)
                     {
-                        motionX += var7;
+                        velocityX += var7;
                     }
 
                     if (var11 == 4)
                     {
-                        motionZ += var7;
+                        velocityZ += var7;
                     }
 
                     if (var11 == 5)
                     {
-                        motionZ -= var7;
+                        velocityZ -= var7;
                     }
 
                     int[][] var14 = field_855_j[var11];
                     double var15 = (double)(var14[1][0] - var14[0][0]);
                     double var17 = (double)(var14[1][2] - var14[0][2]);
                     double var19 = java.lang.Math.sqrt(var15 * var15 + var17 * var17);
-                    double var21 = motionX * var15 + motionZ * var17;
+                    double var21 = velocityX * var15 + velocityZ * var17;
                     if (var21 < 0.0D)
                     {
                         var15 = -var15;
                         var17 = -var17;
                     }
 
-                    double var23 = java.lang.Math.sqrt(motionX * motionX + motionZ * motionZ);
-                    motionX = var23 * var15 / var19;
-                    motionZ = var23 * var17 / var19;
+                    double var23 = java.lang.Math.sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                    velocityX = var23 * var15 / var19;
+                    velocityZ = var23 * var17 / var19;
                     double var25;
                     if (var13)
                     {
-                        var25 = java.lang.Math.sqrt(motionX * motionX + motionZ * motionZ);
+                        var25 = java.lang.Math.sqrt(velocityX * velocityX + velocityZ * velocityZ);
                         if (var25 < 0.03D)
                         {
-                            motionX *= 0.0D;
-                            motionY *= 0.0D;
-                            motionZ *= 0.0D;
+                            velocityX *= 0.0D;
+                            velocityY *= 0.0D;
+                            velocityZ *= 0.0D;
                         }
                         else
                         {
-                            motionX *= 0.5D;
-                            motionY *= 0.0D;
-                            motionZ *= 0.5D;
+                            velocityX *= 0.5D;
+                            velocityY *= 0.0D;
+                            velocityZ *= 0.5D;
                         }
                     }
 
@@ -356,28 +356,28 @@ namespace betareborn.Entities
                     double var39;
                     if (var15 == 0.0D)
                     {
-                        posX = (double)var1 + 0.5D;
-                        var25 = posZ - (double)var3;
+                        x = (double)var1 + 0.5D;
+                        var25 = z - (double)var3;
                     }
                     else if (var17 == 0.0D)
                     {
-                        posZ = (double)var3 + 0.5D;
-                        var25 = posX - (double)var1;
+                        z = (double)var3 + 0.5D;
+                        var25 = x - (double)var1;
                     }
                     else
                     {
-                        var35 = posX - var27;
-                        var37 = posZ - var29;
+                        var35 = x - var27;
+                        var37 = z - var29;
                         var39 = (var35 * var15 + var37 * var17) * 2.0D;
                         var25 = var39;
                     }
 
-                    posX = var27 + var15 * var25;
-                    posZ = var29 + var17 * var25;
-                    setPosition(posX, posY + (double)yOffset, posZ);
-                    var35 = motionX;
-                    var37 = motionZ;
-                    if (riddenByEntity != null)
+                    x = var27 + var15 * var25;
+                    z = var29 + var17 * var25;
+                    setPosition(x, y + (double)standingEyeHeight, z);
+                    var35 = velocityX;
+                    var37 = velocityZ;
+                    if (passenger != null)
                     {
                         var35 *= 0.75D;
                         var37 *= 0.75D;
@@ -404,20 +404,20 @@ namespace betareborn.Entities
                     }
 
                     moveEntity(var35, 0.0D, var37);
-                    if (var14[0][1] != 0 && MathHelper.floor_double(posX) - var1 == var14[0][0] && MathHelper.floor_double(posZ) - var3 == var14[0][2])
+                    if (var14[0][1] != 0 && MathHelper.floor_double(x) - var1 == var14[0][0] && MathHelper.floor_double(z) - var3 == var14[0][2])
                     {
-                        setPosition(posX, posY + (double)var14[0][1], posZ);
+                        setPosition(x, y + (double)var14[0][1], z);
                     }
-                    else if (var14[1][1] != 0 && MathHelper.floor_double(posX) - var1 == var14[1][0] && MathHelper.floor_double(posZ) - var3 == var14[1][2])
+                    else if (var14[1][1] != 0 && MathHelper.floor_double(x) - var1 == var14[1][0] && MathHelper.floor_double(z) - var3 == var14[1][2])
                     {
-                        setPosition(posX, posY + (double)var14[1][1], posZ);
+                        setPosition(x, y + (double)var14[1][1], z);
                     }
 
-                    if (riddenByEntity != null)
+                    if (passenger != null)
                     {
-                        motionX *= (double)0.997F;
-                        motionY *= 0.0D;
-                        motionZ *= (double)0.997F;
+                        velocityX *= (double)0.997F;
+                        velocityY *= 0.0D;
+                        velocityZ *= (double)0.997F;
                     }
                     else
                     {
@@ -430,154 +430,154 @@ namespace betareborn.Entities
                                 pushX /= var39;
                                 pushZ /= var39;
                                 double var41 = 0.04D;
-                                motionX *= (double)0.8F;
-                                motionY *= 0.0D;
-                                motionZ *= (double)0.8F;
-                                motionX += pushX * var41;
-                                motionZ += pushZ * var41;
+                                velocityX *= (double)0.8F;
+                                velocityY *= 0.0D;
+                                velocityZ *= (double)0.8F;
+                                velocityX += pushX * var41;
+                                velocityZ += pushZ * var41;
                             }
                             else
                             {
-                                motionX *= (double)0.9F;
-                                motionY *= 0.0D;
-                                motionZ *= (double)0.9F;
+                                velocityX *= (double)0.9F;
+                                velocityY *= 0.0D;
+                                velocityZ *= (double)0.9F;
                             }
                         }
 
-                        motionX *= (double)0.96F;
-                        motionY *= 0.0D;
-                        motionZ *= (double)0.96F;
+                        velocityX *= (double)0.96F;
+                        velocityY *= 0.0D;
+                        velocityZ *= (double)0.96F;
                     }
 
-                    Vec3D var52 = func_514_g(posX, posY, posZ);
+                    Vec3D var52 = func_514_g(x, y, z);
                     if (var52 != null && var10 != null)
                     {
                         double var40 = (var10.yCoord - var52.yCoord) * 0.05D;
-                        var23 = java.lang.Math.sqrt(motionX * motionX + motionZ * motionZ);
+                        var23 = java.lang.Math.sqrt(velocityX * velocityX + velocityZ * velocityZ);
                         if (var23 > 0.0D)
                         {
-                            motionX = motionX / var23 * (var23 + var40);
-                            motionZ = motionZ / var23 * (var23 + var40);
+                            velocityX = velocityX / var23 * (var23 + var40);
+                            velocityZ = velocityZ / var23 * (var23 + var40);
                         }
 
-                        setPosition(posX, var52.yCoord, posZ);
+                        setPosition(x, var52.yCoord, z);
                     }
 
-                    int var53 = MathHelper.floor_double(posX);
-                    int var54 = MathHelper.floor_double(posZ);
+                    int var53 = MathHelper.floor_double(x);
+                    int var54 = MathHelper.floor_double(z);
                     if (var53 != var1 || var54 != var3)
                     {
-                        var23 = java.lang.Math.sqrt(motionX * motionX + motionZ * motionZ);
-                        motionX = var23 * (double)(var53 - var1);
-                        motionZ = var23 * (double)(var54 - var3);
+                        var23 = java.lang.Math.sqrt(velocityX * velocityX + velocityZ * velocityZ);
+                        velocityX = var23 * (double)(var53 - var1);
+                        velocityZ = var23 * (double)(var54 - var3);
                     }
 
                     double var42;
                     if (minecartType == 2)
                     {
                         var42 = (double)MathHelper.sqrt_double(pushX * pushX + pushZ * pushZ);
-                        if (var42 > 0.01D && motionX * motionX + motionZ * motionZ > 0.001D)
+                        if (var42 > 0.01D && velocityX * velocityX + velocityZ * velocityZ > 0.001D)
                         {
                             pushX /= var42;
                             pushZ /= var42;
-                            if (pushX * motionX + pushZ * motionZ < 0.0D)
+                            if (pushX * velocityX + pushZ * velocityZ < 0.0D)
                             {
                                 pushX = 0.0D;
                                 pushZ = 0.0D;
                             }
                             else
                             {
-                                pushX = motionX;
-                                pushZ = motionZ;
+                                pushX = velocityX;
+                                pushZ = velocityZ;
                             }
                         }
                     }
 
                     if (var12)
                     {
-                        var42 = java.lang.Math.sqrt(motionX * motionX + motionZ * motionZ);
+                        var42 = java.lang.Math.sqrt(velocityX * velocityX + velocityZ * velocityZ);
                         if (var42 > 0.01D)
                         {
                             double var44 = 0.06D;
-                            motionX += motionX / var42 * var44;
-                            motionZ += motionZ / var42 * var44;
+                            velocityX += velocityX / var42 * var44;
+                            velocityZ += velocityZ / var42 * var44;
                         }
                         else if (var11 == 1)
                         {
-                            if (worldObj.shouldSuffocate(var1 - 1, var2, var3))
+                            if (world.shouldSuffocate(var1 - 1, var2, var3))
                             {
-                                motionX = 0.02D;
+                                velocityX = 0.02D;
                             }
-                            else if (worldObj.shouldSuffocate(var1 + 1, var2, var3))
+                            else if (world.shouldSuffocate(var1 + 1, var2, var3))
                             {
-                                motionX = -0.02D;
+                                velocityX = -0.02D;
                             }
                         }
                         else if (var11 == 0)
                         {
-                            if (worldObj.shouldSuffocate(var1, var2, var3 - 1))
+                            if (world.shouldSuffocate(var1, var2, var3 - 1))
                             {
-                                motionZ = 0.02D;
+                                velocityZ = 0.02D;
                             }
-                            else if (worldObj.shouldSuffocate(var1, var2, var3 + 1))
+                            else if (world.shouldSuffocate(var1, var2, var3 + 1))
                             {
-                                motionZ = -0.02D;
+                                velocityZ = -0.02D;
                             }
                         }
                     }
                 }
                 else
                 {
-                    if (motionX < -var4)
+                    if (velocityX < -var4)
                     {
-                        motionX = -var4;
+                        velocityX = -var4;
                     }
 
-                    if (motionX > var4)
+                    if (velocityX > var4)
                     {
-                        motionX = var4;
+                        velocityX = var4;
                     }
 
-                    if (motionZ < -var4)
+                    if (velocityZ < -var4)
                     {
-                        motionZ = -var4;
+                        velocityZ = -var4;
                     }
 
-                    if (motionZ > var4)
+                    if (velocityZ > var4)
                     {
-                        motionZ = var4;
+                        velocityZ = var4;
                     }
 
                     if (onGround)
                     {
-                        motionX *= 0.5D;
-                        motionY *= 0.5D;
-                        motionZ *= 0.5D;
+                        velocityX *= 0.5D;
+                        velocityY *= 0.5D;
+                        velocityZ *= 0.5D;
                     }
 
-                    moveEntity(motionX, motionY, motionZ);
+                    moveEntity(velocityX, velocityY, velocityZ);
                     if (!onGround)
                     {
-                        motionX *= (double)0.95F;
-                        motionY *= (double)0.95F;
-                        motionZ *= (double)0.95F;
+                        velocityX *= (double)0.95F;
+                        velocityY *= (double)0.95F;
+                        velocityZ *= (double)0.95F;
                     }
                 }
 
-                rotationPitch = 0.0F;
-                double var48 = prevPosX - posX;
-                double var49 = prevPosZ - posZ;
+                pitch = 0.0F;
+                double var48 = prevX - x;
+                double var49 = prevZ - z;
                 if (var48 * var48 + var49 * var49 > 0.001D)
                 {
-                    rotationYaw = (float)(java.lang.Math.atan2(var49, var48) * 180.0D / java.lang.Math.PI);
+                    yaw = (float)(java.lang.Math.atan2(var49, var48) * 180.0D / java.lang.Math.PI);
                     if (field_856_i)
                     {
-                        rotationYaw += 180.0F;
+                        yaw += 180.0F;
                     }
                 }
 
                 double var50;
-                for (var50 = (double)(rotationYaw - prevRotationYaw); var50 >= 180.0D; var50 -= 360.0D)
+                for (var50 = (double)(yaw - prevYaw); var50 >= 180.0D; var50 -= 360.0D)
                 {
                 }
 
@@ -588,30 +588,30 @@ namespace betareborn.Entities
 
                 if (var50 < -170.0D || var50 >= 170.0D)
                 {
-                    rotationYaw += 180.0F;
+                    yaw += 180.0F;
                     field_856_i = !field_856_i;
                 }
 
-                setRotation(rotationYaw, rotationPitch);
-                var var16 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand((double)0.2F, 0.0D, (double)0.2F));
+                setRotation(yaw, pitch);
+                var var16 = world.getEntities(this, boundingBox.expand((double)0.2F, 0.0D, (double)0.2F));
                 if (var16 != null && var16.Count > 0)
                 {
                     for (int var51 = 0; var51 < var16.Count; ++var51)
                     {
                         Entity var18 = var16[var51];
-                        if (var18 != riddenByEntity && var18.canBePushed() && var18 is EntityMinecart)
+                        if (var18 != passenger && var18.canBePushed() && var18 is EntityMinecart)
                         {
                             var18.applyEntityCollision(this);
                         }
                     }
                 }
 
-                if (riddenByEntity != null && riddenByEntity.isDead)
+                if (passenger != null && passenger.isDead)
                 {
-                    riddenByEntity = null;
+                    passenger = null;
                 }
 
-                if (var6 && rand.nextInt(4) == 0)
+                if (var6 && random.nextInt(4) == 0)
                 {
                     --fuel;
                     if (fuel < 0)
@@ -619,7 +619,7 @@ namespace betareborn.Entities
                         pushX = pushZ = 0.0D;
                     }
 
-                    worldObj.addParticle("largesmoke", posX, posY + 0.8D, posZ, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("largesmoke", x, y + 0.8D, z, 0.0D, 0.0D, 0.0D);
                 }
 
             }
@@ -630,19 +630,19 @@ namespace betareborn.Entities
             int var9 = MathHelper.floor_double(var1);
             int var10 = MathHelper.floor_double(var3);
             int var11 = MathHelper.floor_double(var5);
-            if (BlockRail.isRail(worldObj, var9, var10 - 1, var11))
+            if (BlockRail.isRail(world, var9, var10 - 1, var11))
             {
                 --var10;
             }
 
-            int var12 = worldObj.getBlockId(var9, var10, var11);
+            int var12 = world.getBlockId(var9, var10, var11);
             if (!BlockRail.isRail(var12))
             {
                 return null;
             }
             else
             {
-                int var13 = worldObj.getBlockMeta(var9, var10, var11);
+                int var13 = world.getBlockMeta(var9, var10, var11);
                 if (((BlockRail)Block.BLOCKS[var12]).isAlwaysStraight())
                 {
                     var13 &= 7;
@@ -680,15 +680,15 @@ namespace betareborn.Entities
             int var7 = MathHelper.floor_double(var1);
             int var8 = MathHelper.floor_double(var3);
             int var9 = MathHelper.floor_double(var5);
-            if (BlockRail.isRail(worldObj, var7, var8 - 1, var9))
+            if (BlockRail.isRail(world, var7, var8 - 1, var9))
             {
                 --var8;
             }
 
-            int var10 = worldObj.getBlockId(var7, var8, var9);
+            int var10 = world.getBlockId(var7, var8, var9);
             if (BlockRail.isRail(var10))
             {
-                int var11 = worldObj.getBlockMeta(var7, var8, var9);
+                int var11 = world.getBlockMeta(var7, var8, var9);
                 var3 = (double)var8;
                 if (((BlockRail)Block.BLOCKS[var10]).isAlwaysStraight())
                 {
@@ -813,17 +813,17 @@ namespace betareborn.Entities
 
         public override void applyEntityCollision(Entity var1)
         {
-            if (!worldObj.isRemote)
+            if (!world.isRemote)
             {
-                if (var1 != riddenByEntity)
+                if (var1 != passenger)
                 {
-                    if (var1 is EntityLiving && !(var1 is EntityPlayer) && minecartType == 0 && motionX * motionX + motionZ * motionZ > 0.01D && riddenByEntity == null && var1.ridingEntity == null)
+                    if (var1 is EntityLiving && !(var1 is EntityPlayer) && minecartType == 0 && velocityX * velocityX + velocityZ * velocityZ > 0.01D && passenger == null && var1.vehicle == null)
                     {
                         var1.mountEntity(this);
                     }
 
-                    double var2 = var1.posX - posX;
-                    double var4 = var1.posZ - posZ;
+                    double var2 = var1.x - x;
+                    double var4 = var1.z - z;
                     double var6 = var2 * var2 + var4 * var4;
                     if (var6 >= (double)1.0E-4F)
                     {
@@ -840,48 +840,48 @@ namespace betareborn.Entities
                         var4 *= var8;
                         var2 *= (double)0.1F;
                         var4 *= (double)0.1F;
-                        var2 *= (double)(1.0F - entityCollisionReduction);
-                        var4 *= (double)(1.0F - entityCollisionReduction);
+                        var2 *= (double)(1.0F - pushSpeedReduction);
+                        var4 *= (double)(1.0F - pushSpeedReduction);
                         var2 *= 0.5D;
                         var4 *= 0.5D;
                         if (var1 is EntityMinecart)
                         {
-                            double var10 = var1.posX - posX;
-                            double var12 = var1.posZ - posZ;
-                            double var14 = var10 * var1.motionZ + var12 * var1.prevPosX;
+                            double var10 = var1.x - x;
+                            double var12 = var1.z - z;
+                            double var14 = var10 * var1.velocityZ + var12 * var1.prevX;
                             var14 *= var14;
                             if (var14 > 5.0D)
                             {
                                 return;
                             }
 
-                            double var16 = var1.motionX + motionX;
-                            double var18 = var1.motionZ + motionZ;
+                            double var16 = var1.velocityX + velocityX;
+                            double var18 = var1.velocityZ + velocityZ;
                             if (((EntityMinecart)var1).minecartType == 2 && minecartType != 2)
                             {
-                                motionX *= (double)0.2F;
-                                motionZ *= (double)0.2F;
-                                addVelocity(var1.motionX - var2, 0.0D, var1.motionZ - var4);
-                                var1.motionX *= (double)0.7F;
-                                var1.motionZ *= (double)0.7F;
+                                velocityX *= (double)0.2F;
+                                velocityZ *= (double)0.2F;
+                                addVelocity(var1.velocityX - var2, 0.0D, var1.velocityZ - var4);
+                                var1.velocityX *= (double)0.7F;
+                                var1.velocityZ *= (double)0.7F;
                             }
                             else if (((EntityMinecart)var1).minecartType != 2 && minecartType == 2)
                             {
-                                var1.motionX *= (double)0.2F;
-                                var1.motionZ *= (double)0.2F;
-                                var1.addVelocity(motionX + var2, 0.0D, motionZ + var4);
-                                motionX *= (double)0.7F;
-                                motionZ *= (double)0.7F;
+                                var1.velocityX *= (double)0.2F;
+                                var1.velocityZ *= (double)0.2F;
+                                var1.addVelocity(velocityX + var2, 0.0D, velocityZ + var4);
+                                velocityX *= (double)0.7F;
+                                velocityZ *= (double)0.7F;
                             }
                             else
                             {
                                 var16 /= 2.0D;
                                 var18 /= 2.0D;
-                                motionX *= (double)0.2F;
-                                motionZ *= (double)0.2F;
+                                velocityX *= (double)0.2F;
+                                velocityZ *= (double)0.2F;
                                 addVelocity(var16 - var2, 0.0D, var18 - var4);
-                                var1.motionX *= (double)0.2F;
-                                var1.motionZ *= (double)0.2F;
+                                var1.velocityX *= (double)0.2F;
+                                var1.velocityZ *= (double)0.2F;
                                 var1.addVelocity(var16 + var2, 0.0D, var18 + var4);
                             }
                         }
@@ -962,19 +962,19 @@ namespace betareborn.Entities
         {
             if (minecartType == 0)
             {
-                if (riddenByEntity != null && riddenByEntity is EntityPlayer && riddenByEntity != var1)
+                if (passenger != null && passenger is EntityPlayer && passenger != var1)
                 {
                     return true;
                 }
 
-                if (!worldObj.isRemote)
+                if (!world.isRemote)
                 {
                     var1.mountEntity(this);
                 }
             }
             else if (minecartType == 1)
             {
-                if (!worldObj.isRemote)
+                if (!world.isRemote)
                 {
                     var1.openChestScreen(this);
                 }
@@ -992,8 +992,8 @@ namespace betareborn.Entities
                     fuel += 1200;
                 }
 
-                pushX = posX - var1.posX;
-                pushZ = posZ - var1.posZ;
+                pushX = x - var1.x;
+                pushZ = z - var1.z;
             }
 
             return true;
@@ -1007,16 +1007,16 @@ namespace betareborn.Entities
             field_9411_o = (double)var7;
             field_9410_p = (double)var8;
             field_9415_k = var9 + 2;
-            motionX = field_9409_q;
-            motionY = field_9408_r;
-            motionZ = field_9407_s;
+            velocityX = field_9409_q;
+            velocityY = field_9408_r;
+            velocityZ = field_9407_s;
         }
 
         public override void setVelocity(double var1, double var3, double var5)
         {
-            field_9409_q = motionX = var1;
-            field_9408_r = motionY = var3;
-            field_9407_s = motionZ = var5;
+            field_9409_q = velocityX = var1;
+            field_9408_r = velocityY = var3;
+            field_9407_s = velocityZ = var5;
         }
 
         public bool canPlayerUse(EntityPlayer var1)

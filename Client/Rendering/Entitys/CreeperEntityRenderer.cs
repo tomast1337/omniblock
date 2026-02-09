@@ -69,7 +69,7 @@ namespace betareborn.Client.Rendering.Entitys
             {
                 if (var2 == 1)
                 {
-                    float var4 = var1.ticksExisted + var3;
+                    float var4 = var1.age + var3;
                     loadTexture("/armor/power.png");
                     GLManager.GL.MatrixMode(GLEnum.Texture2D); //wtf?
                     GLManager.GL.LoadIdentity();

@@ -17,26 +17,26 @@ namespace betareborn.Entities
         {
             setPositionAndAnglesKeepPrevAngles(var2, var4, var6, 0.0F, 0.0F);
             field_27028_b = 2;
-            field_27029_a = rand.nextLong();
-            field_27030_c = rand.nextInt(3) + 1;
-            if (var1.difficulty >= 2 && var1.doChunksNearChunkExist(MathHelper.floor_double(var2), MathHelper.floor_double(var4), MathHelper.floor_double(var6), 10))
+            field_27029_a = random.nextLong();
+            field_27030_c = random.nextInt(3) + 1;
+            if (var1.difficulty >= 2 && var1.isRegionLoaded(MathHelper.floor_double(var2), MathHelper.floor_double(var4), MathHelper.floor_double(var6), 10))
             {
                 int var8 = MathHelper.floor_double(var2);
                 int var9 = MathHelper.floor_double(var4);
                 int var10 = MathHelper.floor_double(var6);
                 if (var1.getBlockId(var8, var9, var10) == 0 && Block.FIRE.canPlaceAt(var1, var8, var9, var10))
                 {
-                    var1.setBlockWithNotify(var8, var9, var10, Block.FIRE.id);
+                    var1.setBlock(var8, var9, var10, Block.FIRE.id);
                 }
 
                 for (var8 = 0; var8 < 4; ++var8)
                 {
-                    var9 = MathHelper.floor_double(var2) + rand.nextInt(3) - 1;
-                    var10 = MathHelper.floor_double(var4) + rand.nextInt(3) - 1;
-                    int var11 = MathHelper.floor_double(var6) + rand.nextInt(3) - 1;
+                    var9 = MathHelper.floor_double(var2) + random.nextInt(3) - 1;
+                    var10 = MathHelper.floor_double(var4) + random.nextInt(3) - 1;
+                    int var11 = MathHelper.floor_double(var6) + random.nextInt(3) - 1;
                     if (var1.getBlockId(var9, var10, var11) == 0 && Block.FIRE.canPlaceAt(var1, var9, var10, var11))
                     {
-                        var1.setBlockWithNotify(var9, var10, var11, Block.FIRE.id);
+                        var1.setBlock(var9, var10, var11, Block.FIRE.id);
                     }
                 }
             }
@@ -48,8 +48,8 @@ namespace betareborn.Entities
             base.onUpdate();
             if (field_27028_b == 2)
             {
-                worldObj.playSound(posX, posY, posZ, "ambient.weather.thunder", 10000.0F, 0.8F + rand.nextFloat() * 0.2F);
-                worldObj.playSound(posX, posY, posZ, "random.explode", 2.0F, 0.5F + rand.nextFloat() * 0.2F);
+                world.playSound(x, y, z, "ambient.weather.thunder", 10000.0F, 0.8F + random.nextFloat() * 0.2F);
+                world.playSound(x, y, z, "random.explode", 2.0F, 0.5F + random.nextFloat() * 0.2F);
             }
 
             --field_27028_b;
@@ -59,19 +59,19 @@ namespace betareborn.Entities
                 {
                     markDead();
                 }
-                else if (field_27028_b < -rand.nextInt(10))
+                else if (field_27028_b < -random.nextInt(10))
                 {
                     --field_27030_c;
                     field_27028_b = 1;
-                    field_27029_a = rand.nextLong();
-                    if (worldObj.doChunksNearChunkExist(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ), 10))
+                    field_27029_a = random.nextLong();
+                    if (world.isRegionLoaded(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z), 10))
                     {
-                        int var1 = MathHelper.floor_double(posX);
-                        int var2 = MathHelper.floor_double(posY);
-                        int var3 = MathHelper.floor_double(posZ);
-                        if (worldObj.getBlockId(var1, var2, var3) == 0 && Block.FIRE.canPlaceAt(worldObj, var1, var2, var3))
+                        int var1 = MathHelper.floor_double(x);
+                        int var2 = MathHelper.floor_double(y);
+                        int var3 = MathHelper.floor_double(z);
+                        if (world.getBlockId(var1, var2, var3) == 0 && Block.FIRE.canPlaceAt(world, var1, var2, var3))
                         {
-                            worldObj.setBlockWithNotify(var1, var2, var3, Block.FIRE.id);
+                            world.setBlock(var1, var2, var3, Block.FIRE.id);
                         }
                     }
                 }
@@ -80,7 +80,7 @@ namespace betareborn.Entities
             if (field_27028_b >= 0)
             {
                 double var6 = 3.0D;
-                var var7 = worldObj.getEntitiesWithinAABBExcludingEntity(this, new Box(posX - var6, posY - var6, posZ - var6, posX + var6, posY + 6.0D + var6, posZ + var6));
+                var var7 = world.getEntities(this, new Box(x - var6, y - var6, z - var6, x + var6, y + 6.0D + var6, z + var6));
 
                 for (int var4 = 0; var4 < var7.Count; ++var4)
                 {
@@ -88,7 +88,7 @@ namespace betareborn.Entities
                     var5.onStruckByLightning(this);
                 }
 
-                worldObj.field_27172_i = 2;
+                world.lightningTicksLeft = 2;
             }
 
         }

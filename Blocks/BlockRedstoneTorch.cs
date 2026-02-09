@@ -114,7 +114,7 @@ namespace betareborn.Blocks
             {
                 if (var6)
                 {
-                    world.setBlockAndMetadataWithNotify(x, y, z, Block.REDSTONE_TORCH.id, world.getBlockMeta(x, y, z));
+                    world.setBlock(x, y, z, Block.REDSTONE_TORCH.id, world.getBlockMeta(x, y, z));
                     if (isBurnedOut(world, x, y, z, true))
                     {
                         world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "random.fizz", 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
@@ -131,7 +131,7 @@ namespace betareborn.Blocks
             }
             else if (!var6 && !isBurnedOut(world, x, y, z, false))
             {
-                world.setBlockAndMetadataWithNotify(x, y, z, Block.LIT_REDSTONE_TORCH.id, world.getBlockMeta(x, y, z));
+                world.setBlock(x, y, z, Block.LIT_REDSTONE_TORCH.id, world.getBlockMeta(x, y, z));
             }
 
         }

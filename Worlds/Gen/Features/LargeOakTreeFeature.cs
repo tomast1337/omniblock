@@ -149,7 +149,7 @@ namespace betareborn.Worlds.Gen.Features
                         continue;
                     }
 
-                    world.setBlock(var11[0], var11[1], var11[2], var6);
+                    world.setBlockWithoutNotifyingNeighbors(var11[0], var11[1], var11[2], var6);
                     ++var13;
                 }
             }
@@ -240,7 +240,7 @@ namespace betareborn.Worlds.Gen.Features
                     var14[var6] = MathHelper.floor_double(var1[var6] + var15 + 0.5D);
                     var14[var7] = MathHelper.floor_double(var1[var7] + var15 * var10 + 0.5D);
                     var14[var8] = MathHelper.floor_double(var1[var8] + var15 * var12 + 0.5D);
-                    world.setBlock(var14[0], var14[1], var14[2], var3);
+                    world.setBlockWithoutNotifyingNeighbors(var14[0], var14[1], var14[2], var3);
                 }
 
             }

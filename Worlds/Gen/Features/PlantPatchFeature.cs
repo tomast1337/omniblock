@@ -21,7 +21,7 @@ namespace betareborn.Worlds.Gen.Features
                 int var9 = var5 + var2.nextInt(8) - var2.nextInt(8);
                 if (var1.isAir(var7, var8, var9) && ((BlockPlant)Block.BLOCKS[plantBlockId]).canGrow(var1, var7, var8, var9))
                 {
-                    var1.setBlock(var7, var8, var9, plantBlockId);
+                    var1.setBlockWithoutNotifyingNeighbors(var7, var8, var9, plantBlockId);
                 }
             }
 

@@ -30,7 +30,7 @@ namespace betareborn.Blocks
                     int var7 = world.getBlockMeta(x, y, z);
                     if (var7 == 15)
                     {
-                        world.setBlockWithNotify(x, y + 1, z, id);
+                        world.setBlock(x, y + 1, z, id);
                         world.setBlockMeta(x, y, z, 0);
                     }
                     else
@@ -58,7 +58,7 @@ namespace betareborn.Blocks
             if (!canGrow(world, x, y, z))
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
         }

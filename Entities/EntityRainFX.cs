@@ -11,13 +11,13 @@ namespace betareborn.Entities
 
         public EntityRainFX(World var1, double var2, double var4, double var6) : base(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D)
         {
-            motionX *= (double)0.3F;
-            motionY = (double)((float)java.lang.Math.random() * 0.2F + 0.1F);
-            motionZ *= (double)0.3F;
+            velocityX *= (double)0.3F;
+            velocityY = (double)((float)java.lang.Math.random() * 0.2F + 0.1F);
+            velocityZ *= (double)0.3F;
             particleRed = 1.0F;
             particleGreen = 1.0F;
             particleBlue = 1.0F;
-            particleTextureIndex = 19 + rand.nextInt(4);
+            particleTextureIndex = 19 + random.nextInt(4);
             setBoundingBoxSpacing(0.01F, 0.01F);
             particleGravity = 0.06F;
             particleMaxAge = (int)(8.0D / (java.lang.Math.random() * 0.8D + 0.2D));
@@ -30,14 +30,14 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
-            motionY -= (double)particleGravity;
-            moveEntity(motionX, motionY, motionZ);
-            motionX *= (double)0.98F;
-            motionY *= (double)0.98F;
-            motionZ *= (double)0.98F;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
+            velocityY -= (double)particleGravity;
+            moveEntity(velocityX, velocityY, velocityZ);
+            velocityX *= (double)0.98F;
+            velocityY *= (double)0.98F;
+            velocityZ *= (double)0.98F;
             if (particleMaxAge-- <= 0)
             {
                 markDead();
@@ -50,15 +50,15 @@ namespace betareborn.Entities
                     markDead();
                 }
 
-                motionX *= (double)0.7F;
-                motionZ *= (double)0.7F;
+                velocityX *= (double)0.7F;
+                velocityZ *= (double)0.7F;
             }
 
-            Material var1 = worldObj.getMaterial(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+            Material var1 = world.getMaterial(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z));
             if (var1.isFluid() || var1.isSolid())
             {
-                double var2 = (double)((float)(MathHelper.floor_double(posY) + 1) - BlockFluid.getFluidHeightFromMeta(worldObj.getBlockMeta(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ))));
-                if (posY < var2)
+                double var2 = (double)((float)(MathHelper.floor_double(y) + 1) - BlockFluid.getFluidHeightFromMeta(world.getBlockMeta(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z))));
+                if (y < var2)
                 {
                     markDead();
                 }

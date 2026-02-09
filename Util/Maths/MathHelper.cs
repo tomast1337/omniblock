@@ -19,6 +19,12 @@ namespace betareborn.Util.Maths
             return (float)java.lang.Math.sqrt((double)var0);
         }
 
+        public static int floor(double value)
+        {
+            int var2 = (int)value;
+            return value < var2 ? var2 - 1 : var2;
+        }
+
         public static float sqrt_double(double var0)
         {
             return (float)java.lang.Math.sqrt(var0);
@@ -64,7 +70,6 @@ namespace betareborn.Util.Maths
         {
             return var0 < 0 ? -((-var0 - 1) / var1) - 1 : var0 / var1;
         }
-
 
         static MathHelper()
         {

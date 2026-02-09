@@ -13,14 +13,14 @@ namespace betareborn.Entities
 
         public EntityPortalFX(World var1, double var2, double var4, double var6, double var8, double var10, double var12) : base(var1, var2, var4, var6, var8, var10, var12)
         {
-            motionX = var8;
-            motionY = var10;
-            motionZ = var12;
-            field_4086_p = posX = var2;
-            field_4085_q = posY = var4;
-            field_4084_r = posZ = var6;
-            float var14 = rand.nextFloat() * 0.6F + 0.4F;
-            field_4083_a = particleScale = rand.nextFloat() * 0.2F + 0.5F;
+            velocityX = var8;
+            velocityY = var10;
+            velocityZ = var12;
+            field_4086_p = x = var2;
+            field_4085_q = y = var4;
+            field_4084_r = z = var6;
+            float var14 = random.nextFloat() * 0.6F + 0.4F;
+            field_4083_a = particleScale = random.nextFloat() * 0.2F + 0.5F;
             particleRed = particleGreen = particleBlue = 1.0F * var14;
             particleGreen *= 0.3F;
             particleRed *= 0.9F;
@@ -50,16 +50,16 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            prevPosX = posX;
-            prevPosY = posY;
-            prevPosZ = posZ;
+            prevX = x;
+            prevY = y;
+            prevZ = z;
             float var1 = (float)particleAge / (float)particleMaxAge;
             float var2 = var1;
             var1 = -var1 + var1 * var1 * 2.0F;
             var1 = 1.0F - var1;
-            posX = field_4086_p + motionX * (double)var1;
-            posY = field_4085_q + motionY * (double)var1 + (double)(1.0F - var2);
-            posZ = field_4084_r + motionZ * (double)var1;
+            x = field_4086_p + velocityX * (double)var1;
+            y = field_4085_q + velocityY * (double)var1 + (double)(1.0F - var2);
+            z = field_4084_r + velocityZ * (double)var1;
             if (particleAge++ >= particleMaxAge)
             {
                 markDead();

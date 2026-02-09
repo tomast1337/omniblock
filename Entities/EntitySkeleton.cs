@@ -33,12 +33,12 @@ namespace betareborn.Entities
 
         public override void tickMovement()
         {
-            if (worldObj.isDaytime())
+            if (world.canMonsterSpawn())
             {
                 float var1 = getEntityBrightness(1.0F);
-                if (var1 > 0.5F && worldObj.hasSkyLight(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ)) && rand.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F)
+                if (var1 > 0.5F && world.hasSkyLight(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z)) && random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F)
                 {
-                    fire = 300;
+                    fireTicks = 300;
                 }
             }
 
@@ -49,21 +49,21 @@ namespace betareborn.Entities
         {
             if (var2 < 10.0F)
             {
-                double var3 = var1.posX - posX;
-                double var5 = var1.posZ - posZ;
+                double var3 = var1.x - x;
+                double var5 = var1.z - z;
                 if (attackTime == 0)
                 {
-                    EntityArrow var7 = new EntityArrow(worldObj, this);
-                    var7.posY += (double)1.4F;
-                    double var8 = var1.posY + (double)var1.getEyeHeight() - (double)0.2F - var7.posY;
+                    EntityArrow var7 = new EntityArrow(world, this);
+                    var7.y += (double)1.4F;
+                    double var8 = var1.y + (double)var1.getEyeHeight() - (double)0.2F - var7.y;
                     float var10 = MathHelper.sqrt_double(var3 * var3 + var5 * var5) * 0.2F;
-                    worldObj.playSoundAtEntity(this, "random.bow", 1.0F, 1.0F / (rand.nextFloat() * 0.4F + 0.8F));
-                    worldObj.spawnEntity(var7);
+                    world.playSound(this, "random.bow", 1.0F, 1.0F / (random.nextFloat() * 0.4F + 0.8F));
+                    world.spawnEntity(var7);
                     var7.setArrowHeading(var3, var8 + (double)var10, var5, 0.6F, 12.0F);
                     attackTime = 30;
                 }
 
-                rotationYaw = (float)(java.lang.Math.atan2(var5, var3) * 180.0D / (double)((float)Math.PI)) - 90.0F;
+                yaw = (float)(java.lang.Math.atan2(var5, var3) * 180.0D / (double)((float)Math.PI)) - 90.0F;
                 hasAttacked = true;
             }
 
@@ -86,7 +86,7 @@ namespace betareborn.Entities
 
         protected override void dropFewItems()
         {
-            int var1 = rand.nextInt(3);
+            int var1 = random.nextInt(3);
 
             int var2;
             for (var2 = 0; var2 < var1; ++var2)
@@ -94,7 +94,7 @@ namespace betareborn.Entities
                 dropItem(Item.ARROW.id, 1);
             }
 
-            var1 = rand.nextInt(3);
+            var1 = random.nextInt(3);
 
             for (var2 = 0; var2 < var1; ++var2)
             {

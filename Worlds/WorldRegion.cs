@@ -53,7 +53,7 @@ namespace betareborn.Worlds
                 if (var4 >= 0 && var4 < chunks.Length && var5 >= 0 && var5 < chunks[var4].Length)
                 {
                     Chunk var6 = chunks[var4][var5];
-                    return var6 == null ? 0 : var6.getBlockID(x & 15, y, z & 15);
+                    return var6 == null ? 0 : var6.getBlockId(x & 15, y, z & 15);
                 }
                 else
                 {
@@ -136,7 +136,7 @@ namespace betareborn.Worlds
                 }
                 else if (y >= 128)
                 {
-                    var5 = 15 - world.skylightSubtracted;
+                    var5 = 15 - world.ambientDarkness;
                     if (var5 < 0)
                     {
                         var5 = 0;
@@ -148,7 +148,7 @@ namespace betareborn.Worlds
                 {
                     var5 = (x >> 4) - chunkX;
                     var6 = (z >> 4) - chunkZ;
-                    return chunks[var5][var6].getLight(x & 15, y, z & 15, world.skylightSubtracted);
+                    return chunks[var5][var6].getLight(x & 15, y, z & 15, world.ambientDarkness);
                 }
             }
             else

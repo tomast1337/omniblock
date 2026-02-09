@@ -97,10 +97,10 @@ namespace betareborn.Client.Rendering.Entitys
             fontRenderer = var3;
             if (var4.isSleeping())
             {
-                int var7 = var1.getBlockId(MathHelper.floor_double(var4.posX), MathHelper.floor_double(var4.posY), MathHelper.floor_double(var4.posZ));
+                int var7 = var1.getBlockId(MathHelper.floor_double(var4.x), MathHelper.floor_double(var4.y), MathHelper.floor_double(var4.z));
                 if (var7 == Block.BED.id)
                 {
-                    int var8 = var1.getBlockMeta(MathHelper.floor_double(var4.posX), MathHelper.floor_double(var4.posY), MathHelper.floor_double(var4.posZ));
+                    int var8 = var1.getBlockMeta(MathHelper.floor_double(var4.x), MathHelper.floor_double(var4.y), MathHelper.floor_double(var4.z));
                     int var9 = var8 & 3;
                     playerViewY = var9 * 90 + 180;
                     playerViewX = 0.0F;
@@ -108,21 +108,21 @@ namespace betareborn.Client.Rendering.Entitys
             }
             else
             {
-                playerViewY = var4.prevRotationYaw + (var4.rotationYaw - var4.prevRotationYaw) * var6;
-                playerViewX = var4.prevRotationPitch + (var4.rotationPitch - var4.prevRotationPitch) * var6;
+                playerViewY = var4.prevYaw + (var4.yaw - var4.prevYaw) * var6;
+                playerViewX = var4.prevPitch + (var4.pitch - var4.prevPitch) * var6;
             }
 
-            x = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)var6;
-            y = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)var6;
-            z = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)var6;
+            x = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var6;
+            y = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var6;
+            z = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var6;
         }
 
         public void renderEntity(Entity var1, float var2)
         {
-            double var3 = var1.lastTickPosX + (var1.posX - var1.lastTickPosX) * (double)var2;
-            double var5 = var1.lastTickPosY + (var1.posY - var1.lastTickPosY) * (double)var2;
-            double var7 = var1.lastTickPosZ + (var1.posZ - var1.lastTickPosZ) * (double)var2;
-            float var9 = var1.prevRotationYaw + (var1.rotationYaw - var1.prevRotationYaw) * var2;
+            double var3 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)var2;
+            double var5 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var2;
+            double var7 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var2;
+            float var9 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var2;
             float var10 = var1.getEntityBrightness(var2);
             GLManager.GL.Color3(var10, var10, var10);
             renderEntityWithPosYaw(var1, var3 - offsetX, var5 - offsetY, var7 - offsetZ, var9, var2);

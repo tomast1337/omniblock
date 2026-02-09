@@ -20,13 +20,13 @@ namespace betareborn.Blocks
         public override void onPlaced(World var1, int var2, int var3, int var4)
         {
             base.onPlaced(var1, var2, var3, var4);
-            var1.setBlockTileEntity(var2, var3, var4, getBlockEntity());
+            var1.setBlockEntity(var2, var3, var4, getBlockEntity());
         }
 
         public override void onBreak(World var1, int var2, int var3, int var4)
         {
             base.onBreak(var1, var2, var3, var4);
-            var1.removeBlockTileEntity(var2, var3, var4);
+            var1.removeBlockEntity(var2, var3, var4);
         }
 
         protected abstract BlockEntity getBlockEntity();

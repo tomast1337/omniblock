@@ -28,7 +28,7 @@ namespace betareborn.Entities
 
         public override bool canSpawn()
         {
-            return worldObj.checkIfAABBIsClear(boundingBox);
+            return world.canSpawnEntity(boundingBox);
         }
 
         public override int getTalkInterval()

@@ -42,7 +42,7 @@ namespace betareborn.Blocks
         public void generate(World world, int x, int y, int z, java.util.Random random)
         {
             int var6 = world.getBlockMeta(x, y, z) & 3;
-            world.setBlock(x, y, z, 0);
+            world.setBlockWithoutNotifyingNeighbors(x, y, z, 0);
             object var7 = null;
             if (var6 == 1)
             {
@@ -63,7 +63,7 @@ namespace betareborn.Blocks
 
             if (!((Feature)var7).generate(world, random, x, y, z))
             {
-                world.setBlockAndMetadata(x, y, z, id, var6);
+                world.setBlockWithoutNotifyingNeighbors(x, y, z, id, var6);
             }
 
         }

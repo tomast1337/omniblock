@@ -69,7 +69,7 @@ namespace betareborn.Client.Rendering
                 client.camera = client.player;
             }
 
-            float var1 = client.world.getLuminance(MathHelper.floor_double(client.camera.posX), MathHelper.floor_double(client.camera.posY), MathHelper.floor_double(client.camera.posZ));
+            float var1 = client.world.getLuminance(MathHelper.floor_double(client.camera.x), MathHelper.floor_double(client.camera.y), MathHelper.floor_double(client.camera.z));
             float var2 = (3 - client.options.renderDistance) / 3.0F;
             float var3 = var1 * (1.0F - var2) + var2;
             viewBob += (var3 - viewBob) * 0.1F;
@@ -119,7 +119,7 @@ namespace betareborn.Client.Rendering
                     Vec3D var8 = var6.addVector(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2);
                     targetedEntity = null;
                     float var9 = 1.0F;
-                    var var10 = client.world.getEntitiesWithinAABBExcludingEntity(client.camera, client.camera.boundingBox.stretch(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2).expand((double)var9, (double)var9, (double)var9));
+                    var var10 = client.world.getEntities(client.camera, client.camera.boundingBox.stretch(var7.xCoord * var2, var7.yCoord * var2, var7.zCoord * var2).expand((double)var9, (double)var9, (double)var9));
                     double var11 = 0.0D;
 
                     for (int var13 = 0; var13 < var10.Count; ++var13)
@@ -204,8 +204,8 @@ namespace betareborn.Client.Rendering
             if (client.camera is EntityPlayer)
             {
                 EntityPlayer var2 = (EntityPlayer)client.camera;
-                float var3 = var2.distanceWalkedModified - var2.prevDistanceWalkedModified;
-                float var4 = -(var2.distanceWalkedModified + var3 * tickDelta);
+                float var3 = var2.horizontalSpeed - var2.prevHorizontalSpeed;
+                float var4 = -(var2.horizontalSpeed + var3 * tickDelta);
                 float var5 = var2.prevStepBobbingAmount + (var2.stepBobbingAmount - var2.prevStepBobbingAmount) * tickDelta;
                 float var6 = var2.cameraPitch + (var2.tilt - var2.cameraPitch) * tickDelta;
                 GLManager.GL.Translate(MathHelper.sin(var4 * (float)java.lang.Math.PI) * var5 * 0.5F, -java.lang.Math.abs(MathHelper.cos(var4 * (float)java.lang.Math.PI) * var5), 0.0F);
@@ -218,10 +218,10 @@ namespace betareborn.Client.Rendering
         private void applyCameraTransform(float tickDelta)
         {
             EntityLiving var2 = client.camera;
-            float var3 = var2.yOffset - 1.62F;
-            double var4 = var2.prevPosX + (var2.posX - var2.prevPosX) * (double)tickDelta;
-            double var6 = var2.prevPosY + (var2.posY - var2.prevPosY) * (double)tickDelta - (double)var3;
-            double var8 = var2.prevPosZ + (var2.posZ - var2.prevPosZ) * (double)tickDelta;
+            float var3 = var2.standingEyeHeight - 1.62F;
+            double var4 = var2.prevX + (var2.x - var2.prevX) * (double)tickDelta;
+            double var6 = var2.prevY + (var2.y - var2.prevY) * (double)tickDelta - (double)var3;
+            double var8 = var2.prevZ + (var2.z - var2.prevZ) * (double)tickDelta;
             GLManager.GL.Rotate(prevCameraRollAmount + (cameraRollAmount - prevCameraRollAmount) * tickDelta, 0.0F, 0.0F, 1.0F);
             if (var2.isSleeping())
             {
@@ -229,16 +229,16 @@ namespace betareborn.Client.Rendering
                 GLManager.GL.Translate(0.0F, 0.3F, 0.0F);
                 if (!client.options.debugCamera)
                 {
-                    int var10 = client.world.getBlockId(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
+                    int var10 = client.world.getBlockId(MathHelper.floor_double(var2.x), MathHelper.floor_double(var2.y), MathHelper.floor_double(var2.z));
                     if (var10 == Block.BED.id)
                     {
-                        int var11 = client.world.getBlockMeta(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
+                        int var11 = client.world.getBlockMeta(MathHelper.floor_double(var2.x), MathHelper.floor_double(var2.y), MathHelper.floor_double(var2.z));
                         int var12 = var11 & 3;
                         GLManager.GL.Rotate(var12 * 90, 0.0F, 1.0F, 0.0F);
                     }
 
-                    GLManager.GL.Rotate(var2.prevRotationYaw + (var2.rotationYaw - var2.prevRotationYaw) * tickDelta + 180.0F, 0.0F, -1.0F, 0.0F);
-                    GLManager.GL.Rotate(var2.prevRotationPitch + (var2.rotationPitch - var2.prevRotationPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
+                    GLManager.GL.Rotate(var2.prevYaw + (var2.yaw - var2.prevYaw) * tickDelta + 180.0F, 0.0F, -1.0F, 0.0F);
+                    GLManager.GL.Rotate(var2.prevPitch + (var2.pitch - var2.prevPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
                 }
             }
             else if (client.options.thirdPersonView)
@@ -256,8 +256,8 @@ namespace betareborn.Client.Rendering
                 }
                 else
                 {
-                    var28 = var2.rotationYaw;
-                    var13 = var2.rotationPitch;
+                    var28 = var2.yaw;
+                    var13 = var2.pitch;
                     double var14 = (double)(-MathHelper.sin(var28 / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(var13 / 180.0F * (float)java.lang.Math.PI)) * var27;
                     double var16 = (double)(MathHelper.cos(var28 / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(var13 / 180.0F * (float)java.lang.Math.PI)) * var27;
                     double var18 = (double)-MathHelper.sin(var13 / 180.0F * (float)java.lang.Math.PI) * var27;
@@ -270,7 +270,7 @@ namespace betareborn.Client.Rendering
                         var21 *= 0.1F;
                         var22 *= 0.1F;
                         var23 *= 0.1F;
-                        HitResult var24 = client.world.rayTraceBlocks(Vec3D.createVector(var4 + (double)var21, var6 + (double)var22, var8 + (double)var23), Vec3D.createVector(var4 - var14 + (double)var21 + (double)var23, var6 - var18 + (double)var22, var8 - var16 + (double)var23));
+                        HitResult var24 = client.world.raycast(Vec3D.createVector(var4 + (double)var21, var6 + (double)var22, var8 + (double)var23), Vec3D.createVector(var4 - var14 + (double)var21 + (double)var23, var6 - var18 + (double)var22, var8 - var16 + (double)var23));
                         if (var24 != null)
                         {
                             double var25 = var24.pos.distanceTo(Vec3D.createVector(var4, var6, var8));
@@ -281,11 +281,11 @@ namespace betareborn.Client.Rendering
                         }
                     }
 
-                    GLManager.GL.Rotate(var2.rotationPitch - var13, 1.0F, 0.0F, 0.0F);
-                    GLManager.GL.Rotate(var2.rotationYaw - var28, 0.0F, 1.0F, 0.0F);
+                    GLManager.GL.Rotate(var2.pitch - var13, 1.0F, 0.0F, 0.0F);
+                    GLManager.GL.Rotate(var2.yaw - var28, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Translate(0.0F, 0.0F, (float)-var27);
-                    GLManager.GL.Rotate(var28 - var2.rotationYaw, 0.0F, 1.0F, 0.0F);
-                    GLManager.GL.Rotate(var13 - var2.rotationPitch, 1.0F, 0.0F, 0.0F);
+                    GLManager.GL.Rotate(var28 - var2.yaw, 0.0F, 1.0F, 0.0F);
+                    GLManager.GL.Rotate(var13 - var2.pitch, 1.0F, 0.0F, 0.0F);
                 }
             }
             else
@@ -295,14 +295,14 @@ namespace betareborn.Client.Rendering
 
             if (!client.options.debugCamera)
             {
-                GLManager.GL.Rotate(var2.prevRotationPitch + (var2.rotationPitch - var2.prevRotationPitch) * tickDelta, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Rotate(var2.prevRotationYaw + (var2.rotationYaw - var2.prevRotationYaw) * tickDelta + 180.0F, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate(var2.prevPitch + (var2.pitch - var2.prevPitch) * tickDelta, 1.0F, 0.0F, 0.0F);
+                GLManager.GL.Rotate(var2.prevYaw + (var2.yaw - var2.prevYaw) * tickDelta + 180.0F, 0.0F, 1.0F, 0.0F);
             }
 
             GLManager.GL.Translate(0.0F, var3, 0.0F);
-            var4 = var2.prevPosX + (var2.posX - var2.prevPosX) * (double)tickDelta;
-            var6 = var2.prevPosY + (var2.posY - var2.prevPosY) * (double)tickDelta - (double)var3;
-            var8 = var2.prevPosZ + (var2.posZ - var2.prevPosZ) * (double)tickDelta;
+            var4 = var2.prevX + (var2.x - var2.prevX) * (double)tickDelta;
+            var6 = var2.prevY + (var2.y - var2.prevY) * (double)tickDelta - (double)var3;
+            var8 = var2.prevZ + (var2.z - var2.prevZ) * (double)tickDelta;
         }
 
         private void renderWorld(float tickDelta)
@@ -528,9 +528,9 @@ namespace betareborn.Client.Rendering
             EntityLiving var4 = client.camera;
             WorldRenderer var5 = client.terrainRenderer;
             ParticleManager var6 = client.particleManager;
-            double var7 = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)tickDelta;
-            double var9 = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)tickDelta;
-            double var11 = var4.lastTickPosZ + (var4.posZ - var4.lastTickPosZ) * (double)tickDelta;
+            double var7 = var4.lastTickX + (var4.x - var4.lastTickX) * (double)tickDelta;
+            double var9 = var4.lastTickY + (var4.y - var4.lastTickY) * (double)tickDelta;
+            double var11 = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)tickDelta;
             ChunkSource var13 = client.world.getChunkSource();
 
             Profiler.Start("updateFog");
@@ -643,9 +643,9 @@ namespace betareborn.Client.Rendering
                 random.setSeed(ticks * 312987231L);
                 EntityLiving var2 = client.camera;
                 World var3 = client.world;
-                int var4 = MathHelper.floor_double(var2.posX);
-                int var5 = MathHelper.floor_double(var2.posY);
-                int var6 = MathHelper.floor_double(var2.posZ);
+                int var4 = MathHelper.floor_double(var2.x);
+                int var5 = MathHelper.floor_double(var2.y);
+                int var6 = MathHelper.floor_double(var2.z);
                 byte var7 = 10;
                 double var8 = 0.0D;
                 double var10 = 0.0D;
@@ -656,7 +656,7 @@ namespace betareborn.Client.Rendering
                 {
                     int var16 = var4 + random.nextInt(var7) - random.nextInt(var7);
                     int var17 = var6 + random.nextInt(var7) - random.nextInt(var7);
-                    int var18 = var3.findTopSolidBlock(var16, var17);
+                    int var18 = var3.getTopSolidBlockY(var16, var17);
                     int var19 = var3.getBlockId(var16, var18 - 1, var17);
                     if (var18 <= var5 + var7 && var18 >= var5 - var7 && var3.getBiomeSource().getBiome(var16, var17).canSpawnLightningBolt())
                     {
@@ -687,7 +687,7 @@ namespace betareborn.Client.Rendering
                 if (var14 > 0 && random.nextInt(3) < rainSoundCounter++)
                 {
                     rainSoundCounter = 0;
-                    if (var10 > var2.posY + 1.0D && var3.findTopSolidBlock(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posZ)) > MathHelper.floor_double(var2.posY))
+                    if (var10 > var2.y + 1.0D && var3.getTopSolidBlockY(MathHelper.floor_double(var2.x), MathHelper.floor_double(var2.z)) > MathHelper.floor_double(var2.y))
                     {
                         client.world.playSound(var8, var10, var12, "ambient.weather.rain", 0.1F, 0.5F);
                     }
@@ -707,9 +707,9 @@ namespace betareborn.Client.Rendering
             {
                 EntityLiving var3 = client.camera;
                 World var4 = client.world;
-                int var5 = MathHelper.floor_double(var3.posX);
-                int var6 = MathHelper.floor_double(var3.posY);
-                int var7 = MathHelper.floor_double(var3.posZ);
+                int var5 = MathHelper.floor_double(var3.x);
+                int var6 = MathHelper.floor_double(var3.y);
+                int var7 = MathHelper.floor_double(var3.z);
                 Tessellator var8 = Tessellator.instance;
                 GLManager.GL.Disable(GLEnum.CullFace);
                 GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
@@ -717,9 +717,9 @@ namespace betareborn.Client.Rendering
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTextureId("/environment/snow.png"));
-                double var9 = var3.lastTickPosX + (var3.posX - var3.lastTickPosX) * (double)tickDelta;
-                double var11 = var3.lastTickPosY + (var3.posY - var3.lastTickPosY) * (double)tickDelta;
-                double var13 = var3.lastTickPosZ + (var3.posZ - var3.lastTickPosZ) * (double)tickDelta;
+                double var9 = var3.lastTickX + (var3.x - var3.lastTickX) * (double)tickDelta;
+                double var11 = var3.lastTickY + (var3.y - var3.lastTickY) * (double)tickDelta;
+                double var13 = var3.lastTickZ + (var3.z - var3.lastTickZ) * (double)tickDelta;
                 int var15 = MathHelper.floor_double(var11);
                 byte var16 = 10;
 
@@ -740,7 +740,7 @@ namespace betareborn.Client.Rendering
                         var21 = var17[var18++];
                         if (var21.getEnableSnow())
                         {
-                            var22 = var4.findTopSolidBlock(var19, var20);
+                            var22 = var4.getTopSolidBlockY(var19, var20);
                             if (var22 < 0)
                             {
                                 var22 = 0;
@@ -772,8 +772,8 @@ namespace betareborn.Client.Rendering
                                 float var28 = ((ticks & 511) + tickDelta) / 512.0F;
                                 float var29 = random.nextFloat() + var27 * 0.01F * (float)random.nextGaussian();
                                 float var30 = random.nextFloat() + var27 * (float)random.nextGaussian() * 0.001F;
-                                double var31 = (double)(var19 + 0.5F) - var3.posX;
-                                double var33 = (double)(var20 + 0.5F) - var3.posZ;
+                                double var31 = (double)(var19 + 0.5F) - var3.x;
+                                double var33 = (double)(var20 + 0.5F) - var3.z;
                                 float var35 = MathHelper.sqrt_double(var31 * var31 + var33 * var33) / var16;
                                 var8.startDrawingQuads();
                                 float var36 = var4.getLuminance(var19, var23, var20);
@@ -806,7 +806,7 @@ namespace betareborn.Client.Rendering
                         var21 = var17[var18++];
                         if (var21.canSpawnLightningBolt())
                         {
-                            var22 = var4.findTopSolidBlock(var19, var20);
+                            var22 = var4.getTopSolidBlockY(var19, var20);
                             var23 = var6 - var16;
                             var24 = var6 + var16;
                             if (var23 < var22)
@@ -824,8 +824,8 @@ namespace betareborn.Client.Rendering
                             {
                                 random.setSeed(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761);
                                 var26 = ((ticks + var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761 & 31) + tickDelta) / 32.0F * (3.0F + random.nextFloat());
-                                double var38 = (double)(var19 + 0.5F) - var3.posX;
-                                double var39 = (double)(var20 + 0.5F) - var3.posZ;
+                                double var38 = (double)(var19 + 0.5F) - var3.x;
+                                double var39 = (double)(var20 + 0.5F) - var3.z;
                                 float var40 = MathHelper.sqrt_double(var38 * var38 + var39 * var39) / var16;
                                 var8.startDrawingQuads();
                                 float var32 = var4.getLuminance(var19, 128, var20) * 0.85F + 0.15F;
@@ -870,7 +870,7 @@ namespace betareborn.Client.Rendering
             EntityLiving var3 = client.camera;
             float var4 = 1.0F / (4 - client.options.renderDistance);
             var4 = 1.0F - (float)java.lang.Math.pow((double)var4, 0.25D);
-            Vector3D<double> var5 = var2.func_4079_a(client.camera, tickDelta);
+            Vector3D<double> var5 = var2.getSkyColor(client.camera, tickDelta);
             float var6 = (float)var5.X;
             float var7 = (float)var5.Y;
             float var8 = (float)var5.Z;
@@ -893,7 +893,7 @@ namespace betareborn.Client.Rendering
                 fogColorBlue *= var12;
             }
 
-            var11 = var2.func_27166_f(tickDelta);
+            var11 = var2.getThunderGradient(tickDelta);
             if (var11 > 0.0F)
             {
                 var12 = 1.0F - var11 * 0.5F;
@@ -904,7 +904,7 @@ namespace betareborn.Client.Rendering
 
             if (cloudFog)
             {
-                Vector3D<double> var16 = var2.func_628_d(tickDelta);
+                Vector3D<double> var16 = var2.getCloudColor(tickDelta);
                 fogColorRed = (float)var16.X;
                 fogColorGreen = (float)var16.Y;
                 fogColorBlue = (float)var16.Z;

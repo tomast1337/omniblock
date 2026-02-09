@@ -15,7 +15,7 @@ namespace betareborn.Entities
         public EntityFootStepFX(TextureManager var1, World var2, double var3, double var5, double var7) : base(var2, var3, var5, var7, 0.0D, 0.0D, 0.0D)
         {
             field_27019_p = var1;
-            motionX = motionY = motionZ = 0.0D;
+            velocityX = velocityY = velocityZ = 0.0D;
             field_27020_o = 200;
         }
 
@@ -32,10 +32,10 @@ namespace betareborn.Entities
             var9 *= 0.2F;
             GLManager.GL.Disable(GLEnum.Lighting);
             float var10 = 2.0F / 16.0F;
-            float var11 = (float)(posX - interpPosX);
-            float var12 = (float)(posY - interpPosY);
-            float var13 = (float)(posZ - interpPosZ);
-            float var14 = worldObj.getLuminance(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
+            float var11 = (float)(x - interpPosX);
+            float var12 = (float)(y - interpPosY);
+            float var13 = (float)(z - interpPosZ);
+            float var14 = world.getLuminance(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z));
             field_27019_p.bindTexture(field_27019_p.getTextureId("/misc/footprint.png"));
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);

@@ -25,7 +25,7 @@ namespace betareborn.Entities
             moveSpeed = playerToAttack != null ? 0.95F : 0.5F;
             if (randomSoundDelay > 0 && --randomSoundDelay == 0)
             {
-                worldObj.playSoundAtEntity(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F) * 1.8F);
+                world.playSound(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F) * 1.8F);
             }
 
             base.onUpdate();
@@ -33,7 +33,7 @@ namespace betareborn.Entities
 
         public override bool canSpawn()
         {
-            return worldObj.difficulty > 0 && worldObj.checkIfAABBIsClear(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).Count == 0 && !worldObj.getIsAnyLiquid(boundingBox);
+            return world.difficulty > 0 && world.canSpawnEntity(boundingBox) && world.getEntityCollisions(this, boundingBox).Count == 0 && !world.isBoxSubmergedInFluid(boundingBox);
         }
 
         public override void writeNbt(NBTTagCompound var1)
@@ -62,7 +62,7 @@ namespace betareborn.Entities
         {
             if (var1 is EntityPlayer)
             {
-                var var3 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(32.0D, 32.0D, 32.0D));
+                var var3 = world.getEntities(this, boundingBox.expand(32.0D, 32.0D, 32.0D));
 
                 for (int var4 = 0; var4 < var3.Count; ++var4)
                 {
@@ -83,8 +83,8 @@ namespace betareborn.Entities
         private void becomeAngryAt(Entity var1)
         {
             playerToAttack = var1;
-            angerLevel = 400 + rand.nextInt(400);
-            randomSoundDelay = rand.nextInt(40);
+            angerLevel = 400 + random.nextInt(400);
+            randomSoundDelay = random.nextInt(40);
         }
 
         protected override String getLivingSound()

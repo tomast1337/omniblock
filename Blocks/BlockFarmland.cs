@@ -49,7 +49,7 @@ namespace betareborn.Blocks
                     }
                     else if (!hasCrop(world, x, y, z))
                     {
-                        world.setBlockWithNotify(x, y, z, Block.DIRT.id);
+                        world.setBlock(x, y, z, Block.DIRT.id);
                     }
                 }
                 else
@@ -64,7 +64,7 @@ namespace betareborn.Blocks
         {
             if (world.random.nextInt(4) == 0)
             {
-                world.setBlockWithNotify(x, y, z, Block.DIRT.id);
+                world.setBlock(x, y, z, Block.DIRT.id);
             }
 
         }
@@ -112,7 +112,7 @@ namespace betareborn.Blocks
             Material var6 = world.getMaterial(x, y + 1, z);
             if (var6.isSolid())
             {
-                world.setBlockWithNotify(x, y, z, Block.DIRT.id);
+                world.setBlock(x, y, z, Block.DIRT.id);
             }
 
         }

@@ -43,8 +43,8 @@ namespace betareborn.Client.Rendering.Entitys
             try
             {
                 float var10 = var1.prevRenderYawOffset + (var1.renderYawOffset - var1.prevRenderYawOffset) * var9;
-                float var11 = var1.prevRotationYaw + (var1.rotationYaw - var1.prevRotationYaw) * var9;
-                float var12 = var1.prevRotationPitch + (var1.rotationPitch - var1.prevRotationPitch) * var9;
+                float var11 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var9;
+                float var12 = var1.prevPitch + (var1.pitch - var1.prevPitch) * var9;
                 func_22012_b(var1, var2, var4, var6);
                 float var13 = func_170_d(var1, var9);
                 rotateCorpse(var1, var13, var10, var9);
@@ -166,7 +166,7 @@ namespace betareborn.Client.Rendering.Entitys
 
         protected virtual float func_170_d(EntityLiving var1, float var2)
         {
-            return var1.ticksExisted + var2;
+            return var1.age + var2;
         }
 
         protected virtual void renderMore(EntityLiving var1, float var2)

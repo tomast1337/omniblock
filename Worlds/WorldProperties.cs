@@ -138,7 +138,7 @@ namespace betareborn.Worlds
             return spawnZ;
         }
 
-        public long getWorldTime()
+        public long getTime()
         {
             return worldTime;
         }

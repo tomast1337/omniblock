@@ -68,7 +68,7 @@ namespace betareborn.Blocks
             bool var6 = world.getBlockId(x, y - 1, z) == Block.NETHERRACK.id;
             if (!canPlaceAt(world, x, y, z))
             {
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
 
             if (var6 || !world.isRaining() || !world.isRaining(x, y, z) && !world.isRaining(x - 1, y, z) && !world.isRaining(x + 1, y, z) && !world.isRaining(x, y, z - 1) && !world.isRaining(x, y, z + 1))
@@ -76,7 +76,7 @@ namespace betareborn.Blocks
                 int var7 = world.getBlockMeta(x, y, z);
                 if (var7 < 15)
                 {
-                    world.setBlockMetadata(x, y, z, var7 + random.nextInt(3) / 2);
+                    world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, var7 + random.nextInt(3) / 2);
                 }
 
                 world.scheduleBlockUpdate(x, y, z, id, getTickRate());
@@ -84,13 +84,13 @@ namespace betareborn.Blocks
                 {
                     if (!world.shouldSuffocate(x, y - 1, z) || var7 > 3)
                     {
-                        world.setBlockWithNotify(x, y, z, 0);
+                        world.setBlock(x, y, z, 0);
                     }
 
                 }
                 else if (!var6 && !isFlammable(world, x, y - 1, z) && var7 == 15 && random.nextInt(4) == 0)
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
                 else
                 {
@@ -127,7 +127,7 @@ namespace betareborn.Blocks
                                                 var14 = 15;
                                             }
 
-                                            world.setBlockAndMetadataWithNotify(var8, var10, var9, id, var14);
+                                            world.setBlock(var8, var10, var9, id, var14);
                                         }
                                     }
                                 }
@@ -139,7 +139,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
         }
 
@@ -157,11 +157,11 @@ namespace betareborn.Blocks
                         var10 = 15;
                     }
 
-                    world.setBlockAndMetadataWithNotify(x, y, z, id, var10);
+                    world.setBlock(x, y, z, id, var10);
                 }
                 else
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
 
                 if (var9)
@@ -221,7 +221,7 @@ namespace betareborn.Blocks
         {
             if (!world.shouldSuffocate(x, y - 1, z) && !areBlocksAroundFlammable(world, x, y, z))
             {
-                world.setBlockWithNotify(x, y, z, 0);
+                world.setBlock(x, y, z, 0);
             }
         }
 
@@ -231,7 +231,7 @@ namespace betareborn.Blocks
             {
                 if (!world.shouldSuffocate(x, y - 1, z) && !areBlocksAroundFlammable(world, x, y, z))
                 {
-                    world.setBlockWithNotify(x, y, z, 0);
+                    world.setBlock(x, y, z, 0);
                 }
                 else
                 {

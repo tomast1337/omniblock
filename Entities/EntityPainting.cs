@@ -22,7 +22,7 @@ namespace betareborn.Entities
         {
             field_695_c = 0;
             direction = 0;
-            yOffset = 0.0F;
+            standingEyeHeight = 0.0F;
             setBoundingBoxSpacing(0.5F, 0.5F);
         }
 
@@ -48,7 +48,7 @@ namespace betareborn.Entities
 
             if (var6.size() > 0)
             {
-                art = (EnumArt)var6.get(rand.nextInt(var6.size()));
+                art = (EnumArt)var6.get(random.nextInt(var6.size()));
             }
 
             func_412_b(var5);
@@ -82,7 +82,7 @@ namespace betareborn.Entities
         public void func_412_b(int var1)
         {
             direction = var1;
-            prevRotationYaw = rotationYaw = (float)(var1 * 90);
+            prevYaw = yaw = (float)(var1 * 90);
             float var2 = (float)art.sizeX;
             float var3 = (float)art.sizeY;
             float var4 = (float)art.sizeX;
@@ -155,13 +155,13 @@ namespace betareborn.Entities
 
         public override void onUpdate()
         {
-            if (field_695_c++ == 100 && !worldObj.isRemote)
+            if (field_695_c++ == 100 && !world.isRemote)
             {
                 field_695_c = 0;
                 if (!func_410_i())
                 {
                     markDead();
-                    worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
+                    world.spawnEntity(new EntityItem(world, x, y, z, new ItemStack(Item.PAINTING)));
                 }
             }
 
@@ -169,7 +169,7 @@ namespace betareborn.Entities
 
         public bool func_410_i()
         {
-            if (worldObj.getCollidingBoundingBoxes(this, boundingBox).Count > 0)
+            if (world.getEntityCollisions(this, boundingBox).Count > 0)
             {
                 return false;
             }
@@ -182,25 +182,25 @@ namespace betareborn.Entities
                 int var5 = zPosition;
                 if (direction == 0)
                 {
-                    var3 = MathHelper.floor_double(posX - (double)((float)art.sizeX / 32.0F));
+                    var3 = MathHelper.floor_double(x - (double)((float)art.sizeX / 32.0F));
                 }
 
                 if (direction == 1)
                 {
-                    var5 = MathHelper.floor_double(posZ - (double)((float)art.sizeX / 32.0F));
+                    var5 = MathHelper.floor_double(z - (double)((float)art.sizeX / 32.0F));
                 }
 
                 if (direction == 2)
                 {
-                    var3 = MathHelper.floor_double(posX - (double)((float)art.sizeX / 32.0F));
+                    var3 = MathHelper.floor_double(x - (double)((float)art.sizeX / 32.0F));
                 }
 
                 if (direction == 3)
                 {
-                    var5 = MathHelper.floor_double(posZ - (double)((float)art.sizeX / 32.0F));
+                    var5 = MathHelper.floor_double(z - (double)((float)art.sizeX / 32.0F));
                 }
 
-                var4 = MathHelper.floor_double(posY - (double)((float)art.sizeY / 32.0F));
+                var4 = MathHelper.floor_double(y - (double)((float)art.sizeY / 32.0F));
 
                 int var7;
                 for (int var6 = 0; var6 < var1; ++var6)
@@ -210,11 +210,11 @@ namespace betareborn.Entities
                         Material var8;
                         if (direction != 0 && direction != 2)
                         {
-                            var8 = worldObj.getMaterial(xPosition, var4 + var7, var5 + var6);
+                            var8 = world.getMaterial(xPosition, var4 + var7, var5 + var6);
                         }
                         else
                         {
-                            var8 = worldObj.getMaterial(var3 + var6, var4 + var7, zPosition);
+                            var8 = world.getMaterial(var3 + var6, var4 + var7, zPosition);
                         }
 
                         if (!var8.isSolid())
@@ -224,7 +224,7 @@ namespace betareborn.Entities
                     }
                 }
 
-                var var9 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox);
+                var var9 = world.getEntities(this, boundingBox);
 
                 for (var7 = 0; var7 < var9.Count; ++var7)
                 {
@@ -245,11 +245,11 @@ namespace betareborn.Entities
 
         public override bool damage(Entity var1, int var2)
         {
-            if (!isDead && !worldObj.isRemote)
+            if (!isDead && !world.isRemote)
             {
                 markDead();
                 setBeenAttacked();
-                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
+                world.spawnEntity(new EntityItem(world, x, y, z, new ItemStack(Item.PAINTING)));
             }
 
             return true;
@@ -293,20 +293,20 @@ namespace betareborn.Entities
 
         public override void moveEntity(double var1, double var3, double var5)
         {
-            if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
+            if (!world.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 markDead();
-                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
+                world.spawnEntity(new EntityItem(world, x, y, z, new ItemStack(Item.PAINTING)));
             }
 
         }
 
         public override void addVelocity(double var1, double var3, double var5)
         {
-            if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
+            if (!world.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 markDead();
-                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
+                world.spawnEntity(new EntityItem(world, x, y, z, new ItemStack(Item.PAINTING)));
             }
 
         }

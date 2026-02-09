@@ -48,7 +48,7 @@ namespace betareborn.Blocks
             spawnParticles(world, x, y, z);
             if (id == Block.REDSTONE_ORE.id)
             {
-                world.setBlockWithNotify(x, y, z, Block.LIT_REDSTONE_ORE.id);
+                world.setBlock(x, y, z, Block.LIT_REDSTONE_ORE.id);
             }
 
         }
@@ -57,7 +57,7 @@ namespace betareborn.Blocks
         {
             if (id == Block.LIT_REDSTONE_ORE.id)
             {
-                world.setBlockWithNotify(x, y, z, Block.REDSTONE_ORE.id);
+                world.setBlock(x, y, z, Block.REDSTONE_ORE.id);
             }
 
         }
