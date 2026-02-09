@@ -17,7 +17,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.lightStoneDust.id;
+            return Item.GLOWSTONE_DUST.id;
         }
     }
 

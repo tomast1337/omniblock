@@ -2,10 +2,10 @@ using betareborn.NBT;
 using betareborn.Stats;
 using betareborn.Worlds;
 using java.lang;
-using betareborn.Blocks.BlockEntities;
 using betareborn.Inventorys;
 using betareborn.Util.Maths;
 using betareborn.Client.Guis;
+using betareborn.Blocks.Entities;
 
 namespace betareborn.Entities
 {

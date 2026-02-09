@@ -73,7 +73,7 @@ namespace betareborn.Entities
 
             for (int var2 = 0; var2 < var1; ++var2)
             {
-                entityDropItem(new ItemStack(Item.dyePowder, 1, 0), 0.0F);
+                entityDropItem(new ItemStack(Item.DYE, 1, 0), 0.0F);
             }
 
         }

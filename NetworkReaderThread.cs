@@ -1,12 +1,13 @@
+using betareborn.Network;
 using java.lang;
 
 namespace betareborn
 {
     class NetworkReaderThread : java.lang.Thread
     {
-        public readonly NetworkManager netManager;
+        public readonly Connection netManager;
 
-        public NetworkReaderThread(NetworkManager var1, string var2) : base(var2)
+        public NetworkReaderThread(Connection var1, string var2) : base(var2)
         {
             this.netManager = var1;
         }
@@ -14,10 +15,10 @@ namespace betareborn
 
         public override void run()
         {
-            object var1 = NetworkManager.threadSyncObject;
+            object var1 = Connection.LOCK;
             lock (var1)
             {
-                ++NetworkManager.numReadThreads;
+                ++Connection.READ_THREAD_COUNTER;
             }
 
             while (true)
@@ -27,19 +28,19 @@ namespace betareborn
                 try
                 {
                     var12 = true;
-                    if (!NetworkManager.isRunning(this.netManager))
+                    if (!Connection.isOpen(this.netManager))
                     {
                         var12 = false;
                         break;
                     }
 
-                    if (NetworkManager.isServerTerminating(this.netManager))
+                    if (Connection.isClosed(this.netManager))
                     {
                         var12 = false;
                         break;
                     }
 
-                    while (NetworkManager.readNetworkPacket(this.netManager))
+                    while (Connection.readPacket(this.netManager))
                     {
                     }
 
@@ -55,19 +56,19 @@ namespace betareborn
                 {
                     if (var12)
                     {
-                        object var5 = NetworkManager.threadSyncObject;
+                        object var5 = Connection.LOCK;
                         lock (var5)
                         {
-                            --NetworkManager.numReadThreads;
+                            --Connection.READ_THREAD_COUNTER;
                         }
                     }
                 }
             }
 
-            var1 = NetworkManager.threadSyncObject;
+            var1 = Connection.LOCK;
             lock (var1)
             {
-                --NetworkManager.numReadThreads;
+                --Connection.READ_THREAD_COUNTER;
             }
         }
     }

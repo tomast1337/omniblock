@@ -39,7 +39,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.silk.id;
+            return Item.STRING.id;
         }
     }
 

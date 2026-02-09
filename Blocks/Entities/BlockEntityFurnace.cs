@@ -1,4 +1,3 @@
-using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Entities;
 using betareborn.Inventorys;
@@ -6,7 +5,7 @@ using betareborn.Items;
 using betareborn.NBT;
 using betareborn.Recipes;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Blocks.Entities
 {
     public class BlockEntityFurnace : BlockEntity, IInventory
     {
@@ -38,7 +37,7 @@ namespace betareborn.Blocks.BlockEntities
                 }
                 else
                 {
-                    var3 = inventory[slot].splitStack(stack);
+                    var3 = inventory[slot].split(stack);
                     if (inventory[slot].count == 0)
                     {
                         inventory[slot] = null;
@@ -237,7 +236,7 @@ namespace betareborn.Blocks.BlockEntities
             else
             {
                 int var2 = itemStack.getItem().id;
-                return var2 < 256 && Block.BLOCKS[var2].material == Material.WOOD ? 300 : var2 == Item.stick.id ? 100 : var2 == Item.coal.id ? 1600 : var2 == Item.bucketLava.id ? 20000 : var2 == Block.SAPLING.id ? 100 : 0;
+                return var2 < 256 && Block.BLOCKS[var2].material == Material.WOOD ? 300 : var2 == Item.STICK.id ? 100 : var2 == Item.COAL.id ? 1600 : var2 == Item.LAVA_BUCKET.id ? 20000 : var2 == Block.SAPLING.id ? 100 : 0;
             }
         }
 

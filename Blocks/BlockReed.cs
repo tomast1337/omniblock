@@ -75,7 +75,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.reed.id;
+            return Item.SUGAR_CANE.id;
         }
 
         public override bool isOpaque()

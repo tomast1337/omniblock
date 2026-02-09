@@ -1,12 +1,13 @@
+using betareborn.Network;
 using java.lang;
 
 namespace betareborn
 {
     public class NetworkWriterThread : java.lang.Thread
     {
-        public readonly NetworkManager netManager;
+        public readonly Connection netManager;
 
-        public NetworkWriterThread(NetworkManager var1, string var2) : base(var2)
+        public NetworkWriterThread(Connection var1, string var2) : base(var2)
         {
             this.netManager = var1;
         }
@@ -14,10 +15,10 @@ namespace betareborn
 
         public override void run()
         {
-            object var1 = NetworkManager.threadSyncObject;
+            object var1 = Connection.LOCK;
             lock (var1)
             {
-                ++NetworkManager.numWriteThreads;
+                ++Connection.WRITE_THREAD_COUNTER;
             }
 
             while (true)
@@ -27,13 +28,13 @@ namespace betareborn
                 try
                 {
                     var13 = true;
-                    if (!NetworkManager.isRunning(this.netManager))
+                    if (!Connection.isOpen(this.netManager))
                     {
                         var13 = false;
                         break;
                     }
 
-                    while (NetworkManager.sendNetworkPacket(this.netManager))
+                    while (Connection.writePacket(this.netManager))
                     {
                     }
 
@@ -47,16 +48,16 @@ namespace betareborn
 
                     try
                     {
-                        if (NetworkManager.func_28140_f(this.netManager) != null)
+                        if (Connection.getOutputStream(this.netManager) != null)
                         {
-                            NetworkManager.func_28140_f(this.netManager).flush();
+                            Connection.getOutputStream(this.netManager).flush();
                         }
                     }
                     catch (java.io.IOException var18)
                     {
-                        if (!NetworkManager.func_28138_e(this.netManager))
+                        if (!Connection.isDisconnected(this.netManager))
                         {
-                            NetworkManager.func_30005_a(this.netManager, var18);
+                            Connection.disconnect(this.netManager, var18);
                         }
 
                         var18.printStackTrace();
@@ -66,19 +67,19 @@ namespace betareborn
                 {
                     if (var13)
                     {
-                        object var5 = NetworkManager.threadSyncObject;
+                        object var5 = Connection.LOCK;
                         lock (var5)
                         {
-                            --NetworkManager.numWriteThreads;
+                            --Connection.WRITE_THREAD_COUNTER;
                         }
                     }
                 }
             }
 
-            var1 = NetworkManager.threadSyncObject;
+            var1 = Connection.LOCK;
             lock (var1)
             {
-                --NetworkManager.numWriteThreads;
+                --Connection.WRITE_THREAD_COUNTER;
             }
         }
     }

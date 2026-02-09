@@ -90,9 +90,9 @@ namespace betareborn.Stats
                 while (var1.hasNext())
                 {
                     Integer var5 = (Integer)var1.next();
-                    if (Item.itemsList[var5.intValue()] != null)
+                    if (Item.ITEMS[var5.intValue()] != null)
                     {
-                        string var3 = StatCollector.translateToLocalFormatted("stat.craftItem", [Item.itemsList[var5.intValue()].getStatName()]);
+                        string var3 = StatCollector.translateToLocalFormatted("stat.craftItem", [Item.ITEMS[var5.intValue()].getStatName()]);
                         CRAFTED[var5.intValue()] = (new StatCrafting(16842752 + var5.intValue(), var3, var5.intValue())).registerStat();
                     }
                 }
@@ -128,9 +128,9 @@ namespace betareborn.Stats
 
             for (int var5 = var3; var5 < var4; ++var5)
             {
-                if (Item.itemsList[var5] != null)
+                if (Item.ITEMS[var5] != null)
                 {
-                    string var6 = StatCollector.translateToLocalFormatted(var1, [Item.itemsList[var5].getStatName()]);
+                    string var6 = StatCollector.translateToLocalFormatted(var1, [Item.ITEMS[var5].getStatName()]);
                     var0[var5] = (new StatCrafting(var2 + var5, var6, var5)).registerStat();
                     if (var5 >= Block.BLOCKS.Length)
                     {
@@ -152,9 +152,9 @@ namespace betareborn.Stats
 
             for (int var5 = var3; var5 < var4; ++var5)
             {
-                if (Item.itemsList[var5] != null && Item.itemsList[var5].isDamagable())
+                if (Item.ITEMS[var5] != null && Item.ITEMS[var5].isDamagable())
                 {
-                    string var6 = StatCollector.translateToLocalFormatted(var1, [Item.itemsList[var5].getStatName()]);
+                    string var6 = StatCollector.translateToLocalFormatted(var1, [Item.ITEMS[var5].getStatName()]);
                     var0[var5] = (new StatCrafting(var2 + var5, var6, var5)).registerStat();
                 }
             }

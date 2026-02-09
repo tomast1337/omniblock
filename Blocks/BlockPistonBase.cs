@@ -1,8 +1,8 @@
 using betareborn.Entities;
 using betareborn.Worlds;
-using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Util.Maths;
+using betareborn.Blocks.Entities;
 
 namespace betareborn.Blocks
 {

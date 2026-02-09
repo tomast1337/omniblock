@@ -7,7 +7,7 @@ namespace betareborn.Items
         {
         }
 
-        public override int getPlacedBlockMetadata(int var1)
+        public override int getPlacementMetadata(int var1)
         {
             return 7;
         }

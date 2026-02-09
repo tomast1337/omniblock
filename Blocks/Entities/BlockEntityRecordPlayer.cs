@@ -1,6 +1,6 @@
 using betareborn.NBT;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Blocks.Entities
 {
     public class BlockEntityRecordPlayer : BlockEntity
     {

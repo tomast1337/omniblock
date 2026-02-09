@@ -1,5 +1,5 @@
 using betareborn.Blocks;
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
 using betareborn.Blocks.Materials;
 using betareborn.Inventorys;
 using betareborn.Items;
@@ -276,7 +276,7 @@ namespace betareborn.Entities
             motionY = (double)0.1F;
             if (username.Equals("Notch"))
             {
-                dropItem(new ItemStack(Item.appleRed, 1), true);
+                dropItem(new ItemStack(Item.APPLE, 1), true);
             }
 
             inventory.dropInventory();
@@ -560,7 +560,7 @@ namespace betareborn.Entities
                 ItemStack var2 = getHand();
                 if (var2 != null && entity is EntityLiving)
                 {
-                    var2.useItemOnEntity((EntityLiving)entity);
+                    var2.useOnEntity((EntityLiving)entity);
                     if (var2.count <= 0)
                     {
                         var2.onRemoved(this);
@@ -606,7 +606,7 @@ namespace betareborn.Entities
                 ItemStack var3 = getHand();
                 if (var3 != null && target is EntityLiving)
                 {
-                    var3.hitEntity((EntityLiving)target, this);
+                    var3.postHit((EntityLiving)target, this);
                     if (var3.count <= 0)
                     {
                         var3.onRemoved(this);
@@ -992,9 +992,9 @@ namespace betareborn.Entities
         public override int getItemStackTextureId(ItemStack stack)
         {
             int var2 = base.getItemStackTextureId(stack);
-            if (stack.itemID == Item.fishingRod.id && fishEntity != null)
+            if (stack.itemID == Item.FISHING_ROD.id && fishEntity != null)
             {
-                var2 = stack.getIconIndex() + 16;
+                var2 = stack.getTextureId() + 16;
             }
 
             return var2;

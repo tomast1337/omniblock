@@ -1,8 +1,8 @@
 using betareborn.Blocks;
-using betareborn.Client;
+using betareborn.Blocks.Entities;
 using betareborn.Client.Rendering.Core;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Client.Rendering.Blocks.Entities
 {
     public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
     {

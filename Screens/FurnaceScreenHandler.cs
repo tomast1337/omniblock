@@ -1,4 +1,4 @@
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
 using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;

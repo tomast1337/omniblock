@@ -1,8 +1,8 @@
 using betareborn.Blocks;
 using betareborn.Worlds.Chunks;
-using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Worlds.Biomes.Source;
+using betareborn.Blocks.Entities;
 
 namespace betareborn.Worlds
 {

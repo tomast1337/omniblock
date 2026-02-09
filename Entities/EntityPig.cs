@@ -61,7 +61,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return fire > 0 ? Item.porkCooked.id : Item.porkRaw.id;
+            return fire > 0 ? Item.COOKED_PORKCHOP.id : Item.RAW_PORKCHOP.id;
         }
 
         public bool getSaddled()

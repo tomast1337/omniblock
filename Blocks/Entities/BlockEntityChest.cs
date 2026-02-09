@@ -3,7 +3,7 @@ using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.NBT;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Blocks.Entities
 {
     public class BlockEntityChest : BlockEntity, IInventory
     {
@@ -33,7 +33,7 @@ namespace betareborn.Blocks.BlockEntities
                 }
                 else
                 {
-                    var3 = inventory[slot].splitStack(amount);
+                    var3 = inventory[slot].split(amount);
                     if (inventory[slot].count == 0)
                     {
                         inventory[slot] = null;

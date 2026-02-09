@@ -5,7 +5,7 @@ namespace betareborn.Items
 
         public ItemCookie(int var1, int var2, bool var3, int var4) : base(var1, var2, var3)
         {
-            maxStackSize = var4;
+            maxCount = var4;
         }
     }
 

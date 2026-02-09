@@ -226,7 +226,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return (blockMeta & 8) != 0 ? 0 : (material == Material.METAL ? Item.doorSteel.id : Item.doorWood.id);
+            return (blockMeta & 8) != 0 ? 0 : (material == Material.METAL ? Item.IRON_DOOR.id : Item.WOODEN_DOOR.id);
         }
 
         public override HitResult raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)

@@ -1,9 +1,9 @@
 using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Worlds;
-using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Util.Maths;
+using betareborn.Blocks.Entities;
 
 namespace betareborn.Blocks
 {
@@ -208,7 +208,7 @@ namespace betareborn.Blocks
                             }
 
                             var7.count -= var11;
-                            EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
+                            EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemID, var11, var7.getDamage()));
                             float var13 = 0.05F;
                             var12.motionX = (double)((float)random.nextGaussian() * var13);
                             var12.motionY = (double)((float)random.nextGaussian() * var13 + 0.2F);

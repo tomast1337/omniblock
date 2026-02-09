@@ -115,7 +115,7 @@ namespace betareborn
                     ItemStack var4 = (ItemStack)var1.getObject();
                     var0.writeShort(var4.getItem().id);
                     var0.writeByte(var4.count);
-                    var0.writeShort(var4.getItemDamage());
+                    var0.writeShort(var4.getDamage());
                     break;
                 case 6:
                     Vec3i var3 = (Vec3i)var1.getObject();

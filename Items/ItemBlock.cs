@@ -12,10 +12,10 @@ namespace betareborn.Items
         public ItemBlock(int var1) : base(var1)
         {
             blockID = var1 + 256;
-            setIconIndex(Block.BLOCKS[var1 + 256].getTexture(2));
+            setTextureId(Block.BLOCKS[var1 + 256].getTexture(2));
         }
 
-        public override bool onItemUse(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
         {
             if (var3.getBlockId(var4, var5, var6) == Block.SNOW.id)
             {
@@ -65,7 +65,7 @@ namespace betareborn.Items
             else if (var3.canBlockBePlacedAt(blockID, var4, var5, var6, false, var7))
             {
                 Block var8 = Block.BLOCKS[blockID];
-                if (var3.setBlockAndMetadataWithNotify(var4, var5, var6, blockID, getPlacedBlockMetadata(var1.getItemDamage())))
+                if (var3.setBlockAndMetadataWithNotify(var4, var5, var6, blockID, getPlacementMetadata(var1.getDamage())))
                 {
                     Block.BLOCKS[blockID].onPlaced(var3, var4, var5, var6, var7);
                     Block.BLOCKS[blockID].onPlaced(var3, var4, var5, var6, var2);

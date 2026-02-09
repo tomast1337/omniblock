@@ -258,7 +258,7 @@ namespace betareborn.Entities
 
         public override void onCollideWithPlayer(EntityPlayer var1)
         {
-            if (inGroundSnowball && thrower == var1 && shakeSnowball <= 0 && var1.inventory.addItemStackToInventory(new ItemStack(Item.arrow, 1)))
+            if (inGroundSnowball && thrower == var1 && shakeSnowball <= 0 && var1.inventory.addItemStackToInventory(new ItemStack(Item.ARROW, 1)))
             {
                 worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
                 var1.sendPickup(this, 1);

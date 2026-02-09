@@ -119,7 +119,7 @@ namespace betareborn.Blocks
                         float var9 = world.random.nextFloat() * var8 + (1.0F - var8) * 0.5F;
                         float var10 = world.random.nextFloat() * var8 + (1.0F - var8) * 0.5F;
                         float var11 = world.random.nextFloat() * var8 + (1.0F - var8) * 0.5F;
-                        EntityItem var12 = new EntityItem(world, (double)((float)x + var9), (double)((float)y + var10), (double)((float)z + var11), new ItemStack(Item.seeds));
+                        EntityItem var12 = new EntityItem(world, (double)((float)x + var9), (double)((float)y + var10), (double)((float)z + var11), new ItemStack(Item.SEEDS));
                         var12.delayBeforeCanPickup = 10;
                         world.spawnEntity(var12);
                     }
@@ -130,7 +130,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return blockMeta == 7 ? Item.wheat.id : -1;
+            return blockMeta == 7 ? Item.WHEAT.id : -1;
         }
 
         public override int getDroppedItemCount(java.util.Random random)

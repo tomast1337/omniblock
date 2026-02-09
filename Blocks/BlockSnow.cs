@@ -65,7 +65,7 @@ namespace betareborn.Blocks
 
         public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
         {
-            int var7 = Item.snowball.id;
+            int var7 = Item.SNOWBALL.id;
             float var8 = 0.7F;
             double var9 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
             double var11 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
@@ -79,7 +79,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.snowball.id;
+            return Item.SNOWBALL.id;
         }
 
         public override int getDroppedItemCount(java.util.Random random)

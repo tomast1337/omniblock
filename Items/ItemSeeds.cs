@@ -14,7 +14,7 @@ namespace betareborn.Items
             field_318_a = var2;
         }
 
-        public override bool onItemUse(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
         {
             if (var7 != 1)
             {

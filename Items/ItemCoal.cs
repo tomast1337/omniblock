@@ -11,7 +11,7 @@ namespace betareborn.Items
 
         public override String getItemNameIS(ItemStack var1)
         {
-            return var1.getItemDamage() == 1 ? "item.charcoal" : "item.coal";
+            return var1.getDamage() == 1 ? "item.charcoal" : "item.coal";
         }
     }
 

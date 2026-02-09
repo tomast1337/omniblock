@@ -1077,7 +1077,7 @@ namespace betareborn.Entities
 
         public virtual int getItemStackTextureId(ItemStack var1)
         {
-            return var1.getIconIndex();
+            return var1.getTextureId();
         }
     }
 }

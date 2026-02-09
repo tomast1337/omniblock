@@ -1,8 +1,8 @@
-using betareborn.Client;
+using betareborn.Blocks.Entities;
 using betareborn.Client.Rendering.Core;
 using betareborn.Worlds;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Client.Rendering.Blocks.Entities
 {
     public abstract class BlockEntitySpecialRenderer
     {

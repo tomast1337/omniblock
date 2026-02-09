@@ -10,7 +10,7 @@ namespace betareborn.Entities
 
         public EntitySlimeFX(World var1, double var2, double var4, double var6, Item var8) : base(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D)
         {
-            particleTextureIndex = var8.getIconFromDamage(0);
+            particleTextureIndex = var8.getTextureId(0);
             particleRed = particleGreen = particleBlue = 1.0F;
             particleGravity = Block.SNOW_BLOCK.particleFallSpeedModifier;
             particleScale /= 2.0F;

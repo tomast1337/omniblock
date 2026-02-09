@@ -144,7 +144,7 @@ namespace betareborn.Entities
                         var1.incrementStat(Achievements.MINE_WOOD);
                     }
 
-                    if (item.itemID == Item.leather.id)
+                    if (item.itemID == Item.LEATHER.id)
                     {
                         var1.incrementStat(Achievements.KILL_COW);
                     }

@@ -213,7 +213,7 @@ namespace betareborn.Client.Rendering.Entitys
                 GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
                 if (var1.fishEntity != null)
                 {
-                    var21 = new ItemStack(Item.stick);
+                    var21 = new ItemStack(Item.STICK);
                 }
 
                 if (var21.itemID < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var21.itemID].getRenderType()))
@@ -225,10 +225,10 @@ namespace betareborn.Client.Rendering.Entitys
                     GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Scale(var5, -var5, var5);
                 }
-                else if (Item.itemsList[var21.itemID].isFull3D())
+                else if (Item.ITEMS[var21.itemID].isHandheld())
                 {
                     var5 = 10.0F / 16.0F;
-                    if (Item.itemsList[var21.itemID].shouldRotateAroundWhenRendering())
+                    if (Item.ITEMS[var21.itemID].isHandheldRod())
                     {
                         GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
                         GLManager.GL.Translate(0.0F, -(2.0F / 16.0F), 0.0F);

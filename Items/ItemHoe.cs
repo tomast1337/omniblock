@@ -9,11 +9,11 @@ namespace betareborn.Items
 
         public ItemHoe(int var1, EnumToolMaterial var2) : base(var1)
         {
-            maxStackSize = 1;
+            maxCount = 1;
             setMaxDamage(var2.getMaxUses());
         }
 
-        public override bool onItemUse(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
         {
             int var8 = var3.getBlockId(var4, var5, var6);
             int var9 = var3.getBlockId(var4, var5 + 1, var6);
@@ -38,7 +38,7 @@ namespace betareborn.Items
             }
         }
 
-        public override bool isFull3D()
+        public override bool isHandheld()
         {
             return true;
         }

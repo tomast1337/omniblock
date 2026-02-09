@@ -1,4 +1,5 @@
 using betareborn.Entities;
+using betareborn.Network;
 using betareborn.Util.Maths;
 using java.io;
 
@@ -28,7 +29,7 @@ namespace betareborn.Packets
             this.entityId = var1.entityId;
             this.itemID = var1.item.itemID;
             this.count = var1.item.count;
-            this.itemDamage = var1.item.getItemDamage();
+            this.itemDamage = var1.item.getDamage();
             this.xPosition = MathHelper.floor_double(var1.posX * 32.0D);
             this.yPosition = MathHelper.floor_double(var1.posY * 32.0D);
             this.zPosition = MathHelper.floor_double(var1.posZ * 32.0D);

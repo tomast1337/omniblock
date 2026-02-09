@@ -38,7 +38,7 @@ namespace betareborn
             ItemStack var7 = mc.player.getHand();
             if (var7 != null)
             {
-                var7.onDestroyBlock(var5, var1, var2, var3, mc.player);
+                var7.postMine(var5, var1, var2, var3, mc.player);
                 if (var7.count == 0)
                 {
                     var7.onRemoved(mc.player);

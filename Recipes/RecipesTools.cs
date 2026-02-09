@@ -7,7 +7,7 @@ namespace betareborn.Recipes
     public class RecipesTools : java.lang.Object
     {
         private string[][] recipePatterns = [["XXX", " # ", " # "], ["X", "#", "#"], ["XX", "X#", " #"], ["XX", " #", " #"]];
-        private object[][] recipeItems = [[Block.PLANKS, Block.COBBLESTONE, Item.ingotIron, Item.diamond, Item.ingotGold], [Item.pickaxeWood, Item.pickaxeStone, Item.pickaxeSteel, Item.pickaxeDiamond, Item.pickaxeGold], [Item.shovelWood, Item.shovelStone, Item.shovelSteel, Item.shovelDiamond, Item.shovelGold], [Item.axeWood, Item.axeStone, Item.axeSteel, Item.axeDiamond, Item.axeGold], [Item.hoeWood, Item.hoeStone, Item.hoeSteel, Item.hoeDiamond, Item.hoeGold]];
+        private object[][] recipeItems = [[Block.PLANKS, Block.COBBLESTONE, Item.IRON_INGOT, Item.DIAMOND, Item.GOLD_INGOT], [Item.WOODEN_PICKAXE, Item.STONE_PICKAXE, Item.IRON_PICKAXE, Item.DIAMOND_PICKAXE, Item.GOLDEN_PICKAXE], [Item.WOODEN_SHOVEL, Item.STONE_SHOVEL, Item.IRON_SHOVEL, Item.DIAMOND_SHOVEL, Item.GOLDEN_SHOVEL], [Item.WOODEN_AXE, Item.STONE_AXE, Item.IRON_AXE, Item.DIAMOND_AXE, Item.GOLDEN_AXE], [Item.WOODEN_HOE, Item.STONE_HOE, Item.IRON_HOE, Item.DIAMOND_HOE, Item.GOLDEN_HOE]];
 
         public void addRecipes(CraftingManager var1)
         {
@@ -18,11 +18,11 @@ namespace betareborn.Recipes
                 for (int var4 = 0; var4 < recipeItems.Length - 1; ++var4)
                 {
                     Item var5 = (Item)recipeItems[var4 + 1][var2];
-                    var1.addRecipe(new ItemStack(var5), [recipePatterns[var4], Character.valueOf('#'), Item.stick, Character.valueOf('X'), var3]);
+                    var1.addRecipe(new ItemStack(var5), [recipePatterns[var4], Character.valueOf('#'), Item.STICK, Character.valueOf('X'), var3]);
                 }
             }
 
-            var1.addRecipe(new ItemStack(Item.shears), [" #", "# ", Character.valueOf('#'), Item.ingotIron]);
+            var1.addRecipe(new ItemStack(Item.SHEARS), [" #", "# ", Character.valueOf('#'), Item.IRON_INGOT]);
         }
     }
 

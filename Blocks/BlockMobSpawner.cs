@@ -1,4 +1,4 @@
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
 using betareborn.Blocks.Materials;
 
 namespace betareborn.Blocks

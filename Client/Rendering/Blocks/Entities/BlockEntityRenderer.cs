@@ -1,11 +1,11 @@
-using betareborn.Client;
+using betareborn.Blocks.Entities;
 using betareborn.Client.Rendering.Core;
 using betareborn.Entities;
 using betareborn.Worlds;
 using java.lang;
 using java.util;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Client.Rendering.Blocks.Entities
 {
     public class BlockEntityRenderer
     {

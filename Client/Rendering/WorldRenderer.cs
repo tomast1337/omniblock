@@ -1,5 +1,6 @@
 using betareborn.Blocks;
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
+using betareborn.Client.Rendering.Blocks.Entities;
 using betareborn.Client.Rendering.Chunks;
 using betareborn.Client.Rendering.Core;
 using betareborn.Client.Rendering.Entitys;
@@ -820,7 +821,7 @@ namespace betareborn.Client.Rendering
                     }
                     else if (var1.Equals("snowballpoof"))
                     {
-                        mc.particleManager.addEffect(new EntitySlimeFX(worldObj, var2, var4, var6, Item.snowball));
+                        mc.particleManager.addEffect(new EntitySlimeFX(worldObj, var2, var4, var6, Item.SNOWBALL));
                     }
                     else if (var1.Equals("snowshovel"))
                     {
@@ -828,7 +829,7 @@ namespace betareborn.Client.Rendering
                     }
                     else if (var1.Equals("slime"))
                     {
-                        mc.particleManager.addEffect(new EntitySlimeFX(worldObj, var2, var4, var6, Item.slimeBall));
+                        mc.particleManager.addEffect(new EntitySlimeFX(worldObj, var2, var4, var6, Item.SLIMEBALL));
                     }
                     else if (var1.Equals("heart"))
                     {
@@ -908,9 +909,9 @@ namespace betareborn.Client.Rendering
                     worldObj.playSound((double)(var3 + 0.5F), (double)(var4 + 0.5F), (double)(var5 + 0.5F), "random.fizz", 0.5F, 2.6F + (var7.nextFloat() - var7.nextFloat()) * 0.8F);
                     break;
                 case 1005:
-                    if (Item.itemsList[var6] is ItemRecord)
+                    if (Item.ITEMS[var6] is ItemRecord)
                     {
-                        worldObj.playRecord(((ItemRecord)Item.itemsList[var6]).recordName, var3, var4, var5);
+                        worldObj.playRecord(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5);
                     }
                     else
                     {

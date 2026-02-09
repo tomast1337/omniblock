@@ -1,9 +1,10 @@
 using betareborn.Blocks;
+using betareborn.Blocks.Entities;
 using betareborn.Client.Rendering.Core;
 using betareborn.Worlds;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Client.Rendering.Blocks.Entities
 {
     public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
     {

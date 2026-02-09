@@ -80,7 +80,7 @@ namespace betareborn.Recipes
                             return false;
                         }
 
-                        if (var9.getItemDamage() != -1 && var9.getItemDamage() != var10.getItemDamage())
+                        if (var9.getDamage() != -1 && var9.getDamage() != var10.getDamage())
                         {
                             return false;
                         }
@@ -93,7 +93,7 @@ namespace betareborn.Recipes
 
         public ItemStack getCraftingResult(InventoryCrafting var1)
         {
-            return new ItemStack(recipeOutput.itemID, recipeOutput.count, recipeOutput.getItemDamage());
+            return new ItemStack(recipeOutput.itemID, recipeOutput.count, recipeOutput.getDamage());
         }
 
         public int getRecipeSize()

@@ -14,7 +14,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.snowball.id;
+            return Item.SNOWBALL.id;
         }
 
         public override int getDroppedItemCount(java.util.Random random)

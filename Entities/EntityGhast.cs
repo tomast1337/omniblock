@@ -178,7 +178,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.gunpowder.id;
+            return Item.GUNPOWDER.id;
         }
 
         protected override float getSoundVolume()

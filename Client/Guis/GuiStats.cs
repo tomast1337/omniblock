@@ -105,7 +105,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
             Lighting.turnOn();
             GLManager.GL.PopMatrix();
-            field_27153_j.drawItemIntoGui(fontRenderer, mc.textureManager, var3, 0, Item.itemsList[var3].getIconFromDamage(0), var1 + 2, var2 + 2);
+            field_27153_j.drawItemIntoGui(fontRenderer, mc.textureManager, var3, 0, Item.ITEMS[var3].getTextureId(0), var1 + 2, var2 + 2);
             Lighting.turnOff();
             GLManager.GL.Disable(GLEnum.RescaleNormal);
         }

@@ -11,7 +11,7 @@ namespace betareborn.Items
         {
         }
 
-        public override bool canHarvestBlock(Block var1)
+        public override bool isSuitableFor(Block var1)
         {
             return var1 == Block.SNOW ? true : var1 == Block.SNOW_BLOCK;
         }

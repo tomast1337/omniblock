@@ -17,7 +17,7 @@ namespace betareborn.Items
             renderIndex = var3;
             damageReduceAmount = damageReduceAmountArray[var4];
             setMaxDamage(maxDamageArray[var4] * 3 << var2);
-            maxStackSize = 1;
+            maxCount = 1;
         }
     }
 

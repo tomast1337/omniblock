@@ -11,10 +11,10 @@ namespace betareborn.Items
 
         public ItemBoat(int var1) : base(var1)
         {
-            maxStackSize = 1;
+            maxCount = 1;
         }
 
-        public override ItemStack onItemRightClick(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
             float var4 = 1.0F;
             float var5 = var3.prevRotationPitch + (var3.rotationPitch - var3.prevRotationPitch) * var4;

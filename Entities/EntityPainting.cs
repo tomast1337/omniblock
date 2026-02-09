@@ -161,7 +161,7 @@ namespace betareborn.Entities
                 if (!func_410_i())
                 {
                     markDead();
-                    worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                    worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
                 }
             }
 
@@ -249,7 +249,7 @@ namespace betareborn.Entities
             {
                 markDead();
                 setBeenAttacked();
-                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
             }
 
             return true;
@@ -296,7 +296,7 @@ namespace betareborn.Entities
             if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 markDead();
-                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
             }
 
         }
@@ -306,7 +306,7 @@ namespace betareborn.Entities
             if (!worldObj.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {
                 markDead();
-                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.painting)));
+                worldObj.spawnEntity(new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.PAINTING)));
             }
 
         }

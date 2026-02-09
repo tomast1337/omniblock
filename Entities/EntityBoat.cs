@@ -98,7 +98,7 @@ namespace betareborn.Entities
 
                     for (var3 = 0; var3 < 2; ++var3)
                     {
-                        dropItemWithOffset(Item.stick.id, 1, 0.0F);
+                        dropItemWithOffset(Item.STICK.id, 1, 0.0F);
                     }
 
                     markDead();
@@ -313,7 +313,7 @@ namespace betareborn.Entities
 
                         for (var22 = 0; var22 < 2; ++var22)
                         {
-                            dropItemWithOffset(Item.stick.id, 1, 0.0F);
+                            dropItemWithOffset(Item.STICK.id, 1, 0.0F);
                         }
                     }
                 }

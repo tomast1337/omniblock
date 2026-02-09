@@ -164,7 +164,7 @@ namespace betareborn.Entities
                 if (!worldObj.isRemote)
                 {
                     ItemStack var1 = angler.getHand();
-                    if (angler.isDead || !angler.isEntityAlive() || var1 == null || var1.getItem() != Item.fishingRod || getDistanceSqToEntity(angler) > 1024.0D)
+                    if (angler.isDead || !angler.isEntityAlive() || var1 == null || var1.getItem() != Item.FISHING_ROD || getDistanceSqToEntity(angler) > 1024.0D)
                     {
                         markDead();
                         angler.fishEntity = null;
@@ -422,7 +422,7 @@ namespace betareborn.Entities
             }
             else if (ticksCatchable > 0)
             {
-                EntityItem var13 = new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.fishRaw));
+                EntityItem var13 = new EntityItem(worldObj, posX, posY, posZ, new ItemStack(Item.RAW_FISH));
                 double var3 = angler.posX - posX;
                 double var5 = angler.posY - posY;
                 double var7 = angler.posZ - posZ;

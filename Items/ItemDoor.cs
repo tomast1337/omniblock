@@ -14,10 +14,10 @@ namespace betareborn.Items
         public ItemDoor(int var1, Material var2) : base(var1)
         {
             doorMaterial = var2;
-            maxStackSize = 1;
+            maxCount = 1;
         }
 
-        public override bool onItemUse(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
         {
             if (var7 != 1)
             {

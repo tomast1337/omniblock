@@ -156,13 +156,13 @@ namespace betareborn.Entities
                     ItemStack var3 = var2.inventory.getCurrentItem();
                     if (var3 != null)
                     {
-                        if (!isWolfTamed() && var3.itemID == Item.bone.id)
+                        if (!isWolfTamed() && var3.itemID == Item.BONE.id)
                         {
                             looksWithInterest = true;
                         }
-                        else if (isWolfTamed() && Item.itemsList[var3.itemID] is ItemFood)
+                        else if (isWolfTamed() && Item.ITEMS[var3.itemID] is ItemFood)
                         {
-                            looksWithInterest = ((ItemFood)Item.itemsList[var3.itemID]).getIsWolfsFavoriteMeat();
+                            looksWithInterest = ((ItemFood)Item.ITEMS[var3.itemID]).getIsWolfsFavoriteMeat();
                         }
                     }
                 }
@@ -407,7 +407,7 @@ namespace betareborn.Entities
             ItemStack var2 = var1.inventory.getCurrentItem();
             if (!isWolfTamed())
             {
-                if (var2 != null && var2.itemID == Item.bone.id && !isWolfAngry())
+                if (var2 != null && var2.itemID == Item.BONE.id && !isWolfAngry())
                 {
                     --var2.count;
                     if (var2.count <= 0)
@@ -439,9 +439,9 @@ namespace betareborn.Entities
             }
             else
             {
-                if (var2 != null && Item.itemsList[var2.itemID] is ItemFood)
+                if (var2 != null && Item.ITEMS[var2.itemID] is ItemFood)
                 {
-                    ItemFood var3 = (ItemFood)Item.itemsList[var2.itemID];
+                    ItemFood var3 = (ItemFood)Item.ITEMS[var2.itemID];
                     if (var3.getIsWolfsFavoriteMeat() && dataWatcher.getWatchableObjectInt(18) < 20)
                     {
                         --var2.count;
@@ -450,7 +450,7 @@ namespace betareborn.Entities
                             var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
                         }
 
-                        heal(((ItemFood)Item.porkRaw).getHealAmount());
+                        heal(((ItemFood)Item.RAW_PORKCHOP).getHealAmount());
                         return true;
                     }
                 }

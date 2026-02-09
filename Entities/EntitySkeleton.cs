@@ -9,7 +9,7 @@ namespace betareborn.Entities
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntitySkeleton).TypeHandle);
 
-        private static readonly ItemStack defaultHeldItem = new ItemStack(Item.bow, 1);
+        private static readonly ItemStack defaultHeldItem = new ItemStack(Item.BOW, 1);
 
         public EntitySkeleton(World var1) : base(var1)
         {
@@ -81,7 +81,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.arrow.id;
+            return Item.ARROW.id;
         }
 
         protected override void dropFewItems()
@@ -91,14 +91,14 @@ namespace betareborn.Entities
             int var2;
             for (var2 = 0; var2 < var1; ++var2)
             {
-                dropItem(Item.arrow.id, 1);
+                dropItem(Item.ARROW.id, 1);
             }
 
             var1 = rand.nextInt(3);
 
             for (var2 = 0; var2 < var1; ++var2)
             {
-                dropItem(Item.bone.id, 1);
+                dropItem(Item.BONE.id, 1);
             }
 
         }

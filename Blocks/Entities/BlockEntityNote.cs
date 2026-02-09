@@ -2,7 +2,7 @@ using betareborn.Blocks.Materials;
 using betareborn.NBT;
 using betareborn.Worlds;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Blocks.Entities
 {
     public class BlockEntityNote : BlockEntity
     {

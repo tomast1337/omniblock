@@ -7,10 +7,10 @@ namespace betareborn.Items
 
         public ItemSaddle(int var1) : base(var1)
         {
-            maxStackSize = 1;
+            maxCount = 1;
         }
 
-        public override void saddleEntity(ItemStack var1, EntityLiving var2)
+        public override void useOnEntity(ItemStack var1, EntityLiving var2)
         {
             if (var2 is EntityPig)
             {
@@ -24,9 +24,9 @@ namespace betareborn.Items
 
         }
 
-        public override bool hitEntity(ItemStack var1, EntityLiving var2, EntityLiving var3)
+        public override bool postHit(ItemStack var1, EntityLiving var2, EntityLiving var3)
         {
-            saddleEntity(var1, var2);
+            useOnEntity(var1, var2);
             return true;
         }
     }

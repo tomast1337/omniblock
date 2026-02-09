@@ -1,4 +1,4 @@
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
 using betareborn.Client.Rendering.Core;
 using betareborn.Inventorys;
 using betareborn.Screens;

@@ -60,7 +60,7 @@ namespace betareborn
         public virtual bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
         {
             int var4 = var3.count;
-            ItemStack var5 = var3.useItemRightClick(var2, var1);
+            ItemStack var5 = var3.use(var2, var1);
             if (var5 != var3 || var5 != null && var5.count != var4)
             {
                 var1.inventory.mainInventory[var1.inventory.currentItem] = var5;
@@ -97,7 +97,7 @@ namespace betareborn
         public virtual bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
         {
             int var8 = var2.getBlockId(var4, var5, var6);
-            return var8 > 0 && Block.BLOCKS[var8].onUse(var2, var4, var5, var6, var1) ? true : (var3 == null ? false : var3.useItem(var1, var2, var4, var5, var6, var7));
+            return var8 > 0 && Block.BLOCKS[var8].onUse(var2, var4, var5, var6, var1) ? true : (var3 == null ? false : var3.useOnBlock(var1, var2, var4, var5, var6, var7));
         }
 
         public virtual EntityPlayer createPlayer(World var1)

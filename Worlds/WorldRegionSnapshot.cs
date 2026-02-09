@@ -1,5 +1,5 @@
 ﻿using betareborn.Blocks;
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
 using betareborn.Blocks.Materials;
 using betareborn.Worlds.Biomes.Source;
 using betareborn.Worlds.Chunks;

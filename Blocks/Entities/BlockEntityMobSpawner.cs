@@ -2,7 +2,7 @@ using betareborn.Entities;
 using betareborn.NBT;
 using betareborn.Util.Maths;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Blocks.Entities
 {
     public class BlockEntityMobSpawner : BlockEntity
     {

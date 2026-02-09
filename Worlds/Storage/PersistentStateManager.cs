@@ -48,7 +48,7 @@ namespace betareborn.Worlds.Storage
                             FileInputStream var5 = new(var4);
                             NBTTagCompound var6 = CompressedStreamTools.func_1138_a(var5);
                             var5.close();
-                            var3.readFromNBT(var6.getCompoundTag("data"));
+                            var3.readNBT(var6.getCompoundTag("data"));
                         }
                     }
                     catch (java.lang.Exception var8)
@@ -109,7 +109,7 @@ namespace betareborn.Worlds.Storage
                     if (var2 != null)
                     {
                         NBTTagCompound var3 = new();
-                        var1.writeToNBT(var3);
+                        var1.writeNBT(var3);
                         NBTTagCompound var4 = new();
                         var4.setCompoundTag("data", var3);
 

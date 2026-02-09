@@ -6,7 +6,7 @@ namespace betareborn.Recipes
 {
     public class RecipesIngots
     {
-        private object[][] recipeItems = [[Block.GOLD_BLOCK, new ItemStack(Item.ingotGold, 9)], [Block.IRON_BLOCK, new ItemStack(Item.ingotIron, 9)], [Block.DIAMOND_BLOCK, new ItemStack(Item.diamond, 9)], [Block.LAPIS_BLOCK, new ItemStack(Item.dyePowder, 9, 4)]];
+        private object[][] recipeItems = [[Block.GOLD_BLOCK, new ItemStack(Item.GOLD_INGOT, 9)], [Block.IRON_BLOCK, new ItemStack(Item.IRON_INGOT, 9)], [Block.DIAMOND_BLOCK, new ItemStack(Item.DIAMOND, 9)], [Block.LAPIS_BLOCK, new ItemStack(Item.DYE, 9, 4)]];
 
         public void addRecipes(CraftingManager var1)
         {

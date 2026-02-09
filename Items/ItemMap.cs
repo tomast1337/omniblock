@@ -1,5 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Entities;
+using betareborn.Packets;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;
@@ -7,71 +8,71 @@ using java.lang;
 
 namespace betareborn.Items
 {
-    public class ItemMap : ItemMapBase
+    public class ItemMap : NetworkSyncedItem
     {
 
         public ItemMap(int var1) : base(var1)
         {
-            setMaxStackSize(1);
+            setMaxCount(1);
         }
 
-        public static MapData func_28013_a(short var0, World var1)
+        public static MapState getMapState(short mapId, World world)
         {
-            (new StringBuilder()).append("map_").append(var0).toString();
-            MapData var3 = (MapData)var1.loadItemData(MapData.Class, "map_" + var0);
+            (new StringBuilder()).append("map_").append(mapId).toString();
+            MapState var3 = (MapState)world.loadItemData(MapState.Class, "map_" + mapId);
             if (var3 == null)
             {
-                int var4 = var1.getUniqueDataId("map");
+                int var4 = world.getUniqueDataId("map");
                 string var2 = "map_" + var4;
-                var3 = new MapData(var2);
-                var1.setItemData(var2, var3);
+                var3 = new MapState(var2);
+                world.setItemData(var2, var3);
             }
 
             return var3;
         }
 
-        public MapData func_28012_a(ItemStack var1, World var2)
+        public MapState getSavedMapState(ItemStack stack, World world)
         {
-            (new StringBuilder()).append("map_").append(var1.getItemDamage()).toString();
-            MapData var4 = (MapData)var2.loadItemData(MapData.Class, "map_" + var1.getItemDamage());
+            (new StringBuilder()).append("map_").append(stack.getDamage()).toString();
+            MapState var4 = (MapState)world.loadItemData(MapState.Class, "map_" + stack.getDamage());
             if (var4 == null)
             {
-                var1.setItemDamage(var2.getUniqueDataId("map"));
-                string var3 = "map_" + var1.getItemDamage();
-                var4 = new MapData(var3);
-                var4.field_28180_b = var2.getWorldInfo().getSpawnX();
-                var4.field_28179_c = var2.getWorldInfo().getSpawnZ();
-                var4.field_28177_e = 3;
-                var4.field_28178_d = (sbyte)var2.dimension.id;
+                stack.setDamage(world.getUniqueDataId("map"));
+                string var3 = "map_" + stack.getDamage();
+                var4 = new MapState(var3);
+                var4.centerX = world.getWorldInfo().getSpawnX();
+                var4.centerZ = world.getWorldInfo().getSpawnZ();
+                var4.scale = 3;
+                var4.dimension = (sbyte)world.dimension.id;
                 var4.markDirty();
-                var2.setItemData(var3, var4);
+                world.setItemData(var3, var4);
             }
 
             return var4;
         }
 
-        public void func_28011_a(World var1, Entity var2, MapData var3)
+        public void update(World world, Entity entity, MapState map)
         {
-            if (var1.dimension.id == var3.field_28178_d)
+            if (world.dimension.id == map.dimension)
             {
                 short var4 = 128;
                 short var5 = 128;
-                int var6 = 1 << var3.field_28177_e;
-                int var7 = var3.field_28180_b;
-                int var8 = var3.field_28179_c;
-                int var9 = MathHelper.floor_double(var2.posX - (double)var7) / var6 + var4 / 2;
-                int var10 = MathHelper.floor_double(var2.posZ - (double)var8) / var6 + var5 / 2;
+                int var6 = 1 << map.scale;
+                int var7 = map.centerX;
+                int var8 = map.centerZ;
+                int var9 = MathHelper.floor_double(entity.posX - (double)var7) / var6 + var4 / 2;
+                int var10 = MathHelper.floor_double(entity.posZ - (double)var8) / var6 + var5 / 2;
                 int var11 = 128 / var6;
-                if (var1.dimension.hasCeiling)
+                if (world.dimension.hasCeiling)
                 {
                     var11 /= 2;
                 }
 
-                ++var3.field_28175_g;
+                ++map.inventoryTicks;
 
                 for (int var12 = var9 - var11 + 1; var12 < var9 + var11; ++var12)
                 {
-                    if ((var12 & 15) == (var3.field_28175_g & 15))
+                    if ((var12 & 15) == (map.inventoryTicks & 15))
                     {
                         int var13 = 255;
                         int var14 = 0;
@@ -90,7 +91,7 @@ namespace betareborn.Items
                                 byte var24 = 0;
                                 byte var25 = 0;
                                 int[] var26 = new int[256];
-                                Chunk var27 = var1.getChunkFromBlockCoords(var21, var22);
+                                Chunk var27 = world.getChunkFromBlockCoords(var21, var22);
                                 int var28 = var21 & 15;
                                 int var29 = var22 & 15;
                                 int var30 = 0;
@@ -99,7 +100,7 @@ namespace betareborn.Items
                                 int var34;
                                 int var35;
                                 int var38;
-                                if (var1.dimension.hasCeiling)
+                                if (world.dimension.hasCeiling)
                                 {
                                     var33 = var21 + var22 * 231871;
                                     var33 = var33 * var33 * 31287121 + var33 * 11;
@@ -186,7 +187,7 @@ namespace betareborn.Items
                                 var15 = var31;
                                 if (var17 >= 0 && var18 * var18 + var19 * var19 < var11 * var11 && (!var20 || (var12 + var17 & 1) != 0))
                                 {
-                                    byte var45 = var3.field_28176_f[var12 + var17 * var4];
+                                    byte var45 = map.colors[var12 + var17 * var4];
                                     byte var40 = (byte)(var38 * 4 + var42);
                                     if (var45 != var40)
                                     {
@@ -200,7 +201,7 @@ namespace betareborn.Items
                                             var14 = var17;
                                         }
 
-                                        var3.field_28176_f[var12 + var17 * var4] = var40;
+                                        map.colors[var12 + var17 * var4] = var40;
                                     }
                                 }
                             }
@@ -208,7 +209,7 @@ namespace betareborn.Items
 
                         if (var13 <= var14)
                         {
-                            var3.func_28170_a(var12, var13, var14);
+                            map.markDirty(var12, var13, var14);
                         }
                     }
                 }
@@ -266,37 +267,44 @@ namespace betareborn.Items
             }
         }
 
-        public override void onUpdate(ItemStack var1, World var2, Entity var3, int var4, bool var5)
+        public override void inventoryTick(ItemStack var1, World var2, Entity var3, int var4, bool var5)
         {
             if (!var2.isRemote)
             {
-                MapData var6 = func_28012_a(var1, var2);
+                MapState var6 = getSavedMapState(var1, var2);
                 if (var3 is EntityPlayer)
                 {
                     EntityPlayer var7 = (EntityPlayer)var3;
-                    var6.func_28169_a(var7, var1);
+                    var6.update(var7, var1);
                 }
 
                 if (var5)
                 {
-                    func_28011_a(var2, var3, var6);
+                    update(var2, var3, var6);
                 }
 
             }
         }
 
-        public override void onCreated(ItemStack var1, World var2, EntityPlayer var3)
+        public override void onCraft(ItemStack var1, World var2, EntityPlayer var3)
         {
-            var1.setItemDamage(var2.getUniqueDataId("map"));
-            string var4 = "map_" + var1.getItemDamage();
-            MapData var5 = new MapData(var4);
+            var1.setDamage(var2.getUniqueDataId("map"));
+            string var4 = "map_" + var1.getDamage();
+            MapState var5 = new MapState(var4);
             var2.setItemData(var4, var5);
-            var5.field_28180_b = MathHelper.floor_double(var3.posX);
-            var5.field_28179_c = MathHelper.floor_double(var3.posZ);
-            var5.field_28177_e = 3;
-            var5.field_28178_d = (sbyte)var2.dimension.id;
+            var5.centerX = MathHelper.floor_double(var3.posX);
+            var5.centerZ = MathHelper.floor_double(var3.posZ);
+            var5.scale = 3;
+            var5.dimension = (sbyte)var2.dimension.id;
             var5.markDirty();
         }
+
+        public override Packet getUpdatePacket(ItemStack stack, World world, EntityPlayer player)
+        {
+        //    byte[] var4 = getSavedMapState(stack, world).getPlayerMarkerPacket(player);
+        //    return var4 == null ? null : new MapUpdateS2CPacket((short)Item.MAP.id, (short)stack.getDamage(), var4);
+        //}
+        return null; }
     }
 
 }

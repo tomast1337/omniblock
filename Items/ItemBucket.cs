@@ -14,11 +14,11 @@ namespace betareborn.Items
 
         public ItemBucket(int var1, int var2) : base(var1)
         {
-            maxStackSize = 1;
+            maxCount = 1;
             isFull = var2;
         }
 
-        public override ItemStack onItemRightClick(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
             float var4 = 1.0F;
             float var5 = var3.prevRotationPitch + (var3.rotationPitch - var3.prevRotationPitch) * var4;
@@ -57,20 +57,20 @@ namespace betareborn.Items
                         if (var2.getMaterial(var25, var26, var27) == Material.WATER && var2.getBlockMeta(var25, var26, var27) == 0)
                         {
                             var2.setBlockWithNotify(var25, var26, var27, 0);
-                            return new ItemStack(Item.bucketWater);
+                            return new ItemStack(Item.WATER_BUCKET);
                         }
 
                         if (var2.getMaterial(var25, var26, var27) == Material.LAVA && var2.getBlockMeta(var25, var26, var27) == 0)
                         {
                             var2.setBlockWithNotify(var25, var26, var27, 0);
-                            return new ItemStack(Item.bucketLava);
+                            return new ItemStack(Item.LAVA_BUCKET);
                         }
                     }
                     else
                     {
                         if (isFull < 0)
                         {
-                            return new ItemStack(Item.bucketEmpty);
+                            return new ItemStack(Item.BUCKET);
                         }
 
                         if (var24.side == 0)
@@ -119,13 +119,13 @@ namespace betareborn.Items
                                 var2.setBlockAndMetadataWithNotify(var25, var26, var27, isFull, 0);
                             }
 
-                            return new ItemStack(Item.bucketEmpty);
+                            return new ItemStack(Item.BUCKET);
                         }
                     }
                 }
                 else if (isFull == 0 && var24.entity is EntityCow)
                 {
-                    return new ItemStack(Item.bucketMilk);
+                    return new ItemStack(Item.MILK_BUCKET);
                 }
 
                 return var1;

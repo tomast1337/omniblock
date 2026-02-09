@@ -61,7 +61,7 @@ public class GameCommands
         {
             int finalCount = count;
 
-            if (count == -1) finalCount = items.TryGetValue(itemId, out var item) ? item.maxStackSize : 64;
+            if (count == -1) finalCount = items.TryGetValue(itemId, out var item) ? item.maxCount : 64;
 
             ctx.Game.player.inventory.addItemStackToInventory(new ItemStack(id: itemId, count: finalCount));
             ctx.Reply($"Gave {finalCount} of {itemName}");

@@ -1,9 +1,10 @@
 using betareborn.Blocks;
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
 using betareborn.Client.Guis;
 using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
+using betareborn.Network;
 using betareborn.Packets;
 using betareborn.Screens;
 using betareborn.Util.Maths;
@@ -18,7 +19,7 @@ namespace betareborn.Client.Network
     public class ClientNetworkHandler : NetHandler
     {
         private bool disconnected = false;
-        private NetworkManager netManager;
+        private Connection netManager;
         public string field_1209_a;
         private Minecraft mc;
         private ClientWorld worldClient;
@@ -32,17 +33,17 @@ namespace betareborn.Client.Network
             mc = var1;
             Socket socket = new Socket(InetAddress.getByName(var2), var3);
             socket.setTcpNoDelay(true);
-            netManager = new NetworkManager(socket, "Client", this);
+            netManager = new Connection(socket, "Client", this);
         }
 
         public void tick()
         {
             if (!disconnected)
             {
-                netManager.processReadPackets();
+                netManager.tick();
             }
 
-            netManager.wakeThreads();
+            netManager.interrupt();
         }
 
         public override void handleLogin(Packet1Login var1)
@@ -306,7 +307,7 @@ namespace betareborn.Client.Network
             var1.yPosition = var2.boundingBox.minY;
             var1.zPosition = var2.posZ;
             var1.stance = var2.posY;
-            netManager.addToSendQueue(var1);
+            netManager.sendPacket(var1);
             if (!field_1210_g)
             {
                 mc.player.prevPosX = mc.player.posX;
@@ -357,7 +358,7 @@ namespace betareborn.Client.Network
 
         public override void handleKickDisconnect(Packet255KickDisconnect var1)
         {
-            netManager.networkShutdown("disconnect.kicked", new object[0]);
+            netManager.disconnect("disconnect.kicked", new object[0]);
             disconnected = true;
             mc.changeWorld1(null);
             mc.displayGuiScreen(new GuiConnectFailed("disconnect.disconnected", "disconnect.genericReason", new object[] { var1.reason }));
@@ -377,8 +378,8 @@ namespace betareborn.Client.Network
         {
             if (!disconnected)
             {
-                netManager.addToSendQueue(var1);
-                netManager.func_28142_c();
+                netManager.sendPacket(var1);
+                netManager.disconnect();
             }
         }
 
@@ -386,7 +387,7 @@ namespace betareborn.Client.Network
         {
             if (!disconnected)
             {
-                netManager.addToSendQueue(var1);
+                netManager.sendPacket(var1);
             }
         }
 
@@ -477,13 +478,13 @@ namespace betareborn.Client.Network
                     }
                     else
                     {
-                        netManager.networkShutdown("disconnect.loginFailedInfo", new object[] { var4 });
+                        netManager.disconnect("disconnect.loginFailedInfo", new object[] { var4 });
                     }
                 }
                 catch (java.lang.Exception var5)
                 {
                     var5.printStackTrace();
-                    netManager.networkShutdown("disconnect.genericReason", new object[] { "Internal client error: " + var5.toString() });
+                    netManager.disconnect("disconnect.genericReason", new object[] { "Internal client error: " + var5.toString() });
                 }
             }
 
@@ -492,8 +493,8 @@ namespace betareborn.Client.Network
         public void disconnect()
         {
             disconnected = true;
-            netManager.wakeThreads();
-            netManager.networkShutdown("disconnect.closed", new object[0]);
+            netManager.interrupt();
+            netManager.disconnect("disconnect.closed", new object[0]);
         }
 
         public override void handleMobSpawn(Packet24MobSpawn var1)
@@ -627,7 +628,7 @@ namespace betareborn.Client.Network
                 ItemStack var2 = mc.player.inventorySlots.getSlot(var1.itemSlot).getStack();
                 if (var1.myItemStack != null && (var2 == null || var2.count < var1.myItemStack.count))
                 {
-                    var1.myItemStack.animationsToGo = 5;
+                    var1.myItemStack.bobbingAnimationTime = 5;
                 }
 
                 mc.player.inventorySlots.setStackInSlot(var1.itemSlot, var1.myItemStack);
@@ -752,9 +753,9 @@ namespace betareborn.Client.Network
 
         public override void func_28116_a(Packet131MapData var1)
         {
-            if (var1.field_28055_a == Item.mapItem.id)
+            if (var1.field_28055_a == Item.MAP.id)
             {
-                ItemMap.func_28013_a(var1.field_28054_b, mc.world).func_28171_a(var1.field_28056_c);
+                ItemMap.getMapState(var1.field_28054_b, mc.world).func_28171_a(var1.field_28056_c);
             }
             else
             {

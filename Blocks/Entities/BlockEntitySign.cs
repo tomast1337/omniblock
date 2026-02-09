@@ -2,7 +2,7 @@ using betareborn.NBT;
 using betareborn.Packets;
 using java.lang;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Blocks.Entities
 {
     public class BlockEntitySign : BlockEntity
     {

@@ -13,10 +13,10 @@ namespace betareborn.Items
         {
             healAmount = var2;
             isWolfsFavoriteMeat = var3;
-            maxStackSize = 1;
+            maxCount = 1;
         }
 
-        public override ItemStack onItemRightClick(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
             --var1.count;
             var3.heal(healAmount);

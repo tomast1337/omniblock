@@ -10,7 +10,7 @@ namespace betareborn.Entities
 
         private int angerLevel = 0;
         private int randomSoundDelay = 0;
-        private static readonly ItemStack defaultHeldItem = new ItemStack(Item.swordGold, 1);
+        private static readonly ItemStack defaultHeldItem = new ItemStack(Item.GOLDEN_SWORD, 1);
 
         public EntityPigZombie(World var1) : base(var1)
         {
@@ -104,7 +104,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.porkCooked.id;
+            return Item.COOKED_PORKCHOP.id;
         }
 
         public override ItemStack getHeldItem()

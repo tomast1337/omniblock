@@ -72,14 +72,14 @@ namespace betareborn.Client.Rendering.Items
                         GLManager.GL.Translate(var16, var17, var18);
                     }
 
-                    renderBlocks.renderBlockOnInventory(Block.BLOCKS[var10.itemID], var10.getItemDamage(), var1.getEntityBrightness(var9));
+                    renderBlocks.renderBlockOnInventory(Block.BLOCKS[var10.itemID], var10.getDamage(), var1.getEntityBrightness(var9));
                     GLManager.GL.PopMatrix();
                 }
             }
             else
             {
                 GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
-                int var14 = var10.getIconIndex();
+                int var14 = var10.getTextureId();
                 if (var10.itemID < 256)
                 {
                     loadTexture("/terrain.png");
@@ -103,7 +103,7 @@ namespace betareborn.Client.Rendering.Items
                 float var26;
                 if (useCustomDisplayColor)
                 {
-                    var23 = Item.itemsList[var10.itemID].getColorFromDamage(var10.getItemDamage());
+                    var23 = Item.ITEMS[var10.itemID].getColorMultiplier(var10.getDamage());
                     var24 = (var23 >> 16 & 255) / 255.0F;
                     var25 = (var23 >> 8 & 255) / 255.0F;
                     var26 = (var23 & 255) / 255.0F;
@@ -152,7 +152,7 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Scale(1.0F, 1.0F, -1.0F);
                 GLManager.GL.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-                int var15 = Item.itemsList[var3].getColorFromDamage(var4);
+                int var15 = Item.ITEMS[var3].getColorMultiplier(var4);
                 var11 = (var15 >> 16 & 255) / 255.0F;
                 float var12 = (var15 >> 8 & 255) / 255.0F;
                 float var13 = (var15 & 255) / 255.0F;
@@ -179,7 +179,7 @@ namespace betareborn.Client.Rendering.Items
                     var2.bindTexture(var2.getTextureId("/gui/items.png"));
                 }
 
-                int var8 = Item.itemsList[var3].getColorFromDamage(var4);
+                int var8 = Item.ITEMS[var3].getColorMultiplier(var4);
                 float var9 = (var8 >> 16 & 255) / 255.0F;
                 float var10 = (var8 >> 8 & 255) / 255.0F;
                 var11 = (var8 & 255) / 255.0F;
@@ -199,7 +199,7 @@ namespace betareborn.Client.Rendering.Items
         {
             if (var3 != null)
             {
-                drawItemIntoGui(var1, var2, var3.itemID, var3.getItemDamage(), var3.getIconIndex(), var4, var5);
+                drawItemIntoGui(var1, var2, var3.itemID, var3.getDamage(), var3.getTextureId(), var4, var5);
             }
         }
 
@@ -217,10 +217,10 @@ namespace betareborn.Client.Rendering.Items
                     GLManager.GL.Enable(GLEnum.DepthTest);
                 }
 
-                if (var3.isItemDamaged())
+                if (var3.isDamaged())
                 {
-                    int var11 = (int)java.lang.Math.round(13.0D - var3.getItemDamageForDisplay() * 13.0D / var3.getMaxDamage());
-                    int var7 = (int)java.lang.Math.round(255.0D - var3.getItemDamageForDisplay() * 255.0D / var3.getMaxDamage());
+                    int var11 = (int)java.lang.Math.round(13.0D - var3.getDamage2() * 13.0D / var3.getMaxDamage());
+                    int var7 = (int)java.lang.Math.round(255.0D - var3.getDamage2() * 255.0D / var3.getMaxDamage());
                     GLManager.GL.Disable(GLEnum.Lighting);
                     GLManager.GL.Disable(GLEnum.DepthTest);
                     GLManager.GL.Disable(GLEnum.Texture2D);

@@ -33,7 +33,7 @@ namespace betareborn
             bool var9 = mc.player.canHarvest(Block.BLOCKS[var5]);
             if (var8 != null)
             {
-                var8.onDestroyBlock(var5, var1, var2, var3, mc.player);
+                var8.postMine(var5, var1, var2, var3, mc.player);
                 if (var8.count == 0)
                 {
                     var8.onRemoved(mc.player);

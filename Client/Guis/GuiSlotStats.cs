@@ -204,7 +204,7 @@ namespace betareborn.Client.Guis
         {
             if (var1 != null)
             {
-                Item var4 = Item.itemsList[var1.func_25072_b()];
+                Item var4 = Item.ITEMS[var1.func_25072_b()];
                 string var5 = ("" + TranslationStorage.getInstance().translateNamedKey(var4.getItemName())).Trim();
                 if (var5.Length > 0)
                 {

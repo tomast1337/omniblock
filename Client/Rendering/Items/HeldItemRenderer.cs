@@ -31,7 +31,7 @@ namespace betareborn.Client.Rendering.Items
             if (var2.itemID < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var2.itemID].getRenderType()))
             {
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/terrain.png"));
-                renderBlocksInstance.renderBlockOnInventory(Block.BLOCKS[var2.itemID], var2.getItemDamage(), var1.getEntityBrightness(1.0F));
+                renderBlocksInstance.renderBlockOnInventory(Block.BLOCKS[var2.itemID], var2.getDamage(), var1.getEntityBrightness(1.0F));
             }
             else
             {
@@ -162,7 +162,7 @@ namespace betareborn.Client.Rendering.Items
             float var10;
             if (var5 != null)
             {
-                int var7 = Item.itemsList[var5.itemID].getColorFromDamage(var5.getItemDamage());
+                int var7 = Item.ITEMS[var5.itemID].getColorMultiplier(var5.getDamage());
                 var8 = (var7 >> 16 & 255) / 255.0F;
                 var9 = (var7 >> 8 & 255) / 255.0F;
                 var10 = (var7 & 255) / 255.0F;
@@ -174,7 +174,7 @@ namespace betareborn.Client.Rendering.Items
             }
 
             float var14;
-            if (var5 != null && var5.itemID == Item.mapItem.id)
+            if (var5 != null && var5.itemID == Item.MAP.id)
             {
                 GLManager.GL.PushMatrix();
                 var14 = 0.8F;
@@ -241,7 +241,7 @@ namespace betareborn.Client.Rendering.Items
                 var19.addVertexWithUV(128 + var20, 0 - var20, 0.0D, 1.0D, 0.0D);
                 var19.addVertexWithUV(0 - var20, 0 - var20, 0.0D, 0.0D, 0.0D);
                 var19.draw();
-                MapData var22 = Item.mapItem.func_28012_a(var5, mc.world);
+                MapState var22 = Item.MAP.getSavedMapState(var5, mc.world);
                 field_28131_f.func_28157_a(mc.player, mc.textureManager, var22);
                 GLManager.GL.PopMatrix();
             }
@@ -264,7 +264,7 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Rotate(-var10 * 80.0F, 1.0F, 0.0F, 0.0F);
                 var8 = 0.4F;
                 GLManager.GL.Scale(var8, var8, var8);
-                if (var5.getItem().shouldRotateAroundWhenRendering())
+                if (var5.getItem().isHandheldRod())
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
                 }
@@ -467,7 +467,7 @@ namespace betareborn.Client.Rendering.Items
                 var4 = true;
             }
 
-            if (var2 != null && itemToRender != null && var2 != itemToRender && var2.itemID == itemToRender.itemID && var2.getItemDamage() == itemToRender.getItemDamage())
+            if (var2 != null && itemToRender != null && var2 != itemToRender && var2.itemID == itemToRender.itemID && var2.getDamage() == itemToRender.getDamage())
             {
                 itemToRender = var2;
                 var4 = true;

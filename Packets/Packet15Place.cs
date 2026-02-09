@@ -1,4 +1,5 @@
 using betareborn.Items;
+using betareborn.Network;
 using java.io;
 
 namespace betareborn.Packets
@@ -60,7 +61,7 @@ namespace betareborn.Packets
             {
                 var1.writeShort(this.itemStack.itemID);
                 var1.writeByte(this.itemStack.count);
-                var1.writeShort(this.itemStack.getItemDamage());
+                var1.writeShort(this.itemStack.getDamage());
             }
 
         }

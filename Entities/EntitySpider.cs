@@ -96,7 +96,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return Item.silk.id;
+            return Item.STRING.id;
         }
 
         public override bool isOnLadder()

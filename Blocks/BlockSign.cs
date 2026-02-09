@@ -1,9 +1,9 @@
 using betareborn.Items;
 using betareborn.Worlds;
 using java.lang;
-using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Util.Maths;
+using betareborn.Blocks.Entities;
 
 namespace betareborn.Blocks
 {
@@ -97,7 +97,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.sign.id;
+            return Item.SIGN.id;
         }
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)

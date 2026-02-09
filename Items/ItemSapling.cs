@@ -11,12 +11,12 @@ namespace betareborn.Items
             setHasSubtypes(true);
         }
 
-        public override int getPlacedBlockMetadata(int var1)
+        public override int getPlacementMetadata(int var1)
         {
             return var1;
         }
 
-        public override int getIconFromDamage(int var1)
+        public override int getTextureId(int var1)
         {
             return Block.SAPLING.getTexture(0, var1);
         }

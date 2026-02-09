@@ -4,7 +4,7 @@ using betareborn.Worlds;
 using java.lang;
 using java.util;
 
-namespace betareborn.Blocks.BlockEntities
+namespace betareborn.Blocks.Entities
 {
     public class BlockEntity : java.lang.Object
     {

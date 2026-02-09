@@ -49,8 +49,8 @@ namespace betareborn.Client.Rendering.Entitys
             registerRenderer(Entity.Class, new BoxEntityRenderer());
             registerRenderer(EntityPainting.Class, new PaintingEntityRenderer());
             registerRenderer(EntityArrow.Class, new ArrowEntityRenderer());
-            registerRenderer(EntitySnowball.Class, new ProjectileEntityRenderer(Item.snowball.getIconFromDamage(0)));
-            registerRenderer(EntityEgg.Class, new ProjectileEntityRenderer(Item.egg.getIconFromDamage(0)));
+            registerRenderer(EntitySnowball.Class, new ProjectileEntityRenderer(Item.SNOWBALL.getTextureId(0)));
+            registerRenderer(EntityEgg.Class, new ProjectileEntityRenderer(Item.EGG.getTextureId(0)));
             registerRenderer(EntityFireball.Class, new FireballEntityRenderer());
             registerRenderer(EntityItem.Class, new ItemRenderer());
             registerRenderer(EntityTNTPrimed.Class, new TntEntityRenderer());

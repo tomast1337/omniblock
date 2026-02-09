@@ -10,10 +10,10 @@ namespace betareborn.Items
         {
         }
 
-        public override ItemStack onItemRightClick(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
-            base.onItemRightClick(var1, var2, var3);
-            return new ItemStack(Item.bowlEmpty);
+            base.use(var1, var2, var3);
+            return new ItemStack(Item.BOWL);
         }
     }
 

@@ -1,12 +1,13 @@
+using betareborn.Network;
 using java.lang;
 
 namespace betareborn
 {
     public class NetworkMasterThread : java.lang.Thread
     {
-        public readonly NetworkManager netManager;
+        public readonly Connection netManager;
 
-        public NetworkMasterThread(NetworkManager var1)
+        public NetworkMasterThread(Connection var1)
         {
             netManager = var1;
         }
@@ -17,22 +18,22 @@ namespace betareborn
             try
             {
                 java.lang.Thread.sleep(5000L);
-                if (NetworkManager.getReadThread(this.netManager).isAlive())
+                if (Connection.getReader(this.netManager).isAlive())
                 {
                     try
                     {
-                        NetworkManager.getReadThread(this.netManager).stop();
+                        Connection.getReader(this.netManager).stop();
                     }
                     catch (Throwable var3)
                     {
                     }
                 }
 
-                if (NetworkManager.getWriteThread(this.netManager).isAlive())
+                if (Connection.getWriter(this.netManager).isAlive())
                 {
                     try
                     {
-                        NetworkManager.getWriteThread(this.netManager).stop();
+                        Connection.getWriter(this.netManager).stop();
                     }
                     catch (Throwable var2)
                     {

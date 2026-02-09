@@ -162,7 +162,7 @@ namespace betareborn.Entities
 
         protected override int getDropItemId()
         {
-            return getSlimeSize() == 1 ? Item.slimeBall.id : 0;
+            return getSlimeSize() == 1 ? Item.SLIMEBALL.id : 0;
         }
 
         public override bool canSpawn()

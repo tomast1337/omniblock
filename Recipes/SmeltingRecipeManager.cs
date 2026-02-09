@@ -17,16 +17,16 @@ namespace betareborn.Recipes
 
         private SmeltingRecipeManager()
         {
-            addSmelting(Block.IRON_ORE.id, new ItemStack(Item.ingotIron));
-            addSmelting(Block.GOLD_ORE.id, new ItemStack(Item.ingotGold));
-            addSmelting(Block.DIAMOND_ORE.id, new ItemStack(Item.diamond));
+            addSmelting(Block.IRON_ORE.id, new ItemStack(Item.IRON_INGOT));
+            addSmelting(Block.GOLD_ORE.id, new ItemStack(Item.GOLD_INGOT));
+            addSmelting(Block.DIAMOND_ORE.id, new ItemStack(Item.DIAMOND));
             addSmelting(Block.SAND.id, new ItemStack(Block.GLASS));
-            addSmelting(Item.porkRaw.id, new ItemStack(Item.porkCooked));
-            addSmelting(Item.fishRaw.id, new ItemStack(Item.fishCooked));
+            addSmelting(Item.RAW_PORKCHOP.id, new ItemStack(Item.COOKED_PORKCHOP));
+            addSmelting(Item.RAW_FISH.id, new ItemStack(Item.COOKED_FISH));
             addSmelting(Block.COBBLESTONE.id, new ItemStack(Block.STONE));
-            addSmelting(Item.clay.id, new ItemStack(Item.brick));
-            addSmelting(Block.CACTUS.id, new ItemStack(Item.dyePowder, 1, 2));
-            addSmelting(Block.LOG.id, new ItemStack(Item.coal, 1, 1));
+            addSmelting(Item.CLAY.id, new ItemStack(Item.BRICK));
+            addSmelting(Block.CACTUS.id, new ItemStack(Item.DYE, 1, 2));
+            addSmelting(Block.LOG.id, new ItemStack(Item.COAL, 1, 1));
         }
 
         public void addSmelting(int var1, ItemStack var2)

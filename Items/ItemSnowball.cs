@@ -9,10 +9,10 @@ namespace betareborn.Items
 
         public ItemSnowball(int var1) : base(var1)
         {
-            maxStackSize = 16;
+            maxCount = 16;
         }
 
-        public override ItemStack onItemRightClick(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
             --var1.count;
             var2.playSoundAtEntity(var3, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));

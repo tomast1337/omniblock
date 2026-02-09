@@ -12,7 +12,7 @@ namespace betareborn.Items
         {
         }
 
-        public override bool canHarvestBlock(Block var1)
+        public override bool isSuitableFor(Block var1)
         {
             return var1 == Block.OBSIDIAN ? toolMaterial.getHarvestLevel() == 3 : (var1 != Block.DIAMOND_BLOCK && var1 != Block.DIAMOND_ORE ? (var1 != Block.GOLD_BLOCK && var1 != Block.GOLD_ORE ? (var1 != Block.IRON_BLOCK && var1 != Block.IRON_ORE ? (var1 != Block.LAPIS_BLOCK && var1 != Block.LAPIS_ORE ? (var1 != Block.REDSTONE_ORE && var1 != Block.LIT_REDSTONE_ORE ? (var1.material == Material.STONE ? true : var1.material == Material.METAL) : toolMaterial.getHarvestLevel() >= 2) : toolMaterial.getHarvestLevel() >= 1) : toolMaterial.getHarvestLevel() >= 1) : toolMaterial.getHarvestLevel() >= 2) : toolMaterial.getHarvestLevel() >= 2);
         }

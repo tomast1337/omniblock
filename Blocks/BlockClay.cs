@@ -12,7 +12,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.clay.id;
+            return Item.CLAY.id;
         }
 
         public override int getDroppedItemCount(java.util.Random random)

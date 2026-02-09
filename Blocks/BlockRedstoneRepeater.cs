@@ -177,7 +177,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return Item.redstoneRepeater.id;
+            return Item.REPEATER.id;
         }
 
         public override void randomDisplayTick(World world, int x, int y, int z, java.util.Random random)

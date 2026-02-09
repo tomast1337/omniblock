@@ -1,5 +1,5 @@
 using betareborn.Entities;
-using betareborn.Blocks.BlockEntities;
+using betareborn.Blocks.Entities;
 
 namespace betareborn
 {

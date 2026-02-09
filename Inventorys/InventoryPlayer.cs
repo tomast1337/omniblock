@@ -42,7 +42,7 @@ namespace betareborn.Inventorys
         {
             for (int var2 = 0; var2 < mainInventory.Length; ++var2)
             {
-                if (mainInventory[var2] != null && mainInventory[var2].itemID == var1.itemID && mainInventory[var2].isStackable() && mainInventory[var2].count < mainInventory[var2].getMaxCount() && mainInventory[var2].count < getMaxCountPerStack() && (!mainInventory[var2].getHasSubtypes() || mainInventory[var2].getItemDamage() == var1.getItemDamage()))
+                if (mainInventory[var2] != null && mainInventory[var2].itemID == var1.itemID && mainInventory[var2].isStackable() && mainInventory[var2].count < mainInventory[var2].getMaxCount() && mainInventory[var2].count < getMaxCountPerStack() && (!mainInventory[var2].getHasSubtypes() || mainInventory[var2].getDamage() == var1.getDamage()))
                 {
                     return var2;
                 }
@@ -114,7 +114,7 @@ namespace betareborn.Inventorys
             {
                 if (mainInventory[var4] == null)
                 {
-                    mainInventory[var4] = new ItemStack(var2, 0, var1.getItemDamage());
+                    mainInventory[var4] = new ItemStack(var2, 0, var1.getDamage());
                 }
 
                 int var5 = var3;
@@ -136,7 +136,7 @@ namespace betareborn.Inventorys
                 {
                     var3 -= var5;
                     mainInventory[var4].count += var5;
-                    mainInventory[var4].animationsToGo = 5;
+                    mainInventory[var4].bobbingAnimationTime = 5;
                     return var3;
                 }
             }
@@ -148,7 +148,7 @@ namespace betareborn.Inventorys
             {
                 if (mainInventory[var1] != null)
                 {
-                    mainInventory[var1].updateAnimation(player.worldObj, player, var1, currentItem == var1);
+                    mainInventory[var1].inventoryTick(player.worldObj, player, var1, currentItem == var1);
                 }
             }
 
@@ -175,13 +175,13 @@ namespace betareborn.Inventorys
         public bool addItemStackToInventory(ItemStack var1)
         {
             int var2;
-            if (var1.isItemDamaged())
+            if (var1.isDamaged())
             {
                 var2 = getFirstEmptyStack();
                 if (var2 >= 0)
                 {
-                    mainInventory[var2] = ItemStack.copyItemStack(var1);
-                    mainInventory[var2].animationsToGo = 5;
+                    mainInventory[var2] = ItemStack.clone(var1);
+                    mainInventory[var2].bobbingAnimationTime = 5;
                     var1.count = 0;
                     return true;
                 }
@@ -222,7 +222,7 @@ namespace betareborn.Inventorys
                 }
                 else
                 {
-                    var4 = var3[var1].splitStack(var2);
+                    var4 = var3[var1].split(var2);
                     if (var3[var1].count == 0)
                     {
                         var3[var1] = null;
@@ -254,7 +254,7 @@ namespace betareborn.Inventorys
             float var2 = 1.0F;
             if (mainInventory[currentItem] != null)
             {
-                var2 *= mainInventory[currentItem].getStrVsBlock(var1);
+                var2 *= mainInventory[currentItem].getMiningSpeedMultiplier(var1);
             }
 
             return var2;
@@ -345,7 +345,7 @@ namespace betareborn.Inventorys
         public int getDamageVsEntity(Entity var1)
         {
             ItemStack var2 = getStack(currentItem);
-            return var2 != null ? var2.getDamageVsEntity(var1) : 1;
+            return var2 != null ? var2.getAttackDamage(var1) : 1;
         }
 
         public bool canHarvestBlock(Block var1)
@@ -357,7 +357,7 @@ namespace betareborn.Inventorys
             else
             {
                 ItemStack var2 = getStack(currentItem);
-                return var2 != null ? var2.canHarvestBlock(var1) : false;
+                return var2 != null ? var2.isSuitableFor(var1) : false;
             }
         }
 
@@ -377,7 +377,7 @@ namespace betareborn.Inventorys
                 if (armorInventory[var4] != null && armorInventory[var4].getItem() is ItemArmor)
                 {
                     int var5 = armorInventory[var4].getMaxDamage();
-                    int var6 = armorInventory[var4].getItemDamageForDisplay();
+                    int var6 = armorInventory[var4].getDamage2();
                     int var7 = var5 - var6;
                     var2 += var7;
                     var3 += var5;
@@ -462,7 +462,7 @@ namespace betareborn.Inventorys
             int var2;
             for (var2 = 0; var2 < armorInventory.Length; ++var2)
             {
-                if (armorInventory[var2] != null && armorInventory[var2].isStackEqual(var1))
+                if (armorInventory[var2] != null && armorInventory[var2].equals(var1))
                 {
                     return true;
                 }
@@ -470,7 +470,7 @@ namespace betareborn.Inventorys
 
             for (var2 = 0; var2 < mainInventory.Length; ++var2)
             {
-                if (mainInventory[var2] != null && mainInventory[var2].isStackEqual(var1))
+                if (mainInventory[var2] != null && mainInventory[var2].equals(var1))
                 {
                     return true;
                 }

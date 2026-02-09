@@ -3,10 +3,10 @@ using betareborn.Items;
 using betareborn.Stats;
 using betareborn.Worlds;
 using java.lang;
-using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Util.Maths;
 using betareborn.Util.Hit;
+using betareborn.Blocks.Entities;
 
 namespace betareborn.Blocks
 {
@@ -668,19 +668,19 @@ namespace betareborn.Blocks
 
         static Block()
         {
-            Item.itemsList[WOOL.id] = (new ItemCloth(WOOL.id - 256)).setItemName("cloth");
-            Item.itemsList[LOG.id] = (new ItemLog(LOG.id - 256)).setItemName("log");
-            Item.itemsList[SLAB.id] = (new ItemSlab(SLAB.id - 256)).setItemName("stoneSlab");
-            Item.itemsList[SAPLING.id] = (new ItemSapling(SAPLING.id - 256)).setItemName("sapling");
-            Item.itemsList[LEAVES.id] = (new ItemLeaves(LEAVES.id - 256)).setItemName("leaves");
-            Item.itemsList[PISTON.id] = new ItemPiston(PISTON.id - 256);
-            Item.itemsList[STICKY_PISTON.id] = new ItemPiston(STICKY_PISTON.id - 256);
+            Item.ITEMS[WOOL.id] = (new ItemCloth(WOOL.id - 256)).setItemName("cloth");
+            Item.ITEMS[LOG.id] = (new ItemLog(LOG.id - 256)).setItemName("log");
+            Item.ITEMS[SLAB.id] = (new ItemSlab(SLAB.id - 256)).setItemName("stoneSlab");
+            Item.ITEMS[SAPLING.id] = (new ItemSapling(SAPLING.id - 256)).setItemName("sapling");
+            Item.ITEMS[LEAVES.id] = (new ItemLeaves(LEAVES.id - 256)).setItemName("leaves");
+            Item.ITEMS[PISTON.id] = new ItemPiston(PISTON.id - 256);
+            Item.ITEMS[STICKY_PISTON.id] = new ItemPiston(STICKY_PISTON.id - 256);
 
             for (int var0 = 0; var0 < 256; ++var0)
             {
-                if (BLOCKS[var0] != null && Item.itemsList[var0] == null)
+                if (BLOCKS[var0] != null && Item.ITEMS[var0] == null)
                 {
-                    Item.itemsList[var0] = new ItemBlock(var0 - 256);
+                    Item.ITEMS[var0] = new ItemBlock(var0 - 256);
                     BLOCKS[var0].init();
                 }
             }

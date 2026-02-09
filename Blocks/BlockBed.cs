@@ -164,7 +164,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int blockMeta, java.util.Random random)
         {
-            return isHeadOfBed(blockMeta) ? 0 : Item.bed.id;
+            return isHeadOfBed(blockMeta) ? 0 : Item.BED.id;
         }
 
         private void setDefaultShape()

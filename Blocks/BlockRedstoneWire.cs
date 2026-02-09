@@ -362,7 +362,7 @@ namespace betareborn.Blocks
 
         public override int getDroppedItemId(int var1, java.util.Random var2)
         {
-            return Item.redstone.id;
+            return Item.REDSTONE.id;
         }
 
         public override bool isStrongPoweringSide(World var1, int var2, int var3, int var4, int var5)

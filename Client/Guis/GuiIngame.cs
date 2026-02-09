@@ -396,7 +396,7 @@ namespace betareborn.Client.Guis
             ItemStack var5 = mc.player.inventory.mainInventory[var1];
             if (var5 != null)
             {
-                float var6 = var5.animationsToGo - var4;
+                float var6 = var5.bobbingAnimationTime - var4;
                 if (var6 > 0.0F)
                 {
                     GLManager.GL.PushMatrix();

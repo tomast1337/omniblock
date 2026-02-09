@@ -29,5 +29,9 @@
     <EmbeddedResource Include="shaders/chunk.vert" />
     <EmbeddedResource Include="shaders/chunk.frag" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Network\Packets\C2SPlay\" />
+  </ItemGroup>
 
 </Project>

@@ -34,7 +34,7 @@ namespace betareborn.Client.Rendering.Entitys
                     GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Scale(var4, -var4, var4);
                 }
-                else if (Item.itemsList[var3.itemID].isFull3D())
+                else if (Item.ITEMS[var3.itemID].isHandheld())
                 {
                     var4 = 10.0F / 16.0F;
                     GLManager.GL.Translate(0.0F, 3.0F / 16.0F, 0.0F);

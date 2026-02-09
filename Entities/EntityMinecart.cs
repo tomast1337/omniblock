@@ -113,7 +113,7 @@ namespace betareborn.Entities
                     }
 
                     markDead();
-                    dropItemWithOffset(Item.minecartEmpty.id, 1, 0.0F);
+                    dropItemWithOffset(Item.MINECART.id, 1, 0.0F);
                     if (minecartType == 1)
                     {
                         EntityMinecart var3 = this;
@@ -136,7 +136,7 @@ namespace betareborn.Entities
                                     }
 
                                     var5.count -= var9;
-                                    EntityItem var10 = new EntityItem(worldObj, posX + (double)var6, posY + (double)var7, posZ + (double)var8, new ItemStack(var5.itemID, var9, var5.getItemDamage()));
+                                    EntityItem var10 = new EntityItem(worldObj, posX + (double)var6, posY + (double)var7, posZ + (double)var8, new ItemStack(var5.itemID, var9, var5.getDamage()));
                                     float var11 = 0.05F;
                                     var10.motionX = (double)((float)rand.nextGaussian() * var11);
                                     var10.motionY = (double)((float)rand.nextGaussian() * var11 + 0.2F);
@@ -195,7 +195,7 @@ namespace betareborn.Entities
                         }
 
                         var2.count -= var6;
-                        EntityItem var7 = new EntityItem(worldObj, posX + (double)var3, posY + (double)var4, posZ + (double)var5, new ItemStack(var2.itemID, var6, var2.getItemDamage()));
+                        EntityItem var7 = new EntityItem(worldObj, posX + (double)var3, posY + (double)var4, posZ + (double)var5, new ItemStack(var2.itemID, var6, var2.getDamage()));
                         float var8 = 0.05F;
                         var7.motionX = (double)((float)rand.nextGaussian() * var8);
                         var7.motionY = (double)((float)rand.nextGaussian() * var8 + 0.2F);
@@ -919,7 +919,7 @@ namespace betareborn.Entities
                 }
                 else
                 {
-                    var3 = cargoItems[var1].splitStack(var2);
+                    var3 = cargoItems[var1].split(var2);
                     if (cargoItems[var1].count == 0)
                     {
                         cargoItems[var1] = null;
@@ -982,7 +982,7 @@ namespace betareborn.Entities
             else if (minecartType == 2)
             {
                 ItemStack var2 = var1.inventory.getCurrentItem();
-                if (var2 != null && var2.itemID == Item.coal.id)
+                if (var2 != null && var2.itemID == Item.COAL.id)
                 {
                     if (--var2.count == 0)
                     {

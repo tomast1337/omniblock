@@ -9,20 +9,20 @@ namespace betareborn.Items
         public ItemFishingRod(int var1) : base(var1)
         {
             setMaxDamage(64);
-            setMaxStackSize(1);
+            setMaxCount(1);
         }
 
-        public override bool isFull3D()
+        public override bool isHandheld()
         {
             return true;
         }
 
-        public override bool shouldRotateAroundWhenRendering()
+        public override bool isHandheldRod()
         {
             return true;
         }
 
-        public override ItemStack onItemRightClick(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
             if (var3.fishEntity != null)
             {

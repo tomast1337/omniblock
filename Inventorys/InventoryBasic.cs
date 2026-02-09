@@ -38,7 +38,7 @@ namespace betareborn.Inventorys
                 }
                 else
                 {
-                    var3 = inventoryContents[var1].splitStack(var2);
+                    var3 = inventoryContents[var1].split(var2);
                     if (inventoryContents[var1].count == 0)
                     {
                         inventoryContents[var1] = null;

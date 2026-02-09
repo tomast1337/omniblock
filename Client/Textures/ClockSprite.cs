@@ -15,7 +15,7 @@ namespace betareborn.Client.Textures
         private double angle;
         private double angleDelta;
 
-        public ClockSprite(Minecraft var1) : base(Item.pocketSundial.getIconFromDamage(0))
+        public ClockSprite(Minecraft var1) : base(Item.CLOCK.getTextureId(0))
         {
             mc = var1;
             atlas = FXImage.Items;

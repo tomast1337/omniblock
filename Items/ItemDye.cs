@@ -16,19 +16,19 @@ namespace betareborn.Items
             setMaxDamage(0);
         }
 
-        public override int getIconFromDamage(int var1)
+        public override int getTextureId(int var1)
         {
-            return iconIndex + var1 % 8 * 16 + var1 / 8;
+            return textureId + var1 % 8 * 16 + var1 / 8;
         }
 
         public override String getItemNameIS(ItemStack var1)
         {
-            return base.getItemName() + "." + dyeColors[var1.getItemDamage()];
+            return base.getItemName() + "." + dyeColors[var1.getDamage()];
         }
 
-        public override bool onItemUse(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
         {
-            if (var1.getItemDamage() == 15)
+            if (var1.getDamage() == 15)
             {
                 int var8 = var3.getBlockId(var4, var5, var6);
                 if (var8 == Block.SAPLING.id)
@@ -96,12 +96,12 @@ namespace betareborn.Items
             return false;
         }
 
-        public override void saddleEntity(ItemStack var1, EntityLiving var2)
+        public override void useOnEntity(ItemStack var1, EntityLiving var2)
         {
             if (var2 is EntitySheep)
             {
                 EntitySheep var3 = (EntitySheep)var2;
-                int var4 = BlockCloth.getBlockMeta(var1.getItemDamage());
+                int var4 = BlockCloth.getBlockMeta(var1.getDamage());
                 if (!var3.getSheared() && var3.getFleeceColor() != var4)
                 {
                     var3.setFleeceColor(var4);

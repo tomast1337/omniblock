@@ -1,4 +1,5 @@
 using betareborn.Entities;
+using betareborn.Network;
 using java.io;
 
 namespace betareborn.Packets

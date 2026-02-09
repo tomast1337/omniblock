@@ -55,7 +55,7 @@ namespace betareborn.Screens
             {
                 ItemStack var2 = ((Slot)slots.get(var1)).getStack();
                 ItemStack var3 = (ItemStack)trackedStacks.get(var1);
-                if (!ItemStack.areItemStacksEqual(var3, var2))
+                if (!ItemStack.areEqual(var3, var2))
                 {
                     var3 = var2 == null ? null : var2.copy();
                     trackedStacks.set(var1, var3);
@@ -112,7 +112,7 @@ namespace betareborn.Screens
 
                         if (button == 1)
                         {
-                            player.dropItem(var6.getItemStack().splitStack(1));
+                            player.dropItem(var6.getItemStack().split(1));
                             if (var6.getItemStack().count == 0)
                             {
                                 var6.setItemStack(null);
@@ -164,7 +164,7 @@ namespace betareborn.Screens
                                         var10 = var12.getMaxItemCount();
                                     }
 
-                                    var12.setStack(var14.splitStack(var10));
+                                    var12.setStack(var14.split(var10));
                                     if (var14.count == 0)
                                     {
                                         var6.setItemStack(null);
@@ -185,7 +185,7 @@ namespace betareborn.Screens
                             }
                             else if (var12.canInsert(var14))
                             {
-                                if (var13.itemID != var14.itemID || var13.getHasSubtypes() && var13.getItemDamage() != var14.getItemDamage())
+                                if (var13.itemID != var14.itemID || var13.getHasSubtypes() && var13.getDamage() != var14.getDamage())
                                 {
                                     if (var14.count <= var12.getMaxItemCount())
                                     {
@@ -206,7 +206,7 @@ namespace betareborn.Screens
                                         var10 = var14.getMaxCount() - var13.count;
                                     }
 
-                                    var14.splitStack(var10);
+                                    var14.split(var10);
                                     if (var14.count == 0)
                                     {
                                         var6.setItemStack(null);
@@ -215,13 +215,13 @@ namespace betareborn.Screens
                                     var13.count += var10;
                                 }
                             }
-                            else if (var13.itemID == var14.itemID && var14.getMaxCount() > 1 && (!var13.getHasSubtypes() || var13.getItemDamage() == var14.getItemDamage()))
+                            else if (var13.itemID == var14.itemID && var14.getMaxCount() > 1 && (!var13.getHasSubtypes() || var13.getDamage() == var14.getDamage()))
                             {
                                 var10 = var13.count;
                                 if (var10 > 0 && var10 + var14.count <= var14.getMaxCount())
                                 {
                                     var14.count += var10;
-                                    var13.splitStack(var10);
+                                    var13.split(var10);
                                     if (var13.count == 0)
                                     {
                                         var12.setStack(null);
@@ -321,7 +321,7 @@ namespace betareborn.Screens
                 {
                     var6 = (Slot)slots.get(var5);
                     var7 = var6.getStack();
-                    if (var7 != null && var7.itemID == stack.itemID && (!stack.getHasSubtypes() || stack.getItemDamage() == var7.getItemDamage()))
+                    if (var7 != null && var7.itemID == stack.itemID && (!stack.getHasSubtypes() || stack.getDamage() == var7.getDamage()))
                     {
                         int var8 = var7.count + stack.count;
                         if (var8 <= stack.getMaxCount())

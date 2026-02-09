@@ -1,9 +1,9 @@
 using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Worlds;
-using betareborn.Blocks.BlockEntities;
 using betareborn.Blocks.Materials;
 using betareborn.Util.Maths;
+using betareborn.Blocks.Entities;
 
 namespace betareborn.Blocks
 {
@@ -134,7 +134,7 @@ namespace betareborn.Blocks
             }
             else
             {
-                if (var12.itemID == Item.arrow.id)
+                if (var12.itemID == Item.ARROW.id)
                 {
                     EntityArrow var19 = new EntityArrow(world, var13, var15, var17);
                     var19.setArrowHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
@@ -142,14 +142,14 @@ namespace betareborn.Blocks
                     world.spawnEntity(var19);
                     world.worldEvent(1002, x, y, z, 0);
                 }
-                else if (var12.itemID == Item.egg.id)
+                else if (var12.itemID == Item.EGG.id)
                 {
                     EntityEgg var22 = new EntityEgg(world, var13, var15, var17);
                     var22.setEggHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
                     world.spawnEntity(var22);
                     world.worldEvent(1002, x, y, z, 0);
                 }
-                else if (var12.itemID == Item.snowball.id)
+                else if (var12.itemID == Item.SNOWBALL.id)
                 {
                     EntitySnowball var23 = new EntitySnowball(world, var13, var15, var17);
                     var23.setSnowballHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
@@ -249,7 +249,7 @@ namespace betareborn.Blocks
                         }
 
                         var7.count -= var11;
-                        EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemID, var11, var7.getItemDamage()));
+                        EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemID, var11, var7.getDamage()));
                         float var13 = 0.05F;
                         var12.motionX = (double)((float)random.nextGaussian() * var13);
                         var12.motionY = (double)((float)random.nextGaussian() * var13 + 0.2F);

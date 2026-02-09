@@ -27,11 +27,11 @@ namespace betareborn
 
         }
 
-        public void func_28157_a(EntityPlayer var1, TextureManager var2, MapData var3)
+        public void func_28157_a(EntityPlayer var1, TextureManager var2, MapState var3)
         {
             for (int var4 = 0; var4 < 16384; ++var4)
             {
-                byte var5 = var3.field_28176_f[var4];
+                byte var5 = var3.colors[var4];
                 if (var5 / 4 == 0)
                 {
                     field_28159_a[var4] = (var4 + var4 / 128 & 1) * 8 + 16 << 24;
@@ -76,20 +76,20 @@ namespace betareborn
             GLManager.GL.Enable(GLEnum.AlphaTest);
             GLManager.GL.Disable(GLEnum.Blend);
             var2.bindTexture(var2.getTextureId("/misc/mapicons.png"));
-            Iterator var19 = var3.field_28173_i.iterator();
+            Iterator var19 = var3.icons.iterator();
 
             while (var19.hasNext())
             {
                 MapCoord var20 = (MapCoord)var19.next();
                 GLManager.GL.PushMatrix();
-                GLManager.GL.Translate((float)var15 + (float)var20.field_28216_b / 2.0F + 64.0F, (float)var16 + (float)var20.field_28220_c / 2.0F + 64.0F, -0.02F);
-                GLManager.GL.Rotate((float)(var20.field_28219_d * 360) / 16.0F, 0.0F, 0.0F, 1.0F);
+                GLManager.GL.Translate((float)var15 + (float)var20.x / 2.0F + 64.0F, (float)var16 + (float)var20.z / 2.0F + 64.0F, -0.02F);
+                GLManager.GL.Rotate((float)(var20.rotation * 360) / 16.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Scale(4.0F, 4.0F, 3.0F);
                 GLManager.GL.Translate(-(2.0F / 16.0F), 2.0F / 16.0F, 0.0F);
-                float var21 = (float)(var20.field_28217_a % 4 + 0) / 4.0F;
-                float var22 = (float)(var20.field_28217_a / 4 + 0) / 4.0F;
-                float var23 = (float)(var20.field_28217_a % 4 + 1) / 4.0F;
-                float var24 = (float)(var20.field_28217_a / 4 + 1) / 4.0F;
+                float var21 = (float)(var20.type % 4 + 0) / 4.0F;
+                float var22 = (float)(var20.type / 4 + 0) / 4.0F;
+                float var23 = (float)(var20.type % 4 + 1) / 4.0F;
+                float var24 = (float)(var20.type / 4 + 1) / 4.0F;
                 var17.startDrawingQuads();
                 var17.addVertexWithUV(-1.0D, 1.0D, 0.0D, (double)var21, (double)var22);
                 var17.addVertexWithUV(1.0D, 1.0D, 0.0D, (double)var23, (double)var22);
