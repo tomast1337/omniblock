@@ -1,4 +1,5 @@
 using betareborn.Client.Rendering.Core;
+using betareborn.Client.Rendering.Items;
 using betareborn.Client.Resource.Language;
 using betareborn.Inventorys;
 using betareborn.Items;

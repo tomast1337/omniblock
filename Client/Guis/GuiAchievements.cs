@@ -1,5 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Client.Rendering.Core;
+using betareborn.Client.Rendering.Items;
 using betareborn.Stats;
 using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;

@@ -3,10 +3,11 @@ using betareborn.Blocks.Materials;
 using betareborn.Client.Rendering.Core;
 using betareborn.Client.Rendering.Entitys;
 using betareborn.Entities;
+using betareborn.Items;
 using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn.Items
+namespace betareborn.Client.Rendering.Items
 {
     public class HeldItemRenderer
     {

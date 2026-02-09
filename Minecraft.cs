@@ -8,6 +8,7 @@ using betareborn.Client.Network;
 using betareborn.Client.Rendering;
 using betareborn.Client.Rendering.Core;
 using betareborn.Client.Rendering.Entitys;
+using betareborn.Client.Rendering.Items;
 using betareborn.Client.Resource.Pack;
 using betareborn.Client.Textures;
 using betareborn.Entities;
