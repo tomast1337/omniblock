@@ -5,11 +5,11 @@ namespace betareborn.Blocks
 {
     public class BlockBreakable : Block
     {
-        private bool localFlag;
+        private bool hideAdjacentFaces;
 
-        protected BlockBreakable(int var1, int var2, Material var3, bool var4) : base(var1, var2, var3)
+        protected BlockBreakable(int id, int textureId, Material material, bool hideAdjacentFaces) : base(id, textureId, material)
         {
-            localFlag = var4;
+            this.hideAdjacentFaces = hideAdjacentFaces;
         }
 
         public override bool isOpaque()
@@ -17,10 +17,10 @@ namespace betareborn.Blocks
             return false;
         }
 
-        public override bool isSideVisible(BlockView var1, int var2, int var3, int var4, int var5)
+        public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
         {
-            int var6 = var1.getBlockId(var2, var3, var4);
-            return !localFlag && var6 == id ? false : base.isSideVisible(var1, var2, var3, var4, var5);
+            int neighborBlockId = blockView.getBlockId(x, y, z);
+            return !hideAdjacentFaces && neighborBlockId == id ? false : base.isSideVisible(blockView, x, y, z, side);
         }
     }
 
