@@ -22,7 +22,7 @@ namespace betareborn.Client.Rendering.Entitys
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate((float)var2, (float)var4, (float)var6);
             loadTexture("/terrain.png");
-            Block var10 = Block.BLOCKS[var1.blockID];
+            Block var10 = Block.BLOCKS[var1.blockId];
             World var11 = var1.getWorld();
             GLManager.GL.Disable(GLEnum.Lighting);
             renderBlocks.renderBlockFallingSand(var10, var11, MathHelper.floor_double(var1.x), MathHelper.floor_double(var1.y), MathHelper.floor_double(var1.z));

@@ -9,18 +9,18 @@ namespace betareborn.Entities
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityFireball).TypeHandle);
 
-        private int field_9402_e = -1;
-        private int field_9401_f = -1;
-        private int field_9400_g = -1;
-        private int field_9399_h = 0;
-        private bool field_9398_i = false;
-        public int field_9406_a = 0;
-        public EntityLiving field_9397_j;
-        private int field_9396_k;
-        private int field_9395_l = 0;
-        public double field_9405_b;
-        public double field_9404_c;
-        public double field_9403_d;
+        private int blockX = -1;
+        private int blockY = -1;
+        private int blockZ = -1;
+        private int blockId = 0;
+        private bool inGround = false;
+        public int shake = 0;
+        public EntityLiving owner;
+        private int removalTimer;
+        private int inAirTime = 0;
+        public double powerX;
+        public double powerY;
+        public double powerZ;
 
         public EntityFireball(World var1) : base(var1)
         {
@@ -44,14 +44,14 @@ namespace betareborn.Entities
             setPositionAndAnglesKeepPrevAngles(var2, var4, var6, yaw, pitch);
             setPosition(var2, var4, var6);
             double var14 = (double)MathHelper.sqrt_double(var8 * var8 + var10 * var10 + var12 * var12);
-            field_9405_b = var8 / var14 * 0.1D;
-            field_9404_c = var10 / var14 * 0.1D;
-            field_9403_d = var12 / var14 * 0.1D;
+            powerX = var8 / var14 * 0.1D;
+            powerY = var10 / var14 * 0.1D;
+            powerZ = var12 / var14 * 0.1D;
         }
 
         public EntityFireball(World var1, EntityLiving var2, double var3, double var5, double var7) : base(var1)
         {
-            field_9397_j = var2;
+            owner = var2;
             setBoundingBoxSpacing(1.0F, 1.0F);
             setPositionAndAnglesKeepPrevAngles(var2.x, var2.y, var2.z, var2.yaw, var2.pitch);
             setPosition(x, y, z);
@@ -61,27 +61,27 @@ namespace betareborn.Entities
             var5 += random.nextGaussian() * 0.4D;
             var7 += random.nextGaussian() * 0.4D;
             double var9 = (double)MathHelper.sqrt_double(var3 * var3 + var5 * var5 + var7 * var7);
-            field_9405_b = var3 / var9 * 0.1D;
-            field_9404_c = var5 / var9 * 0.1D;
-            field_9403_d = var7 / var9 * 0.1D;
+            powerX = var3 / var9 * 0.1D;
+            powerY = var5 / var9 * 0.1D;
+            powerZ = var7 / var9 * 0.1D;
         }
 
         public override void tick()
         {
             base.tick();
             fireTicks = 10;
-            if (field_9406_a > 0)
+            if (shake > 0)
             {
-                --field_9406_a;
+                --shake;
             }
 
-            if (field_9398_i)
+            if (inGround)
             {
-                int var1 = world.getBlockId(field_9402_e, field_9401_f, field_9400_g);
-                if (var1 == field_9399_h)
+                int var1 = world.getBlockId(blockX, blockY, blockZ);
+                if (var1 == blockId)
                 {
-                    ++field_9396_k;
-                    if (field_9396_k == 1200)
+                    ++removalTimer;
+                    if (removalTimer == 1200)
                     {
                         markDead();
                     }
@@ -89,16 +89,16 @@ namespace betareborn.Entities
                     return;
                 }
 
-                field_9398_i = false;
+                inGround = false;
                 velocityX *= (double)(random.nextFloat() * 0.2F);
                 velocityY *= (double)(random.nextFloat() * 0.2F);
                 velocityZ *= (double)(random.nextFloat() * 0.2F);
-                field_9396_k = 0;
-                field_9395_l = 0;
+                removalTimer = 0;
+                inAirTime = 0;
             }
             else
             {
-                ++field_9395_l;
+                ++inAirTime;
             }
 
             Vec3D var15 = Vec3D.createVector(x, y, z);
@@ -118,7 +118,7 @@ namespace betareborn.Entities
             for (int var8 = 0; var8 < var5.Count; ++var8)
             {
                 Entity var9 = var5[var8];
-                if (var9.isCollidable() && (var9 != field_9397_j || field_9395_l >= 25))
+                if (var9.isCollidable() && (var9 != owner || inAirTime >= 25))
                 {
                     float var10 = 0.3F;
                     Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
@@ -144,7 +144,7 @@ namespace betareborn.Entities
             {
                 if (!world.isRemote)
                 {
-                    if (var3.entity != null && var3.entity.damage(field_9397_j, 0))
+                    if (var3.entity != null && var3.entity.damage(owner, 0))
                     {
                     }
 
@@ -193,9 +193,9 @@ namespace betareborn.Entities
                 var17 = 0.8F;
             }
 
-            velocityX += field_9405_b;
-            velocityY += field_9404_c;
-            velocityZ += field_9403_d;
+            velocityX += powerX;
+            velocityY += powerY;
+            velocityZ += powerZ;
             velocityX *= (double)var17;
             velocityY *= (double)var17;
             velocityZ *= (double)var17;
@@ -205,22 +205,22 @@ namespace betareborn.Entities
 
         public override void writeNbt(NBTTagCompound var1)
         {
-            var1.setShort("xTile", (short)field_9402_e);
-            var1.setShort("yTile", (short)field_9401_f);
-            var1.setShort("zTile", (short)field_9400_g);
-            var1.setByte("inTile", (sbyte)field_9399_h);
-            var1.setByte("shake", (sbyte)field_9406_a);
-            var1.setByte("inGround", (sbyte)(field_9398_i ? 1 : 0));
+            var1.setShort("xTile", (short)blockX);
+            var1.setShort("yTile", (short)blockY);
+            var1.setShort("zTile", (short)blockZ);
+            var1.setByte("inTile", (sbyte)blockId);
+            var1.setByte("shake", (sbyte)shake);
+            var1.setByte("inGround", (sbyte)(inGround ? 1 : 0));
         }
 
         public override void readNbt(NBTTagCompound var1)
         {
-            field_9402_e = var1.getShort("xTile");
-            field_9401_f = var1.getShort("yTile");
-            field_9400_g = var1.getShort("zTile");
-            field_9399_h = var1.getByte("inTile") & 255;
-            field_9406_a = var1.getByte("shake") & 255;
-            field_9398_i = var1.getByte("inGround") == 1;
+            blockX = var1.getShort("xTile");
+            blockY = var1.getShort("yTile");
+            blockZ = var1.getShort("zTile");
+            blockId = var1.getByte("inTile") & 255;
+            shake = var1.getByte("shake") & 255;
+            inGround = var1.getByte("inGround") == 1;
         }
 
         public override bool isCollidable()
@@ -244,9 +244,9 @@ namespace betareborn.Entities
                     velocityX = var3.xCoord;
                     velocityY = var3.yCoord;
                     velocityZ = var3.zCoord;
-                    field_9405_b = velocityX * 0.1D;
-                    field_9404_c = velocityY * 0.1D;
-                    field_9403_d = velocityZ * 0.1D;
+                    powerX = velocityX * 0.1D;
+                    powerY = velocityY * 0.1D;
+                    powerZ = velocityZ * 0.1D;
                 }
 
                 return true;

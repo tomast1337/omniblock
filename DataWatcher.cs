@@ -11,7 +11,7 @@ namespace betareborn
     {
         private static readonly HashMap dataTypes = [];
         private readonly Map watchedObjects = new HashMap();
-        private bool objectChanged;
+        private bool dirty;
 
         public void addObject(int var1, java.lang.Object var2)
         {
@@ -33,6 +33,39 @@ namespace betareborn
                 WatchableObject var4 = new(var3.intValue(), var1, var2);
                 watchedObjects.put(Integer.valueOf(var1), var4);
             }
+        }
+
+        public bool isDirty()
+        {
+            return dirty;
+        }
+
+        public ArrayList getDirtyEntries()
+        {
+            ArrayList var1 = null;
+            if (dirty)
+            {
+                var collection = watchedObjects.values();
+                var iter = collection.iterator();
+                while (iter.hasNext())
+                {
+                    WatchableObject var3 = (WatchableObject)iter.next();
+
+                    if (var3.getWatching())
+                    {
+                        var3.setWatching(false);
+                        if (var1 == null)
+                        {
+                            var1 = new ArrayList();
+                        }
+
+                        var1.add(var3);
+                    }
+                }
+            }
+
+            dirty = false;
+            return var1;
         }
 
         public sbyte getWatchableObjectByte(int var1)
@@ -57,7 +90,7 @@ namespace betareborn
             {
                 var3.setObject(var2);
                 var3.setWatching(true);
-                objectChanged = true;
+                dirty = true;
             }
         }
 

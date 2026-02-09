@@ -62,107 +62,107 @@ namespace betareborn.Client.Network
 
         public override void onItemEntitySpawn(ItemEntitySpawnS2CPacket var1)
         {
-            double var2 = var1.xPosition / 32.0D;
-            double var4 = var1.yPosition / 32.0D;
-            double var6 = var1.zPosition / 32.0D;
-            EntityItem var8 = new EntityItem(worldClient, var2, var4, var6, new ItemStack(var1.itemID, var1.count, var1.itemDamage));
-            var8.velocityX = var1.rotation / 128.0D;
-            var8.velocityY = var1.pitch / 128.0D;
-            var8.velocityZ = var1.roll / 128.0D;
-            var8.trackedPosX = var1.xPosition;
-            var8.trackedPosY = var1.yPosition;
-            var8.trackedPosZ = var1.zPosition;
-            worldClient.forceEntity(var1.entityId, var8);
+            double var2 = var1.x / 32.0D;
+            double var4 = var1.y / 32.0D;
+            double var6 = var1.z / 32.0D;
+            EntityItem var8 = new EntityItem(worldClient, var2, var4, var6, new ItemStack(var1.itemRawId, var1.itemCount, var1.itemDamage));
+            var8.velocityX = var1.velocityX / 128.0D;
+            var8.velocityY = var1.velocityY / 128.0D;
+            var8.velocityZ = var1.velocityZ / 128.0D;
+            var8.trackedPosX = var1.x;
+            var8.trackedPosY = var1.y;
+            var8.trackedPosZ = var1.z;
+            worldClient.forceEntity(var1.id, var8);
         }
 
         public override void onEntitySpawn(EntitySpawnS2CPacket var1)
         {
-            double var2 = var1.xPosition / 32.0D;
-            double var4 = var1.yPosition / 32.0D;
-            double var6 = var1.zPosition / 32.0D;
+            double var2 = var1.x / 32.0D;
+            double var4 = var1.y / 32.0D;
+            double var6 = var1.z / 32.0D;
             object var8 = null;
-            if (var1.type == 10)
+            if (var1.entityType == 10)
             {
                 var8 = new EntityMinecart(worldClient, var2, var4, var6, 0);
             }
 
-            if (var1.type == 11)
+            if (var1.entityType == 11)
             {
                 var8 = new EntityMinecart(worldClient, var2, var4, var6, 1);
             }
 
-            if (var1.type == 12)
+            if (var1.entityType == 12)
             {
                 var8 = new EntityMinecart(worldClient, var2, var4, var6, 2);
             }
 
-            if (var1.type == 90)
+            if (var1.entityType == 90)
             {
                 var8 = new EntityFish(worldClient, var2, var4, var6);
             }
 
-            if (var1.type == 60)
+            if (var1.entityType == 60)
             {
                 var8 = new EntityArrow(worldClient, var2, var4, var6);
             }
 
-            if (var1.type == 61)
+            if (var1.entityType == 61)
             {
                 var8 = new EntitySnowball(worldClient, var2, var4, var6);
             }
 
-            if (var1.type == 63)
+            if (var1.entityType == 63)
             {
-                var8 = new EntityFireball(worldClient, var2, var4, var6, var1.field_28047_e / 8000.0D, var1.field_28046_f / 8000.0D, var1.field_28045_g / 8000.0D);
-                var1.field_28044_i = 0;
+                var8 = new EntityFireball(worldClient, var2, var4, var6, var1.velocityX / 8000.0D, var1.velocityY / 8000.0D, var1.velocityZ / 8000.0D);
+                var1.entityData = 0;
             }
 
-            if (var1.type == 62)
+            if (var1.entityType == 62)
             {
                 var8 = new EntityEgg(worldClient, var2, var4, var6);
             }
 
-            if (var1.type == 1)
+            if (var1.entityType == 1)
             {
                 var8 = new EntityBoat(worldClient, var2, var4, var6);
             }
 
-            if (var1.type == 50)
+            if (var1.entityType == 50)
             {
                 var8 = new EntityTNTPrimed(worldClient, var2, var4, var6);
             }
 
-            if (var1.type == 70)
+            if (var1.entityType == 70)
             {
                 var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.SAND.id);
             }
 
-            if (var1.type == 71)
+            if (var1.entityType == 71)
             {
                 var8 = new EntityFallingSand(worldClient, var2, var4, var6, Block.GRAVEL.id);
             }
 
             if (var8 != null)
             {
-                ((Entity)var8).trackedPosX = var1.xPosition;
-                ((Entity)var8).trackedPosY = var1.yPosition;
-                ((Entity)var8).trackedPosZ = var1.zPosition;
+                ((Entity)var8).trackedPosX = var1.x;
+                ((Entity)var8).trackedPosY = var1.y;
+                ((Entity)var8).trackedPosZ = var1.z;
                 ((Entity)var8).yaw = 0.0F;
                 ((Entity)var8).pitch = 0.0F;
-                ((Entity)var8).id = var1.entityId;
-                worldClient.forceEntity(var1.entityId, (Entity)var8);
-                if (var1.field_28044_i > 0)
+                ((Entity)var8).id = var1.id;
+                worldClient.forceEntity(var1.id, (Entity)var8);
+                if (var1.entityData > 0)
                 {
-                    if (var1.type == 60)
+                    if (var1.entityType == 60)
                     {
-                        Entity var9 = getEntityByID(var1.field_28044_i);
+                        Entity var9 = getEntityByID(var1.entityData);
                         if (var9 is EntityLiving)
                         {
                             ((EntityArrow)var8).owner = (EntityLiving)var9;
                         }
                     }
 
-                    ((Entity)var8).setVelocityClient(var1.field_28047_e / 8000.0D, var1.field_28046_f / 8000.0D, var1.field_28045_g / 8000.0D);
+                    ((Entity)var8).setVelocityClient(var1.velocityX / 8000.0D, var1.velocityY / 8000.0D, var1.velocityZ / 8000.0D);
                 }
             }
 
@@ -209,7 +209,7 @@ namespace betareborn.Client.Network
 
         public override void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket var1)
         {
-            Entity var2 = getEntityByID(var1.entityId);
+            Entity var2 = getEntityByID(var1.id);
             if (var2 != null && var1.func_21047_b() != null)
             {
                 var2.getDataWatcher().updateWatchedObjectsFromList(var1.func_21047_b());
@@ -244,12 +244,12 @@ namespace betareborn.Client.Network
 
         public override void onEntityPosition(EntityPositionS2CPacket var1)
         {
-            Entity var2 = getEntityByID(var1.entityId);
+            Entity var2 = getEntityByID(var1.id);
             if (var2 != null)
             {
-                var2.trackedPosX = var1.xPosition;
-                var2.trackedPosY = var1.yPosition;
-                var2.trackedPosZ = var1.zPosition;
+                var2.trackedPosX = var1.x;
+                var2.trackedPosY = var1.y;
+                var2.trackedPosZ = var1.z;
                 double var3 = var2.trackedPosX / 32.0D;
                 double var5 = var2.trackedPosY / 32.0D + 1.0D / 64.0D;
                 double var7 = var2.trackedPosZ / 32.0D;
@@ -261,17 +261,17 @@ namespace betareborn.Client.Network
 
         public override void onEntity(EntityS2CPacket var1)
         {
-            Entity var2 = getEntityByID(var1.entityId);
+            Entity var2 = getEntityByID(var1.id);
             if (var2 != null)
             {
-                var2.trackedPosX += var1.xPosition;
-                var2.trackedPosY += var1.yPosition;
-                var2.trackedPosZ += var1.zPosition;
+                var2.trackedPosX += var1.deltaX;
+                var2.trackedPosY += var1.deltaY;
+                var2.trackedPosZ += var1.deltaZ;
                 double var3 = var2.trackedPosX / 32.0D;
                 double var5 = var2.trackedPosY / 32.0D;
                 double var7 = var2.trackedPosZ / 32.0D;
-                float var9 = var1.rotating ? var1.yaw * 360 / 256.0F : var2.yaw;
-                float var10 = var1.rotating ? var1.pitch * 360 / 256.0F : var2.pitch;
+                float var9 = var1.rotate ? var1.yaw * 360 / 256.0F : var2.yaw;
+                float var10 = var1.rotate ? var1.pitch * 360 / 256.0F : var2.pitch;
                 var2.setPositionAndAnglesAvoidEntities(var3, var5, var7, var9, var10, 3);
             }
         }

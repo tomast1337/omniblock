@@ -10,40 +10,40 @@ namespace betareborn
 
         public WatchableObject(int var1, int var2, java.lang.Object var3)
         {
-            this.dataValueId = var2;
-            this.watchedObject = var3;
-            this.objectType = var1;
-            this.isWatching = true;
+            dataValueId = var2;
+            watchedObject = var3;
+            objectType = var1;
+            isWatching = true;
         }
 
         public int getDataValueId()
         {
-            return this.dataValueId;
+            return dataValueId;
         }
 
         public void setObject(java.lang.Object var1)
         {
-            this.watchedObject = var1;
+            watchedObject = var1;
         }
 
         public java.lang.Object getObject()
         {
-            return this.watchedObject;
+            return watchedObject;
         }
 
         public int getObjectType()
         {
-            return this.objectType;
+            return objectType;
         }
 
         public bool getWatching()
         {
-            return this.isWatching;
+            return isWatching;
         }
 
         public void setWatching(bool var1)
         {
-            this.isWatching = var1;
+            isWatching = var1;
         }
     }
 }

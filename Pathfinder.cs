@@ -185,11 +185,11 @@ namespace betareborn
         private PathPoint openPoint(int var1, int var2, int var3)
         {
             int var4 = PathPoint.func_22329_a(var1, var2, var3);
-            PathPoint var5 = (PathPoint)pointMap.lookup(var4);
+            PathPoint var5 = (PathPoint)pointMap.get(var4);
             if (var5 == null)
             {
                 var5 = new PathPoint(var1, var2, var3);
-                pointMap.addKey(var4, var5);
+                pointMap.put(var4, var5);
             }
 
             return var5;

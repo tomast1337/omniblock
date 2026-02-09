@@ -50,16 +50,16 @@ namespace betareborn.Worlds
             return chunkCache;
         }
 
-        public java.util.List getBlockEntities(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+        public List<BlockEntity> getBlockEntities(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
         {
-            java.util.ArrayList var7 = new java.util.ArrayList();
+            List<BlockEntity> var7 = [];
 
             for (int var8 = 0; var8 < blockEntities.Capacity; var8++)
             {
                 BlockEntity var9 = blockEntities[var8];
                 if (var9.x >= minX && var9.y >= minY && var9.z >= minZ && var9.x < maxX && var9.y < maxY && var9.z < maxZ)
                 {
-                    var7.add(var9);
+                    var7.Add(var9);
                 }
             }
 

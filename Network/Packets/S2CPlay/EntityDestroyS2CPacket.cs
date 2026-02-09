@@ -1,4 +1,3 @@
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -8,6 +7,11 @@ namespace betareborn.Network.Packets.S2CPlay
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityDestroyS2CPacket).TypeHandle);
 
         public int entityId;
+
+        public EntityDestroyS2CPacket(int id)
+        {
+            entityId = id;
+        }
 
         public override void read(DataInputStream var1)
         {

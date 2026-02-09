@@ -175,17 +175,17 @@ namespace betareborn.Worlds
                 pendingEntities.add(var2);
             }
 
-            entitiesByNetworkId.addKey(var1, var2);
+            entitiesByNetworkId.put(var1, var2);
         }
 
         public Entity getEntity(int var1)
         {
-            return (Entity)entitiesByNetworkId.lookup(var1);
+            return (Entity)entitiesByNetworkId.get(var1);
         }
 
         public Entity removeEntityFromWorld(int var1)
         {
-            Entity var2 = (Entity)entitiesByNetworkId.removeObject(var1);
+            Entity var2 = (Entity)entitiesByNetworkId.remove(var1);
             if (var2 != null)
             {
                 forcedEntities.remove(var2);

@@ -16,8 +16,8 @@ namespace betareborn.Entities
         public int minecartCurrentDamage;
         public int minecartTimeSinceHit;
         public int minecartRockDirection;
-        private bool field_856_i;
-        public int minecartType;
+        private bool yawFlipped;
+        public int type;
         public int fuel;
         public double pushX;
         public double pushZ;
@@ -50,7 +50,7 @@ namespace betareborn.Entities
             minecartCurrentDamage = 0;
             minecartTimeSinceHit = 0;
             minecartRockDirection = 1;
-            field_856_i = false;
+            yawFlipped = false;
             preventEntitySpawning = true;
             setBoundingBoxSpacing(0.98F, 0.7F);
             standingEyeHeight = height / 2.0F;
@@ -89,7 +89,7 @@ namespace betareborn.Entities
             prevX = var2;
             prevY = var4;
             prevZ = var6;
-            minecartType = var8;
+            type = var8;
         }
 
         public override double getPassengerRidingHeight()
@@ -114,7 +114,7 @@ namespace betareborn.Entities
 
                     markDead();
                     dropItem(Item.MINECART.id, 1, 0.0F);
-                    if (minecartType == 1)
+                    if (type == 1)
                     {
                         EntityMinecart var3 = this;
 
@@ -148,7 +148,7 @@ namespace betareborn.Entities
 
                         dropItem(Block.CHEST.id, 1, 0.0F);
                     }
-                    else if (minecartType == 2)
+                    else if (type == 2)
                     {
                         dropItem(Block.FURNACE.id, 1, 0.0F);
                     }
@@ -421,7 +421,7 @@ namespace betareborn.Entities
                     }
                     else
                     {
-                        if (minecartType == 2)
+                        if (type == 2)
                         {
                             var39 = (double)MathHelper.sqrt_double(pushX * pushX + pushZ * pushZ);
                             if (var39 > 0.01D)
@@ -473,7 +473,7 @@ namespace betareborn.Entities
                     }
 
                     double var42;
-                    if (minecartType == 2)
+                    if (type == 2)
                     {
                         var42 = (double)MathHelper.sqrt_double(pushX * pushX + pushZ * pushZ);
                         if (var42 > 0.01D && velocityX * velocityX + velocityZ * velocityZ > 0.001D)
@@ -570,7 +570,7 @@ namespace betareborn.Entities
                 if (var48 * var48 + var49 * var49 > 0.001D)
                 {
                     yaw = (float)(java.lang.Math.atan2(var49, var48) * 180.0D / java.lang.Math.PI);
-                    if (field_856_i)
+                    if (yawFlipped)
                     {
                         yaw += 180.0F;
                     }
@@ -589,7 +589,7 @@ namespace betareborn.Entities
                 if (var50 < -170.0D || var50 >= 170.0D)
                 {
                     yaw += 180.0F;
-                    field_856_i = !field_856_i;
+                    yawFlipped = !yawFlipped;
                 }
 
                 setRotation(yaw, pitch);
@@ -752,14 +752,14 @@ namespace betareborn.Entities
 
         public override void writeNbt(NBTTagCompound var1)
         {
-            var1.setInteger("Type", minecartType);
-            if (minecartType == 2)
+            var1.setInteger("Type", type);
+            if (type == 2)
             {
                 var1.setDouble("PushX", pushX);
                 var1.setDouble("PushZ", pushZ);
                 var1.setShort("Fuel", (short)fuel);
             }
-            else if (minecartType == 1)
+            else if (type == 1)
             {
                 NBTTagList var2 = new NBTTagList();
 
@@ -781,14 +781,14 @@ namespace betareborn.Entities
 
         public override void readNbt(NBTTagCompound var1)
         {
-            minecartType = var1.getInteger("Type");
-            if (minecartType == 2)
+            type = var1.getInteger("Type");
+            if (type == 2)
             {
                 pushX = var1.getDouble("PushX");
                 pushZ = var1.getDouble("PushZ");
                 fuel = var1.getShort("Fuel");
             }
-            else if (minecartType == 1)
+            else if (type == 1)
             {
                 NBTTagList var2 = var1.getTagList("Items");
                 cargoItems = new ItemStack[size()];
@@ -817,7 +817,7 @@ namespace betareborn.Entities
             {
                 if (var1 != passenger)
                 {
-                    if (var1 is EntityLiving && !(var1 is EntityPlayer) && minecartType == 0 && velocityX * velocityX + velocityZ * velocityZ > 0.01D && passenger == null && var1.vehicle == null)
+                    if (var1 is EntityLiving && !(var1 is EntityPlayer) && type == 0 && velocityX * velocityX + velocityZ * velocityZ > 0.01D && passenger == null && var1.vehicle == null)
                     {
                         var1.setVehicle(this);
                     }
@@ -857,7 +857,7 @@ namespace betareborn.Entities
 
                             double var16 = var1.velocityX + velocityX;
                             double var18 = var1.velocityZ + velocityZ;
-                            if (((EntityMinecart)var1).minecartType == 2 && minecartType != 2)
+                            if (((EntityMinecart)var1).type == 2 && type != 2)
                             {
                                 velocityX *= (double)0.2F;
                                 velocityZ *= (double)0.2F;
@@ -865,7 +865,7 @@ namespace betareborn.Entities
                                 var1.velocityX *= (double)0.7F;
                                 var1.velocityZ *= (double)0.7F;
                             }
-                            else if (((EntityMinecart)var1).minecartType != 2 && minecartType == 2)
+                            else if (((EntityMinecart)var1).type != 2 && type == 2)
                             {
                                 var1.velocityX *= (double)0.2F;
                                 var1.velocityZ *= (double)0.2F;
@@ -960,7 +960,7 @@ namespace betareborn.Entities
 
         public override bool interact(EntityPlayer var1)
         {
-            if (minecartType == 0)
+            if (type == 0)
             {
                 if (passenger != null && passenger is EntityPlayer && passenger != var1)
                 {
@@ -972,14 +972,14 @@ namespace betareborn.Entities
                     var1.setVehicle(this);
                 }
             }
-            else if (minecartType == 1)
+            else if (type == 1)
             {
                 if (!world.isRemote)
                 {
                     var1.openChestScreen(this);
                 }
             }
-            else if (minecartType == 2)
+            else if (type == 2)
             {
                 ItemStack var2 = var1.inventory.getSelectedItem();
                 if (var2 != null && var2.itemId == Item.COAL.id)

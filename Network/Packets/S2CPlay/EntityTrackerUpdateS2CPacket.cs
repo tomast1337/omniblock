@@ -1,4 +1,3 @@
-using betareborn.Network.Packets;
 using java.io;
 using java.util;
 
@@ -8,19 +7,25 @@ namespace betareborn.Network.Packets.S2CPlay
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityTrackerUpdateS2CPacket).TypeHandle);
 
-        public int entityId;
-        private List field_21048_b;
+        public int id;
+        private List trackedValues;
+
+        public EntityTrackerUpdateS2CPacket(int entityId, DataWatcher dataWatcher)
+        {
+            id = entityId;
+            trackedValues = dataWatcher.getDirtyEntries();
+        }
 
         public override void read(DataInputStream var1)
         {
-            entityId = var1.readInt();
-            field_21048_b = DataWatcher.readWatchableObjects(var1);
+            id = var1.readInt();
+            trackedValues = DataWatcher.readWatchableObjects(var1);
         }
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeInt(entityId);
-            DataWatcher.writeObjectsInListToStream(field_21048_b, var1);
+            var1.writeInt(id);
+            DataWatcher.writeObjectsInListToStream(trackedValues, var1);
         }
 
         public override void apply(NetHandler var1)
@@ -35,7 +40,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public List func_21047_b()
         {
-            return field_21048_b;
+            return trackedValues;
         }
     }
 

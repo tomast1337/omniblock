@@ -67,7 +67,7 @@ namespace betareborn.Client.Rendering.Entitys
                 GLManager.GL.Rotate(MathHelper.sin(var23) * var23 * var24 / 10.0F * var1.minecartRockDirection, 1.0F, 0.0F, 0.0F);
             }
 
-            if (var1.minecartType != 0)
+            if (var1.type != 0)
             {
                 loadTexture("/terrain.png");
                 float var25 = 12.0F / 16.0F;
@@ -75,11 +75,11 @@ namespace betareborn.Client.Rendering.Entitys
                 GLManager.GL.Translate(0.0F, 5.0F / 16.0F, 0.0F);
                 GLManager.GL.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
                 //TODO: WTF WHY ARE WE MAKING A NEW RENDER BLOCKS EVERY TIME
-                if (var1.minecartType == 1)
+                if (var1.type == 1)
                 {
                     new BlockRenderer().renderBlockOnInventory(Block.CHEST, 0, var1.getBrightnessAtEyes(var9));
                 }
-                else if (var1.minecartType == 2)
+                else if (var1.type == 2)
                 {
                     new BlockRenderer().renderBlockOnInventory(Block.FURNACE, 0, var1.getBrightnessAtEyes(var9));
                 }
