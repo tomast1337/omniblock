@@ -28,22 +28,22 @@ namespace betareborn.Blocks.Entities
         {
             if (inventory[slot] != null)
             {
-                ItemStack var3;
+                ItemStack removedStack;
                 if (inventory[slot].count <= stack)
                 {
-                    var3 = inventory[slot];
+                    removedStack = inventory[slot];
                     inventory[slot] = null;
-                    return var3;
+                    return removedStack;
                 }
                 else
                 {
-                    var3 = inventory[slot].split(stack);
+                    removedStack = inventory[slot].split(stack);
                     if (inventory[slot].count == 0)
                     {
                         inventory[slot] = null;
                     }
 
-                    return var3;
+                    return removedStack;
                 }
             }
             else
@@ -70,16 +70,16 @@ namespace betareborn.Blocks.Entities
         public override void readNbt(NBTTagCompound nbt)
         {
             base.readNbt(nbt);
-            NBTTagList var2 = nbt.getTagList("Items");
+            NBTTagList itemList = nbt.getTagList("Items");
             inventory = new ItemStack[size()];
 
-            for (int var3 = 0; var3 < var2.tagCount(); ++var3)
+            for (int itemIndex = 0; itemIndex < itemList.tagCount(); ++itemIndex)
             {
-                NBTTagCompound var4 = (NBTTagCompound)var2.tagAt(var3);
-                sbyte var5 = var4.getByte("Slot");
-                if (var5 >= 0 && var5 < inventory.Length)
+                NBTTagCompound itemTag = (NBTTagCompound)itemList.tagAt(itemIndex);
+                sbyte slot = itemTag.getByte("Slot");
+                if (slot >= 0 && slot < inventory.Length)
                 {
-                    inventory[var5] = new ItemStack(var4);
+                    inventory[slot] = new ItemStack(itemTag);
                 }
             }
 
@@ -93,20 +93,20 @@ namespace betareborn.Blocks.Entities
             base.writeNbt(nbt);
             nbt.setShort("BurnTime", (short)burnTime);
             nbt.setShort("CookTime", (short)cookTime);
-            NBTTagList var2 = new NBTTagList();
+            NBTTagList itemList = new NBTTagList();
 
-            for (int var3 = 0; var3 < inventory.Length; ++var3)
+            for (int slotIndex = 0; slotIndex < inventory.Length; ++slotIndex)
             {
-                if (inventory[var3] != null)
+                if (inventory[slotIndex] != null)
                 {
-                    NBTTagCompound var4 = new NBTTagCompound();
-                    var4.setByte("Slot", (sbyte)var3);
-                    inventory[var3].writeToNBT(var4);
-                    var2.setTag(var4);
+                    NBTTagCompound slotTag = new NBTTagCompound();
+                    slotTag.setByte("Slot", (sbyte)slotIndex);
+                    inventory[slotIndex].writeToNBT(slotTag);
+                    itemList.setTag(slotTag);
                 }
             }
 
-            nbt.setTag("Items", var2);
+            nbt.setTag("Items", itemList);
         }
 
         public int getMaxCountPerStack()
@@ -136,8 +136,8 @@ namespace betareborn.Blocks.Entities
 
         public override void tick()
         {
-            bool var1 = burnTime > 0;
-            bool var2 = false;
+            bool wasBurning = burnTime > 0;
+            bool stateChanged = false;
             if (burnTime > 0)
             {
                 --burnTime;
@@ -150,7 +150,7 @@ namespace betareborn.Blocks.Entities
                     fuelTime = burnTime = getFuelTime(inventory[1]);
                     if (burnTime > 0)
                     {
-                        var2 = true;
+                        stateChanged = true;
                         if (inventory[1] != null)
                         {
                             --inventory[1].count;
@@ -169,7 +169,7 @@ namespace betareborn.Blocks.Entities
                     {
                         cookTime = 0;
                         craftRecipe();
-                        var2 = true;
+                        stateChanged = true;
                     }
                 }
                 else
@@ -177,14 +177,14 @@ namespace betareborn.Blocks.Entities
                     cookTime = 0;
                 }
 
-                if (var1 != burnTime > 0)
+                if (wasBurning != burnTime > 0)
                 {
-                    var2 = true;
+                    stateChanged = true;
                     BlockFurnace.updateLitState(burnTime > 0, world, x, y, z);
                 }
             }
 
-            if (var2)
+            if (stateChanged)
             {
                 markDirty();
             }
@@ -199,8 +199,8 @@ namespace betareborn.Blocks.Entities
             }
             else
             {
-                ItemStack var1 = SmeltingRecipeManager.getInstance().craft(inventory[0].getItem().id);
-                return var1 == null ? false : inventory[2] == null ? true : !inventory[2].isItemEqual(var1) ? false : inventory[2].count < getMaxCountPerStack() && inventory[2].count < inventory[2].getMaxCount() ? true : inventory[2].count < var1.getMaxCount();
+                ItemStack outputStack = SmeltingRecipeManager.getInstance().craft(inventory[0].getItem().id);
+                return outputStack == null ? false : inventory[2] == null ? true : !inventory[2].isItemEqual(outputStack) ? false : inventory[2].count < getMaxCountPerStack() && inventory[2].count < inventory[2].getMaxCount() ? true : inventory[2].count < outputStack.getMaxCount();
             }
         }
 
@@ -208,12 +208,12 @@ namespace betareborn.Blocks.Entities
         {
             if (canAcceptRecipeOutput())
             {
-                ItemStack var1 = SmeltingRecipeManager.getInstance().craft(inventory[0].getItem().id);
+                ItemStack outputStack = SmeltingRecipeManager.getInstance().craft(inventory[0].getItem().id);
                 if (inventory[2] == null)
                 {
-                    inventory[2] = var1.copy();
+                    inventory[2] = outputStack.copy();
                 }
-                else if (inventory[2].itemId == var1.itemId)
+                else if (inventory[2].itemId == outputStack.itemId)
                 {
                     ++inventory[2].count;
                 }
@@ -235,8 +235,8 @@ namespace betareborn.Blocks.Entities
             }
             else
             {
-                int var2 = itemStack.getItem().id;
-                return var2 < 256 && Block.BLOCKS[var2].material == Material.WOOD ? 300 : var2 == Item.STICK.id ? 100 : var2 == Item.COAL.id ? 1600 : var2 == Item.LAVA_BUCKET.id ? 20000 : var2 == Block.SAPLING.id ? 100 : 0;
+                int itemId = itemStack.getItem().id;
+                return itemId < 256 && Block.BLOCKS[itemId].material == Material.WOOD ? 300 : itemId == Item.STICK.id ? 100 : itemId == Item.COAL.id ? 1600 : itemId == Item.LAVA_BUCKET.id ? 20000 : itemId == Block.SAPLING.id ? 100 : 0;
             }
         }
 
