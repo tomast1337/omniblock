@@ -5,7 +5,7 @@ namespace betareborn.Client.Guis
     public class GuiTextField : Gui
     {
 
-        private readonly FontRenderer fontRenderer;
+        private readonly TextRenderer fontRenderer;
         private readonly int xPos;
         private readonly int yPos;
         private readonly int width;
@@ -17,7 +17,7 @@ namespace betareborn.Client.Guis
         public bool isEnabled = true;
         private GuiScreen parentGuiScreen;
 
-        public GuiTextField(GuiScreen var1, FontRenderer var2, int var3, int var4, int var5, int var6, string var7)
+        public GuiTextField(GuiScreen var1, TextRenderer var2, int var3, int var4, int var5, int var6, string var7)
         {
             parentGuiScreen = var1;
             fontRenderer = var2;

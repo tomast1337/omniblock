@@ -52,7 +52,7 @@ namespace betareborn
         public bool hideQuitButton = false;
         public volatile bool isGamePaused = false;
         public TextureManager textureManager;
-        public FontRenderer fontRenderer;
+        public TextRenderer fontRenderer;
         public GuiScreen currentScreen = null;
         public LoadingScreenRenderer loadingScreen;
 
@@ -170,7 +170,7 @@ namespace betareborn
             }
             texturePackList = new TexturePacks(this, mcDataDir);
             textureManager = new TextureManager(texturePackList, options);
-            fontRenderer = new FontRenderer(options, textureManager);
+            fontRenderer = new TextRenderer(options, textureManager);
             WaterColors.setcolorMap(textureManager.getColors("/misc/watercolor.png"));
             GrassColors.func_28181_a(textureManager.getColors("/misc/grasscolor.png"));
             FoliageColors.func_28152_a(textureManager.getColors("/misc/foliagecolor.png"));

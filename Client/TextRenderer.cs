@@ -10,7 +10,7 @@ using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Client
 {
-    public class FontRenderer : java.lang.Object
+    public class TextRenderer : java.lang.Object
     {
         private readonly int[] charWidth = new int[256];
         public int fontTextureName = 0;
@@ -18,7 +18,7 @@ namespace betareborn.Client
         private readonly IntBuffer buffer;
         private readonly ByteBuffer byteBuffer = GLAllocation.createDirectByteBuffer(1024 * sizeof(int));
 
-        public FontRenderer(GameOptions var1, TextureManager var3)
+        public TextRenderer(GameOptions var1, TextureManager var3)
         {
             buffer = byteBuffer.asIntBuffer();
 

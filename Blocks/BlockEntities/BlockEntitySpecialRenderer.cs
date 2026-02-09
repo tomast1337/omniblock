@@ -25,7 +25,7 @@ namespace betareborn.Blocks.BlockEntities
         {
         }
 
-        public FontRenderer getFontRenderer()
+        public TextRenderer getFontRenderer()
         {
             return tileEntityRenderer.getFontRenderer();
         }

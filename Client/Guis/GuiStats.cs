@@ -134,7 +134,7 @@ namespace betareborn.Client.Guis
             return var0.mc;
         }
 
-        public static FontRenderer func_27145_b(GuiStats var0)
+        public static TextRenderer func_27145_b(GuiStats var0)
         {
             return var0.fontRenderer;
         }
@@ -144,12 +144,12 @@ namespace betareborn.Client.Guis
             return var0.field_27156_o;
         }
 
-        public static FontRenderer func_27140_d(GuiStats var0)
+        public static TextRenderer func_27140_d(GuiStats var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_27146_e(GuiStats var0)
+        public static TextRenderer func_27146_e(GuiStats var0)
         {
             return var0.fontRenderer;
         }
@@ -169,27 +169,27 @@ namespace betareborn.Client.Guis
             return var0.mc;
         }
 
-        public static FontRenderer func_27133_h(GuiStats var0)
+        public static TextRenderer func_27133_h(GuiStats var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_27137_i(GuiStats var0)
+        public static TextRenderer func_27137_i(GuiStats var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_27132_j(GuiStats var0)
+        public static TextRenderer func_27132_j(GuiStats var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_27134_k(GuiStats var0)
+        public static TextRenderer func_27134_k(GuiStats var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_27139_l(GuiStats var0)
+        public static TextRenderer func_27139_l(GuiStats var0)
         {
             return var0.fontRenderer;
         }
@@ -199,12 +199,12 @@ namespace betareborn.Client.Guis
             var0.drawGradientRect(var1, var2, var3, var4, var5, var6);
         }
 
-        public static FontRenderer func_27144_m(GuiStats var0)
+        public static TextRenderer func_27144_m(GuiStats var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_27127_n(GuiStats var0)
+        public static TextRenderer func_27127_n(GuiStats var0)
         {
             return var0.fontRenderer;
         }
@@ -214,7 +214,7 @@ namespace betareborn.Client.Guis
             var0.drawGradientRect(var1, var2, var3, var4, var5, var6);
         }
 
-        public static FontRenderer func_27131_o(GuiStats var0)
+        public static TextRenderer func_27131_o(GuiStats var0)
         {
             return var0.fontRenderer;
         }

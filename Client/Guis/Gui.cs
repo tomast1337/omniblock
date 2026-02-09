@@ -97,12 +97,12 @@ namespace betareborn.Client.Guis
             GLManager.GL.Enable(GLEnum.Texture2D);
         }
 
-        public void drawCenteredString(FontRenderer var1, string var2, int var3, int var4, int var5)
+        public void drawCenteredString(TextRenderer var1, string var2, int var3, int var4, int var5)
         {
             var1.drawStringWithShadow(var2, var3 - var1.getStringWidth(var2) / 2, var4, var5);
         }
 
-        public void drawString(FontRenderer var1, string var2, int var3, int var4, int var5)
+        public void drawString(TextRenderer var1, string var2, int var3, int var4, int var5)
         {
             var1.drawStringWithShadow(var2, var3, var4, var5);
         }

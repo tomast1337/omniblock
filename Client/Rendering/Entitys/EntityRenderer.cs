@@ -291,7 +291,7 @@ namespace betareborn.Client.Rendering.Entitys
 
         }
 
-        public FontRenderer getTextRenderer()
+        public TextRenderer getTextRenderer()
         {
             return dispatcher.getTextRenderer();
         }

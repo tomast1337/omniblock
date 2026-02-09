@@ -14,7 +14,7 @@ namespace betareborn.Client.Guis
         public int height;
         protected java.util.List controlList = new ArrayList();
         public bool field_948_f = false;
-        public FontRenderer fontRenderer;
+        public TextRenderer fontRenderer;
         public GuiParticle particlesGui;
         private GuiButton selectedButton = null;
 

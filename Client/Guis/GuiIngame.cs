@@ -37,7 +37,7 @@ namespace betareborn.Client.Guis
             ScaledResolution var5 = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
             int var6 = var5.getScaledWidth();
             int var7 = var5.getScaledHeight();
-            FontRenderer var8 = mc.fontRenderer;
+            TextRenderer var8 = mc.fontRenderer;
             mc.gameRenderer.setupHudRender();
             GLManager.GL.Enable(GLEnum.Blend);
             if (Minecraft.isFancyGraphicsEnabled())

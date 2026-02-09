@@ -136,17 +136,17 @@ namespace betareborn.Client.Guis
             return var0.mc;
         }
 
-        public static FontRenderer func_22127_j(GuiTexturePacks var0)
+        public static TextRenderer func_22127_j(GuiTexturePacks var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_22120_k(GuiTexturePacks var0)
+        public static TextRenderer func_22120_k(GuiTexturePacks var0)
         {
             return var0.fontRenderer;
         }
 
-        public static FontRenderer func_22125_l(GuiTexturePacks var0)
+        public static TextRenderer func_22125_l(GuiTexturePacks var0)
         {
             return var0.fontRenderer;
         }

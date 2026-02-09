@@ -11,7 +11,7 @@ namespace betareborn.Blocks.BlockEntities
     {
         private Map specialRendererMap = new HashMap();
         public static BlockEntityRenderer instance = new BlockEntityRenderer();
-        private FontRenderer fontRenderer;
+        private TextRenderer fontRenderer;
         public static double staticPlayerX;
         public static double staticPlayerY;
         public static double staticPlayerZ;
@@ -61,7 +61,7 @@ namespace betareborn.Blocks.BlockEntities
             return var1 == null ? null : getSpecialRendererForClass(var1.getClass());
         }
 
-        public void cacheActiveRenderInfo(World var1, TextureManager var2, FontRenderer var3, EntityLiving var4, float var5)
+        public void cacheActiveRenderInfo(World var1, TextureManager var2, TextRenderer var3, EntityLiving var4, float var5)
         {
             if (worldObj != var1)
             {
@@ -115,7 +115,7 @@ namespace betareborn.Blocks.BlockEntities
 
         }
 
-        public FontRenderer getFontRenderer()
+        public TextRenderer getFontRenderer()
         {
             return fontRenderer;
         }

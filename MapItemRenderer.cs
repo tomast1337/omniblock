@@ -12,9 +12,9 @@ namespace betareborn
         private int[] field_28159_a = new int[16384];
         private int field_28158_b;
         private GameOptions field_28161_c;
-        private FontRenderer field_28160_d;
+        private TextRenderer field_28160_d;
 
-        public MapItemRenderer(FontRenderer var1, GameOptions var2, TextureManager var3)
+        public MapItemRenderer(TextRenderer var1, GameOptions var2, TextureManager var3)
         {
             field_28161_c = var2;
             field_28160_d = var1;

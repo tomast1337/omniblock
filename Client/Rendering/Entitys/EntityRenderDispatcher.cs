@@ -14,7 +14,7 @@ namespace betareborn.Client.Rendering.Entitys
     {
         private Dictionary<Class, EntityRenderer> entityRenderMap = [];
         public static EntityRenderDispatcher instance = new EntityRenderDispatcher();
-        private FontRenderer fontRenderer;
+        private TextRenderer fontRenderer;
         public static double offsetX;
         public static double offsetY;
         public static double offsetZ;
@@ -88,7 +88,7 @@ namespace betareborn.Client.Rendering.Entitys
             return getEntityClassRenderObject(var1.getClass());
         }
 
-        public void cacheActiveRenderInfo(World var1, TextureManager var2, FontRenderer var3, EntityLiving var4, GameOptions var5, float var6)
+        public void cacheActiveRenderInfo(World var1, TextureManager var2, TextRenderer var3, EntityLiving var4, GameOptions var5, float var6)
         {
             world = var1;
             textureManager = var2;
@@ -152,7 +152,7 @@ namespace betareborn.Client.Rendering.Entitys
             return var7 * var7 + var9 * var9 + var11 * var11;
         }
 
-        public FontRenderer getTextRenderer()
+        public TextRenderer getTextRenderer()
         {
             return fontRenderer;
         }

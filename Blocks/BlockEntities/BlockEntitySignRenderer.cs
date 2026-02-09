@@ -52,7 +52,7 @@ namespace betareborn.Blocks.BlockEntities
             GLManager.GL.Scale(var10, -var10, -var10);
             signModel.func_887_a();
             GLManager.GL.PopMatrix();
-            FontRenderer var17 = getFontRenderer();
+            TextRenderer var17 = getFontRenderer();
             var12 = (float)(1.0D / 60.0D) * var10;
             GLManager.GL.Translate(0.0F, 0.5F * var10, 0.07F * var10);
             GLManager.GL.Scale(var12, -var12, var12);
