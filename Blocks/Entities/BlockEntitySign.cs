@@ -1,5 +1,6 @@
 using betareborn.NBT;
-using betareborn.Packets;
+using betareborn.Network.Packets;
+using betareborn.Network.Packets.Play;
 using java.lang;
 
 namespace betareborn.Blocks.Entities

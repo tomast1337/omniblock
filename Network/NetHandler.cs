@@ -1,4 +1,7 @@
-using betareborn.Packets;
+using betareborn.Network.Packets;
+using betareborn.Network.Packets.C2SPlay;
+using betareborn.Network.Packets.Play;
+using betareborn.Network.Packets.S2CPlay;
 
 namespace betareborn.Network
 {
@@ -6,7 +9,7 @@ namespace betareborn.Network
     {
         public abstract bool isServerHandler();
 
-        public virtual void handleMapChunk(Packet51MapChunk var1)
+        public virtual void handleMapChunk(ChunkDataS2CPacket var1)
         {
         }
 
@@ -18,182 +21,182 @@ namespace betareborn.Network
         {
         }
 
-        public virtual void handleKickDisconnect(Packet255KickDisconnect var1)
+        public virtual void handleKickDisconnect(DisconnectPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleLogin(Packet1Login var1)
+        public virtual void handleLogin(LoginHelloPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleFlying(Packet10Flying var1)
+        public virtual void handleFlying(PlayerMovePacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleMultiBlockChange(Packet52MultiBlockChange var1)
+        public virtual void handleMultiBlockChange(ChunkDeltaUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleBlockDig(Packet14BlockDig var1)
+        public virtual void handleBlockDig(PlayerActionC2SPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleBlockChange(Packet53BlockChange var1)
+        public virtual void handleBlockChange(BlockUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handlePreChunk(Packet50PreChunk var1)
+        public virtual void handlePreChunk(ChunkStatusUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleNamedEntitySpawn(Packet20NamedEntitySpawn var1)
+        public virtual void handleNamedEntitySpawn(PlayerSpawnS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleEntity(Packet30Entity var1)
+        public virtual void handleEntity(EntityS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleEntityTeleport(Packet34EntityTeleport var1)
+        public virtual void handleEntityTeleport(EntityPositionS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handlePlace(Packet15Place var1)
+        public virtual void handlePlace(PlayerInteractBlockC2SPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleBlockItemSwitch(Packet16BlockItemSwitch var1)
+        public virtual void handleBlockItemSwitch(UpdateSelectedSlotC2SPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleDestroyEntity(Packet29DestroyEntity var1)
+        public virtual void handleDestroyEntity(EntityDestroyS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handlePickupSpawn(Packet21PickupSpawn var1)
+        public virtual void handlePickupSpawn(ItemEntitySpawnS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleCollect(Packet22Collect var1)
+        public virtual void handleCollect(ItemPickupAnimationS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleChat(Packet3Chat var1)
+        public virtual void handleChat(ChatMessagePacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleVehicleSpawn(Packet23VehicleSpawn var1)
+        public virtual void handleVehicleSpawn(EntitySpawnS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleArmAnimation(Packet18Animation var1)
+        public virtual void handleArmAnimation(EntityAnimationPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_21147_a(Packet19EntityAction var1)
+        public virtual void func_21147_a(ClientCommandC2SPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleHandshake(Packet2Handshake var1)
+        public virtual void handleHandshake(HandshakePacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleMobSpawn(Packet24MobSpawn var1)
+        public virtual void handleMobSpawn(LivingEntitySpawnS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleUpdateTime(Packet4UpdateTime var1)
+        public virtual void handleUpdateTime(WorldTimeUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleSpawnPosition(Packet6SpawnPosition var1)
+        public virtual void handleSpawnPosition(PlayerSpawnPositionS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_6498_a(Packet28EntityVelocity var1)
+        public virtual void func_6498_a(EntityVelocityUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_21148_a(Packet40EntityMetadata var1)
+        public virtual void func_21148_a(EntityTrackerUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_6497_a(Packet39AttachEntity var1)
+        public virtual void func_6497_a(EntityVehicleSetS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleUseEntity(Packet7UseEntity var1)
+        public virtual void handleUseEntity(PlayerInteractEntityC2SPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_9447_a(Packet38EntityStatus var1)
+        public virtual void func_9447_a(EntityStatusS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleHealth(Packet8UpdateHealth var1)
+        public virtual void handleHealth(HealthUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_9448_a(Packet9Respawn var1)
+        public virtual void func_9448_a(PlayerRespawnPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_12245_a(Packet60Explosion var1)
+        public virtual void func_12245_a(ExplosionS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_20087_a(Packet100OpenWindow var1)
+        public virtual void func_20087_a(OpenScreenS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_20092_a(Packet101CloseWindow var1)
+        public virtual void func_20092_a(CloseScreenS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_20091_a(Packet102WindowClick var1)
+        public virtual void func_20091_a(ClickSlotC2SPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_20088_a(Packet103SetSlot var1)
+        public virtual void func_20088_a(ScreenHandlerSlotUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_20094_a(Packet104WindowItems var1)
+        public virtual void func_20094_a(InventoryS2CPacket var1)
         {
             registerPacket(var1);
         }
@@ -203,62 +206,62 @@ namespace betareborn.Network
             registerPacket(var1);
         }
 
-        public virtual void func_20090_a(Packet105UpdateProgressbar var1)
+        public virtual void func_20090_a(ScreenHandlerPropertyUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handlePlayerInventory(Packet5PlayerInventory var1)
+        public virtual void handlePlayerInventory(EntityEquipmentUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_20089_a(Packet106Transaction var1)
+        public virtual void func_20089_a(ScreenHandlerAcknowledgementPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_21146_a(Packet25EntityPainting var1)
+        public virtual void func_21146_a(PaintingEntitySpawnS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleNotePlay(Packet54PlayNoteBlock var1)
+        public virtual void handleNotePlay(PlayNoteSoundS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_27245_a(Packet200Statistic var1)
+        public virtual void func_27245_a(IncreaseStatS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_22186_a(Packet17Sleep var1)
+        public virtual void func_22186_a(PlayerSleepUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_22185_a(Packet27Position var1)
+        public virtual void func_22185_a(PlayerInputC2SPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_25118_a(Packet70Bed var1)
+        public virtual void func_25118_a(GameStateChangeS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void handleWeather(Packet71Weather var1)
+        public virtual void handleWeather(GlobalEntitySpawnS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_28116_a(Packet131MapData var1)
+        public virtual void func_28116_a(MapUpdateS2CPacket var1)
         {
             registerPacket(var1);
         }
 
-        public virtual void func_28115_a(Packet61DoorChange var1)
+        public virtual void func_28115_a(WorldEventS2CPacket var1)
         {
             registerPacket(var1);
         }

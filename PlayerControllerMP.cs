@@ -2,7 +2,7 @@ using betareborn.Blocks;
 using betareborn.Client.Network;
 using betareborn.Entities;
 using betareborn.Items;
-using betareborn.Packets;
+using betareborn.Network.Packets.C2SPlay;
 using betareborn.Worlds;
 
 namespace betareborn
@@ -53,7 +53,7 @@ namespace betareborn
         {
             if (!isHittingBlock || var1 != currentBlockX || var2 != currentBlockY || var3 != currentblockZ)
             {
-                netClientHandler.addToSendQueue(new Packet14BlockDig(0, var1, var2, var3, var4));
+                netClientHandler.addToSendQueue(new PlayerActionC2SPacket(0, var1, var2, var3, var4));
                 int var5 = mc.world.getBlockId(var1, var2, var3);
                 if (var5 > 0 && curBlockDamageMP == 0.0F)
                 {
@@ -115,7 +115,7 @@ namespace betareborn
                         if (curBlockDamageMP >= 1.0F)
                         {
                             isHittingBlock = false;
-                            netClientHandler.addToSendQueue(new Packet14BlockDig(2, var1, var2, var3, var4));
+                            netClientHandler.addToSendQueue(new PlayerActionC2SPacket(2, var1, var2, var3, var4));
                             sendBlockRemoved(var1, var2, var3, var4);
                             curBlockDamageMP = 0.0F;
                             prevBlockDamageMP = 0.0F;
@@ -171,7 +171,7 @@ namespace betareborn
             if (var1 != currentPlayerItem)
             {
                 currentPlayerItem = var1;
-                netClientHandler.addToSendQueue(new Packet16BlockItemSwitch(currentPlayerItem));
+                netClientHandler.addToSendQueue(new UpdateSelectedSlotC2SPacket(currentPlayerItem));
             }
 
         }
@@ -179,7 +179,7 @@ namespace betareborn
         public override bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new Packet15Place(var4, var5, var6, var7, var1.inventory.getCurrentItem()));
+            netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(var4, var5, var6, var7, var1.inventory.getCurrentItem()));
             bool var8 = base.sendPlaceBlock(var1, var2, var3, var4, var5, var6, var7);
             return var8;
         }
@@ -187,7 +187,7 @@ namespace betareborn
         public override bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new Packet15Place(-1, -1, -1, 255, var1.inventory.getCurrentItem()));
+            netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(-1, -1, -1, 255, var1.inventory.getCurrentItem()));
             bool var4 = base.sendUseItem(var1, var2, var3);
             return var4;
         }
@@ -200,14 +200,14 @@ namespace betareborn
         public override void attackEntity(EntityPlayer var1, Entity var2)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new Packet7UseEntity(var1.entityId, var2.entityId, 1));
+            netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.entityId, var2.entityId, 1));
             var1.attack(var2);
         }
 
         public override void interactWithEntity(EntityPlayer var1, Entity var2)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new Packet7UseEntity(var1.entityId, var2.entityId, 0));
+            netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.entityId, var2.entityId, 0));
             var1.interact(var2);
         }
 
@@ -215,7 +215,7 @@ namespace betareborn
         {
             short var6 = var5.craftingInventory.nextRevision(var5.inventory);
             ItemStack var7 = base.func_27174_a(var1, var2, var3, var4, var5);
-            netClientHandler.addToSendQueue(new Packet102WindowClick(var1, var2, var3, var4, var7, var6));
+            netClientHandler.addToSendQueue(new ClickSlotC2SPacket(var1, var2, var3, var4, var7, var6));
             return var7;
         }
 

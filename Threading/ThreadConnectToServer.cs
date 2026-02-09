@@ -1,6 +1,6 @@
 using betareborn.Client.Guis;
 using betareborn.Client.Network;
-using betareborn.Packets;
+using betareborn.Network.Packets;
 using java.net;
 
 namespace betareborn.Threading
@@ -31,7 +31,7 @@ namespace betareborn.Threading
                     return;
                 }
 
-                GuiConnecting.getNetClientHandler(connectingGui).addToSendQueue(new Packet2Handshake(mc.session.username));
+                GuiConnecting.getNetClientHandler(connectingGui).addToSendQueue(new HandshakePacket(mc.session.username));
             }
             catch (UnknownHostException var2)
             {

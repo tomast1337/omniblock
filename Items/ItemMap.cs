@@ -1,6 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Entities;
-using betareborn.Packets;
+using betareborn.Network.Packets;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using betareborn.Worlds.Chunks;

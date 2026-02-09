@@ -1,5 +1,5 @@
 using betareborn.Items;
-using betareborn.Packets;
+using betareborn.Network.Packets;
 using betareborn.Util.Maths;
 using java.io;
 using java.lang;

@@ -1,7 +1,7 @@
 using betareborn.Client.Chunks;
 using betareborn.Client.Network;
 using betareborn.Entities;
-using betareborn.Packets;
+using betareborn.Network.Packets.Play;
 using betareborn.Util;
 using betareborn.Util.Maths;
 using betareborn.Worlds.Chunks;
@@ -256,7 +256,7 @@ namespace betareborn.Worlds
 
         public override void sendQuittingDisconnectingPacket()
         {
-            networkHandler.sendPacketAndDisconnect(new Packet255KickDisconnect("Quitting"));
+            networkHandler.sendPacketAndDisconnect(new DisconnectPacket("Quitting"));
         }
 
         protected override void updateWeather()

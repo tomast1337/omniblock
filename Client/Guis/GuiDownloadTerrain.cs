@@ -1,6 +1,6 @@
 using betareborn.Client.Network;
 using betareborn.Client.Resource.Language;
-using betareborn.Packets;
+using betareborn.Network.Packets.Play;
 
 namespace betareborn.Client.Guis
 {
@@ -30,7 +30,7 @@ namespace betareborn.Client.Guis
             ++updateCounter;
             if (updateCounter % 20 == 0)
             {
-                netHandler.addToSendQueue(new Packet0KeepAlive());
+                netHandler.addToSendQueue(new KeepAlivePacket());
             }
 
             if (netHandler != null)

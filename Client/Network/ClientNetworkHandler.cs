@@ -5,7 +5,9 @@ using betareborn.Entities;
 using betareborn.Inventorys;
 using betareborn.Items;
 using betareborn.Network;
-using betareborn.Packets;
+using betareborn.Network.Packets;
+using betareborn.Network.Packets.Play;
+using betareborn.Network.Packets.S2CPlay;
 using betareborn.Screens;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
@@ -46,7 +48,7 @@ namespace betareborn.Client.Network
             netManager.interrupt();
         }
 
-        public override void handleLogin(Packet1Login var1)
+        public override void handleLogin(LoginHelloPacket var1)
         {
             mc.playerController = new PlayerControllerMP(mc, this);
             mc.statFileWriter.readStat(Stats.Stats.joinMultiplayerStat, 1);
@@ -58,7 +60,7 @@ namespace betareborn.Client.Network
             mc.player.entityId = var1.protocolVersion;
         }
 
-        public override void handlePickupSpawn(Packet21PickupSpawn var1)
+        public override void handlePickupSpawn(ItemEntitySpawnS2CPacket var1)
         {
             double var2 = var1.xPosition / 32.0D;
             double var4 = var1.yPosition / 32.0D;
@@ -73,7 +75,7 @@ namespace betareborn.Client.Network
             worldClient.forceEntity(var1.entityId, var8);
         }
 
-        public override void handleVehicleSpawn(Packet23VehicleSpawn var1)
+        public override void handleVehicleSpawn(EntitySpawnS2CPacket var1)
         {
             double var2 = var1.xPosition / 32.0D;
             double var4 = var1.yPosition / 32.0D;
@@ -166,7 +168,7 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void handleWeather(Packet71Weather var1)
+        public override void handleWeather(GlobalEntitySpawnS2CPacket var1)
         {
             double var2 = var1.field_27053_b / 32.0D;
             double var4 = var1.field_27057_c / 32.0D;
@@ -190,13 +192,13 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void func_21146_a(Packet25EntityPainting var1)
+        public override void func_21146_a(PaintingEntitySpawnS2CPacket var1)
         {
             EntityPainting var2 = new EntityPainting(worldClient, var1.xPosition, var1.yPosition, var1.zPosition, var1.direction, var1.title);
             worldClient.forceEntity(var1.entityId, var2);
         }
 
-        public override void func_6498_a(Packet28EntityVelocity var1)
+        public override void func_6498_a(EntityVelocityUpdateS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null)
@@ -205,7 +207,7 @@ namespace betareborn.Client.Network
             }
         }
 
-        public override void func_21148_a(Packet40EntityMetadata var1)
+        public override void func_21148_a(EntityTrackerUpdateS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null && var1.func_21047_b() != null)
@@ -215,7 +217,7 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void handleNamedEntitySpawn(Packet20NamedEntitySpawn var1)
+        public override void handleNamedEntitySpawn(PlayerSpawnS2CPacket var1)
         {
             double var2 = var1.xPosition / 32.0D;
             double var4 = var1.yPosition / 32.0D;
@@ -240,7 +242,7 @@ namespace betareborn.Client.Network
             worldClient.forceEntity(var1.entityId, var10);
         }
 
-        public override void handleEntityTeleport(Packet34EntityTeleport var1)
+        public override void handleEntityTeleport(EntityPositionS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null)
@@ -257,7 +259,7 @@ namespace betareborn.Client.Network
             }
         }
 
-        public override void handleEntity(Packet30Entity var1)
+        public override void handleEntity(EntityS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null)
@@ -274,12 +276,12 @@ namespace betareborn.Client.Network
             }
         }
 
-        public override void handleDestroyEntity(Packet29DestroyEntity var1)
+        public override void handleDestroyEntity(EntityDestroyS2CPacket var1)
         {
             worldClient.removeEntityFromWorld(var1.entityId);
         }
 
-        public override void handleFlying(Packet10Flying var1)
+        public override void handleFlying(PlayerMovePacket var1)
         {
             ClientPlayerEntity var2 = mc.player;
             double var3 = var2.posX;
@@ -319,12 +321,12 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void handlePreChunk(Packet50PreChunk var1)
+        public override void handlePreChunk(ChunkStatusUpdateS2CPacket var1)
         {
             worldClient.updateChunk(var1.xPosition, var1.yPosition, var1.mode);
         }
 
-        public override void handleMultiBlockChange(Packet52MultiBlockChange var1)
+        public override void handleMultiBlockChange(ChunkDeltaUpdateS2CPacket var1)
         {
             Chunk var2 = worldClient.getChunk(var1.xPosition, var1.zPosition);
             int var3 = var1.xPosition * 16;
@@ -345,18 +347,18 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void handleMapChunk(Packet51MapChunk var1)
+        public override void handleMapChunk(ChunkDataS2CPacket var1)
         {
             worldClient.clearBlockResets(var1.xPosition, var1.yPosition, var1.zPosition, var1.xPosition + var1.xSize - 1, var1.yPosition + var1.ySize - 1, var1.zPosition + var1.zSize - 1);
             worldClient.setChunkData(var1.xPosition, var1.yPosition, var1.zPosition, var1.xSize, var1.ySize, var1.zSize, var1.chunk);
         }
 
-        public override void handleBlockChange(Packet53BlockChange var1)
+        public override void handleBlockChange(BlockUpdateS2CPacket var1)
         {
             worldClient.setBlockWithMetaFromPacket(var1.xPosition, var1.yPosition, var1.zPosition, var1.type, var1.metadata);
         }
 
-        public override void handleKickDisconnect(Packet255KickDisconnect var1)
+        public override void handleKickDisconnect(DisconnectPacket var1)
         {
             netManager.disconnect("disconnect.kicked", new object[0]);
             disconnected = true;
@@ -391,7 +393,7 @@ namespace betareborn.Client.Network
             }
         }
 
-        public override void handleCollect(Packet22Collect var1)
+        public override void handleCollect(ItemPickupAnimationS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.collectedEntityId);
             object var3 = (EntityLiving)getEntityByID(var1.collectorEntityId);
@@ -409,12 +411,12 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void handleChat(Packet3Chat var1)
+        public override void handleChat(ChatMessagePacket var1)
         {
             mc.ingameGUI.addChatMessage(var1.message);
         }
 
-        public override void handleArmAnimation(Packet18Animation var1)
+        public override void handleArmAnimation(EntityAnimationPacket var1)
         {
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null)
@@ -443,7 +445,7 @@ namespace betareborn.Client.Network
             }
         }
 
-        public override void func_22186_a(Packet17Sleep var1)
+        public override void func_22186_a(PlayerSleepUpdateS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.field_22045_a);
             if (var2 != null)
@@ -457,11 +459,11 @@ namespace betareborn.Client.Network
             }
         }
 
-        public override void handleHandshake(Packet2Handshake var1)
+        public override void handleHandshake(HandshakePacket var1)
         {
             if (var1.username.Equals("-"))
             {
-                addToSendQueue(new Packet1Login(mc.session.username, 14));
+                addToSendQueue(new LoginHelloPacket(mc.session.username, 14));
             }
             else
             {
@@ -474,7 +476,7 @@ namespace betareborn.Client.Network
                     //TODO: AUTH
                     if (var4 == null || var4.Equals("ok", StringComparison.OrdinalIgnoreCase))
                     {
-                        addToSendQueue(new Packet1Login(mc.session.username, 14));
+                        addToSendQueue(new LoginHelloPacket(mc.session.username, 14));
                     }
                     else
                     {
@@ -497,7 +499,7 @@ namespace betareborn.Client.Network
             netManager.disconnect("disconnect.closed", new object[0]);
         }
 
-        public override void handleMobSpawn(Packet24MobSpawn var1)
+        public override void handleMobSpawn(LivingEntitySpawnS2CPacket var1)
         {
             double var2 = var1.xPosition / 32.0D;
             double var4 = var1.yPosition / 32.0D;
@@ -520,18 +522,18 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void handleUpdateTime(Packet4UpdateTime var1)
+        public override void handleUpdateTime(WorldTimeUpdateS2CPacket var1)
         {
             mc.world.setWorldTime(var1.time);
         }
 
-        public override void handleSpawnPosition(Packet6SpawnPosition var1)
+        public override void handleSpawnPosition(PlayerSpawnPositionS2CPacket var1)
         {
             mc.player.setSpawnPos(new Vec3i(var1.xPosition, var1.yPosition, var1.zPosition));
             mc.world.getWorldInfo().setSpawn(var1.xPosition, var1.yPosition, var1.zPosition);
         }
 
-        public override void func_6497_a(Packet39AttachEntity var1)
+        public override void func_6497_a(EntityVehicleSetS2CPacket var1)
         {
             object var2 = getEntityByID(var1.entityId);
             Entity var3 = getEntityByID(var1.vehicleEntityId);
@@ -546,7 +548,7 @@ namespace betareborn.Client.Network
             }
         }
 
-        public override void func_9447_a(Packet38EntityStatus var1)
+        public override void func_9447_a(EntityStatusS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.entityId);
             if (var2 != null)
@@ -561,12 +563,12 @@ namespace betareborn.Client.Network
             return var1 == mc.player.entityId ? mc.player : worldClient.getEntity(var1);
         }
 
-        public override void handleHealth(Packet8UpdateHealth var1)
+        public override void handleHealth(HealthUpdateS2CPacket var1)
         {
             mc.player.setHealth(var1.healthMP);
         }
 
-        public override void func_9448_a(Packet9Respawn var1)
+        public override void func_9448_a(PlayerRespawnPacket var1)
         {
             if (var1.field_28048_a != mc.player.dimension)
             {
@@ -581,14 +583,14 @@ namespace betareborn.Client.Network
             mc.respawn(true, var1.field_28048_a);
         }
 
-        public override void func_12245_a(Packet60Explosion var1)
+        public override void func_12245_a(ExplosionS2CPacket var1)
         {
             Explosion var2 = new Explosion(mc.world, null, var1.explosionX, var1.explosionY, var1.explosionZ, var1.explosionSize);
             var2.destroyedBlockPositions = var1.destroyedBlockPositions;
             var2.doExplosionB(true);
         }
 
-        public override void func_20087_a(Packet100OpenWindow var1)
+        public override void func_20087_a(OpenScreenS2CPacket var1)
         {
             if (var1.inventoryType == 0)
             {
@@ -617,7 +619,7 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void func_20088_a(Packet103SetSlot var1)
+        public override void func_20088_a(ScreenHandlerSlotUpdateS2CPacket var1)
         {
             if (var1.windowId == -1)
             {
@@ -640,7 +642,7 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void func_20089_a(Packet106Transaction var1)
+        public override void func_20089_a(ScreenHandlerAcknowledgementPacket var1)
         {
             ScreenHandler var2 = null;
             if (var1.windowId == 0)
@@ -661,13 +663,13 @@ namespace betareborn.Client.Network
                 else
                 {
                     var2.onAcknowledgementDenied(var1.field_20028_b);
-                    addToSendQueue(new Packet106Transaction(var1.windowId, var1.field_20028_b, true));
+                    addToSendQueue(new ScreenHandlerAcknowledgementPacket(var1.windowId, var1.field_20028_b, true));
                 }
             }
 
         }
 
-        public override void func_20094_a(Packet104WindowItems var1)
+        public override void func_20094_a(InventoryS2CPacket var1)
         {
             if (var1.windowId == 0)
             {
@@ -700,7 +702,7 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void func_20090_a(Packet105UpdateProgressbar var1)
+        public override void func_20090_a(ScreenHandlerPropertyUpdateS2CPacket var1)
         {
             registerPacket(var1);
             if (mc.player.craftingInventory != null && mc.player.craftingInventory.syncId == var1.windowId)
@@ -710,7 +712,7 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void handlePlayerInventory(Packet5PlayerInventory var1)
+        public override void handlePlayerInventory(EntityEquipmentUpdateS2CPacket var1)
         {
             Entity var2 = getEntityByID(var1.entityID);
             if (var2 != null)
@@ -720,22 +722,22 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void func_20092_a(Packet101CloseWindow var1)
+        public override void func_20092_a(CloseScreenS2CPacket var1)
         {
             mc.player.closeScreen();
         }
 
-        public override void handleNotePlay(Packet54PlayNoteBlock var1)
+        public override void handleNotePlay(PlayNoteSoundS2CPacket var1)
         {
             mc.world.playNoteBlockActionAt(var1.xLocation, var1.yLocation, var1.zLocation, var1.instrumentType, var1.pitch);
         }
 
-        public override void func_25118_a(Packet70Bed var1)
+        public override void func_25118_a(GameStateChangeS2CPacket var1)
         {
             int var2 = var1.field_25019_b;
-            if (var2 >= 0 && var2 < Packet70Bed.field_25020_a.Length && Packet70Bed.field_25020_a[var2] != null)
+            if (var2 >= 0 && var2 < GameStateChangeS2CPacket.field_25020_a.Length && GameStateChangeS2CPacket.field_25020_a[var2] != null)
             {
-                mc.player.sendMessage(Packet70Bed.field_25020_a[var2]);
+                mc.player.sendMessage(GameStateChangeS2CPacket.field_25020_a[var2]);
             }
 
             if (var2 == 1)
@@ -751,7 +753,7 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void func_28116_a(Packet131MapData var1)
+        public override void func_28116_a(MapUpdateS2CPacket var1)
         {
             if (var1.field_28055_a == Item.MAP.id)
             {
@@ -764,12 +766,12 @@ namespace betareborn.Client.Network
 
         }
 
-        public override void func_28115_a(Packet61DoorChange var1)
+        public override void func_28115_a(WorldEventS2CPacket var1)
         {
             mc.world.worldEvent(var1.field_28050_a, var1.field_28053_c, var1.field_28052_d, var1.field_28051_e, var1.field_28049_b);
         }
 
-        public override void func_27245_a(Packet200Statistic var1)
+        public override void func_27245_a(IncreaseStatS2CPacket var1)
         {
             ((EntityClientPlayerMP)mc.player).func_27027_b(Stats.Stats.getStatById(var1.field_27052_a), var1.field_27051_b);
         }

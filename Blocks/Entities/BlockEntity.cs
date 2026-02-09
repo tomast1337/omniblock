@@ -1,5 +1,5 @@
 using betareborn.NBT;
-using betareborn.Packets;
+using betareborn.Network.Packets;
 using betareborn.Worlds;
 using java.lang;
 using java.util;

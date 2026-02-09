@@ -1,5 +1,5 @@
 ﻿using betareborn.Entities;
-using betareborn.Packets;
+using betareborn.Network.Packets;
 using betareborn.Worlds;
 
 namespace betareborn.Items

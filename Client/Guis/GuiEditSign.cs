@@ -1,9 +1,9 @@
 using betareborn.Blocks;
-using betareborn.Packets;
-using betareborn.Util;
-using betareborn.Client.Rendering.Core;
-using betareborn.Client.Rendering.Blocks.Entities;
 using betareborn.Blocks.Entities;
+using betareborn.Client.Rendering.Blocks.Entities;
+using betareborn.Client.Rendering.Core;
+using betareborn.Network.Packets.Play;
+using betareborn.Util;
 
 namespace betareborn.Client.Guis
 {

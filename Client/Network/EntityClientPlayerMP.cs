@@ -1,5 +1,7 @@
 using betareborn.Entities;
-using betareborn.Packets;
+using betareborn.Network.Packets.C2SPlay;
+using betareborn.Network.Packets.Play;
+using betareborn.Network.Packets.S2CPlay;
 using betareborn.Stats;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
@@ -59,11 +61,11 @@ namespace betareborn.Client.Network
             {
                 if (var1)
                 {
-                    sendQueue.addToSendQueue(new Packet19EntityAction(this, 1));
+                    sendQueue.addToSendQueue(new ClientCommandC2SPacket(this, 1));
                 }
                 else
                 {
-                    sendQueue.addToSendQueue(new Packet19EntityAction(this, 2));
+                    sendQueue.addToSendQueue(new ClientCommandC2SPacket(this, 2));
                 }
 
                 wasSneaking = var1;
@@ -81,33 +83,33 @@ namespace betareborn.Client.Network
             {
                 if (var15)
                 {
-                    sendQueue.addToSendQueue(new Packet11PlayerPosition(motionX, -999.0D, -999.0D, motionZ, onGround));
+                    sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(motionX, -999.0D, -999.0D, motionZ, onGround));
                 }
                 else
                 {
-                    sendQueue.addToSendQueue(new Packet13PlayerLookMove(motionX, -999.0D, -999.0D, motionZ, rotationYaw, rotationPitch, onGround));
+                    sendQueue.addToSendQueue(new PlayerMoveFullPacket(motionX, -999.0D, -999.0D, motionZ, rotationYaw, rotationPitch, onGround));
                 }
 
                 var14 = false;
             }
             else if (var14 && var15)
             {
-                sendQueue.addToSendQueue(new Packet13PlayerLookMove(posX, boundingBox.minY, posY, posZ, rotationYaw, rotationPitch, onGround));
+                sendQueue.addToSendQueue(new PlayerMoveFullPacket(posX, boundingBox.minY, posY, posZ, rotationYaw, rotationPitch, onGround));
                 field_12242_bI = 0;
             }
             else if (var14)
             {
-                sendQueue.addToSendQueue(new Packet11PlayerPosition(posX, boundingBox.minY, posY, posZ, onGround));
+                sendQueue.addToSendQueue(new PlayerMovePositionAndOnGroundPacket(posX, boundingBox.minY, posY, posZ, onGround));
                 field_12242_bI = 0;
             }
             else if (var15)
             {
-                sendQueue.addToSendQueue(new Packet12PlayerLook(rotationYaw, rotationPitch, onGround));
+                sendQueue.addToSendQueue(new PlayerMoveLookAndOnGroundPacket(rotationYaw, rotationPitch, onGround));
                 field_12242_bI = 0;
             }
             else
             {
-                sendQueue.addToSendQueue(new Packet10Flying(onGround));
+                sendQueue.addToSendQueue(new PlayerMovePacket(onGround));
                 if (field_9382_bF == onGround && field_12242_bI <= 200)
                 {
                     ++field_12242_bI;
@@ -137,7 +139,7 @@ namespace betareborn.Client.Network
 
         public override void dropSelectedItem()
         {
-            sendQueue.addToSendQueue(new Packet14BlockDig(4, 0, 0, 0, 0));
+            sendQueue.addToSendQueue(new PlayerActionC2SPacket(4, 0, 0, 0, 0));
         }
 
         private void sendInventoryChanged()
@@ -150,19 +152,19 @@ namespace betareborn.Client.Network
 
         public override void sendChatMessage(string var1)
         {
-            sendQueue.addToSendQueue(new Packet3Chat(var1));
+            sendQueue.addToSendQueue(new ChatMessagePacket(var1));
         }
 
         public override void swingHand()
         {
             base.swingHand();
-            sendQueue.addToSendQueue(new Packet18Animation(this, 1));
+            sendQueue.addToSendQueue(new EntityAnimationPacket(this, 1));
         }
 
         public override void respawn()
         {
             sendInventoryChanged();
-            sendQueue.addToSendQueue(new Packet9Respawn((sbyte)dimension));
+            sendQueue.addToSendQueue(new PlayerRespawnPacket((sbyte)dimension));
         }
 
         protected override void applyDamage(int var1)
@@ -172,7 +174,7 @@ namespace betareborn.Client.Network
 
         public override void closeScreen()
         {
-            sendQueue.addToSendQueue(new Packet101CloseWindow(craftingInventory.syncId));
+            sendQueue.addToSendQueue(new CloseScreenS2CPacket(craftingInventory.syncId));
             inventory.setItemStack(null);
             base.closeScreen();
         }

@@ -1,4 +1,4 @@
-using betareborn.Packets;
+using betareborn.Network.Packets;
 using betareborn.Threading;
 using java.io;
 using java.net;
@@ -94,7 +94,7 @@ namespace betareborn.Network
                 int var10001;
                 Packet var2;
                 object var3;
-                if (!sendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)sendQueue.get(0)).creationTimeMillis >= lag))
+                if (!sendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)sendQueue.get(0)).creationTime >= lag))
                 {
                     var3 = lck;
                     lock (var3)
@@ -103,14 +103,14 @@ namespace betareborn.Network
                         sendQueueSize -= var2.size() + 1;
                     }
 
-                    Packet.writePacket(var2, outputStream);
+                    Packet.write(var2, outputStream);
                     var10000 = TOTAL_SEND_SIZE;
-                    var10001 = var2.getPacketId();
+                    var10001 = var2.getRawId();
                     var10000[var10001] += var2.size() + 1;
                     var1 = true;
                 }
 
-                if (delay-- <= 0 && !delayedSendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)delayedSendQueue.get(0)).creationTimeMillis >= lag))
+                if (delay-- <= 0 && !delayedSendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)delayedSendQueue.get(0)).creationTime >= lag))
                 {
                     var3 = lck;
                     lock (var3)
@@ -119,9 +119,9 @@ namespace betareborn.Network
                         sendQueueSize -= var2.size() + 1;
                     }
 
-                    Packet.writePacket(var2, outputStream);
+                    Packet.write(var2, outputStream);
                     var10000 = TOTAL_SEND_SIZE;
-                    var10001 = var2.getPacketId();
+                    var10001 = var2.getRawId();
                     var10000[var10001] += var2.size() + 1;
                     delay = 0;
                     var1 = true;
@@ -152,11 +152,11 @@ namespace betareborn.Network
 
             try
             {
-                Packet var2 = Packet.readPacket(inputStream, networkHandler.isServerHandler());
+                Packet var2 = Packet.read(inputStream, networkHandler.isServerHandler());
                 if (var2 != null)
                 {
                     int[] var10000 = TOTAL_READ_SIZE;
-                    int var10001 = var2.getPacketId();
+                    int var10001 = var2.getRawId();
                     var10000[var10001] += var2.size() + 1;
                     readQueue.add(var2);
                     var1 = true;

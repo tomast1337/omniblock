@@ -1,6 +1,6 @@
 using betareborn.Client.Network;
 using betareborn.Client.Resource.Language;
-using betareborn.Packets;
+using betareborn.Network.Packets.C2SPlay;
 
 namespace betareborn.Client.Guis
 {
@@ -65,7 +65,7 @@ namespace betareborn.Client.Guis
             if (mc.player is EntityClientPlayerMP)
             {
                 ClientNetworkHandler var1 = ((EntityClientPlayerMP)mc.player).sendQueue;
-                var1.addToSendQueue(new Packet19EntityAction(mc.player, 3));
+                var1.addToSendQueue(new ClientCommandC2SPacket(mc.player, 3));
             }
 
         }
