@@ -1,8 +1,8 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Client;
-using betareborn.Client.Rendering.Chunks;
 using betareborn.Client.Rendering.Core;
+using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Profiling;
 using betareborn.Util.Hit;
@@ -13,7 +13,7 @@ using betareborn.Worlds.Chunks;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn.Entities
+namespace betareborn.Client.Rendering
 {
     public class GameRenderer
     {
@@ -52,7 +52,7 @@ namespace betareborn.Entities
 
         public GameRenderer(Minecraft mc)
         {
-            this.client = mc;
+            client = mc;
             itemRenderer = new HeldItemRenderer(mc);
         }
 
@@ -70,7 +70,7 @@ namespace betareborn.Entities
             }
 
             float var1 = client.world.getLuminance(MathHelper.floor_double(client.camera.posX), MathHelper.floor_double(client.camera.posY), MathHelper.floor_double(client.camera.posZ));
-            float var2 = (float)(3 - client.options.renderDistance) / 3.0F;
+            float var2 = (3 - client.options.renderDistance) / 3.0F;
             float var3 = var1 * (1.0F - var2) + var2;
             viewBob += (var3 - viewBob) * 0.1F;
             ++ticks;
@@ -170,7 +170,7 @@ namespace betareborn.Entities
 
             if (var2.health <= 0)
             {
-                float var4 = (float)var2.deathTime + tickDelta;
+                float var4 = var2.deathTime + tickDelta;
                 var3 /= (1.0F - 500.0F / (var4 + 500.0F)) * 2.0F + 1.0F;
             }
 
@@ -180,17 +180,17 @@ namespace betareborn.Entities
         private void applyDamageTiltEffect(float tickDelta)
         {
             EntityLiving var2 = client.camera;
-            float var3 = (float)var2.hurtTime - tickDelta;
+            float var3 = var2.hurtTime - tickDelta;
             float var4;
             if (var2.health <= 0)
             {
-                var4 = (float)var2.deathTime + tickDelta;
+                var4 = var2.deathTime + tickDelta;
                 GLManager.GL.Rotate(40.0F - 8000.0F / (var4 + 200.0F), 0.0F, 0.0F, 1.0F);
             }
 
             if (var3 >= 0.0F)
             {
-                var3 /= (float)var2.maxHurtTime;
+                var3 /= var2.maxHurtTime;
                 var3 = MathHelper.sin(var3 * var3 * var3 * var3 * (float)java.lang.Math.PI);
                 var4 = var2.attackedAtYaw;
                 GLManager.GL.Rotate(-var4, 0.0F, 1.0F, 0.0F);
@@ -234,7 +234,7 @@ namespace betareborn.Entities
                     {
                         int var11 = client.world.getBlockMeta(MathHelper.floor_double(var2.posX), MathHelper.floor_double(var2.posY), MathHelper.floor_double(var2.posZ));
                         int var12 = var11 & 3;
-                        GLManager.GL.Rotate((float)(var12 * 90), 0.0F, 1.0F, 0.0F);
+                        GLManager.GL.Rotate(var12 * 90, 0.0F, 1.0F, 0.0F);
                     }
 
                     GLManager.GL.Rotate(var2.prevRotationYaw + (var2.rotationYaw - var2.prevRotationYaw) * tickDelta + 180.0F, 0.0F, -1.0F, 0.0F);
@@ -250,7 +250,7 @@ namespace betareborn.Entities
                 {
                     var28 = prevThirdPersonYaw + (thirdPersonYaw - prevThirdPersonYaw) * tickDelta;
                     var13 = prevThirdPersonPitch + (thirdPersonPitch - prevThirdPersonPitch) * tickDelta;
-                    GLManager.GL.Translate(0.0F, 0.0F, (float)(-var27));
+                    GLManager.GL.Translate(0.0F, 0.0F, (float)-var27);
                     GLManager.GL.Rotate(var13, 1.0F, 0.0F, 0.0F);
                     GLManager.GL.Rotate(var28, 0.0F, 1.0F, 0.0F);
                 }
@@ -260,13 +260,13 @@ namespace betareborn.Entities
                     var13 = var2.rotationPitch;
                     double var14 = (double)(-MathHelper.sin(var28 / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(var13 / 180.0F * (float)java.lang.Math.PI)) * var27;
                     double var16 = (double)(MathHelper.cos(var28 / 180.0F * (float)java.lang.Math.PI) * MathHelper.cos(var13 / 180.0F * (float)java.lang.Math.PI)) * var27;
-                    double var18 = (double)(-MathHelper.sin(var13 / 180.0F * (float)java.lang.Math.PI)) * var27;
+                    double var18 = (double)-MathHelper.sin(var13 / 180.0F * (float)java.lang.Math.PI) * var27;
 
                     for (int var20 = 0; var20 < 8; ++var20)
                     {
-                        float var21 = (float)((var20 & 1) * 2 - 1);
-                        float var22 = (float)((var20 >> 1 & 1) * 2 - 1);
-                        float var23 = (float)((var20 >> 2 & 1) * 2 - 1);
+                        float var21 = (var20 & 1) * 2 - 1;
+                        float var22 = (var20 >> 1 & 1) * 2 - 1;
+                        float var23 = (var20 >> 2 & 1) * 2 - 1;
                         var21 *= 0.1F;
                         var22 *= 0.1F;
                         var23 *= 0.1F;
@@ -283,7 +283,7 @@ namespace betareborn.Entities
 
                     GLManager.GL.Rotate(var2.rotationPitch - var13, 1.0F, 0.0F, 0.0F);
                     GLManager.GL.Rotate(var2.rotationYaw - var28, 0.0F, 1.0F, 0.0F);
-                    GLManager.GL.Translate(0.0F, 0.0F, (float)(-var27));
+                    GLManager.GL.Translate(0.0F, 0.0F, (float)-var27);
                     GLManager.GL.Rotate(var28 - var2.rotationYaw, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Rotate(var13 - var2.rotationPitch, 1.0F, 0.0F, 0.0F);
                 }
@@ -307,19 +307,19 @@ namespace betareborn.Entities
 
         private void renderWorld(float tickDelta)
         {
-            viewDistane = (float)(256 >> client.options.renderDistance);
+            viewDistane = 256 >> client.options.renderDistance;
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
 
             if (cameraZoom != 1.0D)
             {
-                GLManager.GL.Translate((float)cameraYaw, (float)(-cameraPitch), 0.0F);
+                GLManager.GL.Translate((float)cameraYaw, (float)-cameraPitch, 0.0F);
                 GLManager.GL.Scale(cameraZoom, cameraZoom, 1.0D);
-                GLU.gluPerspective(getFov(tickDelta), (float)client.displayWidth / (float)client.displayHeight, 0.05F, viewDistane * 2.0F);
+                GLU.gluPerspective(getFov(tickDelta), client.displayWidth / (float)client.displayHeight, 0.05F, viewDistane * 2.0F);
             }
             else
             {
-                GLU.gluPerspective(getFov(tickDelta), (float)client.displayWidth / (float)client.displayHeight, 0.05F, viewDistane * 2.0F);
+                GLU.gluPerspective(getFov(tickDelta), client.displayWidth / (float)client.displayHeight, 0.05F, viewDistane * 2.0F);
             }
 
             GLManager.GL.MatrixMode(GLEnum.Modelview);
@@ -336,9 +336,9 @@ namespace betareborn.Entities
             {
                 float var5 = 5.0F / (var4 * var4 + 5.0F) - var4 * 0.04F;
                 var5 *= var5;
-                GLManager.GL.Rotate(((float)ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
+                GLManager.GL.Rotate((ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
                 GLManager.GL.Scale(1.0F / var5, 1.0F, 1.0F);
-                GLManager.GL.Rotate(-((float)ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
+                GLManager.GL.Rotate(-(ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
             }
 
             applyCameraTransform(tickDelta);
@@ -393,8 +393,8 @@ namespace betareborn.Entities
                 client.mouseHelper.mouseXYChange();
                 float var2 = client.options.mouseSensitivity * 0.6F + 0.2F;
                 float var3 = var2 * var2 * var2 * 8.0F;
-                float var4 = (float)client.mouseHelper.deltaX * var3;
-                float var5 = (float)client.mouseHelper.deltaY * var3;
+                float var4 = client.mouseHelper.deltaX * var3;
+                float var5 = client.mouseHelper.deltaY * var3;
                 //we flip var6 because something is funky with the controls/mouse
                 int var6 = -1;
                 if (client.options.invertMouse)
@@ -408,7 +408,7 @@ namespace betareborn.Entities
                     var5 = mouseFilterYAxis.func_22386_a(var5, 0.05F * var3);
                 }
 
-                client.player.func_346_d(var4, var5 * (float)var6);
+                client.player.func_346_d(var4, var5 * var6);
             }
 
             if (!client.skipRenderWorld)
@@ -439,13 +439,13 @@ namespace betareborn.Entities
                     }
                     else
                     {
-                        renderFrame(tickDelta, lastFrameTime + (long)(1000000000 / var7));
+                        renderFrame(tickDelta, lastFrameTime + 1000000000 / var7);
                     }
                     Profiler.PopGroup();
 
                     if (client.options.limitFramerate == 2)
                     {
-                        var8 = (lastFrameTime + (long)(1000000000 / var7) - java.lang.System.nanoTime()) / 1000000L;
+                        var8 = (lastFrameTime + 1000000000 / var7 - java.lang.System.nanoTime()) / 1000000L;
                         if (var8 > 0L && var8 < 500L)
                         {
                             try
@@ -477,7 +477,7 @@ namespace betareborn.Entities
                     setupHudRender();
                     if (client.options.limitFramerate == 2)
                     {
-                        var8 = (lastFrameTime + (long)(1000000000 / var7) - java.lang.System.nanoTime()) / 1000000L;
+                        var8 = (lastFrameTime + 1000000000 / var7 - java.lang.System.nanoTime()) / 1000000L;
                         if (var8 < 0L)
                         {
                             var8 += 10L;
@@ -526,7 +526,7 @@ namespace betareborn.Entities
             Profiler.Stop("getMouseOver");
 
             EntityLiving var4 = client.camera;
-            ChunkRenderer var5 = client.terrainRenderer;
+            WorldRenderer var5 = client.terrainRenderer;
             ParticleManager var6 = client.particleManager;
             double var7 = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)tickDelta;
             double var9 = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)tickDelta;
@@ -640,7 +640,7 @@ namespace betareborn.Entities
 
             if (var1 != 0.0F)
             {
-                random.setSeed((long)ticks * 312987231L);
+                random.setSeed(ticks * 312987231L);
                 EntityLiving var2 = client.camera;
                 World var3 = client.world;
                 int var4 = MathHelper.floor_double(var2.posX);
@@ -666,19 +666,19 @@ namespace betareborn.Entities
                         {
                             if (Block.BLOCKS[var19].material == Material.LAVA)
                             {
-                                client.particleManager.addEffect(new EntitySmokeFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21), 0.0D, 0.0D, 0.0D));
+                                client.particleManager.addEffect(new EntitySmokeFX(var3, (double)(var16 + var20), (double)(var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)(var17 + var21), 0.0D, 0.0D, 0.0D));
                             }
                             else
                             {
                                 ++var14;
                                 if (random.nextInt(var14) == 0)
                                 {
-                                    var8 = (double)((float)var16 + var20);
-                                    var10 = (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY;
-                                    var12 = (double)((float)var17 + var21);
+                                    var8 = (double)(var16 + var20);
+                                    var10 = (double)(var18 + 0.1F) - Block.BLOCKS[var19].minY;
+                                    var12 = (double)(var17 + var21);
                                 }
 
-                                client.particleManager.addEffect(new EntityRainFX(var3, (double)((float)var16 + var20), (double)((float)var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)((float)var17 + var21)));
+                                client.particleManager.addEffect(new EntityRainFX(var3, (double)(var16 + var20), (double)(var18 + 0.1F) - Block.BLOCKS[var19].minY, (double)(var17 + var21)));
                             }
                         }
                     }
@@ -767,26 +767,26 @@ namespace betareborn.Entities
                             var26 = 1.0F;
                             if (var24 != var25)
                             {
-                                random.setSeed((long)(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761));
-                                float var27 = (float)ticks + tickDelta;
-                                float var28 = ((float)(ticks & 511) + tickDelta) / 512.0F;
+                                random.setSeed(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761);
+                                float var27 = ticks + tickDelta;
+                                float var28 = ((ticks & 511) + tickDelta) / 512.0F;
                                 float var29 = random.nextFloat() + var27 * 0.01F * (float)random.nextGaussian();
                                 float var30 = random.nextFloat() + var27 * (float)random.nextGaussian() * 0.001F;
-                                double var31 = (double)((float)var19 + 0.5F) - var3.posX;
-                                double var33 = (double)((float)var20 + 0.5F) - var3.posZ;
-                                float var35 = MathHelper.sqrt_double(var31 * var31 + var33 * var33) / (float)var16;
+                                double var31 = (double)(var19 + 0.5F) - var3.posX;
+                                double var33 = (double)(var20 + 0.5F) - var3.posZ;
+                                float var35 = MathHelper.sqrt_double(var31 * var31 + var33 * var33) / var16;
                                 var8.startDrawingQuads();
                                 float var36 = var4.getLuminance(var19, var23, var20);
                                 GLManager.GL.Color4(var36, var36, var36, ((1.0F - var35 * var35) * 0.3F + 0.5F) * var2);
                                 var8.setTranslationD(-var9 * 1.0D, -var11 * 1.0D, -var13 * 1.0D);
-                                var8.addVertexWithUV((double)(var19 + 0), (double)var24, (double)var20 + 0.5D, (double)(0.0F * var26 + var29), (double)((float)var24 * var26 / 4.0F + var28 * var26 + var30));
-                                var8.addVertexWithUV((double)(var19 + 1), (double)var24, (double)var20 + 0.5D, (double)(1.0F * var26 + var29), (double)((float)var24 * var26 / 4.0F + var28 * var26 + var30));
-                                var8.addVertexWithUV((double)(var19 + 1), (double)var25, (double)var20 + 0.5D, (double)(1.0F * var26 + var29), (double)((float)var25 * var26 / 4.0F + var28 * var26 + var30));
-                                var8.addVertexWithUV((double)(var19 + 0), (double)var25, (double)var20 + 0.5D, (double)(0.0F * var26 + var29), (double)((float)var25 * var26 / 4.0F + var28 * var26 + var30));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var24, (double)(var20 + 0), (double)(0.0F * var26 + var29), (double)((float)var24 * var26 / 4.0F + var28 * var26 + var30));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var24, (double)(var20 + 1), (double)(1.0F * var26 + var29), (double)((float)var24 * var26 / 4.0F + var28 * var26 + var30));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var25, (double)(var20 + 1), (double)(1.0F * var26 + var29), (double)((float)var25 * var26 / 4.0F + var28 * var26 + var30));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var25, (double)(var20 + 0), (double)(0.0F * var26 + var29), (double)((float)var25 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 0, var24, var20 + 0.5D, (double)(0.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 1, var24, var20 + 0.5D, (double)(1.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 1, var25, var20 + 0.5D, (double)(1.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 0, var25, var20 + 0.5D, (double)(0.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 0, (double)(0.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 1, (double)(1.0F * var26 + var29), (double)(var24 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 0.5D, var25, var20 + 1, (double)(1.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
+                                var8.addVertexWithUV(var19 + 0.5D, var25, var20 + 0, (double)(0.0F * var26 + var29), (double)(var25 * var26 / 4.0F + var28 * var26 + var30));
                                 var8.setTranslationD(0.0D, 0.0D, 0.0D);
                                 var8.draw();
                             }
@@ -822,23 +822,23 @@ namespace betareborn.Entities
                             float var37 = 1.0F;
                             if (var23 != var24)
                             {
-                                random.setSeed((long)(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761));
-                                var26 = ((float)(ticks + var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761 & 31) + tickDelta) / 32.0F * (3.0F + random.nextFloat());
-                                double var38 = (double)((float)var19 + 0.5F) - var3.posX;
-                                double var39 = (double)((float)var20 + 0.5F) - var3.posZ;
-                                float var40 = MathHelper.sqrt_double(var38 * var38 + var39 * var39) / (float)var16;
+                                random.setSeed(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761);
+                                var26 = ((ticks + var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761 & 31) + tickDelta) / 32.0F * (3.0F + random.nextFloat());
+                                double var38 = (double)(var19 + 0.5F) - var3.posX;
+                                double var39 = (double)(var20 + 0.5F) - var3.posZ;
+                                float var40 = MathHelper.sqrt_double(var38 * var38 + var39 * var39) / var16;
                                 var8.startDrawingQuads();
                                 float var32 = var4.getLuminance(var19, 128, var20) * 0.85F + 0.15F;
                                 GLManager.GL.Color4(var32, var32, var32, ((1.0F - var40 * var40) * 0.5F + 0.5F) * var2);
                                 var8.setTranslationD(-var9 * 1.0D, -var11 * 1.0D, -var13 * 1.0D);
-                                var8.addVertexWithUV((double)(var19 + 0), (double)var23, (double)var20 + 0.5D, (double)(0.0F * var37), (double)((float)var23 * var37 / 4.0F + var26 * var37));
-                                var8.addVertexWithUV((double)(var19 + 1), (double)var23, (double)var20 + 0.5D, (double)(1.0F * var37), (double)((float)var23 * var37 / 4.0F + var26 * var37));
-                                var8.addVertexWithUV((double)(var19 + 1), (double)var24, (double)var20 + 0.5D, (double)(1.0F * var37), (double)((float)var24 * var37 / 4.0F + var26 * var37));
-                                var8.addVertexWithUV((double)(var19 + 0), (double)var24, (double)var20 + 0.5D, (double)(0.0F * var37), (double)((float)var24 * var37 / 4.0F + var26 * var37));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var23, (double)(var20 + 0), (double)(0.0F * var37), (double)((float)var23 * var37 / 4.0F + var26 * var37));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var23, (double)(var20 + 1), (double)(1.0F * var37), (double)((float)var23 * var37 / 4.0F + var26 * var37));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var24, (double)(var20 + 1), (double)(1.0F * var37), (double)((float)var24 * var37 / 4.0F + var26 * var37));
-                                var8.addVertexWithUV((double)var19 + 0.5D, (double)var24, (double)(var20 + 0), (double)(0.0F * var37), (double)((float)var24 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 0, var23, var20 + 0.5D, (double)(0.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 1, var23, var20 + 0.5D, (double)(1.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 1, var24, var20 + 0.5D, (double)(1.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 0, var24, var20 + 0.5D, (double)(0.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 0.5D, var23, var20 + 0, (double)(0.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 0.5D, var23, var20 + 1, (double)(1.0F * var37), (double)(var23 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 1, (double)(1.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
+                                var8.addVertexWithUV(var19 + 0.5D, var24, var20 + 0, (double)(0.0F * var37), (double)(var24 * var37 / 4.0F + var26 * var37));
                                 var8.setTranslationD(0.0D, 0.0D, 0.0D);
                                 var8.draw();
                             }
@@ -868,7 +868,7 @@ namespace betareborn.Entities
         {
             World var2 = client.world;
             EntityLiving var3 = client.camera;
-            float var4 = 1.0F / (float)(4 - client.options.renderDistance);
+            float var4 = 1.0F / (4 - client.options.renderDistance);
             var4 = 1.0F - (float)java.lang.Math.pow((double)var4, 0.25D);
             Vector3D<double> var5 = var2.func_4079_a(client.camera, tickDelta);
             float var6 = (float)var5.X;
@@ -934,50 +934,50 @@ namespace betareborn.Entities
         {
             EntityLiving var3 = client.camera;
             GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(fogColorRed, fogColorGreen, fogColorBlue, 1.0F));
-            client.terrainRenderer.worldRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
+            client.terrainRenderer.chunkRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
             GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             if (cloudFog)
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                client.terrainRenderer.worldRenderer.SetFogMode(1);
-                client.terrainRenderer.worldRenderer.SetFogDensity(0.1f);
+                client.terrainRenderer.chunkRenderer.SetFogMode(1);
+                client.terrainRenderer.chunkRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.WATER))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                client.terrainRenderer.worldRenderer.SetFogMode(1);
-                client.terrainRenderer.worldRenderer.SetFogDensity(0.1f);
+                client.terrainRenderer.chunkRenderer.SetFogMode(1);
+                client.terrainRenderer.chunkRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.LAVA))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-                client.terrainRenderer.worldRenderer.SetFogMode(1);
-                client.terrainRenderer.worldRenderer.SetFogDensity(2.0f);
+                client.terrainRenderer.chunkRenderer.SetFogMode(1);
+                client.terrainRenderer.chunkRenderer.SetFogDensity(2.0f);
             }
             else
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
                 GLManager.GL.Fog(GLEnum.FogStart, viewDistane * 0.25F);
                 GLManager.GL.Fog(GLEnum.FogEnd, viewDistane);
-                client.terrainRenderer.worldRenderer.SetFogMode(0);
-                client.terrainRenderer.worldRenderer.SetFogStart(viewDistane * 0.25f);
-                client.terrainRenderer.worldRenderer.SetFogEnd(viewDistane);
+                client.terrainRenderer.chunkRenderer.SetFogMode(0);
+                client.terrainRenderer.chunkRenderer.SetFogStart(viewDistane * 0.25f);
+                client.terrainRenderer.chunkRenderer.SetFogEnd(viewDistane);
                 if (mode < 0)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     GLManager.GL.Fog(GLEnum.FogEnd, viewDistane * 0.8F);
-                    client.terrainRenderer.worldRenderer.SetFogStart(0.0f);
-                    client.terrainRenderer.worldRenderer.SetFogEnd(viewDistane * 0.8f);
+                    client.terrainRenderer.chunkRenderer.SetFogStart(0.0f);
+                    client.terrainRenderer.chunkRenderer.SetFogEnd(viewDistane * 0.8f);
                 }
 
                 if (client.world.dimension.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                    client.terrainRenderer.worldRenderer.SetFogStart(0.0f);
+                    client.terrainRenderer.chunkRenderer.SetFogStart(0.0f);
                 }
             }
 

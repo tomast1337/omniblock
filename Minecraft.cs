@@ -5,7 +5,7 @@ using betareborn.Client;
 using betareborn.Client.Colors;
 using betareborn.Client.Guis;
 using betareborn.Client.Network;
-using betareborn.Client.Rendering.Chunks;
+using betareborn.Client.Rendering;
 using betareborn.Client.Rendering.Core;
 using betareborn.Client.Rendering.Entitys;
 using betareborn.Client.Resource.Pack;
@@ -42,7 +42,7 @@ namespace betareborn
         public int displayHeight;
         private Timer timer = new Timer(20.0F);
         public World world;
-        public ChunkRenderer terrainRenderer;
+        public WorldRenderer terrainRenderer;
         public ClientPlayerEntity player;
         public EntityLiving camera;
         public ParticleManager particleManager;
@@ -233,7 +233,7 @@ namespace betareborn
             textureManager.registerTextureFX(new TextureLavaFlowFX());
             textureManager.registerTextureFX(new TextureFlamesFX(0));
             textureManager.registerTextureFX(new TextureFlamesFX(1));
-            terrainRenderer = new ChunkRenderer(this, textureManager);
+            terrainRenderer = new WorldRenderer(this, textureManager);
             GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
             particleManager = new ParticleManager(world, textureManager);
 
