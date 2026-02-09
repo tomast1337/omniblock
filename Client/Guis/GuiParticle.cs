@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using java.util;
 
 namespace betareborn.Client.Guis
@@ -29,7 +30,7 @@ namespace betareborn.Client.Guis
 
         public void render(float var1)
         {
-            field_25089_b.textureManager.bindTexture(field_25089_b.textureManager.getTexture("/gui/particles.png"));
+            field_25089_b.textureManager.bindTexture(field_25089_b.textureManager.getTextureId("/gui/particles.png"));
 
             for (int var2 = 0; var2 < field_25090_a.size(); ++var2)
             {

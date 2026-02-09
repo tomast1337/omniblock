@@ -77,7 +77,7 @@ namespace betareborn.Client
                 charWidth[var8] = var11 + 2;
             }
 
-            fontTextureName = var3.allocateAndSetupTexture(var4);
+            fontTextureName = var3.load(var4);
             fontDisplayLists = GLAllocation.generateDisplayLists(288);
             Tessellator var19 = Tessellator.instance;
 

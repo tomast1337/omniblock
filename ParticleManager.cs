@@ -77,17 +77,17 @@ namespace betareborn
                     int var9 = 0;
                     if (var8 == 0)
                     {
-                        var9 = renderer.getTexture("/particles.png");
+                        var9 = renderer.getTextureId("/particles.png");
                     }
 
                     if (var8 == 1)
                     {
-                        var9 = renderer.getTexture("/terrain.png");
+                        var9 = renderer.getTextureId("/terrain.png");
                     }
 
                     if (var8 == 2)
                     {
-                        var9 = renderer.getTexture("/gui/items.png");
+                        var9 = renderer.getTextureId("/gui/items.png");
                     }
 
                     GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var9);

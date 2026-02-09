@@ -3,18 +3,18 @@ using betareborn.Util.Maths;
 
 namespace betareborn.Client.Textures
 {
-    public class TexturePortalFX : TextureFX
+    public class NetherPortalSprite : DynamicTexture
     {
 
-        private int portalTickCounter = 0;
-        private byte[][] portalTextureData = new byte[32][];
+        private int ticks = 0;
+        private byte[][] frames = new byte[32][];
 
-        public TexturePortalFX() : base(Block.NETHER_PORTAL.textureId)
+        public NetherPortalSprite() : base(Block.NETHER_PORTAL.textureId)
         {
             java.util.Random var1 = new(100L);
-            for (int i = 0; i < portalTextureData.Length; i++)
+            for (int i = 0; i < frames.Length; i++)
             {
-                portalTextureData[i] = new byte[1024];
+                frames[i] = new byte[1024];
             }
 
             for (int var2 = 0; var2 < 32; ++var2)
@@ -65,20 +65,20 @@ namespace betareborn.Client.Textures
                         int var14 = (int)(var5 * var5 * var5 * var5 * 255.0F);
                         int var15 = (int)(var5 * 100.0F + 155.0F);
                         int var16 = var4 * 16 + var3;
-                        portalTextureData[var2][var16 * 4 + 0] = (byte)var13;
-                        portalTextureData[var2][var16 * 4 + 1] = (byte)var14;
-                        portalTextureData[var2][var16 * 4 + 2] = (byte)var6;
-                        portalTextureData[var2][var16 * 4 + 3] = (byte)var15;
+                        frames[var2][var16 * 4 + 0] = (byte)var13;
+                        frames[var2][var16 * 4 + 1] = (byte)var14;
+                        frames[var2][var16 * 4 + 2] = (byte)var6;
+                        frames[var2][var16 * 4 + 3] = (byte)var15;
                     }
                 }
             }
 
         }
 
-        public override void onTick()
+        public override void tick()
         {
-            ++portalTickCounter;
-            byte[] var1 = portalTextureData[portalTickCounter & 31];
+            ++ticks;
+            byte[] var1 = frames[ticks & 31];
 
             for (int var2 = 0; var2 < 256; ++var2)
             {
@@ -96,10 +96,10 @@ namespace betareborn.Client.Textures
                     var5 = var9;
                 }
 
-                imageData[var2 * 4 + 0] = (byte)var3;
-                imageData[var2 * 4 + 1] = (byte)var4;
-                imageData[var2 * 4 + 2] = (byte)var5;
-                imageData[var2 * 4 + 3] = (byte)var6;
+                pixels[var2 * 4 + 0] = (byte)var3;
+                pixels[var2 * 4 + 1] = (byte)var4;
+                pixels[var2 * 4 + 2] = (byte)var5;
+                pixels[var2 * 4 + 3] = (byte)var6;
             }
 
         }

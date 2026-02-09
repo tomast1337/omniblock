@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using betareborn.Client.Resource.Pack;
 using java.util;
 
@@ -23,7 +24,7 @@ namespace betareborn.Client.Guis
         {
             List var3 = GuiTexturePacks.func_22119_c(parentTexturePackGui).texturePackList.availableTexturePacks();
             GuiTexturePacks.func_22122_d(parentTexturePackGui).texturePackList.setTexturePack((TexturePack)var3.get(var1));
-            GuiTexturePacks.func_22117_e(parentTexturePackGui).textureManager.refreshTextures();
+            GuiTexturePacks.func_22117_e(parentTexturePackGui).textureManager.reload();
         }
 
         protected override bool isSelected(int var1)

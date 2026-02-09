@@ -36,7 +36,7 @@ namespace betareborn.Client.Guis
 
         protected override void drawGuiContainerBackgroundLayer(float var1)
         {
-            int var2 = mc.textureManager.getTexture("/gui/inventory.png");
+            int var2 = mc.textureManager.getTextureId("/gui/inventory.png");
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             mc.textureManager.bindTexture(var2);
             int var3 = (width - xSize) / 2;

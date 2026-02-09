@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using java.util;
 using Silk.NET.OpenGL.Legacy;
 
@@ -225,7 +226,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.Fog);
             Tessellator var16 = Tessellator.instance;
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/gui/background.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/gui/background.png"));
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             float var17 = 32.0F;
             var16.startDrawingQuads();
@@ -352,7 +353,7 @@ namespace betareborn.Client.Guis
         private void overlayBackground(int var1, int var2, int var3, int var4)
         {
             Tessellator var5 = Tessellator.instance;
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/gui/background.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/gui/background.png"));
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             float var6 = 32.0F;
             var5.startDrawingQuads();

@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using betareborn.Stats;
 
 namespace betareborn.Client.Guis

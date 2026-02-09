@@ -143,7 +143,7 @@ namespace betareborn.Client.Rendering.Items
             float var11;
             if (var3 < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var3].getRenderType()))
             {
-                var2.bindTexture(var2.getTexture("/terrain.png"));
+                var2.bindTexture(var2.getTextureId("/terrain.png"));
                 Block var14 = Block.BLOCKS[var3];
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Translate(var6 - 2, var7 + 3, -3.0F);
@@ -172,11 +172,11 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Disable(GLEnum.Lighting);
                 if (var3 < 256)
                 {
-                    var2.bindTexture(var2.getTexture("/terrain.png"));
+                    var2.bindTexture(var2.getTextureId("/terrain.png"));
                 }
                 else
                 {
-                    var2.bindTexture(var2.getTexture("/gui/items.png"));
+                    var2.bindTexture(var2.getTextureId("/gui/items.png"));
                 }
 
                 int var8 = Item.itemsList[var3].getColorFromDamage(var4);

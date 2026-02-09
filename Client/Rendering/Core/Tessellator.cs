@@ -3,7 +3,7 @@ using java.nio;
 using Silk.NET.OpenGL.Legacy;
 using System.Runtime.InteropServices;
 
-namespace betareborn
+namespace betareborn.Client.Rendering.Core
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 32)]
     public struct Vertex(float x, float y, float z, float u, float v, int color, int normal)
@@ -64,15 +64,15 @@ namespace betareborn
 
         private static short FloatToShortUVWithInset(float uv, float centroid)
         {
-            int bias = (uv < centroid) ? 1 : -1;
+            int bias = uv < centroid ? 1 : -1;
             int quantized = (int)System.Math.Round(uv * UV_SCALE) + bias;
 
-            return (short)((quantized & 0x7FFF) | (Sign(bias) << 15));
+            return (short)(quantized & 0x7FFF | Sign(bias) << 15);
         }
 
         private static int Sign(int x)
         {
-            return (x < 0) ? 1 : 0;
+            return x < 0 ? 1 : 0;
         }
 
         public static short FloatToShortPosition(float position)
@@ -90,12 +90,12 @@ namespace betareborn
             skyLight = (byte)(skyLight & 0x0F);
             blockLight = (byte)(blockLight & 0x0F);
 
-            return (byte)((skyLight << 4) | blockLight);
+            return (byte)(skyLight << 4 | blockLight);
         }
 
         public static byte GetSkyLight(byte light)
         {
-            return (byte)((light >> 4) & 0x0F);
+            return (byte)(light >> 4 & 0x0F);
         }
 
         public static byte GetBlockLight(byte light)
@@ -621,9 +621,9 @@ namespace betareborn
             }
 
             hasNormals = true;
-            byte var4 = (byte)((int)(var1 * 128.0F));
-            byte var5 = (byte)((int)(var2 * 127.0F));
-            byte var6 = (byte)((int)(var3 * 127.0F));
+            byte var4 = (byte)(int)(var1 * 128.0F);
+            byte var5 = (byte)(int)(var2 * 127.0F);
+            byte var6 = (byte)(int)(var3 * 127.0F);
             normal = var4 | var5 << 8 | var6 << 16;
         }
 
@@ -655,9 +655,9 @@ namespace betareborn
 
         public void setTranslationF(float var1, float var2, float var3)
         {
-            xOffset += (double)var1;
-            yOffset += (double)var2;
-            zOffset += (double)var3;
+            xOffset += var1;
+            yOffset += var2;
+            zOffset += var3;
         }
     }
 }

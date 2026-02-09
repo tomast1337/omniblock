@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using betareborn.Entities;
 using betareborn.Items;
 using Silk.NET.OpenGL.Legacy;

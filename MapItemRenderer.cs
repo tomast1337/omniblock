@@ -18,7 +18,7 @@ namespace betareborn
         {
             field_28161_c = var2;
             field_28160_d = var1;
-            field_28158_b = var3.allocateAndSetupTexture(new BufferedImage(128, 128, 2));
+            field_28158_b = var3.load(new BufferedImage(128, 128, 2));
 
             for (int var4 = 0; var4 < 16384; ++var4)
             {
@@ -59,7 +59,7 @@ namespace betareborn
                 }
             }
 
-            var2.func_28150_a(field_28159_a, 128, 128, field_28158_b);
+            var2.bind(field_28159_a, 128, 128, field_28158_b);
             byte var15 = 0;
             byte var16 = 0;
             Tessellator var17 = Tessellator.instance;
@@ -75,7 +75,7 @@ namespace betareborn
             var17.draw();
             GLManager.GL.Enable(GLEnum.AlphaTest);
             GLManager.GL.Disable(GLEnum.Blend);
-            var2.bindTexture(var2.getTexture("/misc/mapicons.png"));
+            var2.bindTexture(var2.getTextureId("/misc/mapicons.png"));
             Iterator var19 = var3.field_28173_i.iterator();
 
             while (var19.hasNext())

@@ -1,4 +1,4 @@
-﻿namespace betareborn
+﻿namespace betareborn.Client.Rendering.Core
 {
     public static class GLU
     {

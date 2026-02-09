@@ -2,17 +2,17 @@ using betareborn.Blocks;
 
 namespace betareborn.Client.Textures
 {
-    public class TextureFlamesFX : TextureFX
+    public class FireSprite : DynamicTexture
     {
 
-        protected float[] field_1133_g = new float[320];
-        protected float[] field_1132_h = new float[320];
+        protected float[] current = new float[320];
+        protected float[] next = new float[320];
 
-        public TextureFlamesFX(int var1) : base(Block.FIRE.textureId + var1 * 16)
+        public FireSprite(int var1) : base(Block.FIRE.textureId + var1 * 16)
         {
         }
 
-        public override void onTick()
+        public override void tick()
         {
             int var2;
             float var4;
@@ -23,7 +23,7 @@ namespace betareborn.Client.Textures
                 for (var2 = 0; var2 < 20; ++var2)
                 {
                     int var3 = 18;
-                    var4 = field_1133_g[var1 + (var2 + 1) % 20 * 16] * var3;
+                    var4 = current[var1 + (var2 + 1) % 20 * 16] * var3;
 
                     for (var5 = var1 - 1; var5 <= var1 + 1; ++var5)
                     {
@@ -31,28 +31,28 @@ namespace betareborn.Client.Textures
                         {
                             if (var5 >= 0 && var6 >= 0 && var5 < 16 && var6 < 20)
                             {
-                                var4 += field_1133_g[var5 + var6 * 16];
+                                var4 += current[var5 + var6 * 16];
                             }
 
                             ++var3;
                         }
                     }
 
-                    field_1132_h[var1 + var2 * 16] = var4 / (var3 * 1.06F);
+                    next[var1 + var2 * 16] = var4 / (var3 * 1.06F);
                     if (var2 >= 19)
                     {
-                        field_1132_h[var1 + var2 * 16] = (float)(java.lang.Math.random() * java.lang.Math.random() * java.lang.Math.random() * 4.0D + java.lang.Math.random() * (double)0.1F + (double)0.2F);
+                        next[var1 + var2 * 16] = (float)(java.lang.Math.random() * java.lang.Math.random() * java.lang.Math.random() * 4.0D + java.lang.Math.random() * (double)0.1F + (double)0.2F);
                     }
                 }
             }
 
-            float[] var12 = field_1132_h;
-            field_1132_h = field_1133_g;
-            field_1133_g = var12;
+            float[] var12 = next;
+            next = current;
+            current = var12;
 
             for (var2 = 0; var2 < 256; ++var2)
             {
-                float var13 = field_1133_g[var2] * 1.8F;
+                float var13 = current[var2] * 1.8F;
                 if (var13 > 1.0F)
                 {
                     var13 = 1.0F;
@@ -83,10 +83,10 @@ namespace betareborn.Client.Textures
                     var7 = var11;
                 }
 
-                imageData[var2 * 4 + 0] = (byte)var5;
-                imageData[var2 * 4 + 1] = (byte)var6;
-                imageData[var2 * 4 + 2] = (byte)var7;
-                imageData[var2 * 4 + 3] = (byte)var8;
+                pixels[var2 * 4 + 0] = (byte)var5;
+                pixels[var2 * 4 + 1] = (byte)var6;
+                pixels[var2 * 4 + 2] = (byte)var7;
+                pixels[var2 * 4 + 3] = (byte)var8;
             }
 
         }

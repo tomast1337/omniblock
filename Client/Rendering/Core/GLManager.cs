@@ -1,7 +1,7 @@
 ﻿using java.nio;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn
+namespace betareborn.Client.Rendering.Core
 {
     public class GLManager
     {

@@ -149,7 +149,7 @@ namespace betareborn
 
                 if (Minecraft.INSTANCE?.textureManager != null)
                 {
-                    Minecraft.INSTANCE.textureManager.refreshTextures();
+                    Minecraft.INSTANCE.textureManager.reload();
                 }
             }
 
@@ -158,7 +158,7 @@ namespace betareborn
                 useMipmaps = !useMipmaps;
                 if (Minecraft.INSTANCE?.textureManager != null)
                 {
-                    Minecraft.INSTANCE.textureManager.refreshTextures();
+                    Minecraft.INSTANCE.textureManager.reload();
                 }
             }
 

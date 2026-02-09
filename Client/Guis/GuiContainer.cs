@@ -112,7 +112,7 @@ namespace betareborn.Client.Guis
                 if (var5 >= 0)
                 {
                     GLManager.GL.Disable(GLEnum.Lighting);
-                    mc.textureManager.bindTexture(mc.textureManager.getTexture("/gui/items.png"));
+                    mc.textureManager.bindTexture(mc.textureManager.getTextureId("/gui/items.png"));
                     drawTexturedModalRect(var2, var3, var5 % 16 * 16, var5 / 16 * 16, 16, 16);
                     GLManager.GL.Enable(GLEnum.Lighting);
                     return;

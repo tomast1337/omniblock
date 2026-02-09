@@ -58,12 +58,12 @@ namespace betareborn.Client.Guis
             }
 
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/gui/gui.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/gui/gui.png"));
             InventoryPlayer var11 = mc.player.inventory;
             zLevel = -90.0F;
             drawTexturedModalRect(var6 / 2 - 91, var7 - 22, 0, 0, 182, 22);
             drawTexturedModalRect(var6 / 2 - 91 - 1 + var11.currentItem * 20, var7 - 22 - 1, 0, 22, 24, 22);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/gui/icons.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/gui/icons.png"));
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.OneMinusDstColor, GLEnum.OneMinusSrcColor);
             drawTexturedModalRect(var6 / 2 - 7, var7 / 2 - 7, 0, 0, 16, 16);
@@ -313,7 +313,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("%blur%/misc/pumpkinblur.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("%blur%/misc/pumpkinblur.png"));
             Tessellator var3 = Tessellator.instance;
             var3.startDrawingQuads();
             var3.addVertexWithUV(0.0D, var2, -90.0D, 0.0D, 1.0D);
@@ -345,7 +345,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.DepthMask(false);
             GLManager.GL.BlendFunc(GLEnum.Zero, GLEnum.OneMinusSrcColor);
             GLManager.GL.Color4(prevVignetteBrightness, prevVignetteBrightness, prevVignetteBrightness, 1.0F);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("%blur%/misc/vignette.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("%blur%/misc/vignette.png"));
             Tessellator var4 = Tessellator.instance;
             var4.startDrawingQuads();
             var4.addVertexWithUV(0.0D, var3, -90.0D, 0.0D, 1.0D);
@@ -373,7 +373,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.DepthMask(false);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, var1);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/terrain.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/terrain.png"));
             float var4 = Block.NETHER_PORTAL.textureId % 16 / 16.0F;
             float var5 = Block.NETHER_PORTAL.textureId / 16 / 16.0F;
             float var6 = (Block.NETHER_PORTAL.textureId % 16 + 1) / 16.0F;

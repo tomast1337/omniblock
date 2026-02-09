@@ -6,28 +6,28 @@ using javax.imageio;
 
 namespace betareborn.Client.Textures
 {
-    public class TextureWatchFX : TextureFX
+    public class ClockSprite : DynamicTexture
     {
 
         private Minecraft mc;
-        private int[] watchIconImageData = new int[256];
-        private int[] dialImageData = new int[256];
-        private double field_4222_j;
-        private double field_4221_k;
+        private int[] clock = new int[256];
+        private int[] dial = new int[256];
+        private double angle;
+        private double angleDelta;
 
-        public TextureWatchFX(Minecraft var1) : base(Item.pocketSundial.getIconFromDamage(0))
+        public ClockSprite(Minecraft var1) : base(Item.pocketSundial.getIconFromDamage(0))
         {
             mc = var1;
-            tileImage = FXImage.Items;
+            atlas = FXImage.Items;
 
             try
             {
                 BufferedImage var2 = ImageIO.read(new ByteArrayInputStream(AssetManager.Instance.getAsset("gui/items.png").getBinaryContent()));
-                int var3 = iconIndex % 16 * 16;
-                int var4 = iconIndex / 16 * 16;
-                var2.getRGB(var3, var4, 16, 16, watchIconImageData, 0, 16);
+                int var3 = sprite % 16 * 16;
+                int var4 = sprite / 16 * 16;
+                var2.getRGB(var3, var4, 16, 16, clock, 0, 16);
                 var2 = ImageIO.read(new ByteArrayInputStream(AssetManager.Instance.getAsset("misc/dial.png").getBinaryContent()));
-                var2.getRGB(0, 0, 16, 16, dialImageData, 0, 16);
+                var2.getRGB(0, 0, 16, 16, dial, 0, 16);
             }
             catch (java.io.IOException var5)
             {
@@ -36,7 +36,7 @@ namespace betareborn.Client.Textures
 
         }
 
-        public override void onTick()
+        public override void tick()
         {
             double var1 = 0.0D;
             if (mc.world != null && mc.player != null)
@@ -50,7 +50,7 @@ namespace betareborn.Client.Textures
             }
 
             double var22;
-            for (var22 = var1 - field_4222_j; var22 < -Math.PI; var22 += Math.PI * 2.0D)
+            for (var22 = var1 - angle; var22 < -Math.PI; var22 += Math.PI * 2.0D)
             {
             }
 
@@ -69,18 +69,18 @@ namespace betareborn.Client.Textures
                 var22 = 1.0D;
             }
 
-            field_4221_k += var22 * 0.1D;
-            field_4221_k *= 0.8D;
-            field_4222_j += field_4221_k;
-            double var5 = java.lang.Math.sin(field_4222_j);
-            double var7 = java.lang.Math.cos(field_4222_j);
+            angleDelta += var22 * 0.1D;
+            angleDelta *= 0.8D;
+            angle += angleDelta;
+            double var5 = java.lang.Math.sin(angle);
+            double var7 = java.lang.Math.cos(angle);
 
             for (int var9 = 0; var9 < 256; ++var9)
             {
-                int var10 = watchIconImageData[var9] >> 24 & 255;
-                int var11 = watchIconImageData[var9] >> 16 & 255;
-                int var12 = watchIconImageData[var9] >> 8 & 255;
-                int var13 = watchIconImageData[var9] >> 0 & 255;
+                int var10 = clock[var9] >> 24 & 255;
+                int var11 = clock[var9] >> 16 & 255;
+                int var12 = clock[var9] >> 8 & 255;
+                int var13 = clock[var9] >> 0 & 255;
                 if (var11 == var13 && var12 == 0 && var13 > 0)
                 {
                     double var14 = -(var9 % 16 / 15.0D - 0.5D);
@@ -89,10 +89,10 @@ namespace betareborn.Client.Textures
                     int var19 = (int)((var14 * var7 + var16 * var5 + 0.5D) * 16.0D);
                     int var20 = (int)((var16 * var7 - var14 * var5 + 0.5D) * 16.0D);
                     int var21 = (var19 & 15) + (var20 & 15) * 16;
-                    var10 = dialImageData[var21] >> 24 & 255;
-                    var11 = (dialImageData[var21] >> 16 & 255) * var11 / 255;
-                    var12 = (dialImageData[var21] >> 8 & 255) * var18 / 255;
-                    var13 = (dialImageData[var21] >> 0 & 255) * var18 / 255;
+                    var10 = dial[var21] >> 24 & 255;
+                    var11 = (dial[var21] >> 16 & 255) * var11 / 255;
+                    var12 = (dial[var21] >> 8 & 255) * var18 / 255;
+                    var13 = (dial[var21] >> 0 & 255) * var18 / 255;
                 }
 
                 if (anaglyphEnabled)
@@ -105,10 +105,10 @@ namespace betareborn.Client.Textures
                     var13 = var24;
                 }
 
-                imageData[var9 * 4 + 0] = (byte)var11;
-                imageData[var9 * 4 + 1] = (byte)var12;
-                imageData[var9 * 4 + 2] = (byte)var13;
-                imageData[var9 * 4 + 3] = (byte)var10;
+                pixels[var9 * 4 + 0] = (byte)var11;
+                pixels[var9 * 4 + 1] = (byte)var12;
+                pixels[var9 * 4 + 2] = (byte)var13;
+                pixels[var9 * 4 + 3] = (byte)var10;
             }
 
         }

@@ -106,7 +106,7 @@ namespace betareborn.Client.Guis
                     var9 *= var9;
                     int var5 = achievementWindowWidth - 160;
                     int var6 = 0 - (int)(var9 * 36.0D);
-                    int var7 = theGame.textureManager.getTexture("/achievement/bg.png");
+                    int var7 = theGame.textureManager.getTextureId("/achievement/bg.png");
                     GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
                     GLManager.GL.Enable(GLEnum.Lighting);
                     GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var7);

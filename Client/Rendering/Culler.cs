@@ -1,8 +1,8 @@
 using betareborn.Util.Maths;
 
-namespace betareborn
+namespace betareborn.Client.Rendering
 {
-    public interface ICamera
+    public interface Culler
     {
         bool isBoundingBoxInFrustum(Box var1);
 

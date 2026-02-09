@@ -540,7 +540,7 @@ namespace betareborn.Client.Rendering
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             GLManager.GL.Enable(GLEnum.CullFace);
             renderWorld(tickDelta);
-            ClippingHelperImpl.getInstance();
+            Frustum.getInstance();
             if (client.options.renderDistance < 2)
             {
                 applyFog(-1);
@@ -550,12 +550,12 @@ namespace betareborn.Client.Rendering
             GLManager.GL.Enable(GLEnum.Fog);
             applyFog(1);
 
-            Frustrum var19 = new();
+            FrustrumCuller var19 = new();
             var19.setPosition(var7, var9, var11);
 
             applyFog(0);
             GLManager.GL.Enable(GLEnum.Fog);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/terrain.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTextureId("/terrain.png"));
             Lighting.turnOff();
 
             Profiler.Start("sortAndRender");
@@ -592,7 +592,7 @@ namespace betareborn.Client.Rendering
             applyFog(0);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.Disable(GLEnum.CullFace);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/terrain.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTextureId("/terrain.png"));
 
             Profiler.Start("sortAndRender2");
 
@@ -716,7 +716,7 @@ namespace betareborn.Client.Rendering
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/environment/snow.png"));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTextureId("/environment/snow.png"));
                 double var9 = var3.lastTickPosX + (var3.posX - var3.lastTickPosX) * (double)tickDelta;
                 double var11 = var3.lastTickPosY + (var3.posY - var3.lastTickPosY) * (double)tickDelta;
                 double var13 = var3.lastTickPosZ + (var3.posZ - var3.lastTickPosZ) * (double)tickDelta;
@@ -794,7 +794,7 @@ namespace betareborn.Client.Rendering
                     }
                 }
 
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/environment/rain.png"));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTextureId("/environment/rain.png"));
                 var16 = 10;
 
                 var18 = 0;

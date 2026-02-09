@@ -3,19 +3,19 @@ using betareborn.Util.Maths;
 
 namespace betareborn.Client.Textures
 {
-    public class TextureLavaFX : TextureFX
+    public class LavaSprite : DynamicTexture
     {
 
-        protected float[] field_1147_g = new float[256];
-        protected float[] field_1146_h = new float[256];
-        protected float[] field_1145_i = new float[256];
-        protected float[] field_1144_j = new float[256];
+        protected float[] current = new float[256];
+        protected float[] next = new float[256];
+        protected float[] head = new float[256];
+        protected float[] heatDelta = new float[256];
 
-        public TextureLavaFX() : base(Block.FLOWING_LAVA.textureId)
+        public LavaSprite() : base(Block.FLOWING_LAVA.textureId)
         {
         }
 
-        public override void onTick()
+        public override void tick()
         {
             int var2;
             float var3;
@@ -38,32 +38,32 @@ namespace betareborn.Client.Textures
                         {
                             var8 = var6 + var4 & 15;
                             var9 = var7 + var5 & 15;
-                            var3 += field_1147_g[var8 + var9 * 16];
+                            var3 += current[var8 + var9 * 16];
                         }
                     }
 
-                    field_1146_h[var1 + var2 * 16] = var3 / 10.0F + (field_1145_i[(var1 + 0 & 15) + (var2 + 0 & 15) * 16] + field_1145_i[(var1 + 1 & 15) + (var2 + 0 & 15) * 16] + field_1145_i[(var1 + 1 & 15) + (var2 + 1 & 15) * 16] + field_1145_i[(var1 + 0 & 15) + (var2 + 1 & 15) * 16]) / 4.0F * 0.8F;
-                    field_1145_i[var1 + var2 * 16] += field_1144_j[var1 + var2 * 16] * 0.01F;
-                    if (field_1145_i[var1 + var2 * 16] < 0.0F)
+                    next[var1 + var2 * 16] = var3 / 10.0F + (head[(var1 + 0 & 15) + (var2 + 0 & 15) * 16] + head[(var1 + 1 & 15) + (var2 + 0 & 15) * 16] + head[(var1 + 1 & 15) + (var2 + 1 & 15) * 16] + head[(var1 + 0 & 15) + (var2 + 1 & 15) * 16]) / 4.0F * 0.8F;
+                    head[var1 + var2 * 16] += heatDelta[var1 + var2 * 16] * 0.01F;
+                    if (head[var1 + var2 * 16] < 0.0F)
                     {
-                        field_1145_i[var1 + var2 * 16] = 0.0F;
+                        head[var1 + var2 * 16] = 0.0F;
                     }
 
-                    field_1144_j[var1 + var2 * 16] -= 0.06F;
+                    heatDelta[var1 + var2 * 16] -= 0.06F;
                     if (java.lang.Math.random() < 0.005D)
                     {
-                        field_1144_j[var1 + var2 * 16] = 1.5F;
+                        heatDelta[var1 + var2 * 16] = 1.5F;
                     }
                 }
             }
 
-            float[] var11 = field_1146_h;
-            field_1146_h = field_1147_g;
-            field_1147_g = var11;
+            float[] var11 = next;
+            next = current;
+            current = var11;
 
             for (var2 = 0; var2 < 256; ++var2)
             {
-                var3 = field_1147_g[var2] * 2.0F;
+                var3 = current[var2] * 2.0F;
                 if (var3 > 1.0F)
                 {
                     var3 = 1.0F;
@@ -87,10 +87,10 @@ namespace betareborn.Client.Textures
                     var7 = var10;
                 }
 
-                imageData[var2 * 4 + 0] = (byte)var5;
-                imageData[var2 * 4 + 1] = (byte)var6;
-                imageData[var2 * 4 + 2] = (byte)var7;
-                imageData[var2 * 4 + 3] = 255;
+                pixels[var2 * 4 + 0] = (byte)var5;
+                pixels[var2 * 4 + 1] = (byte)var6;
+                pixels[var2 * 4 + 2] = (byte)var7;
+                pixels[var2 * 4 + 3] = 255;
             }
 
         }

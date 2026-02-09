@@ -18,7 +18,7 @@ namespace betareborn.Client.Rendering.Entitys
         protected void loadTexture(string var1)
         {
             TextureManager var2 = dispatcher.textureManager;
-            var2.bindTexture(var2.getTexture(var1));
+            var2.bindTexture(var2.getTextureId(var1));
         }
 
         protected bool loadDownloadableImageTexture(string var1, string var2)
@@ -118,7 +118,7 @@ namespace betareborn.Client.Rendering.Entitys
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             TextureManager var10 = dispatcher.textureManager;
-            var10.bindTexture(var10.getTexture("%clamp%/misc/shadow.png"));
+            var10.bindTexture(var10.getTextureId("%clamp%/misc/shadow.png"));
             World var11 = getWorld();
             GLManager.GL.DepthMask(false);
             float var12 = shadowRadius;

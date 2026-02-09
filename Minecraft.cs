@@ -80,8 +80,8 @@ namespace betareborn
         public StatFileWriter statFileWriter;
         private string serverName;
         private int serverPort;
-        private TextureWaterFX textureWaterFX = new TextureWaterFX();
-        private TextureLavaFX textureLavaFX = new TextureLavaFX();
+        private WaterSprite textureWaterFX = new WaterSprite();
+        private LavaSprite textureLavaFX = new LavaSprite();
         private static java.io.File minecraftDir = null;
         public volatile bool running = true;
         public string debug = "";
@@ -171,9 +171,9 @@ namespace betareborn
             texturePackList = new TexturePacks(this, mcDataDir);
             textureManager = new TextureManager(texturePackList, options);
             fontRenderer = new FontRenderer(options, textureManager);
-            WaterColors.setcolorMap(textureManager.func_28149_a("/misc/watercolor.png"));
-            GrassColors.func_28181_a(textureManager.func_28149_a("/misc/grasscolor.png"));
-            FoliageColors.func_28152_a(textureManager.func_28149_a("/misc/foliagecolor.png"));
+            WaterColors.setcolorMap(textureManager.getColors("/misc/watercolor.png"));
+            GrassColors.func_28181_a(textureManager.getColors("/misc/grasscolor.png"));
+            FoliageColors.func_28152_a(textureManager.getColors("/misc/foliagecolor.png"));
             gameRenderer = new GameRenderer(this);
             EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
             statFileWriter = new StatFileWriter(session, mcDataDir);
@@ -225,15 +225,15 @@ namespace betareborn
             GLManager.GL.MatrixMode(GLEnum.Modelview);
             checkGLError("Startup");
             sndManager.loadSoundSettings(options);
-            textureManager.registerTextureFX(textureLavaFX);
-            textureManager.registerTextureFX(textureWaterFX);
-            textureManager.registerTextureFX(new TexturePortalFX());
-            textureManager.registerTextureFX(new TextureCompassFX(this));
-            textureManager.registerTextureFX(new TextureWatchFX(this));
-            textureManager.registerTextureFX(new TextureWaterFlowFX());
-            textureManager.registerTextureFX(new TextureLavaFlowFX());
-            textureManager.registerTextureFX(new TextureFlamesFX(0));
-            textureManager.registerTextureFX(new TextureFlamesFX(1));
+            textureManager.addDynamicTexture(textureLavaFX);
+            textureManager.addDynamicTexture(textureWaterFX);
+            textureManager.addDynamicTexture(new NetherPortalSprite());
+            textureManager.addDynamicTexture(new CompassSprite(this));
+            textureManager.addDynamicTexture(new ClockSprite(this));
+            textureManager.addDynamicTexture(new WaterSideSprite());
+            textureManager.addDynamicTexture(new LavaSideSprite());
+            textureManager.addDynamicTexture(new FireSprite(0));
+            textureManager.addDynamicTexture(new FireSprite(1));
             terrainRenderer = new WorldRenderer(this, textureManager);
             GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
             particleManager = new ParticleManager(world, textureManager);
@@ -276,7 +276,7 @@ namespace betareborn
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Enable(GLEnum.Texture2D);
             GLManager.GL.Disable(GLEnum.Fog);
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.getTexture("/title/mojang.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.getTextureId("/title/mojang.png"));
             var2.startDrawingQuads();
             var2.setColorOpaque_I(16777215);
             var2.addVertexWithUV(0.0D, (double)displayHeight, 0.0D, 0.0D, 0.0D);
@@ -1135,10 +1135,10 @@ namespace betareborn
             Profiler.Stop("playerControllerUpdate");
 
             Profiler.Start("updateDynamicTextures");
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.getTexture("/terrain.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.getTextureId("/terrain.png"));
             if (!isGamePaused)
             {
-                textureManager.updateDynamicTextures();
+                textureManager.tick();
             }
 
             Profiler.Stop("updateDynamicTextures");

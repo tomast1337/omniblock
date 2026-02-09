@@ -117,7 +117,7 @@ namespace betareborn.Client.Guis
 
         private void func_27136_c(int var1, int var2, int var3, int var4)
         {
-            int var5 = mc.textureManager.getTexture("/gui/slot.png");
+            int var5 = mc.textureManager.getTextureId("/gui/slot.png");
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             mc.textureManager.bindTexture(var5);
             Tessellator var10 = Tessellator.instance;

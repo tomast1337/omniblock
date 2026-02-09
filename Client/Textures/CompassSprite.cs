@@ -7,25 +7,25 @@ using javax.imageio;
 
 namespace betareborn.Client.Textures
 {
-    public class TextureCompassFX : TextureFX
+    public class CompassSprite : DynamicTexture
     {
 
         private Minecraft mc;
-        private int[] compassIconImageData = new int[256];
-        private double field_4229_i;
-        private double field_4228_j;
+        private int[] compass = new int[256];
+        private double angle;
+        private double angleDelta;
 
-        public TextureCompassFX(Minecraft var1) : base(Item.compass.getIconFromDamage(0))
+        public CompassSprite(Minecraft var1) : base(Item.compass.getIconFromDamage(0))
         {
             mc = var1;
-            tileImage = FXImage.Items;
+            atlas = FXImage.Items;
 
             try
             {
                 BufferedImage var2 = ImageIO.read(new ByteArrayInputStream(AssetManager.Instance.getAsset("gui/items.png").getBinaryContent()));
-                int var3 = iconIndex % 16 * 16;
-                int var4 = iconIndex / 16 * 16;
-                var2.getRGB(var3, var4, 16, 16, compassIconImageData, 0, 16);
+                int var3 = sprite % 16 * 16;
+                int var4 = sprite / 16 * 16;
+                var2.getRGB(var3, var4, 16, 16, compass, 0, 16);
             }
             catch (java.io.IOException var5)
             {
@@ -34,14 +34,14 @@ namespace betareborn.Client.Textures
 
         }
 
-        public override void onTick()
+        public override void tick()
         {
             for (int var1 = 0; var1 < 256; ++var1)
             {
-                int var2 = compassIconImageData[var1] >> 24 & 255;
-                int var3 = compassIconImageData[var1] >> 16 & 255;
-                int var4 = compassIconImageData[var1] >> 8 & 255;
-                int var5 = compassIconImageData[var1] >> 0 & 255;
+                int var2 = compass[var1] >> 24 & 255;
+                int var3 = compass[var1] >> 16 & 255;
+                int var4 = compass[var1] >> 8 & 255;
+                int var5 = compass[var1] >> 0 & 255;
                 if (anaglyphEnabled)
                 {
                     int var6 = (var3 * 30 + var4 * 59 + var5 * 11) / 100;
@@ -52,10 +52,10 @@ namespace betareborn.Client.Textures
                     var5 = var8;
                 }
 
-                imageData[var1 * 4 + 0] = (byte)var3;
-                imageData[var1 * 4 + 1] = (byte)var4;
-                imageData[var1 * 4 + 2] = (byte)var5;
-                imageData[var1 * 4 + 3] = (byte)var2;
+                pixels[var1 * 4 + 0] = (byte)var3;
+                pixels[var1 * 4 + 1] = (byte)var4;
+                pixels[var1 * 4 + 2] = (byte)var5;
+                pixels[var1 * 4 + 3] = (byte)var2;
             }
 
             double var20 = 0.0D;
@@ -72,7 +72,7 @@ namespace betareborn.Client.Textures
             }
 
             double var22;
-            for (var22 = var20 - field_4229_i; var22 < -Math.PI; var22 += Math.PI * 2.0D)
+            for (var22 = var20 - angle; var22 < -Math.PI; var22 += Math.PI * 2.0D)
             {
             }
 
@@ -91,11 +91,11 @@ namespace betareborn.Client.Textures
                 var22 = 1.0D;
             }
 
-            field_4228_j += var22 * 0.1D;
-            field_4228_j *= 0.8D;
-            field_4229_i += field_4228_j;
-            double var24 = java.lang.Math.sin(field_4229_i);
-            double var26 = java.lang.Math.cos(field_4229_i);
+            angleDelta += var22 * 0.1D;
+            angleDelta *= 0.8D;
+            angle += angleDelta;
+            double var24 = java.lang.Math.sin(angle);
+            double var26 = java.lang.Math.cos(angle);
 
             int var9;
             int var10;
@@ -127,10 +127,10 @@ namespace betareborn.Client.Textures
                     var15 = var19;
                 }
 
-                imageData[var12 * 4 + 0] = (byte)var13;
-                imageData[var12 * 4 + 1] = (byte)var14;
-                imageData[var12 * 4 + 2] = (byte)var15;
-                imageData[var12 * 4 + 3] = (byte)var16;
+                pixels[var12 * 4 + 0] = (byte)var13;
+                pixels[var12 * 4 + 1] = (byte)var14;
+                pixels[var12 * 4 + 2] = (byte)var15;
+                pixels[var12 * 4 + 3] = (byte)var16;
             }
 
             for (var9 = -8; var9 <= 16; ++var9)
@@ -152,10 +152,10 @@ namespace betareborn.Client.Textures
                     var15 = var19;
                 }
 
-                imageData[var12 * 4 + 0] = (byte)var13;
-                imageData[var12 * 4 + 1] = (byte)var14;
-                imageData[var12 * 4 + 2] = (byte)var15;
-                imageData[var12 * 4 + 3] = (byte)var16;
+                pixels[var12 * 4 + 0] = (byte)var13;
+                pixels[var12 * 4 + 1] = (byte)var14;
+                pixels[var12 * 4 + 2] = (byte)var15;
+                pixels[var12 * 4 + 3] = (byte)var16;
             }
 
         }

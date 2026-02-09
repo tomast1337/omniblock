@@ -1,5 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
+using betareborn.Client.Rendering.Core;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 

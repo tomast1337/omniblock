@@ -1,4 +1,5 @@
 using betareborn.Blocks.BlockEntities;
+using betareborn.Client.Rendering.Core;
 using betareborn.Inventorys;
 using betareborn.Screens;
 
@@ -22,7 +23,7 @@ namespace betareborn.Client.Guis
 
         protected override void drawGuiContainerBackgroundLayer(float var1)
         {
-            int var2 = mc.textureManager.getTexture("/gui/furnace.png");
+            int var2 = mc.textureManager.getTextureId("/gui/furnace.png");
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             mc.textureManager.bindTexture(var2);
             int var3 = (width - xSize) / 2;

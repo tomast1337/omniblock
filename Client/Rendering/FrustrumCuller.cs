@@ -1,11 +1,11 @@
 using betareborn.Util.Maths;
 
-namespace betareborn
+namespace betareborn.Client.Rendering
 {
-    public class Frustrum : ICamera
+    public class FrustrumCuller : Culler
     {
 
-        private ClippingHelper clippingHelper = ClippingHelperImpl.getInstance();
+        private FrustumData frustum = Frustum.getInstance();
         private double xPosition;
         private double yPosition;
         private double zPosition;
@@ -19,7 +19,7 @@ namespace betareborn
 
         public bool isBoxInFrustum(double var1, double var3, double var5, double var7, double var9, double var11)
         {
-            return clippingHelper.isBoxInFrustum(var1 - xPosition, var3 - yPosition, var5 - zPosition, var7 - xPosition, var9 - yPosition, var11 - zPosition);
+            return frustum.isBoxInFrustum(var1 - xPosition, var3 - yPosition, var5 - zPosition, var7 - xPosition, var9 - yPosition, var11 - zPosition);
         }
 
         public bool isBoundingBoxInFrustum(Box var1)

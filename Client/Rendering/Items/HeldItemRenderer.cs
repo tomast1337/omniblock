@@ -30,18 +30,18 @@ namespace betareborn.Client.Rendering.Items
             GLManager.GL.PushMatrix();
             if (var2.itemID < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var2.itemID].getRenderType()))
             {
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/terrain.png"));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/terrain.png"));
                 renderBlocksInstance.renderBlockOnInventory(Block.BLOCKS[var2.itemID], var2.getItemDamage(), var1.getEntityBrightness(1.0F));
             }
             else
             {
                 if (var2.itemID < 256)
                 {
-                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/terrain.png"));
+                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/terrain.png"));
                 }
                 else
                 {
-                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture("/gui/items.png"));
+                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/gui/items.png"));
                 }
 
                 Tessellator var3 = Tessellator.instance;
@@ -199,7 +199,7 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Rotate(var8 * -85.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Enable(GLEnum.RescaleNormal);
                 //TODO: ADD SKINS
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture(mc.player.getEntityTexture()));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId(mc.player.getEntityTexture()));
 
                 for (int var17 = 0; var17 < 2; ++var17)
                 {
@@ -231,7 +231,7 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Translate(-1.0F, -1.0F, 0.0F);
                 var10 = 0.015625F;
                 GLManager.GL.Scale(var10, var10, var10);
-                mc.textureManager.bindTexture(mc.textureManager.getTexture("/misc/mapbg.png"));
+                mc.textureManager.bindTexture(mc.textureManager.getTextureId("/misc/mapbg.png"));
                 Tessellator var19 = Tessellator.instance;
                 GLManager.GL.Normal3(0.0F, 0.0F, -1.0F);
                 var19.startDrawingQuads();
@@ -289,7 +289,7 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Rotate(var10 * 70.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Rotate(-var9 * 20.0F, 0.0F, 0.0F, 1.0F);
                 //TODO: ADD SKIN
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTexture(mc.player.getEntityTexture()));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId(mc.player.getEntityTexture()));
                 GLManager.GL.Translate(-1.0F, 3.6F, 3.5F);
                 GLManager.GL.Rotate(120.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(200.0F, 1.0F, 0.0F, 0.0F);
@@ -314,7 +314,7 @@ namespace betareborn.Client.Rendering.Items
             int var2;
             if (mc.player.isOnFire())
             {
-                var2 = mc.textureManager.getTexture("/terrain.png");
+                var2 = mc.textureManager.getTextureId("/terrain.png");
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2);
                 renderFireInFirstPerson(var1);
             }
@@ -324,7 +324,7 @@ namespace betareborn.Client.Rendering.Items
                 var2 = MathHelper.floor_double(mc.player.posX);
                 int var3 = MathHelper.floor_double(mc.player.posY);
                 int var4 = MathHelper.floor_double(mc.player.posZ);
-                int var5 = mc.textureManager.getTexture("/terrain.png");
+                int var5 = mc.textureManager.getTextureId("/terrain.png");
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var5);
                 int var6 = mc.world.getBlockId(var2, var3, var4);
                 if (mc.world.shouldSuffocate(var2, var3, var4))
@@ -356,7 +356,7 @@ namespace betareborn.Client.Rendering.Items
 
             if (mc.player.isInsideOfMaterial(Material.WATER))
             {
-                var2 = mc.textureManager.getTexture("/misc/water.png");
+                var2 = mc.textureManager.getTextureId("/misc/water.png");
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2);
                 renderWarpedTextureOverlay(var1);
             }

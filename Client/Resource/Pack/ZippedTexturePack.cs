@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using java.awt.image;
 using java.io;
 using java.util.zip;
@@ -93,7 +94,7 @@ namespace betareborn.Client.Resource.Pack
         {
             if (texturePackThumbnail != null)
             {
-                var1.textureManager.deleteTexture(texturePackName);
+                var1.textureManager.delete(texturePackName);
             }
 
             closeTexturePackFile();
@@ -103,7 +104,7 @@ namespace betareborn.Client.Resource.Pack
         {
             if (texturePackThumbnail != null && texturePackName < 0)
             {
-                texturePackName = var1.textureManager.allocateAndSetupTexture(texturePackThumbnail);
+                texturePackName = var1.textureManager.load(texturePackThumbnail);
             }
 
             if (texturePackThumbnail != null)
@@ -112,7 +113,7 @@ namespace betareborn.Client.Resource.Pack
             }
             else
             {
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var1.textureManager.getTexture("/gui/unknown_pack.png"));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var1.textureManager.getTextureId("/gui/unknown_pack.png"));
             }
 
         }

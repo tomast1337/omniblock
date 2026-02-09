@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using betareborn.Client.Rendering.Terrain;
 using betareborn.Client.Resource;
 using betareborn.Profiling;
@@ -101,7 +102,7 @@ namespace betareborn.Client.Rendering.Chunks
             return 0;
         }
 
-        public unsafe void Render(ICamera camera, Vector3D<double> viewPos, int renderDistance, long ticks, float partialTicks, bool envAnim)
+        public unsafe void Render(Culler camera, Vector3D<double> viewPos, int renderDistance, long ticks, float partialTicks, bool envAnim)
         {
             lastRenderDistance = CalculateRealRenderDistance(renderDistance);
             lastViewPos = viewPos;
@@ -227,7 +228,7 @@ namespace betareborn.Client.Rendering.Chunks
             Core.VertexArray.Unbind();
         }
 
-        private void ProcessOneMeshUpdate(ICamera camera)
+        private void ProcessOneMeshUpdate(Culler camera)
         {
             dirtyChunks.Sort((a, b) =>
             {

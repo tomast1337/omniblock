@@ -14,23 +14,23 @@ namespace betareborn.Client.Rendering.Core
 {
     public class TextureManager : java.lang.Object
     {
-        private readonly HashMap textureMap = [];
-        private readonly HashMap field_28151_c = [];
-        private readonly HashMap textureNameToImageMap = [];
-        private readonly IntBuffer singleIntBuffer = GLAllocation.createDirectIntBuffer(1);
-        private readonly ByteBuffer imageData = GLAllocation.createDirectByteBuffer(1048576);
-        private readonly List<TextureFX> textureList = [];
-        private readonly Map urlToImageDataMap = new HashMap();
-        private readonly GameOptions options;
-        private bool clampTexture = false;
-        private bool blurTexture = false;
-        private readonly TexturePacks texturePack;
+        private readonly HashMap textures = [];
+        private readonly HashMap colors = [];
+        private readonly HashMap images = [];
+        private readonly IntBuffer idbuffer = GLAllocation.createDirectIntBuffer(1);
+        private readonly ByteBuffer imageBuffer = GLAllocation.createDirectByteBuffer(1048576);
+        private readonly List<DynamicTexture> dynamicTextures = [];
+        private readonly Map downloadedImages = new HashMap();
+        private readonly GameOptions gameOptions;
+        private bool clamp = false;
+        private bool blur = false;
+        private readonly TexturePacks texturePacks;
         private readonly BufferedImage missingTextureImage = new(64, 64, 2);
 
         public TextureManager(TexturePacks var1, GameOptions var2)
         {
-            texturePack = var1;
-            options = var2;
+            texturePacks = var1;
+            gameOptions = var2;
             Graphics var3 = missingTextureImage.getGraphics();
             var3.setColor(java.awt.Color.WHITE);
             var3.fillRect(0, 0, 64, 64);
@@ -39,10 +39,10 @@ namespace betareborn.Client.Rendering.Core
             var3.dispose();
         }
 
-        public int[] func_28149_a(string var1)
+        public int[] getColors(string var1)
         {
-            TexturePack var2 = texturePack.selectedTexturePack;
-            int[] var3 = (int[])field_28151_c.get(var1);
+            TexturePack var2 = texturePacks.selectedTexturePack;
+            int[] var3 = (int[])colors.get(var1);
             if (var3 != null)
             {
                 return var3;
@@ -54,47 +54,47 @@ namespace betareborn.Client.Rendering.Core
                     object var6 = null;
                     if (var1.StartsWith("##"))
                     {
-                        var3 = func_28148_b(unwrapImageByColumns(readTextureImage(var2.getResourceAsStream(var1[2..]))));
+                        var3 = readColors(rescale(readImage(var2.getResourceAsStream(var1[2..]))));
                     }
                     else if (var1.StartsWith("%clamp%"))
                     {
-                        clampTexture = true;
-                        var3 = func_28148_b(readTextureImage(var2.getResourceAsStream(var1[7..])));
-                        clampTexture = false;
+                        clamp = true;
+                        var3 = readColors(readImage(var2.getResourceAsStream(var1[7..])));
+                        clamp = false;
                     }
                     else if (var1.StartsWith("%blur%"))
                     {
-                        blurTexture = true;
-                        var3 = func_28148_b(readTextureImage(var2.getResourceAsStream(var1[6..])));
-                        blurTexture = false;
+                        blur = true;
+                        var3 = readColors(readImage(var2.getResourceAsStream(var1[6..])));
+                        blur = false;
                     }
                     else
                     {
                         InputStream var7 = var2.getResourceAsStream(var1);
                         if (var7 == null)
                         {
-                            var3 = func_28148_b(missingTextureImage);
+                            var3 = readColors(missingTextureImage);
                         }
                         else
                         {
-                            var3 = func_28148_b(readTextureImage(var7));
+                            var3 = readColors(readImage(var7));
                         }
                     }
 
-                    field_28151_c.put(var1, var3);
+                    colors.put(var1, var3);
                     return var3;
                 }
                 catch (java.io.IOException var5)
                 {
                     var5.printStackTrace();
-                    int[] var4 = func_28148_b(missingTextureImage);
-                    field_28151_c.put(var1, var4);
+                    int[] var4 = readColors(missingTextureImage);
+                    colors.put(var1, var4);
                     return var4;
                 }
             }
         }
 
-        private int[] func_28148_b(BufferedImage var1)
+        private int[] readColors(BufferedImage var1)
         {
             int var2 = var1.getWidth();
             int var3 = var1.getHeight();
@@ -103,7 +103,7 @@ namespace betareborn.Client.Rendering.Core
             return var4;
         }
 
-        private int[] func_28147_a(BufferedImage var1, int[] var2)
+        private int[] readColors(BufferedImage var1, int[] var2)
         {
             int var3 = var1.getWidth();
             int var4 = var1.getHeight();
@@ -111,10 +111,10 @@ namespace betareborn.Client.Rendering.Core
             return var2;
         }
 
-        public int getTexture(string var1)
+        public int getTextureId(string var1)
         {
-            TexturePack var2 = texturePack.selectedTexturePack;
-            Integer var3 = (Integer)textureMap.get(var1);
+            TexturePack var2 = texturePacks.selectedTexturePack;
+            Integer var3 = (Integer)textures.get(var1);
             if (var3 != null)
             {
                 return var3.intValue();
@@ -123,54 +123,54 @@ namespace betareborn.Client.Rendering.Core
             {
                 try
                 {
-                    singleIntBuffer.clear();
-                    GLAllocation.generateTextureNames(singleIntBuffer);
-                    int var6 = singleIntBuffer.get(0);
+                    idbuffer.clear();
+                    GLAllocation.generateTextureNames(idbuffer);
+                    int var6 = idbuffer.get(0);
                     if (var1.StartsWith("##"))
                     {
-                        setupTexture(unwrapImageByColumns(readTextureImage(var2.getResourceAsStream(var1[2..]))), var6);
+                        load(rescale(readImage(var2.getResourceAsStream(var1[2..]))), var6);
                     }
                     else if (var1.StartsWith("%clamp%"))
                     {
-                        clampTexture = true;
-                        setupTexture(readTextureImage(var2.getResourceAsStream(var1[7..])), var6);
-                        clampTexture = false;
+                        clamp = true;
+                        load(readImage(var2.getResourceAsStream(var1[7..])), var6);
+                        clamp = false;
                     }
                     else if (var1.StartsWith("%blur%"))
                     {
-                        blurTexture = true;
-                        setupTexture(readTextureImage(var2.getResourceAsStream(var1[6..])), var6);
-                        blurTexture = false;
+                        blur = true;
+                        load(readImage(var2.getResourceAsStream(var1[6..])), var6);
+                        blur = false;
                     }
                     else
                     {
                         InputStream var7 = var2.getResourceAsStream(var1);
                         if (var7 == null)
                         {
-                            setupTexture(missingTextureImage, var6);
+                            load(missingTextureImage, var6);
                         }
                         else
                         {
-                            setupTexture(readTextureImage(var7), var6, var1.Contains("terrain.png"));
+                            load(readImage(var7), var6, var1.Contains("terrain.png"));
                         }
                     }
 
-                    textureMap.put(var1, Integer.valueOf(var6));
+                    textures.put(var1, Integer.valueOf(var6));
                     return var6;
                 }
                 catch (java.io.IOException var5)
                 {
                     var5.printStackTrace();
-                    GLAllocation.generateTextureNames(singleIntBuffer);
-                    int var4 = singleIntBuffer.get(0);
-                    setupTexture(missingTextureImage, var4);
-                    textureMap.put(var1, Integer.valueOf(var4));
+                    GLAllocation.generateTextureNames(idbuffer);
+                    int var4 = idbuffer.get(0);
+                    load(missingTextureImage, var4);
+                    textures.put(var1, Integer.valueOf(var4));
                     return var4;
                 }
             }
         }
 
-        private BufferedImage unwrapImageByColumns(BufferedImage var1)
+        private BufferedImage rescale(BufferedImage var1)
         {
             int var2 = var1.getWidth() / 16;
             BufferedImage var3 = new(16, var1.getHeight() * var2, 2);
@@ -185,22 +185,22 @@ namespace betareborn.Client.Rendering.Core
             return var3;
         }
 
-        public int allocateAndSetupTexture(BufferedImage var1)
+        public int load(BufferedImage var1)
         {
-            singleIntBuffer.clear();
-            GLAllocation.generateTextureNames(singleIntBuffer);
-            int var2 = singleIntBuffer.get(0);
-            setupTexture(var1, var2);
-            textureNameToImageMap.put(Integer.valueOf(var2), var1);
+            idbuffer.clear();
+            GLAllocation.generateTextureNames(idbuffer);
+            int var2 = idbuffer.get(0);
+            load(var1, var2);
+            images.put(Integer.valueOf(var2), var1);
             return var2;
         }
 
-        public unsafe void setupTexture(BufferedImage var1, int var2)
+        public unsafe void load(BufferedImage var1, int var2)
         {
-            setupTexture(var1, var2, false);
+            load(var1, var2, false);
         }
 
-        public unsafe void setupTexture(BufferedImage var1, int var2, bool isTerrain)
+        public unsafe void load(BufferedImage var1, int var2, bool isTerrain)
         {
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2);
 
@@ -209,7 +209,7 @@ namespace betareborn.Client.Rendering.Core
                 int tileSize = var1.getWidth() / 16;
                 TextureAtlas[] mips = GenerateMipmaps(bufferedImageToTextureAtlas(var1), tileSize);
 
-                int mipCount = options.useMipmaps ? mips.Length : 1;
+                int mipCount = gameOptions.useMipmaps ? mips.Length : 1;
 
                 for (int mipLevel = 0; mipLevel < mipCount; mipLevel++)
                 {
@@ -232,7 +232,7 @@ namespace betareborn.Client.Rendering.Core
                     }
                 }
 
-                if (options.useMipmaps)
+                if (gameOptions.useMipmaps)
                 {
                     GLManager.GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
                                      (int)TextureMinFilter.NearestMipmapNearest);
@@ -250,7 +250,7 @@ namespace betareborn.Client.Rendering.Core
 
                 if (GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic"))
                 {
-                    float aniso = options.anisotropicLevel == 0 ? 1.0f : (float)System.Math.Pow(2, options.anisotropicLevel);
+                    float aniso = gameOptions.anisotropicLevel == 0 ? 1.0f : (float)System.Math.Pow(2, gameOptions.anisotropicLevel);
                     aniso = System.Math.Clamp(aniso, 1.0f, GameOptions.MaxAnisotropy);
 
                     GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMaxAnisotropy, aniso);
@@ -261,13 +261,13 @@ namespace betareborn.Client.Rendering.Core
             GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
             GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
 
-            if (blurTexture)
+            if (blur)
             {
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Linear);
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Linear);
             }
 
-            if (clampTexture)
+            if (clamp)
             {
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapS, (int)GLEnum.Clamp);
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapT, (int)GLEnum.Clamp);
@@ -302,18 +302,18 @@ namespace betareborn.Client.Rendering.Core
                 var6[var7 * 4 + 3] = (byte)var8;
             }
 
-            imageData.clear();
-            imageData.put(var6);
-            imageData.position(0).limit(var6.Length);
+            imageBuffer.clear();
+            imageBuffer.put(var6);
+            imageBuffer.position(0).limit(var6.Length);
 
-            BufferHelper.UsePointer(imageData, (p) =>
+            BufferHelper.UsePointer(imageBuffer, (p) =>
             {
                 var ptr = (byte*)p;
                 GLManager.GL.TexImage2D(GLEnum.Texture2D, 0, (int)GLEnum.Rgba, (uint)var3, (uint)var4, 0, GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
             });
         }
 
-        public unsafe void func_28150_a(int[] var1, int var2, int var3, int var4)
+        public unsafe void bind(int[] var1, int var2, int var3, int var4)
         {
             //TODO: this is probably wrong and will crash
 
@@ -322,12 +322,12 @@ namespace betareborn.Client.Rendering.Core
             GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
             GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
 
-            if (blurTexture)
+            if (blur)
             {
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Linear);
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Linear);
             }
-            if (clampTexture)
+            if (clamp)
             {
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapS, (int)GLEnum.Clamp);
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapT, (int)GLEnum.Clamp);
@@ -353,12 +353,12 @@ namespace betareborn.Client.Rendering.Core
                 var5[var6 * 4 + 3] = (byte)var7;
             }
 
-            imageData.clear();
-            imageData.put(var5);
-            imageData.position(0).limit(var5.Length);
+            imageBuffer.clear();
+            imageBuffer.put(var5);
+            imageBuffer.position(0).limit(var5.Length);
 
-            byte[] imageArray = imageData.array();
-            int offset = imageData.arrayOffset();
+            byte[] imageArray = imageBuffer.array();
+            int offset = imageBuffer.arrayOffset();
 
             fixed (byte* ptr = imageArray)
             {
@@ -366,12 +366,12 @@ namespace betareborn.Client.Rendering.Core
             }
         }
 
-        public void deleteTexture(int var1)
+        public void delete(int var1)
         {
-            textureNameToImageMap.remove(Integer.valueOf(var1));
-            singleIntBuffer.clear();
-            singleIntBuffer.put(var1);
-            singleIntBuffer.flip();
+            images.remove(Integer.valueOf(var1));
+            idbuffer.clear();
+            idbuffer.put(var1);
+            idbuffer.flip();
             //GL11.glDeleteTextures(singleIntBuffer);
             GLManager.GL.DeleteTexture((uint)var1);
         }
@@ -430,62 +430,62 @@ namespace betareborn.Client.Rendering.Core
 
         //}
 
-        public void registerTextureFX(TextureFX var1)
+        public void addDynamicTexture(DynamicTexture var1)
         {
-            textureList.Add(var1);
-            var1.onTick();
+            dynamicTextures.Add(var1);
+            var1.tick();
         }
 
-        public unsafe void updateDynamicTextures()
+        public unsafe void tick()
         {
             int var1;
-            TextureFX var2;
+            DynamicTexture var2;
             int var3;
             int var4;
 
-            for (var1 = 0; var1 < textureList.Count; ++var1)
+            for (var1 = 0; var1 < dynamicTextures.Count; ++var1)
             {
-                var2 = textureList[var1];
-                var2.onTick();
-                imageData.clear();
-                imageData.put(var2.imageData);
-                imageData.position(0).limit(var2.imageData.Length);
-                var2.bindImage(this);
-                BufferHelper.UsePointer(imageData, p =>
+                var2 = dynamicTextures[var1];
+                var2.tick();
+                imageBuffer.clear();
+                imageBuffer.put(var2.pixels);
+                imageBuffer.position(0).limit(var2.pixels.Length);
+                var2.bind(this);
+                BufferHelper.UsePointer(imageBuffer, p =>
                 {
                     var ptr = (byte*)p;
-                    int fxPixelSize = (int)System.Math.Sqrt(var2.imageData.Length / 4);
-                    for (var3 = 0; var3 < var2.tileSize; ++var3)
+                    int fxPixelSize = (int)System.Math.Sqrt(var2.pixels.Length / 4);
+                    for (var3 = 0; var3 < var2.replicate; ++var3)
                     {
-                        for (var4 = 0; var4 < var2.tileSize; ++var4)
+                        for (var4 = 0; var4 < var2.replicate; ++var4)
                         {
                             GLManager.GL.TexSubImage2D(GLEnum.Texture2D, 0,
-                                var2.iconIndex % 16 * fxPixelSize + var3 * fxPixelSize,
-                                var2.iconIndex / 16 * fxPixelSize + var4 * fxPixelSize,
+                                var2.sprite % 16 * fxPixelSize + var3 * fxPixelSize,
+                                var2.sprite / 16 * fxPixelSize + var4 * fxPixelSize,
                                 (uint)fxPixelSize, (uint)fxPixelSize, GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
                         }
                     }
                 });
 
-                if (var2.tileImage == TextureFX.FXImage.Terrain)
+                if (var2.atlas == DynamicTexture.FXImage.Terrain)
                 {
-                    UpdateTileMipmaps(var2.iconIndex, var2.imageData, var2.tileSize);
+                    UpdateTileMipmaps(var2.sprite, var2.pixels, var2.replicate);
                 }
             }
 
-            for (var1 = 0; var1 < textureList.Count; ++var1)
+            for (var1 = 0; var1 < dynamicTextures.Count; ++var1)
             {
-                var2 = textureList[var1];
-                if (var2.textureId > 0)
+                var2 = dynamicTextures[var1];
+                if (var2.copyTo > 0)
                 {
-                    imageData.clear();
-                    imageData.put(var2.imageData);
-                    imageData.position(0).limit(var2.imageData.Length);
-                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2.textureId);
-                    BufferHelper.UsePointer(imageData, p =>
+                    imageBuffer.clear();
+                    imageBuffer.put(var2.pixels);
+                    imageBuffer.position(0).limit(var2.pixels.Length);
+                    GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2.copyTo);
+                    BufferHelper.UsePointer(imageBuffer, p =>
                     {
                         var ptr = (byte*)p;
-                        int fxPixelSize = (int)System.Math.Sqrt(var2.imageData.Length / 4);
+                        int fxPixelSize = (int)System.Math.Sqrt(var2.pixels.Length / 4);
                         GLManager.GL.TexSubImage2D(GLEnum.Texture2D, 0, 0, 0, (uint)fxPixelSize, (uint)fxPixelSize, GLEnum.Rgba, GLEnum.UnsignedByte, ptr);
                     });
                 }
@@ -494,7 +494,7 @@ namespace betareborn.Client.Rendering.Core
 
         private unsafe void UpdateTileMipmaps(int tileIndex, byte[] tileData, int tileSize)
         {
-            if (!options.useMipmaps)
+            if (!gameOptions.useMipmaps)
             {
                 return;
             }
@@ -554,17 +554,17 @@ namespace betareborn.Client.Rendering.Core
             return mipmaps;
         }
 
-        public void refreshTextures()
+        public void reload()
         {
-            TexturePack var1 = texturePack.selectedTexturePack;
-            Iterator var2 = textureNameToImageMap.keySet().iterator();
+            TexturePack var1 = texturePacks.selectedTexturePack;
+            Iterator var2 = images.keySet().iterator();
 
             BufferedImage var4;
             while (var2.hasNext())
             {
                 int var3 = ((Integer)var2.next()).intValue();
-                var4 = (BufferedImage)textureNameToImageMap.get(Integer.valueOf(var3));
-                setupTexture(var4, var3);
+                var4 = (BufferedImage)images.get(Integer.valueOf(var3));
+                load(var4, var3);
             }
 
             //ThreadDownloadImageData var8;
@@ -573,7 +573,7 @@ namespace betareborn.Client.Rendering.Core
             //    var8 = (ThreadDownloadImageData)var2.next();
             //}
 
-            var2 = textureMap.keySet().iterator();
+            var2 = textures.keySet().iterator();
 
             string var9;
             while (var2.hasNext())
@@ -584,27 +584,27 @@ namespace betareborn.Client.Rendering.Core
                 {
                     if (var9.StartsWith("##"))
                     {
-                        var4 = unwrapImageByColumns(readTextureImage(var1.getResourceAsStream(var9[2..])));
+                        var4 = rescale(readImage(var1.getResourceAsStream(var9[2..])));
                     }
                     else if (var9.StartsWith("%clamp%"))
                     {
-                        clampTexture = true;
-                        var4 = readTextureImage(var1.getResourceAsStream(var9[7..]));
+                        clamp = true;
+                        var4 = readImage(var1.getResourceAsStream(var9[7..]));
                     }
                     else if (var9.StartsWith("%blur%"))
                     {
-                        blurTexture = true;
-                        var4 = readTextureImage(var1.getResourceAsStream(var9[6..]));
+                        blur = true;
+                        var4 = readImage(var1.getResourceAsStream(var9[6..]));
                     }
                     else
                     {
-                        var4 = readTextureImage(var1.getResourceAsStream(var9));
+                        var4 = readImage(var1.getResourceAsStream(var9));
                     }
 
-                    int var5 = ((Integer)textureMap.get(var9)).intValue();
-                    setupTexture(var4, var5, var9.Contains("terrain.png"));
-                    blurTexture = false;
-                    clampTexture = false;
+                    int var5 = ((Integer)textures.get(var9)).intValue();
+                    load(var4, var5, var9.Contains("terrain.png"));
+                    blur = false;
+                    clamp = false;
                 }
                 catch (java.io.IOException var7)
                 {
@@ -612,7 +612,7 @@ namespace betareborn.Client.Rendering.Core
                 }
             }
 
-            var2 = field_28151_c.keySet().iterator();
+            var2 = colors.keySet().iterator();
 
             while (var2.hasNext())
             {
@@ -622,26 +622,26 @@ namespace betareborn.Client.Rendering.Core
                 {
                     if (var9.StartsWith("##"))
                     {
-                        var4 = unwrapImageByColumns(readTextureImage(var1.getResourceAsStream(var9[2..])));
+                        var4 = rescale(readImage(var1.getResourceAsStream(var9[2..])));
                     }
                     else if (var9.StartsWith("%clamp%"))
                     {
-                        clampTexture = true;
-                        var4 = readTextureImage(var1.getResourceAsStream(var9[7..]));
+                        clamp = true;
+                        var4 = readImage(var1.getResourceAsStream(var9[7..]));
                     }
                     else if (var9.StartsWith("%blur%"))
                     {
-                        blurTexture = true;
-                        var4 = readTextureImage(var1.getResourceAsStream(var9[6..]));
+                        blur = true;
+                        var4 = readImage(var1.getResourceAsStream(var9[6..]));
                     }
                     else
                     {
-                        var4 = readTextureImage(var1.getResourceAsStream(var9));
+                        var4 = readImage(var1.getResourceAsStream(var9));
                     }
 
-                    func_28147_a(var4, (int[])field_28151_c.get(var9));
-                    blurTexture = false;
-                    clampTexture = false;
+                    readColors(var4, (int[])colors.get(var9));
+                    blur = false;
+                    clamp = false;
                 }
                 catch (java.io.IOException var6)
                 {
@@ -651,7 +651,7 @@ namespace betareborn.Client.Rendering.Core
 
         }
 
-        private BufferedImage readTextureImage(InputStream var1)
+        private BufferedImage readImage(InputStream var1)
         {
             BufferedImage var2 = ImageIO.read(var1);
             var1.close();
@@ -686,11 +686,11 @@ namespace betareborn.Client.Rendering.Core
             return atlas;
         }
 
-        public void bindTexture(int var1)
+        public void bindTexture(int id)
         {
-            if (var1 >= 0)
+            if (id >= 0)
             {
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var1);
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)id);
             }
         }
     }

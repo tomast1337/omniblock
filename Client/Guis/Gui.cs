@@ -1,3 +1,4 @@
+using betareborn.Client.Rendering.Core;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Client.Guis

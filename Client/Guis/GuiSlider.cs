@@ -1,3 +1,5 @@
+using betareborn.Client.Rendering.Core;
+
 namespace betareborn.Client.Guis
 {
     public class GuiSlider : GuiButton

@@ -1,14 +1,15 @@
+using betareborn.Client.Rendering.Core;
 using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
-namespace betareborn
+namespace betareborn.Client.Rendering
 {
-    public class ClippingHelperImpl : ClippingHelper
+    public class Frustum : FrustumData
     {
 
-        private static ClippingHelperImpl instance = new ClippingHelperImpl();
+        private static Frustum instance = new Frustum();
 
-        public static ClippingHelper getInstance()
+        public static FrustumData getInstance()
         {
             instance.init();
             return instance;

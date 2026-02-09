@@ -13,7 +13,7 @@ namespace betareborn.Blocks.BlockEntities
         protected void bindTextureByName(string var1)
         {
             TextureManager var2 = tileEntityRenderer.renderEngine;
-            var2.bindTexture(var2.getTexture(var1));
+            var2.bindTexture(var2.getTextureId(var1));
         }
 
         public void setTileEntityRenderer(BlockEntityRenderer var1)

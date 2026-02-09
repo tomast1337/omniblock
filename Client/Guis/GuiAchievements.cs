@@ -177,8 +177,8 @@ namespace betareborn.Client.Guis
                 var5 = field_27123_v - 1;
             }
 
-            int var6 = mc.textureManager.getTexture("/terrain.png");
-            int var7 = mc.textureManager.getTexture("/achievement/bg.png");
+            int var6 = mc.textureManager.getTextureId("/terrain.png");
+            int var7 = mc.textureManager.getTextureId("/achievement/bg.png");
             int var8 = (width - field_27121_a) / 2;
             int var9 = (height - field_27119_i) / 2;
             int var10 = var8 + 16;

@@ -36,7 +36,7 @@ namespace betareborn.Entities
             float var12 = (float)(posY - interpPosY);
             float var13 = (float)(posZ - interpPosZ);
             float var14 = worldObj.getLuminance(MathHelper.floor_double(posX), MathHelper.floor_double(posY), MathHelper.floor_double(posZ));
-            field_27019_p.bindTexture(field_27019_p.getTexture("/misc/footprint.png"));
+            field_27019_p.bindTexture(field_27019_p.getTextureId("/misc/footprint.png"));
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             var1.startDrawingQuads();

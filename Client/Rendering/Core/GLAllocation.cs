@@ -2,7 +2,7 @@ using java.lang;
 using java.nio;
 using java.util;
 
-namespace betareborn
+namespace betareborn.Client.Rendering.Core
 {
     public class GLAllocation : java.lang.Object
     {
