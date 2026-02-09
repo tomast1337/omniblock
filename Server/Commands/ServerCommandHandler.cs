@@ -1,9 +1,9 @@
 ﻿using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Network.Packets.Play;
+using betareborn.Util;
 using betareborn.Worlds;
 using java.lang;
-using java.util;
 using java.util.logging;
 
 namespace betareborn.Server.Commands
@@ -23,10 +23,10 @@ namespace betareborn.Server.Commands
             string var2 = command.commandAndArgs;
             CommandOutput var3 = command.output;
             string var4 = var3.getName();
-            PlayerManager var5 = this.server.playerManager;
+            PlayerManager var5 = server.playerManager;
             if (var2.ToLower().StartsWith("help") || var2.ToLower().StartsWith("?"))
             {
-                this.displayHelp(var3);
+                displayHelp(var3);
             }
             else if (var2.ToLower().StartsWith("list"))
             {
@@ -34,42 +34,42 @@ namespace betareborn.Server.Commands
             }
             else if (var2.ToLower().StartsWith("stop"))
             {
-                this.logCommand(var4, "Stopping the server..");
-                this.server.stop();
+                logCommand(var4, "Stopping the server..");
+                server.stop();
             }
             else if (var2.ToLower().StartsWith("save-all"))
             {
-                this.logCommand(var4, "Forcing save..");
+                logCommand(var4, "Forcing save..");
                 if (var5 != null)
                 {
                     var5.savePlayers();
                 }
 
-                for (int var6 = 0; var6 < this.server.worlds.length; var6++)
+                for (int var6 = 0; var6 < server.worlds.Length; var6++)
                 {
-                    ServerWorld var7 = this.server.worlds[var6];
+                    ServerWorld var7 = server.worlds[var6];
                     var7.saveWithLoadingDisplay(true, null);
                 }
 
-                this.logCommand(var4, "Save complete.");
+                logCommand(var4, "Save complete.");
             }
             else if (var2.ToLower().StartsWith("save-off"))
             {
-                this.logCommand(var4, "Disabling level saving..");
+                logCommand(var4, "Disabling level saving..");
 
-                for (int var17 = 0; var17 < this.server.worlds.length; var17++)
+                for (int var17 = 0; var17 < server.worlds.Length; var17++)
                 {
-                    ServerWorld var30 = this.server.worlds[var17];
+                    ServerWorld var30 = server.worlds[var17];
                     var30.savingDisabled = true;
                 }
             }
             else if (var2.ToLower().StartsWith("save-on"))
             {
-                this.logCommand(var4, "Enabling level saving..");
+                logCommand(var4, "Enabling level saving..");
 
-                for (int var18 = 0; var18 < this.server.worlds.length; var18++)
+                for (int var18 = 0; var18 < server.worlds.Length; var18++)
                 {
-                    ServerWorld var31 = this.server.worlds[var18];
+                    ServerWorld var31 = server.worlds[var18];
                     var31.savingDisabled = false;
                 }
             }
@@ -77,7 +77,7 @@ namespace betareborn.Server.Commands
             {
                 string var19 = var2.Substring(var2.IndexOf(" ")).Trim();
                 var5.addToOperators(var19);
-                this.logCommand(var4, "Opping " + var19);
+                logCommand(var4, "Opping " + var19);
                 var5.messagePlayer(var19, "§eYou are now op!");
             }
             else if (var2.ToLower().StartsWith("deop "))
@@ -85,25 +85,25 @@ namespace betareborn.Server.Commands
                 string var20 = var2.Substring(var2.IndexOf(" ")).Trim();
                 var5.removeFromOperators(var20);
                 var5.messagePlayer(var20, "§eYou are no longer op!");
-                this.logCommand(var4, "De-opping " + var20);
+                logCommand(var4, "De-opping " + var20);
             }
             else if (var2.ToLower().StartsWith("ban-ip "))
             {
                 string var21 = var2.Substring(var2.IndexOf(" ")).Trim();
                 var5.banIp(var21);
-                this.logCommand(var4, "Banning ip " + var21);
+                logCommand(var4, "Banning ip " + var21);
             }
             else if (var2.ToLower().StartsWith("pardon-ip "))
             {
                 string var22 = var2.Substring(var2.IndexOf(" ")).Trim();
                 var5.unbanIp(var22);
-                this.logCommand(var4, "Pardoning ip " + var22);
+                logCommand(var4, "Pardoning ip " + var22);
             }
             else if (var2.ToLower().StartsWith("ban "))
             {
                 string var23 = var2.Substring(var2.IndexOf(" ")).Trim();
                 var5.banPlayer(var23);
-                this.logCommand(var4, "Banning " + var23);
+                logCommand(var4, "Banning " + var23);
                 ServerPlayerEntity var32 = var5.getPlayer(var23);
                 if (var32 != null)
                 {
@@ -114,7 +114,7 @@ namespace betareborn.Server.Commands
             {
                 string var24 = var2.Substring(var2.IndexOf(" ")).Trim();
                 var5.unbanPlayer(var24);
-                this.logCommand(var4, "Pardoning " + var24);
+                logCommand(var4, "Pardoning " + var24);
             }
             else if (var2.ToLower().StartsWith("kick "))
             {
@@ -124,7 +124,7 @@ namespace betareborn.Server.Commands
                 for (int var8 = 0; var8 < var5.players.size(); var8++)
                 {
                     ServerPlayerEntity var9 = (ServerPlayerEntity)var5.players.get(var8);
-                    if (var9.name.equalsIgnoreCase(var25))
+                    if (var9.name.EqualsIgnoreCase(var25))
                     {
                         var33 = var9;
                     }
@@ -133,7 +133,7 @@ namespace betareborn.Server.Commands
                 if (var33 != null)
                 {
                     var33.networkHandler.disconnect("Kicked by admin");
-                    this.logCommand(var4, "Kicking " + var33.name);
+                    logCommand(var4, "Kicking " + var33.name);
                 }
                 else
                 {
@@ -162,7 +162,7 @@ namespace betareborn.Server.Commands
                     else
                     {
                         var34.networkHandler.teleport(var37.x, var37.y, var37.z, var37.yaw, var37.pitch);
-                        this.logCommand(var4, "Teleporting " + var26[1] + " to " + var26[2] + ".");
+                        logCommand(var4, "Teleporting " + var26[1] + " to " + var26[2] + ".");
                     }
                 }
                 else
@@ -187,11 +187,11 @@ namespace betareborn.Server.Commands
                         int var40 = Integer.parseInt(var27[2]);
                         if (Item.ITEMS[var40] != null)
                         {
-                            this.logCommand(var4, "Giving " + var38.name + " some " + var40);
+                            logCommand(var4, "Giving " + var38.name + " some " + var40);
                             int var10 = 1;
                             if (var27.Length > 3)
                             {
-                                var10 = this.parseInt(var27[3], 1);
+                                var10 = parseInt(var27[3], 1);
                             }
 
                             if (var10 < 1)
@@ -211,7 +211,7 @@ namespace betareborn.Server.Commands
                             var3.sendMessage("There's no item with id " + var40);
                         }
                     }
-                    catch (NumberFormatException var11)
+                    catch (NumberFormatException)
                     {
                         var3.sendMessage("There's no item with id " + var27[2]);
                     }
@@ -234,32 +234,32 @@ namespace betareborn.Server.Commands
                 try
                 {
                     int var39 = Integer.parseInt(var28[2]);
-                    if ("add".equalsIgnoreCase(var36))
+                    if ("add".EqualsIgnoreCase(var36))
                     {
-                        for (int var41 = 0; var41 < this.server.worlds.length; var41++)
+                        for (int var41 = 0; var41 < server.worlds.Length; var41++)
                         {
-                            ServerWorld var43 = this.server.worlds[var41];
+                            ServerWorld var43 = server.worlds[var41];
                             var43.synchronizeTimeAndUpdates(var43.getTime() + var39);
                         }
 
-                        this.logCommand(var4, "Added " + var39 + " to time");
+                        logCommand(var4, "Added " + var39 + " to time");
                     }
-                    else if ("set".equalsIgnoreCase(var36))
+                    else if ("set".EqualsIgnoreCase(var36))
                     {
-                        for (int var42 = 0; var42 < this.server.worlds.length; var42++)
+                        for (int var42 = 0; var42 < server.worlds.Length; var42++)
                         {
-                            ServerWorld var44 = this.server.worlds[var42];
+                            ServerWorld var44 = server.worlds[var42];
                             var44.synchronizeTimeAndUpdates(var39);
                         }
 
-                        this.logCommand(var4, "Set time to " + var39);
+                        logCommand(var4, "Set time to " + var39);
                     }
                     else
                     {
                         var3.sendMessage("Unknown method, use either \"add\" or \"set\"");
                     }
                 }
-                catch (NumberFormatException var12)
+                catch (NumberFormatException)
                 {
                     var3.sendMessage("Unable to convert time value, " + var28[2]);
                 }
@@ -288,7 +288,7 @@ namespace betareborn.Server.Commands
             }
             else if (var2.ToLower().StartsWith("whitelist "))
             {
-                this.executeWhitelist(var4, var2, var3);
+                executeWhitelist(var4, var2, var3);
             }
             else
             {
@@ -304,20 +304,20 @@ namespace betareborn.Server.Commands
                 string var5 = var4[1].ToLower();
                 if ("on".Equals(var5))
                 {
-                    this.logCommand(commandUser, "Turned on white-listing");
-                    this.server.properties.setProperty("white-list", true);
+                    logCommand(commandUser, "Turned on white-listing");
+                    server.properties.setProperty("white-list", true);
                 }
                 else if ("off".Equals(var5))
                 {
-                    this.logCommand(commandUser, "Turned off white-listing");
-                    this.server.properties.setProperty("white-list", false);
+                    logCommand(commandUser, "Turned off white-listing");
+                    server.properties.setProperty("white-list", false);
                 }
                 else if ("list".Equals(var5))
                 {
-                    Set var6 = this.server.playerManager.getWhitelist();
+                    var var6 = server.playerManager.getWhitelist();
                     string var7 = "";
 
-                    for (string var9 : var6)
+                    foreach (string var9 in var6)
                     {
                         var7 = var7 + var9 + " ";
                     }
@@ -327,19 +327,19 @@ namespace betareborn.Server.Commands
                 else if ("add".Equals(var5) && var4.Length == 3)
                 {
                     string var11 = var4[2].ToLower();
-                    this.server.playerManager.addToWhitelist(var11);
-                    this.logCommand(commandUser, "Added " + var11 + " to white-list");
+                    server.playerManager.addToWhitelist(var11);
+                    logCommand(commandUser, "Added " + var11 + " to white-list");
                 }
                 else if ("remove".Equals(var5) && var4.Length == 3)
                 {
                     string var10 = var4[2].ToLower();
-                    this.server.playerManager.removeFromWhitelist(var10);
-                    this.logCommand(commandUser, "Removed " + var10 + " from white-list");
+                    server.playerManager.removeFromWhitelist(var10);
+                    logCommand(commandUser, "Removed " + var10 + " from white-list");
                 }
                 else if ("reload".Equals(var5))
                 {
-                    this.server.playerManager.reloadWhitelist();
-                    this.logCommand(commandUser, "Reloaded white-list from file");
+                    server.playerManager.reloadWhitelist();
+                    logCommand(commandUser, "Reloaded white-list from file");
                 }
             }
         }
@@ -372,7 +372,7 @@ namespace betareborn.Server.Commands
         private void logCommand(string commandUser, string message)
         {
             string var3 = commandUser + ": " + message;
-            this.server.playerManager.broadcast("§7(" + var3 + ")");
+            server.playerManager.broadcast("§7(" + var3 + ")");
             logger.info(var3);
         }
 
@@ -382,7 +382,7 @@ namespace betareborn.Server.Commands
             {
                 return Integer.parseInt(strin);
             }
-            catch (NumberFormatException var4)
+            catch (NumberFormatException)
             {
                 return fallback;
             }

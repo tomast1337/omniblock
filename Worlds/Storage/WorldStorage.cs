@@ -1,4 +1,4 @@
-using betareborn.Worlds;
+using betareborn.Server.Worlds;
 using betareborn.Worlds.Chunks.Storage;
 using betareborn.Worlds.Dimensions;
 using java.util;
@@ -17,7 +17,8 @@ namespace betareborn.Worlds.Storage
 
         void save(WorldProperties var1);
         void forceSave();
-        //PlayerSaveHandler getPlayerSaveHandler();
+
+        PlayerSaveHandler getPlayerSaveHandler();
 
         java.io.File getWorldPropertiesFile(string name);
     }

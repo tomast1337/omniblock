@@ -7,6 +7,8 @@ using betareborn.Network.Packets.Play;
 using betareborn.Network.Packets.S2CPlay;
 using betareborn.Screens;
 using betareborn.Screens.Slots;
+using betareborn.Server;
+using betareborn.Server.Entities;
 using betareborn.Server.Network;
 using betareborn.Stats;
 using betareborn.Util.Maths;
@@ -511,6 +513,12 @@ namespace betareborn.Entities
             TranslationStorage var2 = TranslationStorage.getInstance();
             string var3 = var2.translateKey(message);
             networkHandler.sendPacket(new ChatMessagePacket(var3));
+        }
+
+        public override void spawn()
+        {
+            //client only
+            throw new NotImplementedException();
         }
     }
 }

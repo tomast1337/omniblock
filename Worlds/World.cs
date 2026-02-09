@@ -74,6 +74,12 @@ namespace betareborn.Worlds
             return dimension.biomeSource;
         }
 
+        public WorldStorage getWorldStorage()
+        {
+            return storage;
+        }
+
+
         public World(WorldStorage var1, string var2, Dimension var3, long var4)
         {
             instantBlockUpdateEnabled = false;

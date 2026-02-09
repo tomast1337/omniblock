@@ -1,4 +1,3 @@
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -8,6 +7,11 @@ namespace betareborn.Network.Packets.S2CPlay
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(WorldTimeUpdateS2CPacket).TypeHandle);
 
         public long time;
+
+        public WorldTimeUpdateS2CPacket(long time)
+        {
+            this.time = time;
+        }
 
         public override void read(DataInputStream var1)
         {

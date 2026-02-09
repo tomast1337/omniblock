@@ -1,6 +1,7 @@
 ﻿using betareborn.Blocks.Entities;
 using betareborn.Entities;
 using betareborn.Network.Packets.S2CPlay;
+using betareborn.Server;
 using betareborn.Server.Worlds;
 using betareborn.Util.Maths;
 using betareborn.Worlds.Chunks;
@@ -15,8 +16,8 @@ namespace betareborn.Worlds
         public ServerChunkCache chunkCache;
         public bool bypassSpawnProtection = false;
         public bool savingDisabled;
-        private MinecraftServer server;
-        private Dictionary<int, Entity> entitiesById = [];
+        private readonly MinecraftServer server;
+        private readonly Dictionary<int, Entity> entitiesById = [];
 
         public ServerWorld(MinecraftServer server, WorldStorage storage, String name, int dimensionId, long seed) : base(storage, name, seed, Dimension.fromId(dimensionId))
         {

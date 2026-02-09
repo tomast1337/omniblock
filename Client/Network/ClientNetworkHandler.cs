@@ -52,10 +52,10 @@ namespace betareborn.Client.Network
         {
             mc.playerController = new PlayerControllerMP(mc, this);
             mc.statFileWriter.readStat(Stats.Stats.joinMultiplayerStat, 1);
-            worldClient = new ClientWorld(this, var1.mapSeed, var1.dimension);
+            worldClient = new ClientWorld(this, var1.worldSeed, var1.dimensionId);
             worldClient.isRemote = true;
             mc.changeWorld1(worldClient);
-            mc.player.dimensionId = var1.dimension;
+            mc.player.dimensionId = var1.dimensionId;
             mc.displayGuiScreen(new GuiDownloadTerrain(this));
             mc.player.id = var1.protocolVersion;
         }
@@ -529,8 +529,8 @@ namespace betareborn.Client.Network
 
         public override void onPlayerSpawnPosition(PlayerSpawnPositionS2CPacket var1)
         {
-            mc.player.setSpawnPos(new Vec3i(var1.xPosition, var1.yPosition, var1.zPosition));
-            mc.world.getProperties().setSpawn(var1.xPosition, var1.yPosition, var1.zPosition);
+            mc.player.setSpawnPos(new Vec3i(var1.x, var1.y, var1.z));
+            mc.world.getProperties().setSpawn(var1.x, var1.y, var1.z);
         }
 
         public override void onEntityVehicleSet(EntityVehicleSetS2CPacket var1)
@@ -768,7 +768,7 @@ namespace betareborn.Client.Network
 
         public override void onWorldEvent(WorldEventS2CPacket var1)
         {
-            mc.world.worldEvent(var1.field_28050_a, var1.field_28053_c, var1.field_28052_d, var1.field_28051_e, var1.field_28049_b);
+            mc.world.worldEvent(var1.eventId, var1.x, var1.y, var1.z, var1.data);
         }
 
         public override void onIncreaseStat(IncreaseStatS2CPacket var1)

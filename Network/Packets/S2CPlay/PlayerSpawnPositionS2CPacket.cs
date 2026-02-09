@@ -1,4 +1,3 @@
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -7,22 +6,29 @@ namespace betareborn.Network.Packets.S2CPlay
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(PlayerSpawnPositionS2CPacket).TypeHandle);
 
-        public int xPosition;
-        public int yPosition;
-        public int zPosition;
+        public int x;
+        public int y;
+        public int z;
+
+        public PlayerSpawnPositionS2CPacket(int x, int y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
 
         public override void read(DataInputStream var1)
         {
-            xPosition = var1.readInt();
-            yPosition = var1.readInt();
-            zPosition = var1.readInt();
+            x = var1.readInt();
+            y = var1.readInt();
+            z = var1.readInt();
         }
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeInt(xPosition);
-            var1.writeInt(yPosition);
-            var1.writeInt(zPosition);
+            var1.writeInt(x);
+            var1.writeInt(y);
+            var1.writeInt(z);
         }
 
         public override void apply(NetHandler var1)

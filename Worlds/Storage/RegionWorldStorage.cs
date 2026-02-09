@@ -1,17 +1,19 @@
-using betareborn.Worlds;
-using betareborn;
+using betareborn.Entities;
+using betareborn.NBT;
+using betareborn.Server.Worlds;
 using betareborn.Worlds.Chunks.Storage;
 using betareborn.Worlds.Dimensions;
-using java.util;
-using betareborn.NBT;
 using java.io;
-using System.Threading.Tasks;
+using java.util;
+using java.util.logging;
 
 namespace betareborn.Worlds.Storage
 {
 
-    public class RegionWorldStorage : WorldStorage
+    public class RegionWorldStorage : WorldStorage, PlayerSaveHandler
     {
+        private static readonly Logger LOGGER = Logger.getLogger("Minecraft");
+
         private readonly java.io.File saveDirectory;
         private readonly java.io.File playersDirectory;
         private readonly java.io.File dataDir;
@@ -222,6 +224,60 @@ namespace betareborn.Worlds.Storage
         public java.io.File getWorldPropertiesFile(string var1)
         {
             return new java.io.File(dataDir, var1 + ".dat");
+        }
+
+        public void savePlayerData(EntityPlayer player)
+        {
+            try
+            {
+                NBTTagCompound var2 = new NBTTagCompound();
+                player.write(var2);
+                java.io.File var3 = new java.io.File(playersDirectory, "_tmp_.dat");
+                java.io.File var4 = new java.io.File(playersDirectory, player.name + ".dat");
+                CompressedStreamTools.writeGzippedCompoundToOutputStream(var2, new FileOutputStream(var3));
+                if (var4.exists())
+                {
+                    var4.delete();
+                }
+
+                var3.renameTo(var4);
+            }
+            catch (Exception var5)
+            {
+                LOGGER.warning("Failed to save player data for " + player.name);
+            }
+        }
+
+        public void loadPlayerData(EntityPlayer player)
+        {
+            NBTTagCompound var2 = loadPlayerData(player.name);
+            if (var2 != null)
+            {
+                player.read(var2);
+            }
+        }
+
+        public NBTTagCompound loadPlayerData(String playerName)
+        {
+            try
+            {
+                java.io.File var2 = new java.io.File(playersDirectory, playerName + ".dat");
+                if (var2.exists())
+                {
+                    return CompressedStreamTools.func_1138_a(new FileInputStream(var2));
+                }
+            }
+            catch (Exception var3)
+            {
+                LOGGER.warning("Failed to load player data for " + playerName);
+            }
+
+            return null;
+        }
+
+        public PlayerSaveHandler getPlayerSaveHandler()
+        {
+            return this;
         }
 
         public void forceSave()

@@ -1807,7 +1807,7 @@ namespace betareborn
             }
         }
 
-        public static void func_6269_a(string var0, string var1)
+        public static void startup(string var0, string var1)
         {
             startMainThread(var0, var1, (string)null);
         }
@@ -1882,12 +1882,12 @@ namespace betareborn
 
                 if (LauncherWindow.Result != null && LauncherWindow.Result.Success)
                 {
-                    func_6269_a(var1, var2);
+                    startup(var1, var2);
                 }
             }
             else
             {
-                func_6269_a(var1, var2);
+                startup(var1, var2);
             }
         }
 
