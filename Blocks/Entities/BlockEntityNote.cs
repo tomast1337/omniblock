@@ -41,29 +41,29 @@ namespace betareborn.Blocks.Entities
         {
             if (world.getMaterial(x, y + 1, z) == Material.AIR)
             {
-                Material var5 = world.getMaterial(x, y - 1, z);
-                byte var6 = 0;
-                if (var5 == Material.STONE)
+                Material material = world.getMaterial(x, y - 1, z);
+                byte instrument = 0;
+                if (material == Material.STONE)
                 {
-                    var6 = 1;
+                    instrument = 1;
                 }
 
-                if (var5 == Material.SAND)
+                if (material == Material.SAND)
                 {
-                    var6 = 2;
+                    instrument = 2;
                 }
 
-                if (var5 == Material.GLASS)
+                if (material == Material.GLASS)
                 {
-                    var6 = 3;
+                    instrument = 3;
                 }
 
-                if (var5 == Material.WOOD)
+                if (material == Material.WOOD)
                 {
-                    var6 = 4;
+                    instrument = 4;
                 }
 
-                world.playNoteBlockActionAt(x, y, z, var6, note);
+                world.playNoteBlockActionAt(x, y, z, instrument, note);
             }
         }
     }
