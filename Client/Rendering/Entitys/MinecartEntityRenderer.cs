@@ -77,11 +77,11 @@ namespace betareborn.Client.Rendering.Entitys
                 //TODO: WTF WHY ARE WE MAKING A NEW RENDER BLOCKS EVERY TIME
                 if (var1.minecartType == 1)
                 {
-                    new BlockRenderer().renderBlockOnInventory(Block.CHEST, 0, var1.getEntityBrightness(var9));
+                    new BlockRenderer().renderBlockOnInventory(Block.CHEST, 0, var1.getBrightnessAtEyes(var9));
                 }
                 else if (var1.minecartType == 2)
                 {
-                    new BlockRenderer().renderBlockOnInventory(Block.FURNACE, 0, var1.getEntityBrightness(var9));
+                    new BlockRenderer().renderBlockOnInventory(Block.FURNACE, 0, var1.getBrightnessAtEyes(var9));
                 }
 
                 GLManager.GL.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);

@@ -169,7 +169,7 @@ namespace betareborn.Worlds
             }
 
             forcedEntities.add(var2);
-            var2.entityId = var1;
+            var2.id = var1;
             if (!spawnEntity(var2))
             {
                 pendingEntities.add(var2);

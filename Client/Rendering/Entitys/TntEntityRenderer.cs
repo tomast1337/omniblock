@@ -41,7 +41,7 @@ namespace betareborn.Client.Rendering.Entitys
 
             var10 = (1.0F - (var1.fuse - var9 + 1.0F) / 100.0F) * 0.8F;
             loadTexture("/terrain.png");
-            blockRenderer.renderBlockOnInventory(Block.TNT, 0, var1.getEntityBrightness(var9));
+            blockRenderer.renderBlockOnInventory(Block.TNT, 0, var1.getBrightnessAtEyes(var9));
             if (var1.fuse / 5 % 2 == 0)
             {
                 GLManager.GL.Disable(GLEnum.Texture2D);

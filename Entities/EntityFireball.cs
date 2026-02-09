@@ -27,11 +27,11 @@ namespace betareborn.Entities
             setBoundingBoxSpacing(1.0F, 1.0F);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public override bool isInRangeToRenderDist(double var1)
+        public override bool shouldRender(double var1)
         {
             double var3 = boundingBox.getAverageSizeLength() * 4.0D;
             var3 *= 64.0D;
@@ -66,9 +66,9 @@ namespace betareborn.Entities
             field_9403_d = var7 / var9 * 0.1D;
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             fireTicks = 10;
             if (field_9406_a > 0)
             {
@@ -118,7 +118,7 @@ namespace betareborn.Entities
             for (int var8 = 0; var8 < var5.Count; ++var8)
             {
                 Entity var9 = var5[var8];
-                if (var9.canBeCollidedWith() && (var9 != field_9397_j || field_9395_l >= 25))
+                if (var9.isCollidable() && (var9 != field_9397_j || field_9395_l >= 25))
                 {
                     float var10 = 0.3F;
                     Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
@@ -148,7 +148,7 @@ namespace betareborn.Entities
                     {
                     }
 
-                    world.newExplosion((Entity)null, x, y, z, 1.0F, true);
+                    world.createExplosion((Entity)null, x, y, z, 1.0F, true);
                 }
 
                 markDead();
@@ -223,22 +223,22 @@ namespace betareborn.Entities
             field_9398_i = var1.getByte("inGround") == 1;
         }
 
-        public override bool canBeCollidedWith()
+        public override bool isCollidable()
         {
             return true;
         }
 
-        public override float getCollisionBorderSize()
+        public override float getTargetingMargin()
         {
             return 1.0F;
         }
 
         public override bool damage(Entity var1, int var2)
         {
-            setBeenAttacked();
+            scheduleVelocityUpdate();
             if (var1 != null)
             {
-                Vec3D var3 = var1.getLookVec();
+                Vec3D var3 = var1.getLookVector();
                 if (var3 != null)
                 {
                     velocityX = var3.xCoord;

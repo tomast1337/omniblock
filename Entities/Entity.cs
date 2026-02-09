@@ -12,7 +12,7 @@ namespace betareborn.Entities
     {
         public static readonly Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(Entity).TypeHandle);
         private static int nextEntityID = 0;
-        public int entityId = nextEntityID++;
+        public int id = nextEntityID++;
         public double renderDistanceWeight = 1.0D;
         public bool preventEntitySpawning = false;
         public Entity passenger;
@@ -39,7 +39,7 @@ namespace betareborn.Entities
         public bool velocityModified = false;
         public bool slowed;
         public bool keepVelocityOnCollision = true;
-        public bool isDead = false;
+        public bool dead = false;
         public float standingEyeHeight = 0.0F;
         public float width = 0.6F;
         public float height = 1.8F;
@@ -84,10 +84,10 @@ namespace betareborn.Entities
             world = var1;
             setPosition(0.0D, 0.0D, 0.0D);
             dataWatcher.addObject(0, java.lang.Byte.valueOf(0));
-            entityInit();
+            initDataTracker();
         }
 
-        protected abstract void entityInit();
+        protected abstract void initDataTracker();
 
         public DataWatcher getDataWatcher()
         {
@@ -96,15 +96,15 @@ namespace betareborn.Entities
 
         public override bool equals(object var1)
         {
-            return var1 is Entity ? ((Entity)var1).entityId == entityId : false;
+            return var1 is Entity ? ((Entity)var1).id == id : false;
         }
 
         public override int hashCode()
         {
-            return entityId;
+            return id;
         }
 
-        public virtual void preparePlayerToSpawn()
+        public virtual void teleportToTop()
         {
             if (world != null)
             {
@@ -126,7 +126,7 @@ namespace betareborn.Entities
 
         public virtual void markDead()
         {
-            isDead = true;
+            dead = true;
         }
 
         protected virtual void setBoundingBoxSpacing(float var1, float var2)
@@ -151,7 +151,7 @@ namespace betareborn.Entities
             boundingBox = new Box(var1 - (double)var7, var3 - (double)standingEyeHeight + (double)cameraOffset, var5 - (double)var7, var1 + (double)var7, var3 - (double)standingEyeHeight + (double)cameraOffset + (double)var8, var5 + (double)var7);
         }
 
-        public void func_346_d(float var1, float var2)
+        public void changeLookDirection(float var1, float var2)
         {
             float var3 = pitch;
             float var4 = yaw;
@@ -171,14 +171,14 @@ namespace betareborn.Entities
             prevYaw += yaw - var4;
         }
 
-        public virtual void onUpdate()
+        public virtual void tick()
         {
-            onEntityUpdate();
+            baseTick();
         }
 
-        public virtual void onEntityUpdate()
+        public virtual void baseTick()
         {
-            if (vehicle != null && vehicle.isDead)
+            if (vehicle != null && vehicle.dead)
             {
                 vehicle = null;
             }
@@ -190,7 +190,7 @@ namespace betareborn.Entities
             prevZ = z;
             prevPitch = pitch;
             prevYaw = yaw;
-            if (handleWaterMovement())
+            if (checkWaterCollisions())
             {
                 if (!inWater && !firstTick)
                 {
@@ -255,26 +255,26 @@ namespace betareborn.Entities
                 }
             }
 
-            if (handleLavaMovement())
+            if (isTouchingLava())
             {
-                setOnFireFromLava();
+                setOnFire();
             }
 
             if (y < -64.0D)
             {
-                kill();
+                tickInVoid();
             }
 
             if (!world.isRemote)
             {
-                setEntityFlag(0, fireTicks > 0);
-                setEntityFlag(2, vehicle != null);
+                setFlag(0, fireTicks > 0);
+                setFlag(2, vehicle != null);
             }
 
             firstTick = false;
         }
 
-        protected void setOnFireFromLava()
+        protected void setOnFire()
         {
             if (!isImmuneToFire)
             {
@@ -284,19 +284,19 @@ namespace betareborn.Entities
 
         }
 
-        protected virtual void kill()
+        protected virtual void tickInVoid()
         {
             markDead();
         }
 
-        public bool isOffsetPositionInLiquid(double var1, double var3, double var5)
+        public bool getEntitiesInside(double var1, double var3, double var5)
         {
             Box var7 = boundingBox.offset(var1, var3, var5);
             var var8 = world.getEntityCollisions(this, var7);
             return var8.Count > 0 ? false : !world.isBoxSubmergedInFluid(var7);
         }
 
-        public virtual void moveEntity(double var1, double var3, double var5)
+        public virtual void move(double var1, double var3, double var5)
         {
             if (noClip)
             {
@@ -502,7 +502,7 @@ namespace betareborn.Entities
                 verticalCollision = var13 != var3;
                 onGround = var13 != var3 && var13 < 0.0D;
                 hasCollided = horizontalCollison || verticalCollision;
-                updateFallState(var3, onGround);
+                fall(var3, onGround);
                 if (var11 != var1)
                 {
                     velocityX = 0.0D;
@@ -523,7 +523,7 @@ namespace betareborn.Entities
                 int var26;
                 int var38;
                 int var39;
-                if (canTriggerWalking() && !var18 && vehicle == null)
+                if (bypassesSteppingEffects() && !var18 && vehicle == null)
                 {
                     horizontalSpeed = (float)((double)horizontalSpeed + (double)MathHelper.sqrt_double(var37 * var37 + var23 * var23) * 0.6D);
                     var38 = MathHelper.floor_double(x);
@@ -580,7 +580,7 @@ namespace betareborn.Entities
                 bool var42 = isWet();
                 if (world.isFireOrLavaInBox(boundingBox.contract(0.001D, 0.001D, 0.001D)))
                 {
-                    dealFireDamage(1);
+                    damage(1);
                     if (!var42)
                     {
                         ++fireTicks;
@@ -604,12 +604,12 @@ namespace betareborn.Entities
             }
         }
 
-        protected virtual bool canTriggerWalking()
+        protected virtual bool bypassesSteppingEffects()
         {
             return true;
         }
 
-        protected void updateFallState(double var1, bool var3)
+        protected virtual void fall(double var1, bool var3)
         {
             if (var3)
             {
@@ -631,7 +631,7 @@ namespace betareborn.Entities
             return null;
         }
 
-        protected virtual void dealFireDamage(int var1)
+        protected virtual void damage(int var1)
         {
             if (!isImmuneToFire)
             {
@@ -659,12 +659,12 @@ namespace betareborn.Entities
             return inWater;
         }
 
-        public virtual bool handleWaterMovement()
+        public virtual bool checkWaterCollisions()
         {
             return world.updateMovementInFluid(boundingBox.expand(0.0D, (double)-0.4F, 0.0D).contract(0.001D, 0.001D, 0.001D), Material.WATER, this);
         }
 
-        public bool isInsideOfMaterial(Material var1)
+        public bool isInFluid(Material var1)
         {
             double var2 = y + (double)getEyeHeight();
             int var4 = MathHelper.floor_double(x);
@@ -688,12 +688,12 @@ namespace betareborn.Entities
             return 0.0F;
         }
 
-        public bool handleLavaMovement()
+        public bool isTouchingLava()
         {
             return world.isMaterialInBox(boundingBox.expand((double)-0.1F, (double)-0.4F, (double)-0.1F), Material.LAVA);
         }
 
-        public void moveFlying(float var1, float var2, float var3)
+        public void moveNonSolid(float var1, float var2, float var3)
         {
             float var4 = MathHelper.sqrt_float(var1 * var1 + var2 * var2);
             if (var4 >= 0.01F)
@@ -713,7 +713,7 @@ namespace betareborn.Entities
             }
         }
 
-        public virtual float getEntityBrightness(float var1)
+        public virtual float getBrightnessAtEyes(float var1)
         {
             int var2 = MathHelper.floor_double(x);
             double var3 = (boundingBox.maxY - boundingBox.minY) * 0.66D;
@@ -735,12 +735,12 @@ namespace betareborn.Entities
             }
         }
 
-        public void setWorld(World var1)
+        public virtual void setWorld(World var1)
         {
             world = var1;
         }
 
-        public void setPositionAndRotation(double x, double y, double z, float yaw, float pitch)
+        public void setPositionAndAngles(double x, double y, double z, float yaw, float pitch)
         {
             prevX = this.x = x;
             prevY = this.y = y;
@@ -773,7 +773,7 @@ namespace betareborn.Entities
             setPosition(x, y, z);
         }
 
-        public float getDistanceToEntity(Entity var1)
+        public float getDistance(Entity var1)
         {
             float var2 = (float)(x - var1.x);
             float var3 = (float)(y - var1.y);
@@ -797,7 +797,7 @@ namespace betareborn.Entities
             return (double)MathHelper.sqrt_double(var7 * var7 + var9 * var9 + var11 * var11);
         }
 
-        public double getDistanceSqToEntity(Entity var1)
+        public double getSquaredDistance(Entity var1)
         {
             double var2 = x - var1.x;
             double var4 = y - var1.y;
@@ -805,11 +805,11 @@ namespace betareborn.Entities
             return var2 * var2 + var4 * var4 + var6 * var6;
         }
 
-        public virtual void onCollideWithPlayer(EntityPlayer var1)
+        public virtual void onPlayerInteraction(EntityPlayer var1)
         {
         }
 
-        public virtual void applyEntityCollision(Entity var1)
+        public virtual void onCollision(Entity var1)
         {
             if (var1.passenger != this && var1.vehicle != this)
             {
@@ -847,23 +847,23 @@ namespace betareborn.Entities
             velocityZ += var5;
         }
 
-        protected void setBeenAttacked()
+        protected void scheduleVelocityUpdate()
         {
             velocityModified = true;
         }
 
         public virtual bool damage(Entity var1, int var2)
         {
-            setBeenAttacked();
+            scheduleVelocityUpdate();
             return false;
         }
 
-        public virtual bool canBeCollidedWith()
+        public virtual bool isCollidable()
         {
             return false;
         }
 
-        public virtual bool canBePushed()
+        public virtual bool isPushable()
         {
             return false;
         }
@@ -872,34 +872,34 @@ namespace betareborn.Entities
         {
         }
 
-        public virtual bool isInRangeToRenderVec3D(Vec3D var1)
+        public virtual bool shouldRender(Vec3D var1)
         {
             double var2 = x - var1.xCoord;
             double var4 = y - var1.yCoord;
             double var6 = z - var1.zCoord;
             double var8 = var2 * var2 + var4 * var4 + var6 * var6;
-            return isInRangeToRenderDist(var8);
+            return shouldRender(var8);
         }
 
-        public virtual bool isInRangeToRenderDist(double var1)
+        public virtual bool shouldRender(double var1)
         {
             double var3 = boundingBox.getAverageSizeLength();
             var3 *= 64.0D * renderDistanceWeight;
             return var1 < var3 * var3;
         }
 
-        public virtual string getEntityTexture()
+        public virtual string getTexture()
         {
             return null;
         }
 
-        public bool addEntityID(NBTTagCompound var1)
+        public bool saveSelfNbt(NBTTagCompound var1)
         {
-            string var2 = getEntityString();
-            if (!isDead && var2 != null)
+            string var2 = getRegistryEntry();
+            if (!dead && var2 != null)
             {
                 var1.setString("id", var2);
-                writeToNBT(var1);
+                write(var1);
                 return true;
             }
             else
@@ -908,7 +908,7 @@ namespace betareborn.Entities
             }
         }
 
-        public void writeToNBT(NBTTagCompound var1)
+        public void write(NBTTagCompound var1)
         {
             var1.setTag("Pos", newDoubleNBTList([x, y + (double)cameraOffset, z]));
             var1.setTag("Motion", newDoubleNBTList([velocityX, velocityY, velocityZ]));
@@ -920,7 +920,7 @@ namespace betareborn.Entities
             writeNbt(var1);
         }
 
-        public void readFromNBT(NBTTagCompound var1)
+        public void read(NBTTagCompound var1)
         {
             NBTTagList var2 = var1.getTagList("Pos");
             NBTTagList var3 = var1.getTagList("Motion");
@@ -957,7 +957,7 @@ namespace betareborn.Entities
             readNbt(var1);
         }
 
-        protected string getEntityString()
+        protected string getRegistryEntry()
         {
             return EntityRegistry.getId(this);
         }
@@ -1003,15 +1003,15 @@ namespace betareborn.Entities
 
         public EntityItem dropItem(int var1, int var2)
         {
-            return dropItemWithOffset(var1, var2, 0.0F);
+            return dropItem(var1, var2, 0.0F);
         }
 
-        public EntityItem dropItemWithOffset(int var1, int var2, float var3)
+        public EntityItem dropItem(int var1, int var2, float var3)
         {
-            return entityDropItem(new ItemStack(var1, var2, 0), var3);
+            return dropItem(new ItemStack(var1, var2, 0), var3);
         }
 
-        public EntityItem entityDropItem(ItemStack var1, float var2)
+        public EntityItem dropItem(ItemStack var1, float var2)
         {
             EntityItem var3 = new EntityItem(world, x, y + (double)var2, z, var1);
             var3.delayBeforeCanPickup = 10;
@@ -1019,9 +1019,9 @@ namespace betareborn.Entities
             return var3;
         }
 
-        public virtual bool isEntityAlive()
+        public virtual bool isAlive()
         {
-            return !isDead;
+            return !dead;
         }
 
         public virtual bool isInsideWall()
@@ -1048,14 +1048,14 @@ namespace betareborn.Entities
             return false;
         }
 
-        public virtual Box? getCollisionBox(Entity var1)
+        public virtual Box? getCollisionAgainstShape(Entity var1)
         {
             return null;
         }
 
-        public virtual void updateRidden()
+        public virtual void tickRiding()
         {
-            if (vehicle.isDead)
+            if (vehicle.dead)
             {
                 vehicle = null;
             }
@@ -1064,10 +1064,10 @@ namespace betareborn.Entities
                 velocityX = 0.0D;
                 velocityY = 0.0D;
                 velocityZ = 0.0D;
-                onUpdate();
+                tick();
                 if (vehicle != null)
                 {
-                    vehicle.updateRiderPosition();
+                    vehicle.updatePassengerPosition();
                     vehicleYawDelta += (double)(vehicle.yaw - vehicle.prevYaw);
 
                     for (vehiclePitchDelta += (double)(vehicle.pitch - vehicle.prevPitch); vehicleYawDelta >= 180.0D; vehicleYawDelta -= 360.0D)
@@ -1120,22 +1120,22 @@ namespace betareborn.Entities
             }
         }
 
-        public virtual void updateRiderPosition()
+        public virtual void updatePassengerPosition()
         {
-            passenger.setPosition(x, y + getMountedYOffset() + passenger.getYOffset(), z);
+            passenger.setPosition(x, y + getPassengerRidingHeight() + passenger.getStandingEyeHeight(), z);
         }
 
-        public virtual double getYOffset()
+        public virtual double getStandingEyeHeight()
         {
             return (double)standingEyeHeight;
         }
 
-        public virtual double getMountedYOffset()
+        public virtual double getPassengerRidingHeight()
         {
             return (double)height * 0.75D;
         }
 
-        public void mountEntity(Entity var1)
+        public virtual void setVehicle(Entity var1)
         {
             vehiclePitchDelta = 0.0D;
             vehicleYawDelta = 0.0D;
@@ -1172,7 +1172,7 @@ namespace betareborn.Entities
             }
         }
 
-        public virtual void setPositionAndRotation2(double var1, double var3, double var5, float var7, float var8, int var9)
+        public virtual void setPositionAndAnglesAvoidEntities(double var1, double var3, double var5, float var7, float var8, int var9)
         {
             setPosition(var1, var3, var5);
             setRotation(var7, var8);
@@ -1196,12 +1196,12 @@ namespace betareborn.Entities
 
         }
 
-        public virtual float getCollisionBorderSize()
+        public virtual float getTargetingMargin()
         {
             return 0.1F;
         }
 
-        public virtual Vec3D getLookVec()
+        public virtual Vec3D getLookVector()
         {
             return null;
         }
@@ -1210,18 +1210,18 @@ namespace betareborn.Entities
         {
         }
 
-        public virtual void setVelocity(double var1, double var3, double var5)
+        public virtual void setVelocityClient(double var1, double var3, double var5)
         {
             velocityX = var1;
             velocityY = var3;
             velocityZ = var5;
         }
 
-        public virtual void handleHealthUpdate(sbyte var1)
+        public virtual void processServerEntityStatus(sbyte var1)
         {
         }
 
-        public virtual void performHurtAnimation()
+        public virtual void animateHurt()
         {
         }
 
@@ -1235,25 +1235,35 @@ namespace betareborn.Entities
 
         public bool isOnFire()
         {
-            return fireTicks > 0 || getEntityFlag(0);
+            return fireTicks > 0 || getFlag(0);
         }
 
-        public bool isRiding()
+        public bool hasVehicle()
         {
-            return vehicle != null || getEntityFlag(2);
+            return vehicle != null || getFlag(2);
+        }
+
+        public virtual ItemStack[] getEquipment()
+        {
+            return null;
         }
 
         public virtual bool isSneaking()
         {
-            return getEntityFlag(1);
+            return getFlag(1);
         }
 
-        protected bool getEntityFlag(int var1)
+        public void setSneaking(bool sneaking)
+        {
+            setFlag(1, sneaking);
+        }
+
+        protected bool getFlag(int var1)
         {
             return (dataWatcher.getWatchableObjectByte(0) & 1 << var1) != 0;
         }
 
-        protected void setEntityFlag(int var1, bool var2)
+        protected void setFlag(int var1, bool var2)
         {
             sbyte var3 = dataWatcher.getWatchableObjectByte(0);
             byte newValue;
@@ -1271,7 +1281,7 @@ namespace betareborn.Entities
 
         public virtual void onStruckByLightning(EntityLightningBolt var1)
         {
-            dealFireDamage(5);
+            damage(5);
             ++fireTicks;
             if (fireTicks == 0)
             {

@@ -1,4 +1,3 @@
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -8,6 +7,11 @@ namespace betareborn.Network.Packets.S2CPlay
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(HealthUpdateS2CPacket).TypeHandle);
 
         public int healthMP;
+
+        public HealthUpdateS2CPacket(int health)
+        {
+            healthMP = health;
+        }
 
         public override void read(DataInputStream var1)
         {
@@ -21,7 +25,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.handleHealth(this);
+            var1.onHealthUpdate(this);
         }
 
         public override int size()

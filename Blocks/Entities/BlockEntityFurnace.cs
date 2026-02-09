@@ -213,7 +213,7 @@ namespace betareborn.Blocks.Entities
                 {
                     inventory[2] = var1.copy();
                 }
-                else if (inventory[2].itemID == var1.itemID)
+                else if (inventory[2].itemId == var1.itemId)
                 {
                     ++inventory[2].count;
                 }

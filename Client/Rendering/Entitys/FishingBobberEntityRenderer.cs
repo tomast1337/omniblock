@@ -53,7 +53,7 @@ namespace betareborn.Client.Rendering.Entitys
                 double var32 = var1.angler.prevZ + (var1.angler.z - var1.angler.prevZ) * (double)var9 + var27.zCoord;
                 if (dispatcher.options.thirdPersonView)
                 {
-                    var20 = (var1.angler.prevRenderYawOffset + (var1.angler.renderYawOffset - var1.angler.prevRenderYawOffset) * var9) * (float)Math.PI / 180.0F;
+                    var20 = (var1.angler.lastBodyYaw + (var1.angler.bodyYaw - var1.angler.lastBodyYaw) * var9) * (float)Math.PI / 180.0F;
                     var21 = (double)MathHelper.sin(var20);
                     var23 = (double)MathHelper.cos(var20);
                     var28 = var1.angler.prevX + (var1.angler.x - var1.angler.prevX) * (double)var9 - var23 * 0.35D - var21 * 0.85D;

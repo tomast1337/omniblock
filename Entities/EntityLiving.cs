@@ -12,28 +12,28 @@ namespace betareborn.Entities
     public abstract class EntityLiving : Entity
     {
         public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityLiving).TypeHandle);
-        public int heartsHalvesLife = 20;
+        public int maxHealth = 20;
         public float field_9365_p;
         public float field_9363_r;
-        public float renderYawOffset = 0.0F;
-        public float prevRenderYawOffset = 0.0F;
-        protected float field_9362_u;
-        protected float field_9361_v;
-        protected float field_9360_w;
-        protected float field_9359_x;
+        public float bodyYaw = 0.0F;
+        public float lastBodyYaw = 0.0F;
+        protected float lastWalkProgress;
+        protected float walkProgress;
+        protected float totalWalkDistance;
+        protected float lastTotalWalkDistance;
         protected bool field_9358_y = true;
         protected string texture = "/mob/char.png";
         protected bool field_9355_A = true;
-        protected float field_9353_B = 0.0F;
-        protected string field_9351_C = null;
+        protected float rotationOffset = 0.0F;
+        protected string modelName = null;
         protected float field_9349_D = 1.0F;
-        protected int scoreValue = 0;
+        protected int scoreAmount = 0;
         protected float field_9345_F = 0.0F;
-        public bool isMultiplayerEntity = false;
-        public float prevSwingProgress;
-        public float swingProgress;
+        public bool interpolateOnly = false;
+        public float lastSwingAnimationProgress;
+        public float swingAnimationProgress;
         public int health = 10;
-        public int prevHealth;
+        public int lastHealth;
         private int livingSoundTime;
         public int hurtTime;
         public int maxHurtTime;
@@ -56,14 +56,14 @@ namespace betareborn.Entities
         protected double newRotationPitch;
         protected int field_9346_af = 0;
         protected int entityAge = 0;
-        protected float moveStrafing;
-        protected float moveForward;
-        protected float randomYawVelocity;
-        protected bool isJumping = false;
+        protected float sidewaysSpeed;
+        protected float forwardSpeed;
+        protected float rotationSpeed;
+        protected bool jumping = false;
         protected float defaultPitch = 0.0F;
-        protected float moveSpeed = 0.7F;
-        private Entity currentTarget;
-        protected int numTicksToChaseTarget = 0;
+        protected float movementSpeed = 0.7F;
+        private Entity lookTarget;
+        protected int lookTimer = 0;
 
         public EntityLiving(World var1) : base(var1)
         {
@@ -75,28 +75,28 @@ namespace betareborn.Entities
             stepHeight = 0.5F;
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public bool canEntityBeSeen(Entity var1)
+        public bool canSee(Entity var1)
         {
             return world.raycast(Vec3D.createVector(x, y + (double)getEyeHeight(), z), Vec3D.createVector(var1.x, var1.y + (double)var1.getEyeHeight(), var1.z)) == null;
         }
 
-        public override string getEntityTexture()
+        public override string getTexture()
         {
             return texture;
         }
 
-        public override bool canBeCollidedWith()
+        public override bool isCollidable()
         {
-            return !isDead;
+            return !dead;
         }
 
-        public override bool canBePushed()
+        public override bool isPushable()
         {
-            return !isDead;
+            return !dead;
         }
 
         public override float getEyeHeight()
@@ -119,17 +119,17 @@ namespace betareborn.Entities
 
         }
 
-        public override void onEntityUpdate()
+        public override void baseTick()
         {
-            prevSwingProgress = swingProgress;
-            base.onEntityUpdate();
+            lastSwingAnimationProgress = swingAnimationProgress;
+            base.baseTick();
             if (random.nextInt(1000) < livingSoundTime++)
             {
                 livingSoundTime = -getTalkInterval();
                 playLivingSound();
             }
 
-            if (isEntityAlive() && isInsideWall())
+            if (isAlive() && isInsideWall())
             {
                 damage(null, 1);
             }
@@ -140,7 +140,7 @@ namespace betareborn.Entities
             }
 
             int var1;
-            if (isEntityAlive() && isInsideOfMaterial(Material.WATER) && !canBreatheUnderwater())
+            if (isAlive() && isInFluid(Material.WATER) && !canBreatheUnderwater())
             {
                 --air;
                 if (air == -20)
@@ -199,16 +199,16 @@ namespace betareborn.Entities
                 }
             }
 
-            field_9359_x = field_9360_w;
-            prevRenderYawOffset = renderYawOffset;
+            lastTotalWalkDistance = totalWalkDistance;
+            lastBodyYaw = bodyYaw;
             prevYaw = yaw;
             prevPitch = pitch;
         }
 
         //TODO: will this still work properly when we implement the server?
-        public override void moveEntity(double var1, double var3, double var5)
+        public override void move(double var1, double var3, double var5)
         {
-            if (!isMultiplayerEntity || this is ClientPlayerEntity) base.moveEntity(var1, var3, var5);
+            if (!interpolateOnly || this is ClientPlayerEntity) base.move(var1, var3, var5);
         }
 
         public void animateSpawn()
@@ -224,14 +224,14 @@ namespace betareborn.Entities
 
         }
 
-        public override void updateRidden()
+        public override void tickRiding()
         {
-            base.updateRidden();
-            field_9362_u = field_9361_v;
-            field_9361_v = 0.0F;
+            base.tickRiding();
+            lastWalkProgress = walkProgress;
+            walkProgress = 0.0F;
         }
 
-        public override void setPositionAndRotation2(double var1, double var3, double var5, float var7, float var8, int var9)
+        public override void setPositionAndAnglesAvoidEntities(double var1, double var3, double var5, float var7, float var8, int var9)
         {
             standingEyeHeight = 0.0F;
             newPosX = var1;
@@ -242,16 +242,16 @@ namespace betareborn.Entities
             newPosRotationIncrements = var9;
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             tickMovement();
             double var1 = x - prevX;
             double var3 = z - prevZ;
             float var5 = MathHelper.sqrt_double(var1 * var1 + var3 * var3);
-            float var6 = renderYawOffset;
+            float var6 = bodyYaw;
             float var7 = 0.0F;
-            field_9362_u = field_9361_v;
+            lastWalkProgress = walkProgress;
             float var8 = 0.0F;
             if (var5 > 0.05F)
             {
@@ -260,7 +260,7 @@ namespace betareborn.Entities
                 var6 = (float)java.lang.Math.atan2(var3, var1) * 180.0F / (float)java.lang.Math.PI - 90.0F;
             }
 
-            if (swingProgress > 0.0F)
+            if (swingAnimationProgress > 0.0F)
             {
                 var6 = yaw;
             }
@@ -270,10 +270,10 @@ namespace betareborn.Entities
                 var8 = 0.0F;
             }
 
-            field_9361_v += (var8 - field_9361_v) * 0.3F;
+            walkProgress += (var8 - walkProgress) * 0.3F;
 
             float var9;
-            for (var9 = var6 - renderYawOffset; var9 < -180.0F; var9 += 360.0F)
+            for (var9 = var6 - bodyYaw; var9 < -180.0F; var9 += 360.0F)
             {
             }
 
@@ -282,10 +282,10 @@ namespace betareborn.Entities
                 var9 -= 360.0F;
             }
 
-            renderYawOffset += var9 * 0.3F;
+            bodyYaw += var9 * 0.3F;
 
             float var10;
-            for (var10 = yaw - renderYawOffset; var10 < -180.0F; var10 += 360.0F)
+            for (var10 = yaw - bodyYaw; var10 < -180.0F; var10 += 360.0F)
             {
             }
 
@@ -305,10 +305,10 @@ namespace betareborn.Entities
                 var10 = 75.0F;
             }
 
-            renderYawOffset = yaw - var10;
+            bodyYaw = yaw - var10;
             if (var10 * var10 > 2500.0F)
             {
-                renderYawOffset += var10 * 0.2F;
+                bodyYaw += var10 * 0.2F;
             }
 
             if (var11)
@@ -326,14 +326,14 @@ namespace betareborn.Entities
                 prevYaw += 360.0F;
             }
 
-            while (renderYawOffset - prevRenderYawOffset < -180.0F)
+            while (bodyYaw - lastBodyYaw < -180.0F)
             {
-                prevRenderYawOffset -= 360.0F;
+                lastBodyYaw -= 360.0F;
             }
 
-            while (renderYawOffset - prevRenderYawOffset >= 180.0F)
+            while (bodyYaw - lastBodyYaw >= 180.0F)
             {
-                prevRenderYawOffset += 360.0F;
+                lastBodyYaw += 360.0F;
             }
 
             while (pitch - prevPitch < -180.0F)
@@ -346,7 +346,7 @@ namespace betareborn.Entities
                 prevPitch += 360.0F;
             }
 
-            field_9360_w += var7;
+            totalWalkDistance += var7;
         }
 
         protected override void setBoundingBoxSpacing(float var1, float var2)
@@ -364,7 +364,7 @@ namespace betareborn.Entities
                     health = 20;
                 }
 
-                hearts = heartsHalvesLife / 2;
+                hearts = maxHealth / 2;
             }
         }
 
@@ -385,7 +385,7 @@ namespace betareborn.Entities
                 {
                     walkAnimationSpeed = 1.5F;
                     bool var3 = true;
-                    if ((float)hearts > (float)heartsHalvesLife / 2.0F)
+                    if ((float)hearts > (float)maxHealth / 2.0F)
                     {
                         if (var2 <= field_9346_af)
                         {
@@ -399,8 +399,8 @@ namespace betareborn.Entities
                     else
                     {
                         field_9346_af = var2;
-                        prevHealth = health;
-                        hearts = heartsHalvesLife;
+                        lastHealth = health;
+                        hearts = maxHealth;
                         applyDamage(var2);
                         hurtTime = maxHurtTime = 10;
                     }
@@ -409,7 +409,7 @@ namespace betareborn.Entities
                     if (var3)
                     {
                         world.broadcastEntityEvent(this, (byte)2);
-                        setBeenAttacked();
+                        scheduleVelocityUpdate();
                         if (var1 != null)
                         {
                             double var4 = var1.x - x;
@@ -448,7 +448,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override void performHurtAnimation()
+        public override void animateHurt()
         {
             hurtTime = maxHurtTime = 10;
             attackedAtYaw = 0.0F;
@@ -498,9 +498,9 @@ namespace betareborn.Entities
 
         public virtual void onKilledBy(Entity var1)
         {
-            if (scoreValue >= 0 && var1 != null)
+            if (scoreAmount >= 0 && var1 != null)
             {
-                var1.updateKilledAchievement(this, scoreValue);
+                var1.updateKilledAchievement(this, scoreAmount);
             }
 
             if (var1 != null)
@@ -560,27 +560,27 @@ namespace betareborn.Entities
             if (isInWater())
             {
                 var3 = y;
-                moveFlying(var1, var2, 0.02F);
-                moveEntity(velocityX, velocityY, velocityZ);
+                moveNonSolid(var1, var2, 0.02F);
+                move(velocityX, velocityY, velocityZ);
                 velocityX *= (double)0.8F;
                 velocityY *= (double)0.8F;
                 velocityZ *= (double)0.8F;
                 velocityY -= 0.02D;
-                if (horizontalCollison && isOffsetPositionInLiquid(velocityX, velocityY + (double)0.6F - y + var3, velocityZ))
+                if (horizontalCollison && getEntitiesInside(velocityX, velocityY + (double)0.6F - y + var3, velocityZ))
                 {
                     velocityY = (double)0.3F;
                 }
             }
-            else if (handleLavaMovement())
+            else if (isTouchingLava())
             {
                 var3 = y;
-                moveFlying(var1, var2, 0.02F);
-                moveEntity(velocityX, velocityY, velocityZ);
+                moveNonSolid(var1, var2, 0.02F);
+                move(velocityX, velocityY, velocityZ);
                 velocityX *= 0.5D;
                 velocityY *= 0.5D;
                 velocityZ *= 0.5D;
                 velocityY -= 0.02D;
-                if (horizontalCollison && isOffsetPositionInLiquid(velocityX, velocityY + (double)0.6F - y + var3, velocityZ))
+                if (horizontalCollison && getEntitiesInside(velocityX, velocityY + (double)0.6F - y + var3, velocityZ))
                 {
                     velocityY = (double)0.3F;
                 }
@@ -599,7 +599,7 @@ namespace betareborn.Entities
                 }
 
                 float var9 = 0.16277136F / (var8 * var8 * var8);
-                moveFlying(var1, var2, onGround ? 0.1F * var9 : 0.02F);
+                moveNonSolid(var1, var2, onGround ? 0.1F * var9 : 0.02F);
                 var8 = 0.91F;
                 if (onGround)
                 {
@@ -646,7 +646,7 @@ namespace betareborn.Entities
                     }
                 }
 
-                moveEntity(velocityX, velocityY, velocityZ);
+                move(velocityX, velocityY, velocityZ);
                 if (horizontalCollison && isOnLadder())
                 {
                     velocityY = 0.2D;
@@ -700,9 +700,9 @@ namespace betareborn.Entities
             attackTime = var1.getShort("AttackTime");
         }
 
-        public override bool isEntityAlive()
+        public override bool isAlive()
         {
-            return !isDead && health > 0;
+            return !dead && health > 0;
         }
 
         public virtual bool canBreatheUnderwater()
@@ -754,19 +754,19 @@ namespace betareborn.Entities
 
             if (isMovementBlocked())
             {
-                isJumping = false;
-                moveStrafing = 0.0F;
-                moveForward = 0.0F;
-                randomYawVelocity = 0.0F;
+                jumping = false;
+                sidewaysSpeed = 0.0F;
+                forwardSpeed = 0.0F;
+                rotationSpeed = 0.0F;
             }
-            else if (!isMultiplayerEntity)
+            else if (!interpolateOnly)
             {
                 tickLiving();
             }
 
             bool var14 = isInWater();
-            bool var2 = handleLavaMovement();
-            if (isJumping)
+            bool var2 = isTouchingLava();
+            if (jumping)
             {
                 if (var14)
                 {
@@ -782,19 +782,19 @@ namespace betareborn.Entities
                 }
             }
 
-            moveStrafing *= 0.98F;
-            moveForward *= 0.98F;
-            randomYawVelocity *= 0.9F;
-            travel(moveStrafing, moveForward);
+            sidewaysSpeed *= 0.98F;
+            forwardSpeed *= 0.98F;
+            rotationSpeed *= 0.9F;
+            travel(sidewaysSpeed, forwardSpeed);
             var var15 = world.getEntities(this, boundingBox.expand((double)0.2F, 0.0D, (double)0.2F));
             if (var15 != null && var15.Count > 0)
             {
                 for (int var4 = 0; var4 < var15.Count; ++var4)
                 {
                     Entity var16 = var15[var4];
-                    if (var16.canBePushed())
+                    if (var16.isPushable())
                     {
-                        var16.applyEntityCollision(this);
+                        var16.onCollision(this);
                     }
                 }
             }
@@ -850,47 +850,47 @@ namespace betareborn.Entities
             ++entityAge;
             EntityPlayer var1 = world.getClosestPlayer(this, -1.0D);
             func_27021_X();
-            moveStrafing = 0.0F;
-            moveForward = 0.0F;
+            sidewaysSpeed = 0.0F;
+            forwardSpeed = 0.0F;
             float var2 = 8.0F;
             if (random.nextFloat() < 0.02F)
             {
                 var1 = world.getClosestPlayer(this, (double)var2);
                 if (var1 != null)
                 {
-                    currentTarget = var1;
-                    numTicksToChaseTarget = 10 + random.nextInt(20);
+                    lookTarget = var1;
+                    lookTimer = 10 + random.nextInt(20);
                 }
                 else
                 {
-                    randomYawVelocity = (random.nextFloat() - 0.5F) * 20.0F;
+                    rotationSpeed = (random.nextFloat() - 0.5F) * 20.0F;
                 }
             }
 
-            if (currentTarget != null)
+            if (lookTarget != null)
             {
-                faceEntity(currentTarget, 10.0F, (float)func_25026_x());
-                if (numTicksToChaseTarget-- <= 0 || currentTarget.isDead || currentTarget.getDistanceSqToEntity(this) > (double)(var2 * var2))
+                faceEntity(lookTarget, 10.0F, (float)func_25026_x());
+                if (lookTimer-- <= 0 || lookTarget.dead || lookTarget.getSquaredDistance(this) > (double)(var2 * var2))
                 {
-                    currentTarget = null;
+                    lookTarget = null;
                 }
             }
             else
             {
                 if (random.nextFloat() < 0.05F)
                 {
-                    randomYawVelocity = (random.nextFloat() - 0.5F) * 20.0F;
+                    rotationSpeed = (random.nextFloat() - 0.5F) * 20.0F;
                 }
 
-                yaw += randomYawVelocity;
+                yaw += rotationSpeed;
                 pitch = defaultPitch;
             }
 
             bool var3 = isInWater();
-            bool var4 = handleLavaMovement();
+            bool var4 = isTouchingLava();
             if (var3 || var4)
             {
-                isJumping = random.nextFloat() < 0.8F;
+                jumping = random.nextFloat() < 0.8F;
             }
 
         }
@@ -924,12 +924,12 @@ namespace betareborn.Entities
 
         public bool hasCurrentTarget()
         {
-            return currentTarget != null;
+            return lookTarget != null;
         }
 
         public Entity getCurrentTarget()
         {
-            return currentTarget;
+            return lookTarget;
         }
 
         private float updateRotation(float var1, float var2, float var3)
@@ -966,20 +966,20 @@ namespace betareborn.Entities
             return world.canSpawnEntity(boundingBox) && world.getEntityCollisions(this, boundingBox).Count == 0 && !world.isBoxSubmergedInFluid(boundingBox);
         }
 
-        protected override void kill()
+        protected override void tickInVoid()
         {
             damage(null, 4);
         }
 
         public float getSwingProgress(float var1)
         {
-            float var2 = swingProgress - prevSwingProgress;
+            float var2 = swingAnimationProgress - lastSwingAnimationProgress;
             if (var2 < 0.0F)
             {
                 ++var2;
             }
 
-            return prevSwingProgress + var2 * var1;
+            return lastSwingAnimationProgress + var2 * var1;
         }
 
         public Vec3D getPosition(float var1)
@@ -997,7 +997,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override Vec3D getLookVec()
+        public override Vec3D getLookVector()
         {
             return getLook(1.0F);
         }
@@ -1046,12 +1046,12 @@ namespace betareborn.Entities
             return null;
         }
 
-        public override void handleHealthUpdate(sbyte var1)
+        public override void processServerEntityStatus(sbyte var1)
         {
             if (var1 == 2)
             {
                 walkAnimationSpeed = 1.5F;
-                hearts = heartsHalvesLife;
+                hearts = maxHealth;
                 hurtTime = maxHurtTime = 10;
                 attackedAtYaw = 0.0F;
                 world.playSound(this, getHurtSound(), getSoundVolume(), (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F);
@@ -1065,7 +1065,7 @@ namespace betareborn.Entities
             }
             else
             {
-                base.handleHealthUpdate(var1);
+                base.processServerEntityStatus(var1);
             }
 
         }

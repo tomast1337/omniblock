@@ -25,35 +25,35 @@ namespace betareborn.Screens.Slots
         public override void onTakeItem(ItemStack var1)
         {
             var1.onCraft(thePlayer.world, thePlayer);
-            if (var1.itemID == Block.CRAFTING_TABLE.id)
+            if (var1.itemId == Block.CRAFTING_TABLE.id)
             {
                 thePlayer.increaseStat(Achievements.BUILD_WORKBENCH, 1);
             }
-            else if (var1.itemID == Item.WOODEN_PICKAXE.id)
+            else if (var1.itemId == Item.WOODEN_PICKAXE.id)
             {
                 thePlayer.increaseStat(Achievements.BUILD_PICKAXE, 1);
             }
-            else if (var1.itemID == Block.FURNACE.id)
+            else if (var1.itemId == Block.FURNACE.id)
             {
                 thePlayer.increaseStat(Achievements.BUILD_FURNACE, 1);
             }
-            else if (var1.itemID == Item.WOODEN_HOE.id)
+            else if (var1.itemId == Item.WOODEN_HOE.id)
             {
                 thePlayer.increaseStat(Achievements.BUILD_HOE, 1);
             }
-            else if (var1.itemID == Item.BREAD.id)
+            else if (var1.itemId == Item.BREAD.id)
             {
                 thePlayer.increaseStat(Achievements.MAKE_BREAD, 1);
             }
-            else if (var1.itemID == Item.CAKE.id)
+            else if (var1.itemId == Item.CAKE.id)
             {
                 thePlayer.increaseStat(Achievements.BAKE_CAKE, 1);
             }
-            else if (var1.itemID == Item.STONE_PICKAXE.id)
+            else if (var1.itemId == Item.STONE_PICKAXE.id)
             {
                 thePlayer.increaseStat(Achievements.CRAFT_STONE_PICKAXE, 1);
             }
-            else if (var1.itemID == Item.WOODEN_SWORD.id)
+            else if (var1.itemId == Item.WOODEN_SWORD.id)
             {
                 thePlayer.increaseStat(Achievements.CRAFT_SWORD, 1);
             }

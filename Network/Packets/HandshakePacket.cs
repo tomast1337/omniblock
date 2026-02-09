@@ -29,7 +29,7 @@ namespace betareborn.Network.Packets
 
         public override void apply(NetHandler var1)
         {
-            var1.handleHandshake(this);
+            var1.onHandshake(this);
         }
 
         public override int size()

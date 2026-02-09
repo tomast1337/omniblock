@@ -200,7 +200,7 @@ namespace betareborn.Blocks
 
         public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
         {
-            if (!world.isRemote && player.getHand() != null && player.getHand().itemID == Item.SHEARS.id)
+            if (!world.isRemote && player.getHand() != null && player.getHand().itemId == Item.SHEARS.id)
             {
                 player.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
                 dropStack(world, x, y, z, new ItemStack(Block.LEAVES.id, 1, meta & 3));

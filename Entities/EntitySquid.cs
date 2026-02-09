@@ -73,7 +73,7 @@ namespace betareborn.Entities
 
             for (int var2 = 0; var2 < var1; ++var2)
             {
-                entityDropItem(new ItemStack(Item.DYE, 1, 0), 0.0F);
+                dropItem(new ItemStack(Item.DYE, 1, 0), 0.0F);
             }
 
         }
@@ -129,7 +129,7 @@ namespace betareborn.Entities
                     field_21079_m *= 0.99F;
                 }
 
-                if (!isMultiplayerEntity)
+                if (!interpolateOnly)
                 {
                     velocityX = (double)(randomMotionVecX * randomMotionSpeed);
                     velocityY = (double)(randomMotionVecY * randomMotionSpeed);
@@ -137,15 +137,15 @@ namespace betareborn.Entities
                 }
 
                 var1 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
-                renderYawOffset += (-((float)java.lang.Math.atan2(velocityX, velocityZ)) * 180.0F / (float)Math.PI - renderYawOffset) * 0.1F;
-                yaw = renderYawOffset;
+                bodyYaw += (-((float)java.lang.Math.atan2(velocityX, velocityZ)) * 180.0F / (float)Math.PI - bodyYaw) * 0.1F;
+                yaw = bodyYaw;
                 field_21087_c += (float)Math.PI * field_21079_m * 1.5F;
                 field_21089_a += (-((float)java.lang.Math.atan2((double)var1, velocityY)) * 180.0F / (float)Math.PI - field_21089_a) * 0.1F;
             }
             else
             {
                 field_21083_i = MathHelper.abs(MathHelper.sin(field_21085_g)) * (float)Math.PI * 0.25F;
-                if (!isMultiplayerEntity)
+                if (!interpolateOnly)
                 {
                     velocityX = 0.0D;
                     velocityY -= 0.08D;
@@ -160,7 +160,7 @@ namespace betareborn.Entities
 
         public override void travel(float var1, float var2)
         {
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
         }
 
         public override void tickLiving()

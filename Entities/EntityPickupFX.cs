@@ -46,7 +46,7 @@ namespace betareborn.Entities
             EntityRenderDispatcher.instance.renderEntityWithPosYaw(field_675_a, (double)((float)var21), (double)((float)var23), (double)((float)var25), field_675_a.yaw, var2);
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             ++field_678_p;
             if (field_678_p == field_677_q)

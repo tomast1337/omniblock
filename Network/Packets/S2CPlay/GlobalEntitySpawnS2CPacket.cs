@@ -21,7 +21,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public GlobalEntitySpawnS2CPacket(Entity var1)
         {
-            field_27054_a = var1.entityId;
+            field_27054_a = var1.id;
             field_27053_b = MathHelper.floor_double(var1.x * 32.0D);
             field_27057_c = MathHelper.floor_double(var1.y * 32.0D);
             field_27056_d = MathHelper.floor_double(var1.z * 32.0D);
@@ -52,7 +52,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.handleWeather(this);
+            var1.onLightningEntitySpawn(this);
         }
 
         public override int size()

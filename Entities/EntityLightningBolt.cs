@@ -43,9 +43,9 @@ namespace betareborn.Entities
 
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             if (field_27028_b == 2)
             {
                 world.playSound(x, y, z, "ambient.weather.thunder", 10000.0F, 0.8F + random.nextFloat() * 0.2F);
@@ -93,7 +93,7 @@ namespace betareborn.Entities
 
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
@@ -105,7 +105,7 @@ namespace betareborn.Entities
         {
         }
 
-        public override bool isInRangeToRenderVec3D(Vec3D var1)
+        public override bool shouldRender(Vec3D var1)
         {
             return field_27028_b >= 0;
         }

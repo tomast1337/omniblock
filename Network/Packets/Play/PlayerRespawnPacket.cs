@@ -20,7 +20,7 @@ namespace betareborn.Network.Packets.Play
 
         public override void apply(NetHandler var1)
         {
-            var1.func_9448_a(this);
+            var1.onPlayerRespawn(this);
         }
 
         public override void read(DataInputStream var1)

@@ -53,7 +53,7 @@ namespace betareborn.Entities
             setArrowHeading(velocityX, velocityY, velocityZ, 1.5F, 1.0F);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
@@ -78,7 +78,7 @@ namespace betareborn.Entities
             ticksInGround = 0;
         }
 
-        public override void setVelocity(double var1, double var3, double var5)
+        public override void setVelocityClient(double var1, double var3, double var5)
         {
             velocityX = var1;
             velocityY = var3;
@@ -96,9 +96,9 @@ namespace betareborn.Entities
 
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             if (prevPitch == 0.0F && prevYaw == 0.0F)
             {
                 float var1 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
@@ -166,7 +166,7 @@ namespace betareborn.Entities
                 for (int var8 = 0; var8 < var5.Count; ++var8)
                 {
                     Entity var9 = var5[var8];
-                    if (var9.canBeCollidedWith() && (var9 != owner || ticksInAir >= 5))
+                    if (var9.isCollidable() && (var9 != owner || ticksInAir >= 5))
                     {
                         var10 = 0.3F;
                         Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
@@ -300,7 +300,7 @@ namespace betareborn.Entities
             doesArrowBelongToPlayer = var1.getBoolean("player");
         }
 
-        public override void onCollideWithPlayer(EntityPlayer var1)
+        public override void onPlayerInteraction(EntityPlayer var1)
         {
             if (!world.isRemote)
             {

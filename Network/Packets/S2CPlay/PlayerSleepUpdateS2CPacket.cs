@@ -1,4 +1,4 @@
-using betareborn.Network.Packets;
+using betareborn.Entities;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -7,33 +7,42 @@ namespace betareborn.Network.Packets.S2CPlay
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(PlayerSleepUpdateS2CPacket).TypeHandle);
 
-        public int field_22045_a;
-        public int field_22044_b;
-        public int field_22048_c;
-        public int field_22047_d;
-        public int field_22046_e;
+        public int id;
+        public int x;
+        public int y;
+        public int z;
+        public int status;
+
+        public PlayerSleepUpdateS2CPacket(Entity player, int status, int x, int y, int z)
+        {
+            this.status = status;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.id = player.id;
+        }
 
         public override void read(DataInputStream var1)
         {
-            field_22045_a = var1.readInt();
-            field_22046_e = (sbyte)var1.readByte();
-            field_22044_b = var1.readInt();
-            field_22048_c = (sbyte)var1.readByte();
-            field_22047_d = var1.readInt();
+            id = var1.readInt();
+            status = (sbyte)var1.readByte();
+            x = var1.readInt();
+            y = (sbyte)var1.readByte();
+            z = var1.readInt();
         }
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeInt(field_22045_a);
-            var1.writeByte(field_22046_e);
-            var1.writeInt(field_22044_b);
-            var1.writeByte(field_22048_c);
-            var1.writeInt(field_22047_d);
+            var1.writeInt(id);
+            var1.writeByte(status);
+            var1.writeInt(x);
+            var1.writeByte(y);
+            var1.writeInt(z);
         }
 
         public override void apply(NetHandler var1)
         {
-            var1.func_22186_a(this);
+            var1.onPlayerSleepUpdate(this);
         }
 
         public override int size()

@@ -39,16 +39,16 @@ namespace betareborn.Entities
             base.renderParticle(var1, var2, var3, var4, var5, var6, var7);
         }
 
-        public override float getEntityBrightness(float var1)
+        public override float getBrightnessAtEyes(float var1)
         {
-            float var2 = base.getEntityBrightness(var1);
+            float var2 = base.getBrightnessAtEyes(var1);
             float var3 = (float)particleAge / (float)particleMaxAge;
             var3 *= var3;
             var3 *= var3;
             return var2 * (1.0F - var3) + var3;
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             prevX = x;
             prevY = y;

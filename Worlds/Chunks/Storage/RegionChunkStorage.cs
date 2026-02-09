@@ -82,7 +82,7 @@ namespace betareborn.Worlds.Chunks.Storage
                 {
                     chunk.lastSaveHadEntities = true;
                     var7 = new NBTTagCompound();
-                    if (var6.addEntityID(var7))
+                    if (var6.saveSelfNbt(var7))
                     {
                         var3.setTag(var7);
                     }

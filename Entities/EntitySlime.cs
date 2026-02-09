@@ -23,9 +23,9 @@ namespace betareborn.Entities
             setSlimeSize(var2);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
-            base.entityInit();
+            base.initDataTracker();
             dataWatcher.addObject(16, new java.lang.Byte((byte)1));
         }
 
@@ -54,11 +54,11 @@ namespace betareborn.Entities
             setSlimeSize(var1.getInteger("Size") + 1);
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             field_767_b = field_768_a;
             bool var1 = onGround;
-            base.onUpdate();
+            base.tick();
             if (onGround && !var1)
             {
                 int var2 = getSlimeSize();
@@ -100,22 +100,22 @@ namespace betareborn.Entities
                     slimeJumpDelay /= 3;
                 }
 
-                isJumping = true;
+                jumping = true;
                 if (getSlimeSize() > 1)
                 {
                     world.playSound(this, "mob.slime", getSoundVolume(), ((random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F) * 0.8F);
                 }
 
                 field_768_a = 1.0F;
-                moveStrafing = 1.0F - random.nextFloat() * 2.0F;
-                moveForward = (float)(1 * getSlimeSize());
+                sidewaysSpeed = 1.0F - random.nextFloat() * 2.0F;
+                forwardSpeed = (float)(1 * getSlimeSize());
             }
             else
             {
-                isJumping = false;
+                jumping = false;
                 if (onGround)
                 {
-                    moveStrafing = moveForward = 0.0F;
+                    sidewaysSpeed = forwardSpeed = 0.0F;
                 }
             }
 
@@ -140,10 +140,10 @@ namespace betareborn.Entities
             base.markDead();
         }
 
-        public override void onCollideWithPlayer(EntityPlayer var1)
+        public override void onPlayerInteraction(EntityPlayer var1)
         {
             int var2 = getSlimeSize();
-            if (var2 > 1 && canEntityBeSeen(var1) && (double)getDistanceToEntity(var1) < 0.6D * (double)var2 && var1.damage(this, var2))
+            if (var2 > 1 && canSee(var1) && (double)getDistance(var1) < 0.6D * (double)var2 && var1.damage(this, var2))
             {
                 world.playSound(this, "mob.slimeattack", 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F);
             }

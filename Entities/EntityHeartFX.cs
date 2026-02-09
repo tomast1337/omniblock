@@ -43,7 +43,7 @@ namespace betareborn.Entities
             base.renderParticle(var1, var2, var3, var4, var5, var6, var7);
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             prevX = x;
             prevY = y;
@@ -53,7 +53,7 @@ namespace betareborn.Entities
                 markDead();
             }
 
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
             if (y == prevY)
             {
                 velocityX *= 1.1D;

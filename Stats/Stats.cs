@@ -73,7 +73,7 @@ namespace betareborn.Stats
                 while (var1.hasNext())
                 {
                     IRecipe var2 = (IRecipe)var1.next();
-                    var0.add(Integer.valueOf(var2.getRecipeOutput().itemID));
+                    var0.add(Integer.valueOf(var2.getRecipeOutput().itemId));
                 }
 
                 var1 = SmeltingRecipeManager.getInstance().getSmeltingList().values().iterator();
@@ -81,7 +81,7 @@ namespace betareborn.Stats
                 while (var1.hasNext())
                 {
                     ItemStack var4 = (ItemStack)var1.next();
-                    var0.add(Integer.valueOf(var4.itemID));
+                    var0.add(Integer.valueOf(var4.itemId));
                 }
 
                 CRAFTED = new StatBase[32000];

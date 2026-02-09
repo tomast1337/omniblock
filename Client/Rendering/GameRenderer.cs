@@ -125,9 +125,9 @@ namespace betareborn.Client.Rendering
                     for (int var13 = 0; var13 < var10.Count; ++var13)
                     {
                         Entity var14 = var10[var13];
-                        if (var14.canBeCollidedWith())
+                        if (var14.isCollidable())
                         {
-                            float var15 = var14.getCollisionBorderSize();
+                            float var15 = var14.getTargetingMargin();
                             Box var16 = var14.boundingBox.expand((double)var15, (double)var15, (double)var15);
                             HitResult var17 = var16.raycast(var6, var8);
                             if (var16.contains(var6))
@@ -163,7 +163,7 @@ namespace betareborn.Client.Rendering
         {
             EntityLiving var2 = client.camera;
             float var3 = 70.0F;
-            if (var2.isInsideOfMaterial(Material.WATER))
+            if (var2.isInFluid(Material.WATER))
             {
                 var3 = 60.0F;
             }
@@ -331,7 +331,7 @@ namespace betareborn.Client.Rendering
                 applyViewBobbing(tickDelta);
             }
 
-            float var4 = client.player.prevTimeInPortal + (client.player.timeInPortal - client.player.prevTimeInPortal) * tickDelta;
+            float var4 = client.player.lastScreenDistortion + (client.player.changeDimensionCooldown - client.player.lastScreenDistortion) * tickDelta;
             if (var4 > 0.0F)
             {
                 float var5 = 5.0F / (var4 * var4 + 5.0F) - var4 * 0.04F;
@@ -408,7 +408,7 @@ namespace betareborn.Client.Rendering
                     var5 = mouseFilterYAxis.func_22386_a(var5, 0.05F * var3);
                 }
 
-                client.player.func_346_d(var4, var5 * var6);
+                client.player.changeLookDirection(var4, var5 * var6);
             }
 
             if (!client.skipRenderWorld)
@@ -579,12 +579,12 @@ namespace betareborn.Client.Rendering
             Profiler.Stop("renderParticles");
 
             EntityPlayer var21;
-            if (client.objectMouseOver != null && var4.isInsideOfMaterial(Material.WATER) && var4 is EntityPlayer)
+            if (client.objectMouseOver != null && var4.isInFluid(Material.WATER) && var4 is EntityPlayer)
             {
                 var21 = (EntityPlayer)var4;
                 GLManager.GL.Disable(GLEnum.AlphaTest);
-                var5.drawBlockBreaking(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
-                var5.drawSelectionBox(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
+                var5.drawBlockBreaking(var21, client.objectMouseOver, 0, var21.inventory.getSelectedItem(), tickDelta);
+                var5.drawSelectionBox(var21, client.objectMouseOver, 0, var21.inventory.getSelectedItem(), tickDelta);
                 GLManager.GL.Enable(GLEnum.AlphaTest);
             }
 
@@ -607,12 +607,12 @@ namespace betareborn.Client.Rendering
             GLManager.GL.DepthMask(true);
             GLManager.GL.Enable(GLEnum.CullFace);
             GLManager.GL.Disable(GLEnum.Blend);
-            if (cameraZoom == 1.0D && var4 is EntityPlayer && client.objectMouseOver != null && !var4.isInsideOfMaterial(Material.WATER))
+            if (cameraZoom == 1.0D && var4 is EntityPlayer && client.objectMouseOver != null && !var4.isInFluid(Material.WATER))
             {
                 var21 = (EntityPlayer)var4;
                 GLManager.GL.Disable(GLEnum.AlphaTest);
-                var5.drawBlockBreaking(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
-                var5.drawSelectionBox(var21, client.objectMouseOver, 0, var21.inventory.getCurrentItem(), tickDelta);
+                var5.drawBlockBreaking(var21, client.objectMouseOver, 0, var21.inventory.getSelectedItem(), tickDelta);
+                var5.drawSelectionBox(var21, client.objectMouseOver, 0, var21.inventory.getSelectedItem(), tickDelta);
                 GLManager.GL.Enable(GLEnum.AlphaTest);
             }
 
@@ -909,13 +909,13 @@ namespace betareborn.Client.Rendering
                 fogColorGreen = (float)var16.Y;
                 fogColorBlue = (float)var16.Z;
             }
-            else if (var3.isInsideOfMaterial(Material.WATER))
+            else if (var3.isInFluid(Material.WATER))
             {
                 fogColorRed = 0.02F;
                 fogColorGreen = 0.02F;
                 fogColorBlue = 0.2F;
             }
-            else if (var3.isInsideOfMaterial(Material.LAVA))
+            else if (var3.isInFluid(Material.LAVA))
             {
                 fogColorRed = 0.6F;
                 fogColorGreen = 0.1F;
@@ -944,14 +944,14 @@ namespace betareborn.Client.Rendering
                 client.terrainRenderer.chunkRenderer.SetFogMode(1);
                 client.terrainRenderer.chunkRenderer.SetFogDensity(0.1f);
             }
-            else if (var3.isInsideOfMaterial(Material.WATER))
+            else if (var3.isInFluid(Material.WATER))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
                 client.terrainRenderer.chunkRenderer.SetFogMode(1);
                 client.terrainRenderer.chunkRenderer.SetFogDensity(0.1f);
             }
-            else if (var3.isInsideOfMaterial(Material.LAVA))
+            else if (var3.isInFluid(Material.LAVA))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);

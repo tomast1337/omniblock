@@ -13,22 +13,22 @@ namespace betareborn.Entities
         {
             texture = "/mob/spider.png";
             setBoundingBoxSpacing(1.4F, 0.9F);
-            moveSpeed = 0.8F;
+            movementSpeed = 0.8F;
         }
 
-        public override double getMountedYOffset()
+        public override double getPassengerRidingHeight()
         {
             return (double)height * 0.75D - 0.5D;
         }
 
-        protected override bool canTriggerWalking()
+        protected override bool bypassesSteppingEffects()
         {
             return false;
         }
 
         protected override Entity findPlayerToAttack()
         {
-            float var1 = getEntityBrightness(1.0F);
+            float var1 = getBrightnessAtEyes(1.0F);
             if (var1 < 0.5F)
             {
                 double var2 = 16.0D;
@@ -57,7 +57,7 @@ namespace betareborn.Entities
 
         protected override void attackEntity(Entity var1, float var2)
         {
-            float var3 = getEntityBrightness(1.0F);
+            float var3 = getBrightnessAtEyes(1.0F);
             if (var3 > 0.5F && random.nextInt(100) == 0)
             {
                 playerToAttack = null;

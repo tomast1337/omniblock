@@ -1,6 +1,6 @@
 namespace betareborn
 {
-    public enum EnumStatus
+    public enum SleepAttemptResult
     {
         OK,
         NOT_POSSIBLE_HERE,

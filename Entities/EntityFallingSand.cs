@@ -32,21 +32,21 @@ namespace betareborn.Entities
             prevZ = var6;
         }
 
-        protected override bool canTriggerWalking()
+        protected override bool bypassesSteppingEffects()
         {
             return false;
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public override bool canBeCollidedWith()
+        public override bool isCollidable()
         {
-            return !isDead;
+            return !dead;
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             if (blockID == 0)
             {
@@ -59,7 +59,7 @@ namespace betareborn.Entities
                 prevZ = z;
                 ++fallTime;
                 velocityY -= (double)0.04F;
-                moveEntity(velocityX, velocityY, velocityZ);
+                move(velocityX, velocityY, velocityZ);
                 velocityX *= (double)0.98F;
                 velocityY *= (double)0.98F;
                 velocityZ *= (double)0.98F;

@@ -55,7 +55,7 @@ namespace betareborn.Blocks
                         var11 = (var11 + (double)z + 0.5D) / 2.0D;
                     }
 
-                    world.newExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
+                    world.createExplosion((Entity)null, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), 5.0F, true);
                     return true;
                 }
                 else
@@ -87,15 +87,15 @@ namespace betareborn.Blocks
                         updateState(world, x, y, z, false);
                     }
 
-                    EnumStatus var15 = player.trySleep(x, y, z);
-                    if (var15 == EnumStatus.OK)
+                    SleepAttemptResult var15 = player.trySleep(x, y, z);
+                    if (var15 == SleepAttemptResult.OK)
                     {
                         updateState(world, x, y, z, true);
                         return true;
                     }
                     else
                     {
-                        if (var15 == EnumStatus.NOT_POSSIBLE_NOW)
+                        if (var15 == SleepAttemptResult.NOT_POSSIBLE_NOW)
                         {
                             player.sendMessage("tile.bed.noSleep");
                         }

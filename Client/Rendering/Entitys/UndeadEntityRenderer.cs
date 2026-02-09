@@ -25,7 +25,7 @@ namespace betareborn.Client.Rendering.Entitys
                 modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
                 GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
                 float var4;
-                if (var3.itemID < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var3.itemID].getRenderType()))
+                if (var3.itemId < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var3.itemId].getRenderType()))
                 {
                     var4 = 0.5F;
                     GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
@@ -34,7 +34,7 @@ namespace betareborn.Client.Rendering.Entitys
                     GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Scale(var4, -var4, var4);
                 }
-                else if (Item.ITEMS[var3.itemID].isHandheld())
+                else if (Item.ITEMS[var3.itemId].isHandheld())
                 {
                     var4 = 10.0F / 16.0F;
                     GLManager.GL.Translate(0.0F, 3.0F / 16.0F, 0.0F);

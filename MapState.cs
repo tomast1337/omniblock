@@ -96,7 +96,7 @@ namespace betareborn
             for (int var14 = 0; var14 < updateTrackers.size(); ++var14)
             {
                 MapInfo var4 = (MapInfo)updateTrackers.get(var14);
-                if (!var4.player.isDead && var4.player.inventory.func_28018_c(var2))
+                if (!var4.player.dead && var4.player.inventory.contains(var2))
                 {
                     float var5 = (float)(var4.player.x - (double)centerX) / (float)(1 << scale);
                     float var6 = (float)(var4.player.z - (double)centerZ) / (float)(1 << scale);
@@ -114,7 +114,7 @@ namespace betareborn
                             var12 = (byte)(var13 * var13 * 34187121 + var13 * 121 >> 15 & 15);
                         }
 
-                        if (var4.player.dimension == dimension)
+                        if (var4.player.dimensionId == dimension)
                         {
                             icons.add(new MapCoord(this, var9, var10, var11, var12));
                         }

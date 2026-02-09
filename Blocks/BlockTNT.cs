@@ -69,7 +69,7 @@ namespace betareborn.Blocks
 
         public override void onBlockBreakStart(World world, int x, int y, int z, EntityPlayer player)
         {
-            if (player.getHand() != null && player.getHand().itemID == Item.FLINT_AND_STEEL.id)
+            if (player.getHand() != null && player.getHand().itemId == Item.FLINT_AND_STEEL.id)
             {
                 world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, 1);
             }

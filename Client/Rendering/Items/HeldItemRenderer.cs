@@ -28,14 +28,14 @@ namespace betareborn.Client.Rendering.Items
         public void renderItem(EntityLiving var1, ItemStack var2)
         {
             GLManager.GL.PushMatrix();
-            if (var2.itemID < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var2.itemID].getRenderType()))
+            if (var2.itemId < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var2.itemId].getRenderType()))
             {
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/terrain.png"));
-                renderBlocksInstance.renderBlockOnInventory(Block.BLOCKS[var2.itemID], var2.getDamage(), var1.getEntityBrightness(1.0F));
+                renderBlocksInstance.renderBlockOnInventory(Block.BLOCKS[var2.itemId], var2.getDamage(), var1.getBrightnessAtEyes(1.0F));
             }
             else
             {
-                if (var2.itemID < 256)
+                if (var2.itemId < 256)
                 {
                     GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/terrain.png"));
                 }
@@ -162,7 +162,7 @@ namespace betareborn.Client.Rendering.Items
             float var10;
             if (var5 != null)
             {
-                int var7 = Item.ITEMS[var5.itemID].getColorMultiplier(var5.getDamage());
+                int var7 = Item.ITEMS[var5.itemId].getColorMultiplier(var5.getDamage());
                 var8 = (var7 >> 16 & 255) / 255.0F;
                 var9 = (var7 >> 8 & 255) / 255.0F;
                 var10 = (var7 & 255) / 255.0F;
@@ -174,7 +174,7 @@ namespace betareborn.Client.Rendering.Items
             }
 
             float var14;
-            if (var5 != null && var5.itemID == Item.MAP.id)
+            if (var5 != null && var5.itemId == Item.MAP.id)
             {
                 GLManager.GL.PushMatrix();
                 var14 = 0.8F;
@@ -199,7 +199,7 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Rotate(var8 * -85.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Enable(GLEnum.RescaleNormal);
                 //TODO: ADD SKINS
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId(mc.player.getEntityTexture()));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId(mc.player.getTexture()));
 
                 for (int var17 = 0; var17 < 2; ++var17)
                 {
@@ -289,7 +289,7 @@ namespace betareborn.Client.Rendering.Items
                 GLManager.GL.Rotate(var10 * 70.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Rotate(-var9 * 20.0F, 0.0F, 0.0F, 1.0F);
                 //TODO: ADD SKIN
-                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId(mc.player.getEntityTexture()));
+                GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId(mc.player.getTexture()));
                 GLManager.GL.Translate(-1.0F, 3.6F, 3.5F);
                 GLManager.GL.Rotate(120.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(200.0F, 1.0F, 0.0F, 0.0F);
@@ -354,7 +354,7 @@ namespace betareborn.Client.Rendering.Items
                 }
             }
 
-            if (mc.player.isInsideOfMaterial(Material.WATER))
+            if (mc.player.isInFluid(Material.WATER))
             {
                 var2 = mc.textureManager.getTextureId("/misc/water.png");
                 GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)var2);
@@ -367,7 +367,7 @@ namespace betareborn.Client.Rendering.Items
         private void renderInsideOfBlock(float var1, int var2)
         {
             Tessellator var3 = Tessellator.instance;
-            mc.player.getEntityBrightness(var1);
+            mc.player.getBrightnessAtEyes(var1);
             float var4 = 0.1F;
             GLManager.GL.Color4(var4, var4, var4, 0.5F);
             GLManager.GL.PushMatrix();
@@ -394,7 +394,7 @@ namespace betareborn.Client.Rendering.Items
         private void renderWarpedTextureOverlay(float var1)
         {
             Tessellator var2 = Tessellator.instance;
-            float var3 = mc.player.getEntityBrightness(var1);
+            float var3 = mc.player.getBrightnessAtEyes(var1);
             GLManager.GL.Color4(var3, var3, var3, 0.5F);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
@@ -460,14 +460,14 @@ namespace betareborn.Client.Rendering.Items
         {
             prevEquippedProgress = equippedProgress;
             ClientPlayerEntity var1 = mc.player;
-            ItemStack var2 = var1.inventory.getCurrentItem();
-            bool var4 = field_20099_f == var1.inventory.currentItem && var2 == itemToRender;
+            ItemStack var2 = var1.inventory.getSelectedItem();
+            bool var4 = field_20099_f == var1.inventory.selectedSlot && var2 == itemToRender;
             if (itemToRender == null && var2 == null)
             {
                 var4 = true;
             }
 
-            if (var2 != null && itemToRender != null && var2 != itemToRender && var2.itemID == itemToRender.itemID && var2.getDamage() == itemToRender.getDamage())
+            if (var2 != null && itemToRender != null && var2 != itemToRender && var2.itemId == itemToRender.itemId && var2.getDamage() == itemToRender.getDamage())
             {
                 itemToRender = var2;
                 var4 = true;
@@ -490,7 +490,7 @@ namespace betareborn.Client.Rendering.Items
             if (equippedProgress < 0.1F)
             {
                 itemToRender = var2;
-                field_20099_f = var1.inventory.currentItem;
+                field_20099_f = var1.inventory.selectedSlot;
             }
 
         }

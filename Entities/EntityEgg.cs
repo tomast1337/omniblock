@@ -25,11 +25,11 @@ namespace betareborn.Entities
             setBoundingBoxSpacing(0.25F, 0.25F);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public override bool isInRangeToRenderDist(double var1)
+        public override bool shouldRender(double var1)
         {
             double var3 = boundingBox.getAverageSizeLength() * 4.0D;
             var3 *= 64.0D;
@@ -82,7 +82,7 @@ namespace betareborn.Entities
             field_20050_h = 0;
         }
 
-        public override void setVelocity(double var1, double var3, double var5)
+        public override void setVelocityClient(double var1, double var3, double var5)
         {
             velocityX = var1;
             velocityY = var3;
@@ -96,12 +96,12 @@ namespace betareborn.Entities
 
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             lastTickX = x;
             lastTickY = y;
             lastTickZ = z;
-            base.onUpdate();
+            base.tick();
             if (field_20057_a > 0)
             {
                 --field_20057_a;
@@ -152,7 +152,7 @@ namespace betareborn.Entities
                 for (int var8 = 0; var8 < var5.Count; ++var8)
                 {
                     Entity var9 = var5[var8];
-                    if (var9.canBeCollidedWith() && (var9 != field_20051_g || field_20049_i >= 5))
+                    if (var9.isCollidable() && (var9 != field_20051_g || field_20049_i >= 5))
                     {
                         float var10 = 0.3F;
                         Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
@@ -272,7 +272,7 @@ namespace betareborn.Entities
             field_20052_f = var1.getByte("inGround") == 1;
         }
 
-        public override void onCollideWithPlayer(EntityPlayer var1)
+        public override void onPlayerInteraction(EntityPlayer var1)
         {
             if (field_20052_f && field_20051_g == var1 && field_20057_a <= 0 && var1.inventory.addItemStackToInventory(new ItemStack(Item.ARROW, 1)))
             {

@@ -31,7 +31,7 @@ namespace betareborn.Entities
             float var13 = (float)(prevX + (x - prevX) * (double)var2 - interpPosX);
             float var14 = (float)(prevY + (y - prevY) * (double)var2 - interpPosY);
             float var15 = (float)(prevZ + (z - prevZ) * (double)var2 - interpPosZ);
-            float var16 = getEntityBrightness(var2);
+            float var16 = getBrightnessAtEyes(var2);
             var1.setColorOpaque_F(var16 * particleRed, var16 * particleGreen, var16 * particleBlue);
             var1.addVertexWithUV((double)(var13 - var3 * var12 - var6 * var12), (double)(var14 - var4 * var12), (double)(var15 - var5 * var12 - var7 * var12), (double)var8, (double)var11);
             var1.addVertexWithUV((double)(var13 - var3 * var12 + var6 * var12), (double)(var14 + var4 * var12), (double)(var15 - var5 * var12 + var7 * var12), (double)var8, (double)var10);

@@ -75,7 +75,7 @@ namespace betareborn.Entities
             func_412_b(var5);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
@@ -153,7 +153,7 @@ namespace betareborn.Entities
             return var1 == 32 ? 0.5F : (var1 == 64 ? 0.5F : 0.0F);
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             if (field_695_c++ == 100 && !world.isRemote)
             {
@@ -238,17 +238,17 @@ namespace betareborn.Entities
             }
         }
 
-        public override bool canBeCollidedWith()
+        public override bool isCollidable()
         {
             return true;
         }
 
         public override bool damage(Entity var1, int var2)
         {
-            if (!isDead && !world.isRemote)
+            if (!dead && !world.isRemote)
             {
                 markDead();
-                setBeenAttacked();
+                scheduleVelocityUpdate();
                 world.spawnEntity(new EntityItem(world, x, y, z, new ItemStack(Item.PAINTING)));
             }
 
@@ -291,7 +291,7 @@ namespace betareborn.Entities
             func_412_b(direction);
         }
 
-        public override void moveEntity(double var1, double var3, double var5)
+        public override void move(double var1, double var3, double var5)
         {
             if (!world.isRemote && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D)
             {

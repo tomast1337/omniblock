@@ -203,7 +203,7 @@ namespace betareborn.Stats
                     var5 = false;
                 }
 
-                var3.append("\r\n    {\"").append(var7.statId).append("\":").append(var2.get(var7));
+                var3.append("\r\n    {\"").append(var7.id).append("\":").append(var2.get(var7));
                 var4.append(var7.statGuid).append(",");
                 var4.append(var2.get(var7)).append(",");
             }

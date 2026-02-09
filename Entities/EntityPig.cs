@@ -14,7 +14,7 @@ namespace betareborn.Entities
             setBoundingBoxSpacing(0.9F, 0.9F);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
             dataWatcher.addObject(16, java.lang.Byte.valueOf((byte)0));
         }
@@ -54,7 +54,7 @@ namespace betareborn.Entities
             }
             else
             {
-                var1.mountEntity(this);
+                var1.setVehicle(this);
                 return true;
             }
         }

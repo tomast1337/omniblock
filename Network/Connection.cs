@@ -152,7 +152,7 @@ namespace betareborn.Network
 
             try
             {
-                Packet var2 = Packet.read(inputStream, networkHandler.isServerHandler());
+                Packet var2 = Packet.read(inputStream, networkHandler.isServerSide());
                 if (var2 != null)
                 {
                     int[] var10000 = TOTAL_READ_SIZE;
@@ -255,7 +255,7 @@ namespace betareborn.Network
             interrupt();
             if (disconnected && readQueue.isEmpty())
             {
-                networkHandler.handleErrorMessage(disconnectedReason, disconnectReasonArgs);
+                networkHandler.onDisconnected(disconnectedReason, disconnectReasonArgs);
             }
 
         }

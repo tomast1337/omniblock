@@ -34,7 +34,7 @@ namespace betareborn.Client.Rendering.Entitys
                 renderPassModel.onGround = mainModel.onGround;
             }
 
-            mainModel.isRiding = var1.isRiding();
+            mainModel.isRiding = var1.hasVehicle();
             if (renderPassModel != null)
             {
                 renderPassModel.isRiding = mainModel.isRiding;
@@ -42,7 +42,7 @@ namespace betareborn.Client.Rendering.Entitys
 
             try
             {
-                float var10 = var1.prevRenderYawOffset + (var1.renderYawOffset - var1.prevRenderYawOffset) * var9;
+                float var10 = var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var9;
                 float var11 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var9;
                 float var12 = var1.prevPitch + (var1.pitch - var1.prevPitch) * var9;
                 func_22012_b(var1, var2, var4, var6);
@@ -60,7 +60,7 @@ namespace betareborn.Client.Rendering.Entitys
                     var15 = 1.0F;
                 }
 
-                loadDownloadableImageTexture(var1.skinUrl, var1.getEntityTexture());
+                loadDownloadableImageTexture(var1.skinUrl, var1.getTexture());
                 GLManager.GL.Enable(GLEnum.AlphaTest);
                 mainModel.setLivingAnimations(var1, var16, var15, var9);
                 mainModel.render(var16, var15, var13, var11 - var10, var12, var14);
@@ -76,7 +76,7 @@ namespace betareborn.Client.Rendering.Entitys
                 }
 
                 renderMore(var1, var9);
-                float var25 = var1.getEntityBrightness(var9);
+                float var25 = var1.getBrightnessAtEyes(var9);
                 int var18 = getColorMultiplier(var1, var25, var9);
                 if ((var18 >> 24 & 255) > 0 || var1.hurtTime > 0 || var1.deathTime > 0)
                 {
@@ -201,14 +201,14 @@ namespace betareborn.Client.Rendering.Entitys
         {
             if (Minecraft.isDebugInfoEnabled())
             {
-                renderLivingLabel(var1, Integer.toString(var1.entityId), var2, var4, var6, 64);
+                renderLivingLabel(var1, Integer.toString(var1.id), var2, var4, var6, 64);
             }
 
         }
 
         protected void renderLivingLabel(EntityLiving var1, string var2, double var3, double var5, double var7, int var9)
         {
-            float var10 = var1.getDistanceToEntity(dispatcher.cameraEntity);
+            float var10 = var1.getDistance(dispatcher.cameraEntity);
             if (var10 <= var9)
             {
                 TextRenderer var11 = getTextRenderer();

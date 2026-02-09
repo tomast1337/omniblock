@@ -58,16 +58,16 @@ namespace betareborn.Entities
             return this;
         }
 
-        protected override bool canTriggerWalking()
+        protected override bool bypassesSteppingEffects()
         {
             return false;
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             prevX = x;
             prevY = y;
@@ -78,7 +78,7 @@ namespace betareborn.Entities
             }
 
             velocityY -= 0.04D * (double)particleGravity;
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
             velocityX *= (double)0.98F;
             velocityY *= (double)0.98F;
             velocityZ *= (double)0.98F;
@@ -100,7 +100,7 @@ namespace betareborn.Entities
             float var13 = (float)(prevX + (x - prevX) * (double)var2 - interpPosX);
             float var14 = (float)(prevY + (y - prevY) * (double)var2 - interpPosY);
             float var15 = (float)(prevZ + (z - prevZ) * (double)var2 - interpPosZ);
-            float var16 = getEntityBrightness(var2);
+            float var16 = getBrightnessAtEyes(var2);
             var1.setColorOpaque_F(particleRed * var16, particleGreen * var16, particleBlue * var16);
             var1.addVertexWithUV((double)(var13 - var3 * var12 - var6 * var12), (double)(var14 - var4 * var12), (double)(var15 - var5 * var12 - var7 * var12), (double)var9, (double)var11);
             var1.addVertexWithUV((double)(var13 - var3 * var12 + var6 * var12), (double)(var14 + var4 * var12), (double)(var15 - var5 * var12 + var7 * var12), (double)var9, (double)var10);

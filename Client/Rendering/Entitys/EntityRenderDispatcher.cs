@@ -123,7 +123,7 @@ namespace betareborn.Client.Rendering.Entitys
             double var5 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)var2;
             double var7 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)var2;
             float var9 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var2;
-            float var10 = var1.getEntityBrightness(var2);
+            float var10 = var1.getBrightnessAtEyes(var2);
             GLManager.GL.Color3(var10, var10, var10);
             renderEntityWithPosYaw(var1, var3 - offsetX, var5 - offsetY, var7 - offsetZ, var9, var2);
         }

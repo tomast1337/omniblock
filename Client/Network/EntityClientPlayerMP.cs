@@ -39,11 +39,11 @@ namespace betareborn.Client.Network
         {
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             if (world.isPosLoaded(MathHelper.floor_double(x), 64, MathHelper.floor_double(z)))
             {
-                base.onUpdate();
+                base.tick();
                 func_4056_N();
             }
         }
@@ -164,7 +164,7 @@ namespace betareborn.Client.Network
         public override void respawn()
         {
             sendInventoryChanged();
-            sendQueue.addToSendQueue(new PlayerRespawnPacket((sbyte)dimension));
+            sendQueue.addToSendQueue(new PlayerRespawnPacket((sbyte)dimensionId));
         }
 
         protected override void applyDamage(int var1)
@@ -172,11 +172,11 @@ namespace betareborn.Client.Network
             health -= var1;
         }
 
-        public override void closeScreen()
+        public override void closeHandledScreen()
         {
-            sendQueue.addToSendQueue(new CloseScreenS2CPacket(craftingInventory.syncId));
+            sendQueue.addToSendQueue(new CloseScreenS2CPacket(currentScreenHandler.syncId));
             inventory.setItemStack(null);
-            base.closeScreen();
+            base.closeHandledScreen();
         }
 
         public override void setHealth(int var1)

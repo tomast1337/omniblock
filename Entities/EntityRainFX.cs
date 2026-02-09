@@ -28,13 +28,13 @@ namespace betareborn.Entities
             base.renderParticle(var1, var2, var3, var4, var5, var6, var7);
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             prevX = x;
             prevY = y;
             prevZ = z;
             velocityY -= (double)particleGravity;
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
             velocityX *= (double)0.98F;
             velocityY *= (double)0.98F;
             velocityZ *= (double)0.98F;

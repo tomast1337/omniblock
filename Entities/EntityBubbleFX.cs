@@ -21,13 +21,13 @@ namespace betareborn.Entities
             particleMaxAge = (int)(8.0D / (java.lang.Math.random() * 0.8D + 0.2D));
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             prevX = x;
             prevY = y;
             prevZ = z;
             velocityY += 0.002D;
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
             velocityX *= (double)0.85F;
             velocityY *= (double)0.85F;
             velocityZ *= (double)0.85F;

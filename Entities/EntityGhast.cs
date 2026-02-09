@@ -24,15 +24,15 @@ namespace betareborn.Entities
             isImmuneToFire = true;
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
-            base.entityInit();
+            base.initDataTracker();
             dataWatcher.addObject(16, java.lang.Byte.valueOf((byte)0));
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             sbyte var1 = dataWatcher.getWatchableObjectByte(16);
             texture = var1 == 1 ? "/mob/ghast_fire.png" : "/mob/ghast.png";
         }
@@ -74,7 +74,7 @@ namespace betareborn.Entities
                 }
             }
 
-            if (targetedEntity != null && targetedEntity.isDead)
+            if (targetedEntity != null && targetedEntity.dead)
             {
                 targetedEntity = null;
             }
@@ -89,13 +89,13 @@ namespace betareborn.Entities
             }
 
             double var9 = 64.0D;
-            if (targetedEntity != null && targetedEntity.getDistanceSqToEntity(this) < var9 * var9)
+            if (targetedEntity != null && targetedEntity.getSquaredDistance(this) < var9 * var9)
             {
                 double var11 = targetedEntity.x - x;
                 double var13 = targetedEntity.boundingBox.minY + (double)(targetedEntity.height / 2.0F) - (y + (double)(height / 2.0F));
                 double var15 = targetedEntity.z - z;
-                renderYawOffset = yaw = -((float)java.lang.Math.atan2(var11, var15)) * 180.0F / (float)java.lang.Math.PI;
-                if (canEntityBeSeen(targetedEntity))
+                bodyYaw = yaw = -((float)java.lang.Math.atan2(var11, var15)) * 180.0F / (float)java.lang.Math.PI;
+                if (canSee(targetedEntity))
                 {
                     if (attackCounter == 10)
                     {
@@ -123,7 +123,7 @@ namespace betareborn.Entities
             }
             else
             {
-                renderYawOffset = yaw = -((float)java.lang.Math.atan2(velocityX, velocityZ)) * 180.0F / (float)java.lang.Math.PI;
+                bodyYaw = yaw = -((float)java.lang.Math.atan2(velocityX, velocityZ)) * 180.0F / (float)java.lang.Math.PI;
                 if (attackCounter > 0)
                 {
                     --attackCounter;

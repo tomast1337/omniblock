@@ -50,7 +50,7 @@ namespace betareborn.Entities
             GLManager.GL.Enable(GLEnum.Lighting);
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             ++field_27018_a;
             if (field_27018_a == field_27020_o)

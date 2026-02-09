@@ -223,7 +223,7 @@ namespace betareborn.Client.Rendering
                 {
                     var7 = (Entity)worldObj.globalEntities.get(var6);
                     ++countEntitiesRendered;
-                    if (var7.isInRangeToRenderVec3D(var1))
+                    if (var7.shouldRender(var1))
                     {
                         EntityRenderDispatcher.instance.renderEntity(var7, var3);
                     }
@@ -232,7 +232,7 @@ namespace betareborn.Client.Rendering
                 for (var6 = 0; var6 < var5.Count; ++var6)
                 {
                     var7 = var5[var6];
-                    if (var7.isInRangeToRenderVec3D(var1) && (var7.ignoreFrustumCheck || var2.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != mc.camera || mc.options.thirdPersonView || mc.camera.isSleeping()))
+                    if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || var2.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != mc.camera || mc.options.thirdPersonView || mc.camera.isSleeping()))
                     {
                         int var8 = MathHelper.floor_double(var7.y);
                         if (var8 < 0)

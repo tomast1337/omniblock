@@ -17,13 +17,13 @@ namespace betareborn
         {
             for (int var2 = 0; var2 < 9; ++var2)
             {
-                if (var1.inventory.mainInventory[var2] == null)
+                if (var1.inventory.main[var2] == null)
                 {
-                    mc.player.inventory.mainInventory[var2] = new ItemStack((Block)Session.registeredBlocksList.get(var2));
+                    mc.player.inventory.main[var2] = new ItemStack((Block)Session.registeredBlocksList.get(var2));
                 }
                 else
                 {
-                    mc.player.inventory.mainInventory[var2].count = 1;
+                    mc.player.inventory.main[var2].count = 1;
                 }
             }
 

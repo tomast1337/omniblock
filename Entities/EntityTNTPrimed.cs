@@ -30,27 +30,27 @@ namespace betareborn.Entities
             prevZ = var6;
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        protected override bool canTriggerWalking()
+        protected override bool bypassesSteppingEffects()
         {
             return false;
         }
 
-        public override bool canBeCollidedWith()
+        public override bool isCollidable()
         {
-            return !isDead;
+            return !dead;
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             prevX = x;
             prevY = y;
             prevZ = z;
             velocityY -= (double)0.04F;
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
             velocityX *= (double)0.98F;
             velocityY *= (double)0.98F;
             velocityZ *= (double)0.98F;

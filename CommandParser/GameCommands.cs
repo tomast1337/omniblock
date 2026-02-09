@@ -44,7 +44,7 @@ public class GameCommands
     [MinecraftCommand("clear", description: "clears inventory")]
     public void ClearInventory(CommandContext ctx)
     {
-        var inventory = ctx.Game.player.inventory.mainInventory;
+        var inventory = ctx.Game.player.inventory.main;
         for (int i = 0; i < inventory.Length; i++)
         {
             inventory[i] = null;

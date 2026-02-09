@@ -6,7 +6,7 @@ using java.lang;
 
 namespace betareborn.Entities
 {
-    public abstract class EntityAnimal : EntityCreature
+    public abstract class EntityAnimal : EntityCreature, SpawnableEntity
     {
         public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityAnimal).TypeHandle);
 

@@ -1,4 +1,3 @@
-using betareborn.Network.Packets;
 using betareborn.Util.Maths;
 using java.io;
 using java.util;
@@ -14,6 +13,15 @@ namespace betareborn.Network.Packets.S2CPlay
         public double explosionZ;
         public float explosionSize;
         public Set destroyedBlockPositions;
+
+        public ExplosionS2CPacket(double x, double y, double z, float radius, Set affectedBlocks)
+        {
+            explosionX = x;
+            explosionY = y;
+            explosionZ = z;
+            explosionSize = radius;
+            destroyedBlockPositions = new HashSet(affectedBlocks);
+        }
 
         public override void read(DataInputStream var1)
         {
@@ -65,7 +73,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.func_12245_a(this);
+            var1.onExplosion(this);
         }
 
         public override int size()

@@ -17,9 +17,9 @@ namespace betareborn.Entities
             texture = "/mob/creeper.png";
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
-            base.entityInit();
+            base.initDataTracker();
             dataWatcher.addObject(16, java.lang.Byte.valueOf(255)); // -1
             dataWatcher.addObject(17, java.lang.Byte.valueOf(0));
         }
@@ -57,7 +57,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             lastActiveTime = timeSinceIgnited;
             if (world.isRemote)
@@ -80,7 +80,7 @@ namespace betareborn.Entities
                 }
             }
 
-            base.onUpdate();
+            base.tick();
             if (playerToAttack == null && timeSinceIgnited > 0)
             {
                 setCreeperState(-1);

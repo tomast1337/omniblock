@@ -25,7 +25,7 @@ namespace betareborn.Client.Guis
         public override void initGui()
         {
             base.initGui();
-            mc.player.craftingInventory = inventorySlots;
+            mc.player.currentScreenHandler = inventorySlots;
         }
 
         public override void render(int var1, int var2, float var3)
@@ -64,11 +64,11 @@ namespace betareborn.Client.Guis
             }
 
             InventoryPlayer var12 = mc.player.inventory;
-            if (var12.getItemStack() != null)
+            if (var12.getCursorStack() != null)
             {
                 GLManager.GL.Translate(0.0F, 0.0F, 32.0F);
-                itemRenderer.renderItemIntoGUI(fontRenderer, mc.textureManager, var12.getItemStack(), var1 - var4 - 8, var2 - var5 - 8);
-                itemRenderer.renderItemOverlayIntoGUI(fontRenderer, mc.textureManager, var12.getItemStack(), var1 - var4 - 8, var2 - var5 - 8);
+                itemRenderer.renderItemIntoGUI(fontRenderer, mc.textureManager, var12.getCursorStack(), var1 - var4 - 8, var2 - var5 - 8);
+                itemRenderer.renderItemOverlayIntoGUI(fontRenderer, mc.textureManager, var12.getCursorStack(), var1 - var4 - 8, var2 - var5 - 8);
             }
 
             GLManager.GL.Disable(GLEnum.RescaleNormal);
@@ -76,7 +76,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);
             drawGuiContainerForegroundLayer();
-            if (var12.getItemStack() == null && var6 != null && var6.hasStack())
+            if (var12.getCursorStack() == null && var6 != null && var6.hasStack())
             {
                 string var13 = ("" + TranslationStorage.getInstance().translateNamedKey(var6.getStack().getItemName())).Trim();
                 if (var13.Length > 0)
@@ -158,7 +158,7 @@ namespace betareborn.Client.Guis
                 int var8 = -1;
                 if (var4 != null)
                 {
-                    var8 = var4.slotNumber;
+                    var8 = var4.id;
                 }
 
                 if (var7)
@@ -187,7 +187,7 @@ namespace betareborn.Client.Guis
         {
             if (eventKey == 1 || eventKey == mc.options.keyBindInventory.keyCode)
             {
-                mc.player.closeScreen();
+                mc.player.closeHandledScreen();
             }
 
         }
@@ -208,9 +208,9 @@ namespace betareborn.Client.Guis
         public override void updateScreen()
         {
             base.updateScreen();
-            if (!mc.player.isEntityAlive() || mc.player.isDead)
+            if (!mc.player.isAlive() || mc.player.dead)
             {
-                mc.player.closeScreen();
+                mc.player.closeHandledScreen();
             }
 
         }

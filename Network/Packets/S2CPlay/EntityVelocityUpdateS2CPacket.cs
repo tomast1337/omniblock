@@ -17,7 +17,7 @@ namespace betareborn.Network.Packets.S2CPlay
         {
         }
 
-        public EntityVelocityUpdateS2CPacket(Entity var1) : this(var1.entityId, var1.velocityX, var1.velocityY, var1.velocityZ)
+        public EntityVelocityUpdateS2CPacket(Entity var1) : this(var1.id, var1.velocityX, var1.velocityY, var1.velocityZ)
         {
         }
 
@@ -78,7 +78,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.func_6498_a(this);
+            var1.onEntityVelocityUpdate(this);
         }
 
         public override int size()

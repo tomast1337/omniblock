@@ -34,7 +34,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.func_28115_a(this);
+            var1.onWorldEvent(this);
         }
 
         public override int size()

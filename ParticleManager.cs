@@ -49,8 +49,8 @@ namespace betareborn
                 for (int var2 = 0; var2 < fxLayers[var1].size(); ++var2)
                 {
                     EntityFX var3 = (EntityFX)fxLayers[var1].get(var2);
-                    var3.onUpdate();
-                    if (var3.isDead)
+                    var3.tick();
+                    if (var3.dead)
                     {
                         fxLayers[var1].remove(var2--);
                     }

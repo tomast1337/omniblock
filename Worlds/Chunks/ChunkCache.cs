@@ -28,12 +28,12 @@ namespace betareborn.Worlds.Chunks
 
         public bool isChunkLoaded(int x, int z)
         {
-            return chunkByPos.ContainsKey(ChunkPos.chunkXZ2Int(x, z));
+            return chunkByPos.ContainsKey(ChunkPos.hashCode(x, z));
         }
 
         public Chunk loadChunk(int chunkX, int chunkZ)
         {
-            int var3 = ChunkPos.chunkXZ2Int(chunkX, chunkZ);
+            int var3 = ChunkPos.hashCode(chunkX, chunkZ);
             chunksToUnload.Remove(var3);
             chunkByPos.TryGetValue(var3, out Chunk? var4);
             if (var4 == null)
@@ -85,7 +85,7 @@ namespace betareborn.Worlds.Chunks
 
         public Chunk getChunk(int chunkX, int chunkZ)
         {
-            chunkByPos.TryGetValue(ChunkPos.chunkXZ2Int(chunkX, chunkZ), out Chunk? var3);
+            chunkByPos.TryGetValue(ChunkPos.hashCode(chunkX, chunkZ), out Chunk? var3);
             return var3 == null ? loadChunk(chunkX, chunkZ) : var3;
         }
 
@@ -278,7 +278,7 @@ namespace betareborn.Worlds.Chunks
 
                 if (!nearAnyPlayer)
                 {
-                    int chunkKey = ChunkPos.chunkXZ2Int(chunk.x, chunk.z);
+                    int chunkKey = ChunkPos.hashCode(chunk.x, chunk.z);
                     chunksToUnload.Add(chunkKey);
                 }
             }

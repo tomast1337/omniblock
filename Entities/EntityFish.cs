@@ -67,7 +67,7 @@ namespace betareborn.Entities
             bobber = null;
             ignoreFrustumCheck = true;
             angler = var2;
-            angler.fishEntity = this;
+            angler.fishHook = this;
             setBoundingBoxSpacing(0.25F, 0.25F);
             setPositionAndAnglesKeepPrevAngles(var2.x, var2.y + 1.62D - (double)var2.standingEyeHeight, var2.z, var2.yaw, var2.pitch);
             x -= (double)(MathHelper.cos(yaw / 180.0F * (float)java.lang.Math.PI) * 0.16F);
@@ -82,11 +82,11 @@ namespace betareborn.Entities
             func_4042_a(base.velocityX, base.velocityY, base.velocityZ, 1.5F, 1.0F);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public override bool isInRangeToRenderDist(double var1)
+        public override bool shouldRender(double var1)
         {
             double var3 = boundingBox.getAverageSizeLength() * 4.0D;
             var3 *= 64.0D;
@@ -114,7 +114,7 @@ namespace betareborn.Entities
             ticksInGround = 0;
         }
 
-        public override void setPositionAndRotation2(double var1, double var3, double var5, float var7, float var8, int var9)
+        public override void setPositionAndAnglesAvoidEntities(double var1, double var3, double var5, float var7, float var8, int var9)
         {
             field_6387_m = var1;
             field_6386_n = var3;
@@ -127,16 +127,16 @@ namespace betareborn.Entities
             base.velocityZ = velocityZ;
         }
 
-        public override void setVelocity(double var1, double var3, double var5)
+        public override void setVelocityClient(double var1, double var3, double var5)
         {
             velocityX = base.velocityX = var1;
             velocityY = base.velocityY = var3;
             velocityZ = base.velocityZ = var5;
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             if (field_6388_l > 0)
             {
                 double var21 = x + (field_6387_m - x) / (double)field_6388_l;
@@ -164,16 +164,16 @@ namespace betareborn.Entities
                 if (!world.isRemote)
                 {
                     ItemStack var1 = angler.getHand();
-                    if (angler.isDead || !angler.isEntityAlive() || var1 == null || var1.getItem() != Item.FISHING_ROD || getDistanceSqToEntity(angler) > 1024.0D)
+                    if (angler.dead || !angler.isAlive() || var1 == null || var1.getItem() != Item.FISHING_ROD || getSquaredDistance(angler) > 1024.0D)
                     {
                         markDead();
-                        angler.fishEntity = null;
+                        angler.fishHook = null;
                         return;
                     }
 
                     if (bobber != null)
                     {
-                        if (!bobber.isDead)
+                        if (!bobber.dead)
                         {
                             x = bobber.x;
                             y = bobber.boundingBox.minY + (double)bobber.height * 0.8D;
@@ -234,7 +234,7 @@ namespace betareborn.Entities
                 for (int var8 = 0; var8 < var5.Count; ++var8)
                 {
                     Entity var9 = var5[var8];
-                    if (var9.canBeCollidedWith() && (var9 != angler || ticksInAir >= 5))
+                    if (var9.isCollidable() && (var9 != angler || ticksInAir >= 5))
                     {
                         float var10 = 0.3F;
                         Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
@@ -273,7 +273,7 @@ namespace betareborn.Entities
 
                 if (!inGround)
                 {
-                    base.moveEntity(base.velocityX, base.velocityY, base.velocityZ);
+                    base.move(base.velocityX, base.velocityY, base.velocityZ);
                     float var24 = MathHelper.sqrt_double(base.velocityX * base.velocityX + base.velocityZ * base.velocityZ);
                     yaw = (float)(java.lang.Math.atan2(base.velocityX, base.velocityZ) * 180.0D / (double)((float)java.lang.Math.PI));
 
@@ -442,7 +442,7 @@ namespace betareborn.Entities
             }
 
             markDead();
-            angler.fishEntity = null;
+            angler.fishHook = null;
             return var1;
         }
     }

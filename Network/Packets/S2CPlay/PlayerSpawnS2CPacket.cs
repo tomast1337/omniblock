@@ -25,15 +25,15 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public PlayerSpawnS2CPacket(EntityPlayer var1)
         {
-            entityId = var1.entityId;
-            name = var1.username;
+            entityId = var1.id;
+            name = var1.name;
             xPosition = MathHelper.floor_double(var1.x * 32.0D);
             yPosition = MathHelper.floor_double(var1.y * 32.0D);
             zPosition = MathHelper.floor_double(var1.z * 32.0D);
             rotation = (sbyte)(int)(var1.yaw * 256.0F / 360.0F);
             pitch = (sbyte)(int)(var1.pitch * 256.0F / 360.0F);
-            ItemStack var2 = var1.inventory.getCurrentItem();
-            currentItem = var2 == null ? 0 : var2.itemID;
+            ItemStack var2 = var1.inventory.getSelectedItem();
+            currentItem = var2 == null ? 0 : var2.itemId;
         }
 
         public override void read(DataInputStream var1)
@@ -62,7 +62,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.handleNamedEntitySpawn(this);
+            var1.onPlayerSpawn(this);
         }
 
         public override int size()

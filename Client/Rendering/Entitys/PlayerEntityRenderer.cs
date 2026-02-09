@@ -49,7 +49,7 @@ namespace betareborn.Client.Rendering.Entitys
 
         public void renderPlayer(EntityPlayer var1, double var2, double var4, double var6, float var8, float var9)
         {
-            ItemStack var10 = var1.inventory.getCurrentItem();
+            ItemStack var10 = var1.inventory.getSelectedItem();
             modelArmorChestplate.field_1278_i = modelArmor.field_1278_i = modelBipedMain.field_1278_i = var10 != null;
             modelArmorChestplate.isSneak = modelArmor.isSneak = modelBipedMain.isSneak = var1.isSneaking();
             double var11 = var4 - var1.standingEyeHeight;
@@ -69,11 +69,11 @@ namespace betareborn.Client.Rendering.Entitys
             {
                 float var8 = 1.6F;
                 float var9 = (float)(1.0D / 60.0D) * var8;
-                float var10 = var1.getDistanceToEntity(dispatcher.cameraEntity);
+                float var10 = var1.getDistance(dispatcher.cameraEntity);
                 float var11 = var1.isSneaking() ? 32.0F : 64.0F;
                 if (var10 < var11)
                 {
-                    string var12 = var1.username;
+                    string var12 = var1.name;
                     if (!var1.isSneaking())
                     {
                         if (var1.isSleeping())
@@ -129,7 +129,7 @@ namespace betareborn.Client.Rendering.Entitys
             {
                 GLManager.GL.PushMatrix();
                 modelBipedMain.bipedHead.transform(1.0F / 16.0F);
-                if (BlockRenderer.isSideLit(Block.BLOCKS[var3.itemID].getRenderType()))
+                if (BlockRenderer.isSideLit(Block.BLOCKS[var3.itemId].getRenderType()))
                 {
                     float var4 = 10.0F / 16.0F;
                     GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
@@ -142,11 +142,11 @@ namespace betareborn.Client.Rendering.Entitys
             }
 
             float var5;
-            if (var1.username.Equals("deadmau5") && loadDownloadableImageTexture(var1.skinUrl, null))
+            if (var1.name.Equals("deadmau5") && loadDownloadableImageTexture(var1.skinUrl, null))
             {
                 for (int var19 = 0; var19 < 2; ++var19)
                 {
-                    var5 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var2 - (var1.prevRenderYawOffset + (var1.renderYawOffset - var1.prevRenderYawOffset) * var2);
+                    var5 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var2 - (var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var2);
                     float var6 = var1.prevPitch + (var1.pitch - var1.prevPitch) * var2;
                     GLManager.GL.PushMatrix();
                     GLManager.GL.Rotate(var5, 0.0F, 1.0F, 0.0F);
@@ -166,10 +166,10 @@ namespace betareborn.Client.Rendering.Entitys
             {
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Translate(0.0F, 0.0F, 2.0F / 16.0F);
-                double var20 = var1.field_20066_r + (var1.field_20063_u - var1.field_20066_r) * (double)var2 - (var1.prevX + (var1.x - var1.prevX) * (double)var2);
-                double var22 = var1.field_20065_s + (var1.field_20062_v - var1.field_20065_s) * (double)var2 - (var1.prevY + (var1.y - var1.prevY) * (double)var2);
-                double var8 = var1.field_20064_t + (var1.field_20061_w - var1.field_20064_t) * (double)var2 - (var1.prevZ + (var1.z - var1.prevZ) * (double)var2);
-                float var10 = var1.prevRenderYawOffset + (var1.renderYawOffset - var1.prevRenderYawOffset) * var2;
+                double var20 = var1.prevCapeX + (var1.capeX - var1.prevCapeX) * (double)var2 - (var1.prevX + (var1.x - var1.prevX) * (double)var2);
+                double var22 = var1.prevCapeY + (var1.capeY - var1.prevCapeY) * (double)var2 - (var1.prevY + (var1.y - var1.prevY) * (double)var2);
+                double var8 = var1.prevCapeZ + (var1.capeZ - var1.prevCapeZ) * (double)var2 - (var1.prevZ + (var1.z - var1.prevZ) * (double)var2);
+                float var10 = var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var2;
                 double var11 = (double)MathHelper.sin(var10 * (float)Math.PI / 180.0F);
                 double var13 = (double)-MathHelper.cos(var10 * (float)Math.PI / 180.0F);
                 float var15 = (float)var22 * 10.0F;
@@ -205,18 +205,18 @@ namespace betareborn.Client.Rendering.Entitys
                 GLManager.GL.PopMatrix();
             }
 
-            ItemStack var21 = var1.inventory.getCurrentItem();
+            ItemStack var21 = var1.inventory.getSelectedItem();
             if (var21 != null)
             {
                 GLManager.GL.PushMatrix();
                 modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
                 GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
-                if (var1.fishEntity != null)
+                if (var1.fishHook != null)
                 {
                     var21 = new ItemStack(Item.STICK);
                 }
 
-                if (var21.itemID < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var21.itemID].getRenderType()))
+                if (var21.itemId < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var21.itemId].getRenderType()))
                 {
                     var5 = 0.5F;
                     GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
@@ -225,10 +225,10 @@ namespace betareborn.Client.Rendering.Entitys
                     GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                     GLManager.GL.Scale(var5, -var5, var5);
                 }
-                else if (Item.ITEMS[var21.itemID].isHandheld())
+                else if (Item.ITEMS[var21.itemId].isHandheld())
                 {
                     var5 = 10.0F / 16.0F;
-                    if (Item.ITEMS[var21.itemID].isHandheldRod())
+                    if (Item.ITEMS[var21.itemId].isHandheldRod())
                     {
                         GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
                         GLManager.GL.Translate(0.0F, -(2.0F / 16.0F), 0.0F);
@@ -270,7 +270,7 @@ namespace betareborn.Client.Rendering.Entitys
 
         protected void func_22016_b(EntityPlayer var1, double var2, double var4, double var6)
         {
-            if (var1.isEntityAlive() && var1.isSleeping())
+            if (var1.isAlive() && var1.isSleeping())
             {
                 base.func_22012_b(var1, var2 + var1.sleepOffsetX, var4 + var1.sleepOffsetY, var6 + var1.sleepOffsetZ);
             }
@@ -283,7 +283,7 @@ namespace betareborn.Client.Rendering.Entitys
 
         protected void func_22017_a(EntityPlayer var1, float var2, float var3, float var4)
         {
-            if (var1.isEntityAlive() && var1.isSleeping())
+            if (var1.isAlive() && var1.isSleeping())
             {
                 GLManager.GL.Rotate(var1.getSleepingRotation(), 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Rotate(getDeathMaxRotation(var1), 0.0F, 0.0F, 1.0F);

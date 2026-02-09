@@ -25,7 +25,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.func_21148_a(this);
+            var1.onEntityTrackerUpdate(this);
         }
 
         public override int size()

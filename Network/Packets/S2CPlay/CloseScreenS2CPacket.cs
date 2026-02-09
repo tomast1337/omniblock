@@ -20,7 +20,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.func_20092_a(this);
+            var1.onCloseScreen(this);
         }
 
         public override void read(DataInputStream var1)

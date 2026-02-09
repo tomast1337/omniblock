@@ -7,7 +7,7 @@ namespace betareborn.Stats
 {
     public class StatBase : java.lang.Object
     {
-        public readonly int statId;
+        public readonly int id;
         public readonly string statName;
         public bool localOnly;
         public string statGuid;
@@ -21,7 +21,7 @@ namespace betareborn.Stats
         public StatBase(int var1, string var2, StatFormatter var3)
         {
             localOnly = false;
-            statId = var1;
+            id = var1;
             statName = var2;
             formatter = var3;
         }
@@ -38,15 +38,15 @@ namespace betareborn.Stats
 
         public virtual StatBase registerStat()
         {
-            if (Stats.ID_TO_STAT.containsKey(Integer.valueOf(statId)))
+            if (Stats.ID_TO_STAT.containsKey(Integer.valueOf(id)))
             {
-                throw new RuntimeException("Duplicate stat id: \"" + ((StatBase)Stats.ID_TO_STAT.get(Integer.valueOf(statId))).statName + "\" and \"" + statName + "\" at id " + statId);
+                throw new RuntimeException("Duplicate stat id: \"" + ((StatBase)Stats.ID_TO_STAT.get(Integer.valueOf(id))).statName + "\" and \"" + statName + "\" at id " + id);
             }
             else
             {
                 Stats.ALL_STATS.add(this);
-                Stats.ID_TO_STAT.put(Integer.valueOf(statId), this);
-                statGuid = AchievementMap.getGuid(statId);
+                Stats.ID_TO_STAT.put(Integer.valueOf(id), this);
+                statGuid = AchievementMap.getGuid(id);
                 return this;
             }
         }

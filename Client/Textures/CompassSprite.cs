@@ -61,7 +61,7 @@ namespace betareborn.Client.Textures
             double var20 = 0.0D;
             if (mc.world != null && mc.player != null)
             {
-                Vec3i var21 = mc.world.getSpawnPoint();
+                Vec3i var21 = mc.world.getSpawnPos();
                 double var23 = var21.x - mc.player.x;
                 double var25 = var21.z - mc.player.z;
                 var20 = (double)(mc.player.yaw - 90.0F) * Math.PI / 180.0D - java.lang.Math.atan2(var25, var23);

@@ -1,4 +1,4 @@
-using betareborn.Network.Packets;
+using betareborn.Entities;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -9,6 +9,12 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public int entityId;
         public int vehicleEntityId;
+
+        public EntityVehicleSetS2CPacket(Entity entity, Entity vehicle)
+        {
+            this.entityId = entity.id;
+            this.vehicleEntityId = vehicle != null ? vehicle.id : -1;
+        }
 
         public override int size()
         {
@@ -29,7 +35,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.func_6497_a(this);
+            var1.onEntityVehicleSet(this);
         }
     }
 

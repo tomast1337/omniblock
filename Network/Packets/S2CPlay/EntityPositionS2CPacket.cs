@@ -22,7 +22,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public EntityPositionS2CPacket(Entity var1)
         {
-            entityId = var1.entityId;
+            entityId = var1.id;
             xPosition = MathHelper.floor_double(var1.x * 32.0D);
             yPosition = MathHelper.floor_double(var1.y * 32.0D);
             zPosition = MathHelper.floor_double(var1.z * 32.0D);
@@ -52,7 +52,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.handleEntityTeleport(this);
+            var1.onEntityPosition(this);
         }
 
         public override int size()

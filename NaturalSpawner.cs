@@ -51,7 +51,7 @@ namespace betareborn
                 }
 
                 var3 = 0;
-                Vec3i var35 = var0.getSpawnPoint();
+                Vec3i var35 = var0.getSpawnPos();
                 EnumCreatureType[] var36 = EnumCreatureType.values;
                 var6 = var36.Length;
 
@@ -185,7 +185,7 @@ namespace betareborn
                 EntitySkeleton var5 = new EntitySkeleton(var1);
                 var5.setPositionAndAnglesKeepPrevAngles((double)var2, (double)var3, (double)var4, var0.yaw, 0.0F);
                 var1.spawnEntity(var5);
-                var5.mountEntity(var0);
+                var5.setVehicle(var0);
             }
             else if (var0 is EntitySheep)
             {

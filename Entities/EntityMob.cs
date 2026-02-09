@@ -17,7 +17,7 @@ namespace betareborn.Entities
 
         public override void tickMovement()
         {
-            float var1 = getEntityBrightness(1.0F);
+            float var1 = getBrightnessAtEyes(1.0F);
             if (var1 > 0.5F)
             {
                 entityAge += 2;
@@ -26,9 +26,9 @@ namespace betareborn.Entities
             base.tickMovement();
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             if (!world.isRemote && world.difficulty == 0)
             {
                 markDead();
@@ -39,7 +39,7 @@ namespace betareborn.Entities
         protected override Entity findPlayerToAttack()
         {
             EntityPlayer var1 = world.getClosestPlayer(this, 16.0D);
-            return var1 != null && canEntityBeSeen(var1) ? var1 : null;
+            return var1 != null && canSee(var1) ? var1 : null;
         }
 
         public override bool damage(Entity var1, int var2)

@@ -7,7 +7,7 @@ namespace betareborn.Screens.Slots
     {
         private readonly int slotIndex;
         private readonly IInventory inventory;
-        public int slotNumber;
+        public int id;
         public int xDisplayPosition;
         public int yDisplayPosition;
 

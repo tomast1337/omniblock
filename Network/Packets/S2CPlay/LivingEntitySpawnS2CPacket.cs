@@ -26,7 +26,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public LivingEntitySpawnS2CPacket(EntityLiving var1)
         {
-            entityId = var1.entityId;
+            entityId = var1.id;
             type = (sbyte)EntityRegistry.getRawId(var1);
             xPosition = MathHelper.floor_double(var1.x * 32.0D);
             yPosition = MathHelper.floor_double(var1.y * 32.0D);
@@ -62,7 +62,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.handleMobSpawn(this);
+            var1.onLivingEntitySpawn(this);
         }
 
         public override int size()

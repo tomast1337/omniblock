@@ -17,23 +17,23 @@ namespace betareborn.Entities
     {
         public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityPlayer).TypeHandle);
         public InventoryPlayer inventory;
-        public ScreenHandler inventorySlots;
-        public ScreenHandler craftingInventory;
-        public byte field_9371_f = 0;
+        public ScreenHandler playerScreenHandler;
+        public ScreenHandler currentScreenHandler;
+        public byte unused = 0;
         public int score = 0;
         public float prevStepBobbingAmount;
         public float stepBobbingAmount;
-        public bool isSwinging = false;
-        public int swingProgressInt = 0;
-        public string username;
-        public int dimension;
+        public bool handSwinging = false;
+        public int handSwingTicks = 0;
+        public string name;
+        public int dimensionId;
         public string playerCloakUrl;
-        public double field_20066_r;
-        public double field_20065_s;
-        public double field_20064_t;
-        public double field_20063_u;
-        public double field_20062_v;
-        public double field_20061_w;
+        public double prevCapeX;
+        public double prevCapeY;
+        public double prevCapeZ;
+        public double capeX;
+        public double capeY;
+        public double capeZ;
         protected bool sleeping;
         public Vec3i sleepingPos;
         private int sleepTimer;
@@ -42,35 +42,35 @@ namespace betareborn.Entities
         public float sleepOffsetZ;
         private Vec3i playerSpawnCoordinate;
         private Vec3i startMinecartRidingCoordinate;
-        public int timeUntilPortal = 20;
-        protected bool inPortal = false;
-        public float timeInPortal;
-        public float prevTimeInPortal;
-        private int damageRemainder = 0;
-        public EntityFish fishEntity = null;
+        public int portalCooldown = 20;
+        protected bool inTeleportationState = false;
+        public float changeDimensionCooldown;
+        public float lastScreenDistortion;
+        private int damageSpill = 0;
+        public EntityFish fishHook = null;
 
         public EntityPlayer(World var1) : base(var1)
         {
             inventory = new InventoryPlayer(this);
-            inventorySlots = new PlayerScreenHandler(inventory, !var1.isRemote);
-            craftingInventory = inventorySlots;
+            playerScreenHandler = new PlayerScreenHandler(inventory, !var1.isRemote);
+            currentScreenHandler = playerScreenHandler;
             standingEyeHeight = 1.62F;
-            Vec3i var2 = var1.getSpawnPoint();
+            Vec3i var2 = var1.getSpawnPos();
             setPositionAndAnglesKeepPrevAngles((double)var2.x + 0.5D, (double)(var2.y + 1), (double)var2.z + 0.5D, 0.0F, 0.0F);
             health = 20;
-            field_9351_C = "humanoid";
-            field_9353_B = 180.0F;
+            modelName = "humanoid";
+            rotationOffset = 180.0F;
             fireImmunityTicks = 20;
             texture = "/mob/char.png";
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
-            base.entityInit();
+            base.initDataTracker();
             dataWatcher.addObject(16, java.lang.Byte.valueOf((byte)0));
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             if (isSleeping())
             {
@@ -101,53 +101,53 @@ namespace betareborn.Entities
                 }
             }
 
-            base.onUpdate();
-            if (!world.isRemote && craftingInventory != null && !craftingInventory.canUse(this))
+            base.tick();
+            if (!world.isRemote && currentScreenHandler != null && !currentScreenHandler.canUse(this))
             {
-                closeScreen();
-                craftingInventory = inventorySlots;
+                closeHandledScreen();
+                currentScreenHandler = playerScreenHandler;
             }
 
-            field_20066_r = field_20063_u;
-            field_20065_s = field_20062_v;
-            field_20064_t = field_20061_w;
-            double var1 = x - field_20063_u;
-            double var3 = y - field_20062_v;
-            double var5 = z - field_20061_w;
+            prevCapeX = capeX;
+            prevCapeY = capeY;
+            prevCapeZ = capeZ;
+            double var1 = x - capeX;
+            double var3 = y - capeY;
+            double var5 = z - capeZ;
             double var7 = 10.0D;
             if (var1 > var7)
             {
-                field_20066_r = field_20063_u = x;
+                prevCapeX = capeX = x;
             }
 
             if (var5 > var7)
             {
-                field_20064_t = field_20061_w = z;
+                prevCapeZ = capeZ = z;
             }
 
             if (var3 > var7)
             {
-                field_20065_s = field_20062_v = y;
+                prevCapeY = capeY = y;
             }
 
             if (var1 < -var7)
             {
-                field_20066_r = field_20063_u = x;
+                prevCapeX = capeX = x;
             }
 
             if (var5 < -var7)
             {
-                field_20064_t = field_20061_w = z;
+                prevCapeZ = capeZ = z;
             }
 
             if (var3 < -var7)
             {
-                field_20065_s = field_20062_v = y;
+                prevCapeY = capeY = y;
             }
 
-            field_20063_u += var1 * 0.25D;
-            field_20061_w += var5 * 0.25D;
-            field_20062_v += var3 * 0.25D;
+            capeX += var1 * 0.25D;
+            capeZ += var5 * 0.25D;
+            capeY += var3 * 0.25D;
             increaseStat(Stats.Stats.minutesPlayedStat, 1);
             if (vehicle == null)
             {
@@ -161,54 +161,59 @@ namespace betareborn.Entities
             return health <= 0 || isSleeping();
         }
 
-        public virtual void closeScreen()
+        public virtual void closeHandledScreen()
         {
-            craftingInventory = inventorySlots;
+            currentScreenHandler = playerScreenHandler;
         }
 
         public override void updateCloak()
         {
-            playerCloakUrl = "http://s3.amazonaws.com/MinecraftCloaks/" + username + ".png";
+            playerCloakUrl = "http://s3.amazonaws.com/MinecraftCloaks/" + name + ".png";
             cloakUrl = playerCloakUrl;
         }
 
-        public override void updateRidden()
+        protected virtual bool isPvpEnabled()
+        {
+            return false;
+        }
+
+        public override void tickRiding()
         {
             double var1 = x;
             double var3 = y;
             double var5 = z;
-            base.updateRidden();
+            base.tickRiding();
             prevStepBobbingAmount = stepBobbingAmount;
             stepBobbingAmount = 0.0F;
             increaseRidingMotionStats(x - var1, y - var3, z - var5);
         }
 
-        public override void preparePlayerToSpawn()
+        public override void teleportToTop()
         {
             standingEyeHeight = 1.62F;
             setBoundingBoxSpacing(0.6F, 1.8F);
-            base.preparePlayerToSpawn();
+            base.teleportToTop();
             health = 20;
             deathTime = 0;
         }
 
         public override void tickLiving()
         {
-            if (isSwinging)
+            if (handSwinging)
             {
-                ++swingProgressInt;
-                if (swingProgressInt >= 8)
+                ++handSwingTicks;
+                if (handSwingTicks >= 8)
                 {
-                    swingProgressInt = 0;
-                    isSwinging = false;
+                    handSwingTicks = 0;
+                    handSwinging = false;
                 }
             }
             else
             {
-                swingProgressInt = 0;
+                handSwingTicks = 0;
             }
 
-            swingProgress = (float)swingProgressInt / 8.0F;
+            swingAnimationProgress = (float)handSwingTicks / 8.0F;
         }
 
         public override void tickMovement()
@@ -248,7 +253,7 @@ namespace betareborn.Entities
                     for (int var4 = 0; var4 < var3.Count; ++var4)
                     {
                         Entity var5 = var3[var4];
-                        if (!var5.isDead)
+                        if (!var5.dead)
                         {
                             collideWithEntity(var5);
                         }
@@ -260,7 +265,7 @@ namespace betareborn.Entities
 
         private void collideWithEntity(Entity entity)
         {
-            entity.onCollideWithPlayer(this);
+            entity.onPlayerInteraction(this);
         }
 
         public int getScore()
@@ -274,7 +279,7 @@ namespace betareborn.Entities
             setBoundingBoxSpacing(0.2F, 0.2F);
             setPosition(x, y, z);
             velocityY = (double)0.1F;
-            if (username.Equals("Notch"))
+            if (name.Equals("Notch"))
             {
                 dropItem(new ItemStack(Item.APPLE, 1), true);
             }
@@ -310,7 +315,7 @@ namespace betareborn.Entities
 
         public virtual void dropSelectedItem()
         {
-            dropItem(inventory.removeStack(inventory.currentItem, 1), false);
+            dropItem(inventory.removeStack(inventory.selectedSlot, 1), false);
         }
 
         public void dropItem(ItemStack stack)
@@ -361,7 +366,7 @@ namespace betareborn.Entities
         public float getBlockBreakingSpeed(Block block)
         {
             float var2 = inventory.getStrVsBlock(block);
-            if (isInsideOfMaterial(Material.WATER))
+            if (isInFluid(Material.WATER))
             {
                 var2 /= 5.0F;
             }
@@ -384,7 +389,7 @@ namespace betareborn.Entities
             base.readNbt(nbt);
             NBTTagList var2 = nbt.getTagList("Inventory");
             inventory.readFromNBT(var2);
-            dimension = nbt.getInteger("Dimension");
+            dimensionId = nbt.getInteger("Dimension");
             sleeping = nbt.getBoolean("Sleeping");
             sleepTimer = nbt.getShort("SleepTimer");
             if (sleeping)
@@ -404,7 +409,7 @@ namespace betareborn.Entities
         {
             base.writeNbt(nbt);
             nbt.setTag("Inventory", inventory.writeToNBT(new NBTTagList()));
-            nbt.setInteger("Dimension", dimension);
+            nbt.setInteger("Dimension", dimensionId);
             nbt.setBoolean("Sleeping", sleeping);
             nbt.setShort("SleepTimer", (short)sleepTimer);
             if (playerSpawnCoordinate != null)
@@ -493,11 +498,6 @@ namespace betareborn.Entities
             }
         }
 
-        protected bool isPvpEnabled()
-        {
-            return false;
-        }
-
         protected void commandWolvesToAttack(EntityLiving entity, bool sitting)
         {
             if (!(entity is EntityCreeper) && !(entity is EntityGhast))
@@ -505,7 +505,7 @@ namespace betareborn.Entities
                 if (entity is EntityWolf)
                 {
                     EntityWolf var3 = (EntityWolf)entity;
-                    if (var3.isWolfTamed() && username.Equals(var3.getWolfOwner()))
+                    if (var3.isWolfTamed() && name.Equals(var3.getWolfOwner()))
                     {
                         return;
                     }
@@ -521,7 +521,7 @@ namespace betareborn.Entities
 
                         if (!var6.isWolfTamed()) continue;
                         if (var6.getTarget() != null) continue;
-                        if (!username.Equals(var6.getWolfOwner())) continue;
+                        if (!name.Equals(var6.getWolfOwner())) continue;
                         if (sitting && var6.isWolfSitting()) continue;
 
                         var6.setWolfSitting(false);
@@ -534,10 +534,10 @@ namespace betareborn.Entities
         protected override void applyDamage(int amount)
         {
             int var2 = 25 - inventory.getTotalArmorValue();
-            int var3 = amount * var2 + damageRemainder;
+            int var3 = amount * var2 + damageSpill;
             inventory.damageArmor(amount);
             amount = var3 / 25;
-            damageRemainder = var3 % 25;
+            damageSpill = var3 % 25;
             base.applyDamage(amount);
         }
 
@@ -573,23 +573,23 @@ namespace betareborn.Entities
 
         public ItemStack getHand()
         {
-            return inventory.getCurrentItem();
+            return inventory.getSelectedItem();
         }
 
         public void clearStackInHand()
         {
-            inventory.setStack(inventory.currentItem, (ItemStack)null);
+            inventory.setStack(inventory.selectedSlot, (ItemStack)null);
         }
 
-        public override double getYOffset()
+        public override double getStandingEyeHeight()
         {
             return (double)(standingEyeHeight - 0.5F);
         }
 
         public virtual void swingHand()
         {
-            swingProgressInt = -1;
-            isSwinging = true;
+            handSwingTicks = -1;
+            handSwinging = true;
         }
 
         public void attack(Entity target)
@@ -616,7 +616,7 @@ namespace betareborn.Entities
 
                 if (target is EntityLiving)
                 {
-                    if (target.isEntityAlive())
+                    if (target.isAlive())
                     {
                         commandWolvesToAttack((EntityLiving)target, true);
                     }
@@ -633,17 +633,17 @@ namespace betareborn.Entities
 
         public abstract void spawn();
 
-        public void onCursorStackChanged(ItemStack stack)
+        public virtual void onCursorStackChanged(ItemStack stack)
         {
         }
 
         public override void markDead()
         {
             base.markDead();
-            inventorySlots.onClosed(this);
-            if (craftingInventory != null)
+            playerScreenHandler.onClosed(this);
+            if (currentScreenHandler != null)
             {
-                craftingInventory.onClosed(this);
+                currentScreenHandler.onClosed(this);
             }
 
         }
@@ -653,28 +653,28 @@ namespace betareborn.Entities
             return !sleeping && base.isInsideWall();
         }
 
-        public EnumStatus trySleep(int x, int y, int z)
+        public virtual SleepAttemptResult trySleep(int x, int y, int z)
         {
             if (!world.isRemote)
             {
-                if (isSleeping() || !isEntityAlive())
+                if (isSleeping() || !isAlive())
                 {
-                    return EnumStatus.OTHER_PROBLEM;
+                    return SleepAttemptResult.OTHER_PROBLEM;
                 }
 
                 if (world.dimension.isNether)
                 {
-                    return EnumStatus.NOT_POSSIBLE_HERE;
+                    return SleepAttemptResult.NOT_POSSIBLE_HERE;
                 }
 
                 if (world.canMonsterSpawn())
                 {
-                    return EnumStatus.NOT_POSSIBLE_NOW;
+                    return SleepAttemptResult.NOT_POSSIBLE_NOW;
                 }
 
                 if (java.lang.Math.abs(base.x - (double)x) > 3.0D || java.lang.Math.abs(base.y - (double)y) > 2.0D || java.lang.Math.abs(base.z - (double)z) > 3.0D)
                 {
-                    return EnumStatus.TOO_FAR_AWAY;
+                    return SleepAttemptResult.TOO_FAR_AWAY;
                 }
             }
 
@@ -719,7 +719,7 @@ namespace betareborn.Entities
                 world.updateSleepingPlayers();
             }
 
-            return EnumStatus.OK;
+            return SleepAttemptResult.OK;
         }
 
         private void calculateSleepOffset(int bedDir)
@@ -744,7 +744,7 @@ namespace betareborn.Entities
 
         }
 
-        public void wakeUp(bool resetSleepTimer, bool updateSleepingPlayers, bool setSpawnPos)
+        public virtual void wakeUp(bool resetSleepTimer, bool updateSleepingPlayers, bool setSpawnPos)
         {
             setBoundingBoxSpacing(0.6F, 1.8F);
             resetEyeHeight();
@@ -895,7 +895,7 @@ namespace betareborn.Entities
             if (vehicle == null)
             {
                 int var7;
-                if (isInsideOfMaterial(Material.WATER))
+                if (isInFluid(Material.WATER))
                 {
                     var7 = java.lang.Math.round(MathHelper.sqrt_double(x * x + y * y + z * z) * 100.0F);
                     if (var7 > 0)
@@ -992,7 +992,7 @@ namespace betareborn.Entities
         public override int getItemStackTextureId(ItemStack stack)
         {
             int var2 = base.getItemStackTextureId(stack);
-            if (stack.itemID == Item.FISHING_ROD.id && fishEntity != null)
+            if (stack.itemId == Item.FISHING_ROD.id && fishHook != null)
             {
                 var2 = stack.getTextureId() + 16;
             }
@@ -1002,13 +1002,13 @@ namespace betareborn.Entities
 
         public override void tickPortalCooldown()
         {
-            if (timeUntilPortal > 0)
+            if (portalCooldown > 0)
             {
-                timeUntilPortal = 10;
+                portalCooldown = 10;
             }
             else
             {
-                inPortal = true;
+                inTeleportationState = true;
             }
         }
     }

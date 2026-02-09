@@ -30,7 +30,7 @@ namespace betareborn.Entities
             velocityZ = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
         }
 
-        protected override bool canTriggerWalking()
+        protected override bool bypassesSteppingEffects()
         {
             return false;
         }
@@ -41,13 +41,13 @@ namespace betareborn.Entities
             standingEyeHeight = height / 2.0F;
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
-            base.onUpdate();
+            base.tick();
             if (delayBeforeCanPickup > 0)
             {
                 --delayBeforeCanPickup;
@@ -66,7 +66,7 @@ namespace betareborn.Entities
             }
 
             pushOutOfBlocks(x, (boundingBox.minY + boundingBox.maxY) / 2.0D, z);
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
             float var1 = 0.98F;
             if (onGround)
             {
@@ -95,19 +95,19 @@ namespace betareborn.Entities
 
         }
 
-        public override bool handleWaterMovement()
+        public override bool checkWaterCollisions()
         {
             return world.updateMovementInFluid(boundingBox, Material.WATER, this);
         }
 
-        protected override void dealFireDamage(int var1)
+        protected override void damage(int var1)
         {
             damage((Entity)null, var1);
         }
 
         public override bool damage(Entity var1, int var2)
         {
-            setBeenAttacked();
+            scheduleVelocityUpdate();
             health -= var2;
             if (health <= 0)
             {
@@ -132,19 +132,19 @@ namespace betareborn.Entities
             item = new ItemStack(var2);
         }
 
-        public override void onCollideWithPlayer(EntityPlayer var1)
+        public override void onPlayerInteraction(EntityPlayer var1)
         {
             if (!world.isRemote)
             {
                 int var2 = item.count;
                 if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(item))
                 {
-                    if (item.itemID == Block.LOG.id)
+                    if (item.itemId == Block.LOG.id)
                     {
                         var1.incrementStat(Achievements.MINE_WOOD);
                     }
 
-                    if (item.itemID == Item.LEATHER.id)
+                    if (item.itemId == Item.LEATHER.id)
                     {
                         var1.incrementStat(Achievements.KILL_COW);
                     }

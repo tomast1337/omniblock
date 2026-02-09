@@ -35,7 +35,7 @@ namespace betareborn.Entities
         {
             if (world.canMonsterSpawn())
             {
-                float var1 = getEntityBrightness(1.0F);
+                float var1 = getBrightnessAtEyes(1.0F);
                 if (var1 > 0.5F && world.hasSkyLight(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z)) && random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F)
                 {
                     fireTicks = 300;

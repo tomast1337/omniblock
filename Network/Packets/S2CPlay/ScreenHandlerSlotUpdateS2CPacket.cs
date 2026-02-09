@@ -1,5 +1,4 @@
 using betareborn.Items;
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -8,46 +7,53 @@ namespace betareborn.Network.Packets.S2CPlay
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(ScreenHandlerSlotUpdateS2CPacket).TypeHandle);
 
-        public int windowId;
-        public int itemSlot;
-        public ItemStack myItemStack;
+        public int syncId;
+        public int slot;
+        public ItemStack stack;
+
+        public ScreenHandlerSlotUpdateS2CPacket(int syncId, int slot, ItemStack stack)
+        {
+            this.syncId = syncId;
+            this.slot = slot;
+            this.stack = stack == null ? stack : stack.copy();
+        }
 
         public override void apply(NetHandler var1)
         {
-            var1.func_20088_a(this);
+            var1.onScreenHandlerSlotUpdate(this);
         }
 
         public override void read(DataInputStream var1)
         {
-            windowId = (sbyte)var1.readByte();
-            itemSlot = var1.readShort();
+            syncId = (sbyte)var1.readByte();
+            slot = var1.readShort();
             short var2 = var1.readShort();
             if (var2 >= 0)
             {
                 sbyte var3 = (sbyte)var1.readByte();
                 short var4 = var1.readShort();
-                myItemStack = new ItemStack(var2, var3, var4);
+                stack = new ItemStack(var2, var3, var4);
             }
             else
             {
-                myItemStack = null;
+                stack = null;
             }
 
         }
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeByte(windowId);
-            var1.writeShort(itemSlot);
-            if (myItemStack == null)
+            var1.writeByte(syncId);
+            var1.writeShort(slot);
+            if (stack == null)
             {
                 var1.writeShort(-1);
             }
             else
             {
-                var1.writeShort(myItemStack.itemID);
-                var1.writeByte(myItemStack.count);
-                var1.writeShort(myItemStack.getDamage());
+                var1.writeShort(stack.itemId);
+                var1.writeByte(stack.count);
+                var1.writeShort(stack.getDamage());
             }
 
         }

@@ -27,7 +27,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.handleSpawnPosition(this);
+            var1.onPlayerSpawnPosition(this);
         }
 
         public override int size()

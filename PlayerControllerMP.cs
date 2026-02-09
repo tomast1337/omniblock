@@ -167,7 +167,7 @@ namespace betareborn
 
         private void syncCurrentPlayItem()
         {
-            int var1 = mc.player.inventory.currentItem;
+            int var1 = mc.player.inventory.selectedSlot;
             if (var1 != currentPlayerItem)
             {
                 currentPlayerItem = var1;
@@ -179,7 +179,7 @@ namespace betareborn
         public override bool sendPlaceBlock(EntityPlayer var1, World var2, ItemStack var3, int var4, int var5, int var6, int var7)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(var4, var5, var6, var7, var1.inventory.getCurrentItem()));
+            netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(var4, var5, var6, var7, var1.inventory.getSelectedItem()));
             bool var8 = base.sendPlaceBlock(var1, var2, var3, var4, var5, var6, var7);
             return var8;
         }
@@ -187,7 +187,7 @@ namespace betareborn
         public override bool sendUseItem(EntityPlayer var1, World var2, ItemStack var3)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(-1, -1, -1, 255, var1.inventory.getCurrentItem()));
+            netClientHandler.addToSendQueue(new PlayerInteractBlockC2SPacket(-1, -1, -1, 255, var1.inventory.getSelectedItem()));
             bool var4 = base.sendUseItem(var1, var2, var3);
             return var4;
         }
@@ -200,20 +200,20 @@ namespace betareborn
         public override void attackEntity(EntityPlayer var1, Entity var2)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.entityId, var2.entityId, 1));
+            netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.id, var2.id, 1));
             var1.attack(var2);
         }
 
         public override void interactWithEntity(EntityPlayer var1, Entity var2)
         {
             syncCurrentPlayItem();
-            netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.entityId, var2.entityId, 0));
+            netClientHandler.addToSendQueue(new PlayerInteractEntityC2SPacket(var1.id, var2.id, 0));
             var1.interact(var2);
         }
 
         public override ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)
         {
-            short var6 = var5.craftingInventory.nextRevision(var5.inventory);
+            short var6 = var5.currentScreenHandler.nextRevision(var5.inventory);
             ItemStack var7 = base.func_27174_a(var1, var2, var3, var4, var5);
             netClientHandler.addToSendQueue(new ClickSlotC2SPacket(var1, var2, var3, var4, var7, var6));
             return var7;

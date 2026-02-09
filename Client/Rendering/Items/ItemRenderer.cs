@@ -49,12 +49,12 @@ namespace betareborn.Client.Rendering.Items
             float var16;
             float var17;
             float var18;
-            if (var10.itemID < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var10.itemID].getRenderType()))
+            if (var10.itemId < 256 && BlockRenderer.isSideLit(Block.BLOCKS[var10.itemId].getRenderType()))
             {
                 GLManager.GL.Rotate(var12, 0.0F, 1.0F, 0.0F);
                 loadTexture("/terrain.png");
                 float var28 = 0.25F;
-                if (!Block.BLOCKS[var10.itemID].isFullCube() && var10.itemID != Block.SLAB.id && Block.BLOCKS[var10.itemID].getRenderType() != 16)
+                if (!Block.BLOCKS[var10.itemId].isFullCube() && var10.itemId != Block.SLAB.id && Block.BLOCKS[var10.itemId].getRenderType() != 16)
                 {
                     var28 = 0.5F;
                 }
@@ -72,7 +72,7 @@ namespace betareborn.Client.Rendering.Items
                         GLManager.GL.Translate(var16, var17, var18);
                     }
 
-                    renderBlocks.renderBlockOnInventory(Block.BLOCKS[var10.itemID], var10.getDamage(), var1.getEntityBrightness(var9));
+                    renderBlocks.renderBlockOnInventory(Block.BLOCKS[var10.itemId], var10.getDamage(), var1.getBrightnessAtEyes(var9));
                     GLManager.GL.PopMatrix();
                 }
             }
@@ -80,7 +80,7 @@ namespace betareborn.Client.Rendering.Items
             {
                 GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
                 int var14 = var10.getTextureId();
-                if (var10.itemID < 256)
+                if (var10.itemId < 256)
                 {
                     loadTexture("/terrain.png");
                 }
@@ -103,11 +103,11 @@ namespace betareborn.Client.Rendering.Items
                 float var26;
                 if (useCustomDisplayColor)
                 {
-                    var23 = Item.ITEMS[var10.itemID].getColorMultiplier(var10.getDamage());
+                    var23 = Item.ITEMS[var10.itemId].getColorMultiplier(var10.getDamage());
                     var24 = (var23 >> 16 & 255) / 255.0F;
                     var25 = (var23 >> 8 & 255) / 255.0F;
                     var26 = (var23 & 255) / 255.0F;
-                    float var27 = var1.getEntityBrightness(var9);
+                    float var27 = var1.getBrightnessAtEyes(var9);
                     GLManager.GL.Color4(var24 * var27, var25 * var27, var26 * var27, 1.0F);
                 }
 
@@ -199,7 +199,7 @@ namespace betareborn.Client.Rendering.Items
         {
             if (var3 != null)
             {
-                drawItemIntoGui(var1, var2, var3.itemID, var3.getDamage(), var3.getTextureId(), var4, var5);
+                drawItemIntoGui(var1, var2, var3.itemId, var3.getDamage(), var3.getTextureId(), var4, var5);
             }
         }
 

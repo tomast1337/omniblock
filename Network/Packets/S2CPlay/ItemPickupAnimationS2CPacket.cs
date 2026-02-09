@@ -1,4 +1,3 @@
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay
@@ -7,24 +6,30 @@ namespace betareborn.Network.Packets.S2CPlay
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(ItemPickupAnimationS2CPacket).TypeHandle);
 
-        public int collectedEntityId;
+        public int entityId;
         public int collectorEntityId;
+
+        public ItemPickupAnimationS2CPacket(int entityId, int collectorId)
+        {
+            this.entityId = entityId;
+            collectorEntityId = collectorId;
+        }
 
         public override void read(DataInputStream var1)
         {
-            collectedEntityId = var1.readInt();
+            entityId = var1.readInt();
             collectorEntityId = var1.readInt();
         }
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeInt(collectedEntityId);
+            var1.writeInt(entityId);
             var1.writeInt(collectorEntityId);
         }
 
         public override void apply(NetHandler var1)
         {
-            var1.handleCollect(this);
+            var1.onItemPickupAnimation(this);
         }
 
         public override int size()

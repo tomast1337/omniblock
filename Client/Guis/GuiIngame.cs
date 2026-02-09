@@ -42,16 +42,16 @@ namespace betareborn.Client.Guis
             GLManager.GL.Enable(GLEnum.Blend);
             if (Minecraft.isFancyGraphicsEnabled())
             {
-                renderVignette(mc.player.getEntityBrightness(var1), var6, var7);
+                renderVignette(mc.player.getBrightnessAtEyes(var1), var6, var7);
             }
 
             ItemStack var9 = mc.player.inventory.armorItemInSlot(3);
-            if (!mc.options.thirdPersonView && var9 != null && var9.itemID == Block.PUMPKIN.id)
+            if (!mc.options.thirdPersonView && var9 != null && var9.itemId == Block.PUMPKIN.id)
             {
                 renderPumpkinBlur(var6, var7);
             }
 
-            float var10 = mc.player.prevTimeInPortal + (mc.player.timeInPortal - mc.player.prevTimeInPortal) * var1;
+            float var10 = mc.player.lastScreenDistortion + (mc.player.changeDimensionCooldown - mc.player.lastScreenDistortion) * var1;
             if (var10 > 0.0F)
             {
                 renderPortalOverlay(var10, var6, var7);
@@ -62,7 +62,7 @@ namespace betareborn.Client.Guis
             InventoryPlayer var11 = mc.player.inventory;
             zLevel = -90.0F;
             drawTexturedModalRect(var6 / 2 - 91, var7 - 22, 0, 0, 182, 22);
-            drawTexturedModalRect(var6 / 2 - 91 - 1 + var11.currentItem * 20, var7 - 22 - 1, 0, 22, 24, 22);
+            drawTexturedModalRect(var6 / 2 - 91 - 1 + var11.selectedSlot * 20, var7 - 22 - 1, 0, 22, 24, 22);
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/gui/icons.png"));
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.OneMinusDstColor, GLEnum.OneMinusSrcColor);
@@ -75,7 +75,7 @@ namespace betareborn.Client.Guis
             }
 
             int var13 = mc.player.health;
-            int var14 = mc.player.prevHealth;
+            int var14 = mc.player.lastHealth;
             rand.setSeed(updateCounter * 312871);
             int var15;
             int var16;
@@ -144,7 +144,7 @@ namespace betareborn.Client.Guis
                     }
                 }
 
-                if (mc.player.isInsideOfMaterial(Material.WATER))
+                if (mc.player.isInFluid(Material.WATER))
                 {
                     var16 = (int)java.lang.Math.ceil((mc.player.air - 2) * 10.0D / 300.0D);
                     var17 = (int)java.lang.Math.ceil(mc.player.air * 10.0D / 300.0D) - var16;
@@ -393,7 +393,7 @@ namespace betareborn.Client.Guis
 
         private void renderInventorySlot(int var1, int var2, int var3, float var4)
         {
-            ItemStack var5 = mc.player.inventory.mainInventory[var1];
+            ItemStack var5 = mc.player.inventory.main[var1];
             if (var5 != null)
             {
                 float var6 = var5.bobbingAnimationTime - var4;

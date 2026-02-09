@@ -56,16 +56,16 @@ namespace betareborn.Entities
             standingEyeHeight = height / 2.0F;
         }
 
-        protected override bool canTriggerWalking()
+        protected override bool bypassesSteppingEffects()
         {
             return false;
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
         }
 
-        public override Box? getCollisionBox(Entity var1)
+        public override Box? getCollisionAgainstShape(Entity var1)
         {
             return var1.boundingBox;
         }
@@ -75,7 +75,7 @@ namespace betareborn.Entities
             return null;
         }
 
-        public override bool canBePushed()
+        public override bool isPushable()
         {
             return true;
         }
@@ -92,28 +92,28 @@ namespace betareborn.Entities
             minecartType = var8;
         }
 
-        public override double getMountedYOffset()
+        public override double getPassengerRidingHeight()
         {
             return (double)height * 0.0D - (double)0.3F;
         }
 
         public override bool damage(Entity var1, int var2)
         {
-            if (!world.isRemote && !isDead)
+            if (!world.isRemote && !dead)
             {
                 minecartRockDirection = -minecartRockDirection;
                 minecartTimeSinceHit = 10;
-                setBeenAttacked();
+                scheduleVelocityUpdate();
                 minecartCurrentDamage += var2 * 10;
                 if (minecartCurrentDamage > 40)
                 {
                     if (passenger != null)
                     {
-                        passenger.mountEntity(this);
+                        passenger.setVehicle(this);
                     }
 
                     markDead();
-                    dropItemWithOffset(Item.MINECART.id, 1, 0.0F);
+                    dropItem(Item.MINECART.id, 1, 0.0F);
                     if (minecartType == 1)
                     {
                         EntityMinecart var3 = this;
@@ -136,7 +136,7 @@ namespace betareborn.Entities
                                     }
 
                                     var5.count -= var9;
-                                    EntityItem var10 = new EntityItem(world, x + (double)var6, y + (double)var7, z + (double)var8, new ItemStack(var5.itemID, var9, var5.getDamage()));
+                                    EntityItem var10 = new EntityItem(world, x + (double)var6, y + (double)var7, z + (double)var8, new ItemStack(var5.itemId, var9, var5.getDamage()));
                                     float var11 = 0.05F;
                                     var10.velocityX = (double)((float)random.nextGaussian() * var11);
                                     var10.velocityY = (double)((float)random.nextGaussian() * var11 + 0.2F);
@@ -146,11 +146,11 @@ namespace betareborn.Entities
                             }
                         }
 
-                        dropItemWithOffset(Block.CHEST.id, 1, 0.0F);
+                        dropItem(Block.CHEST.id, 1, 0.0F);
                     }
                     else if (minecartType == 2)
                     {
-                        dropItemWithOffset(Block.FURNACE.id, 1, 0.0F);
+                        dropItem(Block.FURNACE.id, 1, 0.0F);
                     }
                 }
 
@@ -162,7 +162,7 @@ namespace betareborn.Entities
             }
         }
 
-        public override void performHurtAnimation()
+        public override void animateHurt()
         {
             java.lang.System.@out.println("Animating hurt");
             minecartRockDirection = -minecartRockDirection;
@@ -170,9 +170,9 @@ namespace betareborn.Entities
             minecartCurrentDamage += minecartCurrentDamage * 10;
         }
 
-        public override bool canBeCollidedWith()
+        public override bool isCollidable()
         {
-            return !isDead;
+            return !dead;
         }
 
         public override void markDead()
@@ -195,7 +195,7 @@ namespace betareborn.Entities
                         }
 
                         var2.count -= var6;
-                        EntityItem var7 = new EntityItem(world, x + (double)var3, y + (double)var4, z + (double)var5, new ItemStack(var2.itemID, var6, var2.getDamage()));
+                        EntityItem var7 = new EntityItem(world, x + (double)var3, y + (double)var4, z + (double)var5, new ItemStack(var2.itemId, var6, var2.getDamage()));
                         float var8 = 0.05F;
                         var7.velocityX = (double)((float)random.nextGaussian() * var8);
                         var7.velocityY = (double)((float)random.nextGaussian() * var8 + 0.2F);
@@ -208,7 +208,7 @@ namespace betareborn.Entities
             base.markDead();
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             if (minecartTimeSinceHit > 0)
             {
@@ -403,7 +403,7 @@ namespace betareborn.Entities
                         var37 = var4;
                     }
 
-                    moveEntity(var35, 0.0D, var37);
+                    move(var35, 0.0D, var37);
                     if (var14[0][1] != 0 && MathHelper.floor_double(x) - var1 == var14[0][0] && MathHelper.floor_double(z) - var3 == var14[0][2])
                     {
                         setPosition(x, y + (double)var14[0][1], z);
@@ -555,7 +555,7 @@ namespace betareborn.Entities
                         velocityZ *= 0.5D;
                     }
 
-                    moveEntity(velocityX, velocityY, velocityZ);
+                    move(velocityX, velocityY, velocityZ);
                     if (!onGround)
                     {
                         velocityX *= (double)0.95F;
@@ -599,14 +599,14 @@ namespace betareborn.Entities
                     for (int var51 = 0; var51 < var16.Count; ++var51)
                     {
                         Entity var18 = var16[var51];
-                        if (var18 != passenger && var18.canBePushed() && var18 is EntityMinecart)
+                        if (var18 != passenger && var18.isPushable() && var18 is EntityMinecart)
                         {
-                            var18.applyEntityCollision(this);
+                            var18.onCollision(this);
                         }
                     }
                 }
 
-                if (passenger != null && passenger.isDead)
+                if (passenger != null && passenger.dead)
                 {
                     passenger = null;
                 }
@@ -811,7 +811,7 @@ namespace betareborn.Entities
             return 0.0F;
         }
 
-        public override void applyEntityCollision(Entity var1)
+        public override void onCollision(Entity var1)
         {
             if (!world.isRemote)
             {
@@ -819,7 +819,7 @@ namespace betareborn.Entities
                 {
                     if (var1 is EntityLiving && !(var1 is EntityPlayer) && minecartType == 0 && velocityX * velocityX + velocityZ * velocityZ > 0.01D && passenger == null && var1.vehicle == null)
                     {
-                        var1.mountEntity(this);
+                        var1.setVehicle(this);
                     }
 
                     double var2 = var1.x - x;
@@ -969,7 +969,7 @@ namespace betareborn.Entities
 
                 if (!world.isRemote)
                 {
-                    var1.mountEntity(this);
+                    var1.setVehicle(this);
                 }
             }
             else if (minecartType == 1)
@@ -981,12 +981,12 @@ namespace betareborn.Entities
             }
             else if (minecartType == 2)
             {
-                ItemStack var2 = var1.inventory.getCurrentItem();
-                if (var2 != null && var2.itemID == Item.COAL.id)
+                ItemStack var2 = var1.inventory.getSelectedItem();
+                if (var2 != null && var2.itemId == Item.COAL.id)
                 {
                     if (--var2.count == 0)
                     {
-                        var1.inventory.setStack(var1.inventory.currentItem, (ItemStack)null);
+                        var1.inventory.setStack(var1.inventory.selectedSlot, (ItemStack)null);
                     }
 
                     fuel += 1200;
@@ -999,7 +999,7 @@ namespace betareborn.Entities
             return true;
         }
 
-        public override void setPositionAndRotation2(double var1, double var3, double var5, float var7, float var8, int var9)
+        public override void setPositionAndAnglesAvoidEntities(double var1, double var3, double var5, float var7, float var8, int var9)
         {
             field_9414_l = var1;
             field_9413_m = var3;
@@ -1012,7 +1012,7 @@ namespace betareborn.Entities
             velocityZ = field_9407_s;
         }
 
-        public override void setVelocity(double var1, double var3, double var5)
+        public override void setVelocityClient(double var1, double var3, double var5)
         {
             field_9409_q = velocityX = var1;
             field_9408_r = velocityY = var3;
@@ -1021,7 +1021,7 @@ namespace betareborn.Entities
 
         public bool canPlayerUse(EntityPlayer var1)
         {
-            return isDead ? false : var1.getDistanceSqToEntity(this) <= 64.0D;
+            return dead ? false : var1.getSquaredDistance(this) <= 64.0D;
         }
     }
 

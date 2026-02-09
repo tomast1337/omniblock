@@ -38,7 +38,7 @@ namespace betareborn.Recipes
                         while (var7.hasNext())
                         {
                             ItemStack var8 = (ItemStack)var7.next();
-                            if (var5.itemID == var8.itemID && (var8.getDamage() == -1 || var5.getDamage() == var8.getDamage()))
+                            if (var5.itemId == var8.itemId && (var8.getDamage() == -1 || var5.getDamage() == var8.getDamage()))
                             {
                                 var6 = true;
                                 var2.remove(var8);

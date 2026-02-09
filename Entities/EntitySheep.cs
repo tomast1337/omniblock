@@ -17,9 +17,9 @@ namespace betareborn.Entities
             setBoundingBoxSpacing(0.9F, 1.3F);
         }
 
-        protected override void entityInit()
+        protected override void initDataTracker()
         {
-            base.entityInit();
+            base.initDataTracker();
             dataWatcher.addObject(16, new java.lang.Byte((byte)0));
         }
 
@@ -32,7 +32,7 @@ namespace betareborn.Entities
         {
             if (!getSheared())
             {
-                entityDropItem(new ItemStack(Block.WOOL.id, 1, getFleeceColor()), 0.0F);
+                dropItem(new ItemStack(Block.WOOL.id, 1, getFleeceColor()), 0.0F);
             }
 
         }
@@ -44,8 +44,8 @@ namespace betareborn.Entities
 
         public override bool interact(EntityPlayer var1)
         {
-            ItemStack var2 = var1.inventory.getCurrentItem();
-            if (var2 != null && var2.itemID == Item.SHEARS.id && !getSheared())
+            ItemStack var2 = var1.inventory.getSelectedItem();
+            if (var2 != null && var2.itemId == Item.SHEARS.id && !getSheared())
             {
                 if (!world.isRemote)
                 {
@@ -54,7 +54,7 @@ namespace betareborn.Entities
 
                     for (int var4 = 0; var4 < var3; ++var4)
                     {
-                        EntityItem var5 = entityDropItem(new ItemStack(Block.WOOL.id, 1, getFleeceColor()), 1.0F);
+                        EntityItem var5 = dropItem(new ItemStack(Block.WOOL.id, 1, getFleeceColor()), 1.0F);
                         var5.velocityY += (double)(random.nextFloat() * 0.05F);
                         var5.velocityX += (double)((random.nextFloat() - random.nextFloat()) * 0.1F);
                         var5.velocityZ += (double)((random.nextFloat() - random.nextFloat()) * 0.1F);

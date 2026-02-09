@@ -63,10 +63,10 @@ namespace betareborn
             ItemStack var5 = var3.use(var2, var1);
             if (var5 != var3 || var5 != null && var5.count != var4)
             {
-                var1.inventory.mainInventory[var1.inventory.currentItem] = var5;
+                var1.inventory.main[var1.inventory.selectedSlot] = var5;
                 if (var5.count == 0)
                 {
-                    var1.inventory.mainInventory[var1.inventory.currentItem] = null;
+                    var1.inventory.main[var1.inventory.selectedSlot] = null;
                 }
 
                 return true;
@@ -117,13 +117,13 @@ namespace betareborn
 
         public virtual ItemStack func_27174_a(int var1, int var2, int var3, bool var4, EntityPlayer var5)
         {
-            return var5.craftingInventory.onSlotClick(var2, var3, var4, var5);
+            return var5.currentScreenHandler.onSlotClick(var2, var3, var4, var5);
         }
 
         public virtual void func_20086_a(int var1, EntityPlayer var2)
         {
-            var2.craftingInventory.onClosed(var2);
-            var2.craftingInventory = var2.inventorySlots;
+            var2.currentScreenHandler.onClosed(var2);
+            var2.currentScreenHandler = var2.playerScreenHandler;
         }
     }
 

@@ -8,29 +8,29 @@ namespace betareborn.Network.Packets.Play
 
         public PlayerMoveFullPacket()
         {
-            rotating = true;
-            moving = true;
+            changeLook = true;
+            changePosition = true;
         }
 
         public PlayerMoveFullPacket(double var1, double var3, double var5, double var7, float var9, float var10, bool var11)
         {
-            xPosition = var1;
-            yPosition = var3;
-            stance = var5;
-            zPosition = var7;
+            x = var1;
+            y = var3;
+            eyeHeight = var5;
+            z = var7;
             yaw = var9;
             pitch = var10;
             onGround = var11;
-            rotating = true;
-            moving = true;
+            changeLook = true;
+            changePosition = true;
         }
 
         public override void read(DataInputStream var1)
         {
-            xPosition = var1.readDouble();
-            yPosition = var1.readDouble();
-            stance = var1.readDouble();
-            zPosition = var1.readDouble();
+            x = var1.readDouble();
+            y = var1.readDouble();
+            eyeHeight = var1.readDouble();
+            z = var1.readDouble();
             yaw = var1.readFloat();
             pitch = var1.readFloat();
             base.read(var1);
@@ -38,10 +38,10 @@ namespace betareborn.Network.Packets.Play
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeDouble(xPosition);
-            var1.writeDouble(yPosition);
-            var1.writeDouble(stance);
-            var1.writeDouble(zPosition);
+            var1.writeDouble(x);
+            var1.writeDouble(y);
+            var1.writeDouble(eyeHeight);
+            var1.writeDouble(z);
             var1.writeFloat(yaw);
             var1.writeFloat(pitch);
             base.write(var1);

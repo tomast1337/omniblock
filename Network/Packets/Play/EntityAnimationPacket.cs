@@ -1,5 +1,4 @@
 using betareborn.Entities;
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.Play
@@ -8,8 +7,8 @@ namespace betareborn.Network.Packets.Play
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityAnimationPacket).TypeHandle);
 
-        public int entityId;
-        public int animate;
+        public int id;
+        public int animationId;
 
         public EntityAnimationPacket()
         {
@@ -17,25 +16,25 @@ namespace betareborn.Network.Packets.Play
 
         public EntityAnimationPacket(Entity var1, int var2)
         {
-            entityId = var1.entityId;
-            animate = var2;
+            id = var1.id;
+            animationId = var2;
         }
 
         public override void read(DataInputStream var1)
         {
-            entityId = var1.readInt();
-            animate = (sbyte)var1.readByte();
+            id = var1.readInt();
+            animationId = (sbyte)var1.readByte();
         }
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeInt(entityId);
-            var1.writeByte(animate);
+            var1.writeInt(id);
+            var1.writeByte(animationId);
         }
 
         public override void apply(NetHandler var1)
         {
-            var1.handleArmAnimation(this);
+            var1.onEntityAnimation(this);
         }
 
         public override int size()

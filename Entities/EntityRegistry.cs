@@ -64,7 +64,7 @@ namespace betareborn.Entities
 
             if (var2 != null)
             {
-                var2.readFromNBT(nbt);
+                var2.read(nbt);
             }
             else
             {
@@ -89,7 +89,7 @@ namespace betareborn.Entities
                         if (ent != null)
                         {
                             ent.setPosition(x, y, z);
-                            ent.setPositionAndRotation(x, y, z, 0, 0);
+                            ent.setPositionAndAngles(x, y, z, 0, 0);
                             if (!world.spawnEntity(ent))
                             {
                                 Console.Error.WriteLine($"Entity `{name}` with ID:`{id}` failed to join world.");

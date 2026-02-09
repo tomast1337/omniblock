@@ -21,7 +21,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public PaintingEntitySpawnS2CPacket(EntityPainting var1)
         {
-            entityId = var1.entityId;
+            entityId = var1.id;
             xPosition = var1.xPosition;
             yPosition = var1.yPosition;
             zPosition = var1.zPosition;
@@ -51,7 +51,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override void apply(NetHandler var1)
         {
-            var1.func_21146_a(this);
+            var1.onPaintingEntitySpawn(this);
         }
 
         public override int size()

@@ -18,7 +18,7 @@ namespace betareborn.Client.Network
 
         public OtherPlayerEntity(World var1, string var2) : base(var1)
         {
-            username = var2;
+            name = var2;
             standingEyeHeight = 0.0F;
             stepHeight = 0.0F;
             if (var2 != null && var2.Length > 0)
@@ -41,7 +41,7 @@ namespace betareborn.Client.Network
             return true;
         }
 
-        public override void setPositionAndRotation2(double var1, double var3, double var5, float var7, float var8, int var9)
+        public override void setPositionAndAnglesAvoidEntities(double var1, double var3, double var5, float var7, float var8, int var9)
         {
             lerpX = var1;
             lerpY = var3;
@@ -51,10 +51,10 @@ namespace betareborn.Client.Network
             lerpSteps = var9;
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             sleepOffsetY = 0.0F;
-            base.onUpdate();
+            base.tick();
             lastWalkAnimationSpeed = walkAnimationSpeed;
             double var1 = x - prevX;
             double var3 = z - prevZ;
@@ -131,11 +131,11 @@ namespace betareborn.Client.Network
 
             if (var1 == 0)
             {
-                inventory.mainInventory[inventory.currentItem] = var4;
+                inventory.main[inventory.selectedSlot] = var4;
             }
             else
             {
-                inventory.armorInventory[var1 - 1] = var4;
+                inventory.armor[var1 - 1] = var4;
             }
 
         }

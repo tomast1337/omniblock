@@ -13,14 +13,14 @@ namespace betareborn.Util.Maths
             z = var2;
         }
 
-        public static int chunkXZ2Int(int var0, int var1)
+        public static int hashCode(int var0, int var1)
         {
             return (var0 < 0 ? Integer.MIN_VALUE : 0) | (var0 & Short.MAX_VALUE) << 16 | (var1 < 0 ? -Short.MIN_VALUE : 0) | var1 & Short.MAX_VALUE;
         }
 
         public override int GetHashCode()
         {
-            return chunkXZ2Int(x, z);
+            return hashCode(x, z);
         }
 
         public readonly bool Equals(ChunkPos var1)

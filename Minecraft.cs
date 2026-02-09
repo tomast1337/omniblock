@@ -963,7 +963,7 @@ namespace betareborn
                     }
                     else
                     {
-                        ItemStack var7 = player.inventory.getCurrentItem();
+                        ItemStack var7 = player.inventory.getSelectedItem();
                         int var8 = var7 != null ? var7.count : 0;
                         if (playerController.sendPlaceBlock(player, world, var7, var3, var4, var5, var6))
                         {
@@ -978,7 +978,7 @@ namespace betareborn
 
                         if (var7.count == 0)
                         {
-                            player.inventory.mainInventory[player.inventory.currentItem] = null;
+                            player.inventory.main[player.inventory.selectedSlot] = null;
                         }
                         else if (var7.count != var8)
                         {
@@ -989,7 +989,7 @@ namespace betareborn
 
                 if (var2 && var1 == 1)
                 {
-                    ItemStack var9 = player.inventory.getCurrentItem();
+                    ItemStack var9 = player.inventory.getSelectedItem();
                     if (var9 != null && playerController.sendUseItem(player, world, var9))
                     {
                         gameRenderer.itemRenderer.func_9450_c();
@@ -1395,7 +1395,7 @@ namespace betareborn
                         {
                             if (Keyboard.getEventKey() == Keyboard.KEY_1 + var6)
                             {
-                                player.inventory.currentItem = var6;
+                                player.inventory.selectedSlot = var6;
                             }
                         }
 
@@ -1466,28 +1466,28 @@ namespace betareborn
         public void usePortal()
         {
             java.lang.System.@out.println("Toggling dimension!!");
-            if (player.dimension == -1)
+            if (player.dimensionId == -1)
             {
-                player.dimension = 0;
+                player.dimensionId = 0;
             }
             else
             {
-                player.dimension = -1;
+                player.dimensionId = -1;
             }
 
             world.remove(player);
-            player.isDead = false;
+            player.dead = false;
             double var1 = player.x;
             double var3 = player.z;
             double var5 = 8.0D;
             World var7;
-            if (player.dimension == -1)
+            if (player.dimensionId == -1)
             {
                 var1 /= var5;
                 var3 /= var5;
                 player.setPositionAndAnglesKeepPrevAngles(var1, player.y, var3, player.yaw,
                     player.pitch);
-                if (player.isEntityAlive())
+                if (player.isAlive())
                 {
                     world.updateEntity(player, false);
                 }
@@ -1502,7 +1502,7 @@ namespace betareborn
                 var3 *= var5;
                 player.setPositionAndAnglesKeepPrevAngles(var1, player.y, var3, player.yaw,
                     player.pitch);
-                if (player.isEntityAlive())
+                if (player.isAlive())
                 {
                     world.updateEntity(player, false);
                 }
@@ -1513,7 +1513,7 @@ namespace betareborn
             }
 
             player.world = world;
-            if (player.isEntityAlive())
+            if (player.isAlive())
             {
                 player.setPositionAndAnglesKeepPrevAngles(var1, player.y, var3, player.yaw,
                     player.pitch);
@@ -1613,7 +1613,7 @@ namespace betareborn
                 }
                 else if (player != null)
                 {
-                    player.preparePlayerToSpawn();
+                    player.teleportToTop();
                     if (var1 != null)
                     {
                         var1.spawnEntity(player);
@@ -1628,7 +1628,7 @@ namespace betareborn
                 if (player == null)
                 {
                     player = (ClientPlayerEntity)playerController.createPlayer(var1);
-                    player.preparePlayerToSpawn();
+                    player.teleportToTop();
                     playerController.flipPlayer(player);
                 }
 
@@ -1677,7 +1677,7 @@ namespace betareborn
             int var4 = var2 * 2 / 16 + 1;
             var4 *= var4;
             ChunkSource var5 = world.getChunkSource();
-            Vec3i var6 = world.getSpawnPoint();
+            Vec3i var6 = world.getSpawnPos();
             if (player != null)
             {
                 var6.x = (int)player.x;
@@ -1769,7 +1769,7 @@ namespace betareborn
 
             if (var4 == null)
             {
-                var4 = world.getSpawnPoint();
+                var4 = world.getSpawnPos();
                 var5 = false;
             }
 
@@ -1778,15 +1778,15 @@ namespace betareborn
             int var8 = 0;
             if (player != null)
             {
-                var8 = player.entityId;
+                var8 = player.id;
                 world.remove(player);
             }
 
             camera = null;
             player = (ClientPlayerEntity)playerController.createPlayer(world);
-            player.dimension = var2;
+            player.dimensionId = var2;
             camera = player;
-            player.preparePlayerToSpawn();
+            player.teleportToTop();
             if (var5)
             {
                 player.setSpawnPos(var3);
@@ -1797,7 +1797,7 @@ namespace betareborn
             playerController.flipPlayer(player);
             world.addPlayer(player);
             player.movementInput = new MovementInputFromOptions(options);
-            player.entityId = var8;
+            player.id = var8;
             player.spawn();
             playerController.func_6473_b(player);
             func_6255_d("Respawning");

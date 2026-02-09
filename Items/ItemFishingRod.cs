@@ -24,9 +24,9 @@ namespace betareborn.Items
 
         public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
         {
-            if (var3.fishEntity != null)
+            if (var3.fishHook != null)
             {
-                int var4 = var3.fishEntity.catchFish();
+                int var4 = var3.fishHook.catchFish();
                 var1.damageItem(var4, var3);
                 var3.swingHand();
             }

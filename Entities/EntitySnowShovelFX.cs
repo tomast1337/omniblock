@@ -46,7 +46,7 @@ namespace betareborn.Entities
             base.renderParticle(var1, var2, var3, var4, var5, var6, var7);
         }
 
-        public override void onUpdate()
+        public override void tick()
         {
             prevX = x;
             prevY = y;
@@ -58,7 +58,7 @@ namespace betareborn.Entities
 
             particleTextureIndex = 7 - particleAge * 8 / particleMaxAge;
             velocityY -= 0.03D;
-            moveEntity(velocityX, velocityY, velocityZ);
+            move(velocityX, velocityY, velocityZ);
             velocityX *= (double)0.99F;
             velocityY *= (double)0.99F;
             velocityZ *= (double)0.99F;

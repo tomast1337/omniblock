@@ -89,7 +89,7 @@ namespace betareborn.Worlds
             if (var3 != null)
             {
                 var4 = new NBTTagCompound();
-                var3.writeToNBT(var4);
+                var3.write(var4);
             }
 
             updateTagCompound(var2, var4);

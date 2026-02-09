@@ -51,10 +51,10 @@ namespace betareborn.Entities
 
         public override bool interact(EntityPlayer var1)
         {
-            ItemStack var2 = var1.inventory.getCurrentItem();
-            if (var2 != null && var2.itemID == Item.BUCKET.id)
+            ItemStack var2 = var1.inventory.getSelectedItem();
+            if (var2 != null && var2.itemId == Item.BUCKET.id)
             {
-                var1.inventory.setStack(var1.inventory.currentItem, new ItemStack(Item.MILK_BUCKET));
+                var1.inventory.setStack(var1.inventory.selectedSlot, new ItemStack(Item.MILK_BUCKET));
                 return true;
             }
             else

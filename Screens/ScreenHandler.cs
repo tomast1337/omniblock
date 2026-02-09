@@ -18,7 +18,7 @@ namespace betareborn.Screens
 
         protected void addSlot(Slot var1)
         {
-            var1.slotNumber = slots.size();
+            var1.id = slots.size();
             slots.add(var1);
             trackedStacks.add(null);
         }
@@ -102,18 +102,18 @@ namespace betareborn.Screens
                 InventoryPlayer var6 = player.inventory;
                 if (index == -999)
                 {
-                    if (var6.getItemStack() != null && index == -999)
+                    if (var6.getCursorStack() != null && index == -999)
                     {
                         if (button == 0)
                         {
-                            player.dropItem(var6.getItemStack());
+                            player.dropItem(var6.getCursorStack());
                             var6.setItemStack(null);
                         }
 
                         if (button == 1)
                         {
-                            player.dropItem(var6.getItemStack().split(1));
-                            if (var6.getItemStack().count == 0)
+                            player.dropItem(var6.getCursorStack().split(1));
+                            if (var6.getCursorStack().count == 0)
                             {
                                 var6.setItemStack(null);
                             }
@@ -148,7 +148,7 @@ namespace betareborn.Screens
                         {
                             var12.markDirty();
                             ItemStack var13 = var12.getStack();
-                            ItemStack var14 = var6.getItemStack();
+                            ItemStack var14 = var6.getCursorStack();
                             if (var13 != null)
                             {
                                 var5 = var13.copy();
@@ -181,11 +181,11 @@ namespace betareborn.Screens
                                     var12.setStack(null);
                                 }
 
-                                var12.onTakeItem(var6.getItemStack());
+                                var12.onTakeItem(var6.getCursorStack());
                             }
                             else if (var12.canInsert(var14))
                             {
-                                if (var13.itemID != var14.itemID || var13.getHasSubtypes() && var13.getDamage() != var14.getDamage())
+                                if (var13.itemId != var14.itemId || var13.getHasSubtypes() && var13.getDamage() != var14.getDamage())
                                 {
                                     if (var14.count <= var12.getMaxItemCount())
                                     {
@@ -215,7 +215,7 @@ namespace betareborn.Screens
                                     var13.count += var10;
                                 }
                             }
-                            else if (var13.itemID == var14.itemID && var14.getMaxCount() > 1 && (!var13.getHasSubtypes() || var13.getDamage() == var14.getDamage()))
+                            else if (var13.itemId == var14.itemId && var14.getMaxCount() > 1 && (!var13.getHasSubtypes() || var13.getDamage() == var14.getDamage()))
                             {
                                 var10 = var13.count;
                                 if (var10 > 0 && var10 + var14.count <= var14.getMaxCount())
@@ -227,7 +227,7 @@ namespace betareborn.Screens
                                         var12.setStack(null);
                                     }
 
-                                    var12.onTakeItem(var6.getItemStack());
+                                    var12.onTakeItem(var6.getCursorStack());
                                 }
                             }
                         }
@@ -241,9 +241,9 @@ namespace betareborn.Screens
         public virtual void onClosed(EntityPlayer player)
         {
             InventoryPlayer var2 = player.inventory;
-            if (var2.getItemStack() != null)
+            if (var2.getCursorStack() != null)
             {
-                player.dropItem(var2.getItemStack());
+                player.dropItem(var2.getCursorStack());
                 var2.setItemStack(null);
             }
 
@@ -321,7 +321,7 @@ namespace betareborn.Screens
                 {
                     var6 = (Slot)slots.get(var5);
                     var7 = var6.getStack();
-                    if (var7 != null && var7.itemID == stack.itemID && (!stack.getHasSubtypes() || stack.getDamage() == var7.getDamage()))
+                    if (var7 != null && var7.itemId == stack.itemId && (!stack.getHasSubtypes() || stack.getDamage() == var7.getDamage()))
                     {
                         int var8 = var7.count + stack.count;
                         if (var8 <= stack.getMaxCount())

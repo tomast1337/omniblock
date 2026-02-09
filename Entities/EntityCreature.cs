@@ -32,14 +32,14 @@ namespace betareborn.Entities
                     pathToEntity = world.findPath(this, playerToAttack, var1);
                 }
             }
-            else if (!playerToAttack.isEntityAlive())
+            else if (!playerToAttack.isAlive())
             {
                 playerToAttack = null;
             }
             else
             {
-                float var2 = playerToAttack.getDistanceToEntity(this);
-                if (canEntityBeSeen(playerToAttack))
+                float var2 = playerToAttack.getDistance(this);
+                if (canSee(playerToAttack))
                 {
                     attackEntity(playerToAttack, var2);
                 }
@@ -63,7 +63,7 @@ namespace betareborn.Entities
 
             int var21 = MathHelper.floor_double(boundingBox.minY + 0.5D);
             bool var3 = isInWater();
-            bool var4 = handleLavaMovement();
+            bool var4 = isTouchingLava();
             pitch = 0.0F;
             if (pathToEntity != null && random.nextInt(100) != 0)
             {
@@ -84,7 +84,7 @@ namespace betareborn.Entities
                     }
                 }
 
-                isJumping = false;
+                jumping = false;
                 if (var5 != null)
                 {
                     double var8 = var5.xCoord - x;
@@ -93,7 +93,7 @@ namespace betareborn.Entities
                     float var14 = (float)(java.lang.Math.atan2(var10, var8) * 180.0D / (double)((float)java.lang.Math.PI)) - 90.0F;
                     float var15 = var14 - yaw;
 
-                    for (moveForward = moveSpeed; var15 < -180.0F; var15 += 360.0F)
+                    for (forwardSpeed = movementSpeed; var15 < -180.0F; var15 += 360.0F)
                     {
                     }
 
@@ -120,13 +120,13 @@ namespace betareborn.Entities
                         float var20 = yaw;
                         yaw = (float)(java.lang.Math.atan2(var18, var16) * 180.0D / (double)((float)java.lang.Math.PI)) - 90.0F;
                         var15 = (var20 - yaw + 90.0F) * (float)java.lang.Math.PI / 180.0F;
-                        moveStrafing = -MathHelper.sin(var15) * moveForward * 1.0F;
-                        moveForward = MathHelper.cos(var15) * moveForward * 1.0F;
+                        sidewaysSpeed = -MathHelper.sin(var15) * forwardSpeed * 1.0F;
+                        forwardSpeed = MathHelper.cos(var15) * forwardSpeed * 1.0F;
                     }
 
                     if (var12 > 0.0D)
                     {
-                        isJumping = true;
+                        jumping = true;
                     }
                 }
 
@@ -137,12 +137,12 @@ namespace betareborn.Entities
 
                 if (horizontalCollison && !hasPath())
                 {
-                    isJumping = true;
+                    jumping = true;
                 }
 
                 if (random.nextFloat() < 0.8F && (var3 || var4))
                 {
-                    isJumping = true;
+                    jumping = true;
                 }
 
             }
