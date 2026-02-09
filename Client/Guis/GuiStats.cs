@@ -1,4 +1,4 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Client.Resource.Language;
 using betareborn.Items;
 using betareborn.Stats;
@@ -10,7 +10,7 @@ namespace betareborn.Client.Guis
     public class GuiStats : GuiScreen
     {
 
-        private static RenderItem field_27153_j = new RenderItem();
+        private static ItemRenderer field_27153_j = new ItemRenderer();
         protected GuiScreen field_27152_a;
         protected string field_27154_i = "Select world";
         private GuiSlotStatsGeneral field_27151_l;
@@ -102,10 +102,10 @@ namespace betareborn.Client.Guis
             GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.GL.PushMatrix();
             GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
-            RenderHelper.enableStandardItemLighting();
+            Lighting.turnOn();
             GLManager.GL.PopMatrix();
             field_27153_j.drawItemIntoGui(fontRenderer, mc.textureManager, var3, 0, Item.itemsList[var3].getIconFromDamage(0), var1 + 2, var2 + 2);
-            RenderHelper.disableStandardItemLighting();
+            Lighting.turnOff();
             GLManager.GL.Disable(GLEnum.RescaleNormal);
         }
 

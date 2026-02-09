@@ -1,4 +1,4 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Entitys;
 using betareborn.Entities;
 using betareborn.Worlds;
 using java.util;
@@ -31,7 +31,7 @@ namespace betareborn.Blocks.BlockEntities
                 GLManager.GL.Translate(0.0F, -0.4F, 0.0F);
                 GLManager.GL.Scale(var10, var10, var10);
                 var9.setPositionAndAnglesKeepPrevAngles(var2, var4, var6, 0.0F, 0.0F);
-                RenderManager.instance.renderEntityWithPosYaw(var9, 0.0D, 0.0D, 0.0D, 0.0F, var8);
+                EntityRenderDispatcher.instance.renderEntityWithPosYaw(var9, 0.0D, 0.0D, 0.0D, 0.0F, var8);
             }
 
             GLManager.GL.PopMatrix();

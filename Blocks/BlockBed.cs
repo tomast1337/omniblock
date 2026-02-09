@@ -1,5 +1,4 @@
 using betareborn.Blocks.Materials;
-using betareborn.Client.Models;
 using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Util.Maths;
@@ -116,7 +115,7 @@ namespace betareborn.Blocks
             else
             {
                 int var3 = getDirection(meta);
-                int var4 = ModelBed.bedDirection[var3][side];
+                int var4 = Facings.BED_FACINGS[var3][side];
                 return isHeadOfBed(meta) ? (var4 == 2 ? textureId + 2 + 16 : (var4 != 5 && var4 != 4 ? textureId + 1 : textureId + 1 + 16)) : (var4 == 3 ? textureId - 1 + 16 : (var4 != 5 && var4 != 4 ? textureId : textureId + 16));
             }
         }

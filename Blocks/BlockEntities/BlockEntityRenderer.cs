@@ -1,5 +1,5 @@
 using betareborn.Client;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Entities;
 using betareborn.Worlds;
 using java.lang;

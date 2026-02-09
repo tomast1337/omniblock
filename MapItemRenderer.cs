@@ -1,5 +1,5 @@
 using betareborn.Client;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Entities;
 using java.awt.image;
 using java.util;

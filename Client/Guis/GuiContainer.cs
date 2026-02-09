@@ -1,4 +1,4 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Client.Resource.Language;
 using betareborn.Inventorys;
 using betareborn.Items;
@@ -11,7 +11,7 @@ namespace betareborn.Client.Guis
     public abstract class GuiContainer : GuiScreen
     {
 
-        private static RenderItem itemRenderer = new RenderItem();
+        private static ItemRenderer itemRenderer = new ItemRenderer();
         protected int xSize = 176;
         protected int ySize = 166;
         public ScreenHandler inventorySlots;
@@ -35,7 +35,7 @@ namespace betareborn.Client.Guis
             drawGuiContainerBackgroundLayer(var3);
             GLManager.GL.PushMatrix();
             GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
-            RenderHelper.enableStandardItemLighting();
+            Lighting.turnOn();
             GLManager.GL.PopMatrix();
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(var4, var5, 0.0F);
@@ -71,7 +71,7 @@ namespace betareborn.Client.Guis
             }
 
             GLManager.GL.Disable(GLEnum.RescaleNormal);
-            RenderHelper.disableStandardItemLighting();
+            Lighting.turnOff();
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);
             drawGuiContainerForegroundLayer();

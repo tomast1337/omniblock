@@ -1,4 +1,4 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Stats;
 using Silk.NET.OpenGL.Legacy;
 
@@ -14,13 +14,13 @@ namespace betareborn.Client.Guis
         private string field_25084_e;
         private Achievement theAchievement;
         private long field_25083_f;
-        private RenderItem itemRender;
+        private ItemRenderer itemRender;
         private bool field_27103_i;
 
         public GuiAchievement(Minecraft var1)
         {
             theGame = var1;
-            itemRender = new RenderItem();
+            itemRender = new ItemRenderer();
         }
 
         public void queueTakenAchievement(Achievement var1)
@@ -68,7 +68,7 @@ namespace betareborn.Client.Guis
             {
                 GLManager.GL.Disable(GLEnum.DepthTest);
                 GLManager.GL.DepthMask(false);
-                RenderHelper.disableStandardItemLighting();
+                Lighting.turnOff();
                 updateAchievementWindowScale();
                 string var1 = "Minecraft Beta 1.7.3   Unlicensed Copy :(";
                 string var2 = "(Or logged in from another location)";
@@ -123,7 +123,7 @@ namespace betareborn.Client.Guis
 
                     GLManager.GL.PushMatrix();
                     GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
-                    RenderHelper.enableStandardItemLighting();
+                    Lighting.turnOn();
                     GLManager.GL.PopMatrix();
                     GLManager.GL.Disable(GLEnum.Lighting);
                     GLManager.GL.Enable(GLEnum.RescaleNormal);

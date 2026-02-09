@@ -137,13 +137,13 @@ namespace betareborn
             if (curBlockDamageMP <= 0.0F)
             {
                 mc.ingameGUI.damageGuiPartialTime = 0.0F;
-                mc.renderGlobal.damagePartialTime = 0.0F;
+                mc.terrainRenderer.damagePartialTime = 0.0F;
             }
             else
             {
                 float var2 = prevBlockDamageMP + (curBlockDamageMP - prevBlockDamageMP) * var1;
                 mc.ingameGUI.damageGuiPartialTime = var2;
-                mc.renderGlobal.damagePartialTime = var2;
+                mc.terrainRenderer.damagePartialTime = var2;
             }
 
         }

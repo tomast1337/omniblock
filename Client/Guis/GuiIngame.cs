@@ -1,6 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Client.Resource.Language;
 using betareborn.Inventorys;
 using betareborn.Items;
@@ -14,7 +14,7 @@ namespace betareborn.Client.Guis
     public class GuiIngame : Gui
     {
 
-        private static RenderItem itemRenderer = new RenderItem();
+        private static ItemRenderer itemRenderer = new ItemRenderer();
         private java.util.List chatMessageList = new ArrayList();
         private java.util.Random rand = new();
         private Minecraft mc;
@@ -166,7 +166,7 @@ namespace betareborn.Client.Guis
             GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.GL.PushMatrix();
             GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
-            RenderHelper.enableStandardItemLighting();
+            Lighting.turnOn();
             GLManager.GL.PopMatrix();
 
             for (var15 = 0; var15 < 9; ++var15)
@@ -176,7 +176,7 @@ namespace betareborn.Client.Guis
                 renderInventorySlot(var15, var16, var17, var1);
             }
 
-            RenderHelper.disableStandardItemLighting();
+            Lighting.turnOff();
             GLManager.GL.Disable(GLEnum.RescaleNormal);
             if (mc.player.getSleepTimer() > 0)
             {

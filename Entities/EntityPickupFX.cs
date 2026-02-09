@@ -1,4 +1,4 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Entitys;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 
@@ -42,7 +42,7 @@ namespace betareborn.Entities
             var23 -= interpPosY;
             var25 -= interpPosZ;
             GLManager.GL.Color4(var30, var30, var30, 1.0F);
-            RenderManager.instance.renderEntityWithPosYaw(field_675_a, (double)((float)var21), (double)((float)var23), (double)((float)var25), field_675_a.rotationYaw, var2);
+            EntityRenderDispatcher.instance.renderEntityWithPosYaw(field_675_a, (double)((float)var21), (double)((float)var23), (double)((float)var25), field_675_a.rotationYaw, var2);
         }
 
         public override void onUpdate()

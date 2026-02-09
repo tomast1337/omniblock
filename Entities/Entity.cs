@@ -1233,7 +1233,7 @@ namespace betareborn.Entities
         {
         }
 
-        public bool isBurning()
+        public bool isOnFire()
         {
             return fire > 0 || getEntityFlag(0);
         }

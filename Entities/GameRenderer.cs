@@ -1,7 +1,8 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
 using betareborn.Client;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Chunks;
+using betareborn.Client.Rendering.Core;
 using betareborn.Items;
 using betareborn.Profiling;
 using betareborn.Util.Hit;
@@ -19,7 +20,7 @@ namespace betareborn.Entities
         public static int anaglyphField;
         private Minecraft client;
         private float viewDistane = 0.0F;
-        public ItemRenderer itemRenderer;
+        public HeldItemRenderer itemRenderer;
         private int ticks;
         private Entity targetedEntity = null;
         private MouseFilter mouseFilterXAxis = new MouseFilter();
@@ -52,7 +53,7 @@ namespace betareborn.Entities
         public GameRenderer(Minecraft mc)
         {
             this.client = mc;
-            itemRenderer = new ItemRenderer(mc);
+            itemRenderer = new HeldItemRenderer(mc);
         }
 
         public void updateCamera()
@@ -79,9 +80,9 @@ namespace betareborn.Entities
 
         public void tick(float var1)
         {
-            if (client.renderGlobal != null)
+            if (client.terrainRenderer != null)
             {
-                client.renderGlobal.tick(client.camera, var1);
+                client.terrainRenderer.tick(client.camera, var1);
             }
         }
 
@@ -525,7 +526,7 @@ namespace betareborn.Entities
             Profiler.Stop("getMouseOver");
 
             EntityLiving var4 = client.camera;
-            RenderGlobal var5 = client.renderGlobal;
+            ChunkRenderer var5 = client.terrainRenderer;
             ParticleManager var6 = client.particleManager;
             double var7 = var4.lastTickPosX + (var4.posX - var4.lastTickPosX) * (double)tickDelta;
             double var9 = var4.lastTickPosY + (var4.posY - var4.lastTickPosY) * (double)tickDelta;
@@ -555,14 +556,14 @@ namespace betareborn.Entities
             applyFog(0);
             GLManager.GL.Enable(GLEnum.Fog);
             GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)client.textureManager.getTexture("/terrain.png"));
-            RenderHelper.disableStandardItemLighting();
+            Lighting.turnOff();
 
             Profiler.Start("sortAndRender");
             var5.sortAndRender(var4, 0, (double)tickDelta, var19);
             Profiler.Stop("sortAndRender");
 
             GLManager.GL.ShadeModel(GLEnum.Flat);
-            RenderHelper.enableStandardItemLighting();
+            Lighting.turnOn();
 
             Profiler.Start("renderEntities");
             var5.renderEntities(var4.getPosition(tickDelta), var19, tickDelta);
@@ -570,7 +571,7 @@ namespace betareborn.Entities
 
             var6.func_1187_b(var4, tickDelta);
 
-            RenderHelper.disableStandardItemLighting();
+            Lighting.turnOff();
             applyFog(0);
 
             Profiler.Start("renderParticles");
@@ -933,50 +934,50 @@ namespace betareborn.Entities
         {
             EntityLiving var3 = client.camera;
             GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(fogColorRed, fogColorGreen, fogColorBlue, 1.0F));
-            client.renderGlobal.worldRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
+            client.terrainRenderer.worldRenderer.SetFogColor(fogColorRed, fogColorGreen, fogColorBlue, 1.0f);
             GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             if (cloudFog)
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                client.renderGlobal.worldRenderer.SetFogMode(1);
-                client.renderGlobal.worldRenderer.SetFogDensity(0.1f);
+                client.terrainRenderer.worldRenderer.SetFogMode(1);
+                client.terrainRenderer.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.WATER))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-                client.renderGlobal.worldRenderer.SetFogMode(1);
-                client.renderGlobal.worldRenderer.SetFogDensity(0.1f);
+                client.terrainRenderer.worldRenderer.SetFogMode(1);
+                client.terrainRenderer.worldRenderer.SetFogDensity(0.1f);
             }
             else if (var3.isInsideOfMaterial(Material.LAVA))
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
                 GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-                client.renderGlobal.worldRenderer.SetFogMode(1);
-                client.renderGlobal.worldRenderer.SetFogDensity(2.0f);
+                client.terrainRenderer.worldRenderer.SetFogMode(1);
+                client.terrainRenderer.worldRenderer.SetFogDensity(2.0f);
             }
             else
             {
                 GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
                 GLManager.GL.Fog(GLEnum.FogStart, viewDistane * 0.25F);
                 GLManager.GL.Fog(GLEnum.FogEnd, viewDistane);
-                client.renderGlobal.worldRenderer.SetFogMode(0);
-                client.renderGlobal.worldRenderer.SetFogStart(viewDistane * 0.25f);
-                client.renderGlobal.worldRenderer.SetFogEnd(viewDistane);
+                client.terrainRenderer.worldRenderer.SetFogMode(0);
+                client.terrainRenderer.worldRenderer.SetFogStart(viewDistane * 0.25f);
+                client.terrainRenderer.worldRenderer.SetFogEnd(viewDistane);
                 if (mode < 0)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                     GLManager.GL.Fog(GLEnum.FogEnd, viewDistane * 0.8F);
-                    client.renderGlobal.worldRenderer.SetFogStart(0.0f);
-                    client.renderGlobal.worldRenderer.SetFogEnd(viewDistane * 0.8f);
+                    client.terrainRenderer.worldRenderer.SetFogStart(0.0f);
+                    client.terrainRenderer.worldRenderer.SetFogEnd(viewDistane * 0.8f);
                 }
 
                 if (client.world.dimension.isNether)
                 {
                     GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                    client.renderGlobal.worldRenderer.SetFogStart(0.0f);
+                    client.terrainRenderer.worldRenderer.SetFogStart(0.0f);
                 }
             }
 

@@ -1,5 +1,5 @@
 using betareborn.Blocks;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Worlds;
 using Silk.NET.OpenGL.Legacy;
 
@@ -8,7 +8,7 @@ namespace betareborn.Blocks.BlockEntities
     public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
     {
 
-        private RenderBlocks renderBlocks;
+        private BlockRenderer renderBlocks;
 
         public void func_31070_a(BlockEntityPiston var1, double var2, double var4, double var6, float var8)
         {
@@ -17,7 +17,7 @@ namespace betareborn.Blocks.BlockEntities
             {
                 Tessellator var10 = Tessellator.instance;
                 bindTextureByName("/terrain.png");
-                RenderHelper.disableStandardItemLighting();
+                Lighting.turnOff();
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.Disable(GLEnum.CullFace);
@@ -52,14 +52,14 @@ namespace betareborn.Blocks.BlockEntities
 
                 var10.setTranslationD(0.0D, 0.0D, 0.0D);
                 var10.draw();
-                RenderHelper.enableStandardItemLighting();
+                Lighting.turnOn();
             }
 
         }
 
         public override void func_31069_a(World var1)
         {
-            renderBlocks = new RenderBlocks(var1, Tessellator.instance);
+            renderBlocks = new BlockRenderer(var1, Tessellator.instance);
         }
 
         public override void renderTileEntityAt(BlockEntity var1, double var2, double var4, double var6, float var8)

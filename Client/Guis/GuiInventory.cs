@@ -1,4 +1,5 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
+using betareborn.Client.Rendering.Entitys;
 using betareborn.Entities;
 using Silk.NET.OpenGL.Legacy;
 
@@ -54,7 +55,7 @@ namespace betareborn.Client.Guis
             float var9 = var3 + 51 - xSize_lo;
             float var10 = var4 + 75 - 50 - ySize_lo;
             GLManager.GL.Rotate(135.0F, 0.0F, 1.0F, 0.0F);
-            RenderHelper.enableStandardItemLighting();
+            Lighting.turnOn();
             GLManager.GL.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(-(float)java.lang.Math.atan((double)(var10 / 40.0F)) * 20.0F, 1.0F, 0.0F, 0.0F);
             mc.player.renderYawOffset = (float)java.lang.Math.atan((double)(var9 / 40.0F)) * 20.0F;
@@ -62,14 +63,14 @@ namespace betareborn.Client.Guis
             mc.player.rotationPitch = -(float)java.lang.Math.atan((double)(var10 / 40.0F)) * 20.0F;
             mc.player.entityBrightness = 1.0F;
             GLManager.GL.Translate(0.0F, mc.player.yOffset, 0.0F);
-            RenderManager.instance.playerViewY = 180.0F;
-            RenderManager.instance.renderEntityWithPosYaw(mc.player, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
+            EntityRenderDispatcher.instance.playerViewY = 180.0F;
+            EntityRenderDispatcher.instance.renderEntityWithPosYaw(mc.player, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
             mc.player.entityBrightness = 0.0F;
             mc.player.renderYawOffset = var6;
             mc.player.rotationYaw = var7;
             mc.player.rotationPitch = var8;
             GLManager.GL.PopMatrix();
-            RenderHelper.disableStandardItemLighting();
+            Lighting.turnOff();
             GLManager.GL.Disable(GLEnum.RescaleNormal);
         }
 

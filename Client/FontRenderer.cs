@@ -1,4 +1,4 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Client.Resource;
 using betareborn.Util;
 using java.awt.image;

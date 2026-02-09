@@ -1,4 +1,4 @@
-using betareborn.Client.Models;
+using betareborn.Client.Rendering.Entitys.Models;
 
 namespace betareborn
 {

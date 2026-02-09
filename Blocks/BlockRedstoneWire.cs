@@ -1,5 +1,4 @@
 using betareborn.Blocks.Materials;
-using betareborn.Client.Models;
 using betareborn.Items;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
@@ -477,7 +476,7 @@ namespace betareborn.Blocks
             else
             {
                 int var6 = var0.getBlockMeta(var1, var2, var3);
-                return var4 == ModelBed.field_22279_b[var6 & 3];
+                return var4 == Facings.OPPOSITE[var6 & 3];
             }
         }
     }

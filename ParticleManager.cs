@@ -1,5 +1,5 @@
 using betareborn.Blocks;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Entities;
 using betareborn.Util.Maths;
 using betareborn.Worlds;

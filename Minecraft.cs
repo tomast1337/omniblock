@@ -5,7 +5,9 @@ using betareborn.Client;
 using betareborn.Client.Colors;
 using betareborn.Client.Guis;
 using betareborn.Client.Network;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Chunks;
+using betareborn.Client.Rendering.Core;
+using betareborn.Client.Rendering.Entitys;
 using betareborn.Client.Resource.Pack;
 using betareborn.Client.Textures;
 using betareborn.Entities;
@@ -40,7 +42,7 @@ namespace betareborn
         public int displayHeight;
         private Timer timer = new Timer(20.0F);
         public World world;
-        public RenderGlobal renderGlobal;
+        public ChunkRenderer terrainRenderer;
         public ClientPlayerEntity player;
         public EntityLiving camera;
         public ParticleManager particleManager;
@@ -172,7 +174,7 @@ namespace betareborn
             GrassColors.func_28181_a(textureManager.func_28149_a("/misc/grasscolor.png"));
             FoliageColors.func_28152_a(textureManager.func_28149_a("/misc/foliagecolor.png"));
             gameRenderer = new GameRenderer(this);
-            RenderManager.instance.itemRenderer = new ItemRenderer(this);
+            EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
             statFileWriter = new StatFileWriter(session, mcDataDir);
             Achievements.OPEN_INVENTORY.setStatStringFormatter(new StatStringFormatKeyInv(this));
             loadScreen();
@@ -231,7 +233,7 @@ namespace betareborn
             textureManager.registerTextureFX(new TextureLavaFlowFX());
             textureManager.registerTextureFX(new TextureFlamesFX(0));
             textureManager.registerTextureFX(new TextureFlamesFX(1));
-            renderGlobal = new RenderGlobal(this, textureManager);
+            terrainRenderer = new ChunkRenderer(this, textureManager);
             GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
             particleManager = new ParticleManager(world, textureManager);
 
@@ -568,7 +570,7 @@ namespace betareborn
 
                         long var24 = java.lang.System.nanoTime() - var23;
                         checkGLError("Pre render");
-                        RenderBlocks.fancyGrass = true;
+                        BlockRenderer.fancyGrass = true;
                         sndManager.func_338_a(player, timer.renderPartialTicks);
                         GLManager.GL.Enable(GLEnum.Texture2D);
                         if (world != null)
@@ -1205,7 +1207,7 @@ namespace betareborn
 
                 if (!isGamePaused)
                 {
-                    renderGlobal.updateClouds();
+                    terrainRenderer.updateClouds();
                 }
 
                 Profiler.PushGroup("theWorldUpdateEntities");
@@ -1630,9 +1632,9 @@ namespace betareborn
                 }
 
                 player.movementInput = new MovementInputFromOptions(options);
-                if (renderGlobal != null)
+                if (terrainRenderer != null)
                 {
-                    renderGlobal.changeWorld(var1);
+                    terrainRenderer.changeWorld(var1);
                 }
 
                 if (particleManager != null)
@@ -1728,7 +1730,7 @@ namespace betareborn
 
         public string func_6262_n()
         {
-            return renderGlobal.getDebugInfoEntities();
+            return terrainRenderer.getDebugInfoEntities();
         }
 
         public string func_21002_o()

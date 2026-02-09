@@ -1,4 +1,4 @@
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using Silk.NET.OpenGL.Legacy;
 
 namespace betareborn.Client.Textures

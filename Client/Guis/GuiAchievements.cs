@@ -1,5 +1,5 @@
 using betareborn.Blocks;
-using betareborn.Client.Rendering;
+using betareborn.Client.Rendering.Core;
 using betareborn.Stats;
 using betareborn.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
@@ -287,10 +287,10 @@ namespace betareborn.Client.Guis
             }
 
             Achievement var27 = null;
-            RenderItem var29 = new RenderItem();
+            ItemRenderer var29 = new ItemRenderer();
             GLManager.GL.PushMatrix();
             GLManager.GL.Rotate(180.0F, 1.0F, 0.0F, 0.0F);
-            RenderHelper.enableStandardItemLighting();
+            Lighting.turnOn();
             GLManager.GL.PopMatrix();
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
@@ -337,7 +337,7 @@ namespace betareborn.Client.Guis
                     {
                         float var36 = 0.1F;
                         GLManager.GL.Color4(var36, var36, var36, 1.0F);
-                        var29.field_27004_a = false;
+                        var29.useCustomDisplayColor = false;
                     }
 
                     GLManager.GL.Enable(GLEnum.Lighting);
@@ -346,7 +346,7 @@ namespace betareborn.Client.Guis
                     GLManager.GL.Disable(GLEnum.Lighting);
                     if (!field_27120_x.func_27181_b(var30))
                     {
-                        var29.field_27004_a = true;
+                        var29.useCustomDisplayColor = true;
                     }
 
                     GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -404,7 +404,7 @@ namespace betareborn.Client.Guis
 
             GLManager.GL.Enable(GLEnum.DepthTest);
             GLManager.GL.Enable(GLEnum.Lighting);
-            RenderHelper.disableStandardItemLighting();
+            Lighting.turnOff();
         }
 
         public override bool doesGuiPauseGame()
