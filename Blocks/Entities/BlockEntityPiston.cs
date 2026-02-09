@@ -91,16 +91,16 @@ namespace betareborn.Blocks.Entities
                 collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
             }
 
-            Box? var3 = Block.MOVING_PISTON.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
-            if (var3 != null)
+            Box? pushCollisionBox = Block.MOVING_PISTON.getPushedBlockCollisionShape(world, x, y, z, pushedBlockId, collisionShapeSizeMultiplier, facing);
+            if (pushCollisionBox != null)
             {
-                var var4 = world.getEntities(null, var3.Value);
-                if (var4.Count > 0)
+                var entitiesToPush = world.getEntities(null, pushCollisionBox.Value);
+                if (entitiesToPush.Count > 0)
                 {
-                    pushedEntities.AddRange(var4);
-                    foreach (Entity var6 in pushedEntities)
+                    pushedEntities.AddRange(entitiesToPush);
+                    foreach (Entity entity in pushedEntities)
                     {
-                        var6.move(
+                        entity.move(
                             (double)(entityMoveMultiplier * PistonConstants.HEAD_OFFSET_X[facing]),
                             (double)(entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Y[facing]),
                             (double)(entityMoveMultiplier * PistonConstants.HEAD_OFFSET_Z[facing])

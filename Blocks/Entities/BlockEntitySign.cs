@@ -26,12 +26,12 @@ namespace betareborn.Blocks.Entities
             editable = false;
             base.readNbt(nbt);
 
-            for (int var2 = 0; var2 < 4; ++var2)
+            for (int line = 0; line < 4; ++line)
             {
-                texts[var2] = nbt.getString("Text" + (var2 + 1));
-                if (texts[var2].Length > 15)
+                texts[line] = nbt.getString("Text" + (line + 1));
+                if (texts[line].Length > 15)
                 {
-                    texts[var2] = texts[var2].Substring(0, 15);
+                    texts[line] = texts[line].Substring(0, 15);
                 }
             }
 
@@ -39,14 +39,14 @@ namespace betareborn.Blocks.Entities
 
         public override Packet createUpdatePacket()
         {
-            string[] var1 = new string[4];
+            string[] lines = new string[4];
 
-            for (int var2 = 0; var2 < 4; var2++)
+            for (int lineIndex = 0; lineIndex < 4; lineIndex++)
             {
-                var1[var2] = texts[var2];
+                lines[lineIndex] = texts[lineIndex];
             }
 
-            return new UpdateSignPacket(x, y, z, var1);
+            return new UpdateSignPacket(x, y, z, lines);
         }
 
         public bool isEditable()

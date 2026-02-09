@@ -39,14 +39,14 @@ namespace betareborn.Blocks.Entities
 
         public virtual void writeNbt(NBTTagCompound nbt)
         {
-            string var2 = (string)classToId.get(getClass());
-            if (var2 == null)
+            string entityId = (string)classToId.get(getClass());
+            if (entityId == null)
             {
                 throw new RuntimeException(getClass() + " is missing a mapping! This is a bug!");
             }
             else
             {
-                nbt.setString("id", var2);
+                nbt.setString("id", entityId);
                 nbt.setInteger("x", x);
                 nbt.setInteger("y", y);
                 nbt.setInteger("z", z);
@@ -59,31 +59,31 @@ namespace betareborn.Blocks.Entities
 
         public static BlockEntity createFromNbt(NBTTagCompound nbt)
         {
-            BlockEntity var1 = null;
+            BlockEntity blockEntity = null;
 
             try
             {
-                Class var2 = (Class)idToClass.get(nbt.getString("id"));
-                if (var2 != null)
+                Class blockEntityClass = (Class)idToClass.get(nbt.getString("id"));
+                if (blockEntityClass != null)
                 {
-                    var1 = (BlockEntity)var2.newInstance();
+                    blockEntity = (BlockEntity)blockEntityClass.newInstance();
                 }
             }
-            catch (java.lang.Exception var3)
+            catch (java.lang.Exception exception)
             {
-                var3.printStackTrace();
+                exception.printStackTrace();
             }
 
-            if (var1 != null)
+            if (blockEntity != null)
             {
-                var1.readNbt(nbt);
+                blockEntity.readNbt(nbt);
             }
             else
             {
                 java.lang.System.@out.println("Skipping TileEntity with id " + nbt.getString("id"));
             }
 
-            return var1;
+            return blockEntity;
         }
 
         public virtual int getPushedBlockData()
@@ -102,10 +102,10 @@ namespace betareborn.Blocks.Entities
 
         public double distanceFrom(double x, double y, double z)
         {
-            double var7 = this.x + 0.5D - x;
-            double var9 = this.y + 0.5D - y;
-            double var11 = this.z + 0.5D - z;
-            return var7 * var7 + var9 * var9 + var11 * var11;
+            double dx = this.x + 0.5D - x;
+            double dy = this.y + 0.5D - y;
+            double dz = this.z + 0.5D - z;
+            return dx * dx + dy * dy + dz * dz;
         }
 
         public Block getBlock()
