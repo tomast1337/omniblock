@@ -29,9 +29,5 @@
     <EmbeddedResource Include="shaders/chunk.vert" />
     <EmbeddedResource Include="shaders/chunk.frag" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Packets\" />
-  </ItemGroup>
 
 </Project>
