@@ -38,11 +38,11 @@ namespace betareborn.Blocks.Entities
             lastRotation = rotation;
             if (isPlayerInRange())
             {
-                double var1 = (double)(x + world.random.nextFloat());
-                double var3 = (double)(y + world.random.nextFloat());
-                double var5 = (double)(z + world.random.nextFloat());
-                world.addParticle("smoke", var1, var3, var5, 0.0D, 0.0D, 0.0D);
-                world.addParticle("flame", var1, var3, var5, 0.0D, 0.0D, 0.0D);
+                double particleX = (double)(x + world.random.nextFloat());
+                double particleY = (double)(y + world.random.nextFloat());
+                double particleZ = (double)(z + world.random.nextFloat());
+                world.addParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+                world.addParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
 
                 for (rotation += 1000.0F / (spawnDelay + 200.0F); rotation > 360.0D; lastRotation -= 360.0D)
                 {
@@ -62,43 +62,43 @@ namespace betareborn.Blocks.Entities
                         return;
                     }
 
-                    byte var7 = 4;
+                    byte max = 4;
 
-                    for (int var8 = 0; var8 < var7; ++var8)
+                    for (int spawnAttempt = 0; spawnAttempt < max; ++spawnAttempt)
                     {
-                        EntityLiving var9 = (EntityLiving)EntityRegistry.create(spawnedEntityId, world);
-                        if (var9 == null)
+                        EntityLiving entityLiving = (EntityLiving)EntityRegistry.create(spawnedEntityId, world);
+                        if (entityLiving == null)
                         {
                             return;
                         }
 
-                        int var10 = world.collectEntitiesByClass(var9.getClass(), new Box(x, y, z, x + 1, y + 1, z + 1).expand(8.0D, 4.0D, 8.0D)).Count;
-                        if (var10 >= 6)
+                        int count = world.collectEntitiesByClass(entityLiving.getClass(), new Box(x, y, z, x + 1, y + 1, z + 1).expand(8.0D, 4.0D, 8.0D)).Count;
+                        if (count >= 6)
                         {
                             resetDelay();
                             return;
                         }
 
-                        if (var9 != null)
+                        if (entityLiving != null)
                         {
-                            double var11 = x + (world.random.nextDouble() - world.random.nextDouble()) * 4.0D;
-                            double var13 = y + world.random.nextInt(3) - 1;
-                            double var15 = z + (world.random.nextDouble() - world.random.nextDouble()) * 4.0D;
-                            var9.setPositionAndAnglesKeepPrevAngles(var11, var13, var15, world.random.nextFloat() * 360.0F, 0.0F);
-                            if (var9.canSpawn())
+                            double posX = x + (world.random.nextDouble() - world.random.nextDouble()) * 4.0D;
+                            double posY = y + world.random.nextInt(3) - 1;
+                            double posZ = z + (world.random.nextDouble() - world.random.nextDouble()) * 4.0D;
+                            entityLiving.setPositionAndAnglesKeepPrevAngles(posX, posY, posZ, world.random.nextFloat() * 360.0F, 0.0F);
+                            if (entityLiving.canSpawn())
                             {
-                                world.spawnEntity(var9);
+                                world.spawnEntity(entityLiving);
 
-                                for (int var17 = 0; var17 < 20; ++var17)
+                                for (int particleIndex = 0; particleIndex < 20; ++particleIndex)
                                 {
-                                    var1 = x + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
-                                    var3 = y + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
-                                    var5 = z + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
-                                    world.addParticle("smoke", var1, var3, var5, 0.0D, 0.0D, 0.0D);
-                                    world.addParticle("flame", var1, var3, var5, 0.0D, 0.0D, 0.0D);
+                                    particleX = x + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
+                                    particleY = y + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
+                                    particleZ = z + 0.5D + ((double)world.random.nextFloat() - 0.5D) * 2.0D;
+                                    world.addParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+                                    world.addParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                                 }
 
-                                var9.animateSpawn();
+                                entityLiving.animateSpawn();
                                 resetDelay();
                             }
                         }
