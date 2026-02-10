@@ -24,41 +24,41 @@ namespace betareborn.Blocks
 
         public override int getColorMultiplier(BlockView blockView, int x, int y, int z)
         {
-            int var5 = blockView.getBlockMeta(x, y, z);
-            if ((var5 & 1) == 1)
+            int meta = blockView.getBlockMeta(x, y, z);
+            if ((meta & 1) == 1)
             {
                 return FoliageColors.getSpruceColor();
             }
-            else if ((var5 & 2) == 2)
+            else if ((meta & 2) == 2)
             {
                 return FoliageColors.getBirchColor();
             }
             else
             {
                 blockView.getBiomeSource().getBiomesInArea(x, z, 1, 1);
-                double var6 = blockView.getBiomeSource().temperatureMap[0];
-                double var8 = blockView.getBiomeSource().downfallMap[0];
-                return FoliageColors.getFoliageColor(var6, var8);
+                double temperature = blockView.getBiomeSource().temperatureMap[0];
+                double downfall = blockView.getBiomeSource().downfallMap[0];
+                return FoliageColors.getFoliageColor(temperature, downfall);
             }
         }
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            sbyte var5 = 1;
-            int var6 = var5 + 1;
-            if (world.isRegionLoaded(x - var6, y - var6, z - var6, x + var6, y + var6, z + var6))
+            sbyte searchRadius = 1;
+            int loadCheckExtent = searchRadius + 1;
+            if (world.isRegionLoaded(x - loadCheckExtent, y - loadCheckExtent, z - loadCheckExtent, x + loadCheckExtent, y + loadCheckExtent, z + loadCheckExtent))
             {
-                for (int var7 = -var5; var7 <= var5; ++var7)
+                for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
                 {
-                    for (int var8 = -var5; var8 <= var5; ++var8)
+                    for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
                     {
-                        for (int var9 = -var5; var9 <= var5; ++var9)
+                        for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                         {
-                            int var10 = world.getBlockId(x + var7, y + var8, z + var9);
-                            if (var10 == Block.LEAVES.id)
+                            int blockId = world.getBlockId(x + offsetX, y + offsetY, z + offsetZ);
+                            if (blockId == Block.LEAVES.id)
                             {
-                                int var11 = world.getBlockMeta(x + var7, y + var8, z + var9);
-                                world.setBlockMetaWithoutNotifyingNeighbors(x + var7, y + var8, z + var9, var11 | 8);
+                                int leavesMeta = world.getBlockMeta(x + offsetX, y + offsetY, z + offsetZ);
+                                world.setBlockMetaWithoutNotifyingNeighbors(x + offsetX, y + offsetY, z + offsetZ, leavesMeta | 8);
                             }
                         }
                     }
@@ -71,95 +71,95 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                if ((var6 & 8) != 0)
+                int meta = world.getBlockMeta(x, y, z);
+                if ((meta & 8) != 0)
                 {
-                    sbyte var7 = 4;
-                    int var8 = var7 + 1;
-                    sbyte var9 = 32;
-                    int var10 = var9 * var9;
-                    int var11 = var9 / 2;
+                    sbyte decayRadius = 4;
+                    int loadCheckExtent = decayRadius + 1;
+                    sbyte regionSize = 32;
+                    int planeSize = regionSize * regionSize;
+                    int centerOffset = regionSize / 2;
                     if (decayRegion == null)
                     {
-                        decayRegion = new int[var9 * var9 * var9];
+                        decayRegion = new int[regionSize * regionSize * regionSize];
                     }
 
-                    int var12;
-                    if (world.isRegionLoaded(x - var8, y - var8, z - var8, x + var8, y + var8, z + var8))
+                    int distanceToLog;
+                    if (world.isRegionLoaded(x - loadCheckExtent, y - loadCheckExtent, z - loadCheckExtent, x + loadCheckExtent, y + loadCheckExtent, z + loadCheckExtent))
                     {
-                        var12 = -var7;
+                        distanceToLog = -decayRadius;
 
-                        while (var12 <= var7)
+                        while (distanceToLog <= decayRadius)
                         {
-                            int var13;
-                            int var14;
-                            int var15;
+                            int dx;
+                            int dy;
+                            int dz;
 
-                            for (var13 = -var7; var13 <= var7; ++var13)
+                            for (dx = -decayRadius; dx <= decayRadius; ++dx)
                             {
-                                for (var14 = -var7; var14 <= var7; ++var14)
+                                for (dy = -decayRadius; dy <= decayRadius; ++dy)
                                 {
-                                    var15 = world.getBlockId(x + var12, y + var13, z + var14);
-                                    if (var15 == Block.LOG.id)
+                                    dz = world.getBlockId(x + distanceToLog, y + dx, z + dy);
+                                    if (dz == Block.LOG.id)
                                     {
-                                        decayRegion[(var12 + var11) * var10 + (var13 + var11) * var9 + var14 + var11] = 0;
+                                        decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = 0;
                                     }
-                                    else if (var15 == Block.LEAVES.id)
+                                    else if (dz == Block.LEAVES.id)
                                     {
-                                        decayRegion[(var12 + var11) * var10 + (var13 + var11) * var9 + var14 + var11] = -2;
+                                        decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = -2;
                                     }
                                     else
                                     {
-                                        decayRegion[(var12 + var11) * var10 + (var13 + var11) * var9 + var14 + var11] = -1;
+                                        decayRegion[(distanceToLog + centerOffset) * planeSize + (dx + centerOffset) * regionSize + dy + centerOffset] = -1;
                                     }
                                 }
                             }
 
-                            ++var12;
+                            ++distanceToLog;
                         }
 
-                        for (var12 = 1; var12 <= 4; ++var12)
+                        for (distanceToLog = 1; distanceToLog <= 4; ++distanceToLog)
                         {
-                            int var13;
-                            int var14;
-                            int var15;
+                            int dx;
+                            int dy;
+                            int dz;
 
-                            for (var13 = -var7; var13 <= var7; ++var13)
+                            for (dx = -decayRadius; dx <= decayRadius; ++dx)
                             {
-                                for (var14 = -var7; var14 <= var7; ++var14)
+                                for (dy = -decayRadius; dy <= decayRadius; ++dy)
                                 {
-                                    for (var15 = -var7; var15 <= var7; ++var15)
+                                    for (dz = -decayRadius; dz <= decayRadius; ++dz)
                                     {
-                                        if (decayRegion[(var13 + var11) * var10 + (var14 + var11) * var9 + var15 + var11] == var12 - 1)
+                                        if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == distanceToLog - 1)
                                         {
-                                            if (decayRegion[(var13 + var11 - 1) * var10 + (var14 + var11) * var9 + var15 + var11] == -2)
+                                            if (decayRegion[(dx + centerOffset - 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == -2)
                                             {
-                                                decayRegion[(var13 + var11 - 1) * var10 + (var14 + var11) * var9 + var15 + var11] = var12;
+                                                decayRegion[(dx + centerOffset - 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] = distanceToLog;
                                             }
 
-                                            if (decayRegion[(var13 + var11 + 1) * var10 + (var14 + var11) * var9 + var15 + var11] == -2)
+                                            if (decayRegion[(dx + centerOffset + 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] == -2)
                                             {
-                                                decayRegion[(var13 + var11 + 1) * var10 + (var14 + var11) * var9 + var15 + var11] = var12;
+                                                decayRegion[(dx + centerOffset + 1) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset] = distanceToLog;
                                             }
 
-                                            if (decayRegion[(var13 + var11) * var10 + (var14 + var11 - 1) * var9 + var15 + var11] == -2)
+                                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset - 1) * regionSize + dz + centerOffset] == -2)
                                             {
-                                                decayRegion[(var13 + var11) * var10 + (var14 + var11 - 1) * var9 + var15 + var11] = var12;
+                                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset - 1) * regionSize + dz + centerOffset] = distanceToLog;
                                             }
 
-                                            if (decayRegion[(var13 + var11) * var10 + (var14 + var11 + 1) * var9 + var15 + var11] == -2)
+                                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset + 1) * regionSize + dz + centerOffset] == -2)
                                             {
-                                                decayRegion[(var13 + var11) * var10 + (var14 + var11 + 1) * var9 + var15 + var11] = var12;
+                                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset + 1) * regionSize + dz + centerOffset] = distanceToLog;
                                             }
 
-                                            if (decayRegion[(var13 + var11) * var10 + (var14 + var11) * var9 + (var15 + var11 - 1)] == -2)
+                                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + (dz + centerOffset - 1)] == -2)
                                             {
-                                                decayRegion[(var13 + var11) * var10 + (var14 + var11) * var9 + (var15 + var11 - 1)] = var12;
+                                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + (dz + centerOffset - 1)] = distanceToLog;
                                             }
 
-                                            if (decayRegion[(var13 + var11) * var10 + (var14 + var11) * var9 + var15 + var11 + 1] == -2)
+                                            if (decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset + 1] == -2)
                                             {
-                                                decayRegion[(var13 + var11) * var10 + (var14 + var11) * var9 + var15 + var11 + 1] = var12;
+                                                decayRegion[(dx + centerOffset) * planeSize + (dy + centerOffset) * regionSize + dz + centerOffset + 1] = distanceToLog;
                                             }
                                         }
                                     }
@@ -168,10 +168,10 @@ namespace betareborn.Blocks
                         }
                     }
 
-                    var12 = decayRegion[var11 * var10 + var11 * var9 + var11];
-                    if (var12 >= 0)
+                    distanceToLog = decayRegion[centerOffset * planeSize + centerOffset * regionSize + centerOffset];
+                    if (distanceToLog >= 0)
                     {
-                        world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, var6 & -9);
+                        world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, meta & -9);
                     }
                     else
                     {

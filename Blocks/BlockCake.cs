@@ -15,36 +15,36 @@ namespace betareborn.Blocks
 
         public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = blockView.getBlockMeta(x, y, z);
-            float var6 = 1.0F / 16.0F;
-            float var7 = (float)(1 + var5 * 2) / 16.0F;
-            float var8 = 0.5F;
-            setBoundingBox(var7, 0.0F, var6, 1.0F - var6, var8, 1.0F - var6);
+            int slicesEaten = blockView.getBlockMeta(x, y, z);
+            float edgeInset = 1.0F / 16.0F;
+            float minX = (float)(1 + slicesEaten * 2) / 16.0F;
+            float height = 0.5F;
+            setBoundingBox(minX, 0.0F, edgeInset, 1.0F - edgeInset, height, 1.0F - edgeInset);
         }
 
         public override void setupRenderBoundingBox()
         {
-            float var1 = 1.0F / 16.0F;
-            float var2 = 0.5F;
-            setBoundingBox(var1, 0.0F, var1, 1.0F - var1, var2, 1.0F - var1);
+            float edgeInset = 1.0F / 16.0F;
+            float height = 0.5F;
+            setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, height, 1.0F - edgeInset);
         }
 
         public override Box? getCollisionShape(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockMeta(x, y, z);
-            float var6 = 1.0F / 16.0F;
-            float var7 = (float)(1 + var5 * 2) / 16.0F;
-            float var8 = 0.5F;
-            return new Box((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8 - var6), (double)((float)(z + 1) - var6));
+            int slicesEaten = world.getBlockMeta(x, y, z);
+            float edgeInset = 1.0F / 16.0F;
+            float minX = (float)(1 + slicesEaten * 2) / 16.0F;
+            float height = 0.5F;
+            return new Box((double)((float)x + minX), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)((float)y + height - edgeInset), (double)((float)(z + 1) - edgeInset));
         }
 
         public override Box getBoundingBox(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockMeta(x, y, z);
-            float var6 = 1.0F / 16.0F;
-            float var7 = (float)(1 + var5 * 2) / 16.0F;
-            float var8 = 0.5F;
-            return new Box((double)((float)x + var7), (double)y, (double)((float)z + var6), (double)((float)(x + 1) - var6), (double)((float)y + var8), (double)((float)(z + 1) - var6));
+            int slicesEaten = world.getBlockMeta(x, y, z);
+            float edgeInset = 1.0F / 16.0F;
+            float minX = (float)(1 + slicesEaten * 2) / 16.0F;
+            float height = 0.5F;
+            return new Box((double)((float)x + minX), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)((float)y + height), (double)((float)(z + 1) - edgeInset));
         }
 
         public override int getTexture(int side, int meta)

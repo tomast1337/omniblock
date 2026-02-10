@@ -35,9 +35,9 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                BlockEntityRecordPlayer var6 = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
-                var6.recordId = id;
-                var6.markDirty();
+                BlockEntityRecordPlayer jukebox = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
+                jukebox.recordId = id;
+                jukebox.markDirty();
                 world.setBlockMeta(x, y, z, 1);
             }
         }
@@ -46,22 +46,22 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                BlockEntityRecordPlayer var5 = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
-                int var6 = var5.recordId;
-                if (var6 != 0)
+                BlockEntityRecordPlayer jukebox = (BlockEntityRecordPlayer)world.getBlockEntity(x, y, z);
+                int recordId = jukebox.recordId;
+                if (recordId != 0)
                 {
                     world.worldEvent(1005, x, y, z, 0);
                     world.playStreaming((String)null, x, y, z);
-                    var5.recordId = 0;
-                    var5.markDirty();
+                    jukebox.recordId = 0;
+                    jukebox.markDirty();
                     world.setBlockMeta(x, y, z, 0);
-                    float var8 = 0.7F;
-                    double var9 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-                    double var11 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.2D + 0.6D;
-                    double var13 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-                    EntityItem var15 = new EntityItem(world, (double)x + var9, (double)y + var11, (double)z + var13, new ItemStack(var6, 1, 0));
-                    var15.delayBeforeCanPickup = 10;
-                    world.spawnEntity(var15);
+                    float spreadFactor = 0.7F;
+                    double offsetX = (double)(world.random.nextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;
+                    double offsetY = (double)(world.random.nextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.2D + 0.6D;
+                    double offsetZ = (double)(world.random.nextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;
+                    EntityItem entityItem = new EntityItem(world, (double)x + offsetX, (double)y + offsetY, (double)z + offsetZ, new ItemStack(recordId, 1, 0));
+                    entityItem.delayBeforeCanPickup = 10;
+                    world.spawnEntity(entityItem);
                 }
             }
         }

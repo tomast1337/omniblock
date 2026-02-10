@@ -29,13 +29,15 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var3 = textureId + 1 + 16;
+                int faceTexture = textureId + 1 + 16;
                 if (lit)
                 {
-                    ++var3;
+                    ++faceTexture;
                 }
 
-                return meta == 2 && side == 2 ? var3 : (meta == 3 && side == 5 ? var3 : (meta == 0 && side == 3 ? var3 : (meta == 1 && side == 4 ? var3 : textureId + 16)));
+                return meta == 2 && side == 2 ?
+                    faceTexture : (meta == 3 && side == 5 ? faceTexture : (meta == 0 && side == 3 ? faceTexture :
+                    (meta == 1 && side == 4 ? faceTexture : textureId + 16)));
             }
         }
 
@@ -51,14 +53,14 @@ namespace betareborn.Blocks
 
         public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockId(x, y, z);
-            return (var5 == 0 || Block.BLOCKS[var5].material.isReplaceable()) && world.shouldSuffocate(x, y - 1, z);
+            int blockId = world.getBlockId(x, y, z);
+            return (blockId == 0 || Block.BLOCKS[blockId].material.isReplaceable()) && world.shouldSuffocate(x, y - 1, z);
         }
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 2.5D) & 3;
-            world.setBlockMeta(x, y, z, var6);
+            int direction = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 2.5D) & 3;
+            world.setBlockMeta(x, y, z, direction);
         }
     }
 

@@ -36,32 +36,32 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                int var5 = world.getBlockId(x, y, z - 1);
-                int var6 = world.getBlockId(x, y, z + 1);
-                int var7 = world.getBlockId(x - 1, y, z);
-                int var8 = world.getBlockId(x + 1, y, z);
-                sbyte var9 = 3;
-                if (Block.BLOCKS_OPAQUE[var5] && !Block.BLOCKS_OPAQUE[var6])
+                int blockNorth = world.getBlockId(x, y, z - 1);
+                int blockSouth = world.getBlockId(x, y, z + 1);
+                int blockWest = world.getBlockId(x - 1, y, z);
+                int blockEast = world.getBlockId(x + 1, y, z);
+                sbyte direction = 3;
+                if (Block.BLOCKS_OPAQUE[blockNorth] && !Block.BLOCKS_OPAQUE[blockSouth])
                 {
-                    var9 = 3;
+                    direction = 3;
                 }
 
-                if (Block.BLOCKS_OPAQUE[var6] && !Block.BLOCKS_OPAQUE[var5])
+                if (Block.BLOCKS_OPAQUE[blockSouth] && !Block.BLOCKS_OPAQUE[blockNorth])
                 {
-                    var9 = 2;
+                    direction = 2;
                 }
 
-                if (Block.BLOCKS_OPAQUE[var7] && !Block.BLOCKS_OPAQUE[var8])
+                if (Block.BLOCKS_OPAQUE[blockWest] && !Block.BLOCKS_OPAQUE[blockEast])
                 {
-                    var9 = 5;
+                    direction = 5;
                 }
 
-                if (Block.BLOCKS_OPAQUE[var8] && !Block.BLOCKS_OPAQUE[var7])
+                if (Block.BLOCKS_OPAQUE[blockEast] && !Block.BLOCKS_OPAQUE[blockWest])
                 {
-                    var9 = 4;
+                    direction = 4;
                 }
 
-                world.setBlockMeta(x, y, z, var9);
+                world.setBlockMeta(x, y, z, direction);
             }
         }
 
@@ -77,8 +77,8 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = blockView.getBlockMeta(x, y, z);
-                return side != var6 ? textureId : textureId + 1;
+                int meta = blockView.getBlockMeta(x, y, z);
+                return side != meta ? textureId : textureId + 1;
             }
         }
 
@@ -95,82 +95,82 @@ namespace betareborn.Blocks
             }
             else
             {
-                BlockEntityDispenser var6 = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
-                player.openDispenserScreen(var6);
+                BlockEntityDispenser dispenser = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
+                player.openDispenserScreen(dispenser);
                 return true;
             }
         }
 
         private void dispense(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            int var9 = 0;
-            int var10 = 0;
-            if (var6 == 3)
+            int meta = world.getBlockMeta(x, y, z);
+            int dirX = 0;
+            int dirZ = 0;
+            if (meta == 3)
             {
-                var10 = 1;
+                dirZ = 1;
             }
-            else if (var6 == 2)
+            else if (meta == 2)
             {
-                var10 = -1;
+                dirZ = -1;
             }
-            else if (var6 == 5)
+            else if (meta == 5)
             {
-                var9 = 1;
+                dirX = 1;
             }
             else
             {
-                var9 = -1;
+                dirX = -1;
             }
 
-            BlockEntityDispenser var11 = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
-            ItemStack var12 = var11.getItemToDispose();
-            double var13 = (double)x + (double)var9 * 0.6D + 0.5D;
-            double var15 = (double)y + 0.5D;
-            double var17 = (double)z + (double)var10 * 0.6D + 0.5D;
-            if (var12 == null)
+            BlockEntityDispenser dispenser = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
+            ItemStack itemStack = dispenser.getItemToDispose();
+            double spawnX = (double)x + (double)dirX * 0.6D + 0.5D;
+            double spawnY = (double)y + 0.5D;
+            double spawnZ = (double)z + (double)dirZ * 0.6D + 0.5D;
+            if (itemStack == null)
             {
                 world.worldEvent(1001, x, y, z, 0);
             }
             else
             {
-                if (var12.itemId == Item.ARROW.id)
+                if (itemStack.itemId == Item.ARROW.id)
                 {
-                    EntityArrow var19 = new EntityArrow(world, var13, var15, var17);
-                    var19.setArrowHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
-                    var19.doesArrowBelongToPlayer = true;
-                    world.spawnEntity(var19);
+                    EntityArrow arrow = new EntityArrow(world, spawnX, spawnY, spawnZ);
+                    arrow.setArrowHeading((double)dirX, (double)0.1F, (double)dirZ, 1.1F, 6.0F);
+                    arrow.doesArrowBelongToPlayer = true;
+                    world.spawnEntity(arrow);
                     world.worldEvent(1002, x, y, z, 0);
                 }
-                else if (var12.itemId == Item.EGG.id)
+                else if (itemStack.itemId == Item.EGG.id)
                 {
-                    EntityEgg var22 = new EntityEgg(world, var13, var15, var17);
-                    var22.setEggHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
-                    world.spawnEntity(var22);
+                    EntityEgg egg = new EntityEgg(world, spawnX, spawnY, spawnZ);
+                    egg.setEggHeading((double)dirX, (double)0.1F, (double)dirZ, 1.1F, 6.0F);
+                    world.spawnEntity(egg);
                     world.worldEvent(1002, x, y, z, 0);
                 }
-                else if (var12.itemId == Item.SNOWBALL.id)
+                else if (itemStack.itemId == Item.SNOWBALL.id)
                 {
-                    EntitySnowball var23 = new EntitySnowball(world, var13, var15, var17);
-                    var23.setSnowballHeading((double)var9, (double)0.1F, (double)var10, 1.1F, 6.0F);
-                    world.spawnEntity(var23);
+                    EntitySnowball snowball = new EntitySnowball(world, spawnX, spawnY, spawnZ);
+                    snowball.setSnowballHeading((double)dirX, (double)0.1F, (double)dirZ, 1.1F, 6.0F);
+                    world.spawnEntity(snowball);
                     world.worldEvent(1002, x, y, z, 0);
                 }
                 else
                 {
-                    EntityItem var24 = new EntityItem(world, var13, var15 - 0.3D, var17, var12);
+                    EntityItem item = new EntityItem(world, spawnX, spawnY - 0.3D, spawnZ, itemStack);
                     double var20 = random.nextDouble() * 0.1D + 0.2D;
-                    var24.velocityX = (double)var9 * var20;
-                    var24.velocityY = (double)0.2F;
-                    var24.velocityZ = (double)var10 * var20;
-                    var24.velocityX += random.nextGaussian() * (double)0.0075F * 6.0D;
-                    var24.velocityY += random.nextGaussian() * (double)0.0075F * 6.0D;
-                    var24.velocityZ += random.nextGaussian() * (double)0.0075F * 6.0D;
-                    world.spawnEntity(var24);
+                    item.velocityX = (double)dirX * var20;
+                    item.velocityY = (double)0.2F;
+                    item.velocityZ = (double)dirZ * var20;
+                    item.velocityX += random.nextGaussian() * (double)0.0075F * 6.0D;
+                    item.velocityY += random.nextGaussian() * (double)0.0075F * 6.0D;
+                    item.velocityZ += random.nextGaussian() * (double)0.0075F * 6.0D;
+                    world.spawnEntity(item);
                     world.worldEvent(1000, x, y, z, 0);
                 }
 
-                world.worldEvent(2000, x, y, z, var9 + 1 + (var10 + 1) * 3);
+                world.worldEvent(2000, x, y, z, dirX + 1 + (dirZ + 1) * 3);
             }
 
         }
@@ -179,8 +179,8 @@ namespace betareborn.Blocks
         {
             if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
             {
-                bool var6 = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
-                if (var6)
+                bool isPowered = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
+                if (isPowered)
                 {
                     world.scheduleBlockUpdate(x, y, z, base.id, getTickRate());
                 }
@@ -204,23 +204,23 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-            if (var6 == 0)
+            int direction = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+            if (direction == 0)
             {
                 world.setBlockMeta(x, y, z, 2);
             }
 
-            if (var6 == 1)
+            if (direction == 1)
             {
                 world.setBlockMeta(x, y, z, 5);
             }
 
-            if (var6 == 2)
+            if (direction == 2)
             {
                 world.setBlockMeta(x, y, z, 3);
             }
 
-            if (var6 == 3)
+            if (direction == 3)
             {
                 world.setBlockMeta(x, y, z, 4);
             }
@@ -229,32 +229,32 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            BlockEntityDispenser var5 = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
+            BlockEntityDispenser dispenser = (BlockEntityDispenser)world.getBlockEntity(x, y, z);
 
-            for (int var6 = 0; var6 < var5.size(); ++var6)
+            for (int slotIndex = 0; slotIndex < dispenser.size(); ++slotIndex)
             {
-                ItemStack var7 = var5.getStack(var6);
-                if (var7 != null)
+                ItemStack stack = dispenser.getStack(slotIndex);
+                if (stack != null)
                 {
-                    float var8 = random.nextFloat() * 0.8F + 0.1F;
-                    float var9 = random.nextFloat() * 0.8F + 0.1F;
-                    float var10 = random.nextFloat() * 0.8F + 0.1F;
+                    float offsetX = random.nextFloat() * 0.8F + 0.1F;
+                    float offsetY = random.nextFloat() * 0.8F + 0.1F;
+                    float offsetZ = random.nextFloat() * 0.8F + 0.1F;
 
-                    while (var7.count > 0)
+                    while (stack.count > 0)
                     {
-                        int var11 = random.nextInt(21) + 10;
-                        if (var11 > var7.count)
+                        int amount = random.nextInt(21) + 10;
+                        if (amount > stack.count)
                         {
-                            var11 = var7.count;
+                            amount = stack.count;
                         }
 
-                        var7.count -= var11;
-                        EntityItem var12 = new EntityItem(world, (double)((float)x + var8), (double)((float)y + var9), (double)((float)z + var10), new ItemStack(var7.itemId, var11, var7.getDamage()));
+                        stack.count -= amount;
+                        EntityItem entityItem = new EntityItem(world, (double)((float)x + offsetX), (double)((float)y + offsetY), (double)((float)z + offsetZ), new ItemStack(stack.itemId, amount, stack.getDamage()));
                         float var13 = 0.05F;
-                        var12.velocityX = (double)((float)random.nextGaussian() * var13);
-                        var12.velocityY = (double)((float)random.nextGaussian() * var13 + 0.2F);
-                        var12.velocityZ = (double)((float)random.nextGaussian() * var13);
-                        world.spawnEntity(var12);
+                        entityItem.velocityX = (double)((float)random.nextGaussian() * var13);
+                        entityItem.velocityY = (double)((float)random.nextGaussian() * var13 + 0.2F);
+                        entityItem.velocityZ = (double)((float)random.nextGaussian() * var13);
+                        world.spawnEntity(entityItem);
                     }
                 }
             }

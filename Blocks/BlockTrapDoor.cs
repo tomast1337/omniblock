@@ -17,9 +17,9 @@ namespace betareborn.Blocks
                 ++textureId;
             }
 
-            float var3 = 0.5F;
-            float var4 = 1.0F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var4, 0.5F + var3);
+            float halfWidth = 0.5F;
+            float fullHeight = 1.0F;
+            setBoundingBox(0.5F - halfWidth, 0.0F, 0.5F - halfWidth, 0.5F + halfWidth, fullHeight, 0.5F + halfWidth);
         }
 
         public override bool isOpaque()
@@ -56,34 +56,34 @@ namespace betareborn.Blocks
 
         public override void setupRenderBoundingBox()
         {
-            float var1 = 3.0F / 16.0F;
-            setBoundingBox(0.0F, 0.5F - var1 / 2.0F, 0.0F, 1.0F, 0.5F + var1 / 2.0F, 1.0F);
+            float height = 3.0F / 16.0F;
+            setBoundingBox(0.0F, 0.5F - height / 2.0F, 0.0F, 1.0F, 0.5F + height / 2.0F, 1.0F);
         }
 
         public void updateBoundingBox(int meta)
         {
-            float var2 = 3.0F / 16.0F;
-            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, var2, 1.0F);
+            float height = 3.0F / 16.0F;
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
             if (isOpen(meta))
             {
                 if ((meta & 3) == 0)
                 {
-                    setBoundingBox(0.0F, 0.0F, 1.0F - var2, 1.0F, 1.0F, 1.0F);
+                    setBoundingBox(0.0F, 0.0F, 1.0F - height, 1.0F, 1.0F, 1.0F);
                 }
 
                 if ((meta & 3) == 1)
                 {
-                    setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, var2);
+                    setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, height);
                 }
 
                 if ((meta & 3) == 2)
                 {
-                    setBoundingBox(1.0F - var2, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                    setBoundingBox(1.0F - height, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 }
 
                 if ((meta & 3) == 3)
                 {
-                    setBoundingBox(0.0F, 0.0F, 0.0F, var2, 1.0F, 1.0F);
+                    setBoundingBox(0.0F, 0.0F, 0.0F, height, 1.0F, 1.0F);
                 }
             }
 
@@ -102,8 +102,8 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                world.setBlockMeta(x, y, z, var6 ^ 4);
+                int meta = world.getBlockMeta(x, y, z);
+                world.setBlockMeta(x, y, z, meta ^ 4);
                 world.worldEvent(player, 1003, x, y, z, 0);
                 return true;
             }
@@ -111,11 +111,11 @@ namespace betareborn.Blocks
 
         public void setOpen(World world, int x, int y, int z, bool open)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            bool var7 = (var6 & 4) > 0;
-            if (var7 != open)
+            int meta = world.getBlockMeta(x, y, z);
+            bool isOpen = (meta & 4) > 0;
+            if (isOpen != open)
             {
-                world.setBlockMeta(x, y, z, var6 ^ 4);
+                world.setBlockMeta(x, y, z, meta ^ 4);
                 world.worldEvent((EntityPlayer)null, 1003, x, y, z, 0);
             }
         }
@@ -124,39 +124,39 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                int var7 = x;
-                int var8 = z;
-                if ((var6 & 3) == 0)
+                int meta = world.getBlockMeta(x, y, z);
+                int xPos = x;
+                int zPos = z;
+                if ((meta & 3) == 0)
                 {
-                    var8 = z + 1;
+                    zPos = z + 1;
                 }
 
-                if ((var6 & 3) == 1)
+                if ((meta & 3) == 1)
                 {
-                    --var8;
+                    --zPos;
                 }
 
-                if ((var6 & 3) == 2)
+                if ((meta & 3) == 2)
                 {
-                    var7 = x + 1;
+                    xPos = x + 1;
                 }
 
-                if ((var6 & 3) == 3)
+                if ((meta & 3) == 3)
                 {
-                    --var7;
+                    --xPos;
                 }
 
-                if (!world.shouldSuffocate(var7, y, var8))
+                if (!world.shouldSuffocate(xPos, y, zPos))
                 {
                     world.setBlock(x, y, z, 0);
-                    dropStacks(world, x, y, z, var6);
+                    dropStacks(world, x, y, z, meta);
                 }
 
                 if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
                 {
-                    bool var9 = world.isPowered(x, y, z);
-                    setOpen(world, x, y, z, var9);
+                    bool isPowered = world.isPowered(x, y, z);
+                    setOpen(world, x, y, z, isPowered);
                 }
 
             }
@@ -170,28 +170,28 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, int direction)
         {
-            sbyte var6 = 0;
+            sbyte meta = 0;
             if (direction == 2)
             {
-                var6 = 0;
+                meta = 0;
             }
 
             if (direction == 3)
             {
-                var6 = 1;
+                meta = 1;
             }
 
             if (direction == 4)
             {
-                var6 = 2;
+                meta = 2;
             }
 
             if (direction == 5)
             {
-                var6 = 3;
+                meta = 3;
             }
 
-            world.setBlockMeta(x, y, z, var6);
+            world.setBlockMeta(x, y, z, meta);
         }
 
         public override bool canPlaceAt(World world, int x, int y, int z, int side)

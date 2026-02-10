@@ -28,8 +28,8 @@ namespace betareborn.Blocks
                 meta = 0;
             }
 
-            float var1 = (float)(meta + 1) / 9.0F;
-            return var1;
+            float height = (float)(meta + 1) / 9.0F;
+            return height;
         }
 
         public override int getTexture(int side)
@@ -50,13 +50,13 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var5 = blockView.getBlockMeta(x, y, z);
-                if (var5 >= 8)
+                int depth = blockView.getBlockMeta(x, y, z);
+                if (depth >= 8)
                 {
-                    var5 = 0;
+                    depth = 0;
                 }
 
-                return var5;
+                return depth;
             }
         }
 
@@ -77,14 +77,18 @@ namespace betareborn.Blocks
 
         public override bool isSolidFace(BlockView blockView, int x, int y, int z, int face)
         {
-            Material var6 = blockView.getMaterial(x, y, z);
-            return var6 == material ? false : (var6 == Material.ICE ? false : (face == 1 ? true : base.isSolidFace(blockView, x, y, z, face)));
+            Material material = blockView.getMaterial(x, y, z);
+            return material == base.material ?
+                false :
+                (material == Material.ICE ? false : (face == 1 ? true : base.isSolidFace(blockView, x, y, z, face)));
         }
 
         public override bool isSideVisible(BlockView blockView, int x, int y, int z, int side)
         {
-            Material var6 = blockView.getMaterial(x, y, z);
-            return var6 == material ? false : (var6 == Material.ICE ? false : (side == 1 ? true : base.isSideVisible(blockView, x, y, z, side)));
+            Material material = blockView.getMaterial(x, y, z);
+            return material == base.material ?
+                false :
+                (material == Material.ICE ? false : (side == 1 ? true : base.isSideVisible(blockView, x, y, z, side)));
         }
 
         public override Box? getCollisionShape(World world, int x, int y, int z)
@@ -109,113 +113,113 @@ namespace betareborn.Blocks
 
         private Vector3D<double> getFlow(BlockView blockView, int x, int y, int z)
         {
-            Vector3D<double> var5 = new(0.0);
-            int var6 = getLiquidDepth(blockView, x, y, z);
+            Vector3D<double> flowVector = new(0.0);
+            int depth = getLiquidDepth(blockView, x, y, z);
 
-            for (int var7 = 0; var7 < 4; ++var7)
+            for (int direction = 0; direction < 4; ++direction)
             {
-                int var8 = x;
-                int var10 = z;
-                if (var7 == 0)
+                int neighborX = x;
+                int neighborZ = z;
+                if (direction == 0)
                 {
-                    var8 = x - 1;
+                    neighborX = x - 1;
                 }
 
-                if (var7 == 1)
+                if (direction == 1)
                 {
-                    var10 = z - 1;
+                    neighborZ = z - 1;
                 }
 
-                if (var7 == 2)
+                if (direction == 2)
                 {
-                    ++var8;
+                    ++neighborX;
                 }
 
-                if (var7 == 3)
+                if (direction == 3)
                 {
-                    ++var10;
+                    ++neighborZ;
                 }
 
-                int var11 = getLiquidDepth(blockView, var8, y, var10);
-                int var12;
-                if (var11 < 0)
+                int neighborDepth = getLiquidDepth(blockView, neighborX, y, neighborZ);
+                int depthDiff;
+                if (neighborDepth < 0)
                 {
-                    if (!blockView.getMaterial(var8, y, var10).blocksMovement())
+                    if (!blockView.getMaterial(neighborX, y, neighborZ).blocksMovement())
                     {
-                        var11 = getLiquidDepth(blockView, var8, y - 1, var10);
-                        if (var11 >= 0)
+                        neighborDepth = getLiquidDepth(blockView, neighborX, y - 1, neighborZ);
+                        if (neighborDepth >= 0)
                         {
-                            var12 = var11 - (var6 - 8);
-                            var5 += new Vector3D<double>((double)((var8 - x) * var12), (double)((y - y) * var12), (double)((var10 - z) * var12));
+                            depthDiff = neighborDepth - (depth - 8);
+                            flowVector += new Vector3D<double>((double)((neighborX - x) * depthDiff), (double)((y - y) * depthDiff), (double)((neighborZ - z) * depthDiff));
                         }
                     }
                 }
-                else if (var11 >= 0)
+                else if (neighborDepth >= 0)
                 {
-                    var12 = var11 - var6;
-                    var5 += new Vector3D<double>((double)((var8 - x) * var12), (double)((y - y) * var12), (double)((var10 - z) * var12));
+                    depthDiff = neighborDepth - depth;
+                    flowVector += new Vector3D<double>((double)((neighborX - x) * depthDiff), (double)((y - y) * depthDiff), (double)((neighborZ - z) * depthDiff));
                 }
             }
 
             if (blockView.getBlockMeta(x, y, z) >= 8)
             {
-                bool var13 = false;
-                if (var13 || isSolidFace(blockView, x, y, z - 1, 2))
+                bool hasAdjacentSolid = false;
+                if (hasAdjacentSolid || isSolidFace(blockView, x, y, z - 1, 2))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13 || isSolidFace(blockView, x, y, z + 1, 3))
+                if (hasAdjacentSolid || isSolidFace(blockView, x, y, z + 1, 3))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13 || isSolidFace(blockView, x - 1, y, z, 4))
+                if (hasAdjacentSolid || isSolidFace(blockView, x - 1, y, z, 4))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13 || isSolidFace(blockView, x + 1, y, z, 5))
+                if (hasAdjacentSolid || isSolidFace(blockView, x + 1, y, z, 5))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13 || isSolidFace(blockView, x, y + 1, z - 1, 2))
+                if (hasAdjacentSolid || isSolidFace(blockView, x, y + 1, z - 1, 2))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13 || isSolidFace(blockView, x, y + 1, z + 1, 3))
+                if (hasAdjacentSolid || isSolidFace(blockView, x, y + 1, z + 1, 3))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13 || isSolidFace(blockView, x - 1, y + 1, z, 4))
+                if (hasAdjacentSolid || isSolidFace(blockView, x - 1, y + 1, z, 4))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13 || isSolidFace(blockView, x + 1, y + 1, z, 5))
+                if (hasAdjacentSolid || isSolidFace(blockView, x + 1, y + 1, z, 5))
                 {
-                    var13 = true;
+                    hasAdjacentSolid = true;
                 }
 
-                if (var13)
+                if (hasAdjacentSolid)
                 {
-                    var5 = Normalize(var5) + new Vector3D<double>(0.0, -0.6, 0.0);
+                    flowVector = Normalize(flowVector) + new Vector3D<double>(0.0, -0.6, 0.0);
                 }
             }
 
-            var5 = Normalize(var5);
-            return var5;
+            flowVector = Normalize(flowVector);
+            return flowVector;
         }
 
         public override void applyVelocity(World world, int x, int y, int z, Entity entity, Vec3D velocity)
         {
-            Vector3D<double> var7 = getFlow(world, x, y, z);
-            velocity.xCoord += var7.X;
-            velocity.yCoord += var7.Y;
-            velocity.zCoord += var7.Z;
+            Vector3D<double> flowVec = getFlow(world, x, y, z);
+            velocity.xCoord += flowVec.X;
+            velocity.yCoord += flowVec.Y;
+            velocity.zCoord += flowVec.Z;
         }
 
         public override int getTickRate()
@@ -225,9 +229,9 @@ namespace betareborn.Blocks
 
         public override float getLuminance(BlockView blockView, int x, int y, int z)
         {
-            float var5 = blockView.getLuminance(x, y, z);
-            float var6 = blockView.getLuminance(x, y + 1, z);
-            return var5 > var6 ? var5 : var6;
+            float luminance = blockView.getLuminance(x, y, z);
+            float luminanceAbove = blockView.getLuminance(x, y + 1, z);
+            return luminance > luminanceAbove ? luminance : luminanceAbove;
         }
 
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
@@ -244,8 +248,8 @@ namespace betareborn.Blocks
         {
             if (material == Material.WATER && random.nextInt(64) == 0)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                if (var6 > 0 && var6 < 8)
+                int meta = world.getBlockMeta(x, y, z);
+                if (meta > 0 && meta < 8)
                 {
                     world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "liquid.water", random.nextFloat() * 0.25F + 12.0F / 16.0F, random.nextFloat() * 1.0F + 0.5F);
                 }
@@ -253,28 +257,28 @@ namespace betareborn.Blocks
 
             if (material == Material.LAVA && world.getMaterial(x, y + 1, z) == Material.AIR && !world.isOpaque(x, y + 1, z) && random.nextInt(100) == 0)
             {
-                double var12 = (double)((float)x + random.nextFloat());
-                double var8 = (double)y + maxY;
-                double var10 = (double)((float)z + random.nextFloat());
-                world.addParticle("lava", var12, var8, var10, 0.0D, 0.0D, 0.0D);
+                double particleX = (double)((float)x + random.nextFloat());
+                double particleY = (double)y + maxY;
+                double particleZ = (double)((float)z + random.nextFloat());
+                world.addParticle("lava", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
 
         }
 
         public static double getFlowingAngle(BlockView blockView, int x, int y, int z, Material material)
         {
-            Vector3D<double> var5 = new(0.0);
+            Vector3D<double> flowVec = new(0.0);
             if (material == Material.WATER)
             {
-                var5 = ((BlockFluid)FLOWING_WATER).getFlow(blockView, x, y, z);
+                flowVec = ((BlockFluid)FLOWING_WATER).getFlow(blockView, x, y, z);
             }
 
             if (material == Material.LAVA)
             {
-                var5 = ((BlockFluid)FLOWING_LAVA).getFlow(blockView, x, y, z);
+                flowVec = ((BlockFluid)FLOWING_LAVA).getFlow(blockView, x, y, z);
             }
 
-            return var5.X == 0.0D && var5.Z == 0.0D ? -1000.0D : java.lang.Math.atan2(var5.Z, var5.X) - Math.PI * 0.5D;
+            return flowVec.X == 0.0D && flowVec.Z == 0.0D ? -1000.0D : java.lang.Math.atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
         }
 
         public override void onPlaced(World world, int x, int y, int z)
@@ -293,33 +297,33 @@ namespace betareborn.Blocks
             {
                 if (material == Material.LAVA)
                 {
-                    bool var5 = false;
-                    if (var5 || world.getMaterial(x, y, z - 1) == Material.WATER)
+                    bool hasWaterAdjacent = false;
+                    if (hasWaterAdjacent || world.getMaterial(x, y, z - 1) == Material.WATER)
                     {
-                        var5 = true;
+                        hasWaterAdjacent = true;
                     }
 
-                    if (var5 || world.getMaterial(x, y, z + 1) == Material.WATER)
+                    if (hasWaterAdjacent || world.getMaterial(x, y, z + 1) == Material.WATER)
                     {
-                        var5 = true;
+                        hasWaterAdjacent = true;
                     }
 
-                    if (var5 || world.getMaterial(x - 1, y, z) == Material.WATER)
+                    if (hasWaterAdjacent || world.getMaterial(x - 1, y, z) == Material.WATER)
                     {
-                        var5 = true;
+                        hasWaterAdjacent = true;
                     }
 
-                    if (var5 || world.getMaterial(x + 1, y, z) == Material.WATER)
+                    if (hasWaterAdjacent || world.getMaterial(x + 1, y, z) == Material.WATER)
                     {
-                        var5 = true;
+                        hasWaterAdjacent = true;
                     }
 
-                    if (var5 || world.getMaterial(x, y + 1, z) == Material.WATER)
+                    if (hasWaterAdjacent || world.getMaterial(x, y + 1, z) == Material.WATER)
                     {
-                        var5 = true;
+                        hasWaterAdjacent = true;
                     }
 
-                    if (var5)
+                    if (hasWaterAdjacent)
                     {
                         int var6 = world.getBlockMeta(x, y, z);
                         if (var6 == 0)
@@ -342,7 +346,7 @@ namespace betareborn.Blocks
         {
             world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "random.fizz", 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
 
-            for (int var5 = 0; var5 < 8; ++var5)
+            for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
             {
                 world.addParticle("largesmoke", (double)x + java.lang.Math.random(), (double)y + 1.2D, (double)z + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
             }
@@ -351,8 +355,8 @@ namespace betareborn.Blocks
 
         private static Vector3D<double> Normalize(Vector3D<double> vec)
         {
-            double var1 = (double)MathHelper.sqrt_double(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z);
-            return var1 < 1.0E-4D ? new(0.0) : new(vec.X / var1, vec.Y / var1, vec.Z / var1);
+            double length = (double)MathHelper.sqrt_double(vec.X * vec.X + vec.Y * vec.Y + vec.Z * vec.Z);
+            return length < 1.0E-4D ? new(0.0) : new(vec.X / length, vec.Y / length, vec.Z / length);
         }
     }
 

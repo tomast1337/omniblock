@@ -28,23 +28,23 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            sbyte var5 = 4;
-            int var6 = var5 + 1;
-            if (world.isRegionLoaded(x - var6, y - var6, z - var6, x + var6, y + var6, z + var6))
+            sbyte searchRadius = 4;
+            int regionExtent = searchRadius + 1;
+            if (world.isRegionLoaded(x - regionExtent, y - regionExtent, z - regionExtent, x + regionExtent, y + regionExtent, z + regionExtent))
             {
-                for (int var7 = -var5; var7 <= var5; ++var7)
+                for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
                 {
-                    for (int var8 = -var5; var8 <= var5; ++var8)
+                    for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
                     {
-                        for (int var9 = -var5; var9 <= var5; ++var9)
+                        for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                         {
-                            int var10 = world.getBlockId(x + var7, y + var8, z + var9);
-                            if (var10 == Block.LEAVES.id)
+                            int neighborBlockId = world.getBlockId(x + offsetX, y + offsetY, z + offsetZ);
+                            if (neighborBlockId == Block.LEAVES.id)
                             {
-                                int var11 = world.getBlockMeta(x + var7, y + var8, z + var9);
-                                if ((var11 & 8) == 0)
+                                int leavesMeta = world.getBlockMeta(x + offsetX, y + offsetY, z + offsetZ);
+                                if ((leavesMeta & 8) == 0)
                                 {
-                                    world.setBlockMetaWithoutNotifyingNeighbors(x + var7, y + var8, z + var9, var11 | 8);
+                                    world.setBlockMetaWithoutNotifyingNeighbors(x + offsetX, y + offsetY, z + offsetZ, leavesMeta | 8);
                                 }
                             }
                         }

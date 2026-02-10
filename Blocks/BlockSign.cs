@@ -18,9 +18,9 @@ namespace betareborn.Blocks
             this.standing = standing;
             textureId = 4;
             this.blockEntityClazz = blockEntityClazz;
-            float var4 = 0.25F;
-            float var5 = 1.0F;
-            setBoundingBox(0.5F - var4, 0.0F, 0.5F - var4, 0.5F + var4, var5, 0.5F + var4);
+            float width = 0.25F;
+            float height = 1.0F;
+            setBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, height, 0.5F + width);
         }
 
         public override Box? getCollisionShape(World world, int x, int y, int z)
@@ -38,31 +38,31 @@ namespace betareborn.Blocks
         {
             if (!standing)
             {
-                int var5 = blockView.getBlockMeta(x, y, z);
-                float var6 = 9.0F / 32.0F;
-                float var7 = 25.0F / 32.0F;
-                float var8 = 0.0F;
-                float var9 = 1.0F;
-                float var10 = 2.0F / 16.0F;
+                int facing = blockView.getBlockMeta(x, y, z);
+                float topOffset = 9.0F / 32.0F;
+                float bottomOffset = 25.0F / 32.0F;
+                float minExtent = 0.0F;
+                float maxExtent = 1.0F;
+                float thickness = 2.0F / 16.0F;
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                if (var5 == 2)
+                if (facing == 2)
                 {
-                    setBoundingBox(var8, var6, 1.0F - var10, var9, var7, 1.0F);
+                    setBoundingBox(minExtent, topOffset, 1.0F - thickness, maxExtent, bottomOffset, 1.0F);
                 }
 
-                if (var5 == 3)
+                if (facing == 3)
                 {
-                    setBoundingBox(var8, var6, 0.0F, var9, var7, var10);
+                    setBoundingBox(minExtent, topOffset, 0.0F, maxExtent, bottomOffset, thickness);
                 }
 
-                if (var5 == 4)
+                if (facing == 4)
                 {
-                    setBoundingBox(1.0F - var10, var6, var8, 1.0F, var7, var9);
+                    setBoundingBox(1.0F - thickness, topOffset, minExtent, 1.0F, bottomOffset, maxExtent);
                 }
 
-                if (var5 == 5)
+                if (facing == 5)
                 {
-                    setBoundingBox(0.0F, var6, var8, var10, var7, var9);
+                    setBoundingBox(0.0F, topOffset, minExtent, thickness, bottomOffset, maxExtent);
                 }
 
             }
@@ -89,9 +89,9 @@ namespace betareborn.Blocks
             {
                 return (BlockEntity)blockEntityClazz.newInstance();
             }
-            catch (java.lang.Exception var2)
+            catch (java.lang.Exception exception)
             {
-                throw new RuntimeException(var2);
+                throw new RuntimeException(exception);
             }
         }
 
@@ -102,40 +102,40 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            bool var6 = false;
+            bool shouldBreak = false;
             if (standing)
             {
                 if (!world.getMaterial(x, y - 1, z).isSolid())
                 {
-                    var6 = true;
+                    shouldBreak = true;
                 }
             }
             else
             {
-                int var7 = world.getBlockMeta(x, y, z);
-                var6 = true;
-                if (var7 == 2 && world.getMaterial(x, y, z + 1).isSolid())
+                int facing = world.getBlockMeta(x, y, z);
+                shouldBreak = true;
+                if (facing == 2 && world.getMaterial(x, y, z + 1).isSolid())
                 {
-                    var6 = false;
+                    shouldBreak = false;
                 }
 
-                if (var7 == 3 && world.getMaterial(x, y, z - 1).isSolid())
+                if (facing == 3 && world.getMaterial(x, y, z - 1).isSolid())
                 {
-                    var6 = false;
+                    shouldBreak = false;
                 }
 
-                if (var7 == 4 && world.getMaterial(x + 1, y, z).isSolid())
+                if (facing == 4 && world.getMaterial(x + 1, y, z).isSolid())
                 {
-                    var6 = false;
+                    shouldBreak = false;
                 }
 
-                if (var7 == 5 && world.getMaterial(x - 1, y, z).isSolid())
+                if (facing == 5 && world.getMaterial(x - 1, y, z).isSolid())
                 {
-                    var6 = false;
+                    shouldBreak = false;
                 }
             }
 
-            if (var6)
+            if (shouldBreak)
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
                 world.setBlock(x, y, z, 0);

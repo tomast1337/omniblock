@@ -36,19 +36,19 @@ namespace betareborn.Blocks
 
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            bool var7 = isPowered(world, x, y, z, var6);
-            if (lit && !var7)
+            int meta = world.getBlockMeta(x, y, z);
+            bool powered = isPowered(world, x, y, z, meta);
+            if (lit && !powered)
             {
-                world.setBlock(x, y, z, Block.REPEATER.id, var6);
+                world.setBlock(x, y, z, Block.REPEATER.id, meta);
             }
             else if (!lit)
             {
-                world.setBlock(x, y, z, Block.POWERED_REPEATER.id, var6);
-                if (!var7)
+                world.setBlock(x, y, z, Block.POWERED_REPEATER.id, meta);
+                if (!powered)
                 {
-                    int var8 = (var6 & 12) >> 2;
-                    world.scheduleBlockUpdate(x, y, z, Block.POWERED_REPEATER.id, DELAY[var8] * 2);
+                    int delaySetting = (meta & 12) >> 2;
+                    world.scheduleBlockUpdate(x, y, z, Block.POWERED_REPEATER.id, DELAY[delaySetting] * 2);
                 }
             }
 
@@ -87,8 +87,8 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = blockView.getBlockMeta(x, y, z) & 3;
-                return var6 == 0 && side == 3 ? true : (var6 == 1 && side == 4 ? true : (var6 == 2 && side == 2 ? true : var6 == 3 && side == 5));
+                int facing = blockView.getBlockMeta(x, y, z) & 3;
+                return facing == 0 && side == 3 ? true : (facing == 1 && side == 4 ? true : (facing == 2 && side == 2 ? true : facing == 3 && side == 5));
             }
         }
 
@@ -101,16 +101,16 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                bool var7 = isPowered(world, x, y, z, var6);
-                int var8 = (var6 & 12) >> 2;
-                if (lit && !var7)
+                int meta = world.getBlockMeta(x, y, z);
+                bool powered = isPowered(world, x, y, z, meta);
+                int delaySetting = (meta & 12) >> 2;
+                if (lit && !powered)
                 {
-                    world.scheduleBlockUpdate(x, y, z, base.id, DELAY[var8] * 2);
+                    world.scheduleBlockUpdate(x, y, z, base.id, DELAY[delaySetting] * 2);
                 }
-                else if (!lit && var7)
+                else if (!lit && powered)
                 {
-                    world.scheduleBlockUpdate(x, y, z, base.id, DELAY[var8] * 2);
+                    world.scheduleBlockUpdate(x, y, z, base.id, DELAY[delaySetting] * 2);
                 }
 
             }
@@ -118,8 +118,8 @@ namespace betareborn.Blocks
 
         private bool isPowered(World world, int x, int y, int z, int meta)
         {
-            int var6 = meta & 3;
-            switch (var6)
+            int facing = meta & 3;
+            switch (facing)
             {
                 case 0:
                     return world.isPoweringSide(x, y, z + 1, 3) || world.getBlockId(x, y, z + 1) == Block.REDSTONE_WIRE.id && world.getBlockMeta(x, y, z + 1) > 0;
@@ -136,10 +136,10 @@ namespace betareborn.Blocks
 
         public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            int var7 = (var6 & 12) >> 2;
-            var7 = var7 + 1 << 2 & 12;
-            world.setBlockMeta(x, y, z, var7 | var6 & 3);
+            int meta = world.getBlockMeta(x, y, z);
+            int newDelaySetting = (meta & 12) >> 2;
+            newDelaySetting = newDelaySetting + 1 << 2 & 12;
+            world.setBlockMeta(x, y, z, newDelaySetting | meta & 3);
             return true;
         }
 
@@ -150,10 +150,10 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = ((MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
-            world.setBlockMeta(x, y, z, var6);
-            bool var7 = isPowered(world, x, y, z, var6);
-            if (var7)
+            int facing = ((MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3) + 2) % 4;
+            world.setBlockMeta(x, y, z, facing);
+            bool powered = isPowered(world, x, y, z, facing);
+            if (powered)
             {
                 world.scheduleBlockUpdate(x, y, z, id, 1);
             }
@@ -184,51 +184,51 @@ namespace betareborn.Blocks
         {
             if (lit)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                double var7 = (double)((float)x + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
-                double var9 = (double)((float)y + 0.4F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
-                double var11 = (double)((float)z + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
-                double var13 = 0.0D;
-                double var15 = 0.0D;
+                int meta = world.getBlockMeta(x, y, z);
+                double particleX = (double)((float)x + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
+                double particleY = (double)((float)y + 0.4F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
+                double particleZ = (double)((float)z + 0.5F) + (double)(random.nextFloat() - 0.5F) * 0.2D;
+                double offsetX = 0.0D;
+                double offsetY = 0.0D;
                 if (random.nextInt(2) == 0)
                 {
-                    switch (var6 & 3)
+                    switch (meta & 3)
                     {
                         case 0:
-                            var15 = -0.3125D;
+                            offsetY = -0.3125D;
                             break;
                         case 1:
-                            var13 = 0.3125D;
+                            offsetX = 0.3125D;
                             break;
                         case 2:
-                            var15 = 0.3125D;
+                            offsetY = 0.3125D;
                             break;
                         case 3:
-                            var13 = -0.3125D;
+                            offsetX = -0.3125D;
                             break;
                     }
                 }
                 else
                 {
-                    int var17 = (var6 & 12) >> 2;
-                    switch (var6 & 3)
+                    int delayIndex = (meta & 12) >> 2;
+                    switch (meta & 3)
                     {
                         case 0:
-                            var15 = RENDER_OFFSET[var17];
+                            offsetY = RENDER_OFFSET[delayIndex];
                             break;
                         case 1:
-                            var13 = -RENDER_OFFSET[var17];
+                            offsetX = -RENDER_OFFSET[delayIndex];
                             break;
                         case 2:
-                            var15 = -RENDER_OFFSET[var17];
+                            offsetY = -RENDER_OFFSET[delayIndex];
                             break;
                         case 3:
-                            var13 = RENDER_OFFSET[var17];
+                            offsetX = RENDER_OFFSET[delayIndex];
                             break;
                     }
                 }
 
-                world.addParticle("reddust", var7 + var13, var9, var11 + var15, 0.0D, 0.0D, 0.0D);
+                world.addParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
             }
         }
     }

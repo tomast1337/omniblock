@@ -17,22 +17,22 @@ namespace betareborn.Blocks
         {
             if (world.isAir(x, y + 1, z))
             {
-                int var6;
-                for (var6 = 1; world.getBlockId(x, y - var6, z) == id; ++var6)
+                int heightBelow;
+                for (heightBelow = 1; world.getBlockId(x, y - heightBelow, z) == id; ++heightBelow)
                 {
                 }
 
-                if (var6 < 3)
+                if (heightBelow < 3)
                 {
-                    int var7 = world.getBlockMeta(x, y, z);
-                    if (var7 == 15)
+                    int growthStage = world.getBlockMeta(x, y, z);
+                    if (growthStage == 15)
                     {
                         world.setBlock(x, y + 1, z, id);
                         world.setBlockMeta(x, y, z, 0);
                     }
                     else
                     {
-                        world.setBlockMeta(x, y, z, var7 + 1);
+                        world.setBlockMeta(x, y, z, growthStage + 1);
                     }
                 }
             }
@@ -41,14 +41,14 @@ namespace betareborn.Blocks
 
         public override Box? getCollisionShape(World world, int x, int y, int z)
         {
-            float var5 = 1.0F / 16.0F;
-            return new Box((double)((float)x + var5), (double)y, (double)((float)z + var5), (double)((float)(x + 1) - var5), (double)((float)(y + 1) - var5), (double)((float)(z + 1) - var5));
+            float edgeInset = 1.0F / 16.0F;
+            return new Box((double)((float)x + edgeInset), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)((float)(y + 1) - edgeInset), (double)((float)(z + 1) - edgeInset));
         }
 
         public override Box getBoundingBox(World world, int x, int y, int z)
         {
-            float var5 = 1.0F / 16.0F;
-            return new Box((double)((float)x + var5), (double)y, (double)((float)z + var5), (double)((float)(x + 1) - var5), (double)(y + 1), (double)((float)(z + 1) - var5));
+            float edgeInset = 1.0F / 16.0F;
+            return new Box((double)((float)x + edgeInset), (double)y, (double)((float)z + edgeInset), (double)((float)(x + 1) - edgeInset), (double)(y + 1), (double)((float)(z + 1) - edgeInset));
         }
 
         public override int getTexture(int side)
@@ -106,8 +106,8 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var5 = world.getBlockId(x, y - 1, z);
-                return var5 == Block.CACTUS.id || var5 == Block.SAND.id;
+                int blockBelowId = world.getBlockId(x, y - 1, z);
+                return blockBelowId == Block.CACTUS.id || blockBelowId == Block.SAND.id;
             }
         }
 

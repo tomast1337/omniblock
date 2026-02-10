@@ -17,31 +17,31 @@ namespace betareborn.Blocks
                 ++textureId;
             }
 
-            float var3 = 0.5F;
-            float var4 = 1.0F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var4, 0.5F + var3);
+            float halfWidth = 0.5F;
+            float height = 1.0F;
+            setBoundingBox(0.5F - halfWidth, 0.0F, 0.5F - halfWidth, 0.5F + halfWidth, height, 0.5F + halfWidth);
         }
 
         public override int getTexture(int side, int meta)
         {
             if (side != 0 && side != 1)
             {
-                int var3 = setOpen(meta);
-                if ((var3 == 0 || var3 == 2) ^ side <= 3)
+                int facing = setOpen(meta);
+                if ((facing == 0 || facing == 2) ^ side <= 3)
                 {
                     return textureId;
                 }
                 else
                 {
-                    int var4 = var3 / 2 + (side & 1 ^ var3);
-                    var4 += (meta & 4) / 4;
-                    int var5 = textureId - (meta & 8) * 2;
-                    if ((var4 & 1) != 0)
+                    int textureIndex = facing / 2 + (side & 1 ^ facing);
+                    textureIndex += (meta & 4) / 4;
+                    int textureId = base.textureId - (meta & 8) * 2;
+                    if ((textureIndex & 1) != 0)
                     {
-                        var5 = -var5;
+                        textureId = -textureId;
                     }
 
-                    return var5;
+                    return textureId;
                 }
             }
             else
@@ -84,26 +84,26 @@ namespace betareborn.Blocks
 
         public void rotate(int meta)
         {
-            float var2 = 3.0F / 16.0F;
+            float thickness = 3.0F / 16.0F;
             setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F);
             if (meta == 0)
             {
-                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, var2);
+                setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, thickness);
             }
 
             if (meta == 1)
             {
-                setBoundingBox(1.0F - var2, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                setBoundingBox(1.0F - thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
             }
 
             if (meta == 2)
             {
-                setBoundingBox(0.0F, 0.0F, 1.0F - var2, 1.0F, 1.0F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 1.0F - thickness, 1.0F, 1.0F, 1.0F);
             }
 
             if (meta == 3)
             {
-                setBoundingBox(0.0F, 0.0F, 0.0F, var2, 1.0F, 1.0F);
+                setBoundingBox(0.0F, 0.0F, 0.0F, thickness, 1.0F, 1.0F);
             }
 
         }
@@ -113,7 +113,7 @@ namespace betareborn.Blocks
             onUse(world, x, y, z, var5);
         }
 
-        public override bool onUse(World var1, int var2, int var3, int var4, EntityPlayer var5)
+        public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
             if (material == Material.METAL)
             {
@@ -121,26 +121,26 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var6 = var1.getBlockMeta(var2, var3, var4);
-                if ((var6 & 8) != 0)
+                int meta = world.getBlockMeta(x, y, z);
+                if ((meta & 8) != 0)
                 {
-                    if (var1.getBlockId(var2, var3 - 1, var4) == id)
+                    if (world.getBlockId(x, y - 1, z) == id)
                     {
-                        onUse(var1, var2, var3 - 1, var4, var5);
+                        onUse(world, x, y - 1, z, player);
                     }
 
                     return true;
                 }
                 else
                 {
-                    if (var1.getBlockId(var2, var3 + 1, var4) == id)
+                    if (world.getBlockId(x, y + 1, z) == id)
                     {
-                        var1.setBlockMeta(var2, var3 + 1, var4, (var6 ^ 4) + 8);
+                        world.setBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
                     }
 
-                    var1.setBlockMeta(var2, var3, var4, var6 ^ 4);
-                    var1.setBlocksDirty(var2, var3 - 1, var4, var2, var3, var4);
-                    var1.worldEvent(var5, 1003, var2, var3, var4, 0);
+                    world.setBlockMeta(x, y, z, meta ^ 4);
+                    world.setBlocksDirty(x, y - 1, z, x, y, z);
+                    world.worldEvent(player, 1003, x, y, z, 0);
                     return true;
                 }
             }
@@ -148,8 +148,8 @@ namespace betareborn.Blocks
 
         public void setOpen(World world, int x, int y, int z, bool open)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            if ((var6 & 8) != 0)
+            int meta = world.getBlockMeta(x, y, z);
+            if ((meta & 8) != 0)
             {
                 if (world.getBlockId(x, y - 1, z) == id)
                 {
@@ -159,15 +159,15 @@ namespace betareborn.Blocks
             }
             else
             {
-                bool var7 = (world.getBlockMeta(x, y, z) & 4) > 0;
-                if (var7 != open)
+                bool isOpen = (world.getBlockMeta(x, y, z) & 4) > 0;
+                if (isOpen != open)
                 {
                     if (world.getBlockId(x, y + 1, z) == id)
                     {
-                        world.setBlockMeta(x, y + 1, z, (var6 ^ 4) + 8);
+                        world.setBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
                     }
 
-                    world.setBlockMeta(x, y, z, var6 ^ 4);
+                    world.setBlockMeta(x, y, z, meta ^ 4);
                     world.setBlocksDirty(x, y - 1, z, x, y, z);
                     world.worldEvent((EntityPlayer)null, 1003, x, y, z, 0);
                 }
@@ -176,8 +176,8 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            if ((var6 & 8) != 0)
+            int meta = world.getBlockMeta(x, y, z);
+            if ((meta & 8) != 0)
             {
                 if (world.getBlockId(x, y - 1, z) != base.id)
                 {
@@ -191,34 +191,34 @@ namespace betareborn.Blocks
             }
             else
             {
-                bool var7 = false;
+                bool wasBroken = false;
                 if (world.getBlockId(x, y + 1, z) != base.id)
                 {
                     world.setBlock(x, y, z, 0);
-                    var7 = true;
+                    wasBroken = true;
                 }
 
                 if (!world.shouldSuffocate(x, y - 1, z))
                 {
                     world.setBlock(x, y, z, 0);
-                    var7 = true;
+                    wasBroken = true;
                     if (world.getBlockId(x, y + 1, z) == base.id)
                     {
                         world.setBlock(x, y + 1, z, 0);
                     }
                 }
 
-                if (var7)
+                if (wasBroken)
                 {
                     if (!world.isRemote)
                     {
-                        dropStacks(world, x, y, z, var6);
+                        dropStacks(world, x, y, z, meta);
                     }
                 }
                 else if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
                 {
-                    bool var8 = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
-                    setOpen(world, x, y, z, var8);
+                    bool isPowered = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
+                    setOpen(world, x, y, z, isPowered);
                 }
             }
 

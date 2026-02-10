@@ -25,10 +25,10 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                if ((var6 & 8) == 0)
+                int meta = world.getBlockMeta(x, y, z);
+                if ((meta & 8) == 0)
                 {
-                    updatePoweredStatus(world, x, y, z, var6);
+                    updatePoweredStatus(world, x, y, z, meta);
                 }
             }
         }
@@ -37,10 +37,10 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                if ((var6 & 8) != 0)
+                int meta = world.getBlockMeta(x, y, z);
+                if ((meta & 8) != 0)
                 {
-                    updatePoweredStatus(world, x, y, z, var6);
+                    updatePoweredStatus(world, x, y, z, meta);
                 }
             }
         }
@@ -57,16 +57,16 @@ namespace betareborn.Blocks
 
         private void updatePoweredStatus(World world, int x, int y, int z, int meta)
         {
-            bool var6 = (meta & 8) != 0;
-            bool var7 = false;
-            float var8 = 2.0F / 16.0F;
-            var var9 = world.collectEntitiesByClass(EntityMinecart.Class, new Box((double)((float)x + var8), (double)y, (double)((float)z + var8), (double)((float)(x + 1) - var8), (double)y + 0.25D, (double)((float)(z + 1) - var8)));
-            if (var9.Count > 0)
+            bool isPowered = (meta & 8) != 0;
+            bool hasMinecart = false;
+            float detectionInset = 2.0F / 16.0F;
+            var minecartsOnRail = world.collectEntitiesByClass(EntityMinecart.Class, new Box((double)((float)x + detectionInset), (double)y, (double)((float)z + detectionInset), (double)((float)(x + 1) - detectionInset), (double)y + 0.25D, (double)((float)(z + 1) - detectionInset)));
+            if (minecartsOnRail.Count > 0)
             {
-                var7 = true;
+                hasMinecart = true;
             }
 
-            if (var7 && !var6)
+            if (hasMinecart && !isPowered)
             {
                 world.setBlockMeta(x, y, z, meta | 8);
                 world.notifyNeighbors(x, y, z, id);
@@ -74,7 +74,7 @@ namespace betareborn.Blocks
                 world.setBlocksDirty(x, y, z, x, y, z);
             }
 
-            if (!var7 && var6)
+            if (!hasMinecart && isPowered)
             {
                 world.setBlockMeta(x, y, z, meta & 7);
                 world.notifyNeighbors(x, y, z, id);
@@ -82,7 +82,7 @@ namespace betareborn.Blocks
                 world.setBlocksDirty(x, y, z, x, y, z);
             }
 
-            if (var7)
+            if (hasMinecart)
             {
                 world.scheduleBlockUpdate(x, y, z, id, getTickRate());
             }

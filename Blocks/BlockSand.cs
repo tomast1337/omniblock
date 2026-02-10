@@ -31,11 +31,11 @@ namespace betareborn.Blocks
         {
             if (canFallThrough(world, x, y - 1, z) && y >= 0)
             {
-                sbyte var8 = 32;
-                if (!fallInstantly && world.isRegionLoaded(x - var8, y - var8, z - var8, x + var8, y + var8, z + var8))
+                sbyte checkRadius = 32;
+                if (!fallInstantly && world.isRegionLoaded(x - checkRadius, y - checkRadius, z - checkRadius, x + checkRadius, y + checkRadius, z + checkRadius))
                 {
-                    EntityFallingSand var9 = new EntityFallingSand(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), id);
-                    world.spawnEntity(var9);
+                    EntityFallingSand fallingSand = new EntityFallingSand(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), id);
+                    world.spawnEntity(fallingSand);
                 }
                 else
                 {
@@ -62,19 +62,19 @@ namespace betareborn.Blocks
 
         public static bool canFallThrough(World world, int x, int y, int z)
         {
-            int var4 = world.getBlockId(x, y, z);
-            if (var4 == 0)
+            int blockId = world.getBlockId(x, y, z);
+            if (blockId == 0)
             {
                 return true;
             }
-            else if (var4 == Block.FIRE.id)
+            else if (blockId == Block.FIRE.id)
             {
                 return true;
             }
             else
             {
-                Material var5 = Block.BLOCKS[var4].material;
-                return var5 == Material.WATER ? true : var5 == Material.LAVA;
+                Material material = Block.BLOCKS[blockId].material;
+                return material == Material.WATER ? true : material == Material.LAVA;
             }
         }
     }

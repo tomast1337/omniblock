@@ -44,9 +44,9 @@ namespace betareborn.Blocks
 
         public override void onDestroyedByExplosion(World world, int x, int y, int z)
         {
-            EntityTNTPrimed var5 = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
-            var5.fuse = world.random.nextInt(var5.fuse / 4) + var5.fuse / 8;
-            world.spawnEntity(var5);
+            EntityTNTPrimed entityTNTPrimed = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
+            entityTNTPrimed.fuse = world.random.nextInt(entityTNTPrimed.fuse / 4) + entityTNTPrimed.fuse / 8;
+            world.spawnEntity(entityTNTPrimed);
         }
 
         public override void onMetadataChange(World world, int x, int y, int z, int meta)
@@ -59,9 +59,9 @@ namespace betareborn.Blocks
                 }
                 else
                 {
-                    EntityTNTPrimed var6 = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
-                    world.spawnEntity(var6);
-                    world.playSound(var6, "random.fuse", 1.0F, 1.0F);
+                    EntityTNTPrimed entityTNTPrimed = new EntityTNTPrimed(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F));
+                    world.spawnEntity(entityTNTPrimed);
+                    world.playSound(entityTNTPrimed, "random.fuse", 1.0F, 1.0F);
                 }
 
             }
