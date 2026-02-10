@@ -12,6 +12,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int instrumentType;
         public int pitch;
 
+        public PlayNoteSoundS2CPacket()
+        {
+        }
+
         public PlayNoteSoundS2CPacket(int x, int y, int z, int instrument, int pitch)
         {
             xLocation = x;

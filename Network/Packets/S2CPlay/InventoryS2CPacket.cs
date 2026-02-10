@@ -11,6 +11,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int syncId;
         public ItemStack[] contents;
 
+        public InventoryS2CPacket()
+        {
+        }
+
         public InventoryS2CPacket(int syncId, List contents)
         {
             this.syncId = syncId;

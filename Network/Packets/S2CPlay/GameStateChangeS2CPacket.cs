@@ -9,6 +9,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public static readonly string[] REASONS = new string[] { "tile.bed.notValid", null, null };
         public int reason;
 
+        public GameStateChangeS2CPacket()
+        {
+        }
+
         public GameStateChangeS2CPacket(int reason)
         {
             this.reason = reason;

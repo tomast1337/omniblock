@@ -8,6 +8,10 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public int entityId;
 
+        public EntityDestroyS2CPacket()
+        {
+        }
+
         public EntityDestroyS2CPacket(int id)
         {
             entityId = id;

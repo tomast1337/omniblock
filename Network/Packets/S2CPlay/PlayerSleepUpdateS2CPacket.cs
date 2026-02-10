@@ -13,6 +13,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int z;
         public int status;
 
+        public PlayerSleepUpdateS2CPacket()
+        {
+        }
+
         public PlayerSleepUpdateS2CPacket(Entity player, int status, int x, int y, int z)
         {
             this.status = status;

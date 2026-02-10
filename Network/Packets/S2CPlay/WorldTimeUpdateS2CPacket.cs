@@ -8,6 +8,10 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public long time;
 
+        public WorldTimeUpdateS2CPacket()
+        {
+        }
+
         public WorldTimeUpdateS2CPacket(long time)
         {
             this.time = time;

@@ -17,7 +17,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public ChunkStatusUpdateS2CPacket(int x, int z, bool load)
         {
-            this.worldPacket = false;
+            worldPacket = false;
             this.x = x;
             this.z = z;
             this.load = load;

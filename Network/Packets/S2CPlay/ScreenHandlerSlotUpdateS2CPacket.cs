@@ -11,6 +11,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int slot;
         public ItemStack stack;
 
+        public ScreenHandlerSlotUpdateS2CPacket()
+        {
+        }
+
         public ScreenHandlerSlotUpdateS2CPacket(int syncId, int slot, ItemStack stack)
         {
             this.syncId = syncId;

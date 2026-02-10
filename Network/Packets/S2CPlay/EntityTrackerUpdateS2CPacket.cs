@@ -10,6 +10,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int id;
         private List trackedValues;
 
+        public EntityTrackerUpdateS2CPacket()
+        {
+        }
+
         public EntityTrackerUpdateS2CPacket(int entityId, DataWatcher dataWatcher)
         {
             id = entityId;

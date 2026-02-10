@@ -3,14 +3,13 @@ using betareborn.Network;
 using betareborn.Network.Packets;
 using betareborn.Network.Packets.Play;
 using betareborn.Network.Packets.S2CPlay;
-using betareborn.Server.Network;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using java.lang;
 using java.net;
 using java.util.logging;
 
-namespace betareborn.Server
+namespace betareborn.Server.Network
 {
     public class ServerLoginNetworkHandler : NetHandler
     {

@@ -15,7 +15,7 @@ namespace betareborn.Network.Packets.S2CPlay
         public bool rotate = false;
         public EntityS2CPacket(int entityId)
         {
-            this.id = entityId;
+            id = entityId;
         }
 
         public EntityS2CPacket()

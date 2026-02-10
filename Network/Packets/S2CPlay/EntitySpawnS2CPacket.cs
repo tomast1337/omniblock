@@ -18,6 +18,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int entityType;
         public int entityData;
 
+        public EntitySpawnS2CPacket()
+        {
+        }
+
         public EntitySpawnS2CPacket(Entity entity, int entityType) : this(entity, entityType, 0)
         {
         }

@@ -23,18 +23,18 @@ namespace betareborn.Network.Packets.S2CPlay
         {
         }
 
-        public ItemEntitySpawnS2CPacket(EntityItem var1)
+        public ItemEntitySpawnS2CPacket(EntityItem item)
         {
-            id = var1.id;
-            itemRawId = var1.item.itemId;
-            itemCount = var1.item.count;
-            itemDamage = var1.item.getDamage();
-            x = MathHelper.floor_double(var1.x * 32.0D);
-            y = MathHelper.floor_double(var1.y * 32.0D);
-            z = MathHelper.floor_double(var1.z * 32.0D);
-            velocityX = (sbyte)(int)(var1.velocityX * 128.0D);
-            velocityY = (sbyte)(int)(var1.velocityY * 128.0D);
-            velocityZ = (sbyte)(int)(var1.velocityZ * 128.0D);
+            id = item.id;
+            itemRawId = item.stack.itemId;
+            itemCount = item.stack.count;
+            itemDamage = item.stack.getDamage();
+            x = MathHelper.floor_double(item.x * 32.0D);
+            y = MathHelper.floor_double(item.y * 32.0D);
+            z = MathHelper.floor_double(item.z * 32.0D);
+            velocityX = (sbyte)(int)(item.velocityX * 128.0D);
+            velocityY = (sbyte)(int)(item.velocityY * 128.0D);
+            velocityZ = (sbyte)(int)(item.velocityZ * 128.0D);
         }
 
         public override void read(DataInputStream var1)
