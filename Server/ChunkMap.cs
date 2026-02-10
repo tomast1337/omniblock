@@ -225,7 +225,7 @@ namespace betareborn.Server
                 }
                 else
                 {
-                    player.activeChunks.add(chunkPos);
+                    player.activeChunks.Add(chunkPos);
                     player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkPos.x, chunkPos.z, true));
                     players.Add(player);
                     player.pendingChunkUpdates.add(chunkPos);
@@ -250,7 +250,7 @@ namespace betareborn.Server
                     }
 
                     player.pendingChunkUpdates.remove(chunkPos);
-                    if (player.activeChunks.contains(chunkPos))
+                    if (player.activeChunks.Contains(chunkPos))
                     {
                         player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkX, chunkZ, false));
                     }
@@ -318,7 +318,7 @@ namespace betareborn.Server
                 for (int var2 = 0; var2 < players.Count; var2++)
                 {
                     ServerPlayerEntity var3 = players[var2];
-                    if (var3.activeChunks.contains(chunkPos))
+                    if (var3.activeChunks.Contains(chunkPos))
                     {
                         var3.networkHandler.sendPacket(packet);
                     }

@@ -22,11 +22,5 @@ namespace betareborn.Util.Maths
         {
             return hashCode(x, z);
         }
-
-        public readonly bool Equals(ChunkPos var1)
-        {
-            return var1.x == x && var1.z == z;
-        }
     }
-
 }
