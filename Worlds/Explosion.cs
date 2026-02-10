@@ -15,7 +15,7 @@ namespace betareborn.Worlds
         public double explosionZ;
         public Entity exploder;
         public float explosionSize;
-        public Set destroyedBlockPositions = new HashSet();
+        public HashSet<BlockPos> destroyedBlockPositions = new();
 
         public Explosion(World var1, Entity var2, double var3, double var5, double var7, float var9)
         {
@@ -71,7 +71,7 @@ namespace betareborn.Worlds
 
                                 if (var14 > 0.0F)
                                 {
-                                    destroyedBlockPositions.add(new BlockPos(var22, var23, var24));
+                                    destroyedBlockPositions.Add(new BlockPos(var22, var23, var24));
                                 }
 
                                 var15 += var6 * (double)var21;
@@ -116,13 +116,12 @@ namespace betareborn.Worlds
             }
 
             explosionSize = var1;
-            ArrayList var32 = new ArrayList();
-            var32.addAll(destroyedBlockPositions);
+            List<BlockPos> var32 = new(destroyedBlockPositions);
             if (isFlaming)
             {
-                for (int var34 = var32.size() - 1; var34 >= 0; --var34)
+                for (int var34 = var32.Count - 1; var34 >= 0; --var34)
                 {
-                    BlockPos var35 = (BlockPos)var32.get(var34);
+                    BlockPos var35 = var32[var34];
                     int var36 = var35.x;
                     int var37 = var35.y;
                     int var16 = var35.z;
@@ -140,12 +139,11 @@ namespace betareborn.Worlds
         public void doExplosionB(bool var1)
         {
             worldObj.playSound(explosionX, explosionY, explosionZ, "random.explode", 4.0F, (1.0F + (worldObj.random.nextFloat() - worldObj.random.nextFloat()) * 0.2F) * 0.7F);
-            ArrayList var2 = new ArrayList();
-            var2.addAll(destroyedBlockPositions);
+            List<BlockPos> var2 = new (destroyedBlockPositions);
 
-            for (int var3 = var2.size() - 1; var3 >= 0; --var3)
+            for (int var3 = var2.Count - 1; var3 >= 0; --var3)
             {
-                BlockPos var4 = (BlockPos)var2.get(var3);
+                BlockPos var4 = var2[var3];
                 int var5 = var4.x;
                 int var6 = var4.y;
                 int var7 = var4.z;

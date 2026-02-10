@@ -64,7 +64,7 @@ namespace betareborn.Worlds
         private bool spawnHostileMobs;
         private bool spawnPeacefulMobs;
         static int lightingUpdatesScheduled = 0;
-        private readonly Set activeChunks;
+        private readonly HashSet<ChunkPos> activeChunks;
         private int soundCounter;
         private readonly List<Entity> tempEntityList;
         public bool isRemote;
@@ -108,7 +108,7 @@ namespace betareborn.Worlds
             lightingUpdatesCounter = 0;
             spawnHostileMobs = true;
             spawnPeacefulMobs = true;
-            activeChunks = new HashSet();
+            activeChunks = new HashSet<ChunkPos>();
             soundCounter = random.nextInt(12000);
             tempEntityList = [];
             isRemote = false;
@@ -150,7 +150,7 @@ namespace betareborn.Worlds
             lightingUpdatesCounter = 0;
             spawnHostileMobs = true;
             spawnPeacefulMobs = true;
-            activeChunks = new HashSet();
+            activeChunks = new HashSet<ChunkPos>();
             soundCounter = random.nextInt(12000);
             tempEntityList = [];
             isRemote = false;
@@ -197,7 +197,7 @@ namespace betareborn.Worlds
             lightingUpdatesCounter = 0;
             spawnHostileMobs = true;
             spawnPeacefulMobs = true;
-            activeChunks = new HashSet();
+            activeChunks = new HashSet<ChunkPos>();
             soundCounter = random.nextInt(12000);
             tempEntityList = [];
             isRemote = false;
@@ -2471,8 +2471,7 @@ namespace betareborn.Worlds
 
         protected virtual void manageChunkUpdatesAndEvents()
         {
-            activeChunks.clear();
-
+            activeChunks.Clear();
             int var3;
             int var4;
             int var6;
@@ -2488,7 +2487,7 @@ namespace betareborn.Worlds
                 {
                     for (var7 = -var5; var7 <= var5; ++var7)
                     {
-                        activeChunks.add(new ChunkPos(var6 + var3, var7 + var4));
+                        activeChunks.Add(new ChunkPos(var6 + var3, var7 + var4));
                     }
                 }
             }
@@ -2497,15 +2496,12 @@ namespace betareborn.Worlds
             {
                 --soundCounter;
             }
-
-            Iterator var12 = activeChunks.iterator();
-
-            while (var12.hasNext())
+            
+            foreach (var p in activeChunks)
             {
-                ChunkPos var13 = (ChunkPos)var12.next();
-                var3 = var13.x * 16;
-                var4 = var13.z * 16;
-                Chunk var14 = getChunk(var13.x, var13.z);
+                var3 = p.x * 16;
+                var4 = p.z * 16;
+                Chunk var14 = getChunk(p.x, p.z);
                 int var8;
                 int var9;
                 int var10;
