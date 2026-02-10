@@ -8,8 +8,8 @@ namespace betareborn.Blocks
     {
         public BlockTallGrass(int i, int j) : base(i, j)
         {
-            float var3 = 0.4F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 0.8F, 0.5F + var3);
+            float halfSize = 0.4F;
+            setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, 0.8F, 0.5F + halfSize);
         }
 
         public override int getTexture(int side, int meta)
@@ -19,22 +19,22 @@ namespace betareborn.Blocks
 
         public override int getColorMultiplier(BlockView blockView, int x, int y, int z)
         {
-            int var5 = blockView.getBlockMeta(x, y, z);
-            if (var5 == 0)
+            int meta = blockView.getBlockMeta(x, y, z);
+            if (meta == 0)
             {
                 return 16777215;
             }
             else
             {
-                long var6 = (long)(x * 3129871 + z * 6129781 + y);
-                var6 = var6 * var6 * 42317861L + var6 * 11L;
-                x = (int)((long)x + (var6 >> 14 & 31L));
-                y = (int)((long)y + (var6 >> 19 & 31L));
-                z = (int)((long)z + (var6 >> 24 & 31L));
+                long positionSeed = (long)(x * 3129871 + z * 6129781 + y);
+                positionSeed = positionSeed * positionSeed * 42317861L + positionSeed * 11L;
+                x = (int)((long)x + (positionSeed >> 14 & 31L));
+                y = (int)((long)y + (positionSeed >> 19 & 31L));
+                z = (int)((long)z + (positionSeed >> 24 & 31L));
                 blockView.getBiomeSource().getBiomesInArea(x, z, 1, 1);
-                double var8 = blockView.getBiomeSource().temperatureMap[0];
-                double var10 = blockView.getBiomeSource().downfallMap[0];
-                return GrassColors.getColor(var8, var10);
+                double temperature = blockView.getBiomeSource().temperatureMap[0];
+                double downfall = blockView.getBiomeSource().downfallMap[0];
+                return GrassColors.getColor(temperature, downfall);
             }
         }
 

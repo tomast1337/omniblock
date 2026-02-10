@@ -12,8 +12,8 @@ namespace betareborn.Blocks
 
         public static bool isRail(World world, int x, int y, int z)
         {
-            int var4 = world.getBlockId(x, y, z);
-            return var4 == Block.RAIL.id || var4 == Block.POWERED_RAIL.id || var4 == Block.DETECTOR_RAIL.id;
+            int blockId = world.getBlockId(x, y, z);
+            return blockId == Block.RAIL.id || blockId == Block.POWERED_RAIL.id || blockId == Block.DETECTOR_RAIL.id;
         }
 
         public static bool isRail(int id)
@@ -50,8 +50,8 @@ namespace betareborn.Blocks
 
         public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = blockView.getBlockMeta(x, y, z);
-            if (var5 >= 2 && var5 <= 5)
+            int meta = blockView.getBlockMeta(x, y, z);
+            if (meta >= 2 && meta <= 5)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
             }
@@ -89,9 +89,9 @@ namespace betareborn.Blocks
             return 9;
         }
 
-        public override bool canPlaceAt(World var1, int x, int y, int z)
+        public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            return var1.shouldSuffocate(x, y - 1, z);
+            return world.shouldSuffocate(x, y - 1, z);
         }
 
         public override void onPlaced(World world, int x, int y, int z)
@@ -107,64 +107,64 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                int var7 = var6;
+                int meta = world.getBlockMeta(x, y, z);
+                int railMeta = meta;
                 if (alwaysStraight)
                 {
-                    var7 = var6 & 7;
+                    railMeta = meta & 7;
                 }
 
-                bool var8 = false;
+                bool shouldBreak = false;
                 if (!world.shouldSuffocate(x, y - 1, z))
                 {
-                    var8 = true;
+                    shouldBreak = true;
                 }
 
-                if (var7 == 2 && !world.shouldSuffocate(x + 1, y, z))
+                if (railMeta == 2 && !world.shouldSuffocate(x + 1, y, z))
                 {
-                    var8 = true;
+                    shouldBreak = true;
                 }
 
-                if (var7 == 3 && !world.shouldSuffocate(x - 1, y, z))
+                if (railMeta == 3 && !world.shouldSuffocate(x - 1, y, z))
                 {
-                    var8 = true;
+                    shouldBreak = true;
                 }
 
-                if (var7 == 4 && !world.shouldSuffocate(x, y, z - 1))
+                if (railMeta == 4 && !world.shouldSuffocate(x, y, z - 1))
                 {
-                    var8 = true;
+                    shouldBreak = true;
                 }
 
-                if (var7 == 5 && !world.shouldSuffocate(x, y, z + 1))
+                if (railMeta == 5 && !world.shouldSuffocate(x, y, z + 1))
                 {
-                    var8 = true;
+                    shouldBreak = true;
                 }
 
-                if (var8)
+                if (shouldBreak)
                 {
                     dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
                     world.setBlock(x, y, z, 0);
                 }
                 else if (base.id == Block.POWERED_RAIL.id)
                 {
-                    bool var9 = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
-                    var9 = var9 || isPoweredByConnectedRails(world, x, y, z, var6, true, 0) || isPoweredByConnectedRails(world, x, y, z, var6, false, 0);
-                    bool var10 = false;
-                    if (var9 && (var6 & 8) == 0)
+                    bool isPowered = world.isPowered(x, y, z) || world.isPowered(x, y + 1, z);
+                    isPowered = isPowered || isPoweredByConnectedRails(world, x, y, z, meta, true, 0) || isPoweredByConnectedRails(world, x, y, z, meta, false, 0);
+                    bool stateChanged = false;
+                    if (isPowered && (meta & 8) == 0)
                     {
-                        world.setBlockMeta(x, y, z, var7 | 8);
-                        var10 = true;
+                        world.setBlockMeta(x, y, z, railMeta | 8);
+                        stateChanged = true;
                     }
-                    else if (!var9 && (var6 & 8) != 0)
+                    else if (!isPowered && (meta & 8) != 0)
                     {
-                        world.setBlockMeta(x, y, z, var7);
-                        var10 = true;
+                        world.setBlockMeta(x, y, z, railMeta);
+                        stateChanged = true;
                     }
 
-                    if (var10)
+                    if (stateChanged)
                     {
                         world.notifyNeighbors(x, y - 1, z, base.id);
-                        if (var7 == 2 || var7 == 3 || var7 == 4 || var7 == 5)
+                        if (railMeta == 2 || railMeta == 3 || railMeta == 4 || railMeta == 5)
                         {
                             world.notifyNeighbors(x, y + 1, z, base.id);
                         }
@@ -194,9 +194,9 @@ namespace betareborn.Blocks
             }
             else
             {
-                int var8 = meta & 7;
-                bool var9 = true;
-                switch (var8)
+                int shape = meta & 7;
+                bool isSameY = true;
+                switch (shape)
                 {
                     case 0:
                         if (towardsNegative)
@@ -227,24 +227,24 @@ namespace betareborn.Blocks
                         {
                             ++x;
                             ++y;
-                            var9 = false;
+                            isSameY = false;
                         }
 
-                        var8 = 1;
+                        shape = 1;
                         break;
                     case 3:
                         if (towardsNegative)
                         {
                             --x;
                             ++y;
-                            var9 = false;
+                            isSameY = false;
                         }
                         else
                         {
                             ++x;
                         }
 
-                        var8 = 1;
+                        shape = 1;
                         break;
                     case 4:
                         if (towardsNegative)
@@ -255,53 +255,53 @@ namespace betareborn.Blocks
                         {
                             --z;
                             ++y;
-                            var9 = false;
+                            isSameY = false;
                         }
 
-                        var8 = 0;
+                        shape = 0;
                         break;
                     case 5:
                         if (towardsNegative)
                         {
                             ++z;
                             ++y;
-                            var9 = false;
+                            isSameY = false;
                         }
                         else
                         {
                             --z;
                         }
 
-                        var8 = 0;
+                        shape = 0;
                         break;
                 }
 
-                return isPoweredByRail(world, x, y, z, towardsNegative, depth, var8) ? true : var9 && isPoweredByRail(world, x, y - 1, z, towardsNegative, depth, var8);
+                return isPoweredByRail(world, x, y, z, towardsNegative, depth, shape) ? true : isSameY && isPoweredByRail(world, x, y - 1, z, towardsNegative, depth, shape);
             }
         }
 
         private bool isPoweredByRail(World world, int x, int y, int z, bool towardsNegative, int depth, int shape)
         {
-            int var8 = world.getBlockId(x, y, z);
-            if (var8 == Block.POWERED_RAIL.id)
+            int blockId = world.getBlockId(x, y, z);
+            if (blockId == Block.POWERED_RAIL.id)
             {
-                int var9 = world.getBlockMeta(x, y, z);
-                int var10 = var9 & 7;
-                if (shape == 1 && (var10 == 0 || var10 == 4 || var10 == 5))
+                int meta = world.getBlockMeta(x, y, z);
+                int railMeta = meta & 7;
+                if (shape == 1 && (railMeta == 0 || railMeta == 4 || railMeta == 5))
                 {
                     return false;
                 }
 
-                if (shape == 0 && (var10 == 1 || var10 == 2 || var10 == 3))
+                if (shape == 0 && (railMeta == 1 || railMeta == 2 || railMeta == 3))
                 {
                     return false;
                 }
 
-                if ((var9 & 8) != 0)
+                if ((meta & 8) != 0)
                 {
                     if (!world.isPowered(x, y, z) && !world.isPowered(x, y + 1, z))
                     {
-                        return isPoweredByConnectedRails(world, x, y, z, var9, towardsNegative, depth + 1);
+                        return isPoweredByConnectedRails(world, x, y, z, meta, towardsNegative, depth + 1);
                     }
 
                     return true;

@@ -42,10 +42,10 @@ namespace betareborn.Blocks
             {
                 if (!isWaterNearby(world, x, y, z) && !world.isRaining(x, y + 1, z))
                 {
-                    int var6 = world.getBlockMeta(x, y, z);
-                    if (var6 > 0)
+                    int meta = world.getBlockMeta(x, y, z);
+                    if (meta > 0)
                     {
-                        world.setBlockMeta(x, y, z, var6 - 1);
+                        world.setBlockMeta(x, y, z, meta - 1);
                     }
                     else if (!hasCrop(world, x, y, z))
                     {
@@ -71,11 +71,11 @@ namespace betareborn.Blocks
 
         private static bool hasCrop(World world, int x, int y, int z)
         {
-            sbyte var5 = 0;
+            sbyte cropRadius = 0;
 
-            for (int var6 = x - var5; var6 <= x + var5; ++var6)
+            for (int var6 = x - cropRadius; var6 <= x + cropRadius; ++var6)
             {
-                for (int var7 = z - var5; var7 <= z + var5; ++var7)
+                for (int var7 = z - cropRadius; var7 <= z + cropRadius; ++var7)
                 {
                     if (world.getBlockId(var6, y + 1, var7) == Block.WHEAT.id)
                     {
@@ -89,13 +89,13 @@ namespace betareborn.Blocks
 
         private static bool isWaterNearby(World world, int x, int y, int z)
         {
-            for (int var5 = x - 4; var5 <= x + 4; ++var5)
+            for (int checkX = x - 4; checkX <= x + 4; ++checkX)
             {
-                for (int var6 = y; var6 <= y + 1; ++var6)
+                for (int checkY = y; checkY <= y + 1; ++checkY)
                 {
-                    for (int var7 = z - 4; var7 <= z + 4; ++var7)
+                    for (int checkZ = z - 4; checkZ <= z + 4; ++checkZ)
                     {
-                        if (world.getMaterial(var5, var6, var7) == Material.WATER)
+                        if (world.getMaterial(checkX, checkY, checkZ) == Material.WATER)
                         {
                             return true;
                         }
@@ -109,8 +109,8 @@ namespace betareborn.Blocks
         public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
             base.neighborUpdate(world, x, y, z, id);
-            Material var6 = world.getMaterial(x, y + 1, z);
-            if (var6.isSolid())
+            Material material = world.getMaterial(x, y + 1, z);
+            if (material.isSolid())
             {
                 world.setBlock(x, y, z, Block.DIRT.id);
             }

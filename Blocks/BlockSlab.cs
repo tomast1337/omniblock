@@ -41,15 +41,15 @@ namespace betareborn.Blocks
                 base.onPlaced(world, x, y, z);
             }
 
-            int var5 = world.getBlockId(x, y - 1, z);
-            int var6 = world.getBlockMeta(x, y, z);
-            int var7 = world.getBlockMeta(x, y - 1, z);
-            if (var6 == var7)
+            int blockBelowId = world.getBlockId(x, y - 1, z);
+            int slabMeta = world.getBlockMeta(x, y, z);
+            int blockBelowMeta = world.getBlockMeta(x, y - 1, z);
+            if (slabMeta == blockBelowMeta)
             {
-                if (var5 == SLAB.id)
+                if (blockBelowId == SLAB.id)
                 {
                     world.setBlock(x, y, z, 0);
-                    world.setBlock(x, y - 1, z, Block.DOUBLE_SLAB.id, var6);
+                    world.setBlock(x, y - 1, z, Block.DOUBLE_SLAB.id, slabMeta);
                 }
 
             }

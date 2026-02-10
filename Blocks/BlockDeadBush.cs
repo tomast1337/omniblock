@@ -5,8 +5,8 @@ namespace betareborn.Blocks
 
         public BlockDeadBush(int i, int j) : base(i, j)
         {
-            float var3 = 0.4F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 0.8F, 0.5F + var3);
+            float halfSize = 0.4F;
+            setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, 0.8F, 0.5F + halfSize);
         }
 
         protected override bool canPlantOnTop(int id)

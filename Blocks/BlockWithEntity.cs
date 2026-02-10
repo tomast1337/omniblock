@@ -7,26 +7,26 @@ namespace betareborn.Blocks
     public abstract class BlockWithEntity : Block
     {
 
-        protected BlockWithEntity(int var1, Material var2) : base(var1, var2)
+        protected BlockWithEntity(int id, Material material) : base(id, material)
         {
-            BLOCKS_WITH_ENTITY[var1] = true;
+            BLOCKS_WITH_ENTITY[id] = true;
         }
 
-        protected BlockWithEntity(int var1, int var2, Material var3) : base(var1, var2, var3)
+        protected BlockWithEntity(int id, int textureId, Material material) : base(id, textureId, material)
         {
-            BLOCKS_WITH_ENTITY[var1] = true;
+            BLOCKS_WITH_ENTITY[id] = true;
         }
 
-        public override void onPlaced(World var1, int var2, int var3, int var4)
+        public override void onPlaced(World world, int x, int y, int z)
         {
-            base.onPlaced(var1, var2, var3, var4);
-            var1.setBlockEntity(var2, var3, var4, getBlockEntity());
+            base.onPlaced(world, x, y, z);
+            world.setBlockEntity(x, y, z, getBlockEntity());
         }
 
-        public override void onBreak(World var1, int var2, int var3, int var4)
+        public override void onBreak(World world, int x, int y, int z)
         {
-            base.onBreak(var1, var2, var3, var4);
-            var1.removeBlockEntity(var2, var3, var4);
+            base.onBreak(world, x, y, z);
+            world.removeBlockEntity(x, y, z);
         }
 
         protected abstract BlockEntity getBlockEntity();

@@ -11,8 +11,8 @@ namespace betareborn.Blocks
         public BlockReed(int id, int textureId) : base(id, Material.PLANT)
         {
             base.textureId = textureId;
-            float var3 = 6.0F / 16.0F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, 1.0F, 0.5F + var3);
+            float halfWidth = 6.0F / 16.0F;
+            setBoundingBox(0.5F - halfWidth, 0.0F, 0.5F - halfWidth, 0.5F + halfWidth, 1.0F, 0.5F + halfWidth);
             setTickRandomly(true);
         }
 
@@ -20,22 +20,22 @@ namespace betareborn.Blocks
         {
             if (world.isAir(x, y + 1, z))
             {
-                int var6;
-                for (var6 = 1; world.getBlockId(x, y - var6, z) == id; ++var6)
+                int heightBelow;
+                for (heightBelow = 1; world.getBlockId(x, y - heightBelow, z) == id; ++heightBelow)
                 {
                 }
 
-                if (var6 < 3)
+                if (heightBelow < 3)
                 {
-                    int var7 = world.getBlockMeta(x, y, z);
-                    if (var7 == 15)
+                    int meta = world.getBlockMeta(x, y, z);
+                    if (meta == 15)
                     {
                         world.setBlock(x, y + 1, z, id);
                         world.setBlockMeta(x, y, z, 0);
                     }
                     else
                     {
-                        world.setBlockMeta(x, y, z, var7 + 1);
+                        world.setBlockMeta(x, y, z, meta + 1);
                     }
                 }
             }
@@ -44,8 +44,8 @@ namespace betareborn.Blocks
 
         public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockId(x, y - 1, z);
-            return var5 == id ? true : (var5 != Block.GRASS_BLOCK.id && var5 != Block.DIRT.id ? false : (world.getMaterial(x - 1, y - 1, z) == Material.WATER ? true : (world.getMaterial(x + 1, y - 1, z) == Material.WATER ? true : (world.getMaterial(x, y - 1, z - 1) == Material.WATER ? true : world.getMaterial(x, y - 1, z + 1) == Material.WATER))));
+            int blockBelowId = world.getBlockId(x, y - 1, z);
+            return blockBelowId == id ? true : (blockBelowId != Block.GRASS_BLOCK.id && blockBelowId != Block.DIRT.id ? false : (world.getMaterial(x - 1, y - 1, z) == Material.WATER ? true : (world.getMaterial(x + 1, y - 1, z) == Material.WATER ? true : (world.getMaterial(x, y - 1, z - 1) == Material.WATER ? true : world.getMaterial(x, y - 1, z + 1) == Material.WATER))));
         }
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)

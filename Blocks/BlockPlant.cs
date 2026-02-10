@@ -10,8 +10,8 @@ namespace betareborn.Blocks
         {
             base.textureId = textureId;
             setTickRandomly(true);
-            float var3 = 0.2F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 3.0F, 0.5F + var3);
+            float halfSize = 0.2F;
+            setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, halfSize * 3.0F, 0.5F + halfSize);
         }
 
         public override bool canPlaceAt(World world, int x, int y, int z)

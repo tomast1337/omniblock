@@ -83,47 +83,47 @@ namespace betareborn.Blocks
 
         private void spawnParticles(World world, int x, int y, int z)
         {
-            java.util.Random var5 = world.random;
-            double var6 = 1.0D / 16.0D;
+            java.util.Random random = world.random;
+            double faceOffset = 1.0D / 16.0D;
 
-            for (int var8 = 0; var8 < 6; ++var8)
+            for (int direction = 0; direction < 6; ++direction)
             {
-                double var9 = (double)((float)x + var5.nextFloat());
-                double var11 = (double)((float)y + var5.nextFloat());
-                double var13 = (double)((float)z + var5.nextFloat());
-                if (var8 == 0 && !world.isOpaque(x, y + 1, z))
+                double particleX = (double)((float)x + random.nextFloat());
+                double particleY = (double)((float)y + random.nextFloat());
+                double particleZ = (double)((float)z + random.nextFloat());
+                if (direction == 0 && !world.isOpaque(x, y + 1, z))
                 {
-                    var11 = (double)(y + 1) + var6;
+                    particleY = (double)(y + 1) + faceOffset;
                 }
 
-                if (var8 == 1 && !world.isOpaque(x, y - 1, z))
+                if (direction == 1 && !world.isOpaque(x, y - 1, z))
                 {
-                    var11 = (double)(y + 0) - var6;
+                    particleY = (double)(y + 0) - faceOffset;
                 }
 
-                if (var8 == 2 && !world.isOpaque(x, y, z + 1))
+                if (direction == 2 && !world.isOpaque(x, y, z + 1))
                 {
-                    var13 = (double)(z + 1) + var6;
+                    particleZ = (double)(z + 1) + faceOffset;
                 }
 
-                if (var8 == 3 && !world.isOpaque(x, y, z - 1))
+                if (direction == 3 && !world.isOpaque(x, y, z - 1))
                 {
-                    var13 = (double)(z + 0) - var6;
+                    particleZ = (double)(z + 0) - faceOffset;
                 }
 
-                if (var8 == 4 && !world.isOpaque(x + 1, y, z))
+                if (direction == 4 && !world.isOpaque(x + 1, y, z))
                 {
-                    var9 = (double)(x + 1) + var6;
+                    particleX = (double)(x + 1) + faceOffset;
                 }
 
-                if (var8 == 5 && !world.isOpaque(x - 1, y, z))
+                if (direction == 5 && !world.isOpaque(x - 1, y, z))
                 {
-                    var9 = (double)(x + 0) - var6;
+                    particleX = (double)(x + 0) - faceOffset;
                 }
 
-                if (var9 < (double)x || var9 > (double)(x + 1) || var11 < 0.0D || var11 > (double)(y + 1) || var13 < (double)z || var13 > (double)(z + 1))
+                if (particleX < (double)x || particleX > (double)(x + 1) || particleY < 0.0D || particleY > (double)(y + 1) || particleZ < (double)z || particleZ > (double)(z + 1))
                 {
-                    world.addParticle("reddust", var9, var11, var13, 0.0D, 0.0D, 0.0D);
+                    world.addParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 }
             }
 

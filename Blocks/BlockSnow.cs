@@ -17,8 +17,10 @@ namespace betareborn.Blocks
 
         public override Box? getCollisionShape(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockMeta(x, y, z) & 7;
-            return var5 >= 3 ? new Box((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)((float)y + 0.5F), (double)z + maxZ) : null;
+            int meta = world.getBlockMeta(x, y, z) & 7;
+            return meta >= 3 ?
+                new Box((double)x + minX, (double)y + minY, (double)z + minZ, (double)x + maxX, (double)((float)y + 0.5F), (double)z + maxZ) :
+                null;
         }
 
         public override bool isOpaque()
@@ -33,15 +35,15 @@ namespace betareborn.Blocks
 
         public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = blockView.getBlockMeta(x, y, z) & 7;
-            float var6 = (float)(2 * (1 + var5)) / 16.0F;
-            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, var6, 1.0F);
+            int meta = blockView.getBlockMeta(x, y, z) & 7;
+            float height = (float)(2 * (1 + meta)) / 16.0F;
+            setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
         }
 
         public override bool canPlaceAt(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockId(x, y - 1, z);
-            return var5 != 0 && Block.BLOCKS[var5].isOpaque() ? world.getMaterial(x, y - 1, z).blocksMovement() : false;
+            int blockBelowId = world.getBlockId(x, y - 1, z);
+            return blockBelowId != 0 && Block.BLOCKS[blockBelowId].isOpaque() ? world.getMaterial(x, y - 1, z).blocksMovement() : false;
         }
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)
@@ -65,14 +67,14 @@ namespace betareborn.Blocks
 
         public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
         {
-            int var7 = Item.SNOWBALL.id;
-            float var8 = 0.7F;
-            double var9 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            double var11 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            double var13 = (double)(world.random.nextFloat() * var8) + (double)(1.0F - var8) * 0.5D;
-            EntityItem var15 = new EntityItem(world, (double)x + var9, (double)y + var11, (double)z + var13, new ItemStack(var7, 1, 0));
-            var15.delayBeforeCanPickup = 10;
-            world.spawnEntity(var15);
+            int snowballId = Item.SNOWBALL.id;
+            float spreadFactor = 0.7F;
+            double offsetX = (double)(world.random.nextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;
+            double offsetY = (double)(world.random.nextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;
+            double offsetZ = (double)(world.random.nextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;
+            EntityItem entityItem = new EntityItem(world, (double)x + offsetX, (double)y + offsetY, (double)z + offsetZ, new ItemStack(snowballId, 1, 0));
+            entityItem.delayBeforeCanPickup = 10;
+            world.spawnEntity(entityItem);
             world.setBlock(x, y, z, 0);
             player.increaseStat(Stats.Stats.mineBlockStatArray[id], 1);
         }

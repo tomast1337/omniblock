@@ -6,8 +6,8 @@ namespace betareborn.Blocks
     {
         public BlockMushroom(int i, int j) : base(i, j)
         {
-            float var3 = 0.2F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
+            float halfSize = 0.2F;
+            setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, halfSize * 2.0F, 0.5F + halfSize);
             setTickRandomly(true);
         }
 
@@ -15,16 +15,14 @@ namespace betareborn.Blocks
         {
             if (random.nextInt(100) == 0)
             {
-                int var6 = x + random.nextInt(3) - 1;
-                int var7 = y + random.nextInt(2) - random.nextInt(2);
-                int var8 = z + random.nextInt(3) - 1;
-                if (world.isAir(var6, var7, var8) && canGrow(world, var6, var7, var8))
+                int tryX = x + random.nextInt(3) - 1;
+                int tryY = y + random.nextInt(2) - random.nextInt(2);
+                int tryZ = z + random.nextInt(3) - 1;
+                if (world.isAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
                 {
-                    int var10000 = x + (random.nextInt(3) - 1);
-                    var10000 = z + (random.nextInt(3) - 1);
-                    if (world.isAir(var6, var7, var8) && canGrow(world, var6, var7, var8))
+                    if (world.isAir(tryX, tryY, tryZ) && canGrow(world, tryX, tryY, tryZ))
                     {
-                        world.setBlock(var6, var7, var8, id);
+                        world.setBlock(tryX, tryY, tryZ, id);
                     }
                 }
             }

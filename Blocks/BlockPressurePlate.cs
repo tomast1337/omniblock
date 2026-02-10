@@ -14,8 +14,8 @@ namespace betareborn.Blocks
         {
             activationRule = rule;
             setTickRandomly(true);
-            float var5 = 1.0F / 16.0F;
-            setBoundingBox(var5, 0.0F, var5, 1.0F - var5, 0.03125F, 1.0F - var5);
+            float edgeInset = 1.0F / 16.0F;
+            setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, 0.03125F, 1.0F - edgeInset);
         }
 
         public override int getTickRate()
@@ -49,13 +49,13 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            bool var6 = false;
+            bool shouldBreak = false;
             if (!world.shouldSuffocate(x, y - 1, z))
             {
-                var6 = true;
+                shouldBreak = true;
             }
 
-            if (var6)
+            if (shouldBreak)
             {
                 dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
                 world.setBlock(x, y, z, 0);
@@ -87,31 +87,31 @@ namespace betareborn.Blocks
 
         private void updatePlateState(World world, int x, int y, int z)
         {
-            bool var5 = world.getBlockMeta(x, y, z) == 1;
-            bool var6 = false;
-            float var7 = 2.0F / 16.0F;
-            List<Entity> var8 = null;
+            bool wasPressed = world.getBlockMeta(x, y, z) == 1;
+            bool shouldBePressed = false;
+            float detectionInset = 2.0F / 16.0F;
+            List<Entity> entitiesInBox = null;
             if (activationRule == PressurePlateActiviationRule.EVERYTHING)
             {
-                var8 = world.getEntities((Entity)null, new Box((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
+                entitiesInBox = world.getEntities((Entity)null, new Box((double)((float)x + detectionInset), (double)y, (double)((float)z + detectionInset), (double)((float)(x + 1) - detectionInset), (double)y + 0.25D, (double)((float)(z + 1) - detectionInset)));
             }
 
             if (activationRule == PressurePlateActiviationRule.MOBS)
             {
-                var8 = world.collectEntitiesByClass(EntityLiving.Class, new Box((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
+                entitiesInBox = world.collectEntitiesByClass(EntityLiving.Class, new Box((double)((float)x + detectionInset), (double)y, (double)((float)z + detectionInset), (double)((float)(x + 1) - detectionInset), (double)y + 0.25D, (double)((float)(z + 1) - detectionInset)));
             }
 
             if (activationRule == PressurePlateActiviationRule.PLAYERS)
             {
-                var8 = world.collectEntitiesByClass(EntityPlayer.Class, new Box((double)((float)x + var7), (double)y, (double)((float)z + var7), (double)((float)(x + 1) - var7), (double)y + 0.25D, (double)((float)(z + 1) - var7)));
+                entitiesInBox = world.collectEntitiesByClass(EntityPlayer.Class, new Box((double)((float)x + detectionInset), (double)y, (double)((float)z + detectionInset), (double)((float)(x + 1) - detectionInset), (double)y + 0.25D, (double)((float)(z + 1) - detectionInset)));
             }
 
-            if (var8.Count > 0)
+            if (entitiesInBox.Count > 0)
             {
-                var6 = true;
+                shouldBePressed = true;
             }
 
-            if (var6 && !var5)
+            if (shouldBePressed && !wasPressed)
             {
                 world.setBlockMeta(x, y, z, 1);
                 world.notifyNeighbors(x, y, z, id);
@@ -120,7 +120,7 @@ namespace betareborn.Blocks
                 world.playSound((double)x + 0.5D, (double)y + 0.1D, (double)z + 0.5D, "random.click", 0.3F, 0.6F);
             }
 
-            if (!var6 && var5)
+            if (!shouldBePressed && wasPressed)
             {
                 world.setBlockMeta(x, y, z, 0);
                 world.notifyNeighbors(x, y, z, id);
@@ -129,7 +129,7 @@ namespace betareborn.Blocks
                 world.playSound((double)x + 0.5D, (double)y + 0.1D, (double)z + 0.5D, "random.click", 0.3F, 0.5F);
             }
 
-            if (var6)
+            if (shouldBePressed)
             {
                 world.scheduleBlockUpdate(x, y, z, id, getTickRate());
             }
@@ -138,8 +138,8 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockMeta(x, y, z);
-            if (var5 > 0)
+            int plateState = world.getBlockMeta(x, y, z);
+            if (plateState > 0)
             {
                 world.notifyNeighbors(x, y, z, id);
                 world.notifyNeighbors(x, y - 1, z, id);
@@ -150,15 +150,15 @@ namespace betareborn.Blocks
 
         public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            bool var5 = blockView.getBlockMeta(x, y, z) == 1;
-            float var6 = 1.0F / 16.0F;
-            if (var5)
+            bool isPressed = blockView.getBlockMeta(x, y, z) == 1;
+            float edgeInset = 1.0F / 16.0F;
+            if (isPressed)
             {
-                setBoundingBox(var6, 0.0F, var6, 1.0F - var6, 0.03125F, 1.0F - var6);
+                setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, 0.03125F, 1.0F - edgeInset);
             }
             else
             {
-                setBoundingBox(var6, 0.0F, var6, 1.0F - var6, 1.0F / 16.0F, 1.0F - var6);
+                setBoundingBox(edgeInset, 0.0F, edgeInset, 1.0F - edgeInset, 1.0F / 16.0F, 1.0F - edgeInset);
             }
 
         }
@@ -180,10 +180,10 @@ namespace betareborn.Blocks
 
         public override void setupRenderBoundingBox()
         {
-            float var1 = 0.5F;
-            float var2 = 2.0F / 16.0F;
-            float var3 = 0.5F;
-            setBoundingBox(0.5F - var1, 0.5F - var2, 0.5F - var3, 0.5F + var1, 0.5F + var2, 0.5F + var3);
+            float halfWidth = 0.5F;
+            float halfHeight = 2.0F / 16.0F;
+            float halfDepth = 0.5F;
+            setBoundingBox(0.5F - halfWidth, 0.5F - halfHeight, 0.5F - halfDepth, 0.5F + halfWidth, 0.5F + halfHeight, 0.5F + halfDepth);
         }
 
         public override int getPistonBehavior()

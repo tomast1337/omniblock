@@ -19,19 +19,19 @@ namespace betareborn.Blocks
 
         public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            float var5;
-            float var6;
+            float thickness;
+            float halfExtent;
             if (blockView.getBlockId(x - 1, y, z) != id && blockView.getBlockId(x + 1, y, z) != id)
             {
-                var5 = 2.0F / 16.0F;
-                var6 = 0.5F;
-                setBoundingBox(0.5F - var5, 0.0F, 0.5F - var6, 0.5F + var5, 1.0F, 0.5F + var6);
+                thickness = 2.0F / 16.0F;
+                halfExtent = 0.5F;
+                setBoundingBox(0.5F - thickness, 0.0F, 0.5F - halfExtent, 0.5F + thickness, 1.0F, 0.5F + halfExtent);
             }
             else
             {
-                var5 = 0.5F;
-                var6 = 2.0F / 16.0F;
-                setBoundingBox(0.5F - var5, 0.0F, 0.5F - var6, 0.5F + var5, 1.0F, 0.5F + var6);
+                thickness = 0.5F;
+                halfExtent = 2.0F / 16.0F;
+                setBoundingBox(0.5F - thickness, 0.0F, 0.5F - halfExtent, 0.5F + thickness, 1.0F, 0.5F + halfExtent);
             }
 
         }
@@ -48,48 +48,48 @@ namespace betareborn.Blocks
 
         public bool create(World world, int x, int y, int z)
         {
-            sbyte var5 = 0;
-            sbyte var6 = 0;
+            sbyte extendsInZ = 0;
+            sbyte extendsInX = 0;
             if (world.getBlockId(x - 1, y, z) == Block.OBSIDIAN.id || world.getBlockId(x + 1, y, z) == Block.OBSIDIAN.id)
             {
-                var5 = 1;
+                extendsInZ = 1;
             }
 
             if (world.getBlockId(x, y, z - 1) == Block.OBSIDIAN.id || world.getBlockId(x, y, z + 1) == Block.OBSIDIAN.id)
             {
-                var6 = 1;
+                extendsInX = 1;
             }
 
-            if (var5 == var6)
+            if (extendsInZ == extendsInX)
             {
                 return false;
             }
             else
             {
-                if (world.getBlockId(x - var5, y, z - var6) == 0)
+                if (world.getBlockId(x - extendsInZ, y, z - extendsInX) == 0)
                 {
-                    x -= var5;
-                    z -= var6;
+                    x -= extendsInZ;
+                    z -= extendsInX;
                 }
 
-                int var7;
-                int var8;
-                for (var7 = -1; var7 <= 2; ++var7)
+                int horizontalOffset;
+                int verticalOffset;
+                for (horizontalOffset = -1; horizontalOffset <= 2; ++horizontalOffset)
                 {
-                    for (var8 = -1; var8 <= 3; ++var8)
+                    for (verticalOffset = -1; verticalOffset <= 3; ++verticalOffset)
                     {
-                        bool var9 = var7 == -1 || var7 == 2 || var8 == -1 || var8 == 3;
-                        if (var7 != -1 && var7 != 2 || var8 != -1 && var8 != 3)
+                        bool isFrame = horizontalOffset == -1 || horizontalOffset == 2 || verticalOffset == -1 || verticalOffset == 3;
+                        if (horizontalOffset != -1 && horizontalOffset != 2 || verticalOffset != -1 && verticalOffset != 3)
                         {
-                            int var10 = world.getBlockId(x + var5 * var7, y + var8, z + var6 * var7);
-                            if (var9)
+                            int blockId = world.getBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
+                            if (isFrame)
                             {
-                                if (var10 != Block.OBSIDIAN.id)
+                                if (blockId != Block.OBSIDIAN.id)
                                 {
                                     return false;
                                 }
                             }
-                            else if (var10 != 0 && var10 != Block.FIRE.id)
+                            else if (blockId != 0 && blockId != Block.FIRE.id)
                             {
                                 return false;
                             }
@@ -99,11 +99,11 @@ namespace betareborn.Blocks
 
                 world.pauseTicking = true;
 
-                for (var7 = 0; var7 < 2; ++var7)
+                for (horizontalOffset = 0; horizontalOffset < 2; ++horizontalOffset)
                 {
-                    for (var8 = 0; var8 < 3; ++var8)
+                    for (verticalOffset = 0; verticalOffset < 3; ++verticalOffset)
                     {
-                        world.setBlock(x + var5 * var7, y + var8, z + var6 * var7, Block.NETHER_PORTAL.id);
+                        world.setBlock(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, Block.NETHER_PORTAL.id);
                     }
                 }
 
@@ -114,39 +114,39 @@ namespace betareborn.Blocks
 
         public override void neighborUpdate(World world, int x, int y, int z, int id)
         {
-            sbyte var6 = 0;
-            sbyte var7 = 1;
+            sbyte offsetX = 0;
+            sbyte offsetZ = 1;
             if (world.getBlockId(x - 1, y, z) == base.id || world.getBlockId(x + 1, y, z) == base.id)
             {
-                var6 = 1;
-                var7 = 0;
+                offsetX = 1;
+                offsetZ = 0;
             }
 
-            int var8;
-            for (var8 = y; world.getBlockId(x, var8 - 1, z) == base.id; --var8)
+            int portalBottomY;
+            for (portalBottomY = y; world.getBlockId(x, portalBottomY - 1, z) == base.id; --portalBottomY)
             {
             }
 
-            if (world.getBlockId(x, var8 - 1, z) != Block.OBSIDIAN.id)
+            if (world.getBlockId(x, portalBottomY - 1, z) != Block.OBSIDIAN.id)
             {
                 world.setBlock(x, y, z, 0);
             }
             else
             {
-                int var9;
-                for (var9 = 1; var9 < 4 && world.getBlockId(x, var8 + var9, z) == base.id; ++var9)
+                int blocksAbove;
+                for (blocksAbove = 1; blocksAbove < 4 && world.getBlockId(x, portalBottomY + blocksAbove, z) == base.id; ++blocksAbove)
                 {
                 }
 
-                if (var9 == 3 && world.getBlockId(x, var8 + var9, z) == Block.OBSIDIAN.id)
+                if (blocksAbove == 3 && world.getBlockId(x, portalBottomY + blocksAbove, z) == Block.OBSIDIAN.id)
                 {
-                    bool var10 = world.getBlockId(x - 1, y, z) == base.id || world.getBlockId(x + 1, y, z) == base.id;
-                    bool var11 = world.getBlockId(x, y, z - 1) == base.id || world.getBlockId(x, y, z + 1) == base.id;
-                    if (var10 && var11)
+                    bool hasXNeighbors = world.getBlockId(x - 1, y, z) == base.id || world.getBlockId(x + 1, y, z) == base.id;
+                    bool hasZNeighbors = world.getBlockId(x, y, z - 1) == base.id || world.getBlockId(x, y, z + 1) == base.id;
+                    if (hasXNeighbors && hasZNeighbors)
                     {
                         world.setBlock(x, y, z, 0);
                     }
-                    else if ((world.getBlockId(x + var6, y, z + var7) != Block.OBSIDIAN.id || world.getBlockId(x - var6, y, z - var7) != base.id) && (world.getBlockId(x - var6, y, z - var7) != Block.OBSIDIAN.id || world.getBlockId(x + var6, y, z + var7) != base.id))
+                    else if ((world.getBlockId(x + offsetX, y, z + offsetZ) != Block.OBSIDIAN.id || world.getBlockId(x - offsetX, y, z - offsetZ) != base.id) && (world.getBlockId(x - offsetX, y, z - offsetZ) != Block.OBSIDIAN.id || world.getBlockId(x + offsetX, y, z + offsetZ) != base.id))
                     {
                         world.setBlock(x, y, z, 0);
                     }
@@ -166,13 +166,13 @@ namespace betareborn.Blocks
             }
             else
             {
-                bool var6 = blockView.getBlockId(x - 1, y, z) == id && blockView.getBlockId(x - 2, y, z) != id;
-                bool var7 = blockView.getBlockId(x + 1, y, z) == id && blockView.getBlockId(x + 2, y, z) != id;
-                bool var8 = blockView.getBlockId(x, y, z - 1) == id && blockView.getBlockId(x, y, z - 2) != id;
-                bool var9 = blockView.getBlockId(x, y, z + 1) == id && blockView.getBlockId(x, y, z + 2) != id;
-                bool var10 = var6 || var7;
-                bool var11 = var8 || var9;
-                return var10 && side == 4 ? true : (var10 && side == 5 ? true : (var11 && side == 2 ? true : var11 && side == 3));
+                bool edgeWest = blockView.getBlockId(x - 1, y, z) == id && blockView.getBlockId(x - 2, y, z) != id;
+                bool edgeEast = blockView.getBlockId(x + 1, y, z) == id && blockView.getBlockId(x + 2, y, z) != id;
+                bool edgeNorth = blockView.getBlockId(x, y, z - 1) == id && blockView.getBlockId(x, y, z - 2) != id;
+                bool edgeSouth = blockView.getBlockId(x, y, z + 1) == id && blockView.getBlockId(x, y, z + 2) != id;
+                bool extendsInX = edgeWest || edgeEast;
+                bool extendsInZ = edgeNorth || edgeSouth;
+                return extendsInX && side == 4 ? true : (extendsInX && side == 5 ? true : (extendsInZ && side == 2 ? true : extendsInZ && side == 3));
             }
         }
 
@@ -202,30 +202,30 @@ namespace betareborn.Blocks
                 world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "portal.portal", 1.0F, random.nextFloat() * 0.4F + 0.8F);
             }
 
-            for (int var6 = 0; var6 < 4; ++var6)
+            for (int particleIndex = 0; particleIndex < 4; ++particleIndex)
             {
-                double var7 = (double)((float)x + random.nextFloat());
-                double var9 = (double)((float)y + random.nextFloat());
-                double var11 = (double)((float)z + random.nextFloat());
-                double var13 = 0.0D;
-                double var15 = 0.0D;
-                double var17 = 0.0D;
-                int var19 = random.nextInt(2) * 2 - 1;
-                var13 = ((double)random.nextFloat() - 0.5D) * 0.5D;
-                var15 = ((double)random.nextFloat() - 0.5D) * 0.5D;
-                var17 = ((double)random.nextFloat() - 0.5D) * 0.5D;
+                double particleX = (double)((float)x + random.nextFloat());
+                double particleY = (double)((float)y + random.nextFloat());
+                double particleZ = (double)((float)z + random.nextFloat());
+                double velocityX = 0.0D;
+                double velocityY = 0.0D;
+                double velocityZ = 0.0D;
+                int direction = random.nextInt(2) * 2 - 1;
+                velocityX = ((double)random.nextFloat() - 0.5D) * 0.5D;
+                velocityY = ((double)random.nextFloat() - 0.5D) * 0.5D;
+                velocityZ = ((double)random.nextFloat() - 0.5D) * 0.5D;
                 if (world.getBlockId(x - 1, y, z) != id && world.getBlockId(x + 1, y, z) != id)
                 {
-                    var7 = (double)x + 0.5D + 0.25D * (double)var19;
-                    var13 = (double)(random.nextFloat() * 2.0F * (float)var19);
+                    particleX = (double)x + 0.5D + 0.25D * (double)direction;
+                    velocityX = (double)(random.nextFloat() * 2.0F * (float)direction);
                 }
                 else
                 {
-                    var11 = (double)z + 0.5D + 0.25D * (double)var19;
-                    var17 = (double)(random.nextFloat() * 2.0F * (float)var19);
+                    particleZ = (double)z + 0.5D + 0.25D * (double)direction;
+                    velocityZ = (double)(random.nextFloat() * 2.0F * (float)direction);
                 }
 
-                world.addParticle("portal", var7, var9, var11, var13, var15, var17);
+                world.addParticle("portal", particleX, particleY, particleZ, velocityX, velocityY, velocityZ);
             }
 
         }

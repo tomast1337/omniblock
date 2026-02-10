@@ -26,8 +26,8 @@ namespace betareborn.Blocks
         public override void afterBreak(World world, EntityPlayer player, int x, int y, int z, int meta)
         {
             base.afterBreak(world, player, x, y, z, meta);
-            Material var7 = world.getMaterial(x, y - 1, z);
-            if (var7.blocksMovement() || var7.isFluid())
+            Material materialBelow = world.getMaterial(x, y - 1, z);
+            if (materialBelow.blocksMovement() || materialBelow.isFluid())
             {
                 world.setBlock(x, y, z, Block.FLOWING_WATER.id);
             }

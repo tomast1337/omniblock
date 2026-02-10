@@ -8,8 +8,8 @@ namespace betareborn.Blocks
     {
         public BlockSapling(int i, int j) : base(i, j)
         {
-            float var3 = 0.4F;
-            setBoundingBox(0.5F - var3, 0.0F, 0.5F - var3, 0.5F + var3, var3 * 2.0F, 0.5F + var3);
+            float halfSize = 0.4F;
+            setBoundingBox(0.5F - halfSize, 0.0F, 0.5F - halfSize, 0.5F + halfSize, halfSize * 2.0F, 0.5F + halfSize);
         }
 
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
@@ -19,10 +19,10 @@ namespace betareborn.Blocks
                 base.onTick(world, x, y, z, random);
                 if (world.getLightLevel(x, y + 1, z) >= 9 && random.nextInt(30) == 0)
                 {
-                    int var6 = world.getBlockMeta(x, y, z);
-                    if ((var6 & 8) == 0)
+                    int saplingMeta = world.getBlockMeta(x, y, z);
+                    if ((saplingMeta & 8) == 0)
                     {
-                        world.setBlockMeta(x, y, z, var6 | 8);
+                        world.setBlockMeta(x, y, z, saplingMeta | 8);
                     }
                     else
                     {
@@ -41,29 +41,29 @@ namespace betareborn.Blocks
 
         public void generate(World world, int x, int y, int z, java.util.Random random)
         {
-            int var6 = world.getBlockMeta(x, y, z) & 3;
+            int saplingType = world.getBlockMeta(x, y, z) & 3;
             world.setBlockWithoutNotifyingNeighbors(x, y, z, 0);
-            object var7 = null;
-            if (var6 == 1)
+            object treeFeature = null;
+            if (saplingType == 1)
             {
-                var7 = new SpruceTreeFeature();
+                treeFeature = new SpruceTreeFeature();
             }
-            else if (var6 == 2)
+            else if (saplingType == 2)
             {
-                var7 = new BirchTreeFeature();
+                treeFeature = new BirchTreeFeature();
             }
             else
             {
-                var7 = new OakTreeFeature();
+                treeFeature = new OakTreeFeature();
                 if (random.nextInt(10) == 0)
                 {
-                    var7 = new LargeOakTreeFeature();
+                    treeFeature = new LargeOakTreeFeature();
                 }
             }
 
-            if (!((Feature)var7).generate(world, random, x, y, z))
+            if (!((Feature)treeFeature).generate(world, random, x, y, z))
             {
-                world.setBlockWithoutNotifyingNeighbors(x, y, z, id, var6);
+                world.setBlockWithoutNotifyingNeighbors(x, y, z, id, saplingType);
             }
 
         }

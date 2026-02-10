@@ -20,16 +20,16 @@ namespace betareborn.Blocks
         {
             if (id > 0 && Block.BLOCKS[id].canEmitRedstonePower())
             {
-                bool var6 = world.isStrongPowered(x, y, z);
-                BlockEntityNote var7 = (BlockEntityNote)world.getBlockEntity(x, y, z);
-                if (var7.powered != var6)
+                bool isPowered = world.isStrongPowered(x, y, z);
+                BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
+                if (blockEntity.powered != isPowered)
                 {
-                    if (var6)
+                    if (isPowered)
                     {
-                        var7.playNote(world, x, y, z);
+                        blockEntity.playNote(world, x, y, z);
                     }
 
-                    var7.powered = var6;
+                    blockEntity.powered = isPowered;
                 }
             }
 
@@ -43,9 +43,9 @@ namespace betareborn.Blocks
             }
             else
             {
-                BlockEntityNote var6 = (BlockEntityNote)world.getBlockEntity(x, y, z);
-                var6.cycleNote();
-                var6.playNote(world, x, y, z);
+                BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
+                blockEntity.cycleNote();
+                blockEntity.playNote(world, x, y, z);
                 return true;
             }
         }
@@ -54,8 +54,8 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                BlockEntityNote var6 = (BlockEntityNote)world.getBlockEntity(x, y, z);
-                var6.playNote(world, x, y, z);
+                BlockEntityNote blockEntity = (BlockEntityNote)world.getBlockEntity(x, y, z);
+                blockEntity.playNote(world, x, y, z);
             }
         }
 
@@ -66,29 +66,29 @@ namespace betareborn.Blocks
 
         public override void onBlockAction(World world, int x, int y, int z, int data1, int data2)
         {
-            float var7 = (float)java.lang.Math.pow(2.0D, (double)(data2 - 12) / 12.0D);
-            string var8 = "harp";
+            float pitch = (float)java.lang.Math.pow(2.0D, (double)(data2 - 12) / 12.0D);
+            string instrumentName = "harp";
             if (data1 == 1)
             {
-                var8 = "bd";
+                instrumentName = "bd";
             }
 
             if (data1 == 2)
             {
-                var8 = "snare";
+                instrumentName = "snare";
             }
 
             if (data1 == 3)
             {
-                var8 = "hat";
+                instrumentName = "hat";
             }
 
             if (data1 == 4)
             {
-                var8 = "bassattack";
+                instrumentName = "bassattack";
             }
 
-            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "note." + var8, 3.0F, var7);
+            world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "note." + instrumentName, 3.0F, pitch);
             world.addParticle("note", (double)x + 0.5D, (double)y + 1.2D, (double)z + 0.5D, (double)data2 / 24.0D, 0.0D, 0.0D);
         }
     }

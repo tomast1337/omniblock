@@ -44,31 +44,31 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, int direction)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            int var7 = var6 & 8;
-            var6 &= 7;
+            int facing = world.getBlockMeta(x, y, z);
+            int pressedBit = facing & 8;
+            facing &= 7;
             if (direction == 2 && world.shouldSuffocate(x, y, z + 1))
             {
-                var6 = 4;
+                facing = 4;
             }
             else if (direction == 3 && world.shouldSuffocate(x, y, z - 1))
             {
-                var6 = 3;
+                facing = 3;
             }
             else if (direction == 4 && world.shouldSuffocate(x + 1, y, z))
             {
-                var6 = 2;
+                facing = 2;
             }
             else if (direction == 5 && world.shouldSuffocate(x - 1, y, z))
             {
-                var6 = 1;
+                facing = 1;
             }
             else
             {
-                var6 = getPlacementSide(world, x, y, z);
+                facing = getPlacementSide(world, x, y, z);
             }
 
-            world.setBlockMeta(x, y, z, var6 + var7);
+            world.setBlockMeta(x, y, z, facing + pressedBit);
         }
 
         private int getPlacementSide(World world, int x, int y, int z)
@@ -80,29 +80,29 @@ namespace betareborn.Blocks
         {
             if (breakIfCannotPlaceAt(world, x, y, z))
             {
-                int var6 = world.getBlockMeta(x, y, z) & 7;
-                bool var7 = false;
-                if (!world.shouldSuffocate(x - 1, y, z) && var6 == 1)
+                int facing = world.getBlockMeta(x, y, z) & 7;
+                bool shouldBreak = false;
+                if (!world.shouldSuffocate(x - 1, y, z) && facing == 1)
                 {
-                    var7 = true;
+                    shouldBreak = true;
                 }
 
-                if (!world.shouldSuffocate(x + 1, y, z) && var6 == 2)
+                if (!world.shouldSuffocate(x + 1, y, z) && facing == 2)
                 {
-                    var7 = true;
+                    shouldBreak = true;
                 }
 
-                if (!world.shouldSuffocate(x, y, z - 1) && var6 == 3)
+                if (!world.shouldSuffocate(x, y, z - 1) && facing == 3)
                 {
-                    var7 = true;
+                    shouldBreak = true;
                 }
 
-                if (!world.shouldSuffocate(x, y, z + 1) && var6 == 4)
+                if (!world.shouldSuffocate(x, y, z + 1) && facing == 4)
                 {
-                    var7 = true;
+                    shouldBreak = true;
                 }
 
-                if (var7)
+                if (shouldBreak)
                 {
                     dropStacks(world, x, y, z, world.getBlockMeta(x, y, z));
                     world.setBlock(x, y, z, 0);
@@ -127,33 +127,33 @@ namespace betareborn.Blocks
 
         public override void updateBoundingBox(BlockView blockView, int x, int y, int z)
         {
-            int var5 = blockView.getBlockMeta(x, y, z);
-            int var6 = var5 & 7;
-            bool var7 = (var5 & 8) > 0;
-            float var8 = 6.0F / 16.0F;
-            float var9 = 10.0F / 16.0F;
-            float var10 = 3.0F / 16.0F;
-            float var11 = 2.0F / 16.0F;
-            if (var7)
+            int meta = blockView.getBlockMeta(x, y, z);
+            int facing = meta & 7;
+            bool isPressed = (meta & 8) > 0;
+            float minY = 6.0F / 16.0F;
+            float maxY = 10.0F / 16.0F;
+            float halfWidth = 3.0F / 16.0F;
+            float thickness = 2.0F / 16.0F;
+            if (isPressed)
             {
-                var11 = 1.0F / 16.0F;
+                thickness = 1.0F / 16.0F;
             }
 
-            if (var6 == 1)
+            if (facing == 1)
             {
-                setBoundingBox(0.0F, var8, 0.5F - var10, var11, var9, 0.5F + var10);
+                setBoundingBox(0.0F, minY, 0.5F - halfWidth, thickness, maxY, 0.5F + halfWidth);
             }
-            else if (var6 == 2)
+            else if (facing == 2)
             {
-                setBoundingBox(1.0F - var11, var8, 0.5F - var10, 1.0F, var9, 0.5F + var10);
+                setBoundingBox(1.0F - thickness, minY, 0.5F - halfWidth, 1.0F, maxY, 0.5F + halfWidth);
             }
-            else if (var6 == 3)
+            else if (facing == 3)
             {
-                setBoundingBox(0.5F - var10, var8, 0.0F, 0.5F + var10, var9, var11);
+                setBoundingBox(0.5F - halfWidth, minY, 0.0F, 0.5F + halfWidth, maxY, thickness);
             }
-            else if (var6 == 4)
+            else if (facing == 4)
             {
-                setBoundingBox(0.5F - var10, var8, 1.0F - var11, 0.5F + var10, var9, 1.0F);
+                setBoundingBox(0.5F - halfWidth, minY, 1.0F - thickness, 0.5F + halfWidth, maxY, 1.0F);
             }
 
         }
@@ -165,32 +165,32 @@ namespace betareborn.Blocks
 
         public override bool onUse(World world, int x, int y, int z, EntityPlayer player)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            int var7 = var6 & 7;
-            int var8 = 8 - (var6 & 8);
-            if (var8 == 0)
+            int meta = world.getBlockMeta(x, y, z);
+            int facing = meta & 7;
+            int pressToggle = 8 - (meta & 8);
+            if (pressToggle == 0)
             {
                 return true;
             }
             else
             {
-                world.setBlockMeta(x, y, z, var7 + var8);
+                world.setBlockMeta(x, y, z, facing + pressToggle);
                 world.setBlocksDirty(x, y, z, x, y, z);
                 world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "random.click", 0.3F, 0.6F);
                 world.notifyNeighbors(x, y, z, id);
-                if (var7 == 1)
+                if (facing == 1)
                 {
                     world.notifyNeighbors(x - 1, y, z, id);
                 }
-                else if (var7 == 2)
+                else if (facing == 2)
                 {
                     world.notifyNeighbors(x + 1, y, z, id);
                 }
-                else if (var7 == 3)
+                else if (facing == 3)
                 {
                     world.notifyNeighbors(x, y, z - 1, id);
                 }
-                else if (var7 == 4)
+                else if (facing == 4)
                 {
                     world.notifyNeighbors(x, y, z + 1, id);
                 }
@@ -206,24 +206,24 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockMeta(x, y, z);
-            if ((var5 & 8) > 0)
+            int meta = world.getBlockMeta(x, y, z);
+            if ((meta & 8) > 0)
             {
                 world.notifyNeighbors(x, y, z, id);
-                int var6 = var5 & 7;
-                if (var6 == 1)
+                int facing = meta & 7;
+                if (facing == 1)
                 {
                     world.notifyNeighbors(x - 1, y, z, id);
                 }
-                else if (var6 == 2)
+                else if (facing == 2)
                 {
                     world.notifyNeighbors(x + 1, y, z, id);
                 }
-                else if (var6 == 3)
+                else if (facing == 3)
                 {
                     world.notifyNeighbors(x, y, z - 1, id);
                 }
-                else if (var6 == 4)
+                else if (facing == 4)
                 {
                     world.notifyNeighbors(x, y, z + 1, id);
                 }
@@ -243,15 +243,15 @@ namespace betareborn.Blocks
 
         public override bool isStrongPoweringSide(World world, int x, int y, int z, int side)
         {
-            int var6 = world.getBlockMeta(x, y, z);
-            if ((var6 & 8) == 0)
+            int meta = world.getBlockMeta(x, y, z);
+            if ((meta & 8) == 0)
             {
                 return false;
             }
             else
             {
-                int var7 = var6 & 7;
-                return var7 == 5 && side == 1 ? true : (var7 == 4 && side == 2 ? true : (var7 == 3 && side == 3 ? true : (var7 == 2 && side == 4 ? true : var7 == 1 && side == 5)));
+                int facing = meta & 7;
+                return facing == 5 && side == 1 ? true : (facing == 4 && side == 2 ? true : (facing == 3 && side == 3 ? true : (facing == 2 && side == 4 ? true : facing == 1 && side == 5)));
             }
         }
 
@@ -264,25 +264,25 @@ namespace betareborn.Blocks
         {
             if (!world.isRemote)
             {
-                int var6 = world.getBlockMeta(x, y, z);
-                if ((var6 & 8) != 0)
+                int meta = world.getBlockMeta(x, y, z);
+                if ((meta & 8) != 0)
                 {
-                    world.setBlockMeta(x, y, z, var6 & 7);
+                    world.setBlockMeta(x, y, z, meta & 7);
                     world.notifyNeighbors(x, y, z, id);
-                    int var7 = var6 & 7;
-                    if (var7 == 1)
+                    int facing = meta & 7;
+                    if (facing == 1)
                     {
                         world.notifyNeighbors(x - 1, y, z, id);
                     }
-                    else if (var7 == 2)
+                    else if (facing == 2)
                     {
                         world.notifyNeighbors(x + 1, y, z, id);
                     }
-                    else if (var7 == 3)
+                    else if (facing == 3)
                     {
                         world.notifyNeighbors(x, y, z - 1, id);
                     }
-                    else if (var7 == 4)
+                    else if (facing == 4)
                     {
                         world.notifyNeighbors(x, y, z + 1, id);
                     }
@@ -299,10 +299,10 @@ namespace betareborn.Blocks
 
         public override void setupRenderBoundingBox()
         {
-            float var1 = 3.0F / 16.0F;
-            float var2 = 2.0F / 16.0F;
-            float var3 = 2.0F / 16.0F;
-            setBoundingBox(0.5F - var1, 0.5F - var2, 0.5F - var3, 0.5F + var1, 0.5F + var2, 0.5F + var3);
+            float halfWidth = 3.0F / 16.0F;
+            float halfHeight = 2.0F / 16.0F;
+            float halfDepth = 2.0F / 16.0F;
+            setBoundingBox(0.5F - halfWidth, 0.5F - halfHeight, 0.5F - halfDepth, 0.5F + halfWidth, 0.5F + halfHeight, 0.5F + halfDepth);
         }
     }
 

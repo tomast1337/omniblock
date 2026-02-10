@@ -50,29 +50,29 @@ namespace betareborn.Blocks
 
         public override void addIntersectingBoundingBox(World world, int x, int y, int z, Box box, List<Box> boxes)
         {
-            int var7 = world.getBlockMeta(x, y, z);
-            if (var7 == 0)
+            int meta = world.getBlockMeta(x, y, z);
+            if (meta == 0)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 0.5F, 1.0F);
                 base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                 setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
             }
-            else if (var7 == 1)
+            else if (meta == 1)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 0.5F, 1.0F, 1.0F);
                 base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                 setBoundingBox(0.5F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
                 base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
             }
-            else if (var7 == 2)
+            else if (meta == 2)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.5F);
                 base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
                 setBoundingBox(0.0F, 0.0F, 0.5F, 1.0F, 1.0F, 1.0F);
                 base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
             }
-            else if (var7 == 3)
+            else if (meta == 3)
             {
                 setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F);
                 base.addIntersectingBoundingBox(world, x, y, z, box, boxes);
@@ -206,23 +206,23 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z, EntityLiving placer)
         {
-            int var6 = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-            if (var6 == 0)
+            int facing = MathHelper.floor_double((double)(placer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+            if (facing == 0)
             {
                 world.setBlockMeta(x, y, z, 2);
             }
 
-            if (var6 == 1)
+            if (facing == 1)
             {
                 world.setBlockMeta(x, y, z, 1);
             }
 
-            if (var6 == 2)
+            if (facing == 2)
             {
                 world.setBlockMeta(x, y, z, 3);
             }
 
-            if (var6 == 3)
+            if (facing == 3)
             {
                 world.setBlockMeta(x, y, z, 0);
             }

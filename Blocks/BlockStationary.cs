@@ -27,9 +27,9 @@ namespace betareborn.Blocks
 
         private void convertToFlowing(World world, int x, int y, int z)
         {
-            int var5 = world.getBlockMeta(x, y, z);
+            int meta = world.getBlockMeta(x, y, z);
             world.pauseTicking = true;
-            world.setBlockWithoutNotifyingNeighbors(x, y, z, id - 1, var5);
+            world.setBlockWithoutNotifyingNeighbors(x, y, z, id - 1, meta);
             world.setBlocksDirty(x, y, z, x, y, z);
             world.scheduleBlockUpdate(x, y, z, id - 1, getTickRate());
             world.pauseTicking = false;
@@ -39,15 +39,15 @@ namespace betareborn.Blocks
         {
             if (material == Material.LAVA)
             {
-                int var6 = random.nextInt(3);
+                int attempts = random.nextInt(3);
 
-                for (int var7 = 0; var7 < var6; ++var7)
+                for (int attempt = 0; attempt < attempts; ++attempt)
                 {
                     x += random.nextInt(3) - 1;
                     ++y;
                     z += random.nextInt(3) - 1;
-                    int var8 = world.getBlockId(x, y, z);
-                    if (var8 == 0)
+                    int neighborBlockId = world.getBlockId(x, y, z);
+                    if (neighborBlockId == 0)
                     {
                         if (isFlammable(world, x - 1, y, z) || isFlammable(world, x + 1, y, z) || isFlammable(world, x, y, z - 1) || isFlammable(world, x, y, z + 1) || isFlammable(world, x, y - 1, z) || isFlammable(world, x, y + 1, z))
                         {
@@ -55,7 +55,7 @@ namespace betareborn.Blocks
                             return;
                         }
                     }
-                    else if (Block.BLOCKS[var8].material.blocksMovement())
+                    else if (Block.BLOCKS[neighborBlockId].material.blocksMovement())
                     {
                         return;
                     }

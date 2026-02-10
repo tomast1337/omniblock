@@ -65,69 +65,69 @@ namespace betareborn.Blocks
 
         public override void onTick(World world, int x, int y, int z, java.util.Random random)
         {
-            bool var6 = world.getBlockId(x, y - 1, z) == Block.NETHERRACK.id;
+            bool isOnNetherrack = world.getBlockId(x, y - 1, z) == Block.NETHERRACK.id;
             if (!canPlaceAt(world, x, y, z))
             {
                 world.setBlock(x, y, z, 0);
             }
 
-            if (var6 || !world.isRaining() || !world.isRaining(x, y, z) && !world.isRaining(x - 1, y, z) && !world.isRaining(x + 1, y, z) && !world.isRaining(x, y, z - 1) && !world.isRaining(x, y, z + 1))
+            if (isOnNetherrack || !world.isRaining() || !world.isRaining(x, y, z) && !world.isRaining(x - 1, y, z) && !world.isRaining(x + 1, y, z) && !world.isRaining(x, y, z - 1) && !world.isRaining(x, y, z + 1))
             {
-                int var7 = world.getBlockMeta(x, y, z);
-                if (var7 < 15)
+                int fireAge = world.getBlockMeta(x, y, z);
+                if (fireAge < 15)
                 {
-                    world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, var7 + random.nextInt(3) / 2);
+                    world.setBlockMetaWithoutNotifyingNeighbors(x, y, z, fireAge + random.nextInt(3) / 2);
                 }
 
                 world.scheduleBlockUpdate(x, y, z, id, getTickRate());
-                if (!var6 && !areBlocksAroundFlammable(world, x, y, z))
+                if (!isOnNetherrack && !areBlocksAroundFlammable(world, x, y, z))
                 {
-                    if (!world.shouldSuffocate(x, y - 1, z) || var7 > 3)
+                    if (!world.shouldSuffocate(x, y - 1, z) || fireAge > 3)
                     {
                         world.setBlock(x, y, z, 0);
                     }
 
                 }
-                else if (!var6 && !isFlammable(world, x, y - 1, z) && var7 == 15 && random.nextInt(4) == 0)
+                else if (!isOnNetherrack && !isFlammable(world, x, y - 1, z) && fireAge == 15 && random.nextInt(4) == 0)
                 {
                     world.setBlock(x, y, z, 0);
                 }
                 else
                 {
-                    trySpreadingFire(world, x + 1, y, z, 300, random, var7);
-                    trySpreadingFire(world, x - 1, y, z, 300, random, var7);
-                    trySpreadingFire(world, x, y - 1, z, 250, random, var7);
-                    trySpreadingFire(world, x, y + 1, z, 250, random, var7);
-                    trySpreadingFire(world, x, y, z - 1, 300, random, var7);
-                    trySpreadingFire(world, x, y, z + 1, 300, random, var7);
+                    trySpreadingFire(world, x + 1, y, z, 300, random, fireAge);
+                    trySpreadingFire(world, x - 1, y, z, 300, random, fireAge);
+                    trySpreadingFire(world, x, y - 1, z, 250, random, fireAge);
+                    trySpreadingFire(world, x, y + 1, z, 250, random, fireAge);
+                    trySpreadingFire(world, x, y, z - 1, 300, random, fireAge);
+                    trySpreadingFire(world, x, y, z + 1, 300, random, fireAge);
 
-                    for (int var8 = x - 1; var8 <= x + 1; ++var8)
+                    for (int checkX = x - 1; checkX <= x + 1; ++checkX)
                     {
-                        for (int var9 = z - 1; var9 <= z + 1; ++var9)
+                        for (int checkY = z - 1; checkY <= z + 1; ++checkY)
                         {
-                            for (int var10 = y - 1; var10 <= y + 4; ++var10)
+                            for (int checkZ = y - 1; checkZ <= y + 4; ++checkZ)
                             {
-                                if (var8 != x || var10 != y || var9 != z)
+                                if (checkX != x || checkZ != y || checkY != z)
                                 {
-                                    int var11 = 100;
-                                    if (var10 > y + 1)
+                                    int spreadDifficulty = 100;
+                                    if (checkZ > y + 1)
                                     {
-                                        var11 += (var10 - (y + 1)) * 100;
+                                        spreadDifficulty += (checkZ - (y + 1)) * 100;
                                     }
 
-                                    int var12 = getBurnChance(world, var8, var10, var9);
-                                    if (var12 > 0)
+                                    int burnChance = getBurnChance(world, checkX, checkZ, checkY);
+                                    if (burnChance > 0)
                                     {
-                                        int var13 = (var12 + 40) / (var7 + 30);
-                                        if (var13 > 0 && random.nextInt(var11) <= var13 && (!world.isRaining() || !world.isRaining(var8, var10, var9)) && !world.isRaining(var8 - 1, var10, z) && !world.isRaining(var8 + 1, var10, var9) && !world.isRaining(var8, var10, var9 - 1) && !world.isRaining(var8, var10, var9 + 1))
+                                        int var13 = (burnChance + 40) / (fireAge + 30);
+                                        if (var13 > 0 && random.nextInt(spreadDifficulty) <= var13 && (!world.isRaining() || !world.isRaining(checkX, checkZ, checkY)) && !world.isRaining(checkX - 1, checkZ, z) && !world.isRaining(checkX + 1, checkZ, checkY) && !world.isRaining(checkX, checkZ, checkY - 1) && !world.isRaining(checkX, checkZ, checkY + 1))
                                         {
-                                            int var14 = var7 + random.nextInt(5) / 4;
-                                            if (var14 > 15)
+                                            int spreadChance = fireAge + random.nextInt(5) / 4;
+                                            if (spreadChance > 15)
                                             {
-                                                var14 = 15;
+                                                spreadChance = 15;
                                             }
 
-                                            world.setBlock(var8, var10, var9, id, var14);
+                                            world.setBlock(checkX, checkZ, checkY, id, spreadChance);
                                         }
                                     }
                                 }
@@ -145,26 +145,26 @@ namespace betareborn.Blocks
 
         private void trySpreadingFire(World world, int x, int y, int z, int spreadFactor, java.util.Random random, int currentAge)
         {
-            int var8 = spreadChances[world.getBlockId(x, y, z)];
-            if (random.nextInt(spreadFactor) < var8)
+            int targetSpreadChance = spreadChances[world.getBlockId(x, y, z)];
+            if (random.nextInt(spreadFactor) < targetSpreadChance)
             {
-                bool var9 = world.getBlockId(x, y, z) == Block.TNT.id;
+                bool isTnt = world.getBlockId(x, y, z) == Block.TNT.id;
                 if (random.nextInt(currentAge + 10) < 5 && !world.isRaining(x, y, z))
                 {
-                    int var10 = currentAge + random.nextInt(5) / 4;
-                    if (var10 > 15)
+                    int newFireAge = currentAge + random.nextInt(5) / 4;
+                    if (newFireAge > 15)
                     {
-                        var10 = 15;
+                        newFireAge = 15;
                     }
 
-                    world.setBlock(x, y, z, id, var10);
+                    world.setBlock(x, y, z, id, newFireAge);
                 }
                 else
                 {
                     world.setBlock(x, y, z, 0);
                 }
 
-                if (var9)
+                if (isTnt)
                 {
                     Block.TNT.onMetadataChange(world, x, y, z, 1);
                 }
@@ -179,20 +179,20 @@ namespace betareborn.Blocks
 
         private int getBurnChance(World world, int x, int y, int z)
         {
-            sbyte var5 = 0;
+            sbyte initialMax = 0;
             if (!world.isAir(x, y, z))
             {
                 return 0;
             }
             else
             {
-                int var6 = getBurnChance(world, x + 1, y, z, var5);
-                var6 = getBurnChance(world, x - 1, y, z, var6);
-                var6 = getBurnChance(world, x, y - 1, z, var6);
-                var6 = getBurnChance(world, x, y + 1, z, var6);
-                var6 = getBurnChance(world, x, y, z - 1, var6);
-                var6 = getBurnChance(world, x, y, z + 1, var6);
-                return var6;
+                int maxChance = getBurnChance(world, x + 1, y, z, initialMax);
+                maxChance = getBurnChance(world, x - 1, y, z, maxChance);
+                maxChance = getBurnChance(world, x, y - 1, z, maxChance);
+                maxChance = getBurnChance(world, x, y + 1, z, maxChance);
+                maxChance = getBurnChance(world, x, y, z - 1, maxChance);
+                maxChance = getBurnChance(world, x, y, z + 1, maxChance);
+                return maxChance;
             }
         }
 
@@ -208,8 +208,8 @@ namespace betareborn.Blocks
 
         public int getBurnChance(World world, int x, int y, int z, int currentChance)
         {
-            int var6 = burnChances[world.getBlockId(x, y, z)];
-            return var6 > currentChance ? var6 : currentChance;
+            int blockBurnChance = burnChances[world.getBlockId(x, y, z)];
+            return blockBurnChance > currentChance ? blockBurnChance : currentChance;
         }
 
         public override bool canPlaceAt(World world, int x, int y, int z)
@@ -247,75 +247,75 @@ namespace betareborn.Blocks
                 world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "fire.fire", 1.0F + random.nextFloat(), random.nextFloat() * 0.7F + 0.3F);
             }
 
-            int var6;
-            float var7;
-            float var8;
-            float var9;
+            int particleIndex;
+            float particleX;
+            float particleY;
+            float particleZ;
             if (!world.shouldSuffocate(x, y - 1, z) && !Block.FIRE.isFlammable(world, x, y - 1, z))
             {
                 if (Block.FIRE.isFlammable(world, x - 1, y, z))
                 {
-                    for (var6 = 0; var6 < 2; ++var6)
+                    for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                     {
-                        var7 = (float)x + random.nextFloat() * 0.1F;
-                        var8 = (float)y + random.nextFloat();
-                        var9 = (float)z + random.nextFloat();
-                        world.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        particleX = (float)x + random.nextFloat() * 0.1F;
+                        particleY = (float)y + random.nextFloat();
+                        particleZ = (float)z + random.nextFloat();
+                        world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
                 if (Block.FIRE.isFlammable(world, x + 1, y, z))
                 {
-                    for (var6 = 0; var6 < 2; ++var6)
+                    for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                     {
-                        var7 = (float)(x + 1) - random.nextFloat() * 0.1F;
-                        var8 = (float)y + random.nextFloat();
-                        var9 = (float)z + random.nextFloat();
-                        world.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        particleX = (float)(x + 1) - random.nextFloat() * 0.1F;
+                        particleY = (float)y + random.nextFloat();
+                        particleZ = (float)z + random.nextFloat();
+                        world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
                 if (Block.FIRE.isFlammable(world, x, y, z - 1))
                 {
-                    for (var6 = 0; var6 < 2; ++var6)
+                    for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                     {
-                        var7 = (float)x + random.nextFloat();
-                        var8 = (float)y + random.nextFloat();
-                        var9 = (float)z + random.nextFloat() * 0.1F;
-                        world.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        particleX = (float)x + random.nextFloat();
+                        particleY = (float)y + random.nextFloat();
+                        particleZ = (float)z + random.nextFloat() * 0.1F;
+                        world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
                 if (Block.FIRE.isFlammable(world, x, y, z + 1))
                 {
-                    for (var6 = 0; var6 < 2; ++var6)
+                    for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                     {
-                        var7 = (float)x + random.nextFloat();
-                        var8 = (float)y + random.nextFloat();
-                        var9 = (float)(z + 1) - random.nextFloat() * 0.1F;
-                        world.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        particleX = (float)x + random.nextFloat();
+                        particleY = (float)y + random.nextFloat();
+                        particleZ = (float)(z + 1) - random.nextFloat() * 0.1F;
+                        world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
                     }
                 }
 
                 if (Block.FIRE.isFlammable(world, x, y + 1, z))
                 {
-                    for (var6 = 0; var6 < 2; ++var6)
+                    for (particleIndex = 0; particleIndex < 2; ++particleIndex)
                     {
-                        var7 = (float)x + random.nextFloat();
-                        var8 = (float)(y + 1) - random.nextFloat() * 0.1F;
-                        var9 = (float)z + random.nextFloat();
-                        world.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                        particleX = (float)x + random.nextFloat();
+                        particleY = (float)(y + 1) - random.nextFloat() * 0.1F;
+                        particleZ = (float)z + random.nextFloat();
+                        world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
                     }
                 }
             }
             else
             {
-                for (var6 = 0; var6 < 3; ++var6)
+                for (particleIndex = 0; particleIndex < 3; ++particleIndex)
                 {
-                    var7 = (float)x + random.nextFloat();
-                    var8 = (float)y + random.nextFloat() * 0.5F + 0.5F;
-                    var9 = (float)z + random.nextFloat();
-                    world.addParticle("largesmoke", (double)var7, (double)var8, (double)var9, 0.0D, 0.0D, 0.0D);
+                    particleX = (float)x + random.nextFloat();
+                    particleY = (float)y + random.nextFloat() * 0.5F + 0.5F;
+                    particleZ = (float)z + random.nextFloat();
+                    world.addParticle("largesmoke", (double)particleX, (double)particleY, (double)particleZ, 0.0D, 0.0D, 0.0D);
                 }
             }
 

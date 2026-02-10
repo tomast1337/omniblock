@@ -12,15 +12,15 @@ namespace betareborn.Blocks
 
         public override void onPlaced(World world, int x, int y, int z)
         {
-            sbyte var5 = 2;
+            sbyte radius = 2;
 
-            for (int var6 = x - var5; var6 <= x + var5; ++var6)
+            for (int checkX = x - radius; checkX <= x + radius; ++checkX)
             {
-                for (int var7 = y - var5; var7 <= y + var5; ++var7)
+                for (int checkY = y - radius; checkY <= y + radius; ++checkY)
                 {
-                    for (int var8 = z - var5; var8 <= z + var5; ++var8)
+                    for (int checkZ = z - radius; checkZ <= z + radius; ++checkZ)
                     {
-                        if (world.getMaterial(var6, var7, var8) == Material.WATER)
+                        if (world.getMaterial(checkX, checkY, checkZ) == Material.WATER)
                         {
                         }
                     }
@@ -31,15 +31,15 @@ namespace betareborn.Blocks
 
         public override void onBreak(World world, int x, int y, int z)
         {
-            sbyte var5 = 2;
+            sbyte radius = 2;
 
-            for (int var6 = x - var5; var6 <= x + var5; ++var6)
+            for (int checkX = x - radius; checkX <= x + radius; ++checkX)
             {
-                for (int var7 = y - var5; var7 <= y + var5; ++var7)
+                for (int checkY = y - radius; checkY <= y + radius; ++checkY)
                 {
-                    for (int var8 = z - var5; var8 <= z + var5; ++var8)
+                    for (int checkZ = z - radius; checkZ <= z + radius; ++checkZ)
                     {
-                        world.notifyNeighbors(var6, var7, var8, world.getBlockId(var6, var7, var8));
+                        world.notifyNeighbors(checkX, checkY, checkZ, world.getBlockId(checkX, checkY, checkZ));
                     }
                 }
             }
