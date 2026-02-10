@@ -11,7 +11,7 @@ namespace betareborn
 {
     public class NaturalSpawner
     {
-        private static Set eligibleChunksForSpawning = new HashSet();
+        private static HashSet<ChunkPos> eligibleChunksForSpawning = new HashSet<ChunkPos>();
         protected static readonly Class[] nightSpawnEntities = new Class[] { EntitySpider.Class, EntityZombie.Class, EntitySkeleton.Class };
 
         protected static BlockPos getRandomSpawningPointInChunk(World var0, int var1, int var2)
@@ -30,7 +30,7 @@ namespace betareborn
             }
             else
             {
-                eligibleChunksForSpawning.clear();
+                eligibleChunksForSpawning.Clear();
 
                 int var3;
                 int var6;
@@ -45,7 +45,7 @@ namespace betareborn
                     {
                         for (int var9 = -var7; var9 <= var7; ++var9)
                         {
-                            eligibleChunksForSpawning.add(new ChunkPos(var8 + var5, var9 + var6));
+                            eligibleChunksForSpawning.Add(new ChunkPos(var8 + var5, var9 + var6));
                         }
                     }
                 }
@@ -58,14 +58,11 @@ namespace betareborn
                 for (int var37 = 0; var37 < var6; ++var37)
                 {
                     EnumCreatureType var38 = var36[var37];
-                    if ((!var38.getPeacefulCreature() || var2) && (var38.getPeacefulCreature() || var1) && var0.countEntities(var38.getCreatureClass()) <= var38.getMaxNumberOfCreature() * eligibleChunksForSpawning.size() / 256)
+                    if ((!var38.getPeacefulCreature() || var2) && (var38.getPeacefulCreature() || var1) && var0.countEntities(var38.getCreatureClass()) <= var38.getMaxNumberOfCreature() * eligibleChunksForSpawning.Count / 256)
                     {
-                        Iterator var39 = eligibleChunksForSpawning.iterator();
-
-                        while (var39.hasNext())
+                        foreach (var chunk in eligibleChunksForSpawning)
                         {
-                            ChunkPos var10 = (ChunkPos)var39.next();
-                            Biome var11 = var0.getBiomeSource().getBiome(var10);
+                            Biome var11 = var0.getBiomeSource().getBiome(chunk);
                             var var12 = var11.getSpawnableList(var38);
 
                             if (var12 == null || var12.Count == 0)
@@ -93,7 +90,7 @@ namespace betareborn
                                 }
                             }
 
-                            BlockPos var41 = getRandomSpawningPointInChunk(var0, var10.x * 16, var10.z * 16);
+                            BlockPos var41 = getRandomSpawningPointInChunk(var0, chunk.x * 16, chunk.z * 16);
                             int var42 = var41.x;
                             int var18 = var41.y;
                             int var19 = var41.z;

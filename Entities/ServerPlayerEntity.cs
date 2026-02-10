@@ -25,7 +25,7 @@ namespace betareborn.Entities
         public double lastX;
         public double lastZ;
         public List pendingChunkUpdates = new LinkedList();
-        public Set activeChunks = new HashSet();
+        public HashSet<ChunkPos> activeChunks = new HashSet<ChunkPos>();
         private int lastHealthScore = -99999999;
         private int joinInvulnerabilityTicks = 60;
         private ItemStack[] equipment = [null, null, null, null, null];

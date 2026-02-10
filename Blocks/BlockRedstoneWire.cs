@@ -10,7 +10,7 @@ namespace betareborn.Blocks
     {
 
         private bool wiresProvidePower = true;
-        private Set field_21031_b = new HashSet();
+        private HashSet<BlockPos> neighbors;
 
         public BlockRedstoneWire(int var1, int var2) : base(var1, var2, Material.PISTON_BREAKABLE)
         {
@@ -55,13 +55,12 @@ namespace betareborn.Blocks
         private void updateAndPropagateCurrentStrength(World var1, int var2, int var3, int var4)
         {
             func_21030_a(var1, var2, var3, var4, var2, var3, var4);
-            ArrayList var5 = new ArrayList(field_21031_b);
-            field_21031_b.clear();
+            List<BlockPos> neighborsCopy = new (neighbors);
+            neighbors.Clear();
 
-            for (int var6 = 0; var6 < var5.size(); ++var6)
+            foreach (var n in neighborsCopy)
             {
-                BlockPos var7 = (BlockPos)var5.get(var6);
-                var1.notifyNeighbors(var7.x, var7.y, var7.z, id);
+                var1.notifyNeighbors(n.x, n.y, n.z, id);
             }
 
         }
@@ -199,13 +198,13 @@ namespace betareborn.Blocks
 
                 if (var8 == 0 || var9 == 0)
                 {
-                    field_21031_b.add(new BlockPos(var2, var3, var4));
-                    field_21031_b.add(new BlockPos(var2 - 1, var3, var4));
-                    field_21031_b.add(new BlockPos(var2 + 1, var3, var4));
-                    field_21031_b.add(new BlockPos(var2, var3 - 1, var4));
-                    field_21031_b.add(new BlockPos(var2, var3 + 1, var4));
-                    field_21031_b.add(new BlockPos(var2, var3, var4 - 1));
-                    field_21031_b.add(new BlockPos(var2, var3, var4 + 1));
+                    neighbors.Add(new BlockPos(var2, var3, var4));
+                    neighbors.Add(new BlockPos(var2 - 1, var3, var4));
+                    neighbors.Add(new BlockPos(var2 + 1, var3, var4));
+                    neighbors.Add(new BlockPos(var2, var3 - 1, var4));
+                    neighbors.Add(new BlockPos(var2, var3 + 1, var4));
+                    neighbors.Add(new BlockPos(var2, var3, var4 - 1));
+                    neighbors.Add(new BlockPos(var2, var3, var4 + 1));
                 }
             }
 

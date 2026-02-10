@@ -12,19 +12,19 @@ namespace betareborn.Network.Packets.S2CPlay
         public double explosionY;
         public double explosionZ;
         public float explosionSize;
-        public Set destroyedBlockPositions;
+        public HashSet<BlockPos> destroyedBlockPositions;
 
         public ExplosionS2CPacket()
         {
         }
 
-        public ExplosionS2CPacket(double x, double y, double z, float radius, Set affectedBlocks)
+        public ExplosionS2CPacket(double x, double y, double z, float radius, HashSet<BlockPos> affectedBlocks)
         {
             explosionX = x;
             explosionY = y;
             explosionZ = z;
             explosionSize = radius;
-            destroyedBlockPositions = new HashSet(affectedBlocks);
+            destroyedBlockPositions = new HashSet<BlockPos>(affectedBlocks);
         }
 
         public override void read(DataInputStream var1)
@@ -34,7 +34,7 @@ namespace betareborn.Network.Packets.S2CPlay
             explosionZ = var1.readDouble();
             explosionSize = var1.readFloat();
             int var2 = var1.readInt();
-            destroyedBlockPositions = new HashSet();
+            destroyedBlockPositions = new HashSet<BlockPos>();
             int var3 = (int)explosionX;
             int var4 = (int)explosionY;
             int var5 = (int)explosionZ;
@@ -45,7 +45,7 @@ namespace betareborn.Network.Packets.S2CPlay
                 int var8 = (sbyte)var1.readByte() + var4;
                 int var9 = (sbyte)var1.readByte() + var5;
 
-                destroyedBlockPositions.add(new BlockPos(var7, var8, var9));
+                destroyedBlockPositions.Add(new BlockPos(var7, var8, var9));
             }
 
         }
@@ -56,23 +56,19 @@ namespace betareborn.Network.Packets.S2CPlay
             var1.writeDouble(explosionY);
             var1.writeDouble(explosionZ);
             var1.writeFloat(explosionSize);
-            var1.writeInt(destroyedBlockPositions.size());
+            var1.writeInt(destroyedBlockPositions.Count);
             int var2 = (int)explosionX;
             int var3 = (int)explosionY;
             int var4 = (int)explosionZ;
-            Iterator var5 = destroyedBlockPositions.iterator();
-
-            while (var5.hasNext())
+            foreach (var pos in destroyedBlockPositions)
             {
-                BlockPos var6 = (BlockPos)var5.next();
-                int var7 = var6.x - var2;
-                int var8 = var6.y - var3;
-                int var9 = var6.z - var4;
+                int var7 = pos.x - var2;
+                int var8 = pos.y - var3;
+                int var9 = pos.z - var4;
                 var1.writeByte(var7);
                 var1.writeByte(var8);
                 var1.writeByte(var9);
             }
-
         }
 
         public override void apply(NetHandler var1)
@@ -82,7 +78,7 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public override int size()
         {
-            return 32 + destroyedBlockPositions.size() * 3;
+            return 32 + destroyedBlockPositions.Count * 3;
         }
     }
 
