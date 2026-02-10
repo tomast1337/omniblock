@@ -243,7 +243,7 @@ namespace betareborn.Worlds
         protected virtual ChunkSource createChunkCache()
         {
             ChunkStorage var1 = storage.getChunkStorage(dimension);
-            return new ChunkCache(this, (RegionChunkStorage)var1, dimension.createChunkGenerator());
+            return new ChunkCache(this, (RegionChunkStorageAsync)var1, dimension.createChunkGenerator());
         }
 
         protected void initializeSpawnPoint()

@@ -1,19 +1,20 @@
 ﻿using java.io;
 using java.lang;
 using java.text;
+using java.util;
 using java.util.logging;
 using StringWriter = java.io.StringWriter;
 
 namespace betareborn.Server
 {
-    public class ConsoleFormatter : Formatter
+    public class ConsoleFormatter : java.util.logging.Formatter
     {
         private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         public override string format(LogRecord logRecord)
         {
             StringBuilder var2 = new StringBuilder();
-            var2.append(dateFormat.format(logRecord.getMillis()));
+            var2.append(dateFormat.format(new Date(logRecord.getMillis())));
             Level var3 = logRecord.getLevel();
             if (var3 == Level.FINEST)
             {

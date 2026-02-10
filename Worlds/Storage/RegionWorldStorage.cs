@@ -14,12 +14,13 @@ namespace betareborn.Worlds.Storage
     {
         private static readonly Logger LOGGER = Logger.getLogger("Minecraft");
 
+        private readonly bool async;
         private readonly java.io.File saveDirectory;
         private readonly java.io.File playersDirectory;
         private readonly java.io.File dataDir;
         private readonly long now = java.lang.System.currentTimeMillis();
 
-        public RegionWorldStorage(java.io.File var1, string var2, bool var3)
+        public RegionWorldStorage(java.io.File var1, string var2, bool var3, bool async = false)
         {
             saveDirectory = new java.io.File(var1, var2);
             saveDirectory.mkdirs();
@@ -32,6 +33,7 @@ namespace betareborn.Worlds.Storage
             }
 
             writeSessionLock();
+            this.async = async;
         }
 
         private void writeSessionLock()
@@ -96,11 +98,25 @@ namespace betareborn.Worlds.Storage
             {
                 java.io.File var3 = new(var2, "DIM-1");
                 var3.mkdirs();
-                return new RegionChunkStorage(var3);
+                if (async)
+                {
+                    return new RegionChunkStorageAsync(var3);
+                }
+                else
+                {
+                    return new RegionChunkStorage(var3);
+                }
             }
             else
             {
-                return new RegionChunkStorage(var2);
+                if (async)
+                {
+                    return new RegionChunkStorageAsync(var2);
+                }
+                else
+                {
+                    return new RegionChunkStorage(var2);
+                }
             }
         }
 
@@ -119,7 +135,7 @@ namespace betareborn.Worlds.Storage
                     java.io.File var5 = new java.io.File(saveDirectory, "level.dat_new");
                     java.io.File var6 = new java.io.File(saveDirectory, "level.dat_old");
                     java.io.File var7 = new java.io.File(saveDirectory, "level.dat");
-                    CompressedStreamTools.writeGzippedCompoundToOutputStream(var4, new FileOutputStream(var5));
+                    NbtIo.writeGzippedCompoundToOutputStream(var4, new FileOutputStream(var5));
                     if (var6.exists())
                     {
                         var6.delete();
@@ -155,7 +171,7 @@ namespace betareborn.Worlds.Storage
             {
                 try
                 {
-                    var2 = CompressedStreamTools.func_1138_a(new FileInputStream(var1));
+                    var2 = NbtIo.read(new FileInputStream(var1));
                     var3 = var2.getCompoundTag("Data");
                     WorldProperties wInfo = new(var3);
                     return wInfo;
@@ -171,7 +187,7 @@ namespace betareborn.Worlds.Storage
             {
                 try
                 {
-                    var2 = CompressedStreamTools.func_1138_a(new FileInputStream(var1));
+                    var2 = NbtIo.read(new FileInputStream(var1));
                     var3 = var2.getCompoundTag("Data");
                     WorldProperties wInfo = new(var3);
                     return wInfo;
@@ -196,7 +212,7 @@ namespace betareborn.Worlds.Storage
                 java.io.File var4 = new java.io.File(saveDirectory, "level.dat_new");
                 java.io.File var5 = new java.io.File(saveDirectory, "level.dat_old");
                 java.io.File var6 = new java.io.File(saveDirectory, "level.dat");
-                CompressedStreamTools.writeGzippedCompoundToOutputStream(var3, new FileOutputStream(var4));
+                NbtIo.writeGzippedCompoundToOutputStream(var3, new FileOutputStream(var4));
                 if (var5.exists())
                 {
                     var5.delete();
@@ -234,7 +250,7 @@ namespace betareborn.Worlds.Storage
                 player.write(var2);
                 java.io.File var3 = new java.io.File(playersDirectory, "_tmp_.dat");
                 java.io.File var4 = new java.io.File(playersDirectory, player.name + ".dat");
-                CompressedStreamTools.writeGzippedCompoundToOutputStream(var2, new FileOutputStream(var3));
+                NbtIo.writeGzippedCompoundToOutputStream(var2, new FileOutputStream(var3));
                 if (var4.exists())
                 {
                     var4.delete();
@@ -264,7 +280,7 @@ namespace betareborn.Worlds.Storage
                 java.io.File var2 = new java.io.File(playersDirectory, playerName + ".dat");
                 if (var2.exists())
                 {
-                    return CompressedStreamTools.func_1138_a(new FileInputStream(var2));
+                    return NbtIo.read(new FileInputStream(var2));
                 }
             }
             catch (Exception var3)

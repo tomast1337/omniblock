@@ -12,13 +12,13 @@ namespace betareborn.Worlds.Chunks
         private readonly HashSet<int> chunksToUnload = [];
         private readonly Chunk empty;
         private readonly ChunkSource generator;
-        private readonly RegionChunkStorage storage;
+        private readonly RegionChunkStorageAsync storage;
         private readonly Dictionary<int, Chunk> chunkByPos = [];
         private readonly List<Chunk> chunks = [];
         private readonly World world;
         private int lastRenderDistance = 0;
 
-        public ChunkCache(World world, RegionChunkStorage storage, ChunkSource generator)
+        public ChunkCache(World world, RegionChunkStorageAsync storage, ChunkSource generator)
         {
             empty = new EmptyChunk(world, new byte[-Short.MIN_VALUE], 0, 0);
             this.world = world;

@@ -1,45 +1,51 @@
+﻿using betareborn.Blocks.Entities;
 using betareborn.Entities;
 using betareborn.NBT;
-using betareborn.Worlds;
-using betareborn.Worlds.Chunks;
-using betareborn.Blocks.Entities;
+using java.io;
 
 namespace betareborn.Worlds.Chunks.Storage
 {
     public class RegionChunkStorage : ChunkStorage
     {
-
-        public readonly java.io.File worldDir;
+        private readonly java.io.File dir;
 
         public RegionChunkStorage(java.io.File dir)
         {
-            worldDir = dir;
+            this.dir = dir;
         }
 
         public Chunk loadChunk(World world, int chunkX, int chunkZ)
         {
-            NBTTagCompound? var4 = Region.RegionCache.readChunkNBT(worldDir, chunkX, chunkZ);
+            var s = RegionIo.getChunkInputStream(dir, chunkX, chunkZ);
+            if (s == null)
+            {
+                return null;
+            }
+
+            var var4 = s.getInputStream();
+
             if (var4 != null)
             {
-                if (!var4.hasKey("Level"))
+                NBTTagCompound var5 = NbtIo.read((DataInput)var4);
+                if (!var5.hasKey("Level"))
                 {
                     java.lang.System.@out.println("Chunk file at " + chunkX + "," + chunkZ + " is missing level data, skipping");
                     return null;
                 }
-                else if (!var4.getCompoundTag("Level").hasKey("Blocks"))
+                else if (!var5.getCompoundTag("Level").hasKey("Blocks"))
                 {
                     java.lang.System.@out.println("Chunk file at " + chunkX + "," + chunkZ + " is missing block data, skipping");
                     return null;
                 }
                 else
                 {
-                    Chunk var6 = loadChunkFromNbt(world, var4.getCompoundTag("Level"));
+                    Chunk var6 = loadChunkFromNbt(world, var5.getCompoundTag("Level"));
                     if (!var6.chunkPosEquals(chunkX, chunkZ))
                     {
                         java.lang.System.@out.println("Chunk file at " + chunkX + "," + chunkZ + " is in the wrong location; relocating. (Expected " + chunkX + ", " + chunkZ + ", got " + var6.x + ", " + var6.z + ")");
-                        var4.setInteger("xPos", chunkX);
-                        var4.setInteger("zPos", chunkZ);
-                        var6 = loadChunkFromNbt(world, var4.getCompoundTag("Level"));
+                        var5.setInteger("xPos", chunkX);
+                        var5.setInteger("zPos", chunkZ);
+                        var6 = loadChunkFromNbt(world, var5.getCompoundTag("Level"));
                     }
 
                     var6.fill();
@@ -52,16 +58,27 @@ namespace betareborn.Worlds.Chunks.Storage
             }
         }
 
-        public void saveChunk(World world, Chunk chunk, Action onSave, long _)
+        public void saveChunk(World world, Chunk chunk, Action unused1, long unused2)
         {
-            NBTTagCompound var4 = new();
-            NBTTagCompound var5 = new();
-            var4.setTag("Level", var5);
-            storeChunkInCompound(chunk, world, var5);
-            Region.RegionCache.writeChunkNBT(worldDir, chunk.x, chunk.z, var4);
+            try
+            {
+                DataOutputStream var3 = RegionIo.getChunkOutputStream(dir, chunk.x, chunk.z);
+                NBTTagCompound var4 = new();
+                NBTTagCompound var5 = new();
+                var4.setTag("Level", var5);
+                storeChunkInCompound(chunk, world, var5);
+                NbtIo.write(var4, var3);
+                var3.close();
+                WorldProperties var6 = world.getProperties();
+                var6.setSizeOnDisk(var6.getSizeOnDisk() + (long)RegionIo.getSizeDelta(dir, chunk.x, chunk.z));
+            }
+            catch (Exception var7)
+            {
+                System.Console.WriteLine(var7);
+            }
         }
 
-        private static void storeChunkInCompound(Chunk chunk, World world, NBTTagCompound nbt)
+        public static void storeChunkInCompound(Chunk chunk, World world, NBTTagCompound nbt)
         {
             nbt.setInteger("xPos", chunk.x);
             nbt.setInteger("zPos", chunk.z);
@@ -73,7 +90,7 @@ namespace betareborn.Worlds.Chunks.Storage
             nbt.setByteArray("HeightMap", chunk.heightmap);
             nbt.setBoolean("TerrainPopulated", chunk.terrainPopulated);
             chunk.lastSaveHadEntities = false;
-            NBTTagList var3 = new NBTTagList();
+            NBTTagList var3 = new();
 
             NBTTagCompound var7;
             for (int var4 = 0; var4 < chunk.entities.Length; ++var4)
@@ -90,7 +107,7 @@ namespace betareborn.Worlds.Chunks.Storage
             }
 
             nbt.setTag("Entities", var3);
-            NBTTagList var8 = new NBTTagList();
+            NBTTagList var8 = new();
 
             foreach (var var9 in chunk.blockEntities.Values)
             {
@@ -102,11 +119,11 @@ namespace betareborn.Worlds.Chunks.Storage
             nbt.setTag("TileEntities", var8);
         }
 
-        private static Chunk loadChunkFromNbt(World world, NBTTagCompound nbt)
+        public static Chunk loadChunkFromNbt(World world, NBTTagCompound nbt)
         {
             int var2 = nbt.getInteger("xPos");
             int var3 = nbt.getInteger("zPos");
-            Chunk var4 = new Chunk(world, var2, var3);
+            Chunk var4 = new(world, var2, var3);
             var4.blocks = nbt.getByteArray("Blocks");
             var4.meta = new ChunkNibbleArray(nbt.getByteArray("Data"));
             var4.skyLight = new ChunkNibbleArray(nbt.getByteArray("SkyLight"));
@@ -177,8 +194,6 @@ namespace betareborn.Worlds.Chunks.Storage
 
         public void flushToDisk()
         {
-            Region.RegionCache.unloadAllRegions(worldDir);
-            Region.RegionCache.resetLoadedCounters();
         }
     }
 }

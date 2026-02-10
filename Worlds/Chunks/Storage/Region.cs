@@ -98,7 +98,7 @@ namespace betareborn.Worlds.Chunks.Storage
 
                 try
                 {
-                    outputStream = RegionFileCache.getChunkOutputStream(worldDir, chunkCoord.x, chunkCoord.z);
+                    outputStream = RegionIo.getChunkOutputStream(worldDir, chunkCoord.x, chunkCoord.z);
 
                     writeChunkData(outputStream, chunk.chunkData);
                     chunk.chunkData.modified.completeSave(chunk.snapshotEpoch);
@@ -635,7 +635,7 @@ namespace betareborn.Worlds.Chunks.Storage
                 for (int z = 0; z < 32; z++)
                 {
                     ChunkPos chunkPos = new(xOffset + x, zOffset + z);
-                    ChunkDataStream chunkStream = RegionFileCache.getChunkInputStream(worldDir, chunkPos.x, chunkPos.z);
+                    ChunkDataStream chunkStream = RegionIo.getChunkInputStream(worldDir, chunkPos.x, chunkPos.z);
 
                     if (chunkStream != null)
                     {
@@ -683,7 +683,7 @@ namespace betareborn.Worlds.Chunks.Storage
             ByteArrayOutputStream outputStream = new();
             DataOutputStream dataOutput = new(outputStream);
             dataOutput.flush();
-            CompressedStreamTools.func_1139_a(nbt, dataOutput);
+            NbtIo.write(nbt, dataOutput);
             return outputStream.toByteArray();
         }
 
@@ -691,7 +691,7 @@ namespace betareborn.Worlds.Chunks.Storage
         {
             ByteArrayInputStream inputStream = new(bytes, 0, length);
             DataInputStream dataInput = new(inputStream);
-            return CompressedStreamTools.func_1141_a(dataInput);
+            return NbtIo.read((DataInput)dataInput);
         }
 
         //chunkX and chunkZ are not relative to region, they are world chunk coordinates
@@ -788,7 +788,7 @@ namespace betareborn.Worlds.Chunks.Storage
             }
             else if (compressionType == 2)
             {
-                NBTTagCompound chunkNBT = CompressedStreamTools.func_1141_a(chunkStream.getInputStream());
+                NBTTagCompound chunkNBT = NbtIo.read((DataInput)chunkStream.getInputStream());
                 writeInternal(chunkPos.x, chunkPos.z, chunkNBT, false);
             }
             else

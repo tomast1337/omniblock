@@ -8,7 +8,30 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Configurations>ClientRelease;ClientDebug;ServerRelease;ServerDebug</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.StartsWith('Client'))">
+    <StartupObject>betareborn.Minecraft</StartupObject>
+    <AssemblyName>BetaSharpClient</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.StartsWith('Server'))">
     <StartupObject>betareborn.Server.MinecraftServer</StartupObject>
+    <AssemblyName>BetaSharpServer</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.EndsWith('Debug'))">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.EndsWith('Release'))">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

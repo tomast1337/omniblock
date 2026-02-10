@@ -4,16 +4,16 @@ using java.util.zip;
 
 namespace betareborn
 {
-    public class CompressedStreamTools : java.lang.Object
+    public class NbtIo : java.lang.Object
     {
-        public static NBTTagCompound func_1138_a(InputStream var0)
+        public static NBTTagCompound read(InputStream var0)
         {
             DataInputStream var1 = new(new GZIPInputStream(var0));
 
             NBTTagCompound var2;
             try
             {
-                var2 = func_1141_a(var1);
+                var2 = read((DataInput)var1);
             }
             finally
             {
@@ -29,7 +29,7 @@ namespace betareborn
 
             try
             {
-                func_1139_a(var0, var2);
+                write(var0, var2);
             }
             finally
             {
@@ -38,7 +38,7 @@ namespace betareborn
 
         }
 
-        public static NBTTagCompound func_1141_a(DataInput var0)
+        public static NBTTagCompound read(DataInput var0)
         {
             NBTBase var1 = NBTBase.readTag(var0);
             if (var1 is NBTTagCompound)
@@ -51,7 +51,7 @@ namespace betareborn
             }
         }
 
-        public static void func_1139_a(NBTTagCompound var0, DataOutput var1)
+        public static void write(NBTTagCompound var0, DataOutput var1)
         {
             NBTBase.writeTag(var0, var1);
         }

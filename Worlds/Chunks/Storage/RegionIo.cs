@@ -4,7 +4,7 @@ using java.util;
 
 namespace betareborn.Worlds.Chunks.Storage
 {
-    public class RegionFileCache : java.lang.Object
+    public class RegionIo : java.lang.Object
     {
         private static readonly Map cache = new HashMap();
         private static readonly object l = new();

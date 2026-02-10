@@ -63,17 +63,14 @@ namespace betareborn.Server.Worlds
 
         public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
         {
-            throw new NotImplementedException();
         }
 
         public void obtainEntitySkin(Entity var1)
         {
-            throw new NotImplementedException();
         }
 
         public void releaseEntitySkin(Entity var1)
         {
-            throw new NotImplementedException();
         }
     }
 

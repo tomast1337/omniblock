@@ -48,7 +48,7 @@ namespace betareborn.Server
             //var1.setDaemon(true);
             //var1.start();
             //TODO: ADD CONSOLE INPUT
-            //ServerLog.init();
+            ServerLog.init();
             LOGGER.info("Starting minecraft server version Beta 1.7.3");
             if (Runtime.getRuntime().maxMemory() / 1024L / 1024L < 512L)
             {
@@ -289,9 +289,9 @@ namespace betareborn.Server
                     }
                 }
             }
-            catch (Throwable var58)
+            catch (System.Exception var58)
             {
-                var58.printStackTrace();
+                Console.WriteLine(var58);
                 LOGGER.log(Level.SEVERE, "Unexpected exception", var58);
 
                 while (running)

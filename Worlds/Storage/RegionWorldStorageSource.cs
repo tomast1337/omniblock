@@ -2,21 +2,22 @@ using betareborn.Util.Maths;
 using betareborn.Worlds.Chunks.Storage;
 using java.io;
 using java.util;
-using java.util.zip;
 
 namespace betareborn.Worlds.Storage
 {
     public class RegionWorldStorageSource : WorldStorageSource
     {
         protected readonly java.io.File dir;
+        private readonly bool async;
 
-        public RegionWorldStorageSource(java.io.File file)
+        public RegionWorldStorageSource(java.io.File file, bool async = false)
         {
             if (!file.exists())
             {
                 file.mkdirs();
             }
             dir = file;
+            this.async = async;
         }
 
         public virtual string getName()
@@ -57,18 +58,13 @@ namespace betareborn.Worlds.Storage
 
         public virtual void flush()
         {
-            RegionFileCache.flush();
+            RegionIo.flush();
         }
 
         public virtual WorldStorage get(string var1, bool var2)
         {
-            return new RegionWorldStorage(dir, var1, var2);
+            return new RegionWorldStorage(dir, var1, var2, async);
         }
-
-
-
-
-
 
         private static long getFolderSizeMB(java.io.File folder)
         {
@@ -109,7 +105,7 @@ namespace betareborn.Worlds.Storage
                 {
                     try
                     {
-                        var4 = CompressedStreamTools.func_1138_a(new FileInputStream(var3));
+                        var4 = NbtIo.read(new FileInputStream(var3));
                         var5 = var4.getCompoundTag("Data");
                         long sizeOnDisk = getFolderSizeMB(var2);
                         var wInfo = new WorldProperties(var5);
@@ -127,7 +123,7 @@ namespace betareborn.Worlds.Storage
                 {
                     try
                     {
-                        var4 = CompressedStreamTools.func_1138_a(new FileInputStream(var3));
+                        var4 = NbtIo.read(new FileInputStream(var3));
                         var5 = var4.getCompoundTag("Data");
                         long sizeOnDisk = getFolderSizeMB(var2);
                         var wInfo = new WorldProperties(var5);
@@ -154,10 +150,10 @@ namespace betareborn.Worlds.Storage
                 {
                     try
                     {
-                        betareborn.NBT.NBTTagCompound var5 = CompressedStreamTools.func_1138_a(new FileInputStream(var4));
+                        betareborn.NBT.NBTTagCompound var5 = NbtIo.read(new FileInputStream(var4));
                         betareborn.NBT.NBTTagCompound var6 = var5.getCompoundTag("Data");
                         var6.setString("LevelName", var2);
-                        CompressedStreamTools.writeGzippedCompoundToOutputStream(var5, new FileOutputStream(var4));
+                        NbtIo.writeGzippedCompoundToOutputStream(var5, new FileOutputStream(var4));
                     }
                     catch (java.lang.Exception var7)
                     {
