@@ -13,6 +13,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int y;
         public int z;
 
+        public WorldEventS2CPacket()
+        {
+        }
+
         public WorldEventS2CPacket(int eventId, int x, int y, int z, int data)
         {
             this.eventId = eventId;

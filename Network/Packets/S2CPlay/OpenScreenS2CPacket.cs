@@ -11,6 +11,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public string name;
         public int slotsCount;
 
+        public OpenScreenS2CPacket()
+        {
+        }
+
         public OpenScreenS2CPacket(int syncId, int screenHandlerId, String name, int size)
         {
             this.syncId = syncId;

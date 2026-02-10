@@ -1,5 +1,4 @@
 using betareborn.Entities;
-using betareborn.Network.Packets;
 using java.io;
 
 namespace betareborn.Network.Packets.S2CPlay

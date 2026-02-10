@@ -10,6 +10,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int propertyId;
         public int value;
 
+        public ScreenHandlerPropertyUpdateS2CPacket()
+        {
+        }
+
         public ScreenHandlerPropertyUpdateS2CPacket(int syncId, int propertyId, int value)
         {
             this.syncId = syncId;

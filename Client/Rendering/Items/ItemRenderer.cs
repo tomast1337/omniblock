@@ -24,22 +24,22 @@ namespace betareborn.Client.Rendering.Items
         public void doRenderItem(EntityItem var1, double var2, double var4, double var6, float var8, float var9)
         {
             random.setSeed(187L);
-            ItemStack var10 = var1.item;
+            ItemStack var10 = var1.stack;
             GLManager.GL.PushMatrix();
             float var11 = MathHelper.sin((var1.age + var9) / 10.0F + var1.field_804_d) * 0.1F + 0.1F;
             float var12 = ((var1.age + var9) / 20.0F + var1.field_804_d) * (180.0F / (float)java.lang.Math.PI);
             byte var13 = 1;
-            if (var1.item.count > 1)
+            if (var1.stack.count > 1)
             {
                 var13 = 2;
             }
 
-            if (var1.item.count > 5)
+            if (var1.stack.count > 5)
             {
                 var13 = 3;
             }
 
-            if (var1.item.count > 20)
+            if (var1.stack.count > 20)
             {
                 var13 = 4;
             }

@@ -9,6 +9,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int entityId;
         public int collectorEntityId;
 
+        public ItemPickupAnimationS2CPacket()
+        {
+        }
+
         public ItemPickupAnimationS2CPacket(int entityId, int collectorId)
         {
             this.entityId = entityId;

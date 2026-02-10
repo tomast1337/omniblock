@@ -10,6 +10,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int y;
         public int z;
 
+        public PlayerSpawnPositionS2CPacket()
+        {
+        }
+
         public PlayerSpawnPositionS2CPacket(int x, int y, int z)
         {
             this.x = x;

@@ -12,6 +12,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int itemRawId;
         public int itemDamage;
 
+        public EntityEquipmentUpdateS2CPacket()
+        {
+        }
+
         public EntityEquipmentUpdateS2CPacket(int id, int slot, ItemStack itemStack)
         {
             this.id = id;

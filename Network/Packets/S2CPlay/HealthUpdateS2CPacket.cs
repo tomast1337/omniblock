@@ -8,6 +8,10 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public int healthMP;
 
+        public HealthUpdateS2CPacket()
+        {
+        }
+
         public HealthUpdateS2CPacket(int health)
         {
             healthMP = health;

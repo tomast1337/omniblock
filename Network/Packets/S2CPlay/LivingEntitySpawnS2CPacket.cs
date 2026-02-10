@@ -1,5 +1,4 @@
 using betareborn.Entities;
-using betareborn.Network.Packets;
 using betareborn.Util.Maths;
 using java.io;
 using java.util;

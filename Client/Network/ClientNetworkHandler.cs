@@ -170,23 +170,23 @@ namespace betareborn.Client.Network
 
         public override void onLightningEntitySpawn(GlobalEntitySpawnS2CPacket var1)
         {
-            double var2 = var1.field_27053_b / 32.0D;
-            double var4 = var1.field_27057_c / 32.0D;
-            double var6 = var1.field_27056_d / 32.0D;
+            double var2 = var1.x / 32.0D;
+            double var4 = var1.y / 32.0D;
+            double var6 = var1.z / 32.0D;
             EntityLightningBolt var8 = null;
-            if (var1.field_27055_e == 1)
+            if (var1.type == 1)
             {
                 var8 = new EntityLightningBolt(worldClient, var2, var4, var6);
             }
 
             if (var8 != null)
             {
-                var8.trackedPosX = var1.field_27053_b;
-                var8.trackedPosY = var1.field_27057_c;
-                var8.trackedPosZ = var1.field_27056_d;
+                var8.trackedPosX = var1.x;
+                var8.trackedPosY = var1.y;
+                var8.trackedPosZ = var1.z;
                 var8.yaw = 0.0F;
                 var8.pitch = 0.0F;
-                var8.id = var1.field_27054_a;
+                var8.id = var1.id;
                 worldClient.spawnGlobalEntity(var8);
             }
 

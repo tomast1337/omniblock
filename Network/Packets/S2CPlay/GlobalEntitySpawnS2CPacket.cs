@@ -1,5 +1,4 @@
 using betareborn.Entities;
-using betareborn.Network.Packets;
 using betareborn.Util.Maths;
 using java.io;
 
@@ -9,11 +8,11 @@ namespace betareborn.Network.Packets.S2CPlay
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(GlobalEntitySpawnS2CPacket).TypeHandle);
 
-        public int field_27054_a;
-        public int field_27053_b;
-        public int field_27057_c;
-        public int field_27056_d;
-        public int field_27055_e;
+        public int id;
+        public int x;
+        public int y;
+        public int z;
+        public int type;
 
         public GlobalEntitySpawnS2CPacket()
         {
@@ -21,33 +20,33 @@ namespace betareborn.Network.Packets.S2CPlay
 
         public GlobalEntitySpawnS2CPacket(Entity var1)
         {
-            field_27054_a = var1.id;
-            field_27053_b = MathHelper.floor_double(var1.x * 32.0D);
-            field_27057_c = MathHelper.floor_double(var1.y * 32.0D);
-            field_27056_d = MathHelper.floor_double(var1.z * 32.0D);
+            id = var1.id;
+            x = MathHelper.floor_double(var1.x * 32.0D);
+            y = MathHelper.floor_double(var1.y * 32.0D);
+            z = MathHelper.floor_double(var1.z * 32.0D);
             if (var1 is EntityLightningBolt)
             {
-                field_27055_e = 1;
+                type = 1;
             }
 
         }
 
         public override void read(DataInputStream var1)
         {
-            field_27054_a = var1.readInt();
-            field_27055_e = (sbyte)var1.readByte();
-            field_27053_b = var1.readInt();
-            field_27057_c = var1.readInt();
-            field_27056_d = var1.readInt();
+            id = var1.readInt();
+            type = (sbyte)var1.readByte();
+            x = var1.readInt();
+            y = var1.readInt();
+            z = var1.readInt();
         }
 
         public override void write(DataOutputStream var1)
         {
-            var1.writeInt(field_27054_a);
-            var1.writeByte(field_27055_e);
-            var1.writeInt(field_27053_b);
-            var1.writeInt(field_27057_c);
-            var1.writeInt(field_27056_d);
+            var1.writeInt(id);
+            var1.writeByte(type);
+            var1.writeInt(x);
+            var1.writeInt(y);
+            var1.writeInt(z);
         }
 
         public override void apply(NetHandler var1)

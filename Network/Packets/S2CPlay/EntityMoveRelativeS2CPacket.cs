@@ -6,6 +6,10 @@ namespace betareborn.Network.Packets.S2CPlay
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityMoveRelativeS2CPacket).TypeHandle);
 
+        public EntityMoveRelativeS2CPacket()
+        {
+        }
+
         public EntityMoveRelativeS2CPacket(int entityId, byte deltaX, byte deltaY, byte deltaZ) : base(entityId)
         {
             this.deltaX = (sbyte)deltaX;

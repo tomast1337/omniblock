@@ -18,7 +18,7 @@ namespace betareborn.Network.Packets.S2CPlay
             this.deltaZ = (sbyte)deltaZ;
             this.yaw = (sbyte)yaw;
             this.pitch = (sbyte)pitch;
-            this.rotate = true;
+            rotate = true;
         }
 
         public override void read(DataInputStream var1)

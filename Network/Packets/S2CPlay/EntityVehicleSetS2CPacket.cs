@@ -10,10 +10,14 @@ namespace betareborn.Network.Packets.S2CPlay
         public int entityId;
         public int vehicleEntityId;
 
+        public EntityVehicleSetS2CPacket()
+        {
+        }
+
         public EntityVehicleSetS2CPacket(Entity entity, Entity vehicle)
         {
-            this.entityId = entity.id;
-            this.vehicleEntityId = vehicle != null ? vehicle.id : -1;
+            entityId = entity.id;
+            vehicleEntityId = vehicle != null ? vehicle.id : -1;
         }
 
         public override int size()

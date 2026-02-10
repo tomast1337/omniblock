@@ -8,9 +8,8 @@ namespace betareborn.Server.Network
 {
     public class ServerPlayerInteractionManager
     {
-        private ServerWorld world;
+        private readonly ServerWorld world;
         public EntityPlayer player;
-        private float blockBreakProgress = 0.0F;
         private int failedMiningStartTime;
         private int failedMiningX;
         private int failedMiningY;
@@ -97,8 +96,6 @@ namespace betareborn.Server.Network
                     }
                 }
             }
-
-            blockBreakProgress = 0.0F;
         }
 
         public bool finishMining(int x, int y, int z)

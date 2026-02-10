@@ -14,6 +14,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public float explosionSize;
         public Set destroyedBlockPositions;
 
+        public ExplosionS2CPacket()
+        {
+        }
+
         public ExplosionS2CPacket(double x, double y, double z, float radius, Set affectedBlocks)
         {
             explosionX = x;

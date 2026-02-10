@@ -9,6 +9,10 @@ namespace betareborn.Network.Packets.S2CPlay
         public int entityId;
         public sbyte entityStatus;
 
+        public EntityStatusS2CPacket()
+        {
+        }
+
         public EntityStatusS2CPacket(int entityId, byte status)
         {
             this.entityId = entityId;

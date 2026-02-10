@@ -11,7 +11,7 @@ namespace betareborn.Entities
     {
 
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityItem).TypeHandle);
-        public ItemStack item;
+        public ItemStack stack;
         private int field_803_e;
         public int age = 0;
         public int delayBeforeCanPickup;
@@ -23,7 +23,7 @@ namespace betareborn.Entities
             setBoundingBoxSpacing(0.25F, 0.25F);
             standingEyeHeight = height / 2.0F;
             setPosition(var2, var4, var6);
-            item = var8;
+            stack = var8;
             yaw = (float)(java.lang.Math.random() * 360.0D);
             velocityX = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
             velocityY = (double)0.2F;
@@ -121,7 +121,7 @@ namespace betareborn.Entities
         {
             var1.setShort("Health", (short)((byte)health));
             var1.setShort("Age", (short)age);
-            var1.setCompoundTag("Item", item.writeToNBT(new NBTTagCompound()));
+            var1.setCompoundTag("Item", stack.writeToNBT(new NBTTagCompound()));
         }
 
         public override void readNbt(NBTTagCompound var1)
@@ -129,29 +129,29 @@ namespace betareborn.Entities
             health = var1.getShort("Health") & 255;
             age = var1.getShort("Age");
             NBTTagCompound var2 = var1.getCompoundTag("Item");
-            item = new ItemStack(var2);
+            stack = new ItemStack(var2);
         }
 
         public override void onPlayerInteraction(EntityPlayer var1)
         {
             if (!world.isRemote)
             {
-                int var2 = item.count;
-                if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(item))
+                int var2 = stack.count;
+                if (delayBeforeCanPickup == 0 && var1.inventory.addItemStackToInventory(stack))
                 {
-                    if (item.itemId == Block.LOG.id)
+                    if (stack.itemId == Block.LOG.id)
                     {
                         var1.incrementStat(Achievements.MINE_WOOD);
                     }
 
-                    if (item.itemId == Item.LEATHER.id)
+                    if (stack.itemId == Item.LEATHER.id)
                     {
                         var1.incrementStat(Achievements.KILL_COW);
                     }
 
                     world.playSound(this, "random.pop", 0.2F, ((random.nextFloat() - random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
                     var1.sendPickup(this, var2);
-                    if (item.count <= 0)
+                    if (stack.count <= 0)
                     {
                         markDead();
                     }
