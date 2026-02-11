@@ -43,10 +43,6 @@ namespace betareborn.Stats
         private static bool hasBasicItemStatsInitialized = false;
         private static bool hasExtendedItemStatsInitialized = false;
 
-        public static void func_27360_a()
-        {
-        }
-
         public static void initializeItemStats()
         {
             USED = initItemUsedStats(USED, "stat.useItem", 16908288, 0, Block.BLOCKS.Length);

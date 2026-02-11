@@ -4,7 +4,7 @@ namespace betareborn.Client.Colors
     {
         private static int[] grassBuffer = new int[65536];
 
-        public static void func_28181_a(int[] var0)
+        public static void loadColors(int[] var0)
         {
             grassBuffer = var0;
         }

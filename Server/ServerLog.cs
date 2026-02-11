@@ -5,9 +5,16 @@ namespace betareborn.Server
     public class ServerLog
     {
         public static Logger LOGGER = Logger.getLogger("Minecraft");
+        private static bool initialized = false;
 
         public static void init()
         {
+            if (initialized)
+            {
+                return;
+            }
+
+            initialized = true;
             ConsoleFormatter var0 = new ConsoleFormatter();
             LOGGER.setUseParentHandlers(false);
             ConsoleHandler var1 = new ConsoleHandler();

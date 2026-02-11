@@ -10,7 +10,7 @@ namespace betareborn.Server.Commands
 {
     public class ServerCommandHandler
     {
-        private static Logger logger = Logger.getLogger("Minecraft");
+        private static readonly Logger logger = Logger.getLogger("Minecraft");
         private readonly MinecraftServer server;
 
         public ServerCommandHandler(MinecraftServer server)
@@ -121,9 +121,9 @@ namespace betareborn.Server.Commands
                 string var25 = var2.Substring(var2.IndexOf(" ")).Trim();
                 ServerPlayerEntity var33 = null;
 
-                for (int var8 = 0; var8 < var5.players.size(); var8++)
+                for (int var8 = 0; var8 < var5.players.Count; var8++)
                 {
-                    ServerPlayerEntity var9 = (ServerPlayerEntity)var5.players.get(var8);
+                    ServerPlayerEntity var9 = var5.players[var8];
                     if (var9.name.EqualsIgnoreCase(var25))
                     {
                         var33 = var9;
@@ -305,12 +305,12 @@ namespace betareborn.Server.Commands
                 if ("on".Equals(var5))
                 {
                     logCommand(commandUser, "Turned on white-listing");
-                    server.properties.setProperty("white-list", true);
+                    server.config.SetProperty("white-list", true);
                 }
                 else if ("off".Equals(var5))
                 {
                     logCommand(commandUser, "Turned off white-listing");
-                    server.properties.setProperty("white-list", false);
+                    server.config.SetProperty("white-list", false);
                 }
                 else if ("list".Equals(var5))
                 {

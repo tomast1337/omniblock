@@ -2,31 +2,44 @@ namespace betareborn.Util.Maths
 {
     public class Vec3D : java.lang.Object
     {
-        private static readonly List<Vec3D> vectorList = [];
-        private static int nextVector = 0;
+        private class Pool
+        {
+            private readonly List<Vec3D> vectorList = [];
+            private int index = 0;
+
+            public Vec3D create(double x, double y, double z)
+            {
+                if (index >= vectorList.Count)
+                {
+                    vectorList.Add(new Vec3D(0.0D, 0.0D, 0.0D));
+                }
+
+                return vectorList[index++].setComponents(x, y, z);
+            }
+
+            public void cleanUp()
+            {
+                vectorList.Clear();
+                index = 0;
+            }
+        }
+
+        private static readonly ThreadLocal<Pool> pool = new(() => new());
         public double xCoord;
         public double yCoord;
         public double zCoord;
 
         public static void cleanUp()
         {
-            vectorList.Clear();
-            nextVector = 0;
+            Pool? p = pool.Value ?? throw new Exception("Vec3D pool was not created!");
+            p.cleanUp();
         }
 
-        public static void initialize()
+        public static Vec3D createVector(double x, double y, double z)
         {
-            nextVector = 0;
-        }
+            Pool? p = pool.Value;
 
-        public static Vec3D createVector(double var0, double var2, double var4)
-        {
-            if (nextVector >= vectorList.Count)
-            {
-                vectorList.Add(new Vec3D(0.0D, 0.0D, 0.0D));
-            }
-
-            return vectorList[nextVector++].setComponents(var0, var2, var4);
+            return p == null ? throw new Exception("Vec3D pool was not created!") : p.create(x, y, z);
         }
 
         private Vec3D(double var1, double var3, double var5)

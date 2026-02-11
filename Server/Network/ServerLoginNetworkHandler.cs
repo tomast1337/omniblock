@@ -9,6 +9,8 @@ using java.lang;
 using java.net;
 using java.util.logging;
 
+using betareborn.Server.Internal;
+
 namespace betareborn.Server.Network
 {
     public class ServerLoginNetworkHandler : NetHandler
@@ -78,6 +80,10 @@ namespace betareborn.Server.Network
 
         public override void onHello(LoginHelloPacket packet)
         {
+            if (server is InternalServer)
+            {
+                packet.username = "player";
+            }
             username = packet.username;
             if (packet.protocolVersion != 14)
             {

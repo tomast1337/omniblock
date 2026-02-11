@@ -17,6 +17,7 @@ using betareborn.Entities;
 using betareborn.Items;
 using betareborn.Launcher;
 using betareborn.Profiling;
+using betareborn.Server.Internal;
 using betareborn.Stats;
 using betareborn.Util.Hit;
 using betareborn.Util.Maths;
@@ -31,10 +32,11 @@ using Silk.NET.Input;
 using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace betareborn
 {
-    public class Minecraft : java.lang.Object, Runnable
+    public partial class Minecraft : java.lang.Object, Runnable
     {
         public static Minecraft INSTANCE;
         public PlayerController playerController;
@@ -94,22 +96,43 @@ namespace betareborn
         long systemTime = java.lang.System.currentTimeMillis();
         private int joinPlayerCounter = 0;
         private ImGuiController imGuiController;
+        public InternalServer? internalServer;
 
         public Minecraft(int var4, int var5, bool var6)
         {
             loadingScreen = new LoadingScreenRenderer(this);
             guiAchievement = new GuiAchievement(this);
-            Stats.Stats.func_27360_a();
             tempDisplayHeight = var5;
             fullscreen = var6;
-            //tf is this
-            //new ThreadSleepForever(this, "Timer hack thread");
             displayWidth = var4;
             displayHeight = var5;
             fullscreen = var6;
-            //hideQuitButton = false;
 
             INSTANCE = this;
+        }
+
+        [LibraryImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
+        private static partial uint TimeBeginPeriod(uint period);
+
+        [LibraryImport("winmm.dll", EntryPoint = "timeEndPeriod")]
+        private static partial uint TimeEndPeriod(uint period);
+
+        private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        public void InitializeTimer()
+        {
+            if (IsWindows)
+            {
+                TimeBeginPeriod(1);
+            }
+        }
+
+        public void CleanupTimer()
+        {
+            if (IsWindows)
+            {
+                TimeEndPeriod(1);
+            }
         }
 
         public void onMinecraftCrash(UnexpectedThrowable var1)
@@ -131,6 +154,8 @@ namespace betareborn
 
         public unsafe void startGame()
         {
+            InitializeTimer();
+
             if (fullscreen)
             {
                 Display.setFullscreen(true);
@@ -172,9 +197,9 @@ namespace betareborn
             texturePackList = new TexturePacks(this, mcDataDir);
             textureManager = new TextureManager(texturePackList, options);
             fontRenderer = new TextRenderer(options, textureManager);
-            WaterColors.setcolorMap(textureManager.getColors("/misc/watercolor.png"));
-            GrassColors.func_28181_a(textureManager.getColors("/misc/grasscolor.png"));
-            FoliageColors.func_28152_a(textureManager.getColors("/misc/foliagecolor.png"));
+            WaterColors.loadColors(textureManager.getColors("/misc/watercolor.png"));
+            GrassColors.loadColors(textureManager.getColors("/misc/grasscolor.png"));
+            FoliageColors.loadColors(textureManager.getColors("/misc/foliagecolor.png"));
             gameRenderer = new GameRenderer(this);
             EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
             statFileWriter = new StatFileWriter(session, mcDataDir);
@@ -442,19 +467,9 @@ namespace betareborn
         {
             try
             {
+                stopInternalServer();
                 statFileWriter.func_27175_b();
                 statFileWriter.syncStats();
-
-                //try
-                //{
-                //    if (downloadResourcesThread != null)
-                //    {
-                //        downloadResourcesThread.closeMinecraft();
-                //    }
-                //}
-                //catch (java.lang.Exception var9)
-                //{
-                //}
 
                 java.lang.System.@out.println("Stopping!");
 
@@ -481,6 +496,8 @@ namespace betareborn
             finally
             {
                 Display.destroy();
+                CleanupTimer();
+
                 if (!hasCrashed)
                 {
                     java.lang.System.exit(0);
@@ -520,7 +537,6 @@ namespace betareborn
                     }
                     try
                     {
-                        Vec3D.initialize();
                         if (Display.isCloseRequested())
                         {
                             shutdown();
@@ -864,6 +880,19 @@ namespace betareborn
                     leftClickCounter = 10000;
                     mouseTicksRan = ticksRan + 10000;
                 }
+            }
+        }
+
+        public void stopInternalServer()
+        {
+            if (internalServer != null)
+            {
+                internalServer.stop();
+                while (!internalServer.stopped)
+                {
+                    System.Threading.Thread.Sleep(1);
+                }
+                internalServer = null;
             }
         }
 
@@ -1430,21 +1459,7 @@ namespace betareborn
         {
             changeWorld1((World)null);
             java.lang.System.gc();
-            WorldStorage var5 = saveLoader.get(var1, false);
-            World var6 = null;
-            var6 = new World(var5, var2, var3);
-            if (var6.isNewWorld)
-            {
-                statFileWriter.readStat(Stats.Stats.createWorldStat, 1);
-                statFileWriter.readStat(Stats.Stats.startGameStat, 1);
-                changeWorld2(var6, "Generating level");
-            }
-            else
-            {
-                statFileWriter.readStat(Stats.Stats.loadWorldStat, 1);
-                statFileWriter.readStat(Stats.Stats.startGameStat, 1);
-                changeWorld2(var6, "Loading level");
-            }
+            displayGuiScreen(new GuiLevelLoading(var1, var2, var3));
         }
 
 

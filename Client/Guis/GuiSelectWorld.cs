@@ -123,7 +123,6 @@ namespace betareborn.Client.Guis
 
         public void selectWorld(int var1)
         {
-            mc.displayGuiScreen(null);
             if (!selected)
             {
                 selected = true;
@@ -135,7 +134,6 @@ namespace betareborn.Client.Guis
                 }
 
                 mc.startWorld(var2, getSaveName(var1), 0L);
-                mc.displayGuiScreen(null);
             }
         }
 
