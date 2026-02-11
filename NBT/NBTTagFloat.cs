@@ -1,40 +1,39 @@
+using System.Globalization;
 using java.io;
 
 namespace betareborn.NBT
 {
-    public class NBTTagFloat : NBTBase
+    public sealed class NBTTagFloat : NBTBase
     {
-
         public float floatValue;
 
         public NBTTagFloat()
         {
         }
 
-        public NBTTagFloat(float var1)
+        public NBTTagFloat(float value)
         {
-            floatValue = var1;
+            floatValue = value;
         }
 
-        public override void writeTagContents(DataOutput var1)
+        public override void writeTagContents(DataOutput output)
         {
-            var1.writeFloat(floatValue);
+            output.writeFloat(floatValue);
         }
 
-        public override void readTagContents(DataInput var1)
+        public override void readTagContents(DataInput input)
         {
-            floatValue = var1.readFloat();
+            floatValue = input.readFloat();
         }
 
         public override byte getType()
         {
-            return (byte)5;
+            return 5;
         }
 
         public override string toString()
         {
-            return "" + floatValue;
+            return floatValue.ToString(CultureInfo.CurrentCulture);
         }
     }
-
 }

@@ -1,39 +1,39 @@
+using System.Globalization;
 using java.io;
 
 namespace betareborn.NBT
 {
-    public class NBTTagDouble : NBTBase
+    public sealed class NBTTagDouble : NBTBase
     {
-
         public double doubleValue;
 
         public NBTTagDouble()
         {
         }
 
-        public NBTTagDouble(double var1)
+        public NBTTagDouble(double value)
         {
-            doubleValue = var1;
+            doubleValue = value;
         }
 
-        public override void writeTagContents(DataOutput var1)
+        public override void writeTagContents(DataOutput output)
         {
-            var1.writeDouble(doubleValue);
+            output.writeDouble(doubleValue);
         }
 
-        public override void readTagContents(DataInput var1)
+        public override void readTagContents(DataInput input)
         {
-            doubleValue = var1.readDouble();
+            doubleValue = input.readDouble();
         }
 
         public override byte getType()
         {
-            return (byte)6;
+            return 6;
         }
 
         public override string toString()
         {
-            return "" + doubleValue;
+            return doubleValue.ToString(CultureInfo.CurrentCulture);
         }
     }
 }

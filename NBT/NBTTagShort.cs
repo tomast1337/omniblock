@@ -2,39 +2,37 @@ using java.io;
 
 namespace betareborn.NBT
 {
-    public class NBTTagShort : NBTBase
+    public sealed class NBTTagShort : NBTBase
     {
-
         public short shortValue;
 
         public NBTTagShort()
         {
         }
 
-        public NBTTagShort(short var1)
+        public NBTTagShort(short value)
         {
-            shortValue = var1;
+            shortValue = value;
         }
 
-        public override void writeTagContents(DataOutput var1)
+        public override void writeTagContents(DataOutput output)
         {
-            var1.writeShort(shortValue);
+            output.writeShort(shortValue);
         }
 
-        public override void readTagContents(DataInput var1)
+        public override void readTagContents(DataInput input)
         {
-            shortValue = var1.readShort();
+            shortValue = input.readShort();
         }
 
         public override byte getType()
         {
-            return (byte)2;
+            return 2;
         }
 
         public override string toString()
         {
-            return "" + shortValue;
+            return shortValue.ToString();
         }
     }
-
 }

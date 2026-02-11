@@ -2,20 +2,21 @@ using java.io;
 
 namespace betareborn.NBT
 {
-    public class NBTTagEnd : NBTBase
+    public sealed class NBTTagEnd : NBTBase
     {
-        public override void readTagContents(DataInput var1)
+        public override void readTagContents(DataInput input)
         {
+            throw new InvalidOperationException("Cannot read end tag");
         }
 
-        public override void writeTagContents(DataOutput var1)
+        public override void writeTagContents(DataOutput output)
         {
+            throw new InvalidOperationException("Cannot write end tag");
         }
-
 
         public override byte getType()
         {
-            return (byte)0;
+            return 0;
         }
 
         public override string toString()
@@ -23,5 +24,4 @@ namespace betareborn.NBT
             return "END";
         }
     }
-
 }

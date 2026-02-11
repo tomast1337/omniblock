@@ -4,74 +4,77 @@ namespace betareborn.NBT
 {
     public abstract class NBTBase : java.lang.Object
     {
-        private string key = null;
+        private string? key;
 
-        public abstract void writeTagContents(DataOutput var1);
+        public abstract void writeTagContents(DataOutput output);
 
-        public abstract void readTagContents(DataInput var1);
+        public abstract void readTagContents(DataInput input);
 
         public abstract byte getType();
 
         public string getKey()
         {
-            return key == null ? "" : key;
+            return key ?? string.Empty;
         }
 
-        public NBTBase setKey(string var1)
+        public NBTBase setKey(string value)
         {
-            key = var1;
+            key = value;
             return this;
         }
 
-        public static NBTBase readTag(DataInput var0)
+        public static NBTBase readTag(DataInput input)
         {
+            var identifier = input.readByte();
 
-            byte var1 = var0.readByte();
-            if (var1 == 0)
+            if (identifier is 0)
             {
                 return new NBTTagEnd();
             }
-            else
-            {
-                NBTBase var2 = createTagOfType(var1);
-                var2.key = var0.readUTF();
-                var2.readTagContents(var0);
-                return var2;
-            }
+
+            var tag = createTagOfType(identifier);
+
+            tag.key = input.readUTF();
+            tag.readTagContents(input);
+
+            return tag;
         }
 
-        public static void writeTag(NBTBase var0, DataOutput var1)
+        public static void writeTag(NBTBase tag, DataOutput output)
         {
-            var1.writeByte(var0.getType());
-            if (var0.getType() != 0)
+            output.writeByte(tag.getType());
+
+            if (tag.getType() is 0)
             {
-                var1.writeUTF(var0.getKey());
-                var0.writeTagContents(var1);
+                return;
             }
+
+            output.writeUTF(tag.getKey());
+            tag.writeTagContents(output);
         }
 
-        public static NBTBase createTagOfType(byte var0)
+        public static NBTBase createTagOfType(byte identifier)
         {
-            return var0 switch
+            return identifier switch
             {
-                0 => (NBTBase)new NBTTagEnd(),
-                1 => (NBTBase)new NBTTagByte(),
-                2 => (NBTBase)new NBTTagShort(),
-                3 => (NBTBase)new NBTTagInt(),
-                4 => (NBTBase)new NBTTagLong(),
-                5 => (NBTBase)new NBTTagFloat(),
-                6 => (NBTBase)new NBTTagDouble(),
-                7 => (NBTBase)new NBTTagByteArray(),
-                8 => (NBTBase)new NBTTagString(),
-                9 => (NBTBase)new NBTTagList(),
-                10 => (NBTBase)new NBTTagCompound(),
-                _ => null,
+                0 => new NBTTagEnd(),
+                1 => new NBTTagByte(),
+                2 => new NBTTagShort(),
+                3 => new NBTTagInt(),
+                4 => new NBTTagLong(),
+                5 => new NBTTagFloat(),
+                6 => new NBTTagDouble(),
+                7 => new NBTTagByteArray(),
+                8 => new NBTTagString(),
+                9 => new NBTTagList(),
+                10 => new NBTTagCompound(),
+                _ => throw new ArgumentOutOfRangeException(nameof(identifier), identifier, "Unknown NBT identifier")
             };
         }
 
-        public static string getTagName(byte var0)
+        public static string getTagName(byte identifier)
         {
-            return var0 switch
+            return identifier switch
             {
                 0 => "TAG_End",
                 1 => "TAG_Byte",
@@ -84,9 +87,8 @@ namespace betareborn.NBT
                 8 => "TAG_String",
                 9 => "TAG_List",
                 10 => "TAG_Compound",
-                _ => "UNKNOWN",
+                _ => throw new ArgumentOutOfRangeException(nameof(identifier), identifier, "Unknown NBT identifier")
             };
         }
-
     }
 }

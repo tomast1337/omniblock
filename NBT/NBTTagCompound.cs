@@ -3,169 +3,165 @@ using java.util;
 
 namespace betareborn.NBT
 {
-    public class NBTTagCompound : NBTBase
+    public sealed class NBTTagCompound : NBTBase
     {
+        private readonly Dictionary<string, NBTBase> tagMap = [];
 
-        private readonly Map tagMap = new HashMap();
-
-        public override void writeTagContents(DataOutput var1)
+        public override void writeTagContents(DataOutput output)
         {
-            Iterator var2 = tagMap.values().iterator();
-
-            while (var2.hasNext())
+            foreach (var value in tagMap.Values)
             {
-                NBTBase var3 = (NBTBase)var2.next();
-                writeTag(var3, var1);
+                writeTag(value, output);
             }
 
-            var1.writeByte(0);
+            output.writeByte(0);
         }
 
-        public override void readTagContents(DataInput var1)
+        public override void readTagContents(DataInput input)
         {
-            tagMap.clear();
+            tagMap.Clear();
 
             while (true)
             {
-                NBTBase var2 = readTag(var1);
-                if (var2.getType() == 0)
+                var tag = readTag(input);
+
+                if (tag.getType() is 0)
                 {
                     return;
                 }
 
-                tagMap.put(var2.getKey(), var2);
+                tagMap[tag.getKey()] = tag;
             }
         }
 
         public Collection func_28110_c()
         {
-            return tagMap.values();
+            throw new NotImplementedException();
         }
 
         public override byte getType()
         {
-            return (byte)10;
+            return 10;
         }
 
-        public void setTag(string var1, NBTBase var2)
+        public void setTag(string key, NBTBase value)
         {
-            tagMap.put(var1, var2.setKey(var1));
+            tagMap[key] = value.setKey(key);
         }
 
-        public void setByte(string var1, sbyte var2)
+        public void setByte(string key, sbyte value)
         {
-            tagMap.put(var1, (new NBTTagByte(var2)).setKey(var1));
+            tagMap[key] = new NBTTagByte(value).setKey(key);
         }
 
-        public void setShort(string var1, short var2)
+        public void setShort(string key, short value)
         {
-            tagMap.put(var1, (new NBTTagShort(var2)).setKey(var1));
+            tagMap[key] = new NBTTagShort(value).setKey(key);
         }
 
-        public void setInteger(string var1, int var2)
+        public void setInteger(string key, int value)
         {
-            tagMap.put(var1, (new NBTTagInt(var2)).setKey(var1));
+            tagMap[key] = new NBTTagInt(value).setKey(key);
         }
 
-        public void setLong(string var1, long var2)
+        public void setLong(string key, long value)
         {
-            tagMap.put(var1, (new NBTTagLong(var2)).setKey(var1));
+            tagMap[key] = new NBTTagLong(value).setKey(key);
         }
 
-        public void setFloat(string var1, float var2)
+        public void setFloat(string key, float value)
         {
-            tagMap.put(var1, (new NBTTagFloat(var2)).setKey(var1));
+            tagMap[key] = new NBTTagFloat(value).setKey(key);
         }
 
-        public void setDouble(string var1, double var2)
+        public void setDouble(string key, double value)
         {
-            tagMap.put(var1, (new NBTTagDouble(var2)).setKey(var1));
+            tagMap[key] = new NBTTagDouble(value).setKey(key);
         }
 
-        public void setString(string var1, string var2)
+        public void setString(string key, string value)
         {
-            tagMap.put(var1, (new NBTTagString(var2)).setKey(var1));
+            tagMap[key] = new NBTTagString(value).setKey(key);
         }
 
-        public void setByteArray(string var1, byte[] var2)
+        public void setByteArray(string key, byte[] value)
         {
-            tagMap.put(var1, (new NBTTagByteArray(var2)).setKey(var1));
+            tagMap[key] = new NBTTagByteArray(value).setKey(key);
         }
 
-        public void setCompoundTag(string var1, NBTTagCompound var2)
+        public void setCompoundTag(string key, NBTTagCompound value)
         {
-            tagMap.put(var1, var2.setKey(var1));
+            tagMap[key] = value.setKey(key);
         }
 
-        public void setBoolean(string var1, bool var2)
+        public void setBoolean(string key, bool value)
         {
-            setByte(var1, (sbyte)(var2 ? 1 : 0));
+            setByte(key, (sbyte) (value ? 1 : 0));
         }
 
-        public bool hasKey(string var1)
+        public bool hasKey(string key)
         {
-            return tagMap.containsKey(var1);
+            return tagMap.ContainsKey(key);
         }
 
-        public sbyte getByte(string var1)
+        public sbyte getByte(string key)
         {
-            return !tagMap.containsKey(var1) ? (sbyte)0 : ((NBTTagByte)tagMap.get(var1)).byteValue;
+            return !tagMap.TryGetValue(key, out var value) ? (sbyte) 0 : ((NBTTagByte) value).byteValue;
         }
 
-        public short getShort(string var1)
+        public short getShort(string key)
         {
-            return !tagMap.containsKey(var1) ? (short)0 : ((NBTTagShort)tagMap.get(var1)).shortValue;
+            return !tagMap.TryGetValue(key, out var value) ? (short) 0 : ((NBTTagShort) value).shortValue;
         }
 
-        public int getInteger(string var1)
+        public int getInteger(string key)
         {
-            return !tagMap.containsKey(var1) ? 0 : ((NBTTagInt)tagMap.get(var1)).intValue;
+            return !tagMap.TryGetValue(key, out var value) ? 0 : ((NBTTagInt) value).intValue;
         }
 
-        public long getLong(string var1)
+        public long getLong(string key)
         {
-            return !tagMap.containsKey(var1) ? 0L : ((NBTTagLong)tagMap.get(var1)).longValue;
+            return !tagMap.TryGetValue(key, out var value) ? 0L : ((NBTTagLong) value).longValue;
         }
 
-        public float getFloat(string var1)
+        public float getFloat(string key)
         {
-            return !tagMap.containsKey(var1) ? 0.0F : ((NBTTagFloat)tagMap.get(var1)).floatValue;
+            return !tagMap.TryGetValue(key, out var value) ? 0.0F : ((NBTTagFloat) value).floatValue;
         }
 
-        public double getDouble(string var1)
+        public double getDouble(string key)
         {
-            return !tagMap.containsKey(var1) ? 0.0D : ((NBTTagDouble)tagMap.get(var1)).doubleValue;
+            return !tagMap.TryGetValue(key, out var value) ? 0.0D : ((NBTTagDouble) value).doubleValue;
         }
 
-        public string getString(string var1)
+        public string getString(string key)
         {
-            return !tagMap.containsKey(var1) ? "" : ((NBTTagString)tagMap.get(var1)).stringValue;
+            return !tagMap.TryGetValue(key, out var value) ? string.Empty : ((NBTTagString) value).stringValue;
         }
 
-        public byte[] getByteArray(string var1)
+        public byte[] getByteArray(string key)
         {
-            return !tagMap.containsKey(var1) ? [] : ((NBTTagByteArray)tagMap.get(var1)).byteArray;
+            return !tagMap.TryGetValue(key, out var value) ? [] : ((NBTTagByteArray) value).byteArray;
         }
 
-        public NBTTagCompound getCompoundTag(string var1)
+        public NBTTagCompound getCompoundTag(string key)
         {
-            return !tagMap.containsKey(var1) ? new NBTTagCompound() : (NBTTagCompound)tagMap.get(var1);
+            return !tagMap.TryGetValue(key, out var value) ? new NBTTagCompound() : (NBTTagCompound) value;
         }
 
-        public NBTTagList getTagList(string var1)
+        public NBTTagList getTagList(string key)
         {
-            return !tagMap.containsKey(var1) ? new NBTTagList() : (NBTTagList)tagMap.get(var1);
+            return !tagMap.TryGetValue(key, out var value) ? new NBTTagList() : (NBTTagList) value;
         }
 
-        public bool getBoolean(string var1)
+        public bool getBoolean(string key)
         {
-            return getByte(var1) != 0;
+            return getByte(key) != 0;
         }
 
         public override string toString()
         {
-            return "" + tagMap.size() + " entries";
+            return $"{tagMap.Count} entries";
         }
     }
-
 }
