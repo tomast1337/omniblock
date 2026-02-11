@@ -1,6 +1,6 @@
 using betareborn.Client;
 
-namespace betareborn
+namespace betareborn.Client.Input
 {
     public class MouseHelper
     {

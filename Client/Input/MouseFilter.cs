@@ -1,4 +1,4 @@
-namespace betareborn
+namespace betareborn.Client.Input
 {
     public class MouseFilter : java.lang.Object
     {

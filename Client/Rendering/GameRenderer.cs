@@ -1,5 +1,6 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
+using betareborn.Client.Input;
 using betareborn.Client.Rendering.Core;
 using betareborn.Client.Rendering.Items;
 using betareborn.Entities;
