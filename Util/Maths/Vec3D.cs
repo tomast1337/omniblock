@@ -19,7 +19,6 @@ namespace betareborn.Util.Maths
 
             public void cleanUp()
             {
-                vectorList.Clear();
                 index = 0;
             }
         }
