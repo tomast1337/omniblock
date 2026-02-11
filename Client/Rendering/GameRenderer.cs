@@ -411,8 +411,8 @@ namespace betareborn.Client.Rendering
                 }
                 if (client.options.smoothCamera)
                 {
-                    var4 = mouseFilterXAxis.func_22386_a(var4, 0.05F * var3);
-                    var5 = mouseFilterYAxis.func_22386_a(var5, 0.05F * var3);
+                    var4 = mouseFilterXAxis.Smooth(var4, 0.05F * var3);
+                    var5 = mouseFilterYAxis.Smooth(var5, 0.05F * var3);
                 }
                 client.player.changeLookDirection(var4, var5 * var6);
             }

@@ -6,7 +6,6 @@ namespace betareborn
     {
         public int deltaX;
         public int deltaY;
-        private int field_1115_e = 10;
 
         public MouseHelper()
         {
