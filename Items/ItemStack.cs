@@ -12,7 +12,7 @@ namespace betareborn.Items
         public int itemId;
         private int damage;
 
-        public ItemStack(Block var1) : this((Block)var1, 1)
+        public ItemStack(Block block) : this((Block)block, 1)
         {
         }
 
@@ -22,44 +22,44 @@ namespace betareborn.Items
             this.count = count;
         }
 
-        public ItemStack(Block var1, int var2) : this(var1.id, var2, 0)
+        public ItemStack(Block block, int count) : this(block.id, count, 0)
         {
         }
 
-        public ItemStack(Block var1, int var2, int var3) : this(var1.id, var2, var3)
+        public ItemStack(Block block, int count, int damage) : this(block.id, count, damage)
         {
         }
 
-        public ItemStack(Item var1) : this(var1.id, 1, 0)
+        public ItemStack(Item item) : this(item.id, 1, 0)
         {
         }
 
-        public ItemStack(Item var1, int var2) : this(var1.id, var2, 0)
+        public ItemStack(Item item, int count) : this(item.id, count, 0)
         {
         }
 
-        public ItemStack(Item var1, int var2, int var3) : this(var1.id, var2, var3)
+        public ItemStack(Item item, int count, int damage) : this(item.id, count, damage)
         {
         }
 
-        public ItemStack(int var1, int var2, int var3)
+        public ItemStack(int itemId, int count, int damage)
+        {
+            this.count = 0;
+            this.itemId = itemId;
+            this.count = count;
+            this.damage = damage;
+        }
+
+        public ItemStack(NBTTagCompound nbt)
         {
             count = 0;
-            itemId = var1;
-            count = var2;
-            damage = var3;
+            readFromNBT(nbt);
         }
 
-        public ItemStack(NBTTagCompound var1)
+        public ItemStack split(int splitAmount)
         {
-            count = 0;
-            readFromNBT(var1);
-        }
-
-        public ItemStack split(int var1)
-        {
-            count -= var1;
-            return new ItemStack(itemId, var1, damage);
+            count -= splitAmount;
+            return new ItemStack(itemId, splitAmount, damage);
         }
 
         public Item getItem()
@@ -72,40 +72,40 @@ namespace betareborn.Items
             return getItem().getTextureId(this);
         }
 
-        public bool useOnBlock(EntityPlayer var1, World var2, int var3, int var4, int var5, int var6)
+        public bool useOnBlock(EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            bool var7 = getItem().useOnBlock(this, var1, var2, var3, var4, var5, var6);
-            if (var7)
+            bool item = getItem().useOnBlock(this, entityPlayer, world, x, y, z, meta);
+            if (item)
             {
-                var1.increaseStat(Stats.Stats.USED[itemId], 1);
+                entityPlayer.increaseStat(Stats.Stats.USED[itemId], 1);
             }
 
-            return var7;
+            return item;
         }
 
-        public float getMiningSpeedMultiplier(Block var1)
+        public float getMiningSpeedMultiplier(Block block)
         {
-            return getItem().getMiningSpeedMultiplier(this, var1);
+            return getItem().getMiningSpeedMultiplier(this, block);
         }
 
-        public ItemStack use(World var1, EntityPlayer var2)
+        public ItemStack use(World world, EntityPlayer entityPlayer)
         {
-            return getItem().use(this, var1, var2);
+            return getItem().use(this, world, entityPlayer);
         }
 
-        public NBTTagCompound writeToNBT(NBTTagCompound var1)
+        public NBTTagCompound writeToNBT(NBTTagCompound nbt)
         {
-            var1.setShort("id", (short)itemId);
-            var1.setByte("Count", (sbyte)count);
-            var1.setShort("Damage", (short)damage);
-            return var1;
+            nbt.setShort("id", (short)itemId);
+            nbt.setByte("Count", (sbyte)count);
+            nbt.setShort("Damage", (short)damage);
+            return nbt;
         }
 
-        public void readFromNBT(NBTTagCompound var1)
+        public void readFromNBT(NBTTagCompound nbt)
         {
-            itemId = var1.getShort("id");
-            count = var1.getByte("Count");
-            damage = var1.getShort("Damage");
+            itemId = nbt.getShort("id");
+            count = nbt.getByte("Count");
+            damage = nbt.getShort("Damage");
         }
 
         public int getMaxCount()
@@ -143,9 +143,9 @@ namespace betareborn.Items
             return damage;
         }
 
-        public void setDamage(int var1)
+        public void setDamage(int damage)
         {
-            damage = var1;
+            this.damage = damage;
         }
 
         public int getMaxDamage()
@@ -153,16 +153,16 @@ namespace betareborn.Items
             return Item.ITEMS[itemId].getMaxDamage();
         }
 
-        public void damageItem(int var1, Entity var2)
+        public void damageItem(int damageAmount, Entity entity)
         {
             if (isDamageable())
             {
-                damage += var1;
+                damage += damageAmount;
                 if (damage > getMaxDamage())
                 {
-                    if (var2 is EntityPlayer)
+                    if (entity is EntityPlayer)
                     {
-                        ((EntityPlayer)var2).increaseStat(Stats.Stats.BROKEN[itemId], 1);
+                        ((EntityPlayer)entity).increaseStat(Stats.Stats.BROKEN[itemId], 1);
                     }
 
                     --count;
@@ -177,43 +177,43 @@ namespace betareborn.Items
             }
         }
 
-        public void postHit(EntityLiving var1, EntityPlayer var2)
+        public void postHit(EntityLiving entityLiving, EntityPlayer entityPlayer)
         {
-            bool var3 = Item.ITEMS[itemId].postHit(this, var1, var2);
-            if (var3)
+            bool hit = Item.ITEMS[itemId].postHit(this, entityLiving, entityPlayer);
+            if (hit)
             {
-                var2.increaseStat(Stats.Stats.USED[itemId], 1);
+                entityPlayer.increaseStat(Stats.Stats.USED[itemId], 1);
             }
 
         }
 
-        public void postMine(int var1, int var2, int var3, int var4, EntityPlayer var5)
+        public void postMine(int blockId, int x, int y, int z, EntityPlayer entityPlayer)
         {
-            bool var6 = Item.ITEMS[itemId].postMine(this, var1, var2, var3, var4, var5);
-            if (var6)
+            bool mined = Item.ITEMS[itemId].postMine(this, blockId, x, y, z, entityPlayer);
+            if (mined)
             {
-                var5.increaseStat(Stats.Stats.USED[itemId], 1);
+                entityPlayer.increaseStat(Stats.Stats.USED[itemId], 1);
             }
 
         }
 
-        public int getAttackDamage(Entity var1)
+        public int getAttackDamage(Entity entity)
         {
-            return Item.ITEMS[itemId].getAttackDamage(var1);
+            return Item.ITEMS[itemId].getAttackDamage(entity);
         }
 
-        public bool isSuitableFor(Block var1)
+        public bool isSuitableFor(Block block)
         {
-            return Item.ITEMS[itemId].isSuitableFor(var1);
+            return Item.ITEMS[itemId].isSuitableFor(block);
         }
 
-        public void onRemoved(EntityPlayer var1)
+        public void onRemoved(EntityPlayer entityPlayer)
         {
         }
 
-        public void useOnEntity(EntityLiving var1)
+        public void useOnEntity(EntityLiving entityLiving)
         {
-            Item.ITEMS[itemId].useOnEntity(this, var1);
+            Item.ITEMS[itemId].useOnEntity(this, entityLiving);
         }
 
         public ItemStack copy()
@@ -221,19 +221,19 @@ namespace betareborn.Items
             return new ItemStack(itemId, count, damage);
         }
 
-        public static bool areEqual(ItemStack var0, ItemStack var1)
+        public static bool areEqual(ItemStack a, ItemStack b)
         {
-            return var0 == null && var1 == null ? true : (var0 != null && var1 != null ? var0.equals2(var1) : false);
+            return a == null && b == null ? true : (a != null && b != null ? a.equals2(b) : false);
         }
 
-        private bool equals2(ItemStack var1)
+        private bool equals2(ItemStack itemStack)
         {
-            return count != var1.count ? false : (itemId != var1.itemId ? false : damage == var1.damage);
+            return count != itemStack.count ? false : (itemId != itemStack.itemId ? false : damage == itemStack.damage);
         }
 
-        public bool isItemEqual(ItemStack var1)
+        public bool isItemEqual(ItemStack itemStack)
         {
-            return itemId == var1.itemId && damage == var1.damage;
+            return itemId == itemStack.itemId && damage == itemStack.damage;
         }
 
         public string getItemName()
@@ -241,9 +241,9 @@ namespace betareborn.Items
             return Item.ITEMS[itemId].getItemNameIS(this);
         }
 
-        public static ItemStack clone(ItemStack var0)
+        public static ItemStack clone(ItemStack itemStack)
         {
-            return var0 == null ? null : var0.copy();
+            return itemStack == null ? null : itemStack.copy();
         }
 
         public override string toString()
@@ -251,25 +251,25 @@ namespace betareborn.Items
             return count + "x" + Item.ITEMS[itemId].getItemName() + "@" + damage;
         }
 
-        public void inventoryTick(World var1, Entity var2, int var3, bool var4)
+        public void inventoryTick(World world, Entity entity, int slotIndex, bool shouldUpdate)
         {
             if (bobbingAnimationTime > 0)
             {
                 --bobbingAnimationTime;
             }
 
-            Item.ITEMS[itemId].inventoryTick(this, var1, var2, var3, var4);
+            Item.ITEMS[itemId].inventoryTick(this, world, entity, slotIndex, shouldUpdate);
         }
 
-        public void onCraft(World var1, EntityPlayer var2)
+        public void onCraft(World world, EntityPlayer entityPlayer)
         {
-            var2.increaseStat(Stats.Stats.CRAFTED[itemId], count);
-            Item.ITEMS[itemId].onCraft(this, var1, var2);
+            entityPlayer.increaseStat(Stats.Stats.CRAFTED[itemId], count);
+            Item.ITEMS[itemId].onCraft(this, world, entityPlayer);
         }
 
-        public bool equals(ItemStack var1)
+        public bool equals(ItemStack itemStack)
         {
-            return itemId == var1.itemId && count == var1.count && damage == var1.damage;
+            return itemId == itemStack.itemId && count == itemStack.count && damage == itemStack.damage;
         }
     }
 

@@ -3,15 +3,15 @@ namespace betareborn.Items
     public class ItemCoal : Item
     {
 
-        public ItemCoal(int var1) : base(var1)
+        public ItemCoal(int id) : base(id)
         {
             setHasSubtypes(true);
             setMaxDamage(0);
         }
 
-        public override String getItemNameIS(ItemStack var1)
+        public override String getItemNameIS(ItemStack itemStack)
         {
-            return var1.getDamage() == 1 ? "item.charcoal" : "item.coal";
+            return itemStack.getDamage() == 1 ? "item.charcoal" : "item.coal";
         }
     }
 

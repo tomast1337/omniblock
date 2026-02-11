@@ -8,7 +8,7 @@ namespace betareborn.Items
 
         private static Block[] blocksEffectiveAgainst = new Block[] { Block.PLANKS, Block.BOOKSHELF, Block.LOG, Block.CHEST };
 
-        public ItemAxe(int var1, EnumToolMaterial var2) : base(var1, 3, var2, blocksEffectiveAgainst)
+        public ItemAxe(int id, EnumToolMaterial enumToolMaterial) : base(id, 3, enumToolMaterial, blocksEffectiveAgainst)
         {
         }
     }

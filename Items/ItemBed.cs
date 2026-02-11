@@ -8,48 +8,48 @@ namespace betareborn.Items
     public class ItemBed : Item
     {
 
-        public ItemBed(int var1) : base(var1)
+        public ItemBed(int id) : base(id)
         {
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var7 != 1)
+            if (meta != 1)
             {
                 return false;
             }
             else
             {
-                ++var5;
-                BlockBed var8 = (BlockBed)Block.BED;
-                int var9 = MathHelper.floor_double((double)(var2.yaw * 4.0F / 360.0F) + 0.5D) & 3;
-                sbyte var10 = 0;
-                sbyte var11 = 0;
-                if (var9 == 0)
+                ++y;
+                BlockBed blockBed = (BlockBed)Block.BED;
+                int direction = MathHelper.floor_double((double)(entityPlayer.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+                sbyte headOffsetX = 0;
+                sbyte headOffsetZ = 0;
+                if (direction == 0)
                 {
-                    var11 = 1;
+                    headOffsetZ = 1;
                 }
 
-                if (var9 == 1)
+                if (direction == 1)
                 {
-                    var10 = -1;
+                    headOffsetX = -1;
                 }
 
-                if (var9 == 2)
+                if (direction == 2)
                 {
-                    var11 = -1;
+                    headOffsetZ = -1;
                 }
 
-                if (var9 == 3)
+                if (direction == 3)
                 {
-                    var10 = 1;
+                    headOffsetX = 1;
                 }
 
-                if (var3.isAir(var4, var5, var6) && var3.isAir(var4 + var10, var5, var6 + var11) && var3.shouldSuffocate(var4, var5 - 1, var6) && var3.shouldSuffocate(var4 + var10, var5 - 1, var6 + var11))
+                if (world.isAir(x, y, z) && world.isAir(x + headOffsetX, y, z + headOffsetZ) && world.shouldSuffocate(x, y - 1, z) && world.shouldSuffocate(x + headOffsetX, y - 1, z + headOffsetZ))
                 {
-                    var3.setBlock(var4, var5, var6, var8.id, var9);
-                    var3.setBlock(var4 + var10, var5, var6 + var11, var8.id, var9 + 8);
-                    --var1.count;
+                    world.setBlock(x, y, z, blockBed.id, direction);
+                    world.setBlock(x + headOffsetX, y, z + headOffsetZ, blockBed.id, direction + 8);
+                    --itemStack.count;
                     return true;
                 }
                 else

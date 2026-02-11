@@ -10,13 +10,13 @@ namespace betareborn.Items
         public readonly int damageReduceAmount;
         public readonly int renderIndex;
 
-        public ItemArmor(int var1, int var2, int var3, int var4) : base(var1)
+        public ItemArmor(int id, int armorLevel, int renderIndex, int armorType) : base(id)
         {
-            armorLevel = var2;
-            armorType = var4;
-            renderIndex = var3;
-            damageReduceAmount = damageReduceAmountArray[var4];
-            setMaxDamage(maxDamageArray[var4] * 3 << var2);
+            this.armorLevel = armorLevel;
+            this.armorType = armorType;
+            this.renderIndex = renderIndex;
+            damageReduceAmount = damageReduceAmountArray[armorType];
+            setMaxDamage(maxDamageArray[armorType] * 3 << armorLevel);
             maxCount = 1;
         }
     }

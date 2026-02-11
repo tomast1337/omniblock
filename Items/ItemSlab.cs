@@ -5,25 +5,25 @@ namespace betareborn.Items
     public class ItemSlab : ItemBlock
     {
 
-        public ItemSlab(int var1) : base(var1)
+        public ItemSlab(int id) : base(id)
         {
             setMaxDamage(0);
             setHasSubtypes(true);
         }
 
-        public override int getTextureId(int var1)
+        public override int getTextureId(int meta)
         {
-            return Block.SLAB.getTexture(2, var1);
+            return Block.SLAB.getTexture(2, meta);
         }
 
-        public override int getPlacementMetadata(int var1)
+        public override int getPlacementMetadata(int meta)
         {
-            return var1;
+            return meta;
         }
 
-        public override String getItemNameIS(ItemStack var1)
+        public override String getItemNameIS(ItemStack itemStack)
         {
-            return base.getItemName() + "." + BlockSlab.names[var1.getDamage()];
+            return base.getItemName() + "." + BlockSlab.names[itemStack.getDamage()];
         }
     }
 

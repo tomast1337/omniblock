@@ -6,7 +6,7 @@ namespace betareborn.Items
 {
     public class NetworkSyncedItem : Item
     {
-        public NetworkSyncedItem(int i) : base(i)
+        public NetworkSyncedItem(int id) : base(id)
         {
         }
 

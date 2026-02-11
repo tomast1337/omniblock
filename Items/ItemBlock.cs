@@ -9,68 +9,68 @@ namespace betareborn.Items
 
         private int blockID;
 
-        public ItemBlock(int var1) : base(var1)
+        public ItemBlock(int id) : base(id)
         {
-            blockID = var1 + 256;
-            setTextureId(Block.BLOCKS[var1 + 256].getTexture(2));
+            blockID = id + 256;
+            setTextureId(Block.BLOCKS[id + 256].getTexture(2));
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var3.getBlockId(var4, var5, var6) == Block.SNOW.id)
+            if (world.getBlockId(x, y, z) == Block.SNOW.id)
             {
-                var7 = 0;
+                meta = 0;
             }
             else
             {
-                if (var7 == 0)
+                if (meta == 0)
                 {
-                    --var5;
+                    --y;
                 }
 
-                if (var7 == 1)
+                if (meta == 1)
                 {
-                    ++var5;
+                    ++y;
                 }
 
-                if (var7 == 2)
+                if (meta == 2)
                 {
-                    --var6;
+                    --z;
                 }
 
-                if (var7 == 3)
+                if (meta == 3)
                 {
-                    ++var6;
+                    ++z;
                 }
 
-                if (var7 == 4)
+                if (meta == 4)
                 {
-                    --var4;
+                    --x;
                 }
 
-                if (var7 == 5)
+                if (meta == 5)
                 {
-                    ++var4;
+                    ++x;
                 }
             }
 
-            if (var1.count == 0)
+            if (itemStack.count == 0)
             {
                 return false;
             }
-            else if (var5 == 127 && Block.BLOCKS[blockID].material.isSolid())
+            else if (y == 127 && Block.BLOCKS[blockID].material.isSolid())
             {
                 return false;
             }
-            else if (var3.canPlace(blockID, var4, var5, var6, false, var7))
+            else if (world.canPlace(blockID, x, y, z, false, meta))
             {
-                Block var8 = Block.BLOCKS[blockID];
-                if (var3.setBlock(var4, var5, var6, blockID, getPlacementMetadata(var1.getDamage())))
+                Block block = Block.BLOCKS[blockID];
+                if (world.setBlock(x, y, z, blockID, getPlacementMetadata(itemStack.getDamage())))
                 {
-                    Block.BLOCKS[blockID].onPlaced(var3, var4, var5, var6, var7);
-                    Block.BLOCKS[blockID].onPlaced(var3, var4, var5, var6, var2);
-                    var3.playSound((double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), (double)((float)var6 + 0.5F), var8.soundGroup.func_1145_d(), (var8.soundGroup.getVolume() + 1.0F) / 2.0F, var8.soundGroup.getPitch() * 0.8F);
-                    --var1.count;
+                    Block.BLOCKS[blockID].onPlaced(world, x, y, z, meta);
+                    Block.BLOCKS[blockID].onPlaced(world, x, y, z, entityPlayer);
+                    world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), block.soundGroup.func_1145_d(), (block.soundGroup.getVolume() + 1.0F) / 2.0F, block.soundGroup.getPitch() * 0.8F);
+                    --itemStack.count;
                 }
 
                 return true;
@@ -81,7 +81,7 @@ namespace betareborn.Items
             }
         }
 
-        public override String getItemNameIS(ItemStack var1)
+        public override String getItemNameIS(ItemStack itemStack)
         {
             return Block.BLOCKS[blockID].getBlockName();
         }

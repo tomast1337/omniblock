@@ -7,52 +7,52 @@ namespace betareborn.Items
     public class ItemFlintAndSteel : Item
     {
 
-        public ItemFlintAndSteel(int var1) : base(var1)
+        public ItemFlintAndSteel(int id) : base(id)
         {
             maxCount = 1;
             setMaxDamage(64);
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var7 == 0)
+            if (meta == 0)
             {
-                --var5;
+                --y;
             }
 
-            if (var7 == 1)
+            if (meta == 1)
             {
-                ++var5;
+                ++y;
             }
 
-            if (var7 == 2)
+            if (meta == 2)
             {
-                --var6;
+                --z;
             }
 
-            if (var7 == 3)
+            if (meta == 3)
             {
-                ++var6;
+                ++z;
             }
 
-            if (var7 == 4)
+            if (meta == 4)
             {
-                --var4;
+                --x;
             }
 
-            if (var7 == 5)
+            if (meta == 5)
             {
-                ++var4;
+                ++x;
             }
 
-            int var8 = var3.getBlockId(var4, var5, var6);
-            if (var8 == 0)
+            int blockId = world.getBlockId(x, y, z);
+            if (blockId == 0)
             {
-                var3.playSound((double)var4 + 0.5D, (double)var5 + 0.5D, (double)var6 + 0.5D, "fire.ignite", 1.0F, itemRand.nextFloat() * 0.4F + 0.8F);
-                var3.setBlock(var4, var5, var6, Block.FIRE.id);
+                world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "fire.ignite", 1.0F, itemRand.nextFloat() * 0.4F + 0.8F);
+                world.setBlock(x, y, z, Block.FIRE.id);
             }
 
-            var1.damageItem(1, var2);
+            itemStack.damageItem(1, entityPlayer);
             return true;
         }
     }

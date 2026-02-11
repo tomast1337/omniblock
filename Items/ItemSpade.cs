@@ -7,13 +7,13 @@ namespace betareborn.Items
 
         private static Block[] blocksEffectiveAgainst = new Block[] { Block.GRASS_BLOCK, Block.DIRT, Block.SAND, Block.GRAVEL, Block.SNOW, Block.SNOW_BLOCK, Block.CLAY, Block.FARMLAND };
 
-        public ItemSpade(int var1, EnumToolMaterial var2) : base(var1, 1, var2, blocksEffectiveAgainst)
+        public ItemSpade(int id, EnumToolMaterial enumToolMaterial) : base(id, 1, enumToolMaterial, blocksEffectiveAgainst)
         {
         }
 
-        public override bool isSuitableFor(Block var1)
+        public override bool isSuitableFor(Block block)
         {
-            return var1 == Block.SNOW ? true : var1 == Block.SNOW_BLOCK;
+            return block == Block.SNOW ? true : block == Block.SNOW_BLOCK;
         }
     }
 

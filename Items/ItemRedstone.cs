@@ -7,54 +7,54 @@ namespace betareborn.Items
     public class ItemRedstone : Item
     {
 
-        public ItemRedstone(int var1) : base(var1)
+        public ItemRedstone(int id) : base(id)
         {
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var3.getBlockId(var4, var5, var6) != Block.SNOW.id)
+            if (world.getBlockId(x, y, z) != Block.SNOW.id)
             {
-                if (var7 == 0)
+                if (meta == 0)
                 {
-                    --var5;
+                    --y;
                 }
 
-                if (var7 == 1)
+                if (meta == 1)
                 {
-                    ++var5;
+                    ++y;
                 }
 
-                if (var7 == 2)
+                if (meta == 2)
                 {
-                    --var6;
+                    --z;
                 }
 
-                if (var7 == 3)
+                if (meta == 3)
                 {
-                    ++var6;
+                    ++z;
                 }
 
-                if (var7 == 4)
+                if (meta == 4)
                 {
-                    --var4;
+                    --x;
                 }
 
-                if (var7 == 5)
+                if (meta == 5)
                 {
-                    ++var4;
+                    ++x;
                 }
 
-                if (!var3.isAir(var4, var5, var6))
+                if (!world.isAir(x, y, z))
                 {
                     return false;
                 }
             }
 
-            if (Block.REDSTONE_WIRE.canPlaceAt(var3, var4, var5, var6))
+            if (Block.REDSTONE_WIRE.canPlaceAt(world, x, y, z))
             {
-                --var1.count;
-                var3.setBlock(var4, var5, var6, Block.REDSTONE_WIRE.id);
+                --itemStack.count;
+                world.setBlock(x, y, z, Block.REDSTONE_WIRE.id);
             }
 
             return true;

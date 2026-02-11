@@ -6,7 +6,7 @@ namespace betareborn.Items
     public class ItemFishingRod : Item
     {
 
-        public ItemFishingRod(int var1) : base(var1)
+        public ItemFishingRod(int id) : base(id)
         {
             setMaxDamage(64);
             setMaxCount(1);
@@ -22,26 +22,26 @@ namespace betareborn.Items
             return true;
         }
 
-        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            if (var3.fishHook != null)
+            if (entityPlayer.fishHook != null)
             {
-                int var4 = var3.fishHook.catchFish();
-                var1.damageItem(var4, var3);
-                var3.swingHand();
+                int durabilityLoss = entityPlayer.fishHook.catchFish();
+                itemStack.damageItem(durabilityLoss, entityPlayer);
+                entityPlayer.swingHand();
             }
             else
             {
-                var2.playSound(var3, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-                if (!var2.isRemote)
+                world.playSound(entityPlayer, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+                if (!world.isRemote)
                 {
-                    var2.spawnEntity(new EntityFish(var2, var3));
+                    world.spawnEntity(new EntityFish(world, entityPlayer));
                 }
 
-                var3.swingHand();
+                entityPlayer.swingHand();
             }
 
-            return var1;
+            return itemStack;
         }
     }
 

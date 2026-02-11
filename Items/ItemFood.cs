@@ -9,18 +9,18 @@ namespace betareborn.Items
         private int healAmount;
         private bool isWolfsFavoriteMeat;
 
-        public ItemFood(int var1, int var2, bool var3) : base(var1)
+        public ItemFood(int id, int healAmount, bool isWolfsFavoriteMeat) : base(id)
         {
-            healAmount = var2;
-            isWolfsFavoriteMeat = var3;
+            this.healAmount = healAmount;
+            this.isWolfsFavoriteMeat = isWolfsFavoriteMeat;
             maxCount = 1;
         }
 
-        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            --var1.count;
-            var3.heal(healAmount);
-            return var1;
+            --itemStack.count;
+            entityPlayer.heal(healAmount);
+            return itemStack;
         }
 
         public int getHealAmount()

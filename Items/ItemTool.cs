@@ -11,21 +11,21 @@ namespace betareborn.Items
         private int damageVsEntity;
         protected EnumToolMaterial toolMaterial;
 
-        protected ItemTool(int var1, int var2, EnumToolMaterial var3, Block[] var4) : base(var1)
+        protected ItemTool(int id, int baseDamage, EnumToolMaterial enumToolMaterial, Block[] blocksEffectiveAgainst) : base(id)
         {
-            toolMaterial = var3;
-            blocksEffectiveAgainst = var4;
+            toolMaterial = enumToolMaterial;
+            this.blocksEffectiveAgainst = blocksEffectiveAgainst;
             maxCount = 1;
-            setMaxDamage(var3.getMaxUses());
-            efficiencyOnProperMaterial = var3.getEfficiencyOnProperMaterial();
-            damageVsEntity = var2 + var3.getDamageVsEntity();
+            setMaxDamage(enumToolMaterial.getMaxUses());
+            efficiencyOnProperMaterial = enumToolMaterial.getEfficiencyOnProperMaterial();
+            damageVsEntity = baseDamage + enumToolMaterial.getDamageVsEntity();
         }
 
-        public override float getMiningSpeedMultiplier(ItemStack var1, Block var2)
+        public override float getMiningSpeedMultiplier(ItemStack itemStack, Block block)
         {
-            for (int var3 = 0; var3 < blocksEffectiveAgainst.Length; ++var3)
+            for (int i = 0; i < blocksEffectiveAgainst.Length; ++i)
             {
-                if (blocksEffectiveAgainst[var3] == var2)
+                if (blocksEffectiveAgainst[i] == block)
                 {
                     return efficiencyOnProperMaterial;
                 }
@@ -34,19 +34,19 @@ namespace betareborn.Items
             return 1.0F;
         }
 
-        public override bool postHit(ItemStack var1, EntityLiving var2, EntityLiving var3)
+        public override bool postHit(ItemStack itemStack, EntityLiving a, EntityLiving b)
         {
-            var1.damageItem(2, var3);
+            itemStack.damageItem(2, b);
             return true;
         }
 
-        public override bool postMine(ItemStack var1, int var2, int var3, int var4, int var5, EntityLiving var6)
+        public override bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
         {
-            var1.damageItem(1, var6);
+            itemStack.damageItem(1, entityLiving);
             return true;
         }
 
-        public override int getAttackDamage(Entity var1)
+        public override int getAttackDamage(Entity entity)
         {
             return damageVsEntity;
         }

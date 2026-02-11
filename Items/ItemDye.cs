@@ -10,82 +10,82 @@ namespace betareborn.Items
         public static readonly String[] dyeColors = new String[] { "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white" };
         public static readonly int[] field_31002_bk = new int[] { 1973019, 11743532, 3887386, 5320730, 2437522, 8073150, 2651799, 2651799, 4408131, 14188952, 4312372, 14602026, 6719955, 12801229, 15435844, 15790320 };
 
-        public ItemDye(int var1) : base(var1)
+        public ItemDye(int id) : base(id)
         {
             setHasSubtypes(true);
             setMaxDamage(0);
         }
 
-        public override int getTextureId(int var1)
+        public override int getTextureId(int meta)
         {
-            return textureId + var1 % 8 * 16 + var1 / 8;
+            return textureId + meta % 8 * 16 + meta / 8;
         }
 
-        public override String getItemNameIS(ItemStack var1)
+        public override String getItemNameIS(ItemStack itemStack)
         {
-            return base.getItemName() + "." + dyeColors[var1.getDamage()];
+            return base.getItemName() + "." + dyeColors[itemStack.getDamage()];
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var1.getDamage() == 15)
+            if (itemStack.getDamage() == 15)
             {
-                int var8 = var3.getBlockId(var4, var5, var6);
-                if (var8 == Block.SAPLING.id)
+                int blockId = world.getBlockId(x, y, z);
+                if (blockId == Block.SAPLING.id)
                 {
-                    if (!var3.isRemote)
+                    if (!world.isRemote)
                     {
-                        ((BlockSapling)Block.SAPLING).generate(var3, var4, var5, var6, var3.random);
-                        --var1.count;
+                        ((BlockSapling)Block.SAPLING).generate(world, x, y, z, world.random);
+                        --itemStack.count;
                     }
                     return true;
                 }
-                if (var8 == Block.WHEAT.id)
+                if (blockId == Block.WHEAT.id)
                 {
-                    if (!var3.isRemote)
+                    if (!world.isRemote)
                     {
-                        ((BlockCrops)Block.WHEAT).applyFullGrowth(var3, var4, var5, var6);
-                        --var1.count;
+                        ((BlockCrops)Block.WHEAT).applyFullGrowth(world, x, y, z);
+                        --itemStack.count;
                     }
                     return true;
                 }
-                if (var8 == Block.GRASS_BLOCK.id)
+                if (blockId == Block.GRASS_BLOCK.id)
                 {
-                    if (!var3.isRemote)
+                    if (!world.isRemote)
                     {
-                        --var1.count;
+                        --itemStack.count;
 
-                        for (int var9 = 0; var9 < 128; ++var9)
+                        for (int attempt = 0; attempt < 128; ++attempt)
                         {
-                            int var10 = var4;
-                            int var11 = var5 + 1;
-                            int var12 = var6;
+                            int spawnX = x;
+                            int spawnY = y + 1;
+                            int spawnZ = z;
 
                             bool validPosition = true;
-                            for (int var13 = 0; var13 < var9 / 16 && validPosition; ++var13)
+                            for (int walkStep = 0; walkStep < attempt / 16 && validPosition; ++walkStep)
                             {
-                                var10 += itemRand.nextInt(3) - 1;
-                                var11 += (itemRand.nextInt(3) - 1) * itemRand.nextInt(3) / 2;
-                                var12 += itemRand.nextInt(3) - 1;
-                                if (var3.getBlockId(var10, var11 - 1, var12) != Block.GRASS_BLOCK.id || var3.shouldSuffocate(var10, var11, var12))
+                                spawnX += itemRand.nextInt(3) - 1;
+                                spawnY += (itemRand.nextInt(3) - 1) * itemRand.nextInt(3) / 2;
+                                spawnZ += itemRand.nextInt(3) - 1;
+                                if (world.getBlockId(spawnX, spawnY - 1, spawnZ) != Block.GRASS_BLOCK.id || world.shouldSuffocate(spawnX, spawnY, spawnZ))
                                 {
                                     validPosition = false;
                                 }
                             }
 
-                            if (validPosition && var3.getBlockId(var10, var11, var12) == 0)
+                            if (validPosition && world.getBlockId(spawnX, spawnY, spawnZ) == 0)
                             {
                                 if (itemRand.nextInt(10) != 0)
                                 {
-                                    var3.setBlock(var10, var11, var12, Block.GRASS.id, 1);
+                                    world.setBlock(spawnX, spawnY, spawnZ, Block.GRASS.id, 1);
                                 }
                                 else if (itemRand.nextInt(3) != 0)
                                 {
-                                    var3.setBlock(var10, var11, var12, Block.DANDELION.id);
+                                    world.setBlock(spawnX, spawnY, spawnZ, Block.DANDELION.id);
                                 }
                                 else
                                 {
-                                    var3.setBlock(var10, var11, var12, Block.ROSE.id);
+                                    world.setBlock(spawnX, spawnY, spawnZ, Block.ROSE.id);
                                 }
                             }
                         }
@@ -96,16 +96,16 @@ namespace betareborn.Items
             return false;
         }
 
-        public override void useOnEntity(ItemStack var1, EntityLiving var2)
+        public override void useOnEntity(ItemStack itemStack, EntityLiving entityLiving)
         {
-            if (var2 is EntitySheep)
+            if (entityLiving is EntitySheep)
             {
-                EntitySheep var3 = (EntitySheep)var2;
-                int var4 = BlockCloth.getBlockMeta(var1.getDamage());
-                if (!var3.getSheared() && var3.getFleeceColor() != var4)
+                EntitySheep sheep = (EntitySheep)entityLiving;
+                int woolColor = BlockCloth.getBlockMeta(itemStack.getDamage());
+                if (!sheep.getSheared() && sheep.getFleeceColor() != woolColor)
                 {
-                    var3.setFleeceColor(var4);
-                    --var1.count;
+                    sheep.setFleeceColor(woolColor);
+                    --itemStack.count;
                 }
             }
 

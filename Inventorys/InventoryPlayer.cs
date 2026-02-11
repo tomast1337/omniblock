@@ -401,13 +401,13 @@ namespace betareborn.Inventorys
             }
         }
 
-        public void damageArmor(int var1)
+        public void damageArmor(int durabilityLoss)
         {
             for (int var2 = 0; var2 < armor.Length; ++var2)
             {
                 if (armor[var2] != null && armor[var2].getItem() is ItemArmor)
                 {
-                    armor[var2].damageItem(var1, player);
+                    armor[var2].damageItem(durabilityLoss, player);
                     if (armor[var2].count == 0)
                     {
                         armor[var2].onRemoved(player);
