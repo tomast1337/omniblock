@@ -1,27 +1,24 @@
-﻿using betareborn.Launcher;
-using betareborn.Network.Packets.S2CPlay;
+﻿using betareborn.Network.Packets.S2CPlay;
 using betareborn.Server.Commands;
 using betareborn.Server.Entities;
 using betareborn.Server.Network;
-using betareborn.Server.Threading;
 using betareborn.Server.Worlds;
 using betareborn.Util;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using betareborn.Worlds.Storage;
 using java.lang;
-using java.net;
 using java.util;
 using java.util.logging;
 
 namespace betareborn.Server
 {
-    public class MinecraftServer : Runnable, CommandOutput
+    public abstract class MinecraftServer : Runnable, CommandOutput
     {
         public static Logger LOGGER = Logger.getLogger("Minecraft");
-        public static HashMap GIVE_COMMANDS_COOLDOWNS = new HashMap();
+        public HashMap GIVE_COMMANDS_COOLDOWNS = [];
         public ConnectionListener connections;
-        public ServerProperties properties;
+        public IServerConfiguration config;
         public ServerWorld[] worlds;
         public PlayerManager playerManager;
         private ServerCommandHandler commandHandler;
@@ -37,85 +34,29 @@ namespace betareborn.Server
         public bool spawnAnimals;
         public bool pvpEnabled;
         public bool flightEnabled;
+        protected bool logHelp = true;
 
-        public MinecraftServer()
+        public MinecraftServer(IServerConfiguration config)
         {
+            this.config = config;
         }
 
-        private bool init()
+        protected virtual bool Init()
         {
-            if (!JarValidator.ValidateJar("b1.7.3.jar"))
-            {
-                Console.WriteLine("Downloading b1.7.3.jar");
-                var task = MinecraftDownloader.DownloadBeta173Async();
-                task.Wait();
-
-                if (task.Result)
-                {
-                    Console.WriteLine("Successfully downloaded b1.7.3.jar");
-                }
-                else
-                {
-                    Console.WriteLine("Failed to download b1.7.3.jar");
-                }
-            }
-
             commandHandler = new ServerCommandHandler(this);
-            ConsoleInputThread var1 = new ConsoleInputThread(this);
-            var1.setDaemon(true);
-            var1.start();
             ServerLog.init();
-            LOGGER.info("Starting minecraft server version Beta 1.7.3");
-            if (Runtime.getRuntime().maxMemory() / 1024L / 1024L < 512L)
-            {
-                LOGGER.warning("**** NOT ENOUGH RAM!");
-                LOGGER.warning("To start the server with more ram, launch it as \"java -Xmx1024M -Xms1024M -jar minecraft_server.jar\"");
-            }
 
-            LOGGER.info("Loading properties");
-            properties = new ServerProperties(new java.io.File("server.properties"));
-            string var2 = properties.getProperty("server-ip", "");
-            onlineMode = properties.getProperty("online-mode", true);
-            spawnAnimals = properties.getProperty("spawn-animals", true);
-            pvpEnabled = properties.getProperty("pvp", true);
-            flightEnabled = properties.getProperty("allow-flight", false);
-            InetAddress var3 = null;
-            if (var2.Length > 0)
-            {
-                var3 = InetAddress.getByName(var2);
-            }
+            onlineMode = config.GetOnlineMode(true);
+            spawnAnimals = config.GetSpawnAnimals(true);
+            pvpEnabled = config.GetPvpEnabled(true);
+            flightEnabled = config.GetAllowFlight(false);
 
-            int var4 = properties.getProperty("server-port", 25565);
-            LOGGER.info("Starting Minecraft server on " + (var2.Length == 0 ? "*" : var2) + ":" + var4);
-
-            try
-            {
-                connections = new ConnectionListener(this, var3, var4);
-            }
-            catch (java.io.IOException var13)
-            {
-                LOGGER.warning("**** FAILED TO BIND TO PORT!");
-                LOGGER.log(Level.WARNING, "The exception was: " + var13.toString());
-                LOGGER.warning("Perhaps a server is already running on that port?");
-                return false;
-            }
-
-            if (!onlineMode)
-            {
-                LOGGER.warning("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
-                LOGGER.warning("The server will make no attempt to authenticate usernames. Beware.");
-                LOGGER.warning(
-                   "While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose."
-                );
-                LOGGER.warning("To change this, set \"online-mode\" to \"true\" in the server.settings file.");
-            }
-
-            playerManager = new PlayerManager(this);
+            playerManager = CreatePlayerManager();
             entityTrackers[0] = new EntityTracker(this, 0);
             entityTrackers[1] = new EntityTracker(this, -1);
             long var5 = java.lang.System.nanoTime();
-            string var7 = properties.getProperty("level-name", "world");
-            string var8 = properties.getProperty("level-seed", "");
+            string var7 = config.GetLevelName("world");
+            string var8 = config.GetLevelSeed("");
             long var9 = new java.util.Random().nextLong();
             if (var8.Length > 0)
             {
@@ -130,15 +71,20 @@ namespace betareborn.Server
             }
 
             LOGGER.info("Preparing level \"" + var7 + "\"");
-            loadWorld(new RegionWorldStorageSource(new java.io.File(".")), var7, var9);
-            LOGGER.info("Done (" + (java.lang.System.nanoTime() - var5) + "ns)! For help, type \"help\" or \"?\"");
+            loadWorld(new RegionWorldStorageSource(getFile(".")), var7, var9);
+
+            if (logHelp)
+            {
+                LOGGER.info("Done (" + (java.lang.System.nanoTime() - var5) + "ns)! For help, type \"help\" or \"?\"");
+            }
+
             return true;
         }
 
         private void loadWorld(WorldStorageSource storageSource, string worldDir, long seed)
         {
             worlds = new ServerWorld[2];
-            RegionWorldStorage var5 = new RegionWorldStorage(new java.io.File("."), worldDir, true);
+            RegionWorldStorage var5 = new RegionWorldStorage(getFile("."), worldDir, true);
 
             for (int var6 = 0; var6 < worlds.Length; var6++)
             {
@@ -152,8 +98,8 @@ namespace betareborn.Server
                 }
 
                 worlds[var6].addWorldAccess(new ServerWorldEventListener(this, worlds[var6]));
-                worlds[var6].difficulty = properties.getProperty("spawn-monsters", true) ? 1 : 0;
-                worlds[var6].allowSpawning(properties.getProperty("spawn-monsters", true), spawnAnimals);
+                worlds[var6].difficulty = config.GetSpawnMonsters(true) ? 1 : 0;
+                worlds[var6].allowSpawning(config.GetSpawnMonsters(true), spawnAnimals);
                 playerManager.saveAllPlayers(worlds);
             }
 
@@ -163,7 +109,7 @@ namespace betareborn.Server
             for (int var9 = 0; var9 < worlds.Length; var9++)
             {
                 LOGGER.info("Preparing start region for level " + var9);
-                if (var9 == 0 || properties.getProperty("allow-nether", true))
+                if (var9 == 0 || config.GetAllowNether(true))
                 {
                     ServerWorld var10 = worlds[var9];
                     Vec3i var11 = var10.getSpawnPos();
@@ -240,6 +186,10 @@ namespace betareborn.Server
                     saveWorlds();
                 }
             }
+
+            while (AsyncIO.isBlocked())
+            {
+            }
         }
 
         public void stop()
@@ -251,7 +201,7 @@ namespace betareborn.Server
         {
             try
             {
-                if (init())
+                if (Init())
                 {
                     long var1 = java.lang.System.currentTimeMillis();
 
@@ -335,16 +285,12 @@ namespace betareborn.Server
                 {
                     var54.printStackTrace();
                 }
-                finally
-                {
-                    java.lang.System.exit(0);
-                }
             }
         }
 
         private void tick()
         {
-            ArrayList var1 = new ArrayList();
+            ArrayList var1 = [];
 
             var keys = GIVE_COMMANDS_COOLDOWNS.keySet();
             var iter = keys.iterator();
@@ -368,11 +314,12 @@ namespace betareborn.Server
             }
 
             Vec3D.cleanUp();
+            AsyncIO.tick();
             ticks++;
 
             for (int var7 = 0; var7 < worlds.Length; var7++)
             {
-                if (var7 == 0 || properties.getProperty("allow-nether", true))
+                if (var7 == 0 || config.GetAllowNether(true))
                 {
                     ServerWorld var10 = worlds[var7];
                     if (ticks % 20 == 0)
@@ -390,7 +337,10 @@ namespace betareborn.Server
                 }
             }
 
-            connections.tick();
+            if (connections != null)
+            {
+                connections.tick();
+            }
             playerManager.updateAllChunks();
 
             for (int var8 = 0; var8 < entityTrackers.Length; var8++)
@@ -432,24 +382,7 @@ namespace betareborn.Server
             tickables.add(tickable);
         }
 
-        public static void Main(string[] args)
-        {
-            try
-            {
-                MinecraftServer var1 = new MinecraftServer();
-
-                new RunServerThread(var1, "Server thread").start();
-            }
-            catch (java.lang.Exception var2)
-            {
-                LOGGER.log(Level.SEVERE, "Failed to start the minecraft server", (Throwable)var2);
-            }
-        }
-
-        public java.io.File getFile(string path)
-        {
-            return new java.io.File(path);
-        }
+        public abstract java.io.File getFile(string path);
 
         public void sendMessage(string message)
         {
@@ -475,6 +408,10 @@ namespace betareborn.Server
         {
             return dimensionId == -1 ? entityTrackers[1] : entityTrackers[0];
         }
-    }
+        protected virtual PlayerManager CreatePlayerManager()
+        {
+            return new PlayerManager(this);
+        }
 
+    }
 }

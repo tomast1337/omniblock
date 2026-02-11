@@ -200,7 +200,7 @@ namespace betareborn.Entities
 
             if (inTeleportationState)
             {
-                if (server.properties.getProperty("allow-nether", true))
+                if (server.config.GetAllowNether(true))
                 {
                     if (currentScreenHandler != playerScreenHandler)
                     {

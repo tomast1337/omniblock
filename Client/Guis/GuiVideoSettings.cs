@@ -8,7 +8,7 @@ namespace betareborn.Client.Guis
         private GuiScreen field_22110_h;
         protected string field_22107_a = "Video Settings";
         private GameOptions guiGameSettings;
-        private static EnumOptions[] field_22108_k = new EnumOptions[] { EnumOptions.RENDER_DISTANCE, EnumOptions.FRAMERATE_LIMIT, EnumOptions.VIEW_BOBBING, EnumOptions.GUI_SCALE, EnumOptions.ANISOTROPIC, EnumOptions.MIPMAPS, EnumOptions.MSAA, EnumOptions.ENVIRONMENT_ANIMATION, EnumOptions.DEBUG_MODE };
+        private static EnumOptions[] field_22108_k = new EnumOptions[] { EnumOptions.RENDER_DISTANCE, EnumOptions.FOV, EnumOptions.FRAMERATE_LIMIT, EnumOptions.VIEW_BOBBING, EnumOptions.GUI_SCALE, EnumOptions.ANISOTROPIC, EnumOptions.MIPMAPS, EnumOptions.MSAA, EnumOptions.ENVIRONMENT_ANIMATION, EnumOptions.DEBUG_MODE };
 
         public GuiVideoSettings(GuiScreen var1, GameOptions var2)
         {
@@ -58,10 +58,13 @@ namespace betareborn.Client.Guis
                     mc.displayGuiScreen(field_22110_h);
                 }
 
-                ScaledResolution var2 = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
-                int var3 = var2.getScaledWidth();
-                int var4 = var2.getScaledHeight();
-                setWorldAndResolution(mc, var3, var4);
+                if (var1.id == (int)EnumOptions.GUI_SCALE.ordinal())
+                {
+                    ScaledResolution var2 = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
+                    int var3 = var2.getScaledWidth();
+                    int var4 = var2.getScaledHeight();
+                    setWorldAndResolution(mc, var3, var4);
+                }
             }
         }
 

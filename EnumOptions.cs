@@ -8,7 +8,8 @@ namespace betareborn
         public static readonly EnumOptions SENSITIVITY = new("options.sensitivity", true, false, 3);
         public static readonly EnumOptions RENDER_DISTANCE = new("options.renderDistance", false, false, 4);
         public static readonly EnumOptions VIEW_BOBBING = new("options.viewBobbing", false, true, 5);
-        public static readonly EnumOptions FRAMERATE_LIMIT = new("options.framerateLimit", false, false, 8);
+        public static readonly EnumOptions FRAMERATE_LIMIT = new("options.framerateLimit", true, false, 8);
+        public static readonly EnumOptions FOV = new("options.fov", true, false, 18);
         public static readonly EnumOptions DIFFICULTY = new("options.difficulty", false, false, 9);
         public static readonly EnumOptions GUI_SCALE = new("options.guiScale", false, false, 12);
         public static readonly EnumOptions ANISOTROPIC = new("Aniso Level", false, false, 13);
@@ -19,7 +20,7 @@ namespace betareborn
 
         private static readonly EnumOptions[] allValues =
         [
-            MUSIC, SOUND, INVERT_MOUSE, SENSITIVITY, RENDER_DISTANCE, VIEW_BOBBING, FRAMERATE_LIMIT, DIFFICULTY, GUI_SCALE, ANISOTROPIC, MIPMAPS, DEBUG_MODE, MSAA, ENVIRONMENT_ANIMATION
+            MUSIC, SOUND, INVERT_MOUSE, SENSITIVITY, RENDER_DISTANCE, VIEW_BOBBING, FRAMERATE_LIMIT, FOV, DIFFICULTY, GUI_SCALE, ANISOTROPIC, MIPMAPS, DEBUG_MODE, MSAA, ENVIRONMENT_ANIMATION
         ];
 
         private readonly bool enumFloat;

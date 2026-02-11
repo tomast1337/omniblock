@@ -85,7 +85,6 @@ namespace betareborn.Client.Guis
                 }
                 else if (var1.id == 0)
                 {
-                    mc.displayGuiScreen(null);
                     if (createClicked)
                     {
                         return;
@@ -112,7 +111,6 @@ namespace betareborn.Client.Guis
 
                     mc.playerController = new PlayerControllerSP(mc);
                     mc.startWorld(folderName, textboxWorldName.getText(), var2);
-                    mc.displayGuiScreen(null);
                 }
 
             }

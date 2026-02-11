@@ -1,6 +1,5 @@
 using betareborn.Blocks;
 using betareborn.Blocks.Materials;
-using betareborn.Client;
 using betareborn.Client.Rendering.Core;
 using betareborn.Client.Rendering.Items;
 using betareborn.Entities;
@@ -12,6 +11,7 @@ using betareborn.Worlds.Biomes;
 using betareborn.Worlds.Chunks;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL.Legacy;
+using System.Diagnostics;
 
 namespace betareborn.Client.Rendering
 {
@@ -159,10 +159,10 @@ namespace betareborn.Client.Rendering
             }
         }
 
-        private float getFov(float tickDelta)
+        private float getFov(float tickDelta, bool isHand = false)
         {
             EntityLiving var2 = client.camera;
-            float var3 = 70.0F;
+            float var3 = isHand ? 70.0F : (30.0F + client.options.fov * 90.0F);
             if (var2.isInFluid(Material.WATER))
             {
                 var3 = 60.0F;
@@ -346,6 +346,15 @@ namespace betareborn.Client.Rendering
 
         private void renderFirstPersonHand(float tickDelta)
         {
+            GLManager.GL.MatrixMode(GLEnum.Projection);
+            GLManager.GL.LoadIdentity();
+            if (cameraZoom != 1.0D)
+            {
+                GLManager.GL.Translate((float)cameraYaw, (float)-cameraPitch, 0.0F);
+                GLManager.GL.Scale(cameraZoom, cameraZoom, 1.0D);
+            }
+            GLU.gluPerspective(getFov(tickDelta, true), client.displayWidth / (float)client.displayHeight, 0.05F, viewDistane * 2.0F);
+            GLManager.GL.MatrixMode(GLEnum.Modelview);
             GLManager.GL.LoadIdentity();
 
             GLManager.GL.PushMatrix();
@@ -395,19 +404,16 @@ namespace betareborn.Client.Rendering
                 float var3 = var2 * var2 * var2 * 8.0F;
                 float var4 = client.mouseHelper.deltaX * var3;
                 float var5 = client.mouseHelper.deltaY * var3;
-                //we flip var6 because something is funky with the controls/mouse
                 int var6 = -1;
                 if (client.options.invertMouse)
                 {
                     var6 = 1;
                 }
-
                 if (client.options.smoothCamera)
                 {
                     var4 = mouseFilterXAxis.func_22386_a(var4, 0.05F * var3);
                     var5 = mouseFilterYAxis.func_22386_a(var5, 0.05F * var3);
                 }
-
                 client.player.changeLookDirection(var4, var5 * var6);
             }
 
@@ -418,49 +424,19 @@ namespace betareborn.Client.Rendering
                 int var15 = var13.getScaledHeight();
                 int var16 = Mouse.getX() * var14 / client.displayWidth;
                 int var17 = var15 - Mouse.getY() * var15 / client.displayHeight - 1;
-                short var7 = 200;
-                if (client.options.limitFramerate == 1)
+                int var7 = 30 + (int)(client.options.limitFramerate * 210.0f);
+
+                if (var7 < 240)
                 {
-                    var7 = 120;
+                    Display.setVSyncEnabled(false);
                 }
 
-                if (client.options.limitFramerate == 2)
-                {
-                    var7 = 40;
-                }
-
-                long var8;
                 if (client.world != null)
                 {
                     Profiler.PushGroup("renderWorld");
-                    if (client.options.limitFramerate == 0)
-                    {
-                        renderFrame(tickDelta, 0L);
-                    }
-                    else
-                    {
-                        renderFrame(tickDelta, lastFrameTime + 1000000000 / var7);
-                    }
+                    renderFrame(tickDelta, 0L);
                     Profiler.PopGroup();
-
-                    if (client.options.limitFramerate == 2)
-                    {
-                        var8 = (lastFrameTime + 1000000000 / var7 - java.lang.System.nanoTime()) / 1000000L;
-                        if (var8 > 0L && var8 < 500L)
-                        {
-                            try
-                            {
-                                java.lang.Thread.sleep(var8);
-                            }
-                            catch (java.lang.InterruptedException var12)
-                            {
-                                var12.printStackTrace();
-                            }
-                        }
-                    }
-
                     Profiler.Start("renderGameOverlay");
-                    lastFrameTime = java.lang.System.nanoTime();
                     if (!client.options.hideGUI || client.currentScreen != null)
                     {
                         client.ingameGUI.renderGameOverlay(tickDelta, client.currentScreen != null, var16, var17);
@@ -475,28 +451,6 @@ namespace betareborn.Client.Rendering
                     GLManager.GL.MatrixMode(GLEnum.Modelview);
                     GLManager.GL.LoadIdentity();
                     setupHudRender();
-                    if (client.options.limitFramerate == 2)
-                    {
-                        var8 = (lastFrameTime + 1000000000 / var7 - java.lang.System.nanoTime()) / 1000000L;
-                        if (var8 < 0L)
-                        {
-                            var8 += 10L;
-                        }
-
-                        if (var8 > 0L && var8 < 500L)
-                        {
-                            try
-                            {
-                                java.lang.Thread.sleep(var8);
-                            }
-                            catch (java.lang.InterruptedException var11)
-                            {
-                                var11.printStackTrace();
-                            }
-                        }
-                    }
-
-                    lastFrameTime = java.lang.System.nanoTime();
                 }
 
                 if (client.currentScreen != null)
@@ -509,8 +463,49 @@ namespace betareborn.Client.Rendering
                     }
                 }
 
+                if (var7 < 240)
+                {
+                    long interval = 1000000000L / var7;
+
+                    if (targetTime == 0L)
+                    {
+                        targetTime = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
+                    }
+
+                    long now = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
+                    long diff = targetTime - now;
+
+                    if (diff > 2000000L)
+                    {
+                        long sleepMs = (diff - 1000000L) / 1000000L;
+                        Thread.Sleep((int)sleepMs);
+                    }
+
+                    while (true)
+                    {
+                        now = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
+                        if (now >= targetTime) break;
+                        Thread.SpinWait(10);
+                    }
+
+                    targetTime += interval;
+
+                    long finalNow = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
+                    if (finalNow > targetTime + interval)
+                    {
+                        targetTime = finalNow;
+                    }
+                }
+                else
+                {
+                    targetTime = 0L;
+                }
+
+                lastFrameTime = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
             }
         }
+
+        private long targetTime = 0L;
 
         public void renderFrame(float tickDelta, long time)
         {

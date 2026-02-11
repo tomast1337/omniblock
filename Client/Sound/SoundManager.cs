@@ -182,8 +182,15 @@ namespace betareborn.Client.Sound
 
         private SoundBuffer getRandomSoundBuffer(string name)
         {
-            if (!soundBuffers.TryGetValue(name, out List<SoundBuffer>? value) || value.Count == 0)
+            if (name == null)
+            {
                 return null;
+            }
+
+            if (!soundBuffers.TryGetValue(name, out List<SoundBuffer>? value) || value.Count == 0)
+            {
+                return null;
+            }
 
             int index = rand.nextInt(value.Count);
             return value[index];

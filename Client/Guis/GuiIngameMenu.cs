@@ -15,7 +15,7 @@ namespace betareborn.Client.Guis
             controlList.clear();
             int var1 = -16;
             controlList.add(new GuiButton(1, width / 2 - 100, height / 4 + 120 + var1, "Save and quit to title"));
-            if (mc.isMultiplayerWorld())
+            if (mc.isMultiplayerWorld() && mc.internalServer == null)
             {
                 ((GuiButton)controlList.get(0)).displayString = "Disconnect";
             }
@@ -44,7 +44,15 @@ namespace betareborn.Client.Guis
                 }
 
                 mc.changeWorld1(null);
-                mc.displayGuiScreen(new GuiMainMenu());
+
+                if (mc.internalServer != null)
+                {
+                    mc.displayGuiScreen(new GuiStoppingServer());
+                }
+                else
+                {
+                    mc.displayGuiScreen(new GuiMainMenu());
+                }
             }
 
             if (var1.id == 4)

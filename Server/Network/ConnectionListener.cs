@@ -15,12 +15,14 @@ namespace betareborn.Server.Network
         private List<ServerLoginNetworkHandler> pendingConnections = [];
         private List<ServerPlayNetworkHandler> connections = [];
         public MinecraftServer server;
+        public int port;
 
         public ConnectionListener(MinecraftServer server, InetAddress address, int port)
         {
             this.server = server;
             socket = new ServerSocket(port, 0, address);
             socket.setPerformancePreferences(0, 2, 1);
+            this.port = socket.getLocalPort();
             open = true;
             thread = new AcceptConnectionThread(this, "Listen Thread");
             thread.start();

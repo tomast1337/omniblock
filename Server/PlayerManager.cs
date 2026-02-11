@@ -9,8 +9,6 @@ using betareborn.Util;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
 using betareborn.Worlds.Dimensions;
-using java.io;
-using java.util;
 using java.util.logging;
 
 namespace betareborn.Server
@@ -18,42 +16,26 @@ namespace betareborn.Server
     public class PlayerManager
     {
         public static Logger LOGGER = Logger.getLogger("Minecraft");
-        public List players = new ArrayList();
-        private MinecraftServer server;
-        private ChunkMap[] chunkMaps;
-        private int maxPlayerCount;
-        private HashSet<string> bannedPlayers = [];
-        private HashSet<string> bannedIps = [];
-        private HashSet<string> ops = [];
-        private HashSet<string> whitelist = [];
-        private java.io.File BANNED_PLAYERS_FILE;
-        private java.io.File BANNED_IPS_FILE;
-        private java.io.File OPERATORS_FILE;
-        private java.io.File WHITELIST_FILE;
+        public List<ServerPlayerEntity> players = [];
+        private readonly MinecraftServer server;
+        private readonly ChunkMap[] chunkMaps;
+        private readonly int maxPlayerCount;
+        protected readonly HashSet<string> bannedPlayers = [];
+        protected readonly HashSet<string> bannedIps = [];
+        protected readonly HashSet<string> ops = [];
+        protected readonly HashSet<string> whitelist = [];
         private PlayerSaveHandler saveHandler;
-        private bool whitelistEnabled;
+        private readonly bool whitelistEnabled;
 
         public PlayerManager(MinecraftServer server)
         {
             chunkMaps = new ChunkMap[2];
             this.server = server;
-            BANNED_PLAYERS_FILE = server.getFile("banned-players.txt");
-            BANNED_IPS_FILE = server.getFile("banned-ips.txt");
-            OPERATORS_FILE = server.getFile("ops.txt");
-            WHITELIST_FILE = server.getFile("white-list.txt");
-            int var2 = server.properties.getProperty("view-distance", 10);
+            int var2 = server.config.GetViewDistance(10);
             chunkMaps[0] = new ChunkMap(server, 0, var2);
             chunkMaps[1] = new ChunkMap(server, -1, var2);
-            maxPlayerCount = server.properties.getProperty("max-players", 20);
-            whitelistEnabled = server.properties.getProperty("white-list", false);
-            loadBannedPlayers();
-            loadBannedIps();
-            loadOperators();
-            loadWhitelist();
-            saveBannedPlayers();
-            saveBannedIps();
-            saveOperators();
-            saveWhitelist();
+            maxPlayerCount = server.config.GetMaxPlayers(20);
+            whitelistEnabled = server.config.GetWhiteList(false);
         }
 
         public void saveAllPlayers(ServerWorld[] world)
@@ -87,7 +69,7 @@ namespace betareborn.Server
 
         public void addPlayer(ServerPlayerEntity player)
         {
-            players.add(player);
+            players.Add(player);
             ServerWorld var2 = server.getWorld(player.dimensionId);
             var2.chunkCache.loadChunk((int)player.x >> 4, (int)player.z >> 4);
 
@@ -109,7 +91,7 @@ namespace betareborn.Server
         {
             saveHandler.savePlayerData(player);
             server.getWorld(player.dimensionId).remove(player);
-            players.remove(player);
+            players.Remove(player);
             getChunkMap(player.dimensionId).removePlayer(player);
         }
 
@@ -135,16 +117,16 @@ namespace betareborn.Server
                     loginNetworkHandler.disconnect("Your IP address is banned from this server!");
                     return null;
                 }
-                else if (players.size() >= maxPlayerCount)
+                else if (players.Count >= maxPlayerCount)
                 {
                     loginNetworkHandler.disconnect("The server is full!");
                     return null;
                 }
                 else
                 {
-                    for (int var4 = 0; var4 < players.size(); var4++)
+                    for (int var4 = 0; var4 < players.Count; var4++)
                     {
-                        ServerPlayerEntity var5 = (ServerPlayerEntity)players.get(var4);
+                        ServerPlayerEntity var5 = players[var4];
                         if (var5.name.EqualsIgnoreCase(name))
                         {
                             var5.networkHandler.disconnect("You logged in from another location");
@@ -161,15 +143,17 @@ namespace betareborn.Server
             server.getEntityTracker(player.dimensionId).removeListener(player);
             server.getEntityTracker(player.dimensionId).onEntityRemoved(player);
             getChunkMap(player.dimensionId).removePlayer(player);
-            players.remove(player);
+            players.Remove(player);
             server.getWorld(player.dimensionId).serverRemove(player);
             Vec3i var3 = player.getSpawnPos();
             player.dimensionId = dimensionId;
-            ServerPlayerEntity var4 = new ServerPlayerEntity(
+            ServerPlayerEntity var4 = new(
                server, server.getWorld(player.dimensionId), player.name, new ServerPlayerInteractionManager(server.getWorld(player.dimensionId))
-            );
-            var4.id = player.id;
-            var4.networkHandler = player.networkHandler;
+            )
+            {
+                id = player.id,
+                networkHandler = player.networkHandler
+            };
             ServerWorld var5 = server.getWorld(player.dimensionId);
             if (var3 != null)
             {
@@ -197,7 +181,7 @@ namespace betareborn.Server
             sendWorldInfo(var4, var5);
             getChunkMap(var4.dimensionId).addPlayer(var4);
             var5.spawnEntity(var4);
-            players.add(var4);
+            players.Add(var4);
             var4.initScreenHandler();
             var4.m_41544513();
             return var4;
@@ -277,18 +261,18 @@ namespace betareborn.Server
 
         public void sendToAll(Packet packet)
         {
-            for (int var2 = 0; var2 < players.size(); var2++)
+            for (int var2 = 0; var2 < players.Count; var2++)
             {
-                ServerPlayerEntity var3 = (ServerPlayerEntity)players.get(var2);
+                ServerPlayerEntity var3 = players[var2];
                 var3.networkHandler.sendPacket(packet);
             }
         }
 
         public void sendToDimension(Packet packet, int dimensionId)
         {
-            for (int var3 = 0; var3 < players.size(); var3++)
+            for (int var3 = 0; var3 < players.Count; var3++)
             {
-                ServerPlayerEntity var4 = (ServerPlayerEntity)players.get(var3);
+                ServerPlayerEntity var4 = players[var3];
                 if (var4.dimensionId == dimensionId)
                 {
                     var4.networkHandler.sendPacket(packet);
@@ -296,18 +280,18 @@ namespace betareborn.Server
             }
         }
 
-        public String getPlayerList()
+        public string getPlayerList()
         {
-            String var1 = "";
+            string var1 = "";
 
-            for (int var2 = 0; var2 < players.size(); var2++)
+            for (int var2 = 0; var2 < players.Count; var2++)
             {
                 if (var2 > 0)
                 {
-                    var1 = var1 + ", ";
+                    var1 += ", ";
                 }
 
-                var1 = var1 + ((ServerPlayerEntity)players.get(var2)).name;
+                var1 += players[var2].name;
             }
 
             return var1;
@@ -325,44 +309,12 @@ namespace betareborn.Server
             saveBannedPlayers();
         }
 
-        private void loadBannedPlayers()
+        protected virtual void loadBannedPlayers()
         {
-            try
-            {
-                bannedPlayers.Clear();
-                BufferedReader var1 = new BufferedReader(new FileReader(BANNED_PLAYERS_FILE));
-                String var2 = "";
-
-                while ((var2 = var1.readLine()) != null)
-                {
-                    bannedPlayers.Add(var2.Trim().ToLower());
-                }
-
-                var1.close();
-            }
-            catch (Exception var3)
-            {
-                LOGGER.warning("Failed to load ban list: " + var3);
-            }
         }
 
-        private void saveBannedPlayers()
+        protected virtual void saveBannedPlayers()
         {
-            try
-            {
-                PrintWriter var1 = new PrintWriter(new FileWriter(BANNED_PLAYERS_FILE, false));
-
-                foreach (string var3 in bannedPlayers)
-                {
-                    var1.println(var3);
-                }
-
-                var1.close();
-            }
-            catch (Exception var4)
-            {
-                LOGGER.warning("Failed to save ban list: " + var4);
-            }
         }
 
         public void banIp(string ip)
@@ -377,154 +329,58 @@ namespace betareborn.Server
             saveBannedIps();
         }
 
-        private void loadBannedIps()
+        protected virtual void loadBannedIps()
         {
-            try
-            {
-                bannedIps.Clear();
-                BufferedReader var1 = new BufferedReader(new FileReader(BANNED_IPS_FILE));
-                String var2 = "";
-
-                while ((var2 = var1.readLine()) != null)
-                {
-                    bannedIps.Add(var2.Trim().ToLower());
-                }
-
-                var1.close();
-            }
-            catch (Exception var3)
-            {
-                LOGGER.warning("Failed to load ip ban list: " + var3);
-            }
         }
 
-        private void saveBannedIps()
+        protected virtual void saveBannedIps()
         {
-            try
-            {
-                PrintWriter var1 = new PrintWriter(new FileWriter(BANNED_IPS_FILE, false));
-
-                foreach (String var3 in bannedIps)
-                {
-                    var1.println(var3);
-                }
-
-                var1.close();
-            }
-            catch (Exception var4)
-            {
-                LOGGER.warning("Failed to save ip ban list: " + var4);
-            }
         }
 
-        public void addToOperators(String name)
+        public void addToOperators(string name)
         {
             ops.Add(name.ToLower());
             saveOperators();
         }
 
-        public void removeFromOperators(String name)
+        public void removeFromOperators(string name)
         {
             ops.Remove(name.ToLower());
             saveOperators();
         }
 
-        private void loadOperators()
+        protected virtual void loadOperators()
         {
-            try
-            {
-                ops.Clear();
-                BufferedReader var1 = new BufferedReader(new FileReader(OPERATORS_FILE));
-                String var2 = "";
-
-                while ((var2 = var1.readLine()) != null)
-                {
-                    ops.Add(var2.Trim().ToLower());
-                }
-
-                var1.close();
-            }
-            catch (Exception var3)
-            {
-                LOGGER.warning("Failed to load ip ban list: " + var3);
-            }
         }
 
-        private void saveOperators()
+        protected virtual void saveOperators()
         {
-            try
-            {
-                PrintWriter var1 = new PrintWriter(new FileWriter(OPERATORS_FILE, false));
-
-                foreach (String var3 in ops)
-                {
-                    var1.println(var3);
-                }
-
-                var1.close();
-            }
-            catch (Exception var4)
-            {
-                LOGGER.warning("Failed to save ip ban list: " + var4);
-            }
         }
 
-        private void loadWhitelist()
+        protected virtual void loadWhitelist()
         {
-            try
-            {
-                whitelist.Clear();
-                BufferedReader var1 = new BufferedReader(new FileReader(WHITELIST_FILE));
-                String var2 = "";
-
-                while ((var2 = var1.readLine()) != null)
-                {
-                    whitelist.Add(var2.Trim().ToLower());
-                }
-
-                var1.close();
-            }
-            catch (Exception var3)
-            {
-                LOGGER.warning("Failed to load white-list: " + var3);
-            }
         }
 
-        private void saveWhitelist()
+        protected virtual void saveWhitelist()
         {
-            try
-            {
-                PrintWriter var1 = new PrintWriter(new FileWriter(WHITELIST_FILE, false));
-
-                foreach (String var3 in whitelist)
-                {
-                    var1.println(var3);
-                }
-
-                var1.close();
-            }
-            catch (Exception var4)
-            {
-                LOGGER.warning("Failed to save white-list: " + var4);
-            }
         }
 
-        public bool isWhitelisted(String name)
+        public bool isWhitelisted(string name)
         {
             name = name.Trim().ToLower();
             return !whitelistEnabled || ops.Contains(name) || whitelist.Contains(name);
         }
 
-        public bool isOperator(String name)
+        public bool isOperator(string name)
         {
             return ops.Contains(name.Trim().ToLower());
         }
 
-        public ServerPlayerEntity getPlayer(String name)
+        public ServerPlayerEntity getPlayer(string name)
         {
-            for (int var2 = 0; var2 < players.size(); var2++)
+            for (int var2 = 0; var2 < players.Count; var2++)
             {
-                ServerPlayerEntity var3 = (ServerPlayerEntity)players.get(var2);
+                ServerPlayerEntity var3 = players[var2];
                 if (var3.name.EqualsIgnoreCase(name))
                 {
                     return var3;
@@ -550,9 +406,9 @@ namespace betareborn.Server
 
         public void sendToAround(EntityPlayer player, double x, double y, double z, double range, int dimensionId, Packet packet)
         {
-            for (int var12 = 0; var12 < players.size(); var12++)
+            for (int var12 = 0; var12 < players.Count; var12++)
             {
-                ServerPlayerEntity var13 = (ServerPlayerEntity)players.get(var12);
+                ServerPlayerEntity var13 = players[var12];
                 if (var13 != player && var13.dimensionId == dimensionId)
                 {
                     double var14 = x - var13.x;
@@ -566,13 +422,13 @@ namespace betareborn.Server
             }
         }
 
-        public void broadcast(String message)
+        public void broadcast(string message)
         {
-            ChatMessagePacket var2 = new ChatMessagePacket(message);
+            ChatMessagePacket var2 = new(message);
 
-            for (int var3 = 0; var3 < players.size(); var3++)
+            for (int var3 = 0; var3 < players.Count; var3++)
             {
-                ServerPlayerEntity var4 = (ServerPlayerEntity)players.get(var3);
+                ServerPlayerEntity var4 = players[var3];
                 if (isOperator(var4.name))
                 {
                     var4.networkHandler.sendPacket(var2);
@@ -580,7 +436,7 @@ namespace betareborn.Server
             }
         }
 
-        public bool sendPacket(String player, Packet packet)
+        public bool sendPacket(string player, Packet packet)
         {
             ServerPlayerEntity var3 = getPlayer(player);
             if (var3 != null)
@@ -596,9 +452,9 @@ namespace betareborn.Server
 
         public void savePlayers()
         {
-            for (int var1 = 0; var1 < players.size(); var1++)
+            for (int var1 = 0; var1 < players.Count; var1++)
             {
-                saveHandler.savePlayerData((EntityPlayer)players.get(var1));
+                saveHandler.savePlayerData(players[var1]);
             }
         }
 
@@ -606,13 +462,13 @@ namespace betareborn.Server
         {
         }
 
-        public void addToWhitelist(String name)
+        public void addToWhitelist(string name)
         {
             whitelist.Add(name);
             saveWhitelist();
         }
 
-        public void removeFromWhitelist(String name)
+        public void removeFromWhitelist(string name)
         {
             whitelist.Remove(name);
             saveWhitelist();

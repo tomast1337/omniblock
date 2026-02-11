@@ -33,6 +33,7 @@ namespace betareborn.Client.Guis
 
         public override void initGui()
         {
+            mc.stopInternalServer();
             TranslationStorage var1 = TranslationStorage.getInstance();
             controlList.clear();
             controlList.add(new GuiButton(0, width / 2 - 100, height / 4 + 120 + 12, var1.translateKey("gui.toMenu")));

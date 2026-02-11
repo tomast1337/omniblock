@@ -11,7 +11,7 @@ namespace betareborn
         private static readonly string[] RENDER_DISTANCES = ["options.renderDistance.far", "options.renderDistance.normal", "options.renderDistance.short", "options.renderDistance.tiny"];
         private static readonly string[] DIFFICULTIES = ["options.difficulty.peaceful", "options.difficulty.easy", "options.difficulty.normal", "options.difficulty.hard"];
         private static readonly string[] GUISCALES = ["options.guiScale.auto", "options.guiScale.small", "options.guiScale.normal", "options.guiScale.large"];
-        private static readonly string[] LIMIT_FRAMERATES = ["performance.max", "performance.balanced", "performance.powersaver"];
+        // private static readonly string[] LIMIT_FRAMERATES = ["performance.max", "performance.balanced", "performance.powersaver"];
         private static readonly string[] ANISO_LEVELS = ["options.off", "2x", "4x", "8x", "16x"];
         private static readonly string[] MSAA_LEVELS = ["options.off", "2x", "4x", "8x"];
         public static float MaxAnisotropy = 1.0f;
@@ -21,7 +21,8 @@ namespace betareborn
         public bool invertMouse = false;
         public int renderDistance = 0;
         public bool viewBobbing = true;
-        public int limitFramerate = 1;
+        public float limitFramerate = 0.42857143f; // 0.428... = 120, 1.0 = 240, 0.0 = 30
+        public float fov = 0.44444445F; // (70 - 30) / 90
         public string skin = "Default";
         public KeyBinding keyBindForward = new("key.forward", 17);
         public KeyBinding keyBindLeft = new("key.left", 30);
@@ -47,7 +48,7 @@ namespace betareborn
         public bool debugCamera = false;
         public float field_22272_F = 1.0F;
         public float field_22271_G = 1.0F;
-        public int guiScale = 1;
+        public int guiScale = 0;
         public int anisotropicLevel = 0;
         public int msaaLevel = 0;
         public int INITIAL_MSAA = 0;
@@ -99,11 +100,15 @@ namespace betareborn
                 mc.sndManager.onSoundOptionsChanged();
             }
 
-            if (var1 == EnumOptions.SENSITIVITY)
+            if (var1 == EnumOptions.FRAMERATE_LIMIT)
             {
-                mouseSensitivity = var2;
+                limitFramerate = var2;
             }
 
+            if (var1 == EnumOptions.FOV)
+            {
+                fov = var2;
+            }
         }
 
         public void setOptionValue(EnumOptions var1, int var2)
@@ -128,10 +133,10 @@ namespace betareborn
                 viewBobbing = !viewBobbing;
             }
 
-            if (var1 == EnumOptions.FRAMERATE_LIMIT)
-            {
-                limitFramerate = (limitFramerate + var2 + 3) % 3;
-            }
+            // if (var1 == EnumOptions.FRAMERATE_LIMIT)
+            // {
+            //     limitFramerate = (limitFramerate + var2 + 3) % 3;
+            // }
 
             if (var1 == EnumOptions.DIFFICULTY)
             {
@@ -183,7 +188,12 @@ namespace betareborn
 
         public float getOptionFloatValue(EnumOptions var1)
         {
-            return var1 == EnumOptions.MUSIC ? musicVolume : (var1 == EnumOptions.SOUND ? soundVolume : (var1 == EnumOptions.SENSITIVITY ? mouseSensitivity : 0.0F));
+            if (var1 == EnumOptions.MUSIC) return musicVolume;
+            if (var1 == EnumOptions.SOUND) return soundVolume;
+            if (var1 == EnumOptions.SENSITIVITY) return mouseSensitivity;
+            if (var1 == EnumOptions.FRAMERATE_LIMIT) return limitFramerate;
+            if (var1 == EnumOptions.FOV) return fov;
+            return 0.0F;
         }
 
         public bool getOptionOrdinalValue(EnumOptions var1)
@@ -208,11 +218,25 @@ namespace betareborn
         public string getKeyBinding(EnumOptions var1)
         {
             TranslationStorage var2 = TranslationStorage.getInstance();
-            string var3 = var2.translateKey(var1.getEnumString()) + ": ";
+            string var3 = (var1 == EnumOptions.FRAMERATE_LIMIT ? "Max FPS" : (var1 == EnumOptions.FOV ? "FOV" : var2.translateKey(var1.getEnumString()))) + ": ";
             if (var1.getEnumFloat())
             {
                 float var5 = getOptionFloatValue(var1);
-                return var1 == EnumOptions.SENSITIVITY ? (var5 == 0.0F ? var3 + var2.translateKey("options.sensitivity.min") : (var5 == 1.0F ? var3 + var2.translateKey("options.sensitivity.max") : var3 + (int)(var5 * 200.0F) + "%")) : (var5 == 0.0F ? var3 + var2.translateKey("options.off") : var3 + (int)(var5 * 100.0F) + "%");
+                if (var1 == EnumOptions.SENSITIVITY)
+                {
+                    return var5 == 0.0F ? var3 + var2.translateKey("options.sensitivity.min") : (var5 == 1.0F ? var3 + var2.translateKey("options.sensitivity.max") : var3 + (int)(var5 * 200.0F) + "%");
+                }
+                if (var1 == EnumOptions.FRAMERATE_LIMIT)
+                {
+                    int fps = 30 + (int)(var5 * 210.0f);
+                    return var3 + (fps == 240 ? "Unlimited" : fps + " FPS");
+                }
+                if (var1 == EnumOptions.FOV)
+                {
+                    int fovVal = 30 + (int)(var5 * 90.0f);
+                    return var3 + fovVal;
+                }
+                return (var5 == 0.0F ? var3 + var2.translateKey("options.off") : var3 + (int)(var5 * 100.0F) + "%");
             }
             else if (var1.getEnumBoolean())
             {
@@ -230,7 +254,7 @@ namespace betareborn
             }
             else
             {
-                return var1 == EnumOptions.RENDER_DISTANCE ? var3 + var2.translateKey(RENDER_DISTANCES[renderDistance]) : (var1 == EnumOptions.DIFFICULTY ? var3 + var2.translateKey(DIFFICULTIES[difficulty]) : (var1 == EnumOptions.GUI_SCALE ? var3 + var2.translateKey(GUISCALES[guiScale]) : (var1 == EnumOptions.FRAMERATE_LIMIT ? var3 + StatCollector.translateToLocal(LIMIT_FRAMERATES[limitFramerate]) : (var1 == EnumOptions.ANISOTROPIC ? var3 + (anisotropicLevel == 0 ? var2.translateKey("options.off") : ANISO_LEVELS[anisotropicLevel]) : var3))));
+                return var1 == EnumOptions.RENDER_DISTANCE ? var3 + var2.translateKey(RENDER_DISTANCES[renderDistance]) : (var1 == EnumOptions.DIFFICULTY ? var3 + var2.translateKey(DIFFICULTIES[difficulty]) : (var1 == EnumOptions.GUI_SCALE ? var3 + var2.translateKey(GUISCALES[guiScale]) : (var1 == EnumOptions.ANISOTROPIC ? var3 + (anisotropicLevel == 0 ? var2.translateKey("options.off") : ANISO_LEVELS[anisotropicLevel]) : var3)));
             }
         }
 
@@ -280,12 +304,12 @@ namespace betareborn
 
                         if (var3[0].Equals("viewDistance"))
                         {
-                            renderDistance = Integer.parseInt(var3[1]);
+                            renderDistance = int.Parse(var3[1]);
                         }
 
                         if (var3[0].Equals("guiScale"))
                         {
-                            guiScale = Integer.parseInt(var3[1]);
+                            guiScale = int.Parse(var3[1]);
                         }
 
                         if (var3[0].Equals("bobView"))
@@ -295,12 +319,17 @@ namespace betareborn
 
                         if (var3[0].Equals("fpsLimit"))
                         {
-                            limitFramerate = Integer.parseInt(var3[1]);
+                            limitFramerate = parseFloat(var3[1]);
+                        }
+
+                        if (var3[0].Equals("fov"))
+                        {
+                            fov = parseFloat(var3[1]);
                         }
 
                         if (var3[0].Equals("difficulty"))
                         {
-                            difficulty = Integer.parseInt(var3[1]);
+                            difficulty = int.Parse(var3[1]);
                         }
 
                         if (var3[0].Equals("skin"))
@@ -315,11 +344,11 @@ namespace betareborn
 
                         if (var3[0].Equals("anisotropicLevel"))
                         {
-                            anisotropicLevel = Integer.parseInt(var3[1]);
+                            anisotropicLevel = int.Parse(var3[1]);
                         }
                         if (var3[0].Equals("msaaLevel"))
                         {
-                            msaaLevel = Integer.parseInt(var3[1]);
+                            msaaLevel = int.Parse(var3[1]);
                             if (msaaLevel > 3) msaaLevel = 3;
                         }
 
@@ -342,64 +371,62 @@ namespace betareborn
                         {
                             if (var3[0].Equals("key_" + keyBindings[var4].keyDescription))
                             {
-                                keyBindings[var4].keyCode = Integer.parseInt(var3[1]);
+                                keyBindings[var4].keyCode = int.Parse(var3[1]);
                             }
                         }
                     }
-                    catch (java.lang.Exception var5)
+                    catch (System.Exception var5)
                     {
-                        java.lang.System.@out.println("Skipping bad option: " + var2);
+                        System.Console.WriteLine("Skipping bad option: " + var2);
                     }
                 }
             }
-            catch (java.lang.Exception var6)
+            catch (System.Exception)
             {
-                java.lang.System.@out.println("Failed to load options");
-                var6.printStackTrace();
+                System.Console.WriteLine("Failed to load options");
             }
 
         }
 
         private float parseFloat(string var1)
         {
-            return var1.Equals("true") ? 1.0F : (var1.Equals("false") ? 0.0F : Float.parseFloat(var1));
+            return var1.Equals("true") ? 1.0F : (var1.Equals("false") ? 0.0F : float.Parse(var1));
         }
 
         public void saveOptions()
         {
             try
             {
-                PrintWriter var1 = new(new FileWriter(optionsFile));
-                var1.println("music:" + musicVolume);
-                var1.println("sound:" + soundVolume);
-                var1.println("invertYMouse:" + invertMouse);
-                var1.println("mouseSensitivity:" + mouseSensitivity);
-                var1.println("viewDistance:" + renderDistance);
-                var1.println("guiScale:" + guiScale);
-                var1.println("bobView:" + viewBobbing);
-                var1.println("fpsLimit:" + limitFramerate);
-                var1.println("difficulty:" + difficulty);
-                var1.println("skin:" + skin);
-                var1.println("lastServer:" + lastServer);
-                var1.println("anisotropicLevel:" + anisotropicLevel);
-                var1.println("msaaLevel:" + msaaLevel);
-                var1.println("useMipmaps:" + useMipmaps);
-                var1.println("debugMode:" + debugMode);
-                var1.println("envAnimation:" + environmentAnimation);
+                using System.IO.StreamWriter var1 = new(optionsFile.getAbsolutePath());
+                var1.WriteLine("music:" + musicVolume);
+                var1.WriteLine("sound:" + soundVolume);
+                var1.WriteLine("invertYMouse:" + invertMouse);
+                var1.WriteLine("mouseSensitivity:" + mouseSensitivity);
+                var1.WriteLine("viewDistance:" + renderDistance);
+                var1.WriteLine("guiScale:" + guiScale);
+                var1.WriteLine("bobView:" + viewBobbing);
+                var1.WriteLine("fpsLimit:" + limitFramerate);
+                var1.WriteLine("fov:" + fov);
+                var1.WriteLine("difficulty:" + difficulty);
+                var1.WriteLine("skin:" + skin);
+                var1.WriteLine("lastServer:" + lastServer);
+                var1.WriteLine("anisotropicLevel:" + anisotropicLevel);
+                var1.WriteLine("msaaLevel:" + msaaLevel);
+                var1.WriteLine("useMipmaps:" + useMipmaps);
+                var1.WriteLine("debugMode:" + debugMode);
+                var1.WriteLine("envAnimation:" + environmentAnimation);
 
                 for (int var2 = 0; var2 < keyBindings.Length; ++var2)
                 {
-                    var1.println("key_" + keyBindings[var2].keyDescription + ":" + keyBindings[var2].keyCode);
+                    var1.WriteLine("key_" + keyBindings[var2].keyDescription + ":" + keyBindings[var2].keyCode);
                 }
 
-                var1.close();
+                var1.Close();
             }
-            catch (java.lang.Exception var3)
+            catch (System.Exception var3)
             {
-                java.lang.System.@out.println("Failed to save options");
-                var3.printStackTrace();
+                System.Console.WriteLine("Failed to save options: " + var3.Message);
             }
-
         }
     }
 }
