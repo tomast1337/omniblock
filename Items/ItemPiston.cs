@@ -3,11 +3,11 @@ namespace betareborn.Items
     public class ItemPiston : ItemBlock
     {
 
-        public ItemPiston(int var1) : base(var1)
+        public ItemPiston(int id) : base(id)
         {
         }
 
-        public override int getPlacementMetadata(int var1)
+        public override int getPlacementMetadata(int meta)
         {
             return 7;
         }

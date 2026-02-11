@@ -11,87 +11,87 @@ namespace betareborn.Items
 
         private Material doorMaterial;
 
-        public ItemDoor(int var1, Material var2) : base(var1)
+        public ItemDoor(int id, Material material) : base(id)
         {
-            doorMaterial = var2;
+            doorMaterial = material;
             maxCount = 1;
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var7 != 1)
+            if (meta != 1)
             {
                 return false;
             }
             else
             {
-                ++var5;
-                Block var8;
+                ++y;
+                Block block;
                 if (doorMaterial == Material.WOOD)
                 {
-                    var8 = Block.DOOR;
+                    block = Block.DOOR;
                 }
                 else
                 {
-                    var8 = Block.IRON_DOOR;
+                    block = Block.IRON_DOOR;
                 }
 
-                if (!var8.canPlaceAt(var3, var4, var5, var6))
+                if (!block.canPlaceAt(world, x, y, z))
                 {
                     return false;
                 }
                 else
                 {
-                    int var9 = MathHelper.floor_double((double)((var2.yaw + 180.0F) * 4.0F / 360.0F) - 0.5D) & 3;
-                    sbyte var10 = 0;
-                    sbyte var11 = 0;
-                    if (var9 == 0)
+                    int direction = MathHelper.floor_double((double)((entityPlayer.yaw + 180.0F) * 4.0F / 360.0F) - 0.5D) & 3;
+                    sbyte offsetX = 0;
+                    sbyte offsetZ = 0;
+                    if (direction == 0)
                     {
-                        var11 = 1;
+                        offsetZ = 1;
                     }
 
-                    if (var9 == 1)
+                    if (direction == 1)
                     {
-                        var10 = -1;
+                        offsetX = -1;
                     }
 
-                    if (var9 == 2)
+                    if (direction == 2)
                     {
-                        var11 = -1;
+                        offsetZ = -1;
                     }
 
-                    if (var9 == 3)
+                    if (direction == 3)
                     {
-                        var10 = 1;
+                        offsetX = 1;
                     }
 
-                    int var12 = (var3.shouldSuffocate(var4 - var10, var5, var6 - var11) ? 1 : 0) + (var3.shouldSuffocate(var4 - var10, var5 + 1, var6 - var11) ? 1 : 0);
-                    int var13 = (var3.shouldSuffocate(var4 + var10, var5, var6 + var11) ? 1 : 0) + (var3.shouldSuffocate(var4 + var10, var5 + 1, var6 + var11) ? 1 : 0);
-                    bool var14 = var3.getBlockId(var4 - var10, var5, var6 - var11) == var8.id || var3.getBlockId(var4 - var10, var5 + 1, var6 - var11) == var8.id;
-                    bool var15 = var3.getBlockId(var4 + var10, var5, var6 + var11) == var8.id || var3.getBlockId(var4 + var10, var5 + 1, var6 + var11) == var8.id;
-                    bool var16 = false;
-                    if (var14 && !var15)
+                    int solidBlocksLeft = (world.shouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) + (world.shouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
+                    int solidBlocksRight = (world.shouldSuffocate(x + offsetX, y, z + offsetZ) ? 1 : 0) + (world.shouldSuffocate(x + offsetX, y + 1, z + offsetZ) ? 1 : 0);
+                    bool hasDoorOnLeft = world.getBlockId(x - offsetX, y, z - offsetZ) == block.id || world.getBlockId(x - offsetX, y + 1, z - offsetZ) == block.id;
+                    bool hasDoorOnRight = world.getBlockId(x + offsetX, y, z + offsetZ) == block.id || world.getBlockId(x + offsetX, y + 1, z + offsetZ) == block.id;
+                    bool shouldMirror = false;
+                    if (hasDoorOnLeft && !hasDoorOnRight)
                     {
-                        var16 = true;
+                        shouldMirror = true;
                     }
-                    else if (var13 > var12)
+                    else if (solidBlocksRight > solidBlocksLeft)
                     {
-                        var16 = true;
-                    }
-
-                    if (var16)
-                    {
-                        var9 = var9 - 1 & 3;
-                        var9 += 4;
+                        shouldMirror = true;
                     }
 
-                    var3.pauseTicking = true;
-                    var3.setBlock(var4, var5, var6, var8.id, var9);
-                    var3.setBlock(var4, var5 + 1, var6, var8.id, var9 + 8);
-                    var3.pauseTicking = false;
-                    var3.notifyNeighbors(var4, var5, var6, var8.id);
-                    var3.notifyNeighbors(var4, var5 + 1, var6, var8.id);
-                    --var1.count;
+                    if (shouldMirror)
+                    {
+                        direction = direction - 1 & 3;
+                        direction += 4;
+                    }
+
+                    world.pauseTicking = true;
+                    world.setBlock(x, y, z, block.id, direction);
+                    world.setBlock(x, y + 1, z, block.id, direction + 8);
+                    world.pauseTicking = false;
+                    world.notifyNeighbors(x, y, z, block.id);
+                    world.notifyNeighbors(x, y + 1, z, block.id);
+                    --itemStack.count;
                     return true;
                 }
             }

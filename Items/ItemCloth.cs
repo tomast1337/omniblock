@@ -5,25 +5,25 @@ namespace betareborn.Items
     public class ItemCloth : ItemBlock
     {
 
-        public ItemCloth(int var1) : base(var1)
+        public ItemCloth(int id) : base(id)
         {
             setMaxDamage(0);
             setHasSubtypes(true);
         }
 
-        public override int getTextureId(int var1)
+        public override int getTextureId(int meta)
         {
-            return Block.WOOL.getTexture(2, BlockCloth.getBlockMeta(var1));
+            return Block.WOOL.getTexture(2, BlockCloth.getBlockMeta(meta));
         }
 
-        public override int getPlacementMetadata(int var1)
+        public override int getPlacementMetadata(int meta)
         {
-            return var1;
+            return meta;
         }
 
-        public override String getItemNameIS(ItemStack var1)
+        public override String getItemNameIS(ItemStack itemStack)
         {
-            return base.getItemName() + "." + ItemDye.dyeColors[BlockCloth.getBlockMeta(var1.getDamage())];
+            return base.getItemName() + "." + ItemDye.dyeColors[BlockCloth.getBlockMeta(itemStack.getDamage())];
         }
     }
 

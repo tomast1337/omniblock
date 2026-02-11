@@ -7,47 +7,47 @@ namespace betareborn.Items
     public class ItemPainting : Item
     {
 
-        public ItemPainting(int var1) : base(var1)
+        public ItemPainting(int id) : base(id)
         {
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var7 == 0)
+            if (meta == 0)
             {
                 return false;
             }
-            else if (var7 == 1)
+            else if (meta == 1)
             {
                 return false;
             }
             else
             {
-                byte var8 = 0;
-                if (var7 == 4)
+                byte direction = 0;
+                if (meta == 4)
                 {
-                    var8 = 1;
+                    direction = 1;
                 }
 
-                if (var7 == 3)
+                if (meta == 3)
                 {
-                    var8 = 2;
+                    direction = 2;
                 }
 
-                if (var7 == 5)
+                if (meta == 5)
                 {
-                    var8 = 3;
+                    direction = 3;
                 }
 
-                EntityPainting var9 = new EntityPainting(var3, var4, var5, var6, var8);
-                if (var9.func_410_i())
+                EntityPainting painting = new EntityPainting(world, x, y, z, direction);
+                if (painting.func_410_i())
                 {
-                    if (!var3.isRemote)
+                    if (!world.isRemote)
                     {
-                        var3.spawnEntity(var9);
+                        world.spawnEntity(painting);
                     }
 
-                    --var1.count;
+                    --itemStack.count;
                 }
 
                 return true;

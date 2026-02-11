@@ -24,16 +24,16 @@ namespace betareborn
             var1.yaw = -180.0F;
         }
 
-        public override bool sendBlockRemoved(int var1, int var2, int var3, int var4)
+        public override bool sendBlockRemoved(int x, int y, int z, int var4)
         {
-            int var5 = mc.world.getBlockId(var1, var2, var3);
-            int var6 = mc.world.getBlockMeta(var1, var2, var3);
-            bool var7 = base.sendBlockRemoved(var1, var2, var3, var4);
+            int blockId = mc.world.getBlockId(x, y, z);
+            int var6 = mc.world.getBlockMeta(x, y, z);
+            bool var7 = base.sendBlockRemoved(x, y, z, var4);
             ItemStack var8 = mc.player.getHand();
-            bool var9 = mc.player.canHarvest(Block.BLOCKS[var5]);
+            bool var9 = mc.player.canHarvest(Block.BLOCKS[blockId]);
             if (var8 != null)
             {
-                var8.postMine(var5, var1, var2, var3, mc.player);
+                var8.postMine(blockId, x, y, z, mc.player);
                 if (var8.count == 0)
                 {
                     var8.onRemoved(mc.player);
@@ -43,7 +43,7 @@ namespace betareborn
 
             if (var7 && var9)
             {
-                Block.BLOCKS[var5].afterBreak(mc.world, mc.player, var1, var2, var3, var6);
+                Block.BLOCKS[blockId].afterBreak(mc.world, mc.player, x, y, z, var6);
             }
 
             return var7;

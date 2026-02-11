@@ -12,7 +12,7 @@ namespace betareborn.Items
     public class ItemMap : NetworkSyncedItem
     {
 
-        public ItemMap(int var1) : base(var1)
+        public ItemMap(int id) : base(id)
         {
             setMaxCount(1);
         }
@@ -20,197 +20,197 @@ namespace betareborn.Items
         public static MapState getMapState(short mapId, World world)
         {
             (new StringBuilder()).append("map_").append(mapId).toString();
-            MapState var3 = (MapState)world.getOrCreateState(MapState.Class, "map_" + mapId);
-            if (var3 == null)
+            MapState mapState = (MapState)world.getOrCreateState(MapState.Class, "map_" + mapId);
+            if (mapState == null)
             {
-                int var4 = world.getIdCount("map");
-                string var2 = "map_" + var4;
-                var3 = new MapState(var2);
-                world.setState(var2, var3);
+                int mapIdCount = world.getIdCount("map");
+                string mapName = "map_" + mapIdCount;
+                mapState = new MapState(mapName);
+                world.setState(mapName, mapState);
             }
 
-            return var3;
+            return mapState;
         }
 
         public MapState getSavedMapState(ItemStack stack, World world)
         {
             (new StringBuilder()).append("map_").append(stack.getDamage()).toString();
-            MapState var4 = (MapState)world.getOrCreateState(MapState.Class, "map_" + stack.getDamage());
-            if (var4 == null)
+            MapState mapState = (MapState)world.getOrCreateState(MapState.Class, "map_" + stack.getDamage());
+            if (mapState == null)
             {
                 stack.setDamage(world.getIdCount("map"));
-                string var3 = "map_" + stack.getDamage();
-                var4 = new MapState(var3);
-                var4.centerX = world.getProperties().getSpawnX();
-                var4.centerZ = world.getProperties().getSpawnZ();
-                var4.scale = 3;
-                var4.dimension = (sbyte)world.dimension.id;
-                var4.markDirty();
-                world.setState(var3, var4);
+                string mapName = "map_" + stack.getDamage();
+                mapState = new MapState(mapName);
+                mapState.centerX = world.getProperties().getSpawnX();
+                mapState.centerZ = world.getProperties().getSpawnZ();
+                mapState.scale = 3;
+                mapState.dimension = (sbyte)world.dimension.id;
+                mapState.markDirty();
+                world.setState(mapName, mapState);
             }
 
-            return var4;
+            return mapState;
         }
 
         public void update(World world, Entity entity, MapState map)
         {
             if (world.dimension.id == map.dimension)
             {
-                short var4 = 128;
-                short var5 = 128;
-                int var6 = 1 << map.scale;
-                int var7 = map.centerX;
-                int var8 = map.centerZ;
-                int var9 = MathHelper.floor_double(entity.x - (double)var7) / var6 + var4 / 2;
-                int var10 = MathHelper.floor_double(entity.z - (double)var8) / var6 + var5 / 2;
-                int var11 = 128 / var6;
+                short mapWidth = 128;
+                short mapHeight = 128;
+                int blocksPerPixel = 1 << map.scale;
+                int centerX = map.centerX;
+                int centerZ = map.centerZ;
+                int entityPosX = MathHelper.floor_double(entity.x - (double)centerX) / blocksPerPixel + mapWidth / 2;
+                int entityPosZ = MathHelper.floor_double(entity.z - (double)centerZ) / blocksPerPixel + mapHeight / 2;
+                int scanRadius = 128 / blocksPerPixel;
                 if (world.dimension.hasCeiling)
                 {
-                    var11 /= 2;
+                    scanRadius /= 2;
                 }
 
                 ++map.inventoryTicks;
 
-                for (int var12 = var9 - var11 + 1; var12 < var9 + var11; ++var12)
+                for (int pixelX = entityPosX - scanRadius + 1; pixelX < entityPosX + scanRadius; ++pixelX)
                 {
-                    if ((var12 & 15) == (map.inventoryTicks & 15))
+                    if ((pixelX & 15) == (map.inventoryTicks & 15))
                     {
-                        int var13 = 255;
-                        int var14 = 0;
-                        double var15 = 0.0D;
+                        int minDirtyZ = 255;
+                        int maxDirtyZ = 0;
+                        double lastHeight = 0.0D;
 
-                        for (int var17 = var10 - var11 - 1; var17 < var10 + var11; ++var17)
+                        for (int pixelZ = entityPosZ - scanRadius - 1; pixelZ < entityPosZ + scanRadius; ++pixelZ)
                         {
-                            if (var12 >= 0 && var17 >= -1 && var12 < var4 && var17 < var5)
+                            if (pixelX >= 0 && pixelZ >= -1 && pixelX < mapWidth && pixelZ < mapHeight)
                             {
-                                int var18 = var12 - var9;
-                                int var19 = var17 - var10;
-                                bool var20 = var18 * var18 + var19 * var19 > (var11 - 2) * (var11 - 2);
-                                int var21 = (var7 / var6 + var12 - var4 / 2) * var6;
-                                int var22 = (var8 / var6 + var17 - var5 / 2) * var6;
-                                byte var23 = 0;
-                                byte var24 = 0;
-                                byte var25 = 0;
-                                int[] var26 = new int[256];
-                                Chunk var27 = world.getChunkFromPos(var21, var22);
-                                int var28 = var21 & 15;
-                                int var29 = var22 & 15;
-                                int var30 = 0;
-                                double var31 = 0.0D;
-                                int var33;
-                                int var34;
-                                int var35;
-                                int var38;
+                                int dx = pixelX - entityPosX;
+                                int dy = pixelZ - entityPosZ;
+                                bool IsOutside = dx * dx + dy * dy > (scanRadius - 2) * (scanRadius - 2);
+                                int worldX = (centerX / blocksPerPixel + pixelX - mapWidth / 2) * blocksPerPixel;
+                                int worldZ = (centerZ / blocksPerPixel + pixelZ - mapHeight / 2) * blocksPerPixel;
+                                byte redSum = 0;
+                                byte greenSum = 0;
+                                byte blueSum = 0;
+                                int[] blockHistogram = new int[256];
+                                Chunk chunk = world.getChunkFromPos(worldX, worldZ);
+                                int chunkOffsetX = worldX & 15;
+                                int chunkOffsetZ = worldZ & 15;
+                                int fluidDepth = 0;
+                                double avgHeight = 0.0D;
+                                int sampleX;
+                                int sampleZ;
+                                int currentY;
+                                int colorIndex;
                                 if (world.dimension.hasCeiling)
                                 {
-                                    var33 = var21 + var22 * 231871;
-                                    var33 = var33 * var33 * 31287121 + var33 * 11;
-                                    if ((var33 >> 20 & 1) == 0)
+                                    sampleX = worldX + worldZ * 231871;
+                                    sampleX = sampleX * sampleX * 31287121 + sampleX * 11;
+                                    if ((sampleX >> 20 & 1) == 0)
                                     {
-                                        var26[Block.DIRT.id] += 10;
+                                        blockHistogram[Block.DIRT.id] += 10;
                                     }
                                     else
                                     {
-                                        var26[Block.STONE.id] += 10;
+                                        blockHistogram[Block.STONE.id] += 10;
                                     }
 
-                                    var31 = 100.0D;
+                                    avgHeight = 100.0D;
                                 }
                                 else
                                 {
-                                    for (var33 = 0; var33 < var6; ++var33)
+                                    for (sampleX = 0; sampleX < blocksPerPixel; ++sampleX)
                                     {
-                                        for (var34 = 0; var34 < var6; ++var34)
+                                        for (sampleZ = 0; sampleZ < blocksPerPixel; ++sampleZ)
                                         {
-                                            var35 = var27.getHeight(var33 + var28, var34 + var29) + 1;
-                                            int var36 = 0;
-                                            if (var35 > 1)
+                                            currentY = chunk.getHeight(sampleX + chunkOffsetX, sampleZ + chunkOffsetZ) + 1;
+                                            int blockId = 0;
+                                            if (currentY > 1)
                                             {
-                                                processBlockHeight(var27, var33, var28, var34, var29, ref var35, out var36, ref var30);
+                                                processBlockHeight(chunk, sampleX, chunkOffsetX, sampleZ, chunkOffsetZ, ref currentY, out blockId, ref fluidDepth);
                                             }
 
-                                            var31 += (double)var35 / (double)(var6 * var6);
-                                            ++var26[var36];
+                                            avgHeight += (double)currentY / (double)(blocksPerPixel * blocksPerPixel);
+                                            ++blockHistogram[blockId];
                                         }
                                     }
                                 }
 
-                                var30 /= var6 * var6;
-                                int var10000 = var23 / (var6 * var6);
-                                var10000 = var24 / (var6 * var6);
-                                var10000 = var25 / (var6 * var6);
-                                var33 = 0;
-                                var34 = 0;
+                                fluidDepth /= blocksPerPixel * blocksPerPixel;
+                                int var10000 = redSum / (blocksPerPixel * blocksPerPixel);
+                                var10000 = greenSum / (blocksPerPixel * blocksPerPixel);
+                                var10000 = blueSum / (blocksPerPixel * blocksPerPixel);
+                                sampleX = 0;
+                                sampleZ = 0;
 
-                                for (var35 = 0; var35 < 256; ++var35)
+                                for (currentY = 0; currentY < 256; ++currentY)
                                 {
-                                    if (var26[var35] > var33)
+                                    if (blockHistogram[currentY] > sampleX)
                                     {
-                                        var34 = var35;
-                                        var33 = var26[var35];
+                                        sampleZ = currentY;
+                                        sampleX = blockHistogram[currentY];
                                     }
                                 }
 
-                                double var41 = (var31 - var15) * 4.0D / (double)(var6 + 4) + ((double)(var12 + var17 & 1) - 0.5D) * 0.4D;
-                                byte var42 = 1;
-                                if (var41 > 0.6D)
+                                double shadeFactor = (avgHeight - lastHeight) * 4.0D / (double)(blocksPerPixel + 4) + ((double)(pixelX + pixelZ & 1) - 0.5D) * 0.4D;
+                                byte brightness = 1;
+                                if (shadeFactor > 0.6D)
                                 {
-                                    var42 = 2;
+                                    brightness = 2;
                                 }
 
-                                if (var41 < -0.6D)
+                                if (shadeFactor < -0.6D)
                                 {
-                                    var42 = 0;
+                                    brightness = 0;
                                 }
 
-                                var38 = 0;
-                                if (var34 > 0)
+                                colorIndex = 0;
+                                if (sampleZ > 0)
                                 {
-                                    MapColor var44 = Block.BLOCKS[var34].material.mapColor;
-                                    if (var44 == MapColor.waterColor)
+                                    MapColor mapColor = Block.BLOCKS[sampleZ].material.mapColor;
+                                    if (mapColor == MapColor.waterColor)
                                     {
-                                        var41 = (double)var30 * 0.1D + (double)(var12 + var17 & 1) * 0.2D;
-                                        var42 = 1;
-                                        if (var41 < 0.5D)
+                                        shadeFactor = (double)fluidDepth * 0.1D + (double)(pixelX + pixelZ & 1) * 0.2D;
+                                        brightness = 1;
+                                        if (shadeFactor < 0.5D)
                                         {
-                                            var42 = 2;
+                                            brightness = 2;
                                         }
 
-                                        if (var41 > 0.9D)
+                                        if (shadeFactor > 0.9D)
                                         {
-                                            var42 = 0;
+                                            brightness = 0;
                                         }
                                     }
 
-                                    var38 = var44.colorIndex;
+                                    colorIndex = mapColor.colorIndex;
                                 }
 
-                                var15 = var31;
-                                if (var17 >= 0 && var18 * var18 + var19 * var19 < var11 * var11 && (!var20 || (var12 + var17 & 1) != 0))
+                                lastHeight = avgHeight;
+                                if (pixelZ >= 0 && dx * dx + dy * dy < scanRadius * scanRadius && (!IsOutside || (pixelX + pixelZ & 1) != 0))
                                 {
-                                    byte var45 = map.colors[var12 + var17 * var4];
-                                    byte var40 = (byte)(var38 * 4 + var42);
-                                    if (var45 != var40)
+                                    byte currentColor = map.colors[pixelX + pixelZ * mapWidth];
+                                    byte pixelColor = (byte)(colorIndex * 4 + brightness);
+                                    if (currentColor != pixelColor)
                                     {
-                                        if (var13 > var17)
+                                        if (minDirtyZ > pixelZ)
                                         {
-                                            var13 = var17;
+                                            minDirtyZ = pixelZ;
                                         }
 
-                                        if (var14 < var17)
+                                        if (maxDirtyZ < pixelZ)
                                         {
-                                            var14 = var17;
+                                            maxDirtyZ = pixelZ;
                                         }
 
-                                        map.colors[var12 + var17 * var4] = var40;
+                                        map.colors[pixelX + pixelZ * mapWidth] = pixelColor;
                                     }
                                 }
                             }
                         }
 
-                        if (var13 <= var14)
+                        if (minDirtyZ <= maxDirtyZ)
                         {
-                            map.markDirty(var12, var13, var14);
+                            map.markDirty(pixelX, minDirtyZ, maxDirtyZ);
                         }
                     }
                 }
@@ -218,46 +218,46 @@ namespace betareborn.Items
             }
         }
 
-        private void processBlockHeight(Chunk var27, int var33, int var28, int var34, int var29, ref int var35, out int var36, ref int var30)
+        private void processBlockHeight(Chunk chunk, int chunkX, int dx, int chunkZ, int dz, ref int scanY, out int blockId, ref int fluidDepth)
         {
-            bool var37 = false;
-            var36 = 0;
+            bool foundSurface = false;
+            blockId = 0;
             bool exitLoop = false;
 
             while (!exitLoop)
             {
-                var37 = true;
-                var36 = var27.getBlockId(var33 + var28, var35 - 1, var34 + var29);
-                if (var36 == 0)
+                foundSurface = true;
+                blockId = chunk.getBlockId(chunkX + dx, scanY - 1, chunkZ + dz);
+                if (blockId == 0)
                 {
-                    var37 = false;
+                    foundSurface = false;
                 }
-                else if (var35 > 0 && var36 > 0 && Block.BLOCKS[var36].material.mapColor == MapColor.airColor)
+                else if (scanY > 0 && blockId > 0 && Block.BLOCKS[blockId].material.mapColor == MapColor.airColor)
                 {
-                    var37 = false;
-                }
-
-                if (!var37)
-                {
-                    --var35;
-                    var36 = var27.getBlockId(var33 + var28, var35 - 1, var34 + var29);
+                    foundSurface = false;
                 }
 
-                if (var37)
+                if (!foundSurface)
                 {
-                    if (var36 == 0 || !Block.BLOCKS[var36].material.isFluid())
+                    --scanY;
+                    blockId = chunk.getBlockId(chunkX + dx, scanY - 1, chunkZ + dz);
+                }
+
+                if (foundSurface)
+                {
+                    if (blockId == 0 || !Block.BLOCKS[blockId].material.isFluid())
                     {
                         exitLoop = true;
                     }
                     else
                     {
-                        int var38 = var35 - 1;
+                        int depthCheckY = scanY - 1;
 
                         while (true)
                         {
-                            int var43 = var27.getBlockId(var33 + var28, var38--, var34 + var29);
-                            ++var30;
-                            if (var38 <= 0 || var43 == 0 || !Block.BLOCKS[var43].material.isFluid())
+                            int fluidBlockId = chunk.getBlockId(chunkX + dx, depthCheckY--, chunkZ + dz);
+                            ++fluidDepth;
+                            if (depthCheckY <= 0 || fluidBlockId == 0 || !Block.BLOCKS[fluidBlockId].material.isFluid())
                             {
                                 exitLoop = true;
                                 break;
@@ -268,42 +268,42 @@ namespace betareborn.Items
             }
         }
 
-        public override void inventoryTick(ItemStack var1, World var2, Entity var3, int var4, bool var5)
+        public override void inventoryTick(ItemStack itemStack, World world, Entity entity, int slotIndex, bool shouldUpdate)
         {
-            if (!var2.isRemote)
+            if (!world.isRemote)
             {
-                MapState var6 = getSavedMapState(var1, var2);
-                if (var3 is EntityPlayer)
+                MapState mapState = getSavedMapState(itemStack, world);
+                if (entity is EntityPlayer)
                 {
-                    EntityPlayer var7 = (EntityPlayer)var3;
-                    var6.update(var7, var1);
+                    EntityPlayer entityPlayer = (EntityPlayer)entity;
+                    mapState.update(entityPlayer, itemStack);
                 }
 
-                if (var5)
+                if (shouldUpdate)
                 {
-                    update(var2, var3, var6);
+                    update(world, entity, mapState);
                 }
 
             }
         }
 
-        public override void onCraft(ItemStack var1, World var2, EntityPlayer var3)
+        public override void onCraft(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            var1.setDamage(var2.getIdCount("map"));
-            string var4 = "map_" + var1.getDamage();
-            MapState var5 = new MapState(var4);
-            var2.setState(var4, var5);
-            var5.centerX = MathHelper.floor_double(var3.x);
-            var5.centerZ = MathHelper.floor_double(var3.z);
-            var5.scale = 3;
-            var5.dimension = (sbyte)var2.dimension.id;
-            var5.markDirty();
+            itemStack.setDamage(world.getIdCount("map"));
+            string mapName = "map_" + itemStack.getDamage();
+            MapState mapState = new MapState(mapName);
+            world.setState(mapName, mapState);
+            mapState.centerX = MathHelper.floor_double(entityPlayer.x);
+            mapState.centerZ = MathHelper.floor_double(entityPlayer.z);
+            mapState.scale = 3;
+            mapState.dimension = (sbyte)world.dimension.id;
+            mapState.markDirty();
         }
 
         public override Packet getUpdatePacket(ItemStack stack, World world, EntityPlayer player)
         {
-            byte[] var4 = getSavedMapState(stack, world).getPlayerMarkerPacket(player);
-            return var4 == null ? null : new MapUpdateS2CPacket((short)Item.MAP.id, (short)stack.getDamage(), var4);
+            byte[] updateData = getSavedMapState(stack, world).getPlayerMarkerPacket(player);
+            return updateData == null ? null : new MapUpdateS2CPacket((short)Item.MAP.id, (short)stack.getDamage(), updateData);
         }
     }
 

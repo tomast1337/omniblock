@@ -7,32 +7,32 @@ namespace betareborn.Items
     public class ItemHoe : Item
     {
 
-        public ItemHoe(int var1, EnumToolMaterial var2) : base(var1)
+        public ItemHoe(int id, EnumToolMaterial enumToolMaterial) : base(id)
         {
             maxCount = 1;
-            setMaxDamage(var2.getMaxUses());
+            setMaxDamage(enumToolMaterial.getMaxUses());
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            int var8 = var3.getBlockId(var4, var5, var6);
-            int var9 = var3.getBlockId(var4, var5 + 1, var6);
-            if ((var7 == 0 || var9 != 0 || var8 != Block.GRASS_BLOCK.id) && var8 != Block.DIRT.id)
+            int targetBlockId = world.getBlockId(x, y, z);
+            int blockAbove = world.getBlockId(x, y + 1, z);
+            if ((meta == 0 || blockAbove != 0 || targetBlockId != Block.GRASS_BLOCK.id) && targetBlockId != Block.DIRT.id)
             {
                 return false;
             }
             else
             {
-                Block var10 = Block.FARMLAND;
-                var3.playSound((double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), (double)((float)var6 + 0.5F), var10.soundGroup.func_1145_d(), (var10.soundGroup.getVolume() + 1.0F) / 2.0F, var10.soundGroup.getPitch() * 0.8F);
-                if (var3.isRemote)
+                Block block = Block.FARMLAND;
+                world.playSound((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), block.soundGroup.func_1145_d(), (block.soundGroup.getVolume() + 1.0F) / 2.0F, block.soundGroup.getPitch() * 0.8F);
+                if (world.isRemote)
                 {
                     return true;
                 }
                 else
                 {
-                    var3.setBlock(var4, var5, var6, var10.id);
-                    var1.damageItem(1, var2);
+                    world.setBlock(x, y, z, block.id);
+                    itemStack.damageItem(1, entityPlayer);
                     return true;
                 }
             }

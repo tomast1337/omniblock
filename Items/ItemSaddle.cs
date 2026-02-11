@@ -5,28 +5,28 @@ namespace betareborn.Items
     public class ItemSaddle : Item
     {
 
-        public ItemSaddle(int var1) : base(var1)
+        public ItemSaddle(int id) : base(id)
         {
             maxCount = 1;
         }
 
-        public override void useOnEntity(ItemStack var1, EntityLiving var2)
+        public override void useOnEntity(ItemStack itemStack, EntityLiving entityLiving)
         {
-            if (var2 is EntityPig)
+            if (entityLiving is EntityPig)
             {
-                EntityPig var3 = (EntityPig)var2;
-                if (!var3.getSaddled())
+                EntityPig pig = (EntityPig)entityLiving;
+                if (!pig.getSaddled())
                 {
-                    var3.setSaddled(true);
-                    --var1.count;
+                    pig.setSaddled(true);
+                    --itemStack.count;
                 }
             }
 
         }
 
-        public override bool postHit(ItemStack var1, EntityLiving var2, EntityLiving var3)
+        public override bool postHit(ItemStack itemStack, EntityLiving a, EntityLiving b)
         {
-            useOnEntity(var1, var2);
+            useOnEntity(itemStack, a);
             return true;
         }
     }

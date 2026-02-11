@@ -9,23 +9,23 @@ namespace betareborn.Items
 
         public int minecartType;
 
-        public ItemMinecart(int var1, int var2) : base(var1)
+        public ItemMinecart(int id, int minecartType) : base(id)
         {
             maxCount = 1;
-            minecartType = var2;
+            this.minecartType = minecartType;
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            int var8 = var3.getBlockId(var4, var5, var6);
-            if (BlockRail.isRail(var8))
+            int blockId = world.getBlockId(x, y, z);
+            if (BlockRail.isRail(blockId))
             {
-                if (!var3.isRemote)
+                if (!world.isRemote)
                 {
-                    var3.spawnEntity(new EntityMinecart(var3, (double)((float)var4 + 0.5F), (double)((float)var5 + 0.5F), (double)((float)var6 + 0.5F), minecartType));
+                    world.spawnEntity(new EntityMinecart(world, (double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), minecartType));
                 }
 
-                --var1.count;
+                --itemStack.count;
                 return true;
             }
             else

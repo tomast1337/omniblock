@@ -5,20 +5,20 @@ namespace betareborn.Items
     public class ItemSapling : ItemBlock
     {
 
-        public ItemSapling(int var1) : base(var1)
+        public ItemSapling(int id) : base(id)
         {
             setMaxDamage(0);
             setHasSubtypes(true);
         }
 
-        public override int getPlacementMetadata(int var1)
+        public override int getPlacementMetadata(int meta)
         {
-            return var1;
+            return meta;
         }
 
-        public override int getTextureId(int var1)
+        public override int getTextureId(int meta)
         {
-            return Block.SAPLING.getTexture(0, var1);
+            return Block.SAPLING.getTexture(0, meta);
         }
     }
 

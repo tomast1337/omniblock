@@ -5,20 +5,20 @@ namespace betareborn.Items
     public class ItemLog : ItemBlock
     {
 
-        public ItemLog(int var1) : base(var1)
+        public ItemLog(int id) : base(id)
         {
             setMaxDamage(0);
             setHasSubtypes(true);
         }
 
-        public override int getTextureId(int var1)
+        public override int getTextureId(int meta)
         {
-            return Block.LOG.getTexture(2, var1);
+            return Block.LOG.getTexture(2, meta);
         }
 
-        public override int getPlacementMetadata(int var1)
+        public override int getPlacementMetadata(int meta)
         {
-            return var1;
+            return meta;
         }
     }
 

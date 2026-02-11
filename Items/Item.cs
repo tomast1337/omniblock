@@ -172,19 +172,19 @@ namespace betareborn.Items
             return getTextureId(stack.getDamage());
         }
 
-        public virtual bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
             return false;
         }
 
-        public virtual float getMiningSpeedMultiplier(ItemStack var1, Block var2)
+        public virtual float getMiningSpeedMultiplier(ItemStack itemStack, Block block)
         {
             return 1.0F;
         }
 
-        public virtual ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
+        public virtual ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            return var1;
+            return itemStack;
         }
 
         public int getMaxCount()
@@ -224,12 +224,12 @@ namespace betareborn.Items
             return maxDamage > 0 && !hasSubtypes;
         }
 
-        public virtual bool postHit(ItemStack var1, EntityLiving var2, EntityLiving var3)
+        public virtual bool postHit(ItemStack itemStack, EntityLiving a, EntityLiving b)
         {
             return false;
         }
 
-        public virtual bool postMine(ItemStack var1, int var2, int var3, int var4, int var5, EntityLiving var6)
+        public virtual bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
         {
             return false;
         }
@@ -244,7 +244,7 @@ namespace betareborn.Items
             return false;
         }
 
-        public virtual void useOnEntity(ItemStack var1, EntityLiving var2)
+        public virtual void useOnEntity(ItemStack itemStack, EntityLiving entityLiving)
         {
         }
 
@@ -264,9 +264,9 @@ namespace betareborn.Items
             return false;
         }
 
-        public Item setItemName(string var1)
+        public Item setItemName(string name)
         {
-            translationKey = "item." + var1;
+            translationKey = "item." + name;
             return this;
         }
 
@@ -275,7 +275,7 @@ namespace betareborn.Items
             return translationKey;
         }
 
-        public virtual string getItemNameIS(ItemStack var1)
+        public virtual string getItemNameIS(ItemStack itemStack)
         {
             return translationKey;
         }
@@ -313,11 +313,11 @@ namespace betareborn.Items
             return 16777215;
         }
 
-        public virtual void inventoryTick(ItemStack var1, World var2, Entity var3, int var4, bool var5)
+        public virtual void inventoryTick(ItemStack itemStack, World world, Entity entity, int slotIndex, bool shouldUpdate)
         {
         }
 
-        public virtual void onCraft(ItemStack var1, World var2, EntityPlayer var3)
+        public virtual void onCraft(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
         }
 

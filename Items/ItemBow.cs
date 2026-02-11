@@ -6,23 +6,23 @@ namespace betareborn.Items
     public class ItemBow : Item
     {
 
-        public ItemBow(int var1) : base(var1)
+        public ItemBow(int id) : base(id)
         {
             maxCount = 1;
         }
 
-        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            if (var3.inventory.consumeInventoryItem(Item.ARROW.id))
+            if (entityPlayer.inventory.consumeInventoryItem(Item.ARROW.id))
             {
-                var2.playSound(var3, "random.bow", 1.0F, 1.0F / (itemRand.nextFloat() * 0.4F + 0.8F));
-                if (!var2.isRemote)
+                world.playSound(entityPlayer, "random.bow", 1.0F, 1.0F / (itemRand.nextFloat() * 0.4F + 0.8F));
+                if (!world.isRemote)
                 {
-                    var2.spawnEntity(new EntityArrow(var2, var3));
+                    world.spawnEntity(new EntityArrow(world, entityPlayer));
                 }
             }
 
-            return var1;
+            return itemStack;
         }
     }
 

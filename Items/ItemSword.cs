@@ -8,31 +8,31 @@ namespace betareborn.Items
 
         private int weaponDamage;
 
-        public ItemSword(int var1, EnumToolMaterial var2) : base(var1)
+        public ItemSword(int id, EnumToolMaterial enumToolMaterial) : base(id)
         {
             maxCount = 1;
-            setMaxDamage(var2.getMaxUses());
-            weaponDamage = 4 + var2.getDamageVsEntity() * 2;
+            setMaxDamage(enumToolMaterial.getMaxUses());
+            weaponDamage = 4 + enumToolMaterial.getDamageVsEntity() * 2;
         }
 
-        public override float getMiningSpeedMultiplier(ItemStack var1, Block var2)
+        public override float getMiningSpeedMultiplier(ItemStack itemStack, Block block)
         {
-            return var2.id == Block.COBWEB.id ? 15.0F : 1.5F;
+            return block.id == Block.COBWEB.id ? 15.0F : 1.5F;
         }
 
-        public override bool postHit(ItemStack var1, EntityLiving var2, EntityLiving var3)
+        public override bool postHit(ItemStack itemStack, EntityLiving a, EntityLiving b)
         {
-            var1.damageItem(1, var3);
+            itemStack.damageItem(1, b);
             return true;
         }
 
-        public override bool postMine(ItemStack var1, int var2, int var3, int var4, int var5, EntityLiving var6)
+        public override bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
         {
-            var1.damageItem(2, var6);
+            itemStack.damageItem(2, entityLiving);
             return true;
         }
 
-        public override int getAttackDamage(Entity var1)
+        public override int getAttackDamage(Entity entity)
         {
             return weaponDamage;
         }
@@ -42,9 +42,9 @@ namespace betareborn.Items
             return true;
         }
 
-        public override bool isSuitableFor(Block var1)
+        public override bool isSuitableFor(Block block)
         {
-            return var1.id == Block.COBWEB.id;
+            return block.id == Block.COBWEB.id;
         }
     }
 

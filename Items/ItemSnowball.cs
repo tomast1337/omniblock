@@ -7,21 +7,21 @@ namespace betareborn.Items
     public class ItemSnowball : Item
     {
 
-        public ItemSnowball(int var1) : base(var1)
+        public ItemSnowball(int id) : base(id)
         {
             maxCount = 16;
         }
 
-        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            --var1.count;
-            var2.playSound(var3, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-            if (!var2.isRemote)
+            --itemStack.count;
+            world.playSound(entityPlayer, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+            if (!world.isRemote)
             {
-                var2.spawnEntity(new EntitySnowball(var2, var3));
+                world.spawnEntity(new EntitySnowball(world, entityPlayer));
             }
 
-            return var1;
+            return itemStack;
         }
     }
 

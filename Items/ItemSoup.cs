@@ -6,13 +6,13 @@ namespace betareborn.Items
     public class ItemSoup : ItemFood
     {
 
-        public ItemSoup(int var1, int var2) : base(var1, var2, false)
+        public ItemSoup(int id, int healAmount) : base(id, healAmount, false)
         {
         }
 
-        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            base.use(var1, var2, var3);
+            base.use(itemStack, world, entityPlayer);
             return new ItemStack(Item.BOWL);
         }
     }

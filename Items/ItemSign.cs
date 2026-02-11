@@ -9,68 +9,68 @@ namespace betareborn.Items
     public class ItemSign : Item
     {
 
-        public ItemSign(int var1) : base(var1)
+        public ItemSign(int id) : base(id)
         {
             maxCount = 1;
         }
 
-        public override bool useOnBlock(ItemStack var1, EntityPlayer var2, World var3, int var4, int var5, int var6, int var7)
+        public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, World world, int x, int y, int z, int meta)
         {
-            if (var7 == 0)
+            if (meta == 0)
             {
                 return false;
             }
-            else if (!var3.getMaterial(var4, var5, var6).isSolid())
+            else if (!world.getMaterial(x, y, z).isSolid())
             {
                 return false;
             }
             else
             {
-                if (var7 == 1)
+                if (meta == 1)
                 {
-                    ++var5;
+                    ++y;
                 }
 
-                if (var7 == 2)
+                if (meta == 2)
                 {
-                    --var6;
+                    --z;
                 }
 
-                if (var7 == 3)
+                if (meta == 3)
                 {
-                    ++var6;
+                    ++z;
                 }
 
-                if (var7 == 4)
+                if (meta == 4)
                 {
-                    --var4;
+                    --x;
                 }
 
-                if (var7 == 5)
+                if (meta == 5)
                 {
-                    ++var4;
+                    ++x;
                 }
 
-                if (!Block.SIGN.canPlaceAt(var3, var4, var5, var6))
+                if (!Block.SIGN.canPlaceAt(world, x, y, z))
                 {
                     return false;
                 }
                 else
                 {
-                    if (var7 == 1)
+                    if (meta == 1)
                     {
-                        var3.setBlock(var4, var5, var6, Block.SIGN.id, MathHelper.floor_double((double)((var2.yaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15);
+                        world.setBlock(x, y, z, Block.SIGN.id, MathHelper.floor_double((double)((entityPlayer.yaw + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15);
                     }
                     else
                     {
-                        var3.setBlock(var4, var5, var6, Block.WALL_SIGN.id, var7);
+                        world.setBlock(x, y, z, Block.WALL_SIGN.id, meta);
                     }
 
-                    --var1.count;
-                    BlockEntitySign var8 = (BlockEntitySign)var3.getBlockEntity(var4, var5, var6);
-                    if (var8 != null)
+                    --itemStack.count;
+                    BlockEntitySign blockEntitySign = (BlockEntitySign)world.getBlockEntity(x, y, z);
+                    if (blockEntitySign != null)
                     {
-                        var2.openEditSignScreen(var8);
+                        entityPlayer.openEditSignScreen(blockEntitySign);
                     }
 
                     return true;

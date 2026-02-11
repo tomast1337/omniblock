@@ -113,14 +113,14 @@ namespace betareborn.Server.Network
 
         public bool tryBreakBlock(int x, int y, int z)
         {
-            int var4 = world.getBlockId(x, y, z);
+            int blockId = world.getBlockId(x, y, z);
             int var5 = world.getBlockMeta(x, y, z);
-            world.worldEvent(player, 2001, x, y, z, var4 + world.getBlockMeta(x, y, z) * 256);
+            world.worldEvent(player, 2001, x, y, z, blockId + world.getBlockMeta(x, y, z) * 256);
             bool var6 = finishMining(x, y, z);
             ItemStack var7 = player.getHand();
             if (var7 != null)
             {
-                var7.postMine(var4, x, y, z, player);
+                var7.postMine(blockId, x, y, z, player);
                 if (var7.count == 0)
                 {
                     var7.onRemoved(player);
@@ -128,9 +128,9 @@ namespace betareborn.Server.Network
                 }
             }
 
-            if (var6 && player.canHarvest(Block.BLOCKS[var4]))
+            if (var6 && player.canHarvest(Block.BLOCKS[blockId]))
             {
-                Block.BLOCKS[var4].afterBreak(world, player, x, y, z, var5);
+                Block.BLOCKS[blockId].afterBreak(world, player, x, y, z, var5);
                 ((ServerPlayerEntity)player).networkHandler.sendPacket(new BlockUpdateS2CPacket(x, y, z, world));
             }
 

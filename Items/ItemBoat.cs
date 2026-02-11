@@ -9,54 +9,54 @@ namespace betareborn.Items
     public class ItemBoat : Item
     {
 
-        public ItemBoat(int var1) : base(var1)
+        public ItemBoat(int id) : base(id)
         {
             maxCount = 1;
         }
 
-        public override ItemStack use(ItemStack var1, World var2, EntityPlayer var3)
+        public override ItemStack use(ItemStack itemStack, World world, EntityPlayer entityPlayer)
         {
-            float var4 = 1.0F;
-            float var5 = var3.prevPitch + (var3.pitch - var3.prevPitch) * var4;
-            float var6 = var3.prevYaw + (var3.yaw - var3.prevYaw) * var4;
-            double var7 = var3.prevX + (var3.x - var3.prevX) * (double)var4;
-            double var9 = var3.prevY + (var3.y - var3.prevY) * (double)var4 + 1.62D - (double)var3.standingEyeHeight;
-            double var11 = var3.prevZ + (var3.z - var3.prevZ) * (double)var4;
-            Vec3D var13 = Vec3D.createVector(var7, var9, var11);
-            float var14 = MathHelper.cos(-var6 * ((float)Math.PI / 180.0F) - (float)Math.PI);
-            float var15 = MathHelper.sin(-var6 * ((float)Math.PI / 180.0F) - (float)Math.PI);
-            float var16 = -MathHelper.cos(-var5 * ((float)Math.PI / 180.0F));
-            float var17 = MathHelper.sin(-var5 * ((float)Math.PI / 180.0F));
-            float var18 = var15 * var16;
-            float var20 = var14 * var16;
-            double var21 = 5.0D;
-            Vec3D var23 = var13.addVector((double)var18 * var21, (double)var17 * var21, (double)var20 * var21);
-            HitResult var24 = var2.raycast(var13, var23, true);
-            if (var24 == null)
+            float partialTick = 1.0F;
+            float pitch = entityPlayer.prevPitch + (entityPlayer.pitch - entityPlayer.prevPitch) * partialTick;
+            float yaw = entityPlayer.prevYaw + (entityPlayer.yaw - entityPlayer.prevYaw) * partialTick;
+            double x = entityPlayer.prevX + (entityPlayer.x - entityPlayer.prevX) * (double)partialTick;
+            double y = entityPlayer.prevY + (entityPlayer.y - entityPlayer.prevY) * (double)partialTick + 1.62D - (double)entityPlayer.standingEyeHeight;
+            double z = entityPlayer.prevZ + (entityPlayer.z - entityPlayer.prevZ) * (double)partialTick;
+            Vec3D rayStart = Vec3D.createVector(x, y, z);
+            float cosYaw = MathHelper.cos(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+            float sinYaw = MathHelper.sin(-yaw * ((float)Math.PI / 180.0F) - (float)Math.PI);
+            float cosPitch = -MathHelper.cos(-pitch * ((float)Math.PI / 180.0F));
+            float sinPitch = MathHelper.sin(-pitch * ((float)Math.PI / 180.0F));
+            float dirX = sinYaw * cosPitch;
+            float dirZ = cosYaw * cosPitch;
+            double rayLength = 5.0D;
+            Vec3D rayEnd = rayStart.addVector((double)dirX * rayLength, (double)sinPitch * rayLength, (double)dirZ * rayLength);
+            HitResult hitResult = world.raycast(rayStart, rayEnd, true);
+            if (hitResult == null)
             {
-                return var1;
+                return itemStack;
             }
             else
             {
-                if (var24.type == HitResultType.TILE)
+                if (hitResult.type == HitResultType.TILE)
                 {
-                    int var25 = var24.blockX;
-                    int var26 = var24.blockY;
-                    int var27 = var24.blockZ;
-                    if (!var2.isRemote)
+                    int hitX = hitResult.blockX;
+                    int hitY = hitResult.blockY;
+                    int hitZ = hitResult.blockZ;
+                    if (!world.isRemote)
                     {
-                        if (var2.getBlockId(var25, var26, var27) == Block.SNOW.id)
+                        if (world.getBlockId(hitX, hitY, hitZ) == Block.SNOW.id)
                         {
-                            --var26;
+                            --hitY;
                         }
 
-                        var2.spawnEntity(new EntityBoat(var2, (double)((float)var25 + 0.5F), (double)((float)var26 + 1.0F), (double)((float)var27 + 0.5F)));
+                        world.spawnEntity(new EntityBoat(world, (double)((float)hitX + 0.5F), (double)((float)hitY + 1.0F), (double)((float)hitZ + 0.5F)));
                     }
 
-                    --var1.count;
+                    --itemStack.count;
                 }
 
-                return var1;
+                return itemStack;
             }
         }
     }
