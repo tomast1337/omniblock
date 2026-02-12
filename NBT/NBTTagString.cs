@@ -14,11 +14,6 @@ namespace betareborn.NBT
         public NBTTagString(string value)
         {
             stringValue = value;
-            
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new IllegalArgumentException("Empty string not allowed");
-            }
         }
 
         public override void writeTagContents(DataOutput output)
