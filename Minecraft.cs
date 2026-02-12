@@ -1183,7 +1183,7 @@ namespace betareborn
                 currentScreen.handleInput();
                 if (currentScreen != null)
                 {
-                    currentScreen.particlesGui.func_25088_a();
+                    currentScreen.particlesGui.updateParticles();
                     currentScreen.updateScreen();
                 }
             }

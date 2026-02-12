@@ -8,12 +8,12 @@ namespace betareborn
 {
     public class GameOptions : java.lang.Object
     {
-        private static readonly string[] RENDER_DISTANCES = ["options.renderDistance.far", "options.renderDistance.normal", "options.renderDistance.short", "options.renderDistance.tiny"];
-        private static readonly string[] DIFFICULTIES = ["options.difficulty.peaceful", "options.difficulty.easy", "options.difficulty.normal", "options.difficulty.hard"];
-        private static readonly string[] GUISCALES = ["options.guiScale.auto", "options.guiScale.small", "options.guiScale.normal", "options.guiScale.large"];
+        private static readonly string[] RENDER_DISTANCES = new string[] { "options.renderDistance.far", "options.renderDistance.normal", "options.renderDistance.short", "options.renderDistance.tiny" };
+        private static readonly string[] DIFFICULTIES = new string[] { "options.difficulty.peaceful", "options.difficulty.easy", "options.difficulty.normal", "options.difficulty.hard" };
+        private static readonly string[] GUISCALES = new string[] { "options.guiScale.auto", "options.guiScale.small", "options.guiScale.normal", "options.guiScale.large" };
         // private static readonly string[] LIMIT_FRAMERATES = ["performance.max", "performance.balanced", "performance.powersaver"];
-        private static readonly string[] ANISO_LEVELS = ["options.off", "2x", "4x", "8x", "16x"];
-        private static readonly string[] MSAA_LEVELS = ["options.off", "2x", "4x", "8x"];
+        private static readonly string[] ANISO_LEVELS = new string[] { "options.off", "2x", "4x", "8x", "16x" };
+        private static readonly string[] MSAA_LEVELS = new string[] { "options.off", "2x", "4x", "8x" };
         public static float MaxAnisotropy = 1.0f;
         public float musicVolume = 1.0F;
         public float soundVolume = 1.0F;
@@ -24,17 +24,17 @@ namespace betareborn
         public float limitFramerate = 0.42857143f; // 0.428... = 120, 1.0 = 240, 0.0 = 30
         public float fov = 0.44444445F; // (70 - 30) / 90
         public string skin = "Default";
-        public KeyBinding keyBindForward = new("key.forward", 17);
-        public KeyBinding keyBindLeft = new("key.left", 30);
-        public KeyBinding keyBindBack = new("key.back", 31);
-        public KeyBinding keyBindRight = new("key.right", 32);
-        public KeyBinding keyBindJump = new("key.jump", 57);
-        public KeyBinding keyBindInventory = new("key.inventory", 18);
-        public KeyBinding keyBindDrop = new("key.drop", 16);
-        public KeyBinding keyBindChat = new("key.chat", 20);
-        public KeyBinding keyBindCommand = new("key.command", Keyboard.KEY_SLASH);
-        public KeyBinding keyBindToggleFog = new("key.fog", 33);
-        public KeyBinding keyBindSneak = new("key.sneak", 42);
+        public KeyBinding keyBindForward = new KeyBinding("key.forward", 17);
+        public KeyBinding keyBindLeft = new KeyBinding("key.left", 30);
+        public KeyBinding keyBindBack = new KeyBinding("key.back", 31);
+        public KeyBinding keyBindRight = new KeyBinding("key.right", 32);
+        public KeyBinding keyBindJump = new KeyBinding("key.jump", 57);
+        public KeyBinding keyBindInventory = new KeyBinding("key.inventory", 18);
+        public KeyBinding keyBindDrop = new KeyBinding("key.drop", 16);
+        public KeyBinding keyBindChat = new KeyBinding("key.chat", 20);
+        public KeyBinding keyBindCommand = new KeyBinding("key.command", Keyboard.KEY_SLASH);
+        public KeyBinding keyBindToggleFog = new KeyBinding("key.fog", 33);
+        public KeyBinding keyBindSneak = new KeyBinding("key.sneak", 42);
         public KeyBinding[] keyBindings;
         protected Minecraft mc;
         private readonly java.io.File optionsFile;
@@ -58,7 +58,7 @@ namespace betareborn
 
         public GameOptions(Minecraft var1, java.io.File var2)
         {
-            keyBindings = [keyBindForward, keyBindLeft, keyBindBack, keyBindRight, keyBindJump, keyBindSneak, keyBindDrop, keyBindInventory, keyBindChat, keyBindToggleFog];
+            keyBindings = new KeyBinding[] { keyBindForward, keyBindLeft, keyBindBack, keyBindRight, keyBindJump, keyBindSneak, keyBindDrop, keyBindInventory, keyBindChat, keyBindToggleFog };
             mc = var1;
             optionsFile = new java.io.File(var2, "options.txt");
             loadOptions();
@@ -69,101 +69,87 @@ namespace betareborn
         {
         }
 
-        public string getKeyBindingDescription(int var1)
+        public string getKeyBindingDescription(int keyBindingIndex)
         {
-            TranslationStorage var2 = TranslationStorage.getInstance();
-            return var2.translateKey(keyBindings[var1].keyDescription);
+            TranslationStorage translations = TranslationStorage.getInstance();
+            return translations.translateKey(keyBindings[keyBindingIndex].keyDescription);
         }
 
-        public string getOptionDisplayString(int var1)
+        public string getOptionDisplayString(int keyBindingIndex)
         {
-            return Keyboard.getKeyName(keyBindings[var1].keyCode);
+            return Keyboard.getKeyName(keyBindings[keyBindingIndex].keyCode);
         }
 
-        public void setKeyBinding(int var1, int var2)
+        public void setKeyBinding(int keyBindingIndex, int keyCode)
         {
-            keyBindings[var1].keyCode = var2;
+            keyBindings[keyBindingIndex].keyCode = keyCode;
             saveOptions();
         }
 
-        public void setOptionFloatValue(EnumOptions options, float value)
+        public void setOptionFloatValue(EnumOptions option, float value)
         {
-            if (options == EnumOptions.MUSIC)
+            if (option == EnumOptions.MUSIC)
             {
                 musicVolume = value;
                 mc.sndManager.onSoundOptionsChanged();
             }
-
-            if (options == EnumOptions.SOUND)
+            else if (option == EnumOptions.SOUND)
             {
                 soundVolume = value;
                 mc.sndManager.onSoundOptionsChanged();
             }
-
-            if (options == EnumOptions.FRAMERATE_LIMIT)
+            else if (option == EnumOptions.SENSITIVITY)
+            {
+                mouseSensitivity = value;
+            }
+            else if (option == EnumOptions.FRAMERATE_LIMIT)
             {
                 limitFramerate = value;
             }
-
-            if (options == EnumOptions.FOV)
+            else if (option == EnumOptions.FOV)
             {
                 fov = value;
             }
 
-            if (options == EnumOptions.SENSITIVITY)
-            {
-                mouseSensitivity = value;
-            }
+            saveOptions();
         }
 
-        public void setOptionValue(EnumOptions options, int value)
+        public void setOptionValue(EnumOptions option, int increment)
         {
-            if (options == EnumOptions.INVERT_MOUSE)
+            if (option == EnumOptions.INVERT_MOUSE)
             {
                 invertMouse = !invertMouse;
             }
-
-            if (options == EnumOptions.RENDER_DISTANCE)
+            else if (option == EnumOptions.RENDER_DISTANCE)
             {
-                renderDistance = renderDistance + value & 3;
+                renderDistance = renderDistance + increment & 3;
             }
-
-            if (options == EnumOptions.GUI_SCALE)
+            else if (option == EnumOptions.GUI_SCALE)
             {
-                guiScale = guiScale + value & 3;
+                guiScale = guiScale + increment & 3;
             }
-
-            if (options == EnumOptions.VIEW_BOBBING)
+            else if (option == EnumOptions.VIEW_BOBBING)
             {
                 viewBobbing = !viewBobbing;
             }
-
-            // if (var1 == EnumOptions.FRAMERATE_LIMIT)
-            // {
-            //     limitFramerate = (limitFramerate + var2 + 3) % 3;
-            // }
-
-            if (options == EnumOptions.DIFFICULTY)
+            else if (option == EnumOptions.DIFFICULTY)
             {
-                difficulty = difficulty + value & 3;
+                difficulty = difficulty + increment & 3;
             }
-
-            if (options == EnumOptions.ANISOTROPIC)
+            else if (option == EnumOptions.ANISOTROPIC)
             {
-                anisotropicLevel = (anisotropicLevel + value) % 5;
-                int val = anisotropicLevel == 0 ? 0 : (int)System.Math.Pow(2, anisotropicLevel);
-                if (val > MaxAnisotropy)
+                anisotropicLevel = (anisotropicLevel + increment) % 5;
+                int anisoValue = anisotropicLevel == 0 ? 0 : (int)System.Math.Pow(2, anisotropicLevel);
+                if (anisoValue > MaxAnisotropy)
                 {
                     anisotropicLevel = 0;
                 }
-
                 if (Minecraft.INSTANCE?.textureManager != null)
                 {
                     Minecraft.INSTANCE.textureManager.reload();
                 }
             }
-
-            if (options == EnumOptions.MIPMAPS)
+            else if (option == EnumOptions.MIPMAPS)
             {
                 useMipmaps = !useMipmaps;
                 if (Minecraft.INSTANCE?.textureManager != null)
@@ -171,19 +157,16 @@ namespace betareborn
                     Minecraft.INSTANCE.textureManager.reload();
                 }
             }
-
-            if (options == EnumOptions.MSAA)
+            else if (option == EnumOptions.MSAA)
             {
-                msaaLevel = (msaaLevel + value) % 4;
+                msaaLevel = (msaaLevel + increment) % 4;
             }
-
-            if (options == EnumOptions.DEBUG_MODE)
+            else if (option == EnumOptions.DEBUG_MODE)
             {
                 debugMode = !debugMode;
                 Profiling.Profiler.Enabled = debugMode;
             }
-
-            if (options == EnumOptions.ENVIRONMENT_ANIMATION)
+            else if (option == EnumOptions.ENVIRONMENT_ANIMATION)
             {
                 environmentAnimation = !environmentAnimation;
             }
@@ -203,64 +186,94 @@ namespace betareborn
 
         public bool getOptionOrdinalValue(EnumOptions option)
         {
-            switch (EnumOptionsMappingHelper.enumOptionsMappingHelperArray[option.ordinal()])
+            int mappedValue = EnumOptionsMappingHelper.enumOptionsMappingHelperArray[option.ordinal()];
+            return mappedValue switch
             {
-                case 1:
-                    return invertMouse;
-                case 2:
-                    return viewBobbing;
-                case 3:
-                    return useMipmaps;
-                case 4:
-                    return debugMode;
-                case 5:
-                    return environmentAnimation;
-                default:
-                    return false;
-            }
+                1 => invertMouse,
+                2 => viewBobbing,
+                3 => useMipmaps,
+                4 => debugMode,
+                5 => environmentAnimation,
+                _ => false
+            };
         }
 
         public string getKeyBinding(EnumOptions option)
         {
-            TranslationStorage var2 = TranslationStorage.getInstance();
-            string var3 = (option == EnumOptions.FRAMERATE_LIMIT ? "Max FPS" : (option == EnumOptions.FOV ? "FOV" : var2.translateKey(option.getEnumString()))) + ": ";
+            TranslationStorage translations = TranslationStorage.getInstance();
+            string label = GetOptionLabel(option, translations) + ": ";
+            
             if (option.getEnumFloat())
             {
-                float var5 = getOptionFloatValue(option);
-                if (option == EnumOptions.SENSITIVITY)
-                {
-                    return var5 == 0.0F ? var3 + var2.translateKey("options.sensitivity.min") : (var5 == 1.0F ? var3 + var2.translateKey("options.sensitivity.max") : var3 + (int)(var5 * 200.0F) + "%");
-                }
-                if (option == EnumOptions.FRAMERATE_LIMIT)
-                {
-                    int fps = 30 + (int)(var5 * 210.0f);
-                    return var3 + (fps == 240 ? "Unlimited" : fps + " FPS");
-                }
-                if (option == EnumOptions.FOV)
-                {
-                    int fovVal = 30 + (int)(var5 * 90.0f);
-                    return var3 + fovVal;
-                }
-                return (var5 == 0.0F ? var3 + var2.translateKey("options.off") : var3 + (int)(var5 * 100.0F) + "%");
+                return FormatFloatValue(option, label, translations);
             }
             else if (option.getEnumBoolean())
             {
-                bool var4 = getOptionOrdinalValue(option);
-                return var4 ? var3 + var2.translateKey("options.on") : var3 + var2.translateKey("options.off");
+                bool isEnabled = getOptionOrdinalValue(option);
+                return label + (isEnabled ? translations.translateKey("options.on") : translations.translateKey("options.off"));
             }
             else if (option == EnumOptions.MSAA)
             {
-                string label = var3 + (msaaLevel == 0 ? var2.translateKey("options.off") : MSAA_LEVELS[msaaLevel]);
-                if (msaaLevel != INITIAL_MSAA)
-                {
-                    label += " (Reload required)";
-                }
-                return label;
+                return FormatMsaaValue(label, translations);
             }
             else
             {
-                return option == EnumOptions.RENDER_DISTANCE ? var3 + var2.translateKey(RENDER_DISTANCES[renderDistance]) : (option == EnumOptions.DIFFICULTY ? var3 + var2.translateKey(DIFFICULTIES[difficulty]) : (option == EnumOptions.GUI_SCALE ? var3 + var2.translateKey(GUISCALES[guiScale]) : (option == EnumOptions.ANISOTROPIC ? var3 + (anisotropicLevel == 0 ? var2.translateKey("options.off") : ANISO_LEVELS[anisotropicLevel]) : var3)));
+                return FormatEnumValue(option, label, translations);
             }
+        }
+        
+        private string GetOptionLabel(EnumOptions option, TranslationStorage translations)
+        {
+            if (option == EnumOptions.FRAMERATE_LIMIT) return "Max FPS";
+            if (option == EnumOptions.FOV) return "FOV";
+            return translations.translateKey(option.getEnumString());
+        }
+        
+        private string FormatFloatValue(EnumOptions option, string label, TranslationStorage translations)
+        {
+            float value = getOptionFloatValue(option);
+            
+            if (option == EnumOptions.SENSITIVITY)
+            {
+                return value == 0.0F ? label + translations.translateKey("options.sensitivity.min") : (value == 1.0F ? label + translations.translateKey("options.sensitivity.max") : label + (int)(value * 200.0F) + "%");
+            }
+            else if (option == EnumOptions.FRAMERATE_LIMIT)
+            {
+                return FormatFramerateValue(label, value);
+            }
+            else if (option == EnumOptions.FOV)
+            {
+                return label + (30 + (int)(value * 90.0f));
+            }
+            else
+            {
+                return (value == 0.0F ? label + translations.translateKey("options.off") : label + (int)(value * 100.0F) + "%");
+            }
+        }
+        
+        private string FormatFramerateValue(string label, float value)
+        {
+            int fps = 30 + (int)(value * 210.0f);
+            return label + (fps == 240 ? "Unlimited" : fps + " FPS");
+        }
+        
+        private string FormatMsaaValue(string label, TranslationStorage translations)
+        {
+            string result = label + (msaaLevel == 0 ? translations.translateKey("options.off") : MSAA_LEVELS[msaaLevel]);
+            if (msaaLevel != INITIAL_MSAA)
+            {
+                result += " (Reload required)";
+            }
+            return result;
+        }
+        
+        private string FormatEnumValue(EnumOptions option, string label, TranslationStorage translations)
+        {
+            if (option == EnumOptions.RENDER_DISTANCE) return label + translations.translateKey(RENDER_DISTANCES[renderDistance]);
+            if (option == EnumOptions.DIFFICULTY) return label + translations.translateKey(DIFFICULTIES[difficulty]);
+            if (option == EnumOptions.GUI_SCALE) return label + translations.translateKey(GUISCALES[guiScale]);
+            if (option == EnumOptions.ANISOTROPIC) return label + (anisotropicLevel == 0 ? translations.translateKey("options.off") : ANISO_LEVELS[anisotropicLevel]);
+            return label;
         }
 
         public void loadOptions()
@@ -272,119 +285,26 @@ namespace betareborn
                     return;
                 }
 
-                BufferedReader bufferedReader = new(new FileReader(optionsFile));
-                string optionLine = "";
+                BufferedReader reader = new BufferedReader(new FileReader(optionsFile));
+                string line = "";
 
                 while (true)
                 {
-                    optionLine = bufferedReader.readLine();
-                    if (optionLine == null)
+                    line = reader.readLine();
+                    if (line == null)
                     {
-                        bufferedReader.close();
+                        reader.close();
                         break;
                     }
 
                     try
                     {
-                        string[] keyValue = optionLine.Split(":");
-                        string key = keyValue[0];
-                        string value = keyValue[1];
-                        if (key.Equals("music"))
-                        {
-                            musicVolume = parseFloat(value);
-                        }
-
-                        if (key.Equals("sound"))
-                        {
-                            soundVolume = parseFloat(value);
-                        }
-
-                        if (key.Equals("mouseSensitivity"))
-                        {
-                            mouseSensitivity = parseFloat(value);
-                        }
-
-                        if (key.Equals("invertYMouse"))
-                        {
-                            invertMouse = value.Equals("true");
-                        }
-
-                        if (key.Equals("viewDistance"))
-                        {
-                            renderDistance = int.Parse(value);
-                        }
-
-                        if (key.Equals("guiScale"))
-                        {
-                            guiScale = int.Parse(value);
-                        }
-
-                        if (key.Equals("bobView"))
-                        {
-                            viewBobbing = value.Equals("true");
-                        }
-
-                        if (key.Equals("fpsLimit"))
-                        {
-                            limitFramerate = parseFloat(value);
-                        }
-
-                        if (key.Equals("fov"))
-                        {
-                            fov = parseFloat(value);
-                        }
-
-                        if (key.Equals("difficulty"))
-                        {
-                            difficulty = int.Parse(value);
-                        }
-
-                        if (key.Equals("skin"))
-                        {
-                            skin = value;
-                        }
-
-                        if (key.Equals("lastServer") && keyValue.Length >= 2)
-                        {
-                            lastServer = value;
-                        }
-
-                        if (key.Equals("anisotropicLevel"))
-                        {
-                            anisotropicLevel = int.Parse(value);
-                        }
-                        if (key.Equals("msaaLevel"))
-                        {
-                            msaaLevel = int.Parse(value);
-                            if (msaaLevel > 3) msaaLevel = 3;
-                        }
-
-                        if (key.Equals("useMipmaps"))
-                        {
-                            useMipmaps = value.Equals("true");
-                        }
-
-                        if (key.Equals("debugMode"))
-                        {
-                            debugMode = value.Equals("true");
-                        }
-
-                        if (key.Equals("envAnimation"))
-                        {
-                            environmentAnimation = value.Equals("true");
-                        }
-
-                        for (int i = 0; i < keyBindings.Length; ++i)
-                        {
-                            if (key.Equals("key_" + keyBindings[i].keyDescription))
-                            {
-                                keyBindings[i].keyCode = int.Parse(value);
-                            }
-                        }
+                        string[] parts = line.Split(':');
+                        LoadOptionFromParts(parts);
                     }
-                    catch (System.Exception ex)
+                    catch (System.Exception)
                     {
-                        System.Console.WriteLine("Skipping bad option: " + optionLine);
+                        System.Console.WriteLine("Skipping bad option: " + line);
                     }
                 }
             }
@@ -392,47 +312,119 @@ namespace betareborn
             {
                 System.Console.WriteLine("Failed to load options");
             }
-
+        }
+        
+        private void LoadOptionFromParts(string[] parts)
+        {
+            switch (parts[0])
+            {
+                case "music":
+                    musicVolume = parseFloat(parts[1]);
+                    break;
+                case "sound":
+                    soundVolume = parseFloat(parts[1]);
+                    break;
+                case "mouseSensitivity":
+                    mouseSensitivity = parseFloat(parts[1]);
+                    break;
+                case "invertYMouse":
+                    invertMouse = parts[1].Equals("true");
+                    break;
+                case "viewDistance":
+                    renderDistance = int.Parse(parts[1]);
+                    break;
+                case "guiScale":
+                    guiScale = int.Parse(parts[1]);
+                    break;
+                case "bobView":
+                    viewBobbing = parts[1].Equals("true");
+                    break;
+                case "fpsLimit":
+                    limitFramerate = parseFloat(parts[1]);
+                    break;
+                case "fov":
+                    fov = parseFloat(parts[1]);
+                    break;
+                case "difficulty":
+                    difficulty = int.Parse(parts[1]);
+                    break;
+                case "skin":
+                    skin = parts[1];
+                    break;
+                case "lastServer" when parts.Length >= 2:
+                    lastServer = parts[1];
+                    break;
+                case "anisotropicLevel":
+                    anisotropicLevel = int.Parse(parts[1]);
+                    break;
+                case "msaaLevel":
+                    msaaLevel = int.Parse(parts[1]);
+                    if (msaaLevel > 3) msaaLevel = 3;
+                    break;
+                case "useMipmaps":
+                    useMipmaps = parts[1].Equals("true");
+                    break;
+                case "debugMode":
+                    debugMode = parts[1].Equals("true");
+                    break;
+                case "envAnimation":
+                    environmentAnimation = parts[1].Equals("true");
+                    break;
+            }
+            
+            // Load keybindings
+            for (int i = 0; i < keyBindings.Length; ++i)
+            {
+                if (parts[0].Equals("key_" + keyBindings[i].keyDescription))
+                {
+                    keyBindings[i].keyCode = int.Parse(parts[1]);
+                }
+            }
         }
 
-        private float parseFloat(string var1)
+        private float parseFloat(string value)
         {
-            return var1.Equals("true") ? 1.0F : (var1.Equals("false") ? 0.0F : float.Parse(var1));
+            return value switch
+            {
+                "true" => 1.0F,
+                "false" => 0.0F,
+                _ => float.Parse(value)
+            };
         }
 
         public void saveOptions()
         {
             try
             {
-                using System.IO.StreamWriter optionsFile = new(this.optionsFile.getAbsolutePath());
-                optionsFile.WriteLine("music:" + musicVolume);
-                optionsFile.WriteLine("sound:" + soundVolume);
-                optionsFile.WriteLine("invertYMouse:" + invertMouse);
-                optionsFile.WriteLine("mouseSensitivity:" + mouseSensitivity);
-                optionsFile.WriteLine("viewDistance:" + renderDistance);
-                optionsFile.WriteLine("guiScale:" + guiScale);
-                optionsFile.WriteLine("bobView:" + viewBobbing);
-                optionsFile.WriteLine("fpsLimit:" + limitFramerate);
-                optionsFile.WriteLine("fov:" + fov);
-                optionsFile.WriteLine("difficulty:" + difficulty);
-                optionsFile.WriteLine("skin:" + skin);
-                optionsFile.WriteLine("lastServer:" + lastServer);
-                optionsFile.WriteLine("anisotropicLevel:" + anisotropicLevel);
-                optionsFile.WriteLine("msaaLevel:" + msaaLevel);
-                optionsFile.WriteLine("useMipmaps:" + useMipmaps);
-                optionsFile.WriteLine("debugMode:" + debugMode);
-                optionsFile.WriteLine("envAnimation:" + environmentAnimation);
+                using System.IO.StreamWriter writer = new System.IO.StreamWriter(optionsFile.getAbsolutePath());
+                writer.WriteLine("music:" + musicVolume);
+                writer.WriteLine("sound:" + soundVolume);
+                writer.WriteLine("invertYMouse:" + invertMouse);
+                writer.WriteLine("mouseSensitivity:" + mouseSensitivity);
+                writer.WriteLine("viewDistance:" + renderDistance);
+                writer.WriteLine("guiScale:" + guiScale);
+                writer.WriteLine("bobView:" + viewBobbing);
+                writer.WriteLine("fpsLimit:" + limitFramerate);
+                writer.WriteLine("fov:" + fov);
+                writer.WriteLine("difficulty:" + difficulty);
+                writer.WriteLine("skin:" + skin);
+                writer.WriteLine("lastServer:" + lastServer);
+                writer.WriteLine("anisotropicLevel:" + anisotropicLevel);
+                writer.WriteLine("msaaLevel:" + msaaLevel);
+                writer.WriteLine("useMipmaps:" + useMipmaps);
+                writer.WriteLine("debugMode:" + debugMode);
+                writer.WriteLine("envAnimation:" + environmentAnimation);
 
                 for (int i = 0; i < keyBindings.Length; ++i)
                 {
-                    optionsFile.WriteLine("key_" + keyBindings[i].keyDescription + ":" + keyBindings[i].keyCode);
+                    writer.WriteLine("key_" + keyBindings[i].keyDescription + ":" + keyBindings[i].keyCode);
                 }
 
-                optionsFile.Close();
+                writer.Close();
             }
-            catch (System.Exception var3)
+            catch (System.Exception exception)
             {
-                System.Console.WriteLine("Failed to save options: " + var3.Message);
+                System.Console.WriteLine("Failed to save options: " + exception.Message);
             }
         }
     }
