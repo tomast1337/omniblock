@@ -61,6 +61,14 @@ namespace betareborn.Client.Rendering.Chunks
 
         public void MeshChunk(World world, Vector3D<int> pos, long version)
         {
+            WorldRegionSnapshot cache = new(
+                world,
+                pos.X - 1, pos.Y - 1, pos.Z - 1,
+                pos.X + SubChunkRenderer.Size + 1,
+                pos.Y + SubChunkRenderer.Size + 1,
+                pos.Z + SubChunkRenderer.Size + 1
+            );
+
             Task.Run(async () =>
             {
                 if (concurrencySemaphore != null)
@@ -68,24 +76,13 @@ namespace betareborn.Client.Rendering.Chunks
 
                 try
                 {
-                    WorldRegionSnapshot cache;
-                    lock (world)
-                    {
-                        cache = new(
-                            world,
-                            pos.X - 1, pos.Y - 1, pos.Z - 1,
-                            pos.X + SubChunkRenderer.Size + 1,
-                            pos.Y + SubChunkRenderer.Size + 1,
-                            pos.Z + SubChunkRenderer.Size + 1
-                        );
-                    }
-
                     var mesh = GenerateMesh(pos, version, cache);
                     lock (results)
                         results.Enqueue(mesh);
                 }
                 finally
                 {
+                    cache.Dispose();
                     concurrencySemaphore?.Release();
                 }
             });
