@@ -1,5 +1,4 @@
 using java.io;
-using java.lang;
 
 namespace betareborn.NBT
 {
