@@ -13,6 +13,7 @@ using betareborn.Server.Network;
 using betareborn.Stats;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
+using betareborn.Worlds.Chunks;
 using java.util;
 
 namespace betareborn.Entities
@@ -174,9 +175,11 @@ namespace betareborn.Entities
 
             if (shouldSendChunkUpdates && !pendingChunkUpdates.isEmpty())
             {
-                ChunkPos? chunkPos = (ChunkPos?)pendingChunkUpdates.get(0);
-                if (chunkPos != null)
+                ServerWorld world = server.getWorld(dimensionId);
+                Iterator iterator = pendingChunkUpdates.iterator();
+                while (iterator.hasNext())
                 {
+                    ChunkPos chunkPos = (ChunkPos)iterator.next();
                     bool canSendChunkData = false;
                     if (networkHandler.getBlockDataSendQueueSize() < 4)
                     {
@@ -185,14 +188,18 @@ namespace betareborn.Entities
 
                     if (canSendChunkData)
                     {
-                        ServerWorld world = server.getWorld(dimensionId);
-                        pendingChunkUpdates.remove(chunkPos);
-                        networkHandler.sendPacket(new ChunkDataS2CPacket(chunkPos.Value.x * 16, 0, chunkPos.Value.z * 16, 16, 128, 16, world));
-                        var blockEntities = world.getBlockEntities(chunkPos.Value.x * 16, 0, chunkPos.Value.z * 16, chunkPos.Value.x * 16 + 16, 128, chunkPos.Value.z * 16 + 16);
-
-                        for (int i = 0; i < blockEntities.Count; i++)
+                        Chunk chunk = world.getChunk(chunkPos.x, chunkPos.z);
+                        if (chunk.terrainPopulated)
                         {
-                            updateBlockEntity(blockEntities[i]);
+                            iterator.remove();
+                            networkHandler.sendPacket(new ChunkDataS2CPacket(chunkPos.x * 16, 0, chunkPos.z * 16, 16, 128, 16, world));
+                            var blockEntities = world.getBlockEntities(chunkPos.x * 16, 0, chunkPos.z * 16, chunkPos.x * 16 + 16, 128, chunkPos.z * 16 + 16);
+
+                            for (int i = 0; i < blockEntities.Count; i++)
+                            {
+                                updateBlockEntity(blockEntities[i]);
+                            }
+                            break;
                         }
                     }
                 }
