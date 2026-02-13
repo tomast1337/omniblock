@@ -386,7 +386,7 @@ namespace betareborn.Server
             while (pendingCommands.size() > 0)
             {
                 Command var1 = (Command)pendingCommands.remove(0);
-                commandHandler.executeCommand(var1);
+                commandHandler.ExecuteCommand(var1);
             }
         }
 
@@ -397,17 +397,17 @@ namespace betareborn.Server
 
         public abstract java.io.File getFile(string path);
 
-        public void sendMessage(string message)
+        public void SendMessage(string message)
         {
             LOGGER.info(message);
         }
 
-        public void warn(string message)
+        public void Warn(string message)
         {
             LOGGER.warning(message);
         }
 
-        public string getName()
+        public string GetName()
         {
             return "CONSOLE";
         }
