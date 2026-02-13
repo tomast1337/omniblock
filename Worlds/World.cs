@@ -63,7 +63,7 @@ namespace betareborn.Worlds
         private int lightingUpdatesCounter;
         private bool spawnHostileMobs;
         private bool spawnPeacefulMobs;
-        static int lightingUpdatesScheduled = 0;
+        private int lightingUpdatesScheduled = 0;
         private readonly HashSet<ChunkPos> activeChunks;
         private int soundCounter;
         private readonly List<Entity> tempEntityList;
@@ -2496,7 +2496,7 @@ namespace betareborn.Worlds
             {
                 --soundCounter;
             }
-            
+
             foreach (var p in activeChunks)
             {
                 var3 = p.x * 16;
