@@ -3,7 +3,7 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 
-namespace BetaSharp.Avalonia;
+namespace BetaSharp.Launcher;
 
 internal sealed class ViewLocator : IDataTemplate
 {

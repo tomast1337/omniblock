@@ -1,3 +1,3 @@
-﻿namespace BetaSharp.Avalonia;
+﻿namespace BetaSharp.Launcher;
 
 internal static class Bootstrapper;

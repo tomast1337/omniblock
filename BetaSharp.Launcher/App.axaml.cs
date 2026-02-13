@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using BetaSharp.Avalonia.Features.Shell;
+using BetaSharp.Launcher.Features.Shell;
 
-namespace BetaSharp.Avalonia;
+namespace BetaSharp.Launcher;
 
 internal sealed partial class App : Application
 {

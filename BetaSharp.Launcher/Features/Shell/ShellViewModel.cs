@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace BetaSharp.Avalonia.Features.Shell;
+namespace BetaSharp.Launcher.Features.Shell;
 
 internal sealed partial class ShellViewModel : ObservableObject
 {
