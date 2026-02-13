@@ -10,17 +10,16 @@ using betareborn.Util.Maths;
 using java.awt;
 using java.util;
 using Silk.NET.OpenGL.Legacy;
-using System.Diagnostics;
 
 namespace betareborn.Client.Guis
 {
     public class GuiIngame : Gui
     {
         private readonly GCMonitor GCMonitor;
-        private static ItemRenderer itemRenderer = new ItemRenderer();
-        private java.util.List chatMessageList = new ArrayList();
-        private java.util.Random rand = new();
-        private Minecraft mc;
+        private static readonly ItemRenderer itemRenderer = new ItemRenderer();
+        private readonly java.util.List chatMessageList = new ArrayList();
+        private readonly java.util.Random rand = new();
+        private readonly Minecraft mc;
         public string field_933_a = null;
         private int updateCounter = 0;
         private string recordPlaying = "";
@@ -211,18 +210,26 @@ namespace betareborn.Client.Guis
                 font.drawStringWithShadow(mc.func_6262_n(), 2, 22, 16777215);
                 font.drawStringWithShadow(mc.func_6245_o(), 2, 32, 16777215);
                 font.drawStringWithShadow(mc.func_21002_o(), 2, 42, 16777215);
-                long maxMem = java.lang.Runtime.getRuntime().maxMemory();
-                long totalMem = java.lang.Runtime.getRuntime().totalMemory();
-                long freeMem = java.lang.Runtime.getRuntime().freeMemory();
-                long used = totalMem - freeMem;
-                debugStr = "Used memory: " + used * 100L / maxMem + "% (" + used / 1024L / 1024L + "MB) of " + maxMem / 1024L / 1024L + "MB";
+                long maxMem = GCMonitor.MaxMemoryBytes;
+                long usedMem = GCMonitor.UsedMemoryBytes;
+                long heapMem = GCMonitor.UsedHeapBytes;
+                debugStr = "Used memory: " + usedMem * 100L / maxMem + "% (" + usedMem / 1024L / 1024L + "MB) of " + maxMem / 1024L / 1024L + "MB";
                 drawString(font, debugStr, scaledWidth - font.getStringWidth(debugStr) - 2, 2, 14737632);
-                debugStr = "Allocated memory: " + totalMem * 100L / maxMem + "% (" + totalMem / 1024L / 1024L + "MB)";
+                debugStr = "GC heap: " + heapMem * 100L / maxMem + "% (" + heapMem / 1024L / 1024L + "MB)";
                 drawString(font, debugStr, scaledWidth - font.getStringWidth(debugStr) - 2, 12, 14737632);
                 drawString(font, "x: " + mc.player.x, 2, 64, 14737632);
                 drawString(font, "y: " + mc.player.y, 2, 72, 14737632);
                 drawString(font, "z: " + mc.player.z, 2, 80, 14737632);
                 drawString(font, "f: " + (MathHelper.floor_double((double)(mc.player.yaw * 4.0F / 360.0F) + 0.5D) & 3), 2, 88, 14737632);
+
+                if (mc.internalServer != null)
+                {
+                    drawString(font, $"Server TPS: {mc.internalServer.Tps:F1}", 2, 104, 14737632);
+                }
+
+                int meshY = mc.internalServer != null ? 120 : 104;
+                var cr = mc.terrainRenderer.chunkRenderer;
+                drawString(font, $"Meshes: S: {cr.LoadedMeshes} T: {cr.TranslucentMeshes}", 2, meshY, 14737632);
                 GLManager.GL.PopMatrix();
             }
             else

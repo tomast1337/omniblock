@@ -69,6 +69,9 @@ namespace betareborn.Client.Rendering.Chunks
         private float fogEnd;
         private Vector4D<float> fogColor;
 
+        public int LoadedMeshes => renderers.Count;
+        public int TranslucentMeshes { get; private set; }
+
         public ChunkRenderer(World world)
         {
             meshGenerator = new();
@@ -127,25 +130,31 @@ namespace betareborn.Client.Rendering.Chunks
 
             chunkShader.SetUniformMatrix4("projectionMatrix", projection);
 
+            int translucentCount = 0;
             foreach (var state in renderers.Values)
             {
-                if (IsChunkInRenderDistance(state.Renderer.Position, viewPos))
-                {
-                    if (camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
-                    {
-                        state.Renderer.Render(chunkShader, 0, viewPos, modelView);
-
-                        if (state.Renderer.HasTranslucentMesh)
-                        {
-                            translucentRenderers.Add(state.Renderer);
-                        }
-                    }
-                }
-                else
+                if (!IsChunkInRenderDistance(state.Renderer.Position, viewPos))
                 {
                     renderersToRemove.Add(state.Renderer);
+                    continue;
+                }
+
+                if (state.Renderer.HasTranslucentMesh)
+                {
+                    translucentCount++;
+                }
+
+                if (camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
+                {
+                    state.Renderer.Render(chunkShader, 0, viewPos, modelView);
+
+                    if (state.Renderer.HasTranslucentMesh)
+                    {
+                        translucentRenderers.Add(state.Renderer);
+                    }
                 }
             }
+            TranslucentMeshes = translucentCount;
 
             foreach (var renderer in renderersToRemove)
             {

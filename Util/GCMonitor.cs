@@ -9,7 +9,7 @@ namespace betareborn.Util
         public long UsedHeapBytes { get; private set; }
         public bool AllowUpdating { get; set; } = true;
 
-        private readonly System.Threading.Timer _timer;
+        private readonly Timer _timer;
         private readonly Process _process;
 
         private const int UpdateIntervalMs = 250;
@@ -19,7 +19,7 @@ namespace betareborn.Util
             _process = Process.GetCurrentProcess();
             MaxMemoryBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
 
-            _timer = new System.Threading.Timer(
+            _timer = new Timer(
                 _ => Update(),
                 null,
                 0,
