@@ -37,8 +37,8 @@ namespace betareborn.Client.Guis
         public void renderGameOverlay(float partialTicks, bool unusedFlag, int unusedA, int unusedB)
         {
             ScaledResolution scaled = new ScaledResolution(mc.options, mc.displayWidth, mc.displayHeight);
-            int scaledWidth = scaled.getScaledWidth();
-            int scaledHeight = scaled.getScaledHeight();
+            int scaledWidth = scaled.ScaledWidth;
+            int scaledHeight = scaled.ScaledHeight;
             TextRenderer font = mc.fontRenderer;
             mc.gameRenderer.setupHudRender();
             GLManager.GL.Enable(GLEnum.Blend);
@@ -280,9 +280,9 @@ namespace betareborn.Client.Guis
 
             for (j = 0; j < chatMessageList.size() && j < linesToShow; ++j)
             {
-                if (((ChatLine)chatMessageList.get(j)).updateCounter < 200 || chatOpen)
+                if (((ChatLine)chatMessageList.get(j)).UpdateCounter < 200 || chatOpen)
                 {
-                    double d = ((ChatLine)chatMessageList.get(j)).updateCounter / 200.0D;
+                    double d = ((ChatLine)chatMessageList.get(j)).UpdateCounter / 200.0D;
                     d = 1.0D - d;
                     d *= 10.0D;
                     if (d < 0.0D)
@@ -306,7 +306,7 @@ namespace betareborn.Client.Guis
                     {
                         byte left = 2;
                         int y = -j * 9;
-                        debugStr = ((ChatLine)chatMessageList.get(j)).message;
+                        debugStr = ((ChatLine)chatMessageList.get(j)).Message;
                         drawRect(left, y - 1, left + 320, y + 8, alpha / 2 << 24);
                         GLManager.GL.Enable(GLEnum.Blend);
                         font.drawStringWithShadow(debugStr, left, y, 16777215 + (alpha << 24));
@@ -440,7 +440,7 @@ namespace betareborn.Client.Guis
 
             for (int i = 0; i < chatMessageList.size(); ++i)
             {
-                ++((ChatLine)chatMessageList.get(i)).updateCounter;
+                ++((ChatLine)chatMessageList.get(i)).UpdateCounter;
             }
 
         }
