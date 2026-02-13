@@ -129,7 +129,7 @@ namespace betareborn.Server.Commands
                     {
                         "all" => true,
                         "living" or "mob" => entity is EntityLiving,
-                        "monster" => entity is EntityMob,
+                        "monster" => entity is EntityMonster,
                         "animal" => entity is EntityAnimal,
                         "item" => entity is EntityItem,
                         "tnt" => entity is EntityTNTPrimed,

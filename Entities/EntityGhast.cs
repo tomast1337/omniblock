@@ -4,7 +4,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Entities
 {
-    public class EntityGhast : EntityFlying, IMob
+    public class EntityGhast : EntityFlying, Monster
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityGhast).TypeHandle);
 

@@ -6,7 +6,7 @@ using betareborn.Worlds.Chunks;
 
 namespace betareborn.Entities
 {
-    public class EntitySlime : EntityLiving, IMob
+    public class EntitySlime : EntityLiving, Monster
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntitySlime).TypeHandle);
 

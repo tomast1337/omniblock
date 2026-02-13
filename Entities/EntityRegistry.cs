@@ -158,7 +158,7 @@ namespace betareborn.Entities
             register(EntityItem.Class, "Item", 1);
             register(EntityPainting.Class, "Painting", 9);
             register(EntityLiving.Class, "Mob", 48);
-            register(EntityMob.Class, "Monster", 49);
+            register(EntityMonster.Class, "Monster", 49);
             register(EntityCreeper.Class, "Creeper", 50);
             register(EntitySkeleton.Class, "Skeleton", 51);
             register(EntitySpider.Class, "Spider", 52);

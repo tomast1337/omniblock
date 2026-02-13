@@ -5,7 +5,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Entities
 {
-    public class EntitySkeleton : EntityMob
+    public class EntitySkeleton : EntityMonster
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntitySkeleton).TypeHandle);
 

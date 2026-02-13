@@ -2,7 +2,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Entities
 {
-    public class EntityGiantZombie : EntityMob
+    public class EntityGiantZombie : EntityMonster
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityGiantZombie).TypeHandle);
 

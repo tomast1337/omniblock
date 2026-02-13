@@ -4,13 +4,13 @@ using betareborn.Worlds;
 
 namespace betareborn.Entities
 {
-    public class EntityMob : EntityCreature, IMob
+    public class EntityMonster : EntityCreature, Monster
     {
-        public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityMob).TypeHandle);
+        public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityMonster).TypeHandle);
 
         protected int attackStrength = 2;
 
-        public EntityMob(World world) : base(world)
+        public EntityMonster(World world) : base(world)
         {
             health = 20;
         }

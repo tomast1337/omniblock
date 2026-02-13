@@ -457,7 +457,7 @@ namespace betareborn.Entities
                     wakeUp(true, true, false);
                 }
 
-                if (damageSource is EntityMob || damageSource is EntityArrow)
+                if (damageSource is EntityMonster || damageSource is EntityArrow)
                 {
                     if (world.difficulty == 0)
                     {
@@ -982,7 +982,7 @@ namespace betareborn.Entities
 
         public override void onKillOther(EntityLiving other)
         {
-            if (other is EntityMob)
+            if (other is EntityMonster)
             {
                 incrementStat(Achievements.KILL_ENEMY);
             }

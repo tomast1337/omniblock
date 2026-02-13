@@ -4,7 +4,7 @@ using betareborn.Worlds;
 
 namespace betareborn.Entities
 {
-    public class EntityCreeper : EntityMob
+    public class EntityCreeper : EntityMonster
     {
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityCreeper).TypeHandle);
 
