@@ -23,8 +23,6 @@ using betareborn.Stats;
 using betareborn.Util.Hit;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
-using betareborn.Worlds.Chunks.Storage;
-using betareborn.Worlds.Dimensions;
 using betareborn.Worlds.Storage;
 using ImGuiNET;
 using java.lang;
@@ -175,7 +173,7 @@ namespace betareborn
             Display.setTitle("Minecraft Beta 1.7.3");
 
             mcDataDir = getMinecraftDir();
-            saveLoader = new RegionWorldStorageSource(new java.io.File(mcDataDir, "saves"), true);
+            saveLoader = new RegionWorldStorageSource(new java.io.File(mcDataDir, "saves"));
             options = new GameOptions(this, mcDataDir);
             Profiler.Enabled = options.debugMode;
 
@@ -404,10 +402,7 @@ namespace betareborn
         {
             if (!(currentScreen is GuiUnused))
             {
-                if (currentScreen != null)
-                {
-                    currentScreen.onGuiClosed();
-                }
+                currentScreen?.onGuiClosed();
 
                 if (newScreen is GuiMainMenu)
                 {
@@ -600,10 +595,7 @@ namespace betareborn
 
                         if (!skipRenderWorld)
                         {
-                            if (playerController != null)
-                            {
-                                playerController.setPartialTime(timer.renderPartialTicks);
-                            }
+                            playerController?.setPartialTime(timer.renderPartialTicks);
 
                             if (options.debugMode) Profiler.PushGroup("render");
                             gameRenderer.onFrameUpdate(timer.renderPartialTicks);
@@ -615,14 +607,6 @@ namespace betareborn
                             imGuiController.Update(timer.deltaTime);
                             ProfilerRenderer.Draw();
                             ProfilerRenderer.DrawGraph();
-
-                            ImGui.Begin("Region Info");
-                            long rls = Region.RegionCache.getRegionsLoadedSync();
-                            long rla = Region.RegionCache.getRegionsLoadedAsync();
-                            ImGui.Text($"Regions loaded sync: {rls}");
-                            ImGui.Text($"Regions loaded async: {rla}");
-                            ImGui.Text($"Regions loaded total: {rls + rla}");
-                            ImGui.End();
 
                             ImGui.Begin("IO");
                             ImGui.Text($"Async IO ops: {AsyncIO.activeTaskCount()}");
@@ -895,10 +879,7 @@ namespace betareborn
         {
             if (inGameHasFocus)
             {
-                if (player != null)
-                {
-                    player.resetPlayerKeyState();
-                }
+                player?.resetPlayerKeyState();
 
                 inGameHasFocus = false;
                 mouseHelper.ungrabMouseCursor();
@@ -1319,9 +1300,9 @@ namespace betareborn
                             }
                         }
                     }
-                    else if (currentScreen != null)
+                    else
                     {
-                        currentScreen.handleMouseInput();
+                        currentScreen?.handleMouseInput();
                     }
                 }
             }
@@ -1457,66 +1438,6 @@ namespace betareborn
             displayGuiScreen(new GuiLevelLoading(worldName, mainMenuText, seed));
         }
 
-
-        public void usePortal()
-        {
-            java.lang.System.@out.println("Toggling dimension!!");
-            if (player.dimensionId == -1)
-            {
-                player.dimensionId = 0;
-            }
-            else
-            {
-                player.dimensionId = -1;
-            }
-
-            world.remove(player);
-            player.dead = false;
-            double playerX = player.x;
-            double playerZ = player.z;
-            double dimensionScaleFactor = 8.0D;
-            World newWorld;
-            if (player.dimensionId == -1)
-            {
-                playerX /= dimensionScaleFactor;
-                playerZ /= dimensionScaleFactor;
-                player.setPositionAndAnglesKeepPrevAngles(playerX, player.y, playerZ, player.yaw,
-                    player.pitch);
-                if (player.isAlive())
-                {
-                    world.updateEntity(player, false);
-                }
-
-                newWorld = null;
-                newWorld = new World(world, Dimension.fromId(-1));
-                changeWorld(newWorld, "Entering the Nether", player);
-            }
-            else
-            {
-                playerX *= dimensionScaleFactor;
-                playerZ *= dimensionScaleFactor;
-                player.setPositionAndAnglesKeepPrevAngles(playerX, player.y, playerZ, player.yaw,
-                    player.pitch);
-                if (player.isAlive())
-                {
-                    world.updateEntity(player, false);
-                }
-
-                newWorld = null;
-                newWorld = new World(world, Dimension.fromId(0));
-                changeWorld(newWorld, "Leaving the Nether", player);
-            }
-
-            player.world = world;
-            if (player.isAlive())
-            {
-                player.setPositionAndAnglesKeepPrevAngles(playerX, player.y, playerZ, player.yaw,
-                    player.pitch);
-                world.updateEntity(player, false);
-                (new PortalForcer()).moveToPortal(world, player);
-            }
-        }
-
         public void changeWorld1(World newWorld)
         {
             changeWorld2(newWorld, "");
@@ -1550,15 +1471,7 @@ namespace betareborn
                 else if (player != null)
                 {
                     player.teleportToTop();
-                    if (newWorld != null)
-                    {
-                        newWorld.spawnEntity(player);
-                    }
-                }
-
-                if (!newWorld.isRemote)
-                {
-                    func_6255_d(loadingText);
+                    newWorld?.spawnEntity(player);
                 }
 
                 if (player == null)
@@ -1569,15 +1482,9 @@ namespace betareborn
                 }
 
                 player.movementInput = new MovementInputFromOptions(options);
-                if (terrainRenderer != null)
-                {
-                    terrainRenderer.changeWorld(newWorld);
-                }
+                terrainRenderer?.changeWorld(newWorld);
 
-                if (particleManager != null)
-                {
-                    particleManager.clearEffects(newWorld);
-                }
+                particleManager?.clearEffects(newWorld);
 
                 playerController.func_6473_b(player);
                 if (targetEntity != null)
@@ -1601,9 +1508,7 @@ namespace betareborn
             systemTime = 0L;
         }
 
-
-
-        private void func_6255_d(string loadingText)
+        private void showText(string loadingText)
         {
             loadingScreen.printText(loadingText);
             loadingScreen.progressStage("Building terrain");
@@ -1685,11 +1590,6 @@ namespace betareborn
 
         public void respawn(bool ignoreSpawnPosition, int newDimensionId)
         {
-            if (!world.isRemote && !world.dimension.hasWorldSpawn())
-            {
-                usePortal();
-            }
-
             Vec3i playerSpawnPos = null;
             Vec3i respawnPos = null;
             bool useBedSpawn = true;
@@ -1739,7 +1639,7 @@ namespace betareborn
             player.id = previousPlayerId;
             player.spawn();
             playerController.func_6473_b(player);
-            func_6255_d("Respawning");
+            showText("Respawning");
             if (currentScreen is GuiGameOver)
             {
                 displayGuiScreen((GuiScreen)null);

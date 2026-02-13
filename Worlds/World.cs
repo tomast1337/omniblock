@@ -10,7 +10,6 @@ using betareborn.Worlds.Biomes;
 using betareborn.Worlds.Biomes.Source;
 using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Chunks.Light;
-using betareborn.Worlds.Chunks.Storage;
 using betareborn.Worlds.Dimensions;
 using betareborn.Worlds.Storage;
 using java.lang;
@@ -20,7 +19,7 @@ using System.Runtime.InteropServices;
 
 namespace betareborn.Worlds
 {
-    public class World : java.lang.Object, BlockView
+    public abstract class World : java.lang.Object, BlockView
     {
         public static readonly Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(World).TypeHandle);
         private const int AUTOSAVE_PERIOD = 40;
@@ -240,11 +239,7 @@ namespace betareborn.Worlds
             prepareWeather();
         }
 
-        protected virtual ChunkSource createChunkCache()
-        {
-            ChunkStorage var1 = storage.getChunkStorage(dimension);
-            return new ChunkCache(this, (RegionChunkStorageAsync)var1, dimension.createChunkGenerator());
-        }
+        protected abstract ChunkSource createChunkCache();
 
         protected void initializeSpawnPoint()
         {

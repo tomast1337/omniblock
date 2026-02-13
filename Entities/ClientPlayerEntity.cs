@@ -1,12 +1,12 @@
+using betareborn.Blocks.Entities;
+using betareborn.Client.Guis;
+using betareborn.Client.Input;
+using betareborn.Inventorys;
 using betareborn.NBT;
 using betareborn.Stats;
+using betareborn.Util.Maths;
 using betareborn.Worlds;
 using java.lang;
-using betareborn.Inventorys;
-using betareborn.Util.Maths;
-using betareborn.Client.Guis;
-using betareborn.Blocks.Entities;
-using betareborn.Client.Input;
 
 namespace betareborn.Entities
 {
@@ -73,12 +73,6 @@ namespace betareborn.Entities
                 if (changeDimensionCooldown >= 1.0F)
                 {
                     changeDimensionCooldown = 1.0F;
-                    if (!world.isRemote)
-                    {
-                        portalCooldown = 10;
-                        mc.sndManager.playSoundFX("portal.travel", 1.0F, random.nextFloat() * 0.4F + 0.8F);
-                        mc.usePortal();
-                    }
                 }
 
                 inTeleportationState = false;
@@ -200,7 +194,7 @@ namespace betareborn.Entities
             }
             else
             {
-                damageForDisplay = damageAmount; 
+                damageForDisplay = damageAmount;
                 lastHealth = health;
                 hearts = maxHealth;
                 applyDamage(damageAmount);
