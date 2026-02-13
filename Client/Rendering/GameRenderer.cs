@@ -50,6 +50,7 @@ namespace betareborn.Client.Rendering
         float fogColorBlue;
         private float lastViewBob;
         private float viewBob;
+        private readonly Stopwatch fpsTimer;
 
         public GameRenderer(Minecraft mc)
         {
@@ -466,47 +467,29 @@ namespace betareborn.Client.Rendering
 
                 if (var7 < 240)
                 {
-                    long interval = 1000000000L / var7;
-
-                    if (targetTime == 0L)
+                    //frametime in milliseconds
+                    double targetMs = 1000.0 / var7;
+                    
+                    double elapsedMs = fpsTimer.Elapsed.TotalMilliseconds;
+                    double waitTime = targetMs - elapsedMs;
+                
+                    if (waitTime > 0)
                     {
-                        targetTime = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
+                        if (waitTime > 2.0)
+                        {
+                            Thread.Sleep((int)(waitTime - 1.0));
+                        }
+                        
+                        while (fpsTimer.Elapsed.TotalMilliseconds < targetMs)
+                        {
+                            Thread.SpinWait(10);
+                        }
                     }
-
-                    long now = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
-                    long diff = targetTime - now;
-
-                    if (diff > 2000000L)
-                    {
-                        long sleepMs = (diff - 1000000L) / 1000000L;
-                        Thread.Sleep((int)sleepMs);
-                    }
-
-                    while (true)
-                    {
-                        now = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
-                        if (now >= targetTime) break;
-                        Thread.SpinWait(10);
-                    }
-
-                    targetTime += interval;
-
-                    long finalNow = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
-                    if (finalNow > targetTime + interval)
-                    {
-                        targetTime = finalNow;
-                    }
+                    
+                    fpsTimer.Restart();
                 }
-                else
-                {
-                    targetTime = 0L;
-                }
-
-                lastFrameTime = (Stopwatch.GetTimestamp() * 1000000000L) / Stopwatch.Frequency;
             }
         }
-
-        private long targetTime = 0L;
 
         public void renderFrame(float tickDelta, long time)
         {
