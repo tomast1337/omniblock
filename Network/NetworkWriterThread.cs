@@ -37,7 +37,7 @@ namespace betareborn.Network
                     {
                     }
 
-                    netManager.waitForSignal(100);
+                    netManager.waitForSignal(10);
 
                     try
                     {

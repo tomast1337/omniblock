@@ -3,7 +3,6 @@ using betareborn.Threading;
 using java.io;
 using java.net;
 using java.util;
-using System.Threading;
 
 namespace betareborn.Network
 {
@@ -33,7 +32,7 @@ namespace betareborn.Network
         public static int[] TOTAL_READ_SIZE = new int[256];
         public static int[] TOTAL_SEND_SIZE = new int[256];
         public int lag = 0;
-        private int delay = 50;
+        private int delay = 0;
         private readonly ManualResetEventSlim wakeSignal = new ManualResetEventSlim(false);
 
         public Connection(Socket var1, string var2, NetHandler var3)
@@ -53,7 +52,7 @@ namespace betareborn.Network
             }
 
             inputStream = new DataInputStream(var1.getInputStream());
-            outputStream = new DataOutputStream(new BufferedOutputStream(var1.getOutputStream(), 5120));
+            outputStream = new DataOutputStream(new BufferedOutputStream(var1.getOutputStream(), 65536));
             reader = new NetworkReaderThread(this, var2 + " read thread");
             writer = new NetworkWriterThread(this, var2 + " write thread");
             reader.start();

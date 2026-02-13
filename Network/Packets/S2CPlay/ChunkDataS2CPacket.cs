@@ -32,7 +32,7 @@ namespace betareborn.Network.Packets.S2CPlay
             this.sizeY = sizeY;
             this.sizeZ = sizeZ;
             byte[] var8 = world.getChunkData(x, y, z, sizeX, sizeY, sizeZ);
-            Deflater var9 = new(-1);
+            Deflater var9 = new(1);
 
             try
             {
