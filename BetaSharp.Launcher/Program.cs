@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using System;
-using BetaSharp.Avalonia;
 using BetaSharp.Launcher;
 
 Start(args);
