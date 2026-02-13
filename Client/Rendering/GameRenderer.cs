@@ -19,38 +19,37 @@ namespace betareborn.Client.Rendering
     public class GameRenderer
     {
         public static int anaglyphField;
-        private Minecraft client;
+        private readonly Minecraft client;
         private float viewDistane = 0.0F;
         public HeldItemRenderer itemRenderer;
         private int ticks;
         private Entity targetedEntity = null;
-        private MouseFilter mouseFilterXAxis = new MouseFilter();
-        private MouseFilter mouseFilterYAxis = new MouseFilter();
-        private float thirdPersonDistance = 4.0F;
+        private readonly MouseFilter mouseFilterXAxis = new();
+        private readonly MouseFilter mouseFilterYAxis = new();
+        private readonly float thirdPersonDistance = 4.0F;
         private float prevThirdPersonDistance = 4.0F;
-        private float thirdPersonYaw = 0.0F;
+        private readonly float thirdPersonYaw = 0.0F;
         private float prevThirdPersonYaw = 0.0F;
-        private float thirdPersonPitch = 0.0F;
+        private readonly float thirdPersonPitch = 0.0F;
         private float prevThirdPersonPitch = 0.0F;
-        private float cameraRoll = 0.0F;
+        private readonly float cameraRoll = 0.0F;
         private float prevCameraRoll = 0.0F;
-        private float cameraRollAmount = 0.0F;
+        private readonly float cameraRollAmount = 0.0F;
         private float prevCameraRollAmount = 0.0F;
-        private bool cloudFog = false;
-        private double cameraZoom = 1.0D;
-        private double cameraYaw = 0.0D;
-        private double cameraPitch = 0.0D;
+        private readonly bool cloudFog = false;
+        private readonly double cameraZoom = 1.0D;
+        private readonly double cameraYaw = 0.0D;
+        private readonly double cameraPitch = 0.0D;
         private long prevFrameTime = java.lang.System.currentTimeMillis();
-        private long lastFrameTime = 0L;
-        private java.util.Random random = new();
+        private readonly java.util.Random random = new();
         private int rainSoundCounter = 0;
-        float[] fogColorBuffer = new float[16];
-        float fogColorRed;
-        float fogColorGreen;
-        float fogColorBlue;
+        private readonly float[] fogColorBuffer = new float[16];
+        private float fogColorRed;
+        private float fogColorGreen;
+        private float fogColorBlue;
         private float lastViewBob;
         private float viewBob;
-        private readonly Stopwatch fpsTimer;
+        private readonly Stopwatch fpsTimer = Stopwatch.StartNew();
 
         public GameRenderer(Minecraft mc)
         {
@@ -421,7 +420,7 @@ namespace betareborn.Client.Rendering
 
             if (!client.skipRenderWorld)
             {
-                ScaledResolution var13 = new ScaledResolution(client.options, client.displayWidth, client.displayHeight);
+                ScaledResolution var13 = new(client.options, client.displayWidth, client.displayHeight);
                 int var14 = var13.getScaledWidth();
                 int var15 = var13.getScaledHeight();
                 int var16 = Mouse.getX() * var14 / client.displayWidth;
@@ -469,23 +468,23 @@ namespace betareborn.Client.Rendering
                 {
                     //frametime in milliseconds
                     double targetMs = 1000.0 / var7;
-                    
+
                     double elapsedMs = fpsTimer.Elapsed.TotalMilliseconds;
                     double waitTime = targetMs - elapsedMs;
-                
+
                     if (waitTime > 0)
                     {
                         if (waitTime > 2.0)
                         {
                             Thread.Sleep((int)(waitTime - 1.0));
                         }
-                        
+
                         while (fpsTimer.Elapsed.TotalMilliseconds < targetMs)
                         {
                             Thread.SpinWait(10);
                         }
                     }
-                    
+
                     fpsTimer.Restart();
                 }
             }
@@ -833,7 +832,7 @@ namespace betareborn.Client.Rendering
 
         public void setupHudRender()
         {
-            ScaledResolution var1 = new ScaledResolution(client.options, client.displayWidth, client.displayHeight);
+            ScaledResolution var1 = new(client.options, client.displayWidth, client.displayHeight);
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
