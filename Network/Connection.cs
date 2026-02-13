@@ -3,6 +3,7 @@ using betareborn.Threading;
 using java.io;
 using java.net;
 using java.util;
+using System.Threading;
 
 namespace betareborn.Network
 {
@@ -33,6 +34,7 @@ namespace betareborn.Network
         public static int[] TOTAL_SEND_SIZE = new int[256];
         public int lag = 0;
         private int delay = 50;
+        private readonly ManualResetEventSlim wakeSignal = new ManualResetEventSlim(false);
 
         public Connection(Socket var1, string var2, NetHandler var3)
         {
@@ -142,8 +144,13 @@ namespace betareborn.Network
 
         public void interrupt()
         {
-            reader.interrupt();
-            writer.interrupt();
+            wakeSignal.Set();
+        }
+
+        public void waitForSignal(int timeoutMs)
+        {
+            wakeSignal.Wait(timeoutMs);
+            wakeSignal.Reset();
         }
 
         private bool read()
@@ -269,7 +276,6 @@ namespace betareborn.Network
         {
             interrupt();
             closed = true;
-            reader.interrupt();
             new ThreadCloseConnection(this).start();
         }
 
