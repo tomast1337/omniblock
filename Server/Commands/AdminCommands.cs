@@ -15,11 +15,7 @@ namespace betareborn.Server.Commands
 
         public static void Stop(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
-            if (server is InternalServer)
-            {
-                output.SendMessage("Cannot stop an internal server. Use the pause menu to quit.");
-                return;
-            }
+            if (IsInternalServer(server, output)) return;
 
             LogCommand(server, senderName, "Stopping the server..");
             server.stop();
@@ -51,6 +47,7 @@ namespace betareborn.Server.Commands
 
         public static void Op(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1) { output.SendMessage("Usage: op <player>"); return; }
 
             string target = args[0];
@@ -61,6 +58,7 @@ namespace betareborn.Server.Commands
 
         public static void Deop(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1) { output.SendMessage("Usage: deop <player>"); return; }
 
             string target = args[0];
@@ -71,6 +69,7 @@ namespace betareborn.Server.Commands
 
         public static void Ban(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1) { output.SendMessage("Usage: ban <player>"); return; }
 
             string target = args[0];
@@ -81,6 +80,7 @@ namespace betareborn.Server.Commands
 
         public static void Pardon(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1) { output.SendMessage("Usage: pardon <player>"); return; }
 
             string target = args[0];
@@ -90,6 +90,7 @@ namespace betareborn.Server.Commands
 
         public static void BanIp(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1) { output.SendMessage("Usage: ban-ip <ip>"); return; }
 
             string ip = args[0];
@@ -99,6 +100,7 @@ namespace betareborn.Server.Commands
 
         public static void PardonIp(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1) { output.SendMessage("Usage: pardon-ip <ip>"); return; }
 
             string ip = args[0];
@@ -108,6 +110,7 @@ namespace betareborn.Server.Commands
 
         public static void Kick(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1) { output.SendMessage("Usage: kick <player>"); return; }
 
             string target = args[0];
@@ -126,6 +129,7 @@ namespace betareborn.Server.Commands
 
         public static void Whitelist(MinecraftServer server, string senderName, string[] args, CommandOutput output)
         {
+            if (IsInternalServer(server, output)) return;
             if (args.Length < 1)
             {
                 output.SendMessage("Usage: whitelist <on|off|list|add|remove|reload> [player]");
@@ -167,6 +171,16 @@ namespace betareborn.Server.Commands
                     LogCommand(server, senderName, "Reloaded white-list from file");
                     break;
             }
+        }
+
+        private static bool IsInternalServer(MinecraftServer server, CommandOutput output)
+        {
+            if (server is InternalServer)
+            {
+                output.SendMessage("This command is not available in singleplayer.");
+                return true;
+            }
+            return false;
         }
 
         internal static void LogCommand(MinecraftServer server, string senderName, string message)
