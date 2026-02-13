@@ -4,7 +4,8 @@
 
         x:Class="BetaSharp.Avalonia.Features.Shell.ShellView" x:DataType="vm:ShellViewModel"
 
-        Icon="/Assets/icon.ico" Title="BetaSharp.Avalonia">
+        Icon="/Assets/icon.ico" Title="BetaSharp Launcher"
+        Width="850" Height="480" MinWidth="850" MinHeight="480" WindowStartupLocation="CenterScreen">
 
     <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 </Window>
