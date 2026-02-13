@@ -40,8 +40,11 @@ namespace betareborn.Client.Rendering.Chunks
         {
             get
             {
-                if (results.IsEmpty) return null;
-                return results.Dequeue();
+                lock (results)
+                {
+                    if (results.IsEmpty) return null;
+                    return results.Dequeue();
+                }
             }
         }
 

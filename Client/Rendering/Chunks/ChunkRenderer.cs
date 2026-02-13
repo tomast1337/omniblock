@@ -456,6 +456,15 @@ namespace betareborn.Client.Rendering.Chunks
             long? snapshot = version.SnapshotIfNeeded();
             if (snapshot.HasValue)
             {
+                for (int i = 0; i < dirtyChunks.Count; i++)
+                {
+                    if (dirtyChunks[i].Pos == chunkPos)
+                    {
+                        dirtyChunks[i] = new(chunkPos, snapshot.Value, priority || dirtyChunks[i].priority);
+                        return true;
+                    }
+                }
+
                 dirtyChunks.Add(new(chunkPos, snapshot.Value, priority));
                 return true;
             }
