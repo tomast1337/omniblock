@@ -1,4 +1,4 @@
-﻿namespace betareborn
+﻿namespace betareborn.Util
 {
     public class ObjectPool<T> : IDisposable where T : class
     {

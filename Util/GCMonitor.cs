@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace betareborn
+namespace betareborn.Util
 {
     public sealed class GCMonitor : IDisposable
     {

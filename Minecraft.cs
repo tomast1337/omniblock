@@ -23,7 +23,6 @@ using betareborn.Stats;
 using betareborn.Util.Hit;
 using betareborn.Util.Maths;
 using betareborn.Worlds;
-using betareborn.Worlds.Chunks;
 using betareborn.Worlds.Chunks.Storage;
 using betareborn.Worlds.Dimensions;
 using betareborn.Worlds.Storage;
@@ -45,7 +44,7 @@ namespace betareborn
         private bool hasCrashed = false;
         public int displayWidth;
         public int displayHeight;
-        private Timer timer = new Timer(20.0F);
+        private readonly Client.Timer timer = new(20.0F);
         public World world;
         public WorldRenderer terrainRenderer;
         public ClientPlayerEntity player;
@@ -59,20 +58,17 @@ namespace betareborn
         public TextRenderer fontRenderer;
         public GuiScreen currentScreen = null;
         public LoadingScreenRenderer loadingScreen;
-
         public GameRenderer gameRenderer;
-
-        //private ThreadDownloadResources downloadResourcesThread;
         private int ticksRan = 0;
         private int leftClickCounter = 0;
-        private int tempDisplayWidth;
-        private int tempDisplayHeight;
+        private readonly int tempDisplayWidth;
+        private readonly int tempDisplayHeight;
         public GuiAchievement guiAchievement;
         public GuiIngame ingameGUI;
         public bool skipRenderWorld = false;
         public HitResult objectMouseOver = null;
         public GameOptions options;
-        public SoundManager sndManager = new SoundManager();
+        public SoundManager sndManager = new();
         public MouseHelper mouseHelper;
         public TexturePacks texturePackList;
         private java.io.File mcDataDir;
@@ -84,8 +80,8 @@ namespace betareborn
         public StatFileWriter statFileWriter;
         private string serverName;
         private int serverPort;
-        private WaterSprite textureWaterFX = new WaterSprite();
-        private LavaSprite textureLavaFX = new LavaSprite();
+        private readonly WaterSprite textureWaterFX = new();
+        private readonly LavaSprite textureLavaFX = new();
         private static java.io.File minecraftDir = null;
         public volatile bool running = true;
         public string debug = "";
@@ -282,7 +278,7 @@ namespace betareborn
 
         private void loadScreen()
         {
-            ScaledResolution var1 = new ScaledResolution(options, displayWidth, displayHeight);
+            ScaledResolution var1 = new(options, displayWidth, displayHeight);
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
@@ -437,7 +433,7 @@ namespace betareborn
                 if (newScreen != null)
                 {
                     setIngameNotInFocus();
-                    ScaledResolution scaledResolution = new ScaledResolution(options, displayWidth, displayHeight);
+                    ScaledResolution scaledResolution = new(options, displayWidth, displayHeight);
                     int scaledWidth = scaledResolution.getScaledWidth();
                     int scaledHeight = scaledResolution.getScaledHeight();
                     ((GuiScreen)newScreen).setWorldAndResolution(this, scaledWidth, scaledHeight);
@@ -1088,7 +1084,7 @@ namespace betareborn
 
             if (currentScreen != null)
             {
-                ScaledResolution scaledResolution = new ScaledResolution(options, newWidth, newHeight);
+                ScaledResolution scaledResolution = new(options, newWidth, newHeight);
                 int scaledWidth = scaledResolution.getScaledWidth();
                 int scaledHeight = scaledResolution.getScaledHeight();
                 currentScreen.setWorldAndResolution(this, scaledWidth, scaledHeight);

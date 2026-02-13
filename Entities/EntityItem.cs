@@ -12,8 +12,7 @@ namespace betareborn.Entities
 
         public static readonly new java.lang.Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(EntityItem).TypeHandle);
         public ItemStack stack;
-        private int animationTick;
-        public int age = 0;
+        public int itemAge = 0;
         public int delayBeforeCanPickup;
         private int health = 5;
         public float bobPhase = (float)(java.lang.Math.random() * System.Math.PI * 2.0D);
@@ -86,9 +85,8 @@ namespace betareborn.Entities
                 velocityY *= -0.5D;
             }
 
-            ++animationTick;
-            ++age;
-            if (age >= 6000)
+            ++itemAge;
+            if (itemAge >= 6000)
             {
                 markDead();
             }
@@ -120,14 +118,14 @@ namespace betareborn.Entities
         public override void writeNbt(NBTTagCompound nbt)
         {
             nbt.setShort("Health", (short)((byte)health));
-            nbt.setShort("Age", (short)age);
+            nbt.setShort("Age", (short)itemAge);
             nbt.setCompoundTag("Item", stack.writeToNBT(new NBTTagCompound()));
         }
 
         public override void readNbt(NBTTagCompound nbt)
         {
             health = nbt.getShort("Health") & 255;
-            age = nbt.getShort("Age");
+            itemAge = nbt.getShort("Age");
             NBTTagCompound itemTag = nbt.getCompoundTag("Item");
             stack = new ItemStack(itemTag);
         }

@@ -2,7 +2,7 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace betareborn
+namespace betareborn.Util
 {
     public sealed class PooledQueue<T> : IDisposable/* where T : unmanaged*/
     {
