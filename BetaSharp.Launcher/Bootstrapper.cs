@@ -11,7 +11,6 @@ internal static class Bootstrapper
     {
         var builder = new ServiceCollection();
 
-        builder.AddHttpClient();
         builder.AddSingleton<ViewLocator>();
         
         builder
@@ -22,7 +21,9 @@ internal static class Bootstrapper
             .AddTransient<NewView>()
             .AddTransient<NewViewModel>()
             .AddTransient<AuthenticationService>()
-            .AddTransient<LauncherService>();
+            .AddTransient<LauncherService>()
+            .AddTransient<MinecraftDownloader>()
+            .AddHttpClient();
 
         return builder.BuildServiceProvider();
     }
