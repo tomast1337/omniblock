@@ -2,6 +2,7 @@
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server;
+using BetaSharp.Server.Internal;
 using BetaSharp.Server.Worlds;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
@@ -77,7 +78,7 @@ public class ServerWorld : World
             var6 = var5;
         }
 
-        return var6 > 16 || server.playerManager.isOperator(player.name);
+        return var6 > 16 || server.playerManager.isOperator(player.name) || server is InternalServer;
     }
 
 
