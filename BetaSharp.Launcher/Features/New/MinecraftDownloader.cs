@@ -11,7 +11,7 @@ internal sealed class MinecraftDownloader(IHttpClientFactory httpClientFactory)
 {
     public async Task<string> DownloadAsync()
     {
-        var resource = await RequestResourceAsync();
+        var resource = await RequestClientUrlAsync();
         var client = httpClientFactory.CreateClient();
 
         await using var stream = await client.GetStreamAsync(resource);
@@ -22,7 +22,7 @@ internal sealed class MinecraftDownloader(IHttpClientFactory httpClientFactory)
         return file.Name;
     }
 
-    private async Task<string> RequestVersionAsync()
+    private async Task<string> RequestVersionUrlAsync()
     {
         var client = httpClientFactory.CreateClient();
 
@@ -41,18 +41,18 @@ internal sealed class MinecraftDownloader(IHttpClientFactory httpClientFactory)
         return url;
     }
 
-    private async Task<string> RequestResourceAsync()
+    private async Task<string> RequestClientUrlAsync()
     {
-        var resource = await RequestVersionAsync();
+        var resource = await RequestVersionUrlAsync();
         var client = httpClientFactory.CreateClient();
 
         await using var stream = await client.GetStreamAsync(resource);
 
         var node = await JsonNode.ParseAsync(stream);
-        var download = node?["downloads"]?["client"]?["url"]?.GetValue<string>();
+        var url = node?["downloads"]?["client"]?["url"]?.GetValue<string>();
         
-        ArgumentException.ThrowIfNullOrWhiteSpace(download);
+        ArgumentException.ThrowIfNullOrWhiteSpace(url);
 
-        return download;
+        return url;
     }
 }
