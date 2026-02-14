@@ -11,9 +11,16 @@ internal sealed partial class NewViewModel(AuthenticationService authenticationS
     private async Task AuthenticateAsync()
     {
         // What to do if the browser tab was closed?
-        var owns = await authenticationService.OwnsMinecraftAsync();
+        var token = await authenticationService.RequestMinecraftTokenAsync();
 
-        if (!owns)
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return;
+        }
+
+        var name = await authenticationService.RequestMinecraftNameAsync(token);
+
+        if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
@@ -21,13 +28,13 @@ internal sealed partial class NewViewModel(AuthenticationService authenticationS
         await minecraftDownloader.DownloadAsync();
 
         using var process = new Process();
-        
+
         process.StartInfo = new ProcessStartInfo
         {
             FileName = "BetaSharpClient",
-            Arguments = "Starlk -",
-            UseShellExecute = false, 
-            CreateNoWindow = false, 
+            Arguments = $"{name} {token}",
+            UseShellExecute = false,
+            CreateNoWindow = false,
             RedirectStandardOutput = false,
             RedirectStandardError = false
         };

@@ -17,7 +17,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
     private const string REDIRECT = "http://localhost:8080";
     private const string SCOPE = "XboxLive.signin offline_access";
 
-    public async Task<bool> OwnsMinecraftAsync()
+    public async Task<string?> RequestMinecraftTokenAsync()
     {
         var microsoft = await RequestMicrosoftTokenAsync();
         var xbox = await RequestXboxLiveTokenAsync(microsoft);
@@ -31,9 +31,25 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
         var stream = await client.GetStreamAsync("https://api.minecraftservices.com/entitlements/mcstore");
         var node = await JsonNode.ParseAsync(stream);
-        var items = node?["items"]?.AsArray() ?? [];
 
-        return items.Any(item => item?["name"]?.GetValue<string>() is "game_minecraft" or "product_minecraft");
+        var items = node?["items"]?.AsArray() ?? [];
+        var owns = items.Any(item => item?["name"]?.GetValue<string>() is "game_minecraft" or "product_minecraft");
+
+        return owns ? minecraft : null;
+    }
+
+    public async Task<string?> RequestMinecraftNameAsync(string token)
+    {
+        var client = httpClientFactory.CreateClient();
+
+        client.DefaultRequestHeaders.Clear();
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+        await using var stream = await client.GetStreamAsync("https://api.minecraftservices.com/minecraft/profile");
+
+        var node = await JsonNode.ParseAsync(stream);
+
+        return node?["name"]?.GetValue<string>();
     }
 
     private async Task<string> RequestMicrosoftTokenAsync()
