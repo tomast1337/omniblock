@@ -21,8 +21,7 @@ internal static class Bootstrapper
             .AddTransient<NewView>()
             .AddTransient<NewViewModel>()
             .AddTransient<AuthenticationService>()
-            .AddTransient<LauncherService>()
-            .AddTransient<MinecraftDownloader>()
+            .AddTransient<MinecraftDownloadingService>()
             .AddHttpClient();
 
         return builder.BuildServiceProvider();

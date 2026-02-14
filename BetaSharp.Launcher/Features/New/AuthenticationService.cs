@@ -7,15 +7,20 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace BetaSharp.Launcher.Features.New;
 
 // More decoupling and overall cleaning.
-internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory, LauncherService launcherService)
+internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory)
 {
     private const string ID = "c36a9fb6-4f2a-41ff-90bd-ae7cc92031eb";
     private const string REDIRECT = "http://localhost:8080";
     private const string SCOPE = "XboxLive.signin offline_access";
+
+    private readonly Window? window = ((ClassicDesktopStyleApplicationLifetime?) Application.Current?.ApplicationLifetime)?.MainWindow;
 
     public async Task<string?> RequestMinecraftTokenAsync()
     {
@@ -68,7 +73,9 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
                   + $"&state={Uri.EscapeDataString(state)}"
                   + $"&response_type=code";
 
-        await launcherService.LaunchAsync(url);
+        ArgumentNullException.ThrowIfNull(window);
+
+        await window.Launcher.LaunchUriAsync(new Uri(url));
 
         var context = await listener.GetContextAsync();
 
