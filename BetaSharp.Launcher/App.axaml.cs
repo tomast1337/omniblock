@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -8,15 +9,16 @@ namespace BetaSharp.Launcher;
 
 internal sealed partial class App : Application
 {
+    private readonly IServiceProvider services = Bootstrapper.Build();
+
     public override void Initialize()
     {
+        DataTemplates.Add(services.GetRequiredService<ViewLocator>());
         AvaloniaXamlLoader.Load(this);
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var services = Bootstrapper.Build();
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = services.GetRequiredService<ShellView>();

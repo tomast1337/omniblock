@@ -1,8 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.ComponentModel;
+using BetaSharp.Launcher.Features.New;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BetaSharp.Launcher.Features.Shell;
 
-internal sealed partial class ShellViewModel : ObservableObject
+internal sealed partial class ShellViewModel(NewViewModel newViewModel) : ObservableObject
 {
-    public string Greeting => "You must own a legitimate copy of Minecraft Java edition to use this client.";
+    [ObservableProperty]
+    public partial INotifyPropertyChanged Current { get; set; } = newViewModel;
 }

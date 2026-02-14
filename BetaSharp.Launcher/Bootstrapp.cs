@@ -11,6 +11,8 @@ internal static class Bootstrapper
     {
         var builder = new ServiceCollection();
 
+        builder.AddSingleton<ViewLocator>();
+        
         builder
             .AddTransient<ShellView>()
             .AddTransient<ShellViewModel>();

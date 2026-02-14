@@ -2,10 +2,11 @@ using System;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BetaSharp.Launcher;
 
-internal sealed class ViewLocator : IDataTemplate
+internal sealed class ViewLocator(IServiceProvider services) : IDataTemplate
 {
     public Control? Build(object? instance)
     {
@@ -17,7 +18,7 @@ internal sealed class ViewLocator : IDataTemplate
 
         ArgumentNullException.ThrowIfNull(type);
 
-        return (Control?) Activator.CreateInstance(type);
+        return (Control?) ActivatorUtilities.CreateInstance(services, type);
     }
 
     public bool Match(object? instance)

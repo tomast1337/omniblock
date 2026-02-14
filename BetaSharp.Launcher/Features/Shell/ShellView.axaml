@@ -7,5 +7,5 @@
         Icon="/icon.ico" Title="BetaSharp Launcher"
         Width="850" Height="480" MinWidth="850" MinHeight="480" WindowStartupLocation="CenterScreen">
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    <TransitioningContentControl Content="{CompiledBinding Current}" />
 </Window>
