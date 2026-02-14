@@ -9,7 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="icon.ico"/>
+        <AvaloniaResource Include="logo.png"/>
+        <AvaloniaResource Include="logo.ico"/>
     </ItemGroup>
 
     <ItemGroup>

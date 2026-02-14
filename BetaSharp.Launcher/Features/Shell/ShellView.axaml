@@ -4,7 +4,7 @@
 
         x:Class="BetaSharp.Launcher.Features.Shell.ShellView" x:DataType="local:ShellViewModel"
 
-        Icon="/icon.ico" Title="BetaSharp Launcher"
+        Icon="../../logo.ico" Title="BetaSharp Launcher"
         Width="850" Height="480" MinWidth="850" MinHeight="480" WindowStartupLocation="CenterScreen">
 
     <TransitioningContentControl Content="{CompiledBinding Current}" />

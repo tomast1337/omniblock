@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BetaSharp.Launcher.Features.New;
 
-internal sealed partial class NewViewModel(AuthenticationService authenticationService, MinecraftDownloadingService minecraftDownloadingService) : ObservableObject
+internal sealed partial class NewViewModel(AuthenticationService authenticationService, DownloadingService downloadingService) : ObservableObject
 {
     [RelayCommand]
     private async Task AuthenticateAsync()
@@ -25,7 +25,7 @@ internal sealed partial class NewViewModel(AuthenticationService authenticationS
             return;
         }
 
-        await minecraftDownloadingService.DownloadAsync();
+        await downloadingService.DownloadMinecraftAsync();
 
         using var process = new Process();
 

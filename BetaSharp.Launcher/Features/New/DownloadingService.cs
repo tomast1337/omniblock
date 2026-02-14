@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace BetaSharp.Launcher.Features.New;
 
-internal sealed class MinecraftDownloadingService(IHttpClientFactory httpClientFactory)
+internal sealed class DownloadingService(IHttpClientFactory httpClientFactory)
 {
-    public async Task DownloadAsync()
+    public async Task DownloadMinecraftAsync()
     {
         var resource = await RequestClientUrlAsync();
         var client = httpClientFactory.CreateClient();
