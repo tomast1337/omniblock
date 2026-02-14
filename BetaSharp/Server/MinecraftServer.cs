@@ -216,10 +216,6 @@ public abstract class MinecraftServer : Runnable, CommandOutput
                 saveWorlds();
             }
         }
-
-        while (AsyncIO.isBlocked())
-        {
-        }
     }
 
     public void stop()
@@ -377,7 +373,6 @@ public abstract class MinecraftServer : Runnable, CommandOutput
             GIVE_COMMANDS_COOLDOWNS.remove(var1.get(var6));
         }
 
-        AsyncIO.tick();
         ticks++;
 
         for (int var7 = 0; var7 < worlds.Length; var7++)

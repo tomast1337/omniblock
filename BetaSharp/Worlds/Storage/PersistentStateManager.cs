@@ -113,14 +113,9 @@ public class PersistentStateManager : java.lang.Object
                     NBTTagCompound var4 = new();
                     var4.SetCompoundTag("data", var3);
 
-                    var saveTask = Task.Run(() =>
-                    {
-                        FileOutputStream var5 = new(var2);
-                        NbtIo.WriteCompressed(var4, var5);
-                        var5.close();
-                    });
-
-                    AsyncIO.addTask(saveTask);
+                    FileOutputStream var5 = new(var2);
+                    NbtIo.WriteCompressed(var4, var5);
+                    var5.close();
                 }
             }
             catch (System.Exception var6)

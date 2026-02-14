@@ -619,10 +619,6 @@ public partial class Minecraft : java.lang.Object, Runnable
                         ProfilerRenderer.Draw();
                         ProfilerRenderer.DrawGraph();
 
-                        ImGui.Begin("IO");
-                        ImGui.Text($"Async IO ops: {AsyncIO.activeTaskCount()}");
-                        ImGui.End();
-
                         ImGui.Begin("Render Info");
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
                         ImGui.End();
@@ -1118,8 +1114,6 @@ public partial class Minecraft : java.lang.Object, Runnable
         ingameGUI.updateTick();
         Profiler.Stop("ingameGUI.updateTick");
         gameRenderer.updateTargetedEntity(1.0F);
-
-        AsyncIO.tick();
 
         gameRenderer.tick(partialTicks);
 
