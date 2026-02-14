@@ -1,11 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:BetaSharp.Avalonia.Features.Shell"
         xmlns:shell="clr-namespace:BetaSharp.Launcher.Features.Shell"
 
         x:Class="BetaSharp.Launcher.Features.Shell.ShellView" x:DataType="shell:ShellViewModel"
 
-        Icon="/Assets/icon.ico" Title="BetaSharp Launcher"
+        Icon="/icon.ico" Title="BetaSharp Launcher"
         Width="850" Height="480" MinWidth="850" MinHeight="480" WindowStartupLocation="CenterScreen">
 
     <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center" />
