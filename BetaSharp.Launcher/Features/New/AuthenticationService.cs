@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace BetaSharp.Launcher.Features.New;
 
+// More decoupling and overall cleaning.
 internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory, LauncherService launcherService)
 {
     private const string ID = "c36a9fb6-4f2a-41ff-90bd-ae7cc92031eb";
