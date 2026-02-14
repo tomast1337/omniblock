@@ -103,7 +103,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         return (token, hash);
     }
 
-    private async Task<string> RequestXstsTokenAsync(string xblToken)
+    private async Task<string> RequestXstsTokenAsync(string xboxToken)
     {
         var client = httpClientFactory.CreateClient();
 
@@ -112,7 +112,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
             Properties = new
             {
                 SandboxId = "RETAIL",
-                UserTokens = new[] { xblToken }
+                UserTokens = new[] { xboxToken }
             },
             RelyingParty = "rp://api.minecraftservices.com/",
             TokenType = "JWT"
@@ -151,7 +151,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
             new KeyValuePair<string, string>("client_id", ID),
             new KeyValuePair<string, string>("scope", Scope),
             new KeyValuePair<string, string>("code", code),
-            new KeyValuePair<string, string>("redirect_uri", $"{Redirect}"),
+            new KeyValuePair<string, string>("redirect_uri", Redirect),
             new KeyValuePair<string, string>("grant_type", "authorization_code")
         ]);
 
