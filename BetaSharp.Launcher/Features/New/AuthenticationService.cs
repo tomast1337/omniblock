@@ -19,10 +19,10 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
     public async Task<bool> OwnsMinecraftAsync()
     {
-        var microsoft = await RequestAccessTokenAsync();
+        var microsoft = await RequestMicrosoftTokenAsync();
         var xbox = await RequestXboxLiveTokenAsync(microsoft);
         var token = await RequestXstsTokenAsync(xbox.Token);
-        var minecraft = await AuthenticateMinecraftAsync(token, xbox.Hash);
+        var minecraft = await RequestMinecraftTokenAsync(token, xbox.Hash);
 
         var client = httpClientFactory.CreateClient();
 
@@ -41,7 +41,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         return items.Any(item => item?["name"]?.GetValue<string>() is "game_minecraft" or "product_minecraft");
     }
 
-    private async Task<string> RequestAccessTokenAsync()
+    private async Task<string> RequestMicrosoftTokenAsync()
     {
         var state = Guid.NewGuid().ToString();
 
@@ -125,7 +125,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         return await response.Content.GetValueAsync("Token");
     }
 
-    private async Task<string> AuthenticateMinecraftAsync(string token, string hash)
+    private async Task<string> RequestMinecraftTokenAsync(string token, string hash)
     {
         var request = new
         {
