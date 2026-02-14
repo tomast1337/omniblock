@@ -1,31 +1,39 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
+using BetaSharp.Network;
 using BetaSharp.Network.Packets;
 using java.net;
 
 namespace BetaSharp.Threading;
 
-public class ThreadConnectToServer : java.lang.Thread
+public class ThreadConnectToServer(GuiConnecting var1, Minecraft var2, string var3, int var4) : java.lang.Thread
 {
-    readonly Minecraft mc;
-    readonly String hostName;
-    readonly int port;
-    readonly GuiConnecting connectingGui;
-
-    public ThreadConnectToServer(GuiConnecting var1, Minecraft var2, String var3, int var4)
-    {
-        connectingGui = var1;
-        mc = var2;
-        hostName = var3;
-        port = var4;
-    }
-
+    readonly Minecraft mc = var2;
+    readonly string hostName = var3;
+    readonly int port = var4;
+    readonly GuiConnecting connectingGui = var1;
 
     public override void run()
     {
         try
         {
-            GuiConnecting.setNetClientHandler(connectingGui, new ClientNetworkHandler(mc, hostName, port));
+            if (mc.internalServer != null && (hostName.Equals("127.0.0.1") || hostName.Equals("localhost")))
+            {
+                InternalConnection clientConnection = new(null, "Internal-Client");
+                InternalConnection serverConnection = new(null, "Internal-Server");
+                clientConnection.AssignRemote(serverConnection);
+                serverConnection.AssignRemote(clientConnection);
+
+                mc.internalServer.connections.addInternalConnection(serverConnection);
+                Console.WriteLine("[Internal-Client] Created internal connection");
+
+                GuiConnecting.setNetClientHandler(connectingGui, new ClientNetworkHandler(mc, clientConnection));
+            }
+            else
+            {
+                GuiConnecting.setNetClientHandler(connectingGui, new ClientNetworkHandler(mc, hostName, port));
+            }
+
             if (GuiConnecting.isCancelled(connectingGui))
             {
                 return;

@@ -1,4 +1,5 @@
-﻿using BetaSharp.Server.Threading;
+﻿using BetaSharp.Network;
+using BetaSharp.Server.Threading;
 using java.lang;
 using java.net;
 using java.util.logging;
@@ -43,6 +44,12 @@ public class ConnectionListener
         {
             pendingConnections.Add(connection);
         }
+    }
+
+    public void addInternalConnection(InternalConnection connection)
+    {
+        ServerLoginNetworkHandler loginHandler = new ServerLoginNetworkHandler(server, connection);
+        pendingConnections.Add(loginHandler);
     }
 
     public void tick()
