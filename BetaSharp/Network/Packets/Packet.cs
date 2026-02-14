@@ -166,6 +166,10 @@ public abstract class Packet : java.lang.Object
 
     public abstract int size();
 
+    public virtual void ProcessForInternal()
+    {
+    }
+
     static Packet()
     {
         register(0, true, true, KeepAlivePacket.Class);

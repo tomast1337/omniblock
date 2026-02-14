@@ -11,29 +11,29 @@ public class Connection
     public static readonly object LOCK = new object();
     public static int READ_THREAD_COUNTER;
     public static int WRITE_THREAD_COUNTER;
-    private object lck = new object();
+    protected object lck = new object();
     private Socket socket;
     private readonly SocketAddress address;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
-    private bool open = true;
-    private List readQueue = Collections.synchronizedList(new ArrayList());
-    private List sendQueue = Collections.synchronizedList(new ArrayList());
-    private List delayedSendQueue = Collections.synchronizedList(new ArrayList());
-    private NetHandler networkHandler;
-    private bool closed = false;
+    protected bool open = true;
+    protected List readQueue = Collections.synchronizedList(new ArrayList());
+    protected List sendQueue = Collections.synchronizedList(new ArrayList());
+    protected List delayedSendQueue = Collections.synchronizedList(new ArrayList());
+    protected NetHandler networkHandler;
+    protected bool closed = false;
     private java.lang.Thread writer;
     private java.lang.Thread reader;
-    private bool disconnected = false;
-    private string disconnectedReason = "";
-    private object[] disconnectReasonArgs;
-    private int timeout = 0;
-    private int sendQueueSize = 0;
+    protected bool disconnected = false;
+    protected string disconnectedReason = "";
+    protected object[] disconnectReasonArgs;
+    protected int timeout = 0;
+    protected int sendQueueSize = 0;
     public static int[] TOTAL_READ_SIZE = new int[256];
     public static int[] TOTAL_SEND_SIZE = new int[256];
     public int lag = 0;
     private int delay = 0;
-    private readonly ManualResetEventSlim wakeSignal = new ManualResetEventSlim(false);
+    protected readonly ManualResetEventSlim wakeSignal = new ManualResetEventSlim(false);
 
     public Connection(Socket socket, string address, NetHandler networkHandler)
     {
@@ -59,12 +59,17 @@ public class Connection
         writer.start();
     }
 
+    protected Connection()
+    {
+        address = null;
+    }
+
     public void setNetworkHandler(NetHandler netHandler)
     {
         networkHandler = netHandler;
     }
 
-    public void sendPacket(Packet packet)
+    public virtual void sendPacket(Packet packet)
     {
         if (!closed)
         {
@@ -85,7 +90,7 @@ public class Connection
         }
     }
 
-    private bool write()
+    protected virtual bool write()
     {
         bool wrotePacket = false;
 
@@ -141,7 +146,7 @@ public class Connection
         }
     }
 
-    public void interrupt()
+    public virtual void interrupt()
     {
         wakeSignal.Set();
     }
@@ -152,7 +157,7 @@ public class Connection
         wakeSignal.Reset();
     }
 
-    private bool read()
+    protected virtual bool read()
     {
         bool receivedPacket = false;
 
@@ -191,7 +196,7 @@ public class Connection
         disconnect("disconnect.genericReason", new object[] { "Internal exception: " + ex.toString() });
     }
 
-    public void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
+    public virtual void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
     {
         if (open)
         {
@@ -250,13 +255,7 @@ public class Connection
             timeout = 0;
         }
 
-        int maxPacketsPerTick = 100;
-
-        while (!readQueue.isEmpty() && maxPacketsPerTick-- >= 0)
-        {
-            Packet packet = (Packet)readQueue.remove(0);
-            packet.apply(networkHandler);
-        }
+        processPackets();
 
         interrupt();
         if (disconnected && readQueue.isEmpty())
@@ -266,12 +265,23 @@ public class Connection
 
     }
 
-    public SocketAddress getAddress()
+    protected virtual void processPackets()
+    {
+        int maxPacketsPerTick = 100;
+
+        while (!readQueue.isEmpty() && maxPacketsPerTick-- >= 0)
+        {
+            Packet packet = (Packet)readQueue.remove(0);
+            packet.apply(networkHandler);
+        }
+    }
+
+    public virtual SocketAddress getAddress()
     {
         return address;
     }
 
-    public void disconnect()
+    public virtual void disconnect()
     {
         interrupt();
         closed = true;

@@ -38,6 +38,13 @@ public class ClientNetworkHandler : NetHandler
         netManager = new Connection(socket, "Client", this);
     }
 
+    public ClientNetworkHandler(Minecraft mc, Connection connection)
+    {
+        this.mc = mc;
+        netManager = connection;
+        netManager.setNetworkHandler(this);
+    }
+
     public void tick()
     {
         if (!disconnected)

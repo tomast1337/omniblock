@@ -16,6 +16,7 @@ public class ChunkDataS2CPacket : Packet
     public int sizeZ;
     public byte[] chunkData;
     private int chunkDataSize;
+    public byte[] rawData;
 
     public ChunkDataS2CPacket()
     {
@@ -32,6 +33,7 @@ public class ChunkDataS2CPacket : Packet
         this.sizeY = sizeY;
         this.sizeZ = sizeZ;
         byte[] chunkData = world.getChunkData(x, y, z, sizeX, sizeY, sizeZ);
+        rawData = chunkData;
         Deflater deflater = new(1);
 
         try
@@ -61,7 +63,7 @@ public class ChunkDataS2CPacket : Packet
         stream.readFully(chunkData);
 
         this.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
-        Inflater inflater = new Inflater();
+        Inflater inflater = new();
         inflater.setInput(chunkData);
 
         try
@@ -99,5 +101,10 @@ public class ChunkDataS2CPacket : Packet
     public override int size()
     {
         return 17 + chunkDataSize;
+    }
+
+    public override void ProcessForInternal()
+    {
+        chunkData = rawData;
     }
 }
