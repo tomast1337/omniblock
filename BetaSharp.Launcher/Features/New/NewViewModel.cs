@@ -1,6 +1,5 @@
-﻿using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -19,8 +18,20 @@ internal sealed partial class NewViewModel(AuthenticationService authenticationS
             return;
         }
 
-        var path = await minecraftDownloader.DownloadAsync();
+        await minecraftDownloader.DownloadAsync();
 
-        ((ClassicDesktopStyleApplicationLifetime?) Application.Current?.ApplicationLifetime)?.Shutdown();
+        using var process = new Process();
+        
+        process.StartInfo = new ProcessStartInfo
+        {
+            FileName = "BetaSharpClient",
+            Arguments = "Starlk -",
+            UseShellExecute = false, 
+            CreateNoWindow = false, 
+            RedirectStandardOutput = false,
+            RedirectStandardError = false
+        };
+
+        process.Start();
     }
 }

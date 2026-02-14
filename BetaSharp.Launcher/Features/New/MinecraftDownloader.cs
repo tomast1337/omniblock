@@ -9,7 +9,7 @@ namespace BetaSharp.Launcher.Features.New;
 
 internal sealed class MinecraftDownloader(IHttpClientFactory httpClientFactory)
 {
-    public async Task<string> DownloadAsync()
+    public async Task DownloadAsync()
     {
         var resource = await RequestClientUrlAsync();
         var client = httpClientFactory.CreateClient();
@@ -18,8 +18,6 @@ internal sealed class MinecraftDownloader(IHttpClientFactory httpClientFactory)
         await using var file = File.OpenWrite("b1.7.3.jar");
 
         await stream.CopyToAsync(file);
-
-        return file.Name;
     }
 
     private async Task<string> RequestVersionUrlAsync()

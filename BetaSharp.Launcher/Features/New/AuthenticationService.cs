@@ -14,8 +14,8 @@ namespace BetaSharp.Launcher.Features.New;
 internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory, LauncherService launcherService)
 {
     private const string ID = "c36a9fb6-4f2a-41ff-90bd-ae7cc92031eb";
-    private const string Redirect = "http://localhost:8080";
-    private const string Scope = "XboxLive.signin offline_access";
+    private const string REDIRECT = "http://localhost:8080";
+    private const string SCOPE = "XboxLive.signin offline_access";
 
     public async Task<bool> OwnsMinecraftAsync()
     {
@@ -42,13 +42,13 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
         using var listener = new HttpListener();
 
-        listener.Prefixes.Add($"{Redirect}/");
+        listener.Prefixes.Add($"{REDIRECT}/");
         listener.Start();
 
         var url = $"https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize"
                   + $"?client_id={Uri.EscapeDataString(ID)}"
-                  + $"&redirect_uri={Uri.EscapeDataString(Redirect)}"
-                  + $"&scope={Uri.EscapeDataString(Scope)}"
+                  + $"&redirect_uri={Uri.EscapeDataString(REDIRECT)}"
+                  + $"&scope={Uri.EscapeDataString(SCOPE)}"
                   + $"&state={Uri.EscapeDataString(state)}"
                   + $"&response_type=code";
 
@@ -150,9 +150,9 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         var content = new FormUrlEncodedContent(
         [
             new KeyValuePair<string, string>("client_id", ID),
-            new KeyValuePair<string, string>("scope", Scope),
+            new KeyValuePair<string, string>("scope", SCOPE),
             new KeyValuePair<string, string>("code", code),
-            new KeyValuePair<string, string>("redirect_uri", Redirect),
+            new KeyValuePair<string, string>("redirect_uri", REDIRECT),
             new KeyValuePair<string, string>("grant_type", "authorization_code")
         ]);
 

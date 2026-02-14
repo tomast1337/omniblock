@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using BetaSharp.Blocks;
+﻿using BetaSharp.Blocks;
 using BetaSharp.Client;
 using BetaSharp.Client.Colors;
 using BetaSharp.Client.Guis;
@@ -31,7 +29,6 @@ using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using BetaSharp.Launcher;
 
 namespace BetaSharp;
 
@@ -1676,31 +1673,20 @@ public partial class Minecraft : java.lang.Object, Runnable
         return player is EntityClientPlayerMP ? ((EntityClientPlayerMP)player).sendQueue : null;
     }
 
+    // Needs better args validation
     public static void Main(string[] args)
     {
-        bool valid = JarValidator.ValidateJar("b1.7.3.jar");
-        string playerName = null;
-        string sessionToken = null;
-        playerName = "Player" + java.lang.System.currentTimeMillis() % 1000L;
+        var playerName = $"Player{Random.Shared.Next()}";
+        var sessionToken = "-";
+
         if (args.Length > 0)
         {
             playerName = args[0];
         }
 
-        sessionToken = "-";
         if (args.Length > 1)
         {
             sessionToken = args[1];
-        }
-
-        if (!valid)
-        {
-            AppBuilder
-                .Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace()
-                .StartWithClassicDesktopLifetime(args);
         }
 
         startup(playerName, sessionToken);

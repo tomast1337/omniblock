@@ -6,7 +6,6 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <RootNamespace>BetaSharp</RootNamespace>
         <Configurations>ClientRelease;ClientDebug;ServerRelease;ServerDebug</Configurations>
     </PropertyGroup>
@@ -50,9 +49,5 @@
     <ItemGroup>
         <EmbeddedResource Include="shaders/chunk.vert"/>
         <EmbeddedResource Include="shaders/chunk.frag"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\BetaSharp.Launcher\BetaSharp.Launcher.csproj" />
     </ItemGroup>
 </Project>
