@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BetaSharp.Launcher;
 
-internal sealed partial class App : Application
+public sealed partial class App : Application
 {
     private readonly IServiceProvider services = Bootstrapper.Build();
 

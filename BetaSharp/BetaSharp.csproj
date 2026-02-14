@@ -35,9 +35,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.11"/>
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.11"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11"/>
         <PackageReference Include="IKVM" Version="8.15.0"/>
         <PackageReference Include="ImGui.NET" Version="1.91.6.1"/>
         <PackageReference Include="K4os.Compression.LZ4" Version="1.3.8"/>
@@ -53,5 +50,9 @@
     <ItemGroup>
         <EmbeddedResource Include="shaders/chunk.vert"/>
         <EmbeddedResource Include="shaders/chunk.frag"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BetaSharp.Launcher\BetaSharp.Launcher.csproj" />
     </ItemGroup>
 </Project>

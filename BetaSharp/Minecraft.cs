@@ -17,7 +17,6 @@ using BetaSharp.Client.Sound;
 using BetaSharp.Client.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Launcher;
 using BetaSharp.Profiling;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;
@@ -32,6 +31,7 @@ using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using BetaSharp.Launcher;
 
 namespace BetaSharp;
 
@@ -1676,11 +1676,6 @@ public partial class Minecraft : java.lang.Object, Runnable
         return player is EntityClientPlayerMP ? ((EntityClientPlayerMP)player).sendQueue : null;
     }
 
-    private static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .LogToTrace();
-
     public static void Main(string[] args)
     {
         bool valid = JarValidator.ValidateJar("b1.7.3.jar");
@@ -1700,19 +1695,15 @@ public partial class Minecraft : java.lang.Object, Runnable
 
         if (!valid)
         {
-            var app = BuildAvaloniaApp();
-
-            app.StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
-
-            if (LauncherWindow.Result != null && LauncherWindow.Result.Success)
-            {
-                startup(playerName, sessionToken);
-            }
+            AppBuilder
+                .Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace()
+                .StartWithClassicDesktopLifetime(args);
         }
-        else
-        {
-            startup(playerName, sessionToken);
-        }
+
+        startup(playerName, sessionToken);
     }
 
     public static bool isGuiEnabled()

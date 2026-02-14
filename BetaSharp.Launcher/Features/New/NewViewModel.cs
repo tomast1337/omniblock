@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -18,5 +20,7 @@ internal sealed partial class NewViewModel(AuthenticationService authenticationS
         }
 
         var path = await minecraftDownloader.DownloadAsync();
+
+        ((ClassicDesktopStyleApplicationLifetime?) Application.Current?.ApplicationLifetime)?.Shutdown();
     }
 }
