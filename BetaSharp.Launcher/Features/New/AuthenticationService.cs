@@ -29,12 +29,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {minecraft}");
 
-        var response = await client.GetAsync("https://api.minecraftservices.com/entitlements/mcstore");
-
-        response.EnsureSuccessStatusCode();
-
-        await using var stream = await response.Content.ReadAsStreamAsync();
-
+        var stream = await client.GetStreamAsync("https://api.minecraftservices.com/entitlements/mcstore");
         var node = await JsonNode.ParseAsync(stream);
         var items = node?["items"]?.AsArray() ?? [];
 
