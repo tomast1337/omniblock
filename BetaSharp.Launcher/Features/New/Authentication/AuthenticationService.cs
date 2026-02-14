@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Features.New;
+namespace BetaSharp.Launcher.Features.New.Authentication;
 
 // More decoupling and overall cleaning.
 internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory, LauncherService launcherService)
@@ -61,6 +61,12 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
             throw new InvalidOperationException("Context's state did not match the request's state.");
         }
 
+        var response = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>BetaSharp</title>\n    <style>\n        body {\n            margin: 0;\n            padding: 0;\n            background-color: black;\n            display: flex;\n            justify-content: center;\n            align-items: center;\n            height: 100vh;\n            font-family: Arial, sans-serif;\n        }\n        \n        p {\n            color: white;\n            font-size: 1rem;\n            font-weight: normal;\n            text-align: center;\n            opacity: 0.5;\n        }\n    </style>\n</head>\n<body>\n    <p>You can close this tab now</p>\n</body>\n</html>"u8.ToArray();
+
+        context.Response.ContentLength64 = response.Length;
+        await context.Response.OutputStream.WriteAsync(response);
+
+        context.Response.Close();
         listener.Stop();
 
         return await ExchangeCodeAsync(context.Request.QueryString["code"]);

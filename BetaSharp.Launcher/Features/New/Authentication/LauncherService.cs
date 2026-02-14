@@ -4,7 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
-namespace BetaSharp.Launcher.Features.New;
+namespace BetaSharp.Launcher.Features.New.Authentication;
 
 internal sealed class LauncherService
 {
