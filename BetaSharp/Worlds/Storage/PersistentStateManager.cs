@@ -11,7 +11,7 @@ public class PersistentStateManager : java.lang.Object
     private readonly Map loadedDataMap = new HashMap();
     private readonly List loadedDataList = new ArrayList();
     private readonly Map idCounts = new HashMap();
-    private static readonly Class c = new JString("").getClass();
+    private static readonly Class c = ikvm.runtime.Util.getClassFromTypeHandle(typeof(java.lang.String).TypeHandle);
 
     public PersistentStateManager(WorldStorage var1)
     {
@@ -19,52 +19,49 @@ public class PersistentStateManager : java.lang.Object
         loadIdCounts();
     }
 
-    public PersistentState loadData(Class var1, JString var2)
+    public PersistentState loadData(Class var1, string var2)
     {
         PersistentState var3 = (PersistentState)loadedDataMap.get(var2);
         if (var3 != null)
         {
             return var3;
         }
-        else
+
+        if (saveHandler != null)
         {
-            if (saveHandler != null)
+            try
             {
-                try
+                java.io.File var4 = saveHandler.getWorldPropertiesFile(var2);
+                if (var4 != null && var4.exists())
                 {
-                    java.io.File var4 = saveHandler.getWorldPropertiesFile(var2.value);
-                    if (var4 != null && var4.exists())
+                    try
                     {
-                        try
-                        {
-                            var3 = (PersistentState)var1.getConstructor([c]).newInstance([var2]);
-
-                        }
-                        catch (java.lang.Exception var7)
-                        {
-                            throw new RuntimeException("Failed to instantiate " + var1.toString(), var7);
-                        }
-
-                        FileInputStream var5 = new(var4);
-                        NBTTagCompound var6 = NbtIo.Read(var5);
-                        var5.close();
-                        var3.readNBT(var6.GetCompoundTag("data"));
+                        var3 = (PersistentState)var1.getConstructor([c]).newInstance([var2]);
                     }
-                }
-                catch (java.lang.Exception var8)
-                {
-                    var8.printStackTrace();
+                    catch (java.lang.Exception e)
+                    {
+                        throw new RuntimeException("Failed to instantiate " + var1.toString(), e);
+                    }
+
+                    FileInputStream var5 = new(var4);
+                    NBTTagCompound var6 = NbtIo.Read(var5);
+                    var5.close();
+                    var3.readNBT(var6.GetCompoundTag("data"));
                 }
             }
-
-            if (var3 != null)
+            catch (java.lang.Exception var8)
             {
-                loadedDataMap.put(var2, var3);
-                loadedDataList.add(var3);
+                var8.printStackTrace();
             }
-
-            return var3;
         }
+
+        if (var3 != null)
+        {
+            loadedDataMap.put(var2, var3);
+            loadedDataList.add(var3);
+        }
+
+        return var3;
     }
 
     public void setData(string var1, PersistentState var2)
