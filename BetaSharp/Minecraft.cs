@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using BetaSharp.Blocks;
 using BetaSharp.Client;
@@ -32,6 +30,8 @@ using java.lang;
 using Silk.NET.Input;
 using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace BetaSharp;
 
@@ -428,14 +428,21 @@ public partial class Minecraft : java.lang.Object, Runnable
                 ingameGUI.clearChatMessages();
             }
 
-            currentScreen = (GuiScreen)newScreen;
+            currentScreen = newScreen;
+
+            if (internalServer != null)
+            {
+                bool shouldPause = newScreen?.doesGuiPauseGame() ?? false;
+                internalServer.SetPaused(shouldPause);
+            }
+
             if (newScreen != null)
             {
                 setIngameNotInFocus();
                 ScaledResolution scaledResolution = new(options, displayWidth, displayHeight);
                 int scaledWidth = scaledResolution.ScaledWidth;
                 int scaledHeight = scaledResolution.ScaledHeight;
-                ((GuiScreen)newScreen).setWorldAndResolution(this, scaledWidth, scaledHeight);
+                newScreen.setWorldAndResolution(this, scaledWidth, scaledHeight);
                 skipRenderWorld = false;
             }
             else
@@ -611,10 +618,6 @@ public partial class Minecraft : java.lang.Object, Runnable
                         imGuiController.Update(timer.DeltaTime);
                         ProfilerRenderer.Draw();
                         ProfilerRenderer.DrawGraph();
-
-                        ImGui.Begin("IO");
-                        ImGui.Text($"Async IO ops: {AsyncIO.activeTaskCount()}");
-                        ImGui.End();
 
                         ImGui.Begin("Render Info");
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
@@ -1112,8 +1115,6 @@ public partial class Minecraft : java.lang.Object, Runnable
         Profiler.Stop("ingameGUI.updateTick");
         gameRenderer.updateTargetedEntity(1.0F);
 
-        AsyncIO.tick();
-
         gameRenderer.tick(partialTicks);
 
         Profiler.Start("chunkProviderLoadOrGenerateSetCurrentChunkOver");
@@ -1427,7 +1428,6 @@ public partial class Minecraft : java.lang.Object, Runnable
         java.lang.System.@out.println("FORCING RELOAD!");
         sndManager = new SoundManager();
         sndManager.loadSoundSettings(options);
-        //downloadResourcesThread.reloadResources();
     }
 
     public bool isMultiplayerWorld()
@@ -1438,8 +1438,7 @@ public partial class Minecraft : java.lang.Object, Runnable
     public void startWorld(string worldName, string mainMenuText, long seed)
     {
         changeWorld1((World)null);
-        java.lang.System.gc();
-        displayGuiScreen(new GuiLevelLoading(worldName, mainMenuText, seed));
+        displayGuiScreen(new GuiLevelLoading(worldName, seed));
     }
 
     public void changeWorld1(World newWorld)

@@ -27,6 +27,10 @@ public class EntityChicken : EntityAnimal
     public override void tickMovement()
     {
         base.tickMovement();
+        if (world.isRemote)
+        {
+            onGround = System.Math.Abs(y - prevY) < 0.02D;
+        }
         field_756_e = field_752_b;
         field_757_d = destPos;
         destPos = (float)((double)destPos + (double)(onGround ? -1 : 4) * 0.3D);
