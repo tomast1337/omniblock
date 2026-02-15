@@ -25,7 +25,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
     public async Task<Session> AuthenticateAsync()
     {
-        var microsoft = await GetMicrosoftToken();
+        var microsoft = await GetMicrosoftTokenAsync();
         var profile = await xboxService.GetProfileAsync(microsoft);
         var xbox = await xboxService.GetTokenAsync(profile.Token);
         var minecraft = await minecraftService.GetTokenAsync(xbox, profile.Hash);
@@ -41,7 +41,8 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         return session;
     }
 
-    private async Task<string> GetMicrosoftToken()
+    // Probably should be refactored; it does too many things, it opens an HTTP listener, open a browser tab, and reads the HTML response.
+    private async Task<string> GetMicrosoftTokenAsync()
     {
         var state = Guid.NewGuid().ToString();
 

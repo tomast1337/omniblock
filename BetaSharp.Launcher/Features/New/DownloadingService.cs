@@ -6,7 +6,7 @@ namespace BetaSharp.Launcher.Features.New;
 
 internal sealed class DownloadingService(IHttpClientFactory httpClientFactory)
 {
-    public async Task DownloadMinecraftAsync()
+    public async Task DownloadAsync()
     {
         var client = httpClientFactory.CreateClient();
 
