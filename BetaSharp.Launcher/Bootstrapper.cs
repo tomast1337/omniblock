@@ -1,5 +1,6 @@
 ﻿using System;
 using BetaSharp.Launcher.Features.New;
+using BetaSharp.Launcher.Features.New.Authentication;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,9 @@ internal static class Bootstrapper
             .AddTransient<NewViewModel>()
             .AddTransient<AuthenticationService>()
             .AddTransient<DownloadingService>()
+            .AddTransient<LauncherService>()
+            .AddTransient<MinecraftService>()
+            .AddTransient<XboxService>()
             .AddHttpClient();
 
         return builder.BuildServiceProvider();
