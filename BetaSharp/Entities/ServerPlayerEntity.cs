@@ -382,7 +382,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         incrementScreenHandlerSyncId();
         networkHandler.sendPacket(new OpenScreenS2CPacket(screenHandlerSyncId, 0, inventory.getName(), inventory.size()));
-        currentScreenHandler = new GenericContainerScreenHandler(inventory, inventory);
+        currentScreenHandler = new GenericContainerScreenHandler(this.inventory, inventory);
         currentScreenHandler.syncId = screenHandlerSyncId;
         currentScreenHandler.addListener(this);
     }
