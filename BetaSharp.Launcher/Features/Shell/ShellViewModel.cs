@@ -1,12 +1,19 @@
 ﻿using System.ComponentModel;
-using BetaSharp.Launcher.Features.New;
 using BetaSharp.Launcher.Features.Splash;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace BetaSharp.Launcher.Features.Shell;
 
-internal sealed partial class ShellViewModel(SplashViewModel splashViewModel, NewViewModel newViewModel) : ObservableObject
+internal sealed partial class ShellViewModel : ObservableObject
 {
     [ObservableProperty]
-    public partial INotifyPropertyChanged Current { get; set; } = newViewModel;
+    public partial INotifyPropertyChanged Current { get; set; }
+
+    public ShellViewModel(SplashViewModel splashViewModel)
+    {
+        Current = splashViewModel;
+
+        WeakReferenceMessenger.Default.Register<NavigationMessage>(this, (_, message) => Current = message.Destination);
+    }
 }

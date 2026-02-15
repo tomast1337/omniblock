@@ -4,6 +4,12 @@
 
              x:Class="BetaSharp.Launcher.Features.Splash.SplashView" x:DataType="local:SplashViewModel">
 
+    <Interaction.Behaviors>
+        <EventTriggerBehavior EventName="AttachedToVisualTree">
+            <InvokeCommandAction Command="{Binding InitializeCommand}" />
+        </EventTriggerBehavior>
+    </Interaction.Behaviors>
+
     <StackPanel Spacing="25" VerticalAlignment="Center">
         <Image Source="../../logo.png" Width="125" />
         <TextBlock Text="Checking for updates..." Opacity="0.5" HorizontalAlignment="Center" />
