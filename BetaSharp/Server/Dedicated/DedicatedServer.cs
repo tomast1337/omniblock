@@ -71,23 +71,6 @@ public class DedicatedServer : MinecraftServer
     {
         try
         {
-            if (!JarValidator.ValidateJar("b1.7.3.jar"))
-            {
-                Console.WriteLine("Downloading b1.7.3.jar");
-                var task = MinecraftDownloader.DownloadBeta173Async();
-                task.Wait();
-
-                if (task.Result)
-                {
-                    Console.WriteLine("Successfully downloaded b1.7.3.jar");
-                }
-                else
-                {
-                    Console.WriteLine("Failed to download b1.7.3.jar");
-                    return;
-                }
-            }
-
             DedicatedServerConfiguration config = new(new java.io.File("server.properties"));
             DedicatedServer server = new(config);
 
