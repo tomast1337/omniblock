@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,13 +15,32 @@ using Avalonia.Controls.ApplicationLifetimes;
 namespace BetaSharp.Launcher.Features.New;
 
 // More decoupling and overall cleaning.
-internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory)
+internal sealed class AuthenticationService
 {
     private const string ID = "c36a9fb6-4f2a-41ff-90bd-ae7cc92031eb";
-    private const string REDIRECT = "http://localhost:8080";
     private const string SCOPE = "XboxLive.signin offline_access";
 
     private readonly Window? window = ((ClassicDesktopStyleApplicationLifetime?) Application.Current?.ApplicationLifetime)?.MainWindow;
+    private readonly IHttpClientFactory httpClientFactory;
+    private readonly string redirect;
+
+    public AuthenticationService(IHttpClientFactory httpClientFactory)
+    {
+        this.httpClientFactory = httpClientFactory;
+        
+        var endPoint = new IPEndPoint(IPAddress.Loopback, 0);
+
+        using var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+        socket.Bind(endPoint);
+        socket.Listen();
+
+        var local = (IPEndPoint?) socket.LocalEndPoint;
+
+        ArgumentNullException.ThrowIfNull(local);
+
+        redirect = $"http://localhost:{local.Port}";
+    }
 
     public async Task<string?> RequestMinecraftTokenAsync()
     {
@@ -63,12 +83,12 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
         using var listener = new HttpListener();
 
-        listener.Prefixes.Add($"{REDIRECT}/");
+        listener.Prefixes.Add($"{redirect}/");
         listener.Start();
 
         var url = $"https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize"
                   + $"?client_id={Uri.EscapeDataString(ID)}"
-                  + $"&redirect_uri={Uri.EscapeDataString(REDIRECT)}"
+                  + $"&redirect_uri={Uri.EscapeDataString(redirect)}"
                   + $"&scope={Uri.EscapeDataString(SCOPE)}"
                   + $"&state={Uri.EscapeDataString(state)}"
                   + $"&response_type=code";
@@ -175,7 +195,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
             new KeyValuePair<string, string>("client_id", ID),
             new KeyValuePair<string, string>("scope", SCOPE),
             new KeyValuePair<string, string>("code", code),
-            new KeyValuePair<string, string>("redirect_uri", REDIRECT),
+            new KeyValuePair<string, string>("redirect_uri", redirect),
             new KeyValuePair<string, string>("grant_type", "authorization_code")
         ]);
 
