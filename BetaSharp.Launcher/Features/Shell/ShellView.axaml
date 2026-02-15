@@ -9,7 +9,7 @@
 
     <TransitioningContentControl  Content="{CompiledBinding Current}">
         <TransitioningContentControl.PageTransition>
-            <CrossFade Duration="00:00:00.75" />
+            <CrossFade Duration="00:00:00.5" />
         </TransitioningContentControl.PageTransition>
     </TransitioningContentControl>
 </Window>
