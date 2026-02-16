@@ -6,7 +6,7 @@
 
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
         <!-- ReSharper disable once Xaml.StyleClassNotFound -->
-        <Button Content="Authenticate with Microsoft" Classes="accent" Command="{CompiledBinding AuthenticateCommand}"
+        <Button Content="{CompiledBinding Message}" Classes="accent" Command="{CompiledBinding AuthenticateCommand}"
                 HorizontalAlignment="Center" HorizontalContentAlignment="Center"
                 ToolTip.Tip="A Web browser tab will be opened" />
 

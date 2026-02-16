@@ -33,7 +33,7 @@ internal static class Bootstrapper
         builder
             .AddTransient<NewView>()
             .AddTransient<NewViewModel>()
-            .AddTransient<AuthenticationService>()
+            .AddTransient<MicrosoftService>()
             .AddTransient<DownloadingService>()
             .AddTransient<MinecraftService>()
             .AddTransient<XboxService>();

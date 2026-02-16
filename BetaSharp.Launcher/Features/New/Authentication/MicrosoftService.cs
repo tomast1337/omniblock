@@ -5,20 +5,20 @@ using Microsoft.Identity.Client;
 namespace BetaSharp.Launcher.Features.New.Authentication;
 
 // More decoupling and overall cleaning.
-internal sealed class AuthenticationService
+internal sealed class MicrosoftService
 {
     private readonly SystemWebViewOptions _webViewOptions;
     private readonly IPublicClientApplication _application;
 
     // Need better way for storing the HTML responses.
-    public AuthenticationService()
+    public MicrosoftService()
     {
         const string success = """
-                               <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:1rem;font-weight:400;text-align:center}</style></head><body><p>You can close this tab now</p></body></html>
+                               <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:.85rem;font-weight:400;text-align:center;opacity:.5}</style></head><body><p>You can close this tab now</p></body></html>
                                """;
 
         const string failure = """
-                               <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:1rem;font-weight:400;text-align:center}a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><p>Failed to authenticate please raise an issue <a href="https://github.com/Fazin85/betasharp/issues" target="_blank">here</a></p></body></html>
+                               <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:orange;font-size:1rem;font-weight:400;text-align:center}a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><p>Failed to authenticate please raise an issue <a href="https://github.com/Fazin85/betasharp/issues" target="_blank">here</a></p></body></html>
                                """;
 
         _webViewOptions = new SystemWebViewOptions { HtmlMessageSuccess = success, HtmlMessageError = failure };
@@ -33,9 +33,11 @@ internal sealed class AuthenticationService
     }
 
 
-    public async Task AuthenticateAsync()
+    public async Task<string> AuthenticateAsync()
     {
         string[] scopes = ["XboxLive.signin offline_access"];
+
+        AuthenticationResult? result;
 
         try
         {
@@ -46,9 +48,11 @@ internal sealed class AuthenticationService
 
             if (account is not null)
             {
-                await _application
+                result = await _application
                     .AcquireTokenSilent(scopes, account)
                     .ExecuteAsync();
+
+                return result.AccessToken;
             }
         }
         catch (MsalUiRequiredException)
@@ -57,10 +61,12 @@ internal sealed class AuthenticationService
         }
 
         // Find out a way to use system brokers.
-        await _application
+        result = await _application
             .AcquireTokenInteractive(scopes)
             .WithUseEmbeddedWebView(false)
             .WithSystemWebViewOptions(_webViewOptions)
             .ExecuteAsync();
+
+        return result.AccessToken;
     }
 }
