@@ -17,7 +17,7 @@ internal static class SocketExtensions
             socket.Bind(endPoint);
             socket.Listen();
 
-            var local = (IPEndPoint?) socket.LocalEndPoint;
+            var local = (IPEndPoint?)socket.LocalEndPoint;
 
             ArgumentNullException.ThrowIfNull(local);
 

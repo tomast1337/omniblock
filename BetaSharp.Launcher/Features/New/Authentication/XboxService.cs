@@ -19,17 +19,7 @@ internal sealed class XboxService(IHttpClientFactory httpClientFactory)
     {
         var client = httpClientFactory.CreateClient();
 
-        var request = new
-        {
-            Properties = new
-            {
-                AuthMethod = "RPS",
-                SiteName = "user.auth.xboxlive.com",
-                RpsTicket = $"d={accessToken}"
-            },
-            RelyingParty = "http://auth.xboxlive.com",
-            TokenType = "JWT"
-        };
+        var request = new { Properties = new { AuthMethod = "RPS", SiteName = "user.auth.xboxlive.com", RpsTicket = $"d={accessToken}" }, RelyingParty = "http://auth.xboxlive.com", TokenType = "JWT" };
 
         var response = await client.PostAsync("https://user.auth.xboxlive.com/user/authenticate", request);
 
@@ -48,21 +38,12 @@ internal sealed class XboxService(IHttpClientFactory httpClientFactory)
 
         return profile;
     }
-    
+
     public async Task<string> GetTokenAsync(string token)
     {
         var client = httpClientFactory.CreateClient();
 
-        var request = new
-        {
-            Properties = new
-            {
-                SandboxId = "RETAIL",
-                UserTokens = new[] { token }
-            },
-            RelyingParty = "rp://api.minecraftservices.com/",
-            TokenType = "JWT"
-        };
+        var request = new { Properties = new { SandboxId = "RETAIL", UserTokens = new[] { token } }, RelyingParty = "rp://api.minecraftservices.com/", TokenType = "JWT" };
 
         var response = await client.PostAsync("https://xsts.auth.xboxlive.com/xsts/authorize", request);
 

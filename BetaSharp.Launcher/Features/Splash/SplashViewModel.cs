@@ -12,8 +12,7 @@ internal sealed partial class SplashViewModel(NewViewModel newViewModel) : Obser
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        await Task.Delay(TimeSpan.FromSeconds(5));
-
+        await Task.Delay(TimeSpan.FromSeconds(2.5));
         WeakReferenceMessenger.Default.Send(new NavigationMessage(newViewModel));
     }
 }

@@ -23,6 +23,11 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
     private readonly string _redirect = $"http://localhost:{Socket.GetAvailablePort()}";
 
+    // Store this somewhere else, a file or something.
+    private readonly byte[] _response = """
+                                        <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:1rem;font-weight:400;text-align:center;opacity:.5}</style></head><body><p>You can close this tab now</p></body></html>
+                                        """u8.ToArray();
+
     public async Task<Session> AuthenticateAsync()
     {
         string microsoft = await GetMicrosoftTokenAsync();
@@ -41,7 +46,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         return session;
     }
 
-    // Probably should be refactored; it does too many things, it opens an HTTP listener, open a browser tab, and reads the HTML response.
+    // This probably needs further refactoring.
     private async Task<string> GetMicrosoftTokenAsync()
     {
         string state = Guid.NewGuid().ToString();
@@ -71,12 +76,8 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
             throw new InvalidOperationException("Context's state did not match the request's state.");
         }
 
-        byte[] response = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:1rem;font-weight:400;text-align:center;opacity:.5}</style></head><body><p>You can close this tab now</p></body></html>"u8.ToArray();
-
-        context.Response.ContentLength64 = response.Length;
-
-        await context.Response.OutputStream.WriteAsync(response);
-
+        context.Response.ContentLength64 = _response.Length;
+        await context.Response.OutputStream.WriteAsync(_response);
         context.Response.Close();
 
         listener.Stop();

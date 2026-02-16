@@ -8,7 +8,7 @@ namespace BetaSharp.Launcher.Features.New.Authentication;
 
 internal sealed class LauncherService
 {
-    private readonly Window? _window = ((ClassicDesktopStyleApplicationLifetime?) Application.Current?.ApplicationLifetime)?.MainWindow;
+    private readonly Window? _window = ((ClassicDesktopStyleApplicationLifetime?)Application.Current?.ApplicationLifetime)?.MainWindow;
 
     public async Task LaunchAsync(string destination)
     {

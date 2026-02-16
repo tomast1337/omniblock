@@ -18,7 +18,7 @@ internal sealed class ViewLocator(IServiceProvider services) : IDataTemplate
 
         ArgumentNullException.ThrowIfNull(type);
 
-        return (Control?) ActivatorUtilities.CreateInstance(services, type);
+        return (Control?)ActivatorUtilities.CreateInstance(services, type);
     }
 
     public bool Match(object? instance)
