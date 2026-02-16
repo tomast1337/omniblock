@@ -66,6 +66,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
         await launcherService.LaunchAsync(url);
 
+        // Add a timeout?
         var context = await listener.GetContextAsync();
         string? code = context.Request.QueryString["code"];
 
@@ -77,10 +78,10 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         }
 
         context.Response.ContentLength64 = _response.Length;
-        await context.Response.OutputStream.WriteAsync(_response);
-        context.Response.Close();
 
-        listener.Stop();
+        await context.Response.OutputStream.WriteAsync(_response);
+
+        context.Response.Close();
 
         return await ExchangeCodeAsync(code);
     }

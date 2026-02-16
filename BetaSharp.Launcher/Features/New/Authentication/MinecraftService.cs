@@ -16,7 +16,7 @@ internal sealed class MinecraftService(IHttpClientFactory httpClientFactory)
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-        var stream = await client.GetStreamAsync("https://api.minecraftservices.com/entitlements/mcstore");
+        await using var stream = await client.GetStreamAsync("https://api.minecraftservices.com/entitlements/mcstore");
 
         var node = await JsonNode.ParseAsync(stream);
         var items = node?["items"]?.AsArray() ?? [];
