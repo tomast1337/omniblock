@@ -34,7 +34,7 @@ internal sealed class MinecraftService(IHttpClientFactory httpClientFactory)
         await using var stream = await client.GetStreamAsync("https://api.minecraftservices.com/minecraft/profile");
 
         var node = await JsonNode.ParseAsync(stream);
-        var name = node?["name"]?.GetValue<string>();
+        string? name = node?["name"]?.GetValue<string>();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 

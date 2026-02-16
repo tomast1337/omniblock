@@ -8,11 +8,11 @@ namespace BetaSharp.Launcher.Features.New.Authentication;
 
 internal sealed class LauncherService
 {
-    private readonly Window? window = ((ClassicDesktopStyleApplicationLifetime?) Application.Current?.ApplicationLifetime)?.MainWindow;
+    private readonly Window? _window = ((ClassicDesktopStyleApplicationLifetime?) Application.Current?.ApplicationLifetime)?.MainWindow;
 
     public async Task LaunchAsync(string destination)
     {
-        ArgumentNullException.ThrowIfNull(window);
-        await window.Launcher.LaunchUriAsync(new Uri(destination));
+        ArgumentNullException.ThrowIfNull(_window);
+        await _window.Launcher.LaunchUriAsync(new Uri(destination));
     }
 }

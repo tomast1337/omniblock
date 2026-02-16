@@ -1672,43 +1672,9 @@ public partial class Minecraft : java.lang.Object, Runnable
         return player is EntityClientPlayerMP ? ((EntityClientPlayerMP)player).sendQueue : null;
     }
 
-    private static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .LogToTrace();
-
     public static void Startup(string[] args)
     {
-        bool valid = JarValidator.ValidateJar("b1.7.3.jar");
-        string playerName = null;
-        string sessionToken = null;
-        playerName = "Player" + java.lang.System.currentTimeMillis() % 1000L;
-        if (args.Length > 0)
-        {
-            playerName = args[0];
-        }
-
-        sessionToken = "-";
-        if (args.Length > 1)
-        {
-            sessionToken = args[1];
-        }
-
-        if (!valid)
-        {
-            var app = BuildAvaloniaApp();
-
-            app.StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
-
-            if (LauncherWindow.Result != null && LauncherWindow.Result.Success)
-            {
-                StartMainThread(playerName, sessionToken);
-            }
-        }
-        else
-        {
-            StartMainThread(playerName, sessionToken);
-        }
+        StartMainThread(args[0], args[1]);
     }
 
     public static bool isGuiEnabled()

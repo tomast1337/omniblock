@@ -10,7 +10,7 @@ internal sealed class ViewLocator(IServiceProvider services) : IDataTemplate
 {
     public Control? Build(object? instance)
     {
-        var name = instance?.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
+        string? name = instance?.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
 
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 

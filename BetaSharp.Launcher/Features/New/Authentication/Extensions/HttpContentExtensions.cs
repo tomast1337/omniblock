@@ -12,7 +12,7 @@ internal static class HttpContentExtensions
         await using var stream = await content.ReadAsStreamAsync();
 
         var node = await JsonNode.ParseAsync(stream);
-        var value = node?[key]?.GetValue<string>();
+        string? value = node?[key]?.GetValue<string>();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
 

@@ -18,24 +18,24 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
         public string Token => token;
     }
 
-    private const string ID = "c36a9fb6-4f2a-41ff-90bd-ae7cc92031eb";
-    private const string SCOPE = "XboxLive.signin offline_access";
+    private const string Id = "c36a9fb6-4f2a-41ff-90bd-ae7cc92031eb";
+    private const string Scope = "XboxLive.signin offline_access";
 
-    private readonly string redirect = $"http://localhost:{Socket.GetAvailablePort()}";
+    private readonly string _redirect = $"http://localhost:{Socket.GetAvailablePort()}";
 
     public async Task<Session> AuthenticateAsync()
     {
-        var microsoft = await GetMicrosoftTokenAsync();
+        string microsoft = await GetMicrosoftTokenAsync();
         var profile = await xboxService.GetProfileAsync(microsoft);
-        var xbox = await xboxService.GetTokenAsync(profile.Token);
-        var minecraft = await minecraftService.GetTokenAsync(xbox, profile.Hash);
+        string xbox = await xboxService.GetTokenAsync(profile.Token);
+        string minecraft = await minecraftService.GetTokenAsync(xbox, profile.Hash);
 
         if (!await minecraftService.GetGameAsync(minecraft))
         {
             throw new InvalidOperationException("You must own a legitimate copy of Minecraft Java edition to use this client.");
         }
 
-        var name = await minecraftService.GetNameAsync(minecraft);
+        string name = await minecraftService.GetNameAsync(minecraft);
         var session = new Session(name, minecraft);
 
         return session;
@@ -44,24 +44,24 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
     // Probably should be refactored; it does too many things, it opens an HTTP listener, open a browser tab, and reads the HTML response.
     private async Task<string> GetMicrosoftTokenAsync()
     {
-        var state = Guid.NewGuid().ToString();
+        string state = Guid.NewGuid().ToString();
 
         using var listener = new HttpListener();
 
-        listener.Prefixes.Add($"{redirect}/");
+        listener.Prefixes.Add($"{_redirect}/");
         listener.Start();
 
-        var url = $"https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize"
-                  + $"?client_id={Uri.EscapeDataString(ID)}"
-                  + $"&redirect_uri={Uri.EscapeDataString(redirect)}"
-                  + $"&scope={Uri.EscapeDataString(SCOPE)}"
-                  + $"&state={Uri.EscapeDataString(state)}"
-                  + $"&response_type=code";
+        string url = $"https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize"
+                     + $"?client_id={Uri.EscapeDataString(Id)}"
+                     + $"&redirect_uri={Uri.EscapeDataString(_redirect)}"
+                     + $"&scope={Uri.EscapeDataString(Scope)}"
+                     + $"&state={Uri.EscapeDataString(state)}"
+                     + $"&response_type=code";
 
         await launcherService.LaunchAsync(url);
 
         var context = await listener.GetContextAsync();
-        var code = context.Request.QueryString["code"];
+        string? code = context.Request.QueryString["code"];
 
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
 
@@ -70,7 +70,7 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
             throw new InvalidOperationException("Context's state did not match the request's state.");
         }
 
-        var response = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:1rem;font-weight:400;text-align:center;opacity:.5}</style></head><body><p>You can close this tab now</p></body></html>"u8.ToArray();
+        byte[] response = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:1rem;font-weight:400;text-align:center;opacity:.5}</style></head><body><p>You can close this tab now</p></body></html>"u8.ToArray();
 
         context.Response.ContentLength64 = response.Length;
 
@@ -91,10 +91,10 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
 
         var content = new FormUrlEncodedContent(
         [
-            new KeyValuePair<string, string>("client_id", ID),
-            new KeyValuePair<string, string>("scope", SCOPE),
+            new KeyValuePair<string, string>("client_id", Id),
+            new KeyValuePair<string, string>("scope", Scope),
             new KeyValuePair<string, string>("code", code),
-            new KeyValuePair<string, string>("redirect_uri", redirect),
+            new KeyValuePair<string, string>("redirect_uri", _redirect),
             new KeyValuePair<string, string>("grant_type", "authorization_code")
         ]);
 

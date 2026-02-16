@@ -9,11 +9,11 @@ namespace BetaSharp.Launcher;
 
 internal sealed partial class App : Application
 {
-    private readonly IServiceProvider services = Bootstrapper.Build();
+    private readonly IServiceProvider _services = Bootstrapper.Build();
 
     public override void Initialize()
     {
-        DataTemplates.Add(services.GetRequiredService<ViewLocator>());
+        DataTemplates.Add(_services.GetRequiredService<ViewLocator>());
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -21,7 +21,7 @@ internal sealed partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = services.GetRequiredService<ShellView>();
+            desktop.MainWindow = _services.GetRequiredService<ShellView>();
         }
 
         base.OnFrameworkInitializationCompleted();

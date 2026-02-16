@@ -36,11 +36,11 @@ internal sealed class XboxService(IHttpClientFactory httpClientFactory)
         await using var stream = await response.Content.ReadAsStreamAsync();
 
         var node = await JsonNode.ParseAsync(stream);
-        var token = node?["Token"]?.GetValue<string>();
+        string? token = node?["Token"]?.GetValue<string>();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
-        var hash = node?["DisplayClaims"]?["xui"]?[0]?["uhs"]?.GetValue<string>();
+        string? hash = node?["DisplayClaims"]?["xui"]?[0]?["uhs"]?.GetValue<string>();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(hash);
 
