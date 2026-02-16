@@ -26,12 +26,11 @@ internal sealed class AuthenticationService
         _webViewOptions = new SystemWebViewOptions { HtmlMessageSuccess = success, HtmlMessageError = failure };
 
         // Probably not the best idea to use Prism's ID?
-        var builder = PublicClientApplicationBuilder
+        _application = PublicClientApplicationBuilder
             .Create("C36A9FB6-4F2A-41FF-90BD-AE7CC92031EB")
             .WithAuthority("https://login.microsoftonline.com/consumers")
-            .WithRedirectUri("http://localhost");
-
-        _application = builder.Build();
+            .WithRedirectUri("http://localhost")
+            .Build();
     }
 
     public async Task InitializeAsync()
@@ -42,7 +41,7 @@ internal sealed class AuthenticationService
             .WithLinuxKeyring(
                 "betasharp.launcher",
                 MsalCacheHelper.LinuxKeyRingDefaultCollection,
-                "MSAL token cache for BetaSharp's launcher",
+                "MSAL cache for BetaSharp's launcher",
                 default,
                 default)
             .WithMacKeyChain("betasharp.launcher", "betasharp")

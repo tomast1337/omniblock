@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Features.New;
+namespace BetaSharp.Launcher.Features.New.Services;
 
 internal sealed class DownloadingService(IHttpClientFactory httpClientFactory)
 {

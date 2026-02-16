@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Extensions;
 
-namespace BetaSharp.Launcher.Features.New;
+namespace BetaSharp.Launcher.Features.New.Services;
 
 internal sealed class MinecraftService(IHttpClientFactory httpClientFactory)
 {
