@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
-namespace BetaSharp.Launcher.Features.New.Authentication;
+namespace BetaSharp.Launcher.Features;
 
 // More decoupling and overall cleaning.
 internal sealed class AuthenticationService

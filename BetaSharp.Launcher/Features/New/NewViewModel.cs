@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.New.Authentication;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
