@@ -33,7 +33,7 @@ internal sealed class MicrosoftService
     }
 
 
-    public async Task<string> AuthenticateAsync()
+    public async Task<string> GetTokenAsync()
     {
         string[] scopes = ["XboxLive.signin offline_access"];
 

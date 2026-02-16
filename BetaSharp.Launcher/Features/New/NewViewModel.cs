@@ -22,11 +22,11 @@ internal sealed partial class NewViewModel(
     {
         Message = "Authenticating";
 
-        string microsoft = await microsoftService.AuthenticateAsync();
+        string microsoft = await microsoftService.GetTokenAsync();
 
         var profile = await xboxService.GetProfileAsync(microsoft);
 
-        Message = "Checking ownership";
+        Message = "Verifying ownership";
 
         string xbox = await xboxService.GetTokenAsync(profile.Token);
         string minecraft = await minecraftService.GetTokenAsync(xbox, profile.Hash);

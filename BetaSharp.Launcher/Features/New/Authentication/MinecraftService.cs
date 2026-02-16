@@ -43,9 +43,9 @@ internal sealed class MinecraftService(IHttpClientFactory httpClientFactory)
 
     public async Task<string> GetTokenAsync(string token, string hash)
     {
-        var request = new { identityToken = $"XBL3.0 x={hash};{token}" };
-
         var client = httpClientFactory.CreateClient();
+
+        var request = new { identityToken = $"XBL3.0 x={hash};{token}" };
         var response = await client.PostAsync("https://api.minecraftservices.com/authentication/login_with_xbox", request);
 
         response.EnsureSuccessStatusCode();
