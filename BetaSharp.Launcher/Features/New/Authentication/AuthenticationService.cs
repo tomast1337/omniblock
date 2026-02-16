@@ -56,7 +56,8 @@ internal sealed class AuthenticationService(IHttpClientFactory httpClientFactory
                      + $"&redirect_uri={Uri.EscapeDataString(_redirect)}"
                      + $"&scope={Uri.EscapeDataString(Scope)}"
                      + $"&state={Uri.EscapeDataString(state)}"
-                     + $"&response_type=code";
+                     + "&response_type=code"
+                     + "&prompt=select_account";
 
         await launcherService.LaunchAsync(url);
 
