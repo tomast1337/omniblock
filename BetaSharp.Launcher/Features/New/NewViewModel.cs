@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Messaging;
 namespace BetaSharp.Launcher.Features.New;
 
 internal sealed partial class NewViewModel(
-    MicrosoftService microsoftService,
+    AuthenticationService authenticationService,
     XboxService xboxService,
     MinecraftService minecraftService,
     DownloadingService downloadingService,
@@ -18,11 +18,17 @@ internal sealed partial class NewViewModel(
     public partial string Message { get; set; } = "Authenticate with Microsoft";
 
     [RelayCommand]
+    private async Task InitializeAsync()
+    {
+        await authenticationService.InitializeAsync();
+    }
+
+    [RelayCommand]
     private async Task AuthenticateAsync()
     {
         Message = "Authenticating";
 
-        string microsoft = await microsoftService.GetTokenAsync();
+        string microsoft = await authenticationService.AuthenticateAsync();
 
         var profile = await xboxService.GetProfileAsync(microsoft);
 

@@ -4,6 +4,12 @@
 
              x:Class="BetaSharp.Launcher.Features.New.NewView" x:DataType="local:NewViewModel">
 
+    <Interaction.Behaviors>
+        <EventTriggerBehavior EventName="AttachedToVisualTree">
+            <InvokeCommandAction Command="{Binding InitializeCommand}" />
+        </EventTriggerBehavior>
+    </Interaction.Behaviors>
+
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
         <!-- ReSharper disable once Xaml.StyleClassNotFound -->
         <Button Content="{CompiledBinding Message}" Classes="accent" Command="{CompiledBinding AuthenticateCommand}"
