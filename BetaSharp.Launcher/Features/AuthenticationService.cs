@@ -50,7 +50,7 @@ internal sealed class AuthenticationService
                 MsalCacheHelper.LinuxKeyRingDefaultCollection,
                 "MSAL cache for BetaSharp's launcher",
                 new KeyValuePair<string, string>("Version", "1"),
-                new KeyValuePair<string, string>("ProductGroup", "MyApps"))
+                new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
             .WithMacKeyChain("betasharp.launcher", "betasharp")
             .Build();
 
