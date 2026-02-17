@@ -15,6 +15,8 @@ internal sealed class AuthenticationService
     private readonly SystemWebViewOptions _webViewOptions;
     private readonly IPublicClientApplication _application;
 
+    private bool _initialized;
+
     public AuthenticationService(ILogger<AuthenticationService> logger)
     {
         _logger = logger;
@@ -40,6 +42,13 @@ internal sealed class AuthenticationService
 
     public async Task InitializeAsync()
     {
+        if (_initialized)
+        {
+            return;
+        }
+
+        _initialized = true;
+
         _logger.LogInformation("Initializing authentication service");
 
         string path = Path.Combine(MsalCacheHelper.UserRootDirectory, "betasharp.launcher.cache");

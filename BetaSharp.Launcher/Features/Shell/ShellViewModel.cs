@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using BetaSharp.Launcher.Features.Splash;
+using BetaSharp.Launcher.Messages;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 

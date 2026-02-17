@@ -7,9 +7,5 @@
         Icon="../../logo.ico" Title="BetaSharp Launcher"
         Width="850" Height="480" MinWidth="850" MinHeight="480" WindowStartupLocation="CenterScreen">
 
-    <TransitioningContentControl Content="{CompiledBinding Current}">
-        <TransitioningContentControl.PageTransition>
-            <CrossFade Duration="00:00:00.5" />
-        </TransitioningContentControl.PageTransition>
-    </TransitioningContentControl>
+    <ContentControl Content="{CompiledBinding Current}" />
 </Window>

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using BetaSharp.Launcher.Features;
+using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.New;
-using BetaSharp.Launcher.Features.New.Services;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +42,9 @@ internal static class Bootstrapper
         services.AddSingleton<ViewLocator>();
 
         services.AddSingleton<AuthenticationService>();
+        services.AddTransient<DownloadingService>();
+        services.AddTransient<MinecraftService>();
+        services.AddTransient<XboxService>();
 
         services
             .AddTransient<ShellView>()
@@ -58,11 +60,8 @@ internal static class Bootstrapper
             .AddTransient<HomeViewModel>();
 
         services
-            .AddTransient<NewView>()
-            .AddTransient<NewViewModel>()
-            .AddTransient<DownloadingService>()
-            .AddTransient<MinecraftService>()
-            .AddTransient<XboxService>();
+            .AddTransient<AuthenticationView>()
+            .AddTransient<AuthenticationViewModel>();
 
         return services.BuildServiceProvider();
     }
