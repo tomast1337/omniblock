@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Splash;
+namespace BetaSharp.Launcher.Features.Splash;
 
 internal sealed class GitHubService(IHttpClientFactory httpClientFactory)
 {

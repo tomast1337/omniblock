@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Extensions;
+namespace BetaSharp.Launcher.Features.Extensions;
 
 internal static class HttpContentExtensions
 {

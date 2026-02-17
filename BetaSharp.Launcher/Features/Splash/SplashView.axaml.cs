@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace BetaSharp.Launcher.Splash;
+namespace BetaSharp.Launcher.Features.Splash;
 
 internal sealed partial class SplashView : UserControl
 {

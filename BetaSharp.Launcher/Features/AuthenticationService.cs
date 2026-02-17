@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
-namespace BetaSharp.Launcher;
+namespace BetaSharp.Launcher.Features;
 
 // More decoupling and overall cleaning.
 internal sealed class AuthenticationService

@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-using BetaSharp.Launcher.Home;
-using BetaSharp.Launcher.New.Services;
+using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.New.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-namespace BetaSharp.Launcher.New;
+namespace BetaSharp.Launcher.Features.New;
 
 internal sealed partial class NewViewModel(
     AuthenticationService authenticationService,

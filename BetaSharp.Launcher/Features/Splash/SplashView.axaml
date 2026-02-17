@@ -1,8 +1,8 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:splash="clr-namespace:BetaSharp.Launcher.Splash"
+             xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Splash"
 
-             x:Class="BetaSharp.Launcher.Splash.SplashView" x:DataType="splash:SplashViewModel">
+             x:Class="BetaSharp.Launcher.Features.Splash.SplashView" x:DataType="local:SplashViewModel">
 
     <Interaction.Behaviors>
         <EventTriggerBehavior EventName="AttachedToVisualTree">

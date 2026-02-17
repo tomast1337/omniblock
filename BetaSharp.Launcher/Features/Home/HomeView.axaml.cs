@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace BetaSharp.Launcher.Home;
+namespace BetaSharp.Launcher.Features.Home;
 
 internal sealed partial class HomeView : UserControl
 {

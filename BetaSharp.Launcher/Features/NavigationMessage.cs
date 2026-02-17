@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace BetaSharp.Launcher;
+namespace BetaSharp.Launcher.Features;
 
 internal sealed class NavigationMessage(INotifyPropertyChanged destination)
 {

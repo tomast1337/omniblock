@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using BetaSharp.Launcher.Splash;
+using BetaSharp.Launcher.Features.Splash;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 
-namespace BetaSharp.Launcher.Shell;
+namespace BetaSharp.Launcher.Features.Shell;
 
 internal sealed partial class ShellViewModel : ObservableObject
 {
