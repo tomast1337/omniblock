@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
@@ -9,12 +10,15 @@ namespace BetaSharp.Launcher.Features;
 // More decoupling and overall cleaning.
 internal sealed class AuthenticationService
 {
+    private readonly ILogger<AuthenticationService> _logger;
     private readonly SystemWebViewOptions _webViewOptions;
     private readonly IPublicClientApplication _application;
 
     // Need better way for storing the HTML responses.
-    public AuthenticationService()
+    public AuthenticationService(ILogger<AuthenticationService> logger)
     {
+        _logger = logger;
+
         const string success = """
                                <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BetaSharp</title><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:#fff;font-size:.85rem;font-weight:400;text-align:center;opacity:.5}</style></head><body><p>You can close this tab now</p></body></html>
                                """;
@@ -35,6 +39,8 @@ internal sealed class AuthenticationService
 
     public async Task InitializeAsync()
     {
+        _logger.LogInformation("Initializing authentication service");
+
         string path = Path.Combine(MsalCacheHelper.UserRootDirectory, "betasharp.launcher.cache");
 
         var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
@@ -66,11 +72,13 @@ internal sealed class AuthenticationService
                 .AcquireTokenSilent(scopes, accounts.FirstOrDefault())
                 .ExecuteAsync();
 
+            _logger.LogInformation("Acquired authentication token silently");
+
             return result.AccessToken;
         }
         catch (MsalUiRequiredException)
         {
-            // Log it?
+            _logger.LogWarning("Acquiring authentication token interactively");
         }
 
         // Find out a way to use system brokers.
@@ -85,6 +93,8 @@ internal sealed class AuthenticationService
 
     public async Task SignOutAsync()
     {
+        _logger.LogWarning("Signing out accounts");
+
         var accounts = await _application.GetAccountsAsync();
 
         foreach (var account in accounts)
