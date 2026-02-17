@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using BetaSharp.Launcher.Features;
+using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
@@ -27,7 +28,7 @@ internal static class Bootstrapper
                 .MinimumLevel.Information()
                 .WriteTo.Debug(outputTemplate: template)
                 .WriteTo.File(
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BetaSharp Launcher", "Logs", ".txt"),
+                    Path.Combine(App.Folder, "Logs", ".txt"),
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 5,
                     outputTemplate: template)
@@ -42,6 +43,14 @@ internal static class Bootstrapper
         services.AddSingleton<AuthenticationService>();
 
         services
+            .AddTransient<AuthenticationView>()
+            .AddTransient<AuthenticationViewModel>();
+
+        services
+            .AddTransient<HomeView>()
+            .AddTransient<HomeViewModel>();
+
+        services
             .AddTransient<ShellView>()
             .AddTransient<ShellViewModel>();
 
@@ -49,10 +58,6 @@ internal static class Bootstrapper
             .AddTransient<SplashView>()
             .AddTransient<SplashViewModel>()
             .AddTransient<GitHubService>();
-
-        services
-            .AddTransient<HomeView>()
-            .AddTransient<HomeViewModel>();
 
         return services.BuildServiceProvider();
     }

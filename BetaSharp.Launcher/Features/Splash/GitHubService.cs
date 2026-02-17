@@ -8,6 +8,7 @@ internal sealed class GitHubService(IHttpClientFactory httpClientFactory)
     public async Task GetUpdatesAsync()
     {
         var client = httpClientFactory.CreateClient();
-        var response = await client.GetAsync("https://api.github.com/repos/Fazin85/betasharp/releases");
+        // var response = await client.GetAsync("https://api.github.com/repos/Fazin85/betasharp/releases");
+        await Task.Delay(2500);
     }
 }
