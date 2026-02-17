@@ -26,7 +26,7 @@ internal static class Bootstrapper
             const string template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level} {Message:lj}{NewLine}{Exception}";
 
             var logger = new LoggerConfiguration()
-                .MinimumLevel.Warning()
+                .MinimumLevel.Information()
                 .WriteTo.Debug(outputTemplate: template)
                 .WriteTo.File(
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BetaSharp Launcher", "Logs", ".txt"),
