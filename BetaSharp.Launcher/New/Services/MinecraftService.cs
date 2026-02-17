@@ -3,9 +3,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Extensions;
+using BetaSharp.Launcher.Extensions;
 
-namespace BetaSharp.Launcher.Features.New.Services;
+namespace BetaSharp.Launcher.New.Services;
 
 internal sealed class MinecraftService(IHttpClientFactory httpClientFactory)
 {

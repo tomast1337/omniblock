@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.New;
+using BetaSharp.Launcher.New;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-namespace BetaSharp.Launcher.Features.Splash;
+namespace BetaSharp.Launcher.Splash;
 
 internal sealed partial class SplashViewModel(GitHubService gitHubService, NewViewModel newViewModel) : ObservableObject
 {

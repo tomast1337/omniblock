@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace BetaSharp.Launcher.Features.Shell;
+namespace BetaSharp.Launcher.Shell;
 
 internal sealed partial class ShellView : Window
 {

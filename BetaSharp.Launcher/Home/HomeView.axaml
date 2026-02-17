@@ -1,8 +1,8 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Home"
+             xmlns:home="clr-namespace:BetaSharp.Launcher.Home"
 
-             x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
+             x:Class="BetaSharp.Launcher.Home.HomeView" x:DataType="home:HomeViewModel">
 
     <Button Content="Sign out" Command="{CompiledBinding SignOutCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 </UserControl>

@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace BetaSharp.Launcher.Features.Home;
+namespace BetaSharp.Launcher.Home;
 
 internal sealed partial class HomeViewModel(AuthenticationService authenticationService) : ObservableObject
 {

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
-using BetaSharp.Launcher.Features;
-using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.New;
-using BetaSharp.Launcher.Features.New.Services;
-using BetaSharp.Launcher.Features.Shell;
-using BetaSharp.Launcher.Features.Splash;
+using BetaSharp.Launcher.Home;
+using BetaSharp.Launcher.New;
+using BetaSharp.Launcher.New.Services;
+using BetaSharp.Launcher.Shell;
+using BetaSharp.Launcher.Splash;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;

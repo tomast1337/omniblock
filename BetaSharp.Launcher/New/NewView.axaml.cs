@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace BetaSharp.Launcher.Features.New;
+namespace BetaSharp.Launcher.New;
 
 internal sealed partial class NewView : UserControl
 {

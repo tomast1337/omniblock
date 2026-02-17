@@ -2,7 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using BetaSharp.Launcher.Features.Shell;
+using BetaSharp.Launcher.Shell;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BetaSharp.Launcher;

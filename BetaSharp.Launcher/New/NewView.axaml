@@ -1,8 +1,8 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:BetaSharp.Launcher.Features.New"
+             xmlns:new="clr-namespace:BetaSharp.Launcher.New"
 
-             x:Class="BetaSharp.Launcher.Features.New.NewView" x:DataType="local:NewViewModel">
+             x:Class="BetaSharp.Launcher.New.NewView" x:DataType="new:NewViewModel">
 
     <Interaction.Behaviors>
         <EventTriggerBehavior EventName="AttachedToVisualTree">
