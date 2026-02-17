@@ -12,7 +12,6 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
 
     public void renderTileEntityMobSpawner(BlockEntityMobSpawner var1, double var2, double var4, double var6, float var8)
     {
-        Console.WriteLine("CALLING!");
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)var2 + 0.5F, (float)var4, (float)var6 + 0.5F);
         _entityDict.TryGetValue(var1.GetSpawnedEntityId(), out Entity? var9);
@@ -20,7 +19,6 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
         {
             var9 = EntityRegistry.create(var1.GetSpawnedEntityId(), null);
             _entityDict.Add(var1.GetSpawnedEntityId(), var9);
-            Console.WriteLine("ADDING!");
         }
 
         if (var9 != null)
@@ -34,7 +32,6 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
             GLManager.GL.Scale(var10, var10, var10);
             var9.setPositionAndAnglesKeepPrevAngles(var2, var4, var6, 0.0F, 0.0F);
             EntityRenderDispatcher.instance.renderEntityWithPosYaw(var9, 0.0D, 0.0D, 0.0D, 0.0F, var8);
-            Console.WriteLine("RENDERING!");
         }
 
         GLManager.GL.PopMatrix();

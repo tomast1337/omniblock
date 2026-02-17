@@ -41,15 +41,10 @@ public class BlockEntityRenderer
         if (renderer == null && clazz != BlockEntity.Class)
         {
             renderer = GetSpecialRendererForClass(clazz.getSuperclass());
-            _specialRendererMap.Add(clazz, renderer);
+            _specialRendererMap[clazz] = renderer;
         }
 
         return renderer;
-    }
-
-    public bool hasSpecialRenderer(BlockEntity var1)
-    {
-        return GetSpecialRendererForEntity(var1) != null;
     }
 
     public BlockEntitySpecialRenderer? GetSpecialRendererForEntity(BlockEntity var1)
