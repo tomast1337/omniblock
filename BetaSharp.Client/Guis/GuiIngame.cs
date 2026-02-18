@@ -356,7 +356,8 @@ public class GuiIngame : Gui
 
                 int thumbY = top;
                 int range = Math.Max(1, trackHeight - thumbHeight);
-                thumbY = top + (int)((long)chatScrollPos * range / maxScroll);
+                // Inverted: Bottom is newest (0), Top is oldest (maxScroll)
+                thumbY = top + (int)((long)(maxScroll - chatScrollPos) * range / maxScroll);
 
                 uint thumbColor = chatScrollbarDragging ? 0xFFAAAAAA : 0xFFCCCCCC;
                 drawRect(scrollbarX + 1, thumbY, scrollbarX + scrollbarWidth - 1, thumbY + thumbHeight, thumbColor);
@@ -541,7 +542,8 @@ public class GuiIngame : Gui
         if (rel < 0) rel = 0;
         if (rel > scrollbarHeight - thumbHeight) rel = scrollbarHeight - thumbHeight;
 
-        int newScroll = (int)((long)rel * maxScroll / range);
+        // Inverted: Top is oldest (maxScroll), Bottom is newest (0)
+        int newScroll = maxScroll - (int)((long)rel * maxScroll / range);
         if (newScroll < 0) newScroll = 0;
         if (newScroll > maxScroll) newScroll = maxScroll;
         chatScrollPos = newScroll;
@@ -613,5 +615,5 @@ public class GuiIngame : Gui
         if (chatScrollPos < 0) chatScrollPos = 0;
         if (chatScrollPos > maxScroll) chatScrollPos = maxScroll;
     }
-    
+
 }

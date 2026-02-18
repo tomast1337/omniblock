@@ -136,7 +136,7 @@ public class GuiScreen : Gui
 
     }
 
-    public void handleMouseInput()
+    public virtual void handleMouseInput()
     {
         int var1;
         int var2;

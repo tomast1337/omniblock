@@ -6,12 +6,15 @@ public class InternalServer : MinecraftServer
 {
     private readonly string _worldPath;
     private readonly Lock _difficultyLock = new();
-    private int _lastDifficulty = -1;
+    private readonly int _initialDifficulty;
+    private int _lastDifficulty;
 
-    public InternalServer(string worldPath, string levelName, string seed, int viewDistance) : base(new InternalServerConfiguration(levelName, seed, viewDistance))
+    public InternalServer(string worldPath, string levelName, string seed, int viewDistance, int initialDifficulty) : base(new InternalServerConfiguration(levelName, seed, viewDistance))
     {
         _worldPath = worldPath;
         logHelp = false;
+        _initialDifficulty = initialDifficulty;
+        _lastDifficulty = _initialDifficulty;
     }
 
     public void SetViewDistance(int viewDistanceChunks)
@@ -29,8 +32,6 @@ public class InternalServer : MinecraftServer
         LOGGER.info($"Starting internal server");
 
         bool result = base.Init();
-
-        _lastDifficulty = worlds[0].difficulty;
 
         if (result)
         {

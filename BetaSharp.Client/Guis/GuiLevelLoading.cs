@@ -17,7 +17,7 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
         if (!_serverStarted)
         {
             _serverStarted = true;
-            mc.internalServer = new InternalServer(System.IO.Path.Combine(Minecraft.getMinecraftDir().getAbsolutePath(), "saves"), _worldDir, _seed.ToString(), 10);
+            mc.internalServer = new InternalServer(System.IO.Path.Combine(Minecraft.getMinecraftDir().getAbsolutePath(), "saves"), _worldDir, _seed.ToString(), 10, mc.options.difficulty);
             new RunServerThread(mc.internalServer, "InternalServer").start();
         }
     }
