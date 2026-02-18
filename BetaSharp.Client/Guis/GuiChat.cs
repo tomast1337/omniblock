@@ -2,8 +2,6 @@ using BetaSharp.Client.Input;
 using BetaSharp.Util;
 using BetaSharp.Server;
 using BetaSharp.Server.Commands;
-using java.awt;
-using java.awt.datatransfer;
 
 namespace BetaSharp.Client.Guis;
 
@@ -101,6 +99,24 @@ public class GuiChat : GuiScreen
                     string msg = message.Trim();
                     if (msg.Length > 0)
                     {
+                        // Special test trigger: send 64 random messages locally
+                        if (msg == "!/!")
+                        {
+                            java.util.Random r = new java.util.Random();
+                            for (int i = 0; i < 64; ++i)
+                            {
+                                int len = 8 + (int)(r.nextDouble() * 40);
+                                var sb = new System.Text.StringBuilder();
+                                for (int k = 0; k < len; ++k)
+                                {
+                                    char c = (char)('!' + (int)(r.nextDouble() * 90));
+                                    sb.Append(c);
+                                }
+                                mc?.ingameGUI?.addChatMessage(sb.ToString());
+                            }
+                        }
+                        else
+                        {
                         // Convert '&' color codes to section (§) codes for display in chat
                         string sendMsg = ConvertAmpersandToSection(msg);
                         mc.player.sendChatMessage(sendMsg);
@@ -108,6 +124,7 @@ public class GuiChat : GuiScreen
                         if (history.Count > 100)
                         {
                             history.RemoveAt(0);
+                        }
                         }
                     }
 
@@ -349,7 +366,7 @@ public class GuiChat : GuiScreen
         }
 
         // Get completions from provider
-        MinecraftServer server = mc?.internalServer;
+        MinecraftServer? server = mc?.internalServer;
         List<string> matchingCompletions = [];
         
         if (server != null && argIndex >= 0)
@@ -441,6 +458,8 @@ public class GuiChat : GuiScreen
         if (!HasSelection()) return (0, 0);
         int s = Math.Min(selectionStart, selectionEnd);
         int e = Math.Max(selectionStart, selectionEnd);
+        s = Math.Max(0, Math.Min(s, message.Length));
+        e = Math.Max(0, Math.Min(e, message.Length));
         return (s, e);
     }
 
@@ -472,8 +491,7 @@ public class GuiChat : GuiScreen
         try
         {
             string sel = GetSelectedText();
-            StringSelection ss = new(sel);
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
+            setClipboardString(sel);
         }
         catch (Exception)
         {
@@ -491,18 +509,14 @@ public class GuiChat : GuiScreen
     {
         try
         {
-            Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-            if (t != null && t.isDataFlavorSupported(DataFlavor.stringFlavor))
-            {
-                string clip = (string)t.getTransferData(DataFlavor.stringFlavor);
-                clip ??= "";
-                if (HasSelection()) DeleteSelection();
-                int maxInsert = Math.Max(0, 100 - message.Length);
-                if (clip.Length > maxInsert) clip = clip.Substring(0, maxInsert);
-                message = message.Substring(0, cursorPosition) + clip + message.Substring(cursorPosition);
-                cursorPosition += clip.Length;
-                ClearSelection();
-            }
+            string clip = getClipboardString();
+            clip ??= "";
+            if (HasSelection()) DeleteSelection();
+            int maxInsert = Math.Max(0, 100 - message.Length);
+            if (clip.Length > maxInsert) clip = clip.Substring(0, maxInsert);
+            message = message.Substring(0, cursorPosition) + clip + message.Substring(cursorPosition);
+            cursorPosition += clip.Length;
+            ClearSelection();
         }
         catch (Exception)
         {
@@ -559,7 +573,23 @@ public class GuiChat : GuiScreen
     {
         if (var3 == 0)
         {
-            if (mc.ingameGUI.field_933_a != null)
+            // Check if clicking the small chat scrollbar
+            int left = 2;
+            int chatWidth = 320;
+            int scrollbarX = left + chatWidth - 5;
+            int scrollbarWidth = 6;
+            int linesToShow = 20;
+            int bottom = height - 48 + 6;
+            int top = height - 48 - (linesToShow - 1) * 9;
+
+            if (var1 >= scrollbarX && var1 <= scrollbarX + scrollbarWidth && var2 >= top && var2 <= bottom)
+            {
+                mc.ingameGUI?.startChatScrollbarDrag(var2, height);
+                return;
+            }
+
+            if (mc.ingameGUI.field_933_a
+             != null)
             {
                 if (message.Length > 0 && !message.EndsWith(" "))
                 {
@@ -577,6 +607,19 @@ public class GuiChat : GuiScreen
             {
                 base.mouseClicked(var1, var2, var3);
             }
+        }
+    }
+
+    protected override void mouseMovedOrUp(int var1, int var2, int var3)
+    {
+        if (var3 == -1)
+        {
+            mc.ingameGUI?.updateChatScrollbarDrag(var2, height);
+        }
+        else
+        {
+            mc.ingameGUI?.stopChatScrollbarDrag();
+            base.mouseMovedOrUp(var1, var2, var3);
         }
     }
 
