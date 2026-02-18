@@ -15,6 +15,9 @@ internal sealed class AuthenticationService
     private readonly SystemWebViewOptions _webViewOptions;
     private readonly IPublicClientApplication _application;
 
+    // Do we need other scopes?
+    private readonly string[] _scopes = ["XboxLive.signin offline_access"];
+
     public AuthenticationService(ILogger<AuthenticationService> logger)
     {
         _logger = logger;
@@ -60,36 +63,35 @@ internal sealed class AuthenticationService
 
     public async Task<string> AuthenticateAsync()
     {
-        string[] scopes = ["XboxLive.signin offline_access"];
-
-        AuthenticationResult? result;
-
-        try
-        {
-            var accounts = await _application.GetAccountsAsync();
-
-            // Let user choose which account to authenticate with?
-            result = await _application
-                .AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                .ExecuteAsync();
-
-            _logger.LogInformation("Acquired authentication token silently");
-
-            return result.AccessToken;
-        }
-        catch (MsalUiRequiredException)
-        {
-            _logger.LogWarning("Acquiring authentication token interactively");
-        }
-
         // Find out a way to use system brokers.
-        result = await _application
-            .AcquireTokenInteractive(scopes)
+        var result = await _application
+            .AcquireTokenInteractive(_scopes)
             .WithUseEmbeddedWebView(false)
             .WithSystemWebViewOptions(_webViewOptions)
             .ExecuteAsync();
 
         return result.AccessToken;
+    }
+
+    public async Task<string?> GetTokenAsync()
+    {
+        try
+        {
+            var accounts = await _application.GetAccountsAsync();
+
+            // Let user choose which account to authenticate with?
+            var result = await _application
+                .AcquireTokenSilent(_scopes, accounts.FirstOrDefault())
+                .ExecuteAsync();
+
+            return result.AccessToken;
+        }
+        catch (MsalUiRequiredException)
+        {
+            _logger.LogWarning("Failed to get Microsoft token silently");
+        }
+
+        return null;
     }
 
     public async Task<bool> HasAccountsAsync()
@@ -100,7 +102,7 @@ internal sealed class AuthenticationService
 
     public async Task SignOutAsync()
     {
-        _logger.LogWarning("Signing out accounts");
+        _logger.LogWarning("Signing out Microsoft accounts");
 
         var accounts = await _application.GetAccountsAsync();
 

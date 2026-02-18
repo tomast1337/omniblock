@@ -3,7 +3,6 @@ using System.IO;
 using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.Minecraft;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +37,8 @@ internal static class Bootstrapper
             builder.AddSerilog(logger, true);
         });
 
-        services.AddHttpClient(nameof(MinecraftClient));
+        services.AddHttpClient<MinecraftService>();
+        services.AddHttpClient<XboxService>();
 
         services.AddSingleton<ViewLocator>();
 

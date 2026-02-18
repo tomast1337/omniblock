@@ -10,6 +10,7 @@ namespace BetaSharp.Launcher;
 
 internal sealed partial class App : Application
 {
+    // Move to whatever the client uses?
     public static string Folder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BetaSharp Launcher");
 
     private readonly IServiceProvider _services = Bootstrapper.Build();
