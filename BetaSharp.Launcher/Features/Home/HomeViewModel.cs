@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Messages;
@@ -34,7 +33,7 @@ internal sealed partial class HomeViewModel(AuthenticationService authentication
 
         if (string.IsNullOrWhiteSpace(microsoft))
         {
-            // Navigate to authentication.
+            WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Authentication));
             return;
         }
 

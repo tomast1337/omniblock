@@ -1,8 +1,13 @@
-﻿using System.ComponentModel;
+﻿namespace BetaSharp.Launcher.Features.Messages;
 
-namespace BetaSharp.Launcher.Features.Messages;
-
-internal sealed class NavigationMessage(INotifyPropertyChanged destination)
+internal sealed class NavigationMessage(Destination destination)
 {
-    public INotifyPropertyChanged Destination => destination;
+    public Destination Destination => destination;
+}
+
+internal enum Destination
+{
+    Splash,
+    Authentication,
+    Home
 }
