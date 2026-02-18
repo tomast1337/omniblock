@@ -1,4 +1,6 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -7,9 +9,13 @@ namespace BetaSharp.Launcher.Features.Extensions;
 
 internal static class HttpClientExtensions
 {
-    public static async Task<HttpResponseMessage> PostAsync<T>(this HttpClient client, string uri, T instance) where T : class
+    public static async Task<TResponse> PostAsync<TRequest, TResponse>(this HttpClient client, string uri, TRequest instance)
     {
-        var content = new StringContent(JsonSerializer.Serialize(instance), Encoding.UTF8, "application/json");
-        return await client.PostAsync(uri, content);
+        var request = await client.PostAsync(uri, new StringContent(JsonSerializer.Serialize(instance), Encoding.UTF8, "application/json"));
+        var response = await request.Content.ReadFromJsonAsync<TResponse>();
+
+        ArgumentNullException.ThrowIfNull(response);
+
+        return response;
     }
 }
