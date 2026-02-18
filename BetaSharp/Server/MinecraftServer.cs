@@ -391,7 +391,7 @@ public abstract class MinecraftServer : Runnable, CommandOutput
                     playerManager.sendToDimension(new WorldTimeUpdateS2CPacket(var10.getTime()), var10.dimension.id);
                 }
 
-                var10.Tick(-1);
+                var10.Tick();
 
                 while (var10.doLightingUpdates())
                 {

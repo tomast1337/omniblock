@@ -39,6 +39,11 @@ public class InternalConnection : Connection
 
     protected override void processPackets()
     {
+        if (networkHandler == null)
+        {
+            throw new Exception($"InternalConnection is not initialized");
+        }
+
         int count = 0;
         while (!readQueue.isEmpty())
         {
