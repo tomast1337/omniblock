@@ -47,7 +47,7 @@ file sealed class TokenResponse
 
 file sealed class ProfileResponse
 {
-    private sealed class Skin
+    public sealed class Skin
     {
         [JsonPropertyName("url")]
         public required string Url { get; init; }
