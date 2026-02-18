@@ -2,6 +2,7 @@
 using System.IO;
 using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Authentication;
+using BetaSharp.Launcher.Features.Authentication.Services;
 using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
@@ -40,7 +41,11 @@ internal static class Bootstrapper
         services.AddHttpClient();
 
         services.AddSingleton<ViewLocator>();
+
         services.AddSingleton<AuthenticationService>();
+
+        services.AddTransient<MinecraftService>();
+        services.AddTransient<XboxService>();
 
         services
             .AddTransient<AuthenticationView>()
@@ -56,8 +61,7 @@ internal static class Bootstrapper
 
         services
             .AddTransient<SplashView>()
-            .AddTransient<SplashViewModel>()
-            .AddTransient<GitHubService>();
+            .AddTransient<SplashViewModel>();
 
         return services.BuildServiceProvider();
     }

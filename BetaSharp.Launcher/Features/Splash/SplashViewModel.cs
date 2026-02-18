@@ -10,19 +10,18 @@ namespace BetaSharp.Launcher.Features.Splash;
 
 internal sealed partial class SplashViewModel(
     AuthenticationService authenticationService,
-    GitHubService gitHubService,
     AuthenticationViewModel authenticationViewModel,
     HomeViewModel homeViewModel) : ObservableObject
 {
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        await gitHubService.GetUpdatesAsync();
+        await Task.Delay(2500);
 
         await authenticationService.InitializeAsync();
 
-        bool first = await authenticationService.HasAccountsAsync();
+        bool has = await authenticationService.HasAccountsAsync();
 
-        WeakReferenceMessenger.Default.Send(first ? new NavigationMessage(authenticationViewModel) : new NavigationMessage(homeViewModel));
+        WeakReferenceMessenger.Default.Send(new NavigationMessage(has ? homeViewModel : authenticationViewModel));
     }
 }
