@@ -246,7 +246,7 @@ public class Connection
         }
     }
 
-    public void tick()
+    public virtual void tick()
     {
         if (sendQueueSize > 1048576)
         {

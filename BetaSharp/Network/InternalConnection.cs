@@ -101,6 +101,15 @@ public class InternalConnection : Connection
     {
     }
 
+    public override void tick()
+    {
+        processPackets();
+        if (disconnected && readQueue.isEmpty())
+        {
+            networkHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
+        }
+    }
+
     public override java.net.SocketAddress? getAddress()
     {
         return new java.net.InetSocketAddress("127.0.0.1", 12345);
