@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Avalonia;
-using Avalonia.Controls;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
 using BetaSharp.Client.Entities;
@@ -20,7 +18,6 @@ using BetaSharp.Client.Sound;
 using BetaSharp.Client.Textures;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Launcher;
 using BetaSharp.Profiling;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;

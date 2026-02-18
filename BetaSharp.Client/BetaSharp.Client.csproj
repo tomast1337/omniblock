@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BetaSharp.Launcher\BetaSharp.Launcher.csproj"/>
     <ProjectReference Include="..\BetaSharp\BetaSharp.csproj"/>
   </ItemGroup>
 
