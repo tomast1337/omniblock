@@ -9,6 +9,7 @@
     <PublishAot>true</PublishAot>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <OptimizationPreference>speed</OptimizationPreference>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <ItemGroup>
