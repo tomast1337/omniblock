@@ -31,7 +31,7 @@ public sealed class Log
         }
 
         _initialized = true;
-        _directory = directory;
+        _directory = System.IO.Path.Combine(directory, "logs");
 
         // $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log"
 
