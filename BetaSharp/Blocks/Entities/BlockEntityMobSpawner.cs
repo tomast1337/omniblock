@@ -112,7 +112,7 @@ public class BlockEntityMobSpawner : BlockEntity
 
     private void ResetDelay()
     {
-        SpawnDelay = 200 + world.random.nextInt(600);
+        SpawnDelay = 200 + world.random.NextInt(600);
         _logger.LogInformation("Spawn Delay: " + SpawnDelay);
     }
 
