@@ -159,20 +159,6 @@ public static class Log
         return count + 1;
     }
 
-    public static ILogger GetLogger(Type type)
-    {
-        if (!_initialized)
-            throw new InvalidOperationException("Log.Initialize() must be called before logging.");
-        return _factory.CreateLogger(type);
-    }
-
-    public static ILogger GetLogger(string name)
-    {
-        if (!_initialized)
-            throw new InvalidOperationException("Log.Initialize() must be called before logging.");
-        return _factory.CreateLogger(name);
-    }
-
     private sealed class FileLoggerProvider(string path) : ILoggerProvider
     {
         private readonly StreamWriter _writer = new(path, append: true) { AutoFlush = true };
