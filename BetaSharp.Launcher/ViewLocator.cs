@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -11,8 +10,6 @@ namespace BetaSharp.Launcher;
 
 internal sealed class ViewLocator(SplashView splashView, AuthenticationView authenticationView, HomeView homeView) : IDataTemplate
 {
-
-
     public Control Build(object? instance)
     {
         string? name = instance?.GetType().Name.Replace("ViewModel", "View", StringComparison.Ordinal);

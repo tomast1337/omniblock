@@ -45,7 +45,7 @@ internal sealed class AuthenticationService
     {
         _logger.LogInformation("Initializing authentication service");
 
-        string path = Path.Combine(MsalCacheHelper.UserRootDirectory, "betasharp.launcher.cache");
+        string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
 
         var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
             .WithLinuxKeyring(
