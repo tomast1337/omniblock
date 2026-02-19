@@ -18,8 +18,10 @@ public sealed class Log
             .SetMinimumLevel(LogLevel.Debug)
             .AddSimpleConsole(options =>
             {
-                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss";
-                // options.SingleLine = true;
+                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+
+                // This puts exceptions on a single line, which makes them quite unreadable.
+                options.SingleLine = true;
             }));
     }
 
@@ -32,6 +34,8 @@ public sealed class Log
 
         _initialized = true;
         _directory = System.IO.Path.Combine(directory, "logs");
+
+        Directory.CreateDirectory(_directory);
 
         // $"{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.log"
 
@@ -65,7 +69,7 @@ public sealed class Log
 
 internal sealed class FileLoggerProvider(string path) : ILoggerProvider
 {
-    private readonly FileStream _stream = File.OpenRead(path);
+    private readonly FileStream _stream = File.OpenWrite(path);
 
     private sealed class FileLogger(string category, FileStream stream) : ILogger
     {
@@ -78,8 +82,11 @@ internal sealed class FileLoggerProvider(string path) : ILoggerProvider
 
             if (exception is not null)
             {
-                stream.Write(Encoding.UTF8.GetBytes(exception.ToString()));
+                stream.Write(Encoding.UTF8.GetBytes($"{Environment.NewLine}{exception}"));
             }
+
+            stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+            stream.Flush();
         }
 
         public bool IsEnabled(LogLevel logLevel)
