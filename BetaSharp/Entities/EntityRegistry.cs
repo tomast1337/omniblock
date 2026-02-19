@@ -2,6 +2,7 @@ using BetaSharp.NBT;
 using BetaSharp.Worlds;
 using java.lang;
 using java.util;
+using Microsoft.Extensions.Logging;
 using Exception = java.lang.Exception;
 
 namespace BetaSharp.Entities;
@@ -13,6 +14,8 @@ public class EntityRegistry
     private static Map rawIdToClass = new HashMap();
     private static Map classToRawId = new HashMap();
     public static Dictionary<string, int> namesToId = new();
+
+    private static readonly ILogger<EntityRegistry> s_logger = Log.Instance.For<EntityRegistry>();
 
     private static void register(Class entityClass, string id, int rawId)
     {
@@ -66,7 +69,7 @@ public class EntityRegistry
         }
         else
         {
-            Log.Info($"Skipping Entity with id {nbt.GetString("id")}");
+            s_logger.LogInformation($"Skipping Entity with id {nbt.GetString("id")}");
         }
 
         return entity;
@@ -90,7 +93,7 @@ public class EntityRegistry
                         entity.setPositionAndAngles(x, y, z, 0, 0);
                         if (!world.SpawnEntity(entity))
                         {
-                            Log.Error($"Entity `{name}` with ID:`{id}` failed to join world.");
+                            s_logger.LogError($"Entity `{name}` with ID:`{id}` failed to join world.");
                         }
                     }
 
@@ -98,17 +101,17 @@ public class EntityRegistry
                 }
                 else
                 {
-                    Log.Error($"Failed to convert entity of name `{name}` and id `{id}` to a class.");
+                    s_logger.LogError($"Failed to convert entity of name `{name}` and id `{id}` to a class.");
                 }
             }
             else
             {
-                Log.Error($"Unable to find entity of name `{name}`.");
+                s_logger.LogError($"Unable to find entity of name `{name}`.");
             }
         }
         catch (Exception ex)
         {
-            Log.Error(ex);
+            s_logger.LogError(ex, "Exception");
         }
 
         return null;
@@ -128,12 +131,12 @@ public class EntityRegistry
         }
         catch (java.lang.Exception ex)
         {
-            Log.Error(ex);
+            s_logger.LogError(ex, "Exception");
         }
 
         if (entity == null)
         {
-            Log.Info($"Skipping Entity with id {rawId}");
+            s_logger.LogInformation($"Skipping Entity with id {rawId}");
         }
 
         return entity;

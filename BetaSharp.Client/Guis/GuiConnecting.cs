@@ -1,10 +1,12 @@
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Guis;
 
 public class GuiConnecting : GuiScreen
 {
+    private readonly ILogger<GuiConnecting> _logger = Log.Instance.For<GuiConnecting>();
 
     private ClientNetworkHandler _clientHandler;
     private bool _cancelled = false;
@@ -12,7 +14,7 @@ public class GuiConnecting : GuiScreen
 
     public GuiConnecting(Minecraft mc, string host, int port)
     {
-        Log.Info($"Connecting to {host}, {port}");
+        _logger.LogInformation($"Connecting to {host}, {port}");
         mc.changeWorld1(null);
         new ThreadConnectToServer(this, mc, host, port).start();
     }
