@@ -1,9 +1,7 @@
-using BetaSharp.Launcher;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;
 using java.lang;
 using java.net;
-using java.util.logging;
 
 namespace BetaSharp.Server;
 
