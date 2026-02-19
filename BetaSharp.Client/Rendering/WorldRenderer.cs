@@ -5,7 +5,7 @@ using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entitys;
+using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
@@ -23,7 +23,7 @@ public class WorldRenderer : IWorldAccess
     private readonly TextureManager renderEngine;
     private readonly Minecraft mc;
     private BlockRenderer globalRenderBlocks;
-    private int cloudOffsetX = 0;
+    private int cloudOffsetX;
     private readonly int starGLCallList;
     private readonly int glSkyList;
     private readonly int glSkyList2;
@@ -547,7 +547,7 @@ public class WorldRenderer : IWorldAccess
         float var15 = (float)var13.Y;
         float var16 = (float)var13.Z;
 
-        float var19 = 0.00390625F;
+        float var19 = 1 / 256f;
         float var17 = MathHelper.floor_double(var6) * var19;
         float var18 = MathHelper.floor_double(var8) * var19;
         float var20 = (float)(var6 - MathHelper.floor_double(var6));
@@ -786,7 +786,7 @@ public class WorldRenderer : IWorldAccess
             mc.ingameGUI.setRecordPlayingMessage("C418 - " + var1);
         }
 
-        mc.sndManager.playStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
+        mc.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
     }
 
     public void playSound(string var1, double var2, double var4, double var6, float var8, float var9)
@@ -799,7 +799,7 @@ public class WorldRenderer : IWorldAccess
 
         if (mc.camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
         {
-            mc.sndManager.playSound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
+            mc.sndManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
         }
 
     }
@@ -921,7 +921,7 @@ public class WorldRenderer : IWorldAccess
 
     public void worldEvent(EntityPlayer var1, int var2, int var3, int var4, int var5, int var6)
     {
-        java.util.Random var7 = world.random;
+        JavaRandom var7 = world.random;
         int var16;
         switch (var2)
         {
@@ -937,15 +937,15 @@ public class WorldRenderer : IWorldAccess
             case 1003:
                 if (java.lang.Math.random() < 0.5D)
                 {
-                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_open", 1.0F, world.random.nextFloat() * 0.1F + 0.9F);
+                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_open", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
                 }
                 else
                 {
-                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_close", 1.0F, world.random.nextFloat() * 0.1F + 0.9F);
+                    world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_close", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
                 }
                 break;
             case 1004:
-                world.playSound((double)(var3 + 0.5F), (double)(var4 + 0.5F), (double)(var5 + 0.5F), "random.fizz", 0.5F, 2.6F + (var7.nextFloat() - var7.nextFloat()) * 0.8F);
+                world.playSound((double)(var3 + 0.5F), (double)(var4 + 0.5F), (double)(var5 + 0.5F), "random.fizz", 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
                 break;
             case 1005:
                 if (Item.ITEMS[var6] is ItemRecord)
@@ -966,13 +966,13 @@ public class WorldRenderer : IWorldAccess
 
                 for (var16 = 0; var16 < 10; ++var16)
                 {
-                    double var31 = var7.nextDouble() * 0.2D + 0.01D;
-                    double var19 = var10 + var8 * 0.01D + (var7.nextDouble() - 0.5D) * var9 * 0.5D;
-                    double var21 = var12 + (var7.nextDouble() - 0.5D) * 0.5D;
-                    double var23 = var14 + var9 * 0.01D + (var7.nextDouble() - 0.5D) * var8 * 0.5D;
-                    double var25 = var8 * var31 + var7.nextGaussian() * 0.01D;
-                    double var27 = -0.03D + var7.nextGaussian() * 0.01D;
-                    double var29 = var9 * var31 + var7.nextGaussian() * 0.01D;
+                    double var31 = var7.NextDouble() * 0.2D + 0.01D;
+                    double var19 = var10 + var8 * 0.01D + (var7.NextDouble() - 0.5D) * var9 * 0.5D;
+                    double var21 = var12 + (var7.NextDouble() - 0.5D) * 0.5D;
+                    double var23 = var14 + var9 * 0.01D + (var7.NextDouble() - 0.5D) * var8 * 0.5D;
+                    double var25 = var8 * var31 + var7.NextGaussian() * 0.01D;
+                    double var27 = -0.03D + var7.NextGaussian() * 0.01D;
+                    double var29 = var9 * var31 + var7.NextGaussian() * 0.01D;
                     spawnParticle("smoke", var19, var21, var23, var25, var27, var29);
                 }
 
@@ -982,7 +982,7 @@ public class WorldRenderer : IWorldAccess
                 if (var16 > 0)
                 {
                     Block var17 = Block.Blocks[var16];
-                    mc.sndManager.playSound(var17.soundGroup.stepSoundDir(), var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (var17.soundGroup.getVolume() + 1.0F) / 2.0F, var17.soundGroup.getPitch() * 0.8F);
+                    mc.sndManager.PlaySound(var17.soundGroup.stepSoundDir(), var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (var17.soundGroup.getVolume() + 1.0F) / 2.0F, var17.soundGroup.getPitch() * 0.8F);
                 }
 
                 mc.particleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);

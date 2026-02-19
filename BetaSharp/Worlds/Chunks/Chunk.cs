@@ -435,7 +435,7 @@ public class Chunk : java.lang.Object
         int var3 = MathHelper.floor_double(entity.z / 16.0D);
         if (var2 != x || var3 != z)
         {
-            java.lang.System.@out.println("Wrong location! " + entity);
+            Log.Info($"Wrong location! {entity}");
             java.lang.Thread.dumpStack();
         }
 
@@ -537,7 +537,7 @@ public class Chunk : java.lang.Object
         }
         else
         {
-            java.lang.System.@out.println("Attempted to place a tile entity where there was no entity tile!");
+            Log.Info("Attempted to place a tile entity where there was no entity tile!");
         }
     }
 
@@ -831,9 +831,9 @@ public class Chunk : java.lang.Object
         }
     }
 
-    public virtual java.util.Random getSlimeRandom(long scrambler)
+    public virtual JavaRandom getSlimeRandom(long scrambler)
     {
-        return new java.util.Random(world.getSeed() + x * x * 4987142 + x * 5947611 + z * z * 4392871L + z * 389711 ^ scrambler);
+        return new JavaRandom(world.getSeed() + x * x * 4987142 + x * 5947611 + z * z * 4392871L + z * 389711 ^ scrambler);
     }
 
     public virtual bool isEmpty()
