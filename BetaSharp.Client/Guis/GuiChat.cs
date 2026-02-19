@@ -1,6 +1,7 @@
 using System.Text;
 using BetaSharp.Client.Input;
 using BetaSharp.Util;
+using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Guis;
 
@@ -14,6 +15,8 @@ public class GuiChat : GuiScreen
     private static readonly string s_allowedChars = ChatAllowedCharacters.allowedCharacters;
     private static readonly List<string> s_history = [];
     private int _historyIndex = 0;
+
+    public override bool PausesGame => false;
 
     public GuiChat()
     {
