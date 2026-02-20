@@ -26,7 +26,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <!-- <Button Content="Play" Command="{CompiledBinding PlayCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" /> -->
+            <Button Content="Play" Command="{CompiledBinding PlayCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" />
         </Grid>
     </Grid>
 </UserControl>

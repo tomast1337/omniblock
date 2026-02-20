@@ -63,24 +63,14 @@ internal sealed class AuthenticationService
 
     public async Task<string> AuthenticateAsync()
     {
-        // Find out a way to use system brokers.
-        var result = await _application
-            .AcquireTokenInteractive(_scopes)
-            .WithUseEmbeddedWebView(false)
-            .WithSystemWebViewOptions(_webViewOptions)
-            .ExecuteAsync();
+        AuthenticationResult result;
 
-        return result.AccessToken;
-    }
-
-    public async Task<string?> GetTokenAsync()
-    {
         try
         {
             var accounts = await _application.GetAccountsAsync();
 
             // Let user choose which account to authenticate with?
-            var result = await _application
+            result = await _application
                 .AcquireTokenSilent(_scopes, accounts.FirstOrDefault())
                 .ExecuteAsync();
 
@@ -91,7 +81,14 @@ internal sealed class AuthenticationService
             _logger.LogWarning("Failed to get Microsoft token silently");
         }
 
-        return null;
+        // Find out a way to use system brokers.
+        result = await _application
+            .AcquireTokenInteractive(_scopes)
+            .WithUseEmbeddedWebView(false)
+            .WithSystemWebViewOptions(_webViewOptions)
+            .ExecuteAsync();
+
+        return result.AccessToken;
     }
 
     public async Task<bool> HasAccountsAsync()

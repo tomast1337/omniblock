@@ -37,11 +37,13 @@ internal static class Bootstrapper
             builder.AddSerilog(logger, true);
         });
 
+        services.AddHttpClient<DownloadingService>();
         services.AddHttpClient<MinecraftService>();
         services.AddHttpClient<XboxService>();
 
         services.AddSingleton<ViewLocator>();
 
+        services.AddSingleton<DownloadingService>();
         services.AddSingleton<AccountService>();
         services.AddSingleton<AuthenticationService>();
 
