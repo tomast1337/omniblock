@@ -228,8 +228,8 @@ public class GameRenderer
             _client.mouseHelper.mouseXYChange();
             float var2 = _client.options.mouseSensitivity * 0.6F + 0.2F;
             float var3 = var2 * var2 * var2 * 8.0F;
-            float var4 = _client.mouseHelper.deltaX * var3;
-            float var5 = _client.mouseHelper.deltaY * var3;
+            float var4 = _client.mouseHelper.DeltaX * var3;
+            float var5 = _client.mouseHelper.DeltaY * var3;
             int var6 = -1;
             if (_client.options.invertMouse)
             {
