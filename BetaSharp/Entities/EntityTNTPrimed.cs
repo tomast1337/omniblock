@@ -1,4 +1,5 @@
 using BetaSharp.NBT;
+using BetaSharp.Rules;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 
@@ -82,7 +83,12 @@ public class EntityTNTPrimed : Entity
 
     private void explode()
     {
-        float power = 4.0F;
+        if (!world.Rules.GetBool(DefaultRules.TntExplodes))
+        {
+            return;
+        }
+
+        const float power = 4.0F;
         world.createExplosion((Entity)null, x, y, z, power);
     }
 
