@@ -26,7 +26,7 @@ internal sealed partial class HomeViewModel(AccountService accountService, Minec
     {
         await Task.Yield();
 
-        var account = await accountService.GetAsync().ConfigureAwait(false);
+        var account = await accountService.GetAsync();
 
         if (account is null)
         {
