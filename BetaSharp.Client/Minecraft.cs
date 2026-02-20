@@ -1,3 +1,4 @@
+using BetaSharp.Client.Options;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
@@ -21,6 +22,7 @@ using BetaSharp.Items;
 using BetaSharp.Profiling;
 using BetaSharp.Server.Internal;
 using BetaSharp.Stats;
+using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
@@ -80,7 +82,6 @@ public partial class Minecraft
     private int serverPort;
     private readonly WaterSprite textureWaterFX = new();
     private readonly LavaSprite textureLavaFX = new();
-    private static java.io.File minecraftDir;
     public volatile bool running = true;
     public string debug = "";
     bool isTakingScreenshot;
@@ -192,12 +193,12 @@ public partial class Minecraft
         {
             Log.Error(ex);
         }
-        texturePackList = new TexturePacks(this, mcDataDir);
+        texturePackList = new TexturePacks(this, new DirectoryInfo(mcDataDir.getAbsolutePath()));
         textureManager = new TextureManager(texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
-        WaterColors.loadColors(textureManager.getColors("/misc/watercolor.png"));
-        GrassColors.loadColors(textureManager.getColors("/misc/grasscolor.png"));
-        FoliageColors.loadColors(textureManager.getColors("/misc/foliagecolor.png"));
+        WaterColors.loadColors(textureManager.GetColors("/misc/watercolor.png"));
+        GrassColors.loadColors(textureManager.GetColors("/misc/grasscolor.png"));
+        FoliageColors.loadColors(textureManager.GetColors("/misc/foliagecolor.png"));
         gameRenderer = new GameRenderer(this);
         EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
         statFileWriter = new StatFileWriter(session, mcDataDir);
@@ -255,20 +256,20 @@ public partial class Minecraft
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         checkGLError("Startup");
         sndManager.LoadSoundSettings(options);
-        textureManager.addDynamicTexture(textureLavaFX);
-        textureManager.addDynamicTexture(textureWaterFX);
-        textureManager.addDynamicTexture(new NetherPortalSprite());
-        textureManager.addDynamicTexture(new CompassSprite(this));
-        textureManager.addDynamicTexture(new ClockSprite(this));
-        textureManager.addDynamicTexture(new WaterSideSprite());
-        textureManager.addDynamicTexture(new LavaSideSprite());
-        textureManager.addDynamicTexture(new FireSprite(0));
-        textureManager.addDynamicTexture(new FireSprite(1));
+        textureManager.AddDynamicTexture(textureLavaFX);
+        textureManager.AddDynamicTexture(textureWaterFX);
+        textureManager.AddDynamicTexture(new NetherPortalSprite());
+        textureManager.AddDynamicTexture(new CompassSprite(this));
+        textureManager.AddDynamicTexture(new ClockSprite(this));
+        textureManager.AddDynamicTexture(new WaterSideSprite());
+        textureManager.AddDynamicTexture(new LavaSideSprite());
+        textureManager.AddDynamicTexture(new FireSprite(0));
+        textureManager.AddDynamicTexture(new FireSprite(1));
         terrainRenderer = new WorldRenderer(this, textureManager);
         GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
         particleManager = new ParticleManager(world, textureManager);
 
-        MinecraftResourceDownloader downloader = new(this, minecraftDir.getAbsolutePath());
+        MinecraftResourceDownloader downloader = new(this, mcDataDir.getAbsolutePath());
         _ = downloader.DownloadResourcesAsync();
 
         checkGLError("Post startup");
@@ -300,7 +301,7 @@ public partial class Minecraft
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.getTextureId("/title/mojang.png"));
+        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/title/mojang.png"));
         tessellator.startDrawingQuads();
         tessellator.setColorOpaque_I(0xFFFFFF);
         tessellator.addVertexWithUV(0.0D, (double)displayHeight, 0.0D, 0.0D, 0.0D);
@@ -327,67 +328,16 @@ public partial class Minecraft
 
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
-        tess.addVertexWithUV(x + 0,     y + height, 0,  (texX + 0) * uScale,        (texY + height) * vScale);
-        tess.addVertexWithUV(x + width, y + height, 0,  (texX + width) * uScale,    (texY + height) * vScale);
-        tess.addVertexWithUV(x + width, y + 0,      0,  (texX + width) * uScale,    (texY + 0) * vScale);
-        tess.addVertexWithUV(x + 0,     y + 0,      0,  (texX + 0) * uScale,        (texY + 0) * vScale);
+        tess.addVertexWithUV(x + 0, y + height, 0, (texX + 0) * uScale, (texY + height) * vScale);
+        tess.addVertexWithUV(x + width, y + height, 0, (texX + width) * uScale, (texY + height) * vScale);
+        tess.addVertexWithUV(x + width, y + 0, 0, (texX + width) * uScale, (texY + 0) * vScale);
+        tess.addVertexWithUV(x + 0, y + 0, 0, (texX + 0) * uScale, (texY + 0) * vScale);
         tess.draw();
     }
 
     public static java.io.File getMinecraftDir()
     {
-        minecraftDir ??= getAppDir(nameof(BetaSharp));
-
-        return minecraftDir;
-    }
-
-    public static java.io.File getAppDir(string var0)
-    {
-        string var1 = java.lang.System.getProperty("user.home", ".");
-        java.io.File var2;
-        switch (EnumOSMappingHelper.enumOSMappingArray[(int)getOs()])
-        {
-            case 1:
-            case 2:
-                var2 = new java.io.File(var1, '.' + var0 + '/');
-                break;
-            case 3:
-                string var3 = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                var2 = new java.io.File(var3, "." + var0 + '/');
-
-                break;
-            case 4:
-                var2 = new java.io.File(var1, "Library/Application Support/" + var0);
-                break;
-            default:
-                var2 = new java.io.File(var1, var0 + '/');
-                break;
-        }
-
-        if (!var2.exists() && !var2.mkdirs())
-        {
-            throw new RuntimeException("The working directory could not be created: " + var2);
-        }
-        else
-        {
-            return var2;
-        }
-    }
-
-    private static Util.OperatingSystem getOs()
-    {
-        string osName = java.lang.System.getProperty("os.name").ToLower();
-
-        if (osName.Contains("win"))
-            return Util.OperatingSystem.windows;
-        if (osName.Contains("mac"))
-            return Util.OperatingSystem.macos;
-        if (osName.Contains("solaris") || osName.Contains("sunos"))
-            return Util.OperatingSystem.solaris;
-        if (osName.Contains("linux") || osName.Contains("unix"))
-            return Util.OperatingSystem.linux;
-
-        return Util.OperatingSystem.unknown;
+        return new java.io.File(PathHelper.GetAppDir(nameof(BetaSharp)));
     }
 
     public WorldStorageSource getSaveLoader()
@@ -585,7 +535,7 @@ public partial class Minecraft
 
                     if (player != null && player.isInsideWall())
                     {
-                        options.thirdPersonView = false;
+                        options.cameraMode = EnumCameraMode.FirstPerson;
                     }
 
                     if (!skipRenderWorld)
@@ -736,7 +686,7 @@ public partial class Minecraft
                         GLManager.GL.ReadPixels(0, 0, (uint)displayWidth, (uint)displayHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
-                string result = ScreenShotHelper.saveScreenshot(minecraftDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
+                string result = ScreenShotHelper.saveScreenshot(mcDataDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
                 ingameGUI.addChatMessage(result);
             }
         }
@@ -1112,10 +1062,10 @@ public partial class Minecraft
         Profiler.Stop("playerControllerUpdate");
 
         Profiler.Start("updateDynamicTextures");
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.getTextureId("/terrain.png"));
+        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/terrain.png"));
         if (!isGamePaused)
         {
-            textureManager.tick();
+            textureManager.Tick();
         }
 
         Profiler.Stop("updateDynamicTextures");
@@ -1341,7 +1291,7 @@ public partial class Minecraft
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_F5)
                         {
-                            options.thirdPersonView = !options.thirdPersonView;
+                            options.cameraMode = (EnumCameraMode)((int)(options.cameraMode + 2) % 3);
                         }
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_F8)

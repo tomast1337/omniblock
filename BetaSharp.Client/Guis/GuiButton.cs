@@ -41,6 +41,13 @@ public class GuiButton : Gui
         DisplayString = displayStr;
     }
 
+    public GuiButton Size(int width, int height)
+    {
+        _width = width;
+        _height = height;
+        return this;
+    }
+
     protected virtual HoverState GetHoverState(bool isMouseOver)
     {
         if (!Enabled) return HoverState.Disabled;
@@ -55,7 +62,7 @@ public class GuiButton : Gui
 
         TextRenderer font = mc.fontRenderer;
 
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.getTextureId("/gui/gui.png"));
+        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.GetTextureId("/gui/gui.png"));
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
         bool isHovered = mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + _width && mouseY < YPosition + _height;
