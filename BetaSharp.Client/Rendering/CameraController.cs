@@ -139,7 +139,7 @@ public class CameraController
                 GLManager.GL.Rotate(cameraEntity.prevPitch + (cameraEntity.pitch - cameraEntity.prevPitch) * tickDelta, -1.0F, 0.0F, 0.0F);
             }
         }
-        else if (_mc.options.cameraMode == EnumCameraMode.ThirdPerson || _mc.options.cameraMode == EnumCameraMode.FrontThirdPerson)
+        else if (_mc.options.cameraMode == EnumCameraMode.FrontThirdPerson || _mc.options.cameraMode == EnumCameraMode.ThirdPerson)
         {
             double currentDistance;
             if (_mc.options.cameraMode == EnumCameraMode.FrontThirdPerson)
