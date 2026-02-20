@@ -26,7 +26,12 @@
                 </StackPanel>
             </StackPanel>
 
-            <Button Content="Play" Command="{CompiledBinding PlayCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" />
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Grid.Row="1">
+                <!-- ReSharper disable once Xaml.StyleClassNotFound -->
+                <Button Content="Play" Classes="accent" Command="{CompiledBinding PlayCommand}" />
+
+                <Button Content="Sign out" Command="{CompiledBinding SignOutCommand}" />
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

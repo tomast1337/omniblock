@@ -54,4 +54,10 @@ internal sealed class AccountService(ILogger<AccountService> logger)
             return null;
         }
     }
+
+    public void Delete()
+    {
+        _account = null;
+        File.Delete(_path);
+    }
 }

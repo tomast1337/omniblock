@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Messaging;
 namespace BetaSharp.Launcher.Features.Home;
 
 internal sealed partial class HomeViewModel(
+    AuthenticationService authenticationService,
     AccountService accountService,
     MinecraftService minecraftService,
     DownloadingService downloadingService) : ObservableObject
@@ -70,5 +71,12 @@ internal sealed partial class HomeViewModel(
         ArgumentNullException.ThrowIfNull(process);
 
         await process.WaitForExitAsync();
+    }
+
+    [RelayCommand]
+    private async Task SignOutAsync()
+    {
+        await authenticationService.SignOutAsync();
+        WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Authentication));
     }
 }
