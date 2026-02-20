@@ -42,6 +42,7 @@ internal static class Bootstrapper
 
         services.AddSingleton<ViewLocator>();
 
+        services.AddSingleton<AccountService>();
         services.AddSingleton<AuthenticationService>();
 
         services

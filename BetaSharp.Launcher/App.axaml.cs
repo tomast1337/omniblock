@@ -35,6 +35,7 @@ internal sealed partial class App : Application
 }
 
 [JsonSourceGenerationOptions]
+[JsonSerializable(typeof(AccountService.Account))]
 [JsonSerializable(typeof(XboxService.XboxUserRequest))]
 [JsonSerializable(typeof(XboxService.XboxUserRequest.UserProperties))]
 [JsonSerializable(typeof(XboxService.XboxUserResponse))]

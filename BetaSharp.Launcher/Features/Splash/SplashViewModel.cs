@@ -18,6 +18,8 @@ internal sealed partial class SplashViewModel(AuthenticationService authenticati
 
         await authenticationService.InitializeAsync();
 
-        WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Home));
+        bool has = await authenticationService.HasAccountsAsync();
+
+        WeakReferenceMessenger.Default.Send(new NavigationMessage(has ? Destination.Home : Destination.Authentication));
     }
 }

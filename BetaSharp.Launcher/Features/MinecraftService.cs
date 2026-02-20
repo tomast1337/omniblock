@@ -1,9 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Media.Imaging;
 
 namespace BetaSharp.Launcher.Features;
 
@@ -19,6 +22,9 @@ internal sealed class MinecraftService(HttpClient client)
     {
         [JsonPropertyName("access_token")]
         public required string AccessToken { get; init; }
+
+        [JsonPropertyName("expires_in")]
+        public required int ExpiresIn { get; init; }
     }
 
     public sealed class MinecraftProfileResponse
@@ -39,7 +45,7 @@ internal sealed class MinecraftService(HttpClient client)
         public required Skin[] Skins { get; init; }
     }
 
-    public async Task<string> GetTokenAsync(string token, string hash)
+    public async Task<(string Token, DateTimeOffset Expiration)> GetTokenAsync(string token, string hash)
     {
         var response = await client.PostAsync<MinecraftTokenRequest, MinecraftTokenResponse>(
             "https://api.minecraftservices.com/authentication/login_with_xbox",
@@ -49,7 +55,7 @@ internal sealed class MinecraftService(HttpClient client)
 
         ArgumentNullException.ThrowIfNull(response);
 
-        return response.AccessToken;
+        return (response.AccessToken, DateTimeOffset.Now.AddSeconds(response.ExpiresIn));
     }
 
     public async Task<(string Name, string? Skin)> GetProfileAsync(string token)
@@ -63,5 +69,18 @@ internal sealed class MinecraftService(HttpClient client)
         ArgumentNullException.ThrowIfNull(response);
 
         return (response.Name, response.Skins.FirstOrDefault(skin => skin.State.Equals("active", StringComparison.InvariantCultureIgnoreCase))?.Url);
+    }
+
+    public async Task<CroppedBitmap> GetFaceAsync(string skin)
+    {
+        await using var stream = await client.GetStreamAsync(skin);
+
+        var memory = new MemoryStream();
+
+        await stream.CopyToAsync(memory);
+
+        memory.Position = 0;
+
+        return new CroppedBitmap(new Bitmap(memory), new PixelRect(8, 8, 8, 8));
     }
 }

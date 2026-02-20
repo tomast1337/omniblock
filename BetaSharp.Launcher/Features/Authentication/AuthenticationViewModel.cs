@@ -6,13 +6,26 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace BetaSharp.Launcher.Features.Authentication;
 
-// Does it need a better name?
-internal sealed partial class AuthenticationViewModel(AuthenticationService authenticationService) : ObservableObject
+// Does this need a better name?
+internal sealed partial class AuthenticationViewModel(
+    AccountService accountService,
+    AuthenticationService authenticationService,
+    XboxService xboxService,
+    MinecraftService minecraftService) : ObservableObject
 {
     [RelayCommand]
     private async Task AuthenticateAsync()
     {
-        await authenticationService.AuthenticateAsync();
+        string microsoft = await authenticationService.AuthenticateAsync();
+
+        var xbox = await xboxService.GetAsync(microsoft);
+
+        var minecraft = await minecraftService.GetTokenAsync(xbox.Token, xbox.Hash);
+
+        var profile = await minecraftService.GetProfileAsync(minecraft.Token);
+
+        await accountService.UpdateAsync(profile.Name, profile.Skin, minecraft.Token, minecraft.Expiration);
+
         WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Home));
     }
 }

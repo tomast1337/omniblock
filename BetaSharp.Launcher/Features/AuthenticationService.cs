@@ -94,6 +94,12 @@ internal sealed class AuthenticationService
         return null;
     }
 
+    public async Task<bool> HasAccountsAsync()
+    {
+        var accounts = await _application.GetAccountsAsync();
+        return accounts.Any();
+    }
+
     public async Task SignOutAsync()
     {
         _logger.LogWarning("Signing out Microsoft accounts");

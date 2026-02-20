@@ -18,7 +18,7 @@ internal sealed partial class ShellViewModel : ObservableObject
     {
         Current = splashViewModel;
 
-        WeakReferenceMessenger.Default.Register<NavigationMessage>(this, (_, message) => Current = message.Destination switch
+        WeakReferenceMessenger.Default.Register<ShellViewModel, NavigationMessage>(this, (instance, message) => instance.Current = message.Destination switch
         {
             Destination.Splash => splashViewModel,
             Destination.Authentication => authenticationViewModel,
