@@ -64,8 +64,8 @@ public partial class Minecraft
     public GameRenderer gameRenderer;
     private int ticksRan;
     private int leftClickCounter;
-    private readonly int tempDisplayWidth;
-    private readonly int tempDisplayHeight;
+    private int tempDisplayWidth;
+    private int tempDisplayHeight;
     public GuiAchievement guiAchievement;
     public GuiIngame ingameGUI;
     public bool skipRenderWorld;
@@ -947,7 +947,11 @@ public partial class Minecraft
             fullscreen = !fullscreen;
             if (fullscreen)
             {
+                tempDisplayWidth = displayWidth;
+                tempDisplayHeight = displayHeight;
+
                 Display.setDisplayMode(Display.getDesktopDisplayMode());
+                Display.setFullscreen(true);
                 displayWidth = Display.getDisplayMode().getWidth();
                 displayHeight = Display.getDisplayMode().getHeight();
                 if (displayWidth <= 0)
@@ -962,8 +966,20 @@ public partial class Minecraft
             }
             else
             {
-                displayWidth = tempDisplayWidth;
-                displayHeight = tempDisplayHeight;
+                Display.setFullscreen(false);
+                if (tempDisplayWidth > 0 && tempDisplayHeight > 0)
+                {
+                    Display.setDisplayMode(new DisplayMode(tempDisplayWidth, tempDisplayHeight));
+                    displayWidth = tempDisplayWidth;
+                    displayHeight = tempDisplayHeight;
+                }
+                else
+                {
+                    Display.setDisplayMode(new DisplayMode(854, 480));
+                    displayWidth = 854;
+                    displayHeight = 480;
+                }
+
                 if (displayWidth <= 0)
                 {
                     displayWidth = 1;
@@ -973,6 +989,12 @@ public partial class Minecraft
                 {
                     displayHeight = 1;
                 }
+
+                // Center the window
+                var desktopMode = Display.getDesktopDisplayMode();
+                int centerX = (desktopMode.getWidth() - displayWidth) / 2;
+                int centerY = (desktopMode.getHeight() - displayHeight) / 2;
+                Display.setLocation(centerX, centerY);
             }
 
             if (currentScreen != null)
@@ -980,7 +1002,6 @@ public partial class Minecraft
                 resize(displayWidth, displayHeight);
             }
 
-            Display.setFullscreen(fullscreen);
             Display.update();
         }
         catch (System.Exception displayException)
