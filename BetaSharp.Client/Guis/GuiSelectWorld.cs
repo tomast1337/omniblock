@@ -61,7 +61,7 @@ public class GuiSelectWorld : GuiScreen
     protected string getSaveName(int worldIndex)
     {
         string worldName = ((WorldSaveInfo)saveList.get(worldIndex)).getDisplayName();
-        if (worldName == null || MathHelper.stringNullOrLengthZero(worldName))
+        if (worldName == null || string.IsNullOrEmpty(worldName))
         {
             TranslationStorage translations = TranslationStorage.getInstance();
             worldName = translations.translateKey("selectWorld.world") + " " + (worldIndex + 1);
@@ -121,7 +121,7 @@ public class GuiSelectWorld : GuiScreen
                     mc.displayGuiScreen(parentScreen);
                     break;
                 default:
-                    worldSlotContainer.actionPerformed(button);
+                    worldSlotContainer.ActionPerformed(button);
                     break;
             }
         }
@@ -165,7 +165,7 @@ public class GuiSelectWorld : GuiScreen
 
     public override void Render(int mouseX, int mouseY, float partialTicks)
     {
-        worldSlotContainer.drawScreen(mouseX, mouseY, partialTicks);
+        worldSlotContainer.DrawScreen(mouseX, mouseY, partialTicks);
         DrawCenteredString(FontRenderer, screenTitle, Width / 2, 20, 0xFFFFFF);
         base.Render(mouseX, mouseY, partialTicks);
     }

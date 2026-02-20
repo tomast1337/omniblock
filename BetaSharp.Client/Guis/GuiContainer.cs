@@ -85,18 +85,21 @@ public abstract class GuiContainer : GuiScreen
             {
                 int tipX = mouseX - guiLeft + 12;
                 int tipY = mouseY - guiTop - 12;
-                int textWidth = FontRenderer.getStringWidth(itemName);
+                int textWidth = FontRenderer.GetStringWidth(itemName);
 
                 DrawGradientRect(tipX - 3, tipY - 3, tipX + textWidth + 3, tipY + 8 + 3, 0xC0000000, 0xC0000000);
-                FontRenderer.drawStringWithShadow(itemName, tipX, tipY, 0xFFFFFFFF);
+                FontRenderer.DrawStringWithShadow(itemName, tipX, tipY, 0xFFFFFFFF);
             }
         }
 
-        // Render the dragged cursor item last so it appears on top of foreground text
         if (playerInv.getCursorStack() != null)
         {
             GLManager.GL.Enable(GLEnum.RescaleNormal);
+            GLManager.GL.PushMatrix();
+            GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
+            GLManager.GL.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
             Lighting.turnOn();
+            GLManager.GL.PopMatrix();
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.GL.Enable(GLEnum.DepthTest);
 
@@ -132,7 +135,7 @@ public abstract class GuiContainer : GuiScreen
             if (iconIdx >= 0)
             {
                 GLManager.GL.Disable(GLEnum.Lighting);
-                mc.textureManager.bindTexture(mc.textureManager.getTextureId("/gui/items.png"));
+                mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/items.png"));
                 DrawTexturedModalRect(x, y, iconIdx % 16 * 16, iconIdx / 16 * 16, 16, 16);
                 GLManager.GL.Enable(GLEnum.Lighting);
                 return;

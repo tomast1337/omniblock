@@ -23,8 +23,8 @@ public abstract class GuiSlotStats : GuiSlot
         field_27268_b = -1;
         field_27271_e = -1;
         field_27270_f = 0;
-        func_27258_a(false);
-        func_27259_a(true, 20);
+        SetShowSelectionHighlight(false);
+        SetHeader(true, 20);
     }
 
     protected override void ElementClicked(int var1, bool var2)
@@ -36,12 +36,12 @@ public abstract class GuiSlotStats : GuiSlot
         return false;
     }
 
-    protected override void drawBackground()
+    protected override void DrawBackground()
     {
         _gui.DrawDefaultBackground();
     }
 
-    protected override void func_27260_a(int var1, int var2, Tessellator var3)
+    protected override void DrawHeader(int var1, int var2, Tessellator var3)
     {
         if (!Mouse.isButtonDown(0))
         {
@@ -146,16 +146,16 @@ public abstract class GuiSlotStats : GuiSlot
             text = "-";
         }
 
-        _gui.FontRenderer.drawStringWithShadow(text,
-            x - _gui.FontRenderer.getStringWidth(text), y + 5,
+        _gui.FontRenderer.DrawStringWithShadow(text,
+            x - _gui.FontRenderer.GetStringWidth(text), y + 5,
             useBrightColor ? 0xFFFFFFu : 0x909090u);
     }
 
-    protected override void func_27257_b(int var1, int var2)
+    protected override void PostDrawScreen(int var1, int var2)
     {
-        if (var2 >= top && var2 <= bottom)
+        if (var2 >= _top && var2 <= _bottom)
         {
-            int var3 = func_27256_c(var1, var2);
+            int var3 = GetSlotAt(var1, var2);
             int var4 = _gui.Width / 2 - 92 - 16;
             if (var3 >= 0)
             {
@@ -193,9 +193,9 @@ public abstract class GuiSlotStats : GuiSlot
                 {
                     int var6 = var1 + 12;
                     int var7 = var2 - 12;
-                    int var8 = _gui.FontRenderer.getStringWidth(var5);
+                    int var8 = _gui.FontRenderer.GetStringWidth(var5);
                     _gui.drawTranslucentRect(var6 - 3, var7 - 3, var6 + var8 + 3, var7 + 8 + 3);
-                    _gui.FontRenderer.drawStringWithShadow(var5, var6, var7, 0xFFFFFFFF);
+                    _gui.FontRenderer.DrawStringWithShadow(var5, var6, var7, 0xFFFFFFFF);
                 }
             }
 
@@ -212,9 +212,9 @@ public abstract class GuiSlotStats : GuiSlot
             {
                 int var6 = var2 + 12;
                 int var7 = var3 - 12;
-                int var8 = _gui.FontRenderer.getStringWidth(var5);
+                int var8 = _gui.FontRenderer.GetStringWidth(var5);
                 _gui.drawTranslucentRect(var6 - 3, var7 - 3, var6 + var8 + 3, var7 + 8 + 3);
-                _gui.FontRenderer.drawStringWithShadow(var5, var6, var7, 0xFFFFFFFF);
+                _gui.FontRenderer.DrawStringWithShadow(var5, var6, var7, 0xFFFFFFFF);
             }
 
         }

@@ -2,6 +2,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Rules;
 using BetaSharp.Stats;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
@@ -367,7 +368,7 @@ public class Block : java.lang.Object
 
     public virtual void dropStacks(World world, int x, int y, int z, int meta, float luck)
     {
-        if (!world.isRemote)
+        if (!world.isRemote && world.Rules.GetBool(DefaultRules.DoTileDrops))
         {
             int dropCount = getDroppedItemCount(world.random);
 
@@ -388,7 +389,7 @@ public class Block : java.lang.Object
 
     protected void dropStack(World world, int x, int y, int z, ItemStack itemStack)
     {
-        if (!world.isRemote)
+        if (!world.isRemote && world.Rules.GetBool(DefaultRules.DoTileDrops))
         {
             float spreadFactor = 0.7F;
             double offsetX = (double)(world.random.NextFloat() * spreadFactor) + (double)(1.0F - spreadFactor) * 0.5D;

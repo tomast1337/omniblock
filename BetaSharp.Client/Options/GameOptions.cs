@@ -1,4 +1,4 @@
-﻿using BetaSharp.Client.Input;
+using BetaSharp.Client.Input;
 using java.io;
 using Microsoft.Extensions.Logging;
 
@@ -58,7 +58,7 @@ public class GameOptions : java.lang.Object
     private readonly java.io.File optionsFile;
     public int difficulty = 2;
     public bool hideGUI = false;
-    public bool thirdPersonView = false;
+    public EnumCameraMode cameraMode = EnumCameraMode.FirstPerson;
     public bool showDebugInfo = false;
     public string lastServer = "";
     public bool invertScrolling = false;
@@ -176,7 +176,7 @@ public class GameOptions : java.lang.Object
             }
             if (Minecraft.INSTANCE?.textureManager != null)
             {
-                Minecraft.INSTANCE.textureManager.reload();
+                Minecraft.INSTANCE.textureManager.Reload();
             }
         }
         else if (option == EnumOptions.MIPMAPS)
@@ -184,7 +184,7 @@ public class GameOptions : java.lang.Object
             useMipmaps = !useMipmaps;
             if (Minecraft.INSTANCE?.textureManager != null)
             {
-                Minecraft.INSTANCE.textureManager.reload();
+                Minecraft.INSTANCE.textureManager.Reload();
             }
         }
         else if (option == EnumOptions.MSAA)
@@ -400,6 +400,12 @@ public class GameOptions : java.lang.Object
             case "envAnimation":
                 environmentAnimation = parts[1].Equals("true");
                 break;
+            case "cameraMode":
+                cameraMode = (EnumCameraMode)int.Parse(parts[1]);
+                break;
+            case "thirdPersonView": // backward compatibility
+                cameraMode = parts[1].Equals("true") ? EnumCameraMode.ThirdPerson : EnumCameraMode.FirstPerson;
+                break;
         }
 
         // Load keybindings
@@ -444,6 +450,7 @@ public class GameOptions : java.lang.Object
             writer.WriteLine("useMipmaps:" + useMipmaps);
             writer.WriteLine("debugMode:" + debugMode);
             writer.WriteLine("envAnimation:" + environmentAnimation);
+            writer.WriteLine("cameraMode:" + (int)cameraMode);
 
             for (int i = 0; i < keyBindings.Length; ++i)
             {

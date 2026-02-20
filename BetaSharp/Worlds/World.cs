@@ -5,6 +5,7 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Profiling;
+using BetaSharp.Rules;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Biomes;
@@ -69,6 +70,7 @@ public abstract class World : java.lang.Object, BlockView
     private int soundCounter;
     private readonly List<Entity> tempEntityList;
     public bool isRemote;
+    public RuleSet Rules { get; protected set; }
 
     public BiomeSource getBiomeSource()
     {
@@ -119,6 +121,9 @@ public abstract class World : java.lang.Object, BlockView
         persistentStateManager = new PersistentStateManager(var1);
         var3.setWorld(this);
         chunkSource = CreateChunkCache();
+        Rules = properties.RulesTag != null
+            ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
+            : new RuleSet(RuleRegistry.Instance);
         updateSkyBrightness();
         prepareWeather();
     }
@@ -162,6 +167,9 @@ public abstract class World : java.lang.Object, BlockView
         dimension = var2;
         var2.setWorld(this);
         chunkSource = CreateChunkCache();
+        Rules = properties.RulesTag != null
+            ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
+            : new RuleSet(RuleRegistry.Instance);
         updateSkyBrightness();
         prepareWeather();
     }
@@ -232,6 +240,10 @@ public abstract class World : java.lang.Object, BlockView
 
         dimension.setWorld(this);
         chunkSource = CreateChunkCache();
+        Rules = properties.RulesTag != null
+            ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
+            : new RuleSet(RuleRegistry.Instance);
+
         if (var6)
         {
             initializeSpawnPoint();
@@ -341,6 +353,10 @@ public abstract class World : java.lang.Object, BlockView
         //checkSessionLock();
         Profiler.Stop("checkSessionLock");
         Profiler.Start("saveWorldInfoAndPlayer");
+
+        properties.RulesTag = new NBTTagCompound();
+        Rules.WriteToNBT(properties.RulesTag);
+
         storage.save(properties, players.Cast<EntityPlayer>().ToList());
         Profiler.Stop("saveWorldInfoAndPlayer");
 

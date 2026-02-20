@@ -40,21 +40,21 @@ public class GuiWorldSlot : GuiSlot
         return slotIndex == GuiSelectWorld.getSelectedWorld(_parentWorldGui);
     }
 
-    protected override int getContentHeight()
+    protected override int GetContentHeight()
     {
         return GuiSelectWorld.GetSize(_parentWorldGui).size() * 36;
     }
 
-    protected override void drawBackground()
+    protected override void DrawBackground()
     {
         _parentWorldGui.DrawDefaultBackground();
     }
 
-    protected override void drawSlot(int slotIndex, int x, int y, int slotHeight, Tessellator tessellator)
+    protected override void DrawSlot(int slotIndex, int x, int y, int slotHeight, Tessellator tessellator)
     {
         WorldSaveInfo worldInfo = (WorldSaveInfo)GuiSelectWorld.GetSize(_parentWorldGui).get(slotIndex);
         string displayName = worldInfo.getDisplayName();
-        if (displayName == null || MathHelper.stringNullOrLengthZero(displayName))
+        if (displayName == null || string.IsNullOrEmpty(displayName))
         {
             displayName = GuiSelectWorld.getWorldNameHeader(_parentWorldGui) + " " + (slotIndex + 1);
         }
