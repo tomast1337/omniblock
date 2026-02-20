@@ -69,11 +69,15 @@ internal sealed class XboxService(HttpClient client)
     {
         var userResponse = await client.PostAsync<XboxUserRequest, XboxUserResponse>(
             "https://user.auth.xboxlive.com/user/authenticate",
-            new XboxUserRequest { Properties = new XboxUserRequest.UserProperties { RpsTicket = $"d={microsoft}" } });
+            new XboxUserRequest { Properties = new XboxUserRequest.UserProperties { RpsTicket = $"d={microsoft}" } },
+            SourceGenerationContext.Default.XboxUserRequest,
+            SourceGenerationContext.Default.XboxUserResponse);
 
         var tokenResponse = await client.PostAsync<XboxTokenRequest, XboxTokenResponse>(
             "https://xsts.auth.xboxlive.com/xsts/authorize",
-            new XboxTokenRequest { Properties = new XboxTokenRequest.TokenProperties { UserTokens = [userResponse.Token] } });
+            new XboxTokenRequest { Properties = new XboxTokenRequest.TokenProperties { UserTokens = [userResponse.Token] } },
+            SourceGenerationContext.Default.XboxTokenRequest,
+            SourceGenerationContext.Default.XboxTokenResponse);
 
         ArgumentNullException.ThrowIfNull(tokenResponse);
 

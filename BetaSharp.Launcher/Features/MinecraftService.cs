@@ -43,7 +43,9 @@ internal sealed class MinecraftService(HttpClient client)
     {
         var response = await client.PostAsync<MinecraftTokenRequest, MinecraftTokenResponse>(
             "https://api.minecraftservices.com/authentication/login_with_xbox",
-            new MinecraftTokenRequest { IdentityToken = $"XBL3.0 x={hash};{token}" });
+            new MinecraftTokenRequest { IdentityToken = $"XBL3.0 x={hash};{token}" },
+            SourceGenerationContext.Default.MinecraftTokenRequest,
+            SourceGenerationContext.Default.MinecraftTokenResponse);
 
         ArgumentNullException.ThrowIfNull(response);
 
@@ -56,7 +58,7 @@ internal sealed class MinecraftService(HttpClient client)
 
         var response = await client.GetFromJsonAsync<MinecraftProfileResponse>(
             "https://api.minecraftservices.com/minecraft/profile",
-            SourceGenerationContext.Default.Options);
+            SourceGenerationContext.Default.MinecraftProfileResponse);
 
         ArgumentNullException.ThrowIfNull(response);
 
