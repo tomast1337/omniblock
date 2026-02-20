@@ -1125,7 +1125,7 @@ public partial class Minecraft
                 if (joinPlayerCounter == 30)
                 {
                     joinPlayerCounter = 0;
-                    world.loadChunksNearEntity(player);
+                    world.LoadChunksNearEntity(player);
                 }
             }
 
