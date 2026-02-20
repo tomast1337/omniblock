@@ -31,6 +31,8 @@ internal sealed partial class HomeViewModel(
     [RelayCommand]
     private async Task InitializeAsync()
     {
+        IsReady = false;
+
         await Task.Yield();
 
         var account = await accountService.GetAsync();
@@ -41,8 +43,6 @@ internal sealed partial class HomeViewModel(
             return;
         }
 
-        IsReady = true;
-
         Name = account.Name;
 
         ArgumentException.ThrowIfNullOrWhiteSpace(account.Skin);
@@ -51,6 +51,8 @@ internal sealed partial class HomeViewModel(
 
         _token = account.Token;
         _expiration = account.Expiration;
+
+        IsReady = true;
     }
 
     [RelayCommand]
