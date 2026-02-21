@@ -117,9 +117,10 @@ public static class EntityRegistry
         return typeToRawId[entity.GetType()];
     }
 
-    public static string GetId(Entity entity)
+    public static string? GetId(Entity entity)
     {
-        return typeToId[entity.GetType()];
+        typeToId.TryGetValue(entity.GetType(), out string? id);
+        return id;
     }
 
     static EntityRegistry()
