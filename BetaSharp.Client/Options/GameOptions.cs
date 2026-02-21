@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using BetaSharp.Client.Input;
 using java.io;
 using Microsoft.Extensions.Logging;
+using File = System.IO.File;
+using FileNotFoundException = System.IO.FileNotFoundException;
 
 namespace BetaSharp.Client.Options;
 
@@ -283,7 +285,7 @@ public class GameOptions
         else
         {
             return value == 0.0F
-                ? label + translations.TranslateKey("options.off") 
+                ? label + translations.TranslateKey("options.off")
                 : label + $"{(int)(value * 100.0F)}%";
         }
     }
@@ -306,7 +308,7 @@ public class GameOptions
 
     private string FormatEnumValue(EnumOptions option, string label, TranslationStorage translations)
     {
-        if (option == EnumOptions.RENDER_DISTANCE) return label + translations.TranslateKey(RenderDistance[renderDistance]);
+        if (option == EnumOptions.RENDER_DISTANCE) return label + translations.TranslateKey(RENDER_DISTANCES[renderDistance]);
         if (option == EnumOptions.DIFFICULTY) return label + translations.TranslateKey(Difficulties[Difficulty]);
         if (option == EnumOptions.GUI_SCALE) return label + translations.TranslateKey(GuiScales[GuiScale]);
         if (option == EnumOptions.ANISOTROPIC) return label + (AnisotropicLevel == 0 ? translations.TranslateKey("options.off") : AnisoLeves[AnisotropicLevel]);

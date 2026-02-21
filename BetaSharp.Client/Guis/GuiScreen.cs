@@ -47,20 +47,14 @@ public class GuiScreen : Gui
 
     public static string GetClipboardString()
     {
-        try
+        unsafe
         {
-            unsafe
+            if (Display.isCreated())
             {
-                if (Display.isCreated())
-                {
-                    return Display.getGlfw().GetClipboardString(Display.getWindowHandle());
-                }
+                return Display.getGlfw().GetClipboardString(Display.getWindowHandle());
             }
         }
-        catch (Exception)
-        {
-            Log.Error($"Failed to get clipboard string");
-        }
+
         return "";
     }
 

@@ -37,6 +37,7 @@ using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
 using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
+using Exception = System.Exception;
 
 namespace BetaSharp.Client;
 
@@ -139,7 +140,7 @@ public partial class Minecraft
     public void onMinecraftCrash(Exception crashInfo)
     {
         hasCrashed = true;
-        Log.Fatal(crashInfo, "The game has crashed!");
+        _logger.LogError(crashInfo, "The game has crashed!");
     }
 
     public void setServer(string name, int port)
@@ -642,12 +643,7 @@ public partial class Minecraft
         catch (Exception unexpectedException)
         {
             crashCleanup();
-            unexpectedException.printStackTrace();
-            onMinecraftCrash(new UnexpectedThrowable("Unexpected error", unexpectedException));
-        }
-        catch (System.Exception e)
-        {
-            _logger.LogError(e.ToString());
+            onMinecraftCrash(unexpectedException);
         }
         finally
         {

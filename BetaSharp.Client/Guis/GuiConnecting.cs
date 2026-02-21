@@ -17,7 +17,7 @@ public class GuiConnecting : GuiScreen
     public GuiConnecting(Minecraft mc, string host, int port)
     {
         _logger.LogInformation($"Connecting to {host}, {port}");
-        mc.changeWorld1(null);
+        mc.changeWorld(null);
         new ThreadConnectToServer(this, mc, host, port).start();
     }
 
