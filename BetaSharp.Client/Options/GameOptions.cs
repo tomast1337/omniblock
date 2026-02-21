@@ -43,6 +43,8 @@ public class GameOptions
     public float MusicVolume = 1.0F;
     public float SoundVolume = 1.0F;
     public float MouseSensitivity = 0.5F;
+    public float Brightness = 0.5F;
+    public bool VSync = false;
     public bool InvertMouse;
     public int renderDistance;
     public bool ViewBobbing = true;
@@ -169,6 +171,11 @@ public class GameOptions
         {
             ViewBobbing = !ViewBobbing;
         }
+        else if (option == EnumOptions.VSYNC)
+        {
+            VSync = !VSync;
+            Display.getGlfw().SwapInterval(VSync ? 1 : 0);
+        }
         else if (option == EnumOptions.DIFFICULTY)
         {
             Difficulty = Difficulty + increment & 3;
@@ -231,6 +238,7 @@ public class GameOptions
             3 => UseMipmaps,
             4 => DebugMode,
             5 => EnvironmentAnimation,
+            6 => VSync,
             _ => false
         };
     }
@@ -262,6 +270,8 @@ public class GameOptions
     private string GetOptionLabel(EnumOptions option, TranslationStorage translations)
     {
         if (option == EnumOptions.FRAMERATE_LIMIT) return "Max FPS";
+        if (option == EnumOptions.BRIGHTNESS) return "Brightness";
+        if (option == EnumOptions.VSYNC) return "VSync";
         if (option == EnumOptions.FOV) return "FOV";
         return translations.TranslateKey(option.getEnumString());
     }
@@ -359,6 +369,7 @@ public class GameOptions
             case "guiScale": GuiScale = int.Parse(value); break;
             case "bobView": ViewBobbing = value == "true"; break;
             case "fpsLimit": LimitFramerate = ParseFloat(value); break;
+            case "vsync": VSync = bool.Parse(value); break;
             case "fov": Fov = ParseFloat(value); break;
             case "difficulty": Difficulty = int.Parse(value); break;
             case "skin": Skin = value; break;
@@ -417,6 +428,7 @@ public class GameOptions
             writer.WriteLine($"guiScale:{GuiScale}");
             writer.WriteLine($"bobView:{ViewBobbing.ToString().ToLower()}");
             writer.WriteLine($"fpsLimit:{LimitFramerate}");
+            writer.WriteLine($"vsync:{VSync}");
             writer.WriteLine($"fov:{Fov}");
             writer.WriteLine($"difficulty:{Difficulty}");
             writer.WriteLine($"skin:{Skin}");
