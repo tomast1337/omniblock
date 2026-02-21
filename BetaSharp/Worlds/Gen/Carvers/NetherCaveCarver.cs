@@ -6,12 +6,12 @@ namespace BetaSharp.Worlds.Gen.Carvers;
 public class NetherCaveCarver : Carver
 {
 
-    protected void func_4129_a(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z)
+    protected void CarveNetherCavesInChunk(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z)
     {
-        func_4128_a(chunkX, chunkZ, blocks, x, y, z, 1.0F + rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
+        CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, 1.0F + rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
     }
 
-    protected void func_4128_a(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z, float var10, float var11, float var12, int var13, int var14, double var15)
+    protected void CarveNetherCaves(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z, float var10, float var11, float var12, int var13, int var14, double var15)
     {
         double var17 = chunkX * 16 + 8;
         double var19 = chunkZ * 16 + 8;
@@ -35,13 +35,13 @@ public class NetherCaveCarver : Carver
 
         for (bool var26 = var23.NextInt(6) == 0; var13 < var14; ++var13)
         {
-            double var27 = 1.5D + (double)(MathHelper.sin(var13 * (float)Math.PI / var14) * var10 * 1.0F);
+            double var27 = 1.5D + (double)(MathHelper.Sin(var13 * (float)Math.PI / var14) * var10 * 1.0F);
             double var29 = var27 * var15;
-            float var31 = MathHelper.cos(var12);
-            float var32 = MathHelper.sin(var12);
-            x += (double)(MathHelper.cos(var11) * var31);
+            float var31 = MathHelper.Cos(var12);
+            float var32 = MathHelper.Sin(var12);
+            x += (double)(MathHelper.Cos(var11) * var31);
             y += (double)var32;
-            z += (double)(MathHelper.sin(var11) * var31);
+            z += (double)(MathHelper.Sin(var11) * var31);
             if (var26)
             {
                 var12 *= 0.92F;
@@ -59,8 +59,8 @@ public class NetherCaveCarver : Carver
             var21 += (var23.NextFloat() - var23.NextFloat()) * var23.NextFloat() * 4.0F;
             if (!var51 && var13 == var25 && var10 > 1.0F)
             {
-                func_4128_a(chunkX, chunkZ, blocks, x, y, z, var23.NextFloat() * 0.5F + 0.5F, var11 - (float)Math.PI * 0.5F, var12 / 3.0F, var13, var14, 1.0D);
-                func_4128_a(chunkX, chunkZ, blocks, x, y, z, var23.NextFloat() * 0.5F + 0.5F, var11 + (float)Math.PI * 0.5F, var12 / 3.0F, var13, var14, 1.0D);
+                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, var23.NextFloat() * 0.5F + 0.5F, var11 - (float)Math.PI * 0.5F, var12 / 3.0F, var13, var14, 1.0D);
+                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, var23.NextFloat() * 0.5F + 0.5F, var11 + (float)Math.PI * 0.5F, var12 / 3.0F, var13, var14, 1.0D);
                 return;
             }
 
@@ -77,12 +77,12 @@ public class NetherCaveCarver : Carver
 
                 if (x >= var17 - 16.0D - var27 * 2.0D && z >= var19 - 16.0D - var27 * 2.0D && x <= var17 + 16.0D + var27 * 2.0D && z <= var19 + 16.0D + var27 * 2.0D)
                 {
-                    int var52 = MathHelper.floor_double(x - var27) - chunkX * 16 - 1;
-                    int var34 = MathHelper.floor_double(x + var27) - chunkX * 16 + 1;
-                    int var53 = MathHelper.floor_double(y - var29) - 1;
-                    int var36 = MathHelper.floor_double(y + var29) + 1;
-                    int var54 = MathHelper.floor_double(z - var27) - chunkZ * 16 - 1;
-                    int var38 = MathHelper.floor_double(z + var27) - chunkZ * 16 + 1;
+                    int var52 = MathHelper.Floor(x - var27) - chunkX * 16 - 1;
+                    int var34 = MathHelper.Floor(x + var27) - chunkX * 16 + 1;
+                    int var53 = MathHelper.Floor(y - var29) - 1;
+                    int var36 = MathHelper.Floor(y + var29) + 1;
+                    int var54 = MathHelper.Floor(z - var27) - chunkZ * 16 - 1;
+                    int var38 = MathHelper.Floor(z + var27) - chunkZ * 16 + 1;
                     if (var52 < 0)
                     {
                         var52 = 0;
@@ -179,7 +179,7 @@ public class NetherCaveCarver : Carver
 
     }
 
-    protected override void func_868_a(World world, int chunkX, int chunkZ, int centerChunkX, int centerChunkZ, byte[] blocks)
+    protected override void CarveCaves(World world, int chunkX, int chunkZ, int centerChunkX, int centerChunkZ, byte[] blocks)
     {
         int var7 = rand.NextInt(rand.NextInt(rand.NextInt(10) + 1) + 1);
         if (rand.NextInt(5) != 0)
@@ -195,7 +195,7 @@ public class NetherCaveCarver : Carver
             int var15 = 1;
             if (rand.NextInt(4) == 0)
             {
-                func_4129_a(centerChunkX, centerChunkZ, blocks, randX, randY, randZ);
+                CarveNetherCavesInChunk(centerChunkX, centerChunkZ, blocks, randX, randY, randZ);
                 var15 += rand.NextInt(4);
             }
 
@@ -204,7 +204,7 @@ public class NetherCaveCarver : Carver
                 float var17 = rand.NextFloat() * (float)Math.PI * 2.0F;
                 float var18 = (rand.NextFloat() - 0.5F) * 2.0F / 8.0F;
                 float var19 = rand.NextFloat() * 2.0F + rand.NextFloat();
-                func_4128_a(centerChunkX, centerChunkZ, blocks, randX, randY, randZ, var19 * 2.0F, var17, var18, 0, 0, 0.5D);
+                CarveNetherCaves(centerChunkX, centerChunkZ, blocks, randX, randY, randZ, var19 * 2.0F, var17, var18, 0, 0, 0.5D);
             }
         }
 

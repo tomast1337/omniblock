@@ -186,7 +186,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                     continue;
                 }
 
-                if (!world.chunkCache.getChunk(chunkPos.x, chunkPos.z).terrainPopulated)
+                if (!world.chunkCache.GetChunk(chunkPos.x, chunkPos.z).terrainPopulated)
                 {
                     continue;
                 }
@@ -536,8 +536,8 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void sendMessage(string message)
     {
-        TranslationStorage ts = TranslationStorage.getInstance();
-        string translatedMessage = ts.translateKey(message);
+        TranslationStorage ts = TranslationStorage.Instance;
+        string translatedMessage = ts.TranslateKey(message);
         networkHandler.sendPacket(new ChatMessagePacket(translatedMessage));
     }
 
