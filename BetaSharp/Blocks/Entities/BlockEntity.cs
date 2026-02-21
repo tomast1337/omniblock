@@ -39,8 +39,7 @@ public class BlockEntity
 
     public virtual void writeNbt(NBTTagCompound nbt)
     {
-        string entityId = (string)classToId[(GetType())];
-        if (entityId == null)
+        if (!classToId.TryGetValue(GetType(), out string entityId))
         {
             throw new RuntimeException(GetType() + " is missing a mapping! This is a bug!");
         }
@@ -63,10 +62,14 @@ public class BlockEntity
 
         try
         {
-            Type blockEntityClass = (Type)idToClass[(nbt.GetString("id"))];
-            if (blockEntityClass != null)
+            if (idToClass.TryGetValue(nbt.GetString("id"), out Type blockEntityClass))
             {
                 blockEntity = ((BlockEntity)Activator.CreateInstance(blockEntityClass));
+            }
+            else
+            {
+	            Log.Info(nbt.GetString("id") + " is missing a mapping!");
+	            return null;
             }
         }
         catch (Exception exception)
