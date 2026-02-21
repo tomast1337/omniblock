@@ -18,8 +18,8 @@ public class RailLogic
         _worldObj = world;
         _trackPos = pos;
 
-        int blockId = world.getBlockId(pos.x, pos.y, pos.z);
-        int meta = world.getBlockMeta(pos.x, pos.y, pos.z);
+        int blockId = world.getBlockId(pos.X, pos.Y, pos.Z);
+        int meta = world.getBlockMeta(pos.X, pos.Y, pos.Z);
 
         if (Block.Blocks[blockId] is BlockRail rail && rail.isAlwaysStraight())
         {
@@ -36,10 +36,10 @@ public class RailLogic
 
     public void UpdateState(bool powered, bool forceUpdate)
     {
-        bool north = AttemptConnectionAt(new Vec3i(_trackPos.x, _trackPos.y, _trackPos.z - 1));
-        bool south = AttemptConnectionAt(new Vec3i(_trackPos.x, _trackPos.y, _trackPos.z + 1));
-        bool west = AttemptConnectionAt(new Vec3i(_trackPos.x - 1, _trackPos.y, _trackPos.z));
-        bool east = AttemptConnectionAt(new Vec3i(_trackPos.x + 1, _trackPos.y, _trackPos.z));
+        bool north = AttemptConnectionAt(new Vec3i(_trackPos.X, _trackPos.Y, _trackPos.Z - 1));
+        bool south = AttemptConnectionAt(new Vec3i(_trackPos.X, _trackPos.Y, _trackPos.Z + 1));
+        bool west = AttemptConnectionAt(new Vec3i(_trackPos.X - 1, _trackPos.Y, _trackPos.Z));
+        bool east = AttemptConnectionAt(new Vec3i(_trackPos.X + 1, _trackPos.Y, _trackPos.Z));
 
         int meta = -1;
         if ((north || south) && !west && !east) meta = 0;
@@ -79,14 +79,14 @@ public class RailLogic
 
         if (meta == 0)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.x, _trackPos.y + 1, _trackPos.z - 1)) meta = 4;
-            if (BlockRail.isRail(_worldObj, _trackPos.x, _trackPos.y + 1, _trackPos.z + 1)) meta = 5;
+            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z - 1)) meta = 4;
+            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z + 1)) meta = 5;
         }
 
         if (meta == 1)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.x + 1, _trackPos.y + 1, _trackPos.z)) meta = 2;
-            if (BlockRail.isRail(_worldObj, _trackPos.x - 1, _trackPos.y + 1, _trackPos.z)) meta = 3;
+            if (BlockRail.isRail(_worldObj, _trackPos.X + 1, _trackPos.Y + 1, _trackPos.Z)) meta = 2;
+            if (BlockRail.isRail(_worldObj, _trackPos.X - 1, _trackPos.Y + 1, _trackPos.Z)) meta = 3;
         }
 
         if (meta < 0) meta = 0;
@@ -96,12 +96,12 @@ public class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _worldObj.getBlockMeta(_trackPos.x, _trackPos.y, _trackPos.z) & 8 | meta;
+            finalMeta = _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
-        if (forceUpdate || _worldObj.getBlockMeta(_trackPos.x, _trackPos.y, _trackPos.z) != finalMeta)
+        if (forceUpdate || _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
         {
-            _worldObj.setBlockMeta(_trackPos.x, _trackPos.y, _trackPos.z, finalMeta);
+            _worldObj.setBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
 
             foreach (Vec3i pos in _connectedTracks)
             {
@@ -124,9 +124,9 @@ public class RailLogic
     {
         _connectedTracks.Clear();
 
-        int trackX = _trackPos.x;
-        int trackY = _trackPos.y;
-        int trackZ = _trackPos.z;
+        int trackX = _trackPos.X;
+        int trackY = _trackPos.Y;
+        int trackZ = _trackPos.Z;
 
         _connectedTracks.AddRange(meta switch
         {
@@ -153,7 +153,7 @@ public class RailLogic
 
             if (logic != null && logic.IsConnectedTo(this))
             {
-                _connectedTracks[i] = new Vec3i(logic._trackPos.x, logic._trackPos.y, logic._trackPos.z);
+                _connectedTracks[i] = new Vec3i(logic._trackPos.X, logic._trackPos.Y, logic._trackPos.Z);
             }
             else
             {
@@ -164,21 +164,21 @@ public class RailLogic
 
     private bool IsMinecartTrack(Vec3i pos)
     {
-        return BlockRail.isRail(_worldObj, pos.x, pos.y, pos.z) ||
-               BlockRail.isRail(_worldObj, pos.x, pos.y + 1, pos.z) ||
-               BlockRail.isRail(_worldObj, pos.x, pos.y - 1, pos.z);
+        return BlockRail.isRail(_worldObj, pos.X, pos.Y, pos.Z) ||
+               BlockRail.isRail(_worldObj, pos.X, pos.Y + 1, pos.Z) ||
+               BlockRail.isRail(_worldObj, pos.X, pos.Y - 1, pos.Z);
     }
 
     private RailLogic? GetMinecartTrackLogic(Vec3i pos)
     {
-        if (BlockRail.isRail(_worldObj, pos.x, pos.y, pos.z))
+        if (BlockRail.isRail(_worldObj, pos.X, pos.Y, pos.Z))
             return new RailLogic(_rail, _worldObj, pos);
 
-        if (BlockRail.isRail(_worldObj, pos.x, pos.y + 1, pos.z))
-            return new RailLogic(_rail, _worldObj, new Vec3i(pos.x, pos.y + 1, pos.z));
+        if (BlockRail.isRail(_worldObj, pos.X, pos.Y + 1, pos.Z))
+            return new RailLogic(_rail, _worldObj, new Vec3i(pos.X, pos.Y + 1, pos.Z));
 
-        if (BlockRail.isRail(_worldObj, pos.x, pos.y - 1, pos.z))
-            return new RailLogic(_rail, _worldObj, new Vec3i(pos.x, pos.y - 1, pos.z));
+        if (BlockRail.isRail(_worldObj, pos.X, pos.Y - 1, pos.Z))
+            return new RailLogic(_rail, _worldObj, new Vec3i(pos.X, pos.Y - 1, pos.Z));
 
         return null;
     }
@@ -187,7 +187,7 @@ public class RailLogic
     {
         foreach (Vec3i pos in _connectedTracks)
         {
-            if (pos.x == targetLogic._trackPos.x && pos.z == targetLogic._trackPos.z) return true;
+            if (pos.X == targetLogic._trackPos.X && pos.Z == targetLogic._trackPos.Z) return true;
         }
         return false;
     }
@@ -196,7 +196,7 @@ public class RailLogic
     {
         foreach (Vec3i connectedPos in _connectedTracks)
         {
-            if (connectedPos.x == pos.x && connectedPos.z == pos.z) return true;
+            if (connectedPos.X == pos.X && connectedPos.Z == pos.Z) return true;
         }
         return false;
     }
@@ -204,10 +204,10 @@ public class RailLogic
     private int GetAdjacentTracks()
     {
         int count = 0;
-        if (IsMinecartTrack(new Vec3i(_trackPos.x, _trackPos.y, _trackPos.z - 1))) ++count;
-        if (IsMinecartTrack(new Vec3i(_trackPos.x, _trackPos.y, _trackPos.z + 1))) ++count;
-        if (IsMinecartTrack(new Vec3i(_trackPos.x - 1, _trackPos.y, _trackPos.z))) ++count;
-        if (IsMinecartTrack(new Vec3i(_trackPos.x + 1, _trackPos.y, _trackPos.z))) ++count;
+        if (IsMinecartTrack(new Vec3i(_trackPos.X, _trackPos.Y, _trackPos.Z - 1))) ++count;
+        if (IsMinecartTrack(new Vec3i(_trackPos.X, _trackPos.Y, _trackPos.Z + 1))) ++count;
+        if (IsMinecartTrack(new Vec3i(_trackPos.X - 1, _trackPos.Y, _trackPos.Z))) ++count;
+        if (IsMinecartTrack(new Vec3i(_trackPos.X + 1, _trackPos.Y, _trackPos.Z))) ++count;
         return count;
     }
 
@@ -226,12 +226,12 @@ public class RailLogic
 
     private void ConnectTo(RailLogic targetLogic)
     {
-        _connectedTracks.Add(new Vec3i(targetLogic._trackPos.x, targetLogic._trackPos.y, targetLogic._trackPos.z));
+        _connectedTracks.Add(new Vec3i(targetLogic._trackPos.X, targetLogic._trackPos.Y, targetLogic._trackPos.Z));
 
-        bool north = IsInTrack(new Vec3i(_trackPos.x, _trackPos.y, _trackPos.z - 1));
-        bool south = IsInTrack(new Vec3i(_trackPos.x, _trackPos.y, _trackPos.z + 1));
-        bool west = IsInTrack(new Vec3i(_trackPos.x - 1, _trackPos.y, _trackPos.z));
-        bool east = IsInTrack(new Vec3i(_trackPos.x + 1, _trackPos.y, _trackPos.z));
+        bool north = IsInTrack(new Vec3i(_trackPos.X, _trackPos.Y, _trackPos.Z - 1));
+        bool south = IsInTrack(new Vec3i(_trackPos.X, _trackPos.Y, _trackPos.Z + 1));
+        bool west = IsInTrack(new Vec3i(_trackPos.X - 1, _trackPos.Y, _trackPos.Z));
+        bool east = IsInTrack(new Vec3i(_trackPos.X + 1, _trackPos.Y, _trackPos.Z));
 
         int meta = -1;
         if (north || south) meta = 0;
@@ -247,14 +247,14 @@ public class RailLogic
 
         if (meta == 0)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.x, _trackPos.y + 1, _trackPos.z - 1)) meta = 4;
-            if (BlockRail.isRail(_worldObj, _trackPos.x, _trackPos.y + 1, _trackPos.z + 1)) meta = 5;
+            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z - 1)) meta = 4;
+            if (BlockRail.isRail(_worldObj, _trackPos.X, _trackPos.Y + 1, _trackPos.Z + 1)) meta = 5;
         }
 
         if (meta == 1)
         {
-            if (BlockRail.isRail(_worldObj, _trackPos.x + 1, _trackPos.y + 1, _trackPos.z)) meta = 2;
-            if (BlockRail.isRail(_worldObj, _trackPos.x - 1, _trackPos.y + 1, _trackPos.z)) meta = 3;
+            if (BlockRail.isRail(_worldObj, _trackPos.X + 1, _trackPos.Y + 1, _trackPos.Z)) meta = 2;
+            if (BlockRail.isRail(_worldObj, _trackPos.X - 1, _trackPos.Y + 1, _trackPos.Z)) meta = 3;
         }
 
         if (meta < 0) meta = 0;
@@ -262,10 +262,10 @@ public class RailLogic
         int finalMeta = meta;
         if (_isPoweredRail)
         {
-            finalMeta = _worldObj.getBlockMeta(_trackPos.x, _trackPos.y, _trackPos.z) & 8 | meta;
+            finalMeta = _worldObj.getBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
         }
 
-        _worldObj.setBlockMeta(_trackPos.x, _trackPos.y, _trackPos.z, finalMeta);
+        _worldObj.setBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
     }
 
     private bool AttemptConnectionAt(Vec3i pos)
