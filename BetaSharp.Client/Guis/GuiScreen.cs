@@ -4,6 +4,7 @@ using BetaSharp.Client.Rendering.Core;
 using java.awt;
 using java.awt.datatransfer;
 using java.util;
+using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL.Legacy;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,8 @@ namespace BetaSharp.Client.Guis;
 
 public class GuiScreen : Gui
 {
+    private static readonly ILogger<GuiScreen> s_logger = Log.Instance.For<GuiScreen>();
+
     public Minecraft mc;
     public int Width;
     public int Height;
@@ -75,7 +78,7 @@ public class GuiScreen : Gui
         }
         catch (Exception)
         {
-            Log.Error($"Failed to set clipboard string: {text}");
+            s_logger.LogError($"Failed to set clipboard string: {text}");
         }
     }
 
