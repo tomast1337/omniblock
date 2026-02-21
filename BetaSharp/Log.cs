@@ -16,13 +16,7 @@ public sealed class Log
     {
         _factory = LoggerFactory.Create(builder => builder
             .SetMinimumLevel(LogLevel.Debug)
-            .AddSimpleConsole(options =>
-            {
-                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-
-                // This puts exceptions on a single line, which makes them quite unreadable.
-                options.SingleLine = true;
-            }));
+            .AddSimpleConsole(options => options.TimestampFormat = "yyyy-MM-dd HH:mm:ss "));
     }
 
     public void Initialize(string directory)
