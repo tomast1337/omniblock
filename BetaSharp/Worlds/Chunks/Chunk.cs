@@ -433,15 +433,15 @@ public class Chunk : java.lang.Object
     public virtual void addEntity(Entity entity)
     {
         lastSaveHadEntities = true;
-        int var2 = MathHelper.floor_double(entity.x / 16.0D);
-        int var3 = MathHelper.floor_double(entity.z / 16.0D);
+        int var2 = MathHelper.Floor(entity.x / 16.0D);
+        int var3 = MathHelper.Floor(entity.z / 16.0D);
         if (var2 != x || var3 != z)
         {
             _logger.LogInformation($"Wrong location! {entity}");
             java.lang.Thread.dumpStack();
         }
 
-        int var4 = MathHelper.floor_double(entity.y / 16.0D);
+        int var4 = MathHelper.Floor(entity.y / 16.0D);
         if (var4 < 0)
         {
             var4 = 0;
@@ -593,8 +593,8 @@ public class Chunk : java.lang.Object
 
     public virtual void collectOtherEntities(Entity except, Box box, List<Entity> result)
     {
-        int var4 = MathHelper.floor_double((box.minY - 2.0D) / 16.0D);
-        int var5 = MathHelper.floor_double((box.maxY + 2.0D) / 16.0D);
+        int var4 = MathHelper.Floor((box.minY - 2.0D) / 16.0D);
+        int var5 = MathHelper.Floor((box.maxY + 2.0D) / 16.0D);
         if (var4 < 0)
         {
             var4 = 0;
@@ -623,8 +623,8 @@ public class Chunk : java.lang.Object
 
     public virtual void collectEntitiesByClass(java.lang.Class entityClass, Box box, List<Entity> result)
     {
-        int var4 = MathHelper.floor_double((box.minY - 2.0D) / 16.0D);
-        int var5 = MathHelper.floor_double((box.maxY + 2.0D) / 16.0D);
+        int var4 = MathHelper.Floor((box.minY - 2.0D) / 16.0D);
+        int var5 = MathHelper.Floor((box.maxY + 2.0D) / 16.0D);
         if (var4 < 0)
         {
             var4 = 0;

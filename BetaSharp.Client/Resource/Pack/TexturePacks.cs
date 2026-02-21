@@ -1,7 +1,10 @@
+using Microsoft.Extensions.Logging;
+
 namespace BetaSharp.Client.Resource.Pack;
 
 public class TexturePacks
 {
+    private readonly ILogger _logger = Log.Instance.For<TexturePacks>();
     private List<TexturePack> _availTexturePacks = [];
     private readonly TexturePack _defaultTexturePack = new BuiltInTexturePack();
     public TexturePack SelectedTexturePack;
@@ -20,7 +23,7 @@ public class TexturePacks
             _texturePackDir.Create();
         }
 
-        _currentTexturePack = mc.options.skin;
+        _currentTexturePack = mc.options.Skin;
         updateAvaliableTexturePacks();
         SelectedTexturePack.func_6482_a();
     }
@@ -36,8 +39,8 @@ public class TexturePacks
         _currentTexturePack = texturePack.TexturePackFileName;
         SelectedTexturePack = texturePack;
 
-        _mc.options.skin = _currentTexturePack;
-        _mc.options.saveOptions();
+        _mc.options.Skin = _currentTexturePack;
+        _mc.options.SaveOptions();
 
         SelectedTexturePack.func_6482_a();
         return true;
@@ -78,7 +81,7 @@ public class TexturePacks
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex);
+                    _logger.LogError(ex, "Failed to load texture pack {File}", file.Name);
                 }
 
             }

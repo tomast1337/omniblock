@@ -7,11 +7,13 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
 using static BetaSharp.Client.Textures.TextureAtlasMipmapGenerator;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Rendering.Core;
 
 public class TextureManager
 {
+    private readonly ILogger _logger = Log.Instance.For<TextureManager>();
     private readonly Dictionary<string, int> _textures = [];
     private readonly Dictionary<string, int[]> _colors = [];
     private readonly Dictionary<int, Image<Rgba32>> _images = [];
@@ -47,7 +49,7 @@ public class TextureManager
         }
         catch (Exception ex)
         {
-            Log.Error(ex);
+            _logger.LogError(ex, "Failed to get colors from image {Path}", path);
             int[] fallback = ReadColorsFromImage(_missingTextureImage);
             _colors[path] = fallback;
             return fallback;
@@ -85,7 +87,7 @@ public class TextureManager
         }
         catch (Exception ex)
         {
-            Log.Error(ex);
+            _logger.LogError(ex, "Failed to get texture id for path {Path}", path);
             Load(_missingTextureImage, (int)newId);
             _textures[path] = (int)newId;
             return (int)newId;
@@ -101,7 +103,7 @@ public class TextureManager
         {
             int tileSize = image.Width / 16;
             Image<Rgba32>[] mips = GenerateMipmaps(image, tileSize);
-            int mipCount = _gameOptions.useMipmaps ? mips.Length : 1;
+            int mipCount = _gameOptions.UseMipmaps ? mips.Length : 1;
 
             for (int level = 0; level < mipCount; level++)
             {
@@ -128,7 +130,7 @@ public class TextureManager
             GLManager.GL.TexParameter(
                 TextureTarget.Texture2D,
                 TextureParameterName.TextureMinFilter,
-                (int)(_gameOptions.useMipmaps ?
+                (int)(_gameOptions.UseMipmaps ?
                     TextureMinFilter.NearestMipmapNearest :
                     TextureMinFilter.Nearest)
                 );
@@ -137,7 +139,7 @@ public class TextureManager
 
             if (GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic"))
             {
-                float aniso = _gameOptions.anisotropicLevel == 0 ? 1.0f : (float)Math.Pow(2, _gameOptions.anisotropicLevel);
+                float aniso = _gameOptions.AnisotropicLevel == 0 ? 1.0f : (float)Math.Pow(2, _gameOptions.AnisotropicLevel);
                 aniso = Math.Clamp(aniso, 1.0f, GameOptions.MaxAnisotropy);
 
                 GLManager.GL.TexParameter(GLEnum.Texture2D, GLEnum.TextureMaxAnisotropy, aniso);
@@ -337,14 +339,14 @@ public class TextureManager
                 }
             }
 
-            if (texture.atlas == DynamicTexture.FXImage.Terrain && _gameOptions.useMipmaps)
+            if (texture.atlas == DynamicTexture.FXImage.Terrain && _gameOptions.UseMipmaps)
                 UpdateTileMipmaps(texture.sprite, texture.pixels, fxSize);
         }
     }
 
     private unsafe void UpdateTileMipmaps(int tileIndex, byte[] tileData, int tileSize)
     {
-        if (!_gameOptions.useMipmaps) return;
+        if (!_gameOptions.UseMipmaps) return;
 
         int maxMipLevels = (int)Math.Log2(tileSize) + 1;
         byte[] currentData = tileData;

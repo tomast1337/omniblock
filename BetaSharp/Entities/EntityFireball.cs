@@ -43,7 +43,7 @@ public class EntityFireball : Entity
         setBoundingBoxSpacing(1.0F, 1.0F);
         setPositionAndAnglesKeepPrevAngles(x, y, z, yaw, pitch);
         setPosition(x, y, z);
-        double var14 = (double)MathHelper.sqrt_double(var8 * var8 + var10 * var10 + var12 * var12);
+        double var14 = (double)MathHelper.Sqrt(var8 * var8 + var10 * var10 + var12 * var12);
         powerX = var8 / var14 * 0.1D;
         powerY = var10 / var14 * 0.1D;
         powerZ = var12 / var14 * 0.1D;
@@ -60,7 +60,7 @@ public class EntityFireball : Entity
         var3 += random.NextGaussian() * 0.4D;
         var5 += random.NextGaussian() * 0.4D;
         var7 += random.NextGaussian() * 0.4D;
-        double var9 = (double)MathHelper.sqrt_double(var3 * var3 + var5 * var5 + var7 * var7);
+        double var9 = (double)MathHelper.Sqrt(var3 * var3 + var5 * var5 + var7 * var7);
         powerX = var3 / var9 * 0.1D;
         powerY = var5 / var9 * 0.1D;
         powerZ = var7 / var9 * 0.1D;
@@ -106,9 +106,9 @@ public class EntityFireball : Entity
         HitResult var3 = world.raycast(var15, var2);
         var15 = new Vec3D(x, y, z);
         var2 = new Vec3D(x + velocityX, y + velocityY, z + velocityZ);
-        if (var3 != null)
+        if (var3.Type != HitResultType.MISS)
         {
-            var2 = new Vec3D(var3.pos.x, var3.pos.y, var3.pos.z);
+            var2 = new Vec3D(var3.Pos.x, var3.Pos.y, var3.Pos.z);
         }
 
         Entity var4 = null;
@@ -123,9 +123,9 @@ public class EntityFireball : Entity
                 float var10 = 0.3F;
                 Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
                 HitResult var12 = var11.raycast(var15, var2);
-                if (var12 != null)
+                if (var12.Type != HitResultType.MISS)
                 {
-                    double var13 = var15.distanceTo(var12.pos);
+                    double var13 = var15.distanceTo(var12.Pos);
                     if (var13 < var6 || var6 == 0.0D)
                     {
                         var4 = var9;
@@ -140,11 +140,11 @@ public class EntityFireball : Entity
             var3 = new HitResult(var4);
         }
 
-        if (var3 != null)
+        if (var3.Type != HitResultType.MISS)
         {
             if (!world.isRemote)
             {
-                if (var3.entity != null && var3.entity.damage(owner, 0))
+                if (var3.Entity != null && var3.Entity.damage(owner, 0))
                 {
                 }
 
@@ -157,7 +157,7 @@ public class EntityFireball : Entity
         x += velocityX;
         y += velocityY;
         z += velocityZ;
-        float var16 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
+        float var16 = MathHelper.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
         yaw = (float)(System.Math.Atan2(velocityX, velocityZ) * 180.0D / (double)((float)Math.PI));
 
         for (pitch = (float)(System.Math.Atan2(velocityY, (double)var16) * 180.0D / (double)((float)Math.PI)); pitch - prevPitch < -180.0F; prevPitch -= 360.0F)
