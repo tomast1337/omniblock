@@ -24,7 +24,7 @@ public class GuiConnecting : GuiScreen
     public GuiConnecting(Minecraft mc, ClientNetworkHandler clientHandler)
     {
         _clientHandler = clientHandler;
-        mc.changeWorld1(null);
+        mc.changeWorld(null);
     }
 
     public override void UpdateScreen()

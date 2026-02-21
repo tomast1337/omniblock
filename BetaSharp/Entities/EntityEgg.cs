@@ -41,15 +41,15 @@ public class EntityEgg : Entity
         field_20051_g = var2;
         setBoundingBoxSpacing(0.25F, 0.25F);
         setPositionAndAnglesKeepPrevAngles(var2.x, var2.y + (double)var2.getEyeHeight(), var2.z, var2.yaw, var2.pitch);
-        x -= (double)(MathHelper.cos(yaw / 180.0F * (float)Math.PI) * 0.16F);
+        x -= (double)(MathHelper.Cos(yaw / 180.0F * (float)Math.PI) * 0.16F);
         y -= (double)0.1F;
-        z -= (double)(MathHelper.sin(yaw / 180.0F * (float)Math.PI) * 0.16F);
+        z -= (double)(MathHelper.Sin(yaw / 180.0F * (float)Math.PI) * 0.16F);
         setPosition(x, y, z);
         standingEyeHeight = 0.0F;
         float var3 = 0.4F;
-        velocityX = (double)(-MathHelper.sin(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * var3);
-        velocityZ = (double)(MathHelper.cos(yaw / 180.0F * (float)Math.PI) * MathHelper.cos(pitch / 180.0F * (float)Math.PI) * var3);
-        velocityY = (double)(-MathHelper.sin(pitch / 180.0F * (float)Math.PI) * var3);
+        velocityX = (double)(-MathHelper.Sin(yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)Math.PI) * var3);
+        velocityZ = (double)(MathHelper.Cos(yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)Math.PI) * var3);
+        velocityY = (double)(-MathHelper.Sin(pitch / 180.0F * (float)Math.PI) * var3);
         setEggHeading(velocityX, velocityY, velocityZ, 1.5F, 1.0F);
     }
 
@@ -63,7 +63,7 @@ public class EntityEgg : Entity
 
     public void setEggHeading(double var1, double var3, double var5, float var7, float var8)
     {
-        float var9 = MathHelper.sqrt_double(var1 * var1 + var3 * var3 + var5 * var5);
+        float var9 = MathHelper.Sqrt(var1 * var1 + var3 * var3 + var5 * var5);
         var1 /= (double)var9;
         var3 /= (double)var9;
         var5 /= (double)var9;
@@ -76,7 +76,7 @@ public class EntityEgg : Entity
         velocityX = var1;
         velocityY = var3;
         velocityZ = var5;
-        float var10 = MathHelper.sqrt_double(var1 * var1 + var5 * var5);
+        float var10 = MathHelper.Sqrt(var1 * var1 + var5 * var5);
         prevYaw = yaw = (float)(System.Math.Atan2(var1, var5) * 180.0D / (double)((float)Math.PI));
         prevPitch = pitch = (float)(System.Math.Atan2(var3, (double)var10) * 180.0D / (double)((float)Math.PI));
         field_20050_h = 0;
@@ -89,7 +89,7 @@ public class EntityEgg : Entity
         velocityZ = var5;
         if (prevPitch == 0.0F && prevYaw == 0.0F)
         {
-            float var7 = MathHelper.sqrt_double(var1 * var1 + var5 * var5);
+            float var7 = MathHelper.Sqrt(var1 * var1 + var5 * var5);
             prevYaw = yaw = (float)(System.Math.Atan2(var1, var5) * 180.0D / (double)((float)Math.PI));
             prevPitch = pitch = (float)(System.Math.Atan2(var3, (double)var7) * 180.0D / (double)((float)Math.PI));
         }
@@ -138,9 +138,9 @@ public class EntityEgg : Entity
         HitResult var3 = world.raycast(var15, var2);
         var15 = new Vec3D(x, y, z);
         var2 = new Vec3D(x + velocityX, y + velocityY, z + velocityZ);
-        if (var3 != null)
+        if (var3.Type != HitResultType.MISS)
         {
-            var2 = new Vec3D(var3.pos.x, var3.pos.y, var3.pos.z);
+            var2 = new Vec3D(var3.Pos.x, var3.Pos.y, var3.Pos.z);
         }
 
         if (!world.isRemote)
@@ -157,9 +157,9 @@ public class EntityEgg : Entity
                     float var10 = 0.3F;
                     Box var11 = var9.boundingBox.expand((double)var10, (double)var10, (double)var10);
                     HitResult var12 = var11.raycast(var15, var2);
-                    if (var12 != null)
+                    if (var12.Type != HitResultType.MISS)
                     {
-                        double var13 = var15.distanceTo(var12.pos);
+                        double var13 = var15.distanceTo(var12.Pos);
                         if (var13 < var6 || var6 == 0.0D)
                         {
                             var4 = var9;
@@ -175,9 +175,9 @@ public class EntityEgg : Entity
             }
         }
 
-        if (var3 != null)
+        if (var3.Type != HitResultType.MISS)
         {
-            if (var3.entity != null && var3.entity.damage(field_20051_g, 0))
+            if (var3.Entity != null && var3.Entity.damage(field_20051_g, 0))
             {
             }
 
@@ -208,7 +208,7 @@ public class EntityEgg : Entity
         x += velocityX;
         y += velocityY;
         z += velocityZ;
-        float var20 = MathHelper.sqrt_double(velocityX * velocityX + velocityZ * velocityZ);
+        float var20 = MathHelper.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
         yaw = (float)(System.Math.Atan2(velocityX, velocityZ) * 180.0D / (double)((float)Math.PI));
 
         for (pitch = (float)(System.Math.Atan2(velocityY, (double)var20) * 180.0D / (double)((float)Math.PI)); pitch - prevPitch < -180.0F; prevPitch -= 360.0F)

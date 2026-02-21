@@ -23,7 +23,7 @@ public class TexturePacks
             _texturePackDir.Create();
         }
 
-        _currentTexturePack = mc.options.skin;
+        _currentTexturePack = mc.options.Skin;
         updateAvaliableTexturePacks();
         SelectedTexturePack.func_6482_a();
     }
@@ -39,8 +39,8 @@ public class TexturePacks
         _currentTexturePack = texturePack.TexturePackFileName;
         SelectedTexturePack = texturePack;
 
-        _mc.options.skin = _currentTexturePack;
-        _mc.options.saveOptions();
+        _mc.options.Skin = _currentTexturePack;
+        _mc.options.SaveOptions();
 
         SelectedTexturePack.func_6482_a();
         return true;

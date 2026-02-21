@@ -1,4 +1,4 @@
-﻿using Silk.NET.GLFW;
+using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.Input;
 
@@ -150,7 +150,6 @@ public class Keyboard
 
     private static readonly bool[] keyDownBuffer = new bool[KEYBOARD_SIZE];
     private static readonly Queue<KeyEvent> eventQueue = new();
-
     private static KeyEvent current_event = new();
     private static bool repeat_enabled;
 
@@ -167,6 +166,7 @@ public class Keyboard
         InitializeKeyMap();
 
         glfw.SetKeyCallback(window, OnKey);
+        glfw.SetCharCallback(window, OnChar);
 
         keyNames = new string[256];
 
@@ -363,10 +363,17 @@ public class Keyboard
         // pendingChar = null;
     }
 
+    private static unsafe void OnChar(WindowHandle* window, uint codepoint)
+    {
+        if (!created) return;
+
+        char character = (char)codepoint;
+        OnCharacterTyped?.Invoke(character);
+    }
+
     public static event Action<char>? OnCharacterTyped;
 
-
-    public static bool next()
+    public static bool Next()
     {
         if (!created) throw new InvalidOperationException("Keyboard must be created before you can read events");
 
@@ -374,7 +381,6 @@ public class Keyboard
         {
             KeyEvent evt = eventQueue.Dequeue();
 
-            // Skip repeat events if not enabled
             if (evt.Repeat && !repeat_enabled)
                 continue;
 
@@ -429,7 +435,7 @@ public class Keyboard
         return "UNKNOWN";
     }
 
-    private class KeyEvent
+    private struct KeyEvent
     {
         public int Character;
         public int Key;

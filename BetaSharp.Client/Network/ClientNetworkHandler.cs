@@ -69,7 +69,7 @@ public class ClientNetworkHandler : NetHandler
         {
             isRemote = true
         };
-        mc.changeWorld1(worldClient);
+        mc.changeWorld(worldClient);
         mc.player.dimensionId = packet.dimensionId;
         mc.displayGuiScreen(new GuiDownloadTerrain(this));
         mc.player.id = packet.protocolVersion;
@@ -345,7 +345,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet)
     {
-        Chunk chunk = worldClient.getChunk(packet.x, packet.z);
+        Chunk chunk = worldClient.GetChunk(packet.x, packet.z);
         int x = packet.x * 16;
         int y = packet.z * 16;
 
@@ -379,7 +379,7 @@ public class ClientNetworkHandler : NetHandler
     {
         netManager.disconnect("disconnect.kicked");
         disconnected = true;
-        mc.changeWorld1(null);
+        mc.changeWorld(null);
         mc.displayGuiScreen(new GuiConnectFailed("disconnect.disconnected", "disconnect.genericReason", packet.reason));
     }
 
@@ -388,7 +388,7 @@ public class ClientNetworkHandler : NetHandler
         if (!disconnected)
         {
             disconnected = true;
-            mc.changeWorld1(null);
+            mc.changeWorld(null);
             mc.displayGuiScreen(new GuiConnectFailed("disconnect.lost", reason, args));
         }
     }
@@ -591,7 +591,7 @@ public class ClientNetworkHandler : NetHandler
             {
                 isRemote = true
             };
-            mc.changeWorld1(worldClient);
+            mc.changeWorld(worldClient);
             mc.player.dimensionId = packet.dimensionId;
             mc.displayGuiScreen(new GuiDownloadTerrain(this));
         }
@@ -631,7 +631,7 @@ public class ClientNetworkHandler : NetHandler
         else if (packet.screenHandlerId == 1)
         {
             ClientPlayerEntity player = mc.player;
-            mc.player.openCraftingScreen(MathHelper.floor_double(player.x), MathHelper.floor_double(player.y), MathHelper.floor_double(player.z));
+            mc.player.openCraftingScreen(MathHelper.Floor(player.x), MathHelper.Floor(player.y), MathHelper.Floor(player.z));
             mc.player.currentScreenHandler.syncId = packet.syncId;
         }
 
