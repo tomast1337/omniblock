@@ -3029,7 +3029,7 @@ public abstract class World : java.lang.Object, BlockView
 
     public void setSpawnPos(Vec3i pos)
     {
-        properties.SetSpawn(pos.x, pos.y, pos.z);
+        properties.SetSpawn(pos.X, pos.Y, pos.Z);
     }
 
     public void LoadChunksNearEntity(Entity entity)
