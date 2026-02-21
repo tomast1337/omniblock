@@ -408,16 +408,16 @@ public class Block
         return resistance / 5.0F;
     }
 
-    public virtual HitResult? raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
+    public virtual HitResult raycast(World world, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
         updateBoundingBox(world, x, y, z);
         Vec3D pos = new Vec3D(x, y, z);
         HitResult res = BoundingBox.raycast(startPos - pos, endPos - pos);
-        if (res == null) return null;
-        res.blockX = x;
-        res.blockY = y;
-        res.blockZ = z;
-        res.pos += pos;
+        if (res.Type == HitResultType.MISS) return new HitResult(HitResultType.MISS);
+        res.BlockX = x;
+        res.BlockY = y;
+        res.BlockZ = z;
+        res.Pos += pos;
         return res;
     }
 
