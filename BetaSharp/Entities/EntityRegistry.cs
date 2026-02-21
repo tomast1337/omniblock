@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using BetaSharp.NBT;
 using BetaSharp.Worlds;
 using Exception = System.Exception;
@@ -33,7 +34,7 @@ public static class EntityRegistry
 	    return entity;
     }
     
-    private static bool TryCreate(string id, World world, out Entity? entity)
+    private static bool TryCreate(string id, World world, [MaybeNullWhen(false)] out Entity entity)
     {
 	    if (idToFactory.TryGetValue(id, out var factory))
 	    {
@@ -66,7 +67,7 @@ public static class EntityRegistry
             {
 				if(TryCreate(id, world, out Entity? entity))
                 {
-                    entity!.setPosition(x, y, z);
+                    entity.setPosition(x, y, z);
                     entity.setPositionAndAngles(x, y, z, 0, 0);
                     if (!world.SpawnEntity(entity))
                     {
@@ -99,7 +100,7 @@ public static class EntityRegistry
 	    return entity;
     }
 
-    private static bool TryCreate(int rawId, World world, out Entity? entity)
+    private static bool TryCreate(int rawId, World world, [MaybeNullWhen(false)] out Entity entity)
     {
 	    if (rawIdToFactory.TryGetValue(rawId, out var factory))
 	    {
