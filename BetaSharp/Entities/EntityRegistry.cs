@@ -1,16 +1,19 @@
 using BetaSharp.NBT;
 using BetaSharp.Worlds;
+using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
 namespace BetaSharp.Entities;
 
 public static class EntityRegistry
 {
+    private static readonly ILogger s_logger = Log.Instance.For(nameof(EntityRegistry));
     private static readonly Dictionary<string, Func<World, Entity>> idToFactory = new ();
     private static readonly Dictionary<Type, string> typeToId = new ();
     private static readonly Dictionary<int, Func<World, Entity>> rawIdToFactory = new ();
     private static readonly Dictionary<Type, int> typeToRawId = new ();
-    public  static readonly Dictionary<string, int> namesToId = new();
+
+    public static readonly Dictionary<string, int> namesToId = new();
 
     private static void Register<T>(Func<World, T> factory, string id, int rawId) where T : Entity
     {
@@ -32,7 +35,7 @@ public static class EntityRegistry
 	    TryCreate(id, world, out Entity? entity);
 	    return entity;
     }
-    
+
     private static bool TryCreate(string id, World world, out Entity? entity)
     {
 	    if (idToFactory.TryGetValue(id, out var factory))
@@ -41,7 +44,7 @@ public static class EntityRegistry
 		    return true;
 	    }
 
-	    Log.Info($"Unable to find entity with id {id}");
+        s_logger.LogInformation($"Unable to find entity with id {id}");
 	    entity = null;
 	    return false;
     }
@@ -70,24 +73,24 @@ public static class EntityRegistry
                     entity.setPositionAndAngles(x, y, z, 0, 0);
                     if (!world.SpawnEntity(entity))
                     {
-                        Log.Error($"Entity `{name}` with ID:`{id}` failed to join world.");
+                        s_logger.LogError($"Entity `{name}` with ID:`{id}` failed to join world.");
                     }
 
                     return entity;
                 }
                 else
                 {
-                    Log.Error($"Failed to convert entity of name `{name}` and id `{id}` to a class.");
+                    s_logger.LogError($"Failed to convert entity of name `{name}` and id `{id}` to a class.");
                 }
             }
             else
             {
-                Log.Error($"Unable to find entity of name `{name}`.");
+                s_logger.LogError($"Unable to find entity of name `{name}`.");
             }
         }
         catch (Exception ex)
         {
-            Log.Error(ex);
+            s_logger.LogError(ex, "Failure while creating an entity");
         }
 
         return null;
@@ -107,7 +110,7 @@ public static class EntityRegistry
 		    return true;
 	    }
 
-	    Log.Info($"Unable to find entity with raw id {rawId}");
+        s_logger.LogInformation($"Unable to find entity with raw id {rawId}");
 	    entity = null;
 	    return false;
     }

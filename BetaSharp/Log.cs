@@ -54,6 +54,11 @@ public sealed class Log
         return _factory.CreateLogger<T>();
     }
 
+    public ILogger For(string name)
+    {
+        return _factory.CreateLogger(name);
+    }
+
     private void UnhandledException(Exception exception)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(_directory);
