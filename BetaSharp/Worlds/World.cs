@@ -72,7 +72,7 @@ public abstract class World : java.lang.Object, BlockView
 
     public BiomeSource getBiomeSource()
     {
-        return dimension.biomeSource;
+        return dimension.BiomeSource;
     }
 
     public WorldStorage getWorldStorage()
@@ -117,7 +117,7 @@ public abstract class World : java.lang.Object, BlockView
         properties = new WorldProperties(var4, var2);
         dimension = var3;
         persistentStateManager = new PersistentStateManager(var1);
-        var3.setWorld(this);
+        var3.SetWorld(this);
         chunkSource = CreateChunkCache();
         Rules = properties.RulesTag != null
             ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
@@ -163,7 +163,7 @@ public abstract class World : java.lang.Object, BlockView
         properties = new WorldProperties(var1.properties);
         persistentStateManager = new PersistentStateManager(storage);
         dimension = var2;
-        var2.setWorld(this);
+        var2.SetWorld(this);
         chunkSource = CreateChunkCache();
         Rules = properties.RulesTag != null
             ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
@@ -218,11 +218,11 @@ public abstract class World : java.lang.Object, BlockView
         }
         else if (properties != null && properties.Dimension == -1)
         {
-            dimension = Dimension.fromId(-1);
+            dimension = Dimension.FromId(-1);
         }
         else
         {
-            dimension = Dimension.fromId(0);
+            dimension = Dimension.FromId(0);
         }
 
         bool var6 = false;
@@ -236,7 +236,7 @@ public abstract class World : java.lang.Object, BlockView
             properties.LevelName = var2;
         }
 
-        dimension.setWorld(this);
+        dimension.SetWorld(this);
         chunkSource = CreateChunkCache();
         Rules = properties.RulesTag != null
             ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
@@ -260,7 +260,7 @@ public abstract class World : java.lang.Object, BlockView
         byte var2 = 64;
 
         int var3;
-        for (var3 = 0; !dimension.isValidSpawnPoint(var1, var3); var3 += random.NextInt(64) - random.NextInt(64))
+        for (var3 = 0; !dimension.IsValidSpawnPoint(var1, var3); var3 += random.NextInt(64) - random.NextInt(64))
         {
             var1 += random.NextInt(64) - random.NextInt(64);
         }
@@ -801,7 +801,7 @@ public abstract class World : java.lang.Object, BlockView
 
     public void updateLight(LightType lightType, int x, int y, int z, int l)
     {
-        if (!dimension.hasCeiling || lightType != LightType.Sky)
+        if (!dimension.HasCeiling || lightType != LightType.Sky)
         {
             if (isPosLoaded(x, y, z))
             {
@@ -894,12 +894,12 @@ public abstract class World : java.lang.Object, BlockView
             var5 = blockLight;
         }
 
-        return dimension.lightLevelToLuminance[var5];
+        return dimension.LightLevelToLuminance[var5];
     }
 
     public float getLuminance(int x, int y, int z)
     {
-        return dimension.lightLevelToLuminance[getLightLevel(x, y, z)];
+        return dimension.LightLevelToLuminance[getLightLevel(x, y, z)];
     }
 
     public bool canMonsterSpawn()
@@ -1393,7 +1393,7 @@ public abstract class World : java.lang.Object, BlockView
 
     public float getTime(float var1)
     {
-        return dimension.getTimeOfDay(properties.WorldTime, var1);
+        return dimension.GetTimeOfDay(properties.WorldTime, var1);
     }
 
     public Vector3D<double> getCloudColor(float partialTicks)
@@ -1444,7 +1444,7 @@ public abstract class World : java.lang.Object, BlockView
     public Vector3D<double> getFogColor(float var1)
     {
         float var2 = getTime(var1);
-        return dimension.getFogColor(var2, var1);
+        return dimension.GetFogColor(var2, var1);
     }
 
     public int getTopSolidBlockY(int x, int z)
@@ -2228,7 +2228,7 @@ public abstract class World : java.lang.Object, BlockView
 
     public void queueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, bool bl)
     {
-        if (!dimension.hasCeiling || type != LightType.Sky)
+        if (!dimension.HasCeiling || type != LightType.Sky)
         {
             ++lightingUpdatesScheduled;
 
@@ -2374,7 +2374,7 @@ public abstract class World : java.lang.Object, BlockView
 
     protected virtual void UpdateWeatherCycles()
     {
-        if (!dimension.hasCeiling)
+        if (!dimension.HasCeiling)
         {
             if (ticksSinceLightning > 0)
             {
