@@ -9,7 +9,7 @@ using java.lang;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityLiving : Entity
+public class EntityLiving : Entity
 {
     public int maxHealth = 20;
     public float limbSwingPhase;

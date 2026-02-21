@@ -4,59 +4,54 @@ using Exception = System.Exception;
 
 namespace BetaSharp.Entities;
 
-public class EntityRegistry
+public static class EntityRegistry
 {
-    private static Dictionary<string, Type> idToClass = new ();
-    private static Dictionary<Type, string> classToId = new ();
-    private static Dictionary<int, Type> rawIdToClass = new ();
-    private static Dictionary<Type, int> classToRawId = new ();
+    private static Dictionary<string, Func<World, Entity>> idToFactory = new ();
+    private static Dictionary<Type, string> typeToId = new ();
+    private static Dictionary<int, Func<World, Entity>> rawIdToFactory = new ();
+    private static Dictionary<Type, int> typeToRawId = new ();
     public static Dictionary<string, int> namesToId = new();
 
-    private static void Register(Type entityType, string id, int rawId)
+    private static void Register<T>(Func<World, T> factory, string id, int rawId) where T : Entity
     {
-        idToClass.Add(id, entityType);
-        classToId.Add(entityType, id);
-        rawIdToClass.Add(rawId, entityType);
-        classToRawId.Add(entityType, rawId);
+        idToFactory.Add(id, factory);
+        typeToId.Add(typeof(T), id);
+        rawIdToFactory.Add(rawId, factory);
+        typeToRawId.Add(typeof(T), rawId);
         namesToId.TryAdd(id.ToLower(), rawId);
     }
 
-    public static Entity Create(string id, World world)
+    [Obsolete("Creating object from type can return null, use Register(Func<World, Entity> factory, string id, int rawId) instead.")]
+    private static void Register(Type type, string id, int rawId)
     {
-        Entity? entity = null;
-
-        try
-        {
-	        entity = (Entity)Activator.CreateInstance(idToClass[id], world)!;
-        }
-        catch (Exception e)
-        {
-	        Log.Error(e);
-        }
-
-        return entity;
+	    Register(world => (Entity)Activator.CreateInstance(type, world)!, id, rawId);
     }
 
-    public static Entity getEntityFromNbt(NBTTagCompound nbt, World world)
+    public static Entity? Create(string id, World world)
     {
-        Entity entity = null;
+	    TryCreate(id, world, out Entity? entity);
+	    return entity;
+    }
+    
+    private static bool TryCreate(string id, World world, out Entity? entity)
+    {
+	    if (idToFactory.TryGetValue(id, out var factory))
+	    {
+		    entity = factory.Invoke(world);
+		    return true;
+	    }
 
-        try
-        {
-	        entity = ((Entity)Activator.CreateInstance(idToClass[nbt.GetString("id")], world)!);
-        }
-        catch (Exception e)
-        {
-	        Log.Error(e);
-        }
+	    Log.Info($"Unable to find entity with id {id}");
+	    entity = null;
+	    return false;
+    }
 
-        if (entity != null)
+    public static Entity? getEntityFromNbt(NBTTagCompound nbt, World world)
+    {
+	    string id = nbt.GetString("id");
+        if (TryCreate(id, world, out Entity? entity))
         {
-            entity.read(nbt);
-        }
-        else
-        {
-            Log.Info($"Skipping Entity with id {nbt.GetString("id")}");
+	        entity!.read(nbt);
         }
 
         return entity;
@@ -69,18 +64,13 @@ public class EntityRegistry
         {
             if (namesToId.TryGetValue(name, out int id))
             {
-				if(rawIdToClass.TryGetValue(id, out Type type))
+				if(TryCreate(id, world, out Entity? entity))
                 {
-                    var entity = ((Entity)Activator.CreateInstance(type, world));
-
-                    if (entity != null)
+                    entity!.setPosition(x, y, z);
+                    entity.setPositionAndAngles(x, y, z, 0, 0);
+                    if (!world.SpawnEntity(entity))
                     {
-                        entity.setPosition(x, y, z);
-                        entity.setPositionAndAngles(x, y, z, 0, 0);
-                        if (!world.SpawnEntity(entity))
-                        {
-                            Log.Error($"Entity `{name}` with ID:`{id}` failed to join world.");
-                        }
+                        Log.Error($"Entity `{name}` with ID:`{id}` failed to join world.");
                     }
 
                     return entity;
@@ -103,62 +93,60 @@ public class EntityRegistry
         return null;
     }
 
-    public static Entity create(int rawId, World world)
+    public static Entity? Create(int rawId, World world)
     {
-        Entity entity = null;
+	    TryCreate(rawId, world, out Entity? entity);
+	    return entity;
+    }
 
-        try
-        {
-	        entity = ((Entity)Activator.CreateInstance(rawIdToClass[rawId], world));
-        }
-        catch (java.lang.Exception ex)
-        {
-            Log.Error(ex);
-        }
+    private static bool TryCreate(int rawId, World world, out Entity? entity)
+    {
+	    if (rawIdToFactory.TryGetValue(rawId, out var factory))
+	    {
+		    entity = factory.Invoke(world);
+		    return true;
+	    }
 
-        if (entity == null)
-        {
-            Log.Info($"Skipping Entity with id {rawId}");
-        }
-
-        return entity;
+	    Log.Info($"Unable to find entity with raw id {rawId}");
+	    entity = null;
+	    return false;
     }
 
     public static int GetRawId(Entity entity)
     {
-        return classToRawId[entity.GetType()];
+        return typeToRawId[entity.GetType()];
     }
 
     public static string GetId(Entity entity)
     {
-        return classToId[entity.GetType()];
+        return typeToId[entity.GetType()];
     }
 
     static EntityRegistry()
     {
-        Register(typeof(EntityArrow), "Arrow", 10);
-        Register(typeof(EntitySnowball), "Snowball", 11);
-        Register(typeof(EntityItem), "Item", 1);
-        Register(typeof(EntityPainting), "Painting", 9);
-        Register(typeof(EntityLiving), "Mob", 48);
-        Register(typeof(EntityMonster), "Monster", 49);
-        Register(typeof(EntityCreeper), "Creeper", 50);
-        Register(typeof(EntitySkeleton), "Skeleton", 51);
-        Register(typeof(EntitySpider), "Spider", 52);
-        Register(typeof(EntityGiantZombie), "Giant", 53);
-        Register(typeof(EntityZombie), "Zombie", 54);
-        Register(typeof(EntitySlime), "Slime", 55);
-        Register(typeof(EntityGhast), "Ghast", 56);
-        Register(typeof(EntityPigZombie), "PigZombie", 57);
-        Register(typeof(EntityPig), "Pig", 90);
-        Register(typeof(EntitySheep), "Sheep", 91);
-        Register(typeof(EntityCow), "Cow", 92);
-        Register(typeof(EntityChicken), "Chicken", 93);
-        Register(typeof(EntitySquid), "Squid", 94);
-        Register(typeof(EntityWolf), "Wolf", 95);
-        Register(typeof(EntityTNTPrimed), "PrimedTnt", 20);
-        Register(typeof(EntityFallingSand), "FallingSand", 21);
-        Register(typeof(EntityMinecart), "Minecart", 40);
-        Register(typeof(EntityBoat), "Boat", 41);
+        Register(world => new EntityArrow(world), "Arrow", 10);
+        Register(world => new EntitySnowball(world), "Snowball", 11);
+        Register(world => new EntityItem(world), "Item", 1);
+        Register(world => new EntityPainting(world), "Painting", 9);
+        Register(world => new EntityLiving(world), "Mob", 48);
+        Register(world => new EntityMonster(world), "Monster", 49);
+        Register(world => new EntityCreeper(world), "Creeper", 50);
+        Register(world => new EntitySkeleton(world), "Skeleton", 51);
+        Register(world => new EntitySpider(world), "Spider", 52);
+        Register(world => new EntityGiantZombie(world), "Giant", 53);
+        Register(world => new EntityZombie(world), "Zombie", 54);
+        Register(world => new EntitySlime(world), "Slime", 55);
+        Register(world => new EntityGhast(world), "Ghast", 56);
+        Register(world => new EntityPigZombie(world), "PigZombie", 57);
+        Register(world => new EntityPig(world), "Pig", 90);
+        Register(world => new EntitySheep(world), "Sheep", 91);
+        Register(world => new EntityCow(world), "Cow", 92);
+        Register(world => new EntityChicken(world), "Chicken", 93);
+        Register(world => new EntitySquid(world), "Squid", 94);
+        Register(world => new EntityWolf(world), "Wolf", 95);
+        Register(world => new EntityTNTPrimed(world), "PrimedTnt", 20);
+        Register(world => new EntityFallingSand(world), "FallingSand", 21);
+        Register(world => new EntityMinecart(world), "Minecart", 40);
+        Register(world => new EntityBoat(world), "Boat", 41);
     }
 }
