@@ -60,6 +60,7 @@ internal sealed class MinecraftService(HttpClient client)
 
     public async Task<(string Name, string? Skin)> GetProfileAsync(string token)
     {
+        client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
         var response = await client.GetFromJsonAsync<MinecraftProfileResponse>(
