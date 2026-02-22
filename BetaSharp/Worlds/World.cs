@@ -1508,12 +1508,12 @@ public abstract class World : BlockView
         byte var7 = 8;
         if (instantBlockUpdateEnabled)
         {
-            if (isRegionLoaded(var6.x - var7, var6.y - var7, var6.z - var7, var6.x + var7, var6.y + var7, var6.z + var7))
+            if (isRegionLoaded(var6.X - var7, var6.Y - var7, var6.Z - var7, var6.X + var7, var6.Y + var7, var6.Z + var7))
             {
-                int var8 = getBlockId(var6.x, var6.y, var6.z);
-                if (var8 == var6.blockId && var8 > 0)
+                int var8 = getBlockId(var6.X, var6.Y, var6.Z);
+                if (var8 == var6.BlockId && var8 > 0)
                 {
-                    Block.Blocks[var8].onTick(this, var6.x, var6.y, var6.z, random);
+                    Block.Blocks[var8].onTick(this, var6.X, var6.Y, var6.Z, random);
                 }
             }
 
@@ -1524,7 +1524,7 @@ public abstract class World : BlockView
             {
                 if (id > 0)
                 {
-                    var6.setScheduledTime((long)tickRate + properties.WorldTime);
+                    var6.Ticks = properties.WorldTime + tickRate;
                 }
 
                 if (!scheduledUpdateSet.contains(var6))
@@ -1633,10 +1633,10 @@ public abstract class World : BlockView
             if (var5.isRemoved())
             {
                 blockEntities.RemoveAt(i);
-                Chunk var7 = GetChunk(var5.x >> 4, var5.z >> 4);
+                Chunk var7 = GetChunk(var5.X >> 4, var5.Z >> 4);
                 if (var7 != null)
                 {
-                    var7.removeBlockEntityAt(var5.x & 15, var5.y, var5.z & 15);
+                    var7.removeBlockEntityAt(var5.X & 15, var5.Y, var5.Z & 15);
                 }
             }
         }
@@ -1652,12 +1652,12 @@ public abstract class World : BlockView
                     {
                         blockEntities.Add(var8);
                     }
-                    Chunk var9 = GetChunk(var8.x >> 4, var8.z >> 4);
+                    Chunk var9 = GetChunk(var8.X >> 4, var8.Z >> 4);
                     if (var9 != null)
                     {
-                        var9.setBlockEntity(var8.x & 15, var8.y, var8.z & 15, var8);
+                        var9.setBlockEntity(var8.X & 15, var8.Y, var8.Z & 15, var8);
                     }
-                    blockUpdateEvent(var8.x, var8.y, var8.z);
+                    blockUpdateEvent(var8.X, var8.Y, var8.Z);
                 }
             }
             blockEntityUpdateQueue.Clear();
@@ -2122,9 +2122,9 @@ public abstract class World : BlockView
         {
             if (processingDeferred)
             {
-                blockEntity.x = x;
-                blockEntity.y = y;
-                blockEntity.z = z;
+                blockEntity.X = x;
+                blockEntity.Y = y;
+                blockEntity.Z = z;
                 blockEntityUpdateQueue.Add(blockEntity);
             }
             else
@@ -2507,9 +2507,9 @@ public abstract class World : BlockView
 
         foreach (var p in activeChunks)
         {
-            var3 = p.x * 16;
-            var4 = p.z * 16;
-            Chunk var14 = GetChunk(p.x, p.z);
+            var3 = p.X * 16;
+            var4 = p.Z * 16;
+            Chunk var14 = GetChunk(p.X, p.Z);
             int var8;
             int var9;
             int var10;
@@ -2606,7 +2606,7 @@ public abstract class World : BlockView
             for (int var3 = 0; var3 < var2; ++var3)
             {
                 BlockEvent var4 = (BlockEvent)scheduledUpdates.first();
-                if (!flush && var4.ticks > properties.WorldTime)
+                if (!flush && var4.Ticks > properties.WorldTime)
                 {
                     break;
                 }
@@ -2614,12 +2614,12 @@ public abstract class World : BlockView
                 scheduledUpdates.remove(var4);
                 scheduledUpdateSet.remove(var4);
                 byte var5 = 8;
-                if (isRegionLoaded(var4.x - var5, var4.y - var5, var4.z - var5, var4.x + var5, var4.y + var5, var4.z + var5))
+                if (isRegionLoaded(var4.X - var5, var4.Y - var5, var4.Z - var5, var4.X + var5, var4.Y + var5, var4.Z + var5))
                 {
-                    int var6 = getBlockId(var4.x, var4.y, var4.z);
-                    if (var6 == var4.blockId && var6 > 0)
+                    int var6 = getBlockId(var4.X, var4.Y, var4.Z);
+                    if (var6 == var4.BlockId && var6 > 0)
                     {
-                        Block.Blocks[var6].onTick(this, var4.x, var4.y, var4.z, random);
+                        Block.Blocks[var6].onTick(this, var4.X, var4.Y, var4.Z, random);
                     }
                 }
             }
@@ -3001,7 +3001,7 @@ public abstract class World : BlockView
         while (iter.hasNext())
         {
             var obj = (BlockEvent)iter.next();
-            obj.ticks += var3;
+            obj.Ticks += var3;
         }
 
         setTime(time);

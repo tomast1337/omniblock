@@ -514,9 +514,9 @@ public class Chunk
 
     public virtual void addBlockEntity(BlockEntity blockEntity)
     {
-        int var2 = blockEntity.x - x * 16;
-        int var3 = blockEntity.y;
-        int var4 = blockEntity.z - z * 16;
+        int var2 = blockEntity.X - x * 16;
+        int var3 = blockEntity.Y;
+        int var4 = blockEntity.Z - z * 16;
         setBlockEntity(var2, var3, var4, blockEntity);
         if (loaded)
         {
@@ -528,10 +528,10 @@ public class Chunk
     public virtual void setBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
         BlockPos var5 = new(x, y, z);
-        blockEntity.world = world;
-        blockEntity.x = this.x * 16 + x;
-        blockEntity.y = y;
-        blockEntity.z = this.z * 16 + z;
+        blockEntity.World = world;
+        blockEntity.X = this.x * 16 + x;
+        blockEntity.Y = y;
+        blockEntity.Z = this.z * 16 + z;
         if (getBlockId(x, y, z) != 0 && Block.Blocks[getBlockId(x, y, z)] is BlockWithEntity)
         {
             blockEntity.cancelRemoval();

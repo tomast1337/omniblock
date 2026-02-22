@@ -1,56 +1,38 @@
-using java.lang;
-
 namespace BetaSharp;
 
-public class BlockEvent : Comparable
+public class BlockEvent(int x, int y, int z, int blockId)
+    : IComparable
 {
-    private static long nextTickEntryID;
-    public int x;
-    public int y;
-    public int z;
-    public int blockId;
-    public long ticks;
-    private readonly long tickEntryID = nextTickEntryID++;
+    private static long s_nextTickEntryId;
+    public readonly int X = x;
+    public readonly int Y = y;
+    public readonly int Z = z;
+    public readonly int BlockId = blockId;
+    public long Ticks;
+    private readonly long _tickEntryId = s_nextTickEntryId++;
 
-    public BlockEvent(int var1, int var2, int var3, int var4)
+    public override bool Equals(object other)
     {
-        x = var1;
-        y = var2;
-        z = var3;
-        blockId = var4;
-    }
-
-    public override bool Equals(object var1)
-    {
-        if (var1 is not BlockEvent)
+        if (other is not BlockEvent blockEvent)
         {
             return false;
         }
-        else
-        {
-            BlockEvent var2 = (BlockEvent)var1;
-            return x == var2.x && y == var2.y && z == var2.z && blockId == var2.blockId;
-        }
+
+        return X == blockEvent.X && Y == blockEvent.Y && Z == blockEvent.Z && BlockId == blockEvent.BlockId;
     }
 
     public override int GetHashCode()
     {
-        return (x * 128 * 1024 + z * 128 + y) * 256 + blockId;
+        return (X * 128 * 1024 + Z * 128 + Y) * 256 + BlockId;
     }
 
-    public BlockEvent setScheduledTime(long var1)
+    public int CompareTo(BlockEvent other)
     {
-        ticks = var1;
-        return this;
+        return Ticks < other.Ticks ? -1 : (Ticks > other.Ticks ? 1 : (_tickEntryId < other._tickEntryId ? -1 : (_tickEntryId > other._tickEntryId ? 1 : 0)));
     }
 
-    public int comparer(BlockEvent var1)
+    public int CompareTo(object? other)
     {
-        return ticks < var1.ticks ? -1 : (ticks > var1.ticks ? 1 : (tickEntryID < var1.tickEntryID ? -1 : (tickEntryID > var1.tickEntryID ? 1 : 0)));
-    }
-
-    public int CompareTo(object? var1)
-    {
-        return comparer((BlockEvent)var1!);
+        return CompareTo((BlockEvent)other!);
     }
 }

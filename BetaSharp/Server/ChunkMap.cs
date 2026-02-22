@@ -271,7 +271,7 @@ public class ChunkMap
 
             if (player.activeChunks.Add(chunkPos))
             {
-                player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkPos.x, chunkPos.z, true));
+                player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkPos.X, chunkPos.Z, true));
             }
 
             players.Add(player);

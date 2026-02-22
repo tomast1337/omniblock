@@ -1,81 +1,73 @@
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
 using BetaSharp.Worlds;
-using java.lang;
 using Microsoft.Extensions.Logging;
-using Exception = java.lang.Exception;
 
 namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntity
 {
-    private static readonly Dictionary<string, Type> idToClass = new ();
-    private static readonly Dictionary<Type, string> classToId = new ();
+    private static readonly Dictionary<string, Type> s_idToClass = new();
+    private static readonly Dictionary<Type, string> s_classToId = new();
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
-    public World world;
-    public int x;
-    public int y;
-    public int z;
-    protected bool removed;
+    public World World;
+    public int X;
+    public int Y;
+    public int Z;
+    protected bool Removed;
 
     private static void Create(Type blockEntityClass, string id)
     {
-        if (idToClass.ContainsKey(id))
+        if (s_idToClass.ContainsKey(id))
         {
-            throw new IllegalArgumentException("Duplicate id: " + id);
+            throw new ArgumentException("Duplicate id: " + id, nameof(id));
         }
-        else
-        {
-            idToClass.Add(id, blockEntityClass);
-            classToId.Add(blockEntityClass, id);
-        }
+
+        s_idToClass.Add(id, blockEntityClass);
+        s_classToId.Add(blockEntityClass, id);
     }
 
     public virtual void readNbt(NBTTagCompound nbt)
     {
-        x = nbt.GetInteger("x");
-        y = nbt.GetInteger("y");
-        z = nbt.GetInteger("z");
+        X = nbt.GetInteger("x");
+        Y = nbt.GetInteger("y");
+        Z = nbt.GetInteger("z");
     }
 
     public virtual void writeNbt(NBTTagCompound nbt)
     {
-        if (!classToId.TryGetValue(GetType(), out string entityId))
+        if (!s_classToId.TryGetValue(GetType(), out string? entityId))
         {
-            throw new RuntimeException(GetType() + " is missing a mapping! This is a bug!");
+            throw new Exception(GetType() + " is missing a mapping! This is a bug!");
         }
-        else
-        {
-            nbt.SetString("id", entityId);
-            nbt.SetInteger("x", x);
-            nbt.SetInteger("y", y);
-            nbt.SetInteger("z", z);
-        }
+
+        nbt.SetString("id", entityId);
+        nbt.SetInteger("x", X);
+        nbt.SetInteger("y", Y);
+        nbt.SetInteger("z", Z);
     }
 
-    public virtual void tick()
-    {
-    }
+    public virtual void tick() { }
 
-    public static BlockEntity createFromNbt(NBTTagCompound nbt)
+    public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
         BlockEntity blockEntity = null;
 
         try
         {
-            if (idToClass.TryGetValue(nbt.GetString("id"), out Type blockEntityClass))
+            if (s_idToClass.TryGetValue(nbt.GetString("id"), out Type? blockEntityClass))
             {
                 blockEntity = ((BlockEntity)Activator.CreateInstance(blockEntityClass));
             }
             else
             {
-	            s_logger.LogInformation(nbt.GetString("id") + " is missing a mapping!");
-	            return null;
+                s_logger.LogInformation(nbt.GetString("id") + " is missing a mapping!");
+                return null;
             }
         }
         catch (Exception exception)
         {
-	        s_logger.LogError(exception.toString());
+            s_logger.LogError(exception.ToString());
         }
 
         if (blockEntity != null)
@@ -92,29 +84,28 @@ public class BlockEntity
 
     public virtual int getPushedBlockData()
     {
-        return world.getBlockMeta(x, y, z);
+        return World.getBlockMeta(X, Y, Z);
     }
 
     public void markDirty()
     {
-        if (world != null)
+        if (World != null)
         {
-            world.updateBlockEntity(x, y, z, this);
+            World.updateBlockEntity(X, Y, Z, this);
         }
-
     }
 
     public double distanceFrom(double x, double y, double z)
     {
-        double dx = this.x + 0.5D - x;
-        double dy = this.y + 0.5D - y;
-        double dz = this.z + 0.5D - z;
+        double dx = this.X + 0.5D - x;
+        double dy = this.Y + 0.5D - y;
+        double dz = this.Z + 0.5D - z;
         return dx * dx + dy * dy + dz * dz;
     }
 
     public Block getBlock()
     {
-        return Block.Blocks[world.getBlockId(x, y, z)];
+        return Block.Blocks[World.getBlockId(X, Y, Z)];
     }
 
     public virtual Packet createUpdatePacket()
@@ -124,17 +115,17 @@ public class BlockEntity
 
     public bool isRemoved()
     {
-        return removed;
+        return Removed;
     }
 
     public void markRemoved()
     {
-        removed = true;
+        Removed = true;
     }
 
     public void cancelRemoval()
     {
-        removed = false;
+        Removed = false;
     }
 
     static BlockEntity()

@@ -5,7 +5,7 @@ using java.util;
 
 namespace BetaSharp.Stats;
 
-public class StatBase : java.lang.Object
+public class StatBase
 {
     public readonly int id;
     public readonly string statName;
@@ -46,7 +46,7 @@ public class StatBase : java.lang.Object
         {
             Stats.ALL_STATS.Add(this);
             Stats.ID_TO_STAT.Add(id, this);
-            statGuid = AchievementMap.getGuid(id);
+            statGuid = AchievementMap.GetGuid(id);
             return this;
         }
     }
@@ -61,7 +61,7 @@ public class StatBase : java.lang.Object
         return formatter.Format(value);
     }
 
-    public override string toString()
+    public override string ToString()
     {
         return statName;
     }
