@@ -29,7 +29,6 @@ using BetaSharp.Worlds;
 using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Storage;
 using ImGuiNET;
-using java.lang;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
 using Silk.NET.OpenGL.Legacy;

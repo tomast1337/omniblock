@@ -7,7 +7,6 @@ using BetaSharp.Stats;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
-using java.lang;
 
 namespace BetaSharp.Blocks;
 
@@ -147,7 +146,7 @@ public class Block
         slipperiness = 0.6F;
         if (Blocks[id] != null)
         {
-            throw new IllegalArgumentException("Slot " + id + " is already occupied by " + Blocks[id] + " when adding " + this);
+            throw new ArgumentException("Slot " + id + " is already occupied by " + Blocks[id] + " when adding " + this, nameof(id));
         }
         else
         {

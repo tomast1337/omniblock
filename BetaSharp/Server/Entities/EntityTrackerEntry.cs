@@ -4,11 +4,10 @@ using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
-using java.lang;
 
 namespace BetaSharp.Server.Entities;
 
-public class EntityTrackerEntry 
+public class EntityTrackerEntry
 {
     public Entity currentTrackedEntity;
     public int trackedDistance;
@@ -346,7 +345,7 @@ public class EntityTrackerEntry
                 }
                 else
                 {
-                    throw new IllegalArgumentException("Don't know how to add " + currentTrackedEntity.GetType() + "!");
+                    throw new ArgumentException("Don't know how to add " + currentTrackedEntity.GetType() + "!");
                 }
             }
         }

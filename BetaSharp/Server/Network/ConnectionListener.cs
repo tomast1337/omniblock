@@ -1,8 +1,6 @@
 using BetaSharp.Network;
 using BetaSharp.Server.Threading;
-using java.lang;
 using java.net;
-using java.util.logging;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Network;
@@ -49,7 +47,7 @@ public class ConnectionListener
     {
         if (connection == null)
         {
-            throw new IllegalArgumentException("Got null pendingconnection!");
+            throw new ArgumentException("Got null pendingconnection!", nameof(connection));
         }
         else
         {
