@@ -9,7 +9,6 @@ using BetaSharp.Launcher.Features.Splash;
 using BetaSharp.Launcher.Features.Xbox;
 using CommunityToolkit.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace BetaSharp.Launcher;
@@ -47,9 +46,9 @@ internal static partial class Bootstrapper
     [Singleton(typeof(ViewLocator))]
     [Singleton(typeof(AccountService))]
     [Singleton(typeof(AuthenticationService))]
+    [Transient(typeof(ClientService))]
     [Transient(typeof(MojangClient))]
     [Transient(typeof(XboxClient))]
-    [Transient(typeof(ClientService))]
     [Transient(typeof(AuthenticationView))]
     [Transient(typeof(AuthenticationViewModel))]
     [Transient(typeof(HomeView))]
