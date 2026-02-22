@@ -1,9 +1,7 @@
-using BetaSharp.Launcher;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;
 using java.lang;
 using java.net;
-using java.util.logging;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
@@ -71,23 +69,6 @@ public class DedicatedServer(IServerConfiguration config) : MinecraftServer(conf
 
         try
         {
-            if (!JarValidator.ValidateJar("b1.7.3.jar"))
-            {
-                s_logger.LogInformation("Downloading b1.7.3.jar");
-                var task = MinecraftDownloader.DownloadBeta173Async();
-                task.Wait();
-
-                if (task.Result)
-                {
-                    s_logger.LogInformation("Successfully downloaded b1.7.3.jar");
-                }
-                else
-                {
-                    s_logger.LogError("Failed to download b1.7.3.jar");
-                    return;
-                }
-            }
-
             DedicatedServerConfiguration config = new(new java.io.File("server.properties"));
             DedicatedServer server = new(config);
 
