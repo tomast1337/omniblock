@@ -3,13 +3,11 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
-using Exception = System.Exception;
 
 namespace BetaSharp.Blocks;
 
 public class BlockSign : BlockWithEntity
 {
-    //TODO: SIGNS ARE NOT BEING RENDERED?
     private readonly Type _blockEntityType;
     private readonly bool _standing;
 
@@ -64,7 +62,6 @@ public class BlockSign : BlockWithEntity
             {
                 setBoundingBox(0.0F, topOffset, minExtent, thickness, bottomOffset, maxExtent);
             }
-
         }
     }
 
