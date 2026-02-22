@@ -3,6 +3,7 @@ using System.IO;
 using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.Mojang;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
 using CommunityToolkit.Extensions.DependencyInjection;
@@ -19,7 +20,6 @@ internal static partial class Bootstrapper
         var services = new ServiceCollection();
 
         services.AddHttpClient<DownloadingService>();
-        services.AddHttpClient<MinecraftService>();
         services.AddHttpClient<XboxService>();
 
         services.AddLogging(builder =>
@@ -49,6 +49,7 @@ internal static partial class Bootstrapper
     [Singleton(typeof(ViewLocator))]
     [Singleton(typeof(AccountService))]
     [Singleton(typeof(AuthenticationService))]
+    [Transient(typeof(MojangClient))]
     [Transient(typeof(DownloadingService))]
     [Transient(typeof(AuthenticationView))]
     [Transient(typeof(AuthenticationViewModel))]
