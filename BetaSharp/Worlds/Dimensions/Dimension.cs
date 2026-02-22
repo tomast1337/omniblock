@@ -9,8 +9,8 @@ namespace BetaSharp.Worlds.Dimensions;
 
 public abstract class Dimension
 {
-    public World World;
-    public BiomeSource BiomeSource;
+    public World World { get; set; } = null!;
+    public BiomeSource BiomeSource { get; set; } = null!;
     public bool IsNether = false;
     public bool EvaporatesWater = false;
     public bool HasCeiling = false;
