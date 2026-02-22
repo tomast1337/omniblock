@@ -6,6 +6,7 @@ using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Mojang;
 using BetaSharp.Launcher.Features.Shell;
 using BetaSharp.Launcher.Features.Splash;
+using BetaSharp.Launcher.Features.Xbox;
 using CommunityToolkit.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ internal static partial class Bootstrapper
         var services = new ServiceCollection();
 
         services.AddHttpClient<DownloadingService>();
-        services.AddHttpClient<XboxService>();
+        services.AddHttpClient(nameof(XboxClient));
 
         services.AddLogging(builder =>
         {
@@ -50,6 +51,7 @@ internal static partial class Bootstrapper
     [Singleton(typeof(AccountService))]
     [Singleton(typeof(AuthenticationService))]
     [Transient(typeof(MojangClient))]
+    [Transient(typeof(XboxClient))]
     [Transient(typeof(DownloadingService))]
     [Transient(typeof(AuthenticationView))]
     [Transient(typeof(AuthenticationViewModel))]
