@@ -10,6 +10,9 @@
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <OptimizationPreference>speed</OptimizationPreference>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
+    <Company>BetaSharp</Company>
+    <Product>BetaSharp Launcher</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,10 +21,9 @@
                       Private="false"/>
   </ItemGroup>
 
-  <Target Name="CopyClientOutput" AfterTargets="Build">
+  <Target Name="_CopyClientOutput">
     <PropertyGroup>
       <ClientOutputDir>..\BetaSharp.Client\bin\$(Configuration)\$(TargetFramework)\</ClientOutputDir>
-      <ClientDestDir>$(OutputPath)Client\</ClientDestDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,8 +31,20 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(ClientFiles)"
-          DestinationFiles="@(ClientFiles->'$(ClientDestDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(ClientFiles->'$(ClientCopyDestination)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
+  </Target>
+
+  <Target Name="CopyClientOutputBuild" AfterTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+             Targets="_CopyClientOutput"
+             Properties="ClientCopyDestination=$(OutputPath)Client\"/>
+  </Target>
+
+  <Target Name="CopyClientOutputPublish" AfterTargets="Publish">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+             Targets="_CopyClientOutput"
+             Properties="ClientCopyDestination=$(PublishDir)Client\"/>
   </Target>
 
   <ItemGroup>
