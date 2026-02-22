@@ -1,6 +1,6 @@
 namespace BetaSharp.Launcher.Features.Xbox.Token;
 
-internal sealed class XboxTokenRequest
+internal sealed class TokenRequest
 {
     public sealed class TokenProperties
     {

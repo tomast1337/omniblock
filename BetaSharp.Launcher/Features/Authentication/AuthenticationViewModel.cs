@@ -22,7 +22,7 @@ internal sealed partial class AuthenticationViewModel(
     {
         string microsoft = await authenticationService.AuthenticateAsync();
 
-        var xboxUser = await xboxClient.GetUserAsync(microsoft);
+        var xboxUser = await xboxClient.GetProfileAsync(microsoft);
 
         var xboxToken = await xboxClient.GetTokenAsync(xboxUser.Token);
 

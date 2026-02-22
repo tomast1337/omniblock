@@ -1,6 +1,6 @@
 namespace BetaSharp.Launcher.Features.Xbox.User;
 
-internal sealed class XboxUserRequest
+internal sealed class UserRequest
 {
     public sealed class UserProperties
     {

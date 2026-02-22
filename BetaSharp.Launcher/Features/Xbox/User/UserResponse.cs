@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace BetaSharp.Launcher.Features.Xbox.User;
 
-internal sealed class XboxUserResponse
+internal sealed class UserResponse
 {
     public sealed class UserDisplayClaims
     {

@@ -11,38 +11,38 @@ namespace BetaSharp.Launcher.Features.Xbox;
 
 internal sealed class XboxClient(ILogger<XboxClient> logger, IHttpClientFactory clientFactory)
 {
-    public async Task<XboxUserResponse> GetUserAsync(string microsoftToken)
+    public async Task<UserResponse> GetProfileAsync(string microsoftToken)
     {
         var client = clientFactory.CreateClient(nameof(XboxClient));
 
         var response = await client.PostAsync(
             "https://user.auth.xboxlive.com/user/authenticate",
             JsonContent.Create(
-                new XboxUserRequest { Properties = new XboxUserRequest.UserProperties { RpsTicket = $"d={microsoftToken}" } },
-                SourceGenerationContext.Default.XboxUserRequest));
+                new UserRequest { Properties = new UserRequest.UserProperties { RpsTicket = $"d={microsoftToken}" } },
+                XboxSerializerContext.Default.UserRequest));
 
         await using var stream = await response.Content.ReadAsStreamAsync();
 
-        var instance = JsonSerializer.Deserialize<XboxUserResponse>(stream, SourceGenerationContext.Default.XboxUserResponse);
+        var instance = JsonSerializer.Deserialize<UserResponse>(stream, XboxSerializerContext.Default.UserResponse);
 
         ArgumentNullException.ThrowIfNull(instance);
 
         return instance;
     }
 
-    public async Task<XboxTokenResponse> GetTokenAsync(string userToken)
+    public async Task<TokenResponse> GetTokenAsync(string userToken)
     {
         var client = clientFactory.CreateClient(nameof(XboxClient));
 
         var response = await client.PostAsync(
             "https://xsts.auth.xboxlive.com/xsts/authorize",
             JsonContent.Create(
-                new XboxTokenRequest { Properties = new XboxTokenRequest.TokenProperties { UserTokens = [userToken] } },
-                SourceGenerationContext.Default.XboxTokenRequest));
+                new TokenRequest { Properties = new TokenRequest.TokenProperties { UserTokens = [userToken] } },
+                XboxSerializerContext.Default.TokenRequest));
 
         await using var stream = await response.Content.ReadAsStreamAsync();
 
-        var instance = JsonSerializer.Deserialize<XboxTokenResponse>(stream, SourceGenerationContext.Default.XboxTokenResponse);
+        var instance = JsonSerializer.Deserialize<TokenResponse>(stream, XboxSerializerContext.Default.TokenResponse);
 
         ArgumentNullException.ThrowIfNull(instance);
 

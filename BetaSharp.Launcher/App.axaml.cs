@@ -9,8 +9,6 @@ using BetaSharp.Launcher.Features.Mojang.Entitlements;
 using BetaSharp.Launcher.Features.Mojang.Profile;
 using BetaSharp.Launcher.Features.Mojang.Token;
 using BetaSharp.Launcher.Features.Shell;
-using BetaSharp.Launcher.Features.Xbox.Token;
-using BetaSharp.Launcher.Features.Xbox.User;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BetaSharp.Launcher;
@@ -41,14 +39,6 @@ internal sealed partial class App : Application
 
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(AccountService.Account))]
-[JsonSerializable(typeof(XboxUserRequest))]
-[JsonSerializable(typeof(XboxUserRequest.UserProperties))]
-[JsonSerializable(typeof(XboxUserResponse))]
-[JsonSerializable(typeof(XboxUserResponse.UserDisplayClaims))]
-[JsonSerializable(typeof(XboxUserResponse.UserDisplayClaims.UserXui))]
-[JsonSerializable(typeof(XboxTokenRequest))]
-[JsonSerializable(typeof(XboxTokenRequest.TokenProperties))]
-[JsonSerializable(typeof(XboxTokenResponse))]
 [JsonSerializable(typeof(TokenRequest))]
 [JsonSerializable(typeof(TokenResponse))]
 [JsonSerializable(typeof(EntitlementsResponse))]
