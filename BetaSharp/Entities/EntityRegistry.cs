@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using BetaSharp.NBT;
 using BetaSharp.Worlds;
 using Exception = System.Exception;
@@ -21,19 +22,13 @@ public static class EntityRegistry
         namesToId.TryAdd(id.ToLower(), rawId);
     }
 
-    [Obsolete("Creating object from type can return null, use Register(Func<World, Entity> factory, string id, int rawId) instead.")]
-    private static void Register(Type type, string id, int rawId)
-    {
-	    Register(world => (Entity)Activator.CreateInstance(type, world)!, id, rawId);
-    }
-
     public static Entity? Create(string id, World world)
     {
 	    TryCreate(id, world, out Entity? entity);
 	    return entity;
     }
     
-    private static bool TryCreate(string id, World world, out Entity? entity)
+    private static bool TryCreate(string id, World world, [MaybeNullWhen(false)] out Entity entity)
     {
 	    if (idToFactory.TryGetValue(id, out var factory))
 	    {
@@ -66,7 +61,7 @@ public static class EntityRegistry
             {
 				if(TryCreate(id, world, out Entity? entity))
                 {
-                    entity!.setPosition(x, y, z);
+                    entity.setPosition(x, y, z);
                     entity.setPositionAndAngles(x, y, z, 0, 0);
                     if (!world.SpawnEntity(entity))
                     {
@@ -99,7 +94,7 @@ public static class EntityRegistry
 	    return entity;
     }
 
-    private static bool TryCreate(int rawId, World world, out Entity? entity)
+    private static bool TryCreate(int rawId, World world, [MaybeNullWhen(false)] out Entity entity)
     {
 	    if (rawIdToFactory.TryGetValue(rawId, out var factory))
 	    {
@@ -117,9 +112,10 @@ public static class EntityRegistry
         return typeToRawId[entity.GetType()];
     }
 
-    public static string GetId(Entity entity)
+    public static string? GetId(Entity entity)
     {
-        return typeToId[entity.GetType()];
+        typeToId.TryGetValue(entity.GetType(), out string? id);
+        return id;
     }
 
     static EntityRegistry()
