@@ -1,8 +1,21 @@
 ﻿using Avalonia;
 using System;
 using BetaSharp.Launcher;
+using Serilog;
 
-Start(args);
+try
+{
+    Start(args);
+}
+catch (Exception exception)
+{
+    Log.Fatal(exception, "An unhandled exception occurred");
+    throw;
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 return;
 
