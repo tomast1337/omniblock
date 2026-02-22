@@ -68,7 +68,7 @@ internal sealed partial class HomeViewModel(
 
         ArgumentException.ThrowIfNullOrWhiteSpace(_token);
 
-        using var process = Process.Start(Path.Combine(Environment.CurrentDirectory, "Client", "BetaSharp.Client"), [Name, _token]);
+        using var process = Process.Start(Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client"), [Name, _token]);
 
         ArgumentNullException.ThrowIfNull(process);
 
