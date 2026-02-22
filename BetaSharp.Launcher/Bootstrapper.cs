@@ -21,7 +21,6 @@ internal static partial class Bootstrapper
         var services = new ServiceCollection();
 
         services.AddHttpClient<DownloadingService>();
-        services.AddHttpClient(nameof(XboxClient));
 
         services.AddLogging(builder =>
         {

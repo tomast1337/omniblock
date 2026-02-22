@@ -5,18 +5,19 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Xbox.Profile;
 using BetaSharp.Launcher.Features.Xbox.Token;
-using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Launcher.Features.Xbox;
 
-internal sealed class XboxClient(ILogger<XboxClient> logger, IHttpClientFactory clientFactory)
+internal sealed class XboxClient(IHttpClientFactory clientFactory)
 {
+    private const string Base = "https://user.auth.xboxlive.com";
+
     public async Task<UserResponse> GetProfileAsync(string token)
     {
         var client = clientFactory.CreateClient(nameof(XboxClient));
 
         var response = await client.PostAsync(
-            "https://user.auth.xboxlive.com/user/authenticate",
+            $"{Base}/user/authenticate",
             JsonContent.Create(
                 new ProfileRequest { Properties = new ProfileRequest.ProfileProperties { RpsTicket = $"d={token}" } },
                 XboxSerializerContext.Default.ProfileRequest));
@@ -35,7 +36,7 @@ internal sealed class XboxClient(ILogger<XboxClient> logger, IHttpClientFactory 
         var client = clientFactory.CreateClient(nameof(XboxClient));
 
         var response = await client.PostAsync(
-            "https://xsts.auth.xboxlive.com/xsts/authorize",
+            $"{Base}/xsts/authorize",
             JsonContent.Create(
                 new TokenRequest { Properties = new TokenRequest.TokenProperties { UserTokens = [token] } },
                 XboxSerializerContext.Default.TokenRequest));
