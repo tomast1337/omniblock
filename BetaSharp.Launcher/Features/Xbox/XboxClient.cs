@@ -3,8 +3,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BetaSharp.Launcher.Features.Xbox.Profile;
 using BetaSharp.Launcher.Features.Xbox.Token;
-using BetaSharp.Launcher.Features.Xbox.User;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Launcher.Features.Xbox;
@@ -18,8 +18,8 @@ internal sealed class XboxClient(ILogger<XboxClient> logger, IHttpClientFactory 
         var response = await client.PostAsync(
             "https://user.auth.xboxlive.com/user/authenticate",
             JsonContent.Create(
-                new UserRequest { Properties = new UserRequest.UserProperties { RpsTicket = $"d={microsoftToken}" } },
-                XboxSerializerContext.Default.UserRequest));
+                new ProfileRequest { Properties = new ProfileRequest.ProfileProperties { RpsTicket = $"d={microsoftToken}" } },
+                XboxSerializerContext.Default.ProfileRequest));
 
         await using var stream = await response.Content.ReadAsStreamAsync();
 

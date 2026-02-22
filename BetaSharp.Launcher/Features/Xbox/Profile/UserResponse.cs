@@ -1,6 +1,4 @@
-using System.Text.Json.Serialization;
-
-namespace BetaSharp.Launcher.Features.Xbox.User;
+namespace BetaSharp.Launcher.Features.Xbox.Profile;
 
 internal sealed class UserResponse
 {
@@ -8,11 +6,9 @@ internal sealed class UserResponse
     {
         public sealed class UserXui
         {
-            [JsonPropertyName("uhs")]
             public required string Uhs { get; init; }
         }
 
-        [JsonPropertyName("xui")]
         public required UserXui[] Xui { get; set; }
     }
 
