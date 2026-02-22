@@ -2,11 +2,13 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Chunks.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Worlds;
 
 public class ServerChunkCache : ChunkSource
 {
+    private readonly ILogger<ServerChunkCache> _logger = Log.Instance.For<ServerChunkCache>();
     private readonly HashSet<int> _chunksToUnload = [];
     private readonly Chunk _empty;
     private readonly ChunkSource _generator;
@@ -33,8 +35,8 @@ public class ServerChunkCache : ChunkSource
     public void isLoaded(int chunkX, int chunkZ)
     {
         Vec3i var3 = _world.getSpawnPos();
-        int var4 = chunkX * 16 + 8 - var3.x;
-        int var5 = chunkZ * 16 + 8 - var3.z;
+        int var4 = chunkX * 16 + 8 - var3.X;
+        int var5 = chunkZ * 16 + 8 - var3.Z;
         short var6 = 128;
         if (var4 < -var6 || var4 > var6 || var5 < -var6 || var5 > var6)
         {
@@ -141,7 +143,7 @@ public class ServerChunkCache : ChunkSource
             }
             catch (Exception ex)
             {
-                Log.Error(ex);
+                _logger.LogError(ex, "Exception");
                 return null;
             }
         }
@@ -157,7 +159,7 @@ public class ServerChunkCache : ChunkSource
             }
             catch (Exception ex)
             {
-                Log.Error(ex);
+                _logger.LogError(ex, "Exception");
             }
         }
     }
@@ -177,7 +179,7 @@ public class ServerChunkCache : ChunkSource
             }
             catch (IOException ex)
             {
-                Log.Error(ex);
+                _logger.LogError(ex, "Exception");
             }
         }
     }

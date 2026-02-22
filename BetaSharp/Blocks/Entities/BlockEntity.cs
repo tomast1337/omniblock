@@ -2,7 +2,7 @@ using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
 using BetaSharp.Worlds;
 using java.lang;
-using java.util;
+using Microsoft.Extensions.Logging;
 using Exception = java.lang.Exception;
 
 namespace BetaSharp.Blocks.Entities;
@@ -11,6 +11,7 @@ public class BlockEntity
 {
     private static readonly Dictionary<string, Type> idToClass = new ();
     private static readonly Dictionary<Type, string> classToId = new ();
+    private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
     public World world;
     public int x;
     public int y;
@@ -68,13 +69,13 @@ public class BlockEntity
             }
             else
             {
-	            Log.Info(nbt.GetString("id") + " is missing a mapping!");
+	            s_logger.LogInformation(nbt.GetString("id") + " is missing a mapping!");
 	            return null;
             }
         }
         catch (Exception exception)
         {
-            Log.Error(exception);
+	        s_logger.LogError(exception.toString());
         }
 
         if (blockEntity != null)
@@ -83,7 +84,7 @@ public class BlockEntity
         }
         else
         {
-            Log.Info("Skipping TileEntity with id " + nbt.GetString("id"));
+            s_logger.LogInformation("Skipping TileEntity with id " + nbt.GetString("id"));
         }
 
         return blockEntity;

@@ -16,6 +16,7 @@ using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage;
 using java.lang;
 using java.util;
+using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Worlds;
@@ -25,6 +26,7 @@ public abstract class World : BlockView
     private const int AUTOSAVE_PERIOD = 40;
     public bool instantBlockUpdateEnabled;
     private readonly List<LightUpdate> lightingQueue;
+    private readonly ILogger<World> _logger = Log.Instance.For<World>();
     public List<Entity> entities;
     private readonly List<Entity> entitiesToUnload;
     private readonly TreeSet scheduledUpdates;
@@ -71,7 +73,7 @@ public abstract class World : BlockView
 
     public BiomeSource getBiomeSource()
     {
-        return dimension.biomeSource;
+        return dimension.BiomeSource;
     }
 
     public WorldStorage getWorldStorage()
@@ -116,7 +118,7 @@ public abstract class World : BlockView
         properties = new WorldProperties(var4, var2);
         dimension = var3;
         persistentStateManager = new PersistentStateManager(var1);
-        var3.setWorld(this);
+        var3.SetWorld(this);
         chunkSource = CreateChunkCache();
         Rules = properties.RulesTag != null
             ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
@@ -162,7 +164,7 @@ public abstract class World : BlockView
         properties = new WorldProperties(var1.properties);
         persistentStateManager = new PersistentStateManager(storage);
         dimension = var2;
-        var2.setWorld(this);
+        var2.SetWorld(this);
         chunkSource = CreateChunkCache();
         Rules = properties.RulesTag != null
             ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
@@ -217,11 +219,11 @@ public abstract class World : BlockView
         }
         else if (properties != null && properties.Dimension == -1)
         {
-            dimension = Dimension.fromId(-1);
+            dimension = Dimension.FromId(-1);
         }
         else
         {
-            dimension = Dimension.fromId(0);
+            dimension = Dimension.FromId(0);
         }
 
         bool var6 = false;
@@ -235,7 +237,7 @@ public abstract class World : BlockView
             properties.LevelName = var2;
         }
 
-        dimension.setWorld(this);
+        dimension.SetWorld(this);
         chunkSource = CreateChunkCache();
         Rules = properties.RulesTag != null
             ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
@@ -259,7 +261,7 @@ public abstract class World : BlockView
         byte var2 = 64;
 
         int var3;
-        for (var3 = 0; !dimension.isValidSpawnPoint(var1, var3); var3 += random.NextInt(64) - random.NextInt(64))
+        for (var3 = 0; !dimension.IsValidSpawnPoint(var1, var3); var3 += random.NextInt(64) - random.NextInt(64))
         {
             var1 += random.NextInt(64) - random.NextInt(64);
         }
@@ -800,7 +802,7 @@ public abstract class World : BlockView
 
     public void updateLight(LightType lightType, int x, int y, int z, int l)
     {
-        if (!dimension.hasCeiling || lightType != LightType.Sky)
+        if (!dimension.HasCeiling || lightType != LightType.Sky)
         {
             if (isPosLoaded(x, y, z))
             {
@@ -893,12 +895,12 @@ public abstract class World : BlockView
             var5 = blockLight;
         }
 
-        return dimension.lightLevelToLuminance[var5];
+        return dimension.LightLevelToLuminance[var5];
     }
 
     public float getLuminance(int x, int y, int z)
     {
-        return dimension.lightLevelToLuminance[getLightLevel(x, y, z)];
+        return dimension.LightLevelToLuminance[getLightLevel(x, y, z)];
     }
 
     public bool canMonsterSpawn()
@@ -1392,7 +1394,7 @@ public abstract class World : BlockView
 
     public float getTime(float var1)
     {
-        return dimension.getTimeOfDay(properties.WorldTime, var1);
+        return dimension.GetTimeOfDay(properties.WorldTime, var1);
     }
 
     public Vector3D<double> getCloudColor(float partialTicks)
@@ -1443,7 +1445,7 @@ public abstract class World : BlockView
     public Vector3D<double> getFogColor(float var1)
     {
         float var2 = getTime(var1);
-        return dimension.getFogColor(var2, var1);
+        return dimension.GetFogColor(var2, var1);
     }
 
     public int getTopSolidBlockY(int x, int z)
@@ -2227,7 +2229,7 @@ public abstract class World : BlockView
 
     public void queueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, bool bl)
     {
-        if (!dimension.hasCeiling || type != LightType.Sky)
+        if (!dimension.HasCeiling || type != LightType.Sky)
         {
             ++lightingUpdatesScheduled;
 
@@ -2273,7 +2275,7 @@ public abstract class World : BlockView
                     var12 = 1000000;
                     if (lightingQueue.Count > 1000000)
                     {
-                        Log.Info($"More than {var12} updates, aborting lighting updates");
+                        _logger.LogInformation($"More than {var12} updates, aborting lighting updates");
                         lightingQueue.Clear();
                     }
 
@@ -2373,7 +2375,7 @@ public abstract class World : BlockView
 
     protected virtual void UpdateWeatherCycles()
     {
-        if (!dimension.hasCeiling)
+        if (!dimension.HasCeiling)
         {
             if (ticksSinceLightning > 0)
             {
@@ -3040,7 +3042,7 @@ public abstract class World : BlockView
 
     public void setSpawnPos(Vec3i pos)
     {
-        properties.SetSpawn(pos.x, pos.y, pos.z);
+        properties.SetSpawn(pos.X, pos.Y, pos.Z);
     }
 
     public void LoadChunksNearEntity(Entity entity)
