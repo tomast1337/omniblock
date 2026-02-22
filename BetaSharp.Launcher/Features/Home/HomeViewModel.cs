@@ -14,8 +14,8 @@ namespace BetaSharp.Launcher.Features.Home;
 internal sealed partial class HomeViewModel(
     AuthenticationService authenticationService,
     AccountService accountService,
-    MojangClient minecraftService,
-    DownloadingService downloadingService) : ObservableObject
+    MojangClient mojangClient,
+    ClientService clientService) : ObservableObject
 {
     [ObservableProperty]
     public partial bool IsReady { get; set; }
@@ -65,7 +65,7 @@ internal sealed partial class HomeViewModel(
             return;
         }
 
-        await downloadingService.DownloadAsync();
+        await clientService.DownloadAsync();
 
         ArgumentException.ThrowIfNullOrWhiteSpace(_token);
 

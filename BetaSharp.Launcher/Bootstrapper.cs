@@ -20,12 +20,10 @@ internal static partial class Bootstrapper
     {
         var services = new ServiceCollection();
 
-        services.AddHttpClient<DownloadingService>();
+        services.AddHttpClient();
 
         services.AddLogging(builder =>
         {
-            builder.ClearProviders();
-
             // Find a way to display class names and hide HttpClient's logs.
             const string template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level} {Message:lj}{NewLine}{Exception}";
 
@@ -51,7 +49,7 @@ internal static partial class Bootstrapper
     [Singleton(typeof(AuthenticationService))]
     [Transient(typeof(MojangClient))]
     [Transient(typeof(XboxClient))]
-    [Transient(typeof(DownloadingService))]
+    [Transient(typeof(ClientService))]
     [Transient(typeof(AuthenticationView))]
     [Transient(typeof(AuthenticationViewModel))]
     [Transient(typeof(HomeView))]
