@@ -98,6 +98,5 @@ public class EntityPig : EntityAnimal
         {
             ((EntityPlayer)passenger).incrementStat(Achievements.KillPig);
         }
-
     }
 }

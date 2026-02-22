@@ -4,12 +4,11 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
-using java.lang;
 using Math = System.Math;
 
 namespace BetaSharp.Entities;
 
-public abstract class Entity 
+public abstract class Entity
 {
     private static int nextEntityID;
     public int id = nextEntityID++;
@@ -96,7 +95,7 @@ public abstract class Entity
 
     public override bool Equals(object other)
     {
-        return other is Entity ? ((Entity)other).id == id : false;
+        return other is Entity e && e.id == id;
     }
 
     public override int GetHashCode()

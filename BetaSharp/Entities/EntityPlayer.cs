@@ -9,7 +9,6 @@ using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
-using java.lang;
 
 namespace BetaSharp.Entities;
 
@@ -477,15 +476,14 @@ public abstract class EntityPlayer : EntityLiving
                 return false;
             }
 
-            var damageDealer = damageSource;
-            if (damageSource is EntityArrow arrow && arrow.owner != null)
+            if (damageSource is EntityArrow && ((EntityArrow)damageSource).owner != null)
             {
-                damageDealer = arrow.owner;
+                damageSource = ((EntityArrow)damageSource).owner;
             }
 
-            if (damageDealer is EntityLiving livingEntity)
+            if (damageSource is EntityLiving)
             {
-                commandWolvesToAttack(livingEntity, false);
+                commandWolvesToAttack((EntityLiving)damageSource, false);
             }
 
             increaseStat(Stats.Stats.damageTakenStat, amount);
@@ -508,12 +506,10 @@ public abstract class EntityPlayer : EntityLiving
 
             if (entity is not EntityPlayer || isPvpEnabled())
             {
-                var var7 = world.CollectEntitiesByType<EntityWolf>(new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).expand(16.0D, 4.0D, 16.0D));
+                var var7 = world.CollectEntitiesOfType<EntityWolf>(new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).expand(16.0D, 4.0D, 16.0D));
 
-                foreach (Entity var5 in var7)
+                foreach (EntityWolf var6 in var7)
                 {
-                    EntityWolf var6 = (EntityWolf)var5;
-
                     if (!var6.isWolfTamed()) continue;
                     if (var6.getTarget() != null) continue;
                     if (!name.Equals(var6.getWolfOwner())) continue;

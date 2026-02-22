@@ -2326,7 +2326,7 @@ public abstract class World : BlockView
             }
         }
         Profiler.Start("performSpawning");
-        NaturalSpawner.PerformSpawning(this, spawnHostileMobs, spawnPeacefulMobs);
+        NaturalSpawner.DoSpawning(this, spawnHostileMobs, spawnPeacefulMobs);
         Profiler.Stop("performSpawning");
         Profiler.Start("unload100OldestChunks");
         chunkSource.tick();
@@ -2669,13 +2669,13 @@ public abstract class World : BlockView
         return tempEntityList;
     }
 
-    public List<Entity> CollectEntitiesByType<T>(Box box) where T : Entity
+    public List<T> CollectEntitiesOfType<T>(Box box) where T : Entity
     {
+        List<T> res = new();
         int var3 = MathHelper.Floor((box.minX - 2.0D) / 16.0D);
         int var4 = MathHelper.Floor((box.maxX + 2.0D) / 16.0D);
         int var5 = MathHelper.Floor((box.minZ - 2.0D) / 16.0D);
         int var6 = MathHelper.Floor((box.maxZ + 2.0D) / 16.0D);
-        List<Entity> var7 = new();
 
         for (int var8 = var3; var8 <= var4; ++var8)
         {
@@ -2683,12 +2683,12 @@ public abstract class World : BlockView
             {
                 if (hasChunk(var8, var9))
                 {
-	                GetChunk(var8, var9).CollectEntitiesByType<T>(box, var7);
+                    GetChunk(var8, var9).CollectEntitiesOfType<T>(box, res);
                 }
             }
         }
 
-        return var7;
+        return res;
     }
 
     public List<Entity> getEntities()
@@ -2710,34 +2710,16 @@ public abstract class World : BlockView
 
     }
 
-    public int countEntities<T>() where T : Entity
+    public int CountEntitiesOfType(Type type)
     {
-        int var2 = 0;
+        int res = 0;
 
-        for (int var3 = 0; var3 < entities.Count; ++var3)
+        foreach (var entity in entities)
         {
-            if (entities[var3] is T)
-            {
-                ++var2;
-            }
+            if (type.IsInstanceOfType(entity)) res++;
         }
 
-        return var2;
-    }
-    
-    public int countEntities(Type type)
-    {
-	    int var2 = 0;
-
-	    for (int var3 = 0; var3 < entities.Count; ++var3)
-	    {
-		    if (entities[var3].GetType() == type)
-		    {
-			    ++var2;
-		    }
-	    }
-
-	    return var2;
+        return res;
     }
 
     public void addEntities(List<Entity> entities)

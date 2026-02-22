@@ -621,7 +621,7 @@ public class Chunk
 
     }
 
-    public virtual void CollectEntitiesByType<T>(Box box, List<Entity> result) where T : Entity
+    public virtual void CollectEntitiesOfType<T>(Box box, List<T> result) where T : Entity
     {
         int var4 = MathHelper.Floor((box.minY - 2.0D) / 16.0D);
         int var5 = MathHelper.Floor((box.maxY + 2.0D) / 16.0D);
@@ -641,13 +641,13 @@ public class Chunk
 
             for (int var8 = 0; var8 < var7.Count; ++var8)
             {
-                if (var7[var8] is T var9 && var9.boundingBox.intersects(box))
+                Entity var9 = var7[var8];
+                if (var9 is T t && var9.boundingBox.intersects(box))
                 {
-                    result.Add(var9);
+                    result.Add(t);
                 }
             }
         }
-
     }
 
     public virtual bool shouldSave(bool saveEntities)

@@ -1,7 +1,6 @@
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Worlds;
-using java.lang;
 
 namespace BetaSharp.Entities;
 

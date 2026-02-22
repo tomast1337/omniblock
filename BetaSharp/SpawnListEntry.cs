@@ -1,7 +1,6 @@
+using BetaSharp.Entities;
+using BetaSharp.Worlds;
+
 namespace BetaSharp;
 
-public class SpawnListEntry(Type type, int spawnRarityRate)
-{
-	public readonly Type Type = type;
-    public readonly int SpawnRarityRate = spawnRarityRate;
-}
+public record SpawnListEntry(Func<World, EntityLiving> Factory);

@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using java.lang;
 
 namespace BetaSharp.Worlds.Chunks;
 
@@ -131,7 +130,7 @@ public class EmptyChunk : Chunk
     {
     }
 
-    public override void CollectEntitiesByType<T>(Box box, List<Entity> result)
+    public override void CollectEntitiesOfType<T>(Box box, List<T> result)
     {
     }
 
