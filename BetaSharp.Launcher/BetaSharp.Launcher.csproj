@@ -13,6 +13,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BetaSharp.Client\BetaSharp.Client.csproj"
+                      ReferenceOutputAssembly="false"
+                      Private="false"/>
+  </ItemGroup>
+
+  <Target Name="CopyClientOutput" AfterTargets="Build">
+    <PropertyGroup>
+      <ClientOutputDir>..\BetaSharp.Client\bin\$(Configuration)\$(TargetFramework)\</ClientOutputDir>
+      <ClientDestDir>$(OutputPath)Client\</ClientDestDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ClientFiles Include="$(ClientOutputDir)**\*.*"/>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ClientFiles)"
+          DestinationFiles="@(ClientFiles->'$(ClientDestDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"/>
+  </Target>
+
+  <ItemGroup>
     <AvaloniaResource Include="logo.png"/>
     <AvaloniaResource Include="logo.ico"/>
   </ItemGroup>
