@@ -24,8 +24,9 @@ internal static class Bootstrapper
             // Find a way to display class names and hide HttpClient's logs.
             const string template = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level} {Message:lj}{NewLine}{Exception}";
 
-            Log.Logger = new LoggerConfiguration()
+            var logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
+                .WriteTo.Debug(outputTemplate: template)
                 .WriteTo.File(
                     Path.Combine(App.Folder, "Logs", ".txt"),
                     rollingInterval: RollingInterval.Day,
@@ -33,7 +34,7 @@ internal static class Bootstrapper
                     outputTemplate: template)
                 .CreateLogger();
 
-            builder.AddSerilog(Log.Logger);
+            builder.AddSerilog(logger, true);
         });
 
         services.AddHttpClient<DownloadingService>();
