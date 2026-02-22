@@ -24,11 +24,11 @@ public abstract class Packet
     {
         if (IO_TO_TYPE.containsKey(Integer.valueOf(rawId)))
         {
-            throw new IllegalArgumentException("Duplicate packet id:" + rawId);
+            throw new ArgumentException("Duplicate packet id:" + rawId, nameof(rawId));
         }
         else if (TYPE_TO_ID.containsKey(type))
         {
-            throw new IllegalArgumentException("Duplicate packet class:" + type);
+            throw new ArgumentException("Duplicate packet class:" + type, nameof(type));
         }
         else
         {

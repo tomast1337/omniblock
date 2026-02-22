@@ -2,7 +2,6 @@ using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Screens.Slots;
-using java.lang;
 using java.util;
 
 namespace BetaSharp.Screens;
@@ -27,7 +26,7 @@ public abstract class ScreenHandler : java.lang.Object
     {
         if (listeners.contains(listener))
         {
-            throw new IllegalArgumentException("Listener already listening");
+            throw new ArgumentException("Listener already listening", nameof(listener));
         }
         else
         {
