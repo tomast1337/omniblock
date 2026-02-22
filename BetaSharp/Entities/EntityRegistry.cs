@@ -22,12 +22,6 @@ public static class EntityRegistry
         namesToId.TryAdd(id.ToLower(), rawId);
     }
 
-    [Obsolete("Creating object from type can return null, use Register(Func<World, Entity> factory, string id, int rawId) instead.")]
-    private static void Register(Type type, string id, int rawId)
-    {
-	    Register(world => (Entity)Activator.CreateInstance(type, world)!, id, rawId);
-    }
-
     public static Entity? Create(string id, World world)
     {
 	    TryCreate(id, world, out Entity? entity);
