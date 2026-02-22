@@ -6,7 +6,7 @@ using Exception = System.Exception;
 
 namespace BetaSharp.Entities;
 
-public class EntityRegistry
+public static class EntityRegistry
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(EntityRegistry));
     private static readonly Dictionary<string, Func<World, Entity>> idToFactory = new ();
