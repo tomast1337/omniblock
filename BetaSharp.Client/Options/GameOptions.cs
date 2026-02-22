@@ -4,14 +4,17 @@ using System.Linq;
 using System.Collections.Generic;
 using BetaSharp.Client.Input;
 using java.io;
-using FileNotFoundException = System.IO.FileNotFoundException;
+using Microsoft.Extensions.Logging;
 using File = System.IO.File;
+using FileNotFoundException = System.IO.FileNotFoundException;
 
 namespace BetaSharp.Client.Options;
 
 public class GameOptions
 {
-    private static readonly string[] RenderDistance =
+    private readonly ILogger<GameOptions> _logger = Log.Instance.For<GameOptions>();
+
+    private static readonly string[] RENDER_DISTANCES =
     [
         "options.renderDistance.far",
         "options.renderDistance.normal",
@@ -315,7 +318,7 @@ public class GameOptions
 
     private string FormatEnumValue(EnumOptions option, string label, TranslationStorage translations)
     {
-        if (option == EnumOptions.RENDER_DISTANCE) return label + translations.TranslateKey(RenderDistance[renderDistance]);
+        if (option == EnumOptions.RENDER_DISTANCE) return label + translations.TranslateKey(RENDER_DISTANCES[renderDistance]);
         if (option == EnumOptions.DIFFICULTY) return label + translations.TranslateKey(Difficulties[Difficulty]);
         if (option == EnumOptions.GUI_SCALE) return label + translations.TranslateKey(GuiScales[GuiScale]);
         if (option == EnumOptions.ANISOTROPIC) return label + (AnisotropicLevel == 0 ? translations.TranslateKey("options.off") : AnisoLeves[AnisotropicLevel]);
@@ -339,13 +342,13 @@ public class GameOptions
                 }
                 catch (Exception)
                 {
-                    Log.Error($"Skipping bad option: {line}");
+                    _logger.LogError($"Skipping bad option: {line}");
                 }
             }
         }
         catch (Exception)
         {
-            Log.Error("Failed to load options");
+            _logger.LogError("Failed to load options");
         }
     }
 
@@ -446,7 +449,7 @@ public class GameOptions
         }
         catch (Exception exception)
         {
-            Log.Error($"Failed to save options: {exception.Message}");
+            _logger.LogError($"Failed to save options: {exception.Message}");
         }
     }
 }
