@@ -12,13 +12,13 @@ namespace BetaSharp.Launcher.Features.Mojang;
 
 internal sealed class MojangClient(ILogger<MojangClient> logger, IHttpClientFactory clientFactory)
 {
-    public async Task<TokenResponse> GetTokenAsync(TokenRequest request)
+    public async Task<TokenResponse> GetTokenAsync(string token, string hash)
     {
         var client = clientFactory.CreateClient(nameof(MojangClient));
 
         var response = await client.PostAsync(
             "https://api.minecraftservices.com/authentication/login_with_xbox",
-            JsonContent.Create(request, MojangSerializerContext.Default.TokenRequest));
+            JsonContent.Create(new TokenRequest { Value = $"XBL3.0 x={hash};{token}" }, MojangSerializerContext.Default.TokenRequest));
 
         await using var stream = await response.Content.ReadAsStreamAsync();
 
