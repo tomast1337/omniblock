@@ -1624,7 +1624,14 @@ public partial class Minecraft
 
     public static void Startup(string[] args)
     {
-        StartMainThread(args[0], args[1]);
+        (string Name, string Session) result = args.Length switch
+        {
+            0 => ($"Player{Random.Shared.Next()}", "-"),
+            1 => (args[0], "-"),
+            _ => (args[0], args[1])
+        };
+
+        StartMainThread(result.Name, result.Session);
     }
 
     public static bool isGuiEnabled()
