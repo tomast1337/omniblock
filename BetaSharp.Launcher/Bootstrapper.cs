@@ -47,6 +47,7 @@ internal static partial class Bootstrapper
     [Singleton(typeof(AccountsService))]
     [Singleton(typeof(AuthenticationService))]
     [Transient(typeof(ClientService))]
+    [Transient(typeof(SkinService))]
     [Transient(typeof(MojangClient))]
     [Transient(typeof(XboxClient))]
     [Transient(typeof(AuthenticationView))]

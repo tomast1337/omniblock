@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Accounts;
 using BetaSharp.Launcher.Features.Messages;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,10 +11,13 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace BetaSharp.Launcher.Features.Home;
 
-internal sealed partial class HomeViewModel(AccountsService accountsService, ClientService clientService) : ObservableObject
+internal sealed partial class HomeViewModel(AccountsService accountsService, ClientService clientService, SkinService skinService) : ObservableObject
 {
     [ObservableProperty]
     public partial Account? Account { get; set; }
+
+    [ObservableProperty]
+    public partial CroppedBitmap? Face { get; set; }
 
     [RelayCommand]
     private async Task InitializeAsync()
@@ -21,6 +25,11 @@ internal sealed partial class HomeViewModel(AccountsService accountsService, Cli
         Account = await accountsService.GetAsync();
 
         ArgumentNullException.ThrowIfNull(Account);
+
+        if (!string.IsNullOrWhiteSpace(Account.Skin))
+        {
+            Face = await skinService.GetFaceAsync(Account.Skin);
+        }
     }
 
     [RelayCommand]
@@ -30,8 +39,6 @@ internal sealed partial class HomeViewModel(AccountsService accountsService, Cli
         ArgumentNullException.ThrowIfNull(Account);
 
         await clientService.DownloadAsync();
-
-        ArgumentException.ThrowIfNullOrWhiteSpace(Account.Token);
 
         // Probably should move this into a service.
         using var process = Process.Start(Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client"), [Account.Name, Account.Token]);
