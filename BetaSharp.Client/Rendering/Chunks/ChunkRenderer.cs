@@ -96,7 +96,7 @@ public class ChunkRenderer
         };
     }
 
-    public void Render(Culler camera, Vector3D<double> viewPos, int renderDistance, long ticks, float partialTicks, bool envAnim)
+    public void Render(Culler camera, Vector3D<double> viewPos, int renderDistance, long ticks, float partialTicks, float deltaTime, bool envAnim, bool chunkFadeEnabled)
     {
         lastRenderDistance = CalculateRealRenderDistance(renderDistance);
         lastViewPos = viewPos;
@@ -112,6 +112,7 @@ public class ChunkRenderer
         int wrappedTicks = (int)(ticks % 24000);
         chunkShader.SetUniform1("time", (wrappedTicks + partialTicks) / 20.0f);
         chunkShader.SetUniform1("envAnim", envAnim ? 1 : 0);
+        chunkShader.SetUniform1("chunkFadeEnabled", chunkFadeEnabled ? 1 : 0);
 
         var modelView = new Matrix4X4<float>();
         var projection = new Matrix4X4<float>();
@@ -140,6 +141,8 @@ public class ChunkRenderer
                 continue;
             }
 
+            state.Renderer.Update(deltaTime);
+
             if (state.Renderer.HasTranslucentMesh)
             {
                 translucentCount++;
@@ -147,6 +150,8 @@ public class ChunkRenderer
 
             if (camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
             {
+                float fadeProgress = Math.Clamp(state.Renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
+                chunkShader.SetUniform1("fadeProgress", fadeProgress);
                 state.Renderer.Render(chunkShader, 0, viewPos, modelView);
 
                 if (state.Renderer.HasTranslucentMesh)
@@ -216,6 +221,8 @@ public class ChunkRenderer
 
         foreach (var renderer in translucentRenderers)
         {
+            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
+            chunkShader.SetUniform1("fadeProgress", fadeProgress);
             renderer.Render(chunkShader, 1, viewPos, modelView);
         }
 

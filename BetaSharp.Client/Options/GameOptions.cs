@@ -52,6 +52,7 @@ public class GameOptions
     public BoolOption MipmapsOption { get; private set; }
     public BoolOption DebugModeOption { get; private set; }
     public BoolOption EnvironmentAnimationOption { get; private set; }
+    public BoolOption ChunkFadeOption { get; private set; }
 
 
     public CycleOption RenderDistanceOption { get; private set; }
@@ -66,7 +67,7 @@ public class GameOptions
     [
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
         ViewBobbingOption, GuiScaleOption, AnisotropicOption,
-        MipmapsOption, MsaaOption, EnvironmentAnimationOption, DebugModeOption
+        MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption, DebugModeOption
     ];
 
 
@@ -101,6 +102,7 @@ public class GameOptions
     public bool UseMipmaps => MipmapsOption.Value;
     public bool DebugMode => DebugModeOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
+    public bool ChunkFade => ChunkFadeOption.Value;
 
 
     public string Skin = "Default";
@@ -229,6 +231,7 @@ public class GameOptions
             OnChanged = v => Profiling.Profiler.Enabled = v
         };
         EnvironmentAnimationOption = new BoolOption("Environment Anim", "envAnimation", true);
+        ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
 
         RenderDistanceOption = new CycleOption("options.renderDistance", "viewDistance", RenderDistanceLabels);
         DifficultyOption = new CycleOption("options.difficulty", "difficulty", DifficultyLabels, 2);
@@ -277,6 +280,7 @@ public class GameOptions
         yield return MipmapsOption;
         yield return DebugModeOption;
         yield return EnvironmentAnimationOption;
+        yield return ChunkFadeOption;
         yield return RenderDistanceOption;
         yield return DifficultyOption;
         yield return GuiScaleOption;

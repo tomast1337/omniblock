@@ -45,7 +45,8 @@ public partial class Minecraft
     private bool hasCrashed;
     public int displayWidth;
     public int displayHeight;
-    private readonly Timer timer = new(20.0F);
+
+    public Timer Timer { get; } = new(20.0F);
     public World world;
     public WorldRenderer terrainRenderer;
     public ClientPlayerEntity player;
@@ -487,8 +488,8 @@ public partial class Minecraft
             {
                 if (options.DebugMode)
                 {
-                    Profiler.Update(timer.DeltaTime);
-                    Profiler.Record("frame Time", timer.DeltaTime * 1000.0f);
+                    Profiler.Update(Timer.DeltaTime);
+                    Profiler.Record("frame Time", Timer.DeltaTime * 1000.0f);
                     Profiler.PushGroup("run");
                 }
                 try
@@ -500,13 +501,13 @@ public partial class Minecraft
 
                     if (isGamePaused && world != null)
                     {
-                        float previousRenderPartialTicks = timer.renderPartialTicks;
-                        timer.UpdateTimer();
-                        timer.renderPartialTicks = previousRenderPartialTicks;
+                        float previousRenderPartialTicks = Timer.renderPartialTicks;
+                        Timer.UpdateTimer();
+                        Timer.renderPartialTicks = previousRenderPartialTicks;
                     }
                     else
                     {
-                        timer.UpdateTimer();
+                        Timer.UpdateTimer();
                     }
 
                     long tickStartTime = java.lang.System.nanoTime();
@@ -515,13 +516,13 @@ public partial class Minecraft
                         Profiler.PushGroup("runTicks");
                     }
 
-                    for (int tickIndex = 0; tickIndex < timer.elapsedTicks; ++tickIndex)
+                    for (int tickIndex = 0; tickIndex < Timer.elapsedTicks; ++tickIndex)
                     {
                         ++ticksRan;
 
                         try
                         {
-                            runTick(timer.renderPartialTicks);
+                            runTick(Timer.renderPartialTicks);
                         }
                         catch (MinecraftException tickException)
                         {
@@ -539,7 +540,7 @@ public partial class Minecraft
                     long tickElapsedTime = java.lang.System.nanoTime() - tickStartTime;
                     checkGLError("Pre render");
                     BlockRenderer.fancyGrass = true;
-                    sndManager.UpdateListener(player, timer.renderPartialTicks);
+                    sndManager.UpdateListener(player, Timer.renderPartialTicks);
                     GLManager.GL.Enable(GLEnum.Texture2D);
                     if (world != null)
                     {
@@ -560,16 +561,16 @@ public partial class Minecraft
 
                     if (!skipRenderWorld)
                     {
-                        playerController?.setPartialTime(timer.renderPartialTicks);
+                        playerController?.setPartialTime(Timer.renderPartialTicks);
 
                         if (options.DebugMode) Profiler.PushGroup("render");
-                        gameRenderer.onFrameUpdate(timer.renderPartialTicks);
+                        gameRenderer.onFrameUpdate(Timer.renderPartialTicks);
                         if (options.DebugMode) Profiler.PopGroup();
                     }
 
-                    if (imGuiController != null && timer.DeltaTime > 0.0f && options.ShowDebugInfo && options.DebugMode)
+                    if (imGuiController != null && Timer.DeltaTime > 0.0f && options.ShowDebugInfo && options.DebugMode)
                     {
-                        imGuiController.Update(timer.DeltaTime);
+                        imGuiController.Update(Timer.DeltaTime);
                         ProfilerRenderer.Draw();
                         ProfilerRenderer.DrawGraph();
 
@@ -1383,14 +1384,14 @@ public partial class Minecraft
 
         if (currentScreen == null)
         {
-            if (Mouse.isButtonDown(0) && (float)(ticksRan - mouseTicksRan) >= timer.ticksPerSecond / 4.0F &&
+            if (Mouse.isButtonDown(0) && (float)(ticksRan - mouseTicksRan) >= Timer.ticksPerSecond / 4.0F &&
                 inGameHasFocus)
             {
                 clickMouse(0);
                 mouseTicksRan = ticksRan;
             }
 
-            if (Mouse.isButtonDown(1) && (float)(ticksRan - mouseTicksRan) >= timer.ticksPerSecond / 4.0F &&
+            if (Mouse.isButtonDown(1) && (float)(ticksRan - mouseTicksRan) >= Timer.ticksPerSecond / 4.0F &&
                 inGameHasFocus)
             {
                 clickMouse(1);

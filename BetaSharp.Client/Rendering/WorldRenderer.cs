@@ -286,7 +286,7 @@ public class WorldRenderer : IWorldAccess
 
         if (pass == 0)
         {
-            chunkRenderer.Render(cam, new(var33, var7, var9), renderDistance, world.getTime(), (float)var3, mc.options.EnvironmentAnimation);
+            chunkRenderer.Render(cam, new Vector3D<double>(var33, var7, var9), renderDistance, world.getTime(), (float)var3, mc.Timer.DeltaTime, mc.options.EnvironmentAnimation, mc.options.ChunkFade);
         }
         else
         {
