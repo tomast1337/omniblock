@@ -34,16 +34,15 @@ internal sealed class AccountsService(
         var xbox = await xboxClient.GetTokenAsync(profile.Token);
 
         var mojang = await mojangClient.GetTokenAsync(xbox.Value, profile.DisplayClaims.Xui[0].Uhs);
-
         var entitlements = await mojangClient.GetEntitlementsAsync(mojang.Value);
 
-        if (!entitlements.Items.Any(item => item.Name is "product_minecraft" or "game_minecraft"))
+        if (entitlements.Items.Any(item => item.Name is "product_minecraft" or "game_minecraft"))
         {
-            logger.LogInformation("Account does not own Minecraft Java edition");
-            return null;
+            return mojang;
         }
 
-        return mojang;
+        logger.LogInformation("Account does not own Minecraft Java edition");
+        return null;
     }
 
     public async Task<Account?> GetAsync()
@@ -63,13 +62,13 @@ internal sealed class AccountsService(
             ArgumentNullException.ThrowIfNull(_account);
         }
 
-        if (DateTimeOffset.Now.AddMinutes(1) > _account.Expiration)
+        if (DateTimeOffset.Now.AddMinutes(1) <= _account.Expiration)
         {
-            logger.LogInformation("Account's token expired");
-            return null;
+            return _account;
         }
 
-        return _account;
+        logger.LogInformation("Account's token expired");
+        return null;
     }
 
     public async Task RefreshAsync(string token, DateTimeOffset expiration)
