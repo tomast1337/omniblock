@@ -87,7 +87,7 @@ public class GuiMainMenu : GuiScreen
                 translator.TranslateKey("menu.quit")));
         }
 
-        if (mc.session == null)
+        if (mc.session == null || mc.session.sessionId == "-")
         {
             _multiplayerButton.Enabled = false;
         }

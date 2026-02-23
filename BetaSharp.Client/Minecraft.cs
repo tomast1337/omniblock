@@ -1650,6 +1650,11 @@ public partial class Minecraft
         if (playerName != null && sessionToken != null)
         {
             mc.session = new Session(playerName, sessionToken);
+
+            if (sessionToken == "-")
+            {
+                hasPaidCheckTime = java.lang.System.currentTimeMillis();
+            }
         }
         else
         {
