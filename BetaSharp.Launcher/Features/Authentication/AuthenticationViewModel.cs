@@ -1,5 +1,8 @@
-﻿using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Messages;
+using System;
+using System.Threading.Tasks;
+using BetaSharp.Launcher.Features.Accounts;
+using BetaSharp.Launcher.Features.Alert;
+using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -7,24 +10,22 @@ using CommunityToolkit.Mvvm.Messaging;
 namespace BetaSharp.Launcher.Features.Authentication;
 
 // Does this need a better name?
-internal sealed partial class AuthenticationViewModel(
-    AccountService accountService,
-    AuthenticationService authenticationService,
-    XboxService xboxService,
-    MinecraftService minecraftService) : ObservableObject
+internal sealed partial class AuthenticationViewModel(AccountsService accountsService, AlertService alertService) : ObservableObject
 {
     [RelayCommand]
     private async Task AuthenticateAsync()
     {
-        string microsoft = await authenticationService.AuthenticateAsync();
+        await accountsService.DeleteAsync();
 
-        var xbox = await xboxService.GetAsync(microsoft);
+        var token = await accountsService.AuthenticateAsync();
 
-        var minecraft = await minecraftService.GetTokenAsync(xbox.Token, xbox.Hash);
+        if (token is null)
+        {
+            await alertService.ShowAsync("Authentication Failure", "The selected Microsoft account does not own a copy of Minecraft Java edition");
+            return;
+        }
 
-        var profile = await minecraftService.GetProfileAsync(minecraft.Token);
-
-        await accountService.UpdateAsync(profile.Name, profile.Skin, minecraft.Token, minecraft.Expiration);
+        await accountsService.RefreshAsync(token.Value, DateTimeOffset.Now.AddSeconds(token.Expiration));
 
         WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Home));
     }
