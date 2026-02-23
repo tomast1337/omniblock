@@ -11,13 +11,6 @@
     </Interaction.Behaviors>
 
     <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Account, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-        <Grid.Styles>
-            <Style Selector="Button">
-                <Setter Property="HorizontalAlignment" Value="Stretch" />
-                <Setter Property="HorizontalContentAlignment" Value="Center" />
-            </Style>
-        </Grid.Styles>
-
         <Grid ColumnDefinitions="* Auto">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal" Spacing="25" Grid.Row="0">
                 <Border Width="50" Height="50" CornerRadius="{StaticResource ControlCornerRadius}" ClipToBounds="True">
