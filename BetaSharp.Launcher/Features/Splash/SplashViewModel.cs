@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Accounts;
-using BetaSharp.Launcher.Features.Messages;
+using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -13,13 +13,14 @@ internal sealed partial class SplashViewModel(AccountsService accountsService) :
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        // Simulate lag to avoid Avalonia crashing.
-        // This will be replaced by an update checker.
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        // Let everyone appreciate BetaSharp's logo.
+        var delay = Task.Delay(TimeSpan.FromSeconds(2.5));
 
         await accountsService.InitializeAsync();
 
         var account = await accountsService.GetAsync();
+
+        await delay;
 
         WeakReferenceMessenger.Default.Send(new NavigationMessage(account is null ? Destination.Authentication : Destination.Home));
     }

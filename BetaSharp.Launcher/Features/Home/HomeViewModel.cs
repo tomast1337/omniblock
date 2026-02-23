@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Accounts;
-using BetaSharp.Launcher.Features.Messages;
+using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -22,6 +22,7 @@ internal sealed partial class HomeViewModel(AccountsService accountsService, Cli
     [RelayCommand]
     private async Task InitializeAsync()
     {
+        // This doesn't get updated on sign out.
         Account = await accountsService.GetAsync();
 
         ArgumentNullException.ThrowIfNull(Account);
