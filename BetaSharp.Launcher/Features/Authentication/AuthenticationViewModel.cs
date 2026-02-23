@@ -15,12 +15,13 @@ internal sealed partial class AuthenticationViewModel(AccountsService accountsSe
     [RelayCommand]
     private async Task AuthenticateAsync()
     {
+        await accountsService.DeleteAsync();
+
         var token = await accountsService.AuthenticateAsync();
 
         if (token is null)
         {
             await alertService.ShowAsync("Authentication Failure", "The selected Microsoft account does not own a copy of Minecraft Java edition");
-            await accountsService.DeleteAsync();
 
             return;
         }
