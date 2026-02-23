@@ -1,10 +1,8 @@
 using System;
 using System.IO;
-using System.Text.Json.Serialization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using BetaSharp.Launcher.Features.Accounts;
 using BetaSharp.Launcher.Features.Shell;
 using Microsoft.Extensions.DependencyInjection;
 
