@@ -38,8 +38,9 @@ internal sealed class AccountsService(
         // Check if owns Minecraft.
         var entitlements = await mojangClient.GetEntitlementsAsync(mojang.Value);
 
-        if (entitlements.Items.Length is 0)
+        if (!entitlements.Items.Any(item => item.Name is "product_minecraft" or "game_minecraft"))
         {
+            logger.LogInformation("Account does not own Minecraft Java edition");
             return null;
         }
 
@@ -52,6 +53,7 @@ internal sealed class AccountsService(
         {
             if (!File.Exists(_path))
             {
+                logger.LogInformation("Failed to get account's file");
                 return null;
             }
 
@@ -64,6 +66,7 @@ internal sealed class AccountsService(
 
         if (DateTimeOffset.Now.AddMinutes(1) > _account.Expiration)
         {
+            logger.LogInformation("Account's token expired");
             return null;
         }
 

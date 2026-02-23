@@ -91,37 +91,6 @@ internal sealed class AuthenticationService
         return result.AccessToken;
     }
 
-    // public async Task<string> GetTokenAsync()
-    // {
-    //     // Find out a way to use system brokers.
-    //     var result = await _application
-    //         .AcquireTokenInteractive(_scopes)
-    //         .WithUseEmbeddedWebView(false)
-    //         .WithSystemWebViewOptions(_webViewOptions)
-    //         .ExecuteAsync();
-    //
-    //     return result.AccessToken;
-    // }
-    //
-    // public async Task<string?> TryGetTokenSilentlyAsync()
-    // {
-    //     try
-    //     {
-    //         var accounts = await _application.GetAccountsAsync();
-    //
-    //         // Let user choose which account to authenticate with?
-    //         var result = await _application
-    //             .AcquireTokenSilent(_scopes, accounts.FirstOrDefault())
-    //             .ExecuteAsync();
-    //
-    //         return result.AccessToken;
-    //     }
-    //     catch (MsalUiRequiredException)
-    //     {
-    //         return null;
-    //     }
-    // }
-
     public async Task SignOutAsync()
     {
         _logger.LogWarning("Signing out Microsoft accounts");
