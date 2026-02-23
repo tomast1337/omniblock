@@ -4,14 +4,18 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Accounts;
+using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 
 namespace BetaSharp.Launcher.Features.Home;
 
-internal sealed partial class HomeViewModel(AccountsService accountsService, ClientService clientService, SkinService skinService) : ObservableObject
+internal sealed partial class HomeViewModel(
+    NavigationService navigationService,
+    AccountsService accountsService,
+    ClientService clientService,
+    SkinService skinService) : ObservableObject
 {
     [ObservableProperty]
     public partial Account? Account { get; set; }
@@ -52,7 +56,7 @@ internal sealed partial class HomeViewModel(AccountsService accountsService, Cli
     [RelayCommand]
     private async Task SignOutAsync()
     {
-        WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Authentication));
+        navigationService.Navigate<AuthenticationViewModel>();
         await accountsService.DeleteAsync();
     }
 }

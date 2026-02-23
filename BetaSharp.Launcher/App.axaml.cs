@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using BetaSharp.Launcher.Features.Shell;
+using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BetaSharp.Launcher;
@@ -56,6 +57,10 @@ internal sealed class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            _services
+                .GetRequiredService<NavigationService>()
+                .Navigate<SplashViewModel>();
+
             desktop.MainWindow = _services.GetRequiredService<ShellView>();
         }
 

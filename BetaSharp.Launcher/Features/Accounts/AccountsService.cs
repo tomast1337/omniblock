@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace BetaSharp.Launcher.Features.Accounts;
 
 // Add support for multiple accounts.
+// This needs more refactoring.
 internal sealed class AccountsService(
     ILogger<AccountsService> logger,
     AuthenticationService authenticationService,
