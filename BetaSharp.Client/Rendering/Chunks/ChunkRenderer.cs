@@ -230,7 +230,7 @@ public class ChunkRenderer
                 {
                     if (!chunkVersions.TryGetValue(mesh.Pos, out var version))
                     {
-                        version = new ChunkMeshVersion();
+                        version = ChunkMeshVersion.Get();
                         chunkVersions[mesh.Pos] = version;
                     }
 
@@ -334,7 +334,7 @@ public class ChunkRenderer
             {
                 if (!chunkVersions.TryGetValue(state.Renderer.Position, out var version))
                 {
-                    version = new();
+                    version = ChunkMeshVersion.Get();
                     chunkVersions[state.Renderer.Position] = version;
                 }
 
@@ -437,6 +437,7 @@ public class ChunkRenderer
 
         foreach (var pos in chunkVersionsToRemove)
         {
+            chunkVersions[pos].Release();
             chunkVersions.Remove(pos);
         }
 
@@ -453,7 +454,7 @@ public class ChunkRenderer
 
         if (!chunkVersions.TryGetValue(chunkPos, out var version))
         {
-            version = new();
+            version = ChunkMeshVersion.Get();
             chunkVersions[chunkPos] = version;
         }
         version.MarkDirty();
@@ -505,6 +506,11 @@ public class ChunkRenderer
 
         translucentRenderers.Clear();
         renderersToRemove.Clear();
+
+        foreach (var version in chunkVersions.Values)
+        {
+            version.Release();
+        }
         chunkVersions.Clear();
     }
 }

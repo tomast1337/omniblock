@@ -576,6 +576,8 @@ public partial class Minecraft
 
                         ImGui.Begin("Render Info");
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
+                        ImGui.Text($"ChunkMeshVersion Allocated: {BetaSharp.Util.ChunkMeshVersion.TotalAllocated}");
+                        ImGui.Text($"ChunkMeshVersion Released: {BetaSharp.Util.ChunkMeshVersion.TotalReleased}");
                         ImGui.End();
 
                         imGuiController.Render();
