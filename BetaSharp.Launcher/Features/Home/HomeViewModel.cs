@@ -22,6 +22,7 @@ internal sealed partial class HomeViewModel(AccountsService accountsService, Cli
     [RelayCommand]
     private async Task InitializeAsync()
     {
+        // This doesn't get updated on sign out.
         Account = await accountsService.GetAsync();
 
         ArgumentNullException.ThrowIfNull(Account);
