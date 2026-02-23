@@ -11,13 +11,6 @@ public class GameOptions
 {
     private readonly ILogger<GameOptions> _logger = Log.Instance.For<GameOptions>();
 
-    private static readonly string[] RenderDistanceLabels =
-    [
-        "options.renderDistance.far",
-        "options.renderDistance.normal",
-        "options.renderDistance.short",
-        "options.renderDistance.tiny",
-    ];
     private static readonly string[] DifficultyLabels =
     [
         "options.difficulty.peaceful",
@@ -56,7 +49,7 @@ public class GameOptions
     public BoolOption MenuMusicOption { get; private set; }
 
 
-    public CycleOption RenderDistanceOption { get; private set; }
+    public FloatOption RenderDistanceOption { get; private set; }
     public CycleOption DifficultyOption { get; private set; }
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
@@ -93,7 +86,7 @@ public class GameOptions
         get => InvertMouseOption.Value;
         set => InvertMouseOption.Value = value;
     }
-    public int renderDistance => RenderDistanceOption.Value;
+    public int renderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
     public bool ViewBobbing => ViewBobbingOption.Value;
     public bool VSync => VSyncOption.Value;
     public int Difficulty => DifficultyOption.Value;
@@ -237,7 +230,18 @@ public class GameOptions
         ChunkFadeOption = new BoolOption("Chunk Fade", "chunkFade", true);
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
-        RenderDistanceOption = new CycleOption("options.renderDistance", "viewDistance", RenderDistanceLabels);
+        RenderDistanceOption = new FloatOption("options.renderDistance", "viewDistance", 0.2f)
+        {
+            LabelOverride = "Render Distance",
+            Steps = 28,
+            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
+            OnChanged = _ => {
+                if (_mc?.internalServer != null)
+                {
+                    _mc.internalServer.SetViewDistance(this.renderDistance);
+                }
+            }
+        };
         DifficultyOption = new CycleOption("options.difficulty", "difficulty", DifficultyLabels, 2);
         GuiScaleOption = new CycleOption("options.guiScale", "guiScale", GuiScaleLabels);
         AnisotropicOption = new CycleOption("Aniso Level", "anisotropicLevel", AnisoLabels)

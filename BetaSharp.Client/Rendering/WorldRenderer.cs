@@ -184,7 +184,7 @@ public class WorldRenderer : IWorldAccess
 
 
 
-        if (renderDistance == 0)
+        if (renderDistance >= 16)
         {
             SubChunkRenderer.Size = 32;
         }

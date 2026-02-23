@@ -84,21 +84,9 @@ public class ChunkRenderer
         GLManager.GL.UseProgram(0);
     }
 
-    private static int CalculateRealRenderDistance(int val) // TODO: Maybe it's better to flip the values?
-    {
-        return val switch
-        {
-            0 => 16,
-            1 => 8,
-            2 => 4,
-            3 => 2,
-            _ => 0,
-        };
-    }
-
     public void Render(Culler camera, Vector3D<double> viewPos, int renderDistance, long ticks, float partialTicks, float deltaTime, bool envAnim, bool chunkFadeEnabled)
     {
-        lastRenderDistance = CalculateRealRenderDistance(renderDistance);
+        lastRenderDistance = renderDistance;
         lastViewPos = viewPos;
 
         chunkShader.Bind();
