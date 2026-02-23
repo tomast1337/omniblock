@@ -20,8 +20,8 @@
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Welcome" Opacity="0.5" />
 
-                    <TextBlock Text="{CompiledBinding Account.Name, FallbackValue='...'}" FontWeight="Bold"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Text="{CompiledBinding Account.Name, FallbackValue='...'}"
+                               FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>
 

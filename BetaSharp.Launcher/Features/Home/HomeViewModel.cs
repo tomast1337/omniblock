@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Accounts;
-using BetaSharp.Launcher.Features.Messages;
+using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
