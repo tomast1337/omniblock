@@ -22,7 +22,6 @@ internal sealed partial class AuthenticationViewModel(AccountsService accountsSe
         if (token is null)
         {
             await alertService.ShowAsync("Authentication Failure", "The selected Microsoft account does not own a copy of Minecraft Java edition");
-
             return;
         }
 
