@@ -26,7 +26,6 @@ internal sealed partial class HomeViewModel(
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        // This doesn't get updated on sign out.
         Account = await accountsService.GetAsync();
 
         ArgumentNullException.ThrowIfNull(Account);
@@ -45,7 +44,7 @@ internal sealed partial class HomeViewModel(
 
         await clientService.DownloadAsync();
 
-        // Probably should move this into a service.
+        // Probably should move this into a service/view-model.
         using var process = Process.Start(Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client"), [Account.Name, Account.Token]);
 
         ArgumentNullException.ThrowIfNull(process);
