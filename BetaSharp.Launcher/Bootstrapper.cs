@@ -30,7 +30,7 @@ internal static partial class Bootstrapper
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.File(
-                    Path.Combine(App.Folder, "Logs", ".txt"),
+                    Path.Combine(App.Folder, "logs", ".txt"),
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 5,
                     outputTemplate: template)
