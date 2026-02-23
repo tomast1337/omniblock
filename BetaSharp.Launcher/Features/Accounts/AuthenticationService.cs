@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
-namespace BetaSharp.Launcher.Features;
+namespace BetaSharp.Launcher.Features.Accounts;
 
 // More decoupling and overall cleaning.
 internal sealed class AuthenticationService
@@ -91,11 +91,36 @@ internal sealed class AuthenticationService
         return result.AccessToken;
     }
 
-    public async Task<bool> HasAccountsAsync()
-    {
-        var accounts = await _application.GetAccountsAsync();
-        return accounts.Any();
-    }
+    // public async Task<string> GetTokenAsync()
+    // {
+    //     // Find out a way to use system brokers.
+    //     var result = await _application
+    //         .AcquireTokenInteractive(_scopes)
+    //         .WithUseEmbeddedWebView(false)
+    //         .WithSystemWebViewOptions(_webViewOptions)
+    //         .ExecuteAsync();
+    //
+    //     return result.AccessToken;
+    // }
+    //
+    // public async Task<string?> TryGetTokenSilentlyAsync()
+    // {
+    //     try
+    //     {
+    //         var accounts = await _application.GetAccountsAsync();
+    //
+    //         // Let user choose which account to authenticate with?
+    //         var result = await _application
+    //             .AcquireTokenSilent(_scopes, accounts.FirstOrDefault())
+    //             .ExecuteAsync();
+    //
+    //         return result.AccessToken;
+    //     }
+    //     catch (MsalUiRequiredException)
+    //     {
+    //         return null;
+    //     }
+    // }
 
     public async Task SignOutAsync()
     {

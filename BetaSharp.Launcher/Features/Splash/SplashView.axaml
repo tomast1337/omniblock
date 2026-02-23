@@ -10,5 +10,5 @@
         </EventTriggerBehavior>
     </Interaction.Behaviors>
 
-    <TextBlock Text="Checking for updates..." Opacity="0.5" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    <TextBlock Text="Initializing" Opacity="0.5" HorizontalAlignment="Center" VerticalAlignment="Center" />
 </UserControl>

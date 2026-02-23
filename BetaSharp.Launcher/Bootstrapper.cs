@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using BetaSharp.Launcher.Features;
+using BetaSharp.Launcher.Features.Accounts;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Mojang;
@@ -44,7 +44,7 @@ internal static partial class Bootstrapper
     }
 
     [Singleton(typeof(ViewLocator))]
-    [Singleton(typeof(AccountService))]
+    [Singleton(typeof(AccountsService))]
     [Singleton(typeof(AuthenticationService))]
     [Transient(typeof(ClientService))]
     [Transient(typeof(MojangClient))]

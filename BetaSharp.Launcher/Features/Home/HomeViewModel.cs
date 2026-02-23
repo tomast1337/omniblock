@@ -1,85 +1,25 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
-using Avalonia.Media.Imaging;
-using BetaSharp.Launcher.Features.Messages;
-using BetaSharp.Launcher.Features.Mojang;
+using BetaSharp.Launcher.Features.Accounts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 
 namespace BetaSharp.Launcher.Features.Home;
 
-internal sealed partial class HomeViewModel(
-    AuthenticationService authenticationService,
-    AccountService accountService,
-    MojangClient mojangClient,
-    ClientService clientService) : ObservableObject
+internal sealed partial class HomeViewModel(AccountsService accountsService) : ObservableObject
 {
-    [ObservableProperty]
-    public partial bool IsReady { get; set; }
-
     [ObservableProperty]
     public partial string Name { get; set; } = "...";
 
-    [ObservableProperty]
-    public partial CroppedBitmap? Face { get; set; }
-
-    private string? _token;
-    private DateTimeOffset _expiration;
+    private Account? _account;
 
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        IsReady = false;
+        _account = await accountsService.GetAsync();
 
-        await Task.Yield();
+        ArgumentNullException.ThrowIfNull(_account);
 
-        var account = await accountService.GetAsync();
-
-        if (account is null)
-        {
-            WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Authentication));
-            return;
-        }
-
-        Name = account.Name;
-
-        // ArgumentException.ThrowIfNullOrWhiteSpace(account.Skin);
-
-        // Face = await minecraftService.GetFaceAsync(account.Skin);
-
-        _token = account.Token;
-        _expiration = account.Expiration;
-
-        IsReady = true;
-    }
-
-    [RelayCommand]
-    private async Task PlayAsync()
-    {
-        if (DateTimeOffset.Now > _expiration)
-        {
-            WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Authentication));
-            return;
-        }
-
-        await clientService.DownloadAsync();
-
-        ArgumentException.ThrowIfNullOrWhiteSpace(_token);
-
-        using var process = Process.Start(Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client"), [Name, _token]);
-
-        ArgumentNullException.ThrowIfNull(process);
-
-        await process.WaitForExitAsync();
-    }
-
-    [RelayCommand]
-    private async Task SignOutAsync()
-    {
-        await authenticationService.SignOutAsync();
-        WeakReferenceMessenger.Default.Send(new NavigationMessage(Destination.Authentication));
+        Name = _account.Name;
     }
 }
