@@ -18,106 +18,64 @@ using java.lang;
 using java.util;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
+using Random = System.Random;
 
 namespace BetaSharp.Worlds;
 
 public abstract class World : BlockView
 {
     private const int AUTOSAVE_PERIOD = 40;
-    public bool instantBlockUpdateEnabled;
-    private readonly List<LightUpdate> lightingQueue;
+    public bool instantBlockUpdateEnabled = false;
+    private readonly List<LightUpdate> lightingQueue = [];
     private readonly ILogger<World> _logger = Log.Instance.For<World>();
-    public List<Entity> entities;
-    private readonly List<Entity> entitiesToUnload;
-    private readonly TreeSet scheduledUpdates;
-    private readonly Set scheduledUpdateSet;
-    public List<BlockEntity> blockEntities;
-    private readonly List<BlockEntity> blockEntityUpdateQueue;
-    public List<EntityPlayer> players;
-    public List globalEntities;
-    private readonly long worldTimeMask;
-    public int ambientDarkness;
-    protected int lcgBlockSeed;
-    protected readonly int lcgBlockSeedIncrement;
+    public List<Entity> entities = [];
+    private readonly List<Entity> entitiesToUnload = [];
+    private readonly PriorityQueue<BlockUpdate, (long, long)> _scheduledUpdates = new();
+    private long _eventDeltaTime = 0; // difference between world time and the scheduled time of the block events so things don't break when using the time command
+    public List<BlockEntity> blockEntities = [];
+    private readonly List<BlockEntity> blockEntityUpdateQueue = [];
+    public List<EntityPlayer> players = [];
+    public List globalEntities = new ArrayList();
+    private readonly long worldTimeMask = 0xFFFFFFL;
+    public int ambientDarkness = 0;
+    protected int lcgBlockSeed = Random.Shared.Next();
     protected float prevRainingStrength;
     protected float rainingStrength;
     protected float prevThunderingStrength;
     protected float thunderingStrength;
-    protected int ticksSinceLightning;
-    public int lightningTicksLeft;
-    public bool pauseTicking;
-    private readonly long lockTimestamp;
-    protected int autosavePeriod;
+    protected int ticksSinceLightning = 0;
+    public int lightningTicksLeft = 0;
+    public bool pauseTicking = false;
+    protected int autosavePeriod = AUTOSAVE_PERIOD;
     public int difficulty;
-    public JavaRandom random;
+    public JavaRandom random = new();
     public bool isNewWorld;
     public readonly Dimension dimension;
-    protected List<IWorldAccess> eventListeners;
+    protected List<IWorldAccess> eventListeners = [];
     protected ChunkSource chunkSource;
     protected readonly IWorldStorage storage;
     protected WorldProperties properties;
     public bool eventProcessingEnabled;
     private bool allPlayersSleeping;
     public PersistentStateManager persistentStateManager;
-    private readonly List<Box> collidingBoundingBoxes;
+    private readonly List<Box> collidingBoundingBoxes = [];
     private bool processingDeferred;
-    private int lightingUpdatesCounter;
-    private bool spawnHostileMobs;
-    private bool spawnPeacefulMobs;
+    private int lightingUpdatesCounter = 0;
+    private bool spawnHostileMobs = true;
+    private bool spawnPeacefulMobs = true;
     private int lightingUpdatesScheduled;
-    private readonly HashSet<ChunkPos> activeChunks;
-    private int soundCounter;
-    private readonly List<Entity> tempEntityList;
-    public bool isRemote;
+    private readonly HashSet<ChunkPos> activeChunks = new();
+    private int soundCounter = Random.Shared.Next(12000);
+    private readonly List<Entity> tempEntityList = [];
+    public bool isRemote = false;
     public RuleSet Rules { get; protected set; }
-
-    public BiomeSource getBiomeSource()
-    {
-        return dimension.BiomeSource;
-    }
-
-    public IWorldStorage getWorldStorage()
-    {
-        return storage;
-    }
-
 
     public World(IWorldStorage var1, string var2, Dimension var3, long var4)
     {
-        instantBlockUpdateEnabled = false;
-        lightingQueue = [];
-        entities = [];
-        entitiesToUnload = [];
-        scheduledUpdates = new TreeSet();
-        scheduledUpdateSet = new HashSet();
-        blockEntities = [];
-        blockEntityUpdateQueue = [];
-        players = [];
-        globalEntities = new ArrayList();
-        worldTimeMask = 0xFFFFFFL;
-        ambientDarkness = 0;
-        lcgBlockSeed = (new JavaRandom()).NextInt();
-        lcgBlockSeedIncrement = 1013904223;
-        ticksSinceLightning = 0;
-        lightningTicksLeft = 0;
-        pauseTicking = false;
-        lockTimestamp = java.lang.System.currentTimeMillis();
-        autosavePeriod = AUTOSAVE_PERIOD;
-        random = new();
-        isNewWorld = false;
-        eventListeners = [];
-        collidingBoundingBoxes = [];
-        lightingUpdatesCounter = 0;
-        spawnHostileMobs = true;
-        spawnPeacefulMobs = true;
-        activeChunks = new HashSet<ChunkPos>();
-        soundCounter = random.NextInt(12000);
-        tempEntityList = [];
-        isRemote = false;
         storage = var1;
+        persistentStateManager = new PersistentStateManager(var1);
         properties = new WorldProperties(var4, var2);
         dimension = var3;
-        persistentStateManager = new PersistentStateManager(var1);
         var3.SetWorld(this);
         chunkSource = CreateChunkCache();
         Rules = properties.RulesTag != null
@@ -127,88 +85,8 @@ public abstract class World : BlockView
         prepareWeather();
     }
 
-    public World(World var1, Dimension var2)
-    {
-        instantBlockUpdateEnabled = false;
-        lightingQueue = [];
-        entities = [];
-        entitiesToUnload = [];
-        scheduledUpdates = new TreeSet();
-        scheduledUpdateSet = new HashSet();
-        blockEntities = [];
-        blockEntityUpdateQueue = [];
-        players = [];
-        globalEntities = new ArrayList();
-        worldTimeMask = 0xFFFFFFL;
-        ambientDarkness = 0;
-        lcgBlockSeed = (new JavaRandom()).NextInt();
-        lcgBlockSeedIncrement = 1013904223;
-        ticksSinceLightning = 0;
-        lightningTicksLeft = 0;
-        pauseTicking = false;
-        lockTimestamp = java.lang.System.currentTimeMillis();
-        autosavePeriod = AUTOSAVE_PERIOD;
-        random = new();
-        isNewWorld = false;
-        eventListeners = [];
-        collidingBoundingBoxes = [];
-        lightingUpdatesCounter = 0;
-        spawnHostileMobs = true;
-        spawnPeacefulMobs = true;
-        activeChunks = new HashSet<ChunkPos>();
-        soundCounter = random.NextInt(12000);
-        tempEntityList = [];
-        isRemote = false;
-        lockTimestamp = var1.lockTimestamp;
-        storage = var1.storage;
-        properties = new WorldProperties(var1.properties);
-        persistentStateManager = new PersistentStateManager(storage);
-        dimension = var2;
-        var2.SetWorld(this);
-        chunkSource = CreateChunkCache();
-        Rules = properties.RulesTag != null
-            ? RuleSet.FromNBT(RuleRegistry.Instance, properties.RulesTag)
-            : new RuleSet(RuleRegistry.Instance);
-        updateSkyBrightness();
-        prepareWeather();
-    }
-
-    public World(IWorldStorage var1, string var2, long var3) : this(var1, var2, var3, null)
-    {
-    }
-
     public World(IWorldStorage var1, string var2, long var3, Dimension var5)
     {
-        instantBlockUpdateEnabled = false;
-        lightingQueue = [];
-        entities = [];
-        entitiesToUnload = [];
-        scheduledUpdates = new TreeSet();
-        scheduledUpdateSet = new HashSet();
-        blockEntities = [];
-        blockEntityUpdateQueue = [];
-        players = [];
-        globalEntities = new ArrayList();
-        worldTimeMask = 0xFFFFFFL;
-        ambientDarkness = 0;
-        lcgBlockSeed = (new JavaRandom()).NextInt();
-        lcgBlockSeedIncrement = 1013904223;
-        ticksSinceLightning = 0;
-        lightningTicksLeft = 0;
-        pauseTicking = false;
-        lockTimestamp = java.lang.System.currentTimeMillis();
-        autosavePeriod = AUTOSAVE_PERIOD;
-        random = new JavaRandom();
-        isNewWorld = false;
-        eventListeners = [];
-        collidingBoundingBoxes = [];
-        lightingUpdatesCounter = 0;
-        spawnHostileMobs = true;
-        spawnPeacefulMobs = true;
-        activeChunks = new HashSet<ChunkPos>();
-        soundCounter = random.NextInt(12000);
-        tempEntityList = [];
-        isRemote = false;
         storage = var1;
         persistentStateManager = new PersistentStateManager(var1);
         properties = var1.LoadProperties();
@@ -250,6 +128,16 @@ public abstract class World : BlockView
 
         updateSkyBrightness();
         prepareWeather();
+    }
+
+    public BiomeSource getBiomeSource()
+    {
+        return dimension.BiomeSource;
+    }
+
+    public IWorldStorage getWorldStorage()
+    {
+        return storage;
     }
 
     protected abstract ChunkSource CreateChunkCache();
@@ -1502,38 +1390,29 @@ public abstract class World : BlockView
         return -1;
     }
 
-    public virtual void ScheduleBlockUpdate(int x, int y, int z, int id, int tickRate)
+    public virtual void ScheduleBlockUpdate(int x, int y, int z, int blockId, int tickRate)
     {
-        BlockEvent var6 = new(x, y, z, id);
         byte var7 = 8;
         if (instantBlockUpdateEnabled)
         {
-            if (isRegionLoaded(var6.X - var7, var6.Y - var7, var6.Z - var7, var6.X + var7, var6.Y + var7, var6.Z + var7))
+            if (isRegionLoaded(x - var7, y - var7, z - var7, x + var7, y + var7, z + var7))
             {
-                int var8 = getBlockId(var6.X, var6.Y, var6.Z);
-                if (var8 == var6.BlockId && var8 > 0)
+                int var8 = getBlockId(x, y, z);
+                if (var8 == blockId && var8 > 0)
                 {
-                    Block.Blocks[var8].onTick(this, var6.X, var6.Y, var6.Z, random);
+                    Block.Blocks[var8].onTick(this, x, y, z, random);
                 }
             }
-
         }
         else
         {
             if (isRegionLoaded(x - var7, y - var7, z - var7, x + var7, y + var7, z + var7))
             {
-                if (id > 0)
-                {
-                    var6.Ticks = properties.WorldTime + tickRate;
-                }
+                long scheduledTime = GetEventTime() + tickRate;
+                BlockUpdate blockUpdate = new(x, y, z, blockId, scheduledTime);
 
-                if (!scheduledUpdateSet.contains(var6))
-                {
-                    scheduledUpdateSet.add(var6);
-                    scheduledUpdates.add(var6);
-                }
+                _scheduledUpdates.Enqueue(blockUpdate, (blockUpdate.ScheduledTime, blockUpdate.ScheduledOrder));
             }
-
         }
     }
 
@@ -2589,42 +2468,23 @@ public abstract class World : BlockView
 
     }
 
-    public virtual bool ProcessScheduledTicks(bool flush)
+    public virtual void ProcessScheduledTicks(bool flush)
     {
-        int var2 = scheduledUpdates.size();
-        if (var2 != scheduledUpdateSet.size())
+        for (int i = 0; i < 1000; ++i)
         {
-            throw new IllegalStateException("TickNextTick list out of synch");
-        }
-        else
-        {
-            if (var2 > 1000)
-            {
-                var2 = 1000;
-            }
+            if (_scheduledUpdates.Count == 0) break;
+            if (!flush && _scheduledUpdates.Peek().ScheduledTime > GetEventTime()) break;
+            var blockUpdate = _scheduledUpdates.Dequeue();
 
-            for (int var3 = 0; var3 < var2; ++var3)
+            byte var5 = 8;
+            if (isRegionLoaded(blockUpdate.X - var5, blockUpdate.Y - var5, blockUpdate.Z - var5, blockUpdate.X + var5, blockUpdate.Y + var5, blockUpdate.Z + var5))
             {
-                BlockEvent var4 = (BlockEvent)scheduledUpdates.first();
-                if (!flush && var4.Ticks > properties.WorldTime)
+                int blockId = getBlockId(blockUpdate.X, blockUpdate.Y, blockUpdate.Z);
+                if (blockId == blockUpdate.BlockId && blockId > 0)
                 {
-                    break;
-                }
-
-                scheduledUpdates.remove(var4);
-                scheduledUpdateSet.remove(var4);
-                byte var5 = 8;
-                if (isRegionLoaded(var4.X - var5, var4.Y - var5, var4.Z - var5, var4.X + var5, var4.Y + var5, var4.Z + var5))
-                {
-                    int var6 = getBlockId(var4.X, var4.Y, var4.Z);
-                    if (var6 == var4.BlockId && var6 > 0)
-                    {
-                        Block.Blocks[var6].onTick(this, var4.X, var4.Y, var4.Z, random);
-                    }
+                    Block.Blocks[blockId].onTick(this, blockUpdate.X, blockUpdate.Y, blockUpdate.Z, random);
                 }
             }
-
-            return scheduledUpdates.size() != 0;
         }
     }
 
@@ -2995,15 +2855,8 @@ public abstract class World : BlockView
 
     public void synchronizeTimeAndUpdates(long time)
     {
-        long var3 = time - properties.WorldTime;
-
-        var iter = scheduledUpdateSet.iterator();
-        while (iter.hasNext())
-        {
-            var obj = (BlockEvent)iter.next();
-            obj.Ticks += var3;
-        }
-
+        long deltaTime = time - properties.WorldTime;
+        _eventDeltaTime -= deltaTime;
         setTime(time);
     }
 
@@ -3015,6 +2868,11 @@ public abstract class World : BlockView
     public long getTime()
     {
         return properties.WorldTime;
+    }
+
+    private long GetEventTime()
+    {
+        return properties.WorldTime + _eventDeltaTime;
     }
 
     public Vec3i getSpawnPos()

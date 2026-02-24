@@ -33,6 +33,8 @@ using Silk.NET.Input;
 using Silk.NET.OpenGL.Legacy;
 using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using Exception = System.Exception;
+using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 
 namespace BetaSharp.Client;
 
@@ -150,11 +152,16 @@ public partial class Minecraft
     {
         InitializeTimer();
 
+        int maximumWidth = Display.getDisplayMode().getWidth();
+        int maximumHeight = Display.getDisplayMode().getHeight();
+
         if (fullscreen)
         {
             Display.setFullscreen(true);
-            displayWidth = Display.getDisplayMode().getWidth();
-            displayHeight = Display.getDisplayMode().getHeight();
+
+            displayWidth = maximumWidth;
+            displayHeight = maximumHeight;
+
             if (displayWidth <= 0)
             {
                 displayWidth = 1;
@@ -168,6 +175,7 @@ public partial class Minecraft
         else
         {
             Display.setDisplayMode(new DisplayMode(displayWidth, displayHeight));
+            Display.setLocation((maximumWidth - displayWidth)  / 2 , (maximumHeight  - displayHeight)  / 2);
         }
 
         Display.setTitle("Minecraft Beta 1.7.3");
@@ -184,7 +192,7 @@ public partial class Minecraft
             Display.DebugMode = options.DebugMode;
 
             Display.create();
-            Display.getGlfw().SetWindowSizeLimits(Display.getWindowHandle(), 850, 480, 3840, 2160);
+            Display.getGlfw().SetWindowSizeLimits(Display.getWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
             GLManager.Init(Display.getGL()!);
 
@@ -317,7 +325,8 @@ public partial class Minecraft
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/title/mojang.png"));
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        textureManager.BindTexture(textureManager.GetTextureId("/title/mojang.png"));
         tessellator.startDrawingQuads();
         tessellator.setColorOpaque_I(0xFFFFFF);
         tessellator.addVertexWithUV(0.0D, (double)displayHeight, 0.0D, 0.0D, 0.0D);
@@ -441,17 +450,20 @@ public partial class Minecraft
             {
                 changeWorld((World)null);
             }
-            catch (Exception worldChangeException) { }
+            catch (Exception) { }
 
             try
             {
                 GLAllocation.deleteTexturesAndDisplayLists();
             }
-            catch (Exception textureCleanupException) { }
+            catch (Exception) { }
 
+            textureManager.Dispose();
             sndManager.CloseMinecraft();
             Mouse.destroy();
             Keyboard.destroy();
+
+            GLTexture.LogLeakReport();
         }
         finally
         {
@@ -524,7 +536,7 @@ public partial class Minecraft
                         {
                             runTick(Timer.renderPartialTicks);
                         }
-                        catch (MinecraftException tickException)
+                        catch (MinecraftException)
                         {
                             world = null;
                             changeWorld((World)null);
@@ -563,9 +575,17 @@ public partial class Minecraft
                     {
                         playerController?.setPartialTime(Timer.renderPartialTicks);
 
-                        if (options.DebugMode) Profiler.PushGroup("render");
+                        if (options.DebugMode)
+                        {
+                            Profiler.PushGroup("render");
+                            TextureStats.StartFrame();
+                        }
                         gameRenderer.onFrameUpdate(Timer.renderPartialTicks);
-                        if (options.DebugMode) Profiler.PopGroup();
+                        if (options.DebugMode)
+                        {
+                            TextureStats.EndFrame();
+                            Profiler.PopGroup();
+                        }
                     }
 
                     if (imGuiController != null && Timer.DeltaTime > 0.0f && options.ShowDebugInfo && options.DebugMode)
@@ -578,6 +598,9 @@ public partial class Minecraft
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
                         ImGui.Text($"ChunkMeshVersion Allocated: {BetaSharp.Util.ChunkMeshVersion.TotalAllocated}");
                         ImGui.Text($"ChunkMeshVersion Released: {BetaSharp.Util.ChunkMeshVersion.TotalReleased}");
+                        ImGui.Separator();
+                        ImGui.Text($"Texture Binds: {TextureStats.BindsLastFrame} (Avg: {TextureStats.AverageBindsPerFrame:F1}/f)");
+                        ImGui.Text($"Active Textures: {GLTexture.ActiveTextureCount}");
                         ImGui.End();
 
                         imGuiController.Render();
@@ -1114,7 +1137,7 @@ public partial class Minecraft
         Profiler.Stop("playerControllerUpdate");
 
         Profiler.Start("updateDynamicTextures");
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/terrain.png"));
+        textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
         if (!isGamePaused)
         {
             textureManager.Tick();
@@ -1654,7 +1677,7 @@ public partial class Minecraft
     {
         System.Threading.Thread.CurrentThread.Name = "Minecraft Main Thread";
 
-        Minecraft mc = new(1280, 720, false)
+        Minecraft mc = new(850, 480, false)
         {
             minecraftUri = "www.minecraft.net"
         };
