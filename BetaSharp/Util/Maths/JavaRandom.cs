@@ -9,11 +9,6 @@ namespace BetaSharp.Util.Maths;
 /// </summary>
 public class JavaRandom
 {
-    private static readonly ThreadLocal<JavaRandom> s_sharedRandom =
-        new(() => new JavaRandom());
-
-    public static double Random() => s_sharedRandom.Value!.NextDouble();
-
     private static long _seedUniquifier = 8682522807148012L;
     private readonly object _lock = new object();
     private readonly object _seedLock = new object();
