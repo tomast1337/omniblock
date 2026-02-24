@@ -23,14 +23,13 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public ServerPlayerInteractionManager interactionManager;
     public double lastX;
     public double lastZ;
-    public List pendingChunkUpdates = new LinkedList();
+    public Queue<ChunkPos> PendingChunkUpdates = new();
     public HashSet<ChunkPos> activeChunks = new();
     private int lastHealthScore = -99999999;
     private int joinInvulnerabilityTicks = 60;
     private ItemStack[] equipment = [null, null, null, null, null];
     private int screenHandlerSyncId;
     public bool skipPacketSlotUpdates;
-
 
     public ServerPlayerEntity(MinecraftServer server, World world, String name, ServerPlayerInteractionManager interactionManager) : base(world)
     {
@@ -143,12 +142,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         return server.pvpEnabled;
     }
 
-
-    public override void heal(int amount)
-    {
-        base.heal(amount);
-    }
-
     public void playerTick(bool shouldSendChunkUpdates)
     {
         base.tick();
@@ -166,29 +159,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             }
         }
 
-        if (shouldSendChunkUpdates && !pendingChunkUpdates.isEmpty())
+        if (shouldSendChunkUpdates)
         {
-            ServerWorld world = server.getWorld(dimensionId);
-            Iterator iterator = pendingChunkUpdates.iterator();
-
-            while (iterator.hasNext())
+            while (CanSendMoreChunkData() && PendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
             {
-                ChunkPos chunkPos = (ChunkPos)iterator.next();
-
-                if (!CanSendMoreChunkData())
-                {
-                    continue;
-                }
-
-                if (!world.chunkCache.GetChunk(chunkPos.x, chunkPos.z).TerrainPopulated)
-                {
-                    continue;
-                }
-
-                iterator.remove();
+                // Im not doing terrain population checks rn, is that an issue?
+                if (!activeChunks.Contains(chunkPos)) continue;
+                ServerWorld world = server.getWorld(dimensionId);
                 SendChunkData(world, chunkPos);
                 SendBlockEntityUpdates(world, chunkPos);
-                break;
             }
         }
 

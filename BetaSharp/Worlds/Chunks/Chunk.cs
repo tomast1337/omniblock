@@ -32,7 +32,6 @@ public class Chunk
 
     private readonly ILogger<Chunk> _logger = Log.Instance.For<Chunk>();
 
-
     public Chunk(World world, int x, int z)
     {
         BlockEntities = [];
