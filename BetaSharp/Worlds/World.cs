@@ -3083,9 +3083,9 @@ public abstract class World : BlockView
         persistentStateManager.SetData(id, state);
     }
 
-    public PersistentState getOrCreateState(Type type, string id)
+    public PersistentState? getOrCreateState(Type type, string id)
     {
-        return persistentStateManager.LoadData<PersistentState>(id);
+        return persistentStateManager.LoadData(type, id);
     }
 
     public int getIdCount(string id)
