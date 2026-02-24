@@ -936,7 +936,7 @@ public class WorldRenderer : IWorldAccess
                 world.playSound(var3, var4, var5, "random.bow", 1.0F, 1.2F);
                 break;
             case 1003:
-                if (java.lang.Math.random() < 0.5D)
+                if (Random.Shared.NextDouble() < 0.5D)
                 {
                     world.playSound(var3 + 0.5D, var4 + 0.5D, var5 + 0.5D, "random.door_open", 1.0F, world.random.NextFloat() * 0.1F + 0.9F);
                 }
