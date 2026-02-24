@@ -13,10 +13,6 @@ public class TextRenderer
 {
     private readonly int[] _charWidth = new int[256];
     public int fontTextureName = 0;
-    private readonly int _fontDisplayLists;
-
-    // Buffer to hold Display List IDs before sending them to OpenGL
-    private readonly uint[] _listBuffer = new uint[1024];
 
     public TextRenderer(GameOptions options, TextureManager textureManager)
     {
@@ -87,54 +83,6 @@ public class TextRenderer
         }
 
         fontTextureName = textureManager.Load(fontImage);
-        _fontDisplayLists = GLAllocation.generateDisplayLists(288);
-        Tessellator tessellator = Tessellator.instance;
-
-        for (int charIndex = 0; charIndex < 256; ++charIndex)
-        {
-            GLManager.GL.NewList((uint)(_fontDisplayLists + charIndex), GLEnum.Compile);
-            tessellator.startDrawingQuads();
-            
-            int u = (charIndex % 16) * 8;
-            int v = (charIndex / 16) * 8;
-            
-            float quadSize = 7.99F; 
-            float uvOffset = 0.0F;
-
-            tessellator.addVertexWithUV(0.0D, quadSize, 0.0D, (u / 128.0F) + uvOffset, ((v + quadSize) / 128.0F) + uvOffset);
-            tessellator.addVertexWithUV(quadSize, quadSize, 0.0D, ((u + quadSize) / 128.0F) + uvOffset, ((v + quadSize) / 128.0F) + uvOffset);
-            tessellator.addVertexWithUV(quadSize, 0.0D, 0.0D, ((u + quadSize) / 128.0F) + uvOffset, (v / 128.0F) + uvOffset);
-            tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, (u / 128.0F) + uvOffset, (v / 128.0F) + uvOffset);
-            tessellator.draw();
-
-            GLManager.GL.Translate(_charWidth[charIndex], 0.0F, 0.0F);
-            GLManager.GL.EndList();
-        }
-
-        for (int colorIndex = 0; colorIndex < 32; ++colorIndex)
-        {
-            int baseColorOffset = (colorIndex >> 3 & 1) * 85;
-            int r = (colorIndex >> 2 & 1) * 170 + baseColorOffset;
-            int g = (colorIndex >> 1 & 1) * 170 + baseColorOffset;
-            int b = (colorIndex >> 0 & 1) * 170 + baseColorOffset;
-            
-            if (colorIndex == 6)
-            {
-                r += 85;
-            }
-
-            bool isShadow = colorIndex >= 16;
-            if (isShadow)
-            {
-                r /= 4;
-                g /= 4;
-                b /= 4;
-            }
-
-            GLManager.GL.NewList((uint)(_fontDisplayLists + 256 + colorIndex), GLEnum.Compile);
-            GLManager.GL.Color3(r / 255.0F, g / 255.0F, b / 255.0F);
-            GLManager.GL.EndList();
-        }
     }
 
     public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, uint color)
@@ -167,12 +115,12 @@ public class TextRenderer
         
         if (a == 0.0F) a = 1.0F;
 
-        GLManager.GL.Color4(r, g, b, a);
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.setColorRGBA_F(r, g, b, a);
 
-        int bufferPos = 0;
-
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)x, (float)y, 0.0F);
+        float currentX = x;
+        float currentY = y;
 
         for (int i = 0; i < text.Length; ++i)
         {
@@ -184,13 +132,24 @@ public class TextRenderer
                     colorCode = 15;
                 }
 
-                _listBuffer[bufferPos++] = (uint)(_fontDisplayLists + 256 + colorCode + (darken ? 16 : 0));
-
-                if (bufferPos >= 1024)
+                int baseColorOffset = (colorCode >> 3 & 1) * 85;
+                int cr = (colorCode >> 2 & 1) * 170 + baseColorOffset;
+                int cg = (colorCode >> 1 & 1) * 170 + baseColorOffset;
+                int cb = (colorCode >> 0 & 1) * 170 + baseColorOffset;
+                
+                if (colorCode == 6)
                 {
-                    CallLists(bufferPos);
-                    bufferPos = 0;
+                    cr += 85;
                 }
+
+                if (darken)
+                {
+                    cr /= 4;
+                    cg /= 4;
+                    cb /= 4;
+                }
+
+                tessellator.setColorRGBA_F(cr / 255.0F, cg / 255.0F, cb / 255.0F, a);
             }
 
             if (i < text.Length)
@@ -198,31 +157,24 @@ public class TextRenderer
                 int charIndex = ChatAllowedCharacters.allowedCharacters.IndexOf(text[i]);
                 if (charIndex >= 0)
                 {
-                    _listBuffer[bufferPos++] = (uint)(_fontDisplayLists + charIndex + 32);
+                    int fontIndex = charIndex + 32;
+                    int u = (fontIndex % 16) * 8;
+                    int v = (fontIndex / 16) * 8;
+                    
+                    float quadSize = 7.99F; 
+                    float uvOffset = 0.0F;
+
+                    tessellator.addVertexWithUV(currentX + 0.0D, currentY + quadSize, 0.0D, (u / 128.0F) + uvOffset, ((v + quadSize) / 128.0F) + uvOffset);
+                    tessellator.addVertexWithUV(currentX + quadSize, currentY + quadSize, 0.0D, ((u + quadSize) / 128.0F) + uvOffset, ((v + quadSize) / 128.0F) + uvOffset);
+                    tessellator.addVertexWithUV(currentX + quadSize, currentY + 0.0D, 0.0D, ((u + quadSize) / 128.0F) + uvOffset, (v / 128.0F) + uvOffset);
+                    tessellator.addVertexWithUV(currentX + 0.0D, currentY + 0.0D, 0.0D, (u / 128.0F) + uvOffset, (v / 128.0F) + uvOffset);
+
+                    currentX += _charWidth[fontIndex];
                 }
             }
-
-            if (bufferPos >= 1024)
-            {
-                CallLists(bufferPos);
-                bufferPos = 0;
-            }
         }
 
-        if (bufferPos > 0)
-        {
-            CallLists(bufferPos);
-        }
-        
-        GLManager.GL.PopMatrix();
-
-        void CallLists(int count)
-        {
-            fixed (uint* ptr = _listBuffer)
-            {
-                GLManager.GL.CallLists((uint)count, GLEnum.UnsignedInt, ptr);
-            }
-        }
+        tessellator.draw();
     }
 
     public int GetStringWidth(ReadOnlySpan<char> text)
