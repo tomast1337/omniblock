@@ -50,7 +50,7 @@ public class WaterSprite : DynamicTexture
                 }
 
                 heatDelta[var1 + var2 * 16] -= 0.1F;
-                if (JavaRandom.Random() < 0.05D)
+                if (Random.Shared.NextDouble() < 0.05D)
                 {
                     heatDelta[var1 + var2 * 16] = 0.5F;
                 }

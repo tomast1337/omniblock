@@ -25,9 +25,9 @@ public class EntityPortalFX : EntityFX
         particleRed = particleGreen = particleBlue = 1.0F * brightnessVariation;
         particleGreen *= 0.3F;
         particleRed *= 0.9F;
-        particleMaxAge = (int)(JavaRandom.Random() * 10.0D) + 40;
+        particleMaxAge = (int)(Random.Shared.NextDouble() * 10.0D) + 40;
         noClip = true;
-        particleTextureIndex = (int)(JavaRandom.Random() * 8.0D);
+        particleTextureIndex = (int)(Random.Shared.NextDouble() * 8.0D);
     }
 
     public override void renderParticle(Tessellator t, float partialTick, float rotX, float rotY, float rotZ, float upX, float upZ)

@@ -21,11 +21,11 @@ public class EntitySmokeFX : EntityFX
         base.velocityX += velocityX;
         base.velocityY += velocityY;
         base.velocityZ += velocityZ;
-        particleRed = particleGreen = particleBlue = (float)(JavaRandom.Random() * (double)0.3F);
+        particleRed = particleGreen = particleBlue = (float)(Random.Shared.NextDouble() * (double)0.3F);
         base.particleScale *= 12.0F / 16.0F;
         base.particleScale *= particleScale;
         baseScale = base.particleScale;
-        particleMaxAge = (int)(8.0D / (JavaRandom.Random() * 0.8D + 0.2D));
+        particleMaxAge = (int)(8.0D / (Random.Shared.NextDouble() * 0.8D + 0.2D));
         particleMaxAge = (int)((float)particleMaxAge * particleScale);
         noClip = false;
     }

@@ -21,11 +21,11 @@ public class EntitySnowShovelFX : EntityFX
         base.velocityX += velocityX;
         base.velocityY += velocityY;
         base.velocityZ += velocityZ;
-        particleRed = particleGreen = particleBlue = 1.0F - (float)(JavaRandom.Random() * (double)0.3F);
+        particleRed = particleGreen = particleBlue = 1.0F - (float)(Random.Shared.NextDouble() * (double)0.3F);
         particleScale *= 12.0F / 16.0F;
         particleScale *= scaleMultiplier;
         baseScale = particleScale;
-        particleMaxAge = (int)(8.0D / (JavaRandom.Random() * 0.8D + 0.2D));
+        particleMaxAge = (int)(8.0D / (Random.Shared.NextDouble() * 0.8D + 0.2D));
         particleMaxAge = (int)((float)particleMaxAge * scaleMultiplier);
         noClip = false;
     }

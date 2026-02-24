@@ -45,7 +45,7 @@ public class ClockSprite : DynamicTexture
             var1 = (double)(-var3 * (float)Math.PI * 2.0F);
             if (mc.world.dimension.IsNether)
             {
-                var1 = JavaRandom.Random() * (double)(float)Math.PI * 2.0D;
+                var1 = Random.Shared.NextDouble() * (double)(float)Math.PI * 2.0D;
             }
         }
 

@@ -23,14 +23,14 @@ public class EntityReddustFX : EntityFX
             red = 1.0F;
         }
 
-        float colorVariation = (float)JavaRandom.Random() * 0.4F + 0.6F;
-        particleRed = ((float)(JavaRandom.Random() * (double)0.2F) + 0.8F) * red * colorVariation;
-        particleGreen = ((float)(JavaRandom.Random() * (double)0.2F) + 0.8F) * green * colorVariation;
-        particleBlue = ((float)(JavaRandom.Random() * (double)0.2F) + 0.8F) * blue * colorVariation;
+        float colorVariation = (float)Random.Shared.NextDouble() * 0.4F + 0.6F;
+        particleRed = ((float)(Random.Shared.NextDouble() * (double)0.2F) + 0.8F) * red * colorVariation;
+        particleGreen = ((float)(Random.Shared.NextDouble() * (double)0.2F) + 0.8F) * green * colorVariation;
+        particleBlue = ((float)(Random.Shared.NextDouble() * (double)0.2F) + 0.8F) * blue * colorVariation;
         base.particleScale *= 12.0F / 16.0F;
         base.particleScale *= particleScale;
         baseScale = base.particleScale;
-        particleMaxAge = (int)(8.0D / (JavaRandom.Random() * 0.8D + 0.2D));
+        particleMaxAge = (int)(8.0D / (Random.Shared.NextDouble() * 0.8D + 0.2D));
         particleMaxAge = (int)((float)particleMaxAge * particleScale);
         noClip = false;
     }
