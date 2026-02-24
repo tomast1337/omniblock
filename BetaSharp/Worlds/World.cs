@@ -1974,7 +1974,7 @@ public abstract class World : BlockView
 
     }
 
-    public Entity getPlayerForProxy(java.lang.Class var1)
+    public Entity getPlayerForProxy(Type var1)
     {
         return null;
     }
