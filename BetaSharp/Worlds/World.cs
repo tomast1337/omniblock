@@ -3083,9 +3083,9 @@ public abstract class World : java.lang.Object, BlockView
         persistentStateManager.SetData(id, state);
     }
 
-    public PersistentState getOrCreateState(Class @class, string id)
+    public PersistentState? getOrCreateState(Type t, string id)
     {
-        return persistentStateManager.LoadData<PersistentState>(id);
+        return persistentStateManager.LoadData(t, id);
     }
 
     public int getIdCount(string id)
