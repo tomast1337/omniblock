@@ -488,7 +488,8 @@ public partial class Minecraft
 
         try
         {
-            long lastFpsCheckTime = java.lang.System.currentTimeMillis();
+            //long lastFpsCheckTime = java.lang.System.currentTimeMillis();
+            long lastFpsCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             int frameCounter = 0;
 
             while (running)
