@@ -188,7 +188,7 @@ public abstract class GuiSlot
         GLManager.GL.Disable(GLEnum.Fog);
         var tess = Tessellator.instance;
 
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)_mc.textureManager.GetTextureId("/gui/background.png").Id);
+        _mc.textureManager.BindTexture(_mc.textureManager.GetTextureId("/gui/background.png"));
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
         const float textureScale = 32.0f;
 
@@ -320,7 +320,7 @@ public abstract class GuiSlot
         var tess = Tessellator.instance;
         var textureId = (uint)_mc.textureManager.GetTextureId("/gui/background.png").Id;
 
-        GLManager.GL.BindTexture(GLEnum.Texture2D, textureId);
+        _mc.textureManager.BindTexture(_mc.textureManager.GetTextureId("/gui/background.png"));
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
         const float textureScale = 32.0f;

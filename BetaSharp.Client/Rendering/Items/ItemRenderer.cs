@@ -1,6 +1,7 @@
-﻿using BetaSharp.Blocks;
+using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -144,7 +145,7 @@ public class ItemRenderer : EntityRenderer
         float var11;
         if (var3 < 256 && BlockRenderer.isSideLit(Block.Blocks[var3].getRenderType()))
         {
-            var2.BindTexture(var2.GetTextureId("/terrain.png").Id);
+            var2.BindTexture(var2.GetTextureId("/terrain.png"));
             Block var14 = Block.Blocks[var3];
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(var6 - 2, var7 + 3, -3.0F);
@@ -173,11 +174,11 @@ public class ItemRenderer : EntityRenderer
             GLManager.GL.Disable(GLEnum.Lighting);
             if (var3 < 256)
             {
-                var2.BindTexture(var2.GetTextureId("/terrain.png").Id);
+                var2.BindTexture(var2.GetTextureId("/terrain.png"));
             }
             else
             {
-                var2.BindTexture(var2.GetTextureId("/gui/items.png").Id);
+                var2.BindTexture(var2.GetTextureId("/gui/items.png"));
             }
 
             int var8 = Item.ITEMS[var3].getColorMultiplier(var4);

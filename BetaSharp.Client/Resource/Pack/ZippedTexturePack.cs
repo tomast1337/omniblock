@@ -1,5 +1,5 @@
 using System.IO.Compression;
-using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.Textures;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL.Legacy;
 using SixLabors.ImageSharp;
@@ -63,7 +63,7 @@ public class ZippedTexturePack : TexturePack
     {
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.Delete(_texturePackName.Id);
+            mc.textureManager.Delete(_texturePackName);
             _texturePackThumbnail.Dispose();
 
         }
@@ -80,11 +80,11 @@ public class ZippedTexturePack : TexturePack
 
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.BindTexture(_texturePackName.Id);
+            mc.textureManager.BindTexture(_texturePackName);
         }
         else
         {
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.GetTextureId("/gui/unknown_pack.png").Id);
+            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/unknown_pack.png"));
         }
 
     }

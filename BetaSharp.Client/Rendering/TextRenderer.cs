@@ -1,11 +1,9 @@
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Util;
-using Silk.NET.OpenGL.Legacy;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.IO;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -19,7 +17,7 @@ public class TextRenderer
         Image<Rgba32> fontImage;
         try
         {
-            var asset = AssetManager.Instance.getAsset("font/default.png");
+            AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
             using var stream = new MemoryStream(asset.getBinaryContent());
             fontImage = Image.Load<Rgba32>(stream);
         }
@@ -36,10 +34,10 @@ public class TextRenderer
         {
             for (int y = 0; y < accessor.Height; y++)
             {
-                var row = accessor.GetRowSpan(y);
+                Span<Rgba32> row = accessor.GetRowSpan(y);
                 for (int x = 0; x < accessor.Width; x++)
                 {
-                    var p = row[x];
+                    Rgba32 p = row[x];
                     pixels[y * imgWidth + x] = (p.A << 24) | (p.R << 16) | (p.G << 8) | p.B;
                 }
             }
@@ -107,7 +105,7 @@ public class TextRenderer
             color |= alpha;
         }
 
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)(fontTextureName?.Id ?? 0));
+        fontTextureName?.Bind();
         float a = (color >> 24 & 255) / 255.0F;
         float r = (color >> 16 & 255) / 255.0F;
         float g = (color >> 8 & 255) / 255.0F;

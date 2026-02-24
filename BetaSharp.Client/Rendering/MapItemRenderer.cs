@@ -1,5 +1,6 @@
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Entities;
 using java.util;
 using Silk.NET.OpenGL.Legacy;
@@ -57,9 +58,9 @@ public class MapItemRenderer
             }
         }
 
-        textureManager.Bind(colors, 128, 128, _textureId.Id);
+        if (_textureId.Texture != null) textureManager.Bind(colors, 128, 128, _textureId.Texture);
         Tessellator tess = Tessellator.instance;
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)_textureId.Id);
+        _textureId.Bind();
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Disable(GLEnum.AlphaTest);
         tess.startDrawingQuads();
@@ -70,7 +71,7 @@ public class MapItemRenderer
         tess.draw();
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.Disable(GLEnum.Blend);
-        textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png").Id);
+        textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
         Iterator it = mapState.icons.iterator();
 
         while (it.hasNext())
