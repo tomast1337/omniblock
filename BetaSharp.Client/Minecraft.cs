@@ -94,7 +94,7 @@ public partial class Minecraft
     private int mouseTicksRan;
     public bool isRaining = false;
     //private long systemTime = java.lang.System.currentTimeMillis();
-    private long systemTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    private long systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private int joinPlayerCounter;
     private ImGuiController imGuiController;
     public InternalServer? internalServer;
