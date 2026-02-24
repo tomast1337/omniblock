@@ -111,7 +111,7 @@ public class ItemBucket : Item
 
                             for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
                             {
-                                world.addParticle("largesmoke", (double)hitX + JavaRandom.Random(), (double)hitY + JavaRandom.Random(), (double)hitZ + JavaRandom.Random(), 0.0D, 0.0D, 0.0D);
+                                world.addParticle("largesmoke", hitX + Random.Shared.NextDouble(), hitY + Random.Shared.NextDouble(), hitZ + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
                             }
                         }
                         else
