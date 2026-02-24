@@ -42,7 +42,7 @@ public class EntityLiving : Entity
     public float tilt;
     protected bool unused_flag;
     public int field_9326_T = -1;
-    public float field_9325_U = (float)(java.lang.Math.random() * (double)0.9F + (double)0.1F);
+    public float field_9325_U = (float)(JavaRandom.Random() * (double)0.9F + (double)0.1F);
     public float lastWalkAnimationSpeed;
     public float walkAnimationSpeed;
     public float animationPhase;
@@ -66,10 +66,10 @@ public class EntityLiving : Entity
     public EntityLiving(World world) : base(world)
     {
         preventEntitySpawning = true;
-        limbSwingScale = (float)(java.lang.Math.random() + 1.0D) * 0.01F;
+        limbSwingScale = (float)(JavaRandom.Random() + 1.0D) * 0.01F;
         setPosition(x, y, z);
-        limbSwingPhase = (float)java.lang.Math.random() * 12398.0F;
-        yaw = (float)(java.lang.Math.random() * (double)((float)System.Math.PI) * 2.0D);
+        limbSwingPhase = (float)JavaRandom.Random() * 12398.0F;
+        yaw = (float)(JavaRandom.Random() * (double)((float)System.Math.PI) * 2.0D);
         stepHeight = 0.5F;
     }
 
@@ -417,9 +417,9 @@ public class EntityLiving : Entity
                         double var4 = entity.x - x;
 
                         double var6;
-                        for (var6 = entity.z - z; var4 * var4 + var6 * var6 < 1.0E-4D; var6 = (java.lang.Math.random() - java.lang.Math.random()) * 0.01D)
+                        for (var6 = entity.z - z; var4 * var4 + var6 * var6 < 1.0E-4D; var6 = (JavaRandom.Random() - JavaRandom.Random()) * 0.01D)
                         {
-                            var4 = (java.lang.Math.random() - java.lang.Math.random()) * 0.01D;
+                            var4 = (JavaRandom.Random() - JavaRandom.Random()) * 0.01D;
                         }
 
                         attackedAtYaw = (float)(System.Math.Atan2(var6, var4) * 180.0D / (double)((float)System.Math.PI)) - yaw;
@@ -427,7 +427,7 @@ public class EntityLiving : Entity
                     }
                     else
                     {
-                        attackedAtYaw = (float)((int)(java.lang.Math.random() * 2.0D) * 180);
+                        attackedAtYaw = (float)((int)(JavaRandom.Random() * 2.0D) * 180);
                     }
                 }
 

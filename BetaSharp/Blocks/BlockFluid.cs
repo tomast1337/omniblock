@@ -347,7 +347,7 @@ public abstract class BlockFluid : Block
 
         for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
         {
-            world.addParticle("largesmoke", (double)x + java.lang.Math.random(), (double)y + 1.2D, (double)z + java.lang.Math.random(), 0.0D, 0.0D, 0.0D);
+            world.addParticle("largesmoke", (double)x + JavaRandom.Random(), (double)y + 1.2D, (double)z + JavaRandom.Random(), 0.0D, 0.0D, 0.0D);
         }
 
     }

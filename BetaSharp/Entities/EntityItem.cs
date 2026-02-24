@@ -13,7 +13,7 @@ public class EntityItem : Entity
     public int itemAge;
     public int delayBeforeCanPickup;
     private int health = 5;
-    public float bobPhase = (float)(java.lang.Math.random() * System.Math.PI * 2.0D);
+    public float bobPhase = (float)(JavaRandom.Random() * System.Math.PI * 2.0D);
 
     public EntityItem(World world, double x, double y, double z, ItemStack stack) : base(world)
     {
@@ -21,10 +21,10 @@ public class EntityItem : Entity
         standingEyeHeight = height / 2.0F;
         setPosition(x, y, z);
         this.stack = stack;
-        yaw = (float)(java.lang.Math.random() * 360.0D);
-        velocityX = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
+        yaw = (float)(JavaRandom.Random() * 360.0D);
+        velocityX = (double)((float)(JavaRandom.Random() * (double)0.2F - (double)0.1F));
         velocityY = (double)0.2F;
-        velocityZ = (double)((float)(java.lang.Math.random() * (double)0.2F - (double)0.1F));
+        velocityZ = (double)((float)(JavaRandom.Random() * (double)0.2F - (double)0.1F));
     }
 
     protected override bool bypassesSteppingEffects()
