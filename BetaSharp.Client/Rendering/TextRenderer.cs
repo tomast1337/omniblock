@@ -12,7 +12,7 @@ namespace BetaSharp.Client.Rendering;
 public class TextRenderer
 {
     private readonly int[] _charWidth = new int[256];
-    public int fontTextureName = 0;
+    public TextureHandle? fontTextureName;
 
     public TextRenderer(GameOptions options, TextureManager textureManager)
     {
@@ -107,7 +107,7 @@ public class TextRenderer
             color |= alpha;
         }
 
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)fontTextureName);
+        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)(fontTextureName?.Id ?? 0));
         float a = (color >> 24 & 255) / 255.0F;
         float r = (color >> 16 & 255) / 255.0F;
         float g = (color >> 8 & 255) / 255.0F;

@@ -21,7 +21,7 @@ public abstract class EntityRenderer
     protected void loadTexture(string path)
     {
         TextureManager? var2 = Dispatcher.textureManager;
-        var2?.BindTexture(var2.GetTextureId(path));
+        var2?.BindTexture(var2.GetTextureId(path).Id);
     }
 
     protected bool LoadDownloadableImageTexture(string url, string fallbackPath)
@@ -127,7 +127,7 @@ public abstract class EntityRenderer
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
 
         TextureManager textureManager = Dispatcher.textureManager;
-        textureManager.BindTexture(textureManager.GetTextureId("%clamp%/misc/shadow.png"));
+        textureManager.BindTexture(textureManager.GetTextureId("%clamp%/misc/shadow.png").Id);
 
         GLManager.GL.DepthMask(false);
         float radius = ShadowRadius;

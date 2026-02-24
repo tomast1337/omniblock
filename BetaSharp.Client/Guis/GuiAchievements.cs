@@ -178,8 +178,8 @@ public class GuiAchievements : GuiScreen
             var5 = field_27123_v - 1;
         }
 
-        int var6 = mc.textureManager.GetTextureId("/terrain.png");
-        int var7 = mc.textureManager.GetTextureId("/achievement/bg.png");
+        int var6 = mc.textureManager.GetTextureId("/terrain.png").Id;
+        int var7 = mc.textureManager.GetTextureId("/achievement/bg.png").Id;
         int var8 = (Width - field_27121_a) / 2;
         int var9 = (Height - field_27119_i) / 2;
         int var10 = var8 + 16;

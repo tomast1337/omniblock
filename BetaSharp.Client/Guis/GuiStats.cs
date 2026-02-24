@@ -114,7 +114,7 @@ public class GuiStats : GuiScreen
 
     private void drawSlotTexture(int x, int y, int u, int v)
     {
-        int textureId = mc.textureManager.GetTextureId("/gui/slot.png");
+        int textureId = mc.textureManager.GetTextureId("/gui/slot.png").Id;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         mc.textureManager.BindTexture(textureId);
         Tessellator tessellator = Tessellator.instance;

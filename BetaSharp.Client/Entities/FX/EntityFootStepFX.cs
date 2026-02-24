@@ -36,7 +36,7 @@ public class EntityFootStepFX : EntityFX
         float renderY = (float)(y - interpPosY);
         float renderZ = (float)(z - interpPosZ);
         float brightness = world.getLuminance(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
-        textureManager.BindTexture(textureManager.GetTextureId("/misc/footprint.png"));
+        textureManager.BindTexture(textureManager.GetTextureId("/misc/footprint.png").Id);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         t.startDrawingQuads();

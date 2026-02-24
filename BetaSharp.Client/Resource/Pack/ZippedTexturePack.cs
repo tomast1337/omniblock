@@ -11,7 +11,7 @@ public class ZippedTexturePack : TexturePack
 {
     private readonly ILogger _logger = Log.Instance.For<ZippedTexturePack>();
     private ZipArchive? _texturePackZipFile;
-    private int _texturePackName = -1;
+    private TextureHandle? _texturePackName;
     private Image<Rgba32>? _texturePackThumbnail;
 
     private readonly FileInfo _texturePackFile;
@@ -61,10 +61,11 @@ public class ZippedTexturePack : TexturePack
 
     public override void Unload(Minecraft mc)
     {
-        if (_texturePackThumbnail != null)
+        if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.Delete(_texturePackName);
+            mc.textureManager.Delete(_texturePackName.Id);
             _texturePackThumbnail.Dispose();
+
         }
 
         CloseTexturePackFile();
@@ -72,18 +73,18 @@ public class ZippedTexturePack : TexturePack
 
     public override void BindThumbnailTexture(Minecraft mc)
     {
-        if (_texturePackThumbnail != null && _texturePackName < 0)
+        if (_texturePackThumbnail != null && _texturePackName == null)
         {
             _texturePackName = mc.textureManager.Load(_texturePackThumbnail);
         }
 
-        if (_texturePackThumbnail != null)
+        if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.BindTexture(_texturePackName);
+            mc.textureManager.BindTexture(_texturePackName.Id);
         }
         else
         {
-            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.GetTextureId("/gui/unknown_pack.png"));
+            GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)mc.textureManager.GetTextureId("/gui/unknown_pack.png").Id);
         }
 
     }

@@ -26,7 +26,7 @@ public class GuiCrafting : GuiContainer
 
     protected override void DrawGuiContainerBackgroundLayer(float partialTicks)
     {
-        int textureId = mc.textureManager.GetTextureId("/gui/crafting.png");
+        int textureId = mc.textureManager.GetTextureId("/gui/crafting.png").Id;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         mc.textureManager.BindTexture(textureId);
         int guiLeft = (Width - _xSize) / 2;

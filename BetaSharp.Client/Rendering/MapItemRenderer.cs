@@ -11,7 +11,7 @@ namespace BetaSharp.Client.Rendering;
 public class MapItemRenderer
 {
     private readonly int[] colors = new int[128 * 128];
-    private readonly int _textureId;
+    private readonly TextureHandle _textureId;
     private readonly GameOptions _options;
     private readonly TextRenderer _textRenderer;
 
@@ -57,9 +57,9 @@ public class MapItemRenderer
             }
         }
 
-        textureManager.Bind(colors, 128, 128, _textureId);
+        textureManager.Bind(colors, 128, 128, _textureId.Id);
         Tessellator tess = Tessellator.instance;
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)_textureId);
+        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)_textureId.Id);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Disable(GLEnum.AlphaTest);
         tess.startDrawingQuads();
@@ -70,7 +70,7 @@ public class MapItemRenderer
         tess.draw();
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.Disable(GLEnum.Blend);
-        textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
+        textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png").Id);
         Iterator it = mapState.icons.iterator();
 
         while (it.hasNext())

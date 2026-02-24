@@ -14,9 +14,9 @@ namespace BetaSharp.Client.Rendering.Core;
 public class TextureManager
 {
     private readonly ILogger _logger = Log.Instance.For<TextureManager>();
-    private readonly Dictionary<string, int> _textures = [];
+    private readonly Dictionary<string, TextureHandle> _textures = [];
     private readonly Dictionary<string, int[]> _colors = [];
-    private readonly Dictionary<int, Image<Rgba32>> _images = [];
+    private readonly Dictionary<int, (Image<Rgba32> Image, TextureHandle Handle)> _images = [];
     private readonly List<DynamicTexture> _dynamicTextures = [];
     private readonly Dictionary<string, int> _atlasTileSizes = [];
     private readonly GameOptions _gameOptions;
@@ -42,7 +42,7 @@ public class TextureManager
         if (_colors.TryGetValue(path, out int[]? cachedColors)) return cachedColors;
         try
         {
-            using var img = LoadImageFromResource(path);
+            using Image<Rgba32> img = LoadImageFromResource(path);
             int[] result = ReadColorsFromImage(img);
             _colors[path] = result;
             return result;
@@ -57,12 +57,13 @@ public class TextureManager
 
     }
 
-    public int Load(Image<Rgba32> image)
+    public TextureHandle Load(Image<Rgba32> image)
     {
         uint newId = GLManager.GL.GenTexture();
         Load(image, (int)newId, false);
-        _images[(int)newId] = image;
-        return (int)newId;
+        var handle = new TextureHandle(this, (int)newId);
+        _images[(int)newId] = (image, handle);
+        return handle;
     }
 
     public void Load(Image<Rgba32> image, int textureName)
@@ -70,27 +71,28 @@ public class TextureManager
         Load(image, textureName, false);
     }
 
-    public int GetTextureId(string path)
+    public TextureHandle GetTextureId(string path)
     {
-        if (_textures.TryGetValue(path, out int id)) return id;
+        if (_textures.TryGetValue(path, out TextureHandle? handle)) return handle;
 
         uint newId = GLManager.GL.GenTexture();
+        handle = new TextureHandle(this, (int)newId);
+        _textures[path] = handle;
+
         try
         {
-            using var img = LoadImageFromResource(path);
+            using Image<Rgba32> img = LoadImageFromResource(path);
 
             _atlasTileSizes[path] = img.Width / 16;
 
             Load(img, (int)newId, path.Contains("terrain.png"));
-            _textures[path] = (int)newId;
-            return (int)newId;
+            return handle;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to get texture id for path {Path}", path);
             Load(_missingTextureImage, (int)newId);
-            _textures[path] = (int)newId;
-            return (int)newId;
+            return handle;
         }
 
     }
@@ -107,7 +109,7 @@ public class TextureManager
 
             for (int level = 0; level < mipCount; level++)
             {
-                var mip = mips[level];
+                Image<Rgba32> mip = mips[level];
                 byte[] pixels = new byte[mip.Width * mip.Height * 4];
                 mip.CopyPixelDataTo(pixels);
                 fixed (byte* ptr = pixels)
@@ -193,7 +195,7 @@ public class TextureManager
         {
             for (int i = 0; i < scale; i++)
             {
-                using var frame = image.Clone(x => x.Crop(new SixLabors.ImageSharp.Rectangle(i * 16, 0, 16, image.Height)));
+                using Image<Rgba32> frame = image.Clone(x => x.Crop(new SixLabors.ImageSharp.Rectangle(i * 16, 0, 16, image.Height)));
                 ctx.DrawImage(frame, new SixLabors.ImageSharp.Point(0, i * image.Height), 1f);
             }
         });
@@ -207,10 +209,10 @@ public class TextureManager
         {
             for (int y = 0; y < accessor.Height; y++)
             {
-                var row = accessor.GetRowSpan(y);
+                Span<Rgba32> row = accessor.GetRowSpan(y);
                 for (int x = 0; x < accessor.Width; x++)
                 {
-                    var p = row[x];
+                    Rgba32 p = row[x];
                     argb[y * accessor.Width + x] = (p.A << 24) | (p.R << 16) | (p.G << 8) | p.B;
                 }
             }
@@ -225,7 +227,7 @@ public class TextureManager
 
         if (path.StartsWith("##"))
         {
-            using var s = pack.GetResourceAsStream(path[2..]);
+            using Stream? s = pack.GetResourceAsStream(path[2..]);
             return s == null ? _missingTextureImage.Clone() : Rescale(Image.Load<Rgba32>(s));
         }
 
@@ -233,8 +235,8 @@ public class TextureManager
         if (path.StartsWith("%clamp%")) { _clamp = true; cleanPath = path[7..]; }
         else if (path.StartsWith("%blur%")) { _blur = true; cleanPath = path[6..]; }
 
-        using var stream = pack.GetResourceAsStream(cleanPath);
-        var img = stream == null ? _missingTextureImage.Clone() : Image.Load<Rgba32>(stream);
+        using Stream? stream = pack.GetResourceAsStream(cleanPath);
+        Image<Rgba32> img = stream == null ? _missingTextureImage.Clone() : Image.Load<Rgba32>(stream);
 
         return img;
     }
@@ -290,7 +292,10 @@ public class TextureManager
 
     public void Delete(int id)
     {
-        if (_images.Remove(id, out var img)) img.Dispose();
+        KeyValuePair<string, TextureHandle> textureEntry = _textures.FirstOrDefault(x => x.Value.Id == id);
+        if (textureEntry.Key != null) _textures.Remove(textureEntry.Key);
+
+        if (_images.Remove(id, out (Image<Rgba32> Image, TextureHandle Handle) entry)) entry.Image.Dispose();
         GLManager.GL.DeleteTexture((uint)id);
     }
 
@@ -303,20 +308,49 @@ public class TextureManager
 
     public void Reload()
     {
-        _textures.Clear();
-        foreach (var entry in _images) Load(entry.Value, entry.Key);
-        foreach (var key in new List<string>(_textures.Keys)) GetTextureId(key);
-        foreach (var key in new List<string>(_colors.Keys)) GetColors(key);
+        foreach (KeyValuePair<string, TextureHandle> entry in _textures)
+        {
+            GLManager.GL.DeleteTexture((uint)entry.Value.Id);
+
+            uint newId = GLManager.GL.GenTexture();
+            entry.Value.Id = (int)newId;
+            
+            try
+            {
+                using Image<Rgba32> img = LoadImageFromResource(entry.Key);
+                _atlasTileSizes[entry.Key] = img.Width / 16;
+                Load(img, (int)newId, entry.Key.Contains("terrain.png"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to reload texture {Path}", entry.Key);
+                Load(_missingTextureImage, (int)newId);
+            }
+        }
+        
+        var oldImages = new Dictionary<int, (Image<Rgba32> Image, TextureHandle Handle)>(_images);
+        _images.Clear();
+        foreach (KeyValuePair<int, (Image<Rgba32> Image, TextureHandle Handle)> entry in oldImages)
+        {
+            GLManager.GL.DeleteTexture((uint)entry.Key);
+
+            uint newId = GLManager.GL.GenTexture();
+            entry.Value.Handle.Id = (int)newId;
+            Load(entry.Value.Image, (int)newId, false);
+            _images[(int)newId] = entry.Value;
+        }
+    
+        foreach (string key in new List<string>(_colors.Keys)) GetColors(key);
     }
 
     public unsafe void Tick()
     {
-        foreach (var texture in _dynamicTextures)
+        foreach (DynamicTexture texture in _dynamicTextures)
         {
             texture.tick();
 
             string atlasPath = texture.atlas == DynamicTexture.FXImage.Terrain ? "/terrain.png" : "/gui/items.png";
-            BindTexture(texture.copyTo > 0 ? texture.copyTo : GetTextureId(atlasPath));
+            BindTexture(texture.copyTo > 0 ? texture.copyTo : GetTextureId(atlasPath).Id);
 
             int targetTileSize = _atlasTileSizes.TryGetValue(atlasPath, out int size) ? size : 16;
 

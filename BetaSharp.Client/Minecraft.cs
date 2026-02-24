@@ -317,7 +317,7 @@ public partial class Minecraft
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/title/mojang.png"));
+        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/title/mojang.png").Id);
         tessellator.startDrawingQuads();
         tessellator.setColorOpaque_I(0xFFFFFF);
         tessellator.addVertexWithUV(0.0D, (double)displayHeight, 0.0D, 0.0D, 0.0D);
@@ -1114,7 +1114,7 @@ public partial class Minecraft
         Profiler.Stop("playerControllerUpdate");
 
         Profiler.Start("updateDynamicTextures");
-        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/terrain.png"));
+        GLManager.GL.BindTexture(GLEnum.Texture2D, (uint)textureManager.GetTextureId("/terrain.png").Id);
         if (!isGamePaused)
         {
             textureManager.Tick();

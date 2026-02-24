@@ -23,7 +23,7 @@ public class GuiFurnace : GuiContainer
 
     protected override void DrawGuiContainerBackgroundLayer(float partialTicks)
     {
-        int textureId = mc.textureManager.GetTextureId("/gui/furnace.png");
+        int textureId = mc.textureManager.GetTextureId("/gui/furnace.png").Id;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         mc.textureManager.BindTexture(textureId);
         int guiLeft = (Width - _xSize) / 2;

@@ -144,7 +144,7 @@ public class ItemRenderer : EntityRenderer
         float var11;
         if (var3 < 256 && BlockRenderer.isSideLit(Block.Blocks[var3].getRenderType()))
         {
-            var2.BindTexture(var2.GetTextureId("/terrain.png"));
+            var2.BindTexture(var2.GetTextureId("/terrain.png").Id);
             Block var14 = Block.Blocks[var3];
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(var6 - 2, var7 + 3, -3.0F);
@@ -173,11 +173,11 @@ public class ItemRenderer : EntityRenderer
             GLManager.GL.Disable(GLEnum.Lighting);
             if (var3 < 256)
             {
-                var2.BindTexture(var2.GetTextureId("/terrain.png"));
+                var2.BindTexture(var2.GetTextureId("/terrain.png").Id);
             }
             else
             {
-                var2.BindTexture(var2.GetTextureId("/gui/items.png"));
+                var2.BindTexture(var2.GetTextureId("/gui/items.png").Id);
             }
 
             int var8 = Item.ITEMS[var3].getColorMultiplier(var4);
