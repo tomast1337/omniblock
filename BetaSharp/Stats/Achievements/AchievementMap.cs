@@ -7,7 +7,7 @@ namespace BetaSharp.Stats.Achievements;
 internal static class AchievementMap
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(AchievementMap));
-    private static readonly Dictionary<int, string> s_guidMap = new ();
+    private static readonly Dictionary<int, string> s_guidMap = new();
 
     static AchievementMap()
     {
@@ -17,9 +17,10 @@ internal static class AchievementMap
             {
                 while (reader.ReadLine() is { } line)
                 {
+                    if (line == "") continue;
                     string[] parts = line.Split(',');
                     int key = int.Parse(parts[0]);
-                    s_guidMap.Add(key, parts[1]);
+                    s_guidMap.Add(key, parts[1].Trim());
                 }
             }
         }
@@ -27,7 +28,6 @@ internal static class AchievementMap
         {
             s_logger.LogError(ex, ex.Message);
         }
-
     }
 
     public static string GetGuid(int id)
@@ -35,7 +35,9 @@ internal static class AchievementMap
         if (!s_guidMap.TryGetValue(id, out string? value))
         {
             //s_logger.LogWarning("No guid found for id: " + id);
+            return string.Empty;
         }
+
         return value;
     }
 }
