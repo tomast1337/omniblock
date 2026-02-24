@@ -9,13 +9,11 @@ using BetaSharp.NBT;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
-using java.lang;
 
 namespace BetaSharp.Client.Entities;
 
 public class ClientPlayerEntity : EntityPlayer
 {
-    public static readonly new Class Class = ikvm.runtime.Util.getClassFromTypeHandle(typeof(ClientPlayerEntity).TypeHandle);
     public MovementInput movementInput;
     protected Minecraft mc;
     private readonly MouseFilter field_21903_bJ = new();
