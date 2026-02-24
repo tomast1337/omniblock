@@ -17,6 +17,8 @@ public class LivingEntitySpawnS2CPacket : Packet
     private DataWatcher metaData;
     private List<WatchableObject> receivedMetadata;
 
+    public LivingEntitySpawnS2CPacket() { }
+
     public LivingEntitySpawnS2CPacket(EntityLiving ent)
     {
         entityId = ent.id;
@@ -29,7 +31,7 @@ public class LivingEntitySpawnS2CPacket : Packet
         metaData = ent.getDataWatcher();
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         entityId = stream.readInt();
         type = (sbyte)stream.readByte();
@@ -41,7 +43,7 @@ public class LivingEntitySpawnS2CPacket : Packet
         receivedMetadata = DataWatcher.ReadWatchableObjects(stream);
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(entityId);
         stream.writeByte(type);
@@ -53,12 +55,12 @@ public class LivingEntitySpawnS2CPacket : Packet
         metaData.WriteWatchableObjects(stream);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onLivingEntitySpawn(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 20;
     }

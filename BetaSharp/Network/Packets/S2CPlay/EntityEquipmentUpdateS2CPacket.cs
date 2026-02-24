@@ -30,7 +30,7 @@ public class EntityEquipmentUpdateS2CPacket : Packet
         }
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         id = stream.readInt();
         slot = stream.readShort();
@@ -38,7 +38,7 @@ public class EntityEquipmentUpdateS2CPacket : Packet
         itemDamage = stream.readShort();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(id);
         stream.writeShort(slot);
@@ -46,12 +46,12 @@ public class EntityEquipmentUpdateS2CPacket : Packet
         stream.writeShort(itemDamage);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onEntityEquipmentUpdate(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 8;
     }

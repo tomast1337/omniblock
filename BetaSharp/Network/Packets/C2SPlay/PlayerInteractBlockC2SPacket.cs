@@ -24,7 +24,7 @@ public class PlayerInteractBlockC2SPacket : Packet
         this.stack = stack;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         x = stream.readInt();
         y = stream.read();
@@ -44,7 +44,7 @@ public class PlayerInteractBlockC2SPacket : Packet
 
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(x);
         stream.write(y);
@@ -63,12 +63,12 @@ public class PlayerInteractBlockC2SPacket : Packet
 
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onPlayerInteractBlock(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 15;
     }

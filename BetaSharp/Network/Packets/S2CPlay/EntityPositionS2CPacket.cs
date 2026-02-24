@@ -37,7 +37,7 @@ public class EntityPositionS2CPacket : Packet
         pitch = (sbyte)(int)(var1.pitch * 256.0F / 360.0F);
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         id = stream.readInt();
         x = stream.readInt();
@@ -47,7 +47,7 @@ public class EntityPositionS2CPacket : Packet
         pitch = (sbyte)stream.read();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(id);
         stream.writeInt(x);
@@ -57,12 +57,12 @@ public class EntityPositionS2CPacket : Packet
         stream.write(pitch);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onEntityPosition(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 34;
     }

@@ -15,22 +15,22 @@ public class EntityDestroyS2CPacket : Packet
         entityId = id;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         entityId = stream.readInt();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(entityId);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onEntityDestroy(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 4;
     }

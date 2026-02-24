@@ -2,76 +2,62 @@ using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using java.lang;
-using java.util;
 using Microsoft.Extensions.Logging;
+using StringBuilder = System.Text.StringBuilder;
 
 namespace BetaSharp.Network.Packets;
 
 public abstract class Packet
 {
-    private static Map IO_TO_TYPE = new HashMap();
-    private static Map TYPE_TO_ID = new HashMap();
-    private static Set S2C = new HashSet();
-    private static Set C2S = new HashSet();
+    private static readonly Dictionary<int, PacketRegisterItem> s_ioToType = new ();
+    private static readonly Dictionary<Type, PacketRegisterRout> s_typeToId = new ();
     private static readonly ILogger<Packet> s_logger = Log.Instance.For<Packet>();
 
-    public readonly long creationTime = java.lang.System.currentTimeMillis();
-    public bool worldPacket = false;
-    private static HashMap trackers;
-    private static int incomingCount;
+    private static readonly Dictionary<int, PacketTracker> s_trackers = new ();
 
-    static void register(int rawId, bool clientBound, bool serverBound, Type type)
+    public readonly long CreationTime = java.lang.System.currentTimeMillis();
+    public bool WorldPacket = false;
+    private PacketRegisterRout? _rout = null;
+
+    private static void Register<T>(PacketRegisterItem<T> item) where T : Packet
     {
-        if (IO_TO_TYPE.containsKey(Integer.valueOf(rawId)))
+        if (s_ioToType.ContainsKey(item.Id))
         {
-            throw new ArgumentException("Duplicate packet id:" + rawId, nameof(rawId));
+            throw new ArgumentException("Duplicate packet id:" + item.Id, nameof(item));
         }
-        else if (TYPE_TO_ID.containsKey(type))
+        if (s_typeToId.ContainsKey(typeof(T)))
         {
-            throw new ArgumentException("Duplicate packet class:" + type, nameof(type));
+            throw new ArgumentException("Duplicate packet class:" + typeof(T));
         }
-        else
-        {
-            IO_TO_TYPE.put(Integer.valueOf(rawId), type);
-            TYPE_TO_ID.put(type, Integer.valueOf(rawId));
-            if (clientBound)
-            {
-                S2C.add(Integer.valueOf(rawId));
-            }
 
-            if (serverBound)
-            {
-                C2S.add(Integer.valueOf(rawId));
-            }
-
-        }
+        s_ioToType.Add(item.Id, item);
+        s_typeToId.Add(typeof(T), item);
     }
 
-    public static Packet create(int rawId)
+    public static Packet? Create(int rawId)
     {
-        try
+        if (s_ioToType.TryGetValue(rawId, out PacketRegisterItem? item))
         {
-            Class packetClass = (Class)IO_TO_TYPE.get(Integer.valueOf(rawId));
-            return packetClass == null ? null : (Packet)packetClass.newInstance();
+            return item.NewPacket();
         }
-        catch (java.lang.Exception ex)
-        {
-            s_logger.LogError(ex, "Exception");
-            s_logger.LogInformation($"Skipping packet with id {rawId}");
-            return null;
-        }
+
+        s_logger.LogInformation($"Skipping packet with id {rawId}");
+        return null;
     }
 
-    public int getRawId()
+    public int GetRawId()
     {
-        return ((Integer)TYPE_TO_ID.get(GetType())).intValue();
+        if (!s_typeToId.TryGetValue(GetType(), out _rout))
+        {
+            s_logger.LogError($"Id not found for packet type {GetType()}");
+            return -1;
+        }
+        return _rout.Id;
     }
 
-    public static Packet read(java.io.DataInputStream stream, bool server)
+    public static Packet? Read(java.io.DataInputStream stream, bool server)
     {
         Packet packet = null;
-
-
         int rawId;
         try
         {
@@ -81,92 +67,88 @@ public abstract class Packet
                 return null;
             }
 
-            if (server && !C2S.contains(Integer.valueOf(rawId)) || !server && !S2C.contains(Integer.valueOf(rawId)))
+            if (!s_ioToType.TryGetValue(rawId, out PacketRegisterItem? packetR))
             {
-                throw new java.io.IOException("Bad packet id " + rawId);
+                throw new IOException("Bad packet id " + rawId);
             }
 
-            packet = create(rawId);
-            if (packet == null)
+            if (server)
             {
-                throw new java.io.IOException("Bad packet id " + rawId);
+                if (!packetR.ClientBound) throw new IOException("Bad client bound packet id " + rawId);
+            }
+            else
+            {
+                if (!packetR.ServerBound) throw new IOException("Bad server bound packet id " + rawId);
             }
 
-            packet.read(stream);
+            packet = packetR.NewPacket();
+
+            packet.Read(stream);
         }
-        catch (java.io.EOFException)
+        catch (IOException e)
         {
-            s_logger.LogInformation("Reached end of stream");
+            s_logger.LogInformation("Reached end of stream : " + e.Message);
             return null;
         }
 
-        PacketTracker tracker = (PacketTracker)trackers.get(Integer.valueOf(rawId));
-        if (tracker == null)
+        if (!s_trackers.TryGetValue(rawId, out PacketTracker? tracker))
         {
             tracker = new PacketTracker();
-            trackers.put(Integer.valueOf(rawId), tracker);
+            s_trackers.Add(rawId, tracker);
         }
 
-        tracker.update(packet.size());
-        ++incomingCount;
-        if (incomingCount % 1000 == 0)
-        {
-        }
+        tracker.update(packet.Size());
 
         return packet;
     }
 
-    public static void write(Packet packet, java.io.DataOutputStream stream)
+    public static void Write(Packet packet, java.io.DataOutputStream stream)
     {
-        stream.write(packet.getRawId());
-        packet.write(stream);
+        stream.write(packet.GetRawId());
+        packet.Write(stream);
     }
 
-    public static void writeString(string packetData, java.io.DataOutputStream stream)
+    public static void WriteString(string packetData, java.io.DataOutputStream stream)
     {
         if (packetData.Length > Short.MAX_VALUE)
         {
-            throw new java.io.IOException("String too big");
+            throw new IOException("String too big");
         }
-        else
-        {
-            stream.writeShort(packetData.Length);
-            stream.writeChars(packetData);
-        }
+
+        stream.writeShort(packetData.Length);
+        stream.writeChars(packetData);
     }
 
-    public static string readString(java.io.DataInputStream stream, int maxLength)
+    public static string ReadString(java.io.DataInputStream stream, int maxLength)
     {
 
         short length = stream.readShort();
         if (length > maxLength)
         {
-            throw new java.io.IOException("Received string length longer than maximum allowed (" + length + " > " + maxLength + ")");
+            throw new IOException("Received string length longer than maximum allowed (" + length + " > " + maxLength + ")");
         }
-        else if (length < 0)
+        if (length < 0)
         {
-            throw new java.io.IOException("Received string length is less than zero! Weird string!");
+            throw new IOException("Received string length is less than zero! Weird string!");
         }
-        else
+
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < length; ++i)
         {
-            StringBuilder sb = new StringBuilder();
-
-            for (int var4 = 0; var4 < length; ++var4)
-            {
-                sb.append(stream.readChar());
-            }
-
-            return sb.toString();
+            sb.Append(stream.readChar());
         }
+
+        return sb.ToString();
     }
 
-    public abstract void read(java.io.DataInputStream stream);
+    public abstract void Read(java.io.DataInputStream stream);
 
-    public abstract void write(java.io.DataOutputStream stream);
+    public abstract void Write(java.io.DataOutputStream stream);
 
-    public abstract void apply(NetHandler handler);
+    public abstract void Apply(NetHandler handler);
 
-    public abstract int size();
+    public abstract int Size();
 
     public virtual void ProcessForInternal()
     {
@@ -174,64 +156,88 @@ public abstract class Packet
 
     static Packet()
     {
-        register(0, true, true, typeof(KeepAlivePacket));
-        register(1, true, true, typeof(LoginHelloPacket));
-        register(2, true, true, typeof(HandshakePacket));
-        register(3, true, true, typeof(ChatMessagePacket));
-        register(4, true, false, typeof(WorldTimeUpdateS2CPacket));
-        register(5, true, false, typeof(EntityEquipmentUpdateS2CPacket));
-        register(6, true, false, typeof(PlayerSpawnPositionS2CPacket));
-        register(7, false, true, typeof(PlayerInteractEntityC2SPacket));
-        register(8, true, false, typeof(HealthUpdateS2CPacket));
-        register(9, true, true, typeof(PlayerRespawnPacket));
-        register(10, true, true, typeof(PlayerMovePacket));
-        register(11, true, true, typeof(PlayerMovePositionAndOnGroundPacket));
-        register(12, true, true, typeof(PlayerMoveLookAndOnGroundPacket));
-        register(13, true, true, typeof(PlayerMoveFullPacket));
-        register(14, false, true, typeof(PlayerActionC2SPacket));
-        register(15, false, true, typeof(PlayerInteractBlockC2SPacket));
-        register(16, false, true, typeof(UpdateSelectedSlotC2SPacket));
-        register(17, true, false, typeof(PlayerSleepUpdateS2CPacket));
-        register(18, true, true, typeof(EntityAnimationPacket));
-        register(19, false, true, typeof(ClientCommandC2SPacket));
-        register(20, true, false, typeof(PlayerSpawnS2CPacket));
-        register(21, true, false, typeof(ItemEntitySpawnS2CPacket));
-        register(22, true, false, typeof(ItemPickupAnimationS2CPacket));
-        register(23, true, false, typeof(EntitySpawnS2CPacket));
-        register(24, true, false, typeof(LivingEntitySpawnS2CPacket));
-        register(25, true, false, typeof(PaintingEntitySpawnS2CPacket));
-        register(27, false, true, typeof(PlayerInputC2SPacket));
-        register(28, true, false, typeof(EntityVelocityUpdateS2CPacket));
-        register(29, true, false, typeof(EntityDestroyS2CPacket));
-        register(30, true, false, typeof(EntityS2CPacket));
-        register(31, true, false, typeof(EntityMoveRelativeS2CPacket));
-        register(32, true, false, typeof(EntityRotateS2CPacket));
-        register(33, true, false, typeof(EntityRotateAndMoveRelativeS2CPacket));
-        register(34, true, false, typeof(EntityPositionS2CPacket));
-        register(38, true, false, typeof(EntityStatusS2CPacket));
-        register(39, true, false, typeof(EntityVehicleSetS2CPacket));
-        register(40, true, false, typeof(EntityTrackerUpdateS2CPacket));
-        register(50, true, false, typeof(ChunkStatusUpdateS2CPacket));
-        register(51, true, false, typeof(ChunkDataS2CPacket));
-        register(52, true, false, typeof(ChunkDeltaUpdateS2CPacket));
-        register(53, true, false, typeof(BlockUpdateS2CPacket));
-        register(54, true, false, typeof(PlayNoteSoundS2CPacket));
-        register(60, true, false, typeof(ExplosionS2CPacket));
-        register(61, true, false, typeof(WorldEventS2CPacket));
-        register(70, true, false, typeof(GameStateChangeS2CPacket));
-        register(71, true, false, typeof(GlobalEntitySpawnS2CPacket));
-        register(100, true, false, typeof(OpenScreenS2CPacket));
-        register(101, true, true, typeof(CloseScreenS2CPacket));
-        register(102, false, true, typeof(ClickSlotC2SPacket));
-        register(103, true, false, typeof(ScreenHandlerSlotUpdateS2CPacket));
-        register(104, true, false, typeof(InventoryS2CPacket));
-        register(105, true, false, typeof(ScreenHandlerPropertyUpdateS2CPacket));
-        register(106, true, true, typeof(ScreenHandlerAcknowledgementPacket));
-        register(130, true, true, typeof(UpdateSignPacket));
-        register(131, true, false, typeof(MapUpdateS2CPacket));
-        register(200, true, false, typeof(IncreaseStatS2CPacket));
-        register(255, true, true, typeof(DisconnectPacket));
-        trackers = new HashMap();
-        incomingCount = 0;
+        Register(New(0, true, true, () => new KeepAlivePacket()));
+        Register(New(1, true, true, () => new LoginHelloPacket()));
+        Register(New(2, true, true, () => new HandshakePacket()));
+        Register(New(3, true, true, () => new ChatMessagePacket()));
+        Register(New(4, true, false, () => new WorldTimeUpdateS2CPacket()));
+        Register(New(5, true, false, () => new EntityEquipmentUpdateS2CPacket()));
+        Register(New(6, true, false, () => new PlayerSpawnPositionS2CPacket()));
+        Register(New(7, false, true, () => new PlayerInteractEntityC2SPacket()));
+        Register(New(8, true, false, () => new HealthUpdateS2CPacket()));
+        Register(New(9, true, true, () => new PlayerRespawnPacket()));
+        Register(New(10, true, true, () => new PlayerMovePacket()));
+        Register(New(11, true, true, () => new PlayerMovePositionAndOnGroundPacket()));
+        Register(New(12, true, true, () => new PlayerMoveLookAndOnGroundPacket()));
+        Register(New(13, true, true, () => new PlayerMoveFullPacket()));
+        Register(New(14, false, true, () => new PlayerActionC2SPacket()));
+        Register(New(15, false, true, () => new PlayerInteractBlockC2SPacket()));
+        Register(New(16, false, true, () => new UpdateSelectedSlotC2SPacket()));
+        Register(New(17, true, false, () => new PlayerSleepUpdateS2CPacket()));
+        Register(New(18, true, true, () => new EntityAnimationPacket()));
+        Register(New(19, false, true, () => new ClientCommandC2SPacket()));
+        Register(New(20, true, false, () => new PlayerSpawnS2CPacket()));
+        Register(New(21, true, false, () => new ItemEntitySpawnS2CPacket()));
+        Register(New(22, true, false, () => new ItemPickupAnimationS2CPacket()));
+        Register(New(23, true, false, () => new EntitySpawnS2CPacket()));
+        Register(New(24, true, false, () => new LivingEntitySpawnS2CPacket()));
+        Register(New(25, true, false, () => new PaintingEntitySpawnS2CPacket()));
+        Register(New(27, false, true, () => new PlayerInputC2SPacket()));
+        Register(New(28, true, false, () => new EntityVelocityUpdateS2CPacket()));
+        Register(New(29, true, false, () => new EntityDestroyS2CPacket()));
+        Register(New(30, true, false, () => new EntityS2CPacket()));
+        Register(New(31, true, false, () => new EntityMoveRelativeS2CPacket()));
+        Register(New(32, true, false, () => new EntityRotateS2CPacket()));
+        Register(New(33, true, false, () => new EntityRotateAndMoveRelativeS2CPacket()));
+        Register(New(34, true, false, () => new EntityPositionS2CPacket()));
+        Register(New(38, true, false, () => new EntityStatusS2CPacket()));
+        Register(New(39, true, false, () => new EntityVehicleSetS2CPacket()));
+        Register(New(40, true, false, () => new EntityTrackerUpdateS2CPacket()));
+        Register(New(50, true, false, () => new ChunkStatusUpdateS2CPacket()));
+        Register(New(51, true, false, () => new ChunkDataS2CPacket()));
+        Register(New(52, true, false, () => new ChunkDeltaUpdateS2CPacket()));
+        Register(New(53, true, false, () => new BlockUpdateS2CPacket()));
+        Register(New(54, true, false, () => new PlayNoteSoundS2CPacket()));
+        Register(New(60, true, false, () => new ExplosionS2CPacket()));
+        Register(New(61, true, false, () => new WorldEventS2CPacket()));
+        Register(New(70, true, false, () => new GameStateChangeS2CPacket()));
+        Register(New(71, true, false, () => new GlobalEntitySpawnS2CPacket()));
+        Register(New(100, true, false, () => new OpenScreenS2CPacket()));
+        Register(New(101, true, true, () => new CloseScreenS2CPacket()));
+        Register(New(102, false, true, () => new ClickSlotC2SPacket()));
+        Register(New(103, true, false, () => new ScreenHandlerSlotUpdateS2CPacket()));
+        Register(New(104, true, false, () => new InventoryS2CPacket()));
+        Register(New(105, true, false, () => new ScreenHandlerPropertyUpdateS2CPacket()));
+        Register(New(106, true, true, () => new ScreenHandlerAcknowledgementPacket()));
+        Register(New(130, true, true, () => new UpdateSignPacket()));
+        Register(New(131, true, false, () => new MapUpdateS2CPacket()));
+        Register(New(200, true, false, () => new IncreaseStatS2CPacket()));
+        Register(New(255, true, true, () => new DisconnectPacket()));
     }
+
+    private abstract class PacketRegisterRout(int rawId, bool clientBound, bool serverBound)
+    {
+        public readonly int Id = rawId;
+        public readonly bool ClientBound = clientBound;
+        public readonly bool ServerBound = serverBound;
+    }
+
+    private abstract class PacketRegisterItem(int rawId, bool clientBound, bool serverBound) : PacketRegisterRout(rawId, clientBound, serverBound)
+    {
+        public abstract Packet NewPacket();
+    }
+
+    private class PacketRegisterItem<T>(int rawId, bool clientBound, bool serverBound, Func<T> factory) : PacketRegisterItem(rawId, clientBound, serverBound)
+        where T : Packet
+    {
+        public override Packet NewPacket()
+        {
+            Packet p = factory();
+            p._rout = this;
+            return p;
+        }
+    }
+
+    private static PacketRegisterItem<T> New<T>(int rawId, bool clientBound, bool serverBound, Func<T> factory) where T : Packet =>
+        new(rawId, clientBound, serverBound, factory);
 }

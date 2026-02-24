@@ -24,7 +24,7 @@ public class PlayerSleepUpdateS2CPacket : Packet
         this.id = player.id;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         id = stream.readInt();
         status = (sbyte)stream.readByte();
@@ -33,7 +33,7 @@ public class PlayerSleepUpdateS2CPacket : Packet
         z = stream.readInt();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(id);
         stream.writeByte(status);
@@ -42,12 +42,12 @@ public class PlayerSleepUpdateS2CPacket : Packet
         stream.writeInt(z);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onPlayerSleepUpdate(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 14;
     }

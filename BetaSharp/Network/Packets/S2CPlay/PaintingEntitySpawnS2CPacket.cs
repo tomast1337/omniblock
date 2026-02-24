@@ -26,32 +26,32 @@ public class PaintingEntitySpawnS2CPacket : Packet
         title = paint.art.title;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         entityId = stream.readInt();
-        title = readString(stream, EnumArt.maxArtTitleLength);
+        title = ReadString(stream, EnumArt.maxArtTitleLength);
         xPosition = stream.readInt();
         yPosition = stream.readInt();
         zPosition = stream.readInt();
         direction = stream.readInt();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(entityId);
-        writeString(title, stream);
+        WriteString(title, stream);
         stream.writeInt(xPosition);
         stream.writeInt(yPosition);
         stream.writeInt(zPosition);
         stream.writeInt(direction);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onPaintingEntitySpawn(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 24;
     }

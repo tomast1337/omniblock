@@ -11,19 +11,19 @@ public class UpdateSignPacket : Packet
 
     public UpdateSignPacket()
     {
-        worldPacket = true;
+        WorldPacket = true;
     }
 
     public UpdateSignPacket(int x, int y, int z, string[] text)
     {
-        worldPacket = true;
+        WorldPacket = true;
         this.x = x;
         this.y = y;
         this.z = z;
         this.text = text;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         x = stream.readInt();
         y = stream.readShort();
@@ -33,12 +33,12 @@ public class UpdateSignPacket : Packet
         for (int i = 0; i < 4; ++i)
         {
 
-            text[i] = readString(stream, 15);
+            text[i] = ReadString(stream, 15);
         }
 
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(x);
         stream.writeShort(y);
@@ -46,17 +46,17 @@ public class UpdateSignPacket : Packet
 
         for (int i = 0; i < 4; ++i)
         {
-            writeString(text[i], stream);
+            WriteString(text[i], stream);
         }
 
     }
 
-    public override void apply(NetHandler networkHandler)
+    public override void Apply(NetHandler networkHandler)
     {
         networkHandler.handleUpdateSign(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         int size = 0;
 

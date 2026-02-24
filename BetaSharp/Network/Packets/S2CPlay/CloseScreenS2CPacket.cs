@@ -15,22 +15,22 @@ public class CloseScreenS2CPacket : Packet
         this.windowId = windowId;
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onCloseScreen(this);
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         windowId = (sbyte)stream.readByte();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeByte(windowId);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 1;
     }

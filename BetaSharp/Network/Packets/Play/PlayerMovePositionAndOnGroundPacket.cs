@@ -19,25 +19,25 @@ public class PlayerMovePositionAndOnGroundPacket : PlayerMovePacket
         changePosition = true;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         x = stream.readDouble();
         y = stream.readDouble();
         eyeHeight = stream.readDouble();
         z = stream.readDouble();
-        base.read(stream);
+        base.Read(stream);
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeDouble(x);
         stream.writeDouble(y);
         stream.writeDouble(eyeHeight);
         stream.writeDouble(z);
-        base.write(stream);
+        base.Write(stream);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 33;
     }

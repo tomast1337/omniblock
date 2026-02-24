@@ -76,8 +76,8 @@ public class Connection
             object lockObj = lck;
             lock (lockObj)
             {
-                sendQueueSize += packet.size() + 1;
-                if (packet.worldPacket)
+                sendQueueSize += packet.Size() + 1;
+                if (packet.WorldPacket)
                 {
                     delayedSendQueue.add(packet);
                 }
@@ -105,35 +105,35 @@ public class Connection
             int packetId;
             Packet packet;
             object lockObj;
-            if (!sendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)sendQueue.get(0)).creationTime >= lag))
+            if (!sendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)sendQueue.get(0)).CreationTime >= lag))
             {
                 lockObj = lck;
                 lock (lockObj)
                 {
                     packet = (Packet)sendQueue.remove(0);
-                    sendQueueSize -= packet.size() + 1;
+                    sendQueueSize -= packet.Size() + 1;
                 }
 
-                Packet.write(packet, _outputStream);
+                Packet.Write(packet, _outputStream);
                 sizeStats = TOTAL_SEND_SIZE;
-                packetId = packet.getRawId();
-                sizeStats[packetId] += packet.size() + 1;
+                packetId = packet.GetRawId();
+                sizeStats[packetId] += packet.Size() + 1;
                 wrotePacket = true;
             }
 
-            if (_delay-- <= 0 && !delayedSendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)delayedSendQueue.get(0)).creationTime >= lag))
+            if (_delay-- <= 0 && !delayedSendQueue.isEmpty() && (lag == 0 || java.lang.System.currentTimeMillis() - ((Packet)delayedSendQueue.get(0)).CreationTime >= lag))
             {
                 lockObj = lck;
                 lock (lockObj)
                 {
                     packet = (Packet)delayedSendQueue.remove(0);
-                    sendQueueSize -= packet.size() + 1;
+                    sendQueueSize -= packet.Size() + 1;
                 }
 
-                Packet.write(packet, _outputStream);
+                Packet.Write(packet, _outputStream);
                 sizeStats = TOTAL_SEND_SIZE;
-                packetId = packet.getRawId();
-                sizeStats[packetId] += packet.size() + 1;
+                packetId = packet.GetRawId();
+                sizeStats[packetId] += packet.Size() + 1;
                 _delay = 0;
                 wrotePacket = true;
             }
@@ -173,12 +173,12 @@ public class Connection
 
         try
         {
-            Packet packet = Packet.read(_inputStream, networkHandler.isServerSide());
+            Packet? packet = Packet.Read(_inputStream, networkHandler.isServerSide());
             if (packet != null)
             {
                 int[] sizeStats = TOTAL_READ_SIZE;
-                int packetId = packet.getRawId();
-                sizeStats[packetId] += packet.size() + 1;
+                int packetId = packet.GetRawId();
+                sizeStats[packetId] += packet.Size() + 1;
                 readQueue.add(packet);
                 receivedPacket = true;
             }
@@ -287,7 +287,7 @@ public class Connection
         while (!readQueue.isEmpty() && maxPacketsPerTick-- >= 0)
         {
             Packet packet = (Packet)readQueue.remove(0);
-            packet.apply(networkHandler);
+            packet.Apply(networkHandler);
         }
     }
 

@@ -121,7 +121,7 @@ public class DataWatcher
                 stream.writeFloat((float)obj.watchedObject);
                 break;
             case 4:
-                Packet.writeString((string)obj.watchedObject, stream);
+                Packet.WriteString((string)obj.watchedObject, stream);
                 break;
             case 5:
                 ItemStack item = (ItemStack)obj.watchedObject;
@@ -164,7 +164,7 @@ public class DataWatcher
                     obj = new WatchableObject(objectType, dataValueId, stream.readFloat());
                     break;
                 case 4:
-                    obj = new WatchableObject(objectType, dataValueId, Packet.readString(stream, 64));
+                    obj = new WatchableObject(objectType, dataValueId, Packet.ReadString(stream, 64));
                     break;
                 case 5:
                     short id = stream.readShort();

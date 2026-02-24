@@ -15,22 +15,22 @@ public class UpdateSelectedSlotC2SPacket : Packet
         this.selectedSlot = selectedSlot;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         selectedSlot = stream.readShort();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeShort(selectedSlot);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onUpdateSelectedSlot(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 2;
     }

@@ -20,12 +20,12 @@ public class ScreenHandlerSlotUpdateS2CPacket : Packet
         this.stack = stack == null ? stack : stack.copy();
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onScreenHandlerSlotUpdate(this);
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         syncId = (sbyte)stream.readByte();
         slot = stream.readShort();
@@ -43,7 +43,7 @@ public class ScreenHandlerSlotUpdateS2CPacket : Packet
 
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeByte(syncId);
         stream.writeShort(slot);
@@ -60,7 +60,7 @@ public class ScreenHandlerSlotUpdateS2CPacket : Packet
 
     }
 
-    public override int size()
+    public override int Size()
     {
         return 8;
     }

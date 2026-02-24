@@ -20,22 +20,22 @@ public class EntityS2CPacket : Packet
     {
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         id = stream.readInt();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(id);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onEntity(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 4;
     }

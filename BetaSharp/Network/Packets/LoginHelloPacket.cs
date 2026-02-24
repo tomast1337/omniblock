@@ -29,28 +29,28 @@ public class LoginHelloPacket : Packet
         this.protocolVersion = protocolVersion;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         protocolVersion = stream.readInt();
-        username = readString(stream, 16);
+        username = ReadString(stream, 16);
         worldSeed = stream.readLong();
         dimensionId = (sbyte)stream.readByte();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(protocolVersion);
-        writeString(username, stream);
+        WriteString(username, stream);
         stream.writeLong(worldSeed);
         stream.writeByte(dimensionId);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onHello(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 4 + username.Length + 4 + 5;
     }

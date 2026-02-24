@@ -23,7 +23,7 @@ public class WorldEventS2CPacket : Packet
         this.data = data;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         eventId = stream.readInt();
         x = stream.readInt();
@@ -32,7 +32,7 @@ public class WorldEventS2CPacket : Packet
         data = stream.readInt();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(eventId);
         stream.writeInt(x);
@@ -41,12 +41,12 @@ public class WorldEventS2CPacket : Packet
         stream.writeInt(data);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onWorldEvent(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 20;
     }

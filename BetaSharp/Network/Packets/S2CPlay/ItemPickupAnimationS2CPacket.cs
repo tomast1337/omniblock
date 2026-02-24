@@ -17,24 +17,24 @@ public class ItemPickupAnimationS2CPacket : Packet
         collectorEntityId = collectorId;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         entityId = stream.readInt();
         collectorEntityId = stream.readInt();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(entityId);
         stream.writeInt(collectorEntityId);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onItemPickupAnimation(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 8;
     }

@@ -29,7 +29,7 @@ public class GlobalEntitySpawnS2CPacket : Packet
 
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         id = stream.readInt();
         type = (sbyte)stream.readByte();
@@ -38,7 +38,7 @@ public class GlobalEntitySpawnS2CPacket : Packet
         z = stream.readInt();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(id);
         stream.writeByte(type);
@@ -47,12 +47,12 @@ public class GlobalEntitySpawnS2CPacket : Packet
         stream.writeInt(z);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onLightningEntitySpawn(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 17;
     }

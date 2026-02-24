@@ -15,22 +15,22 @@ public class PlayerRespawnPacket : Packet
         this.dimensionId = dimensionId;
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onPlayerRespawn(this);
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         dimensionId = (sbyte)stream.readByte();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeByte(dimensionId);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 1;
     }

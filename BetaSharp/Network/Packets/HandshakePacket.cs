@@ -15,22 +15,22 @@ public class HandshakePacket : Packet
         this.username = username;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
-        username = readString(stream, 32);
+        username = ReadString(stream, 32);
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
-        writeString(username, stream);
+        WriteString(username, stream);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onHandshake(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 4 + username.Length + 4;
     }

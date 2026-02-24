@@ -10,37 +10,37 @@ public class ChunkStatusUpdateS2CPacket : Packet
 
     public ChunkStatusUpdateS2CPacket()
     {
-        worldPacket = false;
+        WorldPacket = false;
     }
 
     public ChunkStatusUpdateS2CPacket(int x, int z, bool load)
     {
-        worldPacket = false;
+        WorldPacket = false;
         this.x = x;
         this.z = z;
         this.load = load;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
         x = stream.readInt();
         z = stream.readInt();
         load = stream.read() != 0;
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
         stream.writeInt(x);
         stream.writeInt(z);
         stream.write(load ? 1 : 0);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onChunkStatusUpdate(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 9;
     }

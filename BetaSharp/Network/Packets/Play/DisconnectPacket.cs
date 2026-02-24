@@ -15,22 +15,22 @@ public class DisconnectPacket : Packet
         this.reason = reason;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
-        reason = readString(stream, 100);
+        reason = ReadString(stream, 100);
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
-        writeString(reason, stream);
+        WriteString(reason, stream);
     }
 
-    public override void apply(NetHandler handler)
+    public override void Apply(NetHandler handler)
     {
         handler.onDisconnect(this);
     }
 
-    public override int size()
+    public override int Size()
     {
         return reason.Length;
     }

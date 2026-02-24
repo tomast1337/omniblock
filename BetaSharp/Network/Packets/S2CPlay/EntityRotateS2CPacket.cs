@@ -16,21 +16,21 @@ public class EntityRotateS2CPacket : EntityS2CPacket
         rotate = true;
     }
 
-    public override void read(DataInputStream stream)
+    public override void Read(DataInputStream stream)
     {
-        base.read(stream);
+        base.Read(stream);
         yaw = (sbyte)stream.readByte();
         pitch = (sbyte)stream.readByte();
     }
 
-    public override void write(DataOutputStream stream)
+    public override void Write(DataOutputStream stream)
     {
-        base.write(stream);
+        base.Write(stream);
         stream.writeByte(yaw);
         stream.writeByte(pitch);
     }
 
-    public override int size()
+    public override int Size()
     {
         return 6;
     }
