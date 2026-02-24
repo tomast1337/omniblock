@@ -137,20 +137,20 @@ public class TextRenderer
         }
     }
 
-    public void DrawStringWithShadow(string text, int x, int y, uint color)
+    public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, uint color)
     {
         RenderString(text, x + 1, y + 1, color, true);
         DrawString(text, x, y, color);
     }
 
-    public void DrawString(string text, int x, int y, uint color)
+    public void DrawString(ReadOnlySpan<char> text, int x, int y, uint color)
     {
         RenderString(text, x, y, color, false);
     }
 
-    public unsafe void RenderString(string text, int x, int y, uint color, bool darken)
+    public unsafe void RenderString(ReadOnlySpan<char> text, int x, int y, uint color, bool darken)
     {
-        if (string.IsNullOrEmpty(text)) return;
+        if (text.IsEmpty) return;
 
         uint alpha = color & 0xFF000000;
         if (darken)
@@ -178,7 +178,7 @@ public class TextRenderer
         {
             for (; text.Length > i + 1 && text[i] == 167; i += 2)
             {
-                int colorCode = "0123456789abcdef".IndexOf(text.ToLower()[i + 1]);
+                int colorCode = "0123456789abcdef".IndexOf(char.ToLower(text[i + 1]));
                 if (colorCode < 0 || colorCode > 15)
                 {
                     colorCode = 15;
@@ -225,9 +225,9 @@ public class TextRenderer
         }
     }
 
-    public int GetStringWidth(string text)
+    public int GetStringWidth(ReadOnlySpan<char> text)
     {
-        if (string.IsNullOrEmpty(text)) return 0;
+        if (text.IsEmpty) return 0;
 
         int totalWidth = 0;
 
@@ -250,105 +250,105 @@ public class TextRenderer
         return totalWidth;
     }
 
-    public void DrawStringWrapped(string text, int x, int y, int maxWidth, uint color)
+    private int GetStringFitLength(ReadOnlySpan<char> text, int maxWidth)
     {
-        if (string.IsNullOrEmpty(text)) return;
-
-        string[] lines = text.Split("\n");
-        if (lines.Length > 1)
+        int width = 0;
+        int lastSpaceIndex = -1;
+        int i = 0;
+        for (; i < text.Length; ++i)
         {
-            for (int i = 0; i < lines.Length; ++i)
+            if (text[i] == 167)
             {
-                DrawStringWrapped(lines[i], x, y, maxWidth, color);
-                y += GetStringHeight(lines[i], maxWidth);
+                ++i;
+                continue;
             }
-            return;
-        }
-
-        string[] words = text.Split(" ");
-        int wordIndex = 0;
-
-        while (wordIndex < words.Length)
-        {
-            string currentLine;
-            for (currentLine = words[wordIndex++] + " "; wordIndex < words.Length && GetStringWidth(currentLine + words[wordIndex]) < maxWidth; currentLine = currentLine + words[wordIndex++] + " ")
+            if (text[i] == ' ')
             {
+                lastSpaceIndex = i;
             }
 
-            int cutIndex;
-            for (; GetStringWidth(currentLine) > maxWidth; currentLine = currentLine[cutIndex..])
+            int charIndex = ChatAllowedCharacters.allowedCharacters.IndexOf(text[i]);
+            if (charIndex >= 0)
             {
-                for (cutIndex = 0; GetStringWidth(currentLine[..(cutIndex + 1)]) <= maxWidth; ++cutIndex)
+                width += _charWidth[charIndex + 32];
+            }
+
+            if (width > maxWidth)
+            {
+                if (lastSpaceIndex > 0)
                 {
+                    return lastSpaceIndex;
                 }
-
-                if (currentLine[..cutIndex].Trim().Length > 0)
-                {
-                    DrawString(currentLine[..cutIndex], x, y, color);
-                    y += 8;
-                }
-            }
-
-            if (currentLine.Trim().Length > 0)
-            {
-                DrawString(currentLine, x, y, color);
-                y += 8;
+                return Math.Max(1, i);
             }
         }
+        return text.Length;
     }
 
-    public int GetStringHeight(string text, int maxWidth)
+    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, uint color, bool draw, ref int outHeight)
     {
-        if (string.IsNullOrEmpty(text)) return 0;
+        if (text.IsEmpty) return;
 
-        string[] lines = text.Split("\n");
-        if (lines.Length > 1)
+        int totalHeight = 0;
+        int currentY = y;
+
+        while (text.Length > 0)
         {
-            int totalHeight = 0;
-            for (int i = 0; i < lines.Length; ++i)
+            int newlineIndex = text.IndexOf('\n');
+            ReadOnlySpan<char> line;
+            if (newlineIndex >= 0)
             {
-                totalHeight += GetStringHeight(lines[i], maxWidth);
+                line = text.Slice(0, newlineIndex);
+                text = text.Slice(newlineIndex + 1);
             }
-            return totalHeight;
-        }
-        else
-        {
-            string[] words = text.Split(" ");
-            int wordIndex = 0;
-            int totalHeight = 0;
-
-            while (wordIndex < words.Length)
+            else
             {
-                string currentLine;
-                for (currentLine = words[wordIndex++] + " "; wordIndex < words.Length && GetStringWidth(currentLine + words[wordIndex]) < maxWidth; currentLine = currentLine + words[wordIndex++] + " ")
+                line = text;
+                text = [];
+            }
+
+            while (line.Length > 0)
+            {
+                int fitLength = GetStringFitLength(line, maxWidth);
+                ReadOnlySpan<char> subline = line.Slice(0, Math.Min(fitLength, line.Length));
+                
+                while(subline.Length > 0 && subline[subline.Length - 1] == ' ')
                 {
+                    subline = subline.Slice(0, subline.Length - 1);
                 }
 
-                int cutIndex;
-                for (; GetStringWidth(currentLine) > maxWidth; currentLine = currentLine[cutIndex..])
+                if (subline.Length > 0 || fitLength > 0)
                 {
-                    for (cutIndex = 0; GetStringWidth(currentLine[..(cutIndex + 1)]) <= maxWidth; ++cutIndex)
+                    if (draw && subline.Length > 0)
                     {
+                        DrawString(subline, x, currentY, color);
                     }
-
-                    if (currentLine[..cutIndex].Trim().Length > 0)
-                    {
-                        totalHeight += 8;
-                    }
-                }
-
-                if (currentLine.Trim().Length > 0)
-                {
+                    currentY += 8;
                     totalHeight += 8;
                 }
-            }
 
-            if (totalHeight < 8)
-            {
-                totalHeight += 8;
+                line = line.Slice(Math.Min(fitLength, line.Length));
+                while(line.Length > 0 && line[0] == ' ')
+                {
+                    line = line.Slice(1);
+                }
             }
-
-            return totalHeight;
         }
+        
+        if (totalHeight < 8) totalHeight = 8;
+        outHeight = totalHeight;
+    }
+
+    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, uint color)
+    {
+        int dummyHeight = 0;
+        ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight);
+    }
+
+    public int GetStringHeight(ReadOnlySpan<char> text, int maxWidth)
+    {
+        int height = 0;
+        ProcessWrappedText(text, 0, 0, maxWidth, 0, false, ref height);
+        return height;
     }
 }
