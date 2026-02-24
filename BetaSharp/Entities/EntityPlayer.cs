@@ -146,7 +146,7 @@ public abstract class EntityPlayer : EntityLiving
         capeX += var1 * 0.25D;
         capeZ += var5 * 0.25D;
         capeY += var3 * 0.25D;
-        increaseStat(Stats.Stats.minutesPlayedStat, 1);
+        increaseStat(Stats.Stats.MinutesPlayedStat, 1);
         if (vehicle == null)
         {
             startMinecartRidingCoordinate = null;
@@ -294,7 +294,7 @@ public abstract class EntityPlayer : EntityLiving
         }
 
         standingEyeHeight = 0.1F;
-        increaseStat(Stats.Stats.deathsStat, 1);
+        increaseStat(Stats.Stats.DeathsStat, 1);
     }
 
     public override void updateKilledAchievement(Entity entityKilled, int score)
@@ -302,11 +302,11 @@ public abstract class EntityPlayer : EntityLiving
         this.score += score;
         if (entityKilled is EntityPlayer)
         {
-            increaseStat(Stats.Stats.playerKillsStat, 1);
+            increaseStat(Stats.Stats.PlayerKillsStat, 1);
         }
         else
         {
-            increaseStat(Stats.Stats.mobKillsStat, 1);
+            increaseStat(Stats.Stats.MobKillsStat, 1);
         }
 
     }
@@ -352,7 +352,7 @@ public abstract class EntityPlayer : EntityLiving
             }
 
             spawnItem(var3);
-            increaseStat(Stats.Stats.dropStat, 1);
+            increaseStat(Stats.Stats.DropStat, 1);
         }
     }
 
@@ -486,8 +486,9 @@ public abstract class EntityPlayer : EntityLiving
                 commandWolvesToAttack((EntityLiving)damageSource, false);
             }
 
-            increaseStat(Stats.Stats.damageTakenStat, amount);
-            return base.damage(damageSource, amount);
+                increaseStat(Stats.Stats.DamageTakenStat, amount);
+                return base.damage(damageSource, amount);
+            }
         }
     }
 
@@ -612,7 +613,7 @@ public abstract class EntityPlayer : EntityLiving
                     commandWolvesToAttack((EntityLiving)target, true);
                 }
 
-                increaseStat(Stats.Stats.damageDealtStat, var2);
+                increaseStat(Stats.Stats.DamageDealtStat, var2);
             }
         }
 
@@ -872,7 +873,7 @@ public abstract class EntityPlayer : EntityLiving
     protected override void jump()
     {
         base.jump();
-        increaseStat(Stats.Stats.jumpStat, 1);
+        increaseStat(Stats.Stats.JumpStat, 1);
     }
 
     public override void travel(float x, float z)
@@ -894,7 +895,7 @@ public abstract class EntityPlayer : EntityLiving
                 var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + y * y + z * z) * 100.0F);
                 if (var7 > 0)
                 {
-                    increaseStat(Stats.Stats.distanceDoveStat, var7);
+                    increaseStat(Stats.Stats.DistanceDoveStat, var7);
                 }
             }
             else if (isInWater())
@@ -902,14 +903,14 @@ public abstract class EntityPlayer : EntityLiving
                 var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 0)
                 {
-                    increaseStat(Stats.Stats.distanceSwumStat, var7);
+                    increaseStat(Stats.Stats.DistanceSwumStat, var7);
                 }
             }
             else if (isOnLadder())
             {
                 if (y > 0.0D)
                 {
-                    increaseStat(Stats.Stats.distanceClimbedStat, (int)java.lang.Math.round(y * 100.0D));
+                    increaseStat(Stats.Stats.DistanceClimbedStat, (int)java.lang.Math.round(y * 100.0D));
                 }
             }
             else if (onGround)
@@ -917,7 +918,7 @@ public abstract class EntityPlayer : EntityLiving
                 var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 0)
                 {
-                    increaseStat(Stats.Stats.distanceWalkedStat, var7);
+                    increaseStat(Stats.Stats.DistanceWalkedStat, var7);
                 }
             }
             else
@@ -925,7 +926,7 @@ public abstract class EntityPlayer : EntityLiving
                 var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 25)
                 {
-                    increaseStat(Stats.Stats.distanceFlownStat, var7);
+                    increaseStat(Stats.Stats.DistanceFlownStat, var7);
                 }
             }
 
@@ -943,7 +944,7 @@ public abstract class EntityPlayer : EntityLiving
         switch (vehicle)
         {
             case EntityMinecart:
-                increaseStat(Stats.Stats.distanceWalkedStat, distanceScaled);
+                increaseStat(Stats.Stats.DistanceFallenStat, distanceScaled);
 
                 int currentX = MathHelper.Floor(this.x);
                 int currentY = MathHelper.Floor(this.y);
@@ -960,11 +961,11 @@ public abstract class EntityPlayer : EntityLiving
                 break;
 
             case EntityBoat:
-                increaseStat(Stats.Stats.distanceWalkedStat, distanceScaled);
+                increaseStat(Stats.Stats.DistanceFallenStat, distanceScaled);
                 break;
 
             case EntityPig:
-                increaseStat(Stats.Stats.distanceWalkedStat, distanceScaled);
+                increaseStat(Stats.Stats.DistanceFallenStat, distanceScaled);
                 break;
         }
     }
@@ -973,7 +974,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (fallDistance >= 2.0F)
         {
-            increaseStat(Stats.Stats.distanceFallenStat, (int)java.lang.Math.round((double)fallDistance * 100.0D));
+            increaseStat(Stats.Stats.DistanceFallenStat, (int)java.lang.Math.round((double)fallDistance * 100.0D));
         }
 
         base.onLanding(fallDistance);

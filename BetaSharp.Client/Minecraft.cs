@@ -207,7 +207,7 @@ public partial class Minecraft
         FoliageColors.loadColors(textureManager.GetColors("/misc/foliagecolor.png"));
         gameRenderer = new GameRenderer(this);
         EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
-        statFileWriter = new StatFileWriter(session, mcDataDir);
+        statFileWriter = new StatFileWriter(session, mcDataDir.getAbsolutePath());
 
         StatStringFormatKeyInv format = new(this);
         BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
@@ -367,7 +367,7 @@ public partial class Minecraft
 
         if (newScreen is GuiMainMenu)
         {
-            statFileWriter.func_27175_b();
+            statFileWriter.Tick();
 
             if (inGameHasFocus)
             {
@@ -375,7 +375,7 @@ public partial class Minecraft
             }
         }
 
-        statFileWriter.syncStats();
+        statFileWriter.SyncStats();
         if (newScreen == null && world == null)
         {
             newScreen = new GuiMainMenu();
@@ -432,8 +432,8 @@ public partial class Minecraft
         try
         {
             stopInternalServer();
-            statFileWriter.func_27175_b();
-            statFileWriter.syncStats();
+            statFileWriter.Tick();
+            statFileWriter.SyncStats();
 
             _logger.LogInformation("Stopping!");
 
@@ -1076,7 +1076,11 @@ public partial class Minecraft
     {
         Profiler.PushGroup("runTick");
 
-        if(!inGameHasFocus && world == null && internalServer == null)
+        Profiler.Start("statFileWriter.SyncStatsIfReady");
+        statFileWriter.SyncStatsIfReady();
+        Profiler.Stop("statFileWriter.SyncStatsIfReady");
+
+        if (!inGameHasFocus && world == null && internalServer == null)
         {
             if (options.MenuMusic)
             {
@@ -1088,9 +1092,8 @@ public partial class Minecraft
             }
         }
 
-        Profiler.Start("statFileWriter.func_27178_d");
-        statFileWriter.func_27178_d();
-        Profiler.Stop("statFileWriter.func_27178_d");
+
+
         Profiler.Start("ingameGUI.updateTick");
         ingameGUI.updateTick();
         Profiler.Stop("ingameGUI.updateTick");
@@ -1384,7 +1387,7 @@ public partial class Minecraft
 
                     if (Keyboard.getEventKey() == options.KeyBindToggleFog.keyCode)
                     {
-                        options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f/28.0f : -1.0f/28.0f), 0.0f, 1.0f);
+                        options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f), 0.0f, 1.0f);
                     }
                 }
             }
@@ -1431,8 +1434,8 @@ public partial class Minecraft
 
     public void changeWorld(World newWorld, string loadingText = "", EntityPlayer targetEntity = null)
     {
-        statFileWriter.func_27175_b();
-        statFileWriter.syncStats();
+        statFileWriter.Tick();
+        statFileWriter.SyncStats();
         camera = null;
         loadingScreen.printText(loadingText);
         loadingScreen.progressStage("");
