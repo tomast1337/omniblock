@@ -294,76 +294,93 @@ public class TextureManager : IDisposable
             texture.tick();
 
             string atlasPath = texture.atlas == DynamicTexture.FXImage.Terrain ? "/terrain.png" : "/gui/items.png";
-            BindTexture(texture.copyTo > 0 ? null : GetTextureId(atlasPath)); // copyTo > 0 is handled differently
+            BindTexture(texture.copyTo > 0 ? null : GetTextureId(atlasPath));
 
             int targetTileSize = _atlasTileSizes.TryGetValue(atlasPath, out int size) ? size : 16;
-
             int fxSize = (int)Math.Sqrt(texture.pixels.Length / 4);
 
-            texture.replicate = targetTileSize / fxSize;
-            if (texture.replicate < 1) texture.replicate = 1;
+            int hdScale = targetTileSize / 16;
+            if (hdScale < 1) hdScale = 1;
+
+            int finalReplicate = texture.replicate * hdScale;
 
             GLTexture? atlasTexture = GetTextureId(atlasPath).Texture;
             if (atlasTexture == null) continue;
 
+            int tileX = (texture.sprite % 16) * targetTileSize;
+            int tileY = (texture.sprite / 16) * targetTileSize;
+
             fixed (byte* ptr = texture.pixels)
             {
-                for (int x = 0; x < texture.replicate; x++)
+                for (int x = 0; x < finalReplicate; x++)
                 {
-                    for (int y = 0; y < texture.replicate; y++)
+                    for (int y = 0; y < finalReplicate; y++)
                     {
                         atlasTexture.UploadSubImage(
-                           (texture.sprite % 16) * targetTileSize + (x * fxSize),
-                           (texture.sprite / 16) * targetTileSize + (y * fxSize),
+                           tileX + (x * fxSize),
+                           tileY + (y * fxSize),
                            fxSize, fxSize, ptr, 0, PixelFormat.Rgba);
                     }
                 }
             }
 
             if (texture.atlas == DynamicTexture.FXImage.Terrain && _gameOptions.UseMipmaps)
-                UpdateTileMipmaps(texture.sprite, texture.pixels, fxSize, GetTextureId(atlasPath).Texture);
+            {
+                for (int x = 0; x < finalReplicate; x++)
+                {
+                    for (int y = 0; y < finalReplicate; y++)
+                    {
+                        UpdateTileMipmaps(tileX + (x * fxSize), tileY + (y * fxSize), fxSize, targetTileSize, texture.pixels, atlasTexture);
+                    }
+                }
+            }
         }
     }
 
-    private unsafe void UpdateTileMipmaps(int tileIndex, byte[] tileData, int tileSize, GLTexture? texture)
+    private unsafe void UpdateTileMipmaps(int baseX, int baseY, int dataSize, int targetTileSize, byte[] tileData, GLTexture texture)
     {
-        if (!_gameOptions.UseMipmaps || texture == null) return;
-
-        int maxMipLevels = (int)Math.Log2(tileSize) + 1;
+        int maxMipLevels = (int)Math.Log2(targetTileSize) + 1;
         byte[] currentData = tileData;
-        int currentSize = tileSize;
+        int currentSize = dataSize;
 
         for (int mipLevel = 1; mipLevel < maxMipLevels; mipLevel++)
         {
             int newSize = currentSize >> 1;
-            if (newSize <= 0) break;
+            if (newSize < 1) newSize = 1;
 
             byte[] downsampled = new byte[newSize * newSize * 4];
 
-            for (int y = 0; y < newSize; y++)
+            if (currentSize > 1)
             {
-                for (int x = 0; x < newSize; x++)
+                for (int y = 0; y < newSize; y++)
                 {
-                    int src0 = ((y * 2) * currentSize + (x * 2)) * 4;
-                    int src1 = ((y * 2) * currentSize + (x * 2 + 1)) * 4;
-                    int src2 = ((y * 2 + 1) * currentSize + (x * 2)) * 4;
-                    int src3 = ((y * 2 + 1) * currentSize + (x * 2 + 1)) * 4;
+                    for (int x = 0; x < newSize; x++)
+                    {
+                        int src0 = ((y * 2) * currentSize + (x * 2)) * 4;
+                        int src1 = ((y * 2) * currentSize + (x * 2 + 1)) * 4;
+                        int src2 = ((y * 2 + 1) * currentSize + (x * 2)) * 4;
+                        int src3 = ((y * 2 + 1) * currentSize + (x * 2 + 1)) * 4;
 
-                    int dst = (y * newSize + x) * 4;
+                        int dst = (y * newSize + x) * 4;
 
-                    downsampled[dst] = (byte)((currentData[src0] + currentData[src1] + currentData[src2] + currentData[src3]) >> 2);
-                    downsampled[dst + 1] = (byte)((currentData[src0 + 1] + currentData[src1 + 1] + currentData[src2 + 1] + currentData[src3 + 1]) >> 2);
-                    downsampled[dst + 2] = (byte)((currentData[src0 + 2] + currentData[src1 + 2] + currentData[src2 + 2] + currentData[src3 + 2]) >> 2);
-                    downsampled[dst + 3] = (byte)((currentData[src0 + 3] + currentData[src1 + 3] + currentData[src2 + 3] + currentData[src3 + 3]) >> 2);
+                        downsampled[dst] = (byte)((currentData[src0] + currentData[src1] + currentData[src2] + currentData[src3]) >> 2);
+                        downsampled[dst + 1] = (byte)((currentData[src0 + 1] + currentData[src1 + 1] + currentData[src2 + 1] + currentData[src3 + 1]) >> 2);
+                        downsampled[dst + 2] = (byte)((currentData[src0 + 2] + currentData[src1 + 2] + currentData[src2 + 2] + currentData[src3 + 2]) >> 2);
+                        downsampled[dst + 3] = (byte)((currentData[src0 + 3] + currentData[src1 + 3] + currentData[src2 + 3] + currentData[src3 + 3]) >> 2);
+                    }
                 }
             }
+            else
+            {
+                for (int i = 0; i < 4; i++) downsampled[i] = currentData[i];
+            }
 
-            int mipTileX = tileIndex % 16 * newSize;
-            int mipTileY = tileIndex / 16 * newSize;
+            int mipX = baseX >> mipLevel;
+            int mipY = baseY >> mipLevel;
 
             fixed (byte* ptr = downsampled)
             {
-                texture.UploadSubImage(mipTileX, mipTileY, newSize, newSize, ptr, mipLevel, PixelFormat.Rgba);
+                texture.UploadSubImage(mipX, mipY, newSize, newSize, ptr, mipLevel, PixelFormat.Rgba);
             }
 
             currentData = downsampled;
