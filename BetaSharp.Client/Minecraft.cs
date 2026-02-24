@@ -1687,7 +1687,8 @@ public partial class Minecraft
 
             if (sessionToken == "-")
             {
-                hasPaidCheckTime = java.lang.System.currentTimeMillis();
+                //hasPaidCheckTime = java.lang.System.currentTimeMillis();
+                hasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             }
         }
         else
