@@ -486,9 +486,8 @@ public abstract class EntityPlayer : EntityLiving
                 commandWolvesToAttack((EntityLiving)damageSource, false);
             }
 
-                increaseStat(Stats.Stats.DamageTakenStat, amount);
-                return base.damage(damageSource, amount);
-            }
+            increaseStat(Stats.Stats.DamageTakenStat, amount);
+            return base.damage(damageSource, amount);
         }
     }
 

@@ -4,7 +4,7 @@ using StringReader = System.IO.StringReader;
 
 namespace BetaSharp.Stats.Achievements;
 
-public static class AchievementMap
+internal static class AchievementMap
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(AchievementMap));
     private static readonly Dictionary<int, string> s_guidMap = new ();
