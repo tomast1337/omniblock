@@ -208,7 +208,7 @@ public partial class Minecraft
             _logger.LogError(ex, "Exception");
         }
         texturePackList = new TexturePacks(this, new DirectoryInfo(mcDataDir.getAbsolutePath()));
-        textureManager = new TextureManager(texturePackList, options);
+        textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
         WaterColors.loadColors(textureManager.GetColors("/misc/watercolor.png"));
         GrassColors.loadColors(textureManager.GetColors("/misc/grasscolor.png"));

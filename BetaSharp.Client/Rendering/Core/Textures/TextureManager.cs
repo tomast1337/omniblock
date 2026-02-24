@@ -23,10 +23,12 @@ public class TextureManager : IDisposable
     private bool _clamp;
     private bool _blur;
     private readonly TexturePacks _texturePacks;
+    private readonly Minecraft _mc;
     private readonly Image<Rgba32> _missingTextureImage = new(64, 64);
 
-    public TextureManager(TexturePacks texturePacks, GameOptions options)
+    public TextureManager(Minecraft mc, TexturePacks texturePacks, GameOptions options)
     {
+        _mc = mc;
         _texturePacks = texturePacks;
         _gameOptions = options;
         _missingTextureImage.Mutate(ctx =>
@@ -247,6 +249,7 @@ public class TextureManager : IDisposable
     public void AddDynamicTexture(DynamicTexture t)
     {
         _dynamicTextures.Add(t);
+        t.Setup(_mc);
         t.tick();
     }
 
@@ -285,6 +288,11 @@ public class TextureManager : IDisposable
         }
     
         foreach (string key in new List<string>(_colors.Keys)) GetColors(key);
+
+        foreach (DynamicTexture dynamicTexture in _dynamicTextures)
+        {
+            dynamicTexture.Setup(_mc);
+        }
     }
 
     public unsafe void Tick()
@@ -294,21 +302,22 @@ public class TextureManager : IDisposable
             texture.tick();
 
             string atlasPath = texture.atlas == DynamicTexture.FXImage.Terrain ? "/terrain.png" : "/gui/items.png";
-            BindTexture(texture.copyTo > 0 ? null : GetTextureId(atlasPath));
+            
+            TextureHandle atlasHandle = _textures.FirstOrDefault(x => x.Key.EndsWith(atlasPath)).Value;
+            if (atlasHandle == null) atlasHandle = GetTextureId(atlasPath);
+            
+            GLTexture? atlasTexture = atlasHandle.Texture;
+            if (atlasTexture == null) continue;
 
-            int targetTileSize = _atlasTileSizes.TryGetValue(atlasPath, out int size) ? size : 16;
-            int fxSize = (int)Math.Sqrt(texture.pixels.Length / 4);
-
+            int targetTileSize = atlasTexture.Width / 16;
             int hdScale = targetTileSize / 16;
             if (hdScale < 1) hdScale = 1;
-
             int finalReplicate = texture.replicate * hdScale;
-
-            GLTexture? atlasTexture = GetTextureId(atlasPath).Texture;
-            if (atlasTexture == null) continue;
 
             int tileX = (texture.sprite % 16) * targetTileSize;
             int tileY = (texture.sprite / 16) * targetTileSize;
+
+            int fxSize = (int)Math.Sqrt(texture.pixels.Length / 4);
 
             fixed (byte* ptr = texture.pixels)
             {
