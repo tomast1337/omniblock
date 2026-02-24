@@ -653,7 +653,8 @@ public partial class Minecraft
                     isGamePaused = (!isMultiplayerWorld() || internalServer != null) && (currentScreen?.PausesGame ?? false);
 
                     for (;
-                         java.lang.System.currentTimeMillis() >= lastFpsCheckTime + 1000L;
+                         //java.lang.System.currentTimeMillis() >= lastFpsCheckTime + 1000L;
+                         DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() >= lastFpsCheckTime + 1000L;
                          frameCounter = 0)
                     {
                         debug = frameCounter + " fps";
@@ -1248,7 +1249,8 @@ public partial class Minecraft
             }
         }
 
-        systemTime = java.lang.System.currentTimeMillis();
+        //systemTime = java.lang.System.currentTimeMillis();
+        systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         Profiler.PopGroup();
     }
 
@@ -1256,7 +1258,8 @@ public partial class Minecraft
     {
         while (Mouse.next())
         {
-            long timeSinceLastMouseEvent = java.lang.System.currentTimeMillis() - systemTime;
+            //long timeSinceLastMouseEvent = java.lang.System.currentTimeMillis() - systemTime;
+            long timeSinceLastMouseEvent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - systemTime;
             if (timeSinceLastMouseEvent <= 200L)
             {
                 int mouseWheelDelta = Mouse.getEventDWheel();
