@@ -74,11 +74,11 @@ public abstract class Packet
 
             if (server)
             {
-                if (!packetR.ClientBound) throw new IOException("Bad client bound packet id " + rawId);
+                if (!packetR.ServerBound) throw new IOException("Bad server bound packet id " + rawId);
             }
             else
             {
-                if (!packetR.ServerBound) throw new IOException("Bad server bound packet id " + rawId);
+                if (!packetR.ClientBound) throw new IOException("Bad client bound packet id " + rawId);
             }
 
             packet = packetR.NewPacket();
