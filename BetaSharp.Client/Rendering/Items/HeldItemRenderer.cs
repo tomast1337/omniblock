@@ -499,7 +499,7 @@ public class HeldItemRenderer
 
     private void bindSkinTexture()
     {
-        var skinHandle = EntityRenderDispatcher.instance.skinManager?.GetTextureHandle(mc.session?.skinUrl);
+        var skinHandle = EntityRenderDispatcher.instance.skinManager?.GetTextureHandle(mc.player?.skinUrl);
         if (skinHandle != null)
         {
             skinHandle.Bind();
