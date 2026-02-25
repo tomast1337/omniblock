@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -55,13 +56,13 @@ public abstract class Packet
         return _rout.Id;
     }
 
-    public static Packet? Read(java.io.DataInputStream stream, bool server)
+    public static Packet? Read(NetworkStream stream, bool server)
     {
         Packet packet = null;
         int rawId;
         try
         {
-            rawId = stream.read();
+            rawId = stream.ReadByte();
             if (rawId == -1)
             {
                 return null;
@@ -102,9 +103,9 @@ public abstract class Packet
         return packet;
     }
 
-    public static void Write(Packet packet, java.io.DataOutputStream stream)
+    public static void Write(Packet packet, NetworkStream stream)
     {
-        stream.write(packet.GetRawId());
+        stream.WriteByte((byte) packet.GetRawId());
         packet.Write(stream);
     }
 
