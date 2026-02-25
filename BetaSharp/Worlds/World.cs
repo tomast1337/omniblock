@@ -75,9 +75,6 @@ public abstract class World : BlockView
     public JavaRandom random = new();
     private int _lcgBlockSeed = Random.Shared.Next();
     private int _soundCounter = Random.Shared.Next(12000);
-    private readonly List<Entity> _tempEntityList = [];
-    private readonly List<Box> _collidingBoundingBoxes = [];
-
 
     protected World(IWorldStorage worldStorage, string levelName, Dimension dim, long seed)
     {
@@ -1007,8 +1004,11 @@ public abstract class World : BlockView
 
     public List<Box> getEntityCollisions(Entity entity, Box area)
     {
-        _collidingBoundingBoxes.Clear();
+        return getEntityCollisions(entity, area, new List<Box>());
+    }
 
+    public List<Box> getEntityCollisions(Entity entity, Box area, List<Box> collidingBoundingBoxes)
+    {
         int minX = MathHelper.Floor(area.MinX);
         int maxX = MathHelper.Floor(area.MaxX + 1.0D);
         int minY = MathHelper.Floor(area.MinY);
@@ -1027,7 +1027,7 @@ public abstract class World : BlockView
                         Block block = Block.Blocks[getBlockId(x, y, z)];
                         if (block != null)
                         {
-                            block.addIntersectingBoundingBox(this, x, y, z, area, _collidingBoundingBoxes);
+                            block.addIntersectingBoundingBox(this, x, y, z, area, collidingBoundingBoxes);
                         }
                     }
                 }
@@ -1035,24 +1035,25 @@ public abstract class World : BlockView
         }
 
         const double expansion = 0.25D;
-        List<Entity> nearbyEntities = getEntities(entity, area.Expand(expansion, expansion, expansion));
+        List<Entity> nearbyEntities = new List<Entity>();
+        getEntities(entity, area.Expand(expansion, expansion, expansion), nearbyEntities);
 
         for (int i = 0; i < nearbyEntities.Count; ++i)
         {
             Box? entityBox = nearbyEntities[i].getBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
-                _collidingBoundingBoxes.Add(entityBox.Value);
+                collidingBoundingBoxes.Add(entityBox.Value);
             }
 
             entityBox = entity.getCollisionAgainstShape(nearbyEntities[i]);
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
-                _collidingBoundingBoxes.Add(entityBox.Value);
+                collidingBoundingBoxes.Add(entityBox.Value);
             }
         }
 
-        return _collidingBoundingBoxes;
+        return collidingBoundingBoxes;
     }
 
     protected int getAmbientDarkness(float delta)
@@ -1473,7 +1474,8 @@ public abstract class World : BlockView
 
     public bool canSpawnEntity(Box spawnArea)
     {
-        List<Entity> nearbyEntities = getEntities(null, spawnArea);
+        List<Entity> nearbyEntities = new List<Entity>();
+        getEntities(null, spawnArea, nearbyEntities);
 
         for (int i = 0; i < nearbyEntities.Count; ++i)
         {
@@ -2273,10 +2275,13 @@ public abstract class World : BlockView
         }
     }
 
-    public List<Entity> getEntities(Entity excludeEntity, Box area)
+    public List<Entity> getEntities(Entity? excludeEntity, Box area)
     {
-        _tempEntityList.Clear();
+        return getEntities(excludeEntity, area, new List<Entity>());
+    }
 
+    public List<Entity> getEntities(Entity? excludeEntity, Box area, List<Entity> results)
+    {
         int minChunkX = MathHelper.Floor((area.MinX - 2.0D) / 16.0D);
         int maxChunkX = MathHelper.Floor((area.MaxX + 2.0D) / 16.0D);
         int minChunkZ = MathHelper.Floor((area.MinZ - 2.0D) / 16.0D);
@@ -2288,12 +2293,12 @@ public abstract class World : BlockView
             {
                 if (hasChunk(chunkX, chunkZ))
                 {
-                    GetChunk(chunkX, chunkZ).CollectOtherEntities(excludeEntity, area, _tempEntityList);
+                    GetChunk(chunkX, chunkZ).CollectOtherEntities(excludeEntity, area, results);
                 }
             }
         }
 
-        return _tempEntityList;
+        return results;
     }
 
     public List<T> CollectEntitiesOfType<T>(Box area) where T : Entity
@@ -2318,6 +2323,8 @@ public abstract class World : BlockView
 
         return results;
     }
+
+
 
     public List<Entity> getEntities()
     {
