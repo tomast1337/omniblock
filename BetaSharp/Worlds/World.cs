@@ -18,11 +18,12 @@ using java.lang;
 using java.util;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
+using Exception = System.Exception;
 using Random = System.Random;
 
 namespace BetaSharp.Worlds;
 
-public abstract class World : java.lang.Object, BlockView
+public abstract class World : BlockView
 {
     private const int AUTOSAVE_PERIOD = 40;
     public bool instantBlockUpdateEnabled = false;
@@ -207,9 +208,9 @@ public abstract class World : java.lang.Object, BlockView
 
             SpawnEntity(player);
         }
-        catch (java.lang.Exception ex)
+        catch (Exception e)
         {
-            ex.printStackTrace();
+            _logger.LogError(e, e.Message);
         }
 
     }
@@ -568,7 +569,7 @@ public abstract class World : java.lang.Object, BlockView
         {
             if (y >= 128)
             {
-                y = 127;
+                return !dimension.HasCeiling ? 15 : 0;
             }
 
             return GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0);
@@ -626,7 +627,7 @@ public abstract class World : java.lang.Object, BlockView
             {
                 if (y >= 128)
                 {
-                    y = 127;
+                    return !dimension.HasCeiling ? 15 - ambientDarkness : 0;
                 }
 
                 Chunk var11 = GetChunk(x >> 4, z >> 4);
@@ -731,7 +732,7 @@ public abstract class World : java.lang.Object, BlockView
 
         if (y >= 128)
         {
-            y = 127;
+            return type.lightValue;
         }
 
         if (y >= 0 && y < 128 && x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
@@ -1156,12 +1157,12 @@ public abstract class World : java.lang.Object, BlockView
     public List<Box> getEntityCollisions(Entity entity, Box box)
     {
         collidingBoundingBoxes.Clear();
-        int var3 = MathHelper.Floor(box.minX);
-        int var4 = MathHelper.Floor(box.maxX + 1.0D);
-        int var5 = MathHelper.Floor(box.minY);
-        int var6 = MathHelper.Floor(box.maxY + 1.0D);
-        int var7 = MathHelper.Floor(box.minZ);
-        int var8 = MathHelper.Floor(box.maxZ + 1.0D);
+        int var3 = MathHelper.Floor(box.MinX);
+        int var4 = MathHelper.Floor(box.MaxX + 1.0D);
+        int var5 = MathHelper.Floor(box.MinY);
+        int var6 = MathHelper.Floor(box.MaxY + 1.0D);
+        int var7 = MathHelper.Floor(box.MinZ);
+        int var8 = MathHelper.Floor(box.MaxZ + 1.0D);
 
         for (int var9 = var3; var9 < var4; ++var9)
         {
@@ -1182,7 +1183,7 @@ public abstract class World : java.lang.Object, BlockView
         }
 
         double var14 = 0.25D;
-        List<Entity> var15 = getEntities(entity, box.expand(var14, var14, var14));
+        List<Entity> var15 = getEntities(entity, box.Expand(var14, var14, var14));
 
         int collisionCount = 0;
         const int MAX_COLLISIONS = 24;
@@ -1195,14 +1196,14 @@ public abstract class World : java.lang.Object, BlockView
             }
 
             Box? var13 = var15[var16].getBoundingBox();
-            if (var13 != null && var13.Value.intersects(box))
+            if (var13 != null && var13.Value.Intersects(box))
             {
                 collidingBoundingBoxes.Add(var13.Value);
                 collisionCount++;
             }
 
             var13 = entity.getCollisionAgainstShape(var15[var16]);
-            if (var13 != null && var13.Value.intersects(box))
+            if (var13 != null && var13.Value.Intersects(box))
             {
                 collidingBoundingBoxes.Add(var13.Value);
                 collisionCount++;
@@ -1510,10 +1511,10 @@ public abstract class World : java.lang.Object, BlockView
             if (var5.isRemoved())
             {
                 blockEntities.RemoveAt(i);
-                Chunk var7 = GetChunk(var5.x >> 4, var5.z >> 4);
-                if (var7 != null)
+                Chunk chunk = GetChunk(var5.X >> 4, var5.Z >> 4);
+                if (chunk != null)
                 {
-                    var7.RemoveBlockEntityAt(var5.x & 15, var5.y, var5.z & 15);
+                    chunk.RemoveBlockEntityAt(var5.X & 15, var5.Y, var5.Z & 15);
                 }
             }
         }
@@ -1529,12 +1530,12 @@ public abstract class World : java.lang.Object, BlockView
                     {
                         blockEntities.Add(var8);
                     }
-                    Chunk var9 = GetChunk(var8.x >> 4, var8.z >> 4);
-                    if (var9 != null)
+                    Chunk chunk = GetChunk(var8.X >> 4, var8.Z >> 4);
+                    if (chunk != null)
                     {
-                        var9.SetBlockEntity(var8.x & 15, var8.y, var8.z & 15, var8);
+                        chunk.SetBlockEntity(var8.X & 15, var8.Y, var8.Z & 15, var8);
                     }
-                    blockUpdateEvent(var8.x, var8.y, var8.z);
+                    blockUpdateEvent(var8.X, var8.Y, var8.Z);
                 }
             }
             blockEntityUpdateQueue.Clear();
@@ -1665,23 +1666,23 @@ public abstract class World : java.lang.Object, BlockView
 
     public bool isAnyBlockInBox(Box box)
     {
-        int var2 = MathHelper.Floor(box.minX);
-        int var3 = MathHelper.Floor(box.maxX + 1.0);
-        int var4 = MathHelper.Floor(box.minY);
-        int var5 = MathHelper.Floor(box.maxY + 1.0);
-        int var6 = MathHelper.Floor(box.minZ);
-        int var7 = MathHelper.Floor(box.maxZ + 1.0);
-        if (box.minX < 0.0)
+        int var2 = MathHelper.Floor(box.MinX);
+        int var3 = MathHelper.Floor(box.MaxX + 1.0);
+        int var4 = MathHelper.Floor(box.MinY);
+        int var5 = MathHelper.Floor(box.MaxY + 1.0);
+        int var6 = MathHelper.Floor(box.MinZ);
+        int var7 = MathHelper.Floor(box.MaxZ + 1.0);
+        if (box.MinX < 0.0)
         {
             var2--;
         }
 
-        if (box.minY < 0.0)
+        if (box.MinY < 0.0)
         {
             var4--;
         }
 
-        if (box.minZ < 0.0)
+        if (box.MinZ < 0.0)
         {
             var6--;
         }
@@ -1706,23 +1707,23 @@ public abstract class World : java.lang.Object, BlockView
 
     public bool isBoxSubmergedInFluid(Box box)
     {
-        int var2 = MathHelper.Floor(box.minX);
-        int var3 = MathHelper.Floor(box.maxX + 1.0D);
-        int var4 = MathHelper.Floor(box.minY);
-        int var5 = MathHelper.Floor(box.maxY + 1.0D);
-        int var6 = MathHelper.Floor(box.minZ);
-        int var7 = MathHelper.Floor(box.maxZ + 1.0D);
-        if (box.minX < 0.0D)
+        int var2 = MathHelper.Floor(box.MinX);
+        int var3 = MathHelper.Floor(box.MaxX + 1.0D);
+        int var4 = MathHelper.Floor(box.MinY);
+        int var5 = MathHelper.Floor(box.MaxY + 1.0D);
+        int var6 = MathHelper.Floor(box.MinZ);
+        int var7 = MathHelper.Floor(box.MaxZ + 1.0D);
+        if (box.MinX < 0.0D)
         {
             --var2;
         }
 
-        if (box.minY < 0.0D)
+        if (box.MinY < 0.0D)
         {
             --var4;
         }
 
-        if (box.minZ < 0.0D)
+        if (box.MinZ < 0.0D)
         {
             --var6;
         }
@@ -1747,12 +1748,12 @@ public abstract class World : java.lang.Object, BlockView
 
     public bool isFireOrLavaInBox(Box box)
     {
-        int var2 = MathHelper.Floor(box.minX);
-        int var3 = MathHelper.Floor(box.maxX + 1.0D);
-        int var4 = MathHelper.Floor(box.minY);
-        int var5 = MathHelper.Floor(box.maxY + 1.0D);
-        int var6 = MathHelper.Floor(box.minZ);
-        int var7 = MathHelper.Floor(box.maxZ + 1.0D);
+        int var2 = MathHelper.Floor(box.MinX);
+        int var3 = MathHelper.Floor(box.MaxX + 1.0D);
+        int var4 = MathHelper.Floor(box.MinY);
+        int var5 = MathHelper.Floor(box.MaxY + 1.0D);
+        int var6 = MathHelper.Floor(box.MinZ);
+        int var7 = MathHelper.Floor(box.MaxZ + 1.0D);
         if (isRegionLoaded(var2, var4, var6, var3, var5, var7))
         {
             for (int var8 = var2; var8 < var3; ++var8)
@@ -1776,12 +1777,12 @@ public abstract class World : java.lang.Object, BlockView
 
     public bool updateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity)
     {
-        int var4 = MathHelper.Floor(entityBox.minX);
-        int var5 = MathHelper.Floor(entityBox.maxX + 1.0D);
-        int var6 = MathHelper.Floor(entityBox.minY);
-        int var7 = MathHelper.Floor(entityBox.maxY + 1.0D);
-        int var8 = MathHelper.Floor(entityBox.minZ);
-        int var9 = MathHelper.Floor(entityBox.maxZ + 1.0D);
+        int var4 = MathHelper.Floor(entityBox.MinX);
+        int var5 = MathHelper.Floor(entityBox.MaxX + 1.0D);
+        int var6 = MathHelper.Floor(entityBox.MinY);
+        int var7 = MathHelper.Floor(entityBox.MaxY + 1.0D);
+        int var8 = MathHelper.Floor(entityBox.MinZ);
+        int var9 = MathHelper.Floor(entityBox.MaxZ + 1.0D);
         if (!isRegionLoaded(var4, var6, var8, var5, var7, var9))
         {
             return false;
@@ -1826,12 +1827,12 @@ public abstract class World : java.lang.Object, BlockView
 
     public bool isMaterialInBox(Box box, Material material)
     {
-        int var3 = MathHelper.Floor(box.minX);
-        int var4 = MathHelper.Floor(box.maxX + 1.0D);
-        int var5 = MathHelper.Floor(box.minY);
-        int var6 = MathHelper.Floor(box.maxY + 1.0D);
-        int var7 = MathHelper.Floor(box.minZ);
-        int var8 = MathHelper.Floor(box.maxZ + 1.0D);
+        int var3 = MathHelper.Floor(box.MinX);
+        int var4 = MathHelper.Floor(box.MaxX + 1.0D);
+        int var5 = MathHelper.Floor(box.MinY);
+        int var6 = MathHelper.Floor(box.MaxY + 1.0D);
+        int var7 = MathHelper.Floor(box.MinZ);
+        int var8 = MathHelper.Floor(box.MaxZ + 1.0D);
 
         for (int var9 = var3; var9 < var4; ++var9)
         {
@@ -1853,12 +1854,12 @@ public abstract class World : java.lang.Object, BlockView
 
     public bool isFluidInBox(Box box, Material fluid)
     {
-        int var3 = MathHelper.Floor(box.minX);
-        int var4 = MathHelper.Floor(box.maxX + 1.0D);
-        int var5 = MathHelper.Floor(box.minY);
-        int var6 = MathHelper.Floor(box.maxY + 1.0D);
-        int var7 = MathHelper.Floor(box.minZ);
-        int var8 = MathHelper.Floor(box.maxZ + 1.0D);
+        int var3 = MathHelper.Floor(box.MinX);
+        int var4 = MathHelper.Floor(box.MaxX + 1.0D);
+        int var5 = MathHelper.Floor(box.MinY);
+        int var6 = MathHelper.Floor(box.MaxY + 1.0D);
+        int var7 = MathHelper.Floor(box.MinZ);
+        int var8 = MathHelper.Floor(box.MaxZ + 1.0D);
 
         for (int var9 = var3; var9 < var4; ++var9)
         {
@@ -1876,7 +1877,7 @@ public abstract class World : java.lang.Object, BlockView
                             var14 = (double)(var10 + 1) - (double)var13 / 8.0D;
                         }
 
-                        if (var14 >= box.minY)
+                        if (var14 >= box.MinY)
                         {
                             return true;
                         }
@@ -1904,9 +1905,9 @@ public abstract class World : java.lang.Object, BlockView
 
     public float getVisibilityRatio(Vec3D vec, Box box)
     {
-        double var3 = 1.0D / ((box.maxX - box.minX) * 2.0D + 1.0D);
-        double var5 = 1.0D / ((box.maxY - box.minY) * 2.0D + 1.0D);
-        double var7 = 1.0D / ((box.maxZ - box.minZ) * 2.0D + 1.0D);
+        double var3 = 1.0D / ((box.MaxX - box.MinX) * 2.0D + 1.0D);
+        double var5 = 1.0D / ((box.MaxY - box.MinY) * 2.0D + 1.0D);
+        double var7 = 1.0D / ((box.MaxZ - box.MinZ) * 2.0D + 1.0D);
         int var9 = 0;
         int var10 = 0;
 
@@ -1916,9 +1917,9 @@ public abstract class World : java.lang.Object, BlockView
             {
                 for (float var13 = 0.0F; var13 <= 1.0F; var13 = (float)((double)var13 + var7))
                 {
-                    double var14 = box.minX + (box.maxX - box.minX) * (double)var11;
-                    double var16 = box.minY + (box.maxY - box.minY) * (double)var12;
-                    double var18 = box.minZ + (box.maxZ - box.minZ) * (double)var13;
+                    double var14 = box.MinX + (box.MaxX - box.MinX) * (double)var11;
+                    double var16 = box.MinY + (box.MaxY - box.MinY) * (double)var12;
+                    double var18 = box.MinZ + (box.MaxZ - box.MinZ) * (double)var13;
                     if (raycast(new Vec3D(var14, var16, var18), vec).Type == HitResultType.MISS)
                     {
                         ++var9;
@@ -1972,7 +1973,7 @@ public abstract class World : java.lang.Object, BlockView
 
     }
 
-    public Entity getPlayerForProxy(java.lang.Class var1)
+    public Entity getPlayerForProxy(Type var1)
     {
         return null;
     }
@@ -1999,9 +2000,9 @@ public abstract class World : java.lang.Object, BlockView
         {
             if (processingDeferred)
             {
-                blockEntity.x = x;
-                blockEntity.y = y;
-                blockEntity.z = z;
+                blockEntity.X = x;
+                blockEntity.Y = y;
+                blockEntity.Z = z;
                 blockEntityUpdateQueue.Add(blockEntity);
             }
             else
@@ -2384,9 +2385,9 @@ public abstract class World : java.lang.Object, BlockView
 
         foreach (var p in activeChunks)
         {
-            var3 = p.x * 16;
-            var4 = p.z * 16;
-            Chunk var14 = GetChunk(p.x, p.z);
+            var3 = p.X * 16;
+            var4 = p.Z * 16;
+            Chunk var14 = GetChunk(p.X, p.Z);
             int var8;
             int var9;
             int var10;
@@ -2508,10 +2509,10 @@ public abstract class World : java.lang.Object, BlockView
     public List<Entity> getEntities(Entity entity, Box box)
     {
         tempEntityList.Clear();
-        int var3 = MathHelper.Floor((box.minX - 2.0D) / 16.0D);
-        int var4 = MathHelper.Floor((box.maxX + 2.0D) / 16.0D);
-        int var5 = MathHelper.Floor((box.minZ - 2.0D) / 16.0D);
-        int var6 = MathHelper.Floor((box.maxZ + 2.0D) / 16.0D);
+        int var3 = MathHelper.Floor((box.MinX - 2.0D) / 16.0D);
+        int var4 = MathHelper.Floor((box.MaxX + 2.0D) / 16.0D);
+        int var5 = MathHelper.Floor((box.MinZ - 2.0D) / 16.0D);
+        int var6 = MathHelper.Floor((box.MaxZ + 2.0D) / 16.0D);
 
         for (int var7 = var3; var7 <= var4; ++var7)
         {
@@ -2530,10 +2531,10 @@ public abstract class World : java.lang.Object, BlockView
     public List<T> CollectEntitiesOfType<T>(Box box) where T : Entity
     {
         List<T> res = new();
-        int var3 = MathHelper.Floor((box.minX - 2.0D) / 16.0D);
-        int var4 = MathHelper.Floor((box.maxX + 2.0D) / 16.0D);
-        int var5 = MathHelper.Floor((box.minZ - 2.0D) / 16.0D);
-        int var6 = MathHelper.Floor((box.maxZ + 2.0D) / 16.0D);
+        int var3 = MathHelper.Floor((box.MinX - 2.0D) / 16.0D);
+        int var4 = MathHelper.Floor((box.MaxX + 2.0D) / 16.0D);
+        int var5 = MathHelper.Floor((box.MinZ - 2.0D) / 16.0D);
+        int var6 = MathHelper.Floor((box.MaxZ + 2.0D) / 16.0D);
 
         for (int var8 = var3; var8 <= var4; ++var8)
         {
@@ -3066,9 +3067,9 @@ public abstract class World : java.lang.Object, BlockView
         persistentStateManager.SetData(id, state);
     }
 
-    public PersistentState? getOrCreateState(Type t, string id)
+    public PersistentState? getOrCreateState(Type type, string id)
     {
-        return persistentStateManager.LoadData(t, id);
+        return persistentStateManager.LoadData(type, id);
     }
 
     public int getIdCount(string id)
