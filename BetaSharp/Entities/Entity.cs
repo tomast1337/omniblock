@@ -722,7 +722,18 @@ public abstract class Entity
         double var3 = (boundingBox.MaxY - boundingBox.MinY) * 0.66D;
         int var5 = MathHelper.Floor(y - (double)standingEyeHeight + var3);
         int var6 = MathHelper.Floor(z);
-        if (world.isRegionLoaded(MathHelper.Floor(boundingBox.MinX), MathHelper.Floor(boundingBox.MinY), MathHelper.Floor(boundingBox.MinZ), MathHelper.Floor(boundingBox.MaxX), MathHelper.Floor(boundingBox.MaxY), MathHelper.Floor(boundingBox.MaxZ)))
+
+        int minX = MathHelper.Floor(boundingBox.MinX);
+        int minY = MathHelper.Floor(boundingBox.MinY);
+        int minZ = MathHelper.Floor(boundingBox.MinZ);
+        int maxX = MathHelper.Floor(boundingBox.MaxX);
+        int maxY = MathHelper.Floor(boundingBox.MaxY);
+        int maxZ = MathHelper.Floor(boundingBox.MaxZ);
+
+        minY = Math.Min(127, Math.Max(0, minY));
+        maxY = Math.Min(127, Math.Max(0, maxY));
+
+        if (world.isRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
             float var7 = world.getLuminance(var2, var5, var6);
             if (var7 < minBrightness)

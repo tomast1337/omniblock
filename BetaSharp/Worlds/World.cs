@@ -566,7 +566,7 @@ public abstract class World : BlockView
         {
             if (y >= 128)
             {
-                y = 127;
+                return !dimension.HasCeiling ? 15 : 0;
             }
 
             return GetChunk(x >> 4, z >> 4).GetLight(x & 15, y, z & 15, 0);
@@ -624,7 +624,7 @@ public abstract class World : BlockView
             {
                 if (y >= 128)
                 {
-                    y = 127;
+                    return !dimension.HasCeiling ? 15 - ambientDarkness : 0;
                 }
 
                 Chunk var11 = GetChunk(x >> 4, z >> 4);
@@ -729,7 +729,7 @@ public abstract class World : BlockView
 
         if (y >= 128)
         {
-            y = 127;
+            return type.lightValue;
         }
 
         if (y >= 0 && y < 128 && x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000)
