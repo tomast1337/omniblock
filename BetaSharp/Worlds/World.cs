@@ -6,6 +6,7 @@ using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Profiling;
 using BetaSharp.Rules;
+using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Biomes;
@@ -102,7 +103,7 @@ public abstract class World : java.lang.Object, BlockView
         ticksSinceLightning = 0;
         lightningTicksLeft = 0;
         pauseTicking = false;
-        lockTimestamp = java.lang.System.currentTimeMillis();
+        lockTimestamp = DateTimeOffset.UtcNow.ToMillis();
         autosavePeriod = AUTOSAVE_PERIOD;
         random = new();
         isNewWorld = false;
@@ -147,7 +148,7 @@ public abstract class World : java.lang.Object, BlockView
         ticksSinceLightning = 0;
         lightningTicksLeft = 0;
         pauseTicking = false;
-        lockTimestamp = java.lang.System.currentTimeMillis();
+        lockTimestamp = DateTimeOffset.UtcNow.ToMillis();
         autosavePeriod = AUTOSAVE_PERIOD;
         random = new();
         isNewWorld = false;
@@ -197,7 +198,7 @@ public abstract class World : java.lang.Object, BlockView
         ticksSinceLightning = 0;
         lightningTicksLeft = 0;
         pauseTicking = false;
-        lockTimestamp = java.lang.System.currentTimeMillis();
+        lockTimestamp = DateTimeOffset.UtcNow.ToMillis();
         autosavePeriod = AUTOSAVE_PERIOD;
         random = new JavaRandom();
         isNewWorld = false;

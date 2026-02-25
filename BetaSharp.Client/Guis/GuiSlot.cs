@@ -1,5 +1,6 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Util;
 using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Guis;
@@ -139,10 +140,10 @@ public abstract class GuiSlot
 
                     if (mouseX >= contentMinX && mouseX <= contentMaxX && slotIndex >= 0 && relativeY >= 0 && slotIndex < listSize)
                     {
-                        bool isDoubleClick = slotIndex == _selectedElement && (java.lang.System.currentTimeMillis() - _lastClicked < 250L);
+                        bool isDoubleClick = slotIndex == _selectedElement && (DateTimeOffset.UtcNow.ToMillis() - _lastClicked < 250L);
                         ElementClicked(slotIndex, isDoubleClick);
                         _selectedElement = slotIndex;
-                        _lastClicked = java.lang.System.currentTimeMillis();
+                        _lastClicked = DateTimeOffset.UtcNow.ToMillis();
                     }
                     else if (mouseX >= contentMinX && mouseX <= contentMaxX && relativeY < 0)
                     {
