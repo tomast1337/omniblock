@@ -93,7 +93,7 @@ public partial class Minecraft
     public bool inGameHasFocus;
     private int mouseTicksRan;
     public bool isRaining = false;
-    long systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    long systemTime = UnixTime.GetCurrentTimeMillis();
     private int joinPlayerCounter;
     private ImGuiController imGuiController;
     public InternalServer? internalServer;
@@ -487,7 +487,7 @@ public partial class Minecraft
 
         try
         {
-            long lastFpsCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long lastFpsCheckTime = UnixTime.GetCurrentTimeMillis();
             int frameCounter = 0;
 
             while (running)
@@ -651,7 +651,7 @@ public partial class Minecraft
                     isGamePaused = (!isMultiplayerWorld() || internalServer != null) && (currentScreen?.PausesGame ?? false);
 
                     for (;
-                         DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() >= lastFpsCheckTime + 1000L;
+                         UnixTime.GetCurrentTimeMillis() >= lastFpsCheckTime + 1000L;
                          frameCounter = 0)
                     {
                         debug = frameCounter + " fps";
@@ -1246,7 +1246,7 @@ public partial class Minecraft
             }
         }
 
-        systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        systemTime = UnixTime.GetCurrentTimeMillis();
         Profiler.PopGroup();
     }
 
@@ -1254,7 +1254,7 @@ public partial class Minecraft
     {
         while (Mouse.next())
         {
-            long timeSinceLastMouseEvent = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - systemTime;
+            long timeSinceLastMouseEvent = UnixTime.GetCurrentTimeMillis() - systemTime;
             if (timeSinceLastMouseEvent <= 200L)
             {
                 int mouseWheelDelta = Mouse.getEventDWheel();
@@ -1682,7 +1682,7 @@ public partial class Minecraft
 
             if (sessionToken == "-")
             {
-                hasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                hasPaidCheckTime = UnixTime.GetCurrentTimeMillis();
             }
         }
         else
