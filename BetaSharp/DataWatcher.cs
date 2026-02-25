@@ -3,6 +3,7 @@ using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Util.Maths;
 using java.io;
+using Console = System.Console;
 
 namespace BetaSharp;
 
@@ -56,7 +57,8 @@ public class DataWatcher
 
     public sbyte getWatchableObjectByte(int id)
     {
-        return (sbyte)((byte)watchedObjects[id].watchedObject);
+        // TODO: Refactor watchable object
+        return watchedObjects[id].watchedObject is int value ? (sbyte)value : (sbyte)0;
     }
 
     public int GetWatchableObjectInt(int id)
