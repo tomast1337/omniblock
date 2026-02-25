@@ -1472,7 +1472,7 @@ public partial class Minecraft
             {
                 if (targetEntity == null)
                 {
-                    player = (ClientPlayerEntity)newWorld.getPlayerForProxy(ClientPlayerEntity.Class);
+                    player = (ClientPlayerEntity)newWorld.getPlayerForProxy(typeof(ClientPlayerEntity));
                 }
             }
             else if (player != null)

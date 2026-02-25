@@ -26,9 +26,9 @@ public class EntityWolf : EntityAnimal
     protected override void initDataTracker()
     {
         base.initDataTracker();
-        dataWatcher.addObject(16, java.lang.Byte.valueOf((byte)0));
-        dataWatcher.addObject(17, new JString(""));
-        dataWatcher.addObject(18, new java.lang.Integer(health));
+        dataWatcher.AddObject(16, (byte)0);
+        dataWatcher.AddObject(17, "");
+        dataWatcher.AddObject(18, health);
     }
 
     protected override bool bypassesSteppingEffects()
@@ -78,7 +78,7 @@ public class EntityWolf : EntityAnimal
 
     protected override string getLivingSound()
     {
-        return isWolfAngry() ? "mob.wolf.growl" : (random.NextInt(3) == 0 ? (isWolfTamed() && dataWatcher.getWatchableObjectInt(18) < 10 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark");
+        return isWolfAngry() ? "mob.wolf.growl" : (random.NextInt(3) == 0 ? (isWolfTamed() && dataWatcher.GetWatchableObjectInt(18) < 10 ? "mob.wolf.whine" : "mob.wolf.panting") : "mob.wolf.bark");
     }
 
     protected override string getHurtSound()
@@ -136,7 +136,7 @@ public class EntityWolf : EntityAnimal
 
         if (!world.isRemote)
         {
-            dataWatcher.updateObject(18, java.lang.Integer.valueOf(health));
+            dataWatcher.UpdateObject(18, health);
         }
 
     }
@@ -438,7 +438,7 @@ public class EntityWolf : EntityAnimal
             if (heldItem != null && Item.ITEMS[heldItem.itemId] is ItemFood)
             {
                 ItemFood food = (ItemFood)Item.ITEMS[heldItem.itemId];
-                if (food.getIsWolfsFavoriteMeat() && dataWatcher.getWatchableObjectInt(18) < 20)
+                if (food.getIsWolfsFavoriteMeat() && dataWatcher.GetWatchableObjectInt(18) < 20)
                 {
                     --heldItem.count;
                     if (heldItem.count <= 0)
@@ -510,7 +510,7 @@ public class EntityWolf : EntityAnimal
 
     public float getTailRotation()
     {
-        return isWolfAngry() ? (float)System.Math.PI * 0.49F : (isWolfTamed() ? (0.55F - (float)(20 - dataWatcher.getWatchableObjectInt(18)) * 0.02F) * (float)System.Math.PI : (float)System.Math.PI * 0.2F);
+        return isWolfAngry() ? (float)System.Math.PI * 0.49F : (isWolfTamed() ? (0.55F - (float)(20 - dataWatcher.GetWatchableObjectInt(18)) * 0.02F) * (float)System.Math.PI : (float)System.Math.PI * 0.2F);
     }
 
     public override int getMaxSpawnedInChunk()
@@ -520,12 +520,12 @@ public class EntityWolf : EntityAnimal
 
     public string getWolfOwner()
     {
-        return dataWatcher.getWatchableObjectString(17);
+        return dataWatcher.GetWatchableObjectString(17);
     }
 
     public void setWolfOwner(string name)
     {
-        dataWatcher.updateObject(17, new JString(name));
+        dataWatcher.UpdateObject(17, name);
     }
 
     public bool isWolfSitting()
@@ -538,11 +538,11 @@ public class EntityWolf : EntityAnimal
         sbyte data = dataWatcher.getWatchableObjectByte(16);
         if (isSitting)
         {
-            dataWatcher.updateObject(16, java.lang.Byte.valueOf((byte)(data | 1)));
+            dataWatcher.UpdateObject(16, ((byte)(data | 1)));
         }
         else
         {
-            dataWatcher.updateObject(16, java.lang.Byte.valueOf((byte)(data & -2)));
+            dataWatcher.UpdateObject(16, ((byte)(data & -2)));
         }
 
     }
@@ -557,11 +557,11 @@ public class EntityWolf : EntityAnimal
         sbyte data = dataWatcher.getWatchableObjectByte(16);
         if (isAngry)
         {
-            dataWatcher.updateObject(16, java.lang.Byte.valueOf((byte)(data | 2)));
+            dataWatcher.UpdateObject(16, ((byte)(data | 2)));
         }
         else
         {
-            dataWatcher.updateObject(16, java.lang.Byte.valueOf((byte)(data & -3)));
+            dataWatcher.UpdateObject(16, ((byte)(data & -3)));
         }
 
     }
@@ -576,11 +576,11 @@ public class EntityWolf : EntityAnimal
         sbyte data = dataWatcher.getWatchableObjectByte(16);
         if (IsTamed)
         {
-            dataWatcher.updateObject(16, java.lang.Byte.valueOf((byte)(data | 4)));
+            dataWatcher.UpdateObject(16, ((byte)(data | 4)));
         }
         else
         {
-            dataWatcher.updateObject(16, java.lang.Byte.valueOf((byte)(data & -5)));
+            dataWatcher.UpdateObject(16, ((byte)(data & -5)));
         }
 
     }

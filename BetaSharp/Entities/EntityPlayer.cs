@@ -65,7 +65,7 @@ public abstract class EntityPlayer : EntityLiving
     protected override void initDataTracker()
     {
         base.initDataTracker();
-        dataWatcher.addObject(16, java.lang.Byte.valueOf((byte)0));
+        dataWatcher.AddObject(16,(byte)0);
     }
 
     public override void tick()
@@ -475,21 +475,19 @@ public abstract class EntityPlayer : EntityLiving
             {
                 return false;
             }
-            else
+
+            if (damageSource is EntityArrow && ((EntityArrow)damageSource).owner != null)
             {
-                if (damageSource is EntityArrow && ((EntityArrow)damageSource).owner != null)
-                {
-                    damageSource = ((EntityArrow)damageSource).owner;
-                }
-
-                if (damageSource is EntityLiving)
-                {
-                    commandWolvesToAttack((EntityLiving)damageSource, false);
-                }
-
-                increaseStat(Stats.Stats.DamageTakenStat, amount);
-                return base.damage(damageSource, amount);
+                damageSource = ((EntityArrow)damageSource).owner;
             }
+
+            if (damageSource is EntityLiving)
+            {
+                commandWolvesToAttack((EntityLiving)damageSource, false);
+            }
+
+            increaseStat(Stats.Stats.DamageTakenStat, amount);
+            return base.damage(damageSource, amount);
         }
     }
 

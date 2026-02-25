@@ -444,9 +444,9 @@ public class Chunk
 
     public virtual void AddBlockEntity(BlockEntity blockEntity)
     {
-        int localX = blockEntity.x - X * 16;
-        int localZ = blockEntity.z - Z * 16;
-        SetBlockEntity(localX, blockEntity.y, localZ, blockEntity);
+        int localX = blockEntity.X - X * 16;
+        int localZ = blockEntity.Z - Z * 16;
+        SetBlockEntity(localX, blockEntity.Y, localZ, blockEntity);
 
         if (Loaded) World.blockEntities.Add(blockEntity);
     }
@@ -454,10 +454,10 @@ public class Chunk
     public virtual void SetBlockEntity(int localX, int y, int localZ, BlockEntity blockEntity)
     {
         BlockPos pos = new(localX, y, localZ);
-        blockEntity.world = World;
-        blockEntity.x = X * 16 + localX;
-        blockEntity.y = y;
-        blockEntity.z = Z * 16 + localZ;
+        blockEntity.World = World;
+        blockEntity.X = X * 16 + localX;
+        blockEntity.Y = y;
+        blockEntity.Z = Z * 16 + localZ;
 
         int id = GetBlockId(localX, y, localZ);
         if (id != 0 && Block.Blocks[id] is BlockWithEntity)

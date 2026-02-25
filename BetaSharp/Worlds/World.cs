@@ -18,11 +18,12 @@ using java.lang;
 using java.util;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
+using Exception = System.Exception;
 using Random = System.Random;
 
 namespace BetaSharp.Worlds;
 
-public abstract class World : java.lang.Object, BlockView
+public abstract class World : BlockView
 {
     private const int AUTOSAVE_PERIOD = 40;
     public bool instantBlockUpdateEnabled = false;
@@ -204,9 +205,9 @@ public abstract class World : java.lang.Object, BlockView
 
             SpawnEntity(player);
         }
-        catch (java.lang.Exception ex)
+        catch (Exception e)
         {
-            ex.printStackTrace();
+            _logger.LogError(e, e.Message);
         }
 
     }
@@ -1512,10 +1513,10 @@ public abstract class World : java.lang.Object, BlockView
             if (var5.isRemoved())
             {
                 blockEntities.RemoveAt(i);
-                Chunk var7 = GetChunk(var5.x >> 4, var5.z >> 4);
-                if (var7 != null)
+                Chunk chunk = GetChunk(var5.X >> 4, var5.Z >> 4);
+                if (chunk != null)
                 {
-                    var7.RemoveBlockEntityAt(var5.x & 15, var5.y, var5.z & 15);
+                    chunk.RemoveBlockEntityAt(var5.X & 15, var5.Y, var5.Z & 15);
                 }
             }
         }
@@ -1531,12 +1532,12 @@ public abstract class World : java.lang.Object, BlockView
                     {
                         blockEntities.Add(var8);
                     }
-                    Chunk var9 = GetChunk(var8.x >> 4, var8.z >> 4);
-                    if (var9 != null)
+                    Chunk chunk = GetChunk(var8.X >> 4, var8.Z >> 4);
+                    if (chunk != null)
                     {
-                        var9.SetBlockEntity(var8.x & 15, var8.y, var8.z & 15, var8);
+                        chunk.SetBlockEntity(var8.X & 15, var8.Y, var8.Z & 15, var8);
                     }
-                    blockUpdateEvent(var8.x, var8.y, var8.z);
+                    blockUpdateEvent(var8.X, var8.Y, var8.Z);
                 }
             }
             blockEntityUpdateQueue.Clear();
@@ -1974,7 +1975,7 @@ public abstract class World : java.lang.Object, BlockView
 
     }
 
-    public Entity getPlayerForProxy(java.lang.Class var1)
+    public Entity getPlayerForProxy(Type var1)
     {
         return null;
     }
@@ -2001,9 +2002,9 @@ public abstract class World : java.lang.Object, BlockView
         {
             if (processingDeferred)
             {
-                blockEntity.x = x;
-                blockEntity.y = y;
-                blockEntity.z = z;
+                blockEntity.X = x;
+                blockEntity.Y = y;
+                blockEntity.Z = z;
                 blockEntityUpdateQueue.Add(blockEntity);
             }
             else
@@ -2386,9 +2387,9 @@ public abstract class World : java.lang.Object, BlockView
 
         foreach (var p in activeChunks)
         {
-            var3 = p.x * 16;
-            var4 = p.z * 16;
-            Chunk var14 = GetChunk(p.x, p.z);
+            var3 = p.X * 16;
+            var4 = p.Z * 16;
+            Chunk var14 = GetChunk(p.X, p.Z);
             int var8;
             int var9;
             int var10;
@@ -3083,9 +3084,9 @@ public abstract class World : java.lang.Object, BlockView
         persistentStateManager.SetData(id, state);
     }
 
-    public PersistentState? getOrCreateState(Type t, string id)
+    public PersistentState? getOrCreateState(Type type, string id)
     {
-        return persistentStateManager.LoadData(t, id);
+        return persistentStateManager.LoadData(type, id);
     }
 
     public int getIdCount(string id)
