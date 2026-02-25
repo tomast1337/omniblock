@@ -26,7 +26,7 @@ public class EntityTrackerUpdateS2CPacket : Packet
     public override void Write(NetworkStream stream)
     {
         stream.WriteInt(id);
-        DataWatcher.WriteObjectsInListToStream(trackedValues);
+        DataWatcher.WriteObjectsInListToStream(trackedValues, stream);
     }
 
     public override void Apply(NetHandler handler)
