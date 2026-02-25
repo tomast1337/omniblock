@@ -115,7 +115,15 @@ public class BlockEntity
 
     public bool isRemoved()
     {
-        return Removed;
+        if (Removed) return true;
+
+        if (World != null)
+        {
+            int id = World.getBlockId(X, Y, Z);
+            if (id == 0 || !Block.BlocksWithEntity[id]) return true;
+        }
+
+        return false;
     }
 
     public void markRemoved()

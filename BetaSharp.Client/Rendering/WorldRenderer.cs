@@ -260,7 +260,7 @@ public class WorldRenderer : IWorldAccess
             for (var6 = 0; var6 < world.blockEntities.Count; ++var6)
             {
                 BlockEntity entity = world.blockEntities[var6];
-                if (culler.isBoundingBoxInFrustum(new Box(entity.X, entity.Y, entity.Z, entity.X + 1, entity.Y + 1, entity.Z + 1)))
+                if (!entity.isRemoved() && culler.isBoundingBoxInFrustum(new Box(entity.X, entity.Y, entity.Z, entity.X + 1, entity.Y + 1, entity.Z + 1)))
                 {
                     BlockEntityRenderer.Instance.RenderTileEntity(entity, var3);
                 }

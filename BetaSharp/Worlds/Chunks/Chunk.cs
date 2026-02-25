@@ -30,7 +30,7 @@ public class Chunk
     public bool LastSaveHadEntities;
     public long LastSaveTime;
 
-    private readonly ILogger<Chunk> _logger = Log.Instance.For<Chunk>();
+    private static readonly ILogger<Chunk> s_logger = Log.Instance.For<Chunk>();
 
 
     public Chunk(World world, int x, int z)
@@ -389,8 +389,8 @@ public class Chunk
 
         if (chunkX != X || chunkZ != Z)
         {
-            _logger.LogWarning($"Entity in wrong chunk location! {entity}");
-            _logger.LogDebug(Environment.StackTrace);
+            s_logger.LogWarning($"Entity in wrong chunk location! {entity}");
+            s_logger.LogDebug(Environment.StackTrace);
         }
 
         int slice = MathHelper.Floor(entity.y / 16.0D);
@@ -467,7 +467,7 @@ public class Chunk
         }
         else
         {
-            _logger.LogWarning("Attempted to place a tile entity where there was no entity tile block!");
+            s_logger.LogWarning("Attempted to place a tile entity where there was no entity tile block!");
         }
     }
 
