@@ -8,18 +8,29 @@ public class FireSprite : DynamicTexture
     protected float[] current = new float[320];
     protected float[] next = new float[320];
 
+    private readonly int index;
+
     public FireSprite(int var1) : base(Block.Fire.textureId + var1 * 16)
     {
+        index = var1;
     }
 
     public override void Setup(Minecraft mc)
     {
         Array.Clear(current);
         Array.Clear(next);
+        TryLoadCustomTexture(mc, index == 0 ? "custom_fire_e_w.png" : "custom_fire_n_s.png");
     }
 
     public override void tick()
     {
+        if (customFrames != null)
+        {
+            Buffer.BlockCopy(customFrames[customFrameIndex], 0, pixels, 0, pixels.Length);
+            customFrameIndex = (customFrameIndex + 1) % customFrameCount;
+            return;
+        }
+
         int var2;
         float var4;
         int var5;

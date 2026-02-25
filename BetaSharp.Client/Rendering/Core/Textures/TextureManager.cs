@@ -304,20 +304,19 @@ public class TextureManager : IDisposable
             string atlasPath = texture.atlas == DynamicTexture.FXImage.Terrain ? "/terrain.png" : "/gui/items.png";
             
             TextureHandle atlasHandle = _textures.FirstOrDefault(x => x.Key.EndsWith(atlasPath)).Value;
-            if (atlasHandle == null) atlasHandle = GetTextureId(atlasPath);
+            atlasHandle ??= GetTextureId(atlasPath);
             
             GLTexture? atlasTexture = atlasHandle.Texture;
             if (atlasTexture == null) continue;
 
             int targetTileSize = atlasTexture.Width / 16;
-            int hdScale = targetTileSize / 16;
-            if (hdScale < 1) hdScale = 1;
-            int finalReplicate = texture.replicate * hdScale;
 
             int tileX = (texture.sprite % 16) * targetTileSize;
             int tileY = (texture.sprite / 16) * targetTileSize;
 
             int fxSize = (int)Math.Sqrt(texture.pixels.Length / 4);
+            int finalReplicate = (texture.replicate * targetTileSize) / fxSize;
+            if (finalReplicate < 1) finalReplicate = 1;
 
             fixed (byte* ptr = texture.pixels)
             {

@@ -14,6 +14,9 @@ public class NetherPortalSprite : DynamicTexture
 
     public override void Setup(Minecraft mc)
     {
+        TryLoadCustomTexture(mc, "custom_portal.png");
+        if (customFrames != null) return;
+
         JavaRandom var1 = new(100L);
         for (int i = 0; i < frames.Length; i++)
         {
@@ -79,6 +82,13 @@ public class NetherPortalSprite : DynamicTexture
 
     public override void tick()
     {
+        if (customFrames != null)
+        {
+            Buffer.BlockCopy(customFrames[customFrameIndex], 0, pixels, 0, pixels.Length);
+            customFrameIndex = (customFrameIndex + 1) % customFrameCount;
+            return;
+        }
+
         ++ticks;
         byte[] var1 = frames[ticks & 31];
 

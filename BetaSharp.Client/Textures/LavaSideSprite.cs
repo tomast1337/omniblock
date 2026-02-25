@@ -17,8 +17,20 @@ public class LavaSideSprite : DynamicTexture
         replicate = 2;
     }
 
+    public override void Setup(Minecraft mc)
+    {
+        TryLoadCustomTexture(mc, "custom_lava_flowing.png");
+    }
+
     public override void tick()
     {
+        if (customFrames != null)
+        {
+            Buffer.BlockCopy(customFrames[customFrameIndex], 0, pixels, 0, pixels.Length);
+            customFrameIndex = (customFrameIndex + 1) % customFrameCount;
+            return;
+        }
+
         ++ticks;
 
         int var2;
