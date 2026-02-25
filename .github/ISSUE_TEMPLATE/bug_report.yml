@@ -1,5 +1,5 @@
 ﻿name: Bug Report
-description: File a bug report for BetaSharp.
+description: File a bug report for BetaSharp
 title: "Bug: "
 labels: [ "bug" ]
 body:
