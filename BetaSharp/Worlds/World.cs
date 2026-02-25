@@ -1138,7 +1138,7 @@ public abstract class World : java.lang.Object, BlockView
         }
 
         Entities.Remove(entity);
-        EntitiesById.Remove(entity.id); // ADD THIS
+        EntitiesById.Remove(entity.id);
         NotifyEntityRemoved(entity);
         NotifyEntityRemoved(entity);
     }
@@ -1184,18 +1184,28 @@ public abstract class World : java.lang.Object, BlockView
         double var14 = 0.25D;
         List<Entity> var15 = getEntities(entity, box.expand(var14, var14, var14));
 
+        int collisionCount = 0;
+        const int MAX_COLLISIONS = 24;
+
         for (int var16 = 0; var16 < var15.Count; ++var16)
         {
+            if (collisionCount >= MAX_COLLISIONS)
+            {
+                break;
+            }
+
             Box? var13 = var15[var16].getBoundingBox();
             if (var13 != null && var13.Value.intersects(box))
             {
                 collidingBoundingBoxes.Add(var13.Value);
+                collisionCount++;
             }
 
             var13 = entity.getCollisionAgainstShape(var15[var16]);
             if (var13 != null && var13.Value.intersects(box))
             {
                 collidingBoundingBoxes.Add(var13.Value);
+                collisionCount++;
             }
         }
 
