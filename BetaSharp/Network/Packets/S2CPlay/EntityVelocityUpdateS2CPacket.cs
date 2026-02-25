@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using java.io;
 
@@ -57,7 +58,7 @@ public class EntityVelocityUpdateS2CPacket : Packet
         this.motionZ = (int)(motionZ * 8000.0D);
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         entityId = stream.readInt();
         motionX = stream.readShort();
@@ -65,7 +66,7 @@ public class EntityVelocityUpdateS2CPacket : Packet
         motionZ = stream.readShort();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(entityId);
         stream.writeShort(motionX);

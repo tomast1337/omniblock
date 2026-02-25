@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -21,7 +22,7 @@ public class MapUpdateS2CPacket : Packet
         this.updateData = updateData;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         itemRawId = stream.readShort();
         id = stream.readShort();
@@ -29,7 +30,7 @@ public class MapUpdateS2CPacket : Packet
         stream.readFully(updateData);
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeShort(itemRawId);
         stream.writeShort(id);

@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Util.Maths;
 using java.io;
 
@@ -24,7 +25,7 @@ public class ExplosionS2CPacket : Packet
         destroyedBlockPositions = new HashSet<BlockPos>(affectedBlocks);
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         explosionX = stream.readDouble();
         explosionY = stream.readDouble();
@@ -47,7 +48,7 @@ public class ExplosionS2CPacket : Packet
 
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeDouble(explosionX);
         stream.writeDouble(explosionY);

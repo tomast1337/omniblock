@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -19,14 +20,14 @@ public class PlayerSpawnPositionS2CPacket : Packet
         this.z = z;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         x = stream.readInt();
         y = stream.readInt();
         z = stream.readInt();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(x);
         stream.writeInt(y);

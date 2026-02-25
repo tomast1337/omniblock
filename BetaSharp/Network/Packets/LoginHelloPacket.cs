@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets;
@@ -29,7 +30,7 @@ public class LoginHelloPacket : Packet
         this.protocolVersion = protocolVersion;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         protocolVersion = stream.readInt();
         username = ReadString(stream, 16);
@@ -37,7 +38,7 @@ public class LoginHelloPacket : Packet
         dimensionId = (sbyte)stream.readByte();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(protocolVersion);
         WriteString(username, stream);

@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Items;
 using java.io;
 using java.util;
@@ -25,7 +26,7 @@ public class InventoryS2CPacket : Packet
         }
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         syncId = (sbyte)stream.readByte();
         short itemsCount = stream.readShort();
@@ -45,7 +46,7 @@ public class InventoryS2CPacket : Packet
 
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeByte(syncId);
         stream.writeShort(contents.Length);

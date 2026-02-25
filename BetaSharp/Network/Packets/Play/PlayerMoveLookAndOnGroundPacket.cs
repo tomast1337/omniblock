@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.Play;
@@ -17,14 +18,14 @@ public class PlayerMoveLookAndOnGroundPacket : PlayerMovePacket
         changeLook = true;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         yaw = stream.readFloat();
         pitch = stream.readFloat();
         base.Read(stream);
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeFloat(yaw);
         stream.writeFloat(pitch);

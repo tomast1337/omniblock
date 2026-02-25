@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using java.io;
 
@@ -18,13 +19,13 @@ public class ClientCommandC2SPacket : Packet
         this.mode = mode;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         entityId = stream.readInt();
         mode = (sbyte)stream.readByte();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(entityId);
         stream.writeByte(mode);

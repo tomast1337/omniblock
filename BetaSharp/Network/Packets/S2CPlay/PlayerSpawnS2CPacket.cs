@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
@@ -33,7 +34,7 @@ public class PlayerSpawnS2CPacket : Packet
         currentItem = itemStack == null ? 0 : itemStack.itemId;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         entityId = stream.readInt();
         name = ReadString(stream, 16);
@@ -45,7 +46,7 @@ public class PlayerSpawnS2CPacket : Packet
         currentItem = stream.readShort();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(entityId);
         WriteString(name, stream);

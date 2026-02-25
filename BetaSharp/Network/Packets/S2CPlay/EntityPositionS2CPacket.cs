@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using java.io;
@@ -37,7 +38,7 @@ public class EntityPositionS2CPacket : Packet
         pitch = (sbyte)(int)(var1.pitch * 256.0F / 360.0F);
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         id = stream.readInt();
         x = stream.readInt();
@@ -47,7 +48,7 @@ public class EntityPositionS2CPacket : Packet
         pitch = (sbyte)stream.read();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(id);
         stream.writeInt(x);

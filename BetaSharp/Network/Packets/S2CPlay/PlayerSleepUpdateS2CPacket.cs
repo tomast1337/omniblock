@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using java.io;
 
@@ -24,7 +25,7 @@ public class PlayerSleepUpdateS2CPacket : Packet
         this.id = player.id;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         id = stream.readInt();
         status = (sbyte)stream.readByte();
@@ -33,7 +34,7 @@ public class PlayerSleepUpdateS2CPacket : Packet
         z = stream.readInt();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(id);
         stream.writeByte(status);

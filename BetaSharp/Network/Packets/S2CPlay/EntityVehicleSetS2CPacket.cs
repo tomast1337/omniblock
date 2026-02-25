@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using java.io;
 
@@ -23,13 +24,13 @@ public class EntityVehicleSetS2CPacket : Packet
         return 8;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         entityId = stream.readInt();
         vehicleEntityId = stream.readInt();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(entityId);
         stream.writeInt(vehicleEntityId);

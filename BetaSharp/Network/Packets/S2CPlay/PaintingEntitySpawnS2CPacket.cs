@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using java.io;
 
@@ -26,7 +27,7 @@ public class PaintingEntitySpawnS2CPacket : Packet
         title = paint.art.title;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         entityId = stream.readInt();
         title = ReadString(stream, EnumArt.maxArtTitleLength);
@@ -36,7 +37,7 @@ public class PaintingEntitySpawnS2CPacket : Packet
         direction = stream.readInt();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(entityId);
         WriteString(title, stream);

@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 using java.util;
 
@@ -16,13 +17,13 @@ public class EntityTrackerUpdateS2CPacket : Packet
         trackedValues = dataWatcher.GetDirtyEntries();
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         id = stream.readInt();
         trackedValues = DataWatcher.ReadWatchableObjects(stream);
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(id);
         DataWatcher.WriteObjectsInListToStream(trackedValues, stream);

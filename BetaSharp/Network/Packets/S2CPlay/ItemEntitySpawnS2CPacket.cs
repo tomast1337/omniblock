@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using java.io;
@@ -35,7 +36,7 @@ public class ItemEntitySpawnS2CPacket : Packet
         velocityZ = (sbyte)(int)(item.velocityZ * 128.0D);
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         id = stream.readInt();
         itemRawId = stream.readShort();
@@ -49,7 +50,7 @@ public class ItemEntitySpawnS2CPacket : Packet
         velocityZ = (sbyte)stream.readByte();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(id);
         stream.writeShort(itemRawId);

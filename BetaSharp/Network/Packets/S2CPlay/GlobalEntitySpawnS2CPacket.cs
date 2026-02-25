@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using java.io;
@@ -29,7 +30,7 @@ public class GlobalEntitySpawnS2CPacket : Packet
 
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         id = stream.readInt();
         type = (sbyte)stream.readByte();
@@ -38,7 +39,7 @@ public class GlobalEntitySpawnS2CPacket : Packet
         z = stream.readInt();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(id);
         stream.writeByte(type);

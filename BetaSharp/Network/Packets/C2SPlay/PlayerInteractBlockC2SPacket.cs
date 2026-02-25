@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Items;
 using java.io;
 
@@ -24,7 +25,7 @@ public class PlayerInteractBlockC2SPacket : Packet
         this.stack = stack;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         x = stream.readInt();
         y = stream.read();
@@ -44,7 +45,7 @@ public class PlayerInteractBlockC2SPacket : Packet
 
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(x);
         stream.write(y);

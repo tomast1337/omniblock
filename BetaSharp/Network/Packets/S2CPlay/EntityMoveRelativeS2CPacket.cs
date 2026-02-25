@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -15,7 +16,7 @@ public class EntityMoveRelativeS2CPacket : EntityS2CPacket
         this.deltaZ = (sbyte)deltaZ;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         base.Read(stream);
         deltaX = (sbyte)stream.readByte();
@@ -23,7 +24,7 @@ public class EntityMoveRelativeS2CPacket : EntityS2CPacket
         deltaZ = (sbyte)stream.readByte();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         base.Write(stream);
         stream.writeByte(deltaX);

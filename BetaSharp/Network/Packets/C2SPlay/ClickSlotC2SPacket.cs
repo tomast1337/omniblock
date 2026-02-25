@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Items;
 using java.io;
 
@@ -31,7 +32,7 @@ public class ClickSlotC2SPacket : Packet
         handler.onClickSlot(this);
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         syncId = (sbyte)stream.readByte();
         slot = stream.readShort();
@@ -52,7 +53,7 @@ public class ClickSlotC2SPacket : Packet
 
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeByte(syncId);
         stream.writeShort(slot);

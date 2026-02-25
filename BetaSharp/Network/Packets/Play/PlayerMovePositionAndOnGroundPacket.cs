@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.Play;
@@ -19,7 +20,7 @@ public class PlayerMovePositionAndOnGroundPacket : PlayerMovePacket
         changePosition = true;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         x = stream.readDouble();
         y = stream.readDouble();
@@ -28,7 +29,7 @@ public class PlayerMovePositionAndOnGroundPacket : PlayerMovePacket
         base.Read(stream);
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeDouble(x);
         stream.writeDouble(y);

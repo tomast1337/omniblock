@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.Play;
@@ -24,14 +25,14 @@ public class ScreenHandlerAcknowledgementPacket : Packet
         handler.onScreenHandlerAcknowledgement(this);
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         syncId = (sbyte)stream.readByte();
         actionType = stream.readShort();
         accepted = (sbyte)stream.readByte() != 0;
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeByte(syncId);
         stream.writeShort(actionType);

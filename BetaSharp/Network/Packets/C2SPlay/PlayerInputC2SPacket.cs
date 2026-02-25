@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.C2SPlay;
@@ -11,7 +12,7 @@ public class PlayerInputC2SPacket : Packet
     private float pitch;
     private float yaw;
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         sideways = stream.readFloat();
         forward = stream.readFloat();
@@ -21,7 +22,7 @@ public class PlayerInputC2SPacket : Packet
         sneaking = stream.readBoolean();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeFloat(sideways);
         stream.writeFloat(forward);

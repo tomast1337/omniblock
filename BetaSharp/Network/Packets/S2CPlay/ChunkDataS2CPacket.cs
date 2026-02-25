@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Worlds;
 using java.io;
 using java.util.zip;
@@ -47,7 +48,7 @@ public class ChunkDataS2CPacket : Packet
         }
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         x = stream.readInt();
         y = stream.readShort();
@@ -79,7 +80,7 @@ public class ChunkDataS2CPacket : Packet
 
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(x);
         stream.writeShort(y);

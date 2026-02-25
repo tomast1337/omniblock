@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Worlds;
 using java.io;
 
@@ -26,7 +27,7 @@ public class BlockUpdateS2CPacket : Packet
         blockMetadata = world.getBlockMeta(x, y, z);
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         x = stream.readInt();
         y = stream.read();
@@ -35,7 +36,7 @@ public class BlockUpdateS2CPacket : Packet
         blockMetadata = stream.read();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(x);
         stream.write(y);

@@ -2,9 +2,7 @@ using System.Net.Sockets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
-using java.lang;
 using Microsoft.Extensions.Logging;
-using StringBuilder = System.Text.StringBuilder;
 
 namespace BetaSharp.Network.Packets;
 
@@ -109,43 +107,9 @@ public abstract class Packet
         packet.Write(stream);
     }
 
-    public static void WriteString(string packetData, java.io.DataOutputStream stream)
-    {
-        if (packetData.Length > Short.MAX_VALUE)
-        {
-            throw new IOException("String too big");
-        }
+    public abstract void Read(NetworkStream stream);
 
-        stream.writeShort(packetData.Length);
-        stream.writeChars(packetData);
-    }
-
-    public static string ReadString(java.io.DataInputStream stream, int maxLength)
-    {
-
-        short length = stream.readShort();
-        if (length > maxLength)
-        {
-            throw new IOException("Received string length longer than maximum allowed (" + length + " > " + maxLength + ")");
-        }
-        if (length < 0)
-        {
-            throw new IOException("Received string length is less than zero! Weird string!");
-        }
-
-        var sb = new StringBuilder();
-
-        for (int i = 0; i < length; ++i)
-        {
-            sb.Append(stream.readChar());
-        }
-
-        return sb.ToString();
-    }
-
-    public abstract void Read(java.io.DataInputStream stream);
-
-    public abstract void Write(java.io.DataOutputStream stream);
+    public abstract void Write(NetworkStream stream);
 
     public abstract void Apply(NetHandler handler);
 

@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -23,7 +24,7 @@ public class PlayNoteSoundS2CPacket : Packet
         this.pitch = pitch;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         xLocation = stream.readInt();
         yLocation = stream.readShort();
@@ -32,7 +33,7 @@ public class PlayNoteSoundS2CPacket : Packet
         pitch = stream.read();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(xLocation);
         stream.writeShort(yLocation);

@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -19,7 +20,7 @@ public class EntityRotateAndMoveRelativeS2CPacket : EntityS2CPacket
         rotate = true;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         base.Read(stream);
         deltaX = (sbyte)stream.readByte();
@@ -29,7 +30,7 @@ public class EntityRotateAndMoveRelativeS2CPacket : EntityS2CPacket
         pitch = (sbyte)stream.readByte();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         base.Write(stream);
         stream.writeByte(deltaX);

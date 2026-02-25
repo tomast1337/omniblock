@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Items;
 using java.io;
 
@@ -30,7 +31,7 @@ public class EntityEquipmentUpdateS2CPacket : Packet
         }
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         id = stream.readInt();
         slot = stream.readShort();
@@ -38,7 +39,7 @@ public class EntityEquipmentUpdateS2CPacket : Packet
         itemDamage = stream.readShort();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(id);
         stream.writeShort(slot);

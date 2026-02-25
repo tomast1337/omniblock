@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using java.io;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -23,7 +24,7 @@ public class WorldEventS2CPacket : Packet
         this.data = data;
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         eventId = stream.readInt();
         x = stream.readInt();
@@ -32,7 +33,7 @@ public class WorldEventS2CPacket : Packet
         data = stream.readInt();
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(eventId);
         stream.writeInt(x);

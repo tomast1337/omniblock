@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using java.io;
@@ -74,7 +75,7 @@ public class EntitySpawnS2CPacket : Packet
         }
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         id = stream.readInt();
         entityType = (sbyte)stream.readByte();
@@ -91,7 +92,7 @@ public class EntitySpawnS2CPacket : Packet
 
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(id);
         stream.writeByte(entityType);

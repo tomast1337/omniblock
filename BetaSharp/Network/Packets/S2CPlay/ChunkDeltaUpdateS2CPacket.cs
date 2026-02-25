@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using java.io;
@@ -40,7 +41,7 @@ public class ChunkDeltaUpdateS2CPacket : Packet
         }
     }
 
-    public override void Read(DataInputStream stream)
+    public override void Read(NetworkStream stream)
     {
         x = stream.readInt();
         z = stream.readInt();
@@ -59,7 +60,7 @@ public class ChunkDeltaUpdateS2CPacket : Packet
         stream.readFully(blockMetadata);
     }
 
-    public override void Write(DataOutputStream stream)
+    public override void Write(NetworkStream stream)
     {
         stream.writeInt(x);
         stream.writeInt(z);
