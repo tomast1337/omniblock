@@ -72,6 +72,21 @@ public class SkinManager : IDisposable
         return null;
     }
 
+    public void Release(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+
+        if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
+        {
+            image.Dispose();
+        }
+
+        if (_textureHandles.TryRemove(url, out TextureHandle? handle))
+        {
+            _textureManager.Delete(handle);
+        }
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
