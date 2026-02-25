@@ -1674,7 +1674,7 @@ public partial class Minecraft
         }
     }
 
-    private static void StartMainThread(string playerName, string sessionToken)
+    private static void StartMainThread(string playerName, string sessionToken, string? skinUrl)
     {
         System.Threading.Thread.CurrentThread.Name = "Minecraft Main Thread";
 
@@ -1685,7 +1685,7 @@ public partial class Minecraft
 
         if (playerName != null && sessionToken != null)
         {
-            mc.session = new Session(playerName, sessionToken);
+            mc.session = new Session(playerName, sessionToken, skinUrl);
 
             if (sessionToken == "-")
             {
@@ -1707,14 +1707,16 @@ public partial class Minecraft
 
     public static void Startup(string[] args)
     {
-        (string Name, string Session) result = args.Length switch
+        (string Name, string Session, string? SkinUrl) result = args.Length switch
         {
-            0 => ($"Player{Random.Shared.Next()}", "-"),
-            1 => (args[0], "-"),
-            _ => (args[0], args[1])
+            0 => ($"Player{Random.Shared.Next()}", "-", null),
+            1 => (args[0], "-", null),
+            2 => (args[0], args[1], null),
+            3 => (args[0], args[1], args[2]),
+            _ => throw new Exception("Invalid arguments!")
         };
 
-        StartMainThread(result.Name, result.Session);
+        StartMainThread(result.Name, result.Session, result.SkinUrl);
     }
 
     public static bool isGuiEnabled()
