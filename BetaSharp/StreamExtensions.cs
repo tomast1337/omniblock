@@ -1,7 +1,8 @@
 using System.Buffers.Binary;
+using System.Text;
 using BetaSharp.Util;
 
-namespace BetaSharp.NBT;
+namespace BetaSharp;
 
 internal static class StreamExtensions
 {
@@ -53,6 +54,16 @@ internal static class StreamExtensions
 
         stream.WriteUShort((ushort)buffer.Length);
         stream.Write(buffer);
+    }
+
+    public static void WriteLongString(this Stream stream, string value)
+    {
+        stream.WriteUShort((ushort)value.Length);
+
+        foreach (char item in value)
+        {
+            stream.WriteByte((byte)item);
+        }
     }
 
     public static short ReadShort(this Stream stream)
@@ -111,5 +122,26 @@ internal static class StreamExtensions
         stream.ReadExactly(buffer);
 
         return ModifiedUtf8.GetString(buffer);
+    }
+
+    public static string ReadLongString(this Stream stream, ushort maximumLength = ushort.MaxValue)
+    {
+        byte[] buffer = new byte[stream.ReadUShort()];
+
+        if (buffer.Length > maximumLength)
+        {
+            throw new IOException("Received string length longer than maximum allowed (" + buffer.Length + " > " + maximumLength + ")");
+        }
+
+        stream.ReadExactly(buffer);
+
+        var builder = new StringBuilder();
+
+        for (int i = 0; i < buffer.Length; ++i)
+        {
+            builder.Append(stream.ReadByte());
+        }
+
+        return builder.ToString();
     }
 }
