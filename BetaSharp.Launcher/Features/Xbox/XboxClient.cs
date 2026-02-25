@@ -7,7 +7,7 @@ namespace BetaSharp.Launcher.Features.Xbox;
 
 internal sealed class XboxClient(IHttpClientFactory clientFactory)
 {
-    public async Task<UserResponse?> GetUserAsync(string token)
+    public async Task<UserResponse> GetUserAsync(string token)
     {
         var client = clientFactory.CreateClient(nameof(XboxClient));
 
@@ -18,7 +18,7 @@ internal sealed class XboxClient(IHttpClientFactory clientFactory)
             XboxSerializerContext.Default.UserResponse);
     }
 
-    public async Task<TokenResponse?> GetTokenAsync(string token)
+    public async Task<TokenResponse> GetTokenAsync(string token)
     {
         var client = clientFactory.CreateClient(nameof(XboxClient));
 

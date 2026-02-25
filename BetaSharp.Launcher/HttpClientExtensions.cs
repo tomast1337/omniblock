@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -8,30 +9,35 @@ namespace BetaSharp.Launcher;
 
 internal static class HttpClientExtensions
 {
-    public static async Task<T?> GetAsync<T>(this HttpClient client, string url, JsonTypeInfo<T> typeInfo)
+    extension(HttpClient client)
     {
-        var response = await client.GetAsync(url);
+        public async Task<T> GetAsync<T>(string url, JsonTypeInfo<T> typeInfo)
+        {
+            var response = await client.GetAsync(url);
 
-        await using var stream = await response.Content.ReadAsStreamAsync();
+            await using var stream = await response.Content.ReadAsStreamAsync();
 
-        var instance = JsonSerializer.Deserialize(stream, typeInfo);
+            var instance = JsonSerializer.Deserialize(stream, typeInfo);
 
-        return instance;
-    }
+            ArgumentNullException.ThrowIfNull(instance);
 
-    public static async Task<TResponse?> PostAsync<TResponse, TRequest>(
-        this HttpClient client,
-        string url,
-        TRequest request,
-        JsonTypeInfo<TRequest> requestInfo,
-        JsonTypeInfo<TResponse> responseInfo)
-    {
-        var response = await client.PostAsync(url, JsonContent.Create(request, requestInfo));
+            return instance;
+        }
 
-        await using var stream = await response.Content.ReadAsStreamAsync();
+        public async Task<TResponse> PostAsync<TResponse, TRequest>(string url,
+            TRequest request,
+            JsonTypeInfo<TRequest> requestInfo,
+            JsonTypeInfo<TResponse> responseInfo)
+        {
+            var response = await client.PostAsync(url, JsonContent.Create(request, requestInfo));
 
-        var instance = JsonSerializer.Deserialize(stream, responseInfo);
+            await using var stream = await response.Content.ReadAsStreamAsync();
 
-        return instance;
+            var instance = JsonSerializer.Deserialize(stream, responseInfo);
+
+            ArgumentNullException.ThrowIfNull(instance);
+
+            return instance;
+        }
     }
 }

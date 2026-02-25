@@ -10,7 +10,7 @@ internal sealed class MojangClient(IHttpClientFactory clientFactory)
 {
     private const string Base = "https://api.minecraftservices.com";
 
-    public async Task<TokenResponse?> GetTokenAsync(string token, string hash)
+    public async Task<TokenResponse> GetTokenAsync(string token, string hash)
     {
         var client = clientFactory.CreateClient(nameof(MojangClient));
 
@@ -21,7 +21,7 @@ internal sealed class MojangClient(IHttpClientFactory clientFactory)
             MojangSerializerContext.Default.TokenResponse);
     }
 
-    public async Task<EntitlementsResponse?> GetEntitlementsAsync(string token)
+    public async Task<EntitlementsResponse> GetEntitlementsAsync(string token)
     {
         var client = clientFactory.CreateClient(nameof(MojangClient));
 
@@ -30,7 +30,7 @@ internal sealed class MojangClient(IHttpClientFactory clientFactory)
         return await client.GetAsync($"{Base}/entitlements", MojangSerializerContext.Default.EntitlementsResponse);
     }
 
-    public async Task<ProfileResponse?> GetProfileAsync(string token)
+    public async Task<ProfileResponse> GetProfileAsync(string token)
     {
         var client = clientFactory.CreateClient(nameof(MojangClient));
 
