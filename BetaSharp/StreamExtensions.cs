@@ -70,6 +70,7 @@ internal static class StreamExtensions
             foreach (char item in value)
             {
                 stream.WriteByte((byte)item);
+                stream.WriteByte(0);
             }
         }
 
@@ -151,7 +152,7 @@ internal static class StreamExtensions
 
             for (int i = 0; i < buffer.Length; ++i)
             {
-                builder.Append(stream.ReadByte());
+                builder.Append((char) stream.ReadByte());
             }
 
             return builder.ToString();

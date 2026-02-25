@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
 using BetaSharp.Threading;
-using java.io;
 using java.util;
 using Microsoft.Extensions.Logging;
 
