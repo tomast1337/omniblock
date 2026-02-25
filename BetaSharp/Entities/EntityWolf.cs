@@ -136,7 +136,7 @@ public class EntityWolf : EntityAnimal
 
         if (!world.isRemote)
         {
-            dataWatcher.UpdateObject(18, java.lang.Integer.valueOf(health));
+            dataWatcher.UpdateObject(18, health);
         }
 
     }
