@@ -4,6 +4,7 @@ using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
+using Math = System.Math;
 
 namespace BetaSharp.Entities;
 
@@ -81,7 +82,7 @@ public abstract class Entity
     {
         this.world = world;
         setPosition(0.0D, 0.0D, 0.0D);
-        dataWatcher.addObject(0, java.lang.Byte.valueOf(0));
+        dataWatcher.AddObject(0, (byte)0);
         initDataTracker();
     }
 
@@ -1277,7 +1278,7 @@ public abstract class Entity
         {
             newValue = (byte)((byte)var3 & ~(1 << var1));
         }
-        dataWatcher.updateObject(0, java.lang.Byte.valueOf(newValue));
+        dataWatcher.UpdateObject(0, (byte)(newValue));
 
     }
 

@@ -50,8 +50,8 @@ public class PersistentStateManager
 
                     using FileStream stream = file.OpenRead();
                     NBTTagCompound rootTag = NbtIo.ReadCompressed(stream);
-                    
-                    newState.readNBT(rootTag.GetCompoundTag("data")); 
+
+                    newState.readNBT(rootTag.GetCompoundTag("data"));
                 }
             }
             catch (Exception ex)
@@ -105,7 +105,7 @@ public class PersistentStateManager
             {
                 NBTTagCompound stateTag = new();
                 state.writeNBT(stateTag);
-                
+
                 NBTTagCompound rootTag = new();
                 rootTag.SetCompoundTag("data", stateTag);
 
