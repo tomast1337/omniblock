@@ -37,7 +37,7 @@ public class DedicatedServer(IServerConfiguration config) : MinecraftServer(conf
 
         if (addressInput.Length > 0)
         {
-            address = Dns.GetHostEntry(addressInput).AddressList[0];
+            address = Dns.GetHostAddresses(addressInput)[0];
         }
 
         int port = config.GetServerPort(25565);
