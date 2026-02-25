@@ -1,7 +1,8 @@
+using System.Net;
+using System.Net.Sockets;
 using BetaSharp.Network.Packets;
 using BetaSharp.Threading;
 using java.io;
-using java.net;
 using java.util;
 using Microsoft.Extensions.Logging;
 
@@ -15,9 +16,7 @@ public class Connection
     public static int WRITE_THREAD_COUNTER;
     protected object lck = new();
     private Socket? _socket;
-    private readonly SocketAddress? _address;
-    private DataInputStream? _inputStream;
-    private DataOutputStream? _outputStream;
+    private readonly IPEndPoint? _address;
     protected bool open = true;
     protected List readQueue = Collections.synchronizedList(new ArrayList());
     protected List sendQueue = Collections.synchronizedList(new ArrayList());
@@ -36,25 +35,26 @@ public class Connection
     public int lag = 0;
     private int _delay = 0;
     protected readonly ManualResetEventSlim wakeSignal = new(false);
+    private NetworkStream? _networkStream;
 
     public Connection(Socket socket, string address, NetHandler networkHandler)
     {
         _socket = socket;
-        _address = socket.getRemoteSocketAddress();
+        _address = (IPEndPoint?) socket.RemoteEndPoint;
         this.networkHandler = networkHandler;
 
-        try
-        {
-            socket.setSoTimeout(30000);
-            socket.setTrafficClass(24);
-        }
-        catch (SocketException e)
-        {
-            _logger.LogError(e, e.Message);
-        }
+        // try
+        // {
+        //     socket.setSoTimeout(30000);
+        //     socket.setTrafficClass(24);
+        // }
+        // catch (SocketException e)
+        // {
+        //     _logger.LogError(e, e.Message);
+        // }
 
-        _inputStream = new DataInputStream(socket.getInputStream());
-        _outputStream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream(), 65536));
+        _networkStream = new NetworkStream(socket);
+
         _reader = new NetworkReaderThread(this, address + " read thread");
         _writer = new NetworkWriterThread(this, address + " write thread");
         _reader.start();
@@ -94,7 +94,7 @@ public class Connection
 
     protected virtual bool write()
     {
-        if (_outputStream == null)
+        if (_networkStream == null)
         {
             throw new Exception("Connection not initialized");
         }
@@ -116,7 +116,7 @@ public class Connection
                     sendQueueSize -= packet.Size() + 1;
                 }
 
-                Packet.Write(packet, _outputStream);
+                Packet.Write(packet, _networkStream);
                 sizeStats = TOTAL_SEND_SIZE;
                 packetId = packet.GetRawId();
                 sizeStats[packetId] += packet.Size() + 1;
@@ -132,7 +132,7 @@ public class Connection
                     sendQueueSize -= packet.Size() + 1;
                 }
 
-                Packet.Write(packet, _outputStream);
+                Packet.Write(packet, _networkStream);
                 sizeStats = TOTAL_SEND_SIZE;
                 packetId = packet.GetRawId();
                 sizeStats[packetId] += packet.Size() + 1;
@@ -166,7 +166,7 @@ public class Connection
 
     protected virtual bool read()
     {
-        if (networkHandler == null || _inputStream == null)
+        if (networkHandler == null || _networkStream == null)
         {
             throw new Exception("Connection not initialized");
         }
@@ -175,7 +175,7 @@ public class Connection
 
         try
         {
-            Packet? packet = Packet.Read(_inputStream, networkHandler.isServerSide());
+            Packet? packet = Packet.Read(_networkStream, networkHandler.isServerSide());
             if (packet != null)
             {
                 int[] sizeStats = TOTAL_READ_SIZE;
@@ -220,31 +220,16 @@ public class Connection
 
             try
             {
-                _inputStream?.close();
-                _inputStream = null;
-            }
-            catch (java.lang.Throwable)
-            {
-            }
+                _networkStream?.Close();
+                _networkStream = null;
 
-            try
-            {
-                _outputStream?.close();
-                _outputStream = null;
-            }
-            catch (java.lang.Throwable)
-            {
-            }
-
-            try
-            {
-                _socket?.close();
+                _socket?.Close();
                 _socket = null;
             }
-            catch (java.lang.Throwable)
+            catch (Exception)
             {
+                // Ignore.
             }
-
         }
     }
 
@@ -293,11 +278,6 @@ public class Connection
         }
     }
 
-    public virtual SocketAddress? getAddress()
-    {
-        return _address;
-    }
-
     public virtual void disconnect()
     {
         interrupt();
@@ -330,14 +310,9 @@ public class Connection
         return conn.write();
     }
 
-    public static DataOutputStream getOutputStream(Connection conn)
+    public static NetworkStream? getOutputStream(Connection conn)
     {
-        if (conn._outputStream == null)
-        {
-            throw new Exception("Connection not initialized");
-        }
-
-        return conn._outputStream;
+        return conn._networkStream;
     }
 
     public static bool isDisconnected(Connection conn)
