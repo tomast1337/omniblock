@@ -160,9 +160,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         {
             while (CanSendMoreChunkData() && PendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
             {
-                // Im not doing terrain population checks rn, is that an issue?
-                if (!activeChunks.Contains(chunkPos)) continue;
                 ServerWorld world = server.getWorld(dimensionId);
+                if (!activeChunks.Contains(chunkPos)) continue;
+                if (!world.chunkCache.GetChunk(chunkPos.X, chunkPos.Z).TerrainPopulated) continue;
                 SendChunkData(world, chunkPos);
                 SendBlockEntityUpdates(world, chunkPos);
             }
@@ -227,15 +227,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private void SendChunkData(ServerWorld world, ChunkPos chunkPos)
     {
-        int worldX = chunkPos.x * 16;
-        int worldZ = chunkPos.z * 16;
+        int worldX = chunkPos.X * 16;
+        int worldZ = chunkPos.Z * 16;
         networkHandler.sendPacket(new ChunkDataS2CPacket(worldX, 0, worldZ, 16, 128, 16, world));
     }
 
     private void SendBlockEntityUpdates(ServerWorld world, ChunkPos chunkPos)
     {
-        int startX = chunkPos.x * 16;
-        int startZ = chunkPos.z * 16;
+        int startX = chunkPos.X * 16;
+        int startZ = chunkPos.Z * 16;
         int endX = startX + 16;
         int endZ = startZ + 16;
 
