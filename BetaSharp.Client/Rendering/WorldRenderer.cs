@@ -887,22 +887,11 @@ public class WorldRenderer : IWorldAccess
         {
             EntityRenderDispatcher.instance.skinManager?.RequestDownload(var1.skinUrl);
         }
-
     }
 
     public void notifyEntityRemoved(Entity var1)
     {
-        //TODO: SKINS
-        //if (var1.skinUrl != null)
-        //{
-        //    renderEngine.releaseImageData(var1.skinUrl);
-        //}
-
-        //if (var1.cloakUrl != null)
-        //{
-        //    renderEngine.releaseImageData(var1.cloakUrl);
-        //}
-
+        EntityRenderDispatcher.instance.skinManager?.Release(var1.skinUrl);
     }
 
     public void notifyAmbientDarknessChanged()
