@@ -23,12 +23,12 @@ public class PlayerRespawnPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        dimensionId = (sbyte)stream.readByte();
+        dimensionId = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeByte(dimensionId);
+        stream.WriteByte((byte)dimensionId);
     }
 
     public override int Size()

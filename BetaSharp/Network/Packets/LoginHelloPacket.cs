@@ -32,18 +32,18 @@ public class LoginHelloPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        protocolVersion = stream.readInt();
-        username = ReadString(stream, 16);
-        worldSeed = stream.readLong();
-        dimensionId = (sbyte)stream.readByte();
+        protocolVersion = stream.ReadInt();
+        username = stream.ReadLongString(16);
+        worldSeed = stream.ReadLong();
+        dimensionId = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(protocolVersion);
-        WriteString(username, stream);
-        stream.writeLong(worldSeed);
-        stream.writeByte(dimensionId);
+        stream.WriteInt(protocolVersion);
+        stream.WriteLongString(username);
+        stream.WriteLong(worldSeed);
+        stream.WriteByte((byte)dimensionId);
     }
 
     public override void Apply(NetHandler handler)

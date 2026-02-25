@@ -33,18 +33,18 @@ public class EntityEquipmentUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.readInt();
-        slot = stream.readShort();
-        itemRawId = stream.readShort();
-        itemDamage = stream.readShort();
+        id = stream.ReadInt();
+        slot = stream.ReadShort();
+        itemRawId = stream.ReadShort();
+        itemDamage = stream.ReadShort();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(id);
-        stream.writeShort(slot);
-        stream.writeShort(itemRawId);
-        stream.writeShort(itemDamage);
+        stream.WriteInt(id);
+        stream.WriteShort((short)slot);
+        stream.WriteShort((short)itemRawId);
+        stream.WriteShort((short)itemDamage);
     }
 
     public override void Apply(NetHandler handler)

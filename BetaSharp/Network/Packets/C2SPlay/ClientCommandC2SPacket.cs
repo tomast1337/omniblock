@@ -21,14 +21,14 @@ public class ClientCommandC2SPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        entityId = stream.readInt();
-        mode = (sbyte)stream.readByte();
+        entityId = stream.ReadInt();
+        mode = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(entityId);
-        stream.writeByte(mode);
+        stream.WriteInt(entityId);
+        stream.WriteByte((byte)mode);
     }
 
     public override void Apply(NetHandler handler)

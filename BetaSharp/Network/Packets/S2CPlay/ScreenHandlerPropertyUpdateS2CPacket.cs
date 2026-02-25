@@ -27,16 +27,16 @@ public class ScreenHandlerPropertyUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        syncId = (sbyte)stream.readByte();
-        propertyId = stream.readShort();
-        value = stream.readShort();
+        syncId = (sbyte)stream.ReadByte();
+        propertyId = stream.ReadShort();
+        value = stream.ReadShort();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeByte(syncId);
-        stream.writeShort(propertyId);
-        stream.writeShort(value);
+        stream.WriteByte((byte)syncId);
+        stream.WriteShort((short)propertyId);
+        stream.WriteShort((short)value);
     }
 
     public override int Size()

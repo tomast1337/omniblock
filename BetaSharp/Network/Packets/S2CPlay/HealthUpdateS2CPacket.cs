@@ -18,12 +18,12 @@ public class HealthUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        healthMP = stream.readShort();
+        healthMP = stream.ReadShort();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeShort(healthMP);
+        stream.WriteShort((short)healthMP);
     }
 
     public override void Apply(NetHandler handler)

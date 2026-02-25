@@ -22,16 +22,16 @@ public class PlayerInteractEntityC2SPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        playerId = stream.readInt();
-        entityId = stream.readInt();
-        isLeftClick = (sbyte)stream.readByte();
+        playerId = stream.ReadInt();
+        entityId = stream.ReadInt();
+        isLeftClick = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(playerId);
-        stream.writeInt(entityId);
-        stream.writeByte(isLeftClick);
+        stream.WriteInt(playerId);
+        stream.WriteInt(entityId);
+        stream.WriteByte((byte)isLeftClick);
     }
 
     public override void Apply(NetHandler handler)

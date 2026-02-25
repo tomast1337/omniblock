@@ -20,15 +20,15 @@ public class PlayerMoveLookAndOnGroundPacket : PlayerMovePacket
 
     public override void Read(NetworkStream stream)
     {
-        yaw = stream.readFloat();
-        pitch = stream.readFloat();
+        yaw = stream.ReadFloat();
+        pitch = stream.ReadFloat();
         base.Read(stream);
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeFloat(yaw);
-        stream.writeFloat(pitch);
+        stream.WriteFloat(yaw);
+        stream.WriteFloat(pitch);
         base.Write(stream);
     }
 

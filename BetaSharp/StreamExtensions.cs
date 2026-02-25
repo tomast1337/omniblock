@@ -6,142 +6,155 @@ namespace BetaSharp;
 
 internal static class StreamExtensions
 {
-    public static void WriteShort(this Stream stream, short value)
+    extension(Stream stream)
     {
-        Span<byte> span = stackalloc byte[sizeof(short)];
-        BinaryPrimitives.WriteInt16BigEndian(span, value);
-        stream.Write(span);
-    }
-
-    public static void WriteUShort(this Stream stream, ushort value)
-    {
-        Span<byte> span = stackalloc byte[sizeof(ushort)];
-        BinaryPrimitives.WriteUInt16BigEndian(span, value);
-        stream.Write(span);
-    }
-
-    public static void WriteInt(this Stream stream, int value)
-    {
-        Span<byte> span = stackalloc byte[sizeof(int)];
-        BinaryPrimitives.WriteInt32BigEndian(span, value);
-        stream.Write(span);
-    }
-
-    public static void WriteFloat(this Stream stream, float value)
-    {
-        Span<byte> span = stackalloc byte[sizeof(float)];
-        BinaryPrimitives.WriteSingleBigEndian(span, value);
-        stream.Write(span);
-    }
-
-    public static void WriteDouble(this Stream stream, double value)
-    {
-        Span<byte> span = stackalloc byte[sizeof(double)];
-        BinaryPrimitives.WriteDoubleBigEndian(span, value);
-        stream.Write(span);
-    }
-
-    public static void WriteLong(this Stream stream, long value)
-    {
-        Span<byte> span = stackalloc byte[sizeof(long)];
-        BinaryPrimitives.WriteInt64BigEndian(span, value);
-        stream.Write(span);
-    }
-
-    public static void WriteString(this Stream stream, string value)
-    {
-        byte[] buffer = ModifiedUtf8.GetBytes(value);
-
-        stream.WriteUShort((ushort)buffer.Length);
-        stream.Write(buffer);
-    }
-
-    public static void WriteLongString(this Stream stream, string value)
-    {
-        stream.WriteUShort((ushort)value.Length);
-
-        foreach (char item in value)
+        public void WriteBoolean(bool value)
         {
-            stream.WriteByte((byte)item);
-        }
-    }
-
-    public static short ReadShort(this Stream stream)
-    {
-        Span<byte> span = stackalloc byte[sizeof(short)];
-        stream.ReadExactly(span);
-
-        return BinaryPrimitives.ReadInt16BigEndian(span);
-    }
-
-    public static ushort ReadUShort(this Stream stream)
-    {
-        Span<byte> span = stackalloc byte[sizeof(ushort)];
-        stream.ReadExactly(span);
-
-        return BinaryPrimitives.ReadUInt16BigEndian(span);
-    }
-
-    public static int ReadInt(this Stream stream)
-    {
-        Span<byte> span = stackalloc byte[sizeof(int)];
-        stream.ReadExactly(span);
-
-        return BinaryPrimitives.ReadInt32BigEndian(span);
-    }
-
-    public static float ReadFloat(this Stream stream)
-    {
-        Span<byte> span = stackalloc byte[sizeof(float)];
-        stream.ReadExactly(span);
-
-        return BinaryPrimitives.ReadSingleBigEndian(span);
-    }
-
-    public static double ReadDouble(this Stream stream)
-    {
-        Span<byte> span = stackalloc byte[sizeof(double)];
-        stream.ReadExactly(span);
-
-        return BinaryPrimitives.ReadDoubleBigEndian(span);
-    }
-
-    public static long ReadLong(this Stream stream)
-    {
-        Span<byte> span = stackalloc byte[sizeof(long)];
-        stream.ReadExactly(span);
-
-        return BinaryPrimitives.ReadInt64BigEndian(span);
-    }
-
-    public static string ReadString(this Stream stream)
-    {
-        ushort length = stream.ReadUShort();
-        byte[] buffer = new byte[length];
-
-        stream.ReadExactly(buffer);
-
-        return ModifiedUtf8.GetString(buffer);
-    }
-
-    public static string ReadLongString(this Stream stream, ushort maximumLength = ushort.MaxValue)
-    {
-        byte[] buffer = new byte[stream.ReadUShort()];
-
-        if (buffer.Length > maximumLength)
-        {
-            throw new IOException("Received string length longer than maximum allowed (" + buffer.Length + " > " + maximumLength + ")");
+            stream.WriteByte((byte) (value ? 1 : 0));
         }
 
-        stream.ReadExactly(buffer);
-
-        var builder = new StringBuilder();
-
-        for (int i = 0; i < buffer.Length; ++i)
+        public void WriteShort(short value)
         {
-            builder.Append(stream.ReadByte());
+            Span<byte> span = stackalloc byte[sizeof(short)];
+            BinaryPrimitives.WriteInt16BigEndian(span, value);
+            stream.Write(span);
         }
 
-        return builder.ToString();
+        public void WriteUShort(ushort value)
+        {
+            Span<byte> span = stackalloc byte[sizeof(ushort)];
+            BinaryPrimitives.WriteUInt16BigEndian(span, value);
+            stream.Write(span);
+        }
+
+        public void WriteInt(int value)
+        {
+            Span<byte> span = stackalloc byte[sizeof(int)];
+            BinaryPrimitives.WriteInt32BigEndian(span, value);
+            stream.Write(span);
+        }
+
+        public void WriteFloat(float value)
+        {
+            Span<byte> span = stackalloc byte[sizeof(float)];
+            BinaryPrimitives.WriteSingleBigEndian(span, value);
+            stream.Write(span);
+        }
+
+        public void WriteDouble(double value)
+        {
+            Span<byte> span = stackalloc byte[sizeof(double)];
+            BinaryPrimitives.WriteDoubleBigEndian(span, value);
+            stream.Write(span);
+        }
+
+        public void WriteLong(long value)
+        {
+            Span<byte> span = stackalloc byte[sizeof(long)];
+            BinaryPrimitives.WriteInt64BigEndian(span, value);
+            stream.Write(span);
+        }
+
+        public void WriteString(string value)
+        {
+            byte[] buffer = ModifiedUtf8.GetBytes(value);
+
+            stream.WriteUShort((ushort)buffer.Length);
+            stream.Write(buffer);
+        }
+
+        public void WriteLongString(string value)
+        {
+            stream.WriteUShort((ushort)value.Length);
+
+            foreach (char item in value)
+            {
+                stream.WriteByte((byte)item);
+            }
+        }
+
+        public bool ReadBoolean()
+        {
+            return stream.ReadByte() > 0;
+        }
+
+        public short ReadShort()
+        {
+            Span<byte> span = stackalloc byte[sizeof(short)];
+            stream.ReadExactly(span);
+
+            return BinaryPrimitives.ReadInt16BigEndian(span);
+        }
+
+        public ushort ReadUShort()
+        {
+            Span<byte> span = stackalloc byte[sizeof(ushort)];
+            stream.ReadExactly(span);
+
+            return BinaryPrimitives.ReadUInt16BigEndian(span);
+        }
+
+        public int ReadInt()
+        {
+            Span<byte> span = stackalloc byte[sizeof(int)];
+            stream.ReadExactly(span);
+
+            return BinaryPrimitives.ReadInt32BigEndian(span);
+        }
+
+        public float ReadFloat()
+        {
+            Span<byte> span = stackalloc byte[sizeof(float)];
+            stream.ReadExactly(span);
+
+            return BinaryPrimitives.ReadSingleBigEndian(span);
+        }
+
+        public double ReadDouble()
+        {
+            Span<byte> span = stackalloc byte[sizeof(double)];
+            stream.ReadExactly(span);
+
+            return BinaryPrimitives.ReadDoubleBigEndian(span);
+        }
+
+        public long ReadLong()
+        {
+            Span<byte> span = stackalloc byte[sizeof(long)];
+            stream.ReadExactly(span);
+
+            return BinaryPrimitives.ReadInt64BigEndian(span);
+        }
+
+        public string ReadString()
+        {
+            ushort length = stream.ReadUShort();
+            byte[] buffer = new byte[length];
+
+            stream.ReadExactly(buffer);
+
+            return ModifiedUtf8.GetString(buffer);
+        }
+
+        public string ReadLongString(ushort maximumLength = ushort.MaxValue)
+        {
+            byte[] buffer = new byte[stream.ReadUShort()];
+
+            if (buffer.Length > maximumLength)
+            {
+                throw new IOException("Received string length longer than maximum allowed (" + buffer.Length + " > " + maximumLength + ")");
+            }
+
+            stream.ReadExactly(buffer);
+
+            var builder = new StringBuilder();
+
+            for (int i = 0; i < buffer.Length; ++i)
+            {
+                builder.Append(stream.ReadByte());
+            }
+
+            return builder.ToString();
+        }
     }
 }

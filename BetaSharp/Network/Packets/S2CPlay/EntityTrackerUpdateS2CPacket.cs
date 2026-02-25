@@ -19,14 +19,14 @@ public class EntityTrackerUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.readInt();
+        id = stream.ReadInt();
         trackedValues = DataWatcher.ReadWatchableObjects(stream);
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(id);
-        DataWatcher.WriteObjectsInListToStream(trackedValues, stream);
+        stream.WriteInt(id);
+        DataWatcher.WriteObjectsInListToStream(trackedValues);
     }
 
     public override void Apply(NetHandler handler)

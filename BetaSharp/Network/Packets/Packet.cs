@@ -103,7 +103,7 @@ public abstract class Packet
 
     public static void Write(Packet packet, NetworkStream stream)
     {
-        stream.WriteByte((byte) packet.GetRawId());
+        stream.WriteByte((byte)(byte) packet.GetRawId());
         packet.Write(stream);
     }
 

@@ -19,12 +19,12 @@ public class GameStateChangeS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        reason = (sbyte)stream.readByte();
+        reason = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeByte(reason);
+        stream.WriteByte((byte)reason);
     }
 
     public override void Apply(NetHandler handler)

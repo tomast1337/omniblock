@@ -32,20 +32,20 @@ public class GlobalEntitySpawnS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.readInt();
-        type = (sbyte)stream.readByte();
-        x = stream.readInt();
-        y = stream.readInt();
-        z = stream.readInt();
+        id = stream.ReadInt();
+        type = (sbyte)stream.ReadByte();
+        x = stream.ReadInt();
+        y = stream.ReadInt();
+        z = stream.ReadInt();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(id);
-        stream.writeByte(type);
-        stream.writeInt(x);
-        stream.writeInt(y);
-        stream.writeInt(z);
+        stream.WriteInt(id);
+        stream.WriteByte((byte)type);
+        stream.WriteInt(x);
+        stream.WriteInt(y);
+        stream.WriteInt(z);
     }
 
     public override void Apply(NetHandler handler)

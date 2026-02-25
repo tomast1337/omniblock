@@ -50,16 +50,15 @@ public class ChunkDataS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        x = stream.readInt();
-        y = stream.readShort();
-        z = stream.readInt();
-        sizeX = stream.read() + 1;
-        sizeY = stream.read() + 1;
-        sizeZ = stream.read() + 1;
-        chunkDataSize = stream.readInt();
-        byte[]
-            chunkData = new byte[chunkDataSize];
-        stream.readFully(chunkData);
+        x = stream.ReadInt();
+        y = stream.ReadShort();
+        z = stream.ReadInt();
+        sizeX = stream.ReadByte() + 1;
+        sizeY = stream.ReadByte() + 1;
+        sizeZ = stream.ReadByte() + 1;
+        chunkDataSize = stream.ReadInt();
+        byte[] chunkData = new byte[chunkDataSize];
+        stream.ReadExactly(chunkData);
 
         this.chunkData = new byte[sizeX * sizeY * sizeZ * 5 / 2];
         Inflater inflater = new();
@@ -82,14 +81,14 @@ public class ChunkDataS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(x);
-        stream.writeShort(y);
-        stream.writeInt(z);
-        stream.write(sizeX - 1);
-        stream.write(sizeY - 1);
-        stream.write(sizeZ - 1);
-        stream.writeInt(chunkDataSize);
-        stream.write(chunkData, 0, chunkDataSize);
+        stream.WriteInt(x);
+        stream.WriteShort((short)y);
+        stream.WriteInt(z);
+        stream.WriteByte((byte)(sizeX - 1));
+        stream.WriteByte((byte)(sizeY - 1));
+        stream.WriteByte((byte)(sizeZ - 1));
+        stream.WriteInt(chunkDataSize);
+        stream.Write(chunkData, 0, chunkDataSize);
     }
 
     public override void Apply(NetHandler handler)

@@ -23,12 +23,12 @@ public class ChatMessagePacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        chatMessage = ReadString(stream, 119);
+        chatMessage = stream.ReadLongString(119);
     }
 
     public override void Write(NetworkStream stream)
     {
-        WriteString(chatMessage, stream);
+        stream.WriteLongString(chatMessage);
     }
 
     public override void Apply(NetHandler handler)

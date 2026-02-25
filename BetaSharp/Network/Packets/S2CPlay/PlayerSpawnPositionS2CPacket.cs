@@ -22,16 +22,16 @@ public class PlayerSpawnPositionS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        x = stream.readInt();
-        y = stream.readInt();
-        z = stream.readInt();
+        x = stream.ReadInt();
+        y = stream.ReadInt();
+        z = stream.ReadInt();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(x);
-        stream.writeInt(y);
-        stream.writeInt(z);
+        stream.WriteInt(x);
+        stream.WriteInt(y);
+        stream.WriteInt(z);
     }
 
     public override void Apply(NetHandler handler)

@@ -28,17 +28,17 @@ public class InventoryS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        syncId = (sbyte)stream.readByte();
-        short itemsCount = stream.readShort();
+        syncId = (sbyte)stream.ReadByte();
+        short itemsCount = stream.ReadShort();
         contents = new ItemStack[itemsCount];
 
         for (int i = 0; i < itemsCount; ++i)
         {
-            short itemId = stream.readShort();
+            short itemId = stream.ReadShort();
             if (itemId >= 0)
             {
-                sbyte count = (sbyte)stream.readByte();
-                short damage = stream.readShort();
+                sbyte count = (sbyte)stream.ReadByte();
+                short damage = stream.ReadShort();
 
                 contents[i] = new ItemStack(itemId, count, damage);
             }
@@ -48,20 +48,20 @@ public class InventoryS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeByte(syncId);
-        stream.writeShort(contents.Length);
+        stream.WriteByte((byte)syncId);
+        stream.WriteShort((short)contents.Length);
 
         for (int i = 0; i < contents.Length; ++i)
         {
             if (contents[i] == null)
             {
-                stream.writeShort(-1);
+                stream.WriteShort((short)-1);
             }
             else
             {
-                stream.writeShort((short)contents[i].itemId);
-                stream.writeByte((byte)contents[i].count);
-                stream.writeShort((short)contents[i].getDamage());
+                stream.WriteShort((short)contents[i].itemId);
+                stream.WriteByte((byte)(byte)contents[i].count);
+                stream.WriteShort((short)contents[i].getDamage());
             }
         }
 

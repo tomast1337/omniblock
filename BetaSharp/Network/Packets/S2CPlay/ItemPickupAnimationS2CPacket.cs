@@ -20,14 +20,14 @@ public class ItemPickupAnimationS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        entityId = stream.readInt();
-        collectorEntityId = stream.readInt();
+        entityId = stream.ReadInt();
+        collectorEntityId = stream.ReadInt();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(entityId);
-        stream.writeInt(collectorEntityId);
+        stream.WriteInt(entityId);
+        stream.WriteInt(collectorEntityId);
     }
 
     public override void Apply(NetHandler handler)

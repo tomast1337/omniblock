@@ -26,20 +26,20 @@ public class PlayNoteSoundS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        xLocation = stream.readInt();
-        yLocation = stream.readShort();
-        zLocation = stream.readInt();
-        instrumentType = stream.read();
-        pitch = stream.read();
+        xLocation = stream.ReadInt();
+        yLocation = stream.ReadShort();
+        zLocation = stream.ReadInt();
+        instrumentType = stream.ReadByte();
+        pitch = stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(xLocation);
-        stream.writeShort(yLocation);
-        stream.writeInt(zLocation);
-        stream.write(instrumentType);
-        stream.write(pitch);
+        stream.WriteInt(xLocation);
+        stream.WriteShort((short)yLocation);
+        stream.WriteInt(zLocation);
+        stream.WriteByte((byte)instrumentType);
+        stream.WriteByte((byte)pitch);
     }
 
     public override void Apply(NetHandler handler)

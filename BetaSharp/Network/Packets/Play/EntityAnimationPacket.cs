@@ -21,14 +21,14 @@ public class EntityAnimationPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.readInt();
-        animationId = (sbyte)stream.readByte();
+        id = stream.ReadInt();
+        animationId = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(id);
-        stream.writeByte(animationId);
+        stream.WriteInt(id);
+        stream.WriteByte((byte)animationId);
     }
 
     public override void Apply(NetHandler handler)

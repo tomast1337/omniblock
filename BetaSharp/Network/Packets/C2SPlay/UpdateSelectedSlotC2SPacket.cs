@@ -18,12 +18,12 @@ public class UpdateSelectedSlotC2SPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        selectedSlot = stream.readShort();
+        selectedSlot = stream.ReadShort();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeShort(selectedSlot);
+        stream.WriteShort((short)selectedSlot);
     }
 
     public override void Apply(NetHandler handler)

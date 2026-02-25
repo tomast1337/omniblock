@@ -29,22 +29,22 @@ public class PaintingEntitySpawnS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        entityId = stream.readInt();
-        title = ReadString(stream, EnumArt.maxArtTitleLength);
-        xPosition = stream.readInt();
-        yPosition = stream.readInt();
-        zPosition = stream.readInt();
-        direction = stream.readInt();
+        entityId = stream.ReadInt();
+        title = stream.ReadLongString((ushort) EnumArt.maxArtTitleLength);
+        xPosition = stream.ReadInt();
+        yPosition = stream.ReadInt();
+        zPosition = stream.ReadInt();
+        direction = stream.ReadInt();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(entityId);
-        WriteString(title, stream);
-        stream.writeInt(xPosition);
-        stream.writeInt(yPosition);
-        stream.writeInt(zPosition);
-        stream.writeInt(direction);
+        stream.WriteInt(entityId);
+        stream.WriteLongString(title);
+        stream.WriteInt(xPosition);
+        stream.WriteInt(yPosition);
+        stream.WriteInt(zPosition);
+        stream.WriteInt(direction);
     }
 
     public override void Apply(NetHandler handler)

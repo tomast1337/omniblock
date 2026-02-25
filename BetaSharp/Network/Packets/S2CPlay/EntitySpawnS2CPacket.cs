@@ -77,34 +77,34 @@ public class EntitySpawnS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.readInt();
-        entityType = (sbyte)stream.readByte();
-        x = stream.readInt();
-        y = stream.readInt();
-        z = stream.readInt();
-        entityData = stream.readInt();
+        id = stream.ReadInt();
+        entityType = (sbyte)stream.ReadByte();
+        x = stream.ReadInt();
+        y = stream.ReadInt();
+        z = stream.ReadInt();
+        entityData = stream.ReadInt();
         if (entityData > 0)
         {
-            velocityX = stream.readShort();
-            velocityY = stream.readShort();
-            velocityZ = stream.readShort();
+            velocityX = stream.ReadShort();
+            velocityY = stream.ReadShort();
+            velocityZ = stream.ReadShort();
         }
 
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(id);
-        stream.writeByte(entityType);
-        stream.writeInt(x);
-        stream.writeInt(y);
-        stream.writeInt(z);
-        stream.writeInt(entityData);
+        stream.WriteInt(id);
+        stream.WriteByte((byte)entityType);
+        stream.WriteInt(x);
+        stream.WriteInt(y);
+        stream.WriteInt(z);
+        stream.WriteInt(entityData);
         if (entityData > 0)
         {
-            stream.writeShort(velocityX);
-            stream.writeShort(velocityY);
-            stream.writeShort(velocityZ);
+            stream.WriteShort((short)velocityX);
+            stream.WriteShort((short)velocityY);
+            stream.WriteShort((short)velocityZ);
         }
 
     }

@@ -20,15 +20,15 @@ public class EntityRotateS2CPacket : EntityS2CPacket
     public override void Read(NetworkStream stream)
     {
         base.Read(stream);
-        yaw = (sbyte)stream.readByte();
-        pitch = (sbyte)stream.readByte();
+        yaw = (sbyte)stream.ReadByte();
+        pitch = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
         base.Write(stream);
-        stream.writeByte(yaw);
-        stream.writeByte(pitch);
+        stream.WriteByte((byte)yaw);
+        stream.WriteByte((byte)pitch);
     }
 
     public override int Size()

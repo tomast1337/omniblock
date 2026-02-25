@@ -23,12 +23,12 @@ public class CloseScreenS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        windowId = (sbyte)stream.readByte();
+        windowId = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeByte(windowId);
+        stream.WriteByte((byte)windowId);
     }
 
     public override int Size()

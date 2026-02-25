@@ -25,14 +25,14 @@ public class IncreaseStatS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        statId = stream.readInt();
-        amount = (sbyte)stream.readByte();
+        statId = stream.ReadInt();
+        amount = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(statId);
-        stream.writeByte(amount);
+        stream.WriteInt(statId);
+        stream.WriteByte((byte)amount);
     }
 
     public override int Size()

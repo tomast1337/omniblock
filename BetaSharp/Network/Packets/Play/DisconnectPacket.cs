@@ -18,12 +18,12 @@ public class DisconnectPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        reason = ReadString(stream, 100);
+        reason = stream.ReadLongString(100);
     }
 
     public override void Write(NetworkStream stream)
     {
-        WriteString(reason, stream);
+        stream.WriteLongString(reason);
     }
 
     public override void Apply(NetHandler handler)

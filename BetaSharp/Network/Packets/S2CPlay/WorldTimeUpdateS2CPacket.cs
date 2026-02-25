@@ -18,12 +18,12 @@ public class WorldTimeUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        time = stream.readLong();
+        time = stream.ReadLong();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeLong(time);
+        stream.WriteLong(time);
     }
 
     public override void Apply(NetHandler handler)

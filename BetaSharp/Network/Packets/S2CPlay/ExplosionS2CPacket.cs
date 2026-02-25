@@ -27,11 +27,11 @@ public class ExplosionS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        explosionX = stream.readDouble();
-        explosionY = stream.readDouble();
-        explosionZ = stream.readDouble();
-        explosionSize = stream.readFloat();
-        int blockCount = stream.readInt();
+        explosionX = stream.ReadDouble();
+        explosionY = stream.ReadDouble();
+        explosionZ = stream.ReadDouble();
+        explosionSize = stream.ReadFloat();
+        int blockCount = stream.ReadInt();
         destroyedBlockPositions = new HashSet<BlockPos>();
         int x = (int)explosionX;
         int y = (int)explosionY;
@@ -39,9 +39,9 @@ public class ExplosionS2CPacket : Packet
 
         for (int _ = 0; _ < blockCount; ++_)
         {
-            int xOffset = (sbyte)stream.readByte() + x;
-            int yOffset = (sbyte)stream.readByte() + y;
-            int zOffset = (sbyte)stream.readByte() + z;
+            int xOffset = (sbyte)stream.ReadByte() + x;
+            int yOffset = (sbyte)stream.ReadByte() + y;
+            int zOffset = (sbyte)stream.ReadByte() + z;
 
             destroyedBlockPositions.Add(new BlockPos(xOffset, yOffset, zOffset));
         }
@@ -50,11 +50,11 @@ public class ExplosionS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeDouble(explosionX);
-        stream.writeDouble(explosionY);
-        stream.writeDouble(explosionZ);
-        stream.writeFloat(explosionSize);
-        stream.writeInt(destroyedBlockPositions.Count);
+        stream.WriteDouble(explosionX);
+        stream.WriteDouble(explosionY);
+        stream.WriteDouble(explosionZ);
+        stream.WriteFloat(explosionSize);
+        stream.WriteInt(destroyedBlockPositions.Count);
         int x = (int)explosionX;
         int y = (int)explosionY;
         int z = (int)explosionZ;
@@ -63,9 +63,9 @@ public class ExplosionS2CPacket : Packet
             int xOffset = pos.x - x;
             int yOffset = pos.y - y;
             int zOffset = pos.z - z;
-            stream.writeByte(xOffset);
-            stream.writeByte(yOffset);
-            stream.writeByte(zOffset);
+            stream.WriteByte((byte)xOffset);
+            stream.WriteByte((byte)yOffset);
+            stream.WriteByte((byte)zOffset);
         }
     }
 

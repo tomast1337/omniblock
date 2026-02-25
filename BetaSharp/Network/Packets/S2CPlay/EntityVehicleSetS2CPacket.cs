@@ -26,14 +26,14 @@ public class EntityVehicleSetS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        entityId = stream.readInt();
-        vehicleEntityId = stream.readInt();
+        entityId = stream.ReadInt();
+        vehicleEntityId = stream.ReadInt();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(entityId);
-        stream.writeInt(vehicleEntityId);
+        stream.WriteInt(entityId);
+        stream.WriteInt(vehicleEntityId);
     }
 
     public override void Apply(NetHandler handler)

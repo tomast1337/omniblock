@@ -40,22 +40,22 @@ public class EntityPositionS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        id = stream.readInt();
-        x = stream.readInt();
-        y = stream.readInt();
-        z = stream.readInt();
-        yaw = (sbyte)stream.read();
-        pitch = (sbyte)stream.read();
+        id = stream.ReadInt();
+        x = stream.ReadInt();
+        y = stream.ReadInt();
+        z = stream.ReadInt();
+        yaw = (sbyte)stream.ReadByte();
+        pitch = (sbyte)stream.ReadByte();
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeInt(id);
-        stream.writeInt(x);
-        stream.writeInt(y);
-        stream.writeInt(z);
-        stream.write(yaw);
-        stream.write(pitch);
+        stream.WriteInt(id);
+        stream.WriteInt(x);
+        stream.WriteInt(y);
+        stream.WriteInt(z);
+        stream.WriteByte((byte)yaw);
+        stream.WriteByte((byte)pitch);
     }
 
     public override void Apply(NetHandler handler)

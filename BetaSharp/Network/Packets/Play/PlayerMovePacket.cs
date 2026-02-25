@@ -31,12 +31,12 @@ public class PlayerMovePacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        onGround = stream.read() != 0;
+        onGround = stream.ReadByte() != 0;
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.write(onGround ? 1 : 0);
+        stream.WriteBoolean(onGround);
     }
 
     public override int Size()

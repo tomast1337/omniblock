@@ -24,18 +24,18 @@ public class MapUpdateS2CPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        itemRawId = stream.readShort();
-        id = stream.readShort();
-        updateData = new byte[(sbyte)stream.readByte() & 255];
-        stream.readFully(updateData);
+        itemRawId = stream.ReadShort();
+        id = stream.ReadShort();
+        updateData = new byte[(sbyte)stream.ReadByte() & 255];
+        stream.ReadExactly(updateData);
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeShort(itemRawId);
-        stream.writeShort(id);
-        stream.writeByte(updateData.Length);
-        stream.write(updateData);
+        stream.WriteShort((short)itemRawId);
+        stream.WriteShort((short)id);
+        stream.WriteByte((byte)updateData.Length);
+        stream.Write(updateData);
     }
 
     public override void Apply(NetHandler handler)

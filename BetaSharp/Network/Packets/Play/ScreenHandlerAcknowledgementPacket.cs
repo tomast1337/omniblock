@@ -27,16 +27,16 @@ public class ScreenHandlerAcknowledgementPacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        syncId = (sbyte)stream.readByte();
-        actionType = stream.readShort();
-        accepted = (sbyte)stream.readByte() != 0;
+        syncId = (sbyte)stream.ReadByte();
+        actionType = stream.ReadShort();
+        accepted = (sbyte)stream.ReadByte() != 0;
     }
 
     public override void Write(NetworkStream stream)
     {
-        stream.writeByte(syncId);
-        stream.writeShort(actionType);
-        stream.writeByte(accepted ? 1 : 0);
+        stream.WriteByte((byte)syncId);
+        stream.WriteShort((short)actionType);
+        stream.WriteBoolean(accepted);
     }
 
     public override int Size()

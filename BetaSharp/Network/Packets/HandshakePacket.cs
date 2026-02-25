@@ -18,12 +18,12 @@ public class HandshakePacket : Packet
 
     public override void Read(NetworkStream stream)
     {
-        username = ReadString(stream, 32);
+        username = stream.ReadLongString(32);
     }
 
     public override void Write(NetworkStream stream)
     {
-        WriteString(username, stream);
+        stream.WriteLongString(username);
     }
 
     public override void Apply(NetHandler handler)
