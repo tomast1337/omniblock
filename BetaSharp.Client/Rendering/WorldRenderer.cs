@@ -613,7 +613,7 @@ public class WorldRenderer : IWorldAccess
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(java.lang.System.currentTimeMillis() / 100.0F) * 0.2F + 0.4F) * 0.5F);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(DateTimeOffset.UtcNow.ToMillis() / 100.0F) * 0.2F + 0.4F) * 0.5F);
         int var8;
         if (var3 == 0)
         {
@@ -651,8 +651,8 @@ public class WorldRenderer : IWorldAccess
         else if (var4 != null)
         {
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            float var16 = MathHelper.Sin(java.lang.System.currentTimeMillis() / 100.0F) * 0.2F + 0.8F;
-            GLManager.GL.Color4(var16, var16, var16, MathHelper.Sin(java.lang.System.currentTimeMillis() / 200.0F) * 0.2F + 0.5F);
+            float var16 = MathHelper.Sin(DateTimeOffset.UtcNow.ToMillis() / 100.0F) * 0.2F + 0.8F;
+            GLManager.GL.Color4(var16, var16, var16, MathHelper.Sin(DateTimeOffset.UtcNow.ToMillis() / 200.0F) * 0.2F + 0.5F);
             renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
             int var17 = var2.BlockX;
             int var18 = var2.BlockY;
