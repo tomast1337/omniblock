@@ -461,6 +461,7 @@ public partial class Minecraft
             }
             catch (Exception) { }
 
+            skinManager.Dispose();
             textureManager.Dispose();
             sndManager.CloseMinecraft();
             Mouse.destroy();
@@ -1502,6 +1503,12 @@ public partial class Minecraft
             }
 
             newWorld.addPlayer(player);
+
+            if (!string.IsNullOrEmpty(session?.skinUrl))
+            {
+                skinManager.RequestDownload(session.skinUrl);
+            }
+
             if (newWorld.isNewWorld)
             {
                 newWorld.savingProgress(loadingScreen);
@@ -1675,7 +1682,7 @@ public partial class Minecraft
         }
     }
 
-    private static void StartMainThread(string playerName, string sessionToken, string? skinUrl)
+    private static void StartMainThread(string playerName, string sessionToken, string? skinUrl = null)
     {
         System.Threading.Thread.CurrentThread.Name = "Minecraft Main Thread";
 
@@ -1713,8 +1720,7 @@ public partial class Minecraft
             0 => ($"Player{Random.Shared.Next()}", "-", null),
             1 => (args[0], "-", null),
             2 => (args[0], args[1], null),
-            3 => (args[0], args[1], args[2]),
-            _ => throw new Exception("Invalid arguments!")
+            _ => (args[0], args[1], args[2]),
         };
 
         StartMainThread(result.Name, result.Session, result.SkinUrl);

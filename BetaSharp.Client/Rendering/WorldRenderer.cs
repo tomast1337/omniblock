@@ -883,16 +883,10 @@ public class WorldRenderer : IWorldAccess
     public void notifyEntityAdded(Entity var1)
     {
         var1.updateCloak();
-        //TODO: SKINS
-        //if (var1.skinUrl != null)
-        //{
-        //    renderEngine.obtainImageData(var1.skinUrl, new ImageBufferDownload());
-        //}
-
-        //if (var1.cloakUrl != null)
-        //{
-        //    renderEngine.obtainImageData(var1.cloakUrl, new ImageBufferDownload());
-        //}
+        if (!string.IsNullOrEmpty(var1.skinUrl))
+        {
+            EntityRenderDispatcher.instance.skinManager?.RequestDownload(var1.skinUrl);
+        }
 
     }
 

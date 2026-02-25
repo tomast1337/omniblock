@@ -503,10 +503,9 @@ public class HeldItemRenderer
         if (skinHandle != null)
         {
             skinHandle.Bind();
+            return;
         }
-        else
-        {
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId(mc.player.getTexture()));
-        }
+
+        mc.textureManager.BindTexture(mc.textureManager.GetTextureId(mc.player.getTexture()));
     }
 }
