@@ -50,17 +50,19 @@ internal sealed class AccountsService(
     {
         if (_account is null)
         {
-            if (!File.Exists(_path))
+            try
             {
-                logger.LogInformation("Failed to get account's file");
+                await using var stream = File.OpenRead(_path);
+
+                _account = await JsonSerializer.DeserializeAsync(stream, AccountsSerializerContext.Default.Account);
+
+                ArgumentNullException.ThrowIfNull(_account);
+            }
+            catch (Exception exception)
+            {
+                logger.LogWarning(exception, "Failed to read account's file");
                 return null;
             }
-
-            await using var stream = File.OpenRead(_path);
-
-            _account = await JsonSerializer.DeserializeAsync(stream, AccountsSerializerContext.Default.Account);
-
-            ArgumentNullException.ThrowIfNull(_account);
         }
 
         if (DateTimeOffset.Now.AddMinutes(1) <= _account.Expiration)
