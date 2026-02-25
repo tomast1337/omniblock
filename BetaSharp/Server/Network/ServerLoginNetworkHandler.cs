@@ -163,8 +163,11 @@ public class ServerLoginNetworkHandler : NetHandler
 
     public string getConnectionInfo()
     {
-        if (connection.getAddress() == null) return "Internal";
-        return username != null ? username + " [" + connection.getAddress()!.toString() + "]" : connection.getAddress()!.toString();
+        var endPoint = connection.getAddress();
+
+        if (endPoint == null) return "Internal";
+
+        return !string.IsNullOrWhiteSpace(username) ? username : endPoint.ToString();
     }
 
     public override bool isServerSide()

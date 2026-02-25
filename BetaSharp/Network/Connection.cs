@@ -278,6 +278,11 @@ public class Connection
         }
     }
 
+    public virtual IPEndPoint? getAddress()
+    {
+        return _address;
+    }
+
     public virtual void disconnect()
     {
         interrupt();
