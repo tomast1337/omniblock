@@ -59,6 +59,7 @@ public partial class Minecraft
     public bool hideQuitButton = false;
     public volatile bool isGamePaused;
     public TextureManager textureManager;
+    public SkinManager skinManager;
     public TextRenderer fontRenderer;
     public GuiScreen currentScreen;
     public LoadingScreenRenderer loadingScreen;
@@ -210,6 +211,7 @@ public partial class Minecraft
         texturePackList = new TexturePacks(this, new DirectoryInfo(mcDataDir.getAbsolutePath()));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
+        skinManager = new SkinManager(textureManager);
         WaterColors.loadColors(textureManager.GetColors("/misc/watercolor.png"));
         GrassColors.loadColors(textureManager.GetColors("/misc/grasscolor.png"));
         FoliageColors.loadColors(textureManager.GetColors("/misc/foliagecolor.png"));
