@@ -31,10 +31,10 @@ internal sealed class AccountsService(
     {
         string microsoft = await authenticationService.AuthenticateAsync();
 
-        var profile = await xboxClient.GetProfileAsync(microsoft);
-        var xbox = await xboxClient.GetTokenAsync(profile.Token);
+        var user = await xboxClient.GetUserAsync(microsoft);
+        var xbox = await xboxClient.GetTokenAsync(user.Token);
 
-        var mojang = await mojangClient.GetTokenAsync(xbox.Value, profile.DisplayClaims.Xui[0].Uhs);
+        var mojang = await mojangClient.GetTokenAsync(xbox.Value, user.DisplayClaims.Xui[0].Uhs);
         var entitlements = await mojangClient.GetEntitlementsAsync(mojang.Value);
 
         if (entitlements.Items.Any(item => item.Name is "product_minecraft" or "game_minecraft"))
