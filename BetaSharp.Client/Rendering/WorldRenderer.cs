@@ -185,16 +185,6 @@ public class WorldRenderer : IWorldAccess
         chunkRenderer = new(world);
         ChunkMeshVersion.ClearPool();
 
-
-        if (renderDistance >= 16)
-        {
-            SubChunkRenderer.Size = 32;
-        }
-        else
-        {
-            SubChunkRenderer.Size = 16;
-        }
-
         renderEntitiesStartupCounter = 2;
     }
 
@@ -286,13 +276,26 @@ public class WorldRenderer : IWorldAccess
 
         Lighting.turnOff();
 
+        var renderParams = new ChunkRenderParams
+        {
+            Camera = cam,
+            ViewPos = new Vector3D<double>(var33, var7, var9),
+            RenderDistance = renderDistance,
+            Ticks = world.getTime(),
+            PartialTicks = (float)var3,
+            DeltaTime = mc.Timer.DeltaTime,
+            EnvironmentAnimation = mc.options.EnvironmentAnimation,
+            ChunkFade = mc.options.ChunkFade,
+            RenderOccluded = mc.options.RenderOccluded
+        };
+
         if (pass == 0)
         {
-            chunkRenderer.Render(cam, new Vector3D<double>(var33, var7, var9), renderDistance, world.getTime(), (float)var3, mc.Timer.DeltaTime, mc.options.EnvironmentAnimation, mc.options.ChunkFade);
+            chunkRenderer.Render(renderParams);
         }
         else
         {
-            chunkRenderer.RenderTransparent(new(var33, var7, var9));
+            chunkRenderer.RenderTransparent(renderParams);
         }
 
         return 0;
@@ -883,32 +886,15 @@ public class WorldRenderer : IWorldAccess
     public void notifyEntityAdded(Entity var1)
     {
         var1.updateCloak();
-        //TODO: SKINS
-        //if (var1.skinUrl != null)
-        //{
-        //    renderEngine.obtainImageData(var1.skinUrl, new ImageBufferDownload());
-        //}
-
-        //if (var1.cloakUrl != null)
-        //{
-        //    renderEngine.obtainImageData(var1.cloakUrl, new ImageBufferDownload());
-        //}
-
+        if (!string.IsNullOrEmpty(var1.skinUrl) && mc.session.skinUrl != null)
+        {
+            EntityRenderDispatcher.instance.skinManager?.RequestDownload(var1.skinUrl);
+        }
     }
 
     public void notifyEntityRemoved(Entity var1)
     {
-        //TODO: SKINS
-        //if (var1.skinUrl != null)
-        //{
-        //    renderEngine.releaseImageData(var1.skinUrl);
-        //}
-
-        //if (var1.cloakUrl != null)
-        //{
-        //    renderEngine.releaseImageData(var1.cloakUrl);
-        //}
-
+        EntityRenderDispatcher.instance.skinManager?.Release(var1.skinUrl);
     }
 
     public void notifyAmbientDarknessChanged()

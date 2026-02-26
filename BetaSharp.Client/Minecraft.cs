@@ -59,6 +59,7 @@ public partial class Minecraft
     public bool hideQuitButton = false;
     public volatile bool isGamePaused;
     public TextureManager textureManager;
+    public SkinManager skinManager;
     public TextRenderer fontRenderer;
     public GuiScreen currentScreen;
     public LoadingScreenRenderer loadingScreen;
@@ -210,10 +211,12 @@ public partial class Minecraft
         texturePackList = new TexturePacks(this, new DirectoryInfo(mcDataDir.getAbsolutePath()));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
+        skinManager = new SkinManager(textureManager);
         WaterColors.loadColors(textureManager.GetColors("/misc/watercolor.png"));
         GrassColors.loadColors(textureManager.GetColors("/misc/grasscolor.png"));
         FoliageColors.loadColors(textureManager.GetColors("/misc/foliagecolor.png"));
         gameRenderer = new GameRenderer(this);
+        EntityRenderDispatcher.instance.skinManager = skinManager;
         EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
         statFileWriter = new StatFileWriter(session, mcDataDir.getAbsolutePath());
 
@@ -458,6 +461,7 @@ public partial class Minecraft
             }
             catch (Exception) { }
 
+            skinManager.Dispose();
             textureManager.Dispose();
             sndManager.CloseMinecraft();
             Mouse.destroy();
@@ -594,6 +598,11 @@ public partial class Minecraft
                         ProfilerRenderer.DrawGraph();
 
                         ImGui.Begin("Render Info");
+                        ImGui.Text($"Chunks Total: {terrainRenderer.chunkRenderer.TotalChunks}");
+                        ImGui.Text($"Chunks Frustum: {terrainRenderer.chunkRenderer.ChunksInFrustum}");
+                        ImGui.Text($"Chunks Occluded: {terrainRenderer.chunkRenderer.ChunksOccluded}");
+                        ImGui.Text($"Chunks Rendered: {terrainRenderer.chunkRenderer.ChunksRendered}");
+                        ImGui.Separator();
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
                         ImGui.Text($"ChunkMeshVersion Allocated: {BetaSharp.Util.ChunkMeshVersion.TotalAllocated}");
                         ImGui.Text($"ChunkMeshVersion Released: {BetaSharp.Util.ChunkMeshVersion.TotalReleased}");
@@ -1499,6 +1508,12 @@ public partial class Minecraft
             }
 
             newWorld.addPlayer(player);
+
+            if (!string.IsNullOrEmpty(session?.skinUrl))
+            {
+                skinManager.RequestDownload(session.skinUrl);
+            }
+
             if (newWorld.isNewWorld)
             {
                 newWorld.savingProgress(loadingScreen);
@@ -1672,9 +1687,9 @@ public partial class Minecraft
         }
     }
 
-    private static void StartMainThread(string playerName, string sessionToken)
+    private static void StartMainThread(string playerName, string sessionToken, string? skinUrl = null)
     {
-        System.Threading.Thread.CurrentThread.Name = "Minecraft Main Thread";
+        Thread.CurrentThread.Name = "Minecraft Main Thread";
 
         Minecraft mc = new(850, 480, false)
         {
@@ -1683,7 +1698,7 @@ public partial class Minecraft
 
         if (playerName != null && sessionToken != null)
         {
-            mc.session = new Session(playerName, sessionToken);
+            mc.session = new Session(playerName, sessionToken, skinUrl);
 
             if (sessionToken == "-")
             {
@@ -1705,14 +1720,15 @@ public partial class Minecraft
 
     public static void Startup(string[] args)
     {
-        (string Name, string Session) result = args.Length switch
+        (string Name, string Session, string? SkinUrl) result = args.Length switch
         {
-            0 => ($"Player{Random.Shared.Next()}", "-"),
-            1 => (args[0], "-"),
-            _ => (args[0], args[1])
+            0 => ($"Player{Random.Shared.Next()}", "-", null),
+            1 => (args[0], "-", null),
+            2 => (args[0], args[1], null),
+            _ => (args[0], args[1], args[2]),
         };
 
-        StartMainThread(result.Name, result.Session);
+        StartMainThread(result.Name, result.Session, result.SkinUrl);
     }
 
     public static bool isGuiEnabled()
