@@ -18,19 +18,15 @@ public class GuiChat : GuiScreen
 
     public override bool PausesGame => false;
 
-    public GuiChat()
+    public GuiChat(string prefix = "")
     {
-    }
-
-    public GuiChat(string prefix)
-    {
+        Keyboard.OnCharacterTyped += CharTyped;
         _message = prefix;
     }
 
     public override void InitGui()
     {
         Keyboard.enableRepeatEvents(true);
-        Keyboard.OnCharacterTyped += CharTyped;
         _isSubscribedToKeyboard = true;
         _historyIndex = s_history.Count;
     }
