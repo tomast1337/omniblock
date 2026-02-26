@@ -141,9 +141,10 @@ internal static class StreamExtensions
 
         public string ReadLongString(ushort maximumLength = ushort.MaxValue)
         {
-            byte[] buffer = new byte[stream.ReadUShort() * 2];
+            ushort length = stream.ReadUShort();
+            byte[] buffer = new byte[length * 2];
 
-            if (buffer.Length / 2 > maximumLength)
+            if (length > maximumLength)
             {
                 throw new IOException("Received string length longer than maximum allowed (" + buffer.Length + " > " + maximumLength + ")");
             }
