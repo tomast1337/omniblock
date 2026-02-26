@@ -67,11 +67,13 @@ internal static class StreamExtensions
         {
             stream.WriteUShort((ushort)value.Length);
 
-            foreach (char item in value)
-            {
-                stream.WriteByte((byte)item);
-                stream.WriteByte(0);
-            }
+            // foreach (char item in value)
+            // {
+            //     stream.WriteByte((byte)item);
+            //     stream.WriteByte(0);
+            // }
+
+            stream.Write(Encoding.BigEndianUnicode.GetBytes(value));
         }
 
         public bool ReadBoolean()
@@ -139,7 +141,7 @@ internal static class StreamExtensions
 
         public string ReadLongString(ushort maximumLength = ushort.MaxValue)
         {
-            byte[] buffer = new byte[stream.ReadUShort()];
+            byte[] buffer = new byte[stream.ReadUShort() * 2];
 
             if (buffer.Length > maximumLength)
             {
@@ -148,14 +150,7 @@ internal static class StreamExtensions
 
             stream.ReadExactly(buffer);
 
-            var builder = new StringBuilder();
-
-            for (int i = 0; i < buffer.Length; ++i)
-            {
-                builder.Append((char) stream.ReadByte());
-            }
-
-            return builder.ToString();
+            return Encoding.BigEndianUnicode.GetString(buffer);
         }
     }
 }
