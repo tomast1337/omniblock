@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;
 using java.lang;
@@ -37,7 +38,8 @@ public class DedicatedServer(IServerConfiguration config) : MinecraftServer(conf
 
         if (addressInput.Length > 0)
         {
-            address = Dns.GetHostAddresses(addressInput)[0];
+            var addresses = Dns.GetHostAddresses(addressInput);
+            address = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork) ?? addresses[0];
         }
 
         int port = config.GetServerPort(25565);
