@@ -1689,7 +1689,7 @@ public partial class Minecraft
 
     private static void StartMainThread(string playerName, string sessionToken, string? skinUrl = null)
     {
-        System.Threading.Thread.CurrentThread.Name = "Minecraft Main Thread";
+        Thread.CurrentThread.Name = "Minecraft Main Thread";
 
         Minecraft mc = new(850, 480, false)
         {
