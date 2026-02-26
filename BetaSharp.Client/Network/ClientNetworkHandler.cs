@@ -42,10 +42,7 @@ public class ClientNetworkHandler : NetHandler
     {
         this.mc = mc;
 
-        var addresses = Dns.GetHostAddresses(address);
-        var ipAddress = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork) ?? addresses[0];
-        var endPoint = new IPEndPoint(ipAddress, port);
-
+        var endPoint = new IPEndPoint(Dns.GetHostAddresses(address)[0], port);
         Socket socket = new(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 
         socket.Connect(endPoint);
