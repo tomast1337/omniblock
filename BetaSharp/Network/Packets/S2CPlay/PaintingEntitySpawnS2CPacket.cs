@@ -20,11 +20,11 @@ public class PaintingEntitySpawnS2CPacket : Packet
     public PaintingEntitySpawnS2CPacket(EntityPainting paint)
     {
         entityId = paint.id;
-        xPosition = paint.xPosition;
-        yPosition = paint.yPosition;
-        zPosition = paint.zPosition;
-        direction = paint.direction;
-        title = paint.art.title;
+        xPosition = paint.XPosition;
+        yPosition = paint.YPosition;
+        zPosition = paint.ZPosition;
+        direction = paint.Direction;
+        title = paint.Art.Title;
     }
 
     public override void Read(NetworkStream stream)
