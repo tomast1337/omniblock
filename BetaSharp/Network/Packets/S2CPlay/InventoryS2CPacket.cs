@@ -55,12 +55,12 @@ public class InventoryS2CPacket : Packet
         {
             if (contents[i] == null)
             {
-                stream.WriteShort((short)-1);
+                stream.WriteShort(-1);
             }
             else
             {
                 stream.WriteShort((short)contents[i].itemId);
-                stream.WriteByte((byte)(byte)contents[i].count);
+                stream.WriteByte((byte)contents[i].count);
                 stream.WriteShort((short)contents[i].getDamage());
             }
         }

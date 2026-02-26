@@ -68,7 +68,7 @@ public class ChunkDeltaUpdateS2CPacket : Packet
 
         for (int i = 0; i < _size; ++i)
         {
-            stream.WriteShort((short)positions[i]);
+            stream.WriteShort(positions[i]);
         }
 
         stream.Write(blockRawIds);

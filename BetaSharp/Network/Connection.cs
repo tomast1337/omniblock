@@ -42,15 +42,8 @@ public class Connection
         _address = (IPEndPoint?) socket.RemoteEndPoint;
         this.networkHandler = networkHandler;
 
-        // try
-        // {
-        //     socket.setSoTimeout(30000);
-        //     socket.setTrafficClass(24);
-        // }
-        // catch (SocketException e)
-        // {
-        //     _logger.LogError(e, e.Message);
-        // }
+        socket.ReceiveTimeout = 30000;
+        // setTrafficClass doesn't have a direct .NET equivalent and can be omitted
 
         _networkStream = new NetworkStream(socket);
 

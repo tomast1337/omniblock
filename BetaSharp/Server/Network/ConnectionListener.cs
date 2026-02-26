@@ -24,11 +24,10 @@ public class ConnectionListener
     {
         this.server = server;
 
-        Socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        Socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
         Socket.Bind(new IPEndPoint(address, port));
         Socket.Listen();
 
-        // socket.setPerformancePreferences(0, 2, 1);
         this.port = port;
         open = true;
         _thread = new AcceptConnectionThread(this, "Listen Thread");

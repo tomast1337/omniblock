@@ -43,10 +43,10 @@ public class ClientNetworkHandler : NetHandler
         this.mc = mc;
 
         var endPoint = new IPEndPoint(Dns.GetHostAddresses(address)[0], port);
-        Socket socket = new(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        Socket socket = new(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+
         socket.Connect(endPoint);
 
-        // socket.setTcpNoDelay(true);
         netManager = new Connection(socket, "Client", this);
     }
 

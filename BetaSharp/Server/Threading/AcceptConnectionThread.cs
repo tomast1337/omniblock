@@ -24,7 +24,8 @@ public class AcceptConnectionThread : java.lang.Thread
             try
             {
                 Socket socket = _listener.Socket.Accept();
-                // socket.setTcpNoDelay(true);
+
+                socket.NoDelay = true;
 
                 var address = ((IPEndPoint?) socket.RemoteEndPoint)?.Address;
 

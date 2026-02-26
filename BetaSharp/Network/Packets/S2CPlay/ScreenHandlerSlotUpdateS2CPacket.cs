@@ -50,7 +50,7 @@ public class ScreenHandlerSlotUpdateS2CPacket : Packet
         stream.WriteShort((short)slot);
         if (stack == null)
         {
-            stream.WriteShort((short)-1);
+            stream.WriteShort(-1);
         }
         else
         {

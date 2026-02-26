@@ -32,8 +32,8 @@ public class MapUpdateS2CPacket : Packet
 
     public override void Write(NetworkStream stream)
     {
-        stream.WriteShort((short)itemRawId);
-        stream.WriteShort((short)id);
+        stream.WriteShort(itemRawId);
+        stream.WriteShort(id);
         stream.WriteByte((byte)updateData.Length);
         stream.Write(updateData);
     }
