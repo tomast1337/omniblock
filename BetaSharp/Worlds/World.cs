@@ -4,6 +4,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
+using BetaSharp.PathFinding;
 using BetaSharp.Profiling;
 using BetaSharp.Rules;
 using BetaSharp.Util.Hit;
@@ -76,8 +77,11 @@ public abstract class World : BlockView
     private int _lcgBlockSeed = Random.Shared.Next();
     private int _soundCounter = Random.Shared.Next(12000);
 
+    private PathFinder _pathFinder;
+
     protected World(IWorldStorage worldStorage, string levelName, Dimension dim, long seed)
     {
+        _pathFinder = new(this);
         Storage = worldStorage;
         persistentStateManager = new PersistentStateManager(worldStorage);
         Properties = new WorldProperties(seed, levelName);
@@ -93,6 +97,7 @@ public abstract class World : BlockView
 
     protected World(IWorldStorage worldStorage, string levelName, long seed, Dimension? dim)
     {
+        _pathFinder = new(this);
         Storage = worldStorage;
         persistentStateManager = new PersistentStateManager(worldStorage);
         Properties = worldStorage.LoadProperties();
@@ -1967,7 +1972,7 @@ public abstract class World : BlockView
 
             if (_spawnHostileMobs && difficulty >= 1)
             {
-                wasSpawnInterrupted = NaturalSpawner.SpawnMonstersAndWakePlayers(this, players);
+                wasSpawnInterrupted = NaturalSpawner.SpawnMonstersAndWakePlayers(this, _pathFinder, players);
             }
 
             if (!wasSpawnInterrupted)
@@ -1979,7 +1984,7 @@ public abstract class World : BlockView
         }
 
         Profiler.Start("performSpawning");
-        NaturalSpawner.DoSpawning(this, _spawnHostileMobs, _spawnPeacefulMobs);
+        NaturalSpawner.DoSpawning(this, _pathFinder, _spawnHostileMobs, _spawnPeacefulMobs);
         Profiler.Stop("performSpawning");
 
         Profiler.Start("unload100OldestChunks");
@@ -2406,43 +2411,51 @@ public abstract class World : BlockView
         return blockId > 0 && existingBlock == null && newBlock != null && newBlock.canPlaceAt(this, x, y, z, side);
     }
 
-    public PathEntity findPath(Entity entity, Entity target, float searchRange)
+    internal PathEntity findPath(Entity entity, Entity target, float range)
     {
-        int startX = MathHelper.Floor(entity.x);
-        int startY = MathHelper.Floor(entity.y);
-        int startZ = MathHelper.Floor(entity.z);
+        Profiler.Start("AI.PathFinding.FindPathToTarget");
+        int entityX = MathHelper.Floor(entity.x);
+        int entityY = MathHelper.Floor(entity.y);
+        int entityZ = MathHelper.Floor(entity.z);
+        int searchRadius = (int)(range + 16.0F);
 
-        int searchRadius = (int)(searchRange + 16.0F);
+        int minX = entityX - searchRadius;
+        int minY = entityY - searchRadius;
+        int minZ = entityZ - searchRadius;
+        int maxX = entityX + searchRadius;
+        int maxY = entityY + searchRadius;
+        int maxZ = entityZ + searchRadius;
 
-        int minX = startX - searchRadius;
-        int minY = startY - searchRadius;
-        int minZ = startZ - searchRadius;
-        int maxX = startX + searchRadius;
-        int maxY = startY + searchRadius;
-        int maxZ = startZ + searchRadius;
+        WorldRegion region = new(this, minX, minY, minZ, maxX, maxY, maxZ);
 
-        WorldRegion pathfindingRegion = new(this, minX, minY, minZ, maxX, maxY, maxZ);
-        return new Pathfinder(pathfindingRegion).createEntityPathTo(entity, target, searchRange);
+        PathEntity result = _pathFinder.CreateEntityPathTo(entity, target, range);
+        Profiler.Stop("AI.PathFinding.FindPathToTarget");
+
+        return result;
     }
 
-    public PathEntity findPath(Entity entity, int targetX, int targetY, int targetZ, float searchRange)
+    internal PathEntity findPath(Entity entity, int x, int y, int z, float range)
     {
-        int startX = MathHelper.Floor(entity.x);
-        int startY = MathHelper.Floor(entity.y);
-        int startZ = MathHelper.Floor(entity.z);
+        Profiler.Start("AI.PathFinding.FindPathToPosition");
+        int entityX = MathHelper.Floor(entity.x);
+        int entityY = MathHelper.Floor(entity.y);
+        int entityZ = MathHelper.Floor(entity.z);
+        int searchRadius = (int)(range + 8.0F);
 
-        int searchRadius = (int)(searchRange + 8.0F);
+        int minX = entityX - searchRadius;
+        int minY = entityY - searchRadius;
+        int minZ = entityZ - searchRadius;
+        int maxX = entityX + searchRadius;
+        int maxY = entityY + searchRadius;
+        int maxZ = entityZ + searchRadius;
 
-        int minX = startX - searchRadius;
-        int minY = startY - searchRadius;
-        int minZ = startZ - searchRadius;
-        int maxX = startX + searchRadius;
-        int maxY = startY + searchRadius;
-        int maxZ = startZ + searchRadius;
+        WorldRegion region = new(this, minX, minY, minZ, maxX, maxY, maxZ);
 
-        WorldRegion pathfindingRegion = new(this, minX, minY, minZ, maxX, maxY, maxZ);
 
-        return new Pathfinder(pathfindingRegion).createEntityPathTo(entity, targetX, targetY, targetZ, searchRange);
+        PathEntity result = _pathFinder.CreateEntityPathTo(entity, x, y, z, range);
+        Profiler.Stop("AI.PathFinding.FindPathToPosition");
+
+        return result;
     }
 
     private bool isStrongPoweringSide(int x, int y, int z, int side)
