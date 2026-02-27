@@ -26,7 +26,7 @@ public class CompassSprite : DynamicTexture
         this.mc = mc;
         TextureManager tm = mc.textureManager;
         string atlasPath = "/gui/items.png";
-        
+
         var handle = tm.GetTextureId(atlasPath);
         if (handle.Texture != null)
         {
@@ -55,7 +55,7 @@ public class CompassSprite : DynamicTexture
                 int localRes = var2.getWidth() / 16;
                 int var3 = (sprite % 16) * localRes;
                 int var4 = (sprite / 16) * localRes;
-                
+
                 if (localRes == resolution)
                 {
                     var2.getRGB(var3, var4, resolution, resolution, compass, 0, resolution);
@@ -73,7 +73,7 @@ public class CompassSprite : DynamicTexture
                     }
                 }
             }
-            
+
         }
         catch (java.io.IOException ex)
         {
@@ -132,8 +132,8 @@ public class CompassSprite : DynamicTexture
         angleDelta += var22 * 0.1D;
         angleDelta *= 0.8D;
         angle += angleDelta;
-        double var24 = java.lang.Math.sin(angle);
-        double var26 = java.lang.Math.cos(angle);
+        double var24 = Math.Sin(angle);
+        double var26 = Math.Cos(angle);
 
         float center = (resolution - 1) / 2.0f;
         float needleScale = resolution / 16.0f;
@@ -142,7 +142,7 @@ public class CompassSprite : DynamicTexture
         {
             int var10 = (int)(center + 0.5f + var26 * var9 * 0.3D * needleScale);
             int var11 = (int)(center - 0.5f - var24 * var9 * 0.3D * 0.5D * needleScale);
-            
+
             if (var10 < 0 || var10 >= resolution || var11 < 0 || var11 >= resolution) continue;
 
             int var12 = var11 * resolution + var10;
@@ -160,7 +160,7 @@ public class CompassSprite : DynamicTexture
         {
             int var10 = (int)(center + 0.5f + var24 * var9 * 0.3D * needleScale);
             int var11 = (int)(center - 0.5f + var26 * var9 * 0.3D * 0.5D * needleScale);
-            
+
             if (var10 < 0 || var10 >= resolution || var11 < 0 || var11 >= resolution) continue;
 
             int var12 = var11 * resolution + var10;

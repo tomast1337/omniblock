@@ -15,8 +15,6 @@ using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Chunks.Light;
 using BetaSharp.Worlds.Dimensions;
 using BetaSharp.Worlds.Storage;
-using java.lang;
-using java.util;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 using Exception = System.Exception;
@@ -41,7 +39,7 @@ public abstract class World : BlockView
     public List<BlockEntity> blockEntities = [];
     private readonly List<BlockEntity> blockEntityUpdateQueue = [];
     public List<EntityPlayer> players = [];
-    public List globalEntities = new ArrayList();
+    public List<Entity> globalEntities = [];
     private readonly long worldTimeMask = 0xFFFFFFL;
     public int ambientDarkness = 0;
     protected int lcgBlockSeed = Random.Shared.Next();
@@ -813,9 +811,9 @@ public abstract class World : BlockView
 
     public HitResult raycast(Vec3D start, Vec3D pos, bool bl, bool bl2)
     {
-        if (!java.lang.Double.isNaN(start.x) && !java.lang.Double.isNaN(start.y) && !java.lang.Double.isNaN(start.z))
+        if (!double.IsNaN(start.x) && !double.IsNaN(start.y) && !double.IsNaN(start.z))
         {
-            if (!java.lang.Double.isNaN(pos.x) && !java.lang.Double.isNaN(pos.y) && !java.lang.Double.isNaN(pos.z))
+            if (!double.IsNaN(pos.x) && !double.IsNaN(pos.y) && !double.IsNaN(pos.z))
             {
                 int var5 = MathHelper.Floor(pos.x);
                 int var6 = MathHelper.Floor(pos.y);
@@ -840,8 +838,8 @@ public abstract class World : BlockView
 
                 while (var11-- >= 0)
                 {
-                    if (java.lang.Double.isNaN(start.x) || java.lang.Double.isNaN(start.y) ||
-                        java.lang.Double.isNaN(start.z))
+                    if (double.IsNaN(start.x) || double.IsNaN(start.y) ||
+                        double.IsNaN(start.z))
                     {
                         return new HitResult(HitResultType.MISS);
                     }
@@ -1050,7 +1048,7 @@ public abstract class World : BlockView
 
     public virtual bool spawnGlobalEntity(Entity entity)
     {
-        globalEntities.add(entity);
+        globalEntities.Add(entity);
         return true;
     }
 
@@ -1425,13 +1423,13 @@ public abstract class World : BlockView
 
         int var1;
         Entity var2;
-        for (var1 = 0; var1 < globalEntities.size(); ++var1)
+        for (var1 = 0; var1 < globalEntities.Count; ++var1)
         {
-            var2 = (Entity)globalEntities.get(var1);
+            var2 = globalEntities[var1];
             var2.tick();
             if (var2.dead)
             {
-                globalEntities.remove(var1--);
+                globalEntities.RemoveAt(var1--);
             }
         }
 
@@ -1595,27 +1593,27 @@ public abstract class World : BlockView
                 }
             }
 
-            if (java.lang.Double.isNaN(entity.x) || java.lang.Double.isInfinite(entity.x))
+            if (double.IsNaN(entity.x) || java.lang.Double.isInfinite(entity.x))
             {
                 entity.x = entity.lastTickX;
             }
 
-            if (java.lang.Double.isNaN(entity.y) || java.lang.Double.isInfinite(entity.y))
+            if (double.IsNaN(entity.y) || java.lang.Double.isInfinite(entity.y))
             {
                 entity.y = entity.lastTickY;
             }
 
-            if (java.lang.Double.isNaN(entity.z) || java.lang.Double.isInfinite(entity.z))
+            if (double.IsNaN(entity.z) || java.lang.Double.isInfinite(entity.z))
             {
                 entity.z = entity.lastTickZ;
             }
 
-            if (java.lang.Double.isNaN((double)entity.pitch) || java.lang.Double.isInfinite((double)entity.pitch))
+            if (double.IsNaN((double)entity.pitch) || java.lang.Double.isInfinite((double)entity.pitch))
             {
                 entity.pitch = entity.prevPitch;
             }
 
-            if (java.lang.Double.isNaN((double)entity.yaw) || java.lang.Double.isInfinite((double)entity.yaw))
+            if (double.IsNaN((double)entity.yaw) || java.lang.Double.isInfinite((double)entity.yaw))
             {
                 entity.yaw = entity.prevYaw;
             }
