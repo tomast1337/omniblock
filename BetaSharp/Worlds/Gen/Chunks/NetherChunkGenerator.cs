@@ -253,7 +253,7 @@ public class NetherChunkGenerator : ChunkSource
         int var15;
         for (var15 = 0; var15 < sizeY; ++var15)
         {
-            var14[var15] = java.lang.Math.cos(var15 * Math.PI * 6.0D / sizeY) * 2.0D;
+            var14[var15] = Math.Cos(var15 * Math.PI * 6.0D / sizeY) * 2.0D;
             double var16 = var15;
             if (var15 > sizeY / 2)
             {
