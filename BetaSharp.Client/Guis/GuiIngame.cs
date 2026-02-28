@@ -153,8 +153,8 @@ public class GuiIngame : Gui
 
             if (_mc.player.isInFluid(Material.Water))
             {
-                i = (int)java.lang.Math.ceil((_mc.player.air - 2) * 10.0D / 300.0D);
-                j = (int)java.lang.Math.ceil(_mc.player.air * 10.0D / 300.0D) - i;
+                i = (int)Math.Ceiling((_mc.player.air - 2) * 10.0D / 300.0D);
+                j = (int)Math.Ceiling(_mc.player.air * 10.0D / 300.0D) - i;
 
                 for (k = 0; k < i + j; ++k)
                 {

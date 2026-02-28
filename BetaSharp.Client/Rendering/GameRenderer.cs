@@ -670,7 +670,7 @@ public class GameRenderer
         EntityLiving var3 = _client.camera;
         float var4 = 4.0F / _client.options.renderDistance;
         var4 = System.Math.Clamp(var4, 0.25f, 1.0f);
-        var4 = 1.0F - (float)java.lang.Math.pow((double)var4, 0.25D);
+        var4 = 1.0F - (float)Math.Pow(var4, 0.25D);
         Vector3D<double> var5 = var2.getSkyColor(_client.camera, tickDelta);
         float var6 = (float)var5.X;
         float var7 = (float)var5.Y;

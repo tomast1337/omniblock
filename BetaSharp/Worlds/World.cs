@@ -1200,7 +1200,7 @@ public abstract class World : BlockView
     public int getAmbientDarkness(float partialTicks)
     {
         float var2 = getTime(partialTicks);
-        float var3 = 1.0F - (MathHelper.Cos(var2 * (float)java.lang.Math.PI * 2.0F) * 2.0F + 0.5F);
+        float var3 = 1.0F - (MathHelper.Cos(var2 * (float)Math.PI * 2.0F) * 2.0F + 0.5F);
         if (var3 < 0.0F)
         {
             var3 = 0.0F;
@@ -1221,7 +1221,7 @@ public abstract class World : BlockView
     public Vector3D<double> getSkyColor(Entity entity, float partialTicks)
     {
         float var3 = getTime(partialTicks);
-        float var4 = MathHelper.Cos(var3 * (float)java.lang.Math.PI * 2.0F) * 2.0F + 0.5F;
+        float var4 = MathHelper.Cos(var3 * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
         if (var4 < 0.0F)
         {
             var4 = 0.0F;
@@ -1289,7 +1289,7 @@ public abstract class World : BlockView
     public Vector3D<double> getCloudColor(float partialTicks)
     {
         float var2 = getTime(partialTicks);
-        float var3 = MathHelper.Cos(var2 * (float)java.lang.Math.PI * 2.0F) * 2.0F + 0.5F;
+        float var3 = MathHelper.Cos(var2 * (float)Math.PI * 2.0F) * 2.0F + 0.5F;
         if (var3 < 0.0F)
         {
             var3 = 0.0F;
@@ -1359,7 +1359,7 @@ public abstract class World : BlockView
     public float calcualteSkyLightIntensity(float partialTicks)
     {
         float var2 = getTime(partialTicks);
-        float var3 = 1.0F - (MathHelper.Cos(var2 * (float)java.lang.Math.PI * 2.0F) * 2.0F + 12.0F / 16.0F);
+        float var3 = 1.0F - (MathHelper.Cos(var2 * (float)Math.PI * 2.0F) * 2.0F + 12.0F / 16.0F);
         if (var3 < 0.0F)
         {
             var3 = 0.0F;

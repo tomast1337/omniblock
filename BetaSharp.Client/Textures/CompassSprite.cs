@@ -102,10 +102,10 @@ public class CompassSprite : DynamicTexture
             Vec3i var21 = mc.world.getSpawnPos();
             double var23 = var21.X - mc.player.x;
             double var25 = var21.Z - mc.player.z;
-            var20 = (double)(mc.player.yaw - 90.0F) * Math.PI / 180.0D - java.lang.Math.atan2(var25, var23);
+            var20 = (mc.player.yaw - 90.0F) * Math.PI / 180.0D - Math.Atan2(var25, var23);
             if (mc.world.dimension.IsNether)
             {
-                var20 = Random.Shared.NextDouble() * (double)(float)Math.PI * 2.0D;
+                var20 = Random.Shared.NextDouble() * (float)Math.PI * 2.0D;
             }
         }
 
