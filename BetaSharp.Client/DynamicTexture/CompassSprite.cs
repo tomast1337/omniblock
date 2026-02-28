@@ -3,8 +3,6 @@ using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.IO;
 
 namespace BetaSharp.Client.DynamicTexture;
 
