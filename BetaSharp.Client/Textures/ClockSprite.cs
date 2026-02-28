@@ -28,7 +28,7 @@ public class ClockSprite : DynamicTexture
         this.mc = mc;
         TextureManager tm = mc.textureManager;
         string atlasPath = "/gui/items.png";
-        
+
         var handle = tm.GetTextureId(atlasPath);
         if (handle.Texture != null)
         {
@@ -76,7 +76,7 @@ public class ClockSprite : DynamicTexture
                     }
                 }
             }
-            
+
             using var dialStream = mc.texturePackList.SelectedTexturePack.GetResourceAsStream("misc/dial.png");
             if (dialStream != null)
             {
@@ -89,7 +89,7 @@ public class ClockSprite : DynamicTexture
                 {
                     dial = new int[dialPixelCount];
                 }
-                var2.getRGB(0, 0, dialResolution, dialResolution, dial, 0, dialResolution); 
+                var2.getRGB(0, 0, dialResolution, dialResolution, dial, 0, dialResolution);
             }
         }
         catch (java.io.IOException ex)
@@ -134,8 +134,8 @@ public class ClockSprite : DynamicTexture
         angleDelta += var22 * 0.1D;
         angleDelta *= 0.8D;
         angle += angleDelta;
-        double var5 = java.lang.Math.sin(angle);
-        double var7 = java.lang.Math.cos(angle);
+        double var5 = Math.Sin(angle);
+        double var7 = Math.Cos(angle);
 
         int pixelCount = resolution * resolution;
         float invResMinus1 = 1.0f / (resolution - 1);
@@ -146,7 +146,7 @@ public class ClockSprite : DynamicTexture
             int var11 = clock[var9] >> 16 & 255;
             int var12 = clock[var9] >> 8 & 255;
             int var13 = clock[var9] >> 0 & 255;
-            
+
             if (Math.Abs(var11 - var13) < 10 && var12 < 40 && var11 > 100)
             {
                 double var14 = -((var9 % resolution) * invResMinus1 - 0.5D);

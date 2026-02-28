@@ -78,8 +78,8 @@ public class EntityTrackerEntry
             int var8 = var3 - lastY;
             int var9 = var4 - lastZ;
             object? var10 = null;
-            bool var11 = java.lang.Math.abs(var2) >= 8 || java.lang.Math.abs(var3) >= 8 || java.lang.Math.abs(var4) >= 8;
-            bool var12 = java.lang.Math.abs(var5 - lastYaw) >= 8 || java.lang.Math.abs(var6 - lastPitch) >= 8;
+            bool var11 = Math.Abs(var2) >= 8 || Math.Abs(var3) >= 8 || Math.Abs(var4) >= 8;
+            bool var12 = Math.Abs(var5 - lastYaw) >= 8 || Math.Abs(var6 - lastPitch) >= 8;
             if (var7 < -128 || var7 >= 128 || var8 < -128 || var8 >= 128 || var9 < -128 || var9 >= 128 || ticksSinceLastDismount > 400)
             {
                 ticksSinceLastDismount = 0;

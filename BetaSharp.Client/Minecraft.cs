@@ -8,7 +8,6 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Rendering;
-using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
@@ -94,7 +93,7 @@ public partial class Minecraft
     public bool inGameHasFocus;
     private int mouseTicksRan;
     public bool isRaining = false;
-    long systemTime = DateTimeOffset.UtcNow.ToMillis();
+    long systemTime = UnixTime.GetCurrentTimeMillis();
     private int joinPlayerCounter;
     private ImGuiController imGuiController;
     public InternalServer? internalServer;
@@ -497,7 +496,7 @@ public partial class Minecraft
 
         try
         {
-            long lastFpsCheckTime = DateTimeOffset.UtcNow.ToMillis();
+            long lastFpsCheckTime = UnixTime.GetCurrentTimeMillis();
             int frameCounter = 0;
 
             while (running)
@@ -665,7 +664,7 @@ public partial class Minecraft
                     isGamePaused = (!isMultiplayerWorld() || internalServer != null) && (currentScreen?.PausesGame ?? false);
 
                     for (;
-                         DateTimeOffset.UtcNow.ToMillis() >= lastFpsCheckTime + 1000L;
+                         UnixTime.GetCurrentTimeMillis() >= lastFpsCheckTime + 1000L;
                          frameCounter = 0)
                     {
                         debug = frameCounter + " fps";
@@ -1260,7 +1259,7 @@ public partial class Minecraft
             }
         }
 
-        systemTime = DateTimeOffset.UtcNow.ToMillis();
+        systemTime = UnixTime.GetCurrentTimeMillis();
         Profiler.PopGroup();
     }
 
@@ -1268,7 +1267,7 @@ public partial class Minecraft
     {
         while (Mouse.next())
         {
-            long timeSinceLastMouseEvent = DateTimeOffset.UtcNow.ToMillis() - systemTime;
+            long timeSinceLastMouseEvent = UnixTime.GetCurrentTimeMillis() - systemTime;
             if (timeSinceLastMouseEvent <= 200L)
             {
                 int mouseWheelDelta = Mouse.getEventDWheel();
@@ -1702,7 +1701,7 @@ public partial class Minecraft
 
             if (sessionToken == "-")
             {
-                hasPaidCheckTime = DateTimeOffset.UtcNow.ToMillis();
+                hasPaidCheckTime = UnixTime.GetCurrentTimeMillis();
             }
         }
         else

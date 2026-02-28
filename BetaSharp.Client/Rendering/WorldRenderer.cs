@@ -213,9 +213,9 @@ public class WorldRenderer : IWorldAccess
 
             int var6;
             Entity var7;
-            for (var6 = 0; var6 < world.globalEntities.size(); ++var6)
+            for (var6 = 0; var6 < world.globalEntities.Count; ++var6)
             {
-                var7 = (Entity)world.globalEntities.get(var6);
+                var7 = world.globalEntities[var6];
                 ++countEntitiesRendered;
                 if (var7.shouldRender(var1))
                 {
@@ -355,7 +355,7 @@ public class WorldRenderer : IWorldAccess
 
                 for (int var20 = 0; var20 <= var19; ++var20)
                 {
-                    var14 = var20 * (float)java.lang.Math.PI * 2.0F / var19;
+                    var14 = var20 * (float)Math.PI * 2.0F / var19;
                     float var15 = MathHelper.Sin(var14);
                     float var16 = MathHelper.Cos(var14);
                     var17.addVertex((double)(var15 * 120.0F), (double)(var16 * 120.0F), (double)(-var16 * 40.0F * var18[3]));
@@ -616,7 +616,7 @@ public class WorldRenderer : IWorldAccess
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(DateTimeOffset.UtcNow.ToMillis() / 100.0F) * 0.2F + 0.4F) * 0.5F);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(UnixTime.GetCurrentTimeMillis() / 100.0F) * 0.2F + 0.4F) * 0.5F);
         int var8;
         if (var3 == 0)
         {
@@ -654,8 +654,8 @@ public class WorldRenderer : IWorldAccess
         else if (var4 != null)
         {
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            float var16 = MathHelper.Sin(DateTimeOffset.UtcNow.ToMillis() / 100.0F) * 0.2F + 0.8F;
-            GLManager.GL.Color4(var16, var16, var16, MathHelper.Sin(DateTimeOffset.UtcNow.ToMillis() / 200.0F) * 0.2F + 0.5F);
+            float var16 = MathHelper.Sin(UnixTime.GetCurrentTimeMillis() / 100.0F) * 0.2F + 0.8F;
+            GLManager.GL.Color4(var16, var16, var16, MathHelper.Sin(UnixTime.GetCurrentTimeMillis() / 200.0F) * 0.2F + 0.5F);
             renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
             int var17 = var2.BlockX;
             int var18 = var2.BlockY;

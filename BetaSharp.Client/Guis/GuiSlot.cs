@@ -140,10 +140,10 @@ public abstract class GuiSlot
 
                     if (mouseX >= contentMinX && mouseX <= contentMaxX && slotIndex >= 0 && relativeY >= 0 && slotIndex < listSize)
                     {
-                        bool isDoubleClick = slotIndex == _selectedElement && (DateTimeOffset.UtcNow.ToMillis() - _lastClicked < 250L);
+                        bool isDoubleClick = slotIndex == _selectedElement && (UnixTime.GetCurrentTimeMillis() - _lastClicked < 250L);
                         ElementClicked(slotIndex, isDoubleClick);
                         _selectedElement = slotIndex;
-                        _lastClicked = DateTimeOffset.UtcNow.ToMillis();
+                        _lastClicked = UnixTime.GetCurrentTimeMillis();
                     }
                     else if (mouseX >= contentMinX && mouseX <= contentMaxX && relativeY < 0)
                     {

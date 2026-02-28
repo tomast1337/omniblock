@@ -299,7 +299,7 @@ public class RegionFile
                     }
                 }
 
-                func_22208_b(var1, var2, (int)(DateTimeOffset.UtcNow.ToMillis() / 1000L));
+                func_22208_b(var1, var2, (int)(UnixTime.GetCurrentTimeMillis() / 1000L));
             }
             catch (System.IO.IOException var12)
             {

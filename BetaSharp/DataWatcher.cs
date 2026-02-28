@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Util.Maths;
@@ -57,8 +58,9 @@ public class DataWatcher
 
     public sbyte getWatchableObjectByte(int id)
     {
-        // TODO: Refactor watchable object
-        return watchedObjects[id].watchedObject is int value ? (sbyte)value : (sbyte)0;
+        // This is terrible. Data watcher needs a refactor
+        int intermediate = Convert.ToInt32(watchedObjects[id].watchedObject);
+        return (sbyte)Math.Clamp(intermediate, sbyte.MinValue, sbyte.MaxValue);
     }
 
     public int GetWatchableObjectInt(int id)

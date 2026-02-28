@@ -18,19 +18,20 @@ namespace BetaSharp.Entities;
 
 public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 {
+    private const int MaxChunkPackets = 16;
+
     public ServerPlayNetworkHandler networkHandler;
     public MinecraftServer server;
     public ServerPlayerInteractionManager interactionManager;
     public double lastX;
     public double lastZ;
-    public List pendingChunkUpdates = new LinkedList();
+    public Queue<ChunkPos> PendingChunkUpdates = new();
     public HashSet<ChunkPos> activeChunks = new();
     private int lastHealthScore = -99999999;
     private int joinInvulnerabilityTicks = 60;
     private ItemStack[] equipment = [null, null, null, null, null];
     private int screenHandlerSyncId;
     public bool skipPacketSlotUpdates;
-
 
     public ServerPlayerEntity(MinecraftServer server, World world, String name, ServerPlayerInteractionManager interactionManager) : base(world)
     {
@@ -67,12 +68,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         currentScreenHandler.addListener(this);
     }
 
-
     public override ItemStack[] getEquipment()
     {
         return equipment;
     }
-
 
     protected override void resetEyeHeight()
     {
@@ -84,7 +83,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         return 1.62F;
     }
-
 
     public override void tick()
     {
@@ -107,7 +105,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         return slot == 0 ? inventory.getSelectedItem() : inventory.armor[slot - 1];
     }
-
 
     public override bool damage(Entity damageSource, int amount)
     {
@@ -137,16 +134,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
     }
 
-
     protected override bool isPvpEnabled()
     {
         return server.pvpEnabled;
-    }
-
-
-    public override void heal(int amount)
-    {
-        base.heal(amount);
     }
 
     public void playerTick(bool shouldSendChunkUpdates)
@@ -166,29 +156,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             }
         }
 
-        if (shouldSendChunkUpdates && !pendingChunkUpdates.isEmpty())
+        if (shouldSendChunkUpdates)
         {
-            ServerWorld world = server.getWorld(dimensionId);
-            Iterator iterator = pendingChunkUpdates.iterator();
-
-            while (iterator.hasNext())
+            while (CanSendMoreChunkData() && PendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
             {
-                ChunkPos chunkPos = (ChunkPos)iterator.next();
-
-                if (!CanSendMoreChunkData())
-                {
-                    continue;
-                }
-
-                if (!world.chunkCache.GetChunk(chunkPos.X, chunkPos.Z).TerrainPopulated)
-                {
-                    continue;
-                }
-
-                iterator.remove();
+                ServerWorld world = server.getWorld(dimensionId);
+                if (!activeChunks.Contains(chunkPos)) continue;
+                if (!world.chunkCache.GetChunk(chunkPos.X, chunkPos.Z).TerrainPopulated) continue;
                 SendChunkData(world, chunkPos);
                 SendBlockEntityUpdates(world, chunkPos);
-                break;
             }
         }
 
@@ -246,7 +222,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private bool CanSendMoreChunkData()
     {
-        return networkHandler.getBlockDataSendQueueSize() < 4;
+        return networkHandler.getBlockDataSendQueueSize() < MaxChunkPackets;
     }
 
     private void SendChunkData(ServerWorld world, ChunkPos chunkPos)
@@ -282,13 +258,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
     }
 
-
-    public override void tickMovement()
-    {
-        base.tickMovement();
-    }
-
-
     public override void sendPickup(Entity item, int count)
     {
         if (!item.dead)
@@ -309,7 +278,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         currentScreenHandler.sendContentUpdates();
     }
 
-
     public override void swingHand()
     {
         if (!handSwinging)
@@ -320,11 +288,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             et.sendToListeners(this, new EntityAnimationPacket(this, 1));
         }
     }
-
-    public void m_41544513()
-    {
-    }
-
 
     public override SleepAttemptResult trySleep(int x, int y, int z)
     {
@@ -340,7 +303,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         return sleepAttemptResult;
     }
-
 
     public override void wakeUp(bool resetSleepTimer, bool updateSleepingPlayers, bool setSpawnPos)
     {
@@ -444,17 +406,14 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, inventory.getCursorStack()));
     }
 
-
     public void onPropertyUpdate(ScreenHandler handler, int syncId, int trackedValue)
     {
         networkHandler.sendPacket(new ScreenHandlerPropertyUpdateS2CPacket(handler.syncId, syncId, trackedValue));
     }
 
-
     public override void onCursorStackChanged(ItemStack stack)
     {
     }
-
 
     public override void closeHandledScreen()
     {
@@ -526,7 +485,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         lastHealthScore = -99999999;
     }
-
 
     public override void sendMessage(string message)
     {

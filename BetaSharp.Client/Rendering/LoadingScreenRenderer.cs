@@ -1,4 +1,6 @@
-﻿using BetaSharp.Client.Rendering.Core;
+﻿using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Util;
 using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering;
@@ -9,7 +11,7 @@ public class LoadingScreenRenderer : LoadingDisplay
     private string field_1004_a = "";
     private readonly Minecraft mc;
     private string field_1007_c = "";
-    private long field_1006_d = DateTimeOffset.UtcNow.ToMillis();
+    private long field_1006_d = UnixTime.GetCurrentTimeMillis();
     private bool field_1005_e;
 
     public LoadingScreenRenderer(Minecraft var1)
@@ -81,7 +83,7 @@ public class LoadingScreenRenderer : LoadingDisplay
         }
         else
         {
-            long var2 = DateTimeOffset.UtcNow.ToMillis();
+            long var2 = UnixTime.GetCurrentTimeMillis();
             if (var2 - field_1006_d >= 20L)
             {
                 field_1006_d = var2;
@@ -128,8 +130,8 @@ public class LoadingScreenRenderer : LoadingDisplay
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
 
-                mc.fontRenderer.DrawStringWithShadow(field_1007_c, (var5 - mc.fontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, 0xFFFFFF);
-                mc.fontRenderer.DrawStringWithShadow(field_1004_a, (var5 - mc.fontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, 0xFFFFFF);
+                mc.fontRenderer.DrawStringWithShadow(field_1007_c, (var5 - mc.fontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
+                mc.fontRenderer.DrawStringWithShadow(field_1004_a, (var5 - mc.fontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
                 Display.update();
 
                 try
