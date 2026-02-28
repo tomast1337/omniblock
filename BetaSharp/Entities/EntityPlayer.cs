@@ -346,9 +346,9 @@ public abstract class EntityPlayer : EntityLiving
                 var4 = 0.02F;
                 var5 = random.NextFloat() * (float)System.Math.PI * 2.0F;
                 var4 *= random.NextFloat();
-                var3.velocityX += java.lang.Math.cos((double)var5) * (double)var4;
+                var3.velocityX += Math.Cos((double)var5) * (double)var4;
                 var3.velocityY += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
-                var3.velocityZ += java.lang.Math.sin((double)var5) * (double)var4;
+                var3.velocityZ += Math.Sin((double)var5) * (double)var4;
             }
 
             spawnItem(var3);
@@ -663,7 +663,7 @@ public abstract class EntityPlayer : EntityLiving
                 return SleepAttemptResult.NOT_POSSIBLE_NOW;
             }
 
-            if (java.lang.Math.abs(base.x - (double)x) > 3.0D || java.lang.Math.abs(base.y - (double)y) > 2.0D || java.lang.Math.abs(base.z - (double)z) > 3.0D)
+            if (Math.Abs(base.x - (double)x) > 3.0D || Math.Abs(base.y - (double)y) > 2.0D || Math.Abs(base.z - (double)z) > 3.0D)
             {
                 return SleepAttemptResult.TOO_FAR_AWAY;
             }
@@ -891,7 +891,7 @@ public abstract class EntityPlayer : EntityLiving
             int var7;
             if (isInFluid(Material.Water))
             {
-                var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + y * y + z * z) * 100.0F);
+                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + y * y + z * z) * 100.0F);
                 if (var7 > 0)
                 {
                     increaseStat(Stats.Stats.DistanceDoveStat, var7);
@@ -899,7 +899,7 @@ public abstract class EntityPlayer : EntityLiving
             }
             else if (isInWater())
             {
-                var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
+                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 0)
                 {
                     increaseStat(Stats.Stats.DistanceSwumStat, var7);
@@ -909,12 +909,12 @@ public abstract class EntityPlayer : EntityLiving
             {
                 if (y > 0.0D)
                 {
-                    increaseStat(Stats.Stats.DistanceClimbedStat, (int)java.lang.Math.round(y * 100.0D));
+                    increaseStat(Stats.Stats.DistanceClimbedStat, (int)MathHelper.Round(y * 100.0D));
                 }
             }
             else if (onGround)
             {
-                var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
+                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 0)
                 {
                     increaseStat(Stats.Stats.DistanceWalkedStat, var7);
@@ -922,7 +922,7 @@ public abstract class EntityPlayer : EntityLiving
             }
             else
             {
-                var7 = java.lang.Math.round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
+                var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 25)
                 {
                     increaseStat(Stats.Stats.DistanceFlownStat, var7);
@@ -973,7 +973,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (fallDistance >= 2.0F)
         {
-            increaseStat(Stats.Stats.DistanceFallenStat, (int)java.lang.Math.round((double)fallDistance * 100.0D));
+            increaseStat(Stats.Stats.DistanceFallenStat, (int)MathHelper.Round((double)fallDistance * 100.0D));
         }
 
         base.onLanding(fallDistance);

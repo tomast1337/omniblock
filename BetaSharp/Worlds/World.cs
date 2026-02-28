@@ -1261,7 +1261,7 @@ public abstract class World : BlockView
         Profiler.Start("updateEntites.updateWeatherEffects");
         for (int i = 0; i < globalEntities.Count; ++i)
         {
-            Entity globalEntity = (Entity)globalEntities[i];
+            Entity globalEntity = globalEntities[i];
             globalEntity.tick();
 
             if (globalEntity.dead)
@@ -1269,7 +1269,6 @@ public abstract class World : BlockView
                 globalEntities.RemoveAt(i--);
             }
         }
-
         Profiler.Stop("updateEntites.updateWeatherEffects");
 
         Profiler.Start("updateEntites.clearUnloadedEntities");

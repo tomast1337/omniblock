@@ -215,7 +215,7 @@ public class WorldRenderer : IWorldAccess
             Entity var7;
             for (var6 = 0; var6 < world.globalEntities.Count; ++var6)
             {
-                var7 = (Entity)world.globalEntities[var6];
+                var7 = world.globalEntities[var6];
                 ++countEntitiesRendered;
                 if (var7.shouldRender(var1))
                 {

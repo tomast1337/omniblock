@@ -221,8 +221,8 @@ public class ItemRenderer : EntityRenderer
 
             if (var3.isDamaged())
             {
-                int var11 = (int)java.lang.Math.round(13.0D - var3.getDamage2() * 13.0D / var3.getMaxDamage());
-                int var7 = (int)java.lang.Math.round(255.0D - var3.getDamage2() * 255.0D / var3.getMaxDamage());
+                int var11 = (int)MathHelper.Round(13.0D - var3.getDamage2() * 13.0D / var3.getMaxDamage());
+                int var7 = (int)MathHelper.Round(255.0D - var3.getDamage2() * 255.0D / var3.getMaxDamage());
                 GLManager.GL.Disable(GLEnum.Lighting);
                 GLManager.GL.Disable(GLEnum.DepthTest);
                 GLManager.GL.Disable(GLEnum.Texture2D);
