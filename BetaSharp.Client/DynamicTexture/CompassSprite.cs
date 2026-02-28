@@ -1,10 +1,10 @@
 ﻿using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using java.awt.image;
-using java.io;
-using javax.imageio;
-using IOException = java.io.IOException;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System;
+using System.IO;
 
 namespace BetaSharp.Client.DynamicTexture;
 
@@ -50,34 +50,27 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
             using Stream? stream = mc.texturePackList.SelectedTexturePack.GetResourceAsStream("gui/items.png");
             if (stream != null)
             {
-                using MemoryStream ms = new();
-                stream.CopyTo(ms);
-                BufferedImage atlasImage = ImageIO.read(new ByteArrayInputStream(ms.ToArray()));
-                int localRes = atlasImage.getWidth() / 16;
-                int sourceX = Sprite % 16 * localRes;
-                int sourceY = Sprite / 16 * localRes;
+                using Image<Rgba32> atlasImage = Image.Load<Rgba32>(stream);
+                int localRes = atlasImage.Width / 16;
+                int sourceX = (Sprite % 16) * localRes;
+                int sourceY = (Sprite / 16) * localRes;
 
-                if (localRes == _resolution)
+                for (int y = 0; y < _resolution; y++)
                 {
-                    atlasImage.getRGB(sourceX, sourceY, _resolution, _resolution, _compass, 0, _resolution);
-                }
-                else
-                {
-                    int[] temp = new int[localRes * localRes];
-                    atlasImage.getRGB(sourceX, sourceY, localRes, localRes, temp, 0, localRes);
-                    for (int y = 0; y < _resolution; y++)
+                    for (int x = 0; x < _resolution; x++)
                     {
-                        for (int x = 0; x < _resolution; x++)
-                        {
-                            _compass[y * _resolution + x] = temp[y * localRes / _resolution * localRes + x * localRes / _resolution];
-                        }
+                        int srcX = sourceX + (x * localRes / _resolution);
+                        int srcY = sourceY + (y * localRes / _resolution);
+
+                        Rgba32 pixel = atlasImage[srcX, srcY];
+                        _compass[y * _resolution + x] = (pixel.A << 24) | (pixel.R << 16) | (pixel.G << 8) | pixel.B;
                     }
                 }
             }
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
-            ex.printStackTrace();
+            Console.WriteLine(ex.ToString());
         }
     }
 
