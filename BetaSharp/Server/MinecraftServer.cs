@@ -134,7 +134,7 @@ public abstract class MinecraftServer : Runnable, CommandOutput
         }
 
         short startRegionSize = 196;
-        long lastTimeLogged = java.lang.System.currentTimeMillis();
+        long lastTimeLogged = UnixTime.GetCurrentTimeMillis();
 
         for (int i = 0; i < worlds.Length; i++)
         {
@@ -148,7 +148,7 @@ public abstract class MinecraftServer : Runnable, CommandOutput
                 {
                     for (int z = -startRegionSize; z <= startRegionSize && running; z += 16)
                     {
-                        long currentTime = java.lang.System.currentTimeMillis();
+                        long currentTime = UnixTime.GetCurrentTimeMillis();
                         if (currentTime < lastTimeLogged)
                         {
                             lastTimeLogged = currentTime;
@@ -233,14 +233,14 @@ public abstract class MinecraftServer : Runnable, CommandOutput
         {
             if (Init())
             {
-                long lastTime = java.lang.System.currentTimeMillis();
+                long lastTime = UnixTime.GetCurrentTimeMillis();
                 long accumulatedTime = 0L;
                 _lastTpsTime = lastTime;
                 _ticksThisSecond = 0;
 
                 while (running)
                 {
-                    long currentTime = java.lang.System.currentTimeMillis();
+                    long currentTime = UnixTime.GetCurrentTimeMillis();
                     long tickLength = currentTime - lastTime;
                     if (tickLength > 2000L)
                     {
@@ -283,7 +283,7 @@ public abstract class MinecraftServer : Runnable, CommandOutput
                         }
                     }
 
-                    long tpsNow = java.lang.System.currentTimeMillis();
+                    long tpsNow = UnixTime.GetCurrentTimeMillis();
                     long tpsElapsed = tpsNow - _lastTpsTime;
                     if (tpsElapsed >= 1000L)
                     {

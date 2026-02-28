@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network.Packets;
@@ -15,7 +16,7 @@ public abstract class Packet
 
     private static readonly Dictionary<int, PacketTracker> s_trackers = new ();
 
-    public readonly long CreationTime = java.lang.System.currentTimeMillis();
+    public readonly long CreationTime = UnixTime.GetCurrentTimeMillis();
     public bool WorldPacket = false;
     private PacketRegisterRout? _rout = null;
 

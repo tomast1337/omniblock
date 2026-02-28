@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Server.Network;
+using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Threading;
@@ -31,14 +32,14 @@ public class AcceptConnectionThread : java.lang.Thread
 
                 ArgumentNullException.ThrowIfNull(address);
 
-                if (map.TryGetValue(address, out long id) && ! IPAddress.Loopback.Equals(address) && java.lang.System.currentTimeMillis() - id < 5000L)
+                if (map.TryGetValue(address, out long id) && ! IPAddress.Loopback.Equals(address) && UnixTime.GetCurrentTimeMillis() - id < 5000L)
                 {
-                    map[address] = java.lang.System.currentTimeMillis();
+                    map[address] = UnixTime.GetCurrentTimeMillis();
                     socket.Close();
                 }
                 else
                 {
-                    map[address] = java.lang.System.currentTimeMillis();
+                    map[address] = UnixTime.GetCurrentTimeMillis();
                     ServerLoginNetworkHandler handler = new(_listener.server, socket, "Connection # " + _listener.connectionCounter);
                     _listener.AddPendingConnection(handler);
                 }
