@@ -379,7 +379,7 @@ public class GuiAchievements : GuiScreen
             var33 = var2 - 4;
             if (statFileWriter.CanUnlockAchievement(var27))
             {
-                var34 = java.lang.Math.max(FontRenderer.GetStringWidth(var31), 120);
+                var34 = Math.Max(FontRenderer.GetStringWidth(var31), 120);
                 int var37 = FontRenderer.GetStringHeight(var32 ?? "", var34);
                 if (statFileWriter.HasAchievementUnlocked(var27))
                 {
@@ -395,7 +395,7 @@ public class GuiAchievements : GuiScreen
             }
             else
             {
-                var34 = java.lang.Math.max(FontRenderer.GetStringWidth(var31), 120);
+                var34 = Math.Max(FontRenderer.GetStringWidth(var31), 120);
                 string var39 = StatCollector.TranslateToLocalFormatted("achievement.requires", new object[] { var27.parent.StatName });
                 var38 = FontRenderer.GetStringHeight(var39, var34);
                 DrawGradientRect(var17 - 3, var33 - 3, var17 + var34 + 3, var33 + var38 + 12 + 3, 0xC0000000, 0xC0000000);
