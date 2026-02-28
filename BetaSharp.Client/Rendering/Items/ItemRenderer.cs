@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
@@ -214,7 +215,7 @@ public class ItemRenderer : EntityRenderer
                 string var6 = "" + var3.count;
                 GLManager.GL.Disable(GLEnum.Lighting);
                 GLManager.GL.Disable(GLEnum.DepthTest);
-                var1.DrawStringWithShadow(var6, var4 + 19 - 2 - var1.GetStringWidth(var6), var5 + 6 + 3, 0xFFFFFF);
+                var1.DrawStringWithShadow(var6, var4 + 19 - 2 - var1.GetStringWidth(var6), var5 + 6 + 3, Color.White);
                 GLManager.GL.Enable(GLEnum.Lighting);
                 GLManager.GL.Enable(GLEnum.DepthTest);
             }

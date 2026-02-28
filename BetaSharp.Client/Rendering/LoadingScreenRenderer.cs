@@ -1,4 +1,5 @@
-﻿using BetaSharp.Client.Rendering.Core;
+﻿using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Core;
 using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering;
@@ -128,8 +129,8 @@ public class LoadingScreenRenderer : LoadingDisplay
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
 
-                mc.fontRenderer.DrawStringWithShadow(field_1007_c, (var5 - mc.fontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, 0xFFFFFF);
-                mc.fontRenderer.DrawStringWithShadow(field_1004_a, (var5 - mc.fontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, 0xFFFFFF);
+                mc.fontRenderer.DrawStringWithShadow(field_1007_c, (var5 - mc.fontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
+                mc.fontRenderer.DrawStringWithShadow(field_1004_a, (var5 - mc.fontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
                 Display.update();
 
                 try
