@@ -9,7 +9,7 @@ using BetaSharp.Worlds.Gen.Features;
 
 namespace BetaSharp.Worlds.Gen.Chunks;
 
-public class OverworldChunkGenerator : ChunkSource
+internal class OverworldChunkGenerator : ChunkSource
 {
 
     private readonly JavaRandom random;

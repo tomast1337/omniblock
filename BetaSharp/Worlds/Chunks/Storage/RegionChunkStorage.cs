@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Chunks.Storage;
 
-public class RegionChunkStorage : IChunkStorage
+internal class RegionChunkStorage : IChunkStorage
 {
     private readonly ILogger<RegionChunkStorage> _logger = Log.Instance.For<RegionChunkStorage>();
     private readonly java.io.File dir;

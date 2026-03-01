@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockPressurePlate : Block
+internal class BlockPressurePlate : Block
 {
 
     private readonly PressurePlateActiviationRule activationRule;

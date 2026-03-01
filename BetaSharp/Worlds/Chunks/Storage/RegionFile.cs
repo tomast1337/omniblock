@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Chunks.Storage;
 
-public class RegionFile
+internal class RegionFile
 {
     public enum CompressionType : byte
     {

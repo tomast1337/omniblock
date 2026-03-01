@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockTorch : Block
+internal class BlockTorch : Block
 {
 
     public BlockTorch(int id, int textureId) : base(id, textureId, Material.PistonBreakable)

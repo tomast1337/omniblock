@@ -8,7 +8,7 @@ using Exception = System.Exception;
 
 namespace BetaSharp.Server;
 
-public class DedicatedServer(IServerConfiguration config) : MinecraftServer(config)
+internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(config)
 {
     private static readonly ILogger<DedicatedServer> s_logger = Log.Instance.For<DedicatedServer>();
 

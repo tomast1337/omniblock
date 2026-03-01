@@ -2,7 +2,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Gen.Features;
 
-public class LargeOakTreeFeature : Feature
+internal class LargeOakTreeFeature : Feature
 {
 
     static readonly sbyte[] MINOR_AXES = [2, 0, 0, 1, 2, 1];

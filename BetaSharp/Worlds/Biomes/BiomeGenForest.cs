@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Gen.Features;
 
 namespace BetaSharp.Worlds.Biomes;
 
-public class BiomeGenForest : Biome
+internal class BiomeGenForest : Biome
 {
 
     public BiomeGenForest()

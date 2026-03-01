@@ -4,7 +4,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Dimensions;
 
-public class PortalForcer
+internal class PortalForcer
 {
     public void MoveToPortal(World world, Entity entity)
     {
@@ -22,7 +22,7 @@ public class PortalForcer
         int foundX = 0;
         int foundY = 0;
         int foundZ = 0;
-        
+
         int entityX = MathHelper.Floor(entity.x);
         int entityZ = MathHelper.Floor(entity.z);
 
@@ -47,7 +47,7 @@ public class PortalForcer
 
                         double dy = y + 0.5D - entity.y;
                         double distanceSq = dx * dx + dy * dy + dz * dz;
-                        
+
                         if (closestDistance < 0.0D || distanceSq < closestDistance)
                         {
                             closestDistance = distanceSq;
@@ -84,16 +84,16 @@ public class PortalForcer
     {
         byte searchRadius = 16;
         double closestDistance = -1.0D;
-        
+
         int entityX = MathHelper.Floor(entity.x);
         int entityY = MathHelper.Floor(entity.y);
         int entityZ = MathHelper.Floor(entity.z);
-        
+
         int bestX = entityX;
         int bestY = entityY;
         int bestZ = entityZ;
         int bestDirection = 0;
-        
+
         int randomDirection = Random.Shared.Next(4);
 
         // Phase 1: Search for an optimal flat 3x4 area of solid ground
@@ -134,7 +134,7 @@ public class PortalForcer
                                         int checkX = x + (widthDepth - 1) * dirX + width * dirZ;
                                         int checkY = y + height;
                                         int checkZ = z + (widthDepth - 1) * dirZ - width * dirX;
-                                        
+
                                         if (height < 0 && !world.getMaterial(checkX, checkY, checkZ).IsSolid || height >= 0 && !world.isAir(checkX, checkY, checkZ))
                                         {
                                             validLocation = false;
@@ -195,7 +195,7 @@ public class PortalForcer
                                         int checkX = x + (widthDepth - 1) * dirX;
                                         int checkY = y + height;
                                         int checkZ = z + (widthDepth - 1) * dirZ;
-                                        
+
                                         if (height < 0 && !world.getMaterial(checkX, checkY, checkZ).IsSolid || height >= 0 && !world.isAir(checkX, checkY, checkZ))
                                         {
                                             validLocation = false;
@@ -227,10 +227,10 @@ public class PortalForcer
         int finalX = bestX;
         int finalY = bestY;
         int finalZ = bestZ;
-        
+
         int finalDirX = bestDirection % 2;
         int finalDirZ = 1 - finalDirX;
-        
+
         if (bestDirection % 4 >= 2)
         {
             finalDirX = -finalDirX;
@@ -251,7 +251,7 @@ public class PortalForcer
                         int buildX = finalX + (wDepth - 1) * finalDirX + w * finalDirZ;
                         int buildY = finalY + h;
                         int buildZ = finalZ + (wDepth - 1) * finalDirZ - w * finalDirX;
-                        
+
                         bool isFloor = h < 0;
                         world.setBlock(buildX, buildY, buildZ, isFloor ? Block.Obsidian.id : 0);
                     }
@@ -259,7 +259,7 @@ public class PortalForcer
             }
         }
 
-        // Phase 4: Construct the Obsidian Frame and spawn portal blocks 
+        // Phase 4: Construct the Obsidian Frame and spawn portal blocks
         for (int pass = 0; pass < 4; ++pass)
         {
             world.pauseTicking = true;
@@ -271,7 +271,7 @@ public class PortalForcer
                     int buildX = finalX + (wDepth - 1) * finalDirX;
                     int buildY = finalY + h;
                     int buildZ = finalZ + (wDepth - 1) * finalDirZ;
-                    
+
                     bool isFrameEdge = wDepth == 0 || wDepth == 3 || h == -1 || h == 3;
                     world.setBlock(buildX, buildY, buildZ, isFrameEdge ? Block.Obsidian.id : Block.NetherPortal.id);
                 }
@@ -287,7 +287,7 @@ public class PortalForcer
                     int buildX = finalX + (wDepth - 1) * finalDirX;
                     int buildY = finalY + h;
                     int buildZ = finalZ + (wDepth - 1) * finalDirZ;
-                    
+
                     world.notifyNeighbors(buildX, buildY, buildZ, world.getBlockId(buildX, buildY, buildZ));
                 }
             }

@@ -6,7 +6,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockSign : BlockWithEntity
+internal class BlockSign : BlockWithEntity
 {
     private readonly Type _blockEntityType;
     private readonly bool _standing;

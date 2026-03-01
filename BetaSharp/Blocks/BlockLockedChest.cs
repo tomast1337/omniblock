@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockLockedChest : Block
+internal class BlockLockedChest : Block
 {
 
     public BlockLockedChest(int id) : base(id, Material.Wood)

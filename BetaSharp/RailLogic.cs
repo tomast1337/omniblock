@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp;
 
-public class RailLogic
+internal class RailLogic
 {
     private World _worldObj;
     private Vec3i _trackPos;

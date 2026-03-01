@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Threading;
 
-public class AcceptConnectionThread : java.lang.Thread
+internal class AcceptConnectionThread : java.lang.Thread
 {
     private readonly ILogger<AcceptConnectionThread> _logger = Log.Instance.For<AcceptConnectionThread>();
     private readonly ConnectionListener _listener;

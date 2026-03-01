@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-public class RecipesArmor
+internal class RecipesArmor
 {
     private string[][] recipePatterns =
     [

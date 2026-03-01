@@ -3,7 +3,7 @@ using java.lang;
 
 namespace BetaSharp.Worlds.Chunks.Storage;
 
-public class DataFile : Comparable
+internal class DataFile : Comparable
 {
     private readonly java.io.File file;
     private readonly int chunkX;

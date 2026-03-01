@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-public class RecipesTools
+internal class RecipesTools
 {
     private string[][] recipePatterns = [["XXX", " # ", " # "], ["X", "#", "#"], ["XX", "X#", " #"], ["XX", " #", " #"]];
     private object[][] recipeItems = [[Block.Planks, Block.Cobblestone, Item.IronIngot, Item.Diamond, Item.GoldIngot], [Item.WoodenPickaxe, Item.StonePickaxe, Item.IronPickaxe, Item.DiamondPickaxe, Item.GoldenPickaxe], [Item.WoodenShovel, Item.StoneShovel, Item.IronShovel, Item.DiamondShovel, Item.GoldenShovel], [Item.WoodenAxe, Item.StoneAxe, Item.IronAxe, Item.DiamondAxe, Item.GoldenAxe], [Item.WoodenHoe, Item.StoneHoe, Item.IronHoe, Item.DiamondHoe, Item.GoldenHoe]];

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Storage;
 
-public class RegionWorldStorage : IWorldStorage, IPlayerStorage
+internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 {
     private readonly DirectoryInfo _saveDirectory;
     private readonly DirectoryInfo _playersDirectory;
@@ -166,7 +166,7 @@ public class RegionWorldStorage : IWorldStorage, IPlayerStorage
         {
             NBTTagCompound tag = new();
             player.write(tag);
-            
+
             string tempFile = System.IO.Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
             string finalFile = System.IO.Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
 
@@ -212,7 +212,7 @@ public class RegionWorldStorage : IWorldStorage, IPlayerStorage
                     using var stream = File.OpenRead(levelFile);
                     NBTTagCompound levelDat = NbtIo.ReadCompressed(stream);
                     NBTTagCompound data = levelDat.GetCompoundTag("Data");
-                    
+
                     if (data.HasKey("Player"))
                     {
                         NBTTagCompound playerTag = data.GetCompoundTag("Player");

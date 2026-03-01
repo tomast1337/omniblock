@@ -6,7 +6,7 @@ using BetaSharp.Screens.Slots;
 
 namespace BetaSharp.Screens;
 
-public class PlayerScreenHandler : ScreenHandler
+internal class PlayerScreenHandler : ScreenHandler
 {
 
     public InventoryCrafting craftingInput;

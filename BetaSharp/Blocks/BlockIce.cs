@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockIce : BlockBreakable
+internal class BlockIce : BlockBreakable
 {
 
     public BlockIce(int id, int textureId) : base(id, textureId, Material.Ice, false)

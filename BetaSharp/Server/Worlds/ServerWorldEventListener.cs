@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Server.Worlds;
 
-public class ServerWorldEventListener : IWorldAccess
+internal class ServerWorldEventListener : IWorldAccess
 {
     private readonly MinecraftServer server;
     private readonly ServerWorld world;

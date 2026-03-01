@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockNote : BlockWithEntity
+internal class BlockNote : BlockWithEntity
 {
     public BlockNote(int id) : base(id, 74, Material.Wood)
     {

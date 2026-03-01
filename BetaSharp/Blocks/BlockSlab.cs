@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockSlab : Block
+internal class BlockSlab : Block
 {
     public static readonly string[] names = ["stone", "sand", "wood", "cobble"];
     private bool doubleSlab;

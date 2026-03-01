@@ -4,7 +4,7 @@ using java.util.logging;
 
 namespace BetaSharp.Server.Commands;
 
-public class AdminCommands
+internal class AdminCommands
 {
     private static readonly Logger logger = Logger.getLogger("Minecraft");
 
