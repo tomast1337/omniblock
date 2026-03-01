@@ -103,10 +103,7 @@ public abstract class Entity
         return id;
     }
 
-    public Vec3D GetPosition()
-    {
-        return new Vec3D(x, y, z);
-    }
+    public Vec3D Position => new Vec3D(x, y, z);
 
     public virtual void teleportToTop()
     {

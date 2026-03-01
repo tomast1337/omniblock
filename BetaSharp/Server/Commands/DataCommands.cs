@@ -174,9 +174,11 @@ public static class DataCommands
                 // Tiered distance check for faster comparison
                 double d = Math.Abs(entity.x - player.x) + Math.Abs(entity.z - player.z);
                 if (d * d * 1.15 > distanceFast) continue;
-                d = player.GetPosition().squareDistance2DTo(entity.GetPosition());
+                var pPos = player.Position;
+                var ePos = entity.Position;
+                d = pPos.squareDistance2DTo(ePos);
                 if (d > distanceFast) continue;
-                double slowD = player.GetPosition().squareDistanceTo(entity.GetPosition());
+                double slowD = pPos.squareDistanceTo(ePos);
                 if (slowD > distance) continue;
                 if (entity.id == player.id) continue; // dont get self
 
@@ -215,7 +217,7 @@ public static class DataCommands
         output.SendMessage("alive: " + !e.dead);
         output.SendMessage("isPersistent: " + e.isPersistent);
         output.SendMessage("age: " + e.age);
-        output.SendMessage("pos: " + e.GetPosition().ToString("F2"));
+        output.SendMessage("pos: " + e.Position.ToString("F2"));
         if (e.passenger != null)
             output.SendMessage("Passenger: " + e.passenger.id);
         if (e.vehicle != null)
