@@ -6,7 +6,7 @@ using Exception = System.Exception;
 
 namespace BetaSharp.Server;
 
-public class DedicatedServerConfiguration : IServerConfiguration
+internal class DedicatedServerConfiguration : IServerConfiguration
 {
     public static Logger logger = Logger.getLogger("Minecraft");
     private readonly Properties properties = new();

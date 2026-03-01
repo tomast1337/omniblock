@@ -8,7 +8,7 @@ using BetaSharp.Worlds.Biomes;
 
 namespace BetaSharp;
 
-public static class NaturalSpawner
+internal static class NaturalSpawner
 {
     private const int SpawnMaxRadius = 8; // Expressed in chunks
     private const float SpawnMinRadius = 24.0F; // Expressed in blocks

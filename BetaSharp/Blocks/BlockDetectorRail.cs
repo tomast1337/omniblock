@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockDetectorRail : BlockRail
+internal class BlockDetectorRail : BlockRail
 {
     public BlockDetectorRail(int id, int textureId) : base(id, textureId, true)
     {

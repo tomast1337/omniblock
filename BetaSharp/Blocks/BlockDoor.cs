@@ -7,7 +7,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockDoor : Block
+internal class BlockDoor : Block
 {
     public BlockDoor(int id, Material material) : base(id, material)
     {

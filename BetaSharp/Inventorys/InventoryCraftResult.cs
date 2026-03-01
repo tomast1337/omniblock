@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Inventorys;
 
-public class InventoryCraftResult : IInventory
+internal class InventoryCraftResult : IInventory
 {
 
     private ItemStack[] stackResult = new ItemStack[1];

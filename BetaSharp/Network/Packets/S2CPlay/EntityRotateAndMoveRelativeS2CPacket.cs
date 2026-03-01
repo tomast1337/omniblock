@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
-public class EntityRotateAndMoveRelativeS2CPacket : EntityS2CPacket
+internal class EntityRotateAndMoveRelativeS2CPacket : EntityS2CPacket
 {
     public EntityRotateAndMoveRelativeS2CPacket()
     {

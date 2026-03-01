@@ -4,7 +4,7 @@ using java.util;
 
 namespace BetaSharp.Recipes;
 
-public class ShapelessRecipes : IRecipe
+internal class ShapelessRecipes : IRecipe
 {
 
     private readonly ItemStack _output;

@@ -7,7 +7,7 @@ using BetaSharp.Worlds.Gen.Features;
 
 namespace BetaSharp.Worlds.Gen.Chunks;
 
-public class NetherChunkGenerator : ChunkSource
+internal class NetherChunkGenerator : ChunkSource
 {
 
     private readonly JavaRandom random;

@@ -9,7 +9,7 @@ using BetaSharp.Worlds.Gen.Features;
 
 namespace BetaSharp.Worlds.Gen.Chunks;
 
-public class SkyChunkGenerator : ChunkSource
+internal class SkyChunkGenerator : ChunkSource
 {
 
     private JavaRandom rand;

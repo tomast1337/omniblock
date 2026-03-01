@@ -19,7 +19,7 @@ public struct ChunkVisibilityStore
             return FoldOutgoing(_data);
 
         long visibilityData = _data;
-        
+
         visibilityData &= GetAngleMask(viewPos, renderer);
 
         long mask = CreateMask((int)incoming);

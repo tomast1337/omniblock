@@ -6,7 +6,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.PathFinding;
 
-public class PathFinder
+internal class PathFinder
 {
     private BlockView _worldMap;
     private readonly Path _path = new();

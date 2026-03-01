@@ -7,7 +7,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Items;
 
-public class ItemBucket : Item
+internal class ItemBucket : Item
 {
 
     private int isFull;

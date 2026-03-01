@@ -3,7 +3,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Gen.Carvers;
 
-public class NetherCaveCarver : Carver
+internal class NetherCaveCarver : Carver
 {
 
     protected void CarveNetherCavesInChunk(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z)

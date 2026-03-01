@@ -1,6 +1,6 @@
 namespace BetaSharp.Recipes;
 
-public class RecipeSorter : IComparer<IRecipe>
+internal class RecipeSorter : IComparer<IRecipe>
 {
     public int Compare(IRecipe x, IRecipe y)
     {
@@ -16,6 +16,6 @@ public class RecipeSorter : IComparer<IRecipe>
         int ySize = y.GetRecipeSize();
 
         // Standard C# comparison (returns -1, 0, or 1)
-        return ySize.CompareTo(xSize); 
+        return ySize.CompareTo(xSize);
     }
 }

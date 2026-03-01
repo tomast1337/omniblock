@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Storage;
 
-
 public class RegionWorldStorageSource : IWorldStorageSource
 {
     protected readonly DirectoryInfo BaseDir;
@@ -25,7 +24,7 @@ public class RegionWorldStorageSource : IWorldStorageSource
     public virtual List<WorldSaveInfo> GetAll()
     {
         var saves = new List<WorldSaveInfo>();
-        
+
         if (!BaseDir.Exists) return saves;
 
         foreach (var subDir in BaseDir.GetDirectories())
@@ -39,10 +38,10 @@ public class RegionWorldStorageSource : IWorldStorageSource
                 string displayName = string.IsNullOrEmpty(props.LevelName) ? folderName : props.LevelName;
 
                 saves.Add(new WorldSaveInfo(
-                    folderName, 
-                    displayName, 
-                    props.LastTimePlayed, 
-                    props.SizeOnDisk, 
+                    folderName,
+                    displayName,
+                    props.LastTimePlayed,
+                    props.SizeOnDisk,
                     requiresConversion));
             }
         }
@@ -85,7 +84,7 @@ public class RegionWorldStorageSource : IWorldStorageSource
                 using var stream = file.OpenRead();
                 var root = NbtIo.ReadCompressed(stream);
                 var data = root.GetCompoundTag("Data");
-                
+
                 var properties = new WorldProperties(data)
                 {
                     SizeOnDisk = GetFolderSize(worldDir)

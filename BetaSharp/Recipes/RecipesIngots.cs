@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-public class RecipesIngots
+internal class RecipesIngots
 {
     private object[][] recipeItems = [[Block.GoldBlock, new ItemStack(Item.GoldIngot, 9)], [Block.IronBlock, new ItemStack(Item.IronIngot, 9)], [Block.DiamondBlock, new ItemStack(Item.Diamond, 9)], [Block.LapisBlock, new ItemStack(Item.Dye, 9, 4)]];
 

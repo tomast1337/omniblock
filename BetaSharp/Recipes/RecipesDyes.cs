@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-public class RecipesDyes
+internal class RecipesDyes
 {
     public void AddRecipes(CraftingManager m)
     {

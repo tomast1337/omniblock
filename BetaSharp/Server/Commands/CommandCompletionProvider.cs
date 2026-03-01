@@ -2,7 +2,7 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Server.Commands;
 
-public static class CommandCompletionProvider
+internal static class CommandCompletionProvider
 {
     /// <summary>
     /// Get tab completions for command arguments
@@ -72,7 +72,7 @@ public static class CommandCompletionProvider
 
         return server.playerManager.players
             .Select(p => p?.name)
-            .Where(name => !string.IsNullOrEmpty(name) && 
+            .Where(name => !string.IsNullOrEmpty(name) &&
                           (string.IsNullOrEmpty(prefix) || name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             .OrderBy(name => name)
             .ToList();

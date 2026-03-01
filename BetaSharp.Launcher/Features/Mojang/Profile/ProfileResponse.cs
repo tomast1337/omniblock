@@ -2,7 +2,7 @@
 
 internal sealed class ProfileResponse
 {
-    public sealed class Skin
+    internal sealed class Skin
     {
         public required string Url { get; init; }
 

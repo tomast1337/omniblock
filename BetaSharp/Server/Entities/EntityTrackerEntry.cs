@@ -7,7 +7,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server.Entities;
 
-public class EntityTrackerEntry
+internal class EntityTrackerEntry
 {
     public Entity currentTrackedEntity;
     public int trackedDistance;

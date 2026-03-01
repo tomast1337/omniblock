@@ -7,7 +7,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockFurnace : BlockWithEntity
+internal class BlockFurnace : BlockWithEntity
 {
 
     private readonly JavaRandom _random = new();

@@ -1,6 +1,6 @@
 namespace BetaSharp.Network;
 
-public class NetworkWriterThread : java.lang.Thread
+internal class NetworkWriterThread : java.lang.Thread
 {
     public readonly Connection netManager;
 

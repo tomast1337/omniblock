@@ -3,12 +3,12 @@ namespace BetaSharp.Util;
 public class ChunkMeshVersion
 {
     private static readonly Stack<ChunkMeshVersion> s_pool = new();
-    
+
     private long _epoch;
     private long _lastMeshed;
     private long _pendingMesh = -1;
 
-    private ChunkMeshVersion() 
+    private ChunkMeshVersion()
     {
         TotalAllocated++;
     }

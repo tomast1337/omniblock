@@ -2,7 +2,7 @@ using BetaSharp.Blocks;
 
 namespace BetaSharp.Worlds.Chunks.Light;
 
-public struct LightUpdate
+internal struct LightUpdate
 {
     public readonly LightType lightType;
 

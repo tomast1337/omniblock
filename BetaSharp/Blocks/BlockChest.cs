@@ -9,7 +9,7 @@ using BetaSharp.Worlds;
 namespace BetaSharp.Blocks;
 
 //NOTE: CHESTS DON'T ROTATE BASED ON PLAYER ORIENTATION, THIS IS VANILLA BEHAVIOR, NOT A BUG
-public class BlockChest : BlockWithEntity
+internal class BlockChest : BlockWithEntity
 {
     private JavaRandom random = new();
 
