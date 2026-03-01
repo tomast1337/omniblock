@@ -1,6 +1,7 @@
 ﻿using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -8,6 +9,7 @@ namespace BetaSharp.Client.DynamicTexture;
 
 internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
 {
+    private readonly ILogger<CompassSprite> _logger = Log.Instance.For<CompassSprite>();
     private double _angle;
     private double _angleDelta;
     private int[] _compass = new int[256];
@@ -68,7 +70,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            _logger.LogError(ex,"Error loading compass sprite");
         }
     }
 

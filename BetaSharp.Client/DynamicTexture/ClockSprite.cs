@@ -1,5 +1,6 @@
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Items;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -7,6 +8,8 @@ namespace BetaSharp.Client.DynamicTexture;
 
 internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
 {
+    private readonly ILogger<ClockSprite> _logger = Log.Instance.For<ClockSprite>();
+
     private double _angle;
     private double _angleDelta;
     private int[] _clock = new int[256];
@@ -61,7 +64,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
                     {
                         int srcX = sourceX + (x * atlasResolution / _resolution);
                         int srcY = sourceY + (y * atlasResolution / _resolution);
-                        
+
                         Rgba32 pixel = atlasImage[srcX, srcY];
                         _clock[y * _resolution + x] = (pixel.A << 24) | (pixel.R << 16) | (pixel.G << 8) | pixel.B;
                     }
@@ -74,7 +77,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
                 using Image<Rgba32> dialImage = Image.Load<Rgba32>(dialStream);
                 _dialResolution = dialImage.Width;
                 int dialPixelCount = _dialResolution * _dialResolution;
-                
+
                 if (_dial.Length != dialPixelCount)
                 {
                     _dial = new int[dialPixelCount];
@@ -92,7 +95,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            _logger.LogError(ex, "Error loading clock sprite");
         }
     }
 
@@ -109,10 +112,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
             }
         }
 
-        double angleDifference;
-        for (angleDifference = targetAngle - _angle; angleDifference < -Math.PI; angleDifference += Math.PI * 2.0D)
-        {
-        }
+        double angleDifference = Math.Atan2(Math.Sin(targetAngle - _angle), Math.Cos(targetAngle - _angle));
 
         while (angleDifference >= Math.PI)
         {
