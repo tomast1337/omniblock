@@ -77,7 +77,7 @@ public class PlayerManager
         ServerWorld var2 = _server.getWorld(player.dimensionId);
         var2.chunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
 
-        while (var2.getEntityCollisions(player, player.boundingBox).Count != 0)
+        while (var2.GetEntityCollisions(player, player.boundingBox).Count != 0)
         {
             player.setPosition(player.x, player.y + 1.0, player.z);
         }
@@ -177,7 +177,7 @@ public class PlayerManager
 
         var5.chunkCache.LoadChunk((int)var4.x >> 4, (int)var4.z >> 4);
 
-        while (var5.getEntityCollisions(var4, var4.boundingBox).Count != 0)
+        while (var5.GetEntityCollisions(var4, var4.boundingBox).Count != 0)
         {
             var4.setPosition(var4.x, var4.y + 1.0, var4.z);
         }

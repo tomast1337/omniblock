@@ -7,7 +7,6 @@ using BetaSharp.NBT;
 using BetaSharp.PathFinding;
 using BetaSharp.Profiling;
 using BetaSharp.Rules;
-using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Biomes;
@@ -58,6 +57,8 @@ public abstract class World : BlockView
     public List<Entity> globalEntities = [];
     private readonly List<Entity> _entitiesToUnload = [];
 
+    [ThreadStatic]
+    private static List<Entity>? _tempCollisionEntities;
 
     private readonly HashSet<ChunkPos> _activeChunks = new();
     public List<BlockEntity> blockEntities = [];
@@ -1008,12 +1009,12 @@ public abstract class World : BlockView
         EventListeners.Remove(worldAccess);
     }
 
-    public List<Box> getEntityCollisions(Entity entity, Box area)
+    public List<Box> GetEntityCollisions(Entity entity, Box area)
     {
-        return getEntityCollisions(entity, area, new List<Box>());
+        return GetEntityCollisions(entity, area, new List<Box>());
     }
 
-    public List<Box> getEntityCollisions(Entity entity, Box area, List<Box> collidingBoundingBoxes)
+    private List<Box> GetEntityCollisions(Entity entity, Box area, List<Box> collidingBoundingBoxes)
     {
         int minX = MathHelper.Floor(area.MinX);
         int maxX = MathHelper.Floor(area.MaxX + 1.0D);
@@ -1041,27 +1042,29 @@ public abstract class World : BlockView
         }
 
         const double expansion = 0.25D;
-        List<Entity> nearbyEntities = new List<Entity>();
-        getEntities(entity, area.Expand(expansion, expansion, expansion), nearbyEntities);
+        _tempCollisionEntities ??= new List<Entity>();
+        _tempCollisionEntities.Clear();
+
+        getEntities(entity, area.Expand(expansion, expansion, expansion), _tempCollisionEntities);
 
         int collisionCount = 0;
-        const int MAX_COLLISIONS = 24;
+        int maxCollisions = Rules.GetInt(DefaultRules.MaxCollisions);
 
-        for (int i = 0; i < nearbyEntities.Count; ++i)
+        for (int i = 0; i < _tempCollisionEntities.Count; ++i)
         {
-            if (collisionCount >= MAX_COLLISIONS)
+            if (collisionCount >= maxCollisions)
             {
                 break;
             }
 
-            Box? entityBox = nearbyEntities[i].getBoundingBox();
+            Box? entityBox = _tempCollisionEntities[i].getBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
                 collisionCount++;
             }
 
-            entityBox = entity.getCollisionAgainstShape(nearbyEntities[i]);
+            entityBox = entity.getCollisionAgainstShape(_tempCollisionEntities[i]);
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
