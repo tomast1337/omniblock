@@ -1,7 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util.Maths;
 using java.io;
-using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Guis;
 
@@ -130,8 +129,8 @@ public class GuiMainMenu : GuiScreen
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(Width / 2 + 90, 70.0F, 0.0F);
         GLManager.GL.Rotate(-20.0F, 0.0F, 0.0F, 1.0F);
-        float splashScale = 1.8F - MathHelper.Abs(MathHelper.Sin(java.lang.System.currentTimeMillis() % 1000L /
-            1000.0F * (float)Math.PI * 2.0F) * 0.1F);
+        float splashScale = 1.8F - MathHelper.Abs(MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ % 1000L / 1000.0F * (float)Math.PI * 2.0F) * 0.1F);
         splashScale = splashScale * 100.0F / (FontRenderer.GetStringWidth(_splashText) + 32);
         GLManager.GL.Scale(splashScale, splashScale, splashScale);
         DrawCenteredString(FontRenderer, _splashText, 0, -8, Color.Yellow);

@@ -30,7 +30,8 @@ public class GameRenderer
     private readonly MouseFilter _mouseFilterXAxis = new();
     private readonly MouseFilter _mouseFilterYAxis = new();
 
-    private long _prevFrameTime = java.lang.System.currentTimeMillis();
+    private long _prevFrameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+;
     private readonly JavaRandom _random = new();
     private int _rainSoundCounter;
     private readonly float[] _fogColorBuffer = new float[16];
@@ -213,14 +214,16 @@ public class GameRenderer
     {
         if (!Display.isActive())
         {
-            if (java.lang.System.currentTimeMillis() - _prevFrameTime > 500L)
+            if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ - _prevFrameTime > 500L)
             {
                 _client.displayInGameMenu();
             }
         }
         else
         {
-            _prevFrameTime = java.lang.System.currentTimeMillis();
+            _prevFrameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+;
         }
 
         if (_client.inGameHasFocus)
