@@ -4,7 +4,7 @@ namespace BetaSharp.Launcher.Features.Mojang.Entitlements;
 
 internal sealed class EntitlementsResponse
 {
-    public sealed class Item
+    internal sealed class Item
     {
         public required string Name { get; init; }
 

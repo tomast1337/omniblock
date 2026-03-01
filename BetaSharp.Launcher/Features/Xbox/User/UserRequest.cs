@@ -2,7 +2,7 @@ namespace BetaSharp.Launcher.Features.Xbox.User;
 
 internal sealed class UserRequest
 {
-    public sealed class UserProperties
+    internal sealed class UserProperties
     {
         public string AuthMethod => "RPS";
 

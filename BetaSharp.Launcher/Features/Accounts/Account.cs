@@ -2,7 +2,7 @@
 
 namespace BetaSharp.Launcher.Features.Accounts;
 
-public sealed class Account
+internal sealed class Account
 {
     public required string Name { get; init; }
 

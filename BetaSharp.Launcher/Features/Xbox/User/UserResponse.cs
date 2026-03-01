@@ -2,9 +2,9 @@ namespace BetaSharp.Launcher.Features.Xbox.User;
 
 internal sealed class UserResponse
 {
-    public sealed class UserDisplayClaims
+    internal sealed class UserDisplayClaims
     {
-        public sealed class UserXui
+        internal sealed class UserXui
         {
             public required string Uhs { get; init; }
         }

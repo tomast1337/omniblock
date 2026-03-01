@@ -2,7 +2,7 @@ namespace BetaSharp.Launcher.Features.Xbox.Token;
 
 internal sealed class TokenRequest
 {
-    public sealed class TokenProperties
+    internal sealed class TokenProperties
     {
         public string SandboxId => "RETAIL";
 
