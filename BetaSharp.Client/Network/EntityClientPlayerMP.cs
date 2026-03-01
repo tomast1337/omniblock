@@ -1,4 +1,4 @@
-﻿using BetaSharp.Client.Entities;
+using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
@@ -178,7 +178,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void closeHandledScreen()
     {
-        sendQueue.addToSendQueue(new CloseScreenS2CPacket(currentScreenHandler.syncId));
+        sendQueue.addToSendQueue(new CloseScreenS2CPacket(currentScreenHandler.SyncId));
         inventory.setItemStack(null);
         base.closeHandledScreen();
     }
