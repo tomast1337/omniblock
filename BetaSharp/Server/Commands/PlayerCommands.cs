@@ -4,7 +4,7 @@ using BetaSharp.Server.Internal;
 
 namespace BetaSharp.Server.Commands;
 
-public static class PlayerCommands
+internal static class PlayerCommands
 {
     public static void Kill(MinecraftServer server, string senderName, string[] args, CommandOutput output)
     {

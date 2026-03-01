@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Chunks;
 
-public class BlockSource
+internal class BlockSource
 {
     private static readonly ILogger<BlockSource> _logger = Log.Instance.For<BlockSource>();
 

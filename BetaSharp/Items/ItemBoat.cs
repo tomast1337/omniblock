@@ -6,7 +6,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Items;
 
-public class ItemBoat : Item
+internal class ItemBoat : Item
 {
 
     public ItemBoat(int id) : base(id)

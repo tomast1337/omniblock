@@ -1,6 +1,6 @@
 namespace BetaSharp.Server.Commands;
 
-public class ServerCommandHandler
+internal class ServerCommandHandler
 {
     private readonly MinecraftServer server;
 

@@ -3,7 +3,7 @@ using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Worlds.Gen.Carvers;
 
-public class Carver
+internal class Carver
 {
     protected int radius = 8;
     protected JavaRandom rand = new();

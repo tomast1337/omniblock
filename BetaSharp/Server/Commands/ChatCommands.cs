@@ -3,7 +3,7 @@ using java.util.logging;
 
 namespace BetaSharp.Server.Commands;
 
-public static class ChatCommands
+internal static class ChatCommands
 {
     private static readonly Logger logger = Logger.getLogger("Minecraft");
 

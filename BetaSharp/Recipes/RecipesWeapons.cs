@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-public class RecipesWeapons
+internal class RecipesWeapons
 {
     private string[][] recipePatterns = [["X", "X", "#"]];
     private object[][] recipeItems = [[Block.Planks, Block.Cobblestone, Item.IronIngot, Item.Diamond, Item.GoldIngot], [Item.WoodenSword, Item.StoneSword, Item.IronSword, Item.DiamondSword, Item.GoldenSword]];
@@ -19,7 +19,7 @@ public class RecipesWeapons
                 m.AddRecipe(new ItemStack(swordResult), recipePatterns[j], '#', Item.Stick, 'X', material);
             }
         }
-            
+
         m.AddRecipe(new ItemStack(Item.BOW, 1), " #X", "# X", " #X", 'X', Item.String, '#', Item.Stick);
         m.AddRecipe(new ItemStack(Item.ARROW, 4), "X", "#", "Y", 'Y', Item.Feather, 'X', Item.Flint, '#', Item.Stick);
     }

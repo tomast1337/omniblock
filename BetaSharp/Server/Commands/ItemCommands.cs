@@ -5,7 +5,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Server.Commands;
 
-public static class ItemCommands
+internal static class ItemCommands
 {
     private static readonly Dictionary<string, int> itemNameToId = [];
     private static bool lookupTablesBuilt;

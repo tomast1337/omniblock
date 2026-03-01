@@ -1,6 +1,6 @@
 namespace BetaSharp.Server.Internal;
 
-public class InternalServerConfiguration : IServerConfiguration
+internal class InternalServerConfiguration : IServerConfiguration
 {
     private string levelName;
     private string seed;
@@ -71,6 +71,11 @@ public class InternalServerConfiguration : IServerConfiguration
     public string GetServerIp(string fallback)
     {
         return "";
+    }
+
+    public bool GetDualStack(bool fallback)
+    {
+        return false;
     }
 
     public int GetServerPort(int fallback)

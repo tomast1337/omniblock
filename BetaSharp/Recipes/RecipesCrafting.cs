@@ -4,7 +4,7 @@ using java.lang;
 
 namespace BetaSharp.Recipes;
 
-public class RecipesCrafting
+internal class RecipesCrafting
 {
     public void AddRecipes(CraftingManager manager)
     {

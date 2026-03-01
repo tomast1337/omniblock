@@ -1,6 +1,6 @@
 namespace BetaSharp;
 
-public record struct BlockUpdate(int X, int Y, int Z, int BlockId, long ScheduledTime)
+internal record struct BlockUpdate(int X, int Y, int Z, int BlockId, long ScheduledTime)
 {
     private static long NextOrder = 0;
     public readonly long ScheduledOrder = NextOrder++;

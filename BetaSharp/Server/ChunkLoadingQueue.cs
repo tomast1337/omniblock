@@ -2,7 +2,7 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Server;
 
-public class ChunkLoadingQueue(ChunkMap chunkMap)
+internal class ChunkLoadingQueue(ChunkMap chunkMap)
 {
     private readonly ChunkMap chunkMap = chunkMap;
     private readonly List<PendingChunk> pendingChunks = [];

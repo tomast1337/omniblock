@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Chunks.Storage;
 
-public class RegionFile : java.lang.Object
+internal class RegionFile
 {
-    public enum CompressionType : byte
+    internal enum CompressionType : byte
     {
         GZipUnused = 1,
         ZLibDeflate,
@@ -298,7 +298,8 @@ public class RegionFile : java.lang.Object
                     }
                 }
 
-                func_22208_b(var1, var2, (int)(java.lang.System.currentTimeMillis() / 1000L));
+                func_22208_b(var1, var2, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ / 1000L));
             }
             catch (System.IO.IOException var12)
             {

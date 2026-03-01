@@ -113,7 +113,8 @@ public class PlayerManager
         }
         else
         {
-            string var3 = loginNetworkHandler.connection.getAddress().toString();
+            // TODO: This does not work with IPEndpoint's ToString
+            string var3 = loginNetworkHandler.connection.getAddress().ToString();
             var3 = var3.Substring(var3.IndexOf("/") + 1);
             var3 = var3.Substring(0, var3.IndexOf(":"));
             if (bannedIps.Contains(var3))
@@ -188,7 +189,6 @@ public class PlayerManager
         var5.SpawnEntity(var4);
         players.Add(var4);
         var4.initScreenHandler();
-        var4.m_41544513();
         return var4;
     }
 

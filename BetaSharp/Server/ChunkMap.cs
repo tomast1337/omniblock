@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
 
-public class ChunkMap
+internal class ChunkMap
 {
     public List<ServerPlayerEntity> players = [];
     private readonly Dictionary<long, TrackedChunk> chunkMapping = new();
@@ -339,7 +339,7 @@ public class ChunkMap
             }
 
             players.Add(player);
-            player.pendingChunkUpdates.add(chunkPos);
+            player.PendingChunkUpdates.Enqueue(chunkPos);
         }
 
         public void removePlayer(ServerPlayerEntity player)
@@ -359,7 +359,6 @@ public class ChunkMap
                     chunkMap.getWorld().chunkCache.isLoaded(chunkX, chunkZ);
                 }
 
-                player.pendingChunkUpdates.remove(chunkPos);
                 if (player.activeChunks.Remove(chunkPos))
                 {
                     player.networkHandler.sendPacket(new ChunkStatusUpdateS2CPacket(chunkX, chunkZ, false));

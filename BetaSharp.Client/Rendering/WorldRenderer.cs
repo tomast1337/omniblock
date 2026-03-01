@@ -185,16 +185,6 @@ public class WorldRenderer : IWorldAccess
         chunkRenderer = new(world);
         ChunkMeshVersion.ClearPool();
 
-
-        if (renderDistance >= 16)
-        {
-            SubChunkRenderer.Size = 32;
-        }
-        else
-        {
-            SubChunkRenderer.Size = 16;
-        }
-
         renderEntitiesStartupCounter = 2;
     }
 
@@ -223,9 +213,9 @@ public class WorldRenderer : IWorldAccess
 
             int var6;
             Entity var7;
-            for (var6 = 0; var6 < world.globalEntities.size(); ++var6)
+            for (var6 = 0; var6 < world.globalEntities.Count; ++var6)
             {
-                var7 = (Entity)world.globalEntities.get(var6);
+                var7 = world.globalEntities[var6];
                 ++countEntitiesRendered;
                 if (var7.shouldRender(var1))
                 {
@@ -286,13 +276,26 @@ public class WorldRenderer : IWorldAccess
 
         Lighting.turnOff();
 
+        var renderParams = new ChunkRenderParams
+        {
+            Camera = cam,
+            ViewPos = new Vector3D<double>(var33, var7, var9),
+            RenderDistance = renderDistance,
+            Ticks = world.getTime(),
+            PartialTicks = (float)var3,
+            DeltaTime = mc.Timer.DeltaTime,
+            EnvironmentAnimation = mc.options.EnvironmentAnimation,
+            ChunkFade = mc.options.ChunkFade,
+            RenderOccluded = mc.options.RenderOccluded
+        };
+
         if (pass == 0)
         {
-            chunkRenderer.Render(cam, new Vector3D<double>(var33, var7, var9), renderDistance, world.getTime(), (float)var3, mc.Timer.DeltaTime, mc.options.EnvironmentAnimation, mc.options.ChunkFade);
+            chunkRenderer.Render(renderParams);
         }
         else
         {
-            chunkRenderer.RenderTransparent(new(var33, var7, var9));
+            chunkRenderer.RenderTransparent(renderParams);
         }
 
         return 0;
@@ -352,7 +355,7 @@ public class WorldRenderer : IWorldAccess
 
                 for (int var20 = 0; var20 <= var19; ++var20)
                 {
-                    var14 = var20 * (float)java.lang.Math.PI * 2.0F / var19;
+                    var14 = var20 * (float)Math.PI * 2.0F / var19;
                     float var15 = MathHelper.Sin(var14);
                     float var16 = MathHelper.Cos(var14);
                     var17.addVertex((double)(var15 * 120.0F), (double)(var16 * 120.0F), (double)(-var16 * 40.0F * var18[3]));
@@ -613,7 +616,8 @@ public class WorldRenderer : IWorldAccess
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(java.lang.System.currentTimeMillis() / 100.0F) * 0.2F + 0.4F) * 0.5F);
+        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, (MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ / 100.0F) * 0.2F + 0.4F) * 0.5F);
         int var8;
         if (var3 == 0)
         {
@@ -651,8 +655,10 @@ public class WorldRenderer : IWorldAccess
         else if (var4 != null)
         {
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            float var16 = MathHelper.Sin(java.lang.System.currentTimeMillis() / 100.0F) * 0.2F + 0.8F;
-            GLManager.GL.Color4(var16, var16, var16, MathHelper.Sin(java.lang.System.currentTimeMillis() / 200.0F) * 0.2F + 0.5F);
+            float var16 = MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ / 100.0F) * 0.2F + 0.8F;
+            GLManager.GL.Color4(var16, var16, var16, MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ / 200.0F) * 0.2F + 0.5F);
             renderEngine.BindTexture(renderEngine.GetTextureId("/terrain.png"));
             int var17 = var2.BlockX;
             int var18 = var2.BlockY;
@@ -883,32 +889,15 @@ public class WorldRenderer : IWorldAccess
     public void notifyEntityAdded(Entity var1)
     {
         var1.updateCloak();
-        //TODO: SKINS
-        //if (var1.skinUrl != null)
-        //{
-        //    renderEngine.obtainImageData(var1.skinUrl, new ImageBufferDownload());
-        //}
-
-        //if (var1.cloakUrl != null)
-        //{
-        //    renderEngine.obtainImageData(var1.cloakUrl, new ImageBufferDownload());
-        //}
-
+        if (!string.IsNullOrEmpty(var1.skinUrl) && mc.session.skinUrl != null)
+        {
+            EntityRenderDispatcher.instance.skinManager?.RequestDownload(var1.skinUrl);
+        }
     }
 
     public void notifyEntityRemoved(Entity var1)
     {
-        //TODO: SKINS
-        //if (var1.skinUrl != null)
-        //{
-        //    renderEngine.releaseImageData(var1.skinUrl);
-        //}
-
-        //if (var1.cloakUrl != null)
-        //{
-        //    renderEngine.releaseImageData(var1.cloakUrl);
-        //}
-
+        EntityRenderDispatcher.instance.skinManager?.Release(var1.skinUrl);
     }
 
     public void notifyAmbientDarknessChanged()

@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockLadder : Block
+internal class BlockLadder : Block
 {
 
     public BlockLadder(int id, int textureId) : base(id, textureId, Material.PistonBreakable)
