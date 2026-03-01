@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Server.Commands;
 
-public static class WorldCommands
+internal static class WorldCommands
 {
     public static void Time(MinecraftServer server, string senderName, string[] args, CommandOutput output)
     {
