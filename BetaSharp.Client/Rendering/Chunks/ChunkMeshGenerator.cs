@@ -23,7 +23,7 @@ internal struct MeshBuildResult
     }
 }
 
-public class ChunkMeshGenerator : IDisposable
+internal class ChunkMeshGenerator : IDisposable
 {
     private readonly PooledQueue<MeshBuildResult> results = new();
     private readonly ObjectPool<PooledList<ChunkVertex>> listPool =
