@@ -3,7 +3,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks.Occlusion;
 
-internal struct ChunkVisibilityStore
+public struct ChunkVisibilityStore
 {
     private long _data;
 
