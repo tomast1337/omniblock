@@ -45,7 +45,7 @@ public class ClientWorld : World
         for (int i = 0; i < 10 && pendingEntities.Count > 0; ++i)
         {
             Entity entity = pendingEntities.First();
-            if (!Entities.Contains(entity))
+            if (!entities.Contains(entity))
             {
                 SpawnEntity(entity);
             }
