@@ -1,6 +1,5 @@
 ﻿using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util;
 using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering;
@@ -11,7 +10,8 @@ public class LoadingScreenRenderer : LoadingDisplay
     private string field_1004_a = "";
     private readonly Minecraft mc;
     private string field_1007_c = "";
-    private long field_1006_d = UnixTime.GetCurrentTimeMillis();
+    private long field_1006_d = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+;
     private bool field_1005_e;
 
     public LoadingScreenRenderer(Minecraft var1)
@@ -83,7 +83,8 @@ public class LoadingScreenRenderer : LoadingDisplay
         }
         else
         {
-            long var2 = UnixTime.GetCurrentTimeMillis();
+            long var2 = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+;
             if (var2 - field_1006_d >= 20L)
             {
                 field_1006_d = var2;

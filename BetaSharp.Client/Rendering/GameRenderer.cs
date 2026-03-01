@@ -8,7 +8,6 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Entities;
 using BetaSharp.Profiling;
-using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
@@ -31,7 +30,8 @@ public class GameRenderer
     private readonly MouseFilter _mouseFilterXAxis = new();
     private readonly MouseFilter _mouseFilterYAxis = new();
 
-    private long _prevFrameTime = UnixTime.GetCurrentTimeMillis();
+    private long _prevFrameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+;
     private readonly JavaRandom _random = new();
     private int _rainSoundCounter;
     private readonly float[] _fogColorBuffer = new float[16];
@@ -214,14 +214,16 @@ public class GameRenderer
     {
         if (!Display.isActive())
         {
-            if (UnixTime.GetCurrentTimeMillis() - _prevFrameTime > 500L)
+            if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+ - _prevFrameTime > 500L)
             {
                 _client.displayInGameMenu();
             }
         }
         else
         {
-            _prevFrameTime = UnixTime.GetCurrentTimeMillis();
+            _prevFrameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+;
         }
 
         if (_client.inGameHasFocus)

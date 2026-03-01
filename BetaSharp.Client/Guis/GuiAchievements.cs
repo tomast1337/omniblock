@@ -4,7 +4,6 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Stats;
-using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using Silk.NET.OpenGL.Legacy;
 
@@ -276,7 +275,7 @@ public class GuiAchievements : GuiScreen
                 }
                 else if (canUnlock)
                 {
-                    color = Math.Sin(UnixTime.GetCurrentTimeMillis() % 600L / 600.0D * Math.PI * 2.0D) > 0.6D ?
+                    color = Math.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 600L / 600.0D * Math.PI * 2.0D) > 0.6D ?
                         Color.Blue :
                         Color.BlueAlpha;
                 }
@@ -316,7 +315,7 @@ public class GuiAchievements : GuiScreen
                 }
                 else if (statFileWriter.CanUnlockAchievement(var30))
                 {
-                    var35 = Math.Sin(UnixTime.GetCurrentTimeMillis() % 600L / 600.0D * Math.PI * 2.0D) < 0.6D ? 0.6F : 0.8F;
+                    var35 = Math.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 600L / 600.0D * Math.PI * 2.0D) < 0.6D ? 0.6F : 0.8F;
                     GLManager.GL.Color4(var35, var35, var35, 1.0F);
                 }
                 else
