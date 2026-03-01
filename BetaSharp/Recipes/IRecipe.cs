@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-public interface IRecipe
+internal interface IRecipe
 {
     bool Matches(InventoryCrafting InventoryCrafting);
 
