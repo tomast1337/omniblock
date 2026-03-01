@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockFence : Block
+internal class BlockFence : Block
 {
 
     public BlockFence(int id, int texture) : base(id, texture, Material.Wood)

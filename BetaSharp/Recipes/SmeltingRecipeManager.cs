@@ -3,7 +3,7 @@ using BetaSharp.Items;
 
 namespace BetaSharp.Recipes;
 
-public class SmeltingRecipeManager
+internal class SmeltingRecipeManager
 {
     private static readonly SmeltingRecipeManager smeltingBase = new();
     private Dictionary<int, ItemStack> smeltingList = new();

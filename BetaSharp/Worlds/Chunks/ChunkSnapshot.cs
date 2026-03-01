@@ -5,7 +5,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Chunks;
 
-public class ChunkSnapshot : IDisposable
+internal class ChunkSnapshot : IDisposable
 {
     public ChunkNibbleArray SkylightMap { get; private set; }
     public ChunkNibbleArray BlocklightMap { get; private set; }

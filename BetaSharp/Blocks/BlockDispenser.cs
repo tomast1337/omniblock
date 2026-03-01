@@ -7,7 +7,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockDispenser : BlockWithEntity
+internal class BlockDispenser : BlockWithEntity
 {
     private static readonly ThreadLocal<JavaRandom> s_random = new(() => new());
 

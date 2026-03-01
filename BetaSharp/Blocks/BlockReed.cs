@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockReed : Block
+internal class BlockReed : Block
 {
 
     public BlockReed(int id, int textureId) : base(id, Material.Plant)

@@ -7,7 +7,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Worlds.Dimensions;
 
-public class NetherDimension : Dimension
+internal class NetherDimension : Dimension
 {
     public override void InitBiomeSource()
     {

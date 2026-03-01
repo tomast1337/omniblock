@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockCactus : Block
+internal class BlockCactus : Block
 {
 
     public BlockCactus(int id, int textureId) : base(id, textureId, Material.Cactus)

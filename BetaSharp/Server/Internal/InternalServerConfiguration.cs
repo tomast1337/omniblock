@@ -1,6 +1,6 @@
 namespace BetaSharp.Server.Internal;
 
-public class InternalServerConfiguration : IServerConfiguration
+internal class InternalServerConfiguration : IServerConfiguration
 {
     private string levelName;
     private string seed;

@@ -1,6 +1,6 @@
 namespace BetaSharp.Items;
 
-public class ItemCoal : Item
+internal class ItemCoal : Item
 {
 
     public ItemCoal(int id) : base(id)

@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockFire : Block
+internal class BlockFire : Block
 {
     private readonly int[] _burnChances = new int[256];
     private readonly int[] _spreadChances = new int[256];

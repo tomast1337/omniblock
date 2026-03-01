@@ -6,7 +6,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockCrops : BlockPlant
+internal class BlockCrops : BlockPlant
 {
 
     public BlockCrops(int i, int j) : base(i, j)

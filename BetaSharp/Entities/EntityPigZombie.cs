@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Entities;
 
-public class EntityPigZombie : EntityZombie
+internal class EntityPigZombie : EntityZombie
 {
     private int angerLevel;
     private int randomSoundDelay;

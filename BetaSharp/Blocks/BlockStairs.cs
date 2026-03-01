@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockStairs : Block
+internal class BlockStairs : Block
 {
 
     private Block baseBlock;

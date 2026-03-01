@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Recipes;
 
-public class CraftingManager
+internal class CraftingManager
 {
     private static CraftingManager instance { get; } = new();
     public List<IRecipe> Recipes { get; } = [];

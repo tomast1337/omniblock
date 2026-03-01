@@ -3,7 +3,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockRedstoneTorch : BlockTorch
+internal class BlockRedstoneTorch : BlockTorch
 {
 
     private readonly bool _lit = false;

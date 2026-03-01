@@ -5,7 +5,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockLever : Block
+internal class BlockLever : Block
 {
 
     public BlockLever(int id, int level) : base(id, level, Material.PistonBreakable)

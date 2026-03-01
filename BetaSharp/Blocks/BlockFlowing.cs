@@ -4,7 +4,7 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Blocks;
 
-public class BlockFlowing : BlockFluid
+internal class BlockFlowing : BlockFluid
 {
     private readonly ThreadLocal<int> _adjacentSources = new(() => 0);
     private readonly ThreadLocal<bool[]> _spread = new(() => new bool[4]);

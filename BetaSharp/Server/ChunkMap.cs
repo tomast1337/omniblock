@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
 
-public class ChunkMap
+internal class ChunkMap
 {
     public List<ServerPlayerEntity> players = [];
     private readonly Dictionary<long, TrackedChunk> chunkMapping = new();

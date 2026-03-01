@@ -2,7 +2,7 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Worlds.Biomes;
 
-public class BiomeGenHell : Biome
+internal class BiomeGenHell : Biome
 {
 
     public BiomeGenHell()
