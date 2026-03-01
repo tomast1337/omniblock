@@ -2,7 +2,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
-public struct Quad
+internal struct Quad
 {
     private PositionTextureVertex[] _vertexPositions;
     public int NVertices;

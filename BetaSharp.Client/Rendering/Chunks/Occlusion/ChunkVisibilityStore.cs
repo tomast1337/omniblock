@@ -3,7 +3,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks.Occlusion;
 
-public struct ChunkVisibilityStore
+internal struct ChunkVisibilityStore
 {
     private long _data;
 
@@ -19,7 +19,7 @@ public struct ChunkVisibilityStore
             return FoldOutgoing(_data);
 
         long visibilityData = _data;
-        
+
         visibilityData &= GetAngleMask(viewPos, renderer);
 
         long mask = CreateMask((int)incoming);

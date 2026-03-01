@@ -12,7 +12,7 @@ public unsafe class DisplayListCompiler
         Color
     }
 
-    public struct DLCommand
+    internal struct DLCommand
     {
         public DLCommandType Type;
         public uint Vao;

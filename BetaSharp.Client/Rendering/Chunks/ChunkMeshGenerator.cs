@@ -7,7 +7,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
 
-public struct MeshBuildResult
+internal struct MeshBuildResult
 {
     public PooledList<ChunkVertex> Solid;
     public PooledList<ChunkVertex> Translucent;
