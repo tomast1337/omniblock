@@ -7,7 +7,7 @@ namespace BetaSharp.Worlds.Chunks.Storage;
 
 internal class RegionFile
 {
-    public enum CompressionType : byte
+    internal enum CompressionType : byte
     {
         GZipUnused = 1,
         ZLibDeflate,
