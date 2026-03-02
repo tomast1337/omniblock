@@ -214,11 +214,13 @@ public static class DataCommands
         output.SendMessage("dead: " + e.dead);
         if (e is EntityPlayer player)
         {
+            output.SendMessage("deathTime: " + player.deathTime);
             output.SendMessage("health: " + player.health);
             output.SendMessage("name: " + player.name);
         }
         else if (e is EntityLiving living)
         {
+            output.SendMessage("deathTime: " + living.deathTime);
             output.SendMessage("health: " + living.health);
         }
 
