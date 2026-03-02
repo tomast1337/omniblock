@@ -13,14 +13,14 @@ public class InventoryS2CPacket : Packet
     {
     }
 
-    public InventoryS2CPacket(int syncId, List contents)
+    public InventoryS2CPacket(int syncId, List<ItemStack> contents)
     {
         this.syncId = syncId;
-        this.contents = new ItemStack[contents.size()];
+        this.contents = new ItemStack[contents.Count];
 
         for (int i = 0; i < this.contents.Length; i++)
         {
-            ItemStack itemStack = (ItemStack)contents.get(i);
+            ItemStack itemStack = contents[i];
             this.contents[i] = itemStack == null ? null : itemStack.copy();
         }
     }

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
@@ -620,25 +620,25 @@ public class ClientNetworkHandler : NetHandler
         {
             InventoryBasic inventory = new(packet.name, packet.slotsCount);
             mc.player.openChestScreen(inventory);
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
         else if (packet.screenHandlerId == 2)
         {
             BlockEntityFurnace furnace = new();
             mc.player.openFurnaceScreen(furnace);
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
         else if (packet.screenHandlerId == 3)
         {
             BlockEntityDispenser dispenser = new();
             mc.player.openDispenserScreen(dispenser);
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
         else if (packet.screenHandlerId == 1)
         {
             ClientPlayerEntity player = mc.player;
             mc.player.openCraftingScreen(MathHelper.Floor(player.x), MathHelper.Floor(player.y), MathHelper.Floor(player.z));
-            mc.player.currentScreenHandler.syncId = packet.syncId;
+            mc.player.currentScreenHandler.SyncId = packet.syncId;
         }
 
     }
@@ -651,7 +651,7 @@ public class ClientNetworkHandler : NetHandler
         }
         else if (packet.syncId == 0 && packet.slot >= 36 && packet.slot < 45)
         {
-            ItemStack itemStack = mc.player.playerScreenHandler.getSlot(packet.slot).getStack();
+            ItemStack itemStack = mc.player.playerScreenHandler.GetSlot(packet.slot).getStack();
             if (packet.stack != null && (itemStack == null || itemStack.count < packet.stack.count))
             {
                 packet.stack.bobbingAnimationTime = 5;
@@ -659,7 +659,7 @@ public class ClientNetworkHandler : NetHandler
 
             mc.player.playerScreenHandler.setStackInSlot(packet.slot, packet.stack);
         }
-        else if (packet.syncId == mc.player.currentScreenHandler.syncId)
+        else if (packet.syncId == mc.player.currentScreenHandler.SyncId)
         {
             mc.player.currentScreenHandler.setStackInSlot(packet.slot, packet.stack);
         }
@@ -673,7 +673,7 @@ public class ClientNetworkHandler : NetHandler
         {
             screenHandler = mc.player.playerScreenHandler;
         }
-        else if (packet.syncId == mc.player.currentScreenHandler.syncId)
+        else if (packet.syncId == mc.player.currentScreenHandler.SyncId)
         {
             screenHandler = mc.player.currentScreenHandler;
         }
@@ -699,7 +699,7 @@ public class ClientNetworkHandler : NetHandler
         {
             mc.player.playerScreenHandler.updateSlotStacks(packet.contents);
         }
-        else if (packet.syncId == mc.player.currentScreenHandler.syncId)
+        else if (packet.syncId == mc.player.currentScreenHandler.SyncId)
         {
             mc.player.currentScreenHandler.updateSlotStacks(packet.contents);
         }
@@ -729,7 +729,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onScreenHandlerPropertyUpdate(ScreenHandlerPropertyUpdateS2CPacket packet)
     {
         handle(packet);
-        if (mc.player.currentScreenHandler != null && mc.player.currentScreenHandler.syncId == packet.syncId)
+        if (mc.player.currentScreenHandler != null && mc.player.currentScreenHandler.SyncId == packet.syncId)
         {
             mc.player.currentScreenHandler.setProperty(packet.propertyId, packet.value);
         }
