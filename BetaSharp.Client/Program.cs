@@ -3,4 +3,4 @@ using BetaSharp.Client;
 using BetaSharp.Util;
 
 Log.Instance.Initialize(PathHelper.GetAppDir(nameof(BetaSharp)));
-Minecraft.Startup(["Player", "offline"]);
+Minecraft.Startup(args);
