@@ -30,11 +30,6 @@ public sealed class RandomAccessFile : IDisposable
 
         _leaveOpen = leaveOpen;
 
-        // Java modes:
-        // "r"   = read only
-        // "rw"  = read/write
-        // "rws" = read/write + every update to content or metadata written synchronously
-        // "rwd" = read/write + every update to content written synchronously (metadata may be deferred)
         FileAccess access;
         FileMode fileMode;
 
@@ -58,8 +53,6 @@ public sealed class RandomAccessFile : IDisposable
                 throw new ArgumentException($"Unsupported mode '{mode}'. Use 'r', 'rw', 'rws', or 'rwd'.", nameof(mode));
         }
 
-        // Java allows concurrent reads via the OS; FileShare.Read is a reasonable default.
-        // If you need stricter locking semantics, adjust FileShare.
         _stream = new FileStream(
             path,
             fileMode,
@@ -84,7 +77,6 @@ public sealed class RandomAccessFile : IDisposable
     public FileStream BaseStream => _stream;
 
     // --- Positioning / sizing (RandomAccessFile-like) ---
-
     public long GetFilePointer() => _stream.Position;
 
     public void Seek(long pos)
@@ -106,7 +98,7 @@ public sealed class RandomAccessFile : IDisposable
 
     // --- Low-level byte operations ---
 
-    public int Read() => _stream.ReadByte(); // returns -1 at EOF (matches Java)
+    public int Read() => _stream.ReadByte();
 
     public int Read(byte[] b) => Read(b, 0, b?.Length ?? 0);
 
@@ -157,7 +149,6 @@ public sealed class RandomAccessFile : IDisposable
     }
 
     // --- Primitive reads/writes (BIG-ENDIAN like Java DataInput/DataOutput) ---
-
     public bool ReadBoolean() => ReadByte() != 0;
 
     public byte ReadByte()
@@ -266,9 +257,7 @@ public sealed class RandomAccessFile : IDisposable
     public void WriteUTF(string s)
     {
         if (s is null) throw new ArgumentNullException(nameof(s));
-        // Java writeUTF uses "modified UTF-8" with 2-byte length prefix (unsigned short).
-        // Implementing modified UTF-8 exactly is non-trivial; this is a best-effort approximation using standard UTF-8.
-        // If you require strict Java compatibility, you should implement modified UTF-8.
+
         byte[] utf8 = Encoding.UTF8.GetBytes(s);
         if (utf8.Length > ushort.MaxValue)
             throw new IOException("UTF string too long (exceeds 65535 bytes).");
@@ -278,7 +267,6 @@ public sealed class RandomAccessFile : IDisposable
     }
 
     // --- Convenience ---
-
     public int SkipBytes(int n)
     {
         if (n <= 0) return 0;
@@ -290,7 +278,6 @@ public sealed class RandomAccessFile : IDisposable
     }
 
     // --- Internals ---
-
     private void ReadFully(Span<byte> buffer)
     {
         int total = 0;
@@ -304,15 +291,9 @@ public sealed class RandomAccessFile : IDisposable
 
     private void SyncIfNeeded(bool forceMetadata)
     {
-        // Java rwd/rws means every update is synchronous.
-        // Best approximation in .NET:
-        // - Flush data to OS buffers: Flush(true)
-        // - Ensuring metadata durability is OS/filesystem-specific; Flush(true) is the closest general option.
         if (_syncMetadata || _syncDataOnly)
         {
-            // If we are in rwd, we try to avoid "forceMetadata" unless asked.
             bool flushToDisk = _syncMetadata || forceMetadata;
-            // FileStream.Flush(true) forces flush of OS buffers to disk (as supported by platform).
             _stream.Flush(flushToDisk);
         }
     }
