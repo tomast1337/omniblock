@@ -14,7 +14,7 @@ internal class RegionFile
 
     private static readonly byte[] emptySector = new byte[4096];
     private readonly string fileName;
-    private readonly BetaSharp.Util.RandomAccessFile dataFile;
+    private readonly Util.RandomAccessFile dataFile;
     private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
     private readonly int[] offsets = new int[1024];
     private readonly int[] chunkSaveTimes = new int[1024];
@@ -88,9 +88,9 @@ internal class RegionFile
                 chunkSaveTimes[var3] = var4;
             }
         }
-        catch (java.io.IOException ex)
+        catch (IOException ex)
         {
-            ex.printStackTrace();
+            Console.WriteLine(ex);
         }
 
     }
@@ -188,7 +188,7 @@ internal class RegionFile
                         }
                     }
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                     debugln("READ", var1, var2, "exception");
                     return null;
@@ -300,7 +300,7 @@ internal class RegionFile
 
                 func_22208_b(var1, var2, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000L));
             }
-            catch (System.IO.IOException var12)
+            catch (IOException var12)
             {
                 _logger.LogError(var12, "Exception");
             }
@@ -345,7 +345,7 @@ internal class RegionFile
         dataFile.WriteInt(var3);
     }
 
-    public void func_22196_b()
+    public void Close()
     {
         dataFile.Close();
     }

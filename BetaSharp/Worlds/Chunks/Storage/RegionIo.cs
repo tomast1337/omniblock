@@ -26,7 +26,10 @@ internal static class RegionIo
                 }
             }
 
-            Directory.CreateDirectory(regionDir);
+            if (!Directory.Exists(regionDir))
+            {
+                Directory.CreateDirectory(regionDir);
+            }
 
             if (cache.Count >= 256)
             {
@@ -47,7 +50,7 @@ internal static class RegionIo
             {
                 if (weakRef.TryGetTarget(out RegionFile? regionFile))
                 {
-                    regionFile.func_22196_b();
+                    regionFile.Close();
                 }
             }
 
