@@ -72,7 +72,7 @@ public static class DataCommands
 
     private static void LogEntity<T>(List<T> items, ServerPlayerEntity player, string[] args, CommandOutput output) where T : Entity
     {
-        var sel = new Selector(args);
+        var sel = GetSelector(args);
 
         if (args.Length < 3)
         {
@@ -81,7 +81,7 @@ public static class DataCommands
             return;
         }
 
-        if (args.Length < 4 && sel.HaveSelector)
+        if (args.Length < 4 && sel != Selector.None)
         {
             if (LogEntitySub(sel, items, player, args, output)) return;
 
@@ -120,38 +120,32 @@ public static class DataCommands
         LogEntity(e, output);
     }
 
-    private class Selector
+    private static Selector GetSelector(string[] args, int start = 2)
     {
-        public bool HaveSelector;
-        public bool first = false;
-        public bool close = false;
-
-        public Selector(string[] args, int start = 2)
+        for (int i = start, l = args.Length; i < l; i++)
         {
-            HaveSelector = true;
-            for (int i = start, l = args.Length; i < l; i++)
+            switch (args[i].ToLower())
             {
-                string low = args[i].ToLower();
-                if (low == "first")
-                {
-                    first = true;
-                    return;
-                }
-
-                if (low == "close")
-                {
-                    close = true;
-                    return;
-                }
+                case "first":
+                    return Selector.First;
+                case "close":
+                    return Selector.Close;
             }
-
-            HaveSelector = false;
         }
+
+        return Selector.None;
+    }
+
+    private enum Selector : byte
+    {
+        None = 0,
+        First = 1,
+        Close = 2
     }
 
     private static bool LogEntitySub<T>(Selector sel, IEnumerable<T> items, ServerPlayerEntity player, string[] args, CommandOutput output) where T : Entity
     {
-        if (sel.first)
+        if (sel == Selector.First)
         {
             T? item = items.FirstOrDefault();
             if (item == null)
@@ -163,7 +157,7 @@ public static class DataCommands
 
             LogEntity(item, output);
         }
-        else if (sel.close)
+        else if (sel == Selector.Close)
         {
             T? item = null;
             double distance = double.MaxValue;
