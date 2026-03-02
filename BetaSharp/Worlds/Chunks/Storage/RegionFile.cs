@@ -1,6 +1,4 @@
 using System.IO.Compression;
-using java.io;
-using java.util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Worlds.Chunks.Storage;
@@ -20,7 +18,7 @@ internal class RegionFile
     private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
     private readonly int[] offsets = new int[1024];
     private readonly int[] chunkSaveTimes = new int[1024];
-    private readonly ArrayList sectorFree;
+    private readonly List<bool> sectorFree;
     private int sizeDelta;
 
     public RegionFile(string input)
@@ -58,16 +56,16 @@ internal class RegionFile
             }
 
             var2 = (int)dataFile.Length() / 4096;
-            sectorFree = new ArrayList(var2);
+            sectorFree = new List<bool>(var2);
 
             int var3;
             for (var3 = 0; var3 < var2; ++var3)
             {
-                sectorFree.add(java.lang.Boolean.TRUE);
+                sectorFree.Add(true);
             }
 
-            sectorFree.set(0, java.lang.Boolean.FALSE);
-            sectorFree.set(1, java.lang.Boolean.FALSE);
+            sectorFree[0] = false;
+            sectorFree[1] = false;
             dataFile.Seek(0L);
 
             int var4;
@@ -75,11 +73,11 @@ internal class RegionFile
             {
                 var4 = dataFile.ReadInt();
                 offsets[var3] = var4;
-                if (var4 != 0 && (var4 >> 8) + (var4 & 255) <= sectorFree.size())
+                if (var4 != 0 && (var4 >> 8) + (var4 & 255) <= sectorFree.Count())
                 {
                     for (int var5 = 0; var5 < (var4 & 255); ++var5)
                     {
-                        sectorFree.set((var4 >> 8) + var5, java.lang.Boolean.FALSE);
+                        sectorFree[(var4 >> 8) + var5] = false;
                     }
                 }
             }
@@ -153,7 +151,8 @@ internal class RegionFile
                     {
                         int var4 = var3 >> 8;
                         int var5 = var3 & 255;
-                        if (var4 + var5 > sectorFree.size())
+
+                        if (var4 + var5 > sectorFree.Count())
                         {
                             debugln("READ", var1, var2, "invalid sector");
                             return null;
@@ -234,19 +233,19 @@ internal class RegionFile
                     int var9;
                     for (var9 = 0; var9 < var7; ++var9)
                     {
-                        sectorFree.set(var6 + var9, java.lang.Boolean.TRUE);
+                        sectorFree[var6 + var9] = true;
                     }
 
-                    var9 = sectorFree.indexOf(java.lang.Boolean.TRUE);
+                    var9 = sectorFree.IndexOf(true);
                     int var10 = 0;
                     int var11;
                     if (var9 != -1)
                     {
-                        for (var11 = var9; var11 < sectorFree.size(); ++var11)
+                        for (var11 = var9; var11 < sectorFree.Count(); ++var11)
                         {
                             if (var10 != 0)
                             {
-                                if (((java.lang.Boolean)sectorFree.get(var11)).booleanValue())
+                                if (sectorFree[var11])
                                 {
                                     ++var10;
                                 }
@@ -255,7 +254,7 @@ internal class RegionFile
                                     var10 = 0;
                                 }
                             }
-                            else if (((java.lang.Boolean)sectorFree.get(var11)).booleanValue())
+                            else if (sectorFree[var11])
                             {
                                 var9 = var11;
                                 var10 = 1;
@@ -276,7 +275,7 @@ internal class RegionFile
 
                         for (var11 = 0; var11 < var8; ++var11)
                         {
-                            sectorFree.set(var6 + var11, java.lang.Boolean.FALSE);
+                            sectorFree[var6 + var11] = false;
                         }
 
                         write(var6, var3, var4);
@@ -285,12 +284,12 @@ internal class RegionFile
                     {
                         func_22197_a("SAVE", var1, var2, var4, "grow");
                         dataFile.Seek(dataFile.Length());
-                        var6 = sectorFree.size();
+                        var6 = sectorFree.Count();
 
                         for (var11 = 0; var11 < var8; ++var11)
                         {
                             dataFile.Write(emptySector);
-                            sectorFree.add(java.lang.Boolean.FALSE);
+                            sectorFree.Add(false);
                         }
 
                         sizeDelta += 4096 * var8;
@@ -299,8 +298,7 @@ internal class RegionFile
                     }
                 }
 
-                func_22208_b(var1, var2, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- / 1000L));
+                func_22208_b(var1, var2, (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000L));
             }
             catch (System.IO.IOException var12)
             {
