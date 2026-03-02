@@ -208,7 +208,7 @@ public static class DataCommands
     {
         output.SendMessage("type: " + e.GetType().Name);
         output.SendMessage("id: " + e.id);
-        output.SendMessage("alive: " + !e.dead);
+        output.SendMessage("dead: " + e.dead);
         output.SendMessage("isPersistent: " + e.isPersistent);
         output.SendMessage("age: " + e.age);
         output.SendMessage("pos: " + e.Position.ToString("F2"));
