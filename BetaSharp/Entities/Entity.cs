@@ -103,6 +103,8 @@ public abstract class Entity
         return id;
     }
 
+    public Vec3D Position => new Vec3D(x, y, z);
+
     public virtual void teleportToTop()
     {
         if (world != null)
