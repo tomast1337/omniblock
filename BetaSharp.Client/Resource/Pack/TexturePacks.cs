@@ -9,12 +9,12 @@ public class TexturePacks
     private readonly TexturePack _defaultTexturePack = new BuiltInTexturePack();
     public TexturePack SelectedTexturePack;
     private readonly Dictionary<string, TexturePack> _texturePacks = [];
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _mc;
     private readonly DirectoryInfo _texturePackDir;
     private string? _currentTexturePack;
     public List<TexturePack> AvailableTexturePacks => _availTexturePacks;
     
-    public TexturePacks(Minecraft mc, DirectoryInfo texturePackDir)
+    public TexturePacks(BetaSharp mc, DirectoryInfo texturePackDir)
     {
         _mc = mc;
         _texturePackDir = new DirectoryInfo(System.IO.Path.Combine(texturePackDir.FullName, "texturepacks"));

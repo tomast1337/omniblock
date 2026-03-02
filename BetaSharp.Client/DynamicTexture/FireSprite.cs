@@ -7,7 +7,7 @@ internal class FireSprite(int index) : Rendering.Core.Textures.DynamicTexture(Bl
     private float[] _current = new float[320];
     private float[] _next = new float[320];
 
-    public override void Setup(Minecraft mc)
+    public override void Setup(BetaSharp mc)
     {
         Array.Clear(_current);
         Array.Clear(_next);

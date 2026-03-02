@@ -16,7 +16,7 @@ public class PlayerControllerSP : PlayerController
     private float field_1069_h;
     private int blockHitWait;
 
-    public PlayerControllerSP(Minecraft var1) : base(var1)
+    public PlayerControllerSP(BetaSharp var1) : base(var1)
     {
     }
 

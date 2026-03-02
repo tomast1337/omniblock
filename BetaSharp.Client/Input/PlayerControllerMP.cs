@@ -22,7 +22,7 @@ public class PlayerControllerMP : PlayerController
     private readonly ClientNetworkHandler netClientHandler;
     private int currentPlayerItem;
 
-    public PlayerControllerMP(Minecraft var1, ClientNetworkHandler var2) : base(var1)
+    public PlayerControllerMP(BetaSharp var1, ClientNetworkHandler var2) : base(var1)
     {
         netClientHandler = var2;
     }

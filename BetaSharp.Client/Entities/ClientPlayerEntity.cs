@@ -15,12 +15,12 @@ namespace BetaSharp.Client.Entities;
 public class ClientPlayerEntity : EntityPlayer
 {
     public MovementInput movementInput;
-    protected Minecraft mc;
+    protected BetaSharp mc;
     private readonly MouseFilter field_21903_bJ = new();
     private readonly MouseFilter field_21904_bK = new();
     private readonly MouseFilter field_21902_bL = new();
 
-    public ClientPlayerEntity(Minecraft mc, World world, Session session, int dimensionId) : base(world)
+    public ClientPlayerEntity(BetaSharp mc, World world, Session session, int dimensionId) : base(world)
     {
         this.mc = mc;
         base.dimensionId = dimensionId;
@@ -47,9 +47,9 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void tickMovement()
     {
-        if (!mc.statFileWriter.HasAchievementUnlocked(BetaSharp.Achievements.OpenInventory))
+        if (!mc.statFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
-            mc.guiAchievement.queueAchievementInformation(BetaSharp.Achievements.OpenInventory);
+            mc.guiAchievement.queueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
         }
 
         lastScreenDistortion = changeDimensionCooldown;

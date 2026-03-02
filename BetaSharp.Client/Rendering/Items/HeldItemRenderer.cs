@@ -13,7 +13,7 @@ namespace BetaSharp.Client.Rendering.Items;
 
 public class HeldItemRenderer
 {
-    private readonly Minecraft mc;
+    private readonly BetaSharp mc;
     private ItemStack itemToRender;
     private float equippedProgress;
     private float prevEquippedProgress;
@@ -21,7 +21,7 @@ public class HeldItemRenderer
     private readonly MapItemRenderer field_28131_f;
     private int field_20099_f = -1;
 
-    public HeldItemRenderer(Minecraft var1)
+    public HeldItemRenderer(BetaSharp var1)
     {
         mc = var1;
         field_28131_f = new MapItemRenderer(var1.fontRenderer, var1.options, var1.textureManager);

@@ -7,9 +7,9 @@ namespace BetaSharp.Client.Guis;
 public class GuiParticle : Gui
 {
     private readonly List<Particle> particles = new ();
-    private readonly Minecraft mc;
+    private readonly BetaSharp mc;
 
-    public GuiParticle(Minecraft mc)
+    public GuiParticle(BetaSharp mc)
     {
         this.mc = mc;
     }

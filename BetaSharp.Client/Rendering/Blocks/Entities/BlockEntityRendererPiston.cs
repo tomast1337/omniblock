@@ -22,7 +22,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.Disable(GLEnum.CullFace);
-            if (Minecraft.isAmbientOcclusionEnabled())
+            if (BetaSharp.isAmbientOcclusionEnabled())
             {
                 GLManager.GL.ShadeModel(GLEnum.Smooth);
             }

@@ -15,7 +15,7 @@ public class GuiScreen : Gui
 {
     private static readonly ILogger<GuiScreen> s_logger = Log.Instance.For<GuiScreen>();
 
-    public Minecraft mc;
+    public BetaSharp mc;
     public int Width;
     public int Height;
     protected List<GuiButton> _controlList = new();
@@ -103,7 +103,7 @@ public class GuiScreen : Gui
 
     protected virtual void ActionPerformed(GuiButton var1) { }
 
-    public void SetWorldAndResolution(Minecraft mc, int width, int height)
+    public void SetWorldAndResolution(BetaSharp mc, int width, int height)
     {
         ParticlesGui = new GuiParticle(mc);
         this.mc = mc;

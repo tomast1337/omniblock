@@ -8,13 +8,13 @@ public class LoadingScreenRenderer : LoadingDisplay
 {
 
     private string field_1004_a = "";
-    private readonly Minecraft mc;
+    private readonly BetaSharp mc;
     private string field_1007_c = "";
     private long field_1006_d = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 ;
     private bool field_1005_e;
 
-    public LoadingScreenRenderer(Minecraft var1)
+    public LoadingScreenRenderer(BetaSharp var1)
     {
         mc = var1;
     }
@@ -37,7 +37,7 @@ public class LoadingScreenRenderer : LoadingDisplay
         {
             if (!field_1005_e)
             {
-                throw new MinecraftShutdownException();
+                throw new BetaSharpShutdownException();
             }
         }
         else
@@ -60,7 +60,7 @@ public class LoadingScreenRenderer : LoadingDisplay
         {
             if (!field_1005_e)
             {
-                throw new MinecraftShutdownException();
+                throw new BetaSharpShutdownException();
             }
         }
         else
@@ -78,7 +78,7 @@ public class LoadingScreenRenderer : LoadingDisplay
         {
             if (!field_1005_e)
             {
-                throw new MinecraftShutdownException();
+                throw new BetaSharpShutdownException();
             }
         }
         else

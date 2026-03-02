@@ -17,10 +17,10 @@ public class ConnectionListener
     public int connectionCounter = 0;
     private readonly List<ServerLoginNetworkHandler> _pendingConnections = [];
     private readonly List<ServerPlayNetworkHandler> _connections = [];
-    public MinecraftServer server;
+    public BetaSharpServer server;
     public int port;
 
-    public ConnectionListener(MinecraftServer server, IPAddress address, int port, bool dualStack = false)
+    public ConnectionListener(BetaSharpServer server, IPAddress address, int port, bool dualStack = false)
     {
         this.server = server;
 
@@ -35,7 +35,7 @@ public class ConnectionListener
         _thread.start();
     }
 
-    public ConnectionListener(MinecraftServer server)
+    public ConnectionListener(BetaSharpServer server)
     {
         this.server = server;
         Socket = null;

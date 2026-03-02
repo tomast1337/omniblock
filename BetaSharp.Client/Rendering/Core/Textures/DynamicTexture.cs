@@ -21,7 +21,7 @@ public class DynamicTexture(int iconIdx)
         Items
     }
 
-    public virtual void Setup(Minecraft mc)
+    public virtual void Setup(BetaSharp mc)
     {
     }
 
@@ -29,7 +29,7 @@ public class DynamicTexture(int iconIdx)
     {
     }
 
-    protected virtual void TryLoadCustomTexture(Minecraft mc, string resourceName)
+    protected virtual void TryLoadCustomTexture(BetaSharp mc, string resourceName)
     {
         CustomFrames = null;
         CustomFrameIndex = 0;

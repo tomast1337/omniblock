@@ -13,10 +13,10 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
     private readonly ILogger<BetaResourceDownloader> _logger = Log.Instance.For<BetaResourceDownloader>();
     private readonly HttpClient _httpClient;
     private readonly string _resourcesDirectory;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _mc;
     private bool _cancelled;
 
-    public BetaResourceDownloader(Minecraft mc, string baseDirectory)
+    public BetaResourceDownloader(BetaSharp mc, string baseDirectory)
     {
         _mc = mc;
         _resourcesDirectory = System.IO.Path.Combine(baseDirectory, "resources");

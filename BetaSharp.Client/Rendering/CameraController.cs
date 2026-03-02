@@ -10,7 +10,7 @@ namespace BetaSharp.Client.Rendering;
 
 public class CameraController
 {
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _mc;
     private readonly float _thirdPersonDistance = 4.0F;
     private readonly float _frontThirdPersonDistance = 4.0F;
     public float ViewBob { get; private set; }
@@ -31,7 +31,7 @@ public class CameraController
     public double CameraYaw { get; } = 0.0D;
     public double CameraPitch { get; } = 0.0D;
 
-    public CameraController(Minecraft mc)
+    public CameraController(BetaSharp mc)
     {
         _mc = mc;
     }

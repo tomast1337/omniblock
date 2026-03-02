@@ -14,7 +14,7 @@ using Exception = System.Exception;
 
 namespace BetaSharp.Server;
 
-public abstract class MinecraftServer : Runnable, CommandOutput
+public abstract class BetaSharpServer : Runnable, CommandOutput
 {
     public HashMap GIVE_COMMANDS_COOLDOWNS = [];
     public ConnectionListener connections;
@@ -35,7 +35,7 @@ public abstract class MinecraftServer : Runnable, CommandOutput
     public bool flightEnabled;
     protected bool logHelp = true;
 
-    private readonly ILogger<MinecraftServer> _logger = Log.Instance.For<MinecraftServer>();
+    private readonly ILogger<BetaSharpServer> _logger = Log.Instance.For<BetaSharpServer>();
     private readonly Lock _tpsLock = new();
     private long _lastTpsTime;
     private int _ticksThisSecond;
@@ -59,7 +59,7 @@ public abstract class MinecraftServer : Runnable, CommandOutput
         _isPaused = paused;
     }
 
-    public MinecraftServer(IServerConfiguration config)
+    public BetaSharpServer(IServerConfiguration config)
     {
         this.config = config;
     }

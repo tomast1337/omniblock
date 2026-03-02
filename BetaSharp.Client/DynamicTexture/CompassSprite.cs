@@ -13,16 +13,16 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
     private double _angle;
     private double _angleDelta;
     private int[] _compass = new int[256];
-    private Minecraft _mc;
+    private BetaSharp _mc;
     private int _resolution = 16;
 
-    public CompassSprite(Minecraft mc) : base(Item.Compass.getTextureId(0))
+    public CompassSprite(BetaSharp mc) : base(Item.Compass.getTextureId(0))
     {
         _mc = mc;
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(Minecraft mc)
+    public override void Setup(BetaSharp mc)
     {
         _mc = mc;
         TextureManager tm = mc.textureManager;

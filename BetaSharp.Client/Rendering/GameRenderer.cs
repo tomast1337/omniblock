@@ -21,7 +21,7 @@ namespace BetaSharp.Client.Rendering;
 public class GameRenderer
 {
     private readonly bool _cloudFog = false;
-    private readonly Minecraft _client;
+    private readonly BetaSharp _client;
     private float _viewDistance;
     public HeldItemRenderer itemRenderer;
     public CameraController cameraController;
@@ -41,7 +41,7 @@ public class GameRenderer
 
     private readonly Stopwatch _fpsTimer = Stopwatch.StartNew();
 
-    public GameRenderer(Minecraft mc)
+    public GameRenderer(BetaSharp mc)
     {
         _client = mc;
         itemRenderer = new HeldItemRenderer(mc);

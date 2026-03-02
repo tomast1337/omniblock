@@ -119,7 +119,7 @@ public class GameOptions
     public KeyBinding KeyBindSneak = new("key.sneak", 42);
     public KeyBinding[] KeyBindings;
 
-    protected Minecraft _mc;
+    protected BetaSharp _mc;
     private readonly string _optionsPath;
     public bool HideGUI = false;
     public EnumCameraMode CameraMode = EnumCameraMode.FirstPerson;
@@ -136,7 +136,7 @@ public class GameOptions
 
     private Dictionary<string, GameOption> _allOptions;
 
-    public GameOptions(Minecraft mc, string mcDataDir)
+    public GameOptions(BetaSharp mc, string mcDataDir)
     {
         _mc = mc;
         _optionsPath = System.IO.Path.Combine(mcDataDir, "options.txt");
@@ -216,8 +216,8 @@ public class GameOptions
         {
             OnChanged = _ =>
             {
-                if (Minecraft.INSTANCE?.textureManager != null)
-                    Minecraft.INSTANCE.textureManager.Reload();
+                if (BetaSharp.INSTANCE?.textureManager != null)
+                    BetaSharp.INSTANCE.textureManager.Reload();
             }
         };
         DebugModeOption = new BoolOption("Debug Mode", "debugMode")
@@ -259,8 +259,8 @@ public class GameOptions
                 {
                     AnisotropicOption.Value = 0;
                 }
-                if (Minecraft.INSTANCE?.textureManager != null)
-                    Minecraft.INSTANCE.textureManager.Reload();
+                if (BetaSharp.INSTANCE?.textureManager != null)
+                    BetaSharp.INSTANCE.textureManager.Reload();
             }
         };
         MsaaOption = new CycleOption("MSAA", "msaaLevel", MSAALabels)

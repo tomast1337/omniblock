@@ -31,7 +31,7 @@ public class ZippedTexturePack : TexturePack
         return str ?? string.Empty;
     }
 
-    public override void func_6485_a(Minecraft mc)
+    public override void func_6485_a(BetaSharp mc)
     {
         try
         {
@@ -59,7 +59,7 @@ public class ZippedTexturePack : TexturePack
         }
     }
 
-    public override void Unload(Minecraft mc)
+    public override void Unload(BetaSharp mc)
     {
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
@@ -71,7 +71,7 @@ public class ZippedTexturePack : TexturePack
         CloseTexturePackFile();
     }
 
-    public override void BindThumbnailTexture(Minecraft mc)
+    public override void BindThumbnailTexture(BetaSharp mc)
     {
         if (_texturePackThumbnail != null && _texturePackName == null)
         {

@@ -21,7 +21,7 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
         if (!_serverStarted)
         {
             _serverStarted = true;
-            mc.internalServer = new InternalServer(System.IO.Path.Combine(Minecraft.getMinecraftDir().getAbsolutePath(), "saves"), _worldDir, _seed.ToString(), mc.options.renderDistance, mc.options.Difficulty);
+            mc.internalServer = new InternalServer(System.IO.Path.Combine(BetaSharp.getBetaSharpDir().getAbsolutePath(), "saves"), _worldDir, _seed.ToString(), mc.options.renderDistance, mc.options.Difficulty);
             new RunServerThread(mc.internalServer, "InternalServer").start();
         }
     }
@@ -49,7 +49,7 @@ public class GuiLevelLoading(string worldDir, long seed) : GuiScreen
 
                 ClientNetworkHandler clientHandler = new(mc, clientConnection);
                 clientConnection.setNetworkHandler(clientHandler);
-                clientHandler.addToSendQueue(new BetaSharp.Network.Packets.HandshakePacket(mc.session.username));
+                clientHandler.addToSendQueue(new global::BetaSharp.Network.Packets.HandshakePacket(mc.session.username));
 
                 mc.displayGuiScreen(new GuiConnecting(mc, clientHandler));
             }

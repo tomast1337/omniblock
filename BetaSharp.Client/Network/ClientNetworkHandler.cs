@@ -32,13 +32,13 @@ public class ClientNetworkHandler : NetHandler
     private bool disconnected;
     private readonly Connection netManager;
     public string field_1209_a;
-    private readonly Minecraft mc;
+    private readonly BetaSharp mc;
     private ClientWorld worldClient;
     private bool terrainLoaded;
     public PersistentStateManager clientPersistentStateManager = new(null);
     readonly JavaRandom rand = new();
 
-    public ClientNetworkHandler(Minecraft mc, string address, int port)
+    public ClientNetworkHandler(BetaSharp mc, string address, int port)
     {
         this.mc = mc;
 
@@ -50,7 +50,7 @@ public class ClientNetworkHandler : NetHandler
         netManager = new Connection(socket, "Client", this);
     }
 
-    public ClientNetworkHandler(Minecraft mc, Connection connection)
+    public ClientNetworkHandler(BetaSharp mc, Connection connection)
     {
         this.mc = mc;
         netManager = connection;

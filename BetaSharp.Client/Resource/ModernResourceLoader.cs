@@ -12,7 +12,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
     private readonly ILogger<ModernAssetDownloader> _logger = Log.Instance.For<ModernAssetDownloader>();
     private readonly HttpClient _httpClient;
     private readonly string _resourcesDirectory;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _mc;
     private bool _cancelled;
     private readonly IEnumerable<string> _wantedAssets;
     private static readonly Dictionary<string, string> ExtensionToFolder = new()
@@ -20,7 +20,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
         { ".ogg", "music" }
     };
 
-    public ModernAssetDownloader(Minecraft mc, string baseDirectory, IEnumerable<string> wantedAssets)
+    public ModernAssetDownloader(BetaSharp mc, string baseDirectory, IEnumerable<string> wantedAssets)
     {
         _wantedAssets = wantedAssets;
         _mc = mc;

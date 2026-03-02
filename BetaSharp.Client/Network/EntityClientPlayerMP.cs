@@ -24,7 +24,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     private bool wasSneaking;
     private int positionOnlyPacketCount;
 
-    public EntityClientPlayerMP(Minecraft mc, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(mc, world, session, 0)
+    public EntityClientPlayerMP(BetaSharp mc, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(mc, world, session, 0)
     {
         sendQueue = clientNetworkHandler;
     }

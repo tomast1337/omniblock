@@ -56,7 +56,7 @@ public class GuiButton : Gui
         return HoverState.Normal;
     }
 
-    public void DrawButton(Minecraft mc, int mouseX, int mouseY)
+    public void DrawButton(BetaSharp mc, int mouseX, int mouseY)
     {
         if (!Visible) return;
 
@@ -87,7 +87,7 @@ public class GuiButton : Gui
         }
     }
 
-    protected virtual void MouseDragged(Minecraft mc, int mouseX, int mouseY)
+    protected virtual void MouseDragged(BetaSharp mc, int mouseX, int mouseY)
     {
     }
 
@@ -95,7 +95,7 @@ public class GuiButton : Gui
     {
     }
 
-    public virtual bool MousePressed(Minecraft mc, int mouseX, int mouseY)
+    public virtual bool MousePressed(BetaSharp mc, int mouseX, int mouseY)
     {
         return Enabled && mouseX >= XPosition && mouseY >= YPosition && mouseX < XPosition + _width && mouseY < YPosition + _height;
     }

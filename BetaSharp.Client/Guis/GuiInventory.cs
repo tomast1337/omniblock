@@ -15,7 +15,7 @@ public class GuiInventory : GuiContainer
     public GuiInventory(EntityPlayer player) : base(player.playerScreenHandler)
     {
         AllowUserInput = true;
-        player.increaseStat(BetaSharp.Achievements.OpenInventory, 1);
+        player.increaseStat(global::BetaSharp.Achievements.OpenInventory, 1);
     }
 
     public override void InitGui()

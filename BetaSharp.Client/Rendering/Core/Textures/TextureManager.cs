@@ -22,10 +22,10 @@ public class TextureManager : IDisposable
     private bool _clamp;
     private bool _blur;
     private readonly TexturePacks _texturePacks;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _mc;
     private readonly Image<Rgba32> _missingTextureImage = new(256, 256);
 
-    public TextureManager(Minecraft mc, TexturePacks texturePacks, GameOptions options)
+    public TextureManager(BetaSharp mc, TexturePacks texturePacks, GameOptions options)
     {
         _mc = mc;
         _texturePacks = texturePacks;

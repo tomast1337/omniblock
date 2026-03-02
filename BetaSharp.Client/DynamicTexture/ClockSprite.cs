@@ -15,16 +15,16 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     private int[] _clock = new int[256];
     private int[] _dial = new int[256];
     private int _dialResolution = 16;
-    private Minecraft _mc;
+    private BetaSharp _mc;
     private int _resolution = 16;
 
-    public ClockSprite(Minecraft mc) : base(Item.Clock.getTextureId(0))
+    public ClockSprite(BetaSharp mc) : base(Item.Clock.getTextureId(0))
     {
         _mc = mc;
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(Minecraft mc)
+    public override void Setup(BetaSharp mc)
     {
         _mc = mc;
         TextureManager tm = mc.textureManager;

@@ -21,7 +21,7 @@ public class GuiIngame : Gui
     private readonly JavaRandom _rand = new();
     private int _chatScrollPos = 0;
     private bool _chatScrollbarDragging = false;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _mc;
     public string _hoveredItemName = null;
     private int _updateCounter = 0;
     private string _recordPlaying = "";
@@ -30,7 +30,7 @@ public class GuiIngame : Gui
     public float _damageGuiPartialTime;
     float PrevVignetteBrightness = 1.0F;
 
-    public GuiIngame(Minecraft gameInstance)
+    public GuiIngame(BetaSharp gameInstance)
     {
         _mc = gameInstance;
         _gcMonitor = new GCMonitor();
@@ -44,7 +44,7 @@ public class GuiIngame : Gui
         TextRenderer font = _mc.fontRenderer;
         _mc.gameRenderer.setupHudRender();
         GLManager.GL.Enable(GLEnum.Blend);
-        if (Minecraft.isFancyGraphicsEnabled())
+        if (BetaSharp.isFancyGraphicsEnabled())
         {
             renderVignette(_mc.player.getBrightnessAtEyes(partialTicks), scaledWidth, scaledHeight);
         }
@@ -208,7 +208,7 @@ public class GuiIngame : Gui
         {
             _gcMonitor.AllowUpdating = true;
             GLManager.GL.PushMatrix();
-            if (Minecraft.hasPaidCheckTime > 0L)
+            if (BetaSharp.hasPaidCheckTime > 0L)
                 GLManager.GL.Translate(0.0F, 32.0F, 0.0F);
 
             font.DrawStringWithShadow("Minecraft Beta 1.7.3 (" + _mc.debug + ")", 2, 2, Color.White);

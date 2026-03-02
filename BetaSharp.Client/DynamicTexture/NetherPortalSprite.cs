@@ -8,7 +8,7 @@ internal class NetherPortalSprite() : Rendering.Core.Textures.DynamicTexture(Blo
     private readonly byte[][] _frames = new byte[32][];
     private int _ticks;
 
-    public override void Setup(Minecraft mc)
+    public override void Setup(BetaSharp mc)
     {
         TryLoadCustomTexture(mc, "custom_portal.png");
         if (CustomFrames != null)

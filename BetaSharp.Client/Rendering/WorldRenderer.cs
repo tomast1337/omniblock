@@ -24,7 +24,7 @@ public class WorldRenderer : IWorldAccess
 {
     private World world;
     private readonly TextureManager renderEngine;
-    private readonly Minecraft mc;
+    private readonly BetaSharp mc;
     private BlockRenderer globalRenderBlocks;
     private int cloudOffsetX;
     private readonly int starGLCallList;
@@ -39,7 +39,7 @@ public class WorldRenderer : IWorldAccess
     public ChunkRenderer chunkRenderer;
     public float damagePartialTime;
 
-    public WorldRenderer(Minecraft gameInstance, TextureManager textureManager)
+    public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
     {
         mc = gameInstance;
         renderEngine = textureManager;

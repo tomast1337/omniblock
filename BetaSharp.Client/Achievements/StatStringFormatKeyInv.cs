@@ -2,9 +2,9 @@ using BetaSharp.Client.Input;
 
 namespace BetaSharp.Client.Achievements;
 
-public class StatStringFormatKeyInv(Minecraft game) : AchievementStatFormatter
+public class StatStringFormatKeyInv(BetaSharp game) : AchievementStatFormatter
 {
-    private readonly Minecraft _mc = game;
+    private readonly BetaSharp _mc = game;
     private static readonly TranslationStorage s_localizedName = TranslationStorage.Instance;
 
     public string formatString(string key)

@@ -35,7 +35,7 @@ public class BuiltInTexturePack : TexturePack
 
     }
 
-    public override void Unload(Minecraft mc)
+    public override void Unload(BetaSharp mc)
     {
         if (texturePackThumbnail != null && _texturePackName != null)
         {
@@ -45,7 +45,7 @@ public class BuiltInTexturePack : TexturePack
 
     }
 
-    public override void BindThumbnailTexture(Minecraft mc)
+    public override void BindThumbnailTexture(BetaSharp mc)
     {
         if (texturePackThumbnail != null && _texturePackName == null)
         {

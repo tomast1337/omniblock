@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Threading;
 
-public class ThreadConnectToServer(GuiConnecting connectingGui, Minecraft mc, string hostName, int port) : java.lang.Thread
+public class ThreadConnectToServer(GuiConnecting connectingGui, BetaSharp mc, string hostName, int port) : java.lang.Thread
 {
     private readonly ILogger<ThreadConnectToServer> _logger = Log.Instance.For<ThreadConnectToServer>();
 

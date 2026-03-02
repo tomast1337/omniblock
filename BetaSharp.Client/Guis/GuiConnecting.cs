@@ -14,14 +14,14 @@ public class GuiConnecting : GuiScreen
 
     public override bool PausesGame=> false;
 
-    public GuiConnecting(Minecraft mc, string host, int port)
+    public GuiConnecting(BetaSharp mc, string host, int port)
     {
         _logger.LogInformation($"Connecting to {host}, {port}");
         mc.changeWorld(null);
         new ThreadConnectToServer(this, mc, host, port).start();
     }
 
-    public GuiConnecting(Minecraft mc, ClientNetworkHandler clientHandler)
+    public GuiConnecting(BetaSharp mc, ClientNetworkHandler clientHandler)
     {
         _clientHandler = clientHandler;
         mc.changeWorld(null);

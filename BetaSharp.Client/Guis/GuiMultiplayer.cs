@@ -76,7 +76,7 @@ public class GuiMultiplayer : GuiScreen
     {
         try
         {
-            string path = System.IO.Path.Combine(Minecraft.getMinecraftDir().getAbsolutePath(), "servers.dat");
+            string path = System.IO.Path.Combine(BetaSharp.getBetaSharpDir().getAbsolutePath(), "servers.dat");
             if (!File.Exists(path)) return;
 
             using FileStream stream = File.OpenRead(path);
@@ -104,7 +104,7 @@ public class GuiMultiplayer : GuiScreen
             NBTTagCompound tag = new();
             tag.SetTag("servers", list);
 
-            string path = System.IO.Path.Combine(Minecraft.getMinecraftDir().getAbsolutePath(), "servers.dat");
+            string path = System.IO.Path.Combine(BetaSharp.getBetaSharpDir().getAbsolutePath(), "servers.dat");
             using FileStream stream = File.OpenWrite(path);
             NbtIo.WriteCompressed(tag, stream);
         }
@@ -147,13 +147,13 @@ public class GuiMultiplayer : GuiScreen
         else if (button.Id == 4) // Direct Connect
         {
             _directConnect = true;
-            _tempServer = new ServerData("Minecraft Server", "");
+            _tempServer = new ServerData("BetaSharp Server", "");
             mc.displayGuiScreen(new GuiDirectConnect(this, _tempServer));
         }
         else if (button.Id == 3) // Add
         {
             _addingServer = true;
-            _tempServer = new ServerData("Minecraft Server", "");
+            _tempServer = new ServerData("BetaSharp Server", "");
             mc.displayGuiScreen(new GuiScreenAddServer(this, _tempServer));
         }
         else if (button.Id == 7) // Edit

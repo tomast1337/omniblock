@@ -8,10 +8,10 @@ namespace BetaSharp.Client.Input;
 
 public class PlayerController
 {
-    protected readonly Minecraft mc;
+    protected readonly BetaSharp mc;
     public bool IsTestPlayer = false;
 
-    public PlayerController(Minecraft var1)
+    public PlayerController(BetaSharp var1)
     {
         mc = var1;
     }
