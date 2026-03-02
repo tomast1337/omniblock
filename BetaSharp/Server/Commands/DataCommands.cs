@@ -208,14 +208,10 @@ public static class DataCommands
     {
         output.SendMessage("type: " + e.GetType().Name);
         output.SendMessage("id: " + e.id);
-        output.SendMessage("dead: " + e.dead);
         output.SendMessage("isPersistent: " + e.isPersistent);
-        output.SendMessage("age: " + e.age);
         output.SendMessage("pos: " + e.Position.ToString("F2"));
-        if (e.passenger != null)
-            output.SendMessage("Passenger: " + e.passenger.id);
-        if (e.vehicle != null)
-            output.SendMessage("Vehicle: " + e.vehicle.id);
+        output.SendMessage("age: " + e.age);
+        output.SendMessage("dead: " + e.dead);
         if (e is EntityPlayer player)
         {
             output.SendMessage("health: " + player.health);
@@ -225,5 +221,10 @@ public static class DataCommands
         {
             output.SendMessage("health: " + living.health);
         }
+
+        if (e.passenger != null)
+            output.SendMessage("Passenger: " + e.passenger.id);
+        if (e.vehicle != null)
+            output.SendMessage("Vehicle: " + e.vehicle.id);
     }
 }
