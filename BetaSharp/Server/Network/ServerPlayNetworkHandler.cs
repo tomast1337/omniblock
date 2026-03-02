@@ -200,7 +200,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             float var21 = (1 / 16f);
-            bool var22 = var2.getEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var22 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             player.move(var32, var15, var17);
             var32 = var5 - player.x;
             var15 = var7 - player.y;
@@ -221,7 +221,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
             }
 
             player.setPositionAndAngles(var5, var7, var9, var11, var12);
-            bool var24 = var2.getEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var24 = var2.GetEntityCollisions(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
                 teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
