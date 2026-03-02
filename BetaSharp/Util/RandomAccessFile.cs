@@ -5,17 +5,11 @@ using System.Text;
 
 namespace BetaSharp.Util;
 
-/// <summary>
-/// A C# wrapper intended to mimic java.io.RandomAccessFile semantics.
-/// - Supports modes: "r", "rw", "rws", "rwd" (approximated)
-/// - Supports random access via Seek / FilePointer
-/// - Supports DataInput/DataOutput-style big-endian primitive operations (Java-compatible)
-/// </summary>
 public sealed class RandomAccessFile : IDisposable
 {
     private readonly FileStream _stream;
-    private readonly bool _syncMetadata; // approximate rws
-    private readonly bool _syncDataOnly; // approximate rwd
+    private readonly bool _syncMetadata;
+    private readonly bool _syncDataOnly;
     private readonly bool _leaveOpen;
 
     public RandomAccessFile(string path, string mode)
@@ -76,7 +70,6 @@ public sealed class RandomAccessFile : IDisposable
 
     public FileStream BaseStream => _stream;
 
-    // --- Positioning / sizing (RandomAccessFile-like) ---
     public long GetFilePointer() => _stream.Position;
 
     public void Seek(long pos)
@@ -95,8 +88,6 @@ public sealed class RandomAccessFile : IDisposable
     }
 
     public void Close() => Dispose();
-
-    // --- Low-level byte operations ---
 
     public int Read() => _stream.ReadByte();
 
@@ -140,7 +131,7 @@ public sealed class RandomAccessFile : IDisposable
     public void WriteBytes(string s)
     {
         if (s is null) throw new ArgumentNullException(nameof(s));
-        // Java writeBytes writes low 8 bits of each char.
+
         Span<byte> buf = s.Length <= 4096 ? stackalloc byte[s.Length] : new byte[s.Length];
         for (int i = 0; i < s.Length; i++)
             buf[i] = unchecked((byte)s[i]);
@@ -148,7 +139,6 @@ public sealed class RandomAccessFile : IDisposable
         SyncIfNeeded(forceMetadata: false);
     }
 
-    // --- Primitive reads/writes (BIG-ENDIAN like Java DataInput/DataOutput) ---
     public bool ReadBoolean() => ReadByte() != 0;
 
     public byte ReadByte()
@@ -176,7 +166,6 @@ public sealed class RandomAccessFile : IDisposable
 
     public char ReadChar()
     {
-        // Java char is unsigned 16-bit
         return (char)ReadUnsignedShort();
     }
 
@@ -266,7 +255,6 @@ public sealed class RandomAccessFile : IDisposable
         Write(utf8);
     }
 
-    // --- Convenience ---
     public int SkipBytes(int n)
     {
         if (n <= 0) return 0;
@@ -277,7 +265,6 @@ public sealed class RandomAccessFile : IDisposable
         return (int)(target - current);
     }
 
-    // --- Internals ---
     private void ReadFully(Span<byte> buffer)
     {
         int total = 0;
