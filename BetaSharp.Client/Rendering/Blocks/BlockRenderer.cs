@@ -13,7 +13,7 @@ public class BlockRenderer
     private readonly Tessellator? _tessellator;
     private int _overrideBlockTexture = -1;
 
-    
+
     private bool _flipTexture;
     private bool _renderAllFaces;
     private static readonly bool s_fancyGrass = true;

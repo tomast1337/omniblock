@@ -19,7 +19,6 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Storage;
-using java.net;
 using Microsoft.Extensions.Logging;
 using Socket = System.Net.Sockets.Socket;
 
@@ -28,6 +27,8 @@ namespace BetaSharp.Client.Network;
 public class ClientNetworkHandler : NetHandler
 {
     private readonly ILogger<ClientNetworkHandler> _logger = Log.Instance.For<ClientNetworkHandler>();
+
+    private static readonly HttpClient _httpClient = new();
 
     private bool disconnected;
     private readonly Connection netManager;
@@ -489,12 +490,13 @@ public class ClientNetworkHandler : NetHandler
         {
             try
             {
-                URL authUrl = new("http://www.minecraft.net/game/joinserver.jsp?user=" + mc.session.username + "&sessionId=" + mc.session.sessionId + "&serverId=" + packet.username);
-                java.io.BufferedReader reader = new(new java.io.InputStreamReader(authUrl.openStream()));
-                string response = reader.readLine();
-                reader.close();
                 //TODO: AUTH
-                if (response == null || response.Equals("ok", StringComparison.OrdinalIgnoreCase))
+                string authUrl = "http://www.minecraft.net/game/joinserver.jsp?user=" + mc.session.username + "&sessionId=" + mc.session.sessionId + "&serverId=" + packet.username;
+
+                string? response = _httpClient.GetStringAsync(authUrl).GetAwaiter().GetResult();
+                response = response?.Trim();
+
+                if (string.IsNullOrEmpty(response) || response.Equals("ok", StringComparison.OrdinalIgnoreCase))
                 {
                     addToSendQueue(new LoginHelloPacket(mc.session.username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
                 }
@@ -506,10 +508,9 @@ public class ClientNetworkHandler : NetHandler
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
-                netManager.disconnect("disconnect.genericReason", "Internal client error: " + e);
+                netManager.disconnect("disconnect.genericReason", "Internal client error: " + e.Message);
             }
         }
-
     }
 
     public void disconnect()
