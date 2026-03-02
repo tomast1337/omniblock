@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
@@ -224,7 +224,11 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityVelocityUpdate(EntityVelocityUpdateS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.entityId);
+        if (mc == null || mc.player == null || worldClient == null)
+            return;
+        
+
+        Entity? ent = getEntityByID(packet.entityId);
         if (ent != null)
         {
             ent.setVelocityClient(packet.motionX / 8000.0D, packet.motionY / 8000.0D, packet.motionZ / 8000.0D);
@@ -268,6 +272,9 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityPosition(EntityPositionS2CPacket packet)
     {
+        if (mc == null || mc.player == null || worldClient == null)
+            return;
+        
         Entity ent = getEntityByID(packet.id);
         if (ent != null)
         {
@@ -285,7 +292,10 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntity(EntityS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
+        if (mc == null || mc.player == null || worldClient == null)
+            return;
+
+        Entity? ent = getEntityByID(packet.id);
         if (ent != null)
         {
             ent.trackedPosX += packet.deltaX;
@@ -419,14 +429,13 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.entityId);
-        object collector = (EntityLiving)getEntityByID(packet.collectorEntityId);
-        collector ??= mc.player;
+        Entity? ent = getEntityByID(packet.entityId);
+        Entity collector = getEntityByID(packet.collectorEntityId) as EntityLiving ?? mc.player;
 
-        if (ent != null)
+        if (ent != null && collector != null)
         {
             worldClient.playSound(ent, "random.pop", 0.2F, ((rand.NextFloat() - rand.NextFloat()) * 0.7F + 1.0F) * 2.0F);
-            mc.particleManager.addEffect(new EntityPickupFX(mc.world, ent, (Entity)collector, -0.5F));
+            mc.particleManager.addEffect(new EntityPickupFX(mc.world, ent, collector, -0.5F));
             worldClient.RemoveEntityFromWorld(packet.entityId);
         }
 
@@ -442,11 +451,10 @@ public class ClientNetworkHandler : NetHandler
         Entity ent = getEntityByID(packet.id);
         if (ent != null)
         {
-            EntityPlayer player;
             if (packet.animationId == 1)
             {
-                player = (EntityPlayer)ent;
-                player.swingHand();
+                if (ent is EntityPlayer player)
+                    player.swingHand();
             }
             else if (packet.animationId == 2)
             {
@@ -454,13 +462,13 @@ public class ClientNetworkHandler : NetHandler
             }
             else if (packet.animationId == 3)
             {
-                player = (EntityPlayer)ent;
-                player.wakeUp(false, false, false);
+                if (ent is EntityPlayer player)
+                    player.wakeUp(false, false, false);
             }
             else if (packet.animationId == 4)
             {
-                player = (EntityPlayer)ent;
-                player.spawn();
+                if (ent is EntityPlayer player)
+                    player.spawn();
             }
 
         }
@@ -468,12 +476,11 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onPlayerSleepUpdate(PlayerSleepUpdateS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.id);
-        if (ent != null)
+        Entity? ent = getEntityByID(packet.id);
+        if (ent is EntityPlayer player)
         {
             if (packet.status == 0)
             {
-                EntityPlayer player = (EntityPlayer)ent;
                 player.trySleep(packet.x, packet.y, packet.z);
             }
 
@@ -556,32 +563,35 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onEntityVehicleSet(EntityVehicleSetS2CPacket packet)
     {
-        object rider = getEntityByID(packet.entityId);
-        Entity ent = getEntityByID(packet.vehicleEntityId);
-        if (packet.entityId == mc.player.id)
+        Entity? rider = getEntityByID(packet.entityId);
+        Entity? ent = getEntityByID(packet.vehicleEntityId);
+        if (mc != null && mc.player != null && packet.entityId == mc.player.id)
         {
             rider = mc.player;
         }
 
-        if (rider != null)
+        if (rider is Entity riderEntity)
         {
-            ((Entity)rider).setVehicle(ent);
+            riderEntity.setVehicle(ent);
         }
     }
 
     public override void onEntityStatus(EntityStatusS2CPacket packet)
     {
-        Entity ent = getEntityByID(packet.entityId);
-        if (ent != null)
-        {
-            ent.processServerEntityStatus(packet.entityStatus);
-        }
-
+        Entity? ent = getEntityByID(packet.entityId);
+        ent?.processServerEntityStatus(packet.entityStatus);
     }
 
-    private Entity getEntityByID(int entityId)
+    private Entity? getEntityByID(int entityId)
     {
-        return entityId == mc.player.id ? mc.player : worldClient.GetEntity(entityId);
+        if (mc == null || worldClient == null)
+            return null;
+        
+
+        if (mc.player != null && entityId == mc.player.id)
+            return mc.player;
+
+        return worldClient.GetEntity(entityId);
     }
 
     public override void onHealthUpdate(HealthUpdateS2CPacket packet)
