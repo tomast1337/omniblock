@@ -15,48 +15,49 @@ internal class RegionFile
     }
 
     private static readonly byte[] emptySector = new byte[4096];
-    private readonly java.io.File fileName;
-    private readonly RandomAccessFile dataFile;
+    private readonly string fileName;
+    private readonly BetaSharp.Util.RandomAccessFile dataFile;
     private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
     private readonly int[] offsets = new int[1024];
     private readonly int[] chunkSaveTimes = new int[1024];
     private readonly ArrayList sectorFree;
     private int sizeDelta;
 
-    public RegionFile(java.io.File var1)
+    public RegionFile(string input)
     {
-        fileName = var1;
+        fileName = input;
         debugln("REGION LOAD " + fileName);
         sizeDelta = 0;
 
         try
         {
-            dataFile = new RandomAccessFile(var1, "rw");
+            dataFile = new BetaSharp.Util.RandomAccessFile(input, "rw");
+
             int var2;
-            if (dataFile.length() < 4096L)
+            if (dataFile.Length() < 4096L)
             {
                 for (var2 = 0; var2 < 1024; ++var2)
                 {
-                    dataFile.writeInt(0);
+                    dataFile.WriteInt(0);
                 }
 
                 for (var2 = 0; var2 < 1024; ++var2)
                 {
-                    dataFile.writeInt(0);
+                    dataFile.WriteInt(0);
                 }
 
                 sizeDelta += 8192;
             }
 
-            if ((dataFile.length() & 4095L) != 0L)
+            if ((dataFile.Length() & 4095L) != 0L)
             {
-                for (var2 = 0; var2 < (dataFile.length() & 4095L); ++var2)
+                for (var2 = 0; var2 < (dataFile.Length() & 4095L); ++var2)
                 {
-                    dataFile.write(0);
+                    dataFile.Write(0);
                 }
             }
 
-            var2 = (int)dataFile.length() / 4096;
+            var2 = (int)dataFile.Length() / 4096;
             sectorFree = new ArrayList(var2);
 
             int var3;
@@ -67,12 +68,12 @@ internal class RegionFile
 
             sectorFree.set(0, java.lang.Boolean.FALSE);
             sectorFree.set(1, java.lang.Boolean.FALSE);
-            dataFile.seek(0L);
+            dataFile.Seek(0L);
 
             int var4;
             for (var3 = 0; var3 < 1024; ++var3)
             {
-                var4 = dataFile.readInt();
+                var4 = dataFile.ReadInt();
                 offsets[var3] = var4;
                 if (var4 != 0 && (var4 >> 8) + (var4 & 255) <= sectorFree.size())
                 {
@@ -85,7 +86,7 @@ internal class RegionFile
 
             for (var3 = 0; var3 < 1024; ++var3)
             {
-                var4 = dataFile.readInt();
+                var4 = dataFile.ReadInt();
                 chunkSaveTimes[var3] = var4;
             }
         }
@@ -117,12 +118,12 @@ internal class RegionFile
 
     private void func_22199_a(string var1, int var2, int var3, string var4)
     {
-        func_22211_a("REGION " + var1 + " " + fileName.getName() + "[" + var2 + "," + var3 + "] = " + var4);
+        func_22211_a("REGION " + var1 + " " + fileName + "[" + var2 + "," + var3 + "] = " + var4);
     }
 
     private void func_22197_a(string var1, int var2, int var3, int var4, string var5)
     {
-        func_22211_a("REGION " + var1 + " " + fileName.getName() + "[" + var2 + "," + var3 + "] " + var4 + "B = " + var5);
+        func_22211_a("REGION " + var1 + " " + fileName + "[" + var2 + "," + var3 + "] " + var4 + "B = " + var5);
     }
 
     private void debugln(string var1, int var2, int var3, string var4)
@@ -159,8 +160,8 @@ internal class RegionFile
                         }
                         else
                         {
-                            dataFile.seek(var4 * 4096);
-                            int var6 = dataFile.readInt();
+                            dataFile.Seek(var4 * 4096);
+                            int var6 = dataFile.ReadInt();
                             if (var6 > 4096 * var5)
                             {
                                 debugln("READ", var1, var2, "invalid length: " + var6 + " > 4096 * " + var5);
@@ -168,14 +169,14 @@ internal class RegionFile
                             }
                             else
                             {
-                                CompressionType var7 = (CompressionType)dataFile.readByte();
+                                CompressionType var7 = (CompressionType)dataFile.ReadByte();
                                 byte[] var8;
                                 Stream var9;
 
                                 if (var7 == CompressionType.ZLibDeflate)
                                 {
                                     var8 = new byte[var6 - 1];
-                                    dataFile.read(var8);
+                                    dataFile.Read(var8);
                                     var9 = new ZLibStream(new MemoryStream(var8), CompressionMode.Decompress);
                                     return new(var9, var7);
                                 }
@@ -283,12 +284,12 @@ internal class RegionFile
                     else
                     {
                         func_22197_a("SAVE", var1, var2, var4, "grow");
-                        dataFile.seek(dataFile.length());
+                        dataFile.Seek(dataFile.Length());
                         var6 = sectorFree.size();
 
                         for (var11 = 0; var11 < var8; ++var11)
                         {
-                            dataFile.write(emptySector);
+                            dataFile.Write(emptySector);
                             sectorFree.add(java.lang.Boolean.FALSE);
                         }
 
@@ -311,10 +312,10 @@ internal class RegionFile
     private void write(int var1, byte[] var2, int var3)
     {
         debugln(" " + var1);
-        dataFile.seek(var1 * 4096);
-        dataFile.writeInt(var3 + 1);
-        dataFile.writeByte((byte)CompressionType.ZLibDeflate);
-        dataFile.write(var2, 0, var3);
+        dataFile.Seek(var1 * 4096);
+        dataFile.WriteInt(var3 + 1);
+        dataFile.WriteByte((byte)CompressionType.ZLibDeflate);
+        dataFile.Write(var2, 0, var3);
     }
 
     private bool outOfBounds(int var1, int var2)
@@ -335,19 +336,19 @@ internal class RegionFile
     private void setOffset(int var1, int var2, int var3)
     {
         offsets[var1 + var2 * 32] = var3;
-        dataFile.seek((var1 + var2 * 32) * 4);
-        dataFile.writeInt(var3);
+        dataFile.Seek((var1 + var2 * 32) * 4);
+        dataFile.WriteInt(var3);
     }
 
     private void func_22208_b(int var1, int var2, int var3)
     {
         chunkSaveTimes[var1 + var2 * 32] = var3;
-        dataFile.seek(4096 + (var1 + var2 * 32) * 4);
-        dataFile.writeInt(var3);
+        dataFile.Seek(4096 + (var1 + var2 * 32) * 4);
+        dataFile.WriteInt(var3);
     }
 
     public void func_22196_b()
     {
-        dataFile.close();
+        dataFile.Close();
     }
 }
