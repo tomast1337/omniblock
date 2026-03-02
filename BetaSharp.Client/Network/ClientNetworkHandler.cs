@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
@@ -42,7 +42,9 @@ public class ClientNetworkHandler : NetHandler
     {
         this.mc = mc;
 
-        var endPoint = new IPEndPoint(Dns.GetHostAddresses(address)[0], port);
+        var addresses = Dns.GetHostAddresses(address);
+        var endPoint = new IPEndPoint(addresses.FirstOrDefault(a => a.AddressFamily is AddressFamily.InterNetwork) ?? addresses.First(), port);
+
         Socket socket = new(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 
         socket.Connect(endPoint);
