@@ -6,7 +6,7 @@ public abstract class PacketBaseEntity : Packet
 {
     protected const int PacketBaseEntitySize = 4;
 
-    public int EntityId;
+    public int EntityId { get; set; }
 
     public PacketBaseEntity(byte id) : base(id) { }
     public PacketBaseEntity(PacketId id) : base(id) { }
