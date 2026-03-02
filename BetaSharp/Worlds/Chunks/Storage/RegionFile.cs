@@ -14,7 +14,7 @@ internal class RegionFile
 
     private static readonly byte[] emptySector = new byte[4096];
     private readonly string fileName;
-    private readonly Util.RandomAccessFile dataFile;
+    private readonly FileStream dataFile;
     private readonly ILogger<RegionFile> _logger = Log.Instance.For<RegionFile>();
     private readonly int[] offsets = new int[1024];
     private readonly int[] chunkSaveTimes = new int[1024];
@@ -29,7 +29,7 @@ internal class RegionFile
 
         try
         {
-            dataFile = new BetaSharp.Util.RandomAccessFile(input, "rw");
+            dataFile = new FileStream(input, FileMode.OpenOrCreate);
 
             int var2;
             if (dataFile.Length() < 4096L)
