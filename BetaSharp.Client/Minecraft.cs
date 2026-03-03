@@ -176,15 +176,17 @@ public partial class Minecraft
         else
         {
             Display.setDisplayMode(new DisplayMode(displayWidth, displayHeight));
-            Display.setLocation((maximumWidth - displayWidth)  / 2 , (maximumHeight  - displayHeight)  / 2);
+            Display.setLocation((maximumWidth - displayWidth) / 2, (maximumHeight - displayHeight) / 2);
         }
 
         Display.setTitle("Minecraft Beta 1.7.3");
 
         mcDataDir = getMinecraftDir();
-        saveLoader = new RegionWorldStorageSource(System.IO.Path.Combine(mcDataDir.getAbsolutePath(), "saves"));
+        saveLoader = new RegionWorldStorageSource(Path.Combine(mcDataDir.getAbsolutePath(), "saves"));
         options = new GameOptions(this, mcDataDir.getAbsolutePath());
         Profiler.Enabled = options.DebugMode;
+        Profiler.EnableLagSpikeDetection = true;
+        Profiler.LagSpikeDirectory = Path.Combine(mcDataDir.getAbsolutePath(), "logs", "lag_spikes");
 
         try
         {
@@ -504,10 +506,15 @@ public partial class Minecraft
 
             while (running)
             {
+                long frameStartNano = java.lang.System.nanoTime();
+
+                int startGcGen0 = GC.CollectionCount(0);
+                int startGcGen1 = GC.CollectionCount(1);
+                int startGcGen2 = GC.CollectionCount(2);
+
                 if (options.DebugMode)
                 {
                     Profiler.Update(Timer.DeltaTime);
-                    Profiler.Record("frame Time", Timer.DeltaTime * 1000.0f);
                     Profiler.PushGroup("run");
                 }
                 try
@@ -568,7 +575,9 @@ public partial class Minecraft
 
                     if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
+                        if (options.DebugMode) Profiler.Start("wait");
                         Display.update();
+                        if (options.DebugMode) Profiler.Stop("wait");
                     }
 
                     if (player != null && player.isInsideWall())
@@ -623,7 +632,9 @@ public partial class Minecraft
                             toggleFullscreen();
                         }
 
+                        if (options.DebugMode) Profiler.Start("wait");
                         java.lang.Thread.sleep(10L);
+                        if (options.DebugMode) Profiler.Stop("wait");
                     }
 
                     if (options.ShowDebugInfo)
@@ -639,7 +650,9 @@ public partial class Minecraft
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
+                        if (options.DebugMode) Profiler.Start("wait");
                         Display.update();
+                        if (options.DebugMode) Profiler.Stop("wait");
                     }
 
                     screenshotListener();
@@ -688,10 +701,36 @@ public partial class Minecraft
                 }
                 finally
                 {
+                    long frameEndNano = java.lang.System.nanoTime();
+                    double thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
+
                     if (options.DebugMode)
                     {
+                        Profiler.Record("frame Time", thisFrameTimeMs);
                         Profiler.CaptureFrame();
                         Profiler.PopGroup();
+                    }
+
+                    if (Display.isActive())
+                    {
+                        int endGcGen0 = GC.CollectionCount(0);
+                        int endGcGen1 = GC.CollectionCount(1);
+                        int endGcGen2 = GC.CollectionCount(2);
+
+                        int gc0Diff = endGcGen0 - startGcGen0;
+                        int gc1Diff = endGcGen1 - startGcGen1;
+                        int gc2Diff = endGcGen2 - startGcGen2;
+
+                        string gcContext = "";
+                        if (gc0Diff > 0 || gc1Diff > 0 || gc2Diff > 0)
+                        {
+                            gcContext = $"GC Collections this frame: Gen0[{gc0Diff}] Gen1[{gc1Diff}] Gen2[{gc2Diff}]";
+                        }
+
+                        int fpsLimit = 30 + (int)(options.LimitFramerate * 210.0f);
+                        double msPerFrameTarget = fpsLimit == 240 ? 16.666 : (1000.0 / fpsLimit);
+                        Profiler.LagSpikeThresholdMs = msPerFrameTarget * 2.0;
+                        Profiler.DetectLagSpike(thisFrameTimeMs, string.IsNullOrEmpty(gcContext) ? debug : $"{debug} - {gcContext}", true);
                     }
                 }
             }
