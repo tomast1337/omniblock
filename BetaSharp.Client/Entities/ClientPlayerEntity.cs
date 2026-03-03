@@ -1,4 +1,4 @@
-﻿using BetaSharp.Blocks.Entities;
+using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Achievements;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Guis;
@@ -225,9 +225,12 @@ public class ClientPlayerEntity : EntityPlayer
             if (stat.IsAchievement())
             {
                 Achievement achievement = (Achievement)stat;
-                if (achievement.parent == null || mc.statFileWriter.HasAchievementUnlocked(achievement.parent))
+                bool parentUnlocked = achievement.parent == null || mc.statFileWriter.HasAchievementUnlocked(achievement.parent);
+                bool alreadyUnlocked = mc.statFileWriter.HasAchievementUnlocked(achievement);
+
+                if (parentUnlocked)
                 {
-                    if (!mc.statFileWriter.HasAchievementUnlocked(achievement))
+                    if (!alreadyUnlocked)
                     {
                         mc.guiAchievement.queueTakenAchievement(achievement);
                     }
