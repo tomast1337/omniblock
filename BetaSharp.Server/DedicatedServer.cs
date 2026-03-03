@@ -8,7 +8,7 @@ using Exception = System.Exception;
 
 namespace BetaSharp.Server;
 
-internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(config)
+internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(config)
 {
     private static readonly ILogger<DedicatedServer> s_logger = Log.Instance.For<DedicatedServer>();
 
@@ -23,7 +23,7 @@ internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(co
         var1.setDaemon(true);
         var1.start();
 
-        s_logger.LogInformation("Starting minecraft server version Beta 1.7.3");
+        s_logger.LogInformation("Starting BetaSharp server version Beta 1.7.3");
         if (Runtime.getRuntime().maxMemory() / 1024L / 1024L < 512L)
         {
             s_logger.LogWarning("**** NOT ENOUGH RAM!");
@@ -44,7 +44,7 @@ internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(co
         }
 
         int port = config.GetServerPort(25565);
-        s_logger.LogInformation($"Starting Minecraft server on {(addressInput.Length == 0 ? "*" : addressInput)}:{port}");
+        s_logger.LogInformation($"Starting BetaSharp server on {(addressInput.Length == 0 ? "*" : addressInput)}:{port}");
 
         try
         {
@@ -82,7 +82,7 @@ internal class DedicatedServer(IServerConfiguration config) : MinecraftServer(co
         }
         catch (Exception e)
         {
-            s_logger.LogError($"Failed to start the minecraft server: {e}");
+            s_logger.LogError($"Failed to start the BetaSharp server: {e}");
         }
     }
 

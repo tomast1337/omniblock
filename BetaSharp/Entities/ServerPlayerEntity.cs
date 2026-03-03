@@ -13,15 +13,18 @@ using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using java.util;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Entities;
 
 public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 {
+    private static readonly ILogger s_logger = Log.Instance.For<ServerPlayerEntity>();
+
     private const int MaxChunkPackets = 16;
 
     public ServerPlayNetworkHandler networkHandler;
-    public MinecraftServer server;
+    public BetaSharpServer server;
     public ServerPlayerInteractionManager interactionManager;
     public double lastX;
     public double lastZ;
@@ -33,7 +36,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     private int screenHandlerSyncId;
     public bool skipPacketSlotUpdates;
 
-    public ServerPlayerEntity(MinecraftServer server, World world, String name, ServerPlayerInteractionManager interactionManager) : base(world)
+    public ServerPlayerEntity(BetaSharpServer server, World world, String name, ServerPlayerInteractionManager interactionManager) : base(world)
     {
         interactionManager.player = this;
         this.interactionManager = interactionManager;
@@ -453,6 +456,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         {
             if (!stat.LocalOnly)
             {
+                if (stat.IsAchievement())
+                {
+                    s_logger.LogInformation("Player {PlayerName} unlocked {AchievementName}", name, stat.StatName);
+                }
+
                 while (amount > 100)
                 {
                     networkHandler.sendPacket(new IncreaseStatS2CPacket(stat.Id, 100));

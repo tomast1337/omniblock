@@ -25,9 +25,9 @@ public class GuiTexturePacks : GuiScreen
         TranslationStorage translations = TranslationStorage.Instance;
         _controlList.Add(new GuiSmallButton(ButtonOpenFolder, Width / 2 - 154, Height - 48, translations.TranslateKey("texturePack.openFolder")));
         _controlList.Add(new GuiSmallButton(ButtonDone, Width / 2 + 4, Height - 48, translations.TranslateKey("gui.done")));
-        mc.texturePackList.updateAvaliableTexturePacks();
+        Game.texturePackList.updateAvaliableTexturePacks();
 
-        string baseDir = Minecraft.getMinecraftDir();
+        string baseDir = BetaSharp.getBetaSharpDir();
         _texturePackFolder = Path.GetFullPath(Path.Combine(baseDir, "texturepacks"));
         
         _guiTexturePackSlot = new GuiTexturePackSlot(this);
@@ -55,8 +55,8 @@ public class GuiTexturePacks : GuiScreen
                     }
                     break;
                 case ButtonDone:
-                    mc.textureManager.Reload();
-                    mc.displayGuiScreen(_parentScreen);
+                    Game.textureManager.Reload();
+                    Game.displayGuiScreen(_parentScreen);
                     break;
                 default:
                     _guiTexturePackSlot.ActionPerformed(btn);
@@ -81,7 +81,7 @@ public class GuiTexturePacks : GuiScreen
         _guiTexturePackSlot.DrawScreen(mouseX, mouseY, partialTicks);
         if (_refreshTimer <= 0)
         {
-            mc.texturePackList.updateAvaliableTexturePacks();
+            Game.texturePackList.updateAvaliableTexturePacks();
             _refreshTimer += 20;
         }
 

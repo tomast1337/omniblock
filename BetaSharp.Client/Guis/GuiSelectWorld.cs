@@ -45,7 +45,7 @@ public class GuiSelectWorld : GuiScreen
 
     private void loadSaves()
     {
-        IWorldStorageSource worldStorage = mc.getSaveLoader();
+        IWorldStorageSource worldStorage = Game.getSaveLoader();
         saveList = worldStorage.GetAll();
         saveList.Sort();
         selectedWorld = -1;
@@ -93,7 +93,7 @@ public class GuiSelectWorld : GuiScreen
             string deleteButtonText = translations.TranslateKey("selectWorld.deleteButton");
             string cancelButtonText = translations.TranslateKey("gui.cancel");
             GuiYesNo confirmDialog = new(this, deleteQuestion, deleteWarning, deleteButtonText, cancelButtonText, worldIndex);
-            mc.displayGuiScreen(confirmDialog);
+            Game.displayGuiScreen(confirmDialog);
         }
     }
 
@@ -110,13 +110,13 @@ public class GuiSelectWorld : GuiScreen
                     selectWorld(selectedWorld);
                     break;
                 case BUTTON_CREATE:
-                    mc.displayGuiScreen(new GuiCreateWorld(this));
+                    Game.displayGuiScreen(new GuiCreateWorld(this));
                     break;
                 case BUTTON_RENAME:
-                    mc.displayGuiScreen(new GuiRenameWorld(this, getSaveFileName(selectedWorld)));
+                    Game.displayGuiScreen(new GuiRenameWorld(this, getSaveFileName(selectedWorld)));
                     break;
                 case BUTTON_CANCEL:
-                    mc.displayGuiScreen(parentScreen);
+                    Game.displayGuiScreen(parentScreen);
                     break;
                 default:
                     worldSlotContainer.ActionPerformed(button);
@@ -130,10 +130,10 @@ public class GuiSelectWorld : GuiScreen
         if (!selected)
         {
             selected = true;
-            mc.statFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
-            mc.playerController = new PlayerControllerSP(mc);
-            string worldFileName = getSaveFileName(worldIndex) ?? "World" + worldIndex;
-            mc.startWorld(worldFileName, getSaveName(worldIndex), 0L);
+            Game.statFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
+            Game.playerController = new PlayerControllerSP(Game);
+            string worldFileName = getSaveFileName(worldIndex) ?? $"World{worldIndex}";
+            Game.startWorld(worldFileName, getSaveName(worldIndex), 0L);
         }
     }
 
@@ -147,13 +147,13 @@ public class GuiSelectWorld : GuiScreen
                 performDelete(worldIndex);
             }
 
-            mc.displayGuiScreen(this);
+            Game.displayGuiScreen(this);
         }
     }
 
     private void performDelete(int worldIndex)
     {
-        IWorldStorageSource worldStorage = mc.getSaveLoader();
+        IWorldStorageSource worldStorage = Game.getSaveLoader();
         worldStorage.Flush();
         worldStorage.Delete(getSaveFileName(worldIndex));
         loadSaves();
