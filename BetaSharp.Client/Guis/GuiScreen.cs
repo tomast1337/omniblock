@@ -1,13 +1,8 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
-using java.awt;
-using java.awt.datatransfer;
-using java.util;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL.Legacy;
-using System;
-using System.Collections.Generic;
 
 namespace BetaSharp.Client.Guis;
 
