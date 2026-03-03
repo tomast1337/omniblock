@@ -184,8 +184,9 @@ public partial class Minecraft
         mcDataDir = getMinecraftDir();
         saveLoader = new RegionWorldStorageSource(Path.Combine(mcDataDir.getAbsolutePath(), "saves"));
         options = new GameOptions(this, mcDataDir.getAbsolutePath());
+
         Profiler.Enabled = options.DebugMode;
-        Profiler.EnableLagSpikeDetection = true;
+        Profiler.EnableLagSpikeDetection = options.DebugMode;
         Profiler.LagSpikeDirectory = Path.Combine(mcDataDir.getAbsolutePath(), "logs", "lag_spikes");
 
         try
@@ -709,28 +710,28 @@ public partial class Minecraft
                         Profiler.Record("frame Time", thisFrameTimeMs);
                         Profiler.CaptureFrame();
                         Profiler.PopGroup();
-                    }
 
-                    if (Display.isActive())
-                    {
-                        int endGcGen0 = GC.CollectionCount(0);
-                        int endGcGen1 = GC.CollectionCount(1);
-                        int endGcGen2 = GC.CollectionCount(2);
-
-                        int gc0Diff = endGcGen0 - startGcGen0;
-                        int gc1Diff = endGcGen1 - startGcGen1;
-                        int gc2Diff = endGcGen2 - startGcGen2;
-
-                        string gcContext = "";
-                        if (gc0Diff > 0 || gc1Diff > 0 || gc2Diff > 0)
+                        if (Display.isActive())
                         {
-                            gcContext = $"GC Collections this frame: Gen0[{gc0Diff}] Gen1[{gc1Diff}] Gen2[{gc2Diff}]";
-                        }
+                            int endGcGen0 = GC.CollectionCount(0);
+                            int endGcGen1 = GC.CollectionCount(1);
+                            int endGcGen2 = GC.CollectionCount(2);
 
-                        int fpsLimit = 30 + (int)(options.LimitFramerate * 210.0f);
-                        double msPerFrameTarget = fpsLimit == 240 ? 16.666 : (1000.0 / fpsLimit);
-                        Profiler.LagSpikeThresholdMs = msPerFrameTarget * 2.0;
-                        Profiler.DetectLagSpike(thisFrameTimeMs, string.IsNullOrEmpty(gcContext) ? debug : $"{debug} - {gcContext}", true);
+                            int gc0Diff = endGcGen0 - startGcGen0;
+                            int gc1Diff = endGcGen1 - startGcGen1;
+                            int gc2Diff = endGcGen2 - startGcGen2;
+
+                            string gcContext = "";
+                            if (gc0Diff > 0 || gc1Diff > 0 || gc2Diff > 0)
+                            {
+                                gcContext = $"GC Collections this frame: Gen0[{gc0Diff}] Gen1[{gc1Diff}] Gen2[{gc2Diff}]";
+                            }
+
+                            int fpsLimit = 30 + (int)(options.LimitFramerate * 210.0f);
+                            double msPerFrameTarget = fpsLimit == 240 ? 16.666 : (1000.0 / fpsLimit);
+                            Profiler.LagSpikeThresholdMs = msPerFrameTarget * 2.0;
+                            Profiler.DetectLagSpike(thisFrameTimeMs, string.IsNullOrEmpty(gcContext) ? debug : $"{debug} - {gcContext}", true);
+                        }
                     }
                 }
             }
