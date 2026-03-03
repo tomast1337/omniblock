@@ -12,7 +12,7 @@ public class GuiAchievement : Gui
     private static readonly string AltLocationWarningText = "(Or logged in from another location)";
     private static readonly string PurchasePromptText = "Purchase at minecraft.net";
 
-    private readonly Minecraft _theGame;
+    private readonly BetaSharp _theGame;
     private int _achievementWindowWidth;
     private int _achievementWindowHeight;
     private string _achievementTitle;
@@ -22,9 +22,9 @@ public class GuiAchievement : Gui
     private readonly ItemRenderer _itemRender;
     private bool _isAchievementInformation;
 
-    public GuiAchievement(Minecraft mc)
+    public GuiAchievement(BetaSharp game)
     {
-        _theGame = mc;
+        _theGame = game;
         _itemRender = new ItemRenderer();
     }
 
@@ -71,7 +71,7 @@ public class GuiAchievement : Gui
 
     public void updateAchievementWindow()
     {
-        if (Minecraft.hasPaidCheckTime > 0L)
+        if (BetaSharp.hasPaidCheckTime > 0L)
         {
             displayLicenseWarning();
         }

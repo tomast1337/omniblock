@@ -25,12 +25,12 @@ public class TextureManager : IDisposable
     private bool _clamp;
     private bool _blur;
     private readonly TexturePacks _texturePacks;
-    private readonly Minecraft _mc;
+    private readonly BetaSharp _game;
     private readonly Image<Rgba32> _missingTextureImage = new(256, 256);
 
-    public TextureManager(Minecraft mc, TexturePacks texturePacks, GameOptions options)
+    public TextureManager(BetaSharp game, TexturePacks texturePacks, GameOptions options)
     {
-        _mc = mc;
+        _game = game;
         _texturePacks = texturePacks;
         _gameOptions = options;
         _missingTextureImage.Mutate(ctx =>
@@ -257,7 +257,7 @@ public class TextureManager : IDisposable
     public void AddDynamicTexture(DynamicTexture t)
     {
         _dynamicTextures.Add(t);
-        t.Setup(_mc);
+        t.Setup(_game);
         t.tick();
 
         _terrainHandle = null;
@@ -304,7 +304,7 @@ public class TextureManager : IDisposable
 
         foreach (DynamicTexture dynamicTexture in _dynamicTextures)
         {
-            dynamicTexture.Setup(_mc);
+            dynamicTexture.Setup(_game);
         }
 
         _terrainHandle = null;

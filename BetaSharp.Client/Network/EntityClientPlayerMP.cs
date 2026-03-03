@@ -1,4 +1,4 @@
-using BetaSharp.Client.Entities;
+﻿using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
@@ -23,7 +23,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     private bool lastOnGround;
     private bool wasSneaking;
 
-    public EntityClientPlayerMP(Minecraft mc, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(mc, world, session, 0)
+    public EntityClientPlayerMP(BetaSharp game, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(game, world, session, 0)
     {
         sendQueue = clientNetworkHandler;
     }

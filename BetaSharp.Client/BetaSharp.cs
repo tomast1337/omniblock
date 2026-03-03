@@ -38,10 +38,10 @@ using System.Runtime;
 
 namespace BetaSharp.Client;
 
-public partial class Minecraft
+public partial class BetaSharp
 {
-    public static Minecraft INSTANCE;
-    private readonly ILogger<Minecraft> _logger = Log.Instance.For<Minecraft>();
+    public static BetaSharp INSTANCE;
+    private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
     public PlayerController playerController;
     private bool fullscreen;
     private bool hasCrashed;
@@ -55,7 +55,7 @@ public partial class Minecraft
     public EntityLiving camera;
     public ParticleManager particleManager;
     public Session session;
-    public string minecraftUri;
+    public string betaSharpUri;
     public bool hideQuitButton = false;
     public volatile bool isGamePaused;
     public TextureManager textureManager;
@@ -76,7 +76,7 @@ public partial class Minecraft
     public SoundManager sndManager = new();
     public MouseHelper mouseHelper;
     public TexturePacks texturePackList;
-    private java.io.File mcDataDir;
+    private java.io.File gameDataDir;
     private IWorldStorageSource saveLoader;
     public static long[] frameTimes = new long[512];
     public static long[] tickTimes = new long[512];
@@ -101,7 +101,7 @@ public partial class Minecraft
     public InternalServer? internalServer;
     private GLErrorHandler _glErrorHandler;
 
-    public Minecraft(int width, int height, bool isFullscreen)
+    public BetaSharp(int width, int height, bool isFullscreen)
     {
         loadingScreen = new LoadingScreenRenderer(this);
         guiAchievement = new GuiAchievement(this);
@@ -138,10 +138,10 @@ public partial class Minecraft
         }
     }
 
-    public void onMinecraftCrash(Exception crashInfo)
+    public void onBetaSharpCrash(Exception crashInfo)
     {
         hasCrashed = true;
-        _logger.LogError(crashInfo, "The game has crashed!");
+        _logger.LogError(crashInfo, "BetaSharp has crashed!");
     }
 
     public void setServer(string name, int port)
@@ -180,15 +180,14 @@ public partial class Minecraft
             Display.setLocation((maximumWidth - displayWidth) / 2, (maximumHeight - displayHeight) / 2);
         }
 
-        Display.setTitle("Minecraft Beta 1.7.3");
+        Display.setTitle("BetaSharp Beta 1.7.3");
 
-        mcDataDir = getMinecraftDir();
-        saveLoader = new RegionWorldStorageSource(Path.Combine(mcDataDir.getAbsolutePath(), "saves"));
-        options = new GameOptions(this, mcDataDir.getAbsolutePath());
-
+        gameDataDir = getBetaSharpDir();
+        saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir.getAbsolutePath(), "saves"));
+        options = new GameOptions(this, gameDataDir.getAbsolutePath());
         Profiler.Enabled = options.DebugMode;
         Profiler.EnableLagSpikeDetection = options.DebugMode;
-        Profiler.LagSpikeDirectory = Path.Combine(mcDataDir.getAbsolutePath(), "logs", "lag_spikes");
+        Profiler.LagSpikeDirectory = Path.Combine(gameDataDir.getAbsolutePath(), "logs", "lag_spikes");
 
         try
         {
@@ -212,7 +211,7 @@ public partial class Minecraft
         {
             _logger.LogError(ex, "Exception");
         }
-        texturePackList = new TexturePacks(this, new DirectoryInfo(mcDataDir.getAbsolutePath()));
+        texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir.getAbsolutePath()));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
         skinManager = new SkinManager(textureManager);
@@ -222,12 +221,12 @@ public partial class Minecraft
         gameRenderer = new GameRenderer(this);
         EntityRenderDispatcher.instance.skinManager = skinManager;
         EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
-        statFileWriter = new StatFileWriter(session, mcDataDir.getAbsolutePath());
+        statFileWriter = new StatFileWriter(session, gameDataDir.getAbsolutePath());
 
         StatStringFormatKeyInv format = new(this);
-        BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
+        global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
         {
-            return format.formatString(BetaSharp.Achievements.OpenInventory.TranslationKey);
+            return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
         };
 
         loadScreen();
@@ -291,7 +290,7 @@ public partial class Minecraft
         GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
         particleManager = new ParticleManager(world, textureManager);
 
-        string dataDirPath = mcDataDir.getAbsolutePath();
+        string dataDirPath = gameDataDir.getAbsolutePath();
 
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, dataDirPath))
@@ -368,7 +367,7 @@ public partial class Minecraft
         tess.draw();
     }
 
-    public static java.io.File getMinecraftDir()
+    public static java.io.File getBetaSharpDir()
     {
         return new java.io.File(PathHelper.GetAppDir(nameof(BetaSharp)));
     }
@@ -444,7 +443,7 @@ public partial class Minecraft
         }
     }
 
-    public void shutdownMinecraftApplet()
+    public void ShutdownBetaSharpApplet()
     {
         try
         {
@@ -468,7 +467,7 @@ public partial class Minecraft
 
             skinManager.Dispose();
             textureManager.Dispose();
-            sndManager.CloseMinecraft();
+            sndManager.CloseBetaSharp();
             Mouse.destroy();
             Keyboard.destroy();
 
@@ -496,7 +495,7 @@ public partial class Minecraft
         }
         catch (Exception startupException)
         {
-            onMinecraftCrash(startupException);
+            onBetaSharpCrash(startupException);
             return;
         }
 
@@ -551,7 +550,7 @@ public partial class Minecraft
                         {
                             runTick(Timer.renderPartialTicks);
                         }
-                        catch (MinecraftException)
+                        catch (BetaSharpException)
                         {
                             world = null;
                             changeWorld((World)null);
@@ -617,8 +616,8 @@ public partial class Minecraft
                         ImGui.Text($"Chunks Rendered: {terrainRenderer.chunkRenderer.ChunksRendered}");
                         ImGui.Separator();
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
-                        ImGui.Text($"ChunkMeshVersion Allocated: {BetaSharp.Util.ChunkMeshVersion.TotalAllocated}");
-                        ImGui.Text($"ChunkMeshVersion Released: {BetaSharp.Util.ChunkMeshVersion.TotalReleased}");
+                        ImGui.Text($"ChunkMeshVersion Allocated: {ChunkMeshVersion.TotalAllocated}");
+                        ImGui.Text($"ChunkMeshVersion Released: {ChunkMeshVersion.TotalReleased}");
                         ImGui.Separator();
                         ImGui.Text($"Texture Binds: {TextureStats.BindsLastFrame} (Avg: {TextureStats.AverageBindsPerFrame:F1}/f)");
                         ImGui.Text($"Active Textures: {GLTexture.ActiveTextureCount}");
@@ -652,9 +651,7 @@ public partial class Minecraft
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
-                        if (options.DebugMode) Profiler.Start("wait");
                         Display.update();
-                        if (options.DebugMode) Profiler.Stop("wait");
                     }
 
                     screenshotListener();
@@ -690,7 +687,7 @@ public partial class Minecraft
                         lastFpsCheckTime += 1000L;
                     }
                 }
-                catch (MinecraftException)
+                catch (BetaSharpException)
                 {
                     world = null;
                     changeWorld(null);
@@ -737,15 +734,15 @@ public partial class Minecraft
                 }
             }
         }
-        catch (MinecraftShutdownException) { }
+        catch (BetaSharpShutdownException) { }
         catch (Exception unexpectedException)
         {
             crashCleanup();
-            onMinecraftCrash(unexpectedException);
+            onBetaSharpCrash(unexpectedException);
         }
         finally
         {
-            shutdownMinecraftApplet();
+            ShutdownBetaSharpApplet();
         }
     }
 
@@ -777,7 +774,7 @@ public partial class Minecraft
                         GLManager.GL.ReadPixels(0, 0, (uint)displayWidth, (uint)displayHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
-                string result = ScreenShotHelper.saveScreenshot(mcDataDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
+                string result = ScreenShotHelper.saveScreenshot(gameDataDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
                 ingameGUI.addChatMessage(result);
             }
         }
@@ -1737,16 +1734,16 @@ public partial class Minecraft
 
     private static void StartMainThread(string playerName, string sessionToken, string? skinUrl = null)
     {
-        Thread.CurrentThread.Name = "Minecraft Main Thread";
+        Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        Minecraft mc = new(850, 480, false)
+        BetaSharp game = new(850, 480, false)
         {
-            minecraftUri = "www.minecraft.net"
+            betaSharpUri = "www.minecraft.net"
         };
 
         if (playerName != null && sessionToken != null)
         {
-            mc.session = new Session(playerName, sessionToken, skinUrl);
+            game.session = new Session(playerName, sessionToken, skinUrl);
 
             if (sessionToken == "-")
             {
@@ -1759,7 +1756,7 @@ public partial class Minecraft
             throw new Exception("Player name and session token were not provided!");
         }
 
-        mc.Run();
+        game.Run();
     }
 
     public ClientNetworkHandler getSendQueue()

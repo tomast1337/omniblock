@@ -68,7 +68,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void renderName(EntityPlayer var1, double var2, double var4, double var6)
     {
-        if (Minecraft.isGuiEnabled() && var1 != Dispatcher.cameraEntity)
+        if (BetaSharp.isGuiEnabled() && var1 != Dispatcher.cameraEntity)
         {
             float var8 = 1.6F;
             float var9 = (float)(1.0D / 60.0D) * var8;

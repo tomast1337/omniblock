@@ -24,7 +24,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     private const int MaxChunkPackets = 16;
 
     public ServerPlayNetworkHandler networkHandler;
-    public MinecraftServer server;
+    public BetaSharpServer server;
     public ServerPlayerInteractionManager interactionManager;
     public double lastX;
     public double lastZ;
@@ -36,7 +36,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     private int screenHandlerSyncId;
     public bool skipPacketSlotUpdates;
 
-    public ServerPlayerEntity(MinecraftServer server, World world, String name, ServerPlayerInteractionManager interactionManager) : base(world)
+    public ServerPlayerEntity(BetaSharpServer server, World world, String name, ServerPlayerInteractionManager interactionManager) : base(world)
     {
         interactionManager.player = this;
         this.interactionManager = interactionManager;
