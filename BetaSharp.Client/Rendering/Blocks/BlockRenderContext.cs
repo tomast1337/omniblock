@@ -63,7 +63,7 @@ public ref struct BlockRenderContext
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static float Clamp(float value) => value < 0f ? 0f : (value > 1f ? 1f : value);
 
-    internal readonly void DrawBottomFace(Block block, in Vec3D pos, in FaceColors colors, int textureId)
+    internal readonly void DrawBottomFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
         int texU = (textureId & 15) << 4;
@@ -96,14 +96,28 @@ public ref struct BlockRenderContext
 
         if (EnableAo)
         {
-            Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
-            Tess.addVertexWithUV(minX, minY, maxZ, u0, v0);
-            Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
-            Tess.addVertexWithUV(minX, minY, minZ, u1, v1);
-            Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
-            Tess.addVertexWithUV(maxX, minY, minZ, u2, v2);
-            Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
-            Tess.addVertexWithUV(maxX, minY, maxZ, u3, v3);
+            if (flipped)
+            {
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(minX, minY, minZ, u1, v1);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(maxX, minY, minZ, u2, v2);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(maxX, minY, maxZ, u3, v3);
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(minX, minY, maxZ, u0, v0);
+            }
+            else
+            {
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(minX, minY, maxZ, u0, v0);
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(minX, minY, minZ, u1, v1);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(maxX, minY, minZ, u2, v2);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(maxX, minY, maxZ, u3, v3);
+            }
         }
         else
         {
@@ -114,7 +128,7 @@ public ref struct BlockRenderContext
         }
     }
 
-    internal readonly void DrawTopFace(Block block, in Vec3D pos, in FaceColors colors, int textureId)
+    internal readonly void DrawTopFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
         int texU = (textureId & 15) << 4;
@@ -147,14 +161,28 @@ public ref struct BlockRenderContext
 
         if (EnableAo)
         {
-            Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
-            Tess.addVertexWithUV(maxX, maxY, maxZ, u0, v0);
-            Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
-            Tess.addVertexWithUV(maxX, maxY, minZ, u1, v1);
-            Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
-            Tess.addVertexWithUV(minX, maxY, minZ, u2, v2);
-            Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
-            Tess.addVertexWithUV(minX, maxY, maxZ, u3, v3);
+            if (flipped)
+            {
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(maxX, maxY, minZ, u1, v1);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(minX, maxY, minZ, u2, v2);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(minX, maxY, maxZ, u3, v3);
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(maxX, maxY, maxZ, u0, v0);
+            }
+            else
+            {
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(maxX, maxY, maxZ, u0, v0);
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(maxX, maxY, minZ, u1, v1);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(minX, maxY, minZ, u2, v2);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(minX, maxY, maxZ, u3, v3);
+            }
         }
         else
         {
@@ -165,7 +193,7 @@ public ref struct BlockRenderContext
         }
     }
 
-    internal readonly void DrawNorthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId)
+    internal readonly void DrawNorthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
         int texU = (textureId & 15) << 4;
@@ -193,14 +221,28 @@ public ref struct BlockRenderContext
 
         if (EnableAo)
         {
-            Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
-            Tess.addVertexWithUV(minX, maxY, minZ, uTl, vTl);
-            Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
-            Tess.addVertexWithUV(minX, minY, minZ, uBl, vBl);
-            Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
-            Tess.addVertexWithUV(minX, minY, maxZ, uBr, vBr);
-            Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
-            Tess.addVertexWithUV(minX, maxY, maxZ, uTr, vTr);
+            if (flipped)
+            {
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(minX, minY, minZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(minX, minY, maxZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(minX, maxY, maxZ, uTr, vTr);
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(minX, maxY, minZ, uTl, vTl);
+            }
+            else
+            {
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(minX, maxY, minZ, uTl, vTl);
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(minX, minY, minZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(minX, minY, maxZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(minX, maxY, maxZ, uTr, vTr);
+            }
         }
         else
         {
@@ -211,7 +253,7 @@ public ref struct BlockRenderContext
         }
     }
 
-    internal readonly void DrawSouthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId)
+    internal readonly void DrawSouthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
         int texU = (textureId & 15) << 4;
@@ -244,14 +286,28 @@ public ref struct BlockRenderContext
 
         if (EnableAo)
         {
-            Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
-            Tess.addVertexWithUV(posX, maxY, maxZ, uTl, vTl);
-            Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
-            Tess.addVertexWithUV(posX, minY, maxZ, uBl, vBl);
-            Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
-            Tess.addVertexWithUV(posX, minY, minZ, uBr, vBr);
-            Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
-            Tess.addVertexWithUV(posX, maxY, minZ, uTr, vTr);
+            if (flipped)
+            {
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(posX, minY, maxZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(posX, minY, minZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(posX, maxY, minZ, uTr, vTr);
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(posX, maxY, maxZ, uTl, vTl);
+            }
+            else
+            {
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(posX, maxY, maxZ, uTl, vTl);
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(posX, minY, maxZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(posX, minY, minZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(posX, maxY, minZ, uTr, vTr);
+            }
         }
         else
         {
@@ -262,7 +318,7 @@ public ref struct BlockRenderContext
         }
     }
 
-    internal readonly void DrawEastFace(Block block, in Vec3D pos, in FaceColors colors, int textureId)
+    internal readonly void DrawEastFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
         int texU = (textureId & 15) << 4;
@@ -295,14 +351,28 @@ public ref struct BlockRenderContext
 
         if (EnableAo)
         {
-            Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
-            Tess.addVertexWithUV(maxX, maxY, minZ, uTl, vTl);
-            Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
-            Tess.addVertexWithUV(maxX, minY, minZ, uBl, vBl);
-            Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
-            Tess.addVertexWithUV(minX, minY, minZ, uBr, vBr);
-            Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
-            Tess.addVertexWithUV(minX, maxY, minZ, uTr, vTr);
+            if (flipped)
+            {
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(maxX, minY, minZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(minX, minY, minZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(minX, maxY, minZ, uTr, vTr);
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(maxX, maxY, minZ, uTl, vTl);
+            }
+            else
+            {
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(maxX, maxY, minZ, uTl, vTl);
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(maxX, minY, minZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(minX, minY, minZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(minX, maxY, minZ, uTr, vTr);
+            }
         }
         else
         {
@@ -313,7 +383,7 @@ public ref struct BlockRenderContext
         }
     }
 
-    internal readonly void DrawWestFace(Block block, in Vec3D pos, in FaceColors colors, int textureId)
+    internal readonly void DrawWestFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
         int texU = (textureId & 15) << 4;
@@ -346,14 +416,28 @@ public ref struct BlockRenderContext
 
         if (EnableAo)
         {
-            Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
-            Tess.addVertexWithUV(minX, maxY, maxZ, uTl, vTl);
-            Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
-            Tess.addVertexWithUV(minX, minY, maxZ, uBl, vBl);
-            Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
-            Tess.addVertexWithUV(maxX, minY, maxZ, uBr, vBr);
-            Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
-            Tess.addVertexWithUV(maxX, maxY, maxZ, uTr, vTr);
+            if (flipped)
+            {
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(minX, minY, maxZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(maxX, minY, maxZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(maxX, maxY, maxZ, uTr, vTr);
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(minX, maxY, maxZ, uTl, vTl);
+            }
+            else
+            {
+                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                Tess.addVertexWithUV(minX, maxY, maxZ, uTl, vTl);
+                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                Tess.addVertexWithUV(minX, minY, maxZ, uBl, vBl);
+                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                Tess.addVertexWithUV(maxX, minY, maxZ, uBr, vBr);
+                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                Tess.addVertexWithUV(maxX, maxY, maxZ, uTr, vTr);
+            }
         }
         else
         {
@@ -414,7 +498,9 @@ public ref struct BlockRenderContext
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.5F, tintBottom);
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 0);
-            DrawBottomFace(block, in vecPos, colors, textureId);
+
+            DrawBottomFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
+
             hasRendered = true;
         }
 
@@ -443,7 +529,9 @@ public ref struct BlockRenderContext
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 1.0F, tintTop);
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 1);
-            DrawTopFace(block, in vecPos, colors, textureId);
+
+            DrawTopFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
+
             hasRendered = true;
         }
 
@@ -472,12 +560,16 @@ public ref struct BlockRenderContext
 
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 2);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
-            DrawEastFace(block, in vecPos, colors, textureId);
+            bool flipped = ao && (v1 + v3 > v2 + v0);
+
+            DrawEastFace(block, in vecPos, colors, textureId, flipped);
+
             if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, true);
-                DrawEastFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+                DrawEastFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
             }
+
             hasRendered = true;
         }
 
@@ -506,12 +598,16 @@ public ref struct BlockRenderContext
 
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 3);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
-            DrawWestFace(block, in vecPos, colors, textureId);
+            bool flipped = ao && (v0 + v2 > v1 + v3);
+
+            DrawWestFace(block, in vecPos, colors, textureId, flipped);
+
             if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, true);
-                DrawWestFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+                DrawWestFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
             }
+
             hasRendered = true;
         }
 
@@ -540,12 +636,16 @@ public ref struct BlockRenderContext
 
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 4);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
-            DrawNorthFace(block, in vecPos, colors, textureId);
+            bool flipped = ao && (v1 + v3 > v2 + v0);
+
+            DrawNorthFace(block, in vecPos, colors, textureId, flipped);
+
             if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, true);
-                DrawNorthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+                DrawNorthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
             }
+
             hasRendered = true;
         }
 
@@ -574,12 +674,16 @@ public ref struct BlockRenderContext
 
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 5);
             var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
-            DrawSouthFace(block, in vecPos, colors, textureId);
+            bool flipped = ao && (v3 + v1 > v0 + v2);
+
+            DrawSouthFace(block, in vecPos, colors, textureId, flipped);
+
             if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, true);
-                DrawSouthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+                DrawSouthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
             }
+
             hasRendered = true;
         }
 
