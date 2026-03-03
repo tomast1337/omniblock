@@ -401,10 +401,10 @@ public ref struct BlockRenderContext
                 float w = block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z);
                 float e = block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z);
 
-                float nw = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) || IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z - 1);
-                float sw = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) || IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z + 1);
-                float ne = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) || IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z - 1);
-                float se = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) || IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z + 1);
+                float nw = (IsOpaque(pos.x - 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z - 1);
+                float sw = (IsOpaque(pos.x - 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z + 1);
+                float ne = (IsOpaque(pos.x + 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z - 1);
+                float se = (IsOpaque(pos.x + 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z + 1);
 
                 v0 = (sw + w + s + lYn) * 0.25F;
                 v1 = (w + nw + lYn + n) * 0.25F;
@@ -430,10 +430,10 @@ public ref struct BlockRenderContext
                 float w = block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z);
                 float e = block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z);
 
-                float nw = (IsOpaque(pos.x - 1, pos.y + 1, pos.z) || IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z - 1);
-                float sw = (IsOpaque(pos.x - 1, pos.y + 1, pos.z) || IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z + 1);
-                float ne = (IsOpaque(pos.x + 1, pos.y + 1, pos.z) || IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z - 1);
-                float se = (IsOpaque(pos.x + 1, pos.y + 1, pos.z) || IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z + 1);
+                float nw = (IsOpaque(pos.x - 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z - 1);
+                float sw = (IsOpaque(pos.x - 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z + 1);
+                float ne = (IsOpaque(pos.x + 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z - 1);
+                float se = (IsOpaque(pos.x + 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z + 1);
 
                 v0 = (s + lYp + se + e) * 0.25F;
                 v1 = (lYp + n + e + ne) * 0.25F;
@@ -459,10 +459,10 @@ public ref struct BlockRenderContext
                 float w = block.getLuminance(World, pos.x - 1, pos.y, pos.z - 1);
                 float e = block.getLuminance(World, pos.x + 1, pos.y, pos.z - 1);
 
-                float uw = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) || IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z - 1);
-                float dw = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) || IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z - 1);
-                float ue = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) || IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z - 1);
-                float de = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) || IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z - 1);
+                float uw = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z - 1);
+                float dw = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z - 1);
+                float ue = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z - 1);
+                float de = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z - 1);
 
                 v0 = (w + uw + lZn + u) * 0.25F;
                 v1 = (lZn + u + e + ue) * 0.25F;
@@ -493,10 +493,10 @@ public ref struct BlockRenderContext
                 float w = block.getLuminance(World, pos.x - 1, pos.y, pos.z + 1);
                 float e = block.getLuminance(World, pos.x + 1, pos.y, pos.z + 1);
 
-                float uw = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) || IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z + 1);
-                float dw = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) || IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z + 1);
-                float ue = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) || IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z + 1);
-                float de = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) || IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z + 1);
+                float uw = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z + 1);
+                float dw = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? w : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z + 1);
+                float ue = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z + 1);
+                float de = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? e : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z + 1);
 
                 v0 = (w + uw + lZp + u) * 0.25F;
                 v1 = (dw + w + d + lZp) * 0.25F;
@@ -527,10 +527,10 @@ public ref struct BlockRenderContext
                 float n = block.getLuminance(World, pos.x - 1, pos.y, pos.z - 1);
                 float s = block.getLuminance(World, pos.x - 1, pos.y, pos.z + 1);
 
-                float un = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) || IsOpaque(pos.x - 1, pos.y + 1, pos.z)) ? n : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z - 1);
-                float dn = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) || IsOpaque(pos.x - 1, pos.y - 1, pos.z)) ? n : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z - 1);
-                float us = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) || IsOpaque(pos.x - 1, pos.y + 1, pos.z)) ? s : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z + 1);
-                float ds = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) || IsOpaque(pos.x - 1, pos.y - 1, pos.z)) ? s : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z + 1);
+                float un = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x - 1, pos.y + 1, pos.z)) ? n : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z - 1);
+                float dn = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x - 1, pos.y - 1, pos.z)) ? n : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z - 1);
+                float us = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x - 1, pos.y + 1, pos.z)) ? s : block.getLuminance(World, pos.x - 1, pos.y + 1, pos.z + 1);
+                float ds = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x - 1, pos.y - 1, pos.z)) ? s : block.getLuminance(World, pos.x - 1, pos.y - 1, pos.z + 1);
 
                 v0 = (u + us + lXn + s) * 0.25F;
                 v1 = (u + un + n + lXn) * 0.25F;
@@ -561,10 +561,10 @@ public ref struct BlockRenderContext
                 float n = block.getLuminance(World, pos.x + 1, pos.y, pos.z - 1);
                 float s = block.getLuminance(World, pos.x + 1, pos.y, pos.z + 1);
 
-                float un = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) || IsOpaque(pos.x + 1, pos.y + 1, pos.z)) ? n : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z - 1);
-                float dn = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) || IsOpaque(pos.x + 1, pos.y - 1, pos.z)) ? n : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z - 1);
-                float us = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) || IsOpaque(pos.x + 1, pos.y + 1, pos.z)) ? s : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z + 1);
-                float ds = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) || IsOpaque(pos.x + 1, pos.y - 1, pos.z)) ? s : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z + 1);
+                float un = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x + 1, pos.y + 1, pos.z)) ? n : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z - 1);
+                float dn = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x + 1, pos.y - 1, pos.z)) ? n : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z - 1);
+                float us = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x + 1, pos.y + 1, pos.z)) ? s : block.getLuminance(World, pos.x + 1, pos.y + 1, pos.z + 1);
+                float ds = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x + 1, pos.y - 1, pos.z)) ? s : block.getLuminance(World, pos.x + 1, pos.y - 1, pos.z + 1);
 
                 v0 = (d + ds + lXp + s) * 0.25F;
                 v1 = (n + lXp + dn + d) * 0.25F;
