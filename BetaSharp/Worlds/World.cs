@@ -20,7 +20,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Worlds;
 
-public abstract class World : BlockView
+public abstract class World : IBlockAccess
 {
     private readonly ILogger<World> _logger = Log.Instance.For<World>();
     protected readonly IWorldStorage Storage;
