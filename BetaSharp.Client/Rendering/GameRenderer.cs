@@ -41,11 +41,11 @@ public class GameRenderer
 
     private readonly Stopwatch _fpsTimer = Stopwatch.StartNew();
 
-    public GameRenderer(BetaSharp mc)
+    public GameRenderer(BetaSharp game)
     {
-        _client = mc;
-        itemRenderer = new HeldItemRenderer(mc);
-        cameraController = new CameraController(mc);
+        _client = game;
+        itemRenderer = new HeldItemRenderer(game);
+        cameraController = new CameraController(game);
     }
 
     public void updateCamera()

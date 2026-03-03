@@ -15,15 +15,15 @@ public abstract class TexturePack
     {
     }
 
-    public virtual void func_6485_a(BetaSharp mc)
+    public virtual void func_6485_a(BetaSharp game)
     {
     }
 
-    public virtual void Unload(BetaSharp mc)
+    public virtual void Unload(BetaSharp game)
     {
     }
 
-    public virtual void BindThumbnailTexture(BetaSharp mc)
+    public virtual void BindThumbnailTexture(BetaSharp game)
     {
     }
 

@@ -22,9 +22,9 @@ public class GuiAchievement : Gui
     private readonly ItemRenderer _itemRender;
     private bool _isAchievementInformation;
 
-    public GuiAchievement(BetaSharp mc)
+    public GuiAchievement(BetaSharp game)
     {
-        _theGame = mc;
+        _theGame = game;
         _itemRender = new ItemRenderer();
     }
 

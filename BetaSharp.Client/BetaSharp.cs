@@ -75,7 +75,7 @@ public partial class BetaSharp
     public SoundManager sndManager = new();
     public MouseHelper mouseHelper;
     public TexturePacks texturePackList;
-    private java.io.File mcDataDir;
+    private java.io.File gameDataDir;
     private IWorldStorageSource saveLoader;
     public static long[] frameTimes = new long[512];
     public static long[] tickTimes = new long[512];
@@ -140,7 +140,7 @@ public partial class BetaSharp
     public void onBetaSharpCrash(Exception crashInfo)
     {
         hasCrashed = true;
-        _logger.LogError(crashInfo, "The game has crashed!");
+        _logger.LogError(crashInfo, "The Game has crashed!");
     }
 
     public void setServer(string name, int port)
@@ -181,9 +181,9 @@ public partial class BetaSharp
 
         Display.setTitle("BetaSharp Beta 1.7.3");
 
-        mcDataDir = getBetaSharpDir();
-        saveLoader = new RegionWorldStorageSource(System.IO.Path.Combine(mcDataDir.getAbsolutePath(), "saves"));
-        options = new GameOptions(this, mcDataDir.getAbsolutePath());
+        gameDataDir = getBetaSharpDir();
+        saveLoader = new RegionWorldStorageSource(System.IO.Path.Combine(gameDataDir.getAbsolutePath(), "saves"));
+        options = new GameOptions(this, gameDataDir.getAbsolutePath());
         Profiler.Enabled = options.DebugMode;
 
         try
@@ -208,7 +208,7 @@ public partial class BetaSharp
         {
             _logger.LogError(ex, "Exception");
         }
-        texturePackList = new TexturePacks(this, new DirectoryInfo(mcDataDir.getAbsolutePath()));
+        texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir.getAbsolutePath()));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
         skinManager = new SkinManager(textureManager);
@@ -218,7 +218,7 @@ public partial class BetaSharp
         gameRenderer = new GameRenderer(this);
         EntityRenderDispatcher.instance.skinManager = skinManager;
         EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
-        statFileWriter = new StatFileWriter(session, mcDataDir.getAbsolutePath());
+        statFileWriter = new StatFileWriter(session, gameDataDir.getAbsolutePath());
 
         StatStringFormatKeyInv format = new(this);
         global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
@@ -287,7 +287,7 @@ public partial class BetaSharp
         GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
         particleManager = new ParticleManager(world, textureManager);
 
-        string dataDirPath = mcDataDir.getAbsolutePath();
+        string dataDirPath = gameDataDir.getAbsolutePath();
 
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, dataDirPath))
@@ -736,7 +736,7 @@ public partial class BetaSharp
                         GLManager.GL.ReadPixels(0, 0, (uint)displayWidth, (uint)displayHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
-                string result = ScreenShotHelper.saveScreenshot(mcDataDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
+                string result = ScreenShotHelper.saveScreenshot(gameDataDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
                 ingameGUI.addChatMessage(result);
             }
         }
@@ -1696,14 +1696,14 @@ public partial class BetaSharp
     {
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        BetaSharp mc = new(850, 480, false)
+        BetaSharp game = new(850, 480, false)
         {
             betaSharpUri = "www.minecraft.net"
         };
 
         if (playerName != null && sessionToken != null)
         {
-            mc.session = new Session(playerName, sessionToken, skinUrl);
+            game.session = new Session(playerName, sessionToken, skinUrl);
 
             if (sessionToken == "-")
             {
@@ -1716,7 +1716,7 @@ public partial class BetaSharp
             throw new Exception("Player name and session token were not provided!");
         }
 
-        mc.Run();
+        game.Run();
     }
 
     public ClientNetworkHandler getSendQueue()

@@ -48,8 +48,8 @@ public class GuiAchievements : GuiScreen
     {
         if (var1.Id == 1)
         {
-            mc.displayGuiScreen(null);
-            mc.setIngameFocus();
+            Game.displayGuiScreen(null);
+            Game.setIngameFocus();
         }
 
         base.ActionPerformed(var1);
@@ -57,10 +57,10 @@ public class GuiAchievements : GuiScreen
 
     protected override void KeyTyped(char eventChar, int eventKey)
     {
-        if (eventKey == mc.options.KeyBindInventory.keyCode)
+        if (eventKey == Game.options.KeyBindInventory.keyCode)
         {
-            mc.displayGuiScreen(null);
-            mc.setIngameFocus();
+            Game.displayGuiScreen(null);
+            Game.setIngameFocus();
         }
         else
         {
@@ -179,8 +179,8 @@ public class GuiAchievements : GuiScreen
             var5 = field_27123_v - 1;
         }
 
-        TextureHandle var6 = mc.textureManager.GetTextureId("/terrain.png");
-        TextureHandle var7 = mc.textureManager.GetTextureId("/achievement/bg.png");
+        TextureHandle var6 = Game.textureManager.GetTextureId("/terrain.png");
+        TextureHandle var7 = Game.textureManager.GetTextureId("/achievement/bg.png");
         int var8 = (Width - field_27121_a) / 2;
         int var9 = (Height - field_27119_i) / 2;
         int var10 = var8 + 16;
@@ -193,7 +193,7 @@ public class GuiAchievements : GuiScreen
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.ColorMaterial);
-        mc.textureManager.BindTexture(var6);
+        Game.textureManager.BindTexture(var6);
         int var12 = var4 + 288 >> 4;
         int var13 = var5 + 288 >> 4;
         int var14 = (var4 + 288) % 16;
@@ -324,7 +324,7 @@ public class GuiAchievements : GuiScreen
                     GLManager.GL.Color4(var35, var35, var35, 1.0F);
                 }
 
-                mc.textureManager.BindTexture(var7);
+                Game.textureManager.BindTexture(var7);
                 var33 = var10 + var16;
                 var34 = var11 + var17;
                 if (var30.isChallenge())
@@ -345,7 +345,7 @@ public class GuiAchievements : GuiScreen
 
                 GLManager.GL.Enable(GLEnum.Lighting);
                 GLManager.GL.Enable(GLEnum.CullFace);
-                var29.renderItemIntoGUI(mc.fontRenderer, mc.textureManager, var30.icon, var33 + 3, var34 + 3);
+                var29.renderItemIntoGUI(Game.fontRenderer, Game.textureManager, var30.icon, var33 + 3, var34 + 3);
                 GLManager.GL.Disable(GLEnum.Lighting);
                 if (!statFileWriter.CanUnlockAchievement(var30))
                 {
@@ -363,7 +363,7 @@ public class GuiAchievements : GuiScreen
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        mc.textureManager.BindTexture(var7);
+        Game.textureManager.BindTexture(var7);
         DrawTexturedModalRect(var8, var9, 0, 0, field_27121_a, field_27119_i);
         GLManager.GL.PopMatrix();
         _zLevel = 0.0F;
