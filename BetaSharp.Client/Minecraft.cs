@@ -34,6 +34,7 @@ using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
 using Exception = System.Exception;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using System.Runtime;
 
 namespace BetaSharp.Client;
 
@@ -882,6 +883,7 @@ public partial class Minecraft
         {
             if (!inGameHasFocus)
             {
+                GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
                 inGameHasFocus = true;
                 mouseHelper.grabMouseCursor();
                 displayGuiScreen((GuiScreen)null);
@@ -911,6 +913,7 @@ public partial class Minecraft
             player?.resetPlayerKeyState();
 
             inGameHasFocus = false;
+            GCSettings.LatencyMode = GCLatencyMode.Batch;
             mouseHelper.ungrabMouseCursor();
         }
     }

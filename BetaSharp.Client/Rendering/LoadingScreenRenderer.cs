@@ -1,4 +1,4 @@
-﻿using BetaSharp.Client.Guis;
+using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
 using Silk.NET.OpenGL.Legacy;
 
