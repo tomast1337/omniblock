@@ -2,7 +2,7 @@ namespace BetaSharp.Client.Sound;
 
 public static class DefaultMusicCategories
 {
-    public static readonly ResourceLocation Game = "Game";
+    public static readonly ResourceLocation Game = "game";
     public static readonly ResourceLocation Menu = "menu";
 
     public static void Register(SoundManager soundManager)

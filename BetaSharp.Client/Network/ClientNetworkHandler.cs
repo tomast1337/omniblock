@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
@@ -15,6 +16,7 @@ using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens;
+using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
@@ -821,7 +823,16 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onIncreaseStat(IncreaseStatS2CPacket packet)
     {
-        ((EntityClientPlayerMP)_game.player).func_27027_b(Stats.Stats.GetStatById(packet.statId), packet.amount);
+        _logger.LogDebug("Received IncreaseStatS2CPacket: statId={StatId}, amount={Amount}", packet.statId, packet.amount);
+        try
+        {
+            StatBase stat = Stats.Stats.GetStatById(packet.statId);
+            ((EntityClientPlayerMP)_game.player).func_27027_b(stat, packet.amount);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Unknown stat id in IncreaseStatS2CPacket: {StatId}", packet.statId);
+        }
     }
 
     public override bool isServerSide()

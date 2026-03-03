@@ -17,32 +17,31 @@ public class HeldItemRenderer
     private ItemStack itemToRender;
     private float equippedProgress;
     private float prevEquippedProgress;
-    private readonly BlockRenderer renderBlocksInstance = new();
     private readonly MapItemRenderer field_28131_f;
     private int field_20099_f = -1;
 
-    public HeldItemRenderer(BetaSharp var1)
+    public HeldItemRenderer(BetaSharp game)
     {
-        _game = var1;
-        field_28131_f = new MapItemRenderer(var1.fontRenderer, var1.options, var1.textureManager);
+        _game = game;
+        field_28131_f = new MapItemRenderer(game.fontRenderer, game.options, game.textureManager);
     }
 
-    public void renderItem(EntityLiving var1, ItemStack var2)
+    public void renderItem(EntityLiving entity, ItemStack item)
     {
         GLManager.GL.PushMatrix();
-        if (var2.itemId < 256 && BlockRenderer.isSideLit(Block.Blocks[var2.itemId].getRenderType()))
+        if (item.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.itemId].getRenderType()))
         {
             _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/terrain.png"));
-            renderBlocksInstance.renderBlockOnInventory(Block.Blocks[var2.itemId], var2.getDamage(), var1.getBrightnessAtEyes(1.0F));
+            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.itemId], item.getDamage(), entity.getBrightnessAtEyes(1.0F), Tessellator.instance);
         }
         else
         {
-            string texPath = var2.itemId < 256 ? "/terrain.png" : "/gui/items.png";
+            string texPath = item.itemId < 256 ? "/terrain.png" : "/gui/items.png";
             _game.textureManager.BindTexture(_game.textureManager.GetTextureId(texPath));
             int tileSize = _game.textureManager.GetAtlasTileSize(texPath);
 
             Tessellator var3 = Tessellator.instance;
-            int var4 = var1.getItemStackTextureId(var2);
+            int var4 = entity.getItemStackTextureId(item);
             float var5 = (var4 % 16 * 16 + 0.0F) / 256.0F;
             float var6 = (var4 % 16 * 16 + 15.99F) / 256.0F;
             float var7 = (var4 / 16 * 16 + 0.0F) / 256.0F;

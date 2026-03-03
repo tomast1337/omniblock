@@ -361,6 +361,8 @@ public class GuiIngame : Gui
                 DrawRect(scrollbarX + 1, thumbY, scrollbarX + scrollbarWidth - 1, thumbY + thumbHeight, thumbColor);
             }
         }
+
+        _game.guiAchievement.RenderAchievementOverlayIfAny(scaledWidth, scaledHeight);
     }
 
     private void renderPumpkinBlur(int screenWidth, int screenHeight)
