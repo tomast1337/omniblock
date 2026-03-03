@@ -387,7 +387,7 @@ public ref struct BlockRenderContext
 
         float v0, v1, v2, v3;
         bool ao = AoBlendMode > 0;
-        Vec3D vecPos = new Vec3D(pos.x, pos.y, pos.z); // Allocate struct once
+        Vec3D vecPos = new(pos.x, pos.y, pos.z); // Allocate struct once
 
         // BOTTOM FACE (Y - 1)
         if (RenderAllFaces || bounds.MinY > 0.0F || block.isSideVisible(World, pos.x, pos.y - 1, pos.z, 0))
@@ -470,9 +470,14 @@ public ref struct BlockRenderContext
                 v3 = (dw + w + d + lZn) * 0.25F;
             }
 
-            var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 2);
+            var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
             DrawEastFace(block, in vecPos, colors, textureId);
+            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            {
+                var overlayColors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, true);
+                DrawEastFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+            }
             hasRendered = true;
         }
 
@@ -499,9 +504,14 @@ public ref struct BlockRenderContext
                 v3 = (lZp + u + e + ue) * 0.25F;
             }
 
-            var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 3);
+            var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
             DrawWestFace(block, in vecPos, colors, textureId);
+            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            {
+                var overlayColors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, true);
+                DrawWestFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+            }
             hasRendered = true;
         }
 
@@ -528,9 +538,14 @@ public ref struct BlockRenderContext
                 v3 = (d + ds + lXn + s) * 0.25F;
             }
 
-            var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 4);
+            var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
             DrawNorthFace(block, in vecPos, colors, textureId);
+            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            {
+                var overlayColors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, true);
+                DrawNorthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+            }
             hasRendered = true;
         }
 
@@ -557,9 +572,14 @@ public ref struct BlockRenderContext
                 v3 = (u + us + lXp + s) * 0.25F;
             }
 
-            var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
             int textureId = hasOverrideTex ? OverrideTexture : block.getTextureId(World, pos.x, pos.y, pos.z, 5);
+            var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
             DrawSouthFace(block, in vecPos, colors, textureId);
+            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            {
+                var overlayColors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, true);
+                DrawSouthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId);
+            }
             hasRendered = true;
         }
 
