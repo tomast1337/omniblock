@@ -1,8 +1,8 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using Microsoft.Extensions.Logging;
-using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Guis;
 
@@ -190,8 +190,8 @@ public class GuiScreen : Gui
 
     public void DrawBackground(int var1)
     {
-        GLManager.GL.Disable(EnableCap.Lighting);
-        GLManager.GL.Disable(EnableCap.Fog);
+        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.GL.Disable(GLEnum.Fog);
 
         Tessellator tess = Tessellator.instance;
         Game.textureManager.BindTexture(Game.textureManager.GetTextureId("/gui/background.png"));
