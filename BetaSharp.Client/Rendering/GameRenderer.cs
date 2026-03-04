@@ -14,14 +14,15 @@ using BetaSharp.Worlds;
 using BetaSharp.Worlds.Biomes;
 using BetaSharp.Worlds.Chunks;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL.Legacy;
+using Silk.NET.OpenGL;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering;
 
 public class GameRenderer
 {
     private readonly bool _cloudFog = false;
-    private readonly Minecraft _client;
+    private readonly BetaSharp _client;
     private float _viewDistance;
     public HeldItemRenderer itemRenderer;
     public CameraController cameraController;
@@ -41,11 +42,11 @@ public class GameRenderer
 
     private readonly Stopwatch _fpsTimer = Stopwatch.StartNew();
 
-    public GameRenderer(Minecraft mc)
+    public GameRenderer(BetaSharp game)
     {
-        _client = mc;
-        itemRenderer = new HeldItemRenderer(mc);
-        cameraController = new CameraController(mc);
+        _client = game;
+        itemRenderer = new HeldItemRenderer(game);
+        cameraController = new CameraController(game);
     }
 
     public void updateCamera()
@@ -249,10 +250,10 @@ public class GameRenderer
         if (!_client.skipRenderWorld)
         {
             ScaledResolution var13 = new(_client.options, _client.displayWidth, _client.displayHeight);
-            int var14 = var13.ScaledWidth;
-            int var15 = var13.ScaledHeight;
-            int var16 = Mouse.getX() * var14 / _client.displayWidth;
-            int var17 = var15 - Mouse.getY() * var15 / _client.displayHeight - 1;
+            int scaledWidth = var13.ScaledWidth;
+            int scaledHeight = var13.ScaledHeight;
+            int scaledMouseX = Mouse.getX() * scaledWidth / _client.displayWidth;
+            int scaledMouseY = scaledHeight - Mouse.getY() * scaledHeight / _client.displayHeight - 1;
             int var7 = 30 + (int)(_client.options.LimitFramerate * 210.0f);
 
             if (var7 < 240)
@@ -268,7 +269,7 @@ public class GameRenderer
                 Profiler.Start("renderGameOverlay");
                 if (!_client.options.HideGUI || _client.currentScreen != null)
                 {
-                    _client.ingameGUI.renderGameOverlay(tickDelta, _client.currentScreen != null, var16, var17);
+                    _client.ingameGUI.renderGameOverlay(tickDelta, _client.currentScreen != null, scaledMouseX, scaledMouseY);
                 }
                 Profiler.Stop("renderGameOverlay");
             }
@@ -285,7 +286,7 @@ public class GameRenderer
             if (_client.currentScreen != null)
             {
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-                _client.currentScreen.Render(var16, var17, tickDelta);
+                _client.currentScreen.Render(scaledMouseX, scaledMouseY, tickDelta);
                 if (_client.currentScreen != null && _client.currentScreen.ParticlesGui != null)
                 {
                     _client.currentScreen.ParticlesGui.render(tickDelta);

@@ -1,8 +1,6 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Util;
-using java.awt;
-using java.awt.datatransfer;
 
 namespace BetaSharp.Client.Guis;
 
@@ -169,7 +167,7 @@ public class GuiTextField : Gui
         }
 
         // Regular character input
-        if (ChatAllowedCharacters.allowedCharacters.IndexOf(eventChar) >= 0 && (_text.Length < _maxStringLength || _maxStringLength == 0))
+        if (ChatAllowedCharacters.IsAllowedCharacter(eventChar) && (_text.Length < _maxStringLength || _maxStringLength == 0))
         {
             if (HasSelection())
             {

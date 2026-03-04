@@ -1,36 +1,15 @@
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
-using java.lang;
-using java.util;
 
 namespace BetaSharp.Client.Chunks;
 
-public class MultiplayerChunkCache : ChunkSource
+public class MultiplayerChunkCache(World world) : ChunkSource
 {
+    private readonly Chunk _empty = new EmptyChunk(world, new byte[-short.MinValue], 0, 0);
+    private readonly Dictionary<ChunkPos, Chunk> _chunkByPos = [];
 
-    private readonly Chunk empty;
-    private readonly Dictionary<ChunkPos, Chunk> chunkByPos = [];
-    private readonly World world;
-
-    public MultiplayerChunkCache(World world)
-    {
-        empty = new EmptyChunk(world, new byte[-Short.MIN_VALUE], 0, 0);
-        this.world = world;
-    }
-
-    public bool IsChunkLoaded(int x, int y)
-    {
-        if (this != null)
-        {
-            return true;
-        }
-        else
-        {
-            ChunkPos key = new(x, y);
-            return chunkByPos.ContainsKey(key);
-        }
-    }
+    public bool IsChunkLoaded(int x, int y) => _chunkByPos.ContainsKey(new ChunkPos(x, y));
 
     public void UnloadChunk(int x, int z)
     {
@@ -40,24 +19,17 @@ public class MultiplayerChunkCache : ChunkSource
             chunk.Unload();
         }
 
-        chunkByPos.Remove(new ChunkPos(x, z));
+        _chunkByPos.Remove(new ChunkPos(x, z));
     }
 
     public Chunk LoadChunk(int x, int z)
     {
         ChunkPos key = new(x, z);
-        byte[] blocks = new byte[-Short.MIN_VALUE];
+        byte[] blocks = new byte[-short.MinValue];
         Chunk chunk = new(world, blocks, x, z);
-        Arrays.fill(chunk.SkyLight.Bytes, 255);
 
-        if (chunkByPos.ContainsKey(key))
-        {
-            chunkByPos[key] = chunk;
-        }
-        else
-        {
-            chunkByPos.Add(key, chunk);
-        }
+        Array.Fill(chunk.SkyLight.Bytes, (byte)255);
+        _chunkByPos[key] = chunk;
 
         chunk.Loaded = true;
         return chunk;
@@ -65,36 +37,19 @@ public class MultiplayerChunkCache : ChunkSource
 
     public Chunk GetChunk(int x, int z)
     {
-        ChunkPos key = new(x, z);
-        chunkByPos.TryGetValue(key, out Chunk? chunk);
-        return chunk == null ? empty : chunk;
+        _chunkByPos.TryGetValue(new ChunkPos(x, z), out Chunk? chunk);
+        return chunk ?? _empty;
     }
 
-    public bool Save(bool bl, LoadingDisplay display)
-    {
-        return true;
-    }
+    public bool Save(bool bl, LoadingDisplay display) => true;
 
-    public bool Tick()
-    {
-        return false;
-    }
+    public bool Tick() => false;
 
-    public bool CanSave()
-    {
-        return false;
-    }
+    public bool CanSave() => false;
 
-    public void DecorateTerrain(ChunkSource source, int x, int y)
-    {
-    }
+    public void DecorateTerrain(ChunkSource source, int x, int y){ }
 
-    public void markChunksForUnload(int _)
-    {
-    }
+    public void markChunksForUnload(int _) { }
 
-    public string GetDebugInfo()
-    {
-        return "MultiplayerChunkCache: " + chunkByPos.Count;
-    }
+    public string GetDebugInfo() => $"MultiplayerChunkCache: {_chunkByPos.Count}";
 }

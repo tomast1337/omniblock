@@ -1,7 +1,6 @@
 using System.IO.Compression;
 using BetaSharp.Client.Rendering.Core.Textures;
 using Microsoft.Extensions.Logging;
-using Silk.NET.OpenGL.Legacy;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -31,25 +30,25 @@ public class ZippedTexturePack : TexturePack
         return str ?? string.Empty;
     }
 
-    public override void func_6485_a(Minecraft mc)
+    public override void func_6485_a(BetaSharp game)
     {
         try
         {
-            using var archive = ZipFile.OpenRead(_texturePackFile.FullName);
+            using ZipArchive archive = ZipFile.OpenRead(_texturePackFile.FullName);
 
-            var packTxtEntry = archive.GetEntry("pack.txt");
+            ZipArchiveEntry? packTxtEntry = archive.GetEntry("pack.txt");
             if (packTxtEntry != null)
             {
-                using var stream = packTxtEntry.Open();
+                using Stream stream = packTxtEntry.Open();
                 using var reader = new StreamReader(stream); // Replaces BufferedReader
                 FirstDescriptionLine = TruncateString(reader.ReadLine());
                 SecondDescriptionLine = TruncateString(reader.ReadLine());
             }
 
-            var packPngEntry = archive.GetEntry("pack.png");
+            ZipArchiveEntry? packPngEntry = archive.GetEntry("pack.png");
             if (packPngEntry != null)
             {
-                using var stream = packPngEntry.Open();
+                using Stream stream = packPngEntry.Open();
                 _texturePackThumbnail = Image.Load<Rgba32>(stream); // Native ImageSharp load
             }
         }
@@ -59,11 +58,11 @@ public class ZippedTexturePack : TexturePack
         }
     }
 
-    public override void Unload(Minecraft mc)
+    public override void Unload(BetaSharp game)
     {
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.Delete(_texturePackName);
+            game.textureManager.Delete(_texturePackName);
             _texturePackThumbnail.Dispose();
 
         }
@@ -71,20 +70,20 @@ public class ZippedTexturePack : TexturePack
         CloseTexturePackFile();
     }
 
-    public override void BindThumbnailTexture(Minecraft mc)
+    public override void BindThumbnailTexture(BetaSharp game)
     {
         if (_texturePackThumbnail != null && _texturePackName == null)
         {
-            _texturePackName = mc.textureManager.Load(_texturePackThumbnail);
+            _texturePackName = game.textureManager.Load(_texturePackThumbnail);
         }
 
         if (_texturePackThumbnail != null && _texturePackName != null)
         {
-            mc.textureManager.BindTexture(_texturePackName);
+            game.textureManager.BindTexture(_texturePackName);
         }
         else
         {
-            mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/unknown_pack.png"));
+            game.textureManager.BindTexture(game.textureManager.GetTextureId("/gui/unknown_pack.png"));
         }
 
     }
@@ -114,11 +113,11 @@ public class ZippedTexturePack : TexturePack
         {
             string entryName = path.StartsWith("/") ? path[1..] : path;
 
-            var entry = _texturePackZipFile?.GetEntry(entryName);
+            ZipArchiveEntry? entry = _texturePackZipFile?.GetEntry(entryName);
             if (entry != null)
             {
                 var ms = new MemoryStream();
-                using (var entryStream = entry.Open())
+                using (Stream entryStream = entry.Open())
                 {
                     entryStream.CopyTo(ms);
                 }

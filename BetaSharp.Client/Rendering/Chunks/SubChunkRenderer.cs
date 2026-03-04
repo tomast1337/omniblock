@@ -1,8 +1,8 @@
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL.Legacy;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 using VertexArray = BetaSharp.Client.Rendering.Core.VertexArray;
 
@@ -21,6 +21,9 @@ public class SubChunkRenderer : IDisposable
     public float Age { get; private set; } = 0.0f;
     public bool HasFadedIn => Age >= FadeDuration;
     public const float FadeDuration = 1.0f;
+
+    public int SolidMeshSizeBytes => vertexCounts[0] * 16;
+    public int TranslucentMeshSizeBytes => vertexCounts[1] * 16;
 
     public Occlusion.ChunkVisibilityStore VisibilityData;
     public Occlusion.ChunkDirectionMask IncomingDirections;
@@ -174,6 +177,8 @@ public class SubChunkRenderer : IDisposable
 
     public void Render(Shader shader, int pass, Vector3D<double> viewPos, Matrix4X4<float> modelViewMatrix)
     {
+        if (disposed) return;
+
         if (pass < 0 || pass > 1)
             throw new ArgumentException("Pass must be 0 or 1");
 
@@ -207,6 +212,9 @@ public class SubChunkRenderer : IDisposable
 
         vertexArrays[0]?.Dispose();
         vertexArrays[1]?.Dispose();
+
+        vertexCounts[0] = 0;
+        vertexCounts[1] = 0;
 
         disposed = true;
     }

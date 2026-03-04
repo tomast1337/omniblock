@@ -1,13 +1,8 @@
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
-using java.awt;
-using java.awt.datatransfer;
-using java.util;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using Microsoft.Extensions.Logging;
-using Silk.NET.OpenGL.Legacy;
-using System;
-using System.Collections.Generic;
 
 namespace BetaSharp.Client.Guis;
 
@@ -15,7 +10,7 @@ public class GuiScreen : Gui
 {
     private static readonly ILogger<GuiScreen> s_logger = Log.Instance.For<GuiScreen>();
 
-    public Minecraft mc;
+    public BetaSharp Game;
     public int Width;
     public int Height;
     protected List<GuiButton> _controlList = new();
@@ -30,7 +25,7 @@ public class GuiScreen : Gui
     {
         foreach (var control in _controlList)
         {
-            control.DrawButton(mc, mouseX, mouseY);
+            control.DrawButton(Game, mouseX, mouseY);
         }
     }
 
@@ -38,8 +33,8 @@ public class GuiScreen : Gui
     {
         if (eventKey == Keyboard.KEY_ESCAPE)
         {
-            mc.displayGuiScreen(null);
-            mc.setIngameFocus();
+            Game.displayGuiScreen(null);
+            Game.setIngameFocus();
         }
     }
 
@@ -82,10 +77,10 @@ public class GuiScreen : Gui
         {
             foreach (var control in _controlList.ToArray())
             {
-                if (control.MousePressed(mc, mouseX, mouseY))
+                if (control.MousePressed(Game, mouseX, mouseY))
                 {
                     SelectedButton = control;
-                    mc.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+                    Game.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
                     ActionPerformed(control);
                 }
             }
@@ -103,11 +98,11 @@ public class GuiScreen : Gui
 
     protected virtual void ActionPerformed(GuiButton var1) { }
 
-    public void SetWorldAndResolution(Minecraft mc, int width, int height)
+    public void SetWorldAndResolution(BetaSharp game, int width, int height)
     {
-        ParticlesGui = new GuiParticle(mc);
-        this.mc = mc;
-        FontRenderer = mc.fontRenderer;
+        ParticlesGui = new GuiParticle(game);
+        this.Game = game;
+        FontRenderer = game.fontRenderer;
         Width = width;
         Height = height;
         _controlList.Clear();
@@ -133,8 +128,8 @@ public class GuiScreen : Gui
 
     public virtual void HandleMouseInput()
     {
-        int x = Mouse.getEventX() * Width / mc.displayWidth;
-        int y = Height - Mouse.getEventY() * Height / mc.displayHeight - 1;
+        int x = Mouse.getEventX() * Width / Game.displayWidth;
+        int y = Height - Mouse.getEventY() * Height / Game.displayHeight - 1;
         if (Mouse.getEventButtonState())
         {
             MouseClicked(x, y, Mouse.getEventButton());
@@ -154,7 +149,7 @@ public class GuiScreen : Gui
 
             if (key == Keyboard.KEY_F11)
             {
-                mc.toggleFullscreen();
+                Game.toggleFullscreen();
                 return;
             }
 
@@ -183,7 +178,7 @@ public class GuiScreen : Gui
 
     public void DrawWorldBackground(int var1)
     {
-        if (mc.world != null)
+        if (Game.world != null)
         {
             DrawGradientRect(0, 0, Width, Height, Color.WorldBackgroundDark, Color.WorldBackground);
         }
@@ -195,11 +190,11 @@ public class GuiScreen : Gui
 
     public void DrawBackground(int var1)
     {
-        GLManager.GL.Disable(EnableCap.Lighting);
-        GLManager.GL.Disable(EnableCap.Fog);
+        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.GL.Disable(GLEnum.Fog);
 
         Tessellator tess = Tessellator.instance;
-        mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/background.png"));
+        Game.textureManager.BindTexture(Game.textureManager.GetTextureId("/gui/background.png"));
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
         float scale = 32.0F;

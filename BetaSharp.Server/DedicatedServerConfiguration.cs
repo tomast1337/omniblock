@@ -1,14 +1,14 @@
 using java.io;
 using java.lang;
 using java.util;
-using java.util.logging;
+using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
 namespace BetaSharp.Server;
 
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
-    public static Logger logger = Logger.getLogger("Minecraft");
+    public static ILogger<DedicatedServerConfiguration> logger = Log.Instance.For<DedicatedServerConfiguration>();
     private readonly Properties properties = new();
     private readonly java.io.File propertiesFile;
 
@@ -23,20 +23,20 @@ internal class DedicatedServerConfiguration : IServerConfiguration
             }
             catch (Exception ex)
             {
-                logger.log(Level.WARNING, "Failed to load " + file, (Throwable)ex);
+                logger.LogWarning(ex, "Failed to load " + file);
                 generateNew();
             }
         }
         else
         {
-            logger.log(Level.WARNING, file + " does not exist");
+            logger.LogWarning(file + " does not exist");
             generateNew();
         }
     }
 
     public void generateNew()
     {
-        logger.log(Level.INFO, "Generating new properties file");
+        logger.LogInformation("Generating new properties file");
         save();
     }
 
@@ -49,11 +49,11 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     {
         try
         {
-            properties.store(new FileOutputStream(propertiesFile), "Minecraft server properties");
+            properties.store(new FileOutputStream(propertiesFile), "BetaSharp server properties");
         }
         catch (Exception ex)
         {
-            logger.log(Level.WARNING, "Failed to save " + propertiesFile, ex);
+            logger.LogWarning(ex, "Failed to save " + propertiesFile);
             generateNew();
         }
     }
@@ -135,4 +135,5 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     public int GetMaxPlayers(int fallback) => GetProperty("max-players", fallback);
     public int GetViewDistance(int fallback) => GetProperty("view-distance", fallback);
     public bool GetWhiteList(bool fallback) => GetProperty("white-list", fallback);
+    public int GetSpawnRegionSize(int fallback) => GetProperty("spawn-region-size", fallback);
 }

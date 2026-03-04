@@ -1,9 +1,7 @@
 using BetaSharp.Client.Input;
-using BetaSharp.Stats;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Storage;
-using java.lang;
 
 namespace BetaSharp.Client.Guis;
 
@@ -68,7 +66,7 @@ public class GuiCreateWorld : GuiScreen
             _folderName = "World";
         }
 
-        _folderName = GenerateUnusedFolderName(mc.getSaveLoader(), _folderName);
+        _folderName = GenerateUnusedFolderName(Game.getSaveLoader(), _folderName);
     }
 
     public static string GenerateUnusedFolderName(IWorldStorageSource worldStorage, string baseFolderName)
@@ -93,7 +91,7 @@ public class GuiCreateWorld : GuiScreen
             switch (button.Id)
             {
                 case ButtonCancel:
-                    mc.displayGuiScreen(_parentScreen);
+                    Game.displayGuiScreen(_parentScreen);
                     break;
                 case ButtonCreate:
                     {
@@ -109,13 +107,13 @@ public class GuiCreateWorld : GuiScreen
                         {
                             try
                             {
-                                long parsedSeed = Long.parseLong(seedInput);
+                                long parsedSeed = long.Parse(seedInput);
                                 if (parsedSeed != 0L)
                                 {
                                     worldSeed = parsedSeed;
                                 }
                             }
-                            catch (NumberFormatException)
+                            catch (Exception)
                             {
                                 // Java based string hashing
                                 int hash = 0;
@@ -127,9 +125,9 @@ public class GuiCreateWorld : GuiScreen
                             }
                         }
 
-                        mc.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
-                        mc.playerController = new PlayerControllerSP(mc);
-                        mc.startWorld(_folderName, _textboxWorldName.GetText(), worldSeed);
+                        Game.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
+                        Game.playerController = new PlayerControllerSP(Game);
+                        Game.startWorld(_folderName, _textboxWorldName.GetText(), worldSeed);
                         break;
                     }
             }

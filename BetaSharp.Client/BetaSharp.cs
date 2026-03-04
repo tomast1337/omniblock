@@ -1,6 +1,7 @@
-using BetaSharp.Client.Options;
 using System.Diagnostics;
+using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
 using BetaSharp.Client.DynamicTexture;
@@ -8,8 +9,11 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Resource;
@@ -29,18 +33,17 @@ using BetaSharp.Worlds.Storage;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
-using Silk.NET.OpenGL.Legacy;
-using Silk.NET.OpenGL.Legacy.Extensions.ImGui;
+using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using Exception = System.Exception;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.OpenGL;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
-public partial class Minecraft
+public partial class BetaSharp
 {
-    public static Minecraft INSTANCE;
-    private readonly ILogger<Minecraft> _logger = Log.Instance.For<Minecraft>();
+    public static BetaSharp Instance = null!;
+    private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
     public PlayerController playerController;
     private bool fullscreen;
     private bool hasCrashed;
@@ -54,7 +57,7 @@ public partial class Minecraft
     public EntityLiving camera;
     public ParticleManager particleManager;
     public Session session;
-    public string minecraftUri;
+    public string betaSharpUri;
     public bool hideQuitButton = false;
     public volatile bool isGamePaused;
     public TextureManager textureManager;
@@ -75,7 +78,7 @@ public partial class Minecraft
     public SoundManager sndManager = new();
     public MouseHelper mouseHelper;
     public TexturePacks texturePackList;
-    private java.io.File mcDataDir;
+    private string gameDataDir;
     private IWorldStorageSource saveLoader;
     public static long[] frameTimes = new long[512];
     public static long[] tickTimes = new long[512];
@@ -100,7 +103,7 @@ public partial class Minecraft
     public InternalServer? internalServer;
     private GLErrorHandler _glErrorHandler;
 
-    public Minecraft(int width, int height, bool isFullscreen)
+    public BetaSharp(int width, int height, bool isFullscreen)
     {
         loadingScreen = new LoadingScreenRenderer(this);
         guiAchievement = new GuiAchievement(this);
@@ -109,7 +112,7 @@ public partial class Minecraft
         displayWidth = width;
         displayHeight = height;
 
-        INSTANCE = this;
+        Instance = this;
     }
 
     [LibraryImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
@@ -137,10 +140,10 @@ public partial class Minecraft
         }
     }
 
-    public void onMinecraftCrash(Exception crashInfo)
+    public void onBetaSharpCrash(Exception crashInfo)
     {
         hasCrashed = true;
-        _logger.LogError(crashInfo, "The game has crashed!");
+        _logger.LogError(crashInfo, "BetaSharp has crashed!");
     }
 
     public void setServer(string name, int port)
@@ -176,15 +179,17 @@ public partial class Minecraft
         else
         {
             Display.setDisplayMode(new DisplayMode(displayWidth, displayHeight));
-            Display.setLocation((maximumWidth - displayWidth)  / 2 , (maximumHeight  - displayHeight)  / 2);
+            Display.setLocation((maximumWidth - displayWidth) / 2, (maximumHeight - displayHeight) / 2);
         }
 
-        Display.setTitle("Minecraft Beta 1.7.3");
+        Display.setTitle("BetaSharp Beta 1.7.3");
 
-        mcDataDir = getMinecraftDir();
-        saveLoader = new RegionWorldStorageSource(System.IO.Path.Combine(mcDataDir.getAbsolutePath(), "saves"));
-        options = new GameOptions(this, mcDataDir.getAbsolutePath());
+        gameDataDir = getBetaSharpDir();
+        saveLoader = new RegionWorldStorageSource(Path.Combine(gameDataDir, "saves"));
+        options = new GameOptions(this, gameDataDir);
         Profiler.Enabled = options.DebugMode;
+        Profiler.EnableLagSpikeDetection = options.DebugMode;
+        Profiler.LagSpikeDirectory = Path.Combine(gameDataDir, "logs", "lag_spikes");
 
         try
         {
@@ -208,7 +213,7 @@ public partial class Minecraft
         {
             _logger.LogError(ex, "Exception");
         }
-        texturePackList = new TexturePacks(this, new DirectoryInfo(mcDataDir.getAbsolutePath()));
+        texturePackList = new TexturePacks(this, new DirectoryInfo(gameDataDir));
         textureManager = new TextureManager(this, texturePackList, options);
         fontRenderer = new TextRenderer(options, textureManager);
         skinManager = new SkinManager(textureManager);
@@ -218,12 +223,12 @@ public partial class Minecraft
         gameRenderer = new GameRenderer(this);
         EntityRenderDispatcher.instance.skinManager = skinManager;
         EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
-        statFileWriter = new StatFileWriter(session, mcDataDir.getAbsolutePath());
+        statFileWriter = new StatFileWriter(session, gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
-        BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
+        global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
         {
-            return format.formatString(BetaSharp.Achievements.OpenInventory.TranslationKey);
+            return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
         };
 
         loadScreen();
@@ -287,7 +292,7 @@ public partial class Minecraft
         GLManager.GL.Viewport(0, 0, (uint)displayWidth, (uint)displayHeight);
         particleManager = new ParticleManager(world, textureManager);
 
-        string dataDirPath = mcDataDir.getAbsolutePath();
+        string dataDirPath = gameDataDir;
 
         _ = new ResourceManager()
             .Add(new BetaResourceDownloader(this, dataDirPath))
@@ -364,9 +369,9 @@ public partial class Minecraft
         tess.draw();
     }
 
-    public static java.io.File getMinecraftDir()
+    public static string getBetaSharpDir()
     {
-        return new java.io.File(PathHelper.GetAppDir(nameof(BetaSharp)));
+        return PathHelper.GetAppDir(nameof(BetaSharp));
     }
 
     public IWorldStorageSource getSaveLoader()
@@ -440,7 +445,7 @@ public partial class Minecraft
         }
     }
 
-    public void shutdownMinecraftApplet()
+    public void ShutdownBetaSharpApplet()
     {
         try
         {
@@ -464,7 +469,7 @@ public partial class Minecraft
 
             skinManager.Dispose();
             textureManager.Dispose();
-            sndManager.CloseMinecraft();
+            sndManager.CloseBetaSharp();
             Mouse.destroy();
             Keyboard.destroy();
 
@@ -492,7 +497,7 @@ public partial class Minecraft
         }
         catch (Exception startupException)
         {
-            onMinecraftCrash(startupException);
+            onBetaSharpCrash(startupException);
             return;
         }
 
@@ -504,10 +509,15 @@ public partial class Minecraft
 
             while (running)
             {
+                long frameStartNano = java.lang.System.nanoTime();
+
+                int startGcGen0 = GC.CollectionCount(0);
+                int startGcGen1 = GC.CollectionCount(1);
+                int startGcGen2 = GC.CollectionCount(2);
+
                 if (options.DebugMode)
                 {
                     Profiler.Update(Timer.DeltaTime);
-                    Profiler.Record("frame Time", Timer.DeltaTime * 1000.0f);
                     Profiler.PushGroup("run");
                 }
                 try
@@ -528,7 +538,7 @@ public partial class Minecraft
                         Timer.UpdateTimer();
                     }
 
-                    long tickStartTime = java.lang.System.nanoTime();
+                    long tickStartTime = Stopwatch.GetTimestamp();
                     if (options.DebugMode)
                     {
                         Profiler.PushGroup("runTicks");
@@ -542,7 +552,7 @@ public partial class Minecraft
                         {
                             runTick(Timer.renderPartialTicks);
                         }
-                        catch (MinecraftException)
+                        catch (BetaSharpException)
                         {
                             world = null;
                             changeWorld((World)null);
@@ -555,7 +565,7 @@ public partial class Minecraft
                         Profiler.PopGroup();
                     }
 
-                    long tickElapsedTime = java.lang.System.nanoTime() - tickStartTime;
+                    long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
                     checkGLError("Pre render");
                     sndManager.UpdateListener(player, Timer.renderPartialTicks);
                     GLManager.GL.Enable(GLEnum.Texture2D);
@@ -568,7 +578,9 @@ public partial class Minecraft
 
                     if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
+                        if (options.DebugMode) Profiler.Start("wait");
                         Display.update();
+                        if (options.DebugMode) Profiler.Stop("wait");
                     }
 
                     if (player != null && player.isInsideWall())
@@ -606,8 +618,43 @@ public partial class Minecraft
                         ImGui.Text($"Chunks Rendered: {terrainRenderer.chunkRenderer.ChunksRendered}");
                         ImGui.Separator();
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
-                        ImGui.Text($"ChunkMeshVersion Allocated: {BetaSharp.Util.ChunkMeshVersion.TotalAllocated}");
-                        ImGui.Text($"ChunkMeshVersion Released: {BetaSharp.Util.ChunkMeshVersion.TotalReleased}");
+                        ImGui.Text($"ChunkMeshVersion Allocated: {ChunkMeshVersion.TotalAllocated}");
+                        ImGui.Text($"ChunkMeshVersion Released: {ChunkMeshVersion.TotalReleased}");
+
+                        terrainRenderer.chunkRenderer.GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets);
+                        ImGui.Separator();
+                        int activeMeshes = 0;
+                        foreach (int v in buckets.Values) activeMeshes += v;
+                        ImGui.Text($"Active Meshes: {activeMeshes}");
+                        ImGui.Text($"Min Mesh Size: {minSize} bytes");
+                        ImGui.Text($"Max Mesh Size: {maxSize} bytes");
+                        ImGui.Text($"Avg Mesh Size: {avgSize} bytes");
+                        if (ImGui.TreeNode("Mesh Size Buckets (KB)"))
+                        {
+                            var sortedBuckets = buckets.Keys.ToList();
+                            sortedBuckets.Sort();
+                            foreach (int po2 in sortedBuckets)
+                            {
+                                ImGui.Text($"{po2}KB: {buckets[po2]} meshes");
+                            }
+                            ImGui.TreePop();
+                        }
+
+                        if (ImGui.Button("Export Mesh Stats to JSON"))
+                        {
+                            var exportData = new
+                            {
+                                minSize,
+                                maxSize,
+                                avgSize,
+                                totalMeshes = activeMeshes,
+                                buckets = buckets.ToDictionary(k => k.Key.ToString(), v => v.Value)
+                            };
+                            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
+                            File.WriteAllText(Path.Combine(getBetaSharpDir(), "mesh_stats.json"), json);
+                            _logger.LogInformation($"Exported mesh stats to {Path.Combine(getBetaSharpDir(), "mesh_stats.json")}");
+                        }
+
                         ImGui.Separator();
                         ImGui.Text($"Texture Binds: {TextureStats.BindsLastFrame} (Avg: {TextureStats.AverageBindsPerFrame:F1}/f)");
                         ImGui.Text($"Active Textures: {GLTexture.ActiveTextureCount}");
@@ -623,7 +670,7 @@ public partial class Minecraft
                             toggleFullscreen();
                         }
 
-                        java.lang.Thread.sleep(10L);
+                        Thread.Sleep(10);
                     }
 
                     if (options.ShowDebugInfo)
@@ -632,7 +679,7 @@ public partial class Minecraft
                     }
                     else
                     {
-                        prevFrameTime = java.lang.System.nanoTime();
+                        prevFrameTime = Stopwatch.GetTimestamp();
                     }
 
                     guiAchievement.updateAchievementWindow();
@@ -675,7 +722,7 @@ public partial class Minecraft
                         lastFpsCheckTime += 1000L;
                     }
                 }
-                catch (MinecraftException)
+                catch (BetaSharpException)
                 {
                     world = null;
                     changeWorld(null);
@@ -688,23 +735,49 @@ public partial class Minecraft
                 }
                 finally
                 {
+                    long frameEndNano = java.lang.System.nanoTime();
+                    double thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
+
                     if (options.DebugMode)
                     {
+                        Profiler.Record("frame Time", thisFrameTimeMs);
                         Profiler.CaptureFrame();
                         Profiler.PopGroup();
+
+                        if (Display.isActive())
+                        {
+                            int endGcGen0 = GC.CollectionCount(0);
+                            int endGcGen1 = GC.CollectionCount(1);
+                            int endGcGen2 = GC.CollectionCount(2);
+
+                            int gc0Diff = endGcGen0 - startGcGen0;
+                            int gc1Diff = endGcGen1 - startGcGen1;
+                            int gc2Diff = endGcGen2 - startGcGen2;
+
+                            string gcContext = "";
+                            if (gc0Diff > 0 || gc1Diff > 0 || gc2Diff > 0)
+                            {
+                                gcContext = $"GC Collections this frame: Gen0[{gc0Diff}] Gen1[{gc1Diff}] Gen2[{gc2Diff}]";
+                            }
+
+                            int fpsLimit = 30 + (int)(options.LimitFramerate * 210.0f);
+                            double msPerFrameTarget = fpsLimit == 240 ? 16.666 : (1000.0 / fpsLimit);
+                            Profiler.LagSpikeThresholdMs = msPerFrameTarget * 2.0;
+                            Profiler.DetectLagSpike(thisFrameTimeMs, string.IsNullOrEmpty(gcContext) ? debug : $"{debug} - {gcContext}", true);
+                        }
                     }
                 }
             }
         }
-        catch (MinecraftShutdownException) { }
+        catch (BetaSharpShutdownException) { }
         catch (Exception unexpectedException)
         {
             crashCleanup();
-            onMinecraftCrash(unexpectedException);
+            onBetaSharpCrash(unexpectedException);
         }
         finally
         {
-            shutdownMinecraftApplet();
+            ShutdownBetaSharpApplet();
         }
     }
 
@@ -736,7 +809,7 @@ public partial class Minecraft
                         GLManager.GL.ReadPixels(0, 0, (uint)displayWidth, (uint)displayHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
                     }
                 }
-                string result = ScreenShotHelper.saveScreenshot(mcDataDir.getAbsolutePath(), displayWidth, displayHeight, pixels);
+                string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
                 ingameGUI.addChatMessage(result);
             }
         }
@@ -751,10 +824,10 @@ public partial class Minecraft
         long targetFrameTime = 16666666L;
         if (prevFrameTime == -1L)
         {
-            prevFrameTime = java.lang.System.nanoTime();
+            prevFrameTime = Stopwatch.GetTimestamp();
         }
 
-        long currentNanoTime = java.lang.System.nanoTime();
+        long currentNanoTime = Stopwatch.GetTimestamp();
         tickTimes[numRecordedFrameTimes & frameTimes.Length - 1] = tickElapsedTime;
         frameTimes[numRecordedFrameTimes++ & frameTimes.Length - 1] = currentNanoTime - prevFrameTime;
         prevFrameTime = currentNanoTime;
@@ -842,6 +915,7 @@ public partial class Minecraft
         {
             if (!inGameHasFocus)
             {
+                GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
                 inGameHasFocus = true;
                 mouseHelper.grabMouseCursor();
                 displayGuiScreen((GuiScreen)null);
@@ -871,6 +945,7 @@ public partial class Minecraft
             player?.resetPlayerKeyState();
 
             inGameHasFocus = false;
+            GCSettings.LatencyMode = GCLatencyMode.Batch;
             mouseHelper.ungrabMouseCursor();
         }
     }
@@ -1694,16 +1769,16 @@ public partial class Minecraft
 
     private static void StartMainThread(string playerName, string sessionToken, string? skinUrl = null)
     {
-        Thread.CurrentThread.Name = "Minecraft Main Thread";
+        Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
-        Minecraft mc = new(850, 480, false)
+        BetaSharp game = new(850, 480, false)
         {
-            minecraftUri = "www.minecraft.net"
+            betaSharpUri = "www.minecraft.net"
         };
 
         if (playerName != null && sessionToken != null)
         {
-            mc.session = new Session(playerName, sessionToken, skinUrl);
+            game.session = new Session(playerName, sessionToken, skinUrl);
 
             if (sessionToken == "-")
             {
@@ -1716,7 +1791,7 @@ public partial class Minecraft
             throw new Exception("Player name and session token were not provided!");
         }
 
-        mc.Run();
+        game.Run();
     }
 
     public ClientNetworkHandler getSendQueue()
@@ -1739,22 +1814,22 @@ public partial class Minecraft
 
     public static bool isGuiEnabled()
     {
-        return INSTANCE == null || !INSTANCE.options.HideGUI;
+        return Instance == null || !Instance.options.HideGUI;
     }
 
     public static bool isFancyGraphicsEnabled()
     {
-        return INSTANCE != null;
+        return Instance != null;
     }
 
     public static bool isAmbientOcclusionEnabled()
     {
-        return INSTANCE != null;
+        return Instance != null;
     }
 
     public static bool isDebugInfoEnabled()
     {
-        return INSTANCE != null && INSTANCE.options.ShowDebugInfo;
+        return Instance != null && Instance.options.ShowDebugInfo;
     }
 
     public static bool lineIsCommand(string var1) => (var1.StartsWith("/"));

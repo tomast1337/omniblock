@@ -1,17 +1,16 @@
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
-using java.util;
 
 namespace BetaSharp.Client.Guis;
 
 public class GuiParticle : Gui
 {
     private readonly List<Particle> particles = new ();
-    private readonly Minecraft mc;
+    private readonly BetaSharp _game;
 
-    public GuiParticle(Minecraft mc)
+    public GuiParticle(BetaSharp game)
     {
-        this.mc = mc;
+        this._game = game;
     }
 
     public void updateParticles()
@@ -31,7 +30,7 @@ public class GuiParticle : Gui
 
     public void render(float partialTicks)
     {
-        mc.textureManager.BindTexture(mc.textureManager.GetTextureId("/gui/particles.png"));
+        _game.textureManager.BindTexture(_game.textureManager.GetTextureId("/gui/particles.png"));
 
         for (int i = 0; i < particles.Count; ++i)
         {

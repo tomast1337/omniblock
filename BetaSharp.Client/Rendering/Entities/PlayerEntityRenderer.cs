@@ -3,11 +3,11 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using Silk.NET.OpenGL.Legacy;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -68,7 +68,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void renderName(EntityPlayer var1, double var2, double var4, double var6)
     {
-        if (Minecraft.isGuiEnabled() && var1 != Dispatcher.cameraEntity)
+        if (BetaSharp.isGuiEnabled() && var1 != Dispatcher.cameraEntity)
         {
             float var8 = 1.6F;
             float var9 = (float)(1.0D / 60.0D) * var8;
@@ -132,7 +132,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             GLManager.GL.PushMatrix();
             modelBipedMain.bipedHead.transform(1.0F / 16.0F);
-            if (BlockRenderer.isSideLit(Block.Blocks[var3.itemId].getRenderType()))
+            if (BlockRenderer.IsSideLit(Block.Blocks[var3.itemId].getRenderType()))
             {
                 float var4 = 10.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
@@ -219,7 +219,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 var21 = new ItemStack(Item.Stick);
             }
 
-            if (var21.itemId < 256 && BlockRenderer.isSideLit(Block.Blocks[var21.itemId].getRenderType()))
+            if (var21.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var21.itemId].getRenderType()))
             {
                 var5 = 0.5F;
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
