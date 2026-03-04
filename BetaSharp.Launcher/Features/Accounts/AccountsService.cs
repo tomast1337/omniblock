@@ -22,11 +22,6 @@ internal sealed class AccountsService(
 
     private Account? _account;
 
-    public Task InitializeAsync()
-    {
-        return authenticationService.InitializeAsync();
-    }
-
     public async Task<TokenResponse?> AuthenticateAsync()
     {
         string microsoft = await authenticationService.AuthenticateAsync();

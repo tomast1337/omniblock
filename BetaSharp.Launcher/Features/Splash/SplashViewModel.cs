@@ -17,8 +17,6 @@ internal sealed partial class SplashViewModel(NavigationService navigationServic
         // Let everyone appreciate BetaSharp's logo.
         var delay = Task.Delay(TimeSpan.FromSeconds(2.5));
 
-        await accountsService.InitializeAsync();
-
         var account = await accountsService.GetAsync();
 
         await delay;
