@@ -44,8 +44,15 @@ internal sealed partial class HomeViewModel(
 
         await clientService.DownloadAsync();
 
+        var info = new ProcessStartInfo
+        {
+            Arguments = $"{Account.Name} {Account.Token} {Account.Skin ?? string.Empty}",
+            CreateNoWindow = true,
+            FileName = Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client")
+        };
+
         // Probably should move this into a service/view-model.
-        using var process = Process.Start(Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client"), [Account.Name, Account.Token, Account.Skin ?? ""]);
+        using var process = Process.Start(info);
 
         ArgumentNullException.ThrowIfNull(process);
 
