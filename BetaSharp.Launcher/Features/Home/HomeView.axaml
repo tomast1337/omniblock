@@ -4,12 +4,6 @@
 
              x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
-    <Interaction.Behaviors>
-        <EventTriggerBehavior EventName="AttachedToVisualTree">
-            <InvokeCommandAction Command="{Binding InitializeCommand}" />
-        </EventTriggerBehavior>
-    </Interaction.Behaviors>
-
     <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Account, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <Grid ColumnDefinitions="* Auto">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal" Spacing="25" Grid.Row="0">

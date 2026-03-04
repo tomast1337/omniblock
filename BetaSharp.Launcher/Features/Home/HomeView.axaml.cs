@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 
 namespace BetaSharp.Launcher.Features.Home;
 
@@ -8,5 +9,10 @@ internal sealed partial class HomeView : UserControl
     {
         DataContext = viewModel;
         InitializeComponent();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs eventArgs)
+    {
+        _ = ((HomeViewModel?)DataContext)?.InitializeCommand.ExecuteAsync(null);
     }
 }
