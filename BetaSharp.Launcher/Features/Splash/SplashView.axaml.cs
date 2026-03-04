@@ -1,18 +1,33 @@
-﻿using Avalonia;
+﻿using System;
+using Avalonia;
 using Avalonia.Controls;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Launcher.Features.Splash;
 
 internal sealed partial class SplashView : UserControl
 {
-    public SplashView(SplashViewModel viewModel)
+    private readonly ILogger<SplashView> _logger;
+    private readonly SplashViewModel _viewModel;
+
+    public SplashView(ILogger<SplashView> logger, SplashViewModel viewModel)
     {
+        _logger = logger;
+        _viewModel = viewModel;
+
         DataContext = viewModel;
         InitializeComponent();
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs eventArgs)
+    protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs eventArgs)
     {
-        _ = ((SplashViewModel?)DataContext)?.InitializeCommand.ExecuteAsync(null);
+        try
+        {
+            await _viewModel.InitializeCommand.ExecuteAsync(null);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Unhandled exception occured while initializing");
+        }
     }
 }
