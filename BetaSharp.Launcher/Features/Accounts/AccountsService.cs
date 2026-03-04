@@ -84,6 +84,6 @@ internal sealed class AccountsService(
         _account = null;
 
         File.Delete(_path);
-        await authenticationService.SignOutAsync();
+        await authenticationService.RemoveAsync();
     }
 }

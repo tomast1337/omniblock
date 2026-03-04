@@ -27,7 +27,7 @@ internal sealed class AuthenticationService
                                <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BetaSharp</title><link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Fazin85/betasharp/refs/heads/main/BetaSharp.Launcher/logo.ico"><style>body{margin:0;padding:0;background-color:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif}p{color:orange;font-size:1rem;font-weight:400;text-align:center}a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><p>Failed to authenticate please raise an issue <a href="https://github.com/Fazin85/betasharp/issues" target="_blank">here</a></p></body></html>
                                """;
 
-        // Need better way for storing the HTML responses.
+        // Need better way to store the HTML responses.
         _webViewOptions = new SystemWebViewOptions { HtmlMessageSuccess = success, HtmlMessageError = failure };
 
         // Probably not the best idea to use Prism's ID?
@@ -72,13 +72,11 @@ internal sealed class AuthenticationService
         return result.AccessToken;
     }
 
-    public async Task SignOutAsync()
+    public async Task RemoveAsync()
     {
-        _logger.LogWarning("Signing out Microsoft accounts");
+        _logger.LogWarning("Removing Microsoft accounts");
 
-        var accounts = await _application.GetAccountsAsync();
-
-        foreach (var account in accounts)
+        foreach (var account in await _application.GetAccountsAsync())
         {
             await _application.RemoveAsync(account);
         }
