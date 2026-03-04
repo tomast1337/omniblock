@@ -51,7 +51,7 @@ internal class RegionFile
             {
                 for (var2 = 0; var2 < (dataFile.Length() & 4095L); ++var2)
                 {
-                    dataFile.Write(0);
+                    StreamExtensions.WriteByte(dataFile, 0);
                 }
             }
 
