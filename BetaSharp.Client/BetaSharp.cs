@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
 using BetaSharp.Client.DynamicTexture;
@@ -619,6 +620,41 @@ public partial class BetaSharp
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
                         ImGui.Text($"ChunkMeshVersion Allocated: {ChunkMeshVersion.TotalAllocated}");
                         ImGui.Text($"ChunkMeshVersion Released: {ChunkMeshVersion.TotalReleased}");
+
+                        terrainRenderer.chunkRenderer.GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets);
+                        ImGui.Separator();
+                        int activeMeshes = 0;
+                        foreach (int v in buckets.Values) activeMeshes += v;
+                        ImGui.Text($"Active Meshes: {activeMeshes}");
+                        ImGui.Text($"Min Mesh Size: {minSize} bytes");
+                        ImGui.Text($"Max Mesh Size: {maxSize} bytes");
+                        ImGui.Text($"Avg Mesh Size: {avgSize} bytes");
+                        if (ImGui.TreeNode("Mesh Size Buckets (KB)"))
+                        {
+                            var sortedBuckets = buckets.Keys.ToList();
+                            sortedBuckets.Sort();
+                            foreach (int po2 in sortedBuckets)
+                            {
+                                ImGui.Text($"{po2}KB: {buckets[po2]} meshes");
+                            }
+                            ImGui.TreePop();
+                        }
+
+                        if (ImGui.Button("Export Mesh Stats to JSON"))
+                        {
+                            var exportData = new
+                            {
+                                minSize,
+                                maxSize,
+                                avgSize,
+                                totalMeshes = activeMeshes,
+                                buckets = buckets.ToDictionary(k => k.Key.ToString(), v => v.Value)
+                            };
+                            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
+                            File.WriteAllText(Path.Combine(getBetaSharpDir(), "mesh_stats.json"), json);
+                            _logger.LogInformation($"Exported mesh stats to {Path.Combine(getBetaSharpDir(), "mesh_stats.json")}");
+                        }
+
                         ImGui.Separator();
                         ImGui.Text($"Texture Binds: {TextureStats.BindsLastFrame} (Avg: {TextureStats.AverageBindsPerFrame:F1}/f)");
                         ImGui.Text($"Active Textures: {GLTexture.ActiveTextureCount}");

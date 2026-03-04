@@ -658,6 +658,44 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return dx * dx + dz * dz <= _lastRenderDistance * _lastRenderDistance;
     }
 
+    public void GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets)
+    {
+        int curMin = int.MaxValue;
+        int curMax = 0;
+        long totalSize = 0;
+        int count = 0;
+        var b = new Dictionary<int, int>();
+
+        foreach (SubChunkState state in _renderers.Values)
+        {
+            void AddSize(int size)
+            {
+                if (size == 0) return;
+                if (size < curMin) curMin = size;
+                if (size > curMax) curMax = size;
+                totalSize += size;
+                count++;
+
+                int sizeKb = (int)Math.Ceiling(size / 1024.0);
+                if (sizeKb <= 0) sizeKb = 1;
+                int po2 = 1;
+                while (po2 < sizeKb) po2 *= 2;
+
+                if (!b.TryGetValue(po2, out int val))
+                    val = 0;
+                b[po2] = val + 1;
+            }
+
+            AddSize(state.Renderer.SolidMeshSizeBytes);
+            AddSize(state.Renderer.TranslucentMeshSizeBytes);
+        }
+
+        minSize = count == 0 ? 0 : curMin;
+        maxSize = curMax;
+        avgSize = count > 0 ? (int)(totalSize / count) : 0;
+        buckets = b;
+    }
+
     private static Vector3D<double> ToDoubleVec(Vector3D<int> vec) => new(vec.X, vec.Y, vec.Z);
 
     public void Dispose()

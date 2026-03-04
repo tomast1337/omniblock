@@ -22,6 +22,9 @@ public class SubChunkRenderer : IDisposable
     public bool HasFadedIn => Age >= FadeDuration;
     public const float FadeDuration = 1.0f;
 
+    public int SolidMeshSizeBytes => vertexCounts[0] * 16;
+    public int TranslucentMeshSizeBytes => vertexCounts[1] * 16;
+
     public Occlusion.ChunkVisibilityStore VisibilityData;
     public Occlusion.ChunkDirectionMask IncomingDirections;
     public int LastVisibleFrame = -1;
