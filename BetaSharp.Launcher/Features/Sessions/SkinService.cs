@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media.Imaging;
 
-namespace BetaSharp.Launcher.Features.Home;
+namespace BetaSharp.Launcher.Features.Sessions;
 
 internal sealed class SkinService(IHttpClientFactory clientFactory)
 {
