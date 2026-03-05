@@ -11,9 +11,9 @@ namespace BetaSharp.Launcher.Features.Authentication;
 
 internal sealed partial class AuthenticationViewModel(
     AuthenticationService authenticationService,
+    SessionService sessionService,
     AlertService alertService,
     NavigationService navigationService,
-    SessionService sessionService,
     StorageService storageService) : ObservableObject
 {
     [RelayCommand]
