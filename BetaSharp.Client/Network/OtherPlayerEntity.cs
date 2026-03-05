@@ -21,7 +21,7 @@ public class OtherPlayerEntity : EntityPlayer
         stepHeight = 0.0F;
         if (name != null && name.Length > 0)
         {
-            skinUrl = "http://s3.amazonaws.com/MinecraftSkins/" + name + ".png";
+            skinUrl = $"https://mc-heads.net/skin/{name}";
         }
 
         noClip = true;
