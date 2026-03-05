@@ -14,7 +14,7 @@ internal sealed class SessionService(XboxClient xboxClient, MojangClient mojangC
         var xbox = await xboxClient.GetTokenAsync(user.Token);
 
         var mojang = await mojangClient.GetTokenAsync(xbox.Value, user.DisplayClaims.Xui[0].Uhs);
-        var entitlements = await mojangClient.GetEntitlementsAsync(token);
+        var entitlements = await mojangClient.GetEntitlementsAsync(mojang.Value);
 
         if (!entitlements.Items.Any(item => item.Name is "product_minecraft" or "game_minecraft"))
         {

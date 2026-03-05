@@ -23,16 +23,12 @@ internal sealed partial class HomeViewModel : ObservableObject
     private readonly NavigationService _navigationService;
     private readonly StorageService _storageService;
     private readonly ClientService _clientService;
-    private readonly AuthenticationService _authenticationService;
-    private readonly SessionService _sessionService;
 
-    public HomeViewModel(NavigationService navigationService, StorageService storageService, ClientService clientService, AuthenticationService authenticationService, SessionService sessionService)
+    public HomeViewModel(NavigationService navigationService, StorageService storageService, ClientService clientService)
     {
         _navigationService = navigationService;
         _storageService = storageService;
         _clientService = clientService;
-        _authenticationService = authenticationService;
-        _sessionService = sessionService;
 
         WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(
             this,
@@ -42,27 +38,10 @@ internal sealed partial class HomeViewModel : ObservableObject
     [RelayCommand]
     private async Task PlayAsync()
     {
-        if (Session?.Expiration > DateTimeOffset.UtcNow.AddMinutes(5))
+        if (Session?.HasExpired is true)
         {
-            string? token = await _authenticationService.TryAuthenticateSilentlyAsync();
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                _navigationService.Navigate<AuthenticationViewModel>();
-                return;
-            }
-
-            Session = await _sessionService.TryCreateAsync(token);
-
-            if (Session is null)
-            {
-                _navigationService.Navigate<AuthenticationViewModel>();
-                return;
-            }
-
-            ArgumentNullException.ThrowIfNull(Session);
-
-            await _storageService.SetAsync(Session, SessionsSerializerContext.Default.Session);
+            _navigationService.Navigate<AuthenticationViewModel>();
+            return;
         }
 
         ArgumentNullException.ThrowIfNull(Session);

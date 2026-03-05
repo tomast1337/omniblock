@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Alert;
+﻿using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Sessions;
@@ -11,48 +9,25 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace BetaSharp.Launcher.Features.Splash;
 
-internal sealed partial class SplashViewModel(
-    AuthenticationService authenticationService,
-    StorageService storageService,
-    NavigationService navigationService,
-    SessionService sessionService,
-    AlertService alertService) : ObservableObject
+internal sealed partial class SplashViewModel(StorageService storageService, NavigationService navigationService) : ObservableObject
 {
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        await authenticationService.InitializeAsync();
-
+        // Let everyone appreciate BetaSharp's logo.
+        var delay = Task.Delay(2500);
         var session = await storageService.GetAsync(SessionsSerializerContext.Default.Session);
 
-        if (session?.Expiration > DateTimeOffset.UtcNow.AddMinutes(5))
+        await delay;
+
+        if (session?.HasExpired ?? true)
+        {
+            navigationService.Navigate<AuthenticationViewModel>();
+        }
+        else
         {
             navigationService.Navigate<HomeViewModel>();
-            return;
+            WeakReferenceMessenger.Default.Send(new SessionMessage(session));
         }
-
-        string? token = await authenticationService.TryAuthenticateSilentlyAsync();
-
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            navigationService.Navigate<AuthenticationViewModel>();
-            return;
-        }
-
-        session = await sessionService.TryCreateAsync(token);
-
-        if (session is null)
-        {
-            navigationService.Navigate<AuthenticationViewModel>();
-            return;
-        }
-
-        ArgumentNullException.ThrowIfNull(session);
-
-        await storageService.SetAsync(session, SessionsSerializerContext.Default.Session);
-
-        WeakReferenceMessenger.Default.Send(new SessionMessage(session));
-
-        navigationService.Navigate<HomeViewModel>();
     }
 }
