@@ -23,12 +23,10 @@ internal sealed class SessionService(XboxClient xboxClient, MojangClient mojangC
 
         var profile = await mojangClient.GetProfileAsync(mojang.Value);
 
-        string skin = profile.Skins.Last().Url;
-
         return new Session
         {
             Name = profile.Name,
-            Skin = skin,
+            Face = $"https://mc-heads.net/avatar/{profile.Name}/8.png",
             Token = mojang.Value,
             Expiration = DateTimeOffset.UtcNow.Add(TimeSpan.FromSeconds(mojang.Expiration)),
         };
