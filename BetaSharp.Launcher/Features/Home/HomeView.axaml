@@ -4,7 +4,7 @@
 
              x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
-    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Account, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+    <Grid RowDefinitions="Auto *" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <Grid ColumnDefinitions="* Auto" Grid.Row="0">
             <StackPanel Spacing="25" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.Row="0">
                 <Border Width="50" Height="50" ClipToBounds="True" CornerRadius="{StaticResource ControlCornerRadius}">
@@ -14,7 +14,7 @@
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="Welcome" Opacity="0.5" />
 
-                    <TextBlock Text="{CompiledBinding Account.Name, FallbackValue='...'}"
+                    <TextBlock Text="{CompiledBinding Session.Name, FallbackValue='...'}"
                                FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>

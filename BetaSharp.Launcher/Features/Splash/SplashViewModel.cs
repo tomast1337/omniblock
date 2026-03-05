@@ -1,32 +1,33 @@
 ﻿using System;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Accounts;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.Sessions;
 using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace BetaSharp.Launcher.Features.Splash;
 
-internal sealed partial class SplashViewModel(NavigationService navigationService, AccountsService accountsService) : ObservableObject
+internal sealed partial class SplashViewModel(AuthenticationService authenticationService, StorageService storageService, NavigationService navigationService) : ObservableObject
 {
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        // Let everyone appreciate BetaSharp's logo.
         var delay = Task.Delay(TimeSpan.FromSeconds(2.5));
 
-        var account = await accountsService.GetAsync();
+        await authenticationService.InitializeAsync();
+        var session = await storageService.GetAsync(SessionsSerializerContext.Default.Session);
 
         await delay;
 
-        if (account is null)
+        if (string.IsNullOrWhiteSpace(session?.Token))
         {
             navigationService.Navigate<AuthenticationViewModel>();
-            return;
         }
-
-        navigationService.Navigate<HomeViewModel>();
+        else
+        {
+            navigationService.Navigate<HomeViewModel>();
+        }
     }
 }

@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
-namespace BetaSharp.Launcher.Features.Accounts;
+namespace BetaSharp.Launcher.Features.Authentication;
 
 internal sealed class AuthenticationService
 {
     private readonly ILogger<AuthenticationService> _logger;
     private readonly SystemWebViewOptions _webViewOptions;
     private readonly IPublicClientApplication _application;
-
-    private bool _initialized;
 
     public AuthenticationService(ILogger<AuthenticationService> logger)
     {
@@ -38,30 +37,46 @@ internal sealed class AuthenticationService
             .Build();
     }
 
+    public async Task InitializeAsync()
+    {
+        _logger.LogInformation("Initializing authentication service");
+
+        string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
+
+        var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
+            .WithLinuxKeyring(
+                "betasharp.launcher",
+                MsalCacheHelper.LinuxKeyRingDefaultCollection,
+                "MSAL cache for BetaSharp's launcher",
+                new KeyValuePair<string, string>("Version", "1"),
+                new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
+            .WithMacKeyChain("betasharp.launcher", "betasharp")
+            .Build();
+
+        var helper = await MsalCacheHelper.CreateAsync(properties);
+        helper.RegisterCache(_application.UserTokenCache);
+    }
+
+    public async Task<string?> TryAuthenticateSilentlyAsync()
+    {
+        var accounts = await _application.GetAccountsAsync();
+
+        try
+        {
+            var result = await _application
+                .AcquireTokenSilent(["XboxLive.signin offline_access"], accounts.FirstOrDefault())
+                .ExecuteAsync();
+
+            return result.AccessToken;
+        }
+        catch (MsalUiRequiredException)
+        {
+            return null;
+        }
+    }
+
     public async Task<string> AuthenticateAsync()
     {
-        if (!_initialized)
-        {
-            _logger.LogInformation("Initializing authentication service");
-
-            string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
-
-            var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
-                .WithLinuxKeyring(
-                    "betasharp.launcher",
-                    MsalCacheHelper.LinuxKeyRingDefaultCollection,
-                    "MSAL cache for BetaSharp's launcher",
-                    new KeyValuePair<string, string>("Version", "1"),
-                    new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
-                .WithMacKeyChain("betasharp.launcher", "betasharp")
-                .Build();
-
-            var helper = await MsalCacheHelper.CreateAsync(properties);
-            helper.RegisterCache(_application.UserTokenCache);
-
-            _initialized = true;
-        }
-
         // Find out a way to use system brokers.
         var result = await _application
             .AcquireTokenInteractive(["XboxLive.signin offline_access"])
@@ -70,15 +85,5 @@ internal sealed class AuthenticationService
             .ExecuteAsync();
 
         return result.AccessToken;
-    }
-
-    public async Task RemoveAsync()
-    {
-        _logger.LogWarning("Removing Microsoft accounts");
-
-        foreach (var account in await _application.GetAccountsAsync())
-        {
-            await _application.RemoveAsync(account);
-        }
     }
 }
