@@ -26,7 +26,7 @@ public class ClientPlayerEntity : EntityPlayer
         base.dimensionId = dimensionId;
         if (session != null && session.username != null && session.username.Length > 0)
         {
-            skinUrl = session.skinUrl ?? "http://s3.amazonaws.com/MinecraftSkins/" + session.username + ".png";
+            skinUrl = $"https://mc-heads.net/skin/{session.username}";
         }
 
         name = session.username;

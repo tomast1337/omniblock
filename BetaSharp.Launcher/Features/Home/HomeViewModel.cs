@@ -47,7 +47,7 @@ internal sealed partial class HomeViewModel : ObservableObject
 
         var info = new ProcessStartInfo
         {
-            Arguments = $"{Session.Name} {Session.Token} {Session.Skin}",
+            Arguments = $"{Session.Name} {Session.Token}",
             CreateNoWindow = true,
             FileName = Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client")
         };

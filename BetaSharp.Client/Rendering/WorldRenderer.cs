@@ -905,9 +905,9 @@ public class WorldRenderer : IWorldAccess
     public void notifyEntityAdded(Entity var1)
     {
         var1.updateCloak();
-        if (!string.IsNullOrEmpty(var1.skinUrl) && _game.session.skinUrl != null)
+        if (!string.IsNullOrEmpty(var1.skinUrl))
         {
-            EntityRenderDispatcher.instance.skinManager?.RequestDownload(var1.skinUrl);
+            EntityRenderDispatcher.instance.skinManager.RequestDownload(var1.skinUrl);
         }
     }
 
