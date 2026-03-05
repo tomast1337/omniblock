@@ -1,13 +1,16 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Sessions;
 using BetaSharp.Launcher.Features.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Launcher.Features.Home;
 
@@ -44,7 +47,7 @@ internal sealed partial class HomeViewModel : ObservableObject
 
         var info = new ProcessStartInfo
         {
-            Arguments = $"{Session.Name} {Session.Token} {Session.Skin}",
+            Arguments = $"{Session.Name} {Session.Token} {Session.Face}",
             CreateNoWindow = true,
             FileName = Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client")
         };
@@ -62,7 +65,5 @@ internal sealed partial class HomeViewModel : ObservableObject
     {
         _navigationService.Navigate<AuthenticationViewModel>();
         _storageService.Delete(nameof(Session));
-
-        Session?.Face?.Dispose();
     }
 }
