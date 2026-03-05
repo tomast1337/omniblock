@@ -49,6 +49,7 @@ internal static partial class Bootstrapper
     [Singleton(typeof(NavigationService))]
     [Singleton(typeof(AlertService))]
     [Singleton(typeof(ShellViewModel))]
+    [Transient(typeof(SessionService))]
     [Transient(typeof(MinecraftService))]
     [Transient(typeof(StorageService))]
     [Transient(typeof(ClientService))]
