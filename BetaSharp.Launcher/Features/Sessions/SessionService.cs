@@ -6,7 +6,7 @@ using BetaSharp.Launcher.Features.Xbox;
 
 namespace BetaSharp.Launcher.Features.Sessions;
 
-internal sealed class SessionService(XboxClient xboxClient, MojangClient mojangClient)
+internal sealed class SessionService(XboxClient xboxClient, MojangClient mojangClient, SkinService skinService)
 {
     public async Task<Session?> TryCreateAsync(string token)
     {
@@ -23,12 +23,15 @@ internal sealed class SessionService(XboxClient xboxClient, MojangClient mojangC
 
         var profile = await mojangClient.GetProfileAsync(mojang.Value);
 
+        string skin = profile.Skins.Last().Url;
+
         return new Session
         {
             Name = profile.Name,
-            Skin = profile.Skins.Last().Url,
+            Skin = skin,
             Token = mojang.Value,
-            Expiration = DateTimeOffset.UtcNow.Add(TimeSpan.FromSeconds(mojang.Expiration))
+            Face = await skinService.GetFaceAsync(skin),
+            Expiration = DateTimeOffset.UtcNow.Add(TimeSpan.FromSeconds(mojang.Expiration)),
         };
     }
 }

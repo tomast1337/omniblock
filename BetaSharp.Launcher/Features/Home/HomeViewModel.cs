@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia.Media.Imaging;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Sessions;
 using BetaSharp.Launcher.Features.Shell;
@@ -16,9 +15,6 @@ internal sealed partial class HomeViewModel : ObservableObject
 {
     [ObservableProperty]
     public partial Session? Session { get; set; }
-
-    [ObservableProperty]
-    public partial CroppedBitmap? Face { get; set; }
 
     private readonly NavigationService _navigationService;
     private readonly StorageService _storageService;
@@ -38,13 +34,11 @@ internal sealed partial class HomeViewModel : ObservableObject
     [RelayCommand]
     private async Task PlayAsync()
     {
-        if (Session?.HasExpired is true)
+        if (Session?.HasExpired ?? true)
         {
             _navigationService.Navigate<AuthenticationViewModel>();
             return;
         }
-
-        ArgumentNullException.ThrowIfNull(Session);
 
         await _clientService.DownloadAsync();
 
@@ -69,6 +63,6 @@ internal sealed partial class HomeViewModel : ObservableObject
         _navigationService.Navigate<AuthenticationViewModel>();
         _storageService.Delete(nameof(Session));
 
-        Face?.Dispose();
+        Session?.Face?.Dispose();
     }
 }

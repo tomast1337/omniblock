@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using Avalonia.Media.Imaging;
 
 namespace BetaSharp.Launcher.Features.Sessions;
 
@@ -12,6 +13,9 @@ internal sealed class Session
     public required string Token { get; set; }
 
     public required DateTimeOffset Expiration { get; set; }
+
+    [JsonIgnore]
+    public CroppedBitmap? Face { get; set; }
 
     [JsonIgnore]
     public bool HasExpired => DateTimeOffset.UtcNow.AddMinutes(5) > Expiration;
