@@ -48,7 +48,12 @@ internal sealed partial class HomeViewModel : ObservableObject
 
         await _clientService.DownloadAsync();
 
-        var info = new ProcessStartInfo { Arguments = $"{Session.Name} {Session.Token} {Session.Skin}", CreateNoWindow = true, FileName = Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client") };
+        var info = new ProcessStartInfo
+        {
+            Arguments = $"{Session.Name} {Session.Token} {Session.Skin}",
+            CreateNoWindow = true,
+            FileName = Path.Combine(AppContext.BaseDirectory, "Client", "BetaSharp.Client")
+        };
 
         // Probably should move this into a service/view-model.
         using var process = Process.Start(info);
