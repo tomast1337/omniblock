@@ -172,11 +172,6 @@ internal static class StreamExtensions
             return stream.Length;
         }
 
-        public void WriteByte(int value)
-        {
-            stream.WriteByte(unchecked((byte)value));
-        }
-
         public int ReadInt()
         {
             return ((Stream)stream).ReadInt();
