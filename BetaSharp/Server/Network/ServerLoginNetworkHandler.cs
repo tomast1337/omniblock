@@ -137,7 +137,7 @@ public class ServerLoginNetworkHandler : NetHandler
             Vec3i var4 = var3.getSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.sendPacket(new LoginHelloPacket("", ent.id, var3.getSeed(), (sbyte)var3.dimension.Id));
-            handler.sendPacket(new PlayerSpawnPositionS2CPacket(var4.X, var4.Y, var4.Z));
+            handler.sendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
             server.playerManager.sendWorldInfo(ent, var3);
             server.playerManager.sendToAll(new ChatMessagePacket("§e" + ent.name + " joined the game."));
             server.playerManager.addPlayer(ent);
