@@ -60,8 +60,13 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
         player.onDisconnect();
         sendPacket(DisconnectPacket.Get(reason));
         connection.disconnect();
-        server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + player.name + " left the game."));
         server.playerManager.disconnect(player);
+        server.playerManager.sendToAll(new PlayerConnectionUpdateS2CPacket(
+            player.id,
+            PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
+            player.name
+        ));
+        server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + player.name + " left the game."));
         disconnected = true;
     }
 
@@ -426,8 +431,13 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     public override void onDisconnected(string reason, object[]? objects)
     {
         _logger.LogInformation($"{player.name} lost connection: {reason}");
-        server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + player.name + " left the game."));
         server.playerManager.disconnect(player);
+        server.playerManager.sendToAll(new PlayerConnectionUpdateS2CPacket(
+            player.id,
+            PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
+            player.name
+        ));
+        server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + player.name + " left the game."));
         disconnected = true;
     }
 
