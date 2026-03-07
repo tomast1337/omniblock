@@ -118,7 +118,7 @@ public class ServerWorld : World
 
     public override void broadcastEntityEvent(Entity entity, byte @event)
     {
-        EntityStatusS2CPacket var3 = new EntityStatusS2CPacket(entity.id, @event);
+        EntityStatusS2CPacket var3 = EntityStatusS2CPacket.Get(entity.id, @event);
         server.getEntityTracker(dimension.Id).sendToAround(entity, var3);
     }
 
@@ -131,7 +131,7 @@ public class ServerWorld : World
         };
         var10.doExplosionA();
         var10.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, new ExplosionS2CPacket(x, y, z, power, var10.destroyedBlockPositions));
+        server.playerManager.sendToAround(x, y, z, 64.0, dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, var10.destroyedBlockPositions));
         return var10;
     }
 
@@ -156,11 +156,11 @@ public class ServerWorld : World
         {
             if (raining)
             {
-                server.playerManager.sendToAll(new GameStateChangeS2CPacket(2));
+                server.playerManager.sendToAll(GameStateChangeS2CPacket.Get(2));
             }
             else
             {
-                server.playerManager.sendToAll(new GameStateChangeS2CPacket(1));
+                server.playerManager.sendToAll(GameStateChangeS2CPacket.Get(1));
             }
         }
     }

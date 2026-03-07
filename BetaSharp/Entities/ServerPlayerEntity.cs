@@ -12,7 +12,6 @@ using BetaSharp.Server.Network;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
-using java.util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Entities;
@@ -100,7 +99,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             ItemStack itemStack = getEquipment(i);
             if (itemStack != equipment[i])
             {
-                server.getEntityTracker(dimensionId).sendToListeners(this, new EntityEquipmentUpdateS2CPacket(id, i, itemStack));
+                server.getEntityTracker(dimensionId).sendToListeners(this, EntityEquipmentUpdateS2CPacket.Get(id, i, itemStack));
                 equipment[i] = itemStack;
             }
         }
@@ -233,7 +232,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         int worldX = chunkPos.X * 16;
         int worldZ = chunkPos.Z * 16;
-        networkHandler.sendPacket(new ChunkDataS2CPacket(worldX, 0, worldZ, 16, 128, 16, world));
+        networkHandler.sendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, 128, 16, world));
     }
 
     private void SendBlockEntityUpdates(ServerWorld world, ChunkPos chunkPos)
@@ -327,7 +326,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void setVehicle(Entity entity)
     {
         base.setVehicle(entity);
-        networkHandler.sendPacket(new EntityVehicleSetS2CPacket(this, vehicle));
+        networkHandler.sendPacket(EntityVehicleSetS2CPacket.Get(this, vehicle));
         networkHandler.teleport(x, y, z, yaw, pitch);
     }
 
@@ -421,7 +420,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void closeHandledScreen()
     {
-        networkHandler.sendPacket(new CloseScreenS2CPacket(currentScreenHandler.SyncId));
+        networkHandler.sendPacket(CloseScreenS2CPacket.Get(currentScreenHandler.SyncId));
         onHandledScreenClosed();
     }
 
@@ -447,6 +446,16 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         setSneaking(sneaking);
         this.pitch = pitch;
         this.yaw = yaw;
+    }
+
+    public void updateInput(Network.Packets.C2SPlay.PlayerInputC2SPacket packet)
+    {
+        sidewaysSpeed = packet.getSideways();
+        forwardSpeed = packet.getForward();
+        jumping = packet.isJumping();
+        setSneaking(packet.isSneaking());
+        pitch = packet.getPitch();
+        yaw = packet.getYaw();
     }
 
 
@@ -499,7 +508,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         TranslationStorage ts = TranslationStorage.Instance;
         string translatedMessage = ts.TranslateKey(message);
-        networkHandler.sendPacket(new ChatMessagePacket(translatedMessage));
+        networkHandler.sendPacket(ChatMessagePacket.Get(translatedMessage));
     }
 
     public override void spawn()
