@@ -432,7 +432,7 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     {
         _logger.LogInformation($"{player.name} lost connection: {reason}");
         server.playerManager.disconnect(player);
-        server.playerManager.sendToAll(new PlayerConnectionUpdateS2CPacket(
+        server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(
             player.id,
             PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
             player.name
