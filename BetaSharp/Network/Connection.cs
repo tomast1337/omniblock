@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
 using BetaSharp.Threading;
-using java.util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
@@ -30,7 +29,6 @@ public class Connection
     private int sendQueueSize;
     private ConcurrentQueue<Packet> sendQueue = [];
     private ConcurrentQueue<Packet> delayedSendQueue = [];
-    private object lck = new();
     private int _delay;
     private Socket? _socket;
     private NetworkStream? _networkStream;
@@ -38,7 +36,7 @@ public class Connection
     public Connection(Socket socket, string address, NetHandler networkHandler)
     {
         _socket = socket;
-        _address = (IPEndPoint?) socket.RemoteEndPoint;
+        _address = (IPEndPoint?)socket.RemoteEndPoint;
         this.networkHandler = networkHandler;
 
         socket.ReceiveTimeout = 30000;
@@ -69,19 +67,14 @@ public class Connection
         if (!closed)
         {
             packet.UseCount++;
-            object lockObj = lck;
-            lock (lockObj)
+            sendQueueSize += packet.Size() + 1;
+            if (Packet.Registry[packet.Id]!.WorldPacket)
             {
-                sendQueueSize += packet.Size() + 1;
-                if (Packet.Registry[packet.Id]!.WorldPacket)
-                {
-                    delayedSendQueue.Enqueue(packet);
-                }
-                else
-                {
-                    sendQueue.Enqueue(packet);
-                }
-
+                delayedSendQueue.Enqueue(packet);
+            }
+            else
+            {
+                sendQueue.Enqueue(packet);
             }
         }
     }
@@ -98,19 +91,14 @@ public class Connection
         try
         {
             Packet? packet;
-            object lockObj;
             if (!sendQueue.IsEmpty)
             {
-                lockObj = lck;
-                lock (lockObj)
+                if (!sendQueue.TryDequeue(out packet))
                 {
-                    if (!sendQueue.TryDequeue(out packet))
-                    {
-                        return false;
-                    }
-
-                    sendQueueSize -= packet.Size() + 1;
+                    return false;
                 }
+
+                sendQueueSize -= packet.Size() + 1;
 
                 Packet.Write(packet, _networkStream);
                 wrotePacket = true;
@@ -118,16 +106,12 @@ public class Connection
 
             if (_delay-- <= 0 && !delayedSendQueue.IsEmpty)
             {
-                lockObj = lck;
-                lock (lockObj)
+                if (!delayedSendQueue.TryDequeue(out packet))
                 {
-                    if (!delayedSendQueue.TryDequeue(out packet))
-                    {
-                        return false;
-                    }
-
-                    sendQueueSize -= packet.Size() + 1;
+                    return false;
                 }
+
+                sendQueueSize -= packet.Size() + 1;
 
                 Packet.Write(packet, _networkStream);
                 _delay = 0;
@@ -250,7 +234,6 @@ public class Connection
         {
             networkHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
         }
-
     }
 
     protected virtual void processPackets()
