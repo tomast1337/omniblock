@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
-using BetaSharp.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
@@ -13,41 +12,35 @@ public class Connection
 
     private readonly ILogger<Connection> _logger = Log.Instance.For<Connection>();
     private readonly IPEndPoint? _address;
-    private readonly java.lang.Thread _writer;
-    private readonly java.lang.Thread _reader;
-    private readonly ManualResetEventSlim wakeSignal = new(false);
 
     protected bool open = true;
     protected ConcurrentQueue<Packet> readQueue = [];
-    protected NetHandler? networkHandler;
+    protected NetHandler? netHandler;
     protected bool closed;
     protected bool disconnected;
     protected string disconnectedReason = "";
     protected object[]? disconnectReasonArgs;
 
     private int timeout;
-    private int sendQueueSize;
     private ConcurrentQueue<Packet> sendQueue = [];
     private ConcurrentQueue<Packet> delayedSendQueue = [];
     private int _delay;
     private Socket? _socket;
     private NetworkStream? _networkStream;
 
-    public Connection(Socket socket, string address, NetHandler networkHandler)
+    public Connection(Socket socket, string address, NetHandler netHandler)
     {
         _socket = socket;
         _address = (IPEndPoint?)socket.RemoteEndPoint;
-        this.networkHandler = networkHandler;
+        this.netHandler = netHandler;
 
         socket.ReceiveTimeout = 30000;
         // setTrafficClass doesn't have a direct .NET equivalent and can be omitted
 
         _networkStream = new NetworkStream(socket);
 
-        _reader = new NetworkReaderThread(this, address + " read thread");
-        _writer = new NetworkWriterThread(this, address + " write thread");
-        _reader.start();
-        _writer.start();
+        Task.Factory.StartNew(Reading, TaskCreationOptions.LongRunning);
+        Task.Factory.StartNew(Writing, TaskCreationOptions.LongRunning);
     }
 
     protected Connection()
@@ -57,7 +50,7 @@ public class Connection
 
     public void setNetworkHandler(NetHandler netHandler)
     {
-        networkHandler = netHandler;
+        this.netHandler = netHandler;
     }
 
     public virtual void sendPacket(Packet packet)
@@ -67,7 +60,6 @@ public class Connection
         if (!closed)
         {
             packet.UseCount++;
-            sendQueueSize += packet.Size() + 1;
             if (Packet.Registry[packet.Id]!.WorldPacket)
             {
                 delayedSendQueue.Enqueue(packet);
@@ -76,104 +68,6 @@ public class Connection
             {
                 sendQueue.Enqueue(packet);
             }
-        }
-    }
-
-    protected virtual bool write()
-    {
-        if (_networkStream == null)
-        {
-            throw new Exception("Connection not initialized");
-        }
-
-        bool wrotePacket = false;
-
-        try
-        {
-            Packet? packet;
-            if (!sendQueue.IsEmpty)
-            {
-                if (!sendQueue.TryDequeue(out packet))
-                {
-                    return false;
-                }
-
-                sendQueueSize -= packet.Size() + 1;
-
-                Packet.Write(packet, _networkStream);
-                wrotePacket = true;
-            }
-
-            if (_delay-- <= 0 && !delayedSendQueue.IsEmpty)
-            {
-                if (!delayedSendQueue.TryDequeue(out packet))
-                {
-                    return false;
-                }
-
-                sendQueueSize -= packet.Size() + 1;
-
-                Packet.Write(packet, _networkStream);
-                _delay = 0;
-                wrotePacket = true;
-            }
-
-            return wrotePacket;
-        }
-        catch (Exception ex)
-        {
-            if (!disconnected)
-            {
-                disconnect(ex);
-            }
-
-            return false;
-        }
-    }
-
-    public virtual void interrupt()
-    {
-        wakeSignal.Set();
-    }
-
-    public void waitForSignal(int timeoutMs)
-    {
-        wakeSignal.Wait(timeoutMs);
-        wakeSignal.Reset();
-    }
-
-    protected virtual bool read()
-    {
-        if (networkHandler == null || _networkStream == null)
-        {
-            throw new Exception("Connection not initialized");
-        }
-
-        bool receivedPacket = false;
-
-        try
-        {
-            Packet? packet = Packet.Read(_networkStream, networkHandler.isServerSide());
-            if (packet != null)
-            {
-                readQueue.Enqueue(packet);
-                receivedPacket = true;
-            }
-            else
-            {
-                disconnect("disconnect.endOfStream");
-            }
-
-            return receivedPacket;
-        }
-        catch (Exception ex)
-        {
-            if (!disconnected)
-            {
-                disconnect(ex);
-            }
-
-            return false;
         }
     }
 
@@ -190,7 +84,6 @@ public class Connection
             disconnected = true;
             this.disconnectedReason = disconnectedReason;
             this.disconnectReasonArgs = disconnectReasonArgs;
-            new NetworkMasterThread(this).start();
             open = false;
 
             try
@@ -210,7 +103,7 @@ public class Connection
 
     public virtual void tick()
     {
-        if (sendQueueSize > 1048576)
+        if (sendQueue.Count > 1048576)
         {
             disconnect("disconnect.overflow");
         }
@@ -229,16 +122,15 @@ public class Connection
 
         processPackets();
 
-        interrupt();
         if (disconnected && readQueue.IsEmpty)
         {
-            networkHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
+            netHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
         }
     }
 
     protected virtual void processPackets()
     {
-        if (networkHandler == null)
+        if (netHandler == null)
         {
             throw new Exception("networkHandler is null");
         }
@@ -247,7 +139,7 @@ public class Connection
 
         while (readQueue.TryDequeue(out var packet) && maxPacketsPerTick-- >= 0)
         {
-            packet.Apply(networkHandler);
+            packet.Apply(netHandler);
             packet.Return();
         }
     }
@@ -259,9 +151,8 @@ public class Connection
 
     public virtual void disconnect()
     {
-        interrupt();
         closed = true;
-        new ThreadCloseConnection(this).Start();
+        disconnect(new Exception("disconnect.closed"));
     }
 
     public int getDelayedSendQueueSize()
@@ -269,48 +160,88 @@ public class Connection
         return delayedSendQueue.Count;
     }
 
-    public static bool isOpen(Connection conn)
+    private void Reading()
     {
-        return conn.open;
+        while (open && !closed)
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(_networkStream);
+                ArgumentNullException.ThrowIfNull(netHandler);
+
+                Packet? packet = Packet.Read(_networkStream, netHandler.isServerSide());
+
+                if (packet is not null)
+                {
+                    readQueue.Enqueue(packet);
+                }
+                else
+                {
+                    disconnect("disconnect.endOfStream");
+                    break;
+                }
+
+                Task.Delay(10);
+            }
+            catch (Exception exception)
+            {
+                disconnect(exception);
+                break;
+            }
+        }
     }
 
-    public static bool isClosed(Connection conn)
+    private void Writing()
     {
-        return conn.closed;
-    }
+        while (open && !closed)
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(_networkStream);
 
-    public static bool readPacket(Connection conn)
-    {
-        return conn.read();
-    }
+                Packet? packet;
 
-    public static bool writePacket(Connection conn)
-    {
-        return conn.write();
-    }
+                if (!sendQueue.IsEmpty)
+                {
+                    if (!sendQueue.TryDequeue(out packet))
+                    {
+                        continue;
+                    }
 
-    public static NetworkStream? getOutputStream(Connection conn)
-    {
-        return conn._networkStream;
-    }
+                    packet.UseCount++;
 
-    public static bool isDisconnected(Connection conn)
-    {
-        return conn.disconnected;
-    }
+                    Packet.Write(packet, _networkStream);
+                    packet.Return();
+                }
 
-    public static void disconnect(Connection conn, Exception ex)
-    {
-        conn.disconnect(ex);
-    }
+                if (!delayedSendQueue.IsEmpty && _delay-- <= 0)
+                {
+                    if (!delayedSendQueue.TryDequeue(out packet))
+                    {
+                        continue;
+                    }
 
-    public static java.lang.Thread getReader(Connection conn)
-    {
-        return conn._reader;
-    }
+                    packet.UseCount++;
 
-    public static java.lang.Thread getWriter(Connection conn)
-    {
-        return conn._writer;
+                    _delay = 0;
+
+                    Packet.Write(packet, _networkStream);
+                    packet.Return();
+                }
+
+                _networkStream.Flush();
+
+                Task.Delay(10);
+            }
+            catch (Exception exception)
+            {
+                if (!disconnected)
+                {
+                    disconnect(exception);
+                }
+
+                break;
+            }
+        }
     }
 }

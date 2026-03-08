@@ -12,9 +12,9 @@ public class InternalConnection : Connection
 
     private readonly ILogger<InternalConnection> _logger = Log.Instance.For<InternalConnection>();
 
-    public InternalConnection(NetHandler? networkHandler, string name)
+    public InternalConnection(NetHandler? netHandler, string name)
     {
-        this.networkHandler = networkHandler;
+        this.netHandler = netHandler;
         Name = name;
     }
 
@@ -43,7 +43,7 @@ public class InternalConnection : Connection
 
     protected override void processPackets()
     {
-        if (networkHandler == null)
+        if (netHandler == null)
         {
             throw new Exception($"InternalConnection is not initialized");
         }
@@ -51,7 +51,7 @@ public class InternalConnection : Connection
         int count = 0;
         while (!readQueue.TryDequeue(out var packet))
         {
-            packet.Apply(networkHandler);
+            packet.Apply(netHandler);
             packet.Return();
             count++;
         }
@@ -59,16 +59,6 @@ public class InternalConnection : Connection
         {
             // _logger.LogInformation($"[{Name}] Processed {count} packets");
         }
-    }
-
-    protected override bool write()
-    {
-        return false;
-    }
-
-    protected override bool read()
-    {
-        return false;
     }
 
     public override void disconnect(string disconnectedReason, params object[] disconnectReasonArgs)
@@ -106,16 +96,12 @@ public class InternalConnection : Connection
         disconnect("Disconnecting");
     }
 
-    public override void interrupt()
-    {
-    }
-
     public override void tick()
     {
         processPackets();
         if (disconnected && readQueue.IsEmpty)
         {
-            networkHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
+            netHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
         }
     }
 
