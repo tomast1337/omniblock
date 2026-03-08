@@ -56,7 +56,7 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Write as fixed lenght Utf8 string
+        /// Write as fixed length UTF-8 string
         /// </summary>
         public void WriteString(string value)
         {
@@ -67,18 +67,11 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Write as fixed lenght Utf16 string
+        /// Write as fixed length UTF-16 string
         /// </summary>
         public void WriteLongString(string value)
         {
             stream.WriteUShort((ushort)value.Length);
-
-            // foreach (char item in value)
-            // {
-            //     stream.WriteByte((byte)item);
-            //     stream.WriteByte(0);
-            // }
-
             stream.Write(Encoding.BigEndianUnicode.GetBytes(value));
         }
 
@@ -136,7 +129,7 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Read fixed lenght Utf8 string
+        /// Read fixed length UTF-8 string
         /// </summary>
         public string ReadString()
         {
@@ -149,7 +142,7 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Read fixed lenght Utf16 string
+        /// Read fixed length UTF-16 string
         /// </summary>
         public string ReadLongString(ushort maximumLength = ushort.MaxValue)
         {
@@ -164,34 +157,6 @@ internal static class StreamExtensions
             stream.ReadExactly(buffer);
 
             return Encoding.BigEndianUnicode.GetString(buffer);
-        }
-    }
-
-    extension(FileStream stream)
-    {
-        public void Seek(long pos)
-        {
-            if (pos < 0)
-            {
-                throw new IOException("Negative seek offset.");
-            }
-
-            stream.Seek(pos, SeekOrigin.Begin);
-        }
-
-        public long Length()
-        {
-            return stream.Length;
-        }
-
-        public int ReadInt()
-        {
-            return ((Stream)stream).ReadInt();
-        }
-
-        public void WriteInt(int value)
-        {
-            ((Stream)stream).WriteInt(value);
         }
     }
 }

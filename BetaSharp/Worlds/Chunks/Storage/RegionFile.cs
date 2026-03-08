@@ -32,7 +32,7 @@ internal class RegionFile
             dataFile = new FileStream(input, FileMode.OpenOrCreate);
 
             int var2;
-            if (dataFile.Length() < 4096L)
+            if (dataFile.Length < 4096L)
             {
                 for (var2 = 0; var2 < 1024; ++var2)
                 {
@@ -47,15 +47,15 @@ internal class RegionFile
                 sizeDelta += 8192;
             }
 
-            if ((dataFile.Length() & 4095L) != 0L)
+            if ((dataFile.Length & 4095L) != 0L)
             {
-                for (var2 = 0; var2 < (dataFile.Length() & 4095L); ++var2)
+                for (var2 = 0; var2 < (dataFile.Length & 4095L); ++var2)
                 {
                     dataFile.WriteByte(0);
                 }
             }
 
-            var2 = (int)dataFile.Length() / 4096;
+            var2 = (int)dataFile.Length / 4096;
             sectorFree = new List<bool>(var2);
 
             int var3;
@@ -66,7 +66,7 @@ internal class RegionFile
 
             sectorFree[0] = false;
             sectorFree[1] = false;
-            dataFile.Seek(0L);
+            dataFile.Seek(0L, SeekOrigin.Begin);
 
             int var4;
             for (var3 = 0; var3 < 1024; ++var3)
@@ -159,7 +159,7 @@ internal class RegionFile
                         }
                         else
                         {
-                            dataFile.Seek(var4 * 4096);
+                            dataFile.Seek(var4 * 4096, SeekOrigin.Begin);
                             int var6 = dataFile.ReadInt();
                             if (var6 > 4096 * var5)
                             {
@@ -283,7 +283,7 @@ internal class RegionFile
                     else
                     {
                         func_22197_a("SAVE", var1, var2, var4, "grow");
-                        dataFile.Seek(dataFile.Length());
+                        dataFile.Seek(dataFile.Length, SeekOrigin.Begin);
                         var6 = sectorFree.Count();
 
                         for (var11 = 0; var11 < var8; ++var11)
@@ -310,7 +310,7 @@ internal class RegionFile
     private void write(int var1, byte[] var2, int var3)
     {
         debugln(" " + var1);
-        dataFile.Seek(var1 * 4096);
+        dataFile.Seek(var1 * 4096, SeekOrigin.Begin);
         dataFile.WriteInt(var3 + 1);
         dataFile.WriteByte((byte)CompressionType.ZLibDeflate);
         dataFile.Write(var2, 0, var3);
@@ -334,19 +334,20 @@ internal class RegionFile
     private void setOffset(int var1, int var2, int var3)
     {
         offsets[var1 + var2 * 32] = var3;
-        dataFile.Seek((var1 + var2 * 32) * 4);
+        dataFile.Seek((var1 + var2 * 32) * 4, SeekOrigin.Begin);
         dataFile.WriteInt(var3);
     }
 
     private void func_22208_b(int var1, int var2, int var3)
     {
         chunkSaveTimes[var1 + var2 * 32] = var3;
-        dataFile.Seek(4096 + (var1 + var2 * 32) * 4);
+        dataFile.Seek(4096 + (var1 + var2 * 32) * 4, SeekOrigin.Begin);
         dataFile.WriteInt(var3);
     }
 
-    public void Close()
+    public void Flush()
     {
+        dataFile.Flush();
         dataFile.Close();
     }
 }
