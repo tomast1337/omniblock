@@ -50,7 +50,7 @@ internal static class RegionIo
             {
                 if (weakRef.TryGetTarget(out RegionFile? regionFile))
                 {
-                    regionFile.Close();
+                    regionFile.Flush();
                 }
             }
 
