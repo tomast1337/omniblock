@@ -9,13 +9,7 @@ namespace BetaSharp.Network;
 
 public class Connection
 {
-    public static readonly int[] TOTAL_READ_SIZE = new int[256];
-    public static readonly int[] TOTAL_SEND_SIZE = new int[256];
-
-    public int lag = 0;
     public bool betaSharpClient = false;
-
-    public static readonly object LOCK = new();
 
     private readonly ILogger<Connection> _logger = Log.Instance.For<Connection>();
     private readonly IPEndPoint? _address;
@@ -36,7 +30,7 @@ public class Connection
     private List sendQueue = Collections.synchronizedList(new ArrayList());
     private List delayedSendQueue = Collections.synchronizedList(new ArrayList());
     private object lck = new();
-    private int _delay = 0;
+    private int _delay;
     private Socket? _socket;
     private NetworkStream? _networkStream;
 
@@ -102,11 +96,9 @@ public class Connection
 
         try
         {
-            int[] sizeStats;
             Packet packet;
             object lockObj;
-            if (!sendQueue.isEmpty() && (lag == 0 || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- - ((Packet)sendQueue.get(0)).CreationTime >= lag))
+            if (!sendQueue.isEmpty())
             {
                 lockObj = lck;
                 lock (lockObj)
@@ -116,13 +108,10 @@ public class Connection
                 }
 
                 Packet.Write(packet, _networkStream);
-                sizeStats = TOTAL_SEND_SIZE;
-                sizeStats[packet.Id] += packet.Size() + 1;
                 wrotePacket = true;
             }
 
-            if (_delay-- <= 0 && !delayedSendQueue.isEmpty() && (lag == 0 || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
- - ((Packet)delayedSendQueue.get(0)).CreationTime >= lag))
+            if (_delay-- <= 0 && !delayedSendQueue.isEmpty())
             {
                 lockObj = lck;
                 lock (lockObj)
@@ -132,8 +121,6 @@ public class Connection
                 }
 
                 Packet.Write(packet, _networkStream);
-                sizeStats = TOTAL_SEND_SIZE;
-                sizeStats[packet.Id] += packet.Size() + 1;
                 _delay = 0;
                 wrotePacket = true;
             }
@@ -176,9 +163,6 @@ public class Connection
             Packet? packet = Packet.Read(_networkStream, networkHandler.isServerSide());
             if (packet != null)
             {
-                int[] sizeStats = TOTAL_READ_SIZE;
-                int packetId = packet.Id;
-                sizeStats[packetId] += packet.Size() + 1;
                 readQueue.add(packet);
                 receivedPacket = true;
             }
