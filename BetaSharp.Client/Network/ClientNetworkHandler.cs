@@ -837,7 +837,7 @@ public class ClientNetworkHandler : NetHandler
         if (packet.type == PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave)
         {
             Entity ent = worldClient.GetEntity(packet.entityId);
-            EntityRenderDispatcher.instance.skinManager?.Release(ent?.skinUrl);
+            EntityRenderDispatcher.instance.skinManager?.Release(packet.name);
         }
     }
 
