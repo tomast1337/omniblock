@@ -2,7 +2,7 @@ namespace BetaSharp.Worlds.Chunks.Storage;
 
 internal static class RegionIo
 {
-    private static readonly Dictionary<string, WeakReference<RegionFile>> cache = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, RegionFile> cache = new(StringComparer.Ordinal);
     private static readonly object gate = new();
 
     public static RegionFile CreateRegionFile(string worldDir, int chunkX, int chunkZ)
@@ -18,12 +18,9 @@ internal static class RegionIo
             string regionFileName = $"r.{chunkX >> 5}.{chunkZ >> 5}.mcr";
             string regionPath = Path.Combine(regionDir, regionFileName);
 
-            if (cache.TryGetValue(regionPath, out WeakReference<RegionFile>? weakRef))
+            if (cache.TryGetValue(regionPath, out RegionFile? region))
             {
-                if (weakRef.TryGetTarget(out RegionFile? existing))
-                {
-                    return existing;
-                }
+                return region;
             }
 
             if (!Directory.Exists(regionDir))
@@ -37,7 +34,7 @@ internal static class RegionIo
             }
 
             RegionFile created = new(regionPath);
-            cache[regionPath] = new WeakReference<RegionFile>(created);
+            cache[regionPath] = created;
             return created;
         }
     }
@@ -46,12 +43,9 @@ internal static class RegionIo
     {
         lock (gate)
         {
-            foreach (WeakReference<RegionFile> weakRef in cache.Values)
+            foreach (var regionFile in cache.Values)
             {
-                if (weakRef.TryGetTarget(out RegionFile? regionFile))
-                {
-                    regionFile.Flush();
-                }
+                regionFile.Flush();
             }
 
             cache.Clear();
