@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Text;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -27,11 +29,11 @@ public sealed class SkinManager : IDisposable
         _httpClient.DefaultRequestHeaders.Add("User-Agent", nameof(BetaSharp));
     }
 
-    public void RequestDownload(string url)
+    public void RequestDownload(string? username)
     {
-        if (string.IsNullOrWhiteSpace(url) || _textureHandles.ContainsKey(url)
-                                           || _downloadedImages.ContainsKey(url)
-                                           || !_downloading.TryAdd(url, true))
+        if (string.IsNullOrWhiteSpace(username) || _textureHandles.ContainsKey(username)
+                                                || _downloadedImages.ContainsKey(username)
+                                                || !_downloading.TryAdd(username, true))
         {
             return;
         }
@@ -40,25 +42,49 @@ public sealed class SkinManager : IDisposable
         {
             try
             {
-                _logger.LogInformation("Downloading skin from {Url}", url);
-                byte[] data = await _httpClient.GetByteArrayAsync(url);
-                var image = Image.Load<Rgba32>(data);
+                _logger.LogInformation("Downloading skin for {Url}", username);
 
-                if (image.Height == 64 && image.Width == 64)
+                var profileResponse = await _httpClient.GetAsync($"https://api.mojang.com/minecraft/profile/lookup/name/{username}");
+                await using var profileStream = await profileResponse.Content.ReadAsStreamAsync();
+                var profileNode = await JsonNode.ParseAsync(profileStream);
+
+                string? id = profileNode?["id"]?.GetValue<string>();
+
+                ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
+                var skinResponse = await _httpClient.GetAsync($"https://sessionserver.mojang.com/session/minecraft/profile/{id}");
+                await using var skinStream = await skinResponse.Content.ReadAsStreamAsync();
+                var skinNode = await JsonNode.ParseAsync(skinStream);
+
+                string? value = skinNode?["properties"]?[0]?["value"]?.GetValue<string>();
+
+                ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+                var node = JsonNode.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(value)));
+                string? texture = node?["textures"]?["SKIN"]?["url"]?.GetValue<string>();
+
+                ArgumentException.ThrowIfNullOrWhiteSpace(texture);
+
+                await using var textureStream = await _httpClient.GetStreamAsync(texture);
+
+                var image = await Image.LoadAsync<Rgba32>(textureStream);
+
+                if (image is { Height: 64, Width: 64 })
                 {
                     image.Mutate(ctx => ctx.Crop(64, 32));
                 }
 
-                _downloadedImages[url] = image;
-                _logger.LogInformation("Skin downloaded successfully from {Url}: ({W}x{H})", url, image.Width, image.Height);
+                _downloadedImages[username] = image;
+
+                _logger.LogInformation("Skin downloaded successfully for {Name}: ({W}x{H})", username, image.Width, image.Height);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to download skin from {Url}", url);
+                _logger.LogWarning(ex, "Failed to download skin for {Name}", username);
             }
             finally
             {
-                _downloading.TryRemove(url, out _);
+                _downloading.TryRemove(username, out _);
             }
         });
     }
