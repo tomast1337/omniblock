@@ -348,6 +348,6 @@ internal class RegionFile
     public void Flush()
     {
         dataFile.Flush();
-        dataFile.Close();
+        dataFile.Dispose();
     }
 }
