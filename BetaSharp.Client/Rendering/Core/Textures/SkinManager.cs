@@ -6,7 +6,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
-public class SkinManager : IDisposable
+public sealed class SkinManager : IDisposable
 {
     private readonly ILogger _logger = Log.Instance.For<SkinManager>();
     private readonly TextureManager _textureManager;
@@ -19,14 +19,22 @@ public class SkinManager : IDisposable
     public SkinManager(TextureManager textureManager)
     {
         _textureManager = textureManager;
-        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(15)
+        };
+
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", nameof(BetaSharp));
     }
 
     public void RequestDownload(string url)
     {
-        if (string.IsNullOrWhiteSpace(url)) return;
-        if (_textureHandles.ContainsKey(url) || _downloadedImages.ContainsKey(url)) return;
-        if (!_downloading.TryAdd(url, true)) return;
+        if (string.IsNullOrWhiteSpace(url) || _textureHandles.ContainsKey(url)
+                                           || _downloadedImages.ContainsKey(url)
+                                           || !_downloading.TryAdd(url, true))
+        {
+            return;
+        }
 
         Task.Run(async () =>
         {
@@ -57,24 +65,35 @@ public class SkinManager : IDisposable
 
     public TextureHandle? GetTextureHandle(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url)) return null;
-
-        if (_textureHandles.TryGetValue(url, out TextureHandle? handle)) return handle;
-
-        if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
+        if (string.IsNullOrWhiteSpace(url))
         {
-            handle = _textureManager.Load(image);
-            _textureHandles[url] = handle;
-            _logger.LogInformation("Skin texture created for {Url}", url);
+            return null;
+        }
+
+        if (_textureHandles.TryGetValue(url, out TextureHandle? handle))
+        {
             return handle;
         }
 
-        return null;
+        if (!_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
+        {
+            return null;
+        }
+
+        handle = _textureManager.Load(image);
+
+        _textureHandles[url] = handle;
+        _logger.LogInformation("Skin texture created for {Url}", url);
+
+        return handle;
     }
 
     public void Release(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url)) return;
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return;
+        }
 
         if (_downloadedImages.TryRemove(url, out Image<Rgba32>? image))
         {
@@ -89,19 +108,20 @@ public class SkinManager : IDisposable
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         _httpClient.Dispose();
 
         foreach (Image<Rgba32> image in _downloadedImages.Values)
         {
             image.Dispose();
         }
+
         _downloadedImages.Clear();
 
         foreach (TextureHandle handle in _textureHandles.Values)
         {
             _textureManager.Delete(handle);
         }
+
         _textureHandles.Clear();
     }
 }
