@@ -9,30 +9,35 @@ namespace BetaSharp.Network;
 
 public class Connection
 {
-    private readonly ILogger<Connection> _logger = Log.Instance.For<Connection>();
-    public static readonly object LOCK = new();
-    protected object lck = new();
-    private Socket? _socket;
-    private readonly IPEndPoint? _address;
-    protected bool open = true;
-    protected List readQueue = Collections.synchronizedList(new ArrayList());
-    protected List sendQueue = Collections.synchronizedList(new ArrayList());
-    protected List delayedSendQueue = Collections.synchronizedList(new ArrayList());
-    protected NetHandler? networkHandler;
-    protected bool closed;
+    public static readonly int[] TOTAL_READ_SIZE = new int[256];
+    public static readonly int[] TOTAL_SEND_SIZE = new int[256];
+
+    public int lag = 0;
     public bool betaSharpClient = false;
+
+    public static readonly object LOCK = new();
+
+    private readonly ILogger<Connection> _logger = Log.Instance.For<Connection>();
+    private readonly IPEndPoint? _address;
     private readonly java.lang.Thread _writer;
     private readonly java.lang.Thread _reader;
+    private readonly ManualResetEventSlim wakeSignal = new(false);
+
+    protected bool open = true;
+    protected List readQueue = Collections.synchronizedList(new ArrayList());
+    protected NetHandler? networkHandler;
+    protected bool closed;
     protected bool disconnected;
     protected string disconnectedReason = "";
     protected object[]? disconnectReasonArgs;
-    protected int timeout;
-    protected int sendQueueSize;
-    public static readonly int[] TOTAL_READ_SIZE = new int[256];
-    public static readonly int[] TOTAL_SEND_SIZE = new int[256];
-    public int lag = 0;
+
+    private int timeout;
+    private int sendQueueSize;
+    private List sendQueue = Collections.synchronizedList(new ArrayList());
+    private List delayedSendQueue = Collections.synchronizedList(new ArrayList());
+    private object lck = new();
     private int _delay = 0;
-    protected readonly ManualResetEventSlim wakeSignal = new(false);
+    private Socket? _socket;
     private NetworkStream? _networkStream;
 
     public Connection(Socket socket, string address, NetHandler networkHandler)
