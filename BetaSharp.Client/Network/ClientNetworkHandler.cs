@@ -77,7 +77,6 @@ public class ClientNetworkHandler : NetHandler
             }
         }
 
-        netManager.interrupt();
     }
 
     public void SendPacket(Packet packet)
@@ -534,7 +533,6 @@ public class ClientNetworkHandler : NetHandler
     public void disconnect()
     {
         disconnected = true;
-        netManager.interrupt();
         netManager.disconnect("disconnect.closed");
     }
 
