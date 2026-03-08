@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
@@ -18,7 +19,7 @@ public class Connection
     private readonly ManualResetEventSlim wakeSignal = new(false);
 
     protected bool open = true;
-    protected List readQueue = Collections.synchronizedList(new ArrayList());
+    protected ConcurrentQueue<Packet> readQueue = [];
     protected NetHandler? networkHandler;
     protected bool closed;
     protected bool disconnected;
@@ -27,8 +28,8 @@ public class Connection
 
     private int timeout;
     private int sendQueueSize;
-    private List sendQueue = Collections.synchronizedList(new ArrayList());
-    private List delayedSendQueue = Collections.synchronizedList(new ArrayList());
+    private ConcurrentQueue<Packet> sendQueue = [];
+    private ConcurrentQueue<Packet> delayedSendQueue = [];
     private object lck = new();
     private int _delay;
     private Socket? _socket;
@@ -74,11 +75,11 @@ public class Connection
                 sendQueueSize += packet.Size() + 1;
                 if (Packet.Registry[packet.Id]!.WorldPacket)
                 {
-                    delayedSendQueue.add(packet);
+                    delayedSendQueue.Enqueue(packet);
                 }
                 else
                 {
-                    sendQueue.add(packet);
+                    sendQueue.Enqueue(packet);
                 }
 
             }
@@ -96,14 +97,18 @@ public class Connection
 
         try
         {
-            Packet packet;
+            Packet? packet;
             object lockObj;
-            if (!sendQueue.isEmpty())
+            if (!sendQueue.IsEmpty)
             {
                 lockObj = lck;
                 lock (lockObj)
                 {
-                    packet = (Packet)sendQueue.remove(0);
+                    if (!sendQueue.TryDequeue(out packet))
+                    {
+                        return false;
+                    }
+
                     sendQueueSize -= packet.Size() + 1;
                 }
 
@@ -111,12 +116,16 @@ public class Connection
                 wrotePacket = true;
             }
 
-            if (_delay-- <= 0 && !delayedSendQueue.isEmpty())
+            if (_delay-- <= 0 && !delayedSendQueue.IsEmpty)
             {
                 lockObj = lck;
                 lock (lockObj)
                 {
-                    packet = (Packet)delayedSendQueue.remove(0);
+                    if (!delayedSendQueue.TryDequeue(out packet))
+                    {
+                        return false;
+                    }
+
                     sendQueueSize -= packet.Size() + 1;
                 }
 
@@ -163,7 +172,7 @@ public class Connection
             Packet? packet = Packet.Read(_networkStream, networkHandler.isServerSide());
             if (packet != null)
             {
-                readQueue.add(packet);
+                readQueue.Enqueue(packet);
                 receivedPacket = true;
             }
             else
@@ -222,7 +231,7 @@ public class Connection
             disconnect("disconnect.overflow");
         }
 
-        if (readQueue.isEmpty())
+        if (readQueue.IsEmpty)
         {
             if (timeout++ == 1200)
             {
@@ -237,7 +246,7 @@ public class Connection
         processPackets();
 
         interrupt();
-        if (disconnected && readQueue.isEmpty())
+        if (disconnected && readQueue.IsEmpty)
         {
             networkHandler?.onDisconnected(disconnectedReason, disconnectReasonArgs);
         }
@@ -253,9 +262,8 @@ public class Connection
 
         int maxPacketsPerTick = 100;
 
-        while (!readQueue.isEmpty() && maxPacketsPerTick-- >= 0)
+        while (readQueue.TryDequeue(out var packet) && maxPacketsPerTick-- >= 0)
         {
-            Packet packet = (Packet)readQueue.remove(0);
             packet.Apply(networkHandler);
             packet.Return();
         }
@@ -275,7 +283,7 @@ public class Connection
 
     public int getDelayedSendQueueSize()
     {
-        return delayedSendQueue.size();
+        return delayedSendQueue.Count;
     }
 
     public static bool isOpen(Connection conn)
