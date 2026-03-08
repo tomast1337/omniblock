@@ -35,7 +35,13 @@ public abstract class Packet
 
     public void Return()
     {
-        if (--UseCount > 0) return;
+        UseCount--;
+        ReturnNoCount();
+    }
+
+    public void ReturnNoCount()
+    {
+        if (UseCount > 0) return;
 
         if (Registry.TryGet(Id, out PacketRegisterItem? item))
         {
@@ -194,7 +200,7 @@ public abstract class Packet
         ]);
     }
 
-    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, item: factory)
+    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryPoolItem<Packet>(rawId, item: factory, 64)
     {
         public override Packet Get()
         {
