@@ -456,8 +456,8 @@ public class ServerPlayNetworkHandler : NetHandler, CommandOutput
     {
         if (packet.selectedSlot >= 0 && packet.selectedSlot <= InventoryPlayer.getHotbarSize())
         {
-            player.inventory.selectedSlot = packet.selectedSlot;
             player.interactionManager.UpdateMiningTool();
+            player.inventory.selectedSlot = packet.selectedSlot;
         }
         else
         {

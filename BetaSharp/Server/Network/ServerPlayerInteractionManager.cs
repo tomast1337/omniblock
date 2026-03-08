@@ -6,6 +6,16 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Server.Network;
 
+/*
+ * mining and miningX,Y,Z don't mean the block you are mining.
+ * It's used in update when the player provided brake was invalid.
+ *
+ * Instead, failedMining is the currently pending mining operation.
+ */
+
+/// <summary>
+/// Handles mining, placing, opening doors, and so on.
+/// </summary>
 public class ServerPlayerInteractionManager
 {
     private readonly ServerWorld world;
@@ -20,7 +30,7 @@ public class ServerPlayerInteractionManager
     private int miningY;
     private int miningZ;
     private int startMiningTime;
-    private float miningSpeed;
+    private float miningProgress = -1;
 
     public ServerPlayerInteractionManager(ServerWorld world)
     {
@@ -41,12 +51,14 @@ public class ServerPlayerInteractionManager
                 if (breakProgress >= 1.0F)
                 {
                     mining = false;
+                    miningProgress = -1;
                     tryBreakBlock(miningX, miningY, miningZ);
                 }
             }
             else
             {
                 mining = false;
+                miningProgress = -1;
             }
         }
     }
@@ -64,12 +76,15 @@ public class ServerPlayerInteractionManager
         if (blockId > 0 && Block.Blocks[blockId].getHardness(player) >= 1.0F)
         {
             tryBreakBlock(x, y, z);
+            miningProgress = -1;
         }
         else
         {
             failedMiningX = x;
             failedMiningY = y;
             failedMiningZ = z;
+            // Previously this margin was in continueMining
+            miningProgress = 0.3f;
         }
     }
 
@@ -81,13 +96,17 @@ public class ServerPlayerInteractionManager
             int blockId = world.getBlockId(x, y, z);
             if (blockId != 0)
             {
-                float breakProgress = miningSpeed * (ticksSinceFailedStart + 1);
-                if (breakProgress >= 0.7F)
+                Block block = Block.Blocks[blockId];
+                float breakProgress = block.getHardness(player) * (ticksSinceFailedStart + 1) + miningProgress;
+                if (breakProgress >= 1F)
                 {
                     tryBreakBlock(x, y, z);
+                    miningProgress = -1;
                 }
                 else if (!mining)
                 {
+                    // Player submitted block brake was not accepted.
+                    // As the block was not mined, we will check in update for when the block should be broken.
                     mining = true;
                     miningX = x;
                     miningY = y;
@@ -113,19 +132,18 @@ public class ServerPlayerInteractionManager
 
     public void UpdateMiningTool()
     {
-        if (!mining)
-        {
-            miningSpeed = float.MaxValue;
-            return;
-        }
-        int blockId = world.getBlockId(miningX, miningY, miningZ);
+        if (miningProgress is < 0F or >= 1F) return;
+        int blockId = world.getBlockId(failedMiningZ, failedMiningZ, failedMiningZ);
         if (blockId == 0)
         {
-            miningSpeed = float.MaxValue;
+            miningProgress = -1;
             return;
         }
+
+        int ticksSinceFailedStart = tickCounter - failedMiningStartTime;
+        failedMiningStartTime = tickCounter;
         Block block = Block.Blocks[blockId];
-        miningSpeed = Math.Min(block.getHardness(player), miningSpeed);
+        miningProgress += block.getHardness(player) * ticksSinceFailedStart;
     }
 
     public bool tryBreakBlock(int x, int y, int z)
@@ -167,6 +185,8 @@ public class ServerPlayerInteractionManager
                 player.inventory.main[player.inventory.selectedSlot] = null;
             }
 
+            miningProgress = -1;
+
             return true;
         }
         else
@@ -175,16 +195,22 @@ public class ServerPlayerInteractionManager
         }
     }
 
-    public bool interactBlock(EntityPlayer player, World world, ItemStack stack, int x, int y, int z, int side)
+    public bool interactBlock(EntityPlayer player, World world, ItemStack? stack, int x, int y, int z, int side)
     {
         int blockId = world.getBlockId(x, y, z);
         if (blockId > 0 && Block.Blocks[blockId].onUse(world, x, y, z, player))
         {
+            miningProgress = -1;
             return true;
         }
-        else
+
+        if (stack == null) return false;
+        if (stack.useOnBlock(player, world, x, y, z, side))
         {
-            return stack == null ? false : stack.useOnBlock(player, world, x, y, z, side);
+            miningProgress = -1;
+            return true;
         }
+
+        return false;
     }
 }
