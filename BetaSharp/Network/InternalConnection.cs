@@ -49,7 +49,7 @@ public class InternalConnection : Connection
         }
 
         int count = 0;
-        while (!readQueue.TryDequeue(out var packet))
+        while (readQueue.TryDequeue(out var packet))
         {
             packet.Apply(netHandler);
             packet.Return();
