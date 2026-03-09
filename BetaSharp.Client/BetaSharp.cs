@@ -32,6 +32,7 @@ using BetaSharp.Worlds.Colors;
 using BetaSharp.Worlds.Storage;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
+using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
@@ -109,6 +110,7 @@ public partial class BetaSharp
     private bool _wasRightTriggerDown;
     private bool _wasStartButtonDown;
     private bool _wasYButtonDown;
+    private bool _wasDpadDownDown;
 
     public bool isControllerMode;
     public float virtualCursorX;
@@ -1571,9 +1573,14 @@ public partial class BetaSharp
             }
             else if (inGameHasFocus)
             {
-                if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.A)
+                if (Controller.GetEventButton() == (int)GamepadButton.A)
                 {
                     player.movementInput.checkKeyForMovementInput(options.KeyBindJump.keyCode, Controller.GetEventButtonState());
+                }
+
+                if (Controller.GetEventButton() == (int)GamepadButton.DPadDown && Controller.GetEventButtonState())
+                {
+                    options.CameraMode = (EnumCameraMode)((int)(options.CameraMode + 2) % 3);
                 }
             }
         }
@@ -1582,12 +1589,12 @@ public partial class BetaSharp
         {
             if (isControllerMode && inGameHasFocus)
             {
-                bool lbDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.LeftBumper);
-                bool rbDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.RightBumper);
+                bool lbDown = Controller.IsButtonDown(GamepadButton.LeftBumper);
+                bool rbDown = Controller.IsButtonDown(GamepadButton.RightBumper);
                 bool ltDown = Controller.LeftTrigger > 0.5f;
                 bool rtDown = Controller.RightTrigger > 0.5f;
-                bool startDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.Start);
-                bool yDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.Y);
+                bool startDown = Controller.IsButtonDown(GamepadButton.Start);
+                bool yDown = Controller.IsButtonDown(GamepadButton.Y);
 
                 if (lbDown && !_wasLeftBumperDown) player.inventory.changeCurrentItem(1);
                 if (rbDown && !_wasRightBumperDown) player.inventory.changeCurrentItem(-1);

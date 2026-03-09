@@ -153,11 +153,11 @@ public class GuiScreen : Gui
 
     public virtual void HandleControllerInput()
     {
+        int scaledMouseX = (int)(Game.virtualCursorX * Width / Game.displayWidth);
+        int scaledMouseY = (int)(Game.virtualCursorY * Height / Game.displayHeight);
+
         if (Controller.GetEventButton() == 0) // A on Xbox layout
         {
-            int scaledMouseX = (int)(Game.virtualCursorX * Width / Game.displayWidth);
-            int scaledMouseY = (int)(Game.virtualCursorY * Height / Game.displayHeight);
-
             if (Controller.GetEventButtonState())
             {
                 MouseClicked(scaledMouseX, scaledMouseY, 0);
@@ -165,6 +165,17 @@ public class GuiScreen : Gui
             else
             {
                 MouseMovedOrUp(scaledMouseX, scaledMouseY, 0);
+            }
+        }
+        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.LeftBumper)
+        {
+            if (Controller.GetEventButtonState())
+            {
+                MouseClicked(scaledMouseX, scaledMouseY, 1);
+            }
+            else
+            {
+                MouseMovedOrUp(scaledMouseX, scaledMouseY, 1);
             }
         }
         else if (Controller.GetEventButton() == 1) // B on Xbox layout
