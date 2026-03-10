@@ -45,10 +45,7 @@ internal sealed partial class AuthenticationViewModel(
         catch (Exception exception)
         {
             logger.LogError(exception, "An exception occurred while trying to authenticate");
-
             storageService.Delete(nameof(Session));
-
-            await authenticationService.RemoveAsync();
 
             await alertService.ShowAsync(
                 "Uh-oh!",

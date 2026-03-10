@@ -93,12 +93,4 @@ internal sealed class AuthenticationService
             return result.AccessToken;
         }
     }
-
-    public async Task RemoveAsync()
-    {
-        foreach (var account in await _application.GetAccountsAsync())
-        {
-            await _application.RemoveAsync(account);
-        }
-    }
 }
