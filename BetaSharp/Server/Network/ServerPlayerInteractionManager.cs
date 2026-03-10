@@ -133,7 +133,7 @@ public class ServerPlayerInteractionManager
     public void UpdateMiningTool()
     {
         if (miningProgress is < 0F or >= 1F) return;
-        int blockId = world.getBlockId(failedMiningZ, failedMiningZ, failedMiningZ);
+        int blockId = world.getBlockId(failedMiningX, failedMiningY, failedMiningZ);
         if (blockId == 0)
         {
             miningProgress = -1;
