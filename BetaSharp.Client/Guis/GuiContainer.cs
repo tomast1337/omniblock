@@ -235,7 +235,7 @@ public abstract class GuiContainer : GuiScreen
 
     }
 
-    public bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY)
+    public override bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY)
     {
         int guiLeft = (Width - _xSize) / 2;
         int guiTop = (Height - _ySize) / 2;
@@ -298,6 +298,6 @@ public abstract class GuiContainer : GuiScreen
             return true;
         }
 
-        return false;
+        return base.HandleDPadNavigation(dpadX, dpadY, ref cursorX, ref cursorY);
     }
 }

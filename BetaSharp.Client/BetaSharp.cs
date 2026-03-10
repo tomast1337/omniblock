@@ -577,7 +577,7 @@ public partial class BetaSharp
 
                         bool dpadHandled = false;
 
-                        if (currentScreen is GuiContainer container)
+                        if (currentScreen != null)
                         {
                             int dpadX = 0, dpadY = 0;
                             if (dpadLeft && !_wasDpadLeftDown) dpadX = -1;
@@ -587,7 +587,7 @@ public partial class BetaSharp
 
                             if (dpadX != 0 || dpadY != 0)
                             {
-                                dpadHandled = container.HandleDPadNavigation(dpadX, dpadY, ref virtualCursorX, ref virtualCursorY);
+                                dpadHandled = currentScreen.HandleDPadNavigation(dpadX, dpadY, ref virtualCursorX, ref virtualCursorY);
                             }
                         }
 

@@ -283,4 +283,79 @@ public class GuiScreen : Gui
     public virtual void DeleteWorld(bool var1, int var2) { }
 
     public virtual void SelectNextField() { }
+
+    public virtual bool HandleDPadNavigation(int dpadX, int dpadY, ref float cursorX, ref float cursorY)
+    {
+        if (_controlList.Count == 0) return false;
+
+        ScaledResolution sr = new(Game.options, Game.displayWidth, Game.displayHeight);
+
+        int scaledMouseX = (int)(cursorX * sr.ScaledWidth / Game.displayWidth);
+        int scaledMouseY = (int)(cursorY * sr.ScaledHeight / Game.displayHeight);
+
+        GuiButton currentButton = null;
+        foreach (var control in _controlList)
+        {
+            if (scaledMouseX >= control.XPosition && scaledMouseY >= control.YPosition &&
+                scaledMouseX < control.XPosition + control.Width && scaledMouseY < control.YPosition + control.Height)
+            {
+                currentButton = control;
+                break;
+            }
+        }
+
+        if (currentButton is GuiSlider) return false;
+
+        float refX, refY;
+        if (currentButton != null)
+        {
+            refX = currentButton.XPosition + currentButton.Width / 2;
+            refY = currentButton.YPosition + currentButton.Height / 2;
+        }
+        else
+        {
+            refX = scaledMouseX;
+            refY = scaledMouseY;
+        }
+
+        GuiButton bestButton = null;
+        float bestScore = float.MaxValue;
+
+        foreach (var button in _controlList)
+        {
+            if (button == currentButton || !button.Visible || !button.Enabled) continue;
+
+            float buttonCenterX = button.XPosition + button.Width / 2;
+            float buttonCenterY = button.YPosition + button.Height / 2;
+
+            float dx = buttonCenterX - refX;
+            float dy = buttonCenterY - refY;
+
+            if (dpadX > 0 && dx <= 0) continue;
+            if (dpadX < 0 && dx >= 0) continue;
+            if (dpadY > 0 && dy <= 0) continue;
+            if (dpadY < 0 && dy >= 0) continue;
+
+            float primaryDist = dpadX != 0 ? Math.Abs(dx) : Math.Abs(dy);
+            float crossDist = dpadX != 0 ? Math.Abs(dy) : Math.Abs(dx);
+            float score = primaryDist + crossDist * 3f;
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestButton = button;
+            }
+        }
+
+        if (bestButton != null)
+        {
+            float targetScaledX = bestButton.XPosition + bestButton.Width / 2;
+            float targetScaledY = bestButton.YPosition + bestButton.Height / 2;
+            cursorX = targetScaledX * Game.displayWidth / sr.ScaledWidth;
+            cursorY = targetScaledY * Game.displayHeight / sr.ScaledHeight;
+            return true;
+        }
+
+        return false;
+    }
 }
