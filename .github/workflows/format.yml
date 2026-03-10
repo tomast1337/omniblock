@@ -19,5 +19,5 @@ jobs:
                     dotnet-version: 10.0.x
             -   name: Restore dependencies
                 run: dotnet restore
-            -   name: Format check
+            -   name: Format
                 run: dotnet format --verify-no-changes --verbosity diagnostic
