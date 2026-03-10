@@ -196,6 +196,15 @@ public abstract class GuiContainer : GuiScreen
 
     }
 
+    protected override void HandleQuickMove(int x, int y)
+    {
+        Slot slot = GetSlotAtPosition(x, y);
+        if (slot != null)
+        {
+            Game.playerController.func_27174_a(InventorySlots.SyncId, slot.id, 0, true, Game.player);
+        }
+    }
+
     protected override void MouseMovedOrUp(int x, int y, int button) { }
 
     protected override void KeyTyped(char eventChar, int eventKey)

@@ -125,10 +125,7 @@ public class GuiScreen : Gui
             HandleKeyboardInput();
         }
 
-        while (Controller.Next())
-        {
-            HandleControllerInput();
-        }
+        ControllerManager.UpdateGui(this);
     }
 
     public virtual void HandleMouseInput()
@@ -156,7 +153,7 @@ public class GuiScreen : Gui
         int scaledMouseX = (int)(Game.virtualCursorX * Width / Game.displayWidth);
         int scaledMouseY = (int)(Game.virtualCursorY * Height / Game.displayHeight);
 
-        if (Controller.GetEventButton() == 0) // A on Xbox layout
+        if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.A)
         {
             if (Controller.GetEventButtonState())
             {
@@ -167,7 +164,7 @@ public class GuiScreen : Gui
                 MouseMovedOrUp(scaledMouseX, scaledMouseY, 0);
             }
         }
-        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.LeftBumper)
+        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.X)
         {
             if (Controller.GetEventButtonState())
             {
@@ -178,14 +175,39 @@ public class GuiScreen : Gui
                 MouseMovedOrUp(scaledMouseX, scaledMouseY, 1);
             }
         }
-        else if (Controller.GetEventButton() == 1) // B on Xbox layout
+        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.B)
         {
             if (Controller.GetEventButtonState())
             {
                 KeyTyped('\0', Keyboard.KEY_ESCAPE);
             }
         }
+        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.Y)
+        {
+            if (Controller.GetEventButtonState())
+            {
+                HandleQuickMove(scaledMouseX, scaledMouseY);
+            }
+        }
+        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.LeftBumper)
+        {
+            if (Controller.GetEventButtonState())
+            {
+                HandleTabLeft();
+            }
+        }
+        else if (Controller.GetEventButton() == (int)Silk.NET.GLFW.GamepadButton.RightBumper)
+        {
+            if (Controller.GetEventButtonState())
+            {
+                HandleTabRight();
+            }
+        }
     }
+
+    protected virtual void HandleQuickMove(int x, int y) { }
+    protected virtual void HandleTabLeft() { }
+    protected virtual void HandleTabRight() { }
 
     public void HandleKeyboardInput()
     {
