@@ -110,6 +110,37 @@ public class AssetManager
         defineAsset("gui/unknown_pack.png", AssetType.Binary);
         defineAsset("gui/Pointer.png", AssetType.Binary);
 
+        string[] controllerPlatforms = ["ps3", "ps4", "ps5", "xone"];
+        string[] controllerIcons = [
+            "back_button", "back_button_pressed", "down_button", "down_button_pressed",
+            "dpad_down", "dpad_down_pressed", "dpad_left", "dpad_left_pressed",
+            "dpad_right", "dpad_right_pressed", "dpad_up", "dpad_up_pressed",
+            "guide_button", "left_bumper", "left_bumper_pressed", "left_button",
+            "left_button_pressed", "left_stick", "left_stick_button",
+            "left_stick_button_pressed", "left_stick_pressed_left",
+            "left_stick_pressed_right", "left_trigger", "left_trigger_pressed",
+            "right_bumper", "right_bumper_pressed", "right_button",
+            "right_button_pressed", "right_stick", "right_stick_button",
+            "right_stick_button_pressed", "right_stick_pressed_left",
+            "right_stick_pressed_right", "right_trigger", "right_trigger_pressed",
+            "start_button", "start_button_pressed", "unknown", "up_button",
+            "up_button_pressed"
+        ];
+
+        foreach (string platform in controllerPlatforms)
+        {
+            foreach (string icon in controllerIcons)
+            {
+                defineAsset($"gui/controls/{platform}/{icon}.png", AssetType.Binary);
+            }
+
+            if (platform == "ps4" || platform == "ps5")
+            {
+                defineAsset($"gui/controls/{platform}/touchpad.png", AssetType.Binary);
+                defineAsset($"gui/controls/{platform}/touchpad_pressed.png", AssetType.Binary);
+            }
+        }
+
         defineAsset("item/arrows.png", AssetType.Binary);
         defineAsset("item/boat.png", AssetType.Binary);
         defineAsset("item/cart.png", AssetType.Binary);
@@ -194,24 +225,21 @@ public class AssetManager
     {
         Directory.CreateDirectory("assets");
 
-        foreach (var directory in assetDirectories)
-        {
-            Directory.CreateDirectory("assets/" + directory);
-        }
-
-        assetDirectories.Clear();
-
         using ZipArchive archive = ZipFile.OpenRead("b1.7.3.jar");
         Dictionary<string, ZipArchiveEntry> entries = [];
-
-        foreach (var entry in archive.Entries)
+        foreach (ZipArchiveEntry entry in archive.Entries)
         {
             entries[entry.FullName] = entry;
         }
 
-        foreach (var assetPath in assetsToLoad.Keys)
+        foreach (string assetPath in assetsToLoad.Keys)
         {
-            var fsAssetPath = "assets/" + assetPath;
+            string fsAssetPath = Path.Combine("assets", assetPath);
+            string? directory = Path.GetDirectoryName(fsAssetPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
             if (!File.Exists(fsAssetPath))
             {
@@ -221,7 +249,11 @@ public class AssetManager
                 }
                 else
                 {
-                    throw new Exception($"Asset does not exist in jar: {assetPath}");
+                    _logger.LogWarning($"Asset does not exist in jar: {assetPath}. Ensuring it exists locally.");
+                    if (!File.Exists(fsAssetPath))
+                    {
+                        _logger.LogError($"Asset {assetPath} is missing both from jar and local assets folder!");
+                    }
                 }
             }
         }
@@ -229,7 +261,7 @@ public class AssetManager
 
     private void loadAssets()
     {
-        foreach (var kvp in assetsToLoad)
+        foreach (KeyValuePair<string, AssetType> kvp in assetsToLoad)
         {
             string assetPath = kvp.Key;
             AssetType type = kvp.Value;
@@ -277,7 +309,7 @@ public class AssetManager
 
     private void defineEmbeddedAsset(string embeddedAssetPath, AssetType type)
     {
-        var embeddedAssetPathForPath = embeddedAssetPath.Replace('/', '.');
+        string embeddedAssetPathForPath = embeddedAssetPath.Replace('/', '.');
 
         try
         {
