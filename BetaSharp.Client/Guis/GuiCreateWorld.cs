@@ -20,7 +20,7 @@ public class GuiCreateWorld : GuiScreen
     private bool _createClicked;
     
     private bool _moreOptions = false;
-    private int _worldTypeIndex = 0;
+    private WorldType _selectedWorldType = WorldType.Default;
     private GuiButton _btnMoreOptions;
     private GuiButton _btnWorldType;
 
@@ -41,21 +41,31 @@ public class GuiCreateWorld : GuiScreen
         Keyboard.enableRepeatEvents(true);
 
         _controlList.Clear();
-        _controlList.Add(new GuiButton(ButtonCreate, Width / 2 - 155, Height - 28, 150, 20, translations.TranslateKey("selectWorld.create")));
-        _controlList.Add(new GuiButton(ButtonCancel, Width / 2 + 5, Height - 28, 150, 20, translations.TranslateKey("gui.cancel")));
-        
-        _controlList.Add(_btnWorldType = new GuiButton(ButtonWorldType, Width / 2 - 75, 100, 150, 20, "World Type"));
-        _btnWorldType.Visible = false;
-        
-        _controlList.Add(_btnMoreOptions = new GuiButton(ButtonMoreOptions, Width / 2 - 75, 172, 150, 20, "More World Options..."));
+        GuiButton btnCreate, btnCancel;
+        _controlList.Add(btnCreate = new GuiButton(ButtonCreate, Width / 2 - 155, Height - 28, 150, 20, translations.TranslateKey("selectWorld.create")));
+        _controlList.Add(btnCancel = new GuiButton(ButtonCancel, Width / 2 + 5, Height - 28, 150, 20, translations.TranslateKey("gui.cancel")));
 
-        _textboxWorldName = new GuiTextField(this, FontRenderer, Width / 2 - 100, 60, 200, 20, translations.TranslateKey("selectWorld.newWorld"))
-        {
-            IsFocused = true
-        };
+        btnCreate.Visible = !_moreOptions;
+        btnCancel.Visible = !_moreOptions;
+        
+        const int moreOptionsY = 150;
+        const int worldTypeY = 110;
+
+        _controlList.Add(_btnWorldType = new GuiButton(ButtonWorldType, Width / 2 - 75, worldTypeY, 150, 20, "World Type"));
+        _btnWorldType.Visible = _moreOptions;
+        
+        string moreOptionsText = _moreOptions ? "Done" : "More World Options...";
+        _controlList.Add(_btnMoreOptions = new GuiButton(ButtonMoreOptions, Width / 2 - 75, moreOptionsY, 150, 20, moreOptionsText));
+
+        string oldName = _textboxWorldName?.GetText() ?? translations.TranslateKey("selectWorld.newWorld");
+        _textboxWorldName = new GuiTextField(this, FontRenderer, Width / 2 - 100, 60, 200, 20, oldName);
         _textboxWorldName.SetMaxStringLength(32);
         
-        _textboxSeed = new GuiTextField(this, FontRenderer, Width / 2 - 100, 60, 200, 20, "");
+        string oldSeed = _textboxSeed?.GetText() ?? "";
+        _textboxSeed = new GuiTextField(this, FontRenderer, Width / 2 - 100, 60, 200, 20, oldSeed);
+        
+        if (_moreOptions) _textboxSeed.IsFocused = true;
+        else _textboxWorldName.IsFocused = true;
 
         UpdateFolderName();
         UpdateButtonText();
@@ -63,11 +73,13 @@ public class GuiCreateWorld : GuiScreen
 
     private void UpdateButtonText()
     {
-        WorldType selectedType = WorldType.worldTypes[_worldTypeIndex];
-        string typeName = selectedType.Name.ToUpper();
-        if (selectedType.Name == "flat") typeName = "SUPERFLAT";
-        
-        _btnWorldType.DisplayString = "World Type: " + typeName;
+        _btnWorldType.DisplayString = "World Type: " + _selectedWorldType.DisplayName;
+    }
+
+    public void SetWorldType(WorldType type)
+    {
+        _selectedWorldType = type;
+        UpdateButtonText();
     }
 
     private void UpdateFolderName()
@@ -149,42 +161,17 @@ public class GuiCreateWorld : GuiScreen
                         Game.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
                         Game.playerController = new PlayerControllerSP(Game);
                         
-                        WorldType selectedType = WorldType.worldTypes[_worldTypeIndex];
-                        WorldSettings settings = new WorldSettings(worldSeed, selectedType);
+                        WorldSettings settings = new WorldSettings(worldSeed, _selectedWorldType);
                         
                         Game.startWorld(_folderName, _textboxWorldName.GetText(), settings);
                         break;
                     }
                 case ButtonMoreOptions:
                     _moreOptions = !_moreOptions;
-                    _btnWorldType.Visible = _moreOptions;
-                    
-                    if (_moreOptions)
-                    {
-                        _btnMoreOptions.DisplayString = "Done";
-                    }
-                    else
-                    {
-                        _btnMoreOptions.DisplayString = "More World Options...";
-                    }
+                    InitGui();
                     break;
                 case ButtonWorldType:
-                    ++_worldTypeIndex;
-                    if (_worldTypeIndex >= WorldType.worldTypes.Length)
-                    {
-                        _worldTypeIndex = 0;
-                    }
-
-                    while (WorldType.worldTypes[_worldTypeIndex] == null || !WorldType.worldTypes[_worldTypeIndex].CanBeCreated)
-                    {
-                        ++_worldTypeIndex;
-                        if (_worldTypeIndex >= WorldType.worldTypes.Length)
-                        {
-                            _worldTypeIndex = 0;
-                        }
-                    }
-
-                    UpdateButtonText();
+                    Game.displayGuiScreen(new GuiSelectWorldType(this, _selectedWorldType));
                     break;
             }
         }
@@ -192,6 +179,20 @@ public class GuiCreateWorld : GuiScreen
 
     protected override void KeyTyped(char eventChar, int eventKey)
     {
+        if (eventKey == Keyboard.KEY_ESCAPE)
+        {
+            if (_moreOptions)
+            {
+                _moreOptions = false;
+                InitGui();
+            }
+            else
+            {
+                Game.displayGuiScreen(_parentScreen);
+            }
+            return;
+        }
+
         if (_textboxWorldName.IsFocused && !_moreOptions)
         {
             _textboxWorldName.textboxKeyTyped(eventChar, eventKey);
@@ -201,7 +202,7 @@ public class GuiCreateWorld : GuiScreen
             _textboxSeed.textboxKeyTyped(eventChar, eventKey);
         }
 
-        if (eventChar == 13)
+        if (eventChar == 13) // Enter
         {
             ActionPerformed(_controlList[0]);
         }
