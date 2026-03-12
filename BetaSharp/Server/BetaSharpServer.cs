@@ -102,8 +102,11 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
             }
         }
 
+        string typeString = config.GetLevelType("DEFAULT");
+        WorldType worldType = WorldType.ParseWorldType(typeString) ?? WorldType.Default;
+
         _logger.LogInformation($"Preparing level \"{worldName}\"");
-        loadWorld(new RegionWorldStorageSource(getFile(".").getAbsolutePath()), worldName, seed);
+        loadWorld(worldName, new WorldSettings(seed, worldType));
 
         if (logHelp)
         {
@@ -113,20 +116,20 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
         return true;
     }
 
-    private void loadWorld(IWorldStorageSource storageSource, string worldDir, long seed)
+    private void loadWorld(string worldDir, WorldSettings settings)
     {
         worlds = new ServerWorld[2];
-        RegionWorldStorage worldStorage = new RegionWorldStorage(getFile(".").getAbsolutePath(), worldDir, true);
+        RegionWorldStorage worldStorage = new(getFile(".").getAbsolutePath(), worldDir, true);
 
         for (int i = 0; i < worlds.Length; i++)
         {
             if (i == 0)
             {
-                worlds[i] = new ServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, seed);
+                worlds[i] = new ServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, settings);
             }
             else
             {
-                worlds[i] = new ReadOnlyServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, seed, worlds[0]);
+                worlds[i] = new ReadOnlyServerWorld(this, worldStorage, worldDir, i == 0 ? 0 : -1, settings, worlds[0]);
             }
 
             worlds[i].addWorldAccess(new ServerWorldEventListener(this, worlds[i]));
@@ -232,10 +235,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
 
         _logger.LogInformation("Stopping server");
 
-        if (playerManager != null)
-        {
-            playerManager.savePlayers();
-        }
+        playerManager?.savePlayers();
 
         foreach (ServerWorld world in worlds)
         {
@@ -425,10 +425,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
             }
         }
 
-        if (connections != null)
-        {
-            connections.Tick();
-        }
+        connections?.Tick();
         playerManager.updateAllChunks();
 
         foreach (EntityTracker t in entityTrackers)
