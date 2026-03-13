@@ -42,7 +42,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             string lockFile = System.IO.Path.Combine(_saveDirectory.FullName, "session.lock");
 
             // Replaced DataOutputStream with native BinaryWriter
-            using var stream = File.OpenWrite(lockFile);
+            using var stream = File.Create(lockFile);
             using var writer = new BinaryWriter(stream);
             writer.Write(_now);
         }
@@ -113,7 +113,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             string levelDatOld = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat_old");
             string levelDat = System.IO.Path.Combine(_saveDirectory.FullName, "level.dat");
 
-            using (var stream = File.OpenWrite(levelDatNew))
+            using (var stream = File.Create(levelDatNew))
             {
                 NbtIo.WriteCompressed(rootTag, stream);
             }
@@ -170,7 +170,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             string tempFile = System.IO.Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
             string finalFile = System.IO.Path.Combine(_playersDirectory.FullName, $"{player.name}.dat");
 
-            using (var stream = File.OpenWrite(tempFile))
+            using (var stream = File.Create(tempFile))
             {
                 NbtIo.WriteCompressed(tag, stream);
             }
@@ -217,7 +217,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
                     {
                         NBTTagCompound playerTag = data.GetCompoundTag("Player");
 
-                        using var writeStream = File.OpenWrite(playerFile);
+                        using var writeStream = File.Create(playerFile);
                         NbtIo.WriteCompressed(playerTag, writeStream);
 
                         _logger.LogInformation($"Migrated singleplayer player data from level.dat to {playerName}.dat");
