@@ -13,6 +13,7 @@ using java.lang;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 using Exception = System.Exception;
+using Thread = System.Threading.Thread;
 
 namespace BetaSharp.Server;
 
@@ -298,6 +299,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                         {
                             _currentTps = 0.0f;
                         }
+                        Thread.Sleep(50);
                         continue;
                     }
 
@@ -330,7 +332,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
                         _lastTpsTime = tpsNow;
                     }
 
-                    java.lang.Thread.sleep(1L);
+                    Thread.Sleep(1);
                 }
             }
             else
@@ -341,7 +343,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
 
                     try
                     {
-                        java.lang.Thread.sleep(10L);
+                        Thread.Sleep(10);
                     }
                     catch (InterruptedException ex)
                     {
@@ -360,7 +362,7 @@ public abstract class BetaSharpServer : Runnable, CommandOutput
 
                 try
                 {
-                    java.lang.Thread.sleep(10L);
+                    Thread.Sleep(10);
                 }
                 catch (InterruptedException interruptedEx)
                 {
