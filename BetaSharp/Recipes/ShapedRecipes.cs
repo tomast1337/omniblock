@@ -82,7 +82,7 @@ internal class ShapedRecipes : IRecipe
         return true;
     }
 
-    public ItemStack GetCraftingResult(InventoryCrafting var1)
+    public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
     {
         return new ItemStack(_output.itemId, _output.count, _output.getDamage());
     }

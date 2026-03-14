@@ -11,10 +11,10 @@ class SlotArmor : Slot
     readonly int armorType;
     readonly PlayerScreenHandler inventory;
 
-    public SlotArmor(PlayerScreenHandler var1, IInventory var2, int var3, int var4, int var5, int var6) : base(var2, var3, var4, var5)
+    public SlotArmor(PlayerScreenHandler screenHandler, IInventory inventory, int slotIndex, int x, int y, int armorType) : base(inventory, slotIndex, x, y)
     {
-        inventory = var1;
-        armorType = var6;
+        this.inventory = screenHandler;
+        this.armorType = armorType;
     }
 
 
@@ -23,8 +23,10 @@ class SlotArmor : Slot
         return 1;
     }
 
-    public override bool canInsert(ItemStack var1)
+    public override bool canInsert(ItemStack stack)
     {
-        return var1.getItem() is ItemArmor ? ((ItemArmor)var1.getItem()).armorType == armorType : (var1.getItem().id == Block.Pumpkin.id ? armorType == 0 : false);
+        return stack.getItem() is ItemArmor
+            ? ((ItemArmor)stack.getItem()).armorType == armorType
+            : stack.getItem().id == Block.Pumpkin.id && armorType == 0;
     }
 }

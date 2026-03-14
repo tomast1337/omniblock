@@ -12,9 +12,9 @@ public class FoliageColors
     public static int getFoliageColor(double temperature, double downfall)
     {
         downfall *= temperature;
-        int var4 = (int)((1.0D - temperature) * 255.0D);
-        int var5 = (int)((1.0D - downfall) * 255.0D);
-        return foliageBuffer[var5 << 8 | var4];
+        int temperatureIndex = (int)((1.0D - temperature) * 255.0D);
+        int downfallIndex = (int)((1.0D - downfall) * 255.0D);
+        return foliageBuffer[downfallIndex << 8 | temperatureIndex];
     }
 
     public static int getSpruceColor()

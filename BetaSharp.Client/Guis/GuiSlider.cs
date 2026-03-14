@@ -23,7 +23,7 @@ public class GuiSlider : GuiButton
         return this;
     }
 
-    protected override HoverState GetHoverState(bool var1)
+    protected override HoverState GetHoverState(bool isMouseOver)
     {
         return HoverState.Disabled;
     }

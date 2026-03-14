@@ -32,8 +32,8 @@ public static class MathHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Floor(float value)
     {
-        int var1 = (int)value;
-        return value < var1 ? var1 - 1 : var1;
+        int truncatedValue = (int)value;
+        return value < truncatedValue ? truncatedValue - 1 : truncatedValue;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

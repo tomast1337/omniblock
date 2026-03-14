@@ -43,9 +43,9 @@ public abstract class ScreenHandler
     {
         List<ItemStack> stacks = new List<ItemStack>();
 
-        for (int var2 = 0; var2 < Slots.Count; var2++)
+        for (int slotIndex = 0; slotIndex < Slots.Count; slotIndex++)
         {
-            stacks.Add(Slots[var2].getStack());
+            stacks.Add(Slots[slotIndex].getStack());
         }
         return stacks;
     }
@@ -175,8 +175,8 @@ public abstract class ScreenHandler
                         else if (cursorStack is null)
                         {
                             slotItemStackSize = button == 0 ? slotStack.count : (slotStack.count + 1) / 2;
-                            ItemStack var11 = slot.takeStack(slotItemStackSize);
-                            playerInventory.setItemStack(var11);
+                            ItemStack takenStack = slot.takeStack(slotItemStackSize);
+                            playerInventory.setItemStack(takenStack);
                             if (slotStack.count == 0)
                             {
                                 slot.setStack(null);

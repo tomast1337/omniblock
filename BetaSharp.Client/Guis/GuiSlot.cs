@@ -64,7 +64,7 @@ public abstract class GuiSlot
 
     protected virtual void DrawHeader(int x, int y, Tessellator tess) { }
 
-    protected virtual void HeaderClicked(int var1, int var2)
+    protected virtual void HeaderClicked(int mouseX, int mouseY)
     {
     }
 

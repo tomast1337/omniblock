@@ -7,9 +7,9 @@ public readonly struct LightType : IEquatable<LightType>
 
     public readonly int lightValue;
 
-    private LightType(int var3)
+    private LightType(int lightValue)
     {
-        lightValue = var3;
+        this.lightValue = lightValue;
     }
 
     public override bool Equals(object? obj)

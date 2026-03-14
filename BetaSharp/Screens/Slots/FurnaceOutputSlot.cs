@@ -9,29 +9,29 @@ internal class FurnaceOutputSlot : Slot
 
     private EntityPlayer thePlayer;
 
-    public FurnaceOutputSlot(EntityPlayer var1, IInventory var2, int var3, int var4, int var5) : base(var2, var3, var4, var5)
+    public FurnaceOutputSlot(EntityPlayer player, IInventory inventory, int slotIndex, int x, int y) : base(inventory, slotIndex, x, y)
     {
-        thePlayer = var1;
+        thePlayer = player;
     }
 
-    public override bool canInsert(ItemStack var1)
+    public override bool canInsert(ItemStack stack)
     {
         return false;
     }
 
-    public override void onTakeItem(ItemStack var1)
+    public override void onTakeItem(ItemStack stack)
     {
-        var1.onCraft(thePlayer.world, thePlayer);
-        if (var1.itemId == Item.IronIngot.id)
+        stack.onCraft(thePlayer.world, thePlayer);
+        if (stack.itemId == Item.IronIngot.id)
         {
             thePlayer.increaseStat(Achievements.AcquireIron, 1);
         }
 
-        if (var1.itemId == Item.CookedFish.id)
+        if (stack.itemId == Item.CookedFish.id)
         {
             thePlayer.increaseStat(Achievements.CookFish, 1);
         }
 
-        base.onTakeItem(var1);
+        base.onTakeItem(stack);
     }
 }

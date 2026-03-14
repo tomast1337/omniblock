@@ -61,7 +61,7 @@ internal class ServerWorldEventListener : IWorldAccess
         server.playerManager.sendToAround(player, x, y, z, 64.0, world.dimension.Id, WorldEventS2CPacket.Get(@event, x, y, z, data));
     }
 
-    public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
+    public void spawnParticle(string particle, double x, double y, double z, double velocityX, double velocityY, double velocityZ)
     {
     }
 }

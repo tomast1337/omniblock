@@ -9,10 +9,10 @@ internal class DataFile : Comparable
     private readonly int chunkX;
     private readonly int chunkZ;
 
-    public DataFile(java.io.File var1)
+    public DataFile(java.io.File file)
     {
-        file = var1;
-        var match = DataFilenameFilter.ChunkFilePattern().Match(var1.getName());
+        this.file = file;
+        var match = DataFilenameFilter.ChunkFilePattern().Match(file.getName());
         if (match.Success)
         {
             chunkX = Integer.parseInt(match.Groups[1].Value, 36);
@@ -26,19 +26,19 @@ internal class DataFile : Comparable
 
     }
 
-    public int comp(DataFile var1)
+    public int comp(DataFile file)
     {
-        int var2 = chunkX >> 5;
-        int var3 = var1.chunkX >> 5;
-        if (var2 == var3)
+        int regionX = chunkX >> 5;
+        int otherRegionX = file.chunkX >> 5;
+        if (regionX == otherRegionX)
         {
-            int var4 = chunkZ >> 5;
-            int var5 = var1.chunkZ >> 5;
-            return var4 - var5;
+            int regionZ = chunkZ >> 5;
+            int otherRegionZ = file.chunkZ >> 5;
+            return regionZ - otherRegionZ;
         }
         else
         {
-            return var2 - var3;
+            return regionX - otherRegionX;
         }
     }
 
@@ -57,8 +57,8 @@ internal class DataFile : Comparable
         return chunkZ;
     }
 
-    public int CompareTo(object? var1)
+    public int CompareTo(object? file)
     {
-        return comp((DataFile)var1!);
+        return comp((DataFile)file!);
     }
 }

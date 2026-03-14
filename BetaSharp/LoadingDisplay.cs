@@ -2,9 +2,9 @@ namespace BetaSharp;
 
 public interface LoadingDisplay
 {
-    void progressStartNoAbort(string var1);
+    void progressStartNoAbort(string message);
 
-    void progressStage(string var1);
+    void progressStage(string message);
 
-    void setLoadingProgress(int var1);
+    void setLoadingProgress(int progress);
 }

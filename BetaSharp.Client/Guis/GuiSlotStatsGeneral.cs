@@ -19,7 +19,7 @@ public class GuiSlotStatsGeneral : GuiSlot
         return Stats.Stats.GeneralStats.Count;
     }
 
-    protected override void ElementClicked(int var1, bool var2)
+    protected override void ElementClicked(int index, bool doubleClick)
     {
     }
 

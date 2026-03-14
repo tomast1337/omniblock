@@ -61,22 +61,22 @@ internal class ChunkSnapshot : IDisposable
         return _data.GetNibble(x, y, z);
     }
 
-    public int getBlockLightValue(int x, int y, int z, int var4)
+    public int getBlockLightValue(int x, int y, int z, int ambientDarkness)
     {
-        int var5 = SkylightMap.GetNibble(x, y, z);
-        if (var5 > 0)
+        int skyLight = SkylightMap.GetNibble(x, y, z);
+        if (skyLight > 0)
         {
             _isLit = true;
         }
 
-        var5 -= var4;
-        int var6 = BlocklightMap.GetNibble(x, y, z);
-        if (var6 > var5)
+        skyLight -= ambientDarkness;
+        int blockLight = BlocklightMap.GetNibble(x, y, z);
+        if (blockLight > skyLight)
         {
-            var5 = var6;
+            skyLight = blockLight;
         }
 
-        return var5;
+        return skyLight;
     }
 
     public bool getIsLit()

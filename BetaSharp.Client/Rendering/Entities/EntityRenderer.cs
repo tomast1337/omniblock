@@ -21,8 +21,8 @@ public abstract class EntityRenderer
 
     protected void loadTexture(string path)
     {
-        TextureManager? var2 = Dispatcher.textureManager;
-        var2?.BindTexture(var2.GetTextureId(path));
+        TextureManager? textureManager = Dispatcher.textureManager;
+        textureManager?.BindTexture(textureManager.GetTextureId(path));
     }
 
     protected bool LoadDownloadableImageTexture(string? url, string fallbackPath)

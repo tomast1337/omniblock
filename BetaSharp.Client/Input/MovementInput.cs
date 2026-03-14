@@ -10,7 +10,7 @@ public class MovementInput
     public bool jump = false;
     public bool sneak = false;
 
-    public virtual void updatePlayerMoveState(EntityPlayer var1)
+    public virtual void updatePlayerMoveState(EntityPlayer player)
     {
     }
 
@@ -18,7 +18,7 @@ public class MovementInput
     {
     }
 
-    public virtual void checkKeyForMovementInput(int var1, bool var2)
+    public virtual void checkKeyForMovementInput(int keyCode, bool pressed)
     {
     }
 }

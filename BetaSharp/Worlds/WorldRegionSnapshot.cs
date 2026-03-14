@@ -19,7 +19,7 @@ public class WorldRegionSnapshot : IBlockAccess, IDisposable
     private bool _isLit;
     private readonly Dictionary<BlockPos, BlockEntity> _tileEntityCache = [];
 
-    public WorldRegionSnapshot(World world, int minX, int var3, int minZ, int maxX, int var6, int maxZ)
+    public WorldRegionSnapshot(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
         //TODO: OPTIMIZE THIS
         _biomeSource = new(world);
