@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace BetaSharp.Registries;
 
-public class MappedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> where T : class
+public class IndexedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> where T : class
 {
     private readonly List<T?> _byId = new(256);
     private readonly Dictionary<ResourceLocation, T> _byLocation = [];

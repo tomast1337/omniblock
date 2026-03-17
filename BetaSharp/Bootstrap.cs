@@ -6,6 +6,6 @@ public class Bootstrap
 {
     public static void Initialize()
     {
-        BuiltInRegistries.Initialize();
+        DefaultRegistries.Initialize();
     }
 }

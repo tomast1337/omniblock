@@ -9,7 +9,7 @@ namespace BetaSharp.Entities;
 public static class EntityRegistry
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(EntityRegistry));
-    private static readonly IRegistry<EntityType> s_registry = BuiltInRegistries.EntityTypes;
+    private static readonly IRegistry<EntityType> s_registry = DefaultRegistries.EntityTypes;
 
     public static readonly EntityType Arrow = Register(world => new EntityArrow(world), "Arrow", 10);
     public static readonly EntityType Snowball = Register(world => new EntitySnowball(world), "Snowball", 11);

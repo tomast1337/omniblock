@@ -5,20 +5,20 @@ using BetaSharp.Worlds.Biomes;
 
 namespace BetaSharp.Registries;
 
-public static class BuiltInRegistries
+public static class DefaultRegistries
 {
     public static readonly IRegistry<EntityType> EntityTypes =
-        new MappedRegistry<EntityType>(ResourceLocation.Parse("entity_types"));
+        new IndexedRegistry<EntityType>(ResourceLocation.Parse("entity_types"));
 
     public static readonly IRegistry<Biome> Biomes =
-        new MappedRegistry<Biome>(ResourceLocation.Parse("biomes"));
+        new IndexedRegistry<Biome>(ResourceLocation.Parse("biomes"));
 
     public static readonly IRegistry<BlockEntityType> BlockEntityTypes =
-        new MappedRegistry<BlockEntityType>(ResourceLocation.Parse("block_entity_types"));
+        new IndexedRegistry<BlockEntityType>(ResourceLocation.Parse("block_entity_types"));
 
     //TODO: Implement this properly
     public static readonly IRegistry<IGameRule> GameRules =
-        new MappedRegistry<IGameRule>(ResourceLocation.Parse("game_rules"));
+        new IndexedRegistry<IGameRule>(ResourceLocation.Parse("game_rules"));
 
     public static void Initialize()
     {

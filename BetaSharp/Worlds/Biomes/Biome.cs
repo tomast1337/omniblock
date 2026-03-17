@@ -9,7 +9,7 @@ namespace BetaSharp.Worlds.Biomes;
 
 public class Biome
 {
-    private static readonly IRegistry<Biome> s_registry = BuiltInRegistries.Biomes;
+    private static readonly IRegistry<Biome> s_registry = DefaultRegistries.Biomes;
 
     public static readonly Biome Rainforest = Register(0, "rainforest", new BiomeGenRainforest().SetColor(0x8FA360).SetName("Rainforest").SetFoliageColor(0x1FF458));
     public static readonly Biome Swampland = Register(1, "swampland", new BiomeGenSwamp().SetColor(0x7F9B20).SetName("Swampland").SetFoliageColor(0x8BAF48));

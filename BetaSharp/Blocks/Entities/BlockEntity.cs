@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks.Entities;
 
 public abstract class BlockEntity
 {
-    private static readonly IRegistry<BlockEntityType> s_registry = BuiltInRegistries.BlockEntityTypes;
+    private static readonly IRegistry<BlockEntityType> s_registry = DefaultRegistries.BlockEntityTypes;
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
 
     public abstract BlockEntityType Type { get; }

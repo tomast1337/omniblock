@@ -541,7 +541,7 @@ public partial class BetaSharp
 
             while (running)
             {
-                long frameStartNano = java.lang.System.nanoTime();
+                long frameStartNano = Stopwatch.GetTimestamp();
 
                 int startGcGen0 = GC.CollectionCount(0);
                 int startGcGen1 = GC.CollectionCount(1);
@@ -813,7 +813,7 @@ public partial class BetaSharp
                 }
                 finally
                 {
-                    long frameEndNano = java.lang.System.nanoTime();
+                    long frameEndNano = Stopwatch.GetTimestamp();
                     double thisFrameTimeMs = (frameEndNano - frameStartNano) / 1000000.0;
                     _debugTelemetry.RecordFrameTime(thisFrameTimeMs);
 
