@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Sessions;
@@ -18,14 +15,12 @@ internal sealed partial class HomeViewModel : ObservableObject
 
     private readonly NavigationService _navigationService;
     private readonly StorageService _storageService;
-    private readonly MinecraftService _minecraftService;
     private readonly ProcessService _processService;
 
-    public HomeViewModel(NavigationService navigationService, StorageService storageService, MinecraftService minecraftService, ProcessService processService)
+    public HomeViewModel(NavigationService navigationService, StorageService storageService, ProcessService processService)
     {
         _navigationService = navigationService;
         _storageService = storageService;
-        _minecraftService = minecraftService;
         _processService = processService;
 
         WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(
@@ -49,11 +44,7 @@ internal sealed partial class HomeViewModel : ObservableObject
             return;
         }
 
-        string directory = Path.Combine(AppContext.BaseDirectory, "Client");
-
-        await _minecraftService.DownloadAsync(directory);
-
-        using var process = _processService.StartAsync(directory, "Client", Session.Name, Session.Token);
+        using var process = await _processService.StartAsync(Kind.Client, Session.Name, Session.Token);
 
         await process.WaitForExitAsync();
     }

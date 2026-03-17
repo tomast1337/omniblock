@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Home;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,7 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BetaSharp.Launcher.Features.Hosting;
 
-internal sealed partial class HostingViewModel(MinecraftService minecraftService, ProcessService processService, NavigationService navigationService) : ObservableObject
+internal sealed partial class HostingViewModel( ProcessService processService, NavigationService navigationService) : ObservableObject
 {
     [ObservableProperty]
     public partial string Message { get; set; } = "Run";
@@ -37,11 +36,7 @@ internal sealed partial class HostingViewModel(MinecraftService minecraftService
 
         Message = "Initializing";
 
-        string directory = Path.Combine(AppContext.BaseDirectory, "Server");
-
-        await minecraftService.DownloadAsync(directory);
-
-        _process = processService.StartAsync(directory, "Server");
+        _process = await processService.StartAsync(Kind.Server);
 
         Message = "Stop";
 

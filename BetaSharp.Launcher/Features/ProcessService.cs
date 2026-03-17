@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BetaSharp.Launcher.Features;
 
-internal sealed class ProcessService
+internal sealed class ProcessService(MinecraftService minecraftService)
 {
-    public Process StartAsync(string directory, string file, params string[] args)
+    public async Task<Process> StartAsync(Kind kind, params string[] args)
     {
+        string suffix = kind.ToString();
+        string directory = Path.Combine(AppContext.BaseDirectory, suffix);
+
+        await minecraftService.DownloadAsync(directory);
+
         var info = new ProcessStartInfo
         {
             Arguments = string.Join(" ", args),
             CreateNoWindow = true,
-            FileName = Path.Combine(directory, $"{nameof(BetaSharp)}.{file}"),
+            FileName = Path.Combine(directory, $"{nameof(BetaSharp)}.{suffix}"),
             WorkingDirectory = directory
         };
 
@@ -22,4 +28,10 @@ internal sealed class ProcessService
 
         return process;
     }
+}
+
+internal enum Kind
+{
+    Client,
+    Server
 }
