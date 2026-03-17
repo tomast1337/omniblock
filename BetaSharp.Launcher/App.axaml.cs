@@ -17,7 +17,7 @@ internal sealed class App : Application
 
     private readonly IServiceProvider _services = Bootstrapper.Build();
 
-    // Taken from BetaSharp.Client, should a .Shared project be created?
+    // Taken from BetaSharp.Client, should a shared project be created?
     static App()
     {
         string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
