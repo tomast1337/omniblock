@@ -1,7 +1,6 @@
 using System.Net;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Threading;
-using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
@@ -20,9 +19,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
 
     protected override bool Init()
     {
-        ConsoleInputThread consoleInputThread = new(this);
-        consoleInputThread.setDaemon(true);
-        consoleInputThread.start();
+        new ConsoleInputThread(this).Run();
 
         s_logger.LogInformation("Starting BetaSharp server version Beta 1.7.3");
         // This instruction is container safe
@@ -53,7 +50,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         {
             connections = new ConnectionListener(this, address, port, dualStack);
         }
-        catch (java.io.IOException ex)
+        catch (IOException ex)
         {
             s_logger.LogWarning("**** FAILED TO BIND TO PORT!");
             s_logger.LogWarning($"The exception was: {ex}");

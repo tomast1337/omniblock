@@ -3,7 +3,7 @@ using BetaSharp.Entities;
 using BetaSharp.Registries;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Gen.Features;
-using java.awt;
+using SixLabors.ImageSharp.ColorSpaces;
 
 namespace BetaSharp.Worlds.Biomes;
 
@@ -123,7 +123,41 @@ public class Biome
             var1 = 1.0F;
         }
 
-        return Color.getHSBColor(224.0F / 360.0F - var1 * 0.05F, 0.5F + var1 * 0.1F, 1.0F).getRGB();
+        return ToRgb(224.0f / 360.0f - var1 * 0.05f, 0.5f + var1 * 0.1f, 1.0f);
+    }
+
+    public static (int R, int G, int B) FromHsbColor(float hue, float saturation, float brightness)
+    {
+        if (saturation == 0f)
+        {
+            int gray = (int)(brightness * 255f + 0.5f);
+            return (gray, gray, gray);
+        }
+
+        float h = (hue - MathF.Floor(hue)) * 6f;
+        float f = h - MathF.Floor(h);
+        float p = brightness * (1f - saturation);
+        float q = brightness * (1f - saturation * f);
+        float t = brightness * (1f - saturation * (1f - f));
+
+        return (int)h switch
+        {
+            0 => ToRgb(brightness, t, p),
+            1 => ToRgb(q, brightness, p),
+            2 => ToRgb(p, brightness, t),
+            3 => ToRgb(p, q, brightness),
+            4 => ToRgb(t, p, brightness),
+            _ => ToRgb(brightness, p, q),
+        };
+
+        static (int, int, int) ToRgb(float r, float g, float b) =>
+            ((int)(r * 255f + 0.5f), (int)(g * 255f + 0.5f), (int)(b * 255f + 0.5f));
+    }
+
+    public static int ToRgb(float hue, float saturation, float brightness)
+    {
+        (int r, int g, int b) = FromHsbColor(hue, saturation, brightness);
+        return (255 << 24) | (r << 16) | (g << 8) | b;
     }
 
     public WeightedRandomSelector<SpawnListEntry> GetSpawnableList(CreatureKind kind)
