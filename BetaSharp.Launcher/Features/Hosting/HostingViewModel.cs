@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BetaSharp.Launcher.Features.Hosting;
 
-internal sealed partial class HostingViewModel(NavigationService navigationService) : ObservableObject
+internal sealed partial class HostingViewModel(MinecraftService minecraftService, NavigationService navigationService) : ObservableObject
 {
     [ObservableProperty]
     public partial string Message { get; set; } = "Run";

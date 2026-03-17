@@ -18,13 +18,15 @@ internal sealed partial class HomeViewModel : ObservableObject
 
     private readonly NavigationService _navigationService;
     private readonly StorageService _storageService;
-    private readonly JarService _jarService;
+    private readonly MinecraftService _minecraftService;
+    private readonly ProcessService _processService;
 
-    public HomeViewModel(NavigationService navigationService, StorageService storageService, JarService jarService)
+    public HomeViewModel(NavigationService navigationService, StorageService storageService, MinecraftService minecraftService, ProcessService processService)
     {
         _navigationService = navigationService;
         _storageService = storageService;
-        _jarService = jarService;
+        _minecraftService = minecraftService;
+        _processService = processService;
 
         WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(
             this,
@@ -49,20 +51,9 @@ internal sealed partial class HomeViewModel : ObservableObject
 
         string directory = Path.Combine(AppContext.BaseDirectory, "Client");
 
-        await _jarService.DownloadAsync(directory);
+        await _minecraftService.DownloadAsync(directory);
 
-        var info = new ProcessStartInfo
-        {
-            Arguments = $"{Session.Name} {Session.Token}",
-            CreateNoWindow = true,
-            FileName = Path.Combine(directory, "BetaSharp.Client"),
-            WorkingDirectory = directory
-        };
-
-        // Probably should move this into a service/view-model.
-        using var process = Process.Start(info);
-
-        ArgumentNullException.ThrowIfNull(process);
+        using var process = _processService.StartAsync(directory, "BetaSharp.Client", Session.Name, Session.Token);
 
         await process.WaitForExitAsync();
     }
