@@ -63,9 +63,9 @@ internal static partial class Bootstrapper
     [Transient(typeof(SplashViewModel))]
 
     // Views
+    [Singleton(typeof(HomeView))]
     [Transient(typeof(ShellView))]
     [Transient(typeof(HostingView))]
-    [Transient(typeof(HomeView))]
     [Transient(typeof(AuthenticationView))]
     [Transient(typeof(SplashView))]
 

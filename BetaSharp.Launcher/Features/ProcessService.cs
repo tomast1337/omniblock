@@ -6,13 +6,13 @@ namespace BetaSharp.Launcher.Features;
 
 internal sealed class ProcessService
 {
-    public Process StartAsync(string directory, string path, params string[] args)
+    public Process StartAsync(string directory, string file, params string[] args)
     {
         var info = new ProcessStartInfo
         {
             Arguments = string.Join(" ", args),
-            CreateNoWindow = true,
-            FileName = Path.Combine(directory, path),
+            CreateNoWindow = false,
+            FileName = Path.Combine(directory, $"{nameof(BetaSharp)}.{file}"),
             WorkingDirectory = directory
         };
 

@@ -53,7 +53,7 @@ internal sealed partial class HomeViewModel : ObservableObject
 
         await _minecraftService.DownloadAsync(directory);
 
-        using var process = _processService.StartAsync(directory, "BetaSharp.Client", Session.Name, Session.Token);
+        using var process = _processService.StartAsync(directory, "Client", Session.Name, Session.Token);
 
         await process.WaitForExitAsync();
     }
