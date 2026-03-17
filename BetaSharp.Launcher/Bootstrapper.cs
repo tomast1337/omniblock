@@ -52,7 +52,7 @@ internal static partial class Bootstrapper
     [Singleton(typeof(AlertService))]
     [Transient(typeof(SessionService))]
     [Transient(typeof(StorageService))]
-    [Transient(typeof(ClientService))]
+    [Transient(typeof(JarService))]
 
     // VMs
     [Singleton(typeof(ShellViewModel))]

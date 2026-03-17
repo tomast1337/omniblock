@@ -18,13 +18,13 @@ internal sealed partial class HomeViewModel : ObservableObject
 
     private readonly NavigationService _navigationService;
     private readonly StorageService _storageService;
-    private readonly ClientService _clientService;
+    private readonly JarService _jarService;
 
-    public HomeViewModel(NavigationService navigationService, StorageService storageService, ClientService clientService)
+    public HomeViewModel(NavigationService navigationService, StorageService storageService, JarService jarService)
     {
         _navigationService = navigationService;
         _storageService = storageService;
-        _clientService = clientService;
+        _jarService = jarService;
 
         WeakReferenceMessenger.Default.Register<HomeViewModel, SessionMessage>(
             this,
@@ -49,7 +49,7 @@ internal sealed partial class HomeViewModel : ObservableObject
 
         string directory = Path.Combine(AppContext.BaseDirectory, "Client");
 
-        await _clientService.DownloadAsync(directory);
+        await _jarService.DownloadAsync(directory);
 
         var info = new ProcessStartInfo
         {

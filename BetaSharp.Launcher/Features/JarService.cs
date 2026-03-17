@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Features.Home;
+namespace BetaSharp.Launcher.Features;
 
-internal sealed class ClientService(IHttpClientFactory clientFactory)
+internal sealed class JarService(IHttpClientFactory clientFactory)
 {
     private const string Url = "https://launcher.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar";
 
