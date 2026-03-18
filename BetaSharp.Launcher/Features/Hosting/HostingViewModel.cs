@@ -96,6 +96,8 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
         _process.Kill();
         _process.Dispose();
 
+        _process = null;
+
         Message = "Run";
 
         IsRunning = false;
