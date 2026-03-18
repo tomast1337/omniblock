@@ -27,6 +27,9 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
             ArgumentNullException.ThrowIfNull(_process);
 
+            _process.CancelOutputRead();
+            _process.OutputDataReceived -= ProcessOnOutputDataReceived;
+
             _process.Kill();
             _process.Dispose();
 
@@ -41,29 +44,10 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
         _process = await processService.StartAsync(Kind.Server);
 
-        _ = Task.Run(async () =>
-        {
-            Logs.Clear();
+        Logs.Clear();
 
-            while (true)
-            {
-                try
-                {
-                    string? line = await _process.StandardOutput.ReadLineAsync();
-
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        break;
-                    }
-
-                    Logs.Add(line);
-                }
-                catch
-                {
-                    break;
-                }
-            }
-        });
+        _process.BeginOutputReadLine();
+        _process.OutputDataReceived += ProcessOnOutputDataReceived;
 
         Message = "Stop";
 
@@ -74,5 +58,13 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
     private void Back()
     {
         navigationService.Navigate<HomeViewModel>();
+    }
+
+    private void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
+    {
+        if (!string.IsNullOrWhiteSpace(eventArgs.Data))
+        {
+            Logs.Add(eventArgs.Data);
+        }
     }
 }
