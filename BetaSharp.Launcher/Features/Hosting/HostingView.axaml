@@ -5,7 +5,7 @@
              x:Class="BetaSharp.Launcher.Features.Hosting.HostingView" x:DataType="local:HostingViewModel">
 
     <Grid RowDefinitions="* Auto" RowSpacing="10">
-        <ListBox Background="Transparent" ItemsSource="{CompiledBinding Logs}" Grid.Row="0">
+        <ListBox Background="Transparent" ItemsSource="{CompiledBinding Logs}" SelectedIndex="{CompiledBinding Last}" Grid.Row="0">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />

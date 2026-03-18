@@ -13,6 +13,9 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
     public ObservableCollection<string> Logs { get; } = [];
 
     [ObservableProperty]
+    public partial int Last { get; set; }
+
+    [ObservableProperty]
     public partial string Message { get; set; } = "Run";
 
     private bool _isRunning;
@@ -62,9 +65,12 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
     private void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
     {
-        if (!string.IsNullOrWhiteSpace(eventArgs.Data))
+        if (string.IsNullOrWhiteSpace(eventArgs.Data))
         {
-            Logs.Add(eventArgs.Data);
+            return;
         }
+
+        Logs.Add(eventArgs.Data);
+        Last = Logs.Count - 1;
     }
 }
