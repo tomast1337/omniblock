@@ -55,8 +55,6 @@
                     <ComboBox SelectedIndex="{Binding LevelType}" HorizontalAlignment="Stretch">
                         <ComboBoxItem Content="Default" />
                         <ComboBoxItem Content="Flat" />
-                        <ComboBoxItem Content="Large biomes" />
-                        <ComboBoxItem Content="Amplified" />
                     </ComboBox>
                 </StackPanel>
 

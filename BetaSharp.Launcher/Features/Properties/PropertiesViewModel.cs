@@ -180,8 +180,6 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
                             {
                                 "DEFAULT" => 0,
                                 "FLAT" => 1,
-                                "LARGEBIOMES" => 2,
-                                "AMPLIFIED" => 3,
                                 _ => 0
                             };
                             break;
@@ -250,8 +248,6 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
         {
             0 => "DEFAULT",
             1 => "FLAT",
-            2 => "LARGEBIOMES",
-            3 => "AMPLIFIED",
             _ => "DEFAULT"
         };
 
