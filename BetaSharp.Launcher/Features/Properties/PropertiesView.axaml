@@ -7,22 +7,22 @@
     <Grid RowDefinitions="* Auto" RowSpacing="10">
         <ScrollViewer IsEnabled="{CompiledBinding IsReady}" Grid.Row="0">
             <StackPanel Spacing="10">
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Server IP" />
                     <TextBox Text="{Binding ServerIp}" />
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Level name" />
                     <TextBox Text="{Binding LevelName}" />
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Level seed" />
                     <TextBox Text="{Binding LevelSeed}" />
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Generator settings" />
                     <TextBox Text="{Binding GeneratorSettings}" />
                 </StackPanel>
@@ -43,7 +43,7 @@
                     </StackPanel>
                 </Grid>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Level type" />
 
                     <ComboBox SelectedIndex="{Binding LevelType}" HorizontalAlignment="Stretch">
@@ -52,22 +52,22 @@
                     </ComboBox>
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Server port" />
                     <NumericUpDown Value="{Binding ServerPort}" Minimum="1" Maximum="65535" />
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="View distance" />
                     <NumericUpDown Value="{Binding ViewDistance}" Minimum="2" Maximum="32" />
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Max players" />
                     <NumericUpDown Value="{Binding MaxPlayers}" Minimum="1" Maximum="500" />
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Spacing="5">
                     <TextBlock Text="Spawn region size" />
                     <NumericUpDown Value="{Binding SpawnRegionSize}" Minimum="0" Maximum="512" />
                 </StackPanel>
