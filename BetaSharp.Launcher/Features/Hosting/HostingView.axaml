@@ -5,13 +5,39 @@
              x:Class="BetaSharp.Launcher.Features.Hosting.HostingView" x:DataType="local:HostingViewModel">
 
     <Grid RowDefinitions="* Auto" RowSpacing="10">
-        <ListBox Background="Transparent" ItemsSource="{CompiledBinding Logs}" SelectedIndex="{CompiledBinding Last}" Grid.Row="0">
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem">
-                    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <Grid RowDefinitions="* Auto" RowSpacing="5" Classes="hidden" Classes.shown="{CompiledBinding IsRunning}" Grid.Row="0">
+            <Grid.Styles>
+                <Style Selector="Grid.hidden">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="IsHitTestVisible" Value="False" />
+
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.5" />
+                        </Transitions>
+                    </Setter>
                 </Style>
-            </ListBox.Styles>
-        </ListBox>
+
+                <Style Selector="Grid.shown">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="IsHitTestVisible" Value="True" />
+                </Style>
+            </Grid.Styles>
+
+            <ListBox Background="Transparent" ItemsSource="{CompiledBinding Logs}" SelectedIndex="{CompiledBinding Last}" Grid.Row="0">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+
+            <TextBox Text="{CompiledBinding Input}" Grid.Row="1">
+                <TextBox.KeyBindings>
+                    <KeyBinding Command="{Binding WriteCommand}" Gesture="Enter" />
+                </TextBox.KeyBindings>
+            </TextBox>
+        </Grid>
 
         <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->

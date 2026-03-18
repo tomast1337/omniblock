@@ -16,15 +16,20 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
     public partial int Last { get; set; }
 
     [ObservableProperty]
+    public partial string Input { get; set; } = string.Empty;
+
+    [ObservableProperty]
     public partial string Message { get; set; } = "Run";
 
-    private bool _isRunning;
+    [ObservableProperty]
+    public partial bool IsRunning { get; set; }
+
     private Process? _process;
 
     [RelayCommand]
     private async Task RunAsync()
     {
-        if (_isRunning)
+        if (IsRunning)
         {
             Message = "Stopping";
 
@@ -38,7 +43,7 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
             Message = "Run";
 
-            _isRunning = false;
+            IsRunning = false;
 
             return;
         }
@@ -48,19 +53,37 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
         _process = await processService.StartAsync(Kind.Server);
 
         Logs.Clear();
+        Last = -1;
+        Input = string.Empty;
 
         _process.BeginOutputReadLine();
         _process.OutputDataReceived += ProcessOnOutputDataReceived;
 
         Message = "Stop";
 
-        _isRunning = true;
+        IsRunning = true;
     }
 
     [RelayCommand]
     private void Back()
     {
         navigationService.Navigate<HomeViewModel>();
+    }
+
+    [RelayCommand]
+    private async Task WriteAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Input))
+        {
+            return;
+        }
+
+        ArgumentNullException.ThrowIfNull(_process);
+
+        await _process.StandardInput.WriteLineAsync(Input);
+        await _process.StandardInput.FlushAsync();
+
+        Input = string.Empty;
     }
 
     private void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
