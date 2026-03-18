@@ -67,7 +67,7 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
     public partial bool SpawnMonsters { get; set; } = true;
 
     [ObservableProperty]
-    [Range(0, 9999, ErrorMessage = "Spawn region size must be between 0 and 9999.")]
+    [Range(0, 512, ErrorMessage = "Spawn region size must be between 0 and 512.")]
     public partial int SpawnRegionSize { get; set; } = 196;
 
     [ObservableProperty]

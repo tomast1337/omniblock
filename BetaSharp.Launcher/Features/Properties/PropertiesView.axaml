@@ -6,48 +6,42 @@
 
     <Grid RowDefinitions="* Auto" RowSpacing="10">
         <ScrollViewer IsEnabled="{CompiledBinding IsReady}" Grid.Row="0">
-            <StackPanel Spacing="5">
+            <StackPanel Spacing="10">
                 <StackPanel>
                     <TextBlock Text="Server IP" />
-                    <TextBox Text="{Binding ServerIp}" />
+                    <TextBox Text="{Binding ServerIp}" Watermark="*" />
                 </StackPanel>
-
-                <CheckBox Content="Dual stack" IsChecked="{Binding DualStack}" />
-
-                <StackPanel>
-                    <TextBlock Text="Server port" />
-                    <NumericUpDown Value="{Binding ServerPort}" Minimum="1" Maximum="65535" />
-                </StackPanel>
-
-                <CheckBox Content="Online mode" IsChecked="{Binding OnlineMode}" />
-
-                <CheckBox Content="Spawn animals" IsChecked="{Binding SpawnAnimals}" />
-
-                <CheckBox Content="PVP" IsChecked="{Binding Pvp}" />
-
-                <CheckBox Content="Allow flight" IsChecked="{Binding AllowFlight}" />
-
-                <StackPanel>
-                    <TextBlock Text="View distance" />
-                    <NumericUpDown Value="{Binding ViewDistance}" Minimum="2" Maximum="32" />
-                </StackPanel>
-
-                <StackPanel>
-                    <TextBlock Text="Max players" />
-                    <NumericUpDown Value="{Binding MaxPlayers}" Minimum="1" Maximum="500" />
-                </StackPanel>
-
-                <CheckBox Content="White list" IsChecked="{Binding WhiteList}" />
 
                 <StackPanel>
                     <TextBlock Text="Level name" />
-                    <TextBox Text="{Binding LevelName}" />
+                    <TextBox Text="{Binding LevelName}" Watermark="world" />
                 </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="Level seed" />
                     <TextBox Text="{Binding LevelSeed}" />
                 </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Generator settings" />
+                    <TextBox Text="{Binding GeneratorSettings}" />
+                </StackPanel>
+
+                <Grid ColumnDefinitions="* *">
+                    <StackPanel Grid.Column="0">
+                        <CheckBox Content="Dual stack" IsChecked="{Binding DualStack}" />
+                        <CheckBox Content="Online mode" IsChecked="{Binding OnlineMode}" />
+                        <CheckBox Content="Spawn animals" IsChecked="{Binding SpawnAnimals}" />
+                        <CheckBox Content="PVP" IsChecked="{Binding Pvp}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <CheckBox Content="Allow flight" IsChecked="{Binding AllowFlight}" />
+                        <CheckBox Content="White list" IsChecked="{Binding WhiteList}" />
+                        <CheckBox Content="Spawn monsters" IsChecked="{Binding SpawnMonsters}" />
+                        <CheckBox Content="Allow nether" IsChecked="{Binding AllowNether}" />
+                    </StackPanel>
+                </Grid>
 
                 <StackPanel>
                     <TextBlock Text="Level type" />
@@ -59,21 +53,26 @@
                 </StackPanel>
 
                 <StackPanel>
-                    <TextBlock Text="Generator settings" />
-                    <TextBox Text="{Binding GeneratorSettings}" />
+                    <TextBlock Text="Server port" />
+                    <NumericUpDown Value="{Binding ServerPort}" Watermark="25565" Minimum="1" Maximum="65535" />
                 </StackPanel>
 
-                <CheckBox Content="Spawn monsters" IsChecked="{Binding SpawnMonsters}" />
+                <StackPanel>
+                    <TextBlock Text="View distance" />
+                    <NumericUpDown Value="{Binding ViewDistance}" Watermark="10" Minimum="2" Maximum="32" />
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Max players" />
+                    <NumericUpDown Value="{Binding MaxPlayers}" Watermark="20" Minimum="1" Maximum="500" />
+                </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="Spawn region size" />
-                    <NumericUpDown Value="{Binding SpawnRegionSize}" Minimum="0" Maximum="9999" />
+                    <NumericUpDown Value="{Binding SpawnRegionSize}" Watermark="196" Minimum="0" Maximum="512" />
                 </StackPanel>
-
-                <CheckBox Content="Allow nether" IsChecked="{Binding AllowNether}" />
             </StackPanel>
         </ScrollViewer>
-
 
         <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
