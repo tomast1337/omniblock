@@ -16,7 +16,7 @@
 
                 <StackPanel>
                     <TextBlock Text="Server port" />
-                    <NumericUpDown Value="{Binding ServerPort}" Minimum="0" Maximum="65535" />
+                    <NumericUpDown Value="{Binding ServerPort}" Minimum="1" Maximum="65535" />
                 </StackPanel>
 
                 <CheckBox Content="Online mode" IsChecked="{Binding OnlineMode}" />
