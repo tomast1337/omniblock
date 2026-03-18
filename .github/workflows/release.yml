@@ -65,7 +65,7 @@ jobs:
         run: |
           for dir in ./artifacts/*/; do
             name=$(basename "$dir")
-            zip -r "./artifacts/${name}.zip" -j "$dir"
+            (cd "$dir" && zip -r "../../artifacts/${name}.zip" .)
             rm -rf "$dir"
           done
       - name: Create GitHub Release
