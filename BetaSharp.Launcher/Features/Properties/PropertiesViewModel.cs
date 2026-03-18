@@ -16,7 +16,7 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
     public partial bool IsReady { get; set; }
 
     [ObservableProperty]
-    [RegularExpression(@"^$|^(\d{1,3}\.){3}\d{1,3}$", ErrorMessage = "Server IP must be empty or a valid IPv4 address.")]
+    [RegularExpression(@"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ErrorMessage = "Server IP must be empty or a valid IP version 4 address.")]
     public partial string? ServerIp { get; set; }
 
     [ObservableProperty]

@@ -9,12 +9,12 @@
             <StackPanel Spacing="10">
                 <StackPanel>
                     <TextBlock Text="Server IP" />
-                    <TextBox Text="{Binding ServerIp}" Watermark="*" />
+                    <TextBox Text="{Binding ServerIp}" />
                 </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="Level name" />
-                    <TextBox Text="{Binding LevelName}" Watermark="world" />
+                    <TextBox Text="{Binding LevelName}" />
                 </StackPanel>
 
                 <StackPanel>
@@ -54,22 +54,22 @@
 
                 <StackPanel>
                     <TextBlock Text="Server port" />
-                    <NumericUpDown Value="{Binding ServerPort}" Watermark="25565" Minimum="1" Maximum="65535" />
+                    <NumericUpDown Value="{Binding ServerPort}" Minimum="1" Maximum="65535" />
                 </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="View distance" />
-                    <NumericUpDown Value="{Binding ViewDistance}" Watermark="10" Minimum="2" Maximum="32" />
+                    <NumericUpDown Value="{Binding ViewDistance}" Minimum="2" Maximum="32" />
                 </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="Max players" />
-                    <NumericUpDown Value="{Binding MaxPlayers}" Watermark="20" Minimum="1" Maximum="500" />
+                    <NumericUpDown Value="{Binding MaxPlayers}" Minimum="1" Maximum="500" />
                 </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="Spawn region size" />
-                    <NumericUpDown Value="{Binding SpawnRegionSize}" Watermark="196" Minimum="0" Maximum="512" />
+                    <NumericUpDown Value="{Binding SpawnRegionSize}" Minimum="0" Maximum="512" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
