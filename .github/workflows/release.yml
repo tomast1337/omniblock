@@ -48,7 +48,7 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish BetaSharp/BetaSharp.Client.csproj
+          dotnet publish BetaSharp.Client/BetaSharp.Client.csproj
           --configuration Release
           --runtime ${{ matrix.rid }}
           --self-contained true
