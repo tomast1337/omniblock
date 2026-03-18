@@ -1,4 +1,4 @@
-name: Build
+name: Release
 
 on:
   push:
@@ -11,9 +11,6 @@ on:
         description: 'Version name (e.g. 1.0, 1.2.4, snapshot-pre1.0_1)'
         required: true
         default: 'snapshot'
-
-env:
-  VERSION: ${{ github.event.inputs.version || 'snapshot' }}
 
 jobs:
   build:
@@ -51,7 +48,7 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish YourGame/YourGame.csproj
+          dotnet publish BetaSharp/BetaSharp.Client.csproj
           --configuration Release
           --runtime ${{ matrix.rid }}
           --self-contained true
@@ -89,7 +86,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.VERSION }}
-          name: ${{ env.VERSION }}
-          prerelease: ${{ contains(env.VERSION, 'snapshot') || contains(env.VERSION, 'pre') || contains(env.VERSION, 'alpha') || contains(env.VERSION, 'beta') }}
+          tag_name: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
+          prerelease: ${{ contains(github.event.inputs.version, 'snapshot') || contains(github.event.inputs.version, 'pre') || contains(github.event.inputs.version, 'alpha') || contains(github.event.inputs.version, 'beta') }}
           files: ./artifacts/**/*.zip
