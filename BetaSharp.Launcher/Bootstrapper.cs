@@ -66,7 +66,7 @@ internal static partial class Bootstrapper
 
     // Views
     [Singleton(typeof(HomeView))]
-    [Singleton(typeof(PropertiesView))]
+    [Transient(typeof(PropertiesView))]
     [Transient(typeof(ShellView))]
     [Transient(typeof(HostingView))]
     [Transient(typeof(AuthenticationView))]

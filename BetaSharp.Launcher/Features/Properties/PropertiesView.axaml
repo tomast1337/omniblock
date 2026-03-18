@@ -5,7 +5,7 @@
              x:Class="BetaSharp.Launcher.Features.Properties.PropertiesView" x:DataType="properties:PropertiesViewModel">
 
     <Grid RowDefinitions="* Auto" RowSpacing="10">
-        <ScrollViewer Grid.Row="0">
+        <ScrollViewer IsEnabled="{CompiledBinding IsReady}" Grid.Row="0">
             <StackPanel Spacing="5">
                 <StackPanel>
                     <TextBlock Text="Server IP" />
