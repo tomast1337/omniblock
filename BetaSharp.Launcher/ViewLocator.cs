@@ -7,6 +7,7 @@ using Avalonia.Controls.Templates;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
 using BetaSharp.Launcher.Features.Hosting;
+using BetaSharp.Launcher.Features.Properties;
 using BetaSharp.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +20,8 @@ internal sealed class ViewLocator(IServiceProvider services) : IDataTemplate
         { nameof(SplashViewModel), services.GetRequiredService<SplashView> },
         { nameof(AuthenticationViewModel), services.GetRequiredService<AuthenticationView> },
         { nameof(HomeViewModel), services.GetRequiredService<HomeView> },
-        { nameof(HostingViewModel), services.GetRequiredService<HostingView> }
+        { nameof(HostingViewModel), services.GetRequiredService<HostingView> },
+        { nameof(PropertiesViewModel), services.GetRequiredService<PropertiesView> }
     }.ToFrozenDictionary();
 
     public Control Build(object? instance)

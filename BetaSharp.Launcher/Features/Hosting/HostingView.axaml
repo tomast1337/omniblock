@@ -45,7 +45,7 @@
             </Grid>
 
             <Grid Classes.hidden="{CompiledBinding IsRunning}" Grid.Row="1">
-                <Button Content="Settings" />
+                <Button Content="Properties" Command="{CompiledBinding PropertiesCommand}" />
             </Grid>
         </Grid>
 

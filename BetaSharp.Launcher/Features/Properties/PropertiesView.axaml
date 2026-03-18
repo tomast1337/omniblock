@@ -1,0 +1,15 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:properties="clr-namespace:BetaSharp.Launcher.Features.Properties"
+
+             x:Class="BetaSharp.Launcher.Features.Properties.PropertiesView" x:DataType="properties:PropertiesViewModel">
+
+    <Grid RowDefinitions="* Auto">
+        <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
+            <!-- ReSharper disable once Xaml.StyleClassNotFound -->
+            <Button Content="Save" Classes="accent" Command="{CompiledBinding SaveCommand}" Grid.Column="0" />
+
+            <Button Content="Back" Command="{CompiledBinding BackCommand}" Grid.Column="1" />
+        </Grid>
+    </Grid>
+</UserControl>

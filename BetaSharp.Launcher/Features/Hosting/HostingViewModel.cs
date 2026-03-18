@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.Properties;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -68,6 +69,12 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
         await _process.StandardInput.FlushAsync();
 
         Input = string.Empty;
+    }
+
+    [RelayCommand]
+    private void Properties()
+    {
+        navigationService.Navigate<PropertiesViewModel>();
     }
 
     [RelayCommand]
