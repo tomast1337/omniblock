@@ -31,43 +31,27 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
     {
         if (IsRunning)
         {
-            Message = "Stopping";
-
-            ArgumentNullException.ThrowIfNull(_process);
-
-            _process.CancelOutputRead();
-            _process.OutputDataReceived -= ProcessOnOutputDataReceived;
-
-            _process.Kill();
-            _process.Dispose();
-
-            Message = "Run";
-
-            IsRunning = false;
-
+            Stop();
             return;
         }
-
-        Message = "Initializing";
-
-        _process = await processService.StartAsync(Kind.Server);
 
         Logs.Clear();
         Last = -1;
         Input = string.Empty;
+        Message = "Initializing";
+
+        _process = await processService.StartAsync(Kind.Server);
+
+        _process.EnableRaisingEvents = true;
 
         _process.BeginOutputReadLine();
-        _process.OutputDataReceived += ProcessOnOutputDataReceived;
+
+        _process.Exited += OnExited;
+        _process.OutputDataReceived += OnOutputDataReceived;
 
         Message = "Stop";
 
         IsRunning = true;
-    }
-
-    [RelayCommand]
-    private void Back()
-    {
-        navigationService.Navigate<HomeViewModel>();
     }
 
     [RelayCommand]
@@ -86,7 +70,31 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
         Input = string.Empty;
     }
 
-    private void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
+    [RelayCommand]
+    private void Back()
+    {
+        navigationService.Navigate<HomeViewModel>();
+    }
+
+    private void Stop()
+    {
+        ArgumentNullException.ThrowIfNull(_process);
+
+        Message = "Stopping";
+
+        _process.Exited -= OnExited;
+        _process.OutputDataReceived -= OnOutputDataReceived;
+
+        _process.CancelOutputRead();
+        _process.Kill();
+        _process.Dispose();
+
+        Message = "Run";
+
+        IsRunning = false;
+    }
+
+    private void OnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
     {
         if (string.IsNullOrWhiteSpace(eventArgs.Data))
         {
@@ -95,5 +103,10 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
         Logs.Add(eventArgs.Data);
         Last = Logs.Count - 1;
+    }
+
+    private void OnExited(object? sender, EventArgs eventArgs)
+    {
+        Stop();
     }
 }
