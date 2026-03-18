@@ -98,11 +98,6 @@ internal sealed partial class HostingViewModel(ProcessService processService, Na
 
             _process.Kill();
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
         finally
         {
             _process.Dispose();
