@@ -19,6 +19,9 @@ internal sealed class ProcessService(MinecraftService minecraftService)
             Arguments = string.Join(" ", args),
             CreateNoWindow = true,
             FileName = Path.Combine(directory, $"{nameof(BetaSharp)}.{suffix}"),
+            RedirectStandardError = true,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
             WorkingDirectory = directory
         };
 

@@ -4,7 +4,15 @@
 
              x:Class="BetaSharp.Launcher.Features.Hosting.HostingView" x:DataType="local:HostingViewModel">
 
-    <Grid RowDefinitions="Auto *">
+    <Grid RowDefinitions="* Auto" RowSpacing="10">
+        <ListBox Background="Transparent" ItemsSource="{CompiledBinding Logs}" Grid.Row="0">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+                </Style>
+            </ListBox.Styles>
+        </ListBox>
+
         <Grid ColumnDefinitions="* Auto" VerticalAlignment="Bottom" ColumnSpacing="10" Grid.Row="1">
             <!-- ReSharper disable once Xaml.StyleClassNotFound -->
             <Button Content="{CompiledBinding Message}" Classes="accent" Command="{CompiledBinding RunCommand}" Grid.Column="0" />
