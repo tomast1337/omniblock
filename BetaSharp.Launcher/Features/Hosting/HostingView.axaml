@@ -5,7 +5,7 @@
              x:Class="BetaSharp.Launcher.Features.Hosting.HostingView" x:DataType="local:HostingViewModel">
 
     <Grid RowDefinitions="* Auto" RowSpacing="10">
-        <Grid RowDefinitions="* Auto" RowSpacing="5" Grid.Row="0">
+        <Grid RowDefinitions="* Auto" RowSpacing="10" Grid.Row="0">
             <Grid.Styles>
                 <Style Selector="Grid">
                     <Setter Property="Transitions">
