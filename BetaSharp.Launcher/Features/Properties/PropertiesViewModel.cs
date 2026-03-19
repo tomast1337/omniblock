@@ -1,7 +1,10 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Hosting;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,20 +13,19 @@ using CommunityToolkit.Mvvm.Input;
 namespace BetaSharp.Launcher.Features.Properties;
 
 // Props should not be hard-coded.
-internal sealed partial class PropertiesViewModel(NavigationService navigationService) : ObservableValidator
+// Had to manually implement INotifyDataErrorInfo because ObservableValidator isn't AOT friendly.
+internal sealed partial class PropertiesViewModel(NavigationService navigationService) : ObservableObject, INotifyDataErrorInfo
 {
     [ObservableProperty]
     public partial bool IsReady { get; set; }
 
     [ObservableProperty]
-    [RegularExpression(@"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ErrorMessage = "Server IP must be empty or a valid IP version 4 address.")]
     public partial string? ServerIp { get; set; }
 
     [ObservableProperty]
     public partial bool DualStack { get; set; } = false;
 
     [ObservableProperty]
-    [Range(1, 65535, ErrorMessage = "Server port must be between 1 and 65535.")]
     public partial int ServerPort { get; set; } = 25565;
 
     [ObservableProperty]
@@ -39,19 +41,15 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
     public partial bool AllowFlight { get; set; } = false;
 
     [ObservableProperty]
-    [Range(2, 32, ErrorMessage = "View distance must be between 2 and 32.")]
     public partial int ViewDistance { get; set; } = 10;
 
     [ObservableProperty]
-    [Range(1, 500, ErrorMessage = "Max players must be between 1 and 500.")]
     public partial int MaxPlayers { get; set; } = 20;
 
     [ObservableProperty]
     public partial bool WhiteList { get; set; } = false;
 
     [ObservableProperty]
-    [Required(ErrorMessage = "Level name is required.")]
-    [StringLength(128, MinimumLength = 1, ErrorMessage = "Level name cannot be empty.")]
     public partial string LevelName { get; set; } = "world";
 
     [ObservableProperty]
@@ -67,12 +65,16 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
     public partial bool SpawnMonsters { get; set; } = true;
 
     [ObservableProperty]
-    [Range(0, 512, ErrorMessage = "Spawn region size must be between 0 and 512.")]
     public partial int SpawnRegionSize { get; set; } = 196;
 
     [ObservableProperty]
     public partial bool AllowNether { get; set; } = true;
 
+    public bool HasErrors => _errors.Count != 0;
+
+    public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+    private readonly Dictionary<string, string> _errors = [];
     private readonly string _path = Path.Combine(AppContext.BaseDirectory, nameof(Kind.Server), "server.properties");
 
     [RelayCommand]
@@ -227,15 +229,6 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
     [RelayCommand]
     private async Task SaveAsync()
     {
-#pragma warning disable IL2026
-        ValidateAllProperties();
-#pragma warning restore IL2026
-
-        if (HasErrors)
-        {
-            return;
-        }
-
         await WriteAsync();
 
         navigationService.Navigate<HostingViewModel>();
@@ -279,5 +272,48 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
                         """;
 
         await File.WriteAllTextAsync(_path, value);
+    }
+
+    public IEnumerable GetErrors(string? propertyName)
+    {
+        return string.IsNullOrEmpty(propertyName)
+            ? _errors.Values.SelectMany(error => error).ToArray()
+            : _errors.TryGetValue(propertyName, out string? message)
+                ? [message]
+                : Array.Empty<string>();
+    }
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
+    {
+        base.OnPropertyChanged(eventArgs);
+
+        if (!string.IsNullOrWhiteSpace(ServerIp) && !IPAddress.TryParse(ServerIp, out _))
+        {
+            _errors[nameof(ServerIp)] = "Server IP must be a valid address.";
+        }
+        else
+        {
+            _errors.Remove(nameof(ServerIp));
+        }
+
+        if (string.IsNullOrWhiteSpace(LevelName))
+        {
+            _errors[nameof(LevelName)] = "Level name cannot be empty.";
+        }
+        else
+        {
+            _errors.Remove(nameof(LevelName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(LevelSeed) && !long.TryParse(LevelSeed, out _))
+        {
+            _errors[nameof(LevelSeed)] = "Level seed should be numerical.";
+        }
+        else
+        {
+            _errors.Remove(nameof(LevelSeed));
+        }
+
+        ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(string.Empty));
     }
 }
