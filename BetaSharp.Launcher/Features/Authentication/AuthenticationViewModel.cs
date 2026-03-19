@@ -54,7 +54,7 @@ internal sealed partial class AuthenticationViewModel(
 
             await alertService.ShowAsync(
                 "Uh-oh!",
-                "Try again shortly. If the issue persists, create a GitHub issue."
+                "Try again shortly. If the issue persists, create a GitHub issue"
                 + Environment.NewLine
                 + "https://github.com/Fazin85/betasharp/issues");
         }
