@@ -17,9 +17,6 @@ namespace BetaSharp.Launcher.Features.Properties;
 internal sealed partial class PropertiesViewModel(NavigationService navigationService) : ObservableObject, INotifyDataErrorInfo
 {
     [ObservableProperty]
-    public partial bool IsReady { get; set; }
-
-    [ObservableProperty]
     public partial string? ServerIp { get; set; }
 
     [ObservableProperty]
@@ -69,6 +66,9 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
 
     [ObservableProperty]
     public partial bool AllowNether { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool IsReady { get; set; }
 
     public bool HasErrors => _errors.Count != 0;
 
@@ -274,15 +274,6 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
         await File.WriteAllTextAsync(_path, value);
     }
 
-    public IEnumerable GetErrors(string? propertyName)
-    {
-        return string.IsNullOrEmpty(propertyName)
-            ? _errors.Values.SelectMany(error => error).ToArray()
-            : _errors.TryGetValue(propertyName, out string? message)
-                ? [message]
-                : Array.Empty<string>();
-    }
-
     protected override void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
     {
         base.OnPropertyChanged(eventArgs);
@@ -315,5 +306,14 @@ internal sealed partial class PropertiesViewModel(NavigationService navigationSe
         }
 
         ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(string.Empty));
+    }
+
+    public IEnumerable GetErrors(string? propertyName)
+    {
+        return string.IsNullOrEmpty(propertyName)
+            ? _errors.Values.SelectMany(error => error).ToArray()
+            : _errors.TryGetValue(propertyName, out string? message)
+                ? [message]
+                : Array.Empty<string>();
     }
 }
