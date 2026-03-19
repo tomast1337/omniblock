@@ -59,7 +59,7 @@
 
                 <StackPanel Spacing="5" ToolTip.Tip="Sets the view distance. Higher values require more RAM">
                     <TextBlock Text="View distance" />
-                    <NumericUpDown Value="{Binding ViewDistance}" Increment="1" Minimum="2" Maximum="32" />
+                    <NumericUpDown Value="{Binding ViewDistance}" Increment="1" Minimum="4" Maximum="32" />
                 </StackPanel>
 
                 <StackPanel Spacing="5" ToolTip.Tip="Sets the max player count. Higher values require more RAM">
