@@ -934,10 +934,10 @@ public class WorldRenderer : IWorldAccess
 
                 return;
             case 2001: // This is for breaking a block
-                particleCount = data & 255;
-                if (particleCount > 0)
+                int blockId = data & 255;
+                if (blockId > 0)
                 {
-                    Block block = Block.Blocks[particleCount];
+                    Block block = Block.Blocks[blockId];
                     _game.sndManager.PlaySound(block.soundGroup.BreakSound, x + 0.5F, y + 0.5F, z + 0.5F, (block.soundGroup.Volume + 1.0F) / 2.0F, block.soundGroup.Pitch * 0.8F);
                 }
 

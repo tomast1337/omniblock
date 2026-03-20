@@ -88,10 +88,10 @@ public class BlockPistonBase : Block
     {
         int blockMeta = world.getBlockMeta(x, y, z);
         int facingDir = getFacing(blockMeta);
-        bool shouldExtend = this.shouldExtend(world, x, y, z, facingDir);
+        bool shouldBeExtended = this.shouldExtend(world, x, y, z, facingDir);
         if (blockMeta != 7)
         {
-            if (shouldExtend && !isExtended(blockMeta))
+            if (shouldBeExtended && !isExtended(blockMeta))
             {
                 if (canExtend(world, x, y, z, facingDir))
                 {
@@ -99,7 +99,7 @@ public class BlockPistonBase : Block
                     world.playNoteBlockActionAt(x, y, z, 0, facingDir);
                 }
             }
-            else if (!shouldExtend && isExtended(blockMeta))
+            else if (!shouldBeExtended && isExtended(blockMeta))
             {
                 world.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, facingDir);
                 world.playNoteBlockActionAt(x, y, z, 1, facingDir);
@@ -413,12 +413,12 @@ public class BlockPistonBase : Block
 
             while (currentX != x || currentY != y || currentZ != z)
             {
-                blocksInPath = currentX - PistonConstants.HEAD_OFFSET_X[dir];
-                neighborBlockId = currentY - PistonConstants.HEAD_OFFSET_Y[dir];
+                int prevX = currentX - PistonConstants.HEAD_OFFSET_X[dir];
+                int prevY = currentY - PistonConstants.HEAD_OFFSET_Y[dir];
                 int prevZ = currentZ - PistonConstants.HEAD_OFFSET_Z[dir];
-                int prevBlockId = world.getBlockId(blocksInPath, neighborBlockId, prevZ);
-                int prevBlockMeta = world.getBlockMeta(blocksInPath, neighborBlockId, prevZ);
-                if (prevBlockId == id && blocksInPath == x && neighborBlockId == y && prevZ == z)
+                int prevBlockId = world.getBlockId(prevX, prevY, prevZ);
+                int prevBlockMeta = world.getBlockMeta(prevX, prevY, prevZ);
+                if (prevBlockId == id && prevX == x && prevY == y && prevZ == z)
                 {
                     world.SetBlockWithoutNotifyingNeighbors(currentX, currentY, currentZ, MovingPiston.id, dir | (sticky ? 8 : 0));
                     world.setBlockEntity(currentX, currentY, currentZ, BlockPistonMoving.createPistonBlockEntity(PistonHead.id, dir | (sticky ? 8 : 0), dir, true, false));
@@ -429,8 +429,8 @@ public class BlockPistonBase : Block
                     world.setBlockEntity(currentX, currentY, currentZ, BlockPistonMoving.createPistonBlockEntity(prevBlockId, prevBlockMeta, dir, true, false));
                 }
 
-                currentX = blocksInPath;
-                currentY = neighborBlockId;
+                currentX = prevX;
+                currentY = prevY;
                 currentZ = prevZ;
             }
 
