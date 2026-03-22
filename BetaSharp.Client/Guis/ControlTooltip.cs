@@ -23,7 +23,7 @@ public record ActionTip(ControlIcon Icon, string Action);
 
 public static class ControlTooltip
 {
-    public static string ControllerType = "x360";
+    public static ControllerType ControllerType = ControllerType.XboxOne;
 
     private static readonly List<ActionTip> s_tips = [];
     private static readonly Dictionary<int, bool> s_usabilityCache = [];

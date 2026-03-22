@@ -32,7 +32,7 @@ public class GuiControls : GuiScreen
 
         for (int i = 0; i < _options.KeyBindings.Length; ++i)
         {
-            _controlList.Add(new GuiSmallButton(i, leftX + i % 2 * 160, Height / 6 + 24 * (i >> 1), 70, 20, _options.GetOptionDisplayString(i)));
+            _controlList.Add(new GuiSmallButton(i, leftX + i % 2 * 160 + 80, Height / 6 + 24 * (i >> 1), 70, 20, _options.GetOptionDisplayString(i)));
         }
 
         _controlList.Add(new GuiSlider(SensitivityId, Width / 2 + 5, Height / 6 + 130, _options.MouseSensitivityOption, _options.MouseSensitivityOption.GetDisplayString(translations), _options.MouseSensitivityOption.Value).Size(125, 20));
@@ -101,7 +101,7 @@ public class GuiControls : GuiScreen
 
         for (int i = 0; i < _options.KeyBindings.Length; ++i)
         {
-            DrawString(FontRenderer, _options.GetKeyBindingDescription(i), leftX + i % 2 * 160 + 70 + 6, Height / 6 + 24 * (i >> 1) + 7, Color.White);
+            DrawString(FontRenderer, _options.GetKeyBindingDescription(i), leftX + i % 2 * 160 + 2, Height / 6 + 24 * (i >> 1) + 7, Color.White);
         }
 
         base.Render(mouseX, mouseY, partialTicks);

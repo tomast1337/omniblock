@@ -239,7 +239,7 @@ public class GameRenderer
             float var4 = _client.mouseHelper.DeltaX * var3;
             float var5 = _client.mouseHelper.DeltaY * var3;
 
-            ControllerManager.HandleLook(ref var4, ref var5, var3);
+            ControllerManager.HandleLook(ref var4, ref var5, var3, _client.Timer.DeltaTime);
             int var6 = -1;
             if (_client.options.InvertMouse)
             {
