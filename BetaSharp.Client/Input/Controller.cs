@@ -41,7 +41,6 @@ public static class Controller
                     {
                         s_gamepadJoystickIndex = i;
                         s_logger.LogInformation("Selected gamepad: {}", name);
-                        ControlTooltip.ControllerType = ControllerType.XboxOne;
                     }
                 }
             }

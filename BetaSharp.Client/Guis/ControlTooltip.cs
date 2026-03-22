@@ -233,6 +233,6 @@ public static class ControlTooltip
             _ => "unknown"
         };
 
-        return $"/gui/controls/{ControllerType}/{iconName}.png";
+        return $"/gui/controls/{ControllerType.Key}/{iconName}.png";
     }
 }
