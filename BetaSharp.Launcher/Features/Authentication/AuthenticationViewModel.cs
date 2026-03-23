@@ -48,6 +48,7 @@ internal sealed partial class AuthenticationViewModel(
             Link = callback.VerificationUrl;
             Message = $"Use a Web browser to open {callback.VerificationUrl} and enter the code {callback.UserCode} to authenticate";
 
+            // Need a way to detect timeouts.
             IsReady = true;
 
             return Task.CompletedTask;
