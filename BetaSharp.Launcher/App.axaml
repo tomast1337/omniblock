@@ -18,6 +18,7 @@
 
         <Style Selector="ListBox">
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
         </Style>
 
         <Style Selector="Button">

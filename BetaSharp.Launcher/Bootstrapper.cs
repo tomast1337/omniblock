@@ -13,6 +13,7 @@ using BetaSharp.Launcher.Features.Splash;
 using BetaSharp.Launcher.Features.Xbox;
 using CommunityToolkit.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Octokit;
 using Serilog;
 
 namespace BetaSharp.Launcher;
@@ -41,6 +42,8 @@ internal static partial class Bootstrapper
 
             builder.AddSerilog(Log.Logger);
         });
+
+        services.AddSingleton<IGitHubClient>(_ => new GitHubClient(new ProductHeaderValue(nameof(BetaSharp))));
 
         ConfigureServices(services);
 
