@@ -1,4 +1,4 @@
-[<p align="center">
+<p align="center">
 <img height="128" src="BetaSharp.Launcher/logo.png" alt="BetaSharp">
 <h1 align="center">BetaSharp</h1>
 <p align="center">An enhanced version of Minecraft Beta 1.7.3, written in C#.</p>
