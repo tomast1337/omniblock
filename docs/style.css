@@ -18,7 +18,7 @@
 
 @font-face {
     font-family: 'Minecraft';
-    src: url('assets/minecraft.woff2') format('woff2');
+    src: url('assets/Minecraft.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
@@ -37,9 +37,7 @@ body {
     left: -5%;
     width: 110%;
     height: 110%;
-    /* To use an image for the background, uncomment the line below and change the url */
     background: url('assets/ss2.png') center/cover no-repeat;
-    /* background: linear-gradient(135deg, #ffffff, #e5e5ea); */
     z-index: -1;
     filter: blur(2px) brightness(1.05);
 }
@@ -50,7 +48,6 @@ body {
     height: 100vh;
 }
 
-/* Glass Panels (Top/Bottom) */
 .glass-panel {
     background: var(--glass-bg);
     backdrop-filter: saturate(180%) blur(20px);
@@ -58,7 +55,6 @@ body {
     z-index: 10;
 }
 
-/* Topbar */
 .topbar {
     height: var(--topbar-height);
     display: flex;
@@ -126,7 +122,6 @@ body {
     box-shadow: 0 4px 8px rgba(0, 113, 227, 0.3);
 }
 
-/* Bottombar */
 .bottombar {
     height: var(--bottombar-height);
     display: flex;
@@ -153,13 +148,11 @@ body {
     gap: 0.5rem;
 }
 
-/* Scrollable Content */
 .content-scrollable {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    /* Custom Scrollbar for app feel */
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
@@ -175,7 +168,6 @@ body {
     border-radius: 20px;
 }
 
-/* Hero Section (Oversized, Clean) */
 .hero-section {
     min-height: calc(100vh - var(--topbar-height));
     display: flex;
@@ -200,11 +192,10 @@ body {
 }
 
 .hero-title {
-    font-size: 5.5rem; /* Massive typography */
+    font-size: 5.5rem;
     font-weight: 800;
     margin-bottom: 0.75rem;
     color: var(--text-main);
-    /* Subtle glow so it floats nicely over light/dark screenshot boundaries */
     text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -231,7 +222,6 @@ body {
     50% { transform: translateY(10px); }
 }
 
-/* Features Section */
 .features-section {
     padding: 6rem 2rem;
     width: 100%;
@@ -270,7 +260,6 @@ body {
     margin-bottom: 4rem;
 }
 
-/* Apple-style feature cards */
 .feature-card {
     flex: 1 1 320px;
     max-width: 420px;
@@ -316,7 +305,6 @@ body {
     color: var(--text-muted);
 }
 
-/* Legal Notice - Moved to bottom */
 .notice {
     background: rgba(255, 59, 48, 0.08);
     border: 1px solid rgba(255, 59, 48, 0.15);
@@ -351,7 +339,6 @@ body {
     opacity: 0.7;
 }
 
-/* Responsive constraints */
 @media (max-width: 768px) {
     .nav-text {
         display: none;
