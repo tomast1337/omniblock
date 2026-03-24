@@ -4,6 +4,7 @@ using BetaSharp.Launcher.Features;
 using BetaSharp.Launcher.Features.Alert;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home;
+using BetaSharp.Launcher.Features.Home.GitHub;
 using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Mojang;
 using BetaSharp.Launcher.Features.Properties;
@@ -13,7 +14,6 @@ using BetaSharp.Launcher.Features.Splash;
 using BetaSharp.Launcher.Features.Xbox;
 using CommunityToolkit.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Octokit;
 using Serilog;
 
 namespace BetaSharp.Launcher;
@@ -42,8 +42,6 @@ internal static partial class Bootstrapper
 
             builder.AddSerilog(Log.Logger);
         });
-
-        services.AddSingleton<IGitHubClient>(_ => new GitHubClient(new ProductHeaderValue(nameof(BetaSharp))));
 
         ConfigureServices(services);
 
@@ -79,5 +77,6 @@ internal static partial class Bootstrapper
     [Singleton(typeof(ViewLocator))]
     [Transient(typeof(MojangClient))]
     [Transient(typeof(XboxClient))]
+    [Transient(typeof(GitHubClient))]
     private static partial void ConfigureServices(IServiceCollection services);
 }

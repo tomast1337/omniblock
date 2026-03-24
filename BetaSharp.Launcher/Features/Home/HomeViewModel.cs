@@ -2,13 +2,13 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
+using BetaSharp.Launcher.Features.Home.GitHub;
 using BetaSharp.Launcher.Features.Hosting;
 using BetaSharp.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
-using Octokit;
 
 namespace BetaSharp.Launcher.Features.Home;
 
@@ -20,14 +20,14 @@ internal sealed partial class HomeViewModel : ObservableObject
     public partial Session? Session { get; set; }
 
     private readonly ILogger<HomeViewModel> _logger;
-    private readonly IGitHubClient _gitHubClient;
+    private readonly GitHubClient _gitHubClient;
     private readonly NavigationService _navigationService;
     private readonly StorageService _storageService;
     private readonly ProcessService _processService;
 
     public HomeViewModel(
         ILogger<HomeViewModel> logger,
-        IGitHubClient gitHubClient,
+        GitHubClient gitHubClient,
         NavigationService navigationService,
         StorageService storageService,
         ProcessService processService)
@@ -81,14 +81,11 @@ internal sealed partial class HomeViewModel : ObservableObject
     {
         try
         {
-            var releases = await _gitHubClient.Repository.Release.GetAll("betasharp-official", nameof(BetaSharp));
+            var releases = await _gitHubClient.GetReleasesAsync("betasharp-official", nameof(BetaSharp));
 
             foreach (var release in releases)
             {
-                Releases.Add(new BetaSharpRelease(
-                    release.TagName,
-                    (release.PublishedAt ?? release.CreatedAt).ToString("d"),
-                    release.HtmlUrl));
+                Releases.Add(new BetaSharpRelease(release.Name, DateTimeOffset.Parse(release.Date).ToString("d"), release.Url));
             }
         }
         catch (Exception exception)
