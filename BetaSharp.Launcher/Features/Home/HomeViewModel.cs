@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using BetaSharp.Launcher.Features.Authentication;
 using BetaSharp.Launcher.Features.Home.GitHub;
@@ -81,6 +82,12 @@ internal sealed partial class HomeViewModel : ObservableObject
     {
         try
         {
+            // Collection is already populated.
+            if (Releases.Any())
+            {
+                return;
+            }
+
             var releases = await _gitHubClient.GetReleasesAsync("betasharp-official", nameof(BetaSharp));
 
             foreach (var release in releases)
