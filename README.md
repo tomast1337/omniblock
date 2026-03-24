@@ -1,5 +1,5 @@
-<p align="center">
-<img height="256" src="BetaSharp.Launcher/logo.png" alt="BetaSharp">
+[<p align="center">
+<img height="128" src="BetaSharp.Launcher/logo.png" alt="BetaSharp">
 <h1 align="center">BetaSharp</h1>
 <p align="center">An enhanced version of Minecraft Beta 1.7.3, written in C#.</p>
 </p>
@@ -19,7 +19,7 @@
 
 ## Running
 
-The launcher is the recommended way to play. It authenticates with your Microsoft account and starts the client automatically. \
+The launcher is the recommended way to play, it authenticates with your Microsoft account and starts the client automatically. \
 Clone the repository and run the following commands.
 
 ```
@@ -29,7 +29,7 @@ dotnet run --configuration Release
 
 ## Building
 
-Clone the repository and make sure the .NET 10 SDK is installed. For installation, visit [dotnet.microsoft.com/en-us/download](https://dotnet.microsoft.com/en-us/download). \
+Clone the repository and make sure the .NET 10 SDK is installed. For installation, visit [dotnet.microsoft.com](https://dotnet.microsoft.com/en-us/download). \
 The Website lists instructions for downloading the SDK on Windows, macOS and Linux.
 
 It is recommended to build with `--configuration Release` for better performance. \
@@ -42,6 +42,6 @@ dotnet build
 
 ## Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process.
-
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process. \
 This is a personal project, so review and merge timelines aren't guaranteed, but submissions are appreciated.
+](url)
