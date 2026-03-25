@@ -23,10 +23,10 @@ public abstract class BetaSharpServer : ICommandOutput
     public IServerConfiguration config;
     public ServerWorld[] worlds;
     public PlayerManager playerManager;
-    private ServerCommandHandler commandHandler;
+    private ServerCommandHandler _commandHandler;
     public bool running = true;
     public bool stopped;
-    private int ticks;
+    private int _ticks;
     public string? progressMessage;
     public int progress;
     private readonly Queue<PendingCommand> _pendingCommands = new();
@@ -69,7 +69,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
     protected virtual bool Init()
     {
-        commandHandler = new ServerCommandHandler(this);
+        _commandHandler = new ServerCommandHandler(this);
 
         onlineMode = config.GetOnlineMode(true);
         spawnAnimals = config.GetSpawnAnimals(true);
@@ -409,14 +409,14 @@ public abstract class BetaSharpServer : ICommandOutput
             }
         }
 
-        ticks++;
+        _ticks++;
 
         for (int i = 0; i < worlds.Length; i++)
         {
             if (i == 0 || config.GetAllowNether(true))
             {
                 ServerWorld world = worlds[i];
-                if (ticks % 20 == 0)
+                if (_ticks % 20 == 0)
                 {
                     playerManager.sendToDimension(WorldTimeUpdateS2CPacket.Get(world.GetTime()), world.Dimension.Id);
                 }
@@ -439,6 +439,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
         connections?.Tick();
         playerManager.updateAllChunks();
+        playerManager.flushPendingChunkUpdates();
 
         foreach (EntityTracker t in entityTrackers)
         {
@@ -473,7 +474,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 if (_pendingCommands.Count == 0) break;
                 cmd = _pendingCommands.Dequeue();
             }
-            commandHandler.ExecuteCommand(cmd);
+            _commandHandler.ExecuteCommand(cmd);
         }
     }
 
