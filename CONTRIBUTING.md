@@ -1,34 +1,35 @@
 # Contributing to BetaSharp
 
+You can contribute to BetaSharp with issues and PRs. Simply filing issues for problems you encounter is a great way to contribute. \
+Contributing implementations is greatly appreciated.
+
 ## Getting Started
 
 For detailed instructions on how to build and run the project, please refer to the Building section in the README file.
 
-## Code Conventions
+## Reporting issues
 
-### 1. Follow .editorconfig
+We always welcome bug reports, feature requests and overall feedback. Here are a few tips on how you can make reporting your issue as effective as possible.
 
-The project includes an `.editorconfig` file. Your IDE (Visual Studio, Rider, VS Code) should automatically respect these settings. **Always follow them.**
+1. **Finding existing issues** please avoid creating duplicate issues; it makes it harder to keep track of issues.
+2. **Choose the appropriate type** select the type of issue that fits the problem best, whether it is a bug report, feature request, or other.
 
-### 2. Standards
+## Creating pull requests
 
-This is **not** a Java project, please follow well known C# conventions to write idiomatic C# contributions, for more visit Microsoft's reference for C#.
+Follow the following tips to ensure creating an effective pull request.
 
-- https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions
-- https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names
+Please do:
 
-### 3. Remove IKVM/Java Types
+1. Do follow the style enforced by `.editorconfig`.
+2. Do follow well known C# conventions to write idiomatic C# contributions, for more visit Microsoft's reference for C#.
+    - https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions
+    - https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names
+3. Do include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
 
-- **Goal**: The ultimate goal of this project is to **remove ALL usage of IKVM and Java types**.
-- **New Code**: Must **exclusively** use C# types, collections, and I/O. Do not introduce new Java dependencies.
-- **Refactoring**: When cleaning up existing code, prioritize converting IKVM/Java types to their C# equivalents.
-- **Exceptions**: If converting to C# would break significant logic or requires a massive rewrite that blocks progress, the IKVM/Java code may remain *temporarily*. However, it should be marked for future refactoring.
+Please do not:
 
-### 5. AI Policy
-
-- **Allowed**: AI tools (ChatGPT, Copilot, etc.) are allowed to assist with coding and refactoring.
-- **Quality Control**: Low-quality, "vibe-coded", or hallucinated code will be **rejected**.
-- **Review**: You are responsible for every line of code you submit. Verify that AI-generated code is correct, follows project conventions, and compiles before submitting.
+1. Do not surprise us with big pull requests. Instead, file an issue so we can agree on a direction before you invest a large amount of time.
+2. Do not add changes that conflict with existing vanilla behavior.
 
 ## Workflow
 
