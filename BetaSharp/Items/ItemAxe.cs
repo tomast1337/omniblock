@@ -14,7 +14,8 @@ internal class ItemAxe : ItemTool
         Block.CraftingTable,
         Block.WoodenStairs,
         Block.Ladder,
-        Block.Trapdoor
+        Block.Trapdoor,
+        Block.Fence
     ];
 
     public ItemAxe(int id, EnumToolMaterial enumToolMaterial) : base(id, 3, enumToolMaterial, blocksEffectiveAgainst)
