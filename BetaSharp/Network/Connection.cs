@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using BetaSharp.Network.Packets;
 using Microsoft.Extensions.Logging;
 
@@ -23,8 +22,8 @@ public class Connection
     protected object[]? disconnectReasonArgs;
 
     private int _timeout;
-    private ConcurrentQueue<Packet> _sendQueue = [];
-    private ConcurrentQueue<Packet> _delayedSendQueue = [];
+    private readonly ConcurrentQueue<Packet> _sendQueue = [];
+    private readonly ConcurrentQueue<Packet> _delayedSendQueue = [];
     private int _delay;
     private Socket? _socket;
     private NetworkStream? _networkStream;
@@ -36,7 +35,6 @@ public class Connection
         this.netHandler = netHandler;
 
         socket.ReceiveTimeout = 30000;
-        // setTrafficClass doesn't have a direct .NET equivalent and can be omitted
 
         _networkStream = new NetworkStream(socket);
 
@@ -138,7 +136,7 @@ public class Connection
 
         int maxPacketsPerTick = 100;
 
-        while (readQueue.TryDequeue(out var packet) && maxPacketsPerTick-- >= 0)
+        while (readQueue.TryDequeue(out Packet? packet) && maxPacketsPerTick-- >= 0)
         {
             packet.Apply(netHandler);
             packet.Return();
@@ -156,17 +154,12 @@ public class Connection
         disconnect(new Exception("disconnect.closed"));
     }
 
-    public int getDelayedSendQueueSize()
-    {
-        return _delayedSendQueue.Count;
-    }
-
     public int getWorldPacketBacklog()
     {
         return _delayedSendQueue.Count;
     }
 
-    private async void Reading()
+    private void Reading()
     {
         while (open && !closed)
         {
@@ -186,8 +179,6 @@ public class Connection
                     disconnect("disconnect.endOfStream");
                     break;
                 }
-
-                await Task.Delay(10);
             }
             catch (Exception exception)
             {
@@ -197,42 +188,33 @@ public class Connection
         }
     }
 
-    private async void Writing()
+    private async Task Writing()
     {
         while (open && !closed)
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(_networkStream);
-
                 Packet? packet;
                 bool wrotePacket = false;
 
-                if (!_sendQueue.IsEmpty)
+                while (_sendQueue.TryDequeue(out packet))
                 {
-                    if (!_sendQueue.TryDequeue(out packet))
-                    {
-                        continue;
-                    }
-
                     Interlocked.Increment(ref packet.UseCount);
-
                     Packet.Write(packet, _networkStream);
                     packet.Return();
                     wrotePacket = true;
                 }
 
-                if (!_delayedSendQueue.IsEmpty && _delay-- <= 0)
+                while (!_delayedSendQueue.IsEmpty && _delay-- <= 0)
                 {
                     if (!_delayedSendQueue.TryDequeue(out packet))
                     {
-                        continue;
+                        break;
                     }
 
                     Interlocked.Increment(ref packet.UseCount);
-
                     _delay = 0;
-
                     Packet.Write(packet, _networkStream);
                     packet.Return();
                     wrotePacket = true;
@@ -241,7 +223,6 @@ public class Connection
                 if (wrotePacket)
                 {
                     _networkStream.Flush();
-                    await Task.Delay(0);
                 }
                 else
                 {
@@ -254,7 +235,6 @@ public class Connection
                 {
                     disconnect(exception);
                 }
-
                 break;
             }
         }
