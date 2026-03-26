@@ -160,7 +160,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     protected override bool isPvpEnabled() => server.pvpEnabled;
 
-    public void playerTick(bool shouldSendChunkUpdates)
+    public void PlayerTick(bool shouldSendChunkUpdates)
     {
         GenericTick();
 
