@@ -28,7 +28,6 @@ internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger,
 
     private Process? _process;
 
-
     public void Stop()
     {
         logger.LogInformation("Stopping the server");
