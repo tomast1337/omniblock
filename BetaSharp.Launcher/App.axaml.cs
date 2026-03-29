@@ -39,7 +39,6 @@ internal sealed class App : Application
                 .Navigate<SplashViewModel>();
 
             desktop.MainWindow = _services.GetRequiredService<ShellView>();
-
             desktop.Exit += DesktopOnExit;
         }
 
