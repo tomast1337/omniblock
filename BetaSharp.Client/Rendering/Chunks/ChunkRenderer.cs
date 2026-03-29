@@ -601,6 +601,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Profiler.Stop("WorldRenderer.Tick");
     }
 
+    public void MarkAllVisibleChunksDirty()
+    {
+        if (_lastRenderDistance <= 0) return;
+
+        foreach (Vector3D<int> pos in new List<Vector3D<int>>(_chunkVersions.Keys))
+            MarkDirty(pos, true);
+    }
+
     public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false)
     {
         if (!_world.BlockHost.IsRegionLoaded(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.Size + 1, chunkPos.Y + SubChunkRenderer.Size + 1, chunkPos.Z + SubChunkRenderer.Size + 1) | !IsChunkInRenderDistance(chunkPos, _lastViewPos))

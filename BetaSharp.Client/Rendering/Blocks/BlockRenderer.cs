@@ -35,6 +35,20 @@ public class BlockRenderer
 
         block.updateBoundingBox(world, pos.x, pos.y, pos.z);
 
+        bool doVariance = BetaSharp.Instance?.options?.AlternateBlocksEnabled == true;
+
+        TextureVariance topRule = doVariance ? block.TopVariance : TextureVariance.None;
+        TextureVariance botRule = doVariance ? block.BottomVariance : TextureVariance.None;
+        TextureVariance sideRule = doVariance ? block.SideVariance : TextureVariance.None;
+
+        int topHash = topRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.x, pos.y, pos.z) : 0;
+        int botHash = botRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.x, pos.y - 1, pos.z) : 0;
+        int sideHash = sideRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.x, pos.y, pos.z) : 0;
+
+        int topRot = BlockRenderContext.ApplyVariance(topHash, topRule, out int flipTop);
+        int botRot = BlockRenderContext.ApplyVariance(botHash, botRule, out int flipBot);
+        int sideRot = BlockRenderContext.ApplyVariance(sideHash, sideRule, out int flipSide);
+
         var ctx = new BlockRenderContext(
             tess: tess,
             lighting: lighting,
@@ -42,12 +56,18 @@ public class BlockRenderer
             overrideTexture: overrideTexture,
             renderAllFaces: renderAllFaces,
             flipTexture: false,
-            uvTop: 0,
-            uvBottom: 0,
-            uvNorth: 0,
-            uvSouth: 0,
-            uvEast: 0,
-            uvWest: 0,
+            uvTop: topRot,
+            uvBottom: botRot,
+            uvNorth: sideRot,
+            uvSouth: sideRot,
+            uvEast: sideRot,
+            uvWest: sideRot,
+            flipTop: flipTop,
+            flipBottom: flipBot,
+            flipNorth: flipSide,
+            flipSouth: flipSide,
+            flipEast: flipSide,
+            flipWest: flipSide,
             aoBlendMode: 1,
             customFlag: type == BlockRendererType.PistonExtension
         );
@@ -184,7 +204,7 @@ public class BlockRenderer
 
         var entityCtx = new BlockRenderContext(
             blockReader: world.Reader,
-            lighting:world.Lighting,
+            lighting: world.Lighting,
             tess: tess,
             renderAllFaces: true,
             enableAo: false
