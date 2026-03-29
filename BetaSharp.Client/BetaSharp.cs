@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Achievements;
+using BetaSharp.Client.Debug;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Guis.Debug;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
@@ -22,6 +22,11 @@ using BetaSharp.Client.Rendering.PostProcessing;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
+using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Screens.InGame;
+using BetaSharp.Client.UI.Screens.InGame.Containers;
+using BetaSharp.Client.UI.Screens.Menu;
+using BetaSharp.Client.UI.Screens.Menu.Net;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Profiling;
@@ -47,7 +52,9 @@ namespace BetaSharp.Client;
 
 public partial class BetaSharp
 {
+    //TODO: REMOVE THIS
     public static BetaSharp Instance = null!;
+
     private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
     public PlayerController playerController;
     private bool fullscreen;
@@ -70,7 +77,9 @@ public partial class BetaSharp
     public TextureManager textureManager;
     public SkinManager skinManager;
     public TextRenderer fontRenderer;
-    public GuiScreen currentScreen;
+    public UIScreen? currentScreen;
+    public bool IsMainMenuOpen => currentScreen is MainMenuScreen;
+    public bool IsGameOverOpen => currentScreen is GameOverScreen;
     public LoadingScreenRenderer loadingScreen;
     public GameRenderer gameRenderer;
     public PostProcessManager PostProcessManager { get; private set; }
@@ -78,8 +87,7 @@ public partial class BetaSharp
     private int leftClickCounter;
     private int tempDisplayWidth;
     private int tempDisplayHeight;
-    public GuiAchievement guiAchievement;
-    public GuiIngame ingameGUI;
+    public HUD HUD { get; private set; } = null!;
     public bool skipRenderWorld;
     public HitResult objectMouseOver = new HitResult(HitResultType.MISS);
     public GameOptions options;
@@ -112,19 +120,12 @@ public partial class BetaSharp
     private GLErrorHandler _glErrorHandler;
     private readonly DebugTelemetry _debugTelemetry = new();
 
-    private bool _wasDpadLeftDown;
-    private bool _wasDpadRightDown;
-    private bool _wasDpadUpDown;
-    private bool _wasDpadDownDown;
-
     public bool isControllerMode;
-    public float virtualCursorX;
-    public float virtualCursorY;
+    public VirtualCursor VirtualCursor { get; } = new VirtualCursor();
 
     public BetaSharp(int width, int height, bool isFullscreen)
     {
         loadingScreen = new LoadingScreenRenderer(this);
-        guiAchievement = new GuiAchievement(this);
         tempDisplayHeight = height;
         fullscreen = isFullscreen;
         displayWidth = width;
@@ -351,17 +352,17 @@ public partial class BetaSharp
             ])).LoadAllAsync();
 
         checkGLError("Post startup");
-        ingameGUI = new GuiIngame(this);
+        HUD = new HUD(this);
         PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), options);
 
         statFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (serverName != null)
         {
-            displayGuiScreen(new GuiConnecting(this, serverName, serverPort));
+            displayGuiScreen(new ConnectingScreen(this, serverName, serverPort));
         }
         else
         {
-            displayGuiScreen(new GuiMainMenu());
+            displayGuiScreen(new MainMenuScreen(this));
         }
     }
 
@@ -371,7 +372,7 @@ public partial class BetaSharp
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, var1.ScaledWidthDouble, var1.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
+        GLManager.GL.Ortho(0.0D, var1.ScaledWidth, var1.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
@@ -402,10 +403,10 @@ public partial class BetaSharp
         Display.swapBuffers();
     }
 
-    public void drawTextureRegion(int x, int y, int texX, int texY, int width, int height)
+    public static void drawTextureRegion(int x, int y, int texX, int texY, int width, int height)
     {
-        float uScale = 1 / 256f;
-        float vScale = 1 / 256f;
+        const float uScale = 1 / 256f;
+        const float vScale = 1 / 256f;
 
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
@@ -426,13 +427,13 @@ public partial class BetaSharp
         return saveLoader;
     }
 
-    public void displayGuiScreen(GuiScreen? newScreen)
+    public void displayGuiScreen(UIScreen? newScreen)
     {
         Mouse.ClearEvents();
         Controller.ClearEvents();
-        currentScreen?.OnGuiClosed();
+        currentScreen?.Uninit();
 
-        if (newScreen is GuiMainMenu)
+        if (newScreen is MainMenuScreen)
         {
             statFileWriter.Tick();
 
@@ -445,24 +446,23 @@ public partial class BetaSharp
         statFileWriter.SyncStats();
         if (newScreen == null && world == null)
         {
-            newScreen = new GuiMainMenu();
+            newScreen = new MainMenuScreen(this);
         }
         else if (newScreen == null && player.health <= 0)
         {
-            newScreen = new GuiGameOver();
+            newScreen = new GameOverScreen(this);
         }
 
-        if (newScreen is GuiMainMenu)
+        if (newScreen is MainMenuScreen)
         {
-            ingameGUI.ClearChatMessages();
+            HUD.Chat.ClearMessages();
         }
 
         currentScreen = newScreen;
 
         if (currentScreen != null)
         {
-            virtualCursorX = displayWidth / 2.0f;
-            virtualCursorY = displayHeight / 2.0f;
+            VirtualCursor.Reset(displayWidth, displayHeight);
         }
 
         if (internalServer != null)
@@ -474,10 +474,7 @@ public partial class BetaSharp
         if (newScreen != null)
         {
             setIngameNotInFocus();
-            ScaledResolution scaledResolution = new(options, displayWidth, displayHeight);
-            int scaledWidth = scaledResolution.ScaledWidth;
-            int scaledHeight = scaledResolution.ScaledHeight;
-            newScreen.SetWorldAndResolution(this, scaledWidth, scaledHeight);
+            newScreen.Initialize();
             skipRenderWorld = false;
         }
         else
@@ -598,53 +595,7 @@ public partial class BetaSharp
 
                     if (isControllerMode && currentScreen != null)
                     {
-                        float lx = Controller.LeftStickX;
-                        float ly = Controller.LeftStickY;
-
-                        bool dpadLeft = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadLeft);
-                        bool dpadRight = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadRight);
-                        bool dpadUp = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadUp);
-                        bool dpadDown = Controller.IsButtonDown(Silk.NET.GLFW.GamepadButton.DPadDown);
-
-                        bool dpadHandled = false;
-
-                        if (currentScreen != null)
-                        {
-                            int dpadX = 0, dpadY = 0;
-                            if (dpadLeft && !_wasDpadLeftDown) dpadX = -1;
-                            if (dpadRight && !_wasDpadRightDown) dpadX = 1;
-                            if (dpadUp && !_wasDpadUpDown) dpadY = -1;
-                            if (dpadDown && !_wasDpadDownDown) dpadY = 1;
-
-                            if (dpadX != 0 || dpadY != 0)
-                            {
-                                dpadHandled = currentScreen.HandleDPadNavigation(dpadX, dpadY, ref virtualCursorX, ref virtualCursorY);
-                            }
-                        }
-
-                        _wasDpadLeftDown = dpadLeft;
-                        _wasDpadRightDown = dpadRight;
-                        _wasDpadUpDown = dpadUp;
-                        _wasDpadDownDown = dpadDown;
-
-                        if (!dpadHandled)
-                        {
-                            if (dpadLeft) lx = -0.2f;
-                            if (dpadRight) lx = 0.2f;
-                            if (dpadUp) ly = -0.2f;
-                            if (dpadDown) ly = 0.2f;
-                        }
-
-                        ScaledResolution sr = new(options, displayWidth, displayHeight);
-                        float speed = 200f * sr.ScaleFactor;
-
-                        virtualCursorX += lx * speed * Timer.DeltaTime;
-                        virtualCursorY += ly * speed * Timer.DeltaTime;
-
-                        if (virtualCursorX < 0) virtualCursorX = 0;
-                        if (virtualCursorX > displayWidth) virtualCursorX = displayWidth;
-                        if (virtualCursorY < 0) virtualCursorY = 0;
-                        if (virtualCursorY > displayHeight) virtualCursorY = displayHeight;
+                        VirtualCursor.Update(currentScreen, options, displayWidth, displayHeight, Timer.DeltaTime);
                     }
 
                     if (isGamePaused && world != null)
@@ -798,7 +749,6 @@ public partial class BetaSharp
                         prevFrameTime = Stopwatch.GetTimestamp();
                     }
 
-                    guiAchievement.UpdateAchievementWindow();
 
                     if (Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
@@ -841,7 +791,7 @@ public partial class BetaSharp
                 catch (OutOfMemoryException)
                 {
                     crashCleanup();
-                    displayGuiScreen(new GuiErrorScreen());
+                    displayGuiScreen(new ErrorScreen("Out of memory!", "Minecraft has run out of memory."));
                 }
                 finally
                 {
@@ -926,7 +876,7 @@ public partial class BetaSharp
                 }
 
                 string result = ScreenShotHelper.saveScreenshot(gameDataDir, displayWidth, displayHeight, pixels);
-                ingameGUI.AddChatMessage(result);
+                HUD.AddChatMessage(result);
             }
         }
         else
@@ -1034,7 +984,7 @@ public partial class BetaSharp
                 GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
                 inGameHasFocus = true;
                 mouseHelper.grabMouseCursor();
-                displayGuiScreen((GuiScreen)null);
+                displayGuiScreen(null);
                 leftClickCounter = 10000;
                 MouseTicksRan = TicksRan + 10000;
             }
@@ -1072,7 +1022,7 @@ public partial class BetaSharp
     {
         if (currentScreen == null)
         {
-            displayGuiScreen(new GuiIngameMenu());
+            displayGuiScreen(new IngameMenuScreen(this));
         }
     }
 
@@ -1266,13 +1216,6 @@ public partial class BetaSharp
         displayHeight = newHeight;
         Mouse.setDisplayDimensions(displayWidth, displayHeight);
 
-        if (currentScreen != null)
-        {
-            ScaledResolution scaledResolution = new(options, newWidth, newHeight);
-            int scaledWidth = scaledResolution.ScaledWidth;
-            int scaledHeight = scaledResolution.ScaledHeight;
-            currentScreen.SetWorldAndResolution(this, scaledWidth, scaledHeight);
-        }
 
         PostProcessManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
     }
@@ -1322,9 +1265,10 @@ public partial class BetaSharp
         }
 
 
-        Profiler.Start("ingameGUI.updateTick");
-        ingameGUI.UpdateTick();
-        Profiler.Stop("ingameGUI.updateTick");
+
+        Profiler.Start("HUD.update");
+        HUD.Update(1.0f);
+        Profiler.Stop("HUD.update");
         gameRenderer.UpdateTargetedEntity(1.0F);
 
         gameRenderer.tick(partialTicks);
@@ -1354,16 +1298,16 @@ public partial class BetaSharp
         {
             if (player.health <= 0)
             {
-                displayGuiScreen((GuiScreen)null);
+                displayGuiScreen(null);
             }
             else if (player.isSleeping() && world != null && world.IsRemote)
             {
-                displayGuiScreen(new GuiSleepMP());
+                displayGuiScreen(new SleepScreen(this));
             }
         }
-        else if (currentScreen != null && currentScreen is GuiSleepMP && !player.isSleeping())
+        else if (currentScreen is SleepScreen && !player.isSleeping())
         {
-            displayGuiScreen((GuiScreen)null);
+            displayGuiScreen(null);
         }
 
         if (currentScreen != null)
@@ -1375,11 +1319,7 @@ public partial class BetaSharp
         if (currentScreen != null)
         {
             currentScreen.HandleInput();
-            if (currentScreen != null)
-            {
-                currentScreen.ParticlesGui.updateParticles();
-                currentScreen.UpdateScreen();
-            }
+            currentScreen?.Update(1.0f);
         }
 
         if (currentScreen == null || currentScreen.AllowUserInput)
@@ -1400,10 +1340,7 @@ public partial class BetaSharp
             }
 
             world.SetDifficulty(options.Difficulty);
-            if (internalServer != null)
-            {
-                internalServer.SetDifficulty(options.Difficulty);
-            }
+            internalServer?.SetDifficulty(options.Difficulty);
 
             if (world.IsRemote)
             {
@@ -1591,7 +1528,7 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
                         {
-                            ingameGUI.ClearChatMessages();
+                            HUD.Chat.ClearMessages();
                         }
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_F3))
@@ -1606,7 +1543,14 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_F3)
                         {
-                            options.ShowDebugInfo = !options.ShowDebugInfo;
+                            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
+                            {
+                                displayGuiScreen(new DebugEditorScreen(this, null));
+                            }
+                            else
+                            {
+                                options.ShowDebugInfo = !options.ShowDebugInfo;
+                            }
                         }
 
                         if (Keyboard.getEventKey() == Keyboard.KEY_F5)
@@ -1626,7 +1570,7 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == options.KeyBindInventory.keyCode)
                         {
-                            displayGuiScreen(new GuiInventory(player));
+                            displayGuiScreen(new InventoryScreen(player));
                         }
 
                         if (Keyboard.getEventKey() == options.KeyBindDrop.keyCode)
@@ -1636,12 +1580,12 @@ public partial class BetaSharp
 
                         if (Keyboard.getEventKey() == options.KeyBindChat.keyCode)
                         {
-                            displayGuiScreen(new GuiChat());
+                            displayGuiScreen(new ChatScreen(this));
                         }
 
                         if (Keyboard.getEventKey() == options.KeyBindCommand.keyCode)
                         {
-                            displayGuiScreen(new GuiChat("/"));
+                            displayGuiScreen(new ChatScreen(this, "/"));
                         }
                     }
 
@@ -1703,10 +1647,10 @@ public partial class BetaSharp
     public void startWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         changeWorld(null);
-        displayGuiScreen(new GuiLevelLoading(worldName, settings));
+        displayGuiScreen(new LevelLoadingScreen(worldName, settings));
     }
 
-    public void changeWorld(World newWorld, string loadingText = "", EntityPlayer targetEntity = null)
+    public void changeWorld(World? newWorld, string loadingText = "", EntityPlayer targetEntity = null)
     {
         statFileWriter.Tick();
         statFileWriter.SyncStats();
@@ -1715,7 +1659,7 @@ public partial class BetaSharp
         loadingScreen.progressStage("");
         sndManager.PlayStreaming(null!, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
-        world = newWorld;
+        world = newWorld!;
         if (newWorld != null)
         {
             playerController.ChangeWorld(newWorld);
@@ -1927,7 +1871,7 @@ public partial class BetaSharp
 
         showText("Respawning");
 
-        if (currentScreen is GuiGameOver)
+        if (IsGameOverOpen)
         {
             displayGuiScreen(null);
         }

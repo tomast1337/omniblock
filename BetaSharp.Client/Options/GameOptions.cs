@@ -1,4 +1,5 @@
 using BetaSharp.Client.Input;
+using BetaSharp.Client.UI;
 using Microsoft.Extensions.Logging;
 using Silk.NET.GLFW;
 using File = System.IO.File;
@@ -233,9 +234,9 @@ public class GameOptions
         ControllerTypeOption = new CycleOption("Controller Type", "controllerType", _ctlTypeLabels, 1)
         {
             Formatter = (v, _) => _ctlTypeLabels[v],
-            OnChanged = v => Guis.ControlTooltip.ControllerType = ControllerType.ControllerTypes[v]
+            OnChanged = v => ControlTooltip.ControllerType = ControllerType.ControllerTypes[v]
         };
-        Guis.ControlTooltip.ControllerType = ControllerType.ControllerTypes[ControllerTypeOption.Value];
+        ControlTooltip.ControllerType = ControllerType.ControllerTypes[ControllerTypeOption.Value];
 
         FramerateLimitOption = new FloatOption("options.framerateLimit", "fpsLimit", 0.42857143f)
         {

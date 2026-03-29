@@ -272,8 +272,8 @@ public class GameRenderer
             int scaledMouseY;
             if (_client.isControllerMode)
             {
-                scaledMouseX = (int)(_client.virtualCursorX * scaledWidth / _client.displayWidth);
-                scaledMouseY = (int)(_client.virtualCursorY * scaledHeight / _client.displayHeight);
+                scaledMouseX = (int)(_client.VirtualCursor.X * scaledWidth / _client.displayWidth);
+                scaledMouseY = (int)(_client.VirtualCursor.Y * scaledHeight / _client.displayHeight);
             }
             else
             {
@@ -299,7 +299,8 @@ public class GameRenderer
                 Profiler.Start("renderGameOverlay");
                 if (!_client.options.HideGUI || _client.currentScreen != null)
                 {
-                    _client.ingameGUI.RenderGameOverlay(tickDelta);
+                    setupHudRender();
+                    _client.HUD.Render(scaledMouseX, scaledMouseY, tickDelta);
                 }
 
                 Profiler.Stop("renderGameOverlay");
@@ -317,11 +318,8 @@ public class GameRenderer
             if (_client.currentScreen != null)
             {
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
+                setupHudRender();
                 _client.currentScreen.Render(scaledMouseX, scaledMouseY, tickDelta);
-                if (_client.currentScreen != null && _client.currentScreen.ParticlesGui != null)
-                {
-                    _client.currentScreen.ParticlesGui.render(tickDelta);
-                }
 
                 if (_client.isControllerMode)
                 {
@@ -329,9 +327,9 @@ public class GameRenderer
                 }
             }
 
-            
+
             _client.PostProcessManager.End();
-            
+
 
             if (var7 < 240)
             {
@@ -479,7 +477,7 @@ public class GameRenderer
 
         if (_client.ShowChunkBorders)
         {
-                renderChunkBorders(tickDelta);
+            renderChunkBorders(tickDelta);
         }
 
         worldRenderer.renderClouds(tickDelta);
@@ -541,7 +539,7 @@ public class GameRenderer
             tess.addVertex(maxX, 128.0, z);
         }
 
-        for (int y = 0; y <= 128; y+=4)
+        for (int y = 0; y <= 128; y += 4)
         {
             if (y % 16 == 0) tess.setColorRGBA_F(0.0F, 0.0F, 1.0F, 1.0F);
             tess.addVertex(minX, y, minZ);
@@ -567,8 +565,8 @@ public class GameRenderer
 
         for (int i = 0; i < 4; i++)
         {
-            double x = minX + (i*16);
-            double z = minZ + (i*16);
+            double x = minX + (i * 16);
+            double z = minZ + (i * 16);
 
             tess.addVertex(x, 0.0, minZ);
             tess.addVertex(x, 128.0, minZ);
@@ -811,7 +809,7 @@ public class GameRenderer
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, var1.ScaledWidthDouble, var1.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
+        GLManager.GL.Ortho(0.0D, var1.ScaledWidth, var1.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.LoadIdentity();
         GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
@@ -819,7 +817,7 @@ public class GameRenderer
 
     public void DrawVirtualCursor(int x, int y)
     {
-        if (_client.isControllerMode)
+        if (_client.isControllerMode && _client.currentScreen?.IsEditingSlider != true)
         {
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);

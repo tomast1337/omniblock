@@ -1,8 +1,11 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Input;
+using BetaSharp.Client.Rendering.Particles;
+using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Screens.InGame;
+using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.NBT;
@@ -17,13 +20,10 @@ public class ClientPlayerEntity : EntityPlayer
     public override EntityType Type => EntityRegistry.Player;
     public MovementInput movementInput;
     protected BetaSharp Game;
-    private readonly MouseFilter field_21903_bJ = new();
-    private readonly MouseFilter field_21904_bK = new();
-    private readonly MouseFilter field_21902_bL = new();
 
     public ClientPlayerEntity(BetaSharp game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
-        this.Game = game;
+        Game = game;
         base.dimensionId = dimensionId;
         name = session.username;
     }
@@ -45,7 +45,7 @@ public class ClientPlayerEntity : EntityPlayer
     {
         if (!Game.statFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
-            Game.guiAchievement.QueueAchievementInformation(global::BetaSharp.Achievements.OpenInventory);
+            Game.HUD.AchievementToast.QueueInfo(global::BetaSharp.Achievements.OpenInventory);
         }
 
         lastScreenDistortion = changeDimensionCooldown;
@@ -58,7 +58,7 @@ public class ClientPlayerEntity : EntityPlayer
 
             if (Game.currentScreen != null)
             {
-                Game.displayGuiScreen((GuiScreen)null);
+                Game.displayGuiScreen(null);
             }
 
             if (changeDimensionCooldown == 0.0F)
@@ -135,27 +135,27 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openEditSignScreen(BlockEntitySign sign)
     {
-        Game.displayGuiScreen(new GuiEditSign(sign));
+        Game.displayGuiScreen(new SignEditScreen(Game, sign));
     }
 
     public override void openChestScreen(IInventory inventory)
     {
-        Game.displayGuiScreen(new GuiChest(base.inventory, inventory));
+        Game.displayGuiScreen(new ChestScreen(base.inventory, inventory));
     }
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.displayGuiScreen(new GuiCrafting(inventory, world, x, y, z));
+        Game.displayGuiScreen(new CraftingScreen(inventory, world, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
-        Game.displayGuiScreen(new GuiFurnace(inventory, furnace));
+        Game.displayGuiScreen(new FurnaceScreen(inventory, furnace));
     }
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
-        Game.displayGuiScreen(new GuiDispenser(inventory, dispenser));
+        Game.displayGuiScreen(new DispenserScreen(inventory, dispenser));
     }
 
     public override void sendPickup(Entity entity, int count)
@@ -170,7 +170,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public virtual void sendChatMessage(string message)
     {
-        Game.ingameGUI.AddChatMessage($"<{name}> {message}");
+        Game.HUD.AddChatMessage($"<{name}> {message}");
     }
 
     public override bool isSneaking()
@@ -210,7 +210,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void sendMessage(string message)
     {
-        Game.ingameGUI.AddChatMessageTranslate(message);
+        Game.HUD.AddChatMessage(message);
     }
 
     public override void increaseStat(StatBase stat, int value)
@@ -227,7 +227,7 @@ public class ClientPlayerEntity : EntityPlayer
                 {
                     if (!alreadyUnlocked)
                     {
-                        Game.guiAchievement.QueueTakenAchievement(achievement);
+                        Game.HUD.AchievementToast.QueueAchievement(achievement);
                     }
 
                     Game.statFileWriter.ReadStat(stat, value);

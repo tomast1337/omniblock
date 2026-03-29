@@ -135,7 +135,6 @@ public class LivingEntityRenderer : EntityRenderer
             _logger.LogError(e, e.Message);
         }
 
-        GLManager.GL.Enable(GLEnum.CullFace);
         GLManager.GL.PopMatrix();
         passSpecialRender(var1, var2, var4, var6);
     }

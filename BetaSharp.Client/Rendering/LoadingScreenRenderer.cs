@@ -48,7 +48,7 @@ public class LoadingScreenRenderer : LoadingDisplay
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
             GLManager.GL.MatrixMode(GLEnum.Projection);
             GLManager.GL.LoadIdentity();
-            GLManager.GL.Ortho(0.0D, var2.ScaledWidthDouble, var2.ScaledHeightDouble, 0.0D, 100.0D, 300.0D);
+            GLManager.GL.Ortho(0.0D, var2.ScaledWidth, var2.ScaledHeight, 0.0D, 100.0D, 300.0D);
             GLManager.GL.MatrixMode(GLEnum.Modelview);
             GLManager.GL.LoadIdentity();
             GLManager.GL.Translate(0.0F, 0.0F, -200.0F);
@@ -95,7 +95,7 @@ public class LoadingScreenRenderer : LoadingDisplay
                 GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
                 GLManager.GL.MatrixMode(GLEnum.Projection);
                 GLManager.GL.LoadIdentity();
-                GLManager.GL.Ortho(0.0D, var4.ScaledWidthDouble, var4.ScaledHeightDouble, 0.0D, 100.0D, 300.0D);
+                GLManager.GL.Ortho(0.0D, var4.ScaledWidth, var4.ScaledHeight, 0.0D, 100.0D, 300.0D);
                 GLManager.GL.MatrixMode(GLEnum.Modelview);
                 GLManager.GL.LoadIdentity();
                 GLManager.GL.Translate(0.0F, 0.0F, -200.0F);
