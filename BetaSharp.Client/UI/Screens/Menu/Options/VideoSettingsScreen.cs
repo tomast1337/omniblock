@@ -45,6 +45,7 @@ public class VideoSettingsScreen(UIScreen? parent, GameOptions options) : BaseOp
             Options.EnvironmentAnimationOption,
             Options.ChunkFadeOption,
             Options.ShowWTHITOption,
+            Options.AlternateBlocksOption
         ]);
 
         return root;
