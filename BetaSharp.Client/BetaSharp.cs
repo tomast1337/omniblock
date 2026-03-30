@@ -8,7 +8,6 @@ using BetaSharp.Client.Debug;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
@@ -58,6 +57,7 @@ public partial class BetaSharp
     private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
     public PlayerController playerController;
     private bool fullscreen;
+    private bool _prevF11Down;
     private bool hasCrashed;
     public int displayWidth;
     public int displayHeight;
@@ -1187,10 +1187,7 @@ public partial class BetaSharp
                 Display.setLocation(centerX, centerY);
             }
 
-            if (currentScreen != null)
-            {
-                resize(displayWidth, displayHeight);
-            }
+            resize(displayWidth, displayHeight);
 
             Display.update();
         }
@@ -1251,6 +1248,13 @@ public partial class BetaSharp
         Profiler.Start("statFileWriter.SyncStatsIfReady");
         statFileWriter.SyncStatsIfReady();
         Profiler.Stop("statFileWriter.SyncStatsIfReady");
+
+        bool f11Down = Keyboard.isKeyDown(Keyboard.KEY_F11);
+        if (f11Down && !_prevF11Down)
+        {
+            toggleFullscreen();
+        }
+        _prevF11Down = f11Down;
 
         if (!inGameHasFocus && world == null && internalServer == null)
         {
@@ -1494,114 +1498,107 @@ public partial class BetaSharp
 
         while (Keyboard.Next())
         {
-            player.handleKeyPress(Keyboard.getEventKey(), Keyboard.getEventKeyState());
+            player?.handleKeyPress(Keyboard.getEventKey(), Keyboard.getEventKeyState());
 
             if (Keyboard.getEventKeyState())
             {
-                if (Keyboard.getEventKey() == Keyboard.KEY_F11)
+                if (currentScreen != null)
                 {
-                    toggleFullscreen();
+                    currentScreen.HandleKeyboardInput();
                 }
                 else
                 {
-                    if (currentScreen != null)
+                    if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
                     {
-                        currentScreen.HandleKeyboardInput();
+                        displayInGameMenu();
                     }
-                    else
+
+                    if (Keyboard.getEventKey() == Keyboard.KEY_S && Keyboard.isKeyDown(Keyboard.KEY_F3))
                     {
-                        if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
-                        {
-                            displayInGameMenu();
-                        }
+                        forceReload();
+                    }
 
-                        if (Keyboard.getEventKey() == Keyboard.KEY_S && Keyboard.isKeyDown(Keyboard.KEY_F3))
-                        {
-                            forceReload();
-                        }
+                    if (Keyboard.getEventKey() == Keyboard.KEY_H && Keyboard.isKeyDown(Keyboard.KEY_F3))
+                    {
+                        options.AdvancedItemTooltips = !options.AdvancedItemTooltips;
+                        options.SaveOptions();
+                    }
 
-                        if (Keyboard.getEventKey() == Keyboard.KEY_H && Keyboard.isKeyDown(Keyboard.KEY_F3))
-                        {
-                            options.AdvancedItemTooltips = !options.AdvancedItemTooltips;
-                            options.SaveOptions();
-                        }
+                    if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
+                    {
+                        HUD.Chat.ClearMessages();
+                    }
 
-                        if (Keyboard.getEventKey() == Keyboard.KEY_D && Keyboard.isKeyDown(Keyboard.KEY_F3))
-                        {
-                            HUD.Chat.ClearMessages();
-                        }
+                    if (Keyboard.getEventKey() == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_F3))
+                    {
+                        throw new Exception("Simulated crash triggered by pressing F3 + C");
+                    }
 
-                        if (Keyboard.getEventKey() == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_F3))
-                        {
-                            throw new Exception("Simulated crash triggered by pressing F3 + C");
-                        }
+                    if (Keyboard.getEventKey() == Keyboard.KEY_F1)
+                    {
+                        options.HideGUI = !options.HideGUI;
+                    }
 
-                        if (Keyboard.getEventKey() == Keyboard.KEY_F1)
+                    if (Keyboard.getEventKey() == Keyboard.KEY_F3)
+                    {
+                        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
                         {
-                            options.HideGUI = !options.HideGUI;
+                            displayGuiScreen(new DebugEditorScreen(this, null));
                         }
-
-                        if (Keyboard.getEventKey() == Keyboard.KEY_F3)
+                        else
                         {
-                            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
-                            {
-                                displayGuiScreen(new DebugEditorScreen(this, null));
-                            }
-                            else
-                            {
-                                options.ShowDebugInfo = !options.ShowDebugInfo;
-                            }
-                        }
-
-                        if (Keyboard.getEventKey() == Keyboard.KEY_F5)
-                        {
-                            options.CameraMode = (EnumCameraMode)((int)(options.CameraMode + 2) % 3);
-                        }
-
-                        if (Keyboard.getEventKey() == Keyboard.KEY_F8)
-                        {
-                            options.SmoothCamera = !options.SmoothCamera;
-                        }
-
-                        if (Keyboard.getEventKey() == Keyboard.KEY_F7)
-                        {
-                            ShowChunkBorders = !ShowChunkBorders;
-                        }
-
-                        if (Keyboard.getEventKey() == options.KeyBindInventory.keyCode)
-                        {
-                            displayGuiScreen(new InventoryScreen(player));
-                        }
-
-                        if (Keyboard.getEventKey() == options.KeyBindDrop.keyCode)
-                        {
-                            player.DropSelectedItem();
-                        }
-
-                        if (Keyboard.getEventKey() == options.KeyBindChat.keyCode)
-                        {
-                            displayGuiScreen(new ChatScreen(this));
-                        }
-
-                        if (Keyboard.getEventKey() == options.KeyBindCommand.keyCode)
-                        {
-                            displayGuiScreen(new ChatScreen(this, "/"));
+                            options.ShowDebugInfo = !options.ShowDebugInfo;
                         }
                     }
 
-                    for (int slotIndex = 0; slotIndex < 9; ++slotIndex)
+                    if (Keyboard.getEventKey() == Keyboard.KEY_F5)
                     {
-                        if (Keyboard.getEventKey() == Keyboard.KEY_1 + slotIndex)
-                        {
-                            player.inventory.selectedSlot = slotIndex;
-                        }
+                        options.CameraMode = (EnumCameraMode)((int)(options.CameraMode + 2) % 3);
                     }
 
-                    if (Keyboard.getEventKey() == options.KeyBindToggleFog.keyCode)
+                    if (Keyboard.getEventKey() == Keyboard.KEY_F8)
                     {
-                        options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f), 0.0f,
-                            1.0f);
+                        options.SmoothCamera = !options.SmoothCamera;
                     }
+
+                    if (Keyboard.getEventKey() == Keyboard.KEY_F7)
+                    {
+                        ShowChunkBorders = !ShowChunkBorders;
+                    }
+
+                    if (Keyboard.getEventKey() == options.KeyBindInventory.keyCode)
+                    {
+                        displayGuiScreen(new InventoryScreen(player));
+                    }
+
+                    if (Keyboard.getEventKey() == options.KeyBindDrop.keyCode)
+                    {
+                        player.DropSelectedItem();
+                    }
+
+                    if (Keyboard.getEventKey() == options.KeyBindChat.keyCode)
+                    {
+                        displayGuiScreen(new ChatScreen(this));
+                    }
+
+                    if (Keyboard.getEventKey() == options.KeyBindCommand.keyCode)
+                    {
+                        displayGuiScreen(new ChatScreen(this, "/"));
+                    }
+                }
+
+                for (int slotIndex = 0; slotIndex < 9; ++slotIndex)
+                {
+                    if (Keyboard.getEventKey() == Keyboard.KEY_1 + slotIndex)
+                    {
+                        player.inventory.selectedSlot = slotIndex;
+                    }
+                }
+
+                if (Keyboard.getEventKey() == options.KeyBindToggleFog.keyCode)
+                {
+                    options.RenderDistanceOption.Value = System.Math.Clamp(options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f), 0.0f,
+                        1.0f);
                 }
             }
         }
