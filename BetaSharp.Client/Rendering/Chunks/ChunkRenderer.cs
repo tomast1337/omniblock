@@ -315,42 +315,41 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         for (int i = 0; i < maxChunks; i++)
         {
-            if (_meshGenerator.Mesh is MeshBuildResult mesh)
+            if (!_meshGenerator.TryDequeueMesh(out var mesh)) break;
+
+            if (IsChunkInRenderDistance(mesh.Pos, viewPos))
             {
-                if (IsChunkInRenderDistance(mesh.Pos, viewPos))
+                if (!_chunkVersions.TryGetValue(mesh.Pos, out ChunkMeshVersion? version))
                 {
-                    if (!_chunkVersions.TryGetValue(mesh.Pos, out ChunkMeshVersion? version))
-                    {
-                        version = ChunkMeshVersion.Get();
-                        _chunkVersions[mesh.Pos] = version;
-                    }
+                    version = ChunkMeshVersion.Get();
+                    _chunkVersions[mesh.Pos] = version;
+                }
 
-                    version.CompleteMesh(mesh.Version);
+                version.CompleteMesh(mesh.Version);
 
-                    if (version.IsStale(mesh.Version))
+                if (version.IsStale(mesh.Version))
+                {
+                    long? snapshot = version.SnapshotIfNeeded();
+                    if (snapshot.HasValue)
                     {
-                        long? snapshot = version.SnapshotIfNeeded();
-                        if (snapshot.HasValue)
-                        {
-                            _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _alternateBlocks());
-                        }
-                        continue;
+                        _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _alternateBlocks());
                     }
+                    continue;
+                }
 
-                    if (_renderers.TryGetValue(mesh.Pos, out SubChunkState? state))
-                    {
-                        state.Renderer.UploadMeshData(mesh.Solid, mesh.Translucent);
-                        state.IsLit = mesh.IsLit;
-                        state.Renderer.VisibilityData = mesh.VisibilityData;
-                    }
-                    else
-                    {
-                        var renderer = new SubChunkRenderer(mesh.Pos);
-                        renderer.UploadMeshData(mesh.Solid, mesh.Translucent);
-                        renderer.VisibilityData = mesh.VisibilityData;
-                        _renderers[mesh.Pos] = new SubChunkState(mesh.IsLit, renderer);
-                        UpdateAdjacency(renderer, true);
-                    }
+                if (_renderers.TryGetValue(mesh.Pos, out SubChunkState? state))
+                {
+                    state.Renderer.UploadMeshData(mesh.Solid, mesh.Translucent);
+                    state.IsLit = mesh.IsLit;
+                    state.Renderer.VisibilityData = mesh.VisibilityData;
+                }
+                else
+                {
+                    var renderer = new SubChunkRenderer(mesh.Pos);
+                    renderer.UploadMeshData(mesh.Solid, mesh.Translucent);
+                    renderer.VisibilityData = mesh.VisibilityData;
+                    _renderers[mesh.Pos] = new SubChunkState(mesh.IsLit, renderer);
+                    UpdateAdjacency(renderer, true);
                 }
             }
         }
