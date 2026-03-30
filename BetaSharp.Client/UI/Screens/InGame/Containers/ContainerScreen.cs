@@ -10,7 +10,7 @@ using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
-public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(BetaSharp.Instance)
+public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlots) : UIScreen(game)
 {
     public ScreenHandler InventorySlots { get; } = inventorySlots;
     protected int _xSize = 176;
@@ -90,7 +90,7 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
                 string itemName = ("" + TranslationStorage.Instance.TranslateNamedKey(stack.getItemName())).Trim();
                 if (itemName.Length > 0)
                 {
-                    int textWidth = Game.FontRenderer.GetStringWidth(itemName);
+                    int textWidth = Game.TextRenderer.GetStringWidth(itemName);
                     float tx = MouseX + 12;
                     float ty = MouseY - 12;
 

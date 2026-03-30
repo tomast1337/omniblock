@@ -56,13 +56,15 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         row1.Style.JustifyContent = Justify.Center;
         row1.Style.MarginBottom = 2;
 
-        _btnSelect = new Button { Text = translations.TranslateKey("selectWorld.select") };
+        _btnSelect = CreateButton();
+        _btnSelect.Text = translations.TranslateKey("selectWorld.select");
         _btnSelect.Style.Width = 150;
         _btnSelect.Style.SetMargin(2);
         _btnSelect.OnClick += (e) => SelectWorld(_selectedWorldIndex);
         row1.AddChild(_btnSelect);
 
-        Button btnCreate = new() { Text = translations.TranslateKey("selectWorld.create") };
+        Button btnCreate = CreateButton();
+        btnCreate.Text = translations.TranslateKey("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
         btnCreate.OnClick += (e) => Game.DisplayUIScreen(new CreateWorldScreen(Game));
@@ -74,19 +76,22 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         row2.Style.FlexDirection = FlexDirection.Row;
         row2.Style.JustifyContent = Justify.Center;
 
-        _btnRename = new Button { Text = translations.TranslateKey("selectWorld.rename") };
+        _btnRename = CreateButton();
+        _btnRename.Text = translations.TranslateKey("selectWorld.rename");
         _btnRename.Style.Width = 72;
         _btnRename.Style.SetMargin(2);
         _btnRename.OnClick += (e) => RenameSelected();
         row2.AddChild(_btnRename);
 
-        _btnDelete = new Button { Text = translations.TranslateKey("selectWorld.delete") };
+        _btnDelete = CreateButton();
+        _btnDelete.Text = translations.TranslateKey("selectWorld.delete");
         _btnDelete.Style.Width = 72;
         _btnDelete.Style.SetMargin(2);
         _btnDelete.OnClick += (e) => DeleteSelected();
         row2.AddChild(_btnDelete);
 
-        Button btnCancel = new() { Text = translations.TranslateKey("gui.cancel") };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));

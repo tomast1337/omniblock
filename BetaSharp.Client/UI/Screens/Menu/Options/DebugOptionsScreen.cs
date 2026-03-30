@@ -6,8 +6,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class DebugOptionsScreen : BaseOptionsScreen
 {
-    public DebugOptionsScreen(UIScreen? parent, GameOptions options)
-        : base(parent, options, "options.debugTitle")
+    public DebugOptionsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
+        : base(game, parent, options, "options.debugTitle")
     {
         TitleText = "Debug Options";
     }
@@ -27,7 +27,8 @@ public class DebugOptionsScreen : BaseOptionsScreen
             list.AddChild(control);
         }
 
-        Button editorBtn = new() { Text = "Edit Debug Components..." };
+        Button editorBtn = CreateButton();
+        editorBtn.Text = "Edit Debug Components...";
         editorBtn.Style.MarginTop = 2;
         editorBtn.Style.MarginBottom = 2;
         editorBtn.Style.Width = 310;

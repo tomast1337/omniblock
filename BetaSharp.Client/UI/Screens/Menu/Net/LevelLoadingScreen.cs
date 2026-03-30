@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
-public class LevelLoadingScreen(string worldDir, WorldSettings settings) : UIScreen(BetaSharp.Instance)
+public class LevelLoadingScreen(BetaSharp game, string worldDir, WorldSettings settings) : UIScreen(game)
 {
     private readonly ILogger<LevelLoadingScreen> _logger = Log.Instance.For<LevelLoadingScreen>();
     private readonly string _worldDir = worldDir;
@@ -60,7 +60,7 @@ public class LevelLoadingScreen(string worldDir, WorldSettings settings) : UIScr
         {
             if (Game.InternalServer.stopped)
             {
-                Game.DisplayUIScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
+                Game.DisplayUIScreen(new ConnectFailedScreen(Game, "connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
                 return;
             }
 

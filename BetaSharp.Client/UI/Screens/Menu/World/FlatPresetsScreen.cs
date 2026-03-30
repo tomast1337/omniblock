@@ -81,13 +81,15 @@ public class FlatPresetsScreen(BetaSharp game, CreateFlatWorldScreen parent) : U
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        _btnSelect = new Button { Text = "Select Preset" };
+        _btnSelect = CreateButton();
+        _btnSelect.Text = "Select Preset";
         _btnSelect.Style.Width = 150;
         _btnSelect.Style.SetMargin(2);
         _btnSelect.OnClick += (e) => SelectSelected();
         buttonPanel.AddChild(_btnSelect);
 
-        Button btnCancel = new() { Text = "Cancel" };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);

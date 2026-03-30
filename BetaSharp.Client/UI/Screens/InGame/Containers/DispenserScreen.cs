@@ -9,8 +9,8 @@ namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
 public class DispenserScreen : ContainerScreen
 {
-    public DispenserScreen(InventoryPlayer inventory, BlockEntityDispenser dispenser)
-        : base(new DispenserScreenHandler(inventory, dispenser))
+    public DispenserScreen(BetaSharp game, InventoryPlayer inventory, BlockEntityDispenser dispenser)
+        : base(game, new DispenserScreenHandler(inventory, dispenser))
     {
     }
 

@@ -26,7 +26,7 @@ public class HeldItemRenderer
     public HeldItemRenderer(BetaSharp game)
     {
         _game = game;
-        mapRenderer = new MapItemRenderer(game.FontRenderer, game.Options, game.TextureManager);
+        mapRenderer = new MapItemRenderer(game.TextRenderer, game.Options, game.TextureManager);
     }
 
     public void renderItem(EntityLiving entity, ItemStack item)
@@ -208,11 +208,11 @@ public class HeldItemRenderer
                 GLManager.GL.Rotate(-90.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(59.0F, 0.0F, 0.0F, 1.0F);
                 GLManager.GL.Rotate(-65 * var21, 0.0F, 1.0F, 0.0F);
-                EntityRenderer var11 = EntityRenderDispatcher.instance.GetEntityRenderObject(_game.Player);
+                EntityRenderer var11 = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
                 PlayerEntityRenderer var12 = (PlayerEntityRenderer)var11;
                 float var13 = 1.0F;
                 GLManager.GL.Scale(var13, var13, var13);
-                var12.drawFirstPersonHand();
+                var12.DrawFirstPersonHand();
                 GLManager.GL.PopMatrix();
             }
 
@@ -293,11 +293,11 @@ public class HeldItemRenderer
             GLManager.GL.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Scale(1.0F, 1.0F, 1.0F);
             GLManager.GL.Translate(5.6F, 0.0F, 0.0F);
-            EntityRenderer var15 = EntityRenderDispatcher.instance.GetEntityRenderObject(_game.Player);
+            EntityRenderer var15 = EntityRenderDispatcher.Instance.GetEntityRenderObject(_game.Player);
             PlayerEntityRenderer var16 = (PlayerEntityRenderer)var15;
             var10 = 1.0F;
             GLManager.GL.Scale(var10, var10, var10);
-            var16.drawFirstPersonHand();
+            var16.DrawFirstPersonHand();
             GLManager.GL.PopMatrix();
         }
 
@@ -501,7 +501,7 @@ public class HeldItemRenderer
 
     private void bindSkinTexture()
     {
-        var skinHandle = EntityRenderDispatcher.instance.skinManager?.GetTextureHandle(_game.Player?.name);
+        var skinHandle = EntityRenderDispatcher.Instance.SkinManager?.GetTextureHandle(_game.Player?.name);
         if (skinHandle != null)
         {
             skinHandle.Bind();

@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
@@ -15,10 +16,12 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.UI.Rendering;
 
-public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager)
+public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize)
 {
     public TextureManager TextureManager { get; } = textureManager;
+    public TextRenderer TextRenderer { get; } = textRenderer;
     private readonly ItemRenderer _itemRenderer = new();
+    private readonly GameOptions _gameOptions = gameOptions;
 
     private float _translateX = 0;
     private float _translateY = 0;
@@ -105,11 +108,11 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void EnableClipping(int x, int y, int width, int height)
     {
-        BetaSharp game = BetaSharp.Instance;
-        ScaledResolution res = new(game.Options, game.DisplayWidth, game.DisplayHeight);
+        Vector2D<int> displaySize = getDisplaySize();
+        ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
         int scale = res.ScaleFactor;
-        int scaledWindowHeight = game.DisplayHeight;
+        int scaledWindowHeight = displaySize.Y;
 
         int physicalX = (int)((x + _translateX) * scale);
         int physicalWidth = width * scale;
@@ -149,11 +152,11 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         {
             if (shadow)
             {
-                textRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
+                TextRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
             }
             else
             {
-                textRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
+                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
             }
             return;
         }
@@ -163,18 +166,18 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Scale(scale, scale, 1);
         if (shadow)
         {
-            textRenderer.DrawStringWithShadow(text, 0, 0, color);
+            TextRenderer.DrawStringWithShadow(text, 0, 0, color);
         }
         else
         {
-            textRenderer.DrawString(text, 0, 0, color);
+            TextRenderer.DrawString(text, 0, 0, color);
         }
         GLManager.GL.PopMatrix();
     }
 
     public void DrawTextWrapped(string text, float x, float y, float maxWidth, Color color)
     {
-        textRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color);
+        TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color);
     }
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
@@ -183,11 +186,11 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         {
             if (shadow)
             {
-                DrawCenteredStringRaw(textRenderer, text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
+                DrawCenteredStringRaw(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
             }
             else
             {
-                textRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
+                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, SixLabors.Fonts.HorizontalAlignment.Center);
             }
             return;
         }
@@ -199,11 +202,11 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         if (shadow)
         {
-            DrawCenteredStringRaw(textRenderer, text, 0, 0, color);
+            DrawCenteredStringRaw(text, 0, 0, color);
         }
         else
         {
-            textRenderer.DrawString(text, 0, 0, color, SixLabors.Fonts.HorizontalAlignment.Center);
+            TextRenderer.DrawString(text, 0, 0, color, SixLabors.Fonts.HorizontalAlignment.Center);
         }
 
         GLManager.GL.PopMatrix();
@@ -276,7 +279,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
-        itemRenderer.drawItemIntoGui(textRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+        itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
     }
 
     public void DrawItem(ItemStack stack, float x, float y)
@@ -295,7 +298,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
             GLManager.GL.Enable(GLEnum.DepthTest);
 
             Lighting.turnOnGui();
-            _itemRenderer.renderItemIntoGUI(textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+            _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
 
             GLManager.GL.Disable(GLEnum.CullFace);
@@ -307,7 +310,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         {
             GLManager.GL.Disable(GLEnum.Lighting);
             GLManager.GL.Disable(GLEnum.DepthTest);
-            _itemRenderer.renderItemIntoGUI(textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+            _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
         }
     }
 
@@ -317,7 +320,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.DepthTest);
-        _itemRenderer.renderItemOverlayIntoGUI(textRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+        _itemRenderer.renderItemOverlayIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
     }
 
     public void DrawEntity(Entity entity, float x, float y, float scale, float mouseX, float mouseY)
@@ -352,8 +355,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         entity.minBrightness = 1.0F;
 
         GLManager.GL.Translate(0.0F, entity.standingEyeHeight, 0.0F);
-        EntityRenderDispatcher.instance.playerViewY = 180.0F;
-        EntityRenderDispatcher.instance.renderEntityWithPosYaw(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
+        EntityRenderDispatcher.Instance.PlayerViewY = 180.0F;
+        EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
 
         entity.minBrightness = 0.0F;
         if (entity is EntityLiving el3)
@@ -416,9 +419,9 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Enable(GLEnum.Texture2D);
     }
 
-    private static void DrawCenteredStringRaw(TextRenderer renderer, string text, int x, int y, Color color)
+    private void DrawCenteredStringRaw(string text, int x, int y, Color color)
     {
-        renderer.DrawStringWithShadow(text, x - renderer.GetStringWidth(text) / 2, y, color);
+        TextRenderer.DrawStringWithShadow(text, x - TextRenderer.GetStringWidth(text) / 2, y, color);
     }
 
     public void DrawSign(BlockEntitySign sign, float x, float y, float scale)

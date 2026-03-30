@@ -45,7 +45,8 @@ public class EditServerScreen(BetaSharp game, MultiplayerScreen parent, ServerDa
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnDone = new() { Text = "Done" };
+        Button btnDone = CreateButton();
+        btnDone.Text = "Done";
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(0, 4, 0, 0);
         btnDone.OnClick += (e) =>
@@ -57,7 +58,8 @@ public class EditServerScreen(BetaSharp game, MultiplayerScreen parent, ServerDa
         };
         buttonPanel.AddChild(btnDone);
 
-        Button btnCancel = new() { Text = "Cancel" };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);
         buttonPanel.AddChild(btnCancel);

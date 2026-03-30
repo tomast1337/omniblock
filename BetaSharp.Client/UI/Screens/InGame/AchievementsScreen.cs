@@ -7,7 +7,7 @@ using BetaSharp.Stats;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class AchievementsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(parent?.Game ?? BetaSharp.Instance)
+public class AchievementsScreen(BetaSharp game, UIScreen? parent, StatFileWriter stats) : UIScreen(parent?.Game ?? game)
 {
     public override bool PausesGame => true;
 
@@ -70,7 +70,8 @@ public class AchievementsScreen(UIScreen? parent, StatFileWriter stats) : UIScre
 
         PopulateAchievementList(cardList);
 
-        Button btnDone = new() { Text = "Done" };
+        Button btnDone = CreateButton();
+        btnDone.Text = "Done";
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0;

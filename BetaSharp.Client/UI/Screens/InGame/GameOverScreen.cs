@@ -39,7 +39,8 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         scoreLabel.Style.MarginBottom = 20;
         Root.AddChild(scoreLabel);
 
-        Button btnRespawn = new() { Text = "Respawn" };
+        Button btnRespawn = CreateButton();
+        btnRespawn.Text = "Respawn";
         btnRespawn.OnClick += (e) =>
         {
             Game.Player.respawn();
@@ -53,7 +54,8 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         }
         Root.AddChild(btnRespawn);
 
-        Button btnTitle = new() { Text = "Title menu" };
+        Button btnTitle = CreateButton();
+        btnTitle.Text = "Title menu";
         btnTitle.OnClick += (e) =>
         {
             Game.ChangeWorld(null!);

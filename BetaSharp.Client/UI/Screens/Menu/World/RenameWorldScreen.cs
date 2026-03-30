@@ -40,7 +40,8 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnRename = new() { Text = translations.TranslateKey("selectWorld.renameButton") };
+        Button btnRename = CreateButton();
+        btnRename.Text = translations.TranslateKey("selectWorld.renameButton");
         btnRename.Style.Width = 100;
         btnRename.Style.SetMargin(2);
         btnRename.OnClick += (e) =>
@@ -53,7 +54,8 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
         };
         buttonPanel.AddChild(btnRename);
 
-        Button btnCancel = new() { Text = translations.TranslateKey("gui.cancel") };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);

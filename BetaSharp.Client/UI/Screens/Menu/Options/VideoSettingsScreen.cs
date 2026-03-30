@@ -1,10 +1,9 @@
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class VideoSettingsScreen(UIScreen? parent, GameOptions options) : BaseOptionsScreen(parent, options, "options.videoTitle")
+public class VideoSettingsScreen(BetaSharp game, UIScreen? parent, GameOptions options) : BaseOptionsScreen(game, parent, options, "options.videoTitle")
 {
     protected override IEnumerable<GameOption> GetOptions() => Options.VideoScreenOptions;
 

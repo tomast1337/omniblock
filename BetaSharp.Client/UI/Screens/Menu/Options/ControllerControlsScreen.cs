@@ -6,8 +6,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class ControllerControlsScreen : BaseOptionsScreen
 {
-    public ControllerControlsScreen(UIScreen? parent, GameOptions options)
-        : base(parent, options, "Controller Settings")
+    public ControllerControlsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
+        : base(game, parent, options, "Controller Settings")
     {
         TitleText = "Controller Settings";
     }
@@ -31,17 +31,19 @@ public class ControllerControlsScreen : BaseOptionsScreen
         list.AddChild(type);
 
         // Edit Bindings Button
-        Button btnBindings = new() { Text = "Edit Bindings..." };
+        Button btnBindings = CreateButton();
+        btnBindings.Text = "Edit Bindings...";
         btnBindings.Style.Width = 310;
         btnBindings.Style.MarginBottom = 4;
         btnBindings.OnClick += (e) =>
         {
-            Game.DisplayUIScreen(new ControllerBindingsScreen(this, Options));
+            Game.DisplayUIScreen(new ControllerBindingsScreen(Game, this, Options));
         };
         list.AddChild(btnBindings);
 
         // Reset Button
-        Button btnReset = new() { Text = "Reset Bindings" };
+        Button btnReset = CreateButton();
+        btnReset.Text = "Reset Bindings";
         btnReset.Style.Width = 310;
         btnReset.OnClick += (e) =>
         {

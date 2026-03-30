@@ -52,7 +52,8 @@ public class ConnectingScreen : UIScreen
             Root.AddChild(lblDetail);
         }
 
-        Button btnCancel = new() { Text = TranslationStorage.Instance.TranslateKey("gui.cancel") };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = TranslationStorage.Instance.TranslateKey("gui.cancel");
         btnCancel.OnClick += (e) => Cancel();
         Root.AddChild(btnCancel);
     }

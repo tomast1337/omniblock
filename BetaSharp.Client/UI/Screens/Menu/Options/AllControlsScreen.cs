@@ -5,8 +5,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class AllControlsScreen : BaseOptionsScreen
 {
-    public AllControlsScreen(UIScreen? parent, GameOptions options)
-        : base(parent, options, "options.controls")
+    public AllControlsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
+        : base(game, parent, options, "options.controls")
     {
         TitleText = "Controls";
     }
@@ -17,20 +17,22 @@ public class AllControlsScreen : BaseOptionsScreen
     {
         Panel list = CreateVerticalList();
 
-        Button btnKeyboard = new() { Text = "Keyboard Controls..." };
+        Button btnKeyboard = CreateButton();
+        btnKeyboard.Text = "Keyboard Controls...";
         btnKeyboard.Style.Width = 310;
         btnKeyboard.Style.MarginBottom = 4;
         btnKeyboard.OnClick += (e) =>
         {
-            Game.DisplayUIScreen(new ControlsScreen(this, Options));
+            Game.DisplayUIScreen(new ControlsScreen(Game, this, Options));
         };
         list.AddChild(btnKeyboard);
 
-        Button btnController = new() { Text = "Controller Settings..." };
+        Button btnController = CreateButton();
+        btnController.Text = "Controller Settings...";
         btnController.Style.Width = 310;
         btnController.OnClick += (e) =>
         {
-            Game.DisplayUIScreen(new ControllerControlsScreen(this, Options));
+            Game.DisplayUIScreen(new ControllerControlsScreen(Game, this, Options));
         };
         list.AddChild(btnController);
 

@@ -8,8 +8,8 @@ public class ControlsScreen : BaseOptionsScreen
 {
     private int _selectedKey = -1;
 
-    public ControlsScreen(UIScreen? parent, GameOptions options)
-        : base(parent, options, "controls.title")
+    public ControlsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
+        : base(game, parent, options, "controls.title")
     {
         TitleText = "Controls";
     }
@@ -46,7 +46,8 @@ public class ControlsScreen : BaseOptionsScreen
             row.AddChild(label);
 
             string btnText = _selectedKey == index ? "> ??? <" : Options.GetOptionDisplayString(index);
-            Button btn = new() { Text = btnText };
+            Button btn = CreateButton();
+            btn.Text = btnText;
             btn.Style.Width = 80;
             btn.OnClick += (e) =>
             {

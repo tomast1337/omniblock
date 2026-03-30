@@ -10,11 +10,11 @@ public class ConnectFailedScreen : UIScreen
     private readonly string _errorMessage;
     private readonly string _errorDetail;
 
-    public ConnectFailedScreen(string messageKey, string detailKey, params object[]? formatArgs) : base(BetaSharp.Instance)
+    public ConnectFailedScreen(BetaSharp game, string messageKey, string detailKey, params object[]? formatArgs) : base(game)
     {
         TranslationStorage translations = TranslationStorage.Instance;
         _errorMessage = translations.TranslateKey(messageKey);
-        
+
         if (formatArgs != null && formatArgs.Length > 0)
         {
             _errorDetail = translations.TranslateKeyFormat(detailKey, formatArgs);
@@ -28,15 +28,15 @@ public class ConnectFailedScreen : UIScreen
     protected override void Init()
     {
         Game.StopInternalServer();
-        
+
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        Label lblError = new() 
-        { 
-            Text = _errorMessage, 
+        Label lblError = new()
+        {
+            Text = _errorMessage,
             TextColor = Color.White,
             Centered = true
         };
@@ -52,7 +52,8 @@ public class ConnectFailedScreen : UIScreen
         lblDetail.Style.MarginBottom = 20;
         Root.AddChild(lblDetail);
 
-        Button btnToMenu = new() { Text = TranslationStorage.Instance.TranslateKey("gui.toMenu") };
+        Button btnToMenu = CreateButton();
+        btnToMenu.Text = TranslationStorage.Instance.TranslateKey("gui.toMenu");
         btnToMenu.Style.Width = 150;
         btnToMenu.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));
         Root.AddChild(btnToMenu);

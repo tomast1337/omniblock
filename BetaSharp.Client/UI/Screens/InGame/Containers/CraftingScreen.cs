@@ -9,8 +9,8 @@ namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
 public class CraftingScreen : ContainerScreen
 {
-    public CraftingScreen(InventoryPlayer player, IWorldContext world, int posX, int posY, int posZ)
-        : base(new CraftingScreenHandler(player, world, posX, posY, posZ))
+    public CraftingScreen(BetaSharp game, InventoryPlayer player, IWorldContext world, int posX, int posY, int posZ)
+        : base(game, new CraftingScreenHandler(player, world, posX, posY, posZ))
     {
     }
 

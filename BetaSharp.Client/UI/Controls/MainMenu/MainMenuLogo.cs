@@ -16,7 +16,7 @@ public class MainMenuLogo : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        TextureHandle logoTexture = BetaSharp.Instance.TextureManager.GetTextureId("/title/mclogo.png");
+        TextureHandle logoTexture = renderer.TextureManager.GetTextureId("/title/mclogo.png");
         
         // Match legacy rendering logic (split into two textured quads)
         renderer.DrawTexturedModalRect(logoTexture, 0, 0, 0, 0, 155, 44);

@@ -10,7 +10,7 @@ public class InventoryScreen : ContainerScreen
 {
     private EntityPreview _playerPreview = null!;
 
-    public InventoryScreen(EntityPlayer player) : base(player.playerScreenHandler)
+    public InventoryScreen(BetaSharp game, EntityPlayer player) : base(game, player.playerScreenHandler)
     {
         player.increaseStat(global::BetaSharp.Achievements.OpenInventory, 1);
     }
@@ -33,7 +33,7 @@ public class InventoryScreen : ContainerScreen
         background.Style.Position = PositionType.Absolute;
         _containerPanel.AddChild(background);
 
-        _playerPreview = new EntityPreview
+        _playerPreview = new EntityPreview(() => Game.CurrentScreen)
         {
             Entity = Game.Player,
             Scale = 30.0f

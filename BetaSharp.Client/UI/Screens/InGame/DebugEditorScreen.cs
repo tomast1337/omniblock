@@ -58,21 +58,17 @@ public class DebugEditorScreen : UIScreen
         buttonContainer.Style.Width = 320;
         Root.AddChild(buttonContainer);
 
-        var addButton = new Button
-        {
-            Text = "Add New...",
-            Enabled = true
-        };
+        Button addButton = CreateButton();
+        addButton.Text = "Add New...";
+        addButton.Enabled = true;
         addButton.Style.Width = 150;
         addButton.Style.SetMargin(2);
         addButton.OnClick += (_) => Game.DisplayUIScreen(new NewDebugComponentScreen(Game, this));
         buttonContainer.AddChild(addButton);
 
-        var saveButton = new Button
-        {
-            Text = "Save",
-            Enabled = true
-        };
+        Button saveButton = CreateButton();
+        saveButton.Text = "Save";
+        saveButton.Enabled = true;
         saveButton.Style.Width = 150;
         saveButton.Style.SetMargin(2);
         saveButton.OnClick += (_) =>
@@ -87,11 +83,9 @@ public class DebugEditorScreen : UIScreen
         };
         buttonContainer.AddChild(saveButton);
 
-        _changeSideButton = new Button
-        {
-            Text = "Change Side",
-            Enabled = false
-        };
+        _changeSideButton = CreateButton();
+        _changeSideButton.Text = "Change Side";
+        _changeSideButton.Enabled = false;
         _changeSideButton.Style.Width = 100;
         _changeSideButton.Style.SetMargin(2);
         _changeSideButton.OnClick += (_) =>
@@ -104,11 +98,9 @@ public class DebugEditorScreen : UIScreen
         };
         buttonContainer.AddChild(_changeSideButton);
 
-        _deleteButton = new Button
-        {
-            Text = "Delete",
-            Enabled = false
-        };
+        _deleteButton = CreateButton();
+        _deleteButton.Text = "Delete";
+        _deleteButton.Enabled = false;
         _deleteButton.Style.Width = 100;
         _deleteButton.Style.SetMargin(2);
         _deleteButton.OnClick += (_) =>
@@ -123,11 +115,9 @@ public class DebugEditorScreen : UIScreen
         };
         buttonContainer.AddChild(_deleteButton);
 
-        var defaultsButton = new Button
-        {
-            Text = "Defaults",
-            Enabled = true
-        };
+        Button defaultsButton = CreateButton();
+        defaultsButton.Text = "Defaults";
+        defaultsButton.Enabled = true;
         defaultsButton.Style.Width = 100;
         defaultsButton.Style.SetMargin(2);
         defaultsButton.OnClick += (_) =>
@@ -140,11 +130,9 @@ public class DebugEditorScreen : UIScreen
         };
         buttonContainer.AddChild(defaultsButton);
 
-        var cancelButton = new Button
-        {
-            Text = "Cancel",
-            Enabled = true
-        };
+        Button cancelButton = CreateButton();
+        cancelButton.Text = "Cancel";
+        cancelButton.Enabled = true;
         cancelButton.Style.Width = 310;
         cancelButton.Style.SetMargin(2);
         cancelButton.OnClick += (_) => Close();

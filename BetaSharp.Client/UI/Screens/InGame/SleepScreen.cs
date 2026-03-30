@@ -18,7 +18,8 @@ public class SleepScreen(BetaSharp game) : UIScreen(game)
 
         TranslationStorage translations = TranslationStorage.Instance;
 
-        Button btnStopSleep = new() { Text = translations.TranslateKey("multiplayer.stopSleeping") };
+        Button btnStopSleep = CreateButton();
+        btnStopSleep.Text = translations.TranslateKey("multiplayer.stopSleeping");
         btnStopSleep.Style.Width = 200;
         btnStopSleep.OnClick += (_) => SendStopSleepingCommand();
 

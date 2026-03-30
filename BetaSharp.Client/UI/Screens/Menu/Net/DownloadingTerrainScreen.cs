@@ -7,7 +7,7 @@ using BetaSharp.Network.Packets.Play;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
-public class DownloadingTerrainScreen(ClientNetworkHandler networkHandler) : UIScreen(BetaSharp.Instance)
+public class DownloadingTerrainScreen(BetaSharp game, ClientNetworkHandler networkHandler) : UIScreen(game)
 {
     private readonly ClientNetworkHandler _networkHandler = networkHandler;
     private int _tickCounter = 0;

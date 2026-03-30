@@ -9,9 +9,10 @@ public class Button : UIElement
     public string Text { get; set; } = "";
     public Color TextColor { get; set; } = Color.GrayE0;
     public Color HoverTextColor { get; set; } = Color.HoverYellow;
+    public Action ClickSound;
 
 
-    public Button()
+    public Button(Action clickSound)
     {
         Style.Width = 200;
         Style.Height = 20;
@@ -19,7 +20,9 @@ public class Button : UIElement
         OnClick += (e) =>
         {
             if (Enabled)
-                BetaSharp.Instance.SoundManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+            {
+                clickSound();
+            }
         };
 
         OnMouseEnter += (e) =>
@@ -39,7 +42,7 @@ public class Button : UIElement
     {
         int hoverState = !Enabled ? 0 : (IsHovered ? 2 : 1);
 
-        TextureHandle texture = BetaSharp.Instance.TextureManager.GetTextureId("/gui/gui.png");
+        TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/gui.png");
 
         // Use fixed UV height of 20 to avoid reading into the next button in the spritesheet
         float uvHeight = 20;

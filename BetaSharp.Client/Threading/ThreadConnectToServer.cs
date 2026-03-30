@@ -40,7 +40,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
                 return;
             }
 
-            game.DisplayUIScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
+            game.DisplayUIScreen(new ConnectFailedScreen(game, "connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
         }
         catch (SocketException ex)
         {
@@ -49,7 +49,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
                 return;
             }
 
-            game.DisplayUIScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", ex.Message));
+            game.DisplayUIScreen(new ConnectFailedScreen(game, "connect.failed", "disconnect.genericReason", ex.Message));
         }
         catch (Exception e)
         {
@@ -59,7 +59,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
             }
 
             _logger.LogError(e, e.Message);
-            game.DisplayUIScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", e.ToString()));
+            game.DisplayUIScreen(new ConnectFailedScreen(game, "connect.failed", "disconnect.genericReason", e.ToString()));
         }
     }
-}
+}

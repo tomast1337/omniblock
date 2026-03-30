@@ -4,7 +4,7 @@ using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class OptionsScreen(UIScreen? parent, GameOptions options) : BaseOptionsScreen(parent, options, "options.title")
+public class OptionsScreen(BetaSharp game, UIScreen? parent, GameOptions options) : BaseOptionsScreen(game, parent, options, "options.title")
 {
     protected override IEnumerable<GameOption> GetOptions() => Options.MainScreenOptions;
 
@@ -36,7 +36,8 @@ public class OptionsScreen(UIScreen? parent, GameOptions options) : BaseOptionsS
 
         void AddSubButton(string text, Action onClick)
         {
-            Button btn = new() { Text = text };
+            Button btn = CreateButton();
+            btn.Text = text;
             btn.Style.MarginTop = 2;
             btn.Style.MarginBottom = 2;
             btn.Style.Width = 310;
@@ -48,10 +49,10 @@ public class OptionsScreen(UIScreen? parent, GameOptions options) : BaseOptionsS
             list.AddChild(btn);
         }
 
-        AddSubButton(translations.TranslateKey("options.video"), () => Game.DisplayUIScreen(new VideoSettingsScreen(this, Options)));
-        AddSubButton("Audio Settings", () => Game.DisplayUIScreen(new AudioSettingsScreen(this, Options)));
-        AddSubButton(translations.TranslateKey("options.controls"), () => Game.DisplayUIScreen(new AllControlsScreen(this, Options)));
-        AddSubButton("Debug Options...", () => Game.DisplayUIScreen(new DebugOptionsScreen(this, Options)));
+        AddSubButton(translations.TranslateKey("options.video"), () => Game.DisplayUIScreen(new VideoSettingsScreen(Game, this, Options)));
+        AddSubButton("Audio Settings", () => Game.DisplayUIScreen(new AudioSettingsScreen(Game, this, Options)));
+        AddSubButton(translations.TranslateKey("options.controls"), () => Game.DisplayUIScreen(new AllControlsScreen(Game, this, Options)));
+        AddSubButton("Debug Options...", () => Game.DisplayUIScreen(new DebugOptionsScreen(Game, this, Options)));
 
         return list;
     }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? BetaSharp.Instance)
+public class TexturePacksScreen(BetaSharp game, UIScreen? parent) : UIScreen(parent?.Game ?? game)
 {
     private readonly ILogger<TexturePacksScreen> _logger = Log.Instance.For<TexturePacksScreen>();
     private readonly UIScreen? _parent = parent;
@@ -60,13 +60,15 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
         buttonContainer.Style.JustifyContent = Justify.Center;
         buttonContainer.Style.Width = 320;
 
-        Button btnOpen = new() { Text = TranslationStorage.Instance.TranslateKey("texturePack.openFolder") };
+        Button btnOpen = CreateButton();
+        btnOpen.Text = TranslationStorage.Instance.TranslateKey("texturePack.openFolder");
         btnOpen.Style.Width = 150;
         btnOpen.Style.SetMargin(2);
         btnOpen.OnClick += (e) => OpenFolder();
         buttonContainer.AddChild(btnOpen);
 
-        Button btnDone = new() { Text = TranslationStorage.Instance.TranslateKey("gui.done") };
+        Button btnDone = CreateButton();
+        btnDone.Text = TranslationStorage.Instance.TranslateKey("gui.done");
         btnDone.Style.Width = 150;
         btnDone.Style.SetMargin(2);
         btnDone.OnClick += (e) => OnDone();

@@ -17,9 +17,9 @@ public class Label : UIElement
     } = 1.0f;
     public bool HasShadow { get; set; } = true;
 
-    public override void Measure(float availableWidth, float availableHeight)
+    public override void Measure(MeasureContext context)
     {
-        ComputedWidth = (Style.Width ?? BetaSharp.Instance.FontRenderer.GetStringWidth(Text)) * Scale;
+        ComputedWidth = (Style.Width ?? context.MeasureString(Text)) * Scale;
         ComputedHeight = (Style.Height ?? 8) * Scale;
     }
 

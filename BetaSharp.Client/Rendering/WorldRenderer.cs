@@ -58,7 +58,7 @@ public class WorldRenderer : IWorldEventListener
         int var7 = 256 / var6 + 2;
         float var5 = 16.0F;
 
-        ChunkRenderer = new(gameInstance.World);
+        ChunkRenderer = new(gameInstance.World, () => _game.Options.AlternateBlocksEnabled);
 
         int var8;
         int var9;
@@ -152,7 +152,7 @@ public class WorldRenderer : IWorldEventListener
     {
         _world?.EventListeners.Remove(this);
 
-        EntityRenderDispatcher.instance.SetWorld(world);
+        EntityRenderDispatcher.Instance.World = world;
         _world = world;
         if (world != null)
         {
@@ -181,7 +181,7 @@ public class WorldRenderer : IWorldEventListener
         _renderDistance = _game.Options.renderDistance;
 
         ChunkRenderer?.Dispose();
-        ChunkRenderer = new(_world);
+        ChunkRenderer = new(_world, () => _game.Options.AlternateBlocksEnabled);
         ChunkMeshVersion.ClearPool();
 
         _renderEntitiesStartupCounter = 2;
@@ -195,15 +195,15 @@ public class WorldRenderer : IWorldEventListener
         }
         else
         {
-            BlockEntityRenderer.Instance.CacheActiveRenderInfo(_world, _textureManager, _game.FontRenderer, _game.Camera, var3);
-            EntityRenderDispatcher.instance.cacheActiveRenderInfo(_world, _textureManager, _game.FontRenderer, _game.Camera, _game.Options, var3);
+            BlockEntityRenderer.Instance.CacheActiveRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, var3);
+            EntityRenderDispatcher.Instance.CacheRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, _game.Options, var3);
             CountEntitiesTotal = 0;
             CountEntitiesRendered = 0;
             CountEntitiesHidden = 0;
             EntityLiving var4 = _game.Camera;
-            EntityRenderDispatcher.offsetX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
-            EntityRenderDispatcher.offsetY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
-            EntityRenderDispatcher.offsetZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
+            EntityRenderDispatcher.OffsetX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
+            EntityRenderDispatcher.OffsetY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
+            EntityRenderDispatcher.OffsetZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
             BlockEntityRenderer.StaticPlayerX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
             BlockEntityRenderer.StaticPlayerY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
             BlockEntityRenderer.StaticPlayerZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
@@ -218,7 +218,7 @@ public class WorldRenderer : IWorldEventListener
                 ++CountEntitiesRendered;
                 if (var7.shouldRender(var1))
                 {
-                    EntityRenderDispatcher.instance.renderEntity(var7, var3);
+                    EntityRenderDispatcher.Instance.RenderEntity(var7, var3);
                 }
             }
 
@@ -257,7 +257,7 @@ public class WorldRenderer : IWorldEventListener
                     if (_world.Reader.IsPosLoaded(MathHelper.Floor(var7.x), var8, MathHelper.Floor(var7.z)))
                     {
                         ++CountEntitiesRendered;
-                        EntityRenderDispatcher.instance.renderEntity(var7, var3);
+                        EntityRenderDispatcher.Instance.RenderEntity(var7, var3);
                     }
                 }
             }
@@ -648,7 +648,7 @@ public class WorldRenderer : IWorldEventListener
         tessellator.setTranslationD(-renderX, -renderY, -renderZ);
         tessellator.disableColor();
 
-        BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true);
+        BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true, _game.Options.AlternateBlocksEnabled);
         tessellator.draw();
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
@@ -817,7 +817,7 @@ public class WorldRenderer : IWorldEventListener
     public void NotifyEntityAdded(Entity var1)
     {
         var1.updateCloak();
-        EntityRenderDispatcher.instance.skinManager.RequestDownload((var1 as EntityPlayer)?.name);
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload((var1 as EntityPlayer)?.name);
     }
 
     public void NotifyEntityRemoved(Entity var1)

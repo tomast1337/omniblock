@@ -155,6 +155,9 @@ public class GameOptions
 
     private Dictionary<string, GameOption> _allOptions;
 
+    public event Action ReloadTextures;
+    public event Action ReloadChunks;
+
     public GameOptions(BetaSharp game, string gameDataDir)
     {
         _game = game;
@@ -273,8 +276,7 @@ public class GameOptions
         {
             OnChanged = _ =>
             {
-                if (BetaSharp.Instance?.TextureManager != null)
-                    BetaSharp.Instance.TextureManager.Reload();
+                ReloadTextures();
             }
         };
         DebugModeOption = new BoolOption("Debug Mode", "debugMode")
@@ -294,7 +296,7 @@ public class GameOptions
         AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
         {
             LabelOverride = "Alternate Blocks",
-            OnChanged = _ => BetaSharp.Instance?.WorldRenderer?.ChunkRenderer?.MarkAllVisibleChunksDirty()
+            OnChanged = _ => ReloadChunks.Invoke()
         };
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
@@ -318,14 +320,13 @@ public class GameOptions
             Formatter = (v, t) => v == 0 ? t.TranslateKey("options.off") : AnisoLabels[v],
             OnChanged = v =>
             {
-                int anisoValue = v == 0 ? 0 : (int)System.Math.Pow(2, v);
+                int anisoValue = v == 0 ? 0 : (int)Math.Pow(2, v);
                 if (anisoValue > MaxAnisotropy)
                 {
                     AnisotropicOption.Value = 0;
                 }
 
-                if (BetaSharp.Instance?.TextureManager != null)
-                    BetaSharp.Instance.TextureManager.Reload();
+                ReloadTextures();
             }
         };
         MsaaOption = new CycleOption("MSAA", "msaaLevel", MSAALabels)

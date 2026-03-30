@@ -67,12 +67,14 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
             _txfSeed.OnTextChanged += (text) => _seed = text;
             Root.AddChild(_txfSeed);
 
-            _btnWorldType = new Button { Text = "World Type: " + _selectedWorldType.DisplayName };
+            _btnWorldType = CreateButton();
+            _btnWorldType.Text = "World Type: " + _selectedWorldType.DisplayName;
             _btnWorldType.Style.MarginBottom = 4;
             _btnWorldType.OnClick += (e) => Game.DisplayUIScreen(new SelectWorldTypeScreen(Game, this, _selectedWorldType));
             Root.AddChild(_btnWorldType);
 
-            _btnCustomize = new Button { Text = "Customize" };
+            _btnCustomize = CreateButton();
+            _btnCustomize.Text = "Customize";
             _btnCustomize.Style.MarginBottom = 10;
             _btnCustomize.Enabled = _selectedWorldType == WorldType.Flat;
             _btnCustomize.OnClick += (e) => Game.DisplayUIScreen(new CreateFlatWorldScreen(Game, this, GeneratorOptions));
@@ -86,14 +88,16 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         buttonPanel.Style.Width = 310;
         buttonPanel.Style.MarginTop = 10;
 
-        Button btnCreate = new() { Text = translations.TranslateKey("selectWorld.create") };
+        Button btnCreate = CreateButton();
+        btnCreate.Text = translations.TranslateKey("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
         btnCreate.OnClick += (e) => CreateWorld();
         buttonPanel.AddChild(btnCreate);
 
         string moreOptionsText = _moreOptions ? "Done" : "More World Options...";
-        Button btnToggleMore = new() { Text = moreOptionsText };
+        Button btnToggleMore = CreateButton();
+        btnToggleMore.Text = moreOptionsText;
         btnToggleMore.Style.Width = 150;
         btnToggleMore.Style.SetMargin(2);
         btnToggleMore.OnClick += (e) =>
@@ -103,7 +107,8 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         };
         buttonPanel.AddChild(btnToggleMore);
 
-        Button btnCancel = new() { Text = translations.TranslateKey("gui.cancel") };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(new WorldScreen(Game));

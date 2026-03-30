@@ -93,7 +93,7 @@ public class TexturePacks
         {
             if (!availablePacks.Contains(oldPack))
             {
-                oldPack.Unload(_game);
+                oldPack.Unload(_game.TextureManager);
                 if (oldPack.Signature != null)
                 {
                     _texturePacks.Remove(oldPack.Signature);

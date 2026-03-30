@@ -53,19 +53,22 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         row1.Style.JustifyContent = Justify.Center;
         row1.Style.MarginBottom = 2;
 
-        _btnJoin = new Button { Text = "Join Server" };
+        _btnJoin = CreateButton();
+        _btnJoin.Text = "Join Server";
         _btnJoin.Style.Width = 100;
         _btnJoin.Style.SetMargin(2);
         _btnJoin.OnClick += (e) => ConnectSelected();
         row1.AddChild(_btnJoin);
 
-        Button btnDirect = new() { Text = "Direct Connect" };
+        Button btnDirect = CreateButton();
+        btnDirect.Text = "Direct Connect";
         btnDirect.Style.Width = 100;
         btnDirect.Style.SetMargin(2);
         btnDirect.OnClick += (e) => Game.DisplayUIScreen(new DirectConnectScreen(Game, this, new ServerData("BetaSharp Server", "")));
         row1.AddChild(btnDirect);
 
-        Button btnAdd = new() { Text = "Add Server" };
+        Button btnAdd = CreateButton();
+        btnAdd.Text = "Add Server";
         btnAdd.Style.Width = 100;
         btnAdd.Style.SetMargin(2);
         btnAdd.OnClick += (e) => Game.DisplayUIScreen(new EditServerScreen(Game, this, new ServerData("BetaSharp Server", ""), false));
@@ -77,25 +80,29 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         row2.Style.FlexDirection = FlexDirection.Row;
         row2.Style.JustifyContent = Justify.Center;
 
-        _btnEdit = new Button { Text = "Edit" };
+        _btnEdit = CreateButton();
+        _btnEdit.Text = "Edit";
         _btnEdit.Style.Width = 75;
         _btnEdit.Style.SetMargin(2);
         _btnEdit.OnClick += (e) => EditSelected();
         row2.AddChild(_btnEdit);
 
-        _btnDelete = new Button { Text = "Delete" };
+        _btnDelete = CreateButton();
+        _btnDelete.Text = "Delete";
         _btnDelete.Style.Width = 75;
         _btnDelete.Style.SetMargin(2);
         _btnDelete.OnClick += (e) => DeleteSelected();
         row2.AddChild(_btnDelete);
 
-        Button btnRefresh = new() { Text = "Refresh" };
+        Button btnRefresh = CreateButton();
+        btnRefresh.Text = "Refresh";
         btnRefresh.Style.Width = 75;
         btnRefresh.Style.SetMargin(2);
         btnRefresh.OnClick += (e) => { LoadServerList(); PopulateServerList(); };
         row2.AddChild(btnRefresh);
 
-        Button btnCancel = new() { Text = "Cancel" };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 75;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));

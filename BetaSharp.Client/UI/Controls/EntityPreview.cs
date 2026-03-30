@@ -3,7 +3,7 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Client.UI.Controls;
 
-public class EntityPreview : UIElement
+public class EntityPreview(Func<UIScreen?> getScreen) : UIElement
 {
     public Entity? Entity { get; set; }
     public float Scale { get; set; } = 30.0f;
@@ -13,13 +13,13 @@ public class EntityPreview : UIElement
     {
         if (Entity != null)
         {
-            BetaSharp game = BetaSharp.Instance;
             float mouseX = 0;
             float mouseY = 0;
 
             if (LookAtCursor)
             {
-                if (game.CurrentScreen is UIScreen screen)
+                UIScreen? screen = getScreen();
+                if (screen != null)
                 {
                     mouseX = screen.MouseX;
                     mouseY = screen.MouseY;

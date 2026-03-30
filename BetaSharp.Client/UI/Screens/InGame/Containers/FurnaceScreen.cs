@@ -9,7 +9,7 @@ using BetaSharp.Screens;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
-public class FurnaceScreen(InventoryPlayer playerInventory, BlockEntityFurnace furnace) : ContainerScreen(new FurnaceScreenHandler(playerInventory, furnace))
+public class FurnaceScreen(BetaSharp game, InventoryPlayer playerInventory, BlockEntityFurnace furnace) : ContainerScreen(game, new FurnaceScreenHandler(playerInventory, furnace))
 {
     protected override void Init()
     {

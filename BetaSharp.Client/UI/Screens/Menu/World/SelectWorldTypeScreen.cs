@@ -36,7 +36,8 @@ public class SelectWorldTypeScreen(BetaSharp game, CreateWorldScreen parent, Wor
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnDone = new() { Text = "Done" };
+        Button btnDone = CreateButton();
+        btnDone.Text = "Done";
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(2);
         btnDone.OnClick += (e) =>
@@ -49,7 +50,8 @@ public class SelectWorldTypeScreen(BetaSharp game, CreateWorldScreen parent, Wor
         };
         buttonPanel.AddChild(btnDone);
 
-        Button btnCancel = new() { Text = "Cancel" };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);

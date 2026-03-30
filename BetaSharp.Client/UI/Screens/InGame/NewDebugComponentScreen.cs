@@ -54,31 +54,28 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         buttonContainer.Style.Width = 320;
         Root.AddChild(buttonContainer);
 
-        _leftButton = new Button
+        _leftButton = CreateButton();
         {
-            Text = "Add to Left",
-            Enabled = false
-        };
+            _leftButton.Text = "Add to Left";
+            _leftButton.Enabled = false;
+        }
+        ;
         _leftButton.Style.Width = 100;
         _leftButton.Style.SetMargin(2);
         _leftButton.OnClick += (_) => AddComponent(false);
         buttonContainer.AddChild(_leftButton);
 
-        _rightButton = new Button
-        {
-            Text = "Add to Right",
-            Enabled = false
-        };
+        _rightButton = CreateButton();
+        _rightButton.Text = "Add to Right";
+        _rightButton.Enabled = false;
         _rightButton.Style.Width = 100;
         _rightButton.Style.SetMargin(2);
         _rightButton.OnClick += (_) => AddComponent(true);
         buttonContainer.AddChild(_rightButton);
 
-        var cancelButton = new Button
-        {
-            Text = "Cancel",
-            Enabled = true
-        };
+        Button cancelButton = CreateButton();
+        cancelButton.Text = "Cancel";
+        cancelButton.Enabled = true;
         cancelButton.Style.Width = 100;
         cancelButton.Style.SetMargin(2);
         cancelButton.OnClick += (_) => Game.DisplayUIScreen(parent);

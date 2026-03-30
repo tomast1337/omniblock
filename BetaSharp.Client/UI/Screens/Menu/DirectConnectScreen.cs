@@ -35,7 +35,8 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnJoin = new() { Text = "Join Server" };
+        Button btnJoin = CreateButton();
+        btnJoin.Text = "Join Server";
         btnJoin.Style.Width = 100;
         btnJoin.Style.SetMargin(0, 4, 0, 0);
         btnJoin.OnClick += (e) =>
@@ -47,7 +48,8 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         };
         buttonPanel.AddChild(btnJoin);
 
-        Button btnCancel = new() { Text = "Cancel" };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);
         buttonPanel.AddChild(btnCancel);

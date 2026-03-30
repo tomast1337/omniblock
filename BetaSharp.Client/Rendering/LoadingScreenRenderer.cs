@@ -132,8 +132,8 @@ public class LoadingScreenRenderer : LoadingDisplay
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
 
-                _game.FontRenderer.DrawStringWithShadow(field_1007_c, (var5 - _game.FontRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
-                _game.FontRenderer.DrawStringWithShadow(field_1004_a, (var5 - _game.FontRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
+                _game.TextRenderer.DrawStringWithShadow(field_1007_c, (var5 - _game.TextRenderer.GetStringWidth(field_1007_c)) / 2, var6 / 2 - 4 - 16, Color.White);
+                _game.TextRenderer.DrawStringWithShadow(field_1004_a, (var5 - _game.TextRenderer.GetStringWidth(field_1004_a)) / 2, var6 / 2 - 4 + 8, Color.White);
                 Display.update();
 
                 try

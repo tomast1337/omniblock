@@ -32,7 +32,8 @@ public class SignEditScreen(BetaSharp game, BlockEntitySign sign) : UIScreen(gam
         preview.Style.MarginBottom = 40;
         Root.AddChild(preview);
 
-        Button btnDone = new() { Text = "Done" };
+        Button btnDone = CreateButton();
+        btnDone.Text = "Done";
         btnDone.Style.Width = 200;
         btnDone.OnClick += (_) => CloseAndSave();
         Root.AddChild(btnDone);

@@ -1,9 +1,7 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Particles;
-using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
@@ -140,22 +138,22 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openChestScreen(IInventory inventory)
     {
-        Game.DisplayUIScreen(new ChestScreen(base.inventory, inventory));
+        Game.DisplayUIScreen(new ChestScreen(Game, base.inventory, inventory));
     }
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.DisplayUIScreen(new CraftingScreen(inventory, world, x, y, z));
+        Game.DisplayUIScreen(new CraftingScreen(Game, inventory, world, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
-        Game.DisplayUIScreen(new FurnaceScreen(inventory, furnace));
+        Game.DisplayUIScreen(new FurnaceScreen(Game, inventory, furnace));
     }
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
-        Game.DisplayUIScreen(new DispenserScreen(inventory, dispenser));
+        Game.DisplayUIScreen(new DispenserScreen(Game, inventory, dispenser));
     }
 
     public override void sendPickup(Entity entity, int count)

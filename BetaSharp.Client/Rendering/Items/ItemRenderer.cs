@@ -124,7 +124,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.GL.Translate(var24, var25, var26);
                 }
 
-                GLManager.GL.Rotate(180.0F - Dispatcher.playerViewY, 0.0F, 1.0F, 0.0F);
+                GLManager.GL.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
                 var15.startDrawingQuads();
                 var15.setNormal(0.0F, 1.0F, 0.0F);
                 var15.addVertexWithUV((double)(0.0F - var21), (double)(0.0F - var22), 0.0D, (double)var16, (double)var19);
@@ -257,7 +257,7 @@ public class ItemRenderer : EntityRenderer
         var10.draw();
     }
 
-    public override void render(Entity target, double x, double y, double z, float yaw, float tickDelta)
+    public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
         doRenderItem((EntityItem)target, x, y, z, yaw, tickDelta);
     }

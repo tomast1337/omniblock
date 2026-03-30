@@ -69,6 +69,8 @@ public abstract class UIScreen
     public float MouseY { get; protected set; }
     public virtual bool PausesGame => true;
     public virtual bool AllowUserInput => false;
+    public Func<Button> CreateButton { get; }
+    public Func<Slider> CreateSlider { get; }
     protected virtual bool AutoAddTooltipBar => true;
 
     private bool _isInitialized;
@@ -99,7 +101,15 @@ public abstract class UIScreen
         Root = new UIElement();
         Root.Style.Width = null;
         Root.Style.Height = null;
-        Renderer = new UIRenderer(game.FontRenderer, game.TextureManager);
+        Renderer = new UIRenderer(game.TextRenderer, game.TextureManager, game.Options, () => new(game.DisplayWidth, game.DisplayHeight));
+
+        void ClickSound()
+        {
+            game.SoundManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+        }
+
+        CreateButton = () => new(ClickSound);
+        CreateSlider = () => new(ClickSound);
     }
 
     public void Initialize()
@@ -387,7 +397,15 @@ public abstract class UIScreen
 
         PreLayout(res.ScaledWidth, res.ScaledHeight);
 
-        FlexLayout.ApplyLayout(Root, res.ScaledWidth, res.ScaledHeight);
+        FlexLayout.LayoutContext layoutContext = new()
+        {
+            Root = Root,
+            AvailableWidth = res.ScaledWidth,
+            AvailableHeight = res.ScaledHeight,
+            MeasureString = (s) => Renderer.TextRenderer.GetStringWidth(s)
+        };
+
+        FlexLayout.ApplyLayout(layoutContext);
 
         MouseX = mouseX;
         MouseY = mouseY;

@@ -42,14 +42,16 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         Panel row1 = new();
         row1.Style.FlexDirection = FlexDirection.Row;
 
-        _btnRemove = new Button { Text = "Remove Layer" };
+        _btnRemove = CreateButton();
+        _btnRemove.Text = "Remove Layer";
         _btnRemove.Style.Width = 150;
         _btnRemove.Style.SetMargin(2);
         _btnRemove.Enabled = false;
         _btnRemove.OnClick += (e) => RemoveSelected();
         row1.AddChild(_btnRemove);
 
-        Button btnPresets = new() { Text = "Presets" };
+        Button btnPresets = CreateButton();
+        btnPresets.Text = "Presets";
         btnPresets.Style.Width = 150;
         btnPresets.Style.SetMargin(2);
         btnPresets.OnClick += (e) => Game.DisplayUIScreen(new FlatPresetsScreen(Game, this));
@@ -60,7 +62,8 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         Panel row2 = new();
         row2.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnDone = new() { Text = "Done" };
+        Button btnDone = CreateButton();
+        btnDone.Text = "Done";
         btnDone.Style.Width = 150;
         btnDone.Style.SetMargin(2);
         btnDone.OnClick += (e) =>
@@ -70,7 +73,8 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         };
         row2.AddChild(btnDone);
 
-        Button btnCancel = new() { Text = "Cancel" };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);

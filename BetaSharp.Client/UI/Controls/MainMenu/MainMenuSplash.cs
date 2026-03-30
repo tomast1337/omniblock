@@ -56,9 +56,9 @@ public class MainMenuSplash : UIElement
         }
     }
 
-    public override void Measure(float availableWidth, float availableHeight)
+    public override void Measure(MeasureContext context)
     {
-        ComputedWidth = BetaSharp.Instance.FontRenderer.GetStringWidth(_splashText);
+        ComputedWidth = context.MeasureString(_splashText);
         ComputedHeight = 8;
     }
 

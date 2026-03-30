@@ -6,8 +6,8 @@ using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class ControllerBindingsScreen(UIScreen? parent, GameOptions options)
-    : BaseOptionsScreen(parent, options, "Button Bindings")
+public class ControllerBindingsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
+    : BaseOptionsScreen(game, parent, options, "Button Bindings")
 {
     private int _listeningIndex = -1;
     private readonly ControllerListener _listener = new();
@@ -40,7 +40,8 @@ public class ControllerBindingsScreen(UIScreen? parent, GameOptions options)
             row.AddChild(label);
 
             string btnText = _listeningIndex == i ? "> ??? <" : bind.GetButtonName();
-            Button btn = new() { Text = btnText };
+            Button btn = CreateButton();
+            btn.Text = btnText;
             btn.Style.Width = 80;
             btn.OnClick += (e) =>
             {

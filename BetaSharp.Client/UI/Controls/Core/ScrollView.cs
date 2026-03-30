@@ -127,11 +127,19 @@ public class ScrollView : UIElement
         return null;
     }
 
-    public override void OnLayoutApplied()
+    public override void OnLayoutApplied(LayoutAppliedContext context)
     {
-        base.OnLayoutApplied();
+        base.OnLayoutApplied(context);
 
-        FlexLayout.ApplyLayout(ContentContainer, ComputedWidth - 10, 999999f);
+        FlexLayout.LayoutContext layoutContext = new()
+        {
+            Root = ContentContainer,
+            AvailableWidth = ComputedWidth - 10,
+            AvailableHeight = 999999f,
+            MeasureString = context.MeasureString
+        };
+
+        FlexLayout.ApplyLayout(layoutContext);
 
         float calculatedHeight = 0f;
         foreach (UIElement child in ContentContainer.Children)

@@ -105,7 +105,7 @@ public class ClientNetworkHandler : NetHandler
         };
         _game.ChangeWorld(_worldClient);
         _game.Player.dimensionId = packet.dimensionId;
-        _game.DisplayUIScreen(new DownloadingTerrainScreen(this));
+        _game.DisplayUIScreen(new DownloadingTerrainScreen(_game, this));
         _game.Player.id = packet.protocolVersion;
     }
 
@@ -415,7 +415,7 @@ public class ClientNetworkHandler : NetHandler
         _netManager.disconnect("disconnect.kicked");
         Disconnected = true;
         _game.ChangeWorld(null);
-        _game.DisplayUIScreen(new ConnectFailedScreen("disconnect.disconnected", "disconnect.genericReason", packet.reason));
+        _game.DisplayUIScreen(new ConnectFailedScreen(_game, "disconnect.disconnected", "disconnect.genericReason", packet.reason));
     }
 
     public override void onDisconnected(string reason, object[]? args)
@@ -424,7 +424,7 @@ public class ClientNetworkHandler : NetHandler
         {
             Disconnected = true;
             _game.ChangeWorld(null);
-            _game.DisplayUIScreen(new ConnectFailedScreen("disconnect.lost", reason, (object[]?)args));
+            _game.DisplayUIScreen(new ConnectFailedScreen(_game, "disconnect.lost", reason, args));
         }
     }
 
@@ -596,7 +596,7 @@ public class ClientNetworkHandler : NetHandler
             };
             _game.ChangeWorld(_worldClient);
             _game.Player.dimensionId = packet.dimensionId;
-            _game.DisplayUIScreen(new DownloadingTerrainScreen(this));
+            _game.DisplayUIScreen(new DownloadingTerrainScreen(_game, this));
         }
 
         _game.Respawn(true, packet.dimensionId);
@@ -819,7 +819,7 @@ public class ClientNetworkHandler : NetHandler
         if (packet.type == PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave)
         {
             Entity? ent = _worldClient.GetEntity(packet.entityId);
-            EntityRenderDispatcher.instance.skinManager?.Release(packet.name);
+            EntityRenderDispatcher.Instance.SkinManager?.Release(packet.name);
         }
     }
 

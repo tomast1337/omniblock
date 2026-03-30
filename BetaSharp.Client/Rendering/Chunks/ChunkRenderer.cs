@@ -88,6 +88,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private int _frameIndex = 0;
+    private readonly Func<bool> _alternateBlocks;
 
     public bool UseOcclusionCulling { get; set; } = true;
 
@@ -97,10 +98,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public int ChunksRendered { get; private set; }
     public int TranslucentMeshes { get; private set; }
 
-    public ChunkRenderer(World world)
+    public ChunkRenderer(World world, Func<bool> alternateBlocks)
     {
         _meshGenerator = new();
         _world = world;
+        _alternateBlocks = alternateBlocks;
 
         _chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").GetTextContent());
 
@@ -330,7 +332,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         long? snapshot = version.SnapshotIfNeeded();
                         if (snapshot.HasValue)
                         {
-                            _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value);
+                            _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _alternateBlocks());
                         }
                         continue;
                     }
@@ -433,7 +435,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         double bestDist = double.MaxValue;
         for (int i = 0; i < _dirtyChunks.Count; i++)
         {
-            var info = _dirtyChunks[i];
+            ChunkToMeshInfo info = _dirtyChunks[i];
             var aabb = new Box(
                 info.Pos.X, info.Pos.Y, info.Pos.Z,
                 info.Pos.X + SubChunkRenderer.Size,
@@ -451,8 +453,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         if (bestIndex != -1)
         {
-            var closest = _dirtyChunks[bestIndex];
-            _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version);
+            ChunkToMeshInfo closest = _dirtyChunks[bestIndex];
+            _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _alternateBlocks());
             _dirtyChunks.RemoveAt(bestIndex);
         }
     }
@@ -474,8 +476,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         if (bestIndex != -1)
         {
-            var update = _lightingUpdates[bestIndex];
-            _meshGenerator.MeshChunk(_world, update.Pos, update.Version);
+            ChunkToMeshInfo update = _lightingUpdates[bestIndex];
+            _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _alternateBlocks());
             _lightingUpdates.RemoveAt(bestIndex);
         }
     }

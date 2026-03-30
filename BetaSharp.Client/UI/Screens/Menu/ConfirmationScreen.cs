@@ -25,7 +25,8 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         Panel buttonPanel = new();
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
-        Button btnConfirm = new() { Text = confirmText };
+        Button btnConfirm = CreateButton();
+        btnConfirm.Text = confirmText;
         btnConfirm.Style.Width = 100;
         btnConfirm.Style.SetMargin(0, 4, 0, 0);
         btnConfirm.OnClick += (e) =>
@@ -35,7 +36,8 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         };
         buttonPanel.AddChild(btnConfirm);
 
-        Button btnCancel = new() { Text = cancelText };
+        Button btnCancel = CreateButton();
+        btnCancel.Text = cancelText;
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += (e) =>
         {

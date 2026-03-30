@@ -12,8 +12,8 @@ public class ChestScreen : ContainerScreen
     private readonly IInventory _lowerInventory;
     private readonly int _inventoryRows;
 
-    public ChestScreen(IInventory upperInventory, IInventory lowerInventory)
-        : base(new GenericContainerScreenHandler(upperInventory, lowerInventory))
+    public ChestScreen(BetaSharp game, IInventory upperInventory, IInventory lowerInventory)
+        : base(game, new GenericContainerScreenHandler(upperInventory, lowerInventory))
     {
         _upperInventory = upperInventory;
         _lowerInventory = lowerInventory;

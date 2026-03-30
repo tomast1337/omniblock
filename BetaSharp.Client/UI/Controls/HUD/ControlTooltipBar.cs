@@ -64,7 +64,7 @@ public class ControlTooltipBar : UIElement
             }
 
             renderer.DrawText(tip.Action, x, TextVerticalOffset, Color.White);
-            x += _game.FontRenderer.GetStringWidth(tip.Action) + Spacing;
+            x += _game.TextRenderer.GetStringWidth(tip.Action) + Spacing;
         }
 
         base.Render(renderer);

@@ -51,8 +51,6 @@ namespace BetaSharp.Client;
 
 public partial class BetaSharp
 {
-    // TODO: REMOVE THIS
-    public static BetaSharp Instance = null!;
     public static string Version { get; private set; } = UnknownVersion;
     public static string BetaSharpDir => PathHelper.GetAppDir(nameof(BetaSharp));
     public static long HasPaidCheckTime { get; private set; }
@@ -85,7 +83,7 @@ public partial class BetaSharp
     public PostProcessManager PostProcessManager { get; private set; }
     public TextureManager TextureManager { get; private set; }
     public SkinManager SkinManager { get; private set; }
-    public TextRenderer FontRenderer { get; private set; }
+    public TextRenderer TextRenderer { get; private set; }
     public TexturePacks TexturePackList { get; private set; }
     public HitResult ObjectMouseOver = new(HitResultType.MISS);
     public bool ShowChunkBorders { get; private set; }
@@ -142,8 +140,6 @@ public partial class BetaSharp
         _fullscreen = isFullscreen;
         DisplayWidth = width;
         DisplayHeight = height;
-
-        Instance = this;
     }
 
     [LibraryImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
@@ -234,6 +230,12 @@ public partial class BetaSharp
         _gameDataDir = BetaSharpDir;
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
         Options = new GameOptions(this, _gameDataDir);
+        Options.ReloadTextures += () => { TextureManager.Reload(); };
+        Options.ReloadChunks += () =>
+        {
+            WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty();
+        };
+
         DebugComponentsStorage = new DebugComponentsStorage(this, _gameDataDir);
         Profiler.Enabled = Options.DebugMode;
         Profiler.EnableLagSpikeDetection = Options.DebugMode;
@@ -272,14 +274,14 @@ public partial class BetaSharp
 
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
-        FontRenderer = new TextRenderer(Options, TextureManager);
+        TextRenderer = new TextRenderer(Options, TextureManager);
         SkinManager = new SkinManager(TextureManager);
         WaterColors.loadColors(TextureManager.GetColors("/misc/watercolor.png"));
         GrassColors.loadColors(TextureManager.GetColors("/misc/grasscolor.png"));
         FoliageColors.loadColors(TextureManager.GetColors("/misc/foliagecolor.png"));
         GameRenderer = new GameRenderer(this);
-        EntityRenderDispatcher.instance.skinManager = SkinManager;
-        EntityRenderDispatcher.instance.heldItemRenderer = new HeldItemRenderer(this);
+        EntityRenderDispatcher.Instance.SkinManager = SkinManager;
+        EntityRenderDispatcher.Instance.HeldItemRenderer = new HeldItemRenderer(this);
         StatFileWriter = new StatFileWriter(Session, _gameDataDir);
 
         StatStringFormatKeyInv format = new(this);
@@ -782,7 +784,7 @@ public partial class BetaSharp
                 catch (OutOfMemoryException)
                 {
                     CrashCleanup();
-                    DisplayUIScreen(new ErrorScreen("Out of memory!", "Minecraft has run out of memory."));
+                    DisplayUIScreen(new ErrorScreen(this, "Out of memory!", "Minecraft has run out of memory."));
                 }
                 finally
                 {
@@ -1474,7 +1476,7 @@ public partial class BetaSharp
 
                     if (Keyboard.getEventKey() == Options.KeyBindInventory.keyCode)
                     {
-                        DisplayUIScreen(new InventoryScreen(Player));
+                        DisplayUIScreen(new InventoryScreen(this, Player));
                     }
 
                     if (Keyboard.getEventKey() == Options.KeyBindDrop.keyCode)
@@ -1556,7 +1558,7 @@ public partial class BetaSharp
     public void StartWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         ChangeWorld(null);
-        DisplayUIScreen(new LevelLoadingScreen(worldName, settings));
+        DisplayUIScreen(new LevelLoadingScreen(this, worldName, settings));
     }
 
     public void ChangeWorld(World? newWorld, string loadingText = "", EntityPlayer? targetEntity = null)
@@ -1815,15 +1817,5 @@ public partial class BetaSharp
         };
 
         StartMainThread(result.Name, result.Session);
-    }
-
-    public static bool IsGuiEnabled()
-    {
-        return Instance == null || !Instance.Options.HideGUI;
-    }
-
-    public static bool IsDebugInfoEnabled()
-    {
-        return Instance != null && Instance.Options.ShowDebugInfo;
     }
 }

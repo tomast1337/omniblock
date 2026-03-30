@@ -11,7 +11,7 @@ public class TexturePackListItem(TexturePack value) : ListItem<TexturePack>(valu
     {
         base.Render(renderer);
 
-        Value.BindThumbnailTexture(BetaSharp.Instance);
+        Value.BindThumbnailTexture(renderer.TextureManager);
         renderer.DrawBoundTexture(4, 4, 24, 24);
 
         string? fileName = Value.TexturePackFileName;

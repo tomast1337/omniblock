@@ -6,7 +6,7 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, string titleKey) : UIScreen(parent?.Game ?? BetaSharp.Instance)
+public abstract class BaseOptionsScreen(BetaSharp game, UIScreen? parent, GameOptions options, string titleKey) : UIScreen(parent?.Game ?? game)
 {
     protected readonly UIScreen? Parent = parent;
     protected readonly GameOptions Options = options;
@@ -40,7 +40,8 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
         scroll.AddContent(content);
         Root.AddChild(scroll);
 
-        Button btnDone = new() { Text = TranslationStorage.Instance.TranslateKey("gui.done") };
+        Button btnDone = CreateButton();
+        btnDone.Text = TranslationStorage.Instance.TranslateKey("gui.done");
         btnDone.Style.MarginBottom = 20;
         btnDone.OnClick += (e) => OnDone();
         Root.AddChild(btnDone);
@@ -140,11 +141,9 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
 
         if (option is FloatOption floatOpt)
         {
-            Slider slider = new()
-            {
-                Value = floatOpt.Value,
-                Text = option.GetDisplayString(translations)
-            };
+            Slider slider = CreateSlider();
+            slider.Value = floatOpt.Value;
+            slider.Text = option.GetDisplayString(translations);
             slider.OnValueChanged += (v) =>
             {
                 floatOpt.Value = v;
@@ -154,7 +153,8 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
         }
         else
         {
-            Button btn = new() { Text = option.GetDisplayString(translations) };
+            Button btn = CreateButton();
+            btn.Text = option.GetDisplayString(translations);
             btn.OnClick += (e) =>
             {
                 if (option is BoolOption boolOpt) boolOpt.Toggle();

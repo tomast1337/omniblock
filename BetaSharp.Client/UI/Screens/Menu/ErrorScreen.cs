@@ -5,7 +5,7 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class ErrorScreen(string title, params string[] messages) : UIScreen(BetaSharp.Instance)
+public class ErrorScreen(BetaSharp game, string title, params string[] messages) : UIScreen(game)
 {
     private readonly List<string> _messages = [.. messages];
 
@@ -42,11 +42,10 @@ public class ErrorScreen(string title, params string[] messages) : UIScreen(Beta
         }
         Root.AddChild(messageContainer);
 
-        Button btnRestart = new()
-        {
-            Text = "Please restart the Game.",
-            Enabled = false
-        };
+        Button btnRestart = CreateButton();
+        btnRestart.Text = "Please restart the Game.";
+        btnRestart.Enabled = false;
+
         Root.AddChild(btnRestart);
     }
 }

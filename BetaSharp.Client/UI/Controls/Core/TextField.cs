@@ -136,7 +136,7 @@ public class TextField : UIElement
 
             if (IsFocused && _cursorCounter / 10 % 2 == 0)
             {
-                int cursorX = 4 + BetaSharp.Instance.FontRenderer.GetStringWidth(_text.AsSpan(0, CursorPosition));
+                int cursorX = 4 + renderer.TextRenderer.GetStringWidth(_text.AsSpan(0, CursorPosition));
                 renderer.DrawRect(cursorX, ComputedHeight / 2 - 5, 1, 10, Color.White);
             }
         }

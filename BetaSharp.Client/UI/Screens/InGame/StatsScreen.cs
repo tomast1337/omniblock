@@ -6,7 +6,7 @@ using BetaSharp.Stats;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(parent?.Game ?? BetaSharp.Instance)
+public class StatsScreen(BetaSharp game, UIScreen? parent, StatFileWriter stats) : UIScreen(parent?.Game ?? game)
 {
     private enum Tab { General, Blocks, Items }
     private Tab _currentTab = Tab.General;
@@ -53,7 +53,8 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
         Root.AddChild(_contentPanel);
 
         // Done button
-        Button btnDone = new() { Text = "Done" };
+        Button btnDone = CreateButton();
+        btnDone.Text = "Done";
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing
@@ -65,7 +66,8 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
 
     private Button CreateTabButton(string text, Tab tab)
     {
-        Button btn = new() { Text = text };
+        Button btn = CreateButton();
+        btn.Text = text;
         btn.Style.Width = 100;
         btn.Style.MarginLeft = 4;
         btn.Style.MarginRight = 4;
@@ -104,7 +106,7 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
                 break;
         }
 
-        Root.OnLayoutApplied(); // Update layout for the new content
+        Root.OnLayoutApplied(new() { MeasureString = (s) => Game.TextRenderer.GetStringWidth(s) }); // Update layout for the new content
     }
 
     private void PopulateGeneralStats(Panel list)

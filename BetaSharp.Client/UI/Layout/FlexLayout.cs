@@ -4,14 +4,22 @@ namespace BetaSharp.Client.UI.Layout;
 
 public static class FlexLayout
 {
-    public static void ApplyLayout(UIElement root, float availableWidth, float availableHeight)
+    public struct LayoutContext
     {
-        Node rootNode = BuildTree(root);
-        rootNode.CalculateLayout(availableWidth, availableHeight, Direction.LTR);
-        ApplyResults(rootNode, root);
+        public UIElement Root;
+        public float AvailableWidth;
+        public float AvailableHeight;
+        public Func<string, float> MeasureString;
     }
 
-    private static Node BuildTree(UIElement element)
+    public static void ApplyLayout(LayoutContext context)
+    {
+        Node rootNode = BuildTree(context.Root, context.MeasureString);
+        rootNode.CalculateLayout(context.AvailableWidth, context.AvailableHeight, Direction.LTR);
+        ApplyResults(rootNode, context.Root, context.MeasureString);
+    }
+
+    private static Node BuildTree(UIElement element, Func<string, float> measureString)
     {
         Node node = new();
 
@@ -56,31 +64,37 @@ public static class FlexLayout
         {
             node.SetMeasureFunc((n, w, wm, h, hm) =>
             {
-                element.Measure(w, h);
+                UIElement.MeasureContext measureContext = new()
+                {
+                    AvailableWidth = w,
+                    AvailableHeight = h,
+                    MeasureString = measureString
+                };
+                element.Measure(measureContext);
                 return new Size(element.ComputedWidth, element.ComputedHeight);
             });
         }
 
         foreach (UIElement child in element.Children)
         {
-            node.AddChild(BuildTree(child));
+            node.AddChild(BuildTree(child, measureString));
         }
 
         return node;
     }
 
-    private static void ApplyResults(Node node, UIElement element)
+    private static void ApplyResults(Node node, UIElement element, Func<string, float> measureString)
     {
         element.ComputedWidth = node.layout.width;
         element.ComputedHeight = node.layout.height;
         element.ComputedX = node.layout.left;
         element.ComputedY = node.layout.top;
 
-        element.OnLayoutApplied();
+        element.OnLayoutApplied(new() { MeasureString = measureString });
 
         for (int i = 0; i < element.Children.Count; i++)
         {
-            ApplyResults(node.GetChild(i), element.Children[i]);
+            ApplyResults(node.GetChild(i), element.Children[i], measureString);
         }
     }
 

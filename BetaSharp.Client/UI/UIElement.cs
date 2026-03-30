@@ -40,6 +40,18 @@ public class UIElement
 
     public bool ClipToBounds { get; set; } = false;
 
+    public struct MeasureContext
+    {
+        public float AvailableWidth;
+        public float AvailableHeight;
+        public Func<string, float> MeasureString;
+    }
+
+    public struct LayoutAppliedContext
+    {
+        public Func<string, float> MeasureString;
+    }
+
     public void AddChild(UIElement child)
     {
         child.Parent = this;
@@ -55,10 +67,10 @@ public class UIElement
         }
     }
 
-    public virtual void Measure(float availableWidth, float availableHeight)
+    public virtual void Measure(MeasureContext context)
     {
-        ComputedWidth = Style.Width ?? availableWidth;
-        ComputedHeight = Style.Height ?? availableHeight;
+        ComputedWidth = Style.Width ?? context.AvailableWidth;
+        ComputedHeight = Style.Height ?? context.AvailableHeight;
     }
 
     public virtual void Arrange(float x, float y, float width, float height)
@@ -93,7 +105,7 @@ public class UIElement
     }
 
     // Fired automatically by the layout engine
-    public virtual void OnLayoutApplied()
+    public virtual void OnLayoutApplied(LayoutAppliedContext context)
     {
     }
 
