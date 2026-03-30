@@ -932,7 +932,7 @@ public partial class BetaSharp
         }
     }
 
-    private void func_6254_a(int mouseButton, bool isHoldingMouse)
+    private void UpdateHeldMouseButton(int mouseButton, bool isHoldingMouse)
     {
         if (!PlayerController.IsTestPlayer)
         {
@@ -1531,7 +1531,7 @@ public partial class BetaSharp
             }
         }
 
-        func_6254_a(0, CurrentScreen == null && (Mouse.isButtonDown(0) || Controller.RightTrigger > 0.5f) && InGameHasFocus);
+        UpdateHeldMouseButton(0, CurrentScreen == null && (Mouse.isButtonDown(0) || Controller.RightTrigger > 0.5f) && InGameHasFocus);
     }
 
     private void ForceReload()
