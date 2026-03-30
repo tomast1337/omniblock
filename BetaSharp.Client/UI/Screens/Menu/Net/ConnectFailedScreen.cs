@@ -27,7 +27,7 @@ public class ConnectFailedScreen : UIScreen
 
     protected override void Init()
     {
-        Game.stopInternalServer();
+        Game.StopInternalServer();
         
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
@@ -54,7 +54,7 @@ public class ConnectFailedScreen : UIScreen
 
         Button btnToMenu = new() { Text = TranslationStorage.Instance.TranslateKey("gui.toMenu") };
         btnToMenu.Style.Width = 150;
-        btnToMenu.OnClick += (e) => Game.displayGuiScreen(new MainMenuScreen(Game));
+        btnToMenu.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));
         Root.AddChild(btnToMenu);
     }
 }

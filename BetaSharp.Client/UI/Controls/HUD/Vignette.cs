@@ -13,9 +13,9 @@ public class Vignette(BetaSharp game) : UIElement
     {
         base.Update(partialTicks);
 
-        if (_game.player == null) return;
+        if (_game.Player == null) return;
 
-        float darkness = _game.player.getBrightnessAtEyes(partialTicks);
+        float darkness = _game.Player.getBrightnessAtEyes(partialTicks);
         darkness = 1.0f - darkness;
         if (darkness < 0.0f) darkness = 0.0f;
         if (darkness > 1.0f) darkness = 1.0f;

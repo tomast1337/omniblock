@@ -15,7 +15,7 @@ public class ConnectingScreen : UIScreen
 
     public ConnectingScreen(BetaSharp game, string host, int port) : base(game)
     {
-        game.changeWorld(null);
+        game.ChangeWorld(null);
         new ThreadConnectToServer(this, game, host, port).Start();
     }
 
@@ -69,7 +69,7 @@ public class ConnectingScreen : UIScreen
     {
         IsCancelled = true;
         ClientHandler?.disconnect();
-        Game.displayGuiScreen(new MainMenuScreen(Game));
+        Game.DisplayUIScreen(new MainMenuScreen(Game));
     }
 
     public override void Update(float partialTicks)

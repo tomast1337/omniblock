@@ -24,7 +24,7 @@ public class Slider : UIElement
         {
             if (e.Button == MouseButton.Left)
             {
-                BetaSharp.Instance.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+                BetaSharp.Instance.SoundManager.PlaySoundFX("random.click", 1.0F, 1.0F);
                 UpdateValueFromMouse(e.MouseX);
                 e.Handled = true;
             }
@@ -52,7 +52,7 @@ public class Slider : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        TextureHandle texture = BetaSharp.Instance.textureManager.GetTextureId("/gui/gui.png");
+        TextureHandle texture = BetaSharp.Instance.TextureManager.GetTextureId("/gui/gui.png");
 
         renderer.DrawTexturedModalRect(texture, 0, 0, 0, 46, ComputedWidth / 2, ComputedHeight);
         renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, 46, ComputedWidth / 2, ComputedHeight);

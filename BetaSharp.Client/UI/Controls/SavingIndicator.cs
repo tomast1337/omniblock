@@ -19,7 +19,7 @@ public class SavingIndicator : UIElement
     {
         BetaSharp game = BetaSharp.Instance;
 
-        bool isSavingActive = !game.world.AttemptSaving(_saveStepTimer++);
+        bool isSavingActive = !game.World.AttemptSaving(_saveStepTimer++);
 
         if (isSavingActive || _tickCounter < 20)
         {

@@ -201,7 +201,7 @@ public class LivingEntityRenderer : EntityRenderer
 
     protected virtual void passSpecialRender(EntityLiving var1, double var2, double var4, double var6)
     {
-        if (BetaSharp.isDebugInfoEnabled())
+        if (BetaSharp.IsDebugInfoEnabled())
         {
             renderLivingLabel(var1, var1.id.ToString(), var2, var4, var6, 64);
         }

@@ -17,7 +17,7 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.FlexStart;
 
-        Root.AddChild(new Background(Game.world != null ? BackgroundType.World : BackgroundType.Dirt));
+        Root.AddChild(new Background(Game.World != null ? BackgroundType.World : BackgroundType.Dirt));
 
         Label title = new()
         {
@@ -126,11 +126,11 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
         Options.SaveOptions();
         if (Parent != null)
         {
-            Game.displayGuiScreen(Parent);
+            Game.DisplayUIScreen(Parent);
         }
         else
         {
-            Game.displayGuiScreen(null);
+            Game.DisplayUIScreen(null);
         }
     }
 

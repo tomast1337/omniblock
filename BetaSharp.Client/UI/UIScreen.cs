@@ -87,11 +87,11 @@ public abstract class UIScreen
     public bool IsEditingSlider => _editingSlider != null;
 
     private ScaledResolution CurrentScaledResolution =>
-        new(Game.options, Game.displayWidth, Game.displayHeight);
+        new(Game.Options, Game.DisplayWidth, Game.DisplayHeight);
 
     private Vector2D<float> ToScaledCoords(float x, float y, ScaledResolution res) =>
-        new(x * res.ScaledWidth / Game.displayWidth,
-            y * res.ScaledHeight / Game.displayHeight);
+        new(x * res.ScaledWidth / Game.DisplayWidth,
+            y * res.ScaledHeight / Game.DisplayHeight);
 
     public UIScreen(BetaSharp game)
     {
@@ -99,7 +99,7 @@ public abstract class UIScreen
         Root = new UIElement();
         Root.Style.Width = null;
         Root.Style.Height = null;
-        Renderer = new UIRenderer(game.fontRenderer, game.textureManager);
+        Renderer = new UIRenderer(game.FontRenderer, game.TextureManager);
     }
 
     public void Initialize()
@@ -157,14 +157,14 @@ public abstract class UIScreen
         {
             if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0 || Mouse.getEventButton() != -1)
             {
-                Game.isControllerMode = false;
+                Game.IsControllerMode = false;
                 Mouse.setCursorVisible(true);
             }
             HandleMouseInput();
         }
         while (Keyboard.Next())
         {
-            Game.isControllerMode = false;
+            Game.IsControllerMode = false;
             HandleKeyboardInput();
         }
         ControllerManager.UpdateGui(this);
@@ -174,7 +174,7 @@ public abstract class UIScreen
 
     private void HandleControllerScroll()
     {
-        if (!Game.isControllerMode) return;
+        if (!Game.IsControllerMode) return;
 
         float ry = Controller.RightStickY;
         if (ry == 0f) return;
@@ -313,8 +313,8 @@ public abstract class UIScreen
 
         float bestCx = best.ScreenX + best.ComputedWidth / 2f;
         float bestCy = best.ScreenY + best.ComputedHeight / 2f;
-        cursorX = bestCx * Game.displayWidth / res.ScaledWidth;
-        cursorY = bestCy * Game.displayHeight / res.ScaledHeight;
+        cursorX = bestCx * Game.DisplayWidth / res.ScaledWidth;
+        cursorY = bestCy * Game.DisplayHeight / res.ScaledHeight;
         return true;
     }
 
@@ -424,8 +424,8 @@ public abstract class UIScreen
     public void HandleMouseInput()
     {
         ScaledResolution res = CurrentScaledResolution;
-        float scaledX = Mouse.getEventX() * res.ScaledWidth / (float)Game.displayWidth;
-        float scaledY = res.ScaledHeight - Mouse.getEventY() * res.ScaledHeight / (float)Game.displayHeight - 1f;
+        float scaledX = Mouse.getEventX() * res.ScaledWidth / (float)Game.DisplayWidth;
+        float scaledY = res.ScaledHeight - Mouse.getEventY() * res.ScaledHeight / (float)Game.DisplayHeight - 1f;
 
         if (Mouse.getEventButtonState())
             HandleMouseButtonDown(scaledX, scaledY);
@@ -528,7 +528,7 @@ public abstract class UIScreen
         if (key == Keyboard.KEY_ESCAPE || key == Keyboard.KEY_NONE)
         {
             Uninit();
-            Game.displayGuiScreen(null);
+            Game.DisplayUIScreen(null);
         }
     }
 

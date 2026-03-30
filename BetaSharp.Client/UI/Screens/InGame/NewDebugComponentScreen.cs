@@ -19,7 +19,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         Root.Style.SetPadding(20);
         Root.Style.AlignItems = Align.Center;
 
-        Root.AddChild(new Background(Game.world != null ? BackgroundType.World : BackgroundType.Dirt));
+        Root.AddChild(new Background(Game.World != null ? BackgroundType.World : BackgroundType.Dirt));
 
         var title = new Label
         {
@@ -81,7 +81,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         };
         cancelButton.Style.Width = 100;
         cancelButton.Style.SetMargin(2);
-        cancelButton.OnClick += (_) => Game.displayGuiScreen(parent);
+        cancelButton.OnClick += (_) => Game.DisplayUIScreen(parent);
         buttonContainer.AddChild(cancelButton);
     }
 
@@ -109,7 +109,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
             var instance = (DebugComponent)Activator.CreateInstance(_selectedType)!;
             instance.Right = right;
             parent.AddComponent(instance);
-            Game.displayGuiScreen(parent);
+            Game.DisplayUIScreen(parent);
         }
     }
 }

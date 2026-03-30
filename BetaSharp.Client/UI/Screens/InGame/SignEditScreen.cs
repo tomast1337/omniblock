@@ -87,14 +87,14 @@ public class SignEditScreen(BetaSharp game, BlockEntitySign sign) : UIScreen(gam
     {
         _sign.CurrentRow = -1; // Reset cursor
         _sign.markDirty();
-        Game.displayGuiScreen(null);
+        Game.DisplayUIScreen(null);
     }
 
     public override void Uninit()
     {
-        if (Game.world?.IsRemote ?? false)
+        if (Game.World?.IsRemote ?? false)
         {
-            Game.getSendQueue().addToSendQueue(UpdateSignPacket.Get(_sign.X, _sign.Y, _sign.Z, _sign.Texts));
+            Game.GetSendQueue()?.addToSendQueue(UpdateSignPacket.Get(_sign.X, _sign.Y, _sign.Z, _sign.Texts));
         }
     }
 }

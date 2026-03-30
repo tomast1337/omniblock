@@ -10,7 +10,7 @@ public class DebugFPS : DebugComponent
 
     public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        yield return new DebugRowData(ctx.Game.debug);
+        yield return new DebugRowData(ctx.Game.DebugText);
     }
 
     public override DebugComponent Duplicate()

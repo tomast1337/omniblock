@@ -26,7 +26,7 @@ public class ControlTooltipBar : UIElement
     {
         _tips.Clear();
 
-        if (!_game.isControllerMode || _game.options.HideGUI)
+        if (!_game.IsControllerMode || _game.Options.HideGUI)
         {
             base.Render(renderer);
             return;
@@ -34,7 +34,7 @@ public class ControlTooltipBar : UIElement
 
         if (_screen == null)
         {
-            if (_game.currentScreen != null)
+            if (_game.CurrentScreen != null)
             {
                 base.Render(renderer);
                 return;
@@ -64,7 +64,7 @@ public class ControlTooltipBar : UIElement
             }
 
             renderer.DrawText(tip.Action, x, TextVerticalOffset, Color.White);
-            x += _game.fontRenderer.GetStringWidth(tip.Action) + Spacing;
+            x += _game.FontRenderer.GetStringWidth(tip.Action) + Spacing;
         }
 
         base.Render(renderer);

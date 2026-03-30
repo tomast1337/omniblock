@@ -19,7 +19,7 @@ public class Label : UIElement
 
     public override void Measure(float availableWidth, float availableHeight)
     {
-        ComputedWidth = (Style.Width ?? BetaSharp.Instance.fontRenderer.GetStringWidth(Text)) * Scale;
+        ComputedWidth = (Style.Width ?? BetaSharp.Instance.FontRenderer.GetStringWidth(Text)) * Scale;
         ComputedHeight = (Style.Height ?? 8) * Scale;
     }
 

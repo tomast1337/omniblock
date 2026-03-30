@@ -48,10 +48,10 @@ public class OptionsScreen(UIScreen? parent, GameOptions options) : BaseOptionsS
             list.AddChild(btn);
         }
 
-        AddSubButton(translations.TranslateKey("options.video"), () => Game.displayGuiScreen(new VideoSettingsScreen(this, Options)));
-        AddSubButton("Audio Settings", () => Game.displayGuiScreen(new AudioSettingsScreen(this, Options)));
-        AddSubButton(translations.TranslateKey("options.controls"), () => Game.displayGuiScreen(new AllControlsScreen(this, Options)));
-        AddSubButton("Debug Options...", () => Game.displayGuiScreen(new DebugOptionsScreen(this, Options)));
+        AddSubButton(translations.TranslateKey("options.video"), () => Game.DisplayUIScreen(new VideoSettingsScreen(this, Options)));
+        AddSubButton("Audio Settings", () => Game.DisplayUIScreen(new AudioSettingsScreen(this, Options)));
+        AddSubButton(translations.TranslateKey("options.controls"), () => Game.DisplayUIScreen(new AllControlsScreen(this, Options)));
+        AddSubButton("Debug Options...", () => Game.DisplayUIScreen(new DebugOptionsScreen(this, Options)));
 
         return list;
     }

@@ -15,24 +15,24 @@ public class DebugLocation : DebugComponent
 
     public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        double x = Math.Floor(ctx.Game.player.x * 1000) / 1000;
-        double y = Math.Floor(ctx.Game.player.y * 100000) / 100000;
-        double z = Math.Floor(ctx.Game.player.z * 1000) / 1000;
+        double x = Math.Floor(ctx.Game.Player.x * 1000) / 1000;
+        double y = Math.Floor(ctx.Game.Player.y * 100000) / 100000;
+        double z = Math.Floor(ctx.Game.Player.z * 1000) / 1000;
 
-        int bx = (int)Math.Floor(ctx.Game.player.x);
-        int by = (int)Math.Floor(ctx.Game.player.y);
-        int bz = (int)Math.Floor(ctx.Game.player.z);
+        int bx = (int)Math.Floor(ctx.Game.Player.x);
+        int by = (int)Math.Floor(ctx.Game.Player.y);
+        int bz = (int)Math.Floor(ctx.Game.Player.z);
 
-        int facingIndex = MathHelper.Floor((double)(ctx.Game.player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
+        int facingIndex = MathHelper.Floor((double)(ctx.Game.Player.yaw * 4.0F / 360.0F) + 0.5D) & 3;
         string cardinalDirection = GetCardinalDirection(facingIndex);
-        string verticalLookDirection = GetVerticalLookDirection(ctx.Game.player.pitch);
+        string verticalLookDirection = GetVerticalLookDirection(ctx.Game.Player.pitch);
         string towards = GetTowards(facingIndex);
 
-        double yaw = Math.Floor(WrapYaw(ctx.Game.player.yaw) * 10) / 10;
-        double pitch = Math.Floor(ctx.Game.player.pitch * 10) / 10;
+        double yaw = Math.Floor(WrapYaw(ctx.Game.Player.yaw) * 10) / 10;
+        double pitch = Math.Floor(ctx.Game.Player.pitch * 10) / 10;
 
-        Biome biome = ctx.Game.world.Dimension.BiomeSource.GetBiome(bx, bz);
-        int light = ctx.Game.world.Lighting.GetLightLevel(bx, by, bz);
+        Biome biome = ctx.Game.World.Dimension.BiomeSource.GetBiome(bx, bz);
+        int light = ctx.Game.World.Lighting.GetLightLevel(bx, by, bz);
 
         yield return new DebugRowData("XYZ: " + x + " / " + y + " / " + z);
         yield return new DebugRowData("Block: " + bx + " " + by + " " + bz);

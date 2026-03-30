@@ -65,7 +65,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         Button btnCreate = new() { Text = translations.TranslateKey("selectWorld.create") };
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => Game.displayGuiScreen(new CreateWorldScreen(Game));
+        btnCreate.OnClick += (e) => Game.DisplayUIScreen(new CreateWorldScreen(Game));
         row1.AddChild(btnCreate);
 
         buttonContainer.AddChild(row1);
@@ -89,7 +89,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         Button btnCancel = new() { Text = translations.TranslateKey("gui.cancel") };
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new MainMenuScreen(Game));
+        btnCancel.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));
         row2.AddChild(btnCancel);
 
         buttonContainer.AddChild(row2);
@@ -107,7 +107,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
 
     private void LoadSaves()
     {
-        IWorldStorageSource worldStorage = Game.getSaveLoader();
+        IWorldStorageSource worldStorage = Game.SaveLoader;
         _saveList.Clear();
         _saveList.AddRange(worldStorage.GetAll());
         _saveList.Sort();
@@ -154,11 +154,11 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         WorldSaveInfo worldInfo = _saveList[index];
         if (worldInfo.IsUnsupported) return;
 
-        Game.statFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
-        Game.playerController = new PlayerControllerSP(Game);
+        Game.StatFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
+        Game.PlayerController = new PlayerControllerSP(Game);
 
         string worldFileName = worldInfo.FileName ?? $"World{index}";
-        IWorldStorageSource worldStorage = Game.getSaveLoader();
+        IWorldStorageSource worldStorage = Game.SaveLoader;
         WorldProperties? props = worldStorage.GetProperties(worldFileName);
 
         WorldSettings settings;
@@ -171,14 +171,14 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
             settings = new WorldSettings(0L, WorldType.Default);
         }
 
-        Game.startWorld(worldFileName, worldInfo.DisplayName, settings);
+        Game.StartWorld(worldFileName, worldInfo.DisplayName, settings);
     }
 
     private void RenameSelected()
     {
         if (_selectedWorldIndex < 0) return;
         string fileName = _saveList[_selectedWorldIndex].FileName;
-        Game.displayGuiScreen(new RenameWorldScreen(Game, this, fileName));
+        Game.DisplayUIScreen(new RenameWorldScreen(Game, this, fileName));
     }
 
     private void DeleteSelected()
@@ -190,18 +190,18 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         string deleteQuestion = translations.TranslateKey("selectWorld.deleteQuestion");
         string deleteWarning = "'" + worldInfo.DisplayName + "' " + translations.TranslateKey("selectWorld.deleteWarning");
 
-        Game.displayGuiScreen(new ConfirmationScreen(Game, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
+        Game.DisplayUIScreen(new ConfirmationScreen(Game, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
         {
             if (confirmed)
             {
-                IWorldStorageSource worldStorage = Game.getSaveLoader();
+                IWorldStorageSource worldStorage = Game.SaveLoader;
                 worldStorage.Flush();
                 worldStorage.Delete(worldInfo.FileName);
                 LoadSaves();
                 PopulateWorldList();
                 UpdateButtons();
             }
-            Game.displayGuiScreen(this);
+            Game.DisplayUIScreen(this);
         }));
     }
 }

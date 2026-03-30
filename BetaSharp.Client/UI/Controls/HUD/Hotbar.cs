@@ -22,20 +22,20 @@ public class Hotbar : UIElement
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        Style.MarginBottom = _game.isControllerMode ? 28 : 0;
+        Style.MarginBottom = _game.IsControllerMode ? 28 : 0;
         _updateCounter++;
     }
 
     public override void Render(UIRenderer renderer)
     {
-        if (_game.player == null) return;
+        if (_game.Player == null) return;
 
         // --- 1. Background (Hotbar itself) ---
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/gui.png"));
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), 0, 0, 0, 0, 182, 22);
 
         // Selection highlight
-        InventoryPlayer inventory = _game.player.inventory;
+        InventoryPlayer inventory = _game.Player.inventory;
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.selectedSlot * 20 - 1, -1, 0, 22, 24, 22);
 
         RenderStats(renderer);
@@ -50,14 +50,14 @@ public class Hotbar : UIElement
 
     private void RenderStats(UIRenderer renderer)
     {
-        if (!_game.playerController.shouldDrawHUD()) return;
+        if (!_game.PlayerController.shouldDrawHUD()) return;
 
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/icons.png"));
 
-        int armorValue = _game.player.getPlayerArmorValue();
-        int health = _game.player.health;
-        int lastHealth = _game.player.lastHealth;
-        bool heartBlink = _game.player.hearts / 3 % 2 == 1 && _game.player.hearts >= 10;
+        int armorValue = _game.Player.getPlayerArmorValue();
+        int health = _game.Player.health;
+        int lastHealth = _game.Player.lastHealth;
+        bool heartBlink = _game.Player.hearts / 3 % 2 == 1 && _game.Player.hearts >= 10;
 
         _rand.SetSeed(_updateCounter * 312871);
 
@@ -94,9 +94,9 @@ public class Hotbar : UIElement
         }
 
         // --- Air ---
-        if (_game.player.isInFluid(Material.Water))
+        if (_game.Player.isInFluid(Material.Water))
         {
-            int air = _game.player.air;
+            int air = _game.Player.air;
             int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
             int partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
 
@@ -110,7 +110,7 @@ public class Hotbar : UIElement
 
     private void RenderSlot(UIRenderer renderer, int slotIndex, int x, int y)
     {
-        ItemStack? stack = _game.player.inventory.main[slotIndex];
+        ItemStack? stack = _game.Player.inventory.main[slotIndex];
         if (stack == null) return;
 
         renderer.DrawItem(stack, x, y);

@@ -106,10 +106,10 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     public void EnableClipping(int x, int y, int width, int height)
     {
         BetaSharp game = BetaSharp.Instance;
-        ScaledResolution res = new(game.options, game.displayWidth, game.displayHeight);
+        ScaledResolution res = new(game.Options, game.DisplayWidth, game.DisplayHeight);
 
         int scale = res.ScaleFactor;
-        int scaledWindowHeight = game.displayHeight;
+        int scaledWindowHeight = game.DisplayHeight;
 
         int physicalX = (int)((x + _translateX) * scale);
         int physicalWidth = width * scale;

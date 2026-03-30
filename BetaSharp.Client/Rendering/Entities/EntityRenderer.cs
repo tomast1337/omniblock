@@ -317,7 +317,7 @@ public abstract class EntityRenderer
 
     public void RenderBoundingBox(Entity target, Vec3D pos, float yaw, float tickDelta)
     {
-        if (!BetaSharp.isDebugInfoEnabled()) return;
+        if (!BetaSharp.IsDebugInfoEnabled()) return;
 
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Texture2D);

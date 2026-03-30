@@ -35,7 +35,7 @@ public class BlockRenderer
 
         block.updateBoundingBox(world, pos.x, pos.y, pos.z);
 
-        bool doVariance = BetaSharp.Instance?.options?.AlternateBlocksEnabled == true;
+        bool doVariance = BetaSharp.Instance?.Options?.AlternateBlocksEnabled == true;
 
         TextureVariance topRule = doVariance ? block.TopVariance : TextureVariance.None;
         TextureVariance botRule = doVariance ? block.BottomVariance : TextureVariance.None;

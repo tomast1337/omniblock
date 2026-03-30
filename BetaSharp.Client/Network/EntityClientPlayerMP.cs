@@ -1,4 +1,4 @@
-﻿using BetaSharp.Client.Entities;
+using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
@@ -127,7 +127,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void DropSelectedItem()
     {
-        if (!Game.player.GameMode.CanDrop) return;
+        if (!Game.Player.GameMode.CanDrop) return;
 
         var selected = getHand();
         if (selected != null && selected.count > 0)

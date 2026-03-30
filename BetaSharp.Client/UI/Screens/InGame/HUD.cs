@@ -90,7 +90,7 @@ public class HUD : UIScreen
     {
         base.Update(partialTicks);
 
-        LicenseWarning.Visible = BetaSharp.hasPaidCheckTime > 0;
-        Game.componentsStorage.Overlay.Context.GCMonitor.AllowUpdating = Game.options.ShowDebugInfo;
+        LicenseWarning.Visible = BetaSharp.HasPaidCheckTime > 0;
+        Game.DebugComponentsStorage.Overlay.Context.GCMonitor.AllowUpdating = Game.Options.ShowDebugInfo;
     }
 }

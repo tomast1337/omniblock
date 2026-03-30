@@ -43,7 +43,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void tickMovement()
     {
-        if (!Game.statFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
+        if (!Game.StatFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
         {
             Game.HUD.AchievementToast.QueueInfo(global::BetaSharp.Achievements.OpenInventory);
         }
@@ -56,14 +56,14 @@ public class ClientPlayerEntity : EntityPlayer
                 setVehicle((Entity)null);
             }
 
-            if (Game.currentScreen != null)
+            if (Game.CurrentScreen != null)
             {
-                Game.displayGuiScreen(null);
+                Game.DisplayUIScreen(null);
             }
 
             if (changeDimensionCooldown == 0.0F)
             {
-                Game.sndManager.PlaySoundFX("portal.trigger", 1.0F, random.NextFloat() * 0.4F + 0.8F);
+                Game.SoundManager.PlaySoundFX("portal.trigger", 1.0F, random.NextFloat() * 0.4F + 0.8F);
             }
 
             changeDimensionCooldown += 0.0125F;
@@ -130,37 +130,37 @@ public class ClientPlayerEntity : EntityPlayer
     public override void closeHandledScreen()
     {
         base.closeHandledScreen();
-        Game.displayGuiScreen(null);
+        Game.DisplayUIScreen(null);
     }
 
     public override void openEditSignScreen(BlockEntitySign sign)
     {
-        Game.displayGuiScreen(new SignEditScreen(Game, sign));
+        Game.DisplayUIScreen(new SignEditScreen(Game, sign));
     }
 
     public override void openChestScreen(IInventory inventory)
     {
-        Game.displayGuiScreen(new ChestScreen(base.inventory, inventory));
+        Game.DisplayUIScreen(new ChestScreen(base.inventory, inventory));
     }
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.displayGuiScreen(new CraftingScreen(inventory, world, x, y, z));
+        Game.DisplayUIScreen(new CraftingScreen(inventory, world, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
-        Game.displayGuiScreen(new FurnaceScreen(inventory, furnace));
+        Game.DisplayUIScreen(new FurnaceScreen(inventory, furnace));
     }
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
-        Game.displayGuiScreen(new DispenserScreen(inventory, dispenser));
+        Game.DisplayUIScreen(new DispenserScreen(inventory, dispenser));
     }
 
     public override void sendPickup(Entity entity, int count)
     {
-        Game.particleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.world, entity, this, -0.5F)));
+        Game.ParticleManager.AddSpecialParticle(new LegacyParticleAdapter(new EntityPickupFX(Game.World, entity, this, -0.5F)));
     }
 
     public int getPlayerArmorValue()
@@ -201,7 +201,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void respawn()
     {
-        Game.respawn(false, 0);
+        Game.Respawn(false, 0);
     }
 
     public override void spawn()
@@ -220,8 +220,8 @@ public class ClientPlayerEntity : EntityPlayer
             if (stat.IsAchievement())
             {
                 Achievement achievement = (Achievement)stat;
-                bool parentUnlocked = achievement.parent == null || Game.statFileWriter.HasAchievementUnlocked(achievement.parent);
-                bool alreadyUnlocked = Game.statFileWriter.HasAchievementUnlocked(achievement);
+                bool parentUnlocked = achievement.parent == null || Game.StatFileWriter.HasAchievementUnlocked(achievement.parent);
+                bool alreadyUnlocked = Game.StatFileWriter.HasAchievementUnlocked(achievement);
 
                 if (parentUnlocked)
                 {
@@ -230,12 +230,12 @@ public class ClientPlayerEntity : EntityPlayer
                         Game.HUD.AchievementToast.QueueAchievement(achievement);
                     }
 
-                    Game.statFileWriter.ReadStat(stat, value);
+                    Game.StatFileWriter.ReadStat(stat, value);
                 }
             }
             else
             {
-                Game.statFileWriter.ReadStat(stat, value);
+                Game.StatFileWriter.ReadStat(stat, value);
             }
         }
     }

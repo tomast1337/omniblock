@@ -16,10 +16,10 @@ public class PortalOverlay(BetaSharp game) : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        if (_game.player == null) return;
+        if (_game.Player == null) return;
 
-        float last = _game.player.lastScreenDistortion;
-        float curr = _game.player.changeDimensionCooldown;
+        float last = _game.Player.lastScreenDistortion;
+        float curr = _game.Player.changeDimensionCooldown;
         float portal = last + (curr - last) * _partialTicks;
 
         if (portal > 0.0F)

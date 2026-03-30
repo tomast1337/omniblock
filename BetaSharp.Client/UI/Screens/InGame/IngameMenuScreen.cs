@@ -28,8 +28,8 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
         Button btnBack = new() { Text = "Back to Game" };
         btnBack.OnClick += (e) =>
         {
-            Game.displayGuiScreen(null);
-            Game.setIngameFocus();
+            Game.DisplayUIScreen(null);
+            Game.SetIngameFocus();
         };
         btnBack.Style.MarginBottom = 4;
         Root.AddChild(btnBack);
@@ -43,35 +43,35 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnAchievements = new() { Text = StatCollector.TranslateToLocal("gui.achievements") };
         btnAchievements.Style.Width = 98;
-        btnAchievements.OnClick += (e) => Game.displayGuiScreen(new AchievementsScreen(this, Game.statFileWriter));
+        btnAchievements.OnClick += (e) => Game.DisplayUIScreen(new AchievementsScreen(this, Game.StatFileWriter));
 
         Button btnStats = new() { Text = StatCollector.TranslateToLocal("gui.stats") };
         btnStats.Style.Width = 98;
-        btnStats.OnClick += (e) => Game.displayGuiScreen(new StatsScreen(this, Game.statFileWriter));
+        btnStats.OnClick += (e) => Game.DisplayUIScreen(new StatsScreen(this, Game.StatFileWriter));
 
         rowStats.AddChild(btnAchievements);
         rowStats.AddChild(btnStats);
         Root.AddChild(rowStats);
 
         Button btnOptions = new() { Text = translator.TranslateKey("menu.options") };
-        btnOptions.OnClick += (e) => Game.displayGuiScreen(new OptionsScreen(this, Game.options));
+        btnOptions.OnClick += (e) => Game.DisplayUIScreen(new OptionsScreen(this, Game.Options));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
 
-        string quitText = (Game.isMultiplayerWorld() && Game.internalServer == null) ? "Disconnect" : "Save and quit to title";
+        string quitText = (Game.IsMultiplayerWorld() && Game.InternalServer == null) ? "Disconnect" : "Save and quit to title";
         Button btnQuit = new() { Text = quitText };
         btnQuit.OnClick += (e) =>
         {
-            Game.statFileWriter.ReadStat(Stats.Stats.LeaveGameStat, 1);
-            if (Game.isMultiplayerWorld())
+            Game.StatFileWriter.ReadStat(Stats.Stats.LeaveGameStat, 1);
+            if (Game.IsMultiplayerWorld())
             {
-                Game.world.Disconnect();
+                Game.World.Disconnect();
             }
 
-            Game.stopInternalServer();
-            Game.changeWorld(null!);
-            Game.options.ShowDebugInfo = false;
-            Game.displayGuiScreen(new MainMenuScreen(Game));
+            Game.StopInternalServer();
+            Game.ChangeWorld(null!);
+            Game.Options.ShowDebugInfo = false;
+            Game.DisplayUIScreen(new MainMenuScreen(Game));
         };
         Root.AddChild(btnQuit);
 

@@ -69,13 +69,13 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
 
             _btnWorldType = new Button { Text = "World Type: " + _selectedWorldType.DisplayName };
             _btnWorldType.Style.MarginBottom = 4;
-            _btnWorldType.OnClick += (e) => Game.displayGuiScreen(new SelectWorldTypeScreen(Game, this, _selectedWorldType));
+            _btnWorldType.OnClick += (e) => Game.DisplayUIScreen(new SelectWorldTypeScreen(Game, this, _selectedWorldType));
             Root.AddChild(_btnWorldType);
 
             _btnCustomize = new Button { Text = "Customize" };
             _btnCustomize.Style.MarginBottom = 10;
             _btnCustomize.Enabled = _selectedWorldType == WorldType.Flat;
-            _btnCustomize.OnClick += (e) => Game.displayGuiScreen(new CreateFlatWorldScreen(Game, this, GeneratorOptions));
+            _btnCustomize.OnClick += (e) => Game.DisplayUIScreen(new CreateFlatWorldScreen(Game, this, GeneratorOptions));
             Root.AddChild(_btnCustomize);
         }
 
@@ -106,7 +106,7 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         Button btnCancel = new() { Text = translations.TranslateKey("gui.cancel") };
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(new WorldScreen(Game));
+        btnCancel.OnClick += (e) => Game.DisplayUIScreen(new WorldScreen(Game));
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -148,13 +148,13 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         }
 
         if (string.IsNullOrEmpty(folderName)) folderName = "World";
-        folderName = GenerateUnusedFolderName(Game.getSaveLoader(), folderName);
+        folderName = GenerateUnusedFolderName(Game.SaveLoader, folderName);
 
-        Game.statFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
-        Game.playerController = new PlayerControllerSP(Game);
+        Game.StatFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
+        Game.PlayerController = new PlayerControllerSP(Game);
 
         WorldSettings settings = new(worldSeed, _selectedWorldType, GeneratorOptions);
-        Game.startWorld(folderName, _worldName, settings);
+        Game.StartWorld(folderName, _worldName, settings);
     }
 
     private static long CalculateJavaHash(string input)

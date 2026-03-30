@@ -11,7 +11,7 @@ public class DebugEntities : DebugComponent
 
     public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        WorldRenderer render = ctx.Game.terrainRenderer;
+        WorldRenderer render = ctx.Game.WorldRenderer;
         yield return new DebugRowData("Rendered Entities: " + render.countEntitiesRendered + "/" + render.countEntitiesTotal);
         yield return new DebugRowData("Hidden Entities: " + render.countEntitiesHidden + ", Not in view: " + (render.countEntitiesTotal - render.countEntitiesHidden - render.countEntitiesRendered));
     }

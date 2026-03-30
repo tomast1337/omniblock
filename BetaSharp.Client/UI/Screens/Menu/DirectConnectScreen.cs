@@ -29,7 +29,7 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         _txfAddress = new TextField();
         _txfAddress.Style.Width = 200;
         _txfAddress.Style.MarginBottom = 20;
-        _txfAddress.Text = Game.options.LastServer;
+        _txfAddress.Text = Game.Options.LastServer;
         Root.AddChild(_txfAddress);
 
         Panel buttonPanel = new();
@@ -41,15 +41,15 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         btnJoin.OnClick += (e) =>
         {
             serverData.Ip = _txfAddress.Text;
-            Game.options.LastServer = _txfAddress.Text;
-            Game.options.SaveOptions();
+            Game.Options.LastServer = _txfAddress.Text;
+            Game.Options.SaveOptions();
             ConnectToServer(_txfAddress.Text);
         };
         buttonPanel.AddChild(btnJoin);
 
         Button btnCancel = new() { Text = "Cancel" };
         btnCancel.Style.Width = 100;
-        btnCancel.OnClick += (e) => Game.displayGuiScreen(parent);
+        btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -61,6 +61,6 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         string host = parts[0];
         int portNum = 25565;
         if (parts.Length > 1) int.TryParse(parts[1], out portNum);
-        Game.displayGuiScreen(new ConnectingScreen(Game, host, portNum));
+        Game.DisplayUIScreen(new ConnectingScreen(Game, host, portNum));
     }
 }

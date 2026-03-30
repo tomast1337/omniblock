@@ -33,7 +33,7 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
 
         Label scoreLabel = new()
         {
-            Text = "Score: &e" + Game.player.getScore(),
+            Text = "Score: &e" + Game.Player.getScore(),
             TextColor = Color.White
         };
         scoreLabel.Style.MarginBottom = 20;
@@ -42,12 +42,12 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         Button btnRespawn = new() { Text = "Respawn" };
         btnRespawn.OnClick += (e) =>
         {
-            Game.player.respawn();
-            Game.displayGuiScreen(null);
+            Game.Player.respawn();
+            Game.DisplayUIScreen(null);
         };
         btnRespawn.Style.MarginBottom = 4;
 
-        if (Game.session == null)
+        if (Game.Session == null)
         {
             btnRespawn.Enabled = false;
         }
@@ -56,8 +56,8 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         Button btnTitle = new() { Text = "Title menu" };
         btnTitle.OnClick += (e) =>
         {
-            Game.changeWorld(null!);
-            Game.displayGuiScreen(new MainMenuScreen(Game));
+            Game.ChangeWorld(null!);
+            Game.DisplayUIScreen(new MainMenuScreen(Game));
         };
         Root.AddChild(btnTitle);
     }

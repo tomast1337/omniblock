@@ -57,7 +57,7 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing
-        btnDone.OnClick += (_) => Game.displayGuiScreen(parent);
+        btnDone.OnClick += (_) => Game.DisplayUIScreen(parent);
         Root.AddChild(btnDone);
 
         UpdateTab(Tab.General);

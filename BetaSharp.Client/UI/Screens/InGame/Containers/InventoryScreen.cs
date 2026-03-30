@@ -35,7 +35,7 @@ public class InventoryScreen : ContainerScreen
 
         _playerPreview = new EntityPreview
         {
-            Entity = Game.player,
+            Entity = Game.Player,
             Scale = 30.0f
         };
         _playerPreview.Style.Position = PositionType.Absolute;

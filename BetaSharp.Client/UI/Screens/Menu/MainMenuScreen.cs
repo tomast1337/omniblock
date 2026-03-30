@@ -44,22 +44,22 @@ public class MainMenuScreen(BetaSharp game) : UIScreen(game)
         TranslationStorage translator = TranslationStorage.Instance;
 
         Button btnSingleplayer = new() { Text = translator.TranslateKey("menu.singleplayer") };
-        btnSingleplayer.OnClick += (e) => Game.displayGuiScreen(new WorldScreen(Game));
+        btnSingleplayer.OnClick += (e) => Game.DisplayUIScreen(new WorldScreen(Game));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 
         Button btnMultiplayer = new() { Text = translator.TranslateKey("menu.multiplayer") };
-        btnMultiplayer.OnClick += (e) => Game.displayGuiScreen(new MultiplayerScreen(Game));
+        btnMultiplayer.OnClick += (e) => Game.DisplayUIScreen(new MultiplayerScreen(Game));
         btnMultiplayer.Style.MarginBottom = 4;
 
-        if (Game.session == null || Game.session.sessionId == "-")
+        if (Game.Session == null || Game.Session.sessionId == "-")
         {
             btnMultiplayer.Enabled = false;
         }
         Root.AddChild(btnMultiplayer);
 
         Button btnMods = new() { Text = translator.TranslateKey("menu.mods") };
-        btnMods.OnClick += (e) => Game.displayGuiScreen(new TexturePacksScreen(this));
+        btnMods.OnClick += (e) => Game.DisplayUIScreen(new TexturePacksScreen(this));
         btnMods.Style.MarginBottom = 4;
         Root.AddChild(btnMods);
 
@@ -71,14 +71,14 @@ public class MainMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnOptions = new() { Text = translator.TranslateKey("menu.options") };
         btnOptions.Style.Width = 98;
-        btnOptions.OnClick += (e) => Game.displayGuiScreen(new OptionsScreen(this, Game.options));
+        btnOptions.OnClick += (e) => Game.DisplayUIScreen(new OptionsScreen(this, Game.Options));
 
         Button btnQuit = new() { Text = translator.TranslateKey("menu.quit") };
         btnQuit.Style.Width = 98;
-        btnQuit.OnClick += (e) => Game.shutdown();
+        btnQuit.OnClick += (e) => Game.Shutdown();
 
         footerButtons.AddChild(btnOptions);
-        if (!Game.hideQuitButton)
+        if (!Game.HideQuitButton)
         {
             footerButtons.AddChild(btnQuit);
         }

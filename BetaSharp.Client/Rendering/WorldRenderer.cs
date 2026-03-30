@@ -59,7 +59,7 @@ public class WorldRenderer : IWorldEventListener
         int var7 = 256 / var6 + 2;
         float var5 = 16.0F;
 
-        chunkRenderer = new(gameInstance.world);
+        chunkRenderer = new(gameInstance.World);
 
         int var8;
         int var9;
@@ -180,7 +180,7 @@ public class WorldRenderer : IWorldEventListener
     public void loadRenderers()
     {
         Block.Leaves.setGraphicsLevel(true);
-        renderDistance = _game.options.renderDistance;
+        renderDistance = _game.Options.renderDistance;
 
         chunkRenderer?.Dispose();
         chunkRenderer = new(world);
@@ -197,12 +197,12 @@ public class WorldRenderer : IWorldEventListener
         }
         else
         {
-            BlockEntityRenderer.Instance.CacheActiveRenderInfo(world, renderEngine, _game.fontRenderer, _game.camera, var3);
-            EntityRenderDispatcher.instance.cacheActiveRenderInfo(world, renderEngine, _game.fontRenderer, _game.camera, _game.options, var3);
+            BlockEntityRenderer.Instance.CacheActiveRenderInfo(world, renderEngine, _game.FontRenderer, _game.Camera, var3);
+            EntityRenderDispatcher.instance.cacheActiveRenderInfo(world, renderEngine, _game.FontRenderer, _game.Camera, _game.Options, var3);
             countEntitiesTotal = 0;
             countEntitiesRendered = 0;
             countEntitiesHidden = 0;
-            EntityLiving var4 = _game.camera;
+            EntityLiving var4 = _game.Camera;
             EntityRenderDispatcher.offsetX = var4.lastTickX + (var4.x - var4.lastTickX) * (double)var3;
             EntityRenderDispatcher.offsetY = var4.lastTickY + (var4.y - var4.lastTickY) * (double)var3;
             EntityRenderDispatcher.offsetZ = var4.lastTickZ + (var4.z - var4.lastTickZ) * (double)var3;
@@ -243,7 +243,7 @@ public class WorldRenderer : IWorldEventListener
                         continue;
                     }
                 }
-                if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || culler.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != _game.camera || _game.options.CameraMode != EnumCameraMode.FirstPerson || _game.camera.isSleeping()))
+                if (var7.shouldRender(var1) && (var7.ignoreFrustumCheck || culler.isBoundingBoxInFrustum(var7.boundingBox)) && (var7 != _game.Camera || _game.Options.CameraMode != EnumCameraMode.FirstPerson || _game.Camera.isSleeping()))
                 {
                     int var8 = MathHelper.Floor(var7.y);
                     if (var8 < 0)
@@ -282,7 +282,7 @@ public class WorldRenderer : IWorldEventListener
 
     public int sortAndRender(EntityLiving var1, int pass, double var3, Culler cam)
     {
-        if (_game.options.renderDistance != renderDistance)
+        if (_game.Options.renderDistance != renderDistance)
         {
             loadRenderers();
         }
@@ -301,9 +301,9 @@ public class WorldRenderer : IWorldEventListener
             Ticks = world.GetTime(),
             PartialTicks = (float)var3,
             DeltaTime = _game.Timer.DeltaTime,
-            EnvironmentAnimation = _game.options.EnvironmentAnimation,
-            ChunkFade = _game.options.ChunkFade,
-            RenderOccluded = _game.options.RenderOccluded
+            EnvironmentAnimation = _game.Options.EnvironmentAnimation,
+            ChunkFade = _game.Options.ChunkFade,
+            RenderOccluded = _game.Options.RenderOccluded
         };
 
         if (pass == 0)
@@ -325,10 +325,10 @@ public class WorldRenderer : IWorldEventListener
 
     public void renderSky(float var1)
     {
-        if (!_game.world.Dimension.IsNether)
+        if (!_game.World.Dimension.IsNether)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
-            Vector3D<double> var2 = world.Environment.GetSkyColor(_game.camera, var1);
+            Vector3D<double> var2 = world.Environment.GetSkyColor(_game.Camera, var1);
             float var3 = (float)var2.X;
             float var4 = (float)var2.Y;
             float var5 = (float)var2.Z;
@@ -442,7 +442,7 @@ public class WorldRenderer : IWorldEventListener
     public void renderClouds(float var1)
     {
         Profiler.Start("renderClouds");
-        if (!_game.world.Dimension.IsNether)
+        if (!_game.World.Dimension.IsNether)
         {
             renderCloudsFancy(var1);
         }
@@ -552,11 +552,11 @@ public class WorldRenderer : IWorldEventListener
     private void renderCloudsFancy(float var1)
     {
         GLManager.GL.Disable(GLEnum.CullFace);
-        float var2 = (float)(_game.camera.lastTickY + (_game.camera.y - _game.camera.lastTickY) * (double)var1);
+        float var2 = (float)(_game.Camera.lastTickY + (_game.Camera.y - _game.Camera.lastTickY) * (double)var1);
         float var4 = 12.0F;
         float var5 = 4.0F;
-        double var6 = (_game.camera.prevX + (_game.camera.x - _game.camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
-        double var8 = (_game.camera.prevZ + (_game.camera.z - _game.camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
+        double var6 = (_game.Camera.prevX + (_game.Camera.x - _game.Camera.prevX) * (double)var1 + (double)((cloudOffsetX + var1) * 0.03F)) / (double)var4;
+        double var8 = (_game.Camera.prevZ + (_game.Camera.z - _game.Camera.prevZ) * (double)var1) / (double)var4 + (double)0.33F;
         float var10 = world.Dimension.CloudHeight - var2 + 0.33F;
         int var11 = MathHelper.Floor(var6 / 2048.0D);
         int var12 = MathHelper.Floor(var8 / 2048.0D);
@@ -769,7 +769,7 @@ public class WorldRenderer : IWorldEventListener
             _game.HUD.Chat.SetRecordPlaying(var1);
         }
 
-        _game.sndManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
+        _game.SoundManager.PlayStreaming(var1, var2, var3, var4, 1.0F, 1.0F);
     }
 
     public void playSound(string var1, double var2, double var4, double var6, float var8, float var9)
@@ -780,24 +780,24 @@ public class WorldRenderer : IWorldEventListener
             var10 *= var8;
         }
 
-        if (_game.camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
+        if (_game.Camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
         {
-            _game.sndManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
+            _game.SoundManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
         }
 
     }
 
     public void spawnParticle(string var1, double var2, double var4, double var6, double var8, double var10, double var12)
     {
-        if (_game != null && _game.camera != null && _game.particleManager != null)
+        if (_game != null && _game.Camera != null && _game.ParticleManager != null)
         {
-            double var14 = _game.camera.x - var2;
-            double var16 = _game.camera.y - var4;
-            double var18 = _game.camera.z - var6;
+            double var14 = _game.Camera.x - var2;
+            double var16 = _game.Camera.y - var4;
+            double var18 = _game.Camera.z - var6;
             double var20 = 16.0D;
             if (var14 * var14 + var16 * var16 + var18 * var18 <= var20 * var20)
             {
-                var pm = _game.particleManager;
+                var pm = _game.ParticleManager;
                 switch (var1)
                 {
                     case "bubble": pm.AddBubble(var2, var4, var6, var8, var10, var12); break;
@@ -847,35 +847,35 @@ public class WorldRenderer : IWorldEventListener
         switch (var2)
         {
             case 1000:
-                _game.sndManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.0F);
+                _game.SoundManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.0F);
                 break;
             case 1001:
-                _game.sndManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.2F);
+                _game.SoundManager.PlaySound("random.click", var3, var4, var5, 1.0F, 1.2F);
                 break;
             case 1002:
-                _game.sndManager.PlaySound("random.bow", var3, var4, var5, 1.0F, 1.2F);
+                _game.SoundManager.PlaySound("random.bow", var3, var4, var5, 1.0F, 1.2F);
                 break;
             case 1003:
                 if (Random.Shared.NextDouble() < 0.5D)
                 {
-                    _game.sndManager.PlaySound("random.door_open", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
+                    _game.SoundManager.PlaySound("random.door_open", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 else
                 {
-                    _game.sndManager.PlaySound("random.door_close", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
+                    _game.SoundManager.PlaySound("random.door_close", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 1.0F, world.Random.NextFloat() * 0.1F + 0.9F);
                 }
                 break;
             case 1004:
-                _game.sndManager.PlaySound("random.fizz", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
+                _game.SoundManager.PlaySound("random.fizz", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
                 break;
             case 1005:
                 if (Item.ITEMS[var6] is ItemRecord)
                 {
-                    _game.sndManager.PlayStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5, 1.0F, 1.0F);
+                    _game.SoundManager.PlayStreaming(((ItemRecord)Item.ITEMS[var6]).recordName, var3, var4, var5, 1.0F, 1.0F);
                 }
                 else
                 {
-                    _game.sndManager.PlayStreaming(null, var3, var4, var5, 1.0F, 1.0F);
+                    _game.SoundManager.PlayStreaming(null, var3, var4, var5, 1.0F, 1.0F);
                 }
                 break;
             case 2000:
@@ -903,10 +903,10 @@ public class WorldRenderer : IWorldEventListener
                 if (var16 > 0)
                 {
                     Block blockId = Block.Blocks[var16];
-                    _game.sndManager.PlaySound(blockId.soundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (blockId.soundGroup.Volume + 1.0F) / 2.0F, blockId.soundGroup.Pitch * 0.8F);
+                    _game.SoundManager.PlaySound(blockId.soundGroup.BreakSound, var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, (blockId.soundGroup.Volume + 1.0F) / 2.0F, blockId.soundGroup.Pitch * 0.8F);
                 }
 
-                _game.particleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
+                _game.ParticleManager.addBlockDestroyEffects(var3, var4, var5, var6 & 255, var6 >> 8 & 255);
                 break;
         }
 

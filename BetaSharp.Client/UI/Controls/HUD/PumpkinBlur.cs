@@ -9,9 +9,9 @@ public class PumpkinBlur(BetaSharp game) : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        if (_game.player == null) return;
+        if (_game.Player == null) return;
 
-        ItemStack head = _game.player.inventory.armorItemInSlot(3);
+        ItemStack head = _game.Player.inventory.armorItemInSlot(3);
         if (head != null && head.itemId == 86) // Pumpkin
         {
             renderer.DrawTexture(renderer.TextureManager.GetTextureId("%blur%%clamp%/misc/pumpkinblur.png"), 0, 0, ComputedWidth, ComputedHeight);

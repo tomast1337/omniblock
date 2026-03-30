@@ -30,7 +30,7 @@ public class SleepScreen(BetaSharp game) : UIScreen(game)
         if (key == Input.Keyboard.KEY_ESCAPE)
         {
             SendStopSleepingCommand();
-            Game.displayGuiScreen(null);
+            Game.DisplayUIScreen(null);
         }
         else
         {
@@ -40,9 +40,9 @@ public class SleepScreen(BetaSharp game) : UIScreen(game)
 
     private void SendStopSleepingCommand()
     {
-        if (Game.player is EntityClientPlayerMP playerMP)
+        if (Game.Player is EntityClientPlayerMP playerMP)
         {
-            playerMP.sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(Game.player, 3));
+            playerMP.sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(Game.Player, 3));
         }
     }
 }

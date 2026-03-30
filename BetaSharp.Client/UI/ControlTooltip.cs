@@ -31,15 +31,15 @@ public static class ControlTooltip
         tips.Add(new ActionTip(ControlIcon.Y, "Inventory"));
 
         string? useAction = null;
-        ItemStack held = game.player.inventory.getSelectedItem();
-        HitResult hit = game.objectMouseOver;
+        ItemStack held = game.Player.inventory.getSelectedItem();
+        HitResult hit = game.ObjectMouseOver;
 
         if (hit.Type == HitResultType.TILE)
         {
             int blockX = hit.BlockX;
             int blockY = hit.BlockY;
             int blockZ = hit.BlockZ;
-            int blockId = game.world.Reader.GetBlockId(blockX, blockY, blockZ);
+            int blockId = game.World.Reader.GetBlockId(blockX, blockY, blockZ);
 
             if (blockId == Block.Chest.id || blockId == Block.Furnace.id || blockId == Block.LitFurnace.id || blockId == Block.CraftingTable.id || blockId == Block.Dispenser.id)
                 useAction = "Interact";
@@ -85,7 +85,7 @@ public static class ControlTooltip
             tips.Add(new ActionTip(ControlIcon.Rt, attackAction));
         }
 
-        if (game.player.inventory.getSelectedItem() != null)
+        if (game.Player.inventory.getSelectedItem() != null)
             tips.Add(new ActionTip(ControlIcon.B, "Drop"));
     }
 

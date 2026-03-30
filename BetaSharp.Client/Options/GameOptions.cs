@@ -207,12 +207,12 @@ public class GameOptions
         MusicVolumeOption = new FloatOption("options.music", "music", 1.0F)
         {
             Steps = 100,
-            OnChanged = _ => _game?.sndManager.OnSoundOptionsChanged()
+            OnChanged = _ => _game?.SoundManager.OnSoundOptionsChanged()
         };
         SoundVolumeOption = new FloatOption("options.sound", "sound", 1.0F)
         {
             Steps = 100,
-            OnChanged = _ => _game?.sndManager.OnSoundOptionsChanged()
+            OnChanged = _ => _game?.SoundManager.OnSoundOptionsChanged()
         };
         MouseSensitivityOption = new FloatOption("options.sensitivity", "mouseSensitivity", 0.5F)
         {
@@ -273,8 +273,8 @@ public class GameOptions
         {
             OnChanged = _ =>
             {
-                if (BetaSharp.Instance?.textureManager != null)
-                    BetaSharp.Instance.textureManager.Reload();
+                if (BetaSharp.Instance?.TextureManager != null)
+                    BetaSharp.Instance.TextureManager.Reload();
             }
         };
         DebugModeOption = new BoolOption("Debug Mode", "debugMode")
@@ -294,7 +294,7 @@ public class GameOptions
         AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
         {
             LabelOverride = "Alternate Blocks",
-            OnChanged = _ => BetaSharp.Instance?.terrainRenderer?.chunkRenderer?.MarkAllVisibleChunksDirty()
+            OnChanged = _ => BetaSharp.Instance?.WorldRenderer?.chunkRenderer?.MarkAllVisibleChunksDirty()
         };
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 
@@ -305,9 +305,9 @@ public class GameOptions
             Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} Chunks",
             OnChanged = _ =>
             {
-                if (_game?.internalServer != null)
+                if (_game?.InternalServer != null)
                 {
-                    _game.internalServer.SetViewDistance(renderDistance);
+                    _game.InternalServer.SetViewDistance(renderDistance);
                 }
             }
         };
@@ -324,8 +324,8 @@ public class GameOptions
                     AnisotropicOption.Value = 0;
                 }
 
-                if (BetaSharp.Instance?.textureManager != null)
-                    BetaSharp.Instance.textureManager.Reload();
+                if (BetaSharp.Instance?.TextureManager != null)
+                    BetaSharp.Instance.TextureManager.Reload();
             }
         };
         MsaaOption = new CycleOption("MSAA", "msaaLevel", MSAALabels)
@@ -513,6 +513,6 @@ public class GameOptions
 
     public void OnSoundOptionsChanged()
     {
-        _game?.sndManager.OnSoundOptionsChanged();
+        _game?.SoundManager.OnSoundOptionsChanged();
     }
 }

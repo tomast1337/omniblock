@@ -19,7 +19,7 @@ public class Button : UIElement
         OnClick += (e) =>
         {
             if (Enabled)
-                BetaSharp.Instance.sndManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+                BetaSharp.Instance.SoundManager.PlaySoundFX("random.click", 1.0F, 1.0F);
         };
 
         OnMouseEnter += (e) =>
@@ -39,7 +39,7 @@ public class Button : UIElement
     {
         int hoverState = !Enabled ? 0 : (IsHovered ? 2 : 1);
 
-        TextureHandle texture = BetaSharp.Instance.textureManager.GetTextureId("/gui/gui.png");
+        TextureHandle texture = BetaSharp.Instance.TextureManager.GetTextureId("/gui/gui.png");
 
         // Use fixed UV height of 20 to avoid reading into the next button in the spritesheet
         float uvHeight = 20;

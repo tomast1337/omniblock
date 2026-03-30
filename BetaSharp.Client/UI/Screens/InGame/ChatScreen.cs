@@ -159,7 +159,7 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
         if (msg.Length > 0)
         {
             string sendMsg = ConvertAmpersandToSection(msg);
-            Game.player.sendChatMessage(sendMsg);
+            Game.Player.sendChatMessage(sendMsg);
             s_history.Add(msg); // Store original with & for history navigation
             if (s_history.Count > 100)
             {
@@ -167,7 +167,7 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
             }
         }
 
-        Game.displayGuiScreen(null);
+        Game.DisplayUIScreen(null);
     }
 
     private static string ConvertAmpersandToSection(string input)

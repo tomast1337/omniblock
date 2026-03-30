@@ -35,7 +35,7 @@ public class BuiltInTexturePack : TexturePack
     {
         if (texturePackThumbnail != null && _texturePackName != null)
         {
-            game.textureManager.Delete(_texturePackName);
+            game.TextureManager.Delete(_texturePackName);
 
         }
 
@@ -45,16 +45,16 @@ public class BuiltInTexturePack : TexturePack
     {
         if (texturePackThumbnail != null && _texturePackName == null)
         {
-            _texturePackName = game.textureManager.Load(texturePackThumbnail);
+            _texturePackName = game.TextureManager.Load(texturePackThumbnail);
         }
 
         if (texturePackThumbnail != null && _texturePackName != null)
         {
-            game.textureManager.BindTexture(_texturePackName);
+            game.TextureManager.BindTexture(_texturePackName);
         }
         else
         {
-            game.textureManager.BindTexture(game.textureManager.GetTextureId("/gui/unknown_pack.png"));
+            game.TextureManager.BindTexture(game.TextureManager.GetTextureId("/gui/unknown_pack.png"));
         }
 
     }

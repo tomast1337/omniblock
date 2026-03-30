@@ -48,8 +48,7 @@ public class LevelLoadingScreen(string worldDir, WorldSettings settings) : UIScr
         if (!_serverStarted)
         {
             _serverStarted = true;
-            Game.internalServer = new InternalServer(Path.Combine(BetaSharp.getBetaSharpDir(), "saves"), _worldDir, _settings, Game.options.renderDistance, Game.options.Difficulty);
-            Game.internalServer.RunThreaded("Internal Server");
+            Game.StartInternalServer(_worldDir, _settings);
         }
     }
 
@@ -57,19 +56,19 @@ public class LevelLoadingScreen(string worldDir, WorldSettings settings) : UIScr
     {
         base.Update(partialTicks);
 
-        if (Game.internalServer != null)
+        if (Game.InternalServer != null)
         {
-            if (Game.internalServer.stopped)
+            if (Game.InternalServer.stopped)
             {
-                Game.displayGuiScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
+                Game.DisplayUIScreen(new ConnectFailedScreen("connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
                 return;
             }
 
-            string progressMsg = Game.internalServer.progressMessage ?? "Starting server...";
-            int progress = Game.internalServer.progress;
+            string progressMsg = Game.InternalServer.progressMessage ?? "Starting server...";
+            int progress = Game.InternalServer.progress;
             _lblProgress.Text = $"{progressMsg} ({progress}%)";
 
-            if (Game.internalServer.isReady)
+            if (Game.InternalServer.isReady)
             {
                 InternalConnection clientConnection = new(null, "Internal-Client");
                 InternalConnection serverConnection = new(null, "Internal-Server");
@@ -77,15 +76,15 @@ public class LevelLoadingScreen(string worldDir, WorldSettings settings) : UIScr
                 clientConnection.AssignRemote(serverConnection);
                 serverConnection.AssignRemote(clientConnection);
 
-                Game.internalServer.connections.AddInternalConnection(serverConnection);
+                Game.InternalServer.connections.AddInternalConnection(serverConnection);
                 _logger.LogInformation("[Internal-Client] Created internal connection");
 
                 ClientNetworkHandler clientHandler = new(Game, clientConnection);
                 clientConnection.setNetworkHandler(clientHandler);
                 _logger.LogInformation("[Internal-Client] Sending HandshakePacket");
-                clientHandler.addToSendQueue(new HandshakePacket(Game.session.username));
+                clientHandler.addToSendQueue(new HandshakePacket(Game.Session.username));
 
-                Game.displayGuiScreen(new ConnectingScreen(Game, clientHandler));
+                Game.DisplayUIScreen(new ConnectingScreen(Game, clientHandler));
             }
         }
     }

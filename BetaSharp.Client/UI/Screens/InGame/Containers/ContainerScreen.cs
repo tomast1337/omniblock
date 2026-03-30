@@ -21,7 +21,7 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
 
     protected override void Init()
     {
-        Game.player.currentScreenHandler = InventorySlots;
+        Game.Player.currentScreenHandler = InventorySlots;
 
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -54,15 +54,15 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
         bool isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         int mouseBtn = (button == MouseButton.Right) ? 1 : 0;
 
-        Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, Game.player);
+        Game.PlayerController.func_27174_a(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, Game.Player);
     }
 
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        if (!Game.player.isAlive() || Game.player.dead)
+        if (!Game.Player.isAlive() || Game.Player.dead)
         {
-            Game.player.closeHandledScreen();
+            Game.Player.closeHandledScreen();
         }
     }
 
@@ -71,7 +71,7 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
         base.Render(mouseX, mouseY, partialTicks);
 
         // Render held item on top of everything
-        ItemStack cursorStack = Game.player.inventory.getCursorStack();
+        ItemStack cursorStack = Game.Player.inventory.getCursorStack();
         if (cursorStack != null)
         {
             Renderer.Begin();
@@ -90,7 +90,7 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
                 string itemName = ("" + TranslationStorage.Instance.TranslateNamedKey(stack.getItemName())).Trim();
                 if (itemName.Length > 0)
                 {
-                    int textWidth = Game.fontRenderer.GetStringWidth(itemName);
+                    int textWidth = Game.FontRenderer.GetStringWidth(itemName);
                     float tx = MouseX + 12;
                     float ty = MouseY - 12;
 
@@ -105,7 +105,7 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
 
     public override void GetTooltips(List<ActionTip> tips)
     {
-        ItemStack cursorStack = Game.player.inventory.getCursorStack();
+        ItemStack cursorStack = Game.Player.inventory.getCursorStack();
 
         if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot)
         {
@@ -137,9 +137,9 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
             {
                 int slotId = uiSlot.Slot.id;
                 if (button == GamepadButton.Y)
-                    Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, 0, true, Game.player);
+                    Game.PlayerController.func_27174_a(InventorySlots.SyncId, slotId, 0, true, Game.Player);
                 else
-                    Game.playerController.func_27174_a(InventorySlots.SyncId, slotId, 1, false, Game.player);
+                    Game.PlayerController.func_27174_a(InventorySlots.SyncId, slotId, 1, false, Game.Player);
                 return;
             }
         }
@@ -149,9 +149,9 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
 
     public override void KeyTyped(int key, char character)
     {
-        if (key == Keyboard.KEY_ESCAPE || key == Game.options.KeyBindInventory.keyCode)
+        if (key == Keyboard.KEY_ESCAPE || key == Game.Options.KeyBindInventory.keyCode)
         {
-            Game.player.closeHandledScreen();
+            Game.Player.closeHandledScreen();
         }
         else
         {
@@ -162,9 +162,9 @@ public abstract class ContainerScreen(ScreenHandler inventorySlots) : UIScreen(B
     public override void Uninit()
     {
         base.Uninit();
-        if (Game.player != null)
+        if (Game.Player != null)
         {
-            Game.playerController.OnGuiClosed(InventorySlots.SyncId, Game.player);
+            Game.PlayerController.OnGuiClosed(InventorySlots.SyncId, Game.Player);
         }
     }
 }

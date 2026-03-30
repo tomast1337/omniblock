@@ -16,14 +16,14 @@ public class DebugTargetedBlock : DebugComponent
     {
         BetaSharp g = ctx.Game;
 
-        if (g.objectMouseOver.Type != HitResultType.TILE || g.world == null) yield break;
+        if (g.ObjectMouseOver.Type != HitResultType.TILE || g.World == null) yield break;
 
-        int blockX = g.objectMouseOver.BlockX;
-        int blockY = g.objectMouseOver.BlockY;
-        int blockZ = g.objectMouseOver.BlockZ;
-        int blockId = g.world.Reader.GetBlockId(blockX, blockY, blockZ);
-        int blockMeta = g.world.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        string sideName = GetTargetedSideName(g.objectMouseOver.Side);
+        int blockX = g.ObjectMouseOver.BlockX;
+        int blockY = g.ObjectMouseOver.BlockY;
+        int blockZ = g.ObjectMouseOver.BlockZ;
+        int blockId = g.World.Reader.GetBlockId(blockX, blockY, blockZ);
+        int blockMeta = g.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
+        string sideName = GetTargetedSideName(g.ObjectMouseOver.Side);
 
         string blockName = "Unknown";
         if (blockId == 0)

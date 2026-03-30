@@ -21,7 +21,7 @@ public class DebugEditorScreen : UIScreen
         _parentScreen = parentScreen;
         _components = [];
 
-        foreach (DebugComponent component in game.componentsStorage.Overlay.Components)
+        foreach (DebugComponent component in game.DebugComponentsStorage.Overlay.Components)
         {
             _components.Add(component.Duplicate());
         }
@@ -32,7 +32,7 @@ public class DebugEditorScreen : UIScreen
         Root.Style.SetPadding(20);
         Root.Style.AlignItems = Align.Center;
 
-        Root.AddChild(new Background(Game.world != null ? BackgroundType.World : BackgroundType.Dirt));
+        Root.AddChild(new Background(Game.World != null ? BackgroundType.World : BackgroundType.Dirt));
 
         var title = new Label
         {
@@ -65,7 +65,7 @@ public class DebugEditorScreen : UIScreen
         };
         addButton.Style.Width = 150;
         addButton.Style.SetMargin(2);
-        addButton.OnClick += (_) => Game.displayGuiScreen(new NewDebugComponentScreen(Game, this));
+        addButton.OnClick += (_) => Game.DisplayUIScreen(new NewDebugComponentScreen(Game, this));
         buttonContainer.AddChild(addButton);
 
         var saveButton = new Button
@@ -77,12 +77,12 @@ public class DebugEditorScreen : UIScreen
         saveButton.Style.SetMargin(2);
         saveButton.OnClick += (_) =>
         {
-            Game.componentsStorage.Overlay.Components.Clear();
+            Game.DebugComponentsStorage.Overlay.Components.Clear();
             foreach (DebugComponent comp in _components)
             {
-                Game.componentsStorage.Overlay.Components.Add(comp.Duplicate());
+                Game.DebugComponentsStorage.Overlay.Components.Add(comp.Duplicate());
             }
-            Game.componentsStorage.SaveComponents();
+            Game.DebugComponentsStorage.SaveComponents();
             Close();
         };
         buttonContainer.AddChild(saveButton);
@@ -188,11 +188,11 @@ public class DebugEditorScreen : UIScreen
     {
         if (_parentScreen != null)
         {
-            Game.displayGuiScreen(_parentScreen);
+            Game.DisplayUIScreen(_parentScreen);
         }
         else
         {
-            Game.displayGuiScreen(null);
+            Game.DisplayUIScreen(null);
         }
     }
 }

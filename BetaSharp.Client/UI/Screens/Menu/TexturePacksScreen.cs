@@ -20,7 +20,7 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
 
     protected override void Init()
     {
-        _texturePackFolder = Path.GetFullPath(Path.Combine(BetaSharp.getBetaSharpDir(), "texturepacks"));
+        _texturePackFolder = Path.GetFullPath(Path.Combine(BetaSharp.BetaSharpDir, "texturepacks"));
 
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
@@ -80,9 +80,9 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
         _scrollView.ContentContainer.Children.Clear();
         _listItems.Clear();
 
-        Game.texturePackList.updateAvaliableTexturePacks();
-        List<TexturePack> packs = Game.texturePackList.AvailableTexturePacks;
-        TexturePack selectedPack = Game.texturePackList.SelectedTexturePack;
+        Game.TexturePackList.updateAvaliableTexturePacks();
+        List<TexturePack> packs = Game.TexturePackList.AvailableTexturePacks;
+        TexturePack selectedPack = Game.TexturePackList.SelectedTexturePack;
 
         for (int i = 0; i < packs.Count; i++)
         {
@@ -105,8 +105,8 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
         }
         selectedItem.IsSelected = true;
 
-        Game.texturePackList.setTexturePack(selectedItem.Value);
-        Game.textureManager.Reload();
+        Game.TexturePackList.setTexturePack(selectedItem.Value);
+        Game.TextureManager.Reload();
     }
 
     private void OpenFolder()
@@ -127,14 +127,14 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
 
     private void OnDone()
     {
-        Game.textureManager.Reload();
+        Game.TextureManager.Reload();
         if (_parent != null)
         {
-            Game.displayGuiScreen(_parent);
+            Game.DisplayUIScreen(_parent);
         }
         else
         {
-            Game.displayGuiScreen(null);
+            Game.DisplayUIScreen(null);
         }
     }
 
@@ -145,16 +145,16 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
         {
             _refreshTimer = 20;
 
-            Game.texturePackList.updateAvaliableTexturePacks();
+            Game.TexturePackList.updateAvaliableTexturePacks();
 
-            List<TexturePack> packs = Game.texturePackList.AvailableTexturePacks;
+            List<TexturePack> packs = Game.TexturePackList.AvailableTexturePacks;
             if (packs.Count != _listItems.Count)
             {
                 PopulatePackList();
             }
             else
             {
-                TexturePack selectedPack = Game.texturePackList.SelectedTexturePack;
+                TexturePack selectedPack = Game.TexturePackList.SelectedTexturePack;
                 foreach (TexturePackListItem item in _listItems)
                 {
                     item.IsSelected = item.Value == selectedPack;

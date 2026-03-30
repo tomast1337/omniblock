@@ -34,15 +34,15 @@ public class DebugMenu : UIElement
         while (_rightColumn.Children.Count > 0)
             _rightColumn.RemoveChild(_rightColumn.Children[0]);
 
-        if (_game.options.ShowDebugInfo && _game.player != null && _game.world != null)
+        if (_game.Options.ShowDebugInfo && _game.Player != null && _game.World != null)
         {
-            _leftColumn.Style.MarginTop = BetaSharp.hasPaidCheckTime > 0L ? 34 : 2;
+            _leftColumn.Style.MarginTop = BetaSharp.HasPaidCheckTime > 0L ? 34 : 2;
             _rightColumn.Style.MarginTop = 2;
 
-            DebugContext ctx = _game.componentsStorage.Overlay.Context;
+            DebugContext ctx = _game.DebugComponentsStorage.Overlay.Context;
             ctx.GCMonitor.AllowUpdating = true;
 
-            foreach (DebugComponent component in _game.componentsStorage.Overlay.Components)
+            foreach (DebugComponent component in _game.DebugComponentsStorage.Overlay.Components)
             {
                 UIElement column = component.Right ? _rightColumn : _leftColumn;
                 foreach (DebugRowData row in component.GetRows(ctx))
