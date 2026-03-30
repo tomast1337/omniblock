@@ -132,11 +132,11 @@ public class TexturePacksScreen(BetaSharp game, UIScreen? parent) : UIScreen(par
         Game.TextureManager.Reload();
         if (_parent != null)
         {
-            Game.DisplayUIScreen(_parent);
+            Navigator.Navigate(_parent);
         }
         else
         {
-            Game.DisplayUIScreen(null);
+            Navigator.Navigate(null);
         }
     }
 

@@ -54,7 +54,7 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         btnPresets.Text = "Presets";
         btnPresets.Style.Width = 150;
         btnPresets.Style.SetMargin(2);
-        btnPresets.OnClick += (e) => Game.DisplayUIScreen(new FlatPresetsScreen(Game, this));
+        btnPresets.OnClick += (e) => Navigator.Navigate(new FlatPresetsScreen(Game, this));
         row1.AddChild(btnPresets);
 
         buttonPanel.AddChild(row1);
@@ -69,7 +69,7 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         btnDone.OnClick += (e) =>
         {
             parent.GeneratorOptions = _generatorInfo.ToString();
-            Game.DisplayUIScreen(parent);
+            Navigator.Navigate(parent);
         };
         row2.AddChild(btnDone);
 
@@ -77,7 +77,7 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);
+        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
         row2.AddChild(btnCancel);
 
         buttonPanel.AddChild(row2);

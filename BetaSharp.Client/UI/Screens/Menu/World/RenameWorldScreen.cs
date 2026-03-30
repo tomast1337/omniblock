@@ -49,7 +49,7 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
             if (_txfName.Text.Trim().Length > 0)
             {
                 worldStorage.Rename(_worldFolderName, _txfName.Text.Trim());
-                Game.DisplayUIScreen(parent);
+                Navigator.Navigate(parent);
             }
         };
         buttonPanel.AddChild(btnRename);
@@ -58,7 +58,7 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
         btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.DisplayUIScreen(parent);
+        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

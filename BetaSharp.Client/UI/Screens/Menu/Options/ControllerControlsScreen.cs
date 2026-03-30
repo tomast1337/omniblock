@@ -37,7 +37,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
         btnBindings.Style.MarginBottom = 4;
         btnBindings.OnClick += (e) =>
         {
-            Game.DisplayUIScreen(new ControllerBindingsScreen(Game, this, Options));
+            Navigator.Navigate(new ControllerBindingsScreen(Game, this, Options));
         };
         list.AddChild(btnBindings);
 

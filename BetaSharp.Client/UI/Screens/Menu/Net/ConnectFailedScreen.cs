@@ -55,7 +55,7 @@ public class ConnectFailedScreen : UIScreen
         Button btnToMenu = CreateButton();
         btnToMenu.Text = TranslationStorage.Instance.TranslateKey("gui.toMenu");
         btnToMenu.Style.Width = 150;
-        btnToMenu.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));
+        btnToMenu.OnClick += (e) => Navigator.Navigate(new MainMenuScreen(Game));
         Root.AddChild(btnToMenu);
     }
 }

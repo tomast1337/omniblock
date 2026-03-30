@@ -4,6 +4,7 @@ using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
+using BetaSharp.Client.UI.Screens;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
 
@@ -71,6 +72,7 @@ public abstract class UIScreen
     public virtual bool AllowUserInput => false;
     public Func<Button> CreateButton { get; }
     public Func<Slider> CreateSlider { get; }
+    public IScreenNavigator Navigator { get; set; }
     protected virtual bool AutoAddTooltipBar => true;
 
     private bool _isInitialized;
@@ -546,7 +548,7 @@ public abstract class UIScreen
         if (key == Keyboard.KEY_ESCAPE || key == Keyboard.KEY_NONE)
         {
             Uninit();
-            Game.DisplayUIScreen(null);
+            Navigator.Navigate(null);
         }
     }
 

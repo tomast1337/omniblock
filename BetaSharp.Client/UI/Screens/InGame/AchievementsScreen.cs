@@ -75,7 +75,7 @@ public class AchievementsScreen(BetaSharp game, UIScreen? parent, StatFileWriter
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0;
-        btnDone.OnClick += (_) => Game.DisplayUIScreen(parent);
+        btnDone.OnClick += (_) => Navigator.Navigate(parent);
         Root.AddChild(btnDone);
     }
 

@@ -49,10 +49,10 @@ public class OptionsScreen(BetaSharp game, UIScreen? parent, GameOptions options
             list.AddChild(btn);
         }
 
-        AddSubButton(translations.TranslateKey("options.video"), () => Game.DisplayUIScreen(new VideoSettingsScreen(Game, this, Options)));
-        AddSubButton("Audio Settings", () => Game.DisplayUIScreen(new AudioSettingsScreen(Game, this, Options)));
-        AddSubButton(translations.TranslateKey("options.controls"), () => Game.DisplayUIScreen(new AllControlsScreen(Game, this, Options)));
-        AddSubButton("Debug Options...", () => Game.DisplayUIScreen(new DebugOptionsScreen(Game, this, Options)));
+        AddSubButton(translations.TranslateKey("options.video"), () => Navigator.Navigate(new VideoSettingsScreen(Game, this, Options)));
+        AddSubButton("Audio Settings", () => Navigator.Navigate(new AudioSettingsScreen(Game, this, Options)));
+        AddSubButton(translations.TranslateKey("options.controls"), () => Navigator.Navigate(new AllControlsScreen(Game, this, Options)));
+        AddSubButton("Debug Options...", () => Navigator.Navigate(new DebugOptionsScreen(Game, this, Options)));
 
         return list;
     }

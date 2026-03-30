@@ -29,7 +29,7 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
         btnBack.Text = "Back to Game";
         btnBack.OnClick += (e) =>
         {
-            Game.DisplayUIScreen(null);
+            Navigator.Navigate(null);
             Game.SetIngameFocus();
         };
         btnBack.Style.MarginBottom = 4;
@@ -45,12 +45,12 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
         Button btnAchievements = CreateButton();
         btnAchievements.Text = StatCollector.TranslateToLocal("gui.achievements");
         btnAchievements.Style.Width = 98;
-        btnAchievements.OnClick += (e) => Game.DisplayUIScreen(new AchievementsScreen(Game, this, Game.StatFileWriter));
+        btnAchievements.OnClick += (e) => Navigator.Navigate(new AchievementsScreen(Game, this, Game.StatFileWriter));
 
         Button btnStats = CreateButton();
         btnStats.Text = StatCollector.TranslateToLocal("gui.stats");
         btnStats.Style.Width = 98;
-        btnStats.OnClick += (e) => Game.DisplayUIScreen(new StatsScreen(Game, this, Game.StatFileWriter));
+        btnStats.OnClick += (e) => Navigator.Navigate(new StatsScreen(Game, this, Game.StatFileWriter));
 
         rowStats.AddChild(btnAchievements);
         rowStats.AddChild(btnStats);
@@ -58,7 +58,7 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
-        btnOptions.OnClick += (e) => Game.DisplayUIScreen(new OptionsScreen(Game, this, Game.Options));
+        btnOptions.OnClick += (e) => Navigator.Navigate(new OptionsScreen(Game, this, Game.Options));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
 
@@ -76,7 +76,7 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
             Game.StopInternalServer();
             Game.ChangeWorld(null!);
             Game.Options.ShowDebugInfo = false;
-            Game.DisplayUIScreen(new MainMenuScreen(Game));
+            Navigator.Navigate(new MainMenuScreen(Game));
         };
         Root.AddChild(btnQuit);
 

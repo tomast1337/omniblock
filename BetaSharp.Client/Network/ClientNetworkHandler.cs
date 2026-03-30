@@ -105,7 +105,7 @@ public class ClientNetworkHandler : NetHandler
         };
         _game.ChangeWorld(_worldClient);
         _game.Player.dimensionId = packet.dimensionId;
-        _game.DisplayUIScreen(new DownloadingTerrainScreen(_game, this));
+        _game.Navigate(new DownloadingTerrainScreen(_game, this));
         _game.Player.id = packet.protocolVersion;
     }
 
@@ -368,7 +368,7 @@ public class ClientNetworkHandler : NetHandler
             _game.Player.prevY = _game.Player.y;
             _game.Player.prevZ = _game.Player.z;
             _terrainLoaded = true;
-            _game.DisplayUIScreen(null);
+            _game.Navigate(null);
         }
 
     }
@@ -415,7 +415,7 @@ public class ClientNetworkHandler : NetHandler
         _netManager.disconnect("disconnect.kicked");
         Disconnected = true;
         _game.ChangeWorld(null);
-        _game.DisplayUIScreen(new ConnectFailedScreen(_game, "disconnect.disconnected", "disconnect.genericReason", packet.reason));
+        _game.Navigate(new ConnectFailedScreen(_game, "disconnect.disconnected", "disconnect.genericReason", packet.reason));
     }
 
     public override void onDisconnected(string reason, object[]? args)
@@ -424,7 +424,7 @@ public class ClientNetworkHandler : NetHandler
         {
             Disconnected = true;
             _game.ChangeWorld(null);
-            _game.DisplayUIScreen(new ConnectFailedScreen(_game, "disconnect.lost", reason, args));
+            _game.Navigate(new ConnectFailedScreen(_game, "disconnect.lost", reason, args));
         }
     }
 
@@ -596,7 +596,7 @@ public class ClientNetworkHandler : NetHandler
             };
             _game.ChangeWorld(_worldClient);
             _game.Player.dimensionId = packet.dimensionId;
-            _game.DisplayUIScreen(new DownloadingTerrainScreen(_game, this));
+            _game.Navigate(new DownloadingTerrainScreen(_game, this));
         }
 
         _game.Respawn(true, packet.dimensionId);

@@ -88,7 +88,7 @@ public class SignEditScreen(BetaSharp game, BlockEntitySign sign) : UIScreen(gam
     {
         _sign.CurrentRow = -1; // Reset cursor
         _sign.markDirty();
-        Game.DisplayUIScreen(null);
+        Navigator.Navigate(null);
     }
 
     public override void Uninit()

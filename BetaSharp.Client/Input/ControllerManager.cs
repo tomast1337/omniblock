@@ -140,13 +140,13 @@ public static class ControllerManager
         // Inventory
         if (inventoryHeld && !s_wasInventoryDown)
         {
-            s_game.DisplayUIScreen(new InventoryScreen(s_game, s_game.Player));
+            s_game.Navigate(new InventoryScreen(s_game, s_game.Player));
         }
 
         // Crafting
         if (craftingHeld && !s_wasCraftingDown)
         {
-            s_game.DisplayUIScreen(new InventoryScreen(s_game, s_game.Player));
+            s_game.Navigate(new InventoryScreen(s_game, s_game.Player));
         }
 
         // Drop

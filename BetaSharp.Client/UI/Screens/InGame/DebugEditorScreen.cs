@@ -63,7 +63,7 @@ public class DebugEditorScreen : UIScreen
         addButton.Enabled = true;
         addButton.Style.Width = 150;
         addButton.Style.SetMargin(2);
-        addButton.OnClick += (_) => Game.DisplayUIScreen(new NewDebugComponentScreen(Game, this));
+        addButton.OnClick += (_) => Navigator.Navigate(new NewDebugComponentScreen(Game, this));
         buttonContainer.AddChild(addButton);
 
         Button saveButton = CreateButton();
@@ -176,11 +176,11 @@ public class DebugEditorScreen : UIScreen
     {
         if (_parentScreen != null)
         {
-            Game.DisplayUIScreen(_parentScreen);
+            Navigator.Navigate(_parentScreen);
         }
         else
         {
-            Game.DisplayUIScreen(null);
+            Navigator.Navigate(null);
         }
     }
 }

@@ -35,7 +35,7 @@ public class DebugOptionsScreen : BaseOptionsScreen
         editorBtn.OnClick += (e) =>
         {
             Options.SaveOptions();
-            Game.DisplayUIScreen(new DebugEditorScreen(Game, this));
+            Navigator.Navigate(new DebugEditorScreen(Game, this));
         };
         list.AddChild(editorBtn);
 

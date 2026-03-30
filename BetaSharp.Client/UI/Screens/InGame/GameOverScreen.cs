@@ -44,7 +44,7 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         btnRespawn.OnClick += (e) =>
         {
             Game.Player.respawn();
-            Game.DisplayUIScreen(null);
+            Navigator.Navigate(null);
         };
         btnRespawn.Style.MarginBottom = 4;
 
@@ -59,7 +59,7 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         btnTitle.OnClick += (e) =>
         {
             Game.ChangeWorld(null!);
-            Game.DisplayUIScreen(new MainMenuScreen(Game));
+            Navigator.Navigate(new MainMenuScreen(Game));
         };
         Root.AddChild(btnTitle);
     }

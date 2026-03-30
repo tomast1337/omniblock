@@ -64,14 +64,14 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         btnDirect.Text = "Direct Connect";
         btnDirect.Style.Width = 100;
         btnDirect.Style.SetMargin(2);
-        btnDirect.OnClick += (e) => Game.DisplayUIScreen(new DirectConnectScreen(Game, this, new ServerData("BetaSharp Server", "")));
+        btnDirect.OnClick += (e) => Navigator.Navigate(new DirectConnectScreen(Game, this, new ServerData("BetaSharp Server", "")));
         row1.AddChild(btnDirect);
 
         Button btnAdd = CreateButton();
         btnAdd.Text = "Add Server";
         btnAdd.Style.Width = 100;
         btnAdd.Style.SetMargin(2);
-        btnAdd.OnClick += (e) => Game.DisplayUIScreen(new EditServerScreen(Game, this, new ServerData("BetaSharp Server", ""), false));
+        btnAdd.OnClick += (e) => Navigator.Navigate(new EditServerScreen(Game, this, new ServerData("BetaSharp Server", ""), false));
         row1.AddChild(btnAdd);
 
         buttonContainer.AddChild(row1);
@@ -105,7 +105,7 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 75;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));
+        btnCancel.OnClick += (e) => Navigator.Navigate(new MainMenuScreen(Game));
         row2.AddChild(btnCancel);
 
         buttonContainer.AddChild(row2);
@@ -197,7 +197,7 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         if (_selectedServerIndex < 0) return;
         ServerData original = _serverList[_selectedServerIndex];
         ServerData temp = new(original.Name, original.Ip);
-        Game.DisplayUIScreen(new EditServerScreen(Game, this, temp, true));
+        Navigator.Navigate(new EditServerScreen(Game, this, temp, true));
     }
 
     public void ConfirmEdit(ServerData data, bool isEditing)
@@ -226,7 +226,7 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         string q = "Are you sure you want to remove this server?";
         string w = "'" + server.Name + "' " + "will be lost forever! (A long time!)";
 
-        Game.DisplayUIScreen(new ConfirmationScreen(Game, this, q, w, "Delete", "Cancel", (result) =>
+        Navigator.Navigate(new ConfirmationScreen(Game, this, q, w, "Delete", "Cancel", (result) =>
         {
             if (result)
             {
@@ -244,6 +244,6 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         string host = parts[0];
         int portNum = 25565;
         if (parts.Length > 1) int.TryParse(parts[1], out portNum);
-        Game.DisplayUIScreen(new ConnectingScreen(Game, host, portNum));
+        Navigator.Navigate(new ConnectingScreen(Game, host, portNum));
     }
 }

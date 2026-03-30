@@ -167,7 +167,7 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
             }
         }
 
-        Game.DisplayUIScreen(null);
+        Navigator.Navigate(null);
     }
 
     private static string ConvertAmpersandToSection(string input)

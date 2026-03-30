@@ -32,7 +32,7 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         btnConfirm.OnClick += (e) =>
         {
             callback(true);
-            Game.DisplayUIScreen(parent);
+            Navigator.Navigate(parent);
         };
         buttonPanel.AddChild(btnConfirm);
 
@@ -42,7 +42,7 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         btnCancel.OnClick += (e) =>
         {
             callback(false);
-            Game.DisplayUIScreen(parent);
+            Navigator.Navigate(parent);
         };
         buttonPanel.AddChild(btnCancel);
 

@@ -67,7 +67,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         btnCreate.Text = translations.TranslateKey("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => Game.DisplayUIScreen(new CreateWorldScreen(Game));
+        btnCreate.OnClick += (e) => Navigator.Navigate(new CreateWorldScreen(Game));
         row1.AddChild(btnCreate);
 
         buttonContainer.AddChild(row1);
@@ -94,7 +94,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Game.DisplayUIScreen(new MainMenuScreen(Game));
+        btnCancel.OnClick += (e) => Navigator.Navigate(new MainMenuScreen(Game));
         row2.AddChild(btnCancel);
 
         buttonContainer.AddChild(row2);
@@ -183,7 +183,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
     {
         if (_selectedWorldIndex < 0) return;
         string fileName = _saveList[_selectedWorldIndex].FileName;
-        Game.DisplayUIScreen(new RenameWorldScreen(Game, this, fileName));
+        Navigator.Navigate(new RenameWorldScreen(Game, this, fileName));
     }
 
     private void DeleteSelected()
@@ -195,7 +195,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         string deleteQuestion = translations.TranslateKey("selectWorld.deleteQuestion");
         string deleteWarning = "'" + worldInfo.DisplayName + "' " + translations.TranslateKey("selectWorld.deleteWarning");
 
-        Game.DisplayUIScreen(new ConfirmationScreen(Game, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
+        Navigator.Navigate(new ConfirmationScreen(Game, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
         {
             if (confirmed)
             {
@@ -206,7 +206,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
                 PopulateWorldList();
                 UpdateButtons();
             }
-            Game.DisplayUIScreen(this);
+            Navigator.Navigate(this);
         }));
     }
 }

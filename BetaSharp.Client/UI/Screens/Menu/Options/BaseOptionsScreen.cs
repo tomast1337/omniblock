@@ -127,11 +127,11 @@ public abstract class BaseOptionsScreen(BetaSharp game, UIScreen? parent, GameOp
         Options.SaveOptions();
         if (Parent != null)
         {
-            Game.DisplayUIScreen(Parent);
+            Navigator.Navigate(Parent);
         }
         else
         {
-            Game.DisplayUIScreen(null);
+            Navigator.Navigate(null);
         }
     }
 

@@ -60,7 +60,7 @@ public class LevelLoadingScreen(BetaSharp game, string worldDir, WorldSettings s
         {
             if (Game.InternalServer.stopped)
             {
-                Game.DisplayUIScreen(new ConnectFailedScreen(Game, "connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
+                Navigator.Navigate(new ConnectFailedScreen(Game, "connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
                 return;
             }
 
@@ -84,7 +84,7 @@ public class LevelLoadingScreen(BetaSharp game, string worldDir, WorldSettings s
                 _logger.LogInformation("[Internal-Client] Sending HandshakePacket");
                 clientHandler.addToSendQueue(new HandshakePacket(Game.Session.username));
 
-                Game.DisplayUIScreen(new ConnectingScreen(Game, clientHandler));
+                Navigator.Navigate(new ConnectingScreen(Game, clientHandler));
             }
         }
     }

@@ -22,6 +22,7 @@ using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
 using BetaSharp.Client.UI;
+using BetaSharp.Client.UI.Screens;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Client.UI.Screens.Menu;
@@ -49,7 +50,7 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
-public partial class BetaSharp
+public partial class BetaSharp : IScreenNavigator
 {
     public static string Version { get; private set; } = UnknownVersion;
     public static string BetaSharpDir => PathHelper.GetAppDir(nameof(BetaSharp));
@@ -369,11 +370,11 @@ public partial class BetaSharp
         StatFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (_serverName != null)
         {
-            DisplayUIScreen(new ConnectingScreen(this, _serverName, _serverPort));
+            Navigate(new ConnectingScreen(this, _serverName, _serverPort));
         }
         else
         {
-            DisplayUIScreen(new MainMenuScreen(this));
+            Navigate(new MainMenuScreen(this));
         }
     }
 
@@ -428,7 +429,7 @@ public partial class BetaSharp
         tess.draw();
     }
 
-    public void DisplayUIScreen(UIScreen? newScreen)
+    public void Navigate(UIScreen? newScreen)
     {
         Mouse.ClearEvents();
         Controller.ClearEvents();
@@ -475,6 +476,7 @@ public partial class BetaSharp
         if (newScreen != null)
         {
             SetIngameNotInFocus();
+            newScreen.Navigator = this;
             newScreen.Initialize();
             SkipRenderWorld = false;
         }
@@ -784,7 +786,7 @@ public partial class BetaSharp
                 catch (OutOfMemoryException)
                 {
                     CrashCleanup();
-                    DisplayUIScreen(new ErrorScreen(this, "Out of memory!", "Minecraft has run out of memory."));
+                    Navigate(new ErrorScreen(this, "Out of memory!", "Minecraft has run out of memory."));
                 }
                 finally
                 {
@@ -892,7 +894,7 @@ public partial class BetaSharp
                 GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
                 InGameHasFocus = true;
                 MouseHelper.grabMouseCursor();
-                DisplayUIScreen(null);
+                Navigate(null);
                 _leftClickCounter = 10000;
                 MouseTicksRan = TicksRan + 10000;
             }
@@ -930,7 +932,7 @@ public partial class BetaSharp
     {
         if (CurrentScreen == null)
         {
-            DisplayUIScreen(new IngameMenuScreen(this));
+            Navigate(new IngameMenuScreen(this));
         }
     }
 
@@ -1210,16 +1212,16 @@ public partial class BetaSharp
         {
             if (Player.health <= 0)
             {
-                DisplayUIScreen(null);
+                Navigate(null);
             }
             else if (Player.isSleeping() && World != null && World.IsRemote)
             {
-                DisplayUIScreen(new SleepScreen(this));
+                Navigate(new SleepScreen(this));
             }
         }
         else if (CurrentScreen is SleepScreen && !Player.isSleeping())
         {
-            DisplayUIScreen(null);
+            Navigate(null);
         }
 
         if (CurrentScreen != null)
@@ -1451,7 +1453,7 @@ public partial class BetaSharp
                     {
                         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
                         {
-                            DisplayUIScreen(new DebugEditorScreen(this, null));
+                            Navigate(new DebugEditorScreen(this, null));
                         }
                         else
                         {
@@ -1476,7 +1478,7 @@ public partial class BetaSharp
 
                     if (Keyboard.getEventKey() == Options.KeyBindInventory.keyCode)
                     {
-                        DisplayUIScreen(new InventoryScreen(this, Player));
+                        Navigate(new InventoryScreen(this, Player));
                     }
 
                     if (Keyboard.getEventKey() == Options.KeyBindDrop.keyCode)
@@ -1486,12 +1488,12 @@ public partial class BetaSharp
 
                     if (Keyboard.getEventKey() == Options.KeyBindChat.keyCode)
                     {
-                        DisplayUIScreen(new ChatScreen(this));
+                        Navigate(new ChatScreen(this));
                     }
 
                     if (Keyboard.getEventKey() == Options.KeyBindCommand.keyCode)
                     {
-                        DisplayUIScreen(new ChatScreen(this, "/"));
+                        Navigate(new ChatScreen(this, "/"));
                     }
                 }
 
@@ -1558,7 +1560,7 @@ public partial class BetaSharp
     public void StartWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         ChangeWorld(null);
-        DisplayUIScreen(new LevelLoadingScreen(this, worldName, settings));
+        Navigate(new LevelLoadingScreen(this, worldName, settings));
     }
 
     public void ChangeWorld(World? newWorld, string loadingText = "", EntityPlayer? targetEntity = null)
@@ -1774,7 +1776,7 @@ public partial class BetaSharp
 
         if (IsGameOverOpen)
         {
-            DisplayUIScreen(null);
+            Navigate(null);
         }
     }
 

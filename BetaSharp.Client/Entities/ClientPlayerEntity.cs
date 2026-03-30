@@ -56,7 +56,7 @@ public class ClientPlayerEntity : EntityPlayer
 
             if (Game.CurrentScreen != null)
             {
-                Game.DisplayUIScreen(null);
+                Game.Navigate(null);
             }
 
             if (changeDimensionCooldown == 0.0F)
@@ -128,32 +128,32 @@ public class ClientPlayerEntity : EntityPlayer
     public override void closeHandledScreen()
     {
         base.closeHandledScreen();
-        Game.DisplayUIScreen(null);
+        Game.Navigate(null);
     }
 
     public override void openEditSignScreen(BlockEntitySign sign)
     {
-        Game.DisplayUIScreen(new SignEditScreen(Game, sign));
+        Game.Navigate(new SignEditScreen(Game, sign));
     }
 
     public override void openChestScreen(IInventory inventory)
     {
-        Game.DisplayUIScreen(new ChestScreen(Game, base.inventory, inventory));
+        Game.Navigate(new ChestScreen(Game, base.inventory, inventory));
     }
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.DisplayUIScreen(new CraftingScreen(Game, inventory, world, x, y, z));
+        Game.Navigate(new CraftingScreen(Game, inventory, world, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
-        Game.DisplayUIScreen(new FurnaceScreen(Game, inventory, furnace));
+        Game.Navigate(new FurnaceScreen(Game, inventory, furnace));
     }
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
-        Game.DisplayUIScreen(new DispenserScreen(Game, inventory, dispenser));
+        Game.Navigate(new DispenserScreen(Game, inventory, dispenser));
     }
 
     public override void sendPickup(Entity entity, int count)

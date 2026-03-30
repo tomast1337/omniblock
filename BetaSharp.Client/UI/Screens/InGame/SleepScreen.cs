@@ -31,7 +31,7 @@ public class SleepScreen(BetaSharp game) : UIScreen(game)
         if (key == Input.Keyboard.KEY_ESCAPE)
         {
             SendStopSleepingCommand();
-            Game.DisplayUIScreen(null);
+            Navigator.Navigate(null);
         }
         else
         {
