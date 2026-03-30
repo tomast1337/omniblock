@@ -10,11 +10,6 @@ namespace BetaSharp.Client.UI.Screens.InGame;
 
 public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
 {
-    protected override void PreLayout(float scaledWidth, float scaledHeight)
-    {
-        Root.Style.PaddingTop = scaledHeight / 4f;
-    }
-
     protected override void Init()
     {
         Root.Style.AlignItems = Align.Center;
@@ -23,8 +18,10 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
         Root.AddChild(new Background(BackgroundType.World));
 
         Label title = new() { Text = "Game menu", TextColor = Color.White };
-        title.Style.MarginBottom = 16;
+        title.Style.MarginTop = 20;
+        title.Style.MarginBottom = 8;
         Root.AddChild(title);
+        AddTitleSpacer();
 
         TranslationStorage translator = TranslationStorage.Instance;
 

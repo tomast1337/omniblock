@@ -22,9 +22,11 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
         Root.AddChild(new Background(BackgroundType.World));
 
         Label title = new() { Text = "Statistics", TextColor = Color.White };
-        title.Style.MarginTop = 25;
-        title.Style.MarginBottom = 6;
+        title.Style.MarginTop = 20;
+        title.Style.MarginBottom = 8;
         Root.AddChild(title);
+
+        AddTitleSpacer();
 
         // Tab bar
         Panel tabBar = new();
@@ -44,16 +46,16 @@ public class StatsScreen(UIScreen? parent, StatFileWriter stats) : UIScreen(pare
         // Content area
         _contentPanel = new();
         _contentPanel.Style.Width = 360;
-        _contentPanel.Style.Height = 130;
+        _contentPanel.Style.FlexGrow = 1;
+        _contentPanel.Style.MaxHeight = 164; // 200 - tabBar(36) = aligns Done with options
         _contentPanel.Style.BackgroundColor = new Color(0, 0, 0, 160);
         _contentPanel.Style.SetPadding(5);
-        _contentPanel.Style.FlexShrink = 0; // Prevent squeezing
         Root.AddChild(_contentPanel);
 
         // Done button
         Button btnDone = new() { Text = "Done" };
         btnDone.Style.MarginTop = 10;
-        btnDone.Style.MarginBottom = 10;
+        btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing
         btnDone.OnClick += (_) => Game.displayGuiScreen(parent);
         Root.AddChild(btnDone);

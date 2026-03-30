@@ -9,6 +9,40 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.UI;
 
+/// <summary>
+/// Base class for all game screens.
+///
+/// SCREEN LAYOUT CONVENTIONS
+/// --------------------------
+/// Screens use a top-aligned flexbox column (JustifyContent = FlexStart, AlignItems = Center).
+/// To match Minecraft's proportional feel across GUI scales, follow these rules:
+///
+/// 1. TITLE
+///    - MarginTop = 20, height ~8px, MarginBottom = 8  →  bottom edge lands at y ≈ 36.
+///    - This is the default assumption for AddTitleSpacer().
+///
+/// 2. TITLE SPACER  (call AddTitleSpacer() right after Root.AddChild(title))
+///    - Inserts a dynamic gap so that the content below starts at height/4 from the top.
+///    - At small (auto) scales the spacer collapses to 0; at lower GUI scales it grows.
+///    - If extra elements exist between the title and the main content (e.g. a tab bar),
+///      pass their total height as titleBottomY so the spacer accounts for them.
+///    - The main menu passes contentStartOffset = 48 because Minecraft targets height/4 + 48
+///      for its first button.
+///
+/// 3. SCROLLABLE / MAIN CONTENT AREA
+///    - Use FlexGrow = 1 so the area fills available space on small screens.
+///    - Add MaxHeight to cap the growth and prevent the Done button from drifting to the
+///      very bottom on large screens. The standard cap is 200px.
+///    - If extra elements sit between the spacer and the content panel (tabs, progress bar,
+///      etc.), reduce MaxHeight by their total height so the Done button aligns across screens.
+///      Formula: MaxHeight = 200 - (height of elements between spacer and content panel).
+///
+/// 4. DONE / CLOSE BUTTON
+///    - MarginBottom = 20  (matches the 20px bottom margin used in BaseOptionsScreen).
+///    - When the content is at its MaxHeight cap, the Done button lands at height/4 + 210
+///      (spacer target + MaxHeight 200 + scroll margin 10) on all conforming screens.
+///    - When the content is not capped (small screens), Done sits 20px from the screen edge.
+/// </summary>
 public abstract class UIScreen
 {
     public BetaSharp Game { get; internal set; }

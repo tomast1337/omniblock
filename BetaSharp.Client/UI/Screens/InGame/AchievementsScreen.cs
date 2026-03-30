@@ -20,9 +20,11 @@ public class AchievementsScreen(UIScreen? parent, StatFileWriter stats) : UIScre
 
         // Title
         Label title = new() { Text = "Achievements", TextColor = Color.White };
-        title.Style.MarginTop = 25;
-        title.Style.MarginBottom = 10;
+        title.Style.MarginTop = 20;
+        title.Style.MarginBottom = 8;
         Root.AddChild(title);
+
+        AddTitleSpacer();
 
         // Stats summary
         int total = global::BetaSharp.Achievements.AllAchievements.Count;
@@ -50,10 +52,10 @@ public class AchievementsScreen(UIScreen? parent, StatFileWriter stats) : UIScre
         // Main Content Area (The "Dashboard")
         Panel contentPanel = new();
         contentPanel.Style.Width = 380;
-        contentPanel.Style.Height = 130;
+        contentPanel.Style.FlexGrow = 1;
+        contentPanel.Style.MaxHeight = 172; // 200 - progressLabel(14) - progressBar(14) = aligns Done with options
         contentPanel.Style.BackgroundColor = new Color(0, 0, 0, 160);
         contentPanel.Style.SetPadding(4);
-        contentPanel.Style.FlexShrink = 0;
         Root.AddChild(contentPanel);
 
         // Scrollable area
@@ -70,7 +72,7 @@ public class AchievementsScreen(UIScreen? parent, StatFileWriter stats) : UIScre
 
         Button btnDone = new() { Text = "Done" };
         btnDone.Style.MarginTop = 10;
-        btnDone.Style.MarginBottom = 10;
+        btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0;
         btnDone.OnClick += (_) => Game.displayGuiScreen(parent);
         Root.AddChild(btnDone);
