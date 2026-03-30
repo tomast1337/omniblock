@@ -294,7 +294,7 @@ public class GameOptions
         AlternateBlocksOption = new BoolOption("Alternate Blocks", "alternateBlocks", true)
         {
             LabelOverride = "Alternate Blocks",
-            OnChanged = _ => BetaSharp.Instance?.WorldRenderer?.chunkRenderer?.MarkAllVisibleChunksDirty()
+            OnChanged = _ => BetaSharp.Instance?.WorldRenderer?.ChunkRenderer?.MarkAllVisibleChunksDirty()
         };
         MenuMusicOption = new BoolOption("Menu Music", "menuMusic", true);
 

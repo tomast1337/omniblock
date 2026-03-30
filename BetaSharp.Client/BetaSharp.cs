@@ -674,16 +674,16 @@ public partial class BetaSharp
                         ProfilerRenderer.DrawGraph();
 
                         ImGui.Begin("Render Info");
-                        ImGui.Text($"Chunks Total: {WorldRenderer.chunkRenderer.TotalChunks}");
-                        ImGui.Text($"Chunks Frustum: {WorldRenderer.chunkRenderer.ChunksInFrustum}");
-                        ImGui.Text($"Chunks Occluded: {WorldRenderer.chunkRenderer.ChunksOccluded}");
-                        ImGui.Text($"Chunks Rendered: {WorldRenderer.chunkRenderer.ChunksRendered}");
+                        ImGui.Text($"Chunks Total: {WorldRenderer.ChunkRenderer.TotalChunks}");
+                        ImGui.Text($"Chunks Frustum: {WorldRenderer.ChunkRenderer.ChunksInFrustum}");
+                        ImGui.Text($"Chunks Occluded: {WorldRenderer.ChunkRenderer.ChunksOccluded}");
+                        ImGui.Text($"Chunks Rendered: {WorldRenderer.ChunkRenderer.ChunksRendered}");
                         ImGui.Separator();
                         ImGui.Text($"Chunk Vertex Buffer Allocated MB: {VertexBuffer<ChunkVertex>.Allocated / 1000000.0}");
                         ImGui.Text($"ChunkMeshVersion Allocated: {ChunkMeshVersion.TotalAllocated}");
                         ImGui.Text($"ChunkMeshVersion Released: {ChunkMeshVersion.TotalReleased}");
 
-                        WorldRenderer.chunkRenderer.GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets);
+                        WorldRenderer.ChunkRenderer.GetMeshSizeStats(out int minSize, out int maxSize, out int avgSize, out Dictionary<int, int> buckets);
                         ImGui.Separator();
                         int activeMeshes = 0;
                         foreach (int v in buckets.Values) activeMeshes += v;
@@ -1267,7 +1267,7 @@ public partial class BetaSharp
 
             if (!IsGamePaused)
             {
-                WorldRenderer.updateClouds();
+                WorldRenderer.UpdateClouds();
             }
 
             Profiler.PushGroup("theWorldUpdateEntities");
@@ -1592,7 +1592,7 @@ public partial class BetaSharp
             }
 
             Player.movementInput = new MovementInputFromOptions(Options);
-            WorldRenderer?.changeWorld(newWorld);
+            WorldRenderer?.ChangeWorld(newWorld);
 
             ParticleManager?.clearEffects(newWorld);
 

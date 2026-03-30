@@ -183,7 +183,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         foreach (SubChunkState state in _renderers.Values)
         {
-            if (renderParams.Camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
+            if (renderParams.Camera.IsBoundingBoxInFrustum(state.Renderer.BoundingBox))
             {
                 frustumCount++;
             }
@@ -400,7 +400,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _visibleRenderers.Add(renderer);
     }
 
-    private void AddNearbySections(Vector3D<int> cameraChunkPos, int frame, Culler camera)
+    private void AddNearbySections(Vector3D<int> cameraChunkPos, int frame, ICuller camera)
     {
         int size = SubChunkRenderer.Size;
         for (int x = -size; x <= size; x += size)
@@ -415,7 +415,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                         if (state.Renderer.LastVisibleFrame != frame)
                         {
                             state.Renderer.LastVisibleFrame = frame;
-                            if (camera.isBoundingBoxInFrustum(state.Renderer.BoundingBox))
+                            if (camera.IsBoundingBoxInFrustum(state.Renderer.BoundingBox))
                             {
                                 Visit(state.Renderer);
                             }
@@ -426,7 +426,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private void ProcessOneMeshUpdate(Culler camera)
+    private void ProcessOneMeshUpdate(ICuller camera)
     {
         _dirtyChunks.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
         int bestIndex = -1;
@@ -442,7 +442,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             );
 
             double dist = Vector3D.DistanceSquared(ToDoubleVec(info.Pos), _lastViewPos);
-            if (dist < bestDist && camera.isBoundingBoxInFrustum(aabb))
+            if (dist < bestDist && camera.IsBoundingBoxInFrustum(aabb))
             {
                 bestDist = dist;
                 bestIndex = i;

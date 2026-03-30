@@ -61,7 +61,7 @@ public class GameRenderer
     {
         if (_client.WorldRenderer != null)
         {
-            _client.WorldRenderer.tick(_client.Camera, var1);
+            _client.WorldRenderer.Tick(_client.Camera, var1);
         }
     }
 
@@ -392,14 +392,14 @@ public class GameRenderer
         if (_client.Options.renderDistance >= 8)
         {
             applyFog(-1);
-            worldRenderer.renderSky(tickDelta);
+            worldRenderer.RenderSky(tickDelta);
         }
 
         GLManager.GL.Enable(GLEnum.Fog);
         applyFog(1);
 
         FrustrumCuller frustrumCuller = new();
-        frustrumCuller.setPosition(entX, entY, entZ);
+        frustrumCuller.SetPosition(entX, entY, entZ);
 
         applyFog(0);
         GLManager.GL.Enable(GLEnum.Fog);
@@ -407,14 +407,14 @@ public class GameRenderer
         Lighting.turnOff();
 
         Profiler.Start("sortAndRender");
-        worldRenderer.sortAndRender(entity, 0, (double)tickDelta, frustrumCuller);
+        worldRenderer.SortAndRender(entity, 0, (double)tickDelta, frustrumCuller);
         Profiler.Stop("sortAndRender");
 
         GLManager.GL.ShadeModel(GLEnum.Flat);
         Lighting.turnOn();
 
         Profiler.Start("renderEntities");
-        worldRenderer.renderEntities(entity.getPosition(tickDelta), frustrumCuller, tickDelta);
+        worldRenderer.RenderEntities(entity.getPosition(tickDelta), frustrumCuller, tickDelta);
         Profiler.Stop("renderEntities");
 
         particleManager.renderSpecialParticles(entity, tickDelta);
@@ -431,8 +431,8 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            worldRenderer.drawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
-            worldRenderer.drawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 
@@ -444,7 +444,7 @@ public class GameRenderer
 
         Profiler.Start("sortAndRender2");
 
-        worldRenderer.sortAndRender(entity, 1, tickDelta, frustrumCuller);
+        worldRenderer.SortAndRender(entity, 1, tickDelta, frustrumCuller);
 
         GLManager.GL.ShadeModel(GLEnum.Flat);
 
@@ -459,8 +459,8 @@ public class GameRenderer
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
-            worldRenderer.drawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
-            worldRenderer.drawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.inventory.getSelectedItem(), tickDelta);
+            worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.inventory.getSelectedItem(), tickDelta);
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 
@@ -478,7 +478,7 @@ public class GameRenderer
             renderChunkBorders(tickDelta);
         }
 
-        worldRenderer.renderClouds(tickDelta);
+        worldRenderer.RenderClouds(tickDelta);
         GLManager.GL.Disable(GLEnum.Fog);
         applyFog(1);
 
@@ -917,50 +917,50 @@ public class GameRenderer
     {
         EntityLiving var3 = _client.Camera;
         GLManager.GL.Fog(GLEnum.FogColor, updateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
-        _client.WorldRenderer.chunkRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
+        _client.WorldRenderer.ChunkRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
         GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         if (_cloudFog)
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            _client.WorldRenderer.chunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.chunkRenderer.SetFogDensity(0.1f);
+            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
+            _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
         }
         else if (var3.isInFluid(Material.Water))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            _client.WorldRenderer.chunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.chunkRenderer.SetFogDensity(0.1f);
+            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
+            _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
         }
         else if (var3.isInFluid(Material.Lava))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-            _client.WorldRenderer.chunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.chunkRenderer.SetFogDensity(2.0f);
+            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
+            _client.WorldRenderer.ChunkRenderer.SetFogDensity(2.0f);
         }
         else
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
             GLManager.GL.Fog(GLEnum.FogStart, _viewDistance * 0.25F);
             GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance);
-            _client.WorldRenderer.chunkRenderer.SetFogMode(0);
-            _client.WorldRenderer.chunkRenderer.SetFogStart(_viewDistance * 0.25f);
-            _client.WorldRenderer.chunkRenderer.SetFogEnd(_viewDistance);
+            _client.WorldRenderer.ChunkRenderer.SetFogMode(0);
+            _client.WorldRenderer.ChunkRenderer.SetFogStart(_viewDistance * 0.25f);
+            _client.WorldRenderer.ChunkRenderer.SetFogEnd(_viewDistance);
             if (mode < 0)
             {
                 GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                 GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance * 0.8F);
-                _client.WorldRenderer.chunkRenderer.SetFogStart(0.0f);
-                _client.WorldRenderer.chunkRenderer.SetFogEnd(_viewDistance * 0.8f);
+                _client.WorldRenderer.ChunkRenderer.SetFogStart(0.0f);
+                _client.WorldRenderer.ChunkRenderer.SetFogEnd(_viewDistance * 0.8f);
             }
 
             if (_client.World.Dimension.IsNether)
             {
                 GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                _client.WorldRenderer.chunkRenderer.SetFogStart(0.0f);
+                _client.WorldRenderer.ChunkRenderer.SetFogStart(0.0f);
             }
         }
 
