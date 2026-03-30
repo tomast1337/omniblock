@@ -32,12 +32,14 @@ public class TexturePacksScreen(UIScreen? parent) : UIScreen(parent?.Game ?? Bet
             TextColor = Color.White,
             Centered = true
         };
-        title.Style.MarginBottom = 10;
+        title.Style.MarginBottom = 8;
         Root.AddChild(title);
+        AddTitleSpacer();
 
         _scrollView = new ScrollView();
         _scrollView.Style.Width = 320;
         _scrollView.Style.FlexGrow = 1;
+        _scrollView.Style.MaxHeight = 200;
         _scrollView.Style.MarginBottom = 10;
         _scrollView.Style.BackgroundColor = Color.BackgroundBlackAlpha;
         Root.AddChild(_scrollView);

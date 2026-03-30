@@ -32,12 +32,14 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         TranslationStorage translations = TranslationStorage.Instance;
 
         Label title = new() { Text = translations.TranslateKey("selectWorld.title"), TextColor = Color.White };
-        title.Style.MarginBottom = 10;
+        title.Style.MarginBottom = 8;
         Root.AddChild(title);
+        AddTitleSpacer();
 
         _scrollView = new ScrollView();
         _scrollView.Style.Width = 300;
         _scrollView.Style.FlexGrow = 1;
+        _scrollView.Style.MaxHeight = 200;
         _scrollView.Style.MarginBottom = 10;
         _scrollView.Style.BackgroundColor = Color.BackgroundBlackAlpha;
         Root.AddChild(_scrollView);

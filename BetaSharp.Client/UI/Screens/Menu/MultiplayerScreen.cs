@@ -29,12 +29,14 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         Root.Style.SetPadding(20);
 
         Label title = new() { Text = "Play Multiplayer", TextColor = Color.White };
-        title.Style.MarginBottom = 10;
+        title.Style.MarginBottom = 8;
         Root.AddChild(title);
+        AddTitleSpacer();
 
         _scrollView = new ScrollView();
         _scrollView.Style.Width = 300;
         _scrollView.Style.FlexGrow = 1;
+        _scrollView.Style.MaxHeight = 200;
         _scrollView.Style.MarginBottom = 10;
         _scrollView.Style.BackgroundColor = Color.BackgroundBlackAlpha;
         Root.AddChild(_scrollView);

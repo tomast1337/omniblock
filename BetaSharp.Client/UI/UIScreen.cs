@@ -39,6 +39,9 @@ public abstract class UIScreen
 
     private bool _isInitialized;
 
+    private Panel? _titleSpacer;
+    private float _titleSpacerOffset;
+
     private Slider? _editingSlider;
     private int _sliderDpadHeldX;
     private int _sliderDpadRepeatTicksRemaining;
@@ -90,6 +93,24 @@ public abstract class UIScreen
 
     protected abstract void Init();
     public virtual void OnEnter() { }
+
+    /// <summary>
+    /// Call in Init() right after adding the title/header. Inserts a spacer that grows
+    /// proportionally so the content below starts at roughly <c>height/4 + contentStartOffset</c>.
+    /// </summary>
+    /// <param name="titleBottomY">Approximate Y of the header's bottom edge (padding + header height + margin).</param>
+    /// <param name="contentStartOffset">Added to height/4 as the target Y for the content. Default 0.</param>
+    protected void AddTitleSpacer(float titleBottomY = 36f, float contentStartOffset = 0f)
+    {
+        _titleSpacer = new Panel();
+        _titleSpacerOffset = titleBottomY - contentStartOffset;
+        Root.AddChild(_titleSpacer);
+    }
+
+    protected virtual void PreLayout(float scaledWidth, float scaledHeight)
+    {
+        _titleSpacer?.Style.Height = Math.Max(0f, scaledHeight / 4f - _titleSpacerOffset);
+    }
 
     public virtual void Uninit()
     {
@@ -329,6 +350,8 @@ public abstract class UIScreen
 
         Root.Style.Width = res.ScaledWidth;
         Root.Style.Height = res.ScaledHeight;
+
+        PreLayout(res.ScaledWidth, res.ScaledHeight);
 
         FlexLayout.ApplyLayout(Root, res.ScaledWidth, res.ScaledHeight);
 

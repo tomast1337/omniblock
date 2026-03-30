@@ -10,10 +10,13 @@ namespace BetaSharp.Client.UI.Screens.Menu;
 
 public class MainMenuScreen(BetaSharp game) : UIScreen(game)
 {
+    private const float LogoTopPadding = 30f;
+
     protected override void Init()
     {
         Root.Style.AlignItems = Align.Center;
-        Root.Style.JustifyContent = Justify.Center;
+        Root.Style.JustifyContent = Justify.FlexStart;
+        Root.Style.PaddingTop = LogoTopPadding;
 
         Root.AddChild(new Background());
 
@@ -34,6 +37,8 @@ public class MainMenuScreen(BetaSharp game) : UIScreen(game)
         headerPanel.AddChild(splash);
 
         Root.AddChild(headerPanel);
+
+        AddTitleSpacer(LogoTopPadding + 64f, 48f);
 
         // --- Buttons ---
         TranslationStorage translator = TranslationStorage.Instance;

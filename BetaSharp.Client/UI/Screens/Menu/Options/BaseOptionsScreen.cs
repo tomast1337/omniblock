@@ -26,12 +26,14 @@ public abstract class BaseOptionsScreen(UIScreen? parent, GameOptions options, s
             Centered = true
         };
         title.Style.MarginTop = 20;
-        title.Style.MarginBottom = 12;
+        title.Style.MarginBottom = 8;
         Root.AddChild(title);
+        AddTitleSpacer();
 
         ScrollView scroll = new();
         scroll.Style.Width = 340;
         scroll.Style.FlexGrow = 1;
+        scroll.Style.MaxHeight = 200;
         scroll.Style.MarginBottom = 10;
 
         UIElement content = CreateContent();

@@ -31,6 +31,9 @@ public static class FlexLayout
         if (element.Style.Height.HasValue)
             node.nodeStyle.Dimensions[(int)Dimension.Height] = new Value(element.Style.Height.Value, Unit.Point);
 
+        if (element.Style.MaxHeight.HasValue)
+            node.nodeStyle.MaxDimensions[(int)Dimension.Height] = new Value(element.Style.MaxHeight.Value, Unit.Point);
+
         node.nodeStyle.Margin[(int)Edge.Top] = new Value(element.Style.MarginTop, Unit.Point);
         node.nodeStyle.Margin[(int)Edge.Bottom] = new Value(element.Style.MarginBottom, Unit.Point);
         node.nodeStyle.Margin[(int)Edge.Left] = new Value(element.Style.MarginLeft, Unit.Point);

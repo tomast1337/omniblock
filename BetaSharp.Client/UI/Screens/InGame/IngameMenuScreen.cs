@@ -10,10 +10,15 @@ namespace BetaSharp.Client.UI.Screens.InGame;
 
 public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
 {
+    protected override void PreLayout(float scaledWidth, float scaledHeight)
+    {
+        Root.Style.PaddingTop = scaledHeight / 4f;
+    }
+
     protected override void Init()
     {
         Root.Style.AlignItems = Align.Center;
-        Root.Style.JustifyContent = Justify.Center;
+        Root.Style.JustifyContent = Justify.FlexStart;
 
         Root.AddChild(new Background(BackgroundType.World));
 

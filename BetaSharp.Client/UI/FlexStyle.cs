@@ -10,6 +10,7 @@ public class FlexStyle
     // Size. Null means auto.
     public float? Width { get; set; }
     public float? Height { get; set; }
+    public float? MaxHeight { get; set; }
 
     // Background. Null means transparent.
     public Color? BackgroundColor { get; set; }
