@@ -10,7 +10,7 @@ public class DebugParticles : DebugComponent
 
     public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        yield return new DebugRowData(ctx.Game.GetParticleDebugInfo());
+        yield return new DebugRowData(ctx.Game.ParticleDebugInfo);
     }
 
     public override DebugComponent Duplicate()

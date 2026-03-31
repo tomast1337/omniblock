@@ -11,7 +11,7 @@ public class DebugSystem : DebugComponent
 
     public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        DebugSystemSnapshot systemSnapshot = ctx.Game.GetDebugSystemSnapshot();
+        DebugSystemSnapshot systemSnapshot = ctx.Game.DebugSystemSnapshot;
         yield return new DebugRowData($"CPU: {FormatCpuInfo(systemSnapshot)}");
         yield return new DebugRowData($"GPU: {systemSnapshot.GpuName} (VRAM: {systemSnapshot.GpuVram})");
         yield return new DebugRowData($"OpenGL: {systemSnapshot.OpenGlVersion}");

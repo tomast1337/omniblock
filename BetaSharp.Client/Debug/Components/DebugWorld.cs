@@ -10,7 +10,7 @@ public class DebugWorld : DebugComponent
 
     public override IEnumerable<DebugRowData> GetRows(DebugContext ctx)
     {
-        yield return new DebugRowData(ctx.Game.GetWorldDebugInfo());
+        yield return new DebugRowData(ctx.Game.WorldDebugInfo);
     }
 
     public override DebugComponent Duplicate()

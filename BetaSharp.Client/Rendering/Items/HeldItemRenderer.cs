@@ -489,12 +489,7 @@ public class HeldItemRenderer
 
     }
 
-    public void func_9449_b()
-    {
-        equippedProgress = 0.0F;
-    }
-
-    public void func_9450_c()
+    public void ResetEquippedProgress()
     {
         equippedProgress = 0.0F;
     }
