@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -13,8 +12,7 @@ namespace BetaSharp.Client.UI.Screens.Menu;
 public class TexturePacksScreen(
     UIContext context,
     UIScreen? parent,
-    TexturePacks texturePackList,
-    TextureManager textureManager) : UIScreen(context)
+    TexturePacks texturePackList) : UIScreen(context)
 {
     private readonly ILogger<TexturePacksScreen> _logger = Log.Instance.For<TexturePacksScreen>();
     private readonly UIScreen? _parent = parent;
@@ -113,7 +111,7 @@ public class TexturePacksScreen(
         selectedItem.IsSelected = true;
 
         texturePackList.setTexturePack(selectedItem.Value);
-        textureManager.Reload();
+        Context.TextureManager.Reload();
     }
 
     private void OpenFolder()
@@ -134,7 +132,7 @@ public class TexturePacksScreen(
 
     private void OnDone()
     {
-        textureManager.Reload();
+        Context.TextureManager.Reload();
         if (_parent != null)
         {
             Context.Navigator.Navigate(_parent);

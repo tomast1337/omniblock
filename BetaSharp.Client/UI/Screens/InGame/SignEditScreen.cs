@@ -8,7 +8,7 @@ using BetaSharp.Util;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? sendSignUpdate) : UIScreen(context)
+public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? editCompleted) : UIScreen(context)
 {
     private readonly BlockEntitySign _sign = sign;
     private int _editLine = 0;
@@ -92,6 +92,6 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? sen
 
     public override void Uninit()
     {
-        sendSignUpdate?.Invoke();
+        editCompleted?.Invoke();
     }
 }

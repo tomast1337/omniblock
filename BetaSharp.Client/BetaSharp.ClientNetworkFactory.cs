@@ -13,6 +13,9 @@ public partial class BetaSharp : IClientNetworkFactory
     public UIScreen CreateTerrainScreen(ClientNetworkHandler handler) =>
         new DownloadingTerrainScreen(UIContext, handler);
 
-    public UIScreen CreateFailedScreen(string messageKey, string detailKey, object[]? args) =>
-        new ConnectFailedScreen(UIContext, StopInternalServer, messageKey, detailKey, args);
+    public UIScreen CreateFailedScreen(string messageKey, string detailKey, object[]? args)
+    {
+        StopInternalServer();
+        return new ConnectFailedScreen(UIContext, messageKey, detailKey, args);
+    }
 }

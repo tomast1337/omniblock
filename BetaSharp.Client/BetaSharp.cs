@@ -51,7 +51,7 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
-public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlayerHost, IWorldHost
+public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlayerHost, IWorldHost, IInternalServerHost, ISingleplayerHost
 {
     public static string Version { get; private set; } = UnknownVersion;
     public static string BetaSharpDir => PathHelper.GetAppDir(nameof(BetaSharp));
@@ -460,13 +460,13 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
 
     private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this);
 
-    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, HideQuitButton, SaveLoader, LoadWorldFromMenu, CreateNetworkContext(), TexturePackList, TextureManager, DebugComponentsStorage, Shutdown);
+    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, HideQuitButton, this, CreateNetworkContext(), TexturePackList, TextureManager, DebugComponentsStorage, Shutdown);
 
-    private void LoadWorldFromMenu(string dir, string name, WorldSettings settings)
+    public void LoadWorld(string dir, string displayName, WorldSettings settings)
     {
         StatFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
         PlayerController = new PlayerControllerSP(this);
-        StartWorld(dir, name, settings);
+        StartWorld(dir, displayName, settings);
     }
 
     public void Navigate(UIScreen? newScreen)
@@ -1608,7 +1608,7 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
     public void StartWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         ChangeWorld(null);
-        Navigate(new LevelLoadingScreen(UIContext, CreateNetworkContext(), worldName, settings, StartInternalServer, () => InternalServer));
+        Navigate(new LevelLoadingScreen(UIContext, CreateNetworkContext(), worldName, settings, this));
     }
 
     public void ChangeWorld(World? newWorld, string loadingText = "", EntityPlayer? targetEntity = null)

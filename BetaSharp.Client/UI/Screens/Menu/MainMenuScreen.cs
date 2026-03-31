@@ -9,17 +9,13 @@ using BetaSharp.Client.UI.Controls.MainMenu;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Screens.Menu.Options;
 using BetaSharp.Client.UI.Screens.Menu.World;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage;
-
 namespace BetaSharp.Client.UI.Screens.Menu;
 
 public class MainMenuScreen(
     UIContext context,
     Session? session,
     bool hideQuitButton,
-    IWorldStorageSource saveLoader,
-    Action<string, string, WorldSettings> loadWorld,
+    ISingleplayerHost singleplayer,
     ClientNetworkContext networkContext,
     TexturePacks texturePackList,
     TextureManager textureManager,
@@ -61,7 +57,7 @@ public class MainMenuScreen(
 
         Button btnSingleplayer = CreateButton();
         btnSingleplayer.Text = translator.TranslateKey("menu.singleplayer");
-        btnSingleplayer.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, saveLoader, loadWorld));
+        btnSingleplayer.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, singleplayer));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 
@@ -78,7 +74,7 @@ public class MainMenuScreen(
 
         Button btnMods = CreateButton();
         btnMods.Text = translator.TranslateKey("menu.mods");
-        btnMods.OnClick += (e) => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePackList, textureManager));
+        btnMods.OnClick += (e) => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePackList));
         btnMods.Style.MarginBottom = 4;
         Root.AddChild(btnMods);
 

@@ -9,16 +9,13 @@ public class ConnectFailedScreen : UIScreen
 {
     private readonly string _errorMessage;
     private readonly string _errorDetail;
-    private readonly Action _stopInternalServer;
 
     public ConnectFailedScreen(
         UIContext context,
-        Action stopInternalServer,
         string messageKey,
         string detailKey,
         params object[]? formatArgs) : base(context)
     {
-        _stopInternalServer = stopInternalServer;
 
         TranslationStorage translations = TranslationStorage.Instance;
         _errorMessage = translations.TranslateKey(messageKey);
@@ -35,8 +32,6 @@ public class ConnectFailedScreen : UIScreen
 
     protected override void Init()
     {
-        _stopInternalServer();
-
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;

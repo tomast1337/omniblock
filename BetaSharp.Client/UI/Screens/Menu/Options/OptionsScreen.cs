@@ -2,7 +2,6 @@ using BetaSharp.Client.Debug;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Screens.InGame;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 

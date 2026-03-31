@@ -14,9 +14,9 @@ namespace BetaSharp.Client.UI.Screens.Menu.Net;
 public class LevelLoadingScreen(
     UIContext context,
     ClientNetworkContext networkContext,
-    string worldDir, WorldSettings settings,
-    Action<string, WorldSettings> startInternalServer,
-    Func<InternalServer?> getInternalServer) : UIScreen(context)
+    string worldDir,
+    WorldSettings settings,
+    IInternalServerHost serverHost) : UIScreen(context)
 {
     private readonly ILogger<LevelLoadingScreen> _logger = Log.Instance.For<LevelLoadingScreen>();
     private bool _serverStarted;
@@ -51,7 +51,7 @@ public class LevelLoadingScreen(
         if (!_serverStarted)
         {
             _serverStarted = true;
-            startInternalServer(worldDir, settings);
+            serverHost.StartInternalServer(worldDir, settings);
         }
     }
 
@@ -59,12 +59,12 @@ public class LevelLoadingScreen(
     {
         base.Update(partialTicks);
 
-        InternalServer? server = getInternalServer();
+        InternalServer? server = serverHost.InternalServer;
         if (server != null)
         {
             if (server.stopped)
             {
-                Context.Navigator.Navigate(new ConnectFailedScreen(Context, () => { }, "connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
+                Context.Navigator.Navigate(new ConnectFailedScreen(Context, "connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
                 return;
             }
 

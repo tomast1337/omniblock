@@ -4,6 +4,7 @@ using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
+using BetaSharp.Client.Network;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
@@ -12,8 +13,7 @@ namespace BetaSharp.Client.UI.Screens.Menu.World;
 
 public class CreateWorldScreen(
     UIContext context,
-    IWorldStorageSource saveLoader,
-    Action<string, string, WorldSettings> createWorld) : UIScreen(context)
+    ISingleplayerHost singleplayer) : UIScreen(context)
 {
     private bool _moreOptions = false;
     private string _worldName = "New World";
@@ -113,7 +113,7 @@ public class CreateWorldScreen(
         btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, saveLoader, createWorld));
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, singleplayer));
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -155,10 +155,10 @@ public class CreateWorldScreen(
         }
 
         if (string.IsNullOrEmpty(folderName)) folderName = "World";
-        folderName = GenerateUnusedFolderName(saveLoader, folderName);
+        folderName = GenerateUnusedFolderName(singleplayer.SaveLoader, folderName);
 
         WorldSettings settings = new(worldSeed, _selectedWorldType, GeneratorOptions);
-        createWorld(folderName, _worldName, settings);
+        singleplayer.LoadWorld(folderName, _worldName, settings);
     }
 
     private static long CalculateJavaHash(string input)
