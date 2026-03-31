@@ -1548,7 +1548,7 @@ public partial class BetaSharp :
         }
     }
 
-    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, TextureManager, DebugComponentsStorage, Shutdown);
+    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, DebugComponentsStorage, Shutdown);
     private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this);
 
     #endregion

@@ -1,7 +1,6 @@
 using BetaSharp.Client.Debug;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
-using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -15,10 +14,9 @@ public class MainMenuScreen(
     UIContext context,
     Session? session,
     bool hideQuitButton,
-    ISingleplayerHost singleplayer,
+    ISingleplayerHost singleplayerHost,
     ClientNetworkContext networkContext,
     TexturePacks texturePackList,
-    TextureManager textureManager,
     DebugComponentsStorage debugStorage,
     Action shutdown) : UIScreen(context)
 {
@@ -57,7 +55,7 @@ public class MainMenuScreen(
 
         Button btnSingleplayer = CreateButton();
         btnSingleplayer.Text = translator.TranslateKey("menu.singleplayer");
-        btnSingleplayer.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, singleplayer));
+        btnSingleplayer.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 

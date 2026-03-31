@@ -11,7 +11,7 @@ namespace BetaSharp.Client.UI.Screens.Menu.World;
 
 public class WorldScreen(
     UIContext context,
-    ISingleplayerHost singleplayer) : UIScreen(context)
+    ISingleplayerHost singleplayerHost) : UIScreen(context)
 {
     private readonly List<WorldSaveInfo> _saveList = [];
     private ScrollView _scrollView = null!;
@@ -68,7 +68,7 @@ public class WorldScreen(
         btnCreate.Text = translations.TranslateKey("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => Context.Navigator.Navigate(new CreateWorldScreen(Context, singleplayer));
+        btnCreate.OnClick += (e) => Context.Navigator.Navigate(new CreateWorldScreen(Context, singleplayerHost));
         row1.AddChild(btnCreate);
 
         buttonContainer.AddChild(row1);
@@ -114,7 +114,7 @@ public class WorldScreen(
     private void LoadSaves()
     {
         _saveList.Clear();
-        _saveList.AddRange(singleplayer.SaveLoader.GetAll());
+        _saveList.AddRange(singleplayerHost.SaveLoader.GetAll());
         _saveList.Sort();
         _selectedWorldIndex = -1;
     }
@@ -160,7 +160,7 @@ public class WorldScreen(
         if (worldInfo.IsUnsupported) return;
 
         string worldFileName = worldInfo.FileName ?? $"World{index}";
-        WorldProperties? props = singleplayer.SaveLoader.GetProperties(worldFileName);
+        WorldProperties? props = singleplayerHost.SaveLoader.GetProperties(worldFileName);
 
         WorldSettings settings;
         if (props != null)
@@ -172,14 +172,14 @@ public class WorldScreen(
             settings = new WorldSettings(0L, WorldType.Default);
         }
 
-        singleplayer.LoadWorld(worldFileName, worldInfo.DisplayName, settings);
+        singleplayerHost.LoadWorld(worldFileName, worldInfo.DisplayName, settings);
     }
 
     private void RenameSelected()
     {
         if (_selectedWorldIndex < 0) return;
         string fileName = _saveList[_selectedWorldIndex].FileName;
-        Context.Navigator.Navigate(new RenameWorldScreen(Context, this, fileName, singleplayer.SaveLoader));
+        Context.Navigator.Navigate(new RenameWorldScreen(Context, this, fileName, singleplayerHost.SaveLoader));
     }
 
     private void DeleteSelected()
@@ -195,8 +195,8 @@ public class WorldScreen(
         {
             if (confirmed)
             {
-                singleplayer.SaveLoader.Flush();
-                singleplayer.SaveLoader.Delete(worldInfo.FileName);
+                singleplayerHost.SaveLoader.Flush();
+                singleplayerHost.SaveLoader.Delete(worldInfo.FileName);
                 LoadSaves();
                 PopulateWorldList();
                 UpdateButtons();
