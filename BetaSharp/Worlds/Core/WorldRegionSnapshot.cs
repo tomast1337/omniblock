@@ -62,8 +62,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         if (chunkIdxX >= 0 && chunkIdxX < _chunks.GetLength(0) &&
             chunkIdxZ >= 0 && chunkIdxZ < _chunks.GetLength(1))
         {
-            ChunkSnapshot chunk = _chunks[chunkIdxX, chunkIdxZ];
-            return chunk.getBlockID(x & 15, y, z & 15);
+            return _chunks[chunkIdxX, chunkIdxZ].getBlockID(x & 15, y, z & 15);
         }
 
         return 0;
@@ -88,9 +87,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         if (chunkIdxX >= 0 && chunkIdxX < _chunks.GetLength(0) &&
             chunkIdxZ >= 0 && chunkIdxZ < _chunks.GetLength(1))
         {
-            ChunkSnapshot chunk = _chunks[chunkIdxX, chunkIdxZ];
-
-            NBTTagCompound? nbt = chunk.GetTileEntityNbt(x & 15, y, z & 15);
+            NBTTagCompound? nbt = _chunks[chunkIdxX, chunkIdxZ].GetTileEntityNbt(x & 15, y, z & 15);
             if (nbt != null)
             {
                 BlockEntity? newEntity = BlockEntity.CreateFromNbt(nbt);
@@ -196,7 +193,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         int chunkIdxX = (x >> 4) - _chunkX;
         int chunkIdxZ = (z >> 4) - _chunkZ;
 
-        ChunkSnapshot chunk = _chunks[chunkIdxX, chunkIdxZ];
+        ref ChunkSnapshot chunk = ref _chunks[chunkIdxX, chunkIdxZ];
 
         int lightValue = chunk.getBlockLightValue(x & 15, y, z & 15, _skylightSubtracted);
 
@@ -206,23 +203,6 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         }
 
         return lightValue;
-    }
-
-    public BiomeSource getBiomeSource()
-    {
-        return _biomeSource;
-    }
-
-    public bool shouldSuffocate(int x, int y, int z)
-    {
-        Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.material.BlocksMovement && block.isFullCube();
-    }
-
-    public bool isOpaque(int x, int y, int z)
-    {
-        Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.isOpaque();
     }
 
     public bool getIsLit()
