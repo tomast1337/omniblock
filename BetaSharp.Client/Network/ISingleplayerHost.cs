@@ -1,7 +1,7 @@
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
 
-namespace BetaSharp.Client.Network;
+namespace BetaSharp.Client;
 
 public interface ISingleplayerHost
 {

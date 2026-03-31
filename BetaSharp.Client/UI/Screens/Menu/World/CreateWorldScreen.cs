@@ -4,7 +4,6 @@ using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
-using BetaSharp.Client.Network;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;

@@ -1,7 +1,7 @@
 using BetaSharp.Server.Internal;
 using BetaSharp.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Network;
+namespace BetaSharp.Client;
 
 public interface IInternalServerHost
 {

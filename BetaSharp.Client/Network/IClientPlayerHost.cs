@@ -5,7 +5,7 @@ namespace BetaSharp.Client.Network;
 
 public interface IClientPlayerHost
 {
-    ClientPlayerEntity Player { get; }
-    PlayerController PlayerController { set; }
+    ClientPlayerEntity? Player { get; }
+    void SetPlayerController(PlayerController controller);
     void Respawn(bool resetHealth, int dimensionId);
 }

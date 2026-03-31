@@ -92,7 +92,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onHello(LoginHelloPacket packet)
     {
         _logger.LogInformation($"[Client] Received onHello from server (id: {packet.protocolVersion})");
-        _context.PlayerHost.PlayerController = _context.Factory.CreatePlayerController(this);
+        _context.PlayerHost.SetPlayerController(_context.Factory.CreatePlayerController(this));
         _context.StatFileWriter.ReadStat(Stats.Stats.JoinMultiplayerStat, 1);
         _worldClient = new ClientWorld(this, packet.worldSeed, packet.dimensionId)
         {

@@ -51,7 +51,13 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
-public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlayerHost, IWorldHost, IInternalServerHost, ISingleplayerHost
+public partial class BetaSharp :
+    IScreenNavigator,
+    IControllerState,
+    IClientPlayerHost,
+    IWorldHost,
+    IInternalServerHost,
+    ISingleplayerHost
 {
     public static string Version { get; private set; } = UnknownVersion;
     public static string BetaSharpDir => PathHelper.GetAppDir(nameof(BetaSharp));
@@ -66,7 +72,8 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
     public World World { get; private set; }
     World? IWorldHost.World => World;
     void IWorldHost.ChangeWorld(World? world) => ChangeWorld(world);
-    ClientPlayerEntity IClientPlayerHost.Player => Player;
+    ClientPlayerEntity? IClientPlayerHost.Player => Player;
+    void IClientPlayerHost.SetPlayerController(PlayerController controller) => PlayerController = controller;
     public Session Session { get; private set; }
     public GameOptions Options { get; private set; }
     public IWorldStorageSource SaveLoader { get; private set; }
@@ -100,9 +107,6 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
     public UIContext UIContext { get; private set; } = null!;
     public UIScreen? CurrentScreen { get; private set; }
     public HUD HUD { get; private set; } = null!;
-    public bool IsMainMenuOpen => CurrentScreen is MainMenuScreen;
-    public bool IsGameOverOpen => CurrentScreen is GameOverScreen;
-    public bool HideQuitButton { get; private set; }
 
     // Input
     public PlayerController PlayerController { get; set; }
@@ -139,6 +143,9 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
     private int _joinPlayerCounter;
     private long _prevFrameTime = -1L;
     private long _systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    private bool _isMainMenuOpen => CurrentScreen is MainMenuScreen;
+    private bool _isGameOverOpen => CurrentScreen is GameOverScreen;
+    private readonly bool _hideQuitButton;
 
     public BetaSharp(int width, int height, bool isFullscreen)
     {
@@ -392,7 +399,7 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
             () => CurrentScreen == null && Player != null && World != null
                 ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.inventory.getSelectedItem())
                 : null,
-            () => IsMainMenuOpen
+            () => _isMainMenuOpen
         ));
         PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
 
@@ -460,7 +467,7 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
 
     private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this);
 
-    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, HideQuitButton, this, CreateNetworkContext(), TexturePackList, TextureManager, DebugComponentsStorage, Shutdown);
+    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, TextureManager, DebugComponentsStorage, Shutdown);
 
     public void LoadWorld(string dir, string displayName, WorldSettings settings)
     {
@@ -1822,7 +1829,7 @@ public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlay
 
         ShowText("Respawning");
 
-        if (IsGameOverOpen)
+        if (_isGameOverOpen)
         {
             Navigate(null);
         }
