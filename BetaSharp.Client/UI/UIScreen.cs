@@ -104,11 +104,6 @@ public abstract class UIScreen
         Root.Style.Height = null;
         Renderer = new UIRenderer(context.TextRenderer, context.TextureManager, context.Options, context.DisplaySize);
 
-        //void ClickSound()
-        //{
-        //    contex.SoundManager.PlaySoundFX("random.click", 1.0F, 1.0F);
-        //}
-
         CreateButton = () => new(context.PlayClickSound);
         CreateSlider = () => new(context.PlayClickSound);
     }
