@@ -1,5 +1,7 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -9,7 +11,17 @@ using BetaSharp.Screens;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
-public class FurnaceScreen(BetaSharp game, InventoryPlayer playerInventory, BlockEntityFurnace furnace) : ContainerScreen(game, new FurnaceScreenHandler(playerInventory, furnace))
+public class FurnaceScreen(
+    UIContext context,
+    ClientPlayerEntity playerEntity,
+    PlayerController playerController,
+    InventoryPlayer playerInventory,
+    BlockEntityFurnace furnace) :
+    ContainerScreen(
+        context,
+        playerEntity,
+        playerController,
+        new FurnaceScreenHandler(playerInventory, furnace))
 {
     protected override void Init()
     {

@@ -4,8 +4,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class AudioSettingsScreen : BaseOptionsScreen
 {
-    public AudioSettingsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
-        : base(game, parent, options, "options.audioTitle")
+    public AudioSettingsScreen(UIContext context, UIScreen? parent)
+        : base(context, parent, "options.audioTitle")
     {
         TitleText = "Audio Settings";
     }

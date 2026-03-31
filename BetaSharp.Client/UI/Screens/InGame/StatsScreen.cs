@@ -6,7 +6,7 @@ using BetaSharp.Stats;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class StatsScreen(BetaSharp game, UIScreen? parent, StatFileWriter stats) : UIScreen(parent?.Game ?? game)
+public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter stats) : UIScreen(context)
 {
     private enum Tab { General, Blocks, Items }
     private Tab _currentTab = Tab.General;
@@ -58,7 +58,7 @@ public class StatsScreen(BetaSharp game, UIScreen? parent, StatFileWriter stats)
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing
-        btnDone.OnClick += (_) => Navigator.Navigate(parent);
+        btnDone.OnClick += (_) => Context.Navigator.Navigate(parent);
         Root.AddChild(btnDone);
 
         UpdateTab(Tab.General);
@@ -106,7 +106,7 @@ public class StatsScreen(BetaSharp game, UIScreen? parent, StatFileWriter stats)
                 break;
         }
 
-        Root.OnLayoutApplied(new() { MeasureString = (s) => Game.TextRenderer.GetStringWidth(s) }); // Update layout for the new content
+        Root.OnLayoutApplied(new() { MeasureString = (s) => Context.TextRenderer.GetStringWidth(s) }); // Update layout for the new content
     }
 
     private void PopulateGeneralStats(Panel list)

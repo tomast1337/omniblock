@@ -1,4 +1,6 @@
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
 
@@ -6,18 +8,34 @@ namespace BetaSharp.Client.UI.Controls.HUD;
 
 public class ControlTooltipBar : UIElement
 {
-    private readonly BetaSharp _game;
-    private readonly UIScreen? _screen; // null = in-game tips, otherwise GUI tips for that screen
+    private readonly IControllerState _controllerState;
+    private readonly GameOptions _options;
+    private readonly TextRenderer _textRenderer;
+    private readonly Func<InGameTipContext?>? _inGameSource;
+    private readonly UIScreen? _screen;
     private readonly List<ActionTip> _tips = [];
 
     private const int IconSize = 16;
     private const int TextVerticalOffset = 4;
     private const int Spacing = 10;
 
-    public ControlTooltipBar(BetaSharp game, UIScreen? screen = null)
+    public ControlTooltipBar(UIContext context, UIScreen screen)
     {
-        _game = game;
+        _controllerState = context.ControllerState;
+        _options = context.Options;
+        _textRenderer = context.TextRenderer;
         _screen = screen;
+        IsHitTestVisible = false;
+        Style.Height = IconSize;
+    }
+
+    public ControlTooltipBar(UIContext context, Func<InGameTipContext?> inGameSource)
+    {
+        _controllerState = context.ControllerState;
+        _options = context.Options;
+        _textRenderer = context.TextRenderer;
+        _inGameSource = inGameSource;
+        _screen = null;
         IsHitTestVisible = false;
         Style.Height = IconSize;
     }
@@ -26,7 +44,7 @@ public class ControlTooltipBar : UIElement
     {
         _tips.Clear();
 
-        if (!_game.IsControllerMode || _game.Options.HideGUI)
+        if (!_controllerState.IsControllerMode || _options.HideGUI)
         {
             base.Render(renderer);
             return;
@@ -34,12 +52,13 @@ public class ControlTooltipBar : UIElement
 
         if (_screen == null)
         {
-            if (_game.CurrentScreen != null)
+            InGameTipContext? ctx = _inGameSource?.Invoke();
+            if (ctx == null)
             {
                 base.Render(renderer);
                 return;
             }
-            ControlTooltip.PopulateInGameTips(_game, _tips);
+            ControlTooltip.PopulateInGameTips(ctx, _tips);
         }
         else
         {
@@ -64,7 +83,7 @@ public class ControlTooltipBar : UIElement
             }
 
             renderer.DrawText(tip.Action, x, TextVerticalOffset, Color.White);
-            x += _game.TextRenderer.GetStringWidth(tip.Action) + Spacing;
+            x += _textRenderer.GetStringWidth(tip.Action) + Spacing;
         }
 
         base.Render(renderer);

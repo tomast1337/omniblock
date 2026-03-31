@@ -13,13 +13,17 @@ public class ConnectingScreen : UIScreen
     public bool IsCancelled { get; private set; }
     public override bool PausesGame => false;
 
-    public ConnectingScreen(BetaSharp game, string host, int port) : base(game)
+    public ConnectingScreen(
+        UIContext context,
+        ClientNetworkContext networkContext,
+        string host,
+        int port) : base(context)
     {
-        game.ChangeWorld(null);
-        new ThreadConnectToServer(this, game, host, port).Start();
+        networkContext.WorldHost.ChangeWorld(null);
+        new ThreadConnectToServer(this, networkContext, host, port).Start();
     }
 
-    public ConnectingScreen(BetaSharp game, ClientNetworkHandler clientHandler) : base(game)
+    public ConnectingScreen(UIContext context, ClientNetworkHandler clientHandler) : base(context)
     {
         ClientHandler = clientHandler;
     }
@@ -44,7 +48,7 @@ public class ConnectingScreen : UIScreen
         {
             Label lblDetail = new()
             {
-                Text = ClientHandler.field_1209_a,
+                Text = ClientHandler.StatusMessage,
                 TextColor = Color.GrayA0,
                 Centered = true
             };
@@ -69,14 +73,14 @@ public class ConnectingScreen : UIScreen
     public void Cancel()
     {
         IsCancelled = true;
-        ClientHandler?.disconnect();
-        Navigator.Navigate(new MainMenuScreen(Game));
+        ClientHandler?.Disconnect();
+        Context.Navigator.Navigate(null);
     }
 
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        ClientHandler?.tick();
+        ClientHandler?.Tick();
 
         if (Root.Children.Count >= 2 && Root.Children[1] is Label lblStatus)
         {

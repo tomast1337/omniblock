@@ -6,10 +6,13 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public abstract class BaseOptionsScreen(BetaSharp game, UIScreen? parent, GameOptions options, string titleKey) : UIScreen(parent?.Game ?? game)
+public abstract class BaseOptionsScreen(
+    UIContext context,
+    UIScreen? parent,
+    string titleKey) : UIScreen(context)
 {
     protected readonly UIScreen? Parent = parent;
-    protected readonly GameOptions Options = options;
+    protected GameOptions Options => Context.Options;
     protected string TitleText = TranslationStorage.Instance.TranslateKey(titleKey);
 
     protected override void Init()
@@ -17,7 +20,7 @@ public abstract class BaseOptionsScreen(BetaSharp game, UIScreen? parent, GameOp
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.FlexStart;
 
-        Root.AddChild(new Background(Game.World != null ? BackgroundType.World : BackgroundType.Dirt));
+        Root.AddChild(new Background(Context.HasWorld ? BackgroundType.World : BackgroundType.Dirt));
 
         Label title = new()
         {
@@ -127,11 +130,11 @@ public abstract class BaseOptionsScreen(BetaSharp game, UIScreen? parent, GameOp
         Options.SaveOptions();
         if (Parent != null)
         {
-            Navigator.Navigate(Parent);
+            Context.Navigator.Navigate(Parent);
         }
         else
         {
-            Navigator.Navigate(null);
+            Context.Navigator.Navigate(null);
         }
     }
 

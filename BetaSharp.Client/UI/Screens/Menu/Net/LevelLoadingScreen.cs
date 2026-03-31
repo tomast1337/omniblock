@@ -11,11 +11,14 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
-public class LevelLoadingScreen(BetaSharp game, string worldDir, WorldSettings settings) : UIScreen(game)
+public class LevelLoadingScreen(
+    UIContext context,
+    ClientNetworkContext networkContext,
+    string worldDir, WorldSettings settings,
+    Action<string, WorldSettings> startInternalServer,
+    Func<InternalServer?> getInternalServer) : UIScreen(context)
 {
     private readonly ILogger<LevelLoadingScreen> _logger = Log.Instance.For<LevelLoadingScreen>();
-    private readonly string _worldDir = worldDir;
-    private readonly WorldSettings _settings = settings;
     private bool _serverStarted;
 
     private Label _lblProgress = null!;
@@ -48,7 +51,7 @@ public class LevelLoadingScreen(BetaSharp game, string worldDir, WorldSettings s
         if (!_serverStarted)
         {
             _serverStarted = true;
-            Game.StartInternalServer(_worldDir, _settings);
+            startInternalServer(worldDir, settings);
         }
     }
 
@@ -56,19 +59,20 @@ public class LevelLoadingScreen(BetaSharp game, string worldDir, WorldSettings s
     {
         base.Update(partialTicks);
 
-        if (Game.InternalServer != null)
+        InternalServer? server = getInternalServer();
+        if (server != null)
         {
-            if (Game.InternalServer.stopped)
+            if (server.stopped)
             {
-                Navigator.Navigate(new ConnectFailedScreen(Game, "connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
+                Context.Navigator.Navigate(new ConnectFailedScreen(Context, () => { }, "connect.failed", "disconnect.genericReason", "Internal server stopped unexpectedly"));
                 return;
             }
 
-            string progressMsg = Game.InternalServer.progressMessage ?? "Starting server...";
-            int progress = Game.InternalServer.progress;
+            string progressMsg = server.progressMessage ?? "Starting server...";
+            int progress = server.progress;
             _lblProgress.Text = $"{progressMsg} ({progress}%)";
 
-            if (Game.InternalServer.isReady)
+            if (server.isReady)
             {
                 InternalConnection clientConnection = new(null, "Internal-Client");
                 InternalConnection serverConnection = new(null, "Internal-Server");
@@ -76,15 +80,15 @@ public class LevelLoadingScreen(BetaSharp game, string worldDir, WorldSettings s
                 clientConnection.AssignRemote(serverConnection);
                 serverConnection.AssignRemote(clientConnection);
 
-                Game.InternalServer.connections.AddInternalConnection(serverConnection);
+                server.connections.AddInternalConnection(serverConnection);
                 _logger.LogInformation("[Internal-Client] Created internal connection");
 
-                ClientNetworkHandler clientHandler = new(Game, clientConnection);
+                ClientNetworkHandler clientHandler = new(networkContext, clientConnection);
                 clientConnection.setNetworkHandler(clientHandler);
                 _logger.LogInformation("[Internal-Client] Sending HandshakePacket");
-                clientHandler.addToSendQueue(new HandshakePacket(Game.Session.username));
+                clientHandler.AddToSendQueue(new HandshakePacket(networkContext.Session.username));
 
-                Navigator.Navigate(new ConnectingScreen(Game, clientHandler));
+                Context.Navigator.Navigate(new ConnectingScreen(Context, clientHandler));
             }
         }
     }

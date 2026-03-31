@@ -1,3 +1,4 @@
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
@@ -10,7 +11,11 @@ using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
-public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlots) : UIScreen(game)
+public abstract class ContainerScreen(
+    UIContext context,
+    ClientPlayerEntity player,
+    PlayerController playerController,
+    ScreenHandler inventorySlots) : UIScreen(context)
 {
     public ScreenHandler InventorySlots { get; } = inventorySlots;
     protected int _xSize = 176;
@@ -21,7 +26,7 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
 
     protected override void Init()
     {
-        Game.Player.currentScreenHandler = InventorySlots;
+        player.currentScreenHandler = InventorySlots;
 
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -54,15 +59,15 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
         bool isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         int mouseBtn = (button == MouseButton.Right) ? 1 : 0;
 
-        Game.PlayerController.func_27174_a(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, Game.Player);
+        playerController.func_27174_a(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, player);
     }
 
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        if (!Game.Player.isAlive() || Game.Player.dead)
+        if (!player.isAlive() || player.dead)
         {
-            Game.Player.closeHandledScreen();
+            player.closeHandledScreen();
         }
     }
 
@@ -71,7 +76,7 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
         base.Render(mouseX, mouseY, partialTicks);
 
         // Render held item on top of everything
-        ItemStack cursorStack = Game.Player.inventory.getCursorStack();
+        ItemStack cursorStack = player.inventory.getCursorStack();
         if (cursorStack != null)
         {
             Renderer.Begin();
@@ -90,7 +95,7 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
                 string itemName = ("" + TranslationStorage.Instance.TranslateNamedKey(stack.getItemName())).Trim();
                 if (itemName.Length > 0)
                 {
-                    int textWidth = Game.TextRenderer.GetStringWidth(itemName);
+                    int textWidth = Context.TextRenderer.GetStringWidth(itemName);
                     float tx = MouseX + 12;
                     float ty = MouseY - 12;
 
@@ -105,7 +110,7 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
 
     public override void GetTooltips(List<ActionTip> tips)
     {
-        ItemStack cursorStack = Game.Player.inventory.getCursorStack();
+        ItemStack cursorStack = player.inventory.getCursorStack();
 
         if (Root.HitTest(MouseX, MouseY) is UISlot hoveredSlot)
         {
@@ -137,9 +142,9 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
             {
                 int slotId = uiSlot.Slot.id;
                 if (button == GamepadButton.Y)
-                    Game.PlayerController.func_27174_a(InventorySlots.SyncId, slotId, 0, true, Game.Player);
+                    playerController.func_27174_a(InventorySlots.SyncId, slotId, 0, true, player);
                 else
-                    Game.PlayerController.func_27174_a(InventorySlots.SyncId, slotId, 1, false, Game.Player);
+                    playerController.func_27174_a(InventorySlots.SyncId, slotId, 1, false, player);
                 return;
             }
         }
@@ -149,9 +154,9 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
 
     public override void KeyTyped(int key, char character)
     {
-        if (key == Keyboard.KEY_ESCAPE || key == Game.Options.KeyBindInventory.keyCode)
+        if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.keyCode)
         {
-            Game.Player.closeHandledScreen();
+            player.closeHandledScreen();
         }
         else
         {
@@ -162,9 +167,9 @@ public abstract class ContainerScreen(BetaSharp game, ScreenHandler inventorySlo
     public override void Uninit()
     {
         base.Uninit();
-        if (Game.Player != null)
+        if (player != null)
         {
-            Game.PlayerController.OnGuiClosed(InventorySlots.SyncId, Game.Player);
+            playerController.OnGuiClosed(InventorySlots.SyncId, player);
         }
     }
 }

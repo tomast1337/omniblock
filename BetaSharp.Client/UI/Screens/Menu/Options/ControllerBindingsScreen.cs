@@ -6,8 +6,8 @@ using Silk.NET.GLFW;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class ControllerBindingsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
-    : BaseOptionsScreen(game, parent, options, "Button Bindings")
+public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
+    : BaseOptionsScreen(context, parent, "Button Bindings")
 {
     private int _listeningIndex = -1;
     private readonly ControllerListener _listener = new();

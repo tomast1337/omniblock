@@ -4,7 +4,6 @@ using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Client.UI.Screens;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
 
@@ -46,7 +45,7 @@ namespace BetaSharp.Client.UI;
 /// </summary>
 public abstract class UIScreen
 {
-    public BetaSharp Game { get; internal set; }
+    protected UIContext Context { get; }
     public UIElement Root { get; private set; }
     public UIRenderer Renderer { get; private set; }
 
@@ -65,6 +64,7 @@ public abstract class UIScreen
             }
         }
     }
+
     public UIElement? DraggingElement { get; set; }
     public float MouseX { get; protected set; }
     public float MouseY { get; protected set; }
@@ -72,7 +72,6 @@ public abstract class UIScreen
     public virtual bool AllowUserInput => false;
     public Func<Button> CreateButton { get; }
     public Func<Slider> CreateSlider { get; }
-    public IScreenNavigator Navigator { get; set; }
     protected virtual bool AutoAddTooltipBar => true;
 
     private bool _isInitialized;
@@ -91,27 +90,27 @@ public abstract class UIScreen
     public bool IsEditingSlider => _editingSlider != null;
 
     private ScaledResolution CurrentScaledResolution =>
-        new(Game.Options, Game.DisplayWidth, Game.DisplayHeight);
+        new(Context.Options, Context.DisplayWidth, Context.DisplayHeight);
 
     private Vector2D<float> ToScaledCoords(float x, float y, ScaledResolution res) =>
-        new(x * res.ScaledWidth / Game.DisplayWidth,
-            y * res.ScaledHeight / Game.DisplayHeight);
+        new(x * res.ScaledWidth / Context.DisplayWidth,
+            y * res.ScaledHeight / Context.DisplayHeight);
 
-    public UIScreen(BetaSharp game)
+    public UIScreen(UIContext context)
     {
-        Game = game;
+        Context = context;
         Root = new UIElement();
         Root.Style.Width = null;
         Root.Style.Height = null;
-        Renderer = new UIRenderer(game.TextRenderer, game.TextureManager, game.Options, () => new(game.DisplayWidth, game.DisplayHeight));
+        Renderer = new UIRenderer(context.TextRenderer, context.TextureManager, context.Options, context.DisplaySize);
 
-        void ClickSound()
-        {
-            game.SoundManager.PlaySoundFX("random.click", 1.0F, 1.0F);
-        }
+        //void ClickSound()
+        //{
+        //    contex.SoundManager.PlaySoundFX("random.click", 1.0F, 1.0F);
+        //}
 
-        CreateButton = () => new(ClickSound);
-        CreateSlider = () => new(ClickSound);
+        CreateButton = () => new(context.PlayClickSound);
+        CreateSlider = () => new(context.PlayClickSound);
     }
 
     public void Initialize()
@@ -123,7 +122,7 @@ public abstract class UIScreen
 
             if (AutoAddTooltipBar)
             {
-                var tooltipBar = new ControlTooltipBar(Game, this);
+                var tooltipBar = new ControlTooltipBar(Context, this);
                 tooltipBar.Style.Position = PositionType.Absolute;
                 tooltipBar.Style.Bottom = 4;
                 tooltipBar.Style.Left = 2;
@@ -169,14 +168,14 @@ public abstract class UIScreen
         {
             if (Mouse.getEventDX() != 0 || Mouse.getEventDY() != 0 || Mouse.getEventButton() != -1)
             {
-                Game.IsControllerMode = false;
+                Context.ControllerState.IsControllerMode = false;
                 Mouse.setCursorVisible(true);
             }
             HandleMouseInput();
         }
         while (Keyboard.Next())
         {
-            Game.IsControllerMode = false;
+            Context.ControllerState.IsControllerMode = false;
             HandleKeyboardInput();
         }
         ControllerManager.UpdateGui(this);
@@ -186,20 +185,20 @@ public abstract class UIScreen
 
     private void HandleControllerScroll()
     {
-        if (!Game.IsControllerMode) return;
+        if (!Context.ControllerState.IsControllerMode) return;
 
         float ry = Controller.RightStickY;
         if (ry == 0f) return;
 
         ScaledResolution res = CurrentScaledResolution;
-        Vector2D<float> scaled = ToScaledCoords(Game.VirtualCursor.X, Game.VirtualCursor.Y, res);
+        Vector2D<float> scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
 
         UIElement? current = Root.HitTest(scaled.X, scaled.Y);
         while (current != null)
         {
             if (current is ScrollView sv && sv.Enabled && sv.MaxScrollY > 0)
             {
-                sv.ScrollBy(ry * 300f / Game.Timer.ticksPerSecond);
+                sv.ScrollBy(ry * 300f / Context.Timer.ticksPerSecond);
                 break;
             }
             current = current.Parent;
@@ -220,7 +219,7 @@ public abstract class UIScreen
         float lx = Controller.LeftStickX;
         if (lx != 0f)
         {
-            _sliderStickAccumulated += lx * SliderStepsPerSecond / Game.Timer.ticksPerSecond;
+            _sliderStickAccumulated += lx * SliderStepsPerSecond / Context.Timer.ticksPerSecond;
             while (_sliderStickAccumulated >= 1f) { _editingSlider.AdjustValue(step); _sliderStickAccumulated -= 1f; }
             while (_sliderStickAccumulated <= -1f) { _editingSlider.AdjustValue(-step); _sliderStickAccumulated += 1f; }
         }
@@ -325,8 +324,8 @@ public abstract class UIScreen
 
         float bestCx = best.ScreenX + best.ComputedWidth / 2f;
         float bestCy = best.ScreenY + best.ComputedHeight / 2f;
-        cursorX = bestCx * Game.DisplayWidth / res.ScaledWidth;
-        cursorY = bestCy * Game.DisplayHeight / res.ScaledHeight;
+        cursorX = bestCx * Context.DisplayWidth / res.ScaledWidth;
+        cursorY = bestCy * Context.DisplayHeight / res.ScaledHeight;
         return true;
     }
 
@@ -379,7 +378,7 @@ public abstract class UIScreen
     protected UIElement? GetElementUnderVirtualCursor()
     {
         ScaledResolution res = CurrentScaledResolution;
-        Vector2D<float> scaled = ToScaledCoords(Game.VirtualCursor.X, Game.VirtualCursor.Y, res);
+        Vector2D<float> scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
         return Root.HitTest(scaled.X, scaled.Y);
     }
 
@@ -444,8 +443,8 @@ public abstract class UIScreen
     public void HandleMouseInput()
     {
         ScaledResolution res = CurrentScaledResolution;
-        float scaledX = Mouse.getEventX() * res.ScaledWidth / (float)Game.DisplayWidth;
-        float scaledY = res.ScaledHeight - Mouse.getEventY() * res.ScaledHeight / (float)Game.DisplayHeight - 1f;
+        float scaledX = Mouse.getEventX() * res.ScaledWidth / (float)Context.DisplayWidth;
+        float scaledY = res.ScaledHeight - Mouse.getEventY() * res.ScaledHeight / (float)Context.DisplayHeight - 1f;
 
         if (Mouse.getEventButtonState())
             HandleMouseButtonDown(scaledX, scaledY);
@@ -548,7 +547,7 @@ public abstract class UIScreen
         if (key == Keyboard.KEY_ESCAPE || key == Keyboard.KEY_NONE)
         {
             Uninit();
-            Navigator.Navigate(null);
+            Context.Navigator.Navigate(null);
         }
     }
 
@@ -560,7 +559,7 @@ public abstract class UIScreen
         if (button == GamepadButton.A && isDown)
         {
             ScaledResolution res = CurrentScaledResolution;
-            Vector2D<float> scaled = ToScaledCoords(Game.VirtualCursor.X, Game.VirtualCursor.Y, res);
+            Vector2D<float> scaled = ToScaledCoords(Context.VirtualCursor.X, Context.VirtualCursor.Y, res);
 
             UIElement? target = Root.HitTest(scaled.X, scaled.Y);
 

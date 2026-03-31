@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -9,7 +10,11 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class TexturePacksScreen(BetaSharp game, UIScreen? parent) : UIScreen(parent?.Game ?? game)
+public class TexturePacksScreen(
+    UIContext context,
+    UIScreen? parent,
+    TexturePacks texturePackList,
+    TextureManager textureManager) : UIScreen(context)
 {
     private readonly ILogger<TexturePacksScreen> _logger = Log.Instance.For<TexturePacksScreen>();
     private readonly UIScreen? _parent = parent;
@@ -82,9 +87,9 @@ public class TexturePacksScreen(BetaSharp game, UIScreen? parent) : UIScreen(par
         _scrollView.ContentContainer.Children.Clear();
         _listItems.Clear();
 
-        Game.TexturePackList.updateAvaliableTexturePacks();
-        List<TexturePack> packs = Game.TexturePackList.AvailableTexturePacks;
-        TexturePack selectedPack = Game.TexturePackList.SelectedTexturePack;
+        texturePackList.updateAvaliableTexturePacks();
+        List<TexturePack> packs = texturePackList.AvailableTexturePacks;
+        TexturePack selectedPack = texturePackList.SelectedTexturePack;
 
         for (int i = 0; i < packs.Count; i++)
         {
@@ -107,8 +112,8 @@ public class TexturePacksScreen(BetaSharp game, UIScreen? parent) : UIScreen(par
         }
         selectedItem.IsSelected = true;
 
-        Game.TexturePackList.setTexturePack(selectedItem.Value);
-        Game.TextureManager.Reload();
+        texturePackList.setTexturePack(selectedItem.Value);
+        textureManager.Reload();
     }
 
     private void OpenFolder()
@@ -129,14 +134,14 @@ public class TexturePacksScreen(BetaSharp game, UIScreen? parent) : UIScreen(par
 
     private void OnDone()
     {
-        Game.TextureManager.Reload();
+        textureManager.Reload();
         if (_parent != null)
         {
-            Navigator.Navigate(_parent);
+            Context.Navigator.Navigate(_parent);
         }
         else
         {
-            Navigator.Navigate(null);
+            Context.Navigator.Navigate(null);
         }
     }
 
@@ -147,16 +152,16 @@ public class TexturePacksScreen(BetaSharp game, UIScreen? parent) : UIScreen(par
         {
             _refreshTimer = 20;
 
-            Game.TexturePackList.updateAvaliableTexturePacks();
+            texturePackList.updateAvaliableTexturePacks();
 
-            List<TexturePack> packs = Game.TexturePackList.AvailableTexturePacks;
+            List<TexturePack> packs = texturePackList.AvailableTexturePacks;
             if (packs.Count != _listItems.Count)
             {
                 PopulatePackList();
             }
             else
             {
-                TexturePack selectedPack = Game.TexturePackList.SelectedTexturePack;
+                TexturePack selectedPack = texturePackList.SelectedTexturePack;
                 foreach (TexturePackListItem item in _listItems)
                 {
                     item.IsSelected = item.Value == selectedPack;

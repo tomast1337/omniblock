@@ -9,7 +9,7 @@ using BetaSharp.NBT;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
+public class MultiplayerScreen(UIContext context, ClientNetworkContext networkContext) : UIScreen(context)
 {
     private readonly List<ServerData> _serverList = [];
     private ScrollView _scrollView = null!;
@@ -64,14 +64,14 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         btnDirect.Text = "Direct Connect";
         btnDirect.Style.Width = 100;
         btnDirect.Style.SetMargin(2);
-        btnDirect.OnClick += (e) => Navigator.Navigate(new DirectConnectScreen(Game, this, new ServerData("BetaSharp Server", "")));
+        btnDirect.OnClick += (e) => Context.Navigator.Navigate(new DirectConnectScreen(Context, this, new ServerData("BetaSharp Server", ""), networkContext));
         row1.AddChild(btnDirect);
 
         Button btnAdd = CreateButton();
         btnAdd.Text = "Add Server";
         btnAdd.Style.Width = 100;
         btnAdd.Style.SetMargin(2);
-        btnAdd.OnClick += (e) => Navigator.Navigate(new EditServerScreen(Game, this, new ServerData("BetaSharp Server", ""), false));
+        btnAdd.OnClick += (e) => Context.Navigator.Navigate(new EditServerScreen(Context, this, new ServerData("BetaSharp Server", ""), false));
         row1.AddChild(btnAdd);
 
         buttonContainer.AddChild(row1);
@@ -105,7 +105,7 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 75;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Navigator.Navigate(new MainMenuScreen(Game));
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(null);
         row2.AddChild(btnCancel);
 
         buttonContainer.AddChild(row2);
@@ -197,7 +197,7 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         if (_selectedServerIndex < 0) return;
         ServerData original = _serverList[_selectedServerIndex];
         ServerData temp = new(original.Name, original.Ip);
-        Navigator.Navigate(new EditServerScreen(Game, this, temp, true));
+        Context.Navigator.Navigate(new EditServerScreen(Context, this, temp, true));
     }
 
     public void ConfirmEdit(ServerData data, bool isEditing)
@@ -226,7 +226,7 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         string q = "Are you sure you want to remove this server?";
         string w = "'" + server.Name + "' " + "will be lost forever! (A long time!)";
 
-        Navigator.Navigate(new ConfirmationScreen(Game, this, q, w, "Delete", "Cancel", (result) =>
+        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, q, w, "Delete", "Cancel", (result) =>
         {
             if (result)
             {
@@ -244,6 +244,6 @@ public class MultiplayerScreen(BetaSharp game) : UIScreen(game)
         string host = parts[0];
         int portNum = 25565;
         if (parts.Length > 1) int.TryParse(parts[1], out portNum);
-        Navigator.Navigate(new ConnectingScreen(Game, host, portNum));
+        Context.Navigator.Navigate(new ConnectingScreen(Context, networkContext, host, portNum));
     }
 }

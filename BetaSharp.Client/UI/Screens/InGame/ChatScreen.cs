@@ -1,12 +1,18 @@
 using System.Text;
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
+using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
+public class ChatScreen(
+    UIContext context,
+    ChatOverlay chat,
+    ClientPlayerEntity player,
+    string prefix = "") : UIScreen(context)
 {
     private static readonly List<string> s_history = [];
     private int _historyIndex = 0;
@@ -60,7 +66,7 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
                 }
                 else
                 {
-                    Game.HUD.Chat.ScrollMessages(1);
+                    chat.ScrollMessages(1);
                     e.Handled = true;
                 }
             }
@@ -73,7 +79,7 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
                 }
                 else
                 {
-                    Game.HUD.Chat.ScrollMessages(-1);
+                    chat.ScrollMessages(-1);
                     e.Handled = true;
                 }
             }
@@ -87,20 +93,20 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
         // Global mouse events for the screen
         Root.OnMouseScroll = (e) =>
         {
-            Game.HUD.Chat.ScrollMessages(e.ScrollDelta > 0 ? 1 : -1);
+            chat.ScrollMessages(e.ScrollDelta > 0 ? 1 : -1);
             e.Handled = true;
         };
 
         Root.OnMouseDown = (e) =>
         {
-            if (e.Button == MouseButton.Left && Game.HUD.Chat.HoveredItemName != null)
+            if (e.Button == MouseButton.Left && chat.HoveredItemName != null)
             {
                 if (_textField.Text.Length > 0 && !_textField.Text.EndsWith(' '))
                 {
                     _textField.Text += " ";
                 }
 
-                _textField.Text += Game.HUD.Chat.HoveredItemName;
+                _textField.Text += chat.HoveredItemName;
 
                 const byte maxLen = 100;
                 if (_textField.Text.Length > maxLen)
@@ -159,7 +165,7 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
         if (msg.Length > 0)
         {
             string sendMsg = ConvertAmpersandToSection(msg);
-            Game.Player.sendChatMessage(sendMsg);
+            player.sendChatMessage(sendMsg);
             s_history.Add(msg); // Store original with & for history navigation
             if (s_history.Count > 100)
             {
@@ -167,7 +173,7 @@ public class ChatScreen(BetaSharp game, string prefix = "") : UIScreen(game)
             }
         }
 
-        Navigator.Navigate(null);
+        Context.Navigator.Navigate(null);
     }
 
     private static string ConvertAmpersandToSection(string input)

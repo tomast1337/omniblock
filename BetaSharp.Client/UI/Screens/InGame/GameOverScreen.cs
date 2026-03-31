@@ -2,11 +2,15 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Screens.Menu;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class GameOverScreen(BetaSharp game) : UIScreen(game)
+public class GameOverScreen(
+    UIContext context,
+    int score,
+    Action respawn,
+    bool canRespawn,
+    Action exitToTitle) : UIScreen(context)
 {
     public override bool PausesGame => false;
 
@@ -33,7 +37,7 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
 
         Label scoreLabel = new()
         {
-            Text = "Score: &e" + Game.Player.getScore(),
+            Text = "Score: &e" + score,
             TextColor = Color.White
         };
         scoreLabel.Style.MarginBottom = 20;
@@ -43,12 +47,12 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         btnRespawn.Text = "Respawn";
         btnRespawn.OnClick += (e) =>
         {
-            Game.Player.respawn();
-            Navigator.Navigate(null);
+            respawn();
+            Context.Navigator.Navigate(null);
         };
         btnRespawn.Style.MarginBottom = 4;
 
-        if (Game.Session == null)
+        if (!canRespawn)
         {
             btnRespawn.Enabled = false;
         }
@@ -58,8 +62,8 @@ public class GameOverScreen(BetaSharp game) : UIScreen(game)
         btnTitle.Text = "Title menu";
         btnTitle.OnClick += (e) =>
         {
-            Game.ChangeWorld(null!);
-            Navigator.Navigate(new MainMenuScreen(Game));
+            exitToTitle();
+            Context.Navigator.Navigate(null);
         };
         Root.AddChild(btnTitle);
     }

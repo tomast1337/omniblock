@@ -10,18 +10,23 @@ namespace BetaSharp.Client.UI.Screens.InGame;
 public class DebugEditorScreen : UIScreen
 {
     private readonly UIScreen? _parentScreen;
+    private readonly DebugComponentsStorage _debugStorage;
     private readonly List<DebugComponent> _components;
     private DebugComponent? _selectedComponent;
     private ScrollView _scroll = null!;
     private Button _changeSideButton = null!;
     private Button _deleteButton = null!;
 
-    public DebugEditorScreen(BetaSharp game, UIScreen? parentScreen) : base(game)
+    public DebugEditorScreen(
+        UIContext context,
+        UIScreen? parentScreen,
+        DebugComponentsStorage debugStorage) : base(context)
     {
         _parentScreen = parentScreen;
+        _debugStorage = debugStorage;
         _components = [];
 
-        foreach (DebugComponent component in game.DebugComponentsStorage.Overlay.Components)
+        foreach (DebugComponent component in debugStorage.Overlay.Components)
         {
             _components.Add(component.Duplicate());
         }
@@ -32,7 +37,7 @@ public class DebugEditorScreen : UIScreen
         Root.Style.SetPadding(20);
         Root.Style.AlignItems = Align.Center;
 
-        Root.AddChild(new Background(Game.World != null ? BackgroundType.World : BackgroundType.Dirt));
+        Root.AddChild(new Background(Context.HasWorld ? BackgroundType.World : BackgroundType.Dirt));
 
         var title = new Label
         {
@@ -63,7 +68,7 @@ public class DebugEditorScreen : UIScreen
         addButton.Enabled = true;
         addButton.Style.Width = 150;
         addButton.Style.SetMargin(2);
-        addButton.OnClick += (_) => Navigator.Navigate(new NewDebugComponentScreen(Game, this));
+        addButton.OnClick += (_) => Context.Navigator.Navigate(new NewDebugComponentScreen(Context, this));
         buttonContainer.AddChild(addButton);
 
         Button saveButton = CreateButton();
@@ -73,12 +78,12 @@ public class DebugEditorScreen : UIScreen
         saveButton.Style.SetMargin(2);
         saveButton.OnClick += (_) =>
         {
-            Game.DebugComponentsStorage.Overlay.Components.Clear();
+            _debugStorage.Overlay.Components.Clear();
             foreach (DebugComponent comp in _components)
             {
-                Game.DebugComponentsStorage.Overlay.Components.Add(comp.Duplicate());
+                _debugStorage.Overlay.Components.Add(comp.Duplicate());
             }
-            Game.DebugComponentsStorage.SaveComponents();
+            _debugStorage.SaveComponents();
             Close();
         };
         buttonContainer.AddChild(saveButton);
@@ -176,11 +181,11 @@ public class DebugEditorScreen : UIScreen
     {
         if (_parentScreen != null)
         {
-            Navigator.Navigate(_parentScreen);
+            Context.Navigator.Navigate(_parentScreen);
         }
         else
         {
-            Navigator.Navigate(null);
+            Context.Navigator.Navigate(null);
         }
     }
 }

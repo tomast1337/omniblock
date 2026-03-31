@@ -1,14 +1,30 @@
+using BetaSharp.Client.Debug;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Network;
+using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Controls.MainMenu;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Screens.Menu.Options;
 using BetaSharp.Client.UI.Screens.Menu.World;
+using BetaSharp.Worlds.Core.Systems;
+using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class MainMenuScreen(BetaSharp game) : UIScreen(game)
+public class MainMenuScreen(
+    UIContext context,
+    Session? session,
+    bool hideQuitButton,
+    IWorldStorageSource saveLoader,
+    Action<string, string, WorldSettings> loadWorld,
+    ClientNetworkContext networkContext,
+    TexturePacks texturePackList,
+    TextureManager textureManager,
+    DebugComponentsStorage debugStorage,
+    Action shutdown) : UIScreen(context)
 {
     private const float LogoTopPadding = 30f;
 
@@ -45,16 +61,16 @@ public class MainMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnSingleplayer = CreateButton();
         btnSingleplayer.Text = translator.TranslateKey("menu.singleplayer");
-        btnSingleplayer.OnClick += (e) => Navigator.Navigate(new WorldScreen(Game));
+        btnSingleplayer.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, saveLoader, loadWorld));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 
         Button btnMultiplayer = CreateButton();
         btnMultiplayer.Text = translator.TranslateKey("menu.multiplayer");
-        btnMultiplayer.OnClick += (e) => Navigator.Navigate(new MultiplayerScreen(Game));
+        btnMultiplayer.OnClick += (e) => Context.Navigator.Navigate(new MultiplayerScreen(Context, networkContext));
         btnMultiplayer.Style.MarginBottom = 4;
 
-        if (Game.Session == null || Game.Session.sessionId == "-")
+        if (session == null || session.sessionId == "-")
         {
             btnMultiplayer.Enabled = false;
         }
@@ -62,7 +78,7 @@ public class MainMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnMods = CreateButton();
         btnMods.Text = translator.TranslateKey("menu.mods");
-        btnMods.OnClick += (e) => Navigator.Navigate(new TexturePacksScreen(Game, this));
+        btnMods.OnClick += (e) => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePackList, textureManager));
         btnMods.Style.MarginBottom = 4;
         Root.AddChild(btnMods);
 
@@ -75,15 +91,15 @@ public class MainMenuScreen(BetaSharp game) : UIScreen(game)
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
         btnOptions.Style.Width = 98;
-        btnOptions.OnClick += (e) => Navigator.Navigate(new OptionsScreen(Game, this, Game.Options));
+        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, debugStorage));
 
         Button btnQuit = CreateButton();
         btnQuit.Text = translator.TranslateKey("menu.quit");
         btnQuit.Style.Width = 98;
-        btnQuit.OnClick += (e) => Game.Shutdown();
+        btnQuit.OnClick += (e) => shutdown();
 
         footerButtons.AddChild(btnOptions);
-        if (!Game.HideQuitButton)
+        if (!hideQuitButton)
         {
             footerButtons.AddChild(btnQuit);
         }
@@ -133,4 +149,6 @@ public class MainMenuScreen(BetaSharp game) : UIScreen(game)
 
         Root.AddChild(copyrightPanel);
     }
+
+    public override void KeyTyped(int key, char character) { }
 }

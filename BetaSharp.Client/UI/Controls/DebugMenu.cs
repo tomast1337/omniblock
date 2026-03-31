@@ -1,17 +1,30 @@
 using BetaSharp.Client.Debug;
+using BetaSharp.Client.Entities;
+using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Client.UI.Controls;
 
 public class DebugMenu : UIElement
 {
-    private readonly BetaSharp _game;
+    private readonly GameOptions _options;
+    private readonly Func<ClientPlayerEntity?> _getPlayer;
+    private readonly Func<World?> _getWorld;
+    private readonly DebugComponentsStorage _debugStorage;
     private readonly UIElement _leftColumn;
     private readonly UIElement _rightColumn;
 
-    public DebugMenu(BetaSharp game)
+    public DebugMenu(
+        GameOptions options,
+        Func<ClientPlayerEntity?> getPlayer,
+        Func<World?> getWorld,
+        DebugComponentsStorage debugStorage)
     {
-        _game = game;
+        _options = options;
+        _getPlayer = getPlayer;
+        _getWorld = getWorld;
+        _debugStorage = debugStorage;
 
         Style.FlexDirection = FlexDirection.Row;
         Style.JustifyContent = Justify.SpaceBetween;
@@ -34,15 +47,15 @@ public class DebugMenu : UIElement
         while (_rightColumn.Children.Count > 0)
             _rightColumn.RemoveChild(_rightColumn.Children[0]);
 
-        if (_game.Options.ShowDebugInfo && _game.Player != null && _game.World != null)
+        DebugContext ctx = _debugStorage.Overlay.Context;
+        ctx.GCMonitor.AllowUpdating = _options.ShowDebugInfo;
+
+        if (_options.ShowDebugInfo && _getPlayer() != null && _getWorld() != null)
         {
             _leftColumn.Style.MarginTop = BetaSharp.HasPaidCheckTime > 0L ? 34 : 2;
             _rightColumn.Style.MarginTop = 2;
 
-            DebugContext ctx = _game.DebugComponentsStorage.Overlay.Context;
-            ctx.GCMonitor.AllowUpdating = true;
-
-            foreach (DebugComponent component in _game.DebugComponentsStorage.Overlay.Components)
+            foreach (DebugComponent component in _debugStorage.Overlay.Components)
             {
                 UIElement column = component.Right ? _rightColumn : _leftColumn;
                 foreach (DebugRowData row in component.GetRows(ctx))

@@ -1,4 +1,6 @@
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Client.Entities;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
@@ -8,13 +10,20 @@ namespace BetaSharp.Client.UI.Controls.HUD;
 
 public class Hotbar : UIElement
 {
-    private readonly BetaSharp _game;
+    private readonly Func<ClientPlayerEntity?> _getPlayer;
+    private readonly Func<PlayerController?> _getPlayerController;
+    private readonly IControllerState _controllerState;
     private readonly JavaRandom _rand = new();
     private int _updateCounter = 0;
 
-    public Hotbar(BetaSharp game)
+    public Hotbar(
+        Func<ClientPlayerEntity?> getPlayer,
+        Func<PlayerController?> getPlayerController,
+        IControllerState controllerState)
     {
-        _game = game;
+        _getPlayer = getPlayer;
+        _getPlayerController = getPlayerController;
+        _controllerState = controllerState;
         Style.Width = 182;
         Style.Height = 22;
     }
@@ -22,20 +31,21 @@ public class Hotbar : UIElement
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        Style.MarginBottom = _game.IsControllerMode ? 28 : 0;
+        Style.MarginBottom = _controllerState.IsControllerMode ? 28 : 0;
         _updateCounter++;
     }
 
     public override void Render(UIRenderer renderer)
     {
-        if (_game.Player == null) return;
+        ClientPlayerEntity? player = _getPlayer();
+        if (player == null) return;
 
         // --- 1. Background (Hotbar itself) ---
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/gui.png"));
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), 0, 0, 0, 0, 182, 22);
 
         // Selection highlight
-        InventoryPlayer inventory = _game.Player.inventory;
+        InventoryPlayer inventory = player.inventory;
         renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.selectedSlot * 20 - 1, -1, 0, 22, 24, 22);
 
         RenderStats(renderer);
@@ -50,14 +60,16 @@ public class Hotbar : UIElement
 
     private void RenderStats(UIRenderer renderer)
     {
-        if (!_game.PlayerController.shouldDrawHUD()) return;
+        ClientPlayerEntity? player = _getPlayer();
+        if (player == null) return;
+        if (!(_getPlayerController()?.shouldDrawHUD() ?? false)) return;
 
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/icons.png"));
 
-        int armorValue = _game.Player.getPlayerArmorValue();
-        int health = _game.Player.health;
-        int lastHealth = _game.Player.lastHealth;
-        bool heartBlink = _game.Player.hearts / 3 % 2 == 1 && _game.Player.hearts >= 10;
+        int armorValue = player.getPlayerArmorValue();
+        int health = player.health;
+        int lastHealth = player.lastHealth;
+        bool heartBlink = player.hearts / 3 % 2 == 1 && player.hearts >= 10;
 
         _rand.SetSeed(_updateCounter * 312871);
 
@@ -94,9 +106,9 @@ public class Hotbar : UIElement
         }
 
         // --- Air ---
-        if (_game.Player.isInFluid(Material.Water))
+        if (player.isInFluid(Material.Water))
         {
-            int air = _game.Player.air;
+            int air = player.air;
             int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
             int partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
 
@@ -110,7 +122,7 @@ public class Hotbar : UIElement
 
     private void RenderSlot(UIRenderer renderer, int slotIndex, int x, int y)
     {
-        ItemStack? stack = _game.Player.inventory.main[slotIndex];
+        ItemStack? stack = _getPlayer()?.inventory.main[slotIndex];
         if (stack == null) return;
 
         renderer.DrawItem(stack, x, y);

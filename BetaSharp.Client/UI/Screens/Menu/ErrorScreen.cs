@@ -5,7 +5,10 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class ErrorScreen(BetaSharp game, string title, params string[] messages) : UIScreen(game)
+public class ErrorScreen(
+    UIContext context,
+    string title,
+    params string[] messages) : UIScreen(context)
 {
     private readonly List<string> _messages = [.. messages];
 

@@ -1,21 +1,22 @@
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
-public class Vignette(BetaSharp game) : UIElement
+public class Vignette(Func<ClientPlayerEntity?> getPlayer) : UIElement
 {
-    private readonly BetaSharp _game = game;
     private float _prevVignetteBrightness = 1.0f;
 
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
 
-        if (_game.Player == null) return;
+        ClientPlayerEntity? player = getPlayer();
+        if (player == null) return;
 
-        float darkness = _game.Player.getBrightnessAtEyes(partialTicks);
+        float darkness = player.getBrightnessAtEyes(partialTicks);
         darkness = 1.0f - darkness;
         if (darkness < 0.0f) darkness = 0.0f;
         if (darkness > 1.0f) darkness = 1.0f;

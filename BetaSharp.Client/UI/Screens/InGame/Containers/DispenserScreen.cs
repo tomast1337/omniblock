@@ -1,5 +1,7 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Inventorys;
@@ -7,13 +9,13 @@ using BetaSharp.Screens;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
-public class DispenserScreen : ContainerScreen
+public class DispenserScreen(
+    UIContext context,
+    ClientPlayerEntity playerEntity,
+    PlayerController playerController,
+    InventoryPlayer inventory,
+    BlockEntityDispenser dispenser) : ContainerScreen(context, playerEntity, playerController, new DispenserScreenHandler(inventory, dispenser))
 {
-    public DispenserScreen(BetaSharp game, InventoryPlayer inventory, BlockEntityDispenser dispenser)
-        : base(game, new DispenserScreenHandler(inventory, dispenser))
-    {
-    }
-
     protected override void Init()
     {
         base.Init();

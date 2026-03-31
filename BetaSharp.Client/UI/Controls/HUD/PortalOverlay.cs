@@ -1,11 +1,11 @@
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
-public class PortalOverlay(BetaSharp game) : UIElement
+public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
 {
-    private readonly BetaSharp _game = game;
     private float _partialTicks;
 
     public override void Update(float partialTicks)
@@ -16,10 +16,11 @@ public class PortalOverlay(BetaSharp game) : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        if (_game.Player == null) return;
+        ClientPlayerEntity? player = getPlayer();
+        if (player == null) return;
 
-        float last = _game.Player.lastScreenDistortion;
-        float curr = _game.Player.changeDimensionCooldown;
+        float last = player.lastScreenDistortion;
+        float curr = player.changeDimensionCooldown;
         float portal = last + (curr - last) * _partialTicks;
 
         if (portal > 0.0F)

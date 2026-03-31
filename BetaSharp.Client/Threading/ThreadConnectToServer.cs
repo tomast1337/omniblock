@@ -6,7 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Threading;
 
-public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp game, string hostName, int port)
+public class ThreadConnectToServer(
+    ConnectingScreen connectingScreen,
+    ClientNetworkContext context,
+    string hostName,
+    int port)
 {
     private readonly ILogger<ThreadConnectToServer> _logger = Log.Instance.For<ThreadConnectToServer>();
 
@@ -24,14 +28,14 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
     {
         try
         {
-            connectingScreen.ClientHandler = new ClientNetworkHandler(game, hostName, port);
+            connectingScreen.ClientHandler = new ClientNetworkHandler(context, hostName, port);
 
             if (connectingScreen.IsCancelled)
             {
                 return;
             }
 
-            connectingScreen.ClientHandler.addToSendQueue(new HandshakePacket(game.Session.username));
+            connectingScreen.ClientHandler.AddToSendQueue(new HandshakePacket(context.Session.username));
         }
         catch (SocketException ex) when (ex.SocketErrorCode == SocketError.HostNotFound)
         {
@@ -40,7 +44,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
                 return;
             }
 
-            game.Navigate(new ConnectFailedScreen(game, "connect.failed", "disconnect.genericReason", "Unknown host \'" + hostName + "\'"));
+            context.Navigator.Navigate(context.Factory.CreateFailedScreen("connect.failed", "disconnect.genericReason", [$"Unknown host '{hostName}'"]));
         }
         catch (SocketException ex)
         {
@@ -49,7 +53,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
                 return;
             }
 
-            game.Navigate(new ConnectFailedScreen(game, "connect.failed", "disconnect.genericReason", ex.Message));
+            context.Navigator.Navigate(context.Factory.CreateFailedScreen("connect.failed", "disconnect.genericReason", [ex.Message]));
         }
         catch (Exception e)
         {
@@ -59,7 +63,7 @@ public class ThreadConnectToServer(ConnectingScreen connectingScreen, BetaSharp 
             }
 
             _logger.LogError(e, e.Message);
-            game.Navigate(new ConnectFailedScreen(game, "connect.failed", "disconnect.genericReason", e.ToString()));
+            context.Navigator.Navigate(context.Factory.CreateFailedScreen("connect.failed", "disconnect.genericReason", [e.ToString()]));
         }
     }
 }

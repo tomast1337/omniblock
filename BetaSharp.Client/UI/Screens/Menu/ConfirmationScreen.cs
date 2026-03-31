@@ -5,7 +5,14 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, string message, string confirmText, string cancelText, Action<bool> callback) : UIScreen(game)
+public class ConfirmationScreen(
+    UIContext context,
+    UIScreen parent,
+    string title,
+    string message,
+    string confirmText,
+    string cancelText,
+    Action<bool> callback) : UIScreen(context)
 {
     protected override void Init()
     {
@@ -32,7 +39,7 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         btnConfirm.OnClick += (e) =>
         {
             callback(true);
-            Navigator.Navigate(parent);
+            Context.Navigator.Navigate(parent);
         };
         buttonPanel.AddChild(btnConfirm);
 
@@ -42,7 +49,7 @@ public class ConfirmationScreen(BetaSharp game, UIScreen parent, string title, s
         btnCancel.OnClick += (e) =>
         {
             callback(false);
-            Navigator.Navigate(parent);
+            Context.Navigator.Navigate(parent);
         };
         buttonPanel.AddChild(btnCancel);
 

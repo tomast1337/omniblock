@@ -1,9 +1,9 @@
 using System.Reflection;
 using BetaSharp.Blocks;
-using BetaSharp.Client.Guis;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.UI;
 
@@ -20,26 +20,28 @@ public enum ControlIcon
 
 public record ActionTip(ControlIcon Icon, string Action);
 
+public record InGameTipContext(HitResult ObjectMouseOver, IBlockReader WorldReader, ItemStack HeldItem);
+
 public static class ControlTooltip
 {
     public static ControllerType ControllerType = ControllerType.XboxOne;
 
     private static readonly Dictionary<int, bool> s_usabilityCache = [];
 
-    internal static void PopulateInGameTips(BetaSharp game, List<ActionTip> tips)
+    internal static void PopulateInGameTips(InGameTipContext context, List<ActionTip> tips)
     {
         tips.Add(new ActionTip(ControlIcon.Y, "Inventory"));
 
         string? useAction = null;
-        ItemStack held = game.Player.inventory.getSelectedItem();
-        HitResult hit = game.ObjectMouseOver;
+        ItemStack held = context.HeldItem;
+        HitResult hit = context.ObjectMouseOver;
 
         if (hit.Type == HitResultType.TILE)
         {
             int blockX = hit.BlockX;
             int blockY = hit.BlockY;
             int blockZ = hit.BlockZ;
-            int blockId = game.World.Reader.GetBlockId(blockX, blockY, blockZ);
+            int blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
 
             if (blockId == Block.Chest.id || blockId == Block.Furnace.id || blockId == Block.LitFurnace.id || blockId == Block.CraftingTable.id || blockId == Block.Dispenser.id)
                 useAction = "Interact";
@@ -85,7 +87,7 @@ public static class ControlTooltip
             tips.Add(new ActionTip(ControlIcon.Rt, attackAction));
         }
 
-        if (game.Player.inventory.getSelectedItem() != null)
+        if (held != null)
             tips.Add(new ActionTip(ControlIcon.B, "Drop"));
     }
 

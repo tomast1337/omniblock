@@ -8,8 +8,8 @@ public class ControlsScreen : BaseOptionsScreen
 {
     private int _selectedKey = -1;
 
-    public ControlsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
-        : base(game, parent, options, "controls.title")
+    public ControlsScreen(UIContext context, UIScreen? parent)
+        : base(context, parent, "controls.title")
     {
         TitleText = "Controls";
     }

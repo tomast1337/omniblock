@@ -7,7 +7,7 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) : UIScreen(game)
+public class NewDebugComponentScreen(UIContext context, DebugEditorScreen parent) : UIScreen(context)
 {
     private Type? _selectedType;
     private ScrollView _scroll = null!;
@@ -19,7 +19,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         Root.Style.SetPadding(20);
         Root.Style.AlignItems = Align.Center;
 
-        Root.AddChild(new Background(Game.World != null ? BackgroundType.World : BackgroundType.Dirt));
+        Root.AddChild(new Background(Context.HasWorld ? BackgroundType.World : BackgroundType.Dirt));
 
         var title = new Label
         {
@@ -78,7 +78,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
         cancelButton.Enabled = true;
         cancelButton.Style.Width = 100;
         cancelButton.Style.SetMargin(2);
-        cancelButton.OnClick += (_) => Navigator.Navigate(parent);
+        cancelButton.OnClick += (_) => Context.Navigator.Navigate(parent);
         buttonContainer.AddChild(cancelButton);
     }
 
@@ -106,7 +106,7 @@ public class NewDebugComponentScreen(BetaSharp game, DebugEditorScreen parent) :
             var instance = (DebugComponent)Activator.CreateInstance(_selectedType)!;
             instance.Right = right;
             parent.AddComponent(instance);
-            Navigator.Navigate(parent);
+            Context.Navigator.Navigate(parent);
         }
     }
 }

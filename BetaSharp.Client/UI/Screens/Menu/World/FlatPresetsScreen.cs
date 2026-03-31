@@ -9,7 +9,7 @@ using BetaSharp.Worlds.Gen.Flat;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
-public class FlatPresetsScreen(BetaSharp game, CreateFlatWorldScreen parent) : UIScreen(game)
+public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) : UIScreen(context)
 {
     public class PresetItem(string name, string value, int iconId = -1)
     {
@@ -92,7 +92,7 @@ public class FlatPresetsScreen(BetaSharp game, CreateFlatWorldScreen parent) : U
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -128,7 +128,7 @@ public class FlatPresetsScreen(BetaSharp game, CreateFlatWorldScreen parent) : U
         if (_txfOptions.Text.Length > 0)
         {
             parent.GeneratorOptions = _txfOptions.Text;
-            Navigator.Navigate(parent);
+            Context.Navigator.Navigate(parent);
         }
     }
 }

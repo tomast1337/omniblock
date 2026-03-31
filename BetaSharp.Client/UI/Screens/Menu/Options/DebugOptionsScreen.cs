@@ -1,3 +1,4 @@
+using BetaSharp.Client.Debug;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Screens.InGame;
@@ -6,10 +7,16 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class DebugOptionsScreen : BaseOptionsScreen
 {
-    public DebugOptionsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
-        : base(game, parent, options, "options.debugTitle")
+    private readonly DebugComponentsStorage _debugStorage;
+
+    public DebugOptionsScreen(
+        UIContext context,
+        UIScreen? parent,
+        DebugComponentsStorage debugStorage)
+        : base(context, parent, "options.debugTitle")
     {
         TitleText = "Debug Options";
+        _debugStorage = debugStorage;
     }
 
     protected override IEnumerable<GameOption> GetOptions() => Options.DebugScreenOptions;
@@ -35,7 +42,7 @@ public class DebugOptionsScreen : BaseOptionsScreen
         editorBtn.OnClick += (e) =>
         {
             Options.SaveOptions();
-            Navigator.Navigate(new DebugEditorScreen(Game, this));
+            Context.Navigator.Navigate(new DebugEditorScreen(Context, this, _debugStorage));
         };
         list.AddChild(editorBtn);
 

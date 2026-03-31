@@ -7,7 +7,7 @@ using BetaSharp.Network.Packets.Play;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
-public class DownloadingTerrainScreen(BetaSharp game, ClientNetworkHandler networkHandler) : UIScreen(game)
+public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler networkHandler) : UIScreen(context)
 {
     private readonly ClientNetworkHandler _networkHandler = networkHandler;
     private int _tickCounter = 0;
@@ -36,10 +36,10 @@ public class DownloadingTerrainScreen(BetaSharp game, ClientNetworkHandler netwo
         ++_tickCounter;
         if (_tickCounter % 20 == 0)
         {
-            _networkHandler.addToSendQueue(KeepAlivePacket.Get());
+            _networkHandler.AddToSendQueue(KeepAlivePacket.Get());
         }
 
-        _networkHandler?.tick();
+        _networkHandler?.Tick();
     }
 
     public override void KeyTyped(int key, char character)

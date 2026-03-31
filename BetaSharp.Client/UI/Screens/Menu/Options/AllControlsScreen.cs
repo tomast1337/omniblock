@@ -5,8 +5,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class AllControlsScreen : BaseOptionsScreen
 {
-    public AllControlsScreen(BetaSharp game, UIScreen? parent, GameOptions options)
-        : base(game, parent, options, "options.controls")
+    public AllControlsScreen(UIContext context, UIScreen? parent)
+        : base(context, parent, "options.controls")
     {
         TitleText = "Controls";
     }
@@ -23,7 +23,7 @@ public class AllControlsScreen : BaseOptionsScreen
         btnKeyboard.Style.MarginBottom = 4;
         btnKeyboard.OnClick += (e) =>
         {
-            Navigator.Navigate(new ControlsScreen(Game, this, Options));
+            Context.Navigator.Navigate(new ControlsScreen(Context, this));
         };
         list.AddChild(btnKeyboard);
 
@@ -32,7 +32,7 @@ public class AllControlsScreen : BaseOptionsScreen
         btnController.Style.Width = 310;
         btnController.OnClick += (e) =>
         {
-            Navigator.Navigate(new ControllerControlsScreen(Game, this, Options));
+            Context.Navigator.Navigate(new ControllerControlsScreen(Context, this));
         };
         list.AddChild(btnController);
 

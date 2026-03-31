@@ -4,12 +4,11 @@ using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Util;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class SignEditScreen(BetaSharp game, BlockEntitySign sign) : UIScreen(game)
+public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? sendSignUpdate) : UIScreen(context)
 {
     private readonly BlockEntitySign _sign = sign;
     private int _editLine = 0;
@@ -88,14 +87,11 @@ public class SignEditScreen(BetaSharp game, BlockEntitySign sign) : UIScreen(gam
     {
         _sign.CurrentRow = -1; // Reset cursor
         _sign.markDirty();
-        Navigator.Navigate(null);
+        Context.Navigator.Navigate(null);
     }
 
     public override void Uninit()
     {
-        if (Game.World?.IsRemote ?? false)
-        {
-            Game.GetSendQueue()?.addToSendQueue(UpdateSignPacket.Get(_sign.X, _sign.Y, _sign.Z, _sign.Texts));
-        }
+        sendSignUpdate?.Invoke();
     }
 }

@@ -7,7 +7,11 @@ using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
-public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldFolderName) : UIScreen(game)
+public class RenameWorldScreen(
+    UIContext context,
+    WorldScreen parent,
+    string worldFolderName,
+    IWorldStorageSource saveLoader) : UIScreen(context)
 {
     private TextField _txfName = null!;
     private readonly string _worldFolderName = worldFolderName;
@@ -29,7 +33,7 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
         lName.Style.MarginBottom = 4;
         Root.AddChild(lName);
 
-        IWorldStorageSource worldStorage = Game.SaveLoader;
+        IWorldStorageSource worldStorage = saveLoader;
         WorldProperties? worldProperties = worldStorage.GetProperties(_worldFolderName);
         string currentWorldName = worldProperties?.LevelName ?? string.Empty;
 
@@ -49,7 +53,7 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
             if (_txfName.Text.Trim().Length > 0)
             {
                 worldStorage.Rename(_worldFolderName, _txfName.Text.Trim());
-                Navigator.Navigate(parent);
+                Context.Navigator.Navigate(parent);
             }
         };
         buttonPanel.AddChild(btnRename);
@@ -58,7 +62,7 @@ public class RenameWorldScreen(BetaSharp game, WorldScreen parent, string worldF
         btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

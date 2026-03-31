@@ -1,5 +1,4 @@
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -11,7 +10,10 @@ using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
-public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
+public class CreateWorldScreen(
+    UIContext context,
+    IWorldStorageSource saveLoader,
+    Action<string, string, WorldSettings> createWorld) : UIScreen(context)
 {
     private bool _moreOptions = false;
     private string _worldName = "New World";
@@ -70,14 +72,14 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
             _btnWorldType = CreateButton();
             _btnWorldType.Text = "World Type: " + _selectedWorldType.DisplayName;
             _btnWorldType.Style.MarginBottom = 4;
-            _btnWorldType.OnClick += (e) => Navigator.Navigate(new SelectWorldTypeScreen(Game, this, _selectedWorldType));
+            _btnWorldType.OnClick += (e) => Context.Navigator.Navigate(new SelectWorldTypeScreen(Context, this, _selectedWorldType));
             Root.AddChild(_btnWorldType);
 
             _btnCustomize = CreateButton();
             _btnCustomize.Text = "Customize";
             _btnCustomize.Style.MarginBottom = 10;
             _btnCustomize.Enabled = _selectedWorldType == WorldType.Flat;
-            _btnCustomize.OnClick += (e) => Navigator.Navigate(new CreateFlatWorldScreen(Game, this, GeneratorOptions));
+            _btnCustomize.OnClick += (e) => Context.Navigator.Navigate(new CreateFlatWorldScreen(Context, this, GeneratorOptions));
             Root.AddChild(_btnCustomize);
         }
 
@@ -92,7 +94,7 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         btnCreate.Text = translations.TranslateKey("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => CreateWorld();
+        btnCreate.OnClick += (e) => DoCreateWorld();
         buttonPanel.AddChild(btnCreate);
 
         string moreOptionsText = _moreOptions ? "Done" : "More World Options...";
@@ -111,7 +113,7 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Navigator.Navigate(new WorldScreen(Game));
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, saveLoader, createWorld));
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -123,7 +125,7 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         BuildUI();
     }
 
-    private void CreateWorld()
+    private void DoCreateWorld()
     {
         long worldSeed = new JavaRandom().NextLong();
         if (!string.IsNullOrEmpty(_seed))
@@ -153,13 +155,10 @@ public class CreateWorldScreen(BetaSharp game) : UIScreen(game)
         }
 
         if (string.IsNullOrEmpty(folderName)) folderName = "World";
-        folderName = GenerateUnusedFolderName(Game.SaveLoader, folderName);
-
-        Game.StatFileWriter.ReadStat(Stats.Stats.CreateWorldStat, 1);
-        Game.PlayerController = new PlayerControllerSP(Game);
+        folderName = GenerateUnusedFolderName(saveLoader, folderName);
 
         WorldSettings settings = new(worldSeed, _selectedWorldType, GeneratorOptions);
-        Game.StartWorld(folderName, _worldName, settings);
+        createWorld(folderName, _worldName, settings);
     }
 
     private static long CalculateJavaHash(string input)

@@ -1,5 +1,4 @@
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Controls.ListItems;
@@ -10,7 +9,10 @@ using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
-public class WorldScreen(BetaSharp game) : UIScreen(game)
+public class WorldScreen(
+    UIContext context,
+    IWorldStorageSource saveLoader,
+    Action<string, string, WorldSettings> loadWorld) : UIScreen(context)
 {
     private readonly List<WorldSaveInfo> _saveList = [];
     private ScrollView _scrollView = null!;
@@ -67,7 +69,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         btnCreate.Text = translations.TranslateKey("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => Navigator.Navigate(new CreateWorldScreen(Game));
+        btnCreate.OnClick += (e) => Context.Navigator.Navigate(new CreateWorldScreen(Context, saveLoader, loadWorld));
         row1.AddChild(btnCreate);
 
         buttonContainer.AddChild(row1);
@@ -94,7 +96,7 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         btnCancel.Text = translations.TranslateKey("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Navigator.Navigate(new MainMenuScreen(Game));
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(null);
         row2.AddChild(btnCancel);
 
         buttonContainer.AddChild(row2);
@@ -112,9 +114,8 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
 
     private void LoadSaves()
     {
-        IWorldStorageSource worldStorage = Game.SaveLoader;
         _saveList.Clear();
-        _saveList.AddRange(worldStorage.GetAll());
+        _saveList.AddRange(saveLoader.GetAll());
         _saveList.Sort();
         _selectedWorldIndex = -1;
     }
@@ -159,12 +160,8 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         WorldSaveInfo worldInfo = _saveList[index];
         if (worldInfo.IsUnsupported) return;
 
-        Game.StatFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
-        Game.PlayerController = new PlayerControllerSP(Game);
-
         string worldFileName = worldInfo.FileName ?? $"World{index}";
-        IWorldStorageSource worldStorage = Game.SaveLoader;
-        WorldProperties? props = worldStorage.GetProperties(worldFileName);
+        WorldProperties? props = saveLoader.GetProperties(worldFileName);
 
         WorldSettings settings;
         if (props != null)
@@ -176,14 +173,14 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
             settings = new WorldSettings(0L, WorldType.Default);
         }
 
-        Game.StartWorld(worldFileName, worldInfo.DisplayName, settings);
+        loadWorld(worldFileName, worldInfo.DisplayName, settings);
     }
 
     private void RenameSelected()
     {
         if (_selectedWorldIndex < 0) return;
         string fileName = _saveList[_selectedWorldIndex].FileName;
-        Navigator.Navigate(new RenameWorldScreen(Game, this, fileName));
+        Context.Navigator.Navigate(new RenameWorldScreen(Context, this, fileName, saveLoader));
     }
 
     private void DeleteSelected()
@@ -195,18 +192,17 @@ public class WorldScreen(BetaSharp game) : UIScreen(game)
         string deleteQuestion = translations.TranslateKey("selectWorld.deleteQuestion");
         string deleteWarning = "'" + worldInfo.DisplayName + "' " + translations.TranslateKey("selectWorld.deleteWarning");
 
-        Navigator.Navigate(new ConfirmationScreen(Game, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
+        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, deleteQuestion, deleteWarning, translations.TranslateKey("selectWorld.deleteButton"), translations.TranslateKey("gui.cancel"), (confirmed) =>
         {
             if (confirmed)
             {
-                IWorldStorageSource worldStorage = Game.SaveLoader;
-                worldStorage.Flush();
-                worldStorage.Delete(worldInfo.FileName);
+                saveLoader.Flush();
+                saveLoader.Delete(worldInfo.FileName);
                 LoadSaves();
                 PopulateWorldList();
                 UpdateButtons();
             }
-            Navigator.Navigate(this);
+            Context.Navigator.Navigate(this);
         }));
     }
 }

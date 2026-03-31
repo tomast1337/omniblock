@@ -1,12 +1,14 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Input;
+using BetaSharp.Client.Network;
 using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.NBT;
+using BetaSharp.Network.Packets.Play;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -133,27 +135,32 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openEditSignScreen(BlockEntitySign sign)
     {
-        Game.Navigate(new SignEditScreen(Game, sign));
+        Action? sendUpdate = null;
+        if (this is EntityClientPlayerMP mp && (Game.World?.IsRemote ?? false))
+        {
+            sendUpdate = () => mp.sendQueue.AddToSendQueue(UpdateSignPacket.Get(sign.X, sign.Y, sign.Z, sign.Texts));
+        }
+        Game.Navigate(new SignEditScreen(Game.UIContext, sign, sendUpdate));
     }
 
     public override void openChestScreen(IInventory inventory)
     {
-        Game.Navigate(new ChestScreen(Game, base.inventory, inventory));
+        Game.Navigate(new ChestScreen(Game.UIContext, this, Game.PlayerController, base.inventory, inventory));
     }
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.Navigate(new CraftingScreen(Game, inventory, world, x, y, z));
+        Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, inventory, (IWorldContext)world, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
-        Game.Navigate(new FurnaceScreen(Game, inventory, furnace));
+        Game.Navigate(new FurnaceScreen(Game.UIContext, this, Game.PlayerController, inventory, furnace));
     }
 
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
-        Game.Navigate(new DispenserScreen(Game, inventory, dispenser));
+        Game.Navigate(new DispenserScreen(Game.UIContext, this, Game.PlayerController, inventory, dispenser));
     }
 
     public override void sendPickup(Entity entity, int count)

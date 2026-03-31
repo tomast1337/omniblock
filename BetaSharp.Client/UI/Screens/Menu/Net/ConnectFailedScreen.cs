@@ -9,9 +9,17 @@ public class ConnectFailedScreen : UIScreen
 {
     private readonly string _errorMessage;
     private readonly string _errorDetail;
+    private readonly Action _stopInternalServer;
 
-    public ConnectFailedScreen(BetaSharp game, string messageKey, string detailKey, params object[]? formatArgs) : base(game)
+    public ConnectFailedScreen(
+        UIContext context,
+        Action stopInternalServer,
+        string messageKey,
+        string detailKey,
+        params object[]? formatArgs) : base(context)
     {
+        _stopInternalServer = stopInternalServer;
+
         TranslationStorage translations = TranslationStorage.Instance;
         _errorMessage = translations.TranslateKey(messageKey);
 
@@ -27,7 +35,7 @@ public class ConnectFailedScreen : UIScreen
 
     protected override void Init()
     {
-        Game.StopInternalServer();
+        _stopInternalServer();
 
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
@@ -55,7 +63,7 @@ public class ConnectFailedScreen : UIScreen
         Button btnToMenu = CreateButton();
         btnToMenu.Text = TranslationStorage.Instance.TranslateKey("gui.toMenu");
         btnToMenu.Style.Width = 150;
-        btnToMenu.OnClick += (e) => Navigator.Navigate(new MainMenuScreen(Game));
+        btnToMenu.OnClick += (e) => Context.Navigator.Navigate(null);
         Root.AddChild(btnToMenu);
     }
 }

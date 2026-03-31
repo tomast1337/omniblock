@@ -6,7 +6,11 @@ using BetaSharp.Client.UI.Layout.Flexbox;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class EditServerScreen(BetaSharp game, MultiplayerScreen parent, ServerData serverData, bool isEditing) : UIScreen(game)
+public class EditServerScreen(
+    UIContext context,
+    MultiplayerScreen parent,
+    ServerData serverData,
+    bool isEditing) : UIScreen(context)
 {
     private TextField _txfName = null!;
     private TextField _txfAddress = null!;
@@ -54,14 +58,14 @@ public class EditServerScreen(BetaSharp game, MultiplayerScreen parent, ServerDa
             serverData.Name = _txfName.Text;
             serverData.Ip = _txfAddress.Text;
             parent.ConfirmEdit(serverData, isEditing);
-            Navigator.Navigate(parent);
+            Context.Navigator.Navigate(parent);
         };
         buttonPanel.AddChild(btnDone);
 
         Button btnCancel = CreateButton();
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 100;
-        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

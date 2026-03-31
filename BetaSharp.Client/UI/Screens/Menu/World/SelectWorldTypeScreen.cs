@@ -7,7 +7,10 @@ using BetaSharp.Worlds;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
-public class SelectWorldTypeScreen(BetaSharp game, CreateWorldScreen parent, WorldType currentType) : UIScreen(game)
+public class SelectWorldTypeScreen(
+    UIContext context,
+    CreateWorldScreen parent,
+    WorldType currentType) : UIScreen(context)
 {
     private ScrollView _scrollView = null!;
     private readonly List<WorldType> _types = [.. WorldType.WorldTypes.Where(t => t != null && t.CanBeCreated)];
@@ -45,7 +48,7 @@ public class SelectWorldTypeScreen(BetaSharp game, CreateWorldScreen parent, Wor
             if (_selectedIndex >= 0)
             {
                 parent.SetWorldType(_types[_selectedIndex]);
-                Navigator.Navigate(parent);
+                Context.Navigator.Navigate(parent);
             }
         };
         buttonPanel.AddChild(btnDone);
@@ -54,7 +57,7 @@ public class SelectWorldTypeScreen(BetaSharp game, CreateWorldScreen parent, Wor
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

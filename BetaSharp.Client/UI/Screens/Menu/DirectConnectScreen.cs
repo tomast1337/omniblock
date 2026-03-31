@@ -7,7 +7,11 @@ using BetaSharp.Client.UI.Screens.Menu.Net;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
-public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData serverData) : UIScreen(game)
+public class DirectConnectScreen(
+    UIContext context,
+    UIScreen parent,
+    ServerData serverData,
+    ClientNetworkContext networkContext) : UIScreen(context)
 {
     private TextField _txfAddress = null!;
 
@@ -29,7 +33,7 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         _txfAddress = new TextField();
         _txfAddress.Style.Width = 200;
         _txfAddress.Style.MarginBottom = 20;
-        _txfAddress.Text = Game.Options.LastServer;
+        _txfAddress.Text = Context.Options.LastServer;
         Root.AddChild(_txfAddress);
 
         Panel buttonPanel = new();
@@ -42,8 +46,8 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         btnJoin.OnClick += (e) =>
         {
             serverData.Ip = _txfAddress.Text;
-            Game.Options.LastServer = _txfAddress.Text;
-            Game.Options.SaveOptions();
+            Context.Options.LastServer = _txfAddress.Text;
+            Context.Options.SaveOptions();
             ConnectToServer(_txfAddress.Text);
         };
         buttonPanel.AddChild(btnJoin);
@@ -51,7 +55,7 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         Button btnCancel = CreateButton();
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 100;
-        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -63,6 +67,6 @@ public class DirectConnectScreen(BetaSharp game, UIScreen parent, ServerData ser
         string host = parts[0];
         int portNum = 25565;
         if (parts.Length > 1) int.TryParse(parts[1], out portNum);
-        Navigator.Navigate(new ConnectingScreen(Game, host, portNum));
+        Context.Navigator.Navigate(new ConnectingScreen(Context, networkContext, host, portNum));
     }
 }

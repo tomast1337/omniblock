@@ -1,14 +1,21 @@
+using BetaSharp.Client.Debug;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Screens.Menu;
 using BetaSharp.Client.UI.Screens.Menu.Options;
 using BetaSharp.Stats;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
+public class IngameMenuScreen(
+    UIContext context,
+    StatFileWriter statFileWriter,
+    DebugComponentsStorage debugStorage,
+    Action onResume,
+    string quitButtonText,
+    Action quit,
+    Func<bool> isSavingComplete) : UIScreen(context)
 {
     protected override void Init()
     {
@@ -29,8 +36,8 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
         btnBack.Text = "Back to Game";
         btnBack.OnClick += (e) =>
         {
-            Navigator.Navigate(null);
-            Game.SetIngameFocus();
+            Context.Navigator.Navigate(null);
+            onResume();
         };
         btnBack.Style.MarginBottom = 4;
         Root.AddChild(btnBack);
@@ -45,12 +52,12 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
         Button btnAchievements = CreateButton();
         btnAchievements.Text = StatCollector.TranslateToLocal("gui.achievements");
         btnAchievements.Style.Width = 98;
-        btnAchievements.OnClick += (e) => Navigator.Navigate(new AchievementsScreen(Game, this, Game.StatFileWriter));
+        btnAchievements.OnClick += (e) => Context.Navigator.Navigate(new AchievementsScreen(Context, this, statFileWriter));
 
         Button btnStats = CreateButton();
         btnStats.Text = StatCollector.TranslateToLocal("gui.stats");
         btnStats.Style.Width = 98;
-        btnStats.OnClick += (e) => Navigator.Navigate(new StatsScreen(Game, this, Game.StatFileWriter));
+        btnStats.OnClick += (e) => Context.Navigator.Navigate(new StatsScreen(Context, this, statFileWriter));
 
         rowStats.AddChild(btnAchievements);
         rowStats.AddChild(btnStats);
@@ -58,29 +65,21 @@ public class IngameMenuScreen(BetaSharp game) : UIScreen(game)
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
-        btnOptions.OnClick += (e) => Navigator.Navigate(new OptionsScreen(Game, this, Game.Options));
+        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, debugStorage));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
 
-        string quitText = (Game.IsMultiplayerWorld() && Game.InternalServer == null) ? "Disconnect" : "Save and quit to title";
         Button btnQuit = CreateButton();
-        btnQuit.Text = quitText;
+        btnQuit.Text = quitButtonText;
         btnQuit.OnClick += (e) =>
         {
-            Game.StatFileWriter.ReadStat(Stats.Stats.LeaveGameStat, 1);
-            if (Game.IsMultiplayerWorld())
-            {
-                Game.World.Disconnect();
-            }
-
-            Game.StopInternalServer();
-            Game.ChangeWorld(null!);
-            Game.Options.ShowDebugInfo = false;
-            Navigator.Navigate(new MainMenuScreen(Game));
+            statFileWriter.ReadStat(global::BetaSharp.Stats.Stats.LeaveGameStat, 1);
+            quit();
+            Context.Navigator.Navigate(null);
         };
         Root.AddChild(btnQuit);
 
-        SavingIndicator savingIndicator = new(Game.World.AttemptSaving);
+        SavingIndicator savingIndicator = new(isSavingComplete);
         savingIndicator.Style.Position = PositionType.Absolute;
         savingIndicator.Style.Left = 8;
         savingIndicator.Style.Bottom = 8;

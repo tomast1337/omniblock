@@ -12,7 +12,7 @@ public class AchievementToast : UIElement
     private bool _isInfo;
     private const long Duration = 3000L;
 
-    public AchievementToast(BetaSharp game)
+    public AchievementToast()
     {
         Style.Width = 160;
         Style.Height = 32;

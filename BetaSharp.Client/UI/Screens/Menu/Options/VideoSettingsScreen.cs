@@ -3,7 +3,7 @@ using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class VideoSettingsScreen(BetaSharp game, UIScreen? parent, GameOptions options) : BaseOptionsScreen(game, parent, options, "options.videoTitle")
+public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.videoTitle")
 {
     protected override IEnumerable<GameOption> GetOptions() => Options.VideoScreenOptions;
 

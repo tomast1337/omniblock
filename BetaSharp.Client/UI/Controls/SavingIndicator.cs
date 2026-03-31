@@ -4,9 +4,8 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.UI.Controls;
 
-public class SavingIndicator(Func<int, bool> attemptSaving) : UIElement
+public class SavingIndicator(Func<bool> isSavingComplete) : UIElement
 {
-    private int _saveStepTimer = 0;
     private float _tickCounter = 0;
 
     public override void Update(float partialTicks)
@@ -17,7 +16,7 @@ public class SavingIndicator(Func<int, bool> attemptSaving) : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        bool isSavingActive = !attemptSaving(_saveStepTimer++);
+        bool isSavingActive = !isSavingComplete();
 
         if (isSavingActive || _tickCounter < 20)
         {

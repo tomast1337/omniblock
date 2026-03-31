@@ -43,6 +43,7 @@ using BetaSharp.Worlds.Storage;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
@@ -50,7 +51,7 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
-public partial class BetaSharp : IScreenNavigator
+public partial class BetaSharp : IScreenNavigator, IControllerState, IClientPlayerHost, IWorldHost
 {
     public static string Version { get; private set; } = UnknownVersion;
     public static string BetaSharpDir => PathHelper.GetAppDir(nameof(BetaSharp));
@@ -61,13 +62,17 @@ public partial class BetaSharp : IScreenNavigator
 
     // Game state
     public Timer Timer { get; } = new(20.0F);
+    public int TicksRan { get; private set; }
     public World World { get; private set; }
+    World? IWorldHost.World => World;
+    void IWorldHost.ChangeWorld(World? world) => ChangeWorld(world);
+    ClientPlayerEntity IClientPlayerHost.Player => Player;
     public Session Session { get; private set; }
     public GameOptions Options { get; private set; }
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
     public StatFileWriter StatFileWriter { get; private set; }
-    public int TicksRan { get; private set; }
+
     public volatile bool Running = true;
     public volatile bool IsGamePaused;
 
@@ -92,6 +97,7 @@ public partial class BetaSharp : IScreenNavigator
     public string DebugText { get; private set; } = "";
 
     // UI
+    public UIContext UIContext { get; private set; } = null!;
     public UIScreen? CurrentScreen { get; private set; }
     public HUD HUD { get; private set; } = null!;
     public bool IsMainMenuOpen => CurrentScreen is MainMenuScreen;
@@ -276,6 +282,20 @@ public partial class BetaSharp : IScreenNavigator
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
         TextRenderer = new TextRenderer(Options, TextureManager);
+
+        UIContext = new UIContext(
+            Options,
+            TextRenderer,
+            TextureManager,
+            playClickSound: () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
+            displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
+            controllerState: this,
+            VirtualCursor,
+            Timer,
+            navigator: this,
+            hasWorld: () => World != null
+        );
+
         SkinManager = new SkinManager(TextureManager);
         WaterColors.loadColors(TextureManager.GetColors("/misc/watercolor.png"));
         GrassColors.loadColors(TextureManager.GetColors("/misc/grasscolor.png"));
@@ -364,17 +384,26 @@ public partial class BetaSharp : IScreenNavigator
             ])).LoadAllAsync();
 
         CheckGLError("Post startup");
-        HUD = new HUD(this);
+        HUD = new HUD(UIContext, new HUDContext(
+            () => Player,
+            () => PlayerController,
+            () => World,
+            DebugComponentsStorage,
+            () => CurrentScreen == null && Player != null && World != null
+                ? new InGameTipContext(ObjectMouseOver, World.Reader, Player.inventory.getSelectedItem())
+                : null,
+            () => IsMainMenuOpen
+        ));
         PostProcessManager = new PostProcessManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
 
         StatFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         if (_serverName != null)
         {
-            Navigate(new ConnectingScreen(this, _serverName, _serverPort));
+            Navigate(new ConnectingScreen(UIContext, CreateNetworkContext(), _serverName, _serverPort));
         }
         else
         {
-            Navigate(new MainMenuScreen(this));
+            Navigate(CreateMainMenuScreen());
         }
     }
 
@@ -429,6 +458,17 @@ public partial class BetaSharp : IScreenNavigator
         tess.draw();
     }
 
+    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this);
+
+    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, HideQuitButton, SaveLoader, LoadWorldFromMenu, CreateNetworkContext(), TexturePackList, TextureManager, DebugComponentsStorage, Shutdown);
+
+    private void LoadWorldFromMenu(string dir, string name, WorldSettings settings)
+    {
+        StatFileWriter.ReadStat(Stats.Stats.LoadWorldStat, 1);
+        PlayerController = new PlayerControllerSP(this);
+        StartWorld(dir, name, settings);
+    }
+
     public void Navigate(UIScreen? newScreen)
     {
         Mouse.ClearEvents();
@@ -448,11 +488,11 @@ public partial class BetaSharp : IScreenNavigator
         StatFileWriter.SyncStats();
         if (newScreen == null && World == null)
         {
-            newScreen = new MainMenuScreen(this);
+            newScreen = CreateMainMenuScreen();
         }
         else if (newScreen == null && Player.health <= 0)
         {
-            newScreen = new GameOverScreen(this);
+            newScreen = new GameOverScreen(UIContext, (int)Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
         }
 
         if (newScreen is MainMenuScreen)
@@ -476,7 +516,6 @@ public partial class BetaSharp : IScreenNavigator
         if (newScreen != null)
         {
             SetIngameNotInFocus();
-            newScreen.Navigator = this;
             newScreen.Initialize();
             SkipRenderWorld = false;
         }
@@ -786,7 +825,7 @@ public partial class BetaSharp : IScreenNavigator
                 catch (OutOfMemoryException)
                 {
                     CrashCleanup();
-                    Navigate(new ErrorScreen(this, "Out of memory!", "Minecraft has run out of memory."));
+                    Navigate(new ErrorScreen(UIContext, "Out of memory!", "Minecraft has run out of memory."));
                 }
                 finally
                 {
@@ -932,7 +971,16 @@ public partial class BetaSharp : IScreenNavigator
     {
         if (CurrentScreen == null)
         {
-            Navigate(new IngameMenuScreen(this));
+            bool isMP = IsMultiplayerWorld() && InternalServer == null;
+            string quitText = isMP ? "Disconnect" : "Save and quit to title";
+            int saveStep = 0;
+            Navigate(new IngameMenuScreen(UIContext, StatFileWriter, DebugComponentsStorage, SetIngameFocus, quitText, () =>
+            {
+                if (IsMultiplayerWorld()) World.Disconnect();
+                StopInternalServer();
+                ChangeWorld(null);
+                Options.ShowDebugInfo = false;
+            }, () => World?.AttemptSaving(saveStep++) ?? false));
         }
     }
 
@@ -1216,7 +1264,7 @@ public partial class BetaSharp : IScreenNavigator
             }
             else if (Player.isSleeping() && World != null && World.IsRemote)
             {
-                Navigate(new SleepScreen(this));
+                Navigate(new SleepScreen(UIContext, Player));
             }
         }
         else if (CurrentScreen is SleepScreen && !Player.isSleeping())
@@ -1453,7 +1501,7 @@ public partial class BetaSharp : IScreenNavigator
                     {
                         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))
                         {
-                            Navigate(new DebugEditorScreen(this, null));
+                            Navigate(new DebugEditorScreen(UIContext, null, DebugComponentsStorage));
                         }
                         else
                         {
@@ -1478,7 +1526,7 @@ public partial class BetaSharp : IScreenNavigator
 
                     if (Keyboard.getEventKey() == Options.KeyBindInventory.keyCode)
                     {
-                        Navigate(new InventoryScreen(this, Player));
+                        Navigate(new InventoryScreen(UIContext, Player, PlayerController, () => CurrentScreen));
                     }
 
                     if (Keyboard.getEventKey() == Options.KeyBindDrop.keyCode)
@@ -1488,12 +1536,12 @@ public partial class BetaSharp : IScreenNavigator
 
                     if (Keyboard.getEventKey() == Options.KeyBindChat.keyCode)
                     {
-                        Navigate(new ChatScreen(this));
+                        Navigate(new ChatScreen(UIContext, HUD.Chat, Player));
                     }
 
                     if (Keyboard.getEventKey() == Options.KeyBindCommand.keyCode)
                     {
-                        Navigate(new ChatScreen(this, "/"));
+                        Navigate(new ChatScreen(UIContext, HUD.Chat, Player, "/"));
                     }
                 }
 
@@ -1560,7 +1608,7 @@ public partial class BetaSharp : IScreenNavigator
     public void StartWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         ChangeWorld(null);
-        Navigate(new LevelLoadingScreen(this, worldName, settings));
+        Navigate(new LevelLoadingScreen(UIContext, CreateNetworkContext(), worldName, settings, StartInternalServer, () => InternalServer));
     }
 
     public void ChangeWorld(World? newWorld, string loadingText = "", EntityPlayer? targetEntity = null)

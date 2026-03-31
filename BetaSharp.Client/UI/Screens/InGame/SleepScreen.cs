@@ -1,3 +1,4 @@
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -5,7 +6,7 @@ using BetaSharp.Network.Packets.C2SPlay;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
-public class SleepScreen(BetaSharp game) : UIScreen(game)
+public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScreen(context)
 {
     public override bool PausesGame => false;
 
@@ -31,7 +32,7 @@ public class SleepScreen(BetaSharp game) : UIScreen(game)
         if (key == Input.Keyboard.KEY_ESCAPE)
         {
             SendStopSleepingCommand();
-            Navigator.Navigate(null);
+            Context.Navigator.Navigate(null);
         }
         else
         {
@@ -41,9 +42,9 @@ public class SleepScreen(BetaSharp game) : UIScreen(game)
 
     private void SendStopSleepingCommand()
     {
-        if (Game.Player is EntityClientPlayerMP playerMP)
+        if (player is EntityClientPlayerMP playerMP)
         {
-            playerMP.sendQueue.addToSendQueue(ClientCommandC2SPacket.Get(Game.Player, 3));
+            playerMP.sendQueue.AddToSendQueue(ClientCommandC2SPacket.Get(player, 3));
         }
     }
 }

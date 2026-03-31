@@ -7,7 +7,10 @@ using BetaSharp.Worlds.Gen.Flat;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
-public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, string generatorOptions) : UIScreen(game)
+public class CreateFlatWorldScreen(
+    UIContext context,
+    CreateWorldScreen parent,
+    string generatorOptions) : UIScreen(context)
 {
     private ScrollView _scrollView = null!;
     private readonly List<FlatLayerListItem> _listItems = [];
@@ -54,7 +57,7 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         btnPresets.Text = "Presets";
         btnPresets.Style.Width = 150;
         btnPresets.Style.SetMargin(2);
-        btnPresets.OnClick += (e) => Navigator.Navigate(new FlatPresetsScreen(Game, this));
+        btnPresets.OnClick += (e) => Context.Navigator.Navigate(new FlatPresetsScreen(Context, this));
         row1.AddChild(btnPresets);
 
         buttonPanel.AddChild(row1);
@@ -69,7 +72,7 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         btnDone.OnClick += (e) =>
         {
             parent.GeneratorOptions = _generatorInfo.ToString();
-            Navigator.Navigate(parent);
+            Context.Navigator.Navigate(parent);
         };
         row2.AddChild(btnDone);
 
@@ -77,7 +80,7 @@ public class CreateFlatWorldScreen(BetaSharp game, CreateWorldScreen parent, str
         btnCancel.Text = "Cancel";
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Navigator.Navigate(parent);
+        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         row2.AddChild(btnCancel);
 
         buttonPanel.AddChild(row2);

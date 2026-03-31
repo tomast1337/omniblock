@@ -1,17 +1,27 @@
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Entities;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
 public class InventoryScreen : ContainerScreen
 {
     private EntityPreview _playerPreview = null!;
+    private readonly ClientPlayerEntity _player;
+    private readonly Func<UIScreen?> _getCurrentScreen;
 
-    public InventoryScreen(BetaSharp game, EntityPlayer player) : base(game, player.playerScreenHandler)
+    public InventoryScreen(
+        UIContext context,
+        ClientPlayerEntity player,
+        PlayerController playerController,
+        Func<UIScreen?> getCurrentScreen)
+        : base(context, player, playerController, player.playerScreenHandler)
     {
+        _player = player;
+        _getCurrentScreen = getCurrentScreen;
         player.increaseStat(global::BetaSharp.Achievements.OpenInventory, 1);
     }
 
@@ -33,9 +43,9 @@ public class InventoryScreen : ContainerScreen
         background.Style.Position = PositionType.Absolute;
         _containerPanel.AddChild(background);
 
-        _playerPreview = new EntityPreview(() => Game.CurrentScreen)
+        _playerPreview = new EntityPreview(_getCurrentScreen)
         {
-            Entity = Game.Player,
+            Entity = _player,
             Scale = 30.0f
         };
         _playerPreview.Style.Position = PositionType.Absolute;

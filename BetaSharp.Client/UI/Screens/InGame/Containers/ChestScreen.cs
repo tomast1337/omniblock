@@ -1,4 +1,6 @@
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Inventorys;
@@ -12,8 +14,13 @@ public class ChestScreen : ContainerScreen
     private readonly IInventory _lowerInventory;
     private readonly int _inventoryRows;
 
-    public ChestScreen(BetaSharp game, IInventory upperInventory, IInventory lowerInventory)
-        : base(game, new GenericContainerScreenHandler(upperInventory, lowerInventory))
+    public ChestScreen(
+        UIContext context,
+        ClientPlayerEntity player,
+        PlayerController playerController,
+        IInventory upperInventory,
+        IInventory lowerInventory)
+        : base(context, player, playerController, new GenericContainerScreenHandler(upperInventory, lowerInventory))
     {
         _upperInventory = upperInventory;
         _lowerInventory = lowerInventory;

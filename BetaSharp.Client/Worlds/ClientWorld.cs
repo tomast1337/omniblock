@@ -57,7 +57,7 @@ public class ClientWorld : World
             }
         }
 
-        _networkHandler.tick();
+        _networkHandler.Tick();
 
         for (int i = 0; i < _blockResets.Count; ++i)
         {
@@ -203,7 +203,7 @@ public class ClientWorld : World
         return false;
     }
 
-    public override void Disconnect() => _networkHandler.sendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));
+    public override void Disconnect() => _networkHandler.SendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));
 
 
 }

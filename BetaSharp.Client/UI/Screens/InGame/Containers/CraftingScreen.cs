@@ -1,4 +1,6 @@
+using BetaSharp.Client.Entities;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Inventorys;
@@ -7,13 +9,17 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
-public class CraftingScreen : ContainerScreen
+public class CraftingScreen(
+    UIContext context,
+    ClientPlayerEntity playerEntity,
+    PlayerController playerController,
+    InventoryPlayer playerInventory,
+    IWorldContext world,
+    int posX,
+    int posY,
+    int posZ) :
+    ContainerScreen(context, playerEntity, playerController, new CraftingScreenHandler(playerInventory, world, posX, posY, posZ))
 {
-    public CraftingScreen(BetaSharp game, InventoryPlayer player, IWorldContext world, int posX, int posY, int posZ)
-        : base(game, new CraftingScreenHandler(player, world, posX, posY, posZ))
-    {
-    }
-
     protected override void Init()
     {
         base.Init();
