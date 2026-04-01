@@ -308,7 +308,7 @@ public abstract class World : IWorldContext
 
         if (loadingDisplay != null)
         {
-            loadingDisplay.progressStartNoAbort("Saving level");
+            loadingDisplay.BeginLoadingPersistent("Saving level");
         }
 
         Profiler.PushGroup("saveLevel");
@@ -316,7 +316,7 @@ public abstract class World : IWorldContext
         Profiler.PopGroup();
         if (loadingDisplay != null)
         {
-            loadingDisplay.progressStage("Saving chunks");
+            loadingDisplay.SetStage("Saving chunks");
         }
 
         Profiler.Start("saveChunks");

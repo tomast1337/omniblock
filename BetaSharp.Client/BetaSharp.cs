@@ -1266,8 +1266,8 @@ public partial class BetaSharp :
     {
         StatFileWriter.Tick();
         StatFileWriter.SyncStats();
-        _loadingScreen.printText(loadingText);
-        _loadingScreen.progressStage("");
+        _loadingScreen.BeginLoading(loadingText);
+        _loadingScreen.SetStage("");
         SoundManager.PlayStreaming(null!, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
         World = newWorld!;
@@ -1411,8 +1411,8 @@ public partial class BetaSharp :
 
     private void ShowText(string loadingText)
     {
-        _loadingScreen.printText(loadingText);
-        _loadingScreen.progressStage("Building terrain");
+        _loadingScreen.BeginLoading(loadingText);
+        _loadingScreen.SetStage("Building terrain");
         short loadingRadius = 128;
         int loadedChunkCount = 0;
         int totalChunksToLoad = loadingRadius * 2 / 16 + 1;
@@ -1429,7 +1429,7 @@ public partial class BetaSharp :
         {
             for (int zOffset = -loadingRadius; zOffset <= loadingRadius; zOffset += 16)
             {
-                _loadingScreen.setLoadingProgress(loadedChunkCount++ * 100 / totalChunksToLoad);
+                _loadingScreen.SetProgress(loadedChunkCount++ * 100 / totalChunksToLoad);
                 World.Reader.GetBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
 
                 while (World.Lighting.DoLightingUpdates())
@@ -1438,7 +1438,7 @@ public partial class BetaSharp :
             }
         }
 
-        _loadingScreen.progressStage("Simulating world for a bit");
+        _loadingScreen.SetStage("Simulating world for a bit");
         World.TickChunks();
     }
 
