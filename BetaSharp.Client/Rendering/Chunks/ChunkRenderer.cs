@@ -5,16 +5,12 @@ using BetaSharp.Profiling;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
 
 public class ChunkRenderer : IChunkVisibilityVisitor
 {
-    private readonly ILogger<ChunkRenderer> _logger = Log.Instance.For<ChunkRenderer>();
-
     static ChunkRenderer()
     {
         var offsets = new List<Vector3D<int>>();
@@ -72,7 +68,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
-    private readonly Core.Shader _chunkShader;
+    private readonly Shader _chunkShader;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
     private int _currentIndex;
@@ -315,7 +311,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         for (int i = 0; i < maxChunks; i++)
         {
-            if (!_meshGenerator.TryDequeueMesh(out var mesh)) break;
+            if (!_meshGenerator.TryDequeueMesh(out MeshBuildResult mesh)) break;
 
             if (IsChunkInRenderDistance(mesh.Pos, viewPos))
             {

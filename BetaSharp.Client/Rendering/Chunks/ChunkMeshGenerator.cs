@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Blocks;
+using BetaSharp.Client.Rendering.Chunks.Occlusion;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -15,7 +16,7 @@ internal struct MeshBuildResult : IDisposable
     public PooledList<ChunkVertex> Solid;
     public PooledList<ChunkVertex> Translucent;
     public bool IsLit;
-    public Occlusion.ChunkVisibilityStore VisibilityData;
+    public ChunkVisibilityStore VisibilityData;
     public Vector3D<int> Pos;
     public long Version;
 
@@ -132,9 +133,13 @@ internal class ChunkMeshGenerator : IDisposable
                         int blockPass = b.getRenderLayer();
 
                         if (blockPass != pass)
+                        {
                             hasNextPass = true;
+                        }
                         else
+                        {
                             BlockRenderer.RenderBlockByRenderType(cache, cache, b, new BlockPos(x, y, z), tess, doVariance: alternateBlocks);
+                        }
                     }
                 }
             }
@@ -149,16 +154,20 @@ internal class ChunkMeshGenerator : IDisposable
                 list.AddRange(verts.Span);
 
                 if (pass == 0)
+                {
                     result.Solid = list;
+                }
                 else
+                {
                     result.Translucent = list;
+                }
             }
 
             if (!hasNextPass) break;
         }
 
         result.IsLit = cache.IsLit;
-        result.VisibilityData = Occlusion.ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
+        result.VisibilityData = ChunkVisibilityComputer.Compute(cache, pos.X, pos.Y, pos.Z);
         return result;
     }
 
