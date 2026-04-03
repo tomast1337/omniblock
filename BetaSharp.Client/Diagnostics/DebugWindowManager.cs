@@ -1,5 +1,6 @@
 using System.Numerics;
 using BetaSharp.Client.Diagnostics.Windows;
+using BetaSharp.Profiling;
 using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics;
@@ -104,42 +105,53 @@ internal sealed class DebugWindowManager
             ImGuiP.DockBuilderFinish(dockspaceId);
         }
 
-        DrawDashboard();
+        using (Profiler.Begin("Dashboard"))
+        {
+            DrawDashboard();
+        }
 
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         ImGui.SetNextWindowBgAlpha(0.0f);
 
-        // NoMouseInputs: prevents ImGui from capturing mouse events over the game viewport,
-        // so clicks pass through to the game's own input queue.
-        ImGuiWindowFlags gwFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMouseInputs;
-        if (ImGui.Begin("Game Viewport", gwFlags))
+        // Note: NoTitleBar is intentionally omitted so the window remains draggable when undocked.
+        // NoMouseInputs is intentionally omitted: when in-game, ImGuiConfigFlags.NoMouse is already
+        // set globally, so it's redundant; when the debug UI is open, we need mouse events to reach
+        // the title bar so the window can be dragged.
+        ImGuiWindowFlags gwFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollWithMouse;
+        using (Profiler.Begin("GameViewport"))
         {
-            Vector2 contentSize = ImGui.GetContentRegionAvail();
-            ViewportSize = contentSize;
-            ViewportPos = ImGui.GetCursorScreenPos();
-
-            // Derive focus from whether the mouse is physically inside the viewport rect,
-            // since NoMouseInputs prevents IsWindowFocused() from ever being true.
-            GameViewportFocused = ImGui.IsMouseHoveringRect(ViewportPos, ViewportPos + contentSize, false);
-            if (ViewportTextureId != 0 && contentSize.X > 0 && contentSize.Y > 0)
+            if (ImGui.Begin("Game Viewport", gwFlags))
             {
-                // Y-flipped UVs because OpenGL FBOs have origin at bottom-left.
-                unsafe
+                Vector2 contentSize = ImGui.GetContentRegionAvail();
+                ViewportSize = contentSize;
+                ViewportPos = ImGui.GetCursorScreenPos();
+
+                // Derive focus from whether the mouse is physically inside the viewport rect,
+                // since NoMouseInputs prevents IsWindowFocused() from ever being true.
+                GameViewportFocused = ImGui.IsMouseHoveringRect(ViewportPos, ViewportPos + contentSize, false);
+                if (ViewportTextureId != 0 && contentSize.X > 0 && contentSize.Y > 0)
                 {
-                    ImGui.Image(new ImTextureRef(null, new ImTextureID((ulong)ViewportTextureId)), contentSize, new Vector2(0, 1), new Vector2(1, 0));
+                    // Y-flipped UVs because OpenGL FBOs have origin at bottom-left.
+                    unsafe
+                    {
+                        ImGui.Image(new ImTextureRef(null, new ImTextureID((ulong)ViewportTextureId)), contentSize, new Vector2(0, 1), new Vector2(1, 0));
+                    }
                 }
             }
+            else
+            {
+                GameViewportFocused = false;
+            }
+            ImGui.End();
         }
-        else
-        {
-            GameViewportFocused = false;
-        }
-        ImGui.End();
         ImGui.PopStyleVar();
 
         foreach (DebugWindow window in _windows)
         {
-            window.Draw();
+            using (Profiler.Begin(window.Title.Replace(" ", "")))
+            {
+                window.Draw();
+            }
         }
     }
 

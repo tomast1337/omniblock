@@ -701,10 +701,16 @@ public partial class BetaSharp :
                             _debugWindowManager.ViewportTextureId = FramebufferManager.TextureId;
                         }
 
-                        _debugWindowManager.Render(Timer.DeltaTime);
+                        using (Profiler.Begin("ImguiBuild"))
+                        {
+                            _debugWindowManager.Render(Timer.DeltaTime);
+                        }
 
-                        ImGui.Render();
-                        ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+                        using (Profiler.Begin("ImguiSubmit"))
+                        {
+                            ImGui.Render();
+                            ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+                        }
                     }
 
                     if (!Display.isActive())
