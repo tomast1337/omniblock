@@ -39,8 +39,6 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
 
         AddSection("Display", [
             Options.ViewBobbingOption,
-            Options.GuiScaleOption,
-            Options.GammaOption,
             Options.EnvironmentAnimationOption,
             Options.ChunkFadeOption,
             Options.ShowWTHITOption,

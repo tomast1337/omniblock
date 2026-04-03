@@ -59,6 +59,7 @@ public class GameOptions
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
     public BoolOption ShowWTHITOption { get; private set; }
+    public BoolOption ShowCoordinatesOption { get; private set; }
 
 
     public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
@@ -67,10 +68,12 @@ public class GameOptions
     public GameOption[] VideoScreenOptions =>
     [
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
-        ViewBobbingOption, GuiScaleOption, AnisotropicOption,
+        ViewBobbingOption, AnisotropicOption,
         MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption,
-        AlternateBlocksOption, ShowWTHITOption, GammaOption
+        AlternateBlocksOption, ShowWTHITOption
     ];
+
+    public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
 
     public float MusicVolume
     {
@@ -105,6 +108,7 @@ public class GameOptions
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
     public bool ShowWTHIT => ShowWTHITOption.Value;
+    public bool ShowCoordinates => ShowCoordinatesOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
     public bool ChunkFade => ChunkFadeOption.Value;
@@ -248,6 +252,7 @@ public class GameOptions
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
         ShowWTHITOption = new BoolOption("WTHIT Overlay", "wthit");
+        ShowCoordinatesOption = new BoolOption("Show Coordinates", "showCoordinates");
         GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
         {
             LabelOverride = "Gamma",
@@ -349,6 +354,7 @@ public class GameOptions
         yield return AnisotropicOption;
         yield return MsaaOption;
         yield return ShowWTHITOption;
+        yield return ShowCoordinatesOption;
     }
 
 

@@ -1,6 +1,5 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Achievement;
 using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -24,7 +23,6 @@ public class HUD : UIScreen
     public Hotbar Hotbar { get; private set; } = null!;
     public ChatOverlay Chat { get; private set; } = null!;
     public AchievementToast AchievementToast { get; private set; } = null!;
-    public LicenseWarning LicenseWarning { get; private set; } = null!;
 
     private readonly HUDContext _hudContext;
 
@@ -72,11 +70,11 @@ public class HUD : UIScreen
         AchievementToast.Style.Right = 0;
         Root.AddChild(AchievementToast);
 
-        LicenseWarning = new LicenseWarning(_hudContext.IsMainMenuOpen);
-        LicenseWarning.Style.Position = PositionType.Absolute;
-        LicenseWarning.Style.Top = 2;
-        LicenseWarning.Style.Left = 2;
-        Root.AddChild(LicenseWarning);
+        var coordinatesDisplay = new CoordinatesDisplay(_hudContext.GetPlayer, () => Context.Options.ShowCoordinates);
+        coordinatesDisplay.Style.Position = PositionType.Absolute;
+        coordinatesDisplay.Style.Top = 2;
+        coordinatesDisplay.Style.Left = 2;
+        Root.AddChild(coordinatesDisplay);
 
         // Foreground elements
         var crosshair = new Crosshair();
@@ -94,11 +92,4 @@ public class HUD : UIScreen
     }
 
     public void AddChatMessage(string message) => Chat.AddMessage(message);
-
-    public override void Update(float partialTicks)
-    {
-        base.Update(partialTicks);
-
-        LicenseWarning.Visible = BetaSharp.HasPaidCheckTime > 0;
-    }
 }
