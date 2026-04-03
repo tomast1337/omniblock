@@ -1853,8 +1853,7 @@ public partial class BetaSharp :
         if (playerName != null && sessionToken != null)
         {
             game.Session = new Session(playerName, sessionToken);
-            game.Session.username = "test";
-            game.Session.sessionId = "test";
+
             if (sessionToken == "-")
             {
                 HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
