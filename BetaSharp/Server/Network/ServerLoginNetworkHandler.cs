@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using BetaSharp.Entities;
+using BetaSharp.GameMode;
 using BetaSharp.Network;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;

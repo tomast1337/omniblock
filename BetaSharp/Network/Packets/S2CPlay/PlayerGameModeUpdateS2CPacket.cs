@@ -1,12 +1,13 @@
 using System.Net.Sockets;
+using BetaSharp.GameMode;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
 public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.PlayerGameModeUpdateS2C)
 {
-    public GameMode GameMode { get; private set; } = GameModes.DefaultGameMode;
+    public GameMode.GameMode GameMode { get; private set; } = GameModes.DefaultGameMode;
 
-    public static PlayerGameModeUpdateS2CPacket Get(GameMode mode)
+    public static PlayerGameModeUpdateS2CPacket Get(GameMode.GameMode mode)
     {
         var p = Get<PlayerGameModeUpdateS2CPacket>(PacketId.PlayerGameModeUpdateS2C);
         p.GameMode = mode;
@@ -18,7 +19,7 @@ public class PlayerGameModeUpdateS2CPacket() : ExtendedProtocolPacket(PacketId.P
         float breakSpeed = stream.ReadFloat();
         int bits = stream.ReadInt();
 
-        GameMode = new GameMode()
+        GameMode = new GameMode.GameMode()
         {
             Name = "remote",
             BrakeSpeed = breakSpeed,

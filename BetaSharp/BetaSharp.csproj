@@ -31,4 +31,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="BetaSharp.Tests" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="assets\**\*" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 </Project>

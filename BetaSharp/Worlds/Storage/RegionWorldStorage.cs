@@ -20,9 +20,12 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     private readonly long _now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private readonly ILogger<RegionWorldStorage> _logger = Log.Instance.For<RegionWorldStorage>();
 
-    public RegionWorldStorage(string baseDir, string worldName, bool createPlayersDir)
+    public RegionWorldStorage(string baseDir, string worldName, bool createPlayersDir) :
+        this( new DirectoryInfo(Path.Combine(baseDir, worldName)), createPlayersDir) { }
+
+    public RegionWorldStorage(DirectoryInfo saveDirectory, bool createPlayersDir)
     {
-        _saveDirectory = new DirectoryInfo(Path.Combine(baseDir, worldName));
+        _saveDirectory = saveDirectory;
         if (!_saveDirectory.Exists) _saveDirectory.Create();
 
         _playersDirectory = new DirectoryInfo(Path.Combine(_saveDirectory.FullName, "players"));
@@ -129,7 +132,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
                 double x = ((NBTTagDouble)posList.TagAt(0)).Value;
                 double y = ((NBTTagDouble)posList.TagAt(1)).Value;
                 double z = ((NBTTagDouble)posList.TagAt(2)).Value;
-                
+
                 NBTTagList newPos = new NBTTagList();
                 newPos.SetTag(new NBTTagDouble(x));
                 newPos.SetTag(new NBTTagDouble(y + 3.24D)); // Vanilla SP saves foot + yOffset (1.62) + ySize (1.62)

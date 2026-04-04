@@ -19,6 +19,7 @@ using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
+using BetaSharp.DataAsset;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens;
 using BetaSharp.Client.UI.Screens.InGame;
@@ -410,6 +411,9 @@ public partial class BetaSharp :
 
     private void SetupResourcesAndPostProcessing()
     {
+        // Start loading base data assets
+        DataAssetLoader.LoadBaseAssets();
+
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);
 
@@ -448,6 +452,9 @@ public partial class BetaSharp :
         ));
 
         FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
+
+        // placed further down to give AssetLoader.LoadBaseAssets() a head start to reduce possible blocking waiting that have to be done.
+        DataAssetLoader.LoadDatapackAssets(_gameDataDir);
     }
 
     private void LoadVersion()

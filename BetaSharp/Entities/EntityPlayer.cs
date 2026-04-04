@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.GameMode;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -46,7 +47,7 @@ public abstract class EntityPlayer : EntityLiving
     public float lastScreenDistortion;
     private int damageSpill;
     public EntityFish fishHook = null;
-    public GameMode GameMode;
+    public GameMode.GameMode GameMode;
 
     public EntityPlayer(IWorldContext world) : base(world)
     {

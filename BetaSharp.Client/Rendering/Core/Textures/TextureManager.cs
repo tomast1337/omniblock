@@ -7,6 +7,7 @@ using SixLabors.ImageSharp.Processing;
 using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
 using Microsoft.Extensions.Logging;
 using System.Buffers;
+using BetaSharp.DataAsset;
 using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
@@ -270,6 +271,9 @@ public class TextureManager : IDisposable
 
     public void Reload()
     {
+        DataAssetLoader.ResetResourcepackAssets();
+        DataAssetLoader.LoadResourcepackAssets(BetaSharp.BetaSharpDir);
+
         _atlasTileSizes.Clear();
         foreach (KeyValuePair<string, TextureHandle> entry in _textures)
         {
