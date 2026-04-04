@@ -1010,7 +1010,7 @@ public partial class BetaSharp :
                             Options.ZoomScale /= 1.08F;
                         }
 
-                        Options.ZoomScale = System.Math.Clamp(Options.ZoomScale, 1.25F, 20.0F);
+                        Options.ZoomScale = Math.Clamp(Options.ZoomScale, 1.25F, 20.0F);
                     }
                     else
                     {
@@ -1141,7 +1141,7 @@ public partial class BetaSharp :
 
                 if (Keyboard.getEventKey() == Options.KeyBindToggleFog.keyCode)
                 {
-                    Options.RenderDistanceOption.Value = System.Math.Clamp(
+                    Options.RenderDistanceOption.Value = Math.Clamp(
                         Options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f),
                         0.0f,
                         1.0f);
@@ -1846,10 +1846,12 @@ public partial class BetaSharp :
             _ => (args[0], args[1]),
         };
 
+        PlayerNameValidator.Validate(result.Name);
+
         StartMainThread(result.Name, result.Session);
     }
 
-    private static void StartMainThread(string playerName, string sessionToken)
+    private static void StartMainThread(string? playerName, string? sessionToken)
     {
         Thread.CurrentThread.Name = "BetaSharp Main Thread";
 
