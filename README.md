@@ -44,3 +44,13 @@ dotnet build
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process. \
 This is a personal project, so review and merge timelines aren't guaranteed, but submissions are appreciated.
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=betasharp-official%2Fbetasharp&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=betasharp-official/betasharp&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=betasharp-official/betasharp&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=betasharp-official/betasharp&type=date&legend=top-left" />
+ </picture>
+</a>

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -44,7 +44,7 @@ public abstract class DataAssetLoader
             Directory.CreateDirectory(p);
         }
 
-        foreach (var loader in s_assetLoaders)
+        foreach (DataAssetLoader loader in s_assetLoaders)
         {
             if (!loader.Locations.HasFlag(LoadLocations.Assets)) continue;
             if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
@@ -68,8 +68,8 @@ public abstract class DataAssetLoader
         {
             if (pack.EndsWith(".disabled")) continue;
             string assets = Path.Join(pack, "data");
-            if (!Directory.Exists(pack)) continue;
-            foreach (var loader in s_assetLoaders)
+            if (!Directory.Exists(assets)) continue;
+            foreach (DataAssetLoader loader in s_assetLoaders)
             {
                 if (!loader.Locations.HasFlag(LoadLocations.GameDatapack)) continue;
                 if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
@@ -95,9 +95,9 @@ public abstract class DataAssetLoader
         {
             if (pack.EndsWith(".disabled")) continue;
             string assets = Path.Join(pack, "data");
-            if (!Directory.Exists(pack)) continue;
+            if (!Directory.Exists(assets)) continue;
 
-            foreach (var loader in s_assetLoaders)
+            foreach (DataAssetLoader loader in s_assetLoaders)
             {
                 if (!loader.Locations.HasFlag(LoadLocations.WorldDatapack)) continue;
                 if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
@@ -122,9 +122,9 @@ public abstract class DataAssetLoader
         {
             if (pack.EndsWith(".disabled")) continue;
             string assets = Path.Join(pack, "data");
-            if (!Directory.Exists(pack)) continue;
+            if (!Directory.Exists(assets)) continue;
 
-            foreach (var loader in s_assetLoaders)
+            foreach (DataAssetLoader loader in s_assetLoaders)
             {
                 if (!loader.Locations.HasFlag(LoadLocations.Resourcepack)) continue;
                 if (!loader.LoadedAssetsModify.HasFlag(filter)) continue;
@@ -138,7 +138,7 @@ public abstract class DataAssetLoader
     {
         if (!s_worldAssetsLoaded) return;
 
-        foreach (var loader in s_assetLoaders)
+        foreach (DataAssetLoader loader in s_assetLoaders)
         {
             if (!loader.Locations.HasFlag(LoadLocations.WorldDatapack)) continue;
             if (!loader.LoadedAssetsModify.HasFlag(LoadLocations.WorldDatapack)) continue;
@@ -151,13 +151,17 @@ public abstract class DataAssetLoader
         if (s_lastResourcePath != null) LoadResourcepackAssets(s_lastResourcePath, LoadLocations.WorldDatapack);
 
         if (wait)
-            foreach (var loader in s_assetLoaders)
+        {
+            foreach (DataAssetLoader loader in s_assetLoaders)
+            {
                 loader.Wait();
+            }
+        }
     }
 
     public static void ResetResourcepackAssets(bool wait = false)
     {
-        foreach (var loader in s_assetLoaders)
+        foreach (DataAssetLoader loader in s_assetLoaders)
         {
             if (!loader.Locations.HasFlag(LoadLocations.Resourcepack)) continue;
             if (!loader.LoadedAssetsModify.HasFlag(LoadLocations.Resourcepack)) continue;
@@ -170,8 +174,12 @@ public abstract class DataAssetLoader
         if (s_lastResourcePath != null) LoadResourcepackAssets(s_lastResourcePath, LoadLocations.Resourcepack);
 
         if (wait)
-            foreach (var loader in s_assetLoaders)
+        {
+            foreach (DataAssetLoader loader in s_assetLoaders)
+            {
                 loader.Wait();
+            }
+        }
     }
 
     private protected abstract void OnLoadAssets(string path, bool namespaced, LoadLocations location);

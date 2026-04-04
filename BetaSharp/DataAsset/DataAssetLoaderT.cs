@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +9,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
     private readonly string _path;
     private readonly bool _allowUnhandled;
     private Task? _loadTask = null;
-    private readonly Dictionary<(Namespace Namespace, string Name), DataAssetRef<T>> _assets = new();
+    private readonly Dictionary<(Namespace Namespace, string Name), DataAssetRef<T>> _assets = [];
 
     public Dictionary<(Namespace Namespace, string Name), DataAssetRef<T>> Assets
     {
@@ -81,9 +81,8 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
 
         foreach (string file in Directory.EnumerateFiles(path, "*.json"))
         {
-            var json = File.OpenRead(file);
+            await using FileStream json = File.OpenRead(file);
             JsonElement obj = await JsonSerializer.DeserializeAsync<JsonElement>(json, s_jsonOptions);
-            json.Close();
 
             if (obj.ValueKind != JsonValueKind.Object)
             {
@@ -91,18 +90,18 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
                 continue;
             }
 
-            string key = GetName(obj, file)!;
+            string key = DataAssetLoader<T>.GetName(obj, file)!;
             if (_assets.TryGetValue((@namespace, key), out DataAssetRef<T>? assetRef))
             {
                 LoadedAssetsModify |= location;
-                if (GetReplace(obj))
+                if (DataAssetLoader<T>.GetReplace(obj))
                 {
-                    FromJsonReplace(obj, file, assetRef);
+                    DataAssetLoader<T>.FromJsonReplace(obj, file, assetRef);
                     continue;
                 }
                 else
                 {
-                    FromJsonUpdate(obj, file, assetRef);
+                    DataAssetLoader<T>.FromJsonUpdate(obj, file, assetRef);
                     continue;
                 }
             }
@@ -112,7 +111,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
                 continue;
             }
 
-            T? asset = FromJson(obj, file);
+            T? asset = DataAssetLoader<T>.FromJson(obj, file);
             if (asset == null)
             {
                 s_logger.LogError($"Asset failed to load from file '{file}'");
@@ -125,9 +124,9 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         }
     }
 
-    private string? GetName(JsonElement json, string path)
+    private static string? GetName(JsonElement json, string path)
     {
-        if (json.TryGetProperty("Name", out var nameElement))
+        if (json.TryGetProperty("Name", out JsonElement nameElement))
         {
             return nameElement.GetString();
         }
@@ -140,9 +139,9 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         return null;
     }
 
-    private bool GetReplace(JsonElement json)
+    private static bool GetReplace(JsonElement json)
     {
-        if (json.TryGetProperty("Replace", out var nameElement))
+        if (json.TryGetProperty("Replace", out JsonElement nameElement))
         {
             return nameElement.GetBoolean();
         }
@@ -150,7 +149,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         return false;
     }
 
-    private T? FromJson(JsonElement json, string path)
+    private static T? FromJson(JsonElement json, string path)
     {
         T? asset = json.Deserialize<T>(s_jsonOptions);
         if (asset == null) return null;
@@ -164,7 +163,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         return asset;
     }
 
-    private void FromJsonUpdate(JsonElement json, string path, DataAssetRef<T> target)
+    private static void FromJsonUpdate(JsonElement json, string path, DataAssetRef<T> target)
     {
         // Serialize the default value to JSON
         JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Asset);
@@ -184,17 +183,16 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         target.Asset = asset;
     }
 
-    internal void FromJsonReplace(string path, DataAssetRef<T> target)
+    internal static void FromJsonReplace(string path, DataAssetRef<T> target)
     {
-        var json = File.OpenRead(Path.Join(path, target.Name + ".json"));
+        using FileStream json = File.OpenRead(Path.Join(path, target.Name + ".json"));
         JsonElement obj = JsonSerializer.Deserialize<JsonElement>(json, s_jsonOptions);
-        json.Close();
-        FromJsonReplace(obj, path, target);
+        DataAssetLoader<T>.FromJsonReplace(obj, path, target);
     }
 
-    private void FromJsonReplace(JsonElement json, string path, DataAssetRef<T> target)
+    private static void FromJsonReplace(JsonElement json, string path, DataAssetRef<T> target)
     {
-        T? v = FromJson(json, path);
+        T? v = DataAssetLoader<T>.FromJson(json, path);
         if (v == null)
         {
             s_logger.LogError($"Asset failed to load from file '{path}'");
@@ -217,15 +215,15 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
         var merged = new Dictionary<string, JsonElement>();
 
         // Add all properties from default
-        foreach (var property in defaultObj.EnumerateObject())
+        foreach (JsonProperty property in defaultObj.EnumerateObject())
         {
             merged[property.Name] = property.Value;
         }
 
         // Override with properties from the override object
-        foreach (var property in overrideObj.EnumerateObject())
+        foreach (JsonProperty property in overrideObj.EnumerateObject())
         {
-            if (merged.TryGetValue(property.Name, out var defaultValue) &&
+            if (merged.TryGetValue(property.Name, out JsonElement defaultValue) &&
                 property.Value.ValueKind == JsonValueKind.Object &&
                 defaultValue.ValueKind == JsonValueKind.Object)
             {
@@ -257,7 +255,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
             return TryGet(ns, name, out asset, shortName);
         }
 
-        foreach (var a in Assets)
+        foreach (KeyValuePair<(Namespace Namespace, string Name), DataAssetRef<T>> a in Assets)
         {
             if (a.Key.Name != name) continue;
 
@@ -270,7 +268,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
             int nameLen = name.Length;
             if (nameLen == 1)
             {
-                foreach (var a in Assets)
+                foreach (KeyValuePair<(Namespace Namespace, string Name), DataAssetRef<T>> a in Assets)
                 {
                     if (a.Key.Name[0] != name[0]) continue;
                     asset = a.Value;
@@ -279,7 +277,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
             }
             else
             {
-                foreach (var a in Assets)
+                foreach (KeyValuePair<(Namespace Namespace, string Name), DataAssetRef<T>> a in Assets)
                 {
                     if (a.Key.Name.Length <= nameLen || a.Key.Name.Substring(0, nameLen) != name) continue;
 
@@ -294,7 +292,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
 
     public bool TryGet(Namespace ns, string name, [NotNullWhen(true)] out T? asset, bool shortName = false)
     {
-        foreach (var a in Assets)
+        foreach (KeyValuePair<(Namespace Namespace, string Name), DataAssetRef<T>> a in Assets)
         {
             if (!a.Key.Namespace.Equals(ns)) continue;
             if (a.Key.Name != name) continue;
@@ -308,7 +306,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
             int nameLen = name.Length;
             if (nameLen == 1)
             {
-                foreach (var a in Assets)
+                foreach (KeyValuePair<(Namespace Namespace, string Name), DataAssetRef<T>> a in Assets)
                 {
                     if (a.Key.Name[0] != name[0]) continue;
                     if (!a.Key.Namespace.Equals(ns)) continue;
@@ -318,7 +316,7 @@ public class DataAssetLoader<T> : DataAssetLoader where T : class, IDataAsset
             }
             else
             {
-                foreach (var a in Assets)
+                foreach (KeyValuePair<(Namespace Namespace, string Name), DataAssetRef<T>> a in Assets)
                 {
                     if (!a.Key.Namespace.Equals(ns)) continue;
                     if (a.Key.Name.Length <= nameLen || a.Key.Name.Substring(0, nameLen) != name) continue;

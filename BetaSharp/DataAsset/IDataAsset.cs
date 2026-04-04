@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace BetaSharp.DataAsset;
 
@@ -14,7 +14,7 @@ public interface IDataAsset
     string? ToString() => Namespace + ':' + Name;
 }
 
-public class BaseDataDataAsset : IDataAsset
+public class BaseDataAsset : IDataAsset
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public string Name { get; set; } = "";

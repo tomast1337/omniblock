@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.DataAsset;
+namespace BetaSharp.DataAsset;
 
 /// <summary>
 /// Essentially a safe pointer.<br/>
@@ -57,7 +57,7 @@ public class DataAssetRef<T1> where T1 : class, IDataAsset
         public override int GetHashCode() => Asset.GetHashCode();
     }
 
-    private class UnresolvedDataAsset<T> : BaseDataDataAsset, IDataAssetProvider<T> where T : class, IDataAsset
+    private class UnresolvedDataAsset<T> : BaseDataAsset, IDataAssetProvider<T> where T : class, IDataAsset
     {
         private readonly DataAssetRef<T> _parent;
         private readonly DataAssetLoader<T> _loader;
@@ -67,7 +67,11 @@ public class DataAssetRef<T1> where T1 : class, IDataAsset
         {
             get
             {
-                _loader.FromJsonReplace(_path, _parent);
+                DataAssetLoader<T>.FromJsonReplace(_path, _parent);
+                if (ReferenceEquals(_parent._dataAssetProvider, this))
+                {
+                    throw new InvalidOperationException($"Asset '{_parent}' failed to load.");
+                }
                 return _parent.Asset;
             }
         }

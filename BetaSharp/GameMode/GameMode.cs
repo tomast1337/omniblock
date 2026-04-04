@@ -1,8 +1,8 @@
-﻿using BetaSharp.DataAsset;
+using BetaSharp.DataAsset;
 
 namespace BetaSharp.GameMode;
 
-public class GameMode : BaseDataDataAsset
+public class GameMode : BaseDataAsset
 {
     public float BrakeSpeed { get; set; } = 1f;
     public bool CanBreak { get; set; } = true;
