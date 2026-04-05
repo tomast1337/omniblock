@@ -20,20 +20,26 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
         // Sensitivity
         UIElement sens = CreateControlForOption(Options.ControllerSensitivityOption);
-        sens.Style.Width = 310;
+        sens.Style.Width = BUTTONSIZE;
+        sens.Style.MarginLeft = BUTTONPADDING;
+        sens.Style.MarginRight = BUTTONPADDING;
         sens.Style.MarginBottom = 4;
         list.AddChild(sens);
 
         // Controller Type
         UIElement type = CreateControlForOption(Options.ControllerTypeOption);
-        type.Style.Width = 310;
-        type.Style.MarginBottom = 10;
+        type.Style.Width = BUTTONSIZE;
+        type.Style.MarginLeft = BUTTONPADDING;
+        type.Style.MarginRight = BUTTONPADDING;
+        type.Style.MarginBottom = 4;
         list.AddChild(type);
 
         // Edit Bindings Button
         Button btnBindings = CreateButton();
         btnBindings.Text = "Edit Bindings...";
-        btnBindings.Style.Width = 310;
+        btnBindings.Style.Width = BUTTONSIZE;
+        btnBindings.Style.MarginLeft = BUTTONPADDING;
+        btnBindings.Style.MarginRight = BUTTONPADDING;
         btnBindings.Style.MarginBottom = 4;
         btnBindings.OnClick += (e) =>
         {
@@ -43,8 +49,11 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
         // Reset Button
         Button btnReset = CreateButton();
-        btnReset.Text = "Reset Bindings";
-        btnReset.Style.Width = 310;
+        btnReset.Style.Width = BUTTONSIZE;
+        btnReset.Style.MarginLeft = BUTTONPADDING;
+        btnReset.Style.MarginRight = BUTTONPADDING;
+        btnReset.Style.MarginBottom = 4;
+        btnReset.Text = "Reset Bindings...";
         btnReset.OnClick += (e) =>
         {
             foreach (ControllerBinding cb in Options.ControllerBindings)

@@ -16,10 +16,11 @@ public abstract class BaseOptionsScreen(
     protected GameOptions Options => Context.Options;
     protected string TitleText = TranslationStorage.Instance.TranslateKey(titleKey);
 
-    private const int BUTTONSIZE = 150;
-    private const int BUTTONPADDING = 4;
-    private const int SCROLLCONTENTSIZE = BUTTONSIZE * 2 + BUTTONPADDING * 4;
-    private const int SCROLLSIZE = SCROLLCONTENTSIZE + 10;
+    protected const int BUTTONSIZE = 150;
+    protected const int BUTTONPADDING = 4;
+    protected const int TWOBUTTONSIZE = BUTTONSIZE * 2 + BUTTONPADDING * 2;
+    protected const int SCROLLCONTENTSIZE = BUTTONSIZE * 2 + BUTTONPADDING * 4;
+    protected const int SCROLLSIZE = SCROLLCONTENTSIZE + 10;
 
     protected override void Init()
     {
