@@ -14,11 +14,11 @@ public class ControlsScreen : BaseOptionsScreen
         TitleText = "Controls";
     }
 
-    protected override IEnumerable<GameOption> GetOptions() => [];
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel list = CreateTwoColumnList();
 
         // Mouse Settings at top
         UIElement sensitivity = CreateControlForOption(Options.MouseSensitivityOption);

@@ -12,11 +12,11 @@ public class ControllerControlsScreen : BaseOptionsScreen
         TitleText = "Controller Settings";
     }
 
-    protected override IEnumerable<GameOption> GetOptions() => [];
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel list = CreateTwoColumnList();
 
         // Sensitivity
         UIElement sens = CreateControlForOption(Options.ControllerSensitivityOption);

@@ -11,11 +11,11 @@ public class AllControlsScreen : BaseOptionsScreen
         TitleText = "Controls";
     }
 
-    protected override IEnumerable<GameOption> GetOptions() => [];
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel list = CreateTwoColumnList();
 
         Button btnKeyboard = CreateButton();
         btnKeyboard.Text = "Keyboard Controls...";

@@ -8,19 +8,21 @@ public class OptionsScreen(
     UIContext context,
     UIScreen? parent) : BaseOptionsScreen(context, parent, "options.title")
 {
-    protected override IEnumerable<GameOption> GetOptions() => Options.MainScreenOptions;
+    protected override List<OptionSection> GetOptions() => [  ];
 
     protected override UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel list = CreateTwoColumnList();
 
         // Main options list
-        foreach (GameOption option in GetOptions())
+        foreach (GameOption option in Options.MainScreenOptions)
         {
             UIElement control = CreateControlForOption(option);
             control.Style.MarginTop = 2;
             control.Style.MarginBottom = 2;
-            control.Style.Width = 310;
+            control.Style.MarginLeft = 4;
+            control.Style.MarginRight = 4;
+            control.Style.Width = 150;
             list.AddChild(control);
         }
 
@@ -42,7 +44,9 @@ public class OptionsScreen(
             btn.Text = text;
             btn.Style.MarginTop = 2;
             btn.Style.MarginBottom = 2;
-            btn.Style.Width = 310;
+            btn.Style.MarginLeft = 4;
+            btn.Style.MarginRight = 4;
+            btn.Style.Width = 150;
             btn.OnClick += (e) =>
             {
                 Options.SaveOptions();

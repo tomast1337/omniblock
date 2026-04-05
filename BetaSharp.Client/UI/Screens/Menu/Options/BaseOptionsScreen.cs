@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls;
@@ -14,6 +15,8 @@ public abstract class BaseOptionsScreen(
     protected readonly UIScreen? Parent = parent;
     protected GameOptions Options => Context.Options;
     protected string TitleText = TranslationStorage.Instance.TranslateKey(titleKey);
+
+    private const int WIDTH = 320;
 
     protected override void Init()
     {
@@ -52,27 +55,31 @@ public abstract class BaseOptionsScreen(
 
     protected virtual UIElement CreateContent()
     {
-        Panel list = CreateVerticalList();
+        Panel root = new();
+        root.Style.FlexDirection = FlexDirection.Column;
+        root.Style.AlignItems = Align.Center;
+        root.Style.Width = WIDTH;
 
-        foreach (GameOption option in GetOptions())
+        var options = GetOptions();
+        foreach (OptionSection section in options)
         {
-            UIElement control = CreateControlForOption(option);
-            control.Style.MarginTop = 2;
-            control.Style.MarginBottom = 2;
-            control.Style.Width = 310;
-            list.AddChild(control);
+            if (section.Name is not null) root.AddChild(CreateSectionHeader(section.Name));
+
+            Panel grid = CreateTwoColumnList();
+            foreach (GameOption option in section.Options)
+            {
+                UIElement control = CreateControlForOption(option);
+                control.Style.Width = 150;
+                control.Style.MarginTop = 2;
+                control.Style.MarginBottom = 2;
+                control.Style.MarginLeft = 4;
+                control.Style.MarginRight = 4;
+                grid.AddChild(control);
+            }
+            root.AddChild(grid);
         }
 
-        return list;
-    }
-
-    protected static Panel CreateVerticalList()
-    {
-        Panel list = new();
-        list.Style.FlexDirection = FlexDirection.Column;
-        list.Style.AlignItems = Align.Center;
-        list.Style.Width = 330;
-        return list;
+        return root;
     }
 
     protected static Panel CreateTwoColumnList()
@@ -80,8 +87,8 @@ public abstract class BaseOptionsScreen(
         Panel list = new();
         list.Style.FlexDirection = FlexDirection.Row;
         list.Style.FlexWrap = Wrap.Wrap;
-        list.Style.JustifyContent = Justify.Center;
-        list.Style.Width = 330;
+        list.Style.JustifyContent = Justify.FlexStart;
+        list.Style.Width = WIDTH;
         return list;
     }
 
@@ -90,7 +97,7 @@ public abstract class BaseOptionsScreen(
         Panel header = new();
         header.Style.FlexDirection = FlexDirection.Row;
         header.Style.AlignItems = Align.Center;
-        header.Style.Width = 330;
+        header.Style.Width = WIDTH;
         header.Style.MarginTop = 10;
         header.Style.MarginBottom = 4;
         header.IsHitTestVisible = false;
@@ -123,7 +130,25 @@ public abstract class BaseOptionsScreen(
         return header;
     }
 
-    protected abstract IEnumerable<GameOption> GetOptions();
+    protected struct OptionSection
+    {
+        public string? Name;
+        public IEnumerable<GameOption> Options;
+
+        public OptionSection(string name, IEnumerable<GameOption> options)
+        {
+            Name = name;
+            Options = options;
+        }
+
+        public OptionSection(IEnumerable<GameOption> options)
+        {
+            Name = null;
+            Options = options;
+        }
+    }
+
+    protected abstract List<OptionSection> GetOptions();
 
     protected virtual void OnDone()
     {
