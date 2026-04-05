@@ -58,7 +58,6 @@ public class GameOptions
     public CycleOption GuiScaleOption { get; private set; }
     public CycleOption AnisotropicOption { get; private set; }
     public CycleOption MsaaOption { get; private set; }
-    public BoolOption ShowWTHITOption { get; private set; }
     public BoolOption ShowCoordinatesOption { get; private set; }
 
 
@@ -70,7 +69,7 @@ public class GameOptions
         RenderDistanceOption, FramerateLimitOption, VSyncOption,
         ViewBobbingOption, AnisotropicOption,
         MipmapsOption, MsaaOption, EnvironmentAnimationOption, ChunkFadeOption,
-        AlternateBlocksOption, ShowWTHITOption
+        AlternateBlocksOption
     ];
 
     public GameOption[] UIScreenOptions => [GuiScaleOption, GammaOption, ShowCoordinatesOption];
@@ -107,7 +106,6 @@ public class GameOptions
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
     public int INITIAL_MSAA;
-    public bool ShowWTHIT => ShowWTHITOption.Value;
     public bool ShowCoordinates => ShowCoordinatesOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
     public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
@@ -251,7 +249,6 @@ public class GameOptions
             Steps = 90,
             Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
         };
-        ShowWTHITOption = new BoolOption("WTHIT Overlay", "wthit");
         ShowCoordinatesOption = new BoolOption("Show Coordinates", "showCoordinates");
         GammaOption = new FloatOption("Gamma", "gamma", 0.5F)
         {
@@ -353,7 +350,6 @@ public class GameOptions
         yield return GuiScaleOption;
         yield return AnisotropicOption;
         yield return MsaaOption;
-        yield return ShowWTHITOption;
         yield return ShowCoordinatesOption;
     }
 

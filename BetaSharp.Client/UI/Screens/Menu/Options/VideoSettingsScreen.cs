@@ -19,7 +19,6 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             Options.ViewBobbingOption,
             Options.EnvironmentAnimationOption,
             Options.ChunkFadeOption,
-            Options.ShowWTHITOption,
             Options.AlternateBlocksOption
         ])
     ];
