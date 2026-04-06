@@ -123,12 +123,16 @@ public class ChatScreen(
     {
         base.OnEnter();
         Keyboard.enableRepeatEvents(true);
+        chat.ScrollOffset = 0;
+        chat.IsOpen = true;
     }
 
     public override void Uninit()
     {
         base.Uninit();
         Keyboard.enableRepeatEvents(false);
+        chat.IsOpen = false;
+        chat.ScrollOffset = 0;
     }
 
     private void NavigateHistory(int direction)
