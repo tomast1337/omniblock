@@ -26,6 +26,7 @@ public sealed class RegistryAccess
 
     // ---- Static factory registration (called during bootstrap) ----
 
+    private static readonly Dictionary<ResourceLocation, object> s_builtIns = [];
     private static readonly List<IDynamicRegistryEntry> s_dynamicEntries = [];
 
     private interface IDynamicRegistryEntry
@@ -54,10 +55,11 @@ public sealed class RegistryAccess
         }
     }
 
+    public static void AddBuiltIn<T>(RegistryKey<T> key, IReadableRegistry<T> registry) where T : class
+        => s_builtIns[key.Location] = registry;
+
     public static void AddDynamic<T>(RegistryDefinition<T> definition) where T : class, IDataAsset
-    {
-        s_dynamicEntries.Add(new DynamicRegistryEntry<T>(definition));
-    }
+        => s_dynamicEntries.Add(new DynamicRegistryEntry<T>(definition));
 
     /// <summary>For test isolation only — clears all registered dynamic entries.</summary>
     internal static void ClearDynamicEntries() => s_dynamicEntries.Clear();
@@ -130,14 +132,7 @@ public sealed class RegistryAccess
         bool hadAnyErrors = false;
         string? error = null;
 
-        // Built-in static registries
-        var builtIns = new Dictionary<ResourceLocation, object>
-        {
-            [RegistryKeys.EntityTypes.Location] = DefaultRegistries.EntityTypes,
-            [RegistryKeys.Biomes.Location] = DefaultRegistries.Biomes,
-            [RegistryKeys.BlockEntityTypes.Location] = DefaultRegistries.BlockEntityTypes,
-            [RegistryKeys.GameRules.Location] = DefaultRegistries.GameRules,
-        };
+        var builtIns = new Dictionary<ResourceLocation, object>(s_builtIns);
 
         // Dynamic (data-driven) registries — load from base + global datapacks
         var serverLoaders = new Dictionary<ResourceLocation, DataAssetLoader>();
