@@ -30,7 +30,7 @@ public class RegistryDataS2CPacket() : ExtendedProtocolPacket(PacketId.RegistryD
         var entries = new List<Entry>();
         foreach (ResourceLocation entryKey in registry.Keys)
         {
-            T? value = registry.Get(entryKey);
+            T? value = registry.GetValue(entryKey);
             if (value is null) continue;
             entries.Add(new Entry(entryKey, JsonSerializer.Serialize(value, s_writeOptions)));
         }

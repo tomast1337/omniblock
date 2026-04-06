@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using BetaSharp.Diagnostics;
-using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -27,7 +26,7 @@ public abstract class BetaSharpServer : ICommandOutput
 {
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
 
-    public GameMode DefaultGameMode { get; set; } = new();
+    public Holder<GameMode> DefaultGameMode { get; set; } = new(new GameMode());
 
     private readonly List<IRegistryReloadListener> _reloadListeners = [];
 
@@ -572,28 +571,11 @@ public abstract class BetaSharpServer : ICommandOutput
     {
         _logger.LogInformation("Reloading datapacks...");
         playerManager.sendToAll(ChatMessagePacket.Get("§eReloading datapacks..."));
-
         try
         {
             RegistryAccess = RegistryAccess.Rebuild();
 
-            foreach (IRegistryReloadListener listener in _reloadListeners)
-            {
-                listener.OnRegistriesRebuilt(RegistryAccess);
-            }
-
-            SendConfigurationTo(playerManager.sendToAll);
-
-            DataAssetLoader<GameMode> gameModes = RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader();
-            foreach (ServerPlayerEntity player in playerManager.players)
-            {
-                if (gameModes.TryGet(player.GameMode.Name, out GameMode? updated))
-                {
-                    player.GameMode = updated;
-                }
-
-                player.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(player.GameMode));
-            }
+            RegistryReloadPipeline.SyncToPlayers(RegistryAccess, _reloadListeners, playerManager.players);
 
             _logger.LogInformation("Datapacks reloaded.");
             playerManager.sendToAll(ChatMessagePacket.Get("§aDatapacks reloaded."));

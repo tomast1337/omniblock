@@ -277,20 +277,38 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     /// treated as <c>namespace:path</c>; otherwise all namespaces are searched by path.
     /// </summary>
     public bool TryGet(string name, [NotNullWhen(true)] out T? asset)
-        => TryGetInternal(name, out asset, prefix: false);
-
-    /// <summary>
-    /// Looks up an entry by prefix. A single character matches the first entry whose
-    /// path starts with that character; a longer string matches the first entry whose
-    /// path starts with the prefix. Namespace prefix matching is also supported via
-    /// <c>ns:prefix</c> syntax.
-    /// </summary>
-    public bool TryGetByPrefix(string prefix, [NotNullWhen(true)] out T? asset)
-        => TryGetInternal(prefix, out asset, prefix: true);
-
-    private bool TryGetInternal(string name, [NotNullWhen(true)] out T? asset, bool prefix)
     {
+        if (TryGetHolder(name, out var holder))
+        {
+            asset = holder.Value;
+            return true;
+        }
+
         asset = null;
+        return false;
+    }
+
+    public bool TryGetByPrefix(string prefix, [NotNullWhen(true)] out T? asset)
+    {
+        if (TryGetHolderByPrefix(prefix, out var holder))
+        {
+            asset = holder.Value;
+            return true;
+        }
+
+        asset = null;
+        return false;
+    }
+
+    public bool TryGetHolder(string name, [NotNullWhen(true)] out Holder<T>? holder)
+        => TryGetHolderInternal(name, out holder, prefix: false);
+
+    public bool TryGetHolderByPrefix(string prefix, [NotNullWhen(true)] out Holder<T>? holder)
+        => TryGetHolderInternal(prefix, out holder, prefix: true);
+
+    private bool TryGetHolderInternal(string name, [NotNullWhen(true)] out Holder<T>? holder, bool prefix)
+    {
+        holder = null;
         int split = name.IndexOf(':');
 
         if (split != -1)
@@ -304,7 +322,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
             foreach (Namespace ns in nss)
             {
-                if (TryGetInNamespace(ns, name, out asset, prefix)) return true;
+                if (TryGetHolderInNamespace(ns, name, out holder, prefix)) return true;
             }
             return false;
         }
@@ -313,7 +331,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         {
             if (a.Key.Path != name) continue;
 
-            asset = a.Value;
+            holder = a.Value;
             return true;
         }
 
@@ -325,7 +343,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                 foreach (KeyValuePair<ResourceLocation, Holder<T>> a in Assets)
                 {
                     if (a.Key.Path[0] != name[0]) continue;
-                    asset = a.Value;
+                    holder = a.Value;
                     return true;
                 }
             }
@@ -335,7 +353,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                 {
                     if (a.Key.Path.Length <= nameLen || a.Key.Path.Substring(0, nameLen) != name) continue;
 
-                    asset = a.Value;
+                    holder = a.Value;
                     return true;
                 }
             }
@@ -344,18 +362,17 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return false;
     }
 
-    private bool TryGetInNamespace(Namespace ns, string name, [NotNullWhen(true)] out T? asset, bool prefix)
+    private bool TryGetHolderInNamespace(Namespace ns, string name, [NotNullWhen(true)] out Holder<T>? holder, bool prefix)
     {
         if (!prefix)
         {
             var key = new ResourceLocation(ns, name);
-            if (Assets.TryGetValue(key, out Holder<T>? holder))
+            if (Assets.TryGetValue(key, out holder))
             {
-                asset = holder;
                 return true;
             }
 
-            asset = null;
+            holder = null;
             return false;
         }
 
@@ -364,7 +381,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             if (!a.Key.Namespace.Equals(ns)) continue;
             if (a.Key.Path != name) continue;
 
-            asset = a.Value;
+            holder = a.Value;
             return true;
         }
 
@@ -375,7 +392,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             {
                 if (a.Key.Path[0] != name[0]) continue;
                 if (!a.Key.Namespace.Equals(ns)) continue;
-                asset = a.Value;
+                holder = a.Value;
                 return true;
             }
         }
@@ -386,12 +403,12 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
                 if (!a.Key.Namespace.Equals(ns)) continue;
                 if (a.Key.Path.Length <= nameLen || a.Key.Path.Substring(0, nameLen) != name) continue;
 
-                asset = a.Value;
+                holder = a.Value;
                 return true;
             }
         }
 
-        asset = null;
+        holder = null;
         return false;
     }
 
@@ -399,10 +416,10 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
     public ResourceLocation RegistryKey => new(Namespace.BetaSharp, _path);
 
-    T? IReadableRegistry<T>.Get(ResourceLocation key)
+    Holder<T>? IReadableRegistry<T>.Get(ResourceLocation key)
     {
-        if (Assets.TryGetValue(key, out Holder<T>? holder)) return holder.Value;
-        return null;
+        Assets.TryGetValue(key, out Holder<T>? holder);
+        return holder;
     }
 
     T? IReadableRegistry<T>.Get(int id) => null;
@@ -422,12 +439,6 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     bool IReadableRegistry<T>.ContainsKey(ResourceLocation key) => Assets.ContainsKey(key);
 
     IEnumerable<ResourceLocation> IReadableRegistry<T>.Keys => Assets.Keys;
-
-    Holder<T>? IReadableRegistry<T>.GetHolder(ResourceLocation key)
-    {
-        Assets.TryGetValue(key, out Holder<T>? holder);
-        return holder;
-    }
 
     public IEnumerator<T> GetEnumerator()
     {

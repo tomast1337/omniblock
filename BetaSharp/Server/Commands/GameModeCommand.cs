@@ -61,20 +61,20 @@ public class GameModeCommand : ICommand
 
     private static void SetGameMode(ServerPlayerEntity p, string arg, ICommand.CommandContext c)
     {
-        if (c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetByPrefix(arg, out var gameMode))
+        if (c.Server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetHolderByPrefix(arg, out Holder<GameMode>? holder))
         {
-            SetGameMode(p, gameMode, c);
+            SetGameMode(p, holder, c);
             return;
         }
 
         c.Output.SendMessage("Gamemode not found.");
     }
 
-    private static void SetGameMode(ServerPlayerEntity p, GameMode gameMode, ICommand.CommandContext c)
+    private static void SetGameMode(ServerPlayerEntity p, Holder<GameMode> holder, ICommand.CommandContext c)
     {
-        p.networkHandler.sendPacket(PlayerGameModeUpdateS2CPacket.Get(gameMode));
-        p.GameMode = gameMode;
-        string s = $"{p.name} game mode set to {gameMode.Name}.";
+        p.GameModeHolder = holder;
+        p.NetworkHandler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(holder.Value));
+        string s = $"{p.name} game mode set to {holder.Value.Name}.";
         s_logger.LogInformation(s);
         c.Output.SendMessage(s);
     }
