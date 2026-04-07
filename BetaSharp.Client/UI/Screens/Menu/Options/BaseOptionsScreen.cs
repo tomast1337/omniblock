@@ -16,11 +16,11 @@ public abstract class BaseOptionsScreen(
     protected GameOptions Options => Context.Options;
     protected string TitleText = TranslationStorage.Instance.TranslateKey(titleKey);
 
-    protected const int BUTTONSIZE = 150;
-    protected const int BUTTONPADDING = 4;
-    protected const int TWOBUTTONSIZE = BUTTONSIZE * 2 + BUTTONPADDING * 2;
-    protected const int SCROLLCONTENTSIZE = BUTTONSIZE * 2 + BUTTONPADDING * 4;
-    protected const int SCROLLSIZE = SCROLLCONTENTSIZE + 10;
+    protected const int ButtonSize = 150;
+    protected const int ButtonPadding = 4;
+    protected const int TwoButtonSize = ButtonSize * 2 + ButtonPadding * 2;
+    protected const int ScrollContentSize = ButtonSize * 2 + ButtonPadding * 4;
+    protected const int ScrollSize = ScrollContentSize + 10;
 
     protected override void Init()
     {
@@ -41,7 +41,7 @@ public abstract class BaseOptionsScreen(
         AddTitleSpacer();
 
         ScrollView scroll = new();
-        scroll.Style.Width = SCROLLSIZE;
+        scroll.Style.Width = ScrollSize;
         scroll.Style.FlexGrow = 1;
         scroll.Style.MaxHeight = 200;
         scroll.Style.MarginBottom = 10;
@@ -62,7 +62,7 @@ public abstract class BaseOptionsScreen(
         Panel root = new();
         root.Style.FlexDirection = FlexDirection.Column;
         root.Style.AlignItems = Align.Center;
-        root.Style.Width = SCROLLCONTENTSIZE;
+        root.Style.Width = ScrollContentSize;
 
         var options = GetOptions();
         bool first = true;
@@ -74,11 +74,11 @@ public abstract class BaseOptionsScreen(
             foreach (GameOption option in section.Options)
             {
                 UIElement control = CreateControlForOption(option);
-                control.Style.Width = BUTTONSIZE;
+                control.Style.Width = ButtonSize;
                 control.Style.MarginTop = 2;
                 control.Style.MarginBottom = 2;
-                control.Style.MarginLeft = BUTTONPADDING;
-                control.Style.MarginRight = BUTTONPADDING;
+                control.Style.MarginLeft = ButtonPadding;
+                control.Style.MarginRight = ButtonPadding;
                 grid.AddChild(control);
             }
             root.AddChild(grid);
@@ -95,7 +95,7 @@ public abstract class BaseOptionsScreen(
         list.Style.FlexDirection = FlexDirection.Row;
         list.Style.FlexWrap = Wrap.Wrap;
         list.Style.JustifyContent = Justify.FlexStart;
-        list.Style.Width = SCROLLCONTENTSIZE;
+        list.Style.Width = ScrollContentSize;
         return list;
     }
 
@@ -104,7 +104,7 @@ public abstract class BaseOptionsScreen(
         Panel header = new();
         header.Style.FlexDirection = FlexDirection.Row;
         header.Style.AlignItems = Align.Center;
-        header.Style.Width = SCROLLCONTENTSIZE;
+        header.Style.Width = ScrollContentSize;
         header.Style.MarginTop = first ? 0 : 10;
         header.Style.MarginBottom = 4;
         header.IsHitTestVisible = false;

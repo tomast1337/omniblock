@@ -22,13 +22,13 @@ public class OptionsScreen(
             control.Style.MarginBottom = 2;
             control.Style.MarginLeft = 4;
             control.Style.MarginRight = 4;
-            control.Style.Width = BUTTONSIZE;
+            control.Style.Width = ButtonSize;
             list.AddChild(control);
         }
 
         // Separator
         Panel separator = new();
-        separator.Style.Width = SCROLLCONTENTSIZE;
+        separator.Style.Width = ScrollContentSize;
         separator.Style.Height = 1;
         separator.Style.BackgroundColor = Color.Gray70;
         separator.Style.MarginTop = 6;
@@ -46,7 +46,7 @@ public class OptionsScreen(
             btn.Style.MarginBottom = 2;
             btn.Style.MarginLeft = 4;
             btn.Style.MarginRight = 4;
-            btn.Style.Width = BUTTONSIZE;
+            btn.Style.Width = ButtonSize;
             btn.OnClick += (e) =>
             {
                 Options.SaveOptions();

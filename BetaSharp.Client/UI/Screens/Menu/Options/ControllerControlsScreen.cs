@@ -20,26 +20,26 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
         // Sensitivity
         UIElement sens = CreateControlForOption(Options.ControllerSensitivityOption);
-        sens.Style.Width = BUTTONSIZE;
-        sens.Style.MarginLeft = BUTTONPADDING;
-        sens.Style.MarginRight = BUTTONPADDING;
+        sens.Style.Width = ButtonSize;
+        sens.Style.MarginLeft = ButtonPadding;
+        sens.Style.MarginRight = ButtonPadding;
         sens.Style.MarginBottom = 4;
         list.AddChild(sens);
 
         // Controller Type
         UIElement type = CreateControlForOption(Options.ControllerTypeOption);
-        type.Style.Width = BUTTONSIZE;
-        type.Style.MarginLeft = BUTTONPADDING;
-        type.Style.MarginRight = BUTTONPADDING;
+        type.Style.Width = ButtonSize;
+        type.Style.MarginLeft = ButtonPadding;
+        type.Style.MarginRight = ButtonPadding;
         type.Style.MarginBottom = 4;
         list.AddChild(type);
 
         // Edit Bindings Button
         Button btnBindings = CreateButton();
         btnBindings.Text = "Edit Bindings...";
-        btnBindings.Style.Width = BUTTONSIZE;
-        btnBindings.Style.MarginLeft = BUTTONPADDING;
-        btnBindings.Style.MarginRight = BUTTONPADDING;
+        btnBindings.Style.Width = ButtonSize;
+        btnBindings.Style.MarginLeft = ButtonPadding;
+        btnBindings.Style.MarginRight = ButtonPadding;
         btnBindings.Style.MarginBottom = 4;
         btnBindings.OnClick += (e) =>
         {
@@ -49,9 +49,9 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
         // Reset Button
         Button btnReset = CreateButton();
-        btnReset.Style.Width = BUTTONSIZE;
-        btnReset.Style.MarginLeft = BUTTONPADDING;
-        btnReset.Style.MarginRight = BUTTONPADDING;
+        btnReset.Style.Width = ButtonSize;
+        btnReset.Style.MarginLeft = ButtonPadding;
+        btnReset.Style.MarginRight = ButtonPadding;
         btnReset.Style.MarginBottom = 4;
         btnReset.Text = "Reset Bindings...";
         btnReset.OnClick += (e) =>

@@ -19,7 +19,7 @@ public class AllControlsScreen : BaseOptionsScreen
 
         Button btnKeyboard = CreateButton();
         btnKeyboard.Text = "Keyboard Controls...";
-        btnKeyboard.Style.Width = TWOBUTTONSIZE;
+        btnKeyboard.Style.Width = TwoButtonSize;
         btnKeyboard.Style.MarginBottom = 4;
         btnKeyboard.OnClick += (e) =>
         {
@@ -29,7 +29,7 @@ public class AllControlsScreen : BaseOptionsScreen
 
         Button btnController = CreateButton();
         btnController.Text = "Controller Settings...";
-        btnController.Style.Width = TWOBUTTONSIZE;
+        btnController.Style.Width = TwoButtonSize;
         btnController.OnClick += (e) =>
         {
             Context.Navigator.Navigate(new ControllerControlsScreen(Context, this));

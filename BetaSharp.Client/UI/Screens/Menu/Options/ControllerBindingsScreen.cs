@@ -32,7 +32,7 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
             Panel row = new();
             row.Style.FlexDirection = FlexDirection.Row;
             row.Style.AlignItems = Align.Center;
-            row.Style.Width = TWOBUTTONSIZE;
+            row.Style.Width = TwoButtonSize;
             row.Style.SetMargin(2);
 
             Label label = new() { Text = bind.Description };

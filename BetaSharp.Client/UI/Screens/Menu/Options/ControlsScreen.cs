@@ -22,16 +22,16 @@ public class ControlsScreen : BaseOptionsScreen
 
         // Mouse Settings at top
         UIElement sensitivity = CreateControlForOption(Options.MouseSensitivityOption);
-        sensitivity.Style.Width = BUTTONSIZE;
-        sensitivity.Style.MarginLeft = BUTTONPADDING;
-        sensitivity.Style.MarginRight = BUTTONPADDING;
+        sensitivity.Style.Width = ButtonSize;
+        sensitivity.Style.MarginLeft = ButtonPadding;
+        sensitivity.Style.MarginRight = ButtonPadding;
         sensitivity.Style.MarginBottom = 10;
         list.AddChild(sensitivity);
 
         UIElement invert = CreateControlForOption(Options.InvertMouseOption);
-        invert.Style.Width = BUTTONSIZE;
-        invert.Style.MarginLeft = BUTTONPADDING;
-        invert.Style.MarginRight = BUTTONPADDING;
+        invert.Style.Width = ButtonSize;
+        invert.Style.MarginLeft = ButtonPadding;
+        invert.Style.MarginRight = ButtonPadding;
         invert.Style.MarginBottom = 10;
         list.AddChild(invert);
 
@@ -42,7 +42,7 @@ public class ControlsScreen : BaseOptionsScreen
             Panel row = new();
             row.Style.FlexDirection = FlexDirection.Row;
             row.Style.AlignItems = Align.Center;
-            row.Style.Width = TWOBUTTONSIZE;
+            row.Style.Width = TwoButtonSize;
             row.Style.SetMargin(2);
 
             Label label = new() { Text = Options.GetKeyBindingDescription(i) };
