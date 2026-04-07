@@ -22,6 +22,8 @@ public abstract class BaseOptionsScreen(
     protected const int ScrollContentSize = ButtonSize * 2 + ButtonPadding * 4;
     protected const int ScrollSize = ScrollContentSize + 10;
 
+    protected virtual int MaxWidth { get; } = 200;
+
     protected override void Init()
     {
         Root.Style.AlignItems = Align.Center;
@@ -43,7 +45,7 @@ public abstract class BaseOptionsScreen(
         ScrollView scroll = new();
         scroll.Style.Width = ScrollSize;
         scroll.Style.FlexGrow = 1;
-        scroll.Style.MaxHeight = 200;
+        scroll.Style.MaxHeight = MaxWidth;
         scroll.Style.MarginBottom = 10;
 
         UIElement content = CreateContent();

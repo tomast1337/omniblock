@@ -130,6 +130,15 @@ public class GameOptions
     public KeyBinding[] KeyBindings;
     public ControllerBinding[] ControllerBindings;
 
+    // for keybindings screen
+    public struct KeyBindingGroup(string title, KeyBinding[] bindings)
+    {
+        public string Title { get; set; } = title;
+        public KeyBinding[] Bindings { get; set; } = bindings;
+    }
+
+    public KeyBindingGroup[] KeyBindingGroups;
+
     protected BetaSharp _game;
     private readonly string _optionsPath;
     public bool HideGUI = false;
@@ -171,6 +180,28 @@ public class GameOptions
             KeyBindChat,
             KeyBindToggleFog,
             KeyBindZoom,
+        ];
+
+        KeyBindingGroups = [
+            new("Movement", [
+                KeyBindForward,
+                KeyBindLeft,
+                KeyBindBack,
+                KeyBindRight,
+                KeyBindJump,
+                KeyBindSneak,
+            ]),
+
+            new("View", [
+                KeyBindInventory,
+                KeyBindChat,
+                KeyBindToggleFog,
+                KeyBindZoom,
+            ]),
+
+            new("Other", [
+                KeyBindDrop
+            ]),
         ];
 
         ControllerBindings =
@@ -354,20 +385,20 @@ public class GameOptions
     }
 
 
-    public string GetKeyBindingDescription(int keyBindingIndex)
+    public string GetKeyBindingDescription(KeyBinding binding)
     {
         TranslationStorage translations = TranslationStorage.Instance;
-        return translations.TranslateKey(KeyBindings[keyBindingIndex].keyDescription);
+        return translations.TranslateKey(binding.keyDescription);
     }
 
-    public string GetOptionDisplayString(int keyBindingIndex)
+    public string GetOptionDisplayString(KeyBinding binding)
     {
-        return Keyboard.getKeyName(KeyBindings[keyBindingIndex].keyCode);
+        return Keyboard.getKeyName(binding.keyCode);
     }
 
-    public void SetKeyBinding(int keyBindingIndex, int keyCode)
+    public void SetKeyBinding(KeyBinding binding, int keyCode)
     {
-        KeyBindings[keyBindingIndex].keyCode = keyCode;
+        binding.keyCode = keyCode;
         SaveOptions();
     }
 

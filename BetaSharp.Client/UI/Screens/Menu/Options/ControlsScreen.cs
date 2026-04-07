@@ -1,3 +1,4 @@
+using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -6,7 +7,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class ControlsScreen : BaseOptionsScreen
 {
-    private int _selectedKey = -1;
+    private KeyBinding? _selectedKey = null;
+    protected override int MaxWidth { get; } = 300;
 
     public ControlsScreen(UIContext context, UIScreen? parent)
         : base(context, parent, "controls.title")
@@ -36,32 +38,43 @@ public class ControlsScreen : BaseOptionsScreen
         list.AddChild(invert);
 
         // Keybinds List
-        for (int i = 0; i < Options.KeyBindings.Length; i++)
+        bool first = true;
+        foreach (GameOptions.KeyBindingGroup group in Options.KeyBindingGroups)
         {
-            int index = i;
-            Panel row = new();
-            row.Style.FlexDirection = FlexDirection.Row;
-            row.Style.AlignItems = Align.Center;
-            row.Style.Width = TwoButtonSize;
-            row.Style.SetMargin(2);
+            list.AddChild(CreateSectionHeader(group.Title, first));
 
-            Label label = new() { Text = Options.GetKeyBindingDescription(i) };
-            label.Style.FlexGrow = 1;
-            row.AddChild(label);
-
-            string btnText = _selectedKey == index ? "> ??? <" : Options.GetOptionDisplayString(index);
-            Button btn = CreateButton();
-            btn.Text = btnText;
-            btn.Style.Width = 80;
-            btn.OnClick += (e) =>
+            for (int i = 0; i < group.Bindings.Length; i++)
             {
-                _selectedKey = index;
-                Refresh();
-            };
-            row.AddChild(btn);
+                KeyBinding bind = group.Bindings[i];
 
-            list.AddChild(row);
+                int index = i;
+                Panel row = new();
+                row.Style.FlexDirection = FlexDirection.Row;
+                row.Style.AlignItems = Align.Center;
+                row.Style.Width = TwoButtonSize;
+                row.Style.SetMargin(2);
+
+                Label label = new() { Text = Options.GetKeyBindingDescription(bind) };
+                label.Style.FlexGrow = 1;
+                row.AddChild(label);
+
+                string btnText = ReferenceEquals(_selectedKey, bind) ? "> ??? <" : Options.GetOptionDisplayString(bind);
+                Button btn = CreateButton();
+                btn.Text = btnText;
+                btn.Style.Width = 80;
+                btn.OnClick += (e) =>
+                {
+                    _selectedKey = bind;
+                    Refresh();
+                };
+                row.AddChild(btn);
+
+                list.AddChild(row);
+            }
+
+            first = false;
         }
+        
 
         return list;
     }
@@ -74,10 +87,10 @@ public class ControlsScreen : BaseOptionsScreen
 
     public override void KeyTyped(int key, char character)
     {
-        if (_selectedKey >= 0)
+        if (_selectedKey is not null)
         {
             Options.SetKeyBinding(_selectedKey, key);
-            _selectedKey = -1;
+            _selectedKey = null;
             Refresh();
         }
         else
