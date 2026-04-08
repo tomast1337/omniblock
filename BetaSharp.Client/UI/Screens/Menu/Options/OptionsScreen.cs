@@ -59,6 +59,7 @@ public class OptionsScreen(
         AddSubButton("UI Settings", () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
         AddSubButton("Audio Settings", () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
         AddSubButton(translations.TranslateKey("options.controls"), () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
+        AddSubButton("Credits", () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
 
         return list;
     }
