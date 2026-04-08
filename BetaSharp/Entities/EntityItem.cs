@@ -130,22 +130,22 @@ public class EntityItem : Entity
     {
         if (!world.IsRemote && player.GameMode.CanPickup)
         {
-            int pickedUpCount = stack.count;
+            int pickedUpCount = stack.Count;
             if (delayBeforeCanPickup == 0 && player.inventory.AddItemStackToInventory(stack))
             {
-                if (stack.itemId == Block.Log.id)
+                if (stack.ItemId == Block.Log.id)
                 {
                     player.incrementStat(Achievements.MineWood);
                 }
 
-                if (stack.itemId == Item.Leather.id)
+                if (stack.ItemId == Item.Leather.id)
                 {
                     player.incrementStat(Achievements.KillCow);
                 }
 
                 world.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((random.NextFloat() - random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
                 player.sendPickup(this, pickedUpCount);
-                if (stack.count <= 0)
+                if (stack.Count <= 0)
                 {
                     markDead();
                 }

@@ -22,10 +22,10 @@ internal class CraftingManager
         new RecipesTools().AddRecipes(this);
         new RecipesWeapons().AddRecipes(this);
         new RecipesIngots().AddRecipes(this);
-        new RecipesFood().AddRecipes(this);
-        new RecipesCrafting().AddRecipes(this);
+        RecipesFood.AddRecipes(this);
+        RecipesCrafting.AddRecipes(this);
         new RecipesArmor().AddRecipes(this);
-        new RecipesDyes().AddRecipes(this);
+        RecipesDyes.AddRecipes(this);
         AddRecipe(new ItemStack(Item.Paper, 3), ["###", '#', Item.SugarCane]);
         AddRecipe(new ItemStack(Item.Book, 1), ["#", "#", "#", '#', Item.Paper]);
         AddRecipe(new ItemStack(Block.Fence, 2), ["###", "###", '#', Item.Stick]);

@@ -131,7 +131,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.bipedHead.transform(1.0F / 16.0F);
-            if (BlockRenderer.IsSideLit(Block.Blocks[var3.itemId].getRenderType()))
+            if (BlockRenderer.IsSideLit(Block.Blocks[var3.ItemId].getRenderType()))
             {
                 float var4 = 10.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
@@ -218,7 +218,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 var21 = new ItemStack(Item.Stick);
             }
 
-            if (var21.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var21.itemId].getRenderType()))
+            if (var21.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[var21.ItemId].getRenderType()))
             {
                 var5 = 0.5F;
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));
@@ -227,10 +227,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Scale(var5, -var5, var5);
             }
-            else if (Item.ITEMS[var21.itemId].isHandheld())
+            else if (Item.ITEMS[var21.ItemId].isHandheld())
             {
                 var5 = 10.0F / 16.0F;
-                if (Item.ITEMS[var21.itemId].isHandheldRod())
+                if (Item.ITEMS[var21.ItemId].isHandheldRod())
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
                     GLManager.GL.Translate(0.0F, -(2.0F / 16.0F), 0.0F);

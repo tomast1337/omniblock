@@ -21,7 +21,7 @@ public class EntityEquipmentUpdateS2CPacket() : PacketBaseEntity(PacketId.Entity
         }
         else
         {
-            p.itemRawId = itemStack.itemId;
+            p.itemRawId = itemStack.ItemId;
             p.itemDamage = itemStack.getDamage();
         }
 

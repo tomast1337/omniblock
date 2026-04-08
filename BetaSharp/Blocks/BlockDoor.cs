@@ -125,7 +125,7 @@ internal class BlockDoor : Block
 
 
     public override bool onUse(OnUseEvent @event) => updateDorState(@event.World, @event.X, @event.Y, @event.Z);
-    public int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
+    public static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
 
     public void SetOpen(IWorldContext world, int x, int y, int z, bool open)
     {

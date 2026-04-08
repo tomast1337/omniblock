@@ -1018,7 +1018,7 @@ public partial class BetaSharp :
                     }
                     else
                     {
-                        Player.inventory.changeCurrentItem(mouseWheelDelta);
+                        Player.inventory.ChangeCurrentItem(mouseWheelDelta);
                         if (Options.InvertScrolling)
                         {
                             if (mouseWheelDelta > 0) mouseWheelDelta = 1;
@@ -1139,7 +1139,7 @@ public partial class BetaSharp :
                 {
                     if (Keyboard.getEventKey() == Keyboard.KEY_1 + slotIndex)
                     {
-                        Player.inventory.selectedSlot = slotIndex;
+                        Player.inventory.SelectedSlot = slotIndex;
                     }
                 }
 
@@ -1217,7 +1217,7 @@ public partial class BetaSharp :
                 else
                 {
                     ItemStack selectedItem = Player.inventory.GetItemInHand();
-                    int itemCountBefore = selectedItem != null ? selectedItem.count : 0;
+                    int itemCountBefore = selectedItem != null ? selectedItem.Count : 0;
                     if (PlayerController.sendPlaceBlock(Player, World, selectedItem, blockX, blockY, blockZ, blockSide))
                     {
                         shouldPerformSecondaryAction = false;
@@ -1229,11 +1229,11 @@ public partial class BetaSharp :
                         return;
                     }
 
-                    if (selectedItem.count == 0)
+                    if (selectedItem.Count == 0)
                     {
-                        Player.inventory.main[Player.inventory.selectedSlot] = null;
+                        Player.inventory.Main[Player.inventory.SelectedSlot] = null;
                     }
-                    else if (selectedItem.count != itemCountBefore)
+                    else if (selectedItem.Count != itemCountBefore)
                     {
                         GameRenderer.itemRenderer.ResetEquippedProgress();
                     }
@@ -1328,7 +1328,7 @@ public partial class BetaSharp :
             {
                 if (targetEntity == null)
                 {
-                    Player = (ClientPlayerEntity?)newWorld.GetPlayerForProxy(typeof(ClientPlayerEntity));
+                    Player = (ClientPlayerEntity?)World.GetPlayerForProxy(typeof(ClientPlayerEntity));
                 }
             }
             else if (Player != null)
@@ -1351,7 +1351,7 @@ public partial class BetaSharp :
             PlayerController.fillHotbar(Player);
             if (targetEntity != null)
             {
-                newWorld.SaveWorldData();
+                World.SaveWorldData();
             }
 
             newWorld.AddPlayer(Player);

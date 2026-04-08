@@ -29,7 +29,7 @@ public class EntityMinecart : Entity, IInventory
 
     private readonly ILogger<EntityMinecart> _logger = Log.Instance.For<EntityMinecart>();
 
-    private ItemStack[] cargoItems;
+    private ItemStack?[] _cargoItems;
 
     // Kept with original names for external compatibility.
     public int minecartCurrentDamage;
@@ -55,7 +55,7 @@ public class EntityMinecart : Entity, IInventory
 
     public EntityMinecart(IWorldContext world) : base(world)
     {
-        cargoItems = new ItemStack[36];
+        _cargoItems = new ItemStack[36];
         minecartCurrentDamage = 0;
         minecartTimeSinceHit = 0;
         minecartRockDirection = 1;
@@ -113,10 +113,7 @@ public class EntityMinecart : Entity, IInventory
 
             if (minecartCurrentDamage > 40)
             {
-                if (passenger != null)
-                {
-                    passenger.setVehicle(this);
-                }
+                passenger?.setVehicle(this);
 
                 markDead();
                 dropItem(Item.Minecart.id, 1, 0.0F);
@@ -125,31 +122,31 @@ public class EntityMinecart : Entity, IInventory
                 {
                     EntityMinecart minecart = this;
 
-                    for (int slotIndex = 0; slotIndex < minecart.size(); ++slotIndex)
+                    for (int slotIndex = 0; slotIndex < minecart.Size; ++slotIndex)
                     {
-                        ItemStack itemStack = minecart.getStack(slotIndex);
+                        ItemStack? itemStack = minecart.GetStack(slotIndex);
                         if (itemStack != null)
                         {
                             float offsetX = random.NextFloat() * 0.8F + 0.1F;
                             float offsetY = random.NextFloat() * 0.8F + 0.1F;
                             float offsetZ = random.NextFloat() * 0.8F + 0.1F;
 
-                            while (itemStack.count > 0)
+                            while (itemStack.Count > 0)
                             {
                                 int dropCount = random.NextInt(21) + 10;
-                                if (dropCount > itemStack.count)
+                                if (dropCount > itemStack.Count)
                                 {
-                                    dropCount = itemStack.count;
+                                    dropCount = itemStack.Count;
                                 }
 
-                                itemStack.count -= dropCount;
+                                itemStack.Count -= dropCount;
 
-                                EntityItem droppedItem = new EntityItem(
+                                EntityItem droppedItem = new(
                                     world,
                                     x + offsetX,
                                     y + offsetY,
                                     z + offsetZ,
-                                    new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage())
+                                    new ItemStack(itemStack.ItemId, dropCount, itemStack.getDamage())
                                 );
 
                                 float scatterSpeed = 0.05F;
@@ -190,31 +187,31 @@ public class EntityMinecart : Entity, IInventory
 
     public override void markDead()
     {
-        for (int slotIndex = 0; slotIndex < size(); ++slotIndex)
+        for (int slotIndex = 0; slotIndex < Size; ++slotIndex)
         {
-            ItemStack itemStack = getStack(slotIndex);
+            ItemStack? itemStack = GetStack(slotIndex);
             if (itemStack != null)
             {
                 float offsetX = random.NextFloat() * 0.8F + 0.1F;
                 float offsetY = random.NextFloat() * 0.8F + 0.1F;
                 float offsetZ = random.NextFloat() * 0.8F + 0.1F;
 
-                while (itemStack.count > 0)
+                while (itemStack.Count > 0)
                 {
                     int dropCount = random.NextInt(21) + 10;
-                    if (dropCount > itemStack.count)
+                    if (dropCount > itemStack.Count)
                     {
-                        dropCount = itemStack.count;
+                        dropCount = itemStack.Count;
                     }
 
-                    itemStack.count -= dropCount;
+                    itemStack.Count -= dropCount;
 
-                    EntityItem droppedItem = new EntityItem(
+                    EntityItem droppedItem = new(
                         world,
                         x + offsetX,
                         y + offsetY,
                         z + offsetZ,
-                        new ItemStack(itemStack.itemId, dropCount, itemStack.getDamage())
+                        new ItemStack(itemStack.ItemId, dropCount, itemStack.getDamage())
                     );
 
                     float scatterSpeed = 0.05F;
@@ -828,15 +825,16 @@ public class EntityMinecart : Entity, IInventory
         }
         else if (type == 1)
         {
-            NBTTagList items = new NBTTagList();
+            NBTTagList items = new();
 
-            for (int slotIndex = 0; slotIndex < cargoItems.Length; ++slotIndex)
+            for (int slotIndex = 0; slotIndex < _cargoItems.Length; ++slotIndex)
             {
-                if (cargoItems[slotIndex] != null)
+                ItemStack? stack = _cargoItems[slotIndex];
+                if (stack != null)
                 {
-                    NBTTagCompound itemTag = new NBTTagCompound();
+                    NBTTagCompound itemTag = new();
                     itemTag.SetByte("Slot", (sbyte)slotIndex);
-                    cargoItems[slotIndex].writeToNBT(itemTag);
+                    stack.writeToNBT(itemTag);
                     items.SetTag(itemTag);
                 }
             }
@@ -858,15 +856,15 @@ public class EntityMinecart : Entity, IInventory
         else if (type == 1)
         {
             NBTTagList items = nbt.GetTagList("Items");
-            cargoItems = new ItemStack[size()];
+            _cargoItems = new ItemStack[Size];
 
             for (int i = 0; i < items.TagCount(); ++i)
             {
                 NBTTagCompound itemTag = (NBTTagCompound)items.TagAt(i);
                 int slotIndex = itemTag.GetByte("Slot") & 255;
-                if (slotIndex >= 0 && slotIndex < cargoItems.Length)
+                if (slotIndex >= 0 && slotIndex < _cargoItems.Length)
                 {
-                    cargoItems[slotIndex] = new ItemStack(itemTag);
+                    _cargoItems[slotIndex] = new ItemStack(itemTag);
                 }
             }
         }
@@ -984,60 +982,55 @@ public class EntityMinecart : Entity, IInventory
         }
     }
 
-    public int size()
+    public int Size => 27;
+
+    public ItemStack? GetStack(int slotIndex)
     {
-        return 27;
+        return _cargoItems[slotIndex];
     }
 
-    public ItemStack getStack(int slotIndex)
+    public ItemStack? RemoveStack(int slotIndex, int amount)
     {
-        return cargoItems[slotIndex];
-    }
-
-    public ItemStack? removeStack(int slotIndex, int amount)
-    {
-        if (cargoItems[slotIndex] == null)
+        if (_cargoItems[slotIndex] == null)
         {
             return null;
         }
 
         ItemStack itemStack;
-        if (cargoItems[slotIndex].count <= amount)
+        ItemStack? stack = _cargoItems[slotIndex];
+
+        if (stack is null) return null;
+
+        if (stack.Count <= amount)
         {
-            itemStack = cargoItems[slotIndex];
-            cargoItems[slotIndex] = null;
+            itemStack = stack;
+            _cargoItems[slotIndex] = null;
             return itemStack;
         }
 
-        itemStack = cargoItems[slotIndex].split(amount);
-        if (cargoItems[slotIndex].count == 0)
+        itemStack = stack.Split(amount);
+        if (stack.Count == 0)
         {
-            cargoItems[slotIndex] = null;
+            _cargoItems[slotIndex] = null;
         }
 
         return itemStack;
     }
 
-    public void setStack(int slotIndex, ItemStack? itemStack)
+    public void SetStack(int slotIndex, ItemStack? itemStack)
     {
-        cargoItems[slotIndex] = itemStack;
-        if (itemStack != null && itemStack.count > getMaxCountPerStack())
+        _cargoItems[slotIndex] = itemStack;
+        if (itemStack != null && itemStack.Count > MaxCountPerStack)
         {
-            itemStack.count = getMaxCountPerStack();
+            itemStack.Count = MaxCountPerStack;
         }
     }
 
-    public string getName()
-    {
-        return "Minecart";
-    }
+    public string Name => "Minecart";
 
-    public int getMaxCountPerStack()
-    {
-        return 64;
-    }
+    public int MaxCountPerStack => 64;
 
-    public void markDirty()
+    public void MarkDirty()
     {
     }
 
@@ -1064,12 +1057,12 @@ public class EntityMinecart : Entity, IInventory
         }
         else if (type == 2)
         {
-            ItemStack heldItem = player.inventory.GetItemInHand();
-            if (heldItem != null && heldItem.itemId == Item.Coal.id)
+            ItemStack? heldItem = player.inventory.GetItemInHand();
+            if (heldItem != null && heldItem.ItemId == Item.Coal.id)
             {
-                if (--heldItem.count == 0)
+                if (--heldItem.Count == 0)
                 {
-                    player.inventory.setStack(player.inventory.selectedSlot, (ItemStack)null);
+                    player.inventory.SetStack(player.inventory.SelectedSlot, null);
                 }
 
                 fuel += 1200;
@@ -1103,7 +1096,7 @@ public class EntityMinecart : Entity, IInventory
         clientVelocityZ = base.velocityZ = velocityZ;
     }
 
-    public bool canPlayerUse(EntityPlayer player)
+    public bool CanPlayerUse(EntityPlayer player)
     {
         return !dead && player.getSquaredDistance(this) <= 64.0D;
     }

@@ -118,7 +118,7 @@ public class EntityPainting : Entity
             centerZ + halfDepth + margin);
     }
 
-    private float GetArtOffset(int artSize)
+    private static float GetArtOffset(int artSize)
     {
         return artSize == 32 ? 0.5F : (artSize == 64 ? 0.5F : 0.0F);
     }

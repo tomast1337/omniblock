@@ -410,7 +410,7 @@ public class Block
         }
     }
 
-    protected void dropStack(IWorldContext world, int x, int y, int z, ItemStack itemStack)
+    protected static void dropStack(IWorldContext world, int x, int y, int z, ItemStack itemStack)
     {
         if (!world.IsRemote && world.Rules.GetBool(DefaultRules.DoTileDrops))
         {

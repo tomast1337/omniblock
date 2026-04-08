@@ -241,7 +241,7 @@ public abstract class BlockFluid : Block
         fizz(broadcaster, x, y, z);
     }
 
-    protected void fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
+    protected static void fizz(WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (Random.Shared.NextSingle() - Random.Shared.NextSingle()) * 0.8F);
 

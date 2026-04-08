@@ -72,7 +72,7 @@ public sealed class DataSynchronizer
                 break;
             case SyncedProperty<ItemStack>(var item):
                 stream.WriteShort((short)item.getItem().id);
-                stream.WriteByte((byte)item.count);
+                stream.WriteByte((byte)item.Count);
                 stream.WriteShort((short)item.getDamage());
                 break;
             case SyncedProperty<Vec3i>(var vec):

@@ -22,7 +22,7 @@ internal static class ItemLookup
     }
 
     internal static string ResolveItemName(ItemStack item) =>
-        s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.itemId).Key ?? item.getItemName();
+        s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.ItemId).Key ?? item.getItemName();
 
     /// <summary>
     /// Gets all available item names that start with the given prefix (with underscores)

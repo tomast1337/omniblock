@@ -26,7 +26,7 @@ public class TellCommand : Command.Command
         string whisper = "§7" + context.Source.SenderName + " whispers " + message;
         s_logger.LogInformation(whisper);
 
-        if (!context.Source.Server.playerManager.sendPacket(target, ChatMessagePacket.Get(whisper)))
+        if (!PlayerManager.sendPacket(target, ChatMessagePacket.Get(whisper)))
         {
             context.Source.Output.SendMessage("There's no player by that name online.");
         }

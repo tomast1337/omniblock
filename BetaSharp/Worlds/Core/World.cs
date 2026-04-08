@@ -269,7 +269,7 @@ public abstract class World : IWorldContext
         Properties.SpawnZ = spawnZ;
     }
 
-    public void SaveWorldData()
+    public static void SaveWorldData()
     {
     }
 
@@ -416,7 +416,7 @@ public abstract class World : IWorldContext
         }
     }
 
-    public Entity? GetPlayerForProxy(Type type) => null;
+    public static Entity? GetPlayerForProxy(Type type) => null;
 
     public string GetDebugInfo() => BlockHost.ChunkSource.GetDebugInfo();
 

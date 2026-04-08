@@ -26,7 +26,7 @@ public class CraftingScreenHandler : ScreenHandler
         this.x = x;
         this.y = y;
         this.z = z;
-        AddSlot(new CraftingResultSlot(playerInventory.player, input, result, 0, 124, 35));
+        AddSlot(new CraftingResultSlot(playerInventory.Player, input, result, 0, 124, 35));
 
         int var6;
         int var7;
@@ -56,7 +56,7 @@ public class CraftingScreenHandler : ScreenHandler
 
     public override void onSlotUpdate(IInventory inv)
     {
-        result.setStack(0, CraftingManager.getInstance().FindMatchingRecipe(input));
+        result.SetStack(0, CraftingManager.getInstance().FindMatchingRecipe(input));
     }
 
     public override void onClosed(EntityPlayer player)
@@ -66,7 +66,7 @@ public class CraftingScreenHandler : ScreenHandler
         {
             for (int i = 0; i < 9; ++i)
             {
-                ItemStack itemStack = input.getStack(i);
+                ItemStack itemStack = input.GetStack(i);
                 if (itemStack != null)
                 {
                     player.inventory.AddItemStackToInventoryOrDrop(itemStack);
@@ -106,7 +106,7 @@ public class CraftingScreenHandler : ScreenHandler
                 insertItem(var4, 10, 46, false);
             }
 
-            if (var4.count == 0)
+            if (var4.Count == 0)
             {
                 var3.setStack(null);
             }
@@ -115,7 +115,7 @@ public class CraftingScreenHandler : ScreenHandler
                 var3.markDirty();
             }
 
-            if (var4.count == var2.count)
+            if (var4.Count == var2.Count)
             {
                 return null;
             }

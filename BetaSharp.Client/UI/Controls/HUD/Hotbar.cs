@@ -46,7 +46,7 @@ public class Hotbar : UIElement
 
         // Selection highlight
         InventoryPlayer inventory = player.inventory;
-        renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.selectedSlot * 20 - 1, -1, 0, 22, 24, 22);
+        renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/gui.png"), inventory.SelectedSlot * 20 - 1, -1, 0, 22, 24, 22);
 
         RenderStats(renderer);
 
@@ -124,7 +124,7 @@ public class Hotbar : UIElement
 
     private void RenderSlot(UIRenderer renderer, int slotIndex, int x, int y)
     {
-        ItemStack? stack = _getPlayer()?.inventory.main[slotIndex];
+        ItemStack? stack = _getPlayer()?.inventory.Main[slotIndex];
         if (stack == null) return;
 
         renderer.DrawItem(stack, x, y);

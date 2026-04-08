@@ -130,7 +130,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
     }
 
-    public ItemStack getEquipment(int slot) => slot == 0 ? inventory.GetItemInHand() : inventory.armor[slot - 1];
+    public ItemStack getEquipment(int slot) => slot == 0 ? inventory.GetItemInHand() : inventory.Armor[slot - 1];
 
     public override bool damage(Entity? damageSource, int amount)
     {
@@ -177,12 +177,12 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private void PlayerTickPostGeneric(bool shouldSendChunkUpdates)
     {
-        for (int slotIndex = 0; slotIndex < inventory.size(); slotIndex++)
+        for (int slotIndex = 0; slotIndex < inventory.Size; slotIndex++)
         {
-            ItemStack itemStack = inventory.getStack(slotIndex);
-            if (itemStack != null && Item.ITEMS[itemStack.itemId].isNetworkSynced() && NetworkHandler.getBlockDataSendQueueSize() <= 2)
+            ItemStack? itemStack = inventory.GetStack(slotIndex);
+            if (itemStack != null && Item.ITEMS[itemStack.ItemId].isNetworkSynced() && NetworkHandler.getBlockDataSendQueueSize() <= 2)
             {
-                Packet packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.itemId]).getUpdatePacket(itemStack, world, this);
+                Packet? packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.ItemId]).getUpdatePacket(itemStack, world, this);
                 if (packet != null)
                 {
                     NetworkHandler.SendPacket(packet);
@@ -438,7 +438,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void openChestScreen(IInventory inventory)
     {
         incrementScreenHandlerSyncId();
-        NetworkHandler.SendPacket(OpenScreenS2CPacket.Get(screenHandlerSyncId, 0, inventory.getName(), inventory.size()));
+        NetworkHandler.SendPacket(OpenScreenS2CPacket.Get(screenHandlerSyncId, 0, inventory.Name, inventory.Size));
         currentScreenHandler = new GenericContainerScreenHandler(this.inventory, inventory);
         currentScreenHandler.SyncId = screenHandlerSyncId;
         currentScreenHandler.AddListener(this);
@@ -448,7 +448,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
         incrementScreenHandlerSyncId();
-        NetworkHandler.SendPacket(OpenScreenS2CPacket.Get(screenHandlerSyncId, 2, furnace.getName(), furnace.size()));
+        NetworkHandler.SendPacket(OpenScreenS2CPacket.Get(screenHandlerSyncId, 2, furnace.Name, furnace.Size));
         currentScreenHandler = new FurnaceScreenHandler(inventory, furnace);
         currentScreenHandler.SyncId = screenHandlerSyncId;
         currentScreenHandler.AddListener(this);
@@ -458,7 +458,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
         incrementScreenHandlerSyncId();
-        NetworkHandler.SendPacket(OpenScreenS2CPacket.Get(screenHandlerSyncId, 3, dispenser.getName(), dispenser.size()));
+        NetworkHandler.SendPacket(OpenScreenS2CPacket.Get(screenHandlerSyncId, 3, dispenser.Name, dispenser.Size));
         currentScreenHandler = new DispenserScreenHandler(inventory, dispenser);
         currentScreenHandler.SyncId = screenHandlerSyncId;
         currentScreenHandler.AddListener(this);

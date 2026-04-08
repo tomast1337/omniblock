@@ -52,7 +52,7 @@ public class EntityManager
         return slice;
     }
 
-    private bool ShouldSkipStandaloneUpdate(Entity entity)
+    private static bool ShouldSkipStandaloneUpdate(Entity entity)
     {
         if (entity.vehicle == null)
         {

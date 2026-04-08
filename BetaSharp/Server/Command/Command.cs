@@ -50,7 +50,7 @@ public abstract partial class Command
         public ICommandHandler Handler { get; } = handler;
         public BetaSharpServer Server => Handler.Server;
         public string SenderName { get; } = senderName;
-        public string[] Args => [];
+        public static string[] Args => [];
         public ICommandOutput Output { get; } = output;
 
         /// <summary>

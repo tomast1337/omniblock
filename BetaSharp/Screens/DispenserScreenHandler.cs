@@ -40,6 +40,6 @@ public class DispenserScreenHandler : ScreenHandler
 
     public override bool canUse(EntityPlayer player)
     {
-        return dispenserBlockEntity.canPlayerUse(player);
+        return dispenserBlockEntity.CanPlayerUse(player);
     }
 }

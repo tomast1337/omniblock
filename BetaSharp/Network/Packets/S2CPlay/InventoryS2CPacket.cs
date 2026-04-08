@@ -56,8 +56,8 @@ public class InventoryS2CPacket() : Packet(PacketId.InventoryS2C)
             }
             else
             {
-                stream.WriteShort((short)contents[i].itemId);
-                stream.WriteByte((byte)contents[i].count);
+                stream.WriteShort((short)contents[i].ItemId);
+                stream.WriteByte((byte)contents[i].Count);
                 stream.WriteShort((short)contents[i].getDamage());
             }
         }

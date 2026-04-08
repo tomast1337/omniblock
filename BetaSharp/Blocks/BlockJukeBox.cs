@@ -22,7 +22,7 @@ internal class BlockJukeBox(int id, int textureId) : BlockWithEntity(id, texture
         return true;
     }
 
-    public void insertRecord(IWorldContext world, int x, int y, int z, int id)
+    public static void insertRecord(IWorldContext world, int x, int y, int z, int id)
     {
         if (world.IsRemote) return;
 
@@ -34,11 +34,11 @@ internal class BlockJukeBox(int id, int textureId) : BlockWithEntity(id, texture
         }
 
         jukebox.recordId = id;
-        jukebox.markDirty();
+        jukebox.MarkDirty();
         world.Writer.SetBlockMeta(x, y, z, 1);
     }
 
-    public void tryEjectRecord(IWorldContext level, int x, int y, int z)
+    public static void tryEjectRecord(IWorldContext level, int x, int y, int z)
     {
         if (level.IsRemote) return;
 
@@ -49,7 +49,7 @@ internal class BlockJukeBox(int id, int textureId) : BlockWithEntity(id, texture
         level.Broadcaster.WorldEvent(1005, x, y, z, 0);
         level.Broadcaster.PlayStreamingAtPos(null, x, y, z);
         jukebox!.recordId = 0;
-        jukebox.markDirty();
+        jukebox.MarkDirty();
         level.Writer.SetBlockMeta(x, y, z, 0);
 
         double offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;

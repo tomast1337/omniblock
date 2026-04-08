@@ -1019,7 +1019,7 @@ public abstract class Entity
 
     public abstract void writeNbt(NBTTagCompound nbt);
 
-    protected NBTTagList newDoubleNBTList(params double[] var1)
+    protected static NBTTagList newDoubleNBTList(params double[] var1)
     {
         NBTTagList var2 = new();
         double[] var3 = var1;
@@ -1034,7 +1034,7 @@ public abstract class Entity
         return var2;
     }
 
-    protected NBTTagList newFloatNBTList(params float[] var1)
+    protected static NBTTagList newFloatNBTList(params float[] var1)
     {
         NBTTagList var2 = new();
         float[] var3 = var1;

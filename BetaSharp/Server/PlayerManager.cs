@@ -496,7 +496,7 @@ public class PlayerManager
         return sendPacket(getPlayer(player), packet);
     }
 
-    public bool sendPacket(ServerPlayerEntity? player, Packet packet)
+    public static bool sendPacket(ServerPlayerEntity? player, Packet packet)
     {
         if (player != null)
         {
@@ -518,7 +518,7 @@ public class PlayerManager
         }
     }
 
-    public void updateBlockEntity(int x, int y, int z, BlockEntity blockentity)
+    public static void updateBlockEntity(int x, int y, int z, BlockEntity blockentity)
     {
     }
 
@@ -544,7 +544,7 @@ public class PlayerManager
         loadWhitelist();
     }
 
-    public void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
+    public static void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
     {
         player.NetworkHandler.SendPacket(WorldTimeUpdateS2CPacket.Get(world.GetTime()));
         if (world.Properties.IsRaining)
@@ -553,7 +553,7 @@ public class PlayerManager
         }
     }
 
-    public void sendPlayerStatus(ServerPlayerEntity player)
+    public static void sendPlayerStatus(ServerPlayerEntity player)
     {
         player.onContentsUpdate(player.playerScreenHandler);
         player.markHealthDirty();

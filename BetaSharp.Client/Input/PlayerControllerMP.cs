@@ -45,9 +45,9 @@ public class PlayerControllerMP : PlayerController
         if (hand != null)
         {
             hand.postMine(blockId, x, y, z, Game.Player);
-            if (hand.count == 0)
+            if (hand.Count == 0)
             {
-                hand.onRemoved(Game.Player);
+                ItemStack.onRemoved(Game.Player);
                 Game.Player.clearStackInHand();
             }
         }
@@ -168,7 +168,7 @@ public class PlayerControllerMP : PlayerController
 
     private void syncCurrentPlayItem()
     {
-        int var1 = Game.Player.inventory.selectedSlot;
+        int var1 = Game.Player.inventory.SelectedSlot;
         if (var1 != currentPlayerItem)
         {
             currentPlayerItem = var1;

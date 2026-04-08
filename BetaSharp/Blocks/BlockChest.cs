@@ -170,25 +170,25 @@ internal class BlockChest : BlockWithEntity
             return;
         }
 
-        for (int slot = 0; slot < chest.size(); ++slot)
+        for (int slot = 0; slot < chest.Size; ++slot)
         {
-            ItemStack? stack = chest.getStack(slot);
+            ItemStack? stack = chest.GetStack(slot);
             if (stack == null) continue;
 
             float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
             float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
             float offsetZ = s_random.NextFloat() * 0.8F + 0.1F;
 
-            while (stack.count > 0)
+            while (stack.Count > 0)
             {
                 int amount = s_random.NextInt(21) + 10;
-                if (amount > stack.count)
+                if (amount > stack.Count)
                 {
-                    amount = stack.count;
+                    amount = stack.Count;
                 }
 
-                stack.count -= amount;
-                EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()));
+                stack.Count -= amount;
+                EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()));
 
                 entityItem.velocityX = s_random.NextGaussian() * DropSpread;
                 entityItem.velocityY = s_random.NextGaussian() * DropSpread + 0.2F;

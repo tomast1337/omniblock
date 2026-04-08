@@ -19,7 +19,7 @@ public class FurnaceScreenHandler : ScreenHandler
         furnaceBlockEntity = furnace;
         AddSlot(new Slot(furnace, 0, 56, 17));
         AddSlot(new Slot(furnace, 1, 56, 53));
-        AddSlot(new FurnaceOutputSlot(playerInventory.player, furnace, 2, 116, 35));
+        AddSlot(new FurnaceOutputSlot(playerInventory.Player, furnace, 2, 116, 35));
 
         int var3;
         for (var3 = 0; var3 < 3; ++var3)
@@ -40,9 +40,9 @@ public class FurnaceScreenHandler : ScreenHandler
     public override void AddListener(ScreenHandlerListener listener)
     {
         base.AddListener(listener);
-        listener.onPropertyUpdate(this, 0, furnaceBlockEntity.cookTime);
-        listener.onPropertyUpdate(this, 1, furnaceBlockEntity.burnTime);
-        listener.onPropertyUpdate(this, 2, furnaceBlockEntity.fuelTime);
+        listener.onPropertyUpdate(this, 0, furnaceBlockEntity.CookTime);
+        listener.onPropertyUpdate(this, 1, furnaceBlockEntity.BurnTime);
+        listener.onPropertyUpdate(this, 2, furnaceBlockEntity.FuelTime);
     }
 
     public override void SendContentUpdates()
@@ -52,49 +52,49 @@ public class FurnaceScreenHandler : ScreenHandler
         for (int var1 = 0; var1 < Listeners.Count; ++var1)
         {
             ScreenHandlerListener var2 = Listeners[var1];
-            if (cookTime != furnaceBlockEntity.cookTime)
+            if (cookTime != furnaceBlockEntity.CookTime)
             {
-                var2.onPropertyUpdate(this, 0, furnaceBlockEntity.cookTime);
+                var2.onPropertyUpdate(this, 0, furnaceBlockEntity.CookTime);
             }
 
-            if (burnTime != furnaceBlockEntity.burnTime)
+            if (burnTime != furnaceBlockEntity.BurnTime)
             {
-                var2.onPropertyUpdate(this, 1, furnaceBlockEntity.burnTime);
+                var2.onPropertyUpdate(this, 1, furnaceBlockEntity.BurnTime);
             }
 
-            if (fuelTime != furnaceBlockEntity.fuelTime)
+            if (fuelTime != furnaceBlockEntity.FuelTime)
             {
-                var2.onPropertyUpdate(this, 2, furnaceBlockEntity.fuelTime);
+                var2.onPropertyUpdate(this, 2, furnaceBlockEntity.FuelTime);
             }
         }
 
-        cookTime = furnaceBlockEntity.cookTime;
-        burnTime = furnaceBlockEntity.burnTime;
-        fuelTime = furnaceBlockEntity.fuelTime;
+        cookTime = furnaceBlockEntity.CookTime;
+        burnTime = furnaceBlockEntity.BurnTime;
+        fuelTime = furnaceBlockEntity.FuelTime;
     }
 
     public override void setProperty(int id, int value)
     {
         if (id == 0)
         {
-            furnaceBlockEntity.cookTime = value;
+            furnaceBlockEntity.CookTime = value;
         }
 
         if (id == 1)
         {
-            furnaceBlockEntity.burnTime = value;
+            furnaceBlockEntity.BurnTime = value;
         }
 
         if (id == 2)
         {
-            furnaceBlockEntity.fuelTime = value;
+            furnaceBlockEntity.FuelTime = value;
         }
 
     }
 
     public override bool canUse(EntityPlayer player)
     {
-        return furnaceBlockEntity.canPlayerUse(player);
+        return furnaceBlockEntity.CanPlayerUse(player);
     }
 
     public override ItemStack quickMove(int slotNumber)
@@ -122,7 +122,7 @@ public class FurnaceScreenHandler : ScreenHandler
                 insertItem(var4, 3, 39, false);
             }
 
-            if (var4.count == 0)
+            if (var4.Count == 0)
             {
                 var3.setStack(null);
             }
@@ -131,7 +131,7 @@ public class FurnaceScreenHandler : ScreenHandler
                 var3.markDirty();
             }
 
-            if (var4.count == var2.count)
+            if (var4.Count == var2.Count)
             {
                 return null;
             }

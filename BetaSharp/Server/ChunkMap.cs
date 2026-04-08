@@ -107,7 +107,7 @@ internal class ChunkMap
         }
     }
 
-    private bool isWithinOldViewDistance(int chunkX, int chunkZ, int centerX, int centerZ, int oldDist)
+    private static bool isWithinOldViewDistance(int chunkX, int chunkZ, int centerX, int centerZ, int oldDist)
     {
         int dx = chunkX - centerX;
         int dz = chunkZ - centerZ;
@@ -279,7 +279,7 @@ internal class ChunkMap
         return GetChunks(player, _viewDistance);
     }
 
-    private ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius)
+    private static ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius)
     {
         int playerChunkX = (int)player.x >> 4;
         int playerChunkZ = (int)player.z >> 4;

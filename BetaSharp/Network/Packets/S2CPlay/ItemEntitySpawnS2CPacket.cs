@@ -21,8 +21,8 @@ public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C)
     {
         var p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
         p.id = item.id;
-        p.itemRawId = item.stack.itemId;
-        p.itemCount = item.stack.count;
+        p.itemRawId = item.stack.ItemId;
+        p.itemCount = item.stack.Count;
         p.itemDamage = item.stack.getDamage();
         p.x = MathHelper.Floor(item.x * 32.0D);
         p.y = MathHelper.Floor(item.y * 32.0D);

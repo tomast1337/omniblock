@@ -150,7 +150,7 @@ public class ServerLoginNetworkHandler : NetHandler
             server.SendConfigurationTo(handler.SendPacket);
             handler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
             handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(var4.X, var4.Y, var4.Z));
-            server.playerManager.sendWorldInfo(ent, var3);
+            PlayerManager.sendWorldInfo(ent, var3);
             server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.id, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.name));
             server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + ent.name + " joined the game."));
             server.playerManager.addPlayer(ent);

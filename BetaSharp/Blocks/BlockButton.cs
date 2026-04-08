@@ -21,7 +21,7 @@ internal class BlockButton : Block
 
     public override bool isFullCube() => false;
 
-    private bool IsValidPlacementSide(IBlockReader read, int x, int y, int z, Side side = Side.Down)
+    private static bool IsValidPlacementSide(IBlockReader read, int x, int y, int z, Side side = Side.Down)
     {
         if (side == Side.North)
         {

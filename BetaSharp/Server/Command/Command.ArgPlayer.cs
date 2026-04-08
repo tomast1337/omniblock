@@ -1,4 +1,4 @@
-﻿using BetaSharp.Entities;
+using BetaSharp.Entities;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Context;
@@ -43,7 +43,7 @@ public abstract partial class Command
 
         public IEnumerable<string> Examples => ["@p", "player"];
 
-        private async Task<Suggestions> ListSuggestionsAsync(
+        private static async Task<Suggestions> ListSuggestionsAsync(
             CommandContext<CommandSource> context,
             SuggestionsBuilder builder)
         {

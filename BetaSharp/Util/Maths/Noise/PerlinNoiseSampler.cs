@@ -80,12 +80,12 @@ internal class PerlinNoiseSampler : NoiseSampler
                                                 grad(_permutations[bb + 1], x - 1, y - 1, z - 1))));
     }
 
-    public double lerp(double t, double a, double b)
+    public static double lerp(double t, double a, double b)
     {
         return a + t * (b - a);
     }
 
-    public double grad(int hash, double x, double y)
+    public static double grad(int hash, double x, double y)
     {
         int h = hash & 15;
         double u = (1 - ((h & 8) >> 3)) * x;
@@ -93,7 +93,7 @@ internal class PerlinNoiseSampler : NoiseSampler
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 
-    public double grad(int hash, double x, double y, double z)
+    public static double grad(int hash, double x, double y, double z)
     {
         int h = hash & 15;
         double u = h < 8 ? x : y;

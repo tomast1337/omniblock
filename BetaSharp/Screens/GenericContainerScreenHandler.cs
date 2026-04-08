@@ -14,7 +14,7 @@ public class GenericContainerScreenHandler : ScreenHandler
     public GenericContainerScreenHandler(IInventory playerInventory, IInventory inventory)
     {
         this.inventory = inventory;
-        rows = inventory.size() / 9;
+        rows = inventory.Size / 9;
         int var3 = (rows - 4) * 18;
 
         int var4;
@@ -44,7 +44,7 @@ public class GenericContainerScreenHandler : ScreenHandler
 
     public override bool canUse(EntityPlayer player)
     {
-        return inventory.canPlayerUse(player);
+        return inventory.CanPlayerUse(player);
     }
 
     public override ItemStack quickMove(int slotNumber)
@@ -64,7 +64,7 @@ public class GenericContainerScreenHandler : ScreenHandler
                 insertItem(var4, 0, rows * 9, false);
             }
 
-            if (var4.count == 0)
+            if (var4.Count == 0)
             {
                 var3.setStack(null);
             }

@@ -169,9 +169,9 @@ public class ServerPlayerInteractionManager
         if (itemStack != null)
         {
             itemStack.postMine(blockId, x, y, z, player);
-            if (itemStack.count == 0)
+            if (itemStack.Count == 0)
             {
-                itemStack.onRemoved(player);
+                ItemStack.onRemoved(player);
                 player.clearStackInHand();
             }
         }
@@ -181,14 +181,14 @@ public class ServerPlayerInteractionManager
 
     public bool interactItem(EntityPlayer player, IWorldContext world, ItemStack stack)
     {
-        int count = stack.count;
+        int count = stack.Count;
         ItemStack itemStack = stack.use(world, player);
-        if (itemStack != stack || itemStack != null && itemStack.count != count)
+        if (itemStack != stack || itemStack != null && itemStack.Count != count)
         {
-            player.inventory.main[player.inventory.selectedSlot] = itemStack;
-            if (itemStack.count == 0)
+            player.inventory.Main[player.inventory.SelectedSlot] = itemStack;
+            if (itemStack.Count == 0)
             {
-                player.inventory.main[player.inventory.selectedSlot] = null;
+                player.inventory.Main[player.inventory.SelectedSlot] = null;
             }
 
             miningProgress = -1;

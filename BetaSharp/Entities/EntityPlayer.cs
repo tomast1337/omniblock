@@ -198,7 +198,7 @@ public abstract class EntityPlayer : EntityLiving
             heal(1);
         }
 
-        inventory.inventoryTick();
+        inventory.Tick();
     }
 
     protected void CollideWithPickupEntities()
@@ -356,7 +356,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (GameMode.CanDrop)
         {
-            DropItem(inventory.removeStack(inventory.selectedSlot, 1), false);
+            DropItem(inventory.RemoveStack(inventory.SelectedSlot, 1), false);
         }
     }
 
@@ -408,7 +408,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public float getBlockBreakingSpeed(Block block)
     {
-        float var2 = inventory.getStrVsBlock(block);
+        float var2 = inventory.GetStrVsBlock(block);
         if (isInFluid(Material.Water))
         {
             var2 /= 5.0F;
@@ -431,7 +431,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         base.readNbt(nbt);
         NBTTagList var2 = nbt.GetTagList("Inventory");
-        inventory.readFromNBT(var2);
+        inventory.ReadFromNBT(var2);
         dimensionId = nbt.GetInteger("Dimension");
         sleeping = nbt.GetBoolean("Sleeping");
         sleepTimer = nbt.GetShort("SleepTimer");
@@ -450,7 +450,7 @@ public abstract class EntityPlayer : EntityLiving
     public override void writeNbt(NBTTagCompound nbt)
     {
         base.writeNbt(nbt);
-        nbt.SetTag("Inventory", inventory.writeToNBT(new NBTTagList()));
+        nbt.SetTag("Inventory", inventory.WriteToNBT(new NBTTagList()));
         nbt.SetInteger("Dimension", dimensionId);
         nbt.SetBoolean("Sleeping", sleeping);
         nbt.SetShort("SleepTimer", (short)sleepTimer);
@@ -597,9 +597,9 @@ public abstract class EntityPlayer : EntityLiving
             if (itemStackInHand != null && entity is EntityLiving living)
             {
                 itemStackInHand.useOnEntity(living, this);
-                if (itemStackInHand.count <= 0)
+                if (itemStackInHand.Count <= 0)
                 {
-                    itemStackInHand.onRemoved(this);
+                    ItemStack.onRemoved(this);
                     clearStackInHand();
                 }
             }
@@ -613,7 +613,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public void clearStackInHand()
     {
-        inventory.setStack(inventory.selectedSlot, (ItemStack)null);
+        inventory.SetStack(inventory.SelectedSlot, (ItemStack)null);
     }
 
     public override double getStandingEyeHeight()
@@ -645,9 +645,9 @@ public abstract class EntityPlayer : EntityLiving
                 if (itemStackInHand != null)
                 {
                     itemStackInHand.postHit(living, this);
-                    if (itemStackInHand.count <= 0)
+                    if (itemStackInHand.Count <= 0)
                     {
-                        itemStackInHand.onRemoved(this);
+                        ItemStack.onRemoved(this);
                         clearStackInHand();
                     }
                 }
@@ -1030,7 +1030,7 @@ public abstract class EntityPlayer : EntityLiving
     public override int getItemStackTextureId(ItemStack stack)
     {
         int var2 = base.getItemStackTextureId(stack);
-        if (stack.itemId == Item.FishingRod.id && fishHook != null)
+        if (stack.ItemId == Item.FishingRod.id && fishHook != null)
         {
             var2 = stack.getTextureId() + 16;
         }

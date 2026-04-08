@@ -62,7 +62,7 @@ public class HelpCommand : Command.Command
         return 1;
     }
 
-    private void BuildHelp(string s, ICommandOutput o, CommandNode<CommandSource> context)
+    private static void BuildHelp(string s, ICommandOutput o, CommandNode<CommandSource> context)
     {
         if (context.Children.Count == 0)
         {

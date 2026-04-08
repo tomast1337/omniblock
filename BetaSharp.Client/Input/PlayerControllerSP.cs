@@ -36,9 +36,9 @@ public class PlayerControllerSP : PlayerController
         if (itemStackInHand != null)
         {
             itemStackInHand.postMine(blockId, x, y, z, Game.Player);
-            if (itemStackInHand.count == 0)
+            if (itemStackInHand.Count == 0)
             {
-                itemStackInHand.onRemoved(Game.Player);
+                ItemStack.onRemoved(Game.Player);
                 Game.Player.clearStackInHand();
             }
         }

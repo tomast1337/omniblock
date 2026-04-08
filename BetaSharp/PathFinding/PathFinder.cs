@@ -283,7 +283,7 @@ internal class PathFinder
         return 1;
     }
 
-    private PathEntity CreateEntityPath(PathPoint start, PathPoint end)
+    private static PathEntity CreateEntityPath(PathPoint start, PathPoint end)
     {
         int length = 1;
         PathPoint current = end;

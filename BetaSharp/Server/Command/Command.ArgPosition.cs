@@ -1,4 +1,4 @@
-﻿using BetaSharp.Util.Maths;
+using BetaSharp.Util.Maths;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Exceptions;
@@ -86,6 +86,6 @@ public abstract partial class Command
 
         public IEnumerable<string> Examples => ["~ ~ ~", "19 -5.2, 109", "~12 ~-4 ~8.2"];
 
-        private Vec3D SenderPosition(CommandSource s) => s.Server.playerManager.getPlayer(s.SenderName)?.GetPosition() ?? throw new Exception("Player not found.");
+        private static Vec3D SenderPosition(CommandSource s) => s.Server.playerManager.getPlayer(s.SenderName)?.GetPosition() ?? throw new Exception("Player not found.");
     }
 }

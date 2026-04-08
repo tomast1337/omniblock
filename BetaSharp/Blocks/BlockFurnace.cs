@@ -57,7 +57,7 @@ internal class BlockFurnace : BlockWithEntity
         }
     }
 
-    private void updateDirection(OnPlacedEvent @event)
+    private static void updateDirection(OnPlacedEvent @event)
     {
         if (@event.World.IsRemote) return;
 
@@ -166,22 +166,22 @@ internal class BlockFurnace : BlockWithEntity
                 return;
             }
 
-            for (int slotIndex = 0; slotIndex < furnace.size(); ++slotIndex)
+            for (int slotIndex = 0; slotIndex < furnace.Size; ++slotIndex)
             {
-                ItemStack? stack = furnace.getStack(slotIndex);
+                ItemStack? stack = furnace.GetStack(slotIndex);
                 if (stack == null) continue;
 
                 float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
                 float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
                 float offsetZ = s_random.NextFloat() * 0.8F + 0.1F;
 
-                while (stack.count > 0)
+                while (stack.Count > 0)
                 {
                     int stackCount = s_random.NextInt(21) + 10;
-                    if (stackCount > stack.count) stackCount = stack.count;
+                    if (stackCount > stack.Count) stackCount = stack.Count;
 
-                    stack.count -= stackCount;
-                    EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, stackCount, stack.getDamage()))
+                    stack.Count -= stackCount;
+                    EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, stackCount, stack.getDamage()))
                     {
                         velocityX = (float)s_random.NextGaussian() * DropSpread,
                         velocityY = (float)s_random.NextGaussian() * DropSpread + 0.2F,

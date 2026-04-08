@@ -80,7 +80,7 @@ public abstract class BlockEntity
 
     public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
 
-    public void markDirty()
+    public void MarkDirty()
     {
         if (World == null || World.IsRemote)
         {

@@ -54,7 +54,7 @@ internal class ItemReed : Item
             }
         }
 
-        if (itemStack.count == 0)
+        if (itemStack.Count == 0)
         {
             return false;
         }

@@ -88,7 +88,7 @@ internal class BlockDispenser : BlockWithEntity
         return true;
     }
 
-    private void dispense(OnTickEvent @event)
+    private static void dispense(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int dirX = 0;
@@ -124,7 +124,7 @@ internal class BlockDispenser : BlockWithEntity
             return;
         }
 
-        if (itemStack.itemId == Item.ARROW.id)
+        if (itemStack.ItemId == Item.ARROW.id)
         {
             EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
             arrow.setArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -132,14 +132,14 @@ internal class BlockDispenser : BlockWithEntity
             @event.World.Entities.SpawnEntity(arrow);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.itemId == Item.Egg.id)
+        else if (itemStack.ItemId == Item.Egg.id)
         {
             EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
             egg.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(egg);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.itemId == Item.Snowball.id)
+        else if (itemStack.ItemId == Item.Snowball.id)
         {
             EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
             snowball.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -196,25 +196,25 @@ internal class BlockDispenser : BlockWithEntity
         {
             JavaRandom random = s_random.Value!;
 
-            for (int slotIndex = 0; slotIndex < dispenser.size(); ++slotIndex)
+            for (int slotIndex = 0; slotIndex < dispenser.Size; ++slotIndex)
             {
-                ItemStack? stack = dispenser.getStack(slotIndex);
+                ItemStack? stack = dispenser.GetStack(slotIndex);
                 if (stack == null) continue;
 
                 float offsetX = random.NextFloat() * 0.8F + 0.1F;
                 float offsetY = random.NextFloat() * 0.8F + 0.1F;
                 float offsetZ = random.NextFloat() * 0.8F + 0.1F;
 
-                while (stack.count > 0)
+                while (stack.Count > 0)
                 {
                     int amount = random.NextInt(21) + 10;
-                    if (amount > stack.count)
+                    if (amount > stack.Count)
                     {
-                        amount = stack.count;
+                        amount = stack.Count;
                     }
 
-                    stack.count -= amount;
-                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.itemId, amount, stack.getDamage()))
+                    stack.Count -= amount;
+                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()))
                     {
                         velocityX = (float)random.NextGaussian() * LaunchSpread,
                         velocityY = (float)random.NextGaussian() * LaunchSpread + 0.2F,

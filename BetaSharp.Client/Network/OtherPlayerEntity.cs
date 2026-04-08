@@ -126,11 +126,11 @@ public class OtherPlayerEntity : EntityPlayer
 
         if (slotIndex == 0)
         {
-            inventory.main[inventory.selectedSlot] = itemStack;
+            inventory.Main[inventory.SelectedSlot] = itemStack;
         }
         else
         {
-            inventory.armor[slotIndex - 1] = itemStack;
+            inventory.Armor[slotIndex - 1] = itemStack;
         }
 
     }

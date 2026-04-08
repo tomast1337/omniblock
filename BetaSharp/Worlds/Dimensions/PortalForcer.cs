@@ -16,7 +16,7 @@ internal class PortalForcer
         }
     }
 
-    public bool TeleportToValidPortal(World world, Entity entity)
+    public static bool TeleportToValidPortal(World world, Entity entity)
     {
         short searchRadius = 128;
         double closestDistance = -1.0D;
@@ -96,7 +96,7 @@ internal class PortalForcer
         return false;
     }
 
-    public bool CreatePortal(World world, Entity entity)
+    public static bool CreatePortal(World world, Entity entity)
     {
         byte searchRadius = 16;
         double closestDistance = -1.0D;

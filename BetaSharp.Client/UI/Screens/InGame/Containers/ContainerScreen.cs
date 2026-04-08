@@ -120,7 +120,7 @@ public abstract class ContainerScreen(
             {
                 tips.Add(new ActionTip(ControlIcon.A, "Move"));
                 tips.Add(new ActionTip(ControlIcon.Y, "Quick Move"));
-                if (slotStack.count > 1)
+                if (slotStack.Count > 1)
                     tips.Add(new ActionTip(ControlIcon.X, "Take Half"));
             }
             else if (cursorStack != null)

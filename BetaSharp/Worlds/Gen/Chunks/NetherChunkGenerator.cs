@@ -453,7 +453,7 @@ internal class NetherChunkGenerator : IChunkSource
         return heightMap;
     }
 
-    public void markChunksForUnload(int _)
+    public static void markChunksForUnload(int _)
     {
     }
 }

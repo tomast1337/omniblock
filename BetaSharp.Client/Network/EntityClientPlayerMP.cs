@@ -130,7 +130,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         if (!Game.Player.GameMode.CanDrop) return;
 
         var selected = getHand();
-        if (selected != null && selected.count > 0)
+        if (selected != null && selected.Count > 0)
         {
             increaseStat(Stats.Stats.DropStat, 1);
         }

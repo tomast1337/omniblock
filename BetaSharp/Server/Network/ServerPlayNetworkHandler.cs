@@ -377,14 +377,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
 
         stack = player.inventory.GetItemInHand();
-        if (stack != null && stack.count == 0)
+        if (stack != null && stack.Count == 0)
         {
-            player.inventory.main[player.inventory.selectedSlot] = null;
+            player.inventory.Main[player.inventory.SelectedSlot] = null;
         }
 
         player.skipPacketSlotUpdates = true;
-        player.inventory.main[player.inventory.selectedSlot] = ItemStack.clone(player.inventory.main[player.inventory.selectedSlot]);
-        Slot slot = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.selectedSlot);
+        player.inventory.Main[player.inventory.SelectedSlot] = ItemStack.clone(player.inventory.Main[player.inventory.SelectedSlot]);
+        Slot slot = player.currentScreenHandler.GetSlot(player.inventory, player.inventory.SelectedSlot);
         player.currentScreenHandler.SendContentUpdates();
         player.skipPacketSlotUpdates = false;
         if (!ItemStack.areEqual(player.inventory.GetItemInHand(), packet.stack))
@@ -423,7 +423,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         if (packet.selectedSlot >= 0 && packet.selectedSlot <= InventoryPlayer.HotbarSize)
         {
             player.interactionManager.UpdateMiningTool();
-            player.inventory.selectedSlot = packet.selectedSlot;
+            player.inventory.SelectedSlot = packet.selectedSlot;
         }
         else
         {
@@ -665,7 +665,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
 
                 var7.SetEditable(false);
-                var7.markDirty();
+                var7.MarkDirty();
                 var2.Broadcaster.BlockUpdateEvent(var10, var11, var12);
             }
         }

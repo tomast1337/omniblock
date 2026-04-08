@@ -123,7 +123,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         WriteLevelDat(rootTag);
     }
 
-    private void AdjustPlayerYForSingleplayer(NBTTagCompound? player)
+    private static void AdjustPlayerYForSingleplayer(NBTTagCompound? player)
     {
         if (player != null && player.HasKey("Pos"))
         {

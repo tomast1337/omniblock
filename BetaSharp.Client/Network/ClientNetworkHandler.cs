@@ -284,11 +284,11 @@ public class ClientNetworkHandler : NetHandler
         int currentItem = packet.currentItem;
         if (currentItem == 0)
         {
-            ent.inventory.main[ent.inventory.selectedSlot] = null;
+            ent.inventory.Main[ent.inventory.SelectedSlot] = null;
         }
         else
         {
-            ent.inventory.main[ent.inventory.selectedSlot] = new ItemStack(currentItem, 1, 0);
+            ent.inventory.Main[ent.inventory.SelectedSlot] = new ItemStack(currentItem, 1, 0);
         }
 
         ent.setPositionAndAngles(x, y, z, rotation, pitch);
@@ -643,17 +643,17 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet)
     {
-        ClientPlayerEntity player = _context.PlayerHost.Player;
+        ClientPlayerEntity? player = _context.PlayerHost.Player;
         if (packet.syncId == -1)
         {
             player.inventory.SetCursorStack(packet.stack);
         }
         else if (packet.syncId == 0 && packet.slot >= 36 && packet.slot < 45)
         {
-            ItemStack itemStack = player.playerScreenHandler.GetSlot(packet.slot).getStack();
-            if (packet.stack != null && (itemStack == null || itemStack.count < packet.stack.count))
+            ItemStack? itemStack = player.playerScreenHandler.GetSlot(packet.slot).getStack();
+            if (packet.stack != null && (itemStack == null || itemStack.Count < packet.stack.Count))
             {
-                packet.stack.bobbingAnimationTime = 5;
+                packet.stack.AnimationTime = 5;
             }
 
             player.playerScreenHandler.setStackInSlot(packet.slot, packet.stack);
@@ -682,11 +682,11 @@ public class ClientNetworkHandler : NetHandler
         {
             if (packet.accepted)
             {
-                screenHandler.onAcknowledgementAccepted(packet.actionType);
+                ScreenHandler.onAcknowledgementAccepted(packet.actionType);
             }
             else
             {
-                screenHandler.onAcknowledgementDenied(packet.actionType);
+                ScreenHandler.onAcknowledgementDenied(packet.actionType);
                 AddToSendQueue(ScreenHandlerAcknowledgementPacket.Get(packet.syncId, packet.actionType, true));
             }
         }
@@ -695,7 +695,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onInventory(InventoryS2CPacket packet)
     {
-        ClientPlayerEntity player = _context.PlayerHost.Player;
+        ClientPlayerEntity? player = _context.PlayerHost.Player;
         if (packet.syncId == 0)
         {
             player.playerScreenHandler.updateSlotStacks(packet.contents);
@@ -720,7 +720,7 @@ public class ClientNetworkHandler : NetHandler
                     signEntity.Texts[i] = packet.text[i];
                 }
 
-                signEntity.markDirty();
+                signEntity.MarkDirty();
             }
         }
     }

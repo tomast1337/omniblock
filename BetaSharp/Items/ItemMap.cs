@@ -31,7 +31,7 @@ public class ItemMap : NetworkSyncedItem
         return mapState;
     }
 
-    public MapState getSavedMapState(ItemStack stack, IWorldContext world)
+    public static MapState getSavedMapState(ItemStack stack, IWorldContext world)
     {
         string mapName = "map_" + stack.getDamage();
         MapState? mapState = (MapState?)world.StateManager.LoadData(typeof(MapState), mapName);
@@ -216,7 +216,7 @@ public class ItemMap : NetworkSyncedItem
         }
     }
 
-    private void processBlockHeight(Chunk chunk, int chunkX, int dx, int chunkZ, int dz, ref int scanY, out int blockId, ref int fluidDepth)
+    private static void processBlockHeight(Chunk chunk, int chunkX, int dx, int chunkZ, int dz, ref int scanY, out int blockId, ref int fluidDepth)
     {
         bool foundSurface = false;
         blockId = 0;

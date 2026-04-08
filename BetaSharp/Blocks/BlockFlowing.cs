@@ -285,7 +285,7 @@ internal class BlockFlowing(int id, Material material) : BlockFluid(id, material
         return spread;
     }
 
-    private bool isLiquidBreaking(IBlockReader reader, int x, int y, int z)
+    private static bool isLiquidBreaking(IBlockReader reader, int x, int y, int z)
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= 128) return false;
 

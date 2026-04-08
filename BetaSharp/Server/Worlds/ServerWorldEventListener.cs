@@ -33,7 +33,7 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
     {
-        server.playerManager.updateBlockEntity(x, y, z, blockEntity);
+        PlayerManager.updateBlockEntity(x, y, z, blockEntity);
     }
 
     public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)

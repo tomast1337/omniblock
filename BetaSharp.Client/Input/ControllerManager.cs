@@ -198,8 +198,8 @@ public static class ControllerManager
         }
         else
         {
-            if (lbHeld && !s_wasHotbarLeftDown) s_game.Player.inventory.changeCurrentItem(1);
-            if (rbHeld && !s_wasHotbarRightDown) s_game.Player.inventory.changeCurrentItem(-1);
+            if (lbHeld && !s_wasHotbarLeftDown) s_game.Player.inventory.ChangeCurrentItem(1);
+            if (rbHeld && !s_wasHotbarRightDown) s_game.Player.inventory.ChangeCurrentItem(-1);
             s_nextZoomInAdjustAtMs = 0L;
             s_nextZoomOutAdjustAtMs = 0L;
         }

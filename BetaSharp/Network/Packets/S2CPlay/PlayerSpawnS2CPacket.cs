@@ -27,7 +27,7 @@ public class PlayerSpawnS2CPacket() : Packet(PacketId.PlayerSpawnS2C)
         p.rotation = (sbyte)(int)(ent.yaw * 256.0F / 360.0F);
         p.pitch = (sbyte)(int)(ent.pitch * 256.0F / 360.0F);
         ItemStack itemStack = ent.inventory.GetItemInHand();
-        p.currentItem = itemStack == null ? 0 : itemStack.itemId;
+        p.currentItem = itemStack == null ? 0 : itemStack.ItemId;
         return p;
     }
 

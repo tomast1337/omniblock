@@ -32,14 +32,14 @@ public class HeldItemRenderer
     public void renderItem(EntityLiving entity, ItemStack item)
     {
         GLManager.GL.PushMatrix();
-        if (item.itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.itemId].getRenderType()))
+        if (item.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.ItemId].getRenderType()))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.itemId], item.getDamage(), entity.getBrightnessAtEyes(1.0F), Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.ItemId], item.getDamage(), entity.getBrightnessAtEyes(1.0F), Tessellator.instance);
         }
         else
         {
-            string texPath = item.itemId < 256 ? "/terrain.png" : "/gui/items.png";
+            string texPath = item.ItemId < 256 ? "/terrain.png" : "/gui/items.png";
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId(texPath));
             int tileSize = _game.TextureManager.GetAtlasTileSize(texPath);
 
@@ -161,7 +161,7 @@ public class HeldItemRenderer
         float var10;
         if (itemToRender != null)
         {
-            int var7 = Item.ITEMS[itemToRender.itemId].getColorMultiplier(itemToRender.getDamage());
+            int var7 = Item.ITEMS[itemToRender.ItemId].getColorMultiplier(itemToRender.getDamage());
             var8 = (var7 >> 16 & 255) / 255.0F;
             var9 = (var7 >> 8 & 255) / 255.0F;
             var10 = (var7 & 255) / 255.0F;
@@ -173,7 +173,7 @@ public class HeldItemRenderer
         }
 
         float var14;
-        if (itemToRender != null && itemToRender.itemId == Item.Map.id)
+        if (itemToRender != null && itemToRender.ItemId == Item.Map.id)
         {
             GLManager.GL.PushMatrix();
             var14 = 0.8F;
@@ -455,13 +455,13 @@ public class HeldItemRenderer
         prevEquippedProgress = equippedProgress;
         ClientPlayerEntity var1 = _game.Player;
         ItemStack var2 = var1.inventory.GetItemInHand();
-        bool var4 = field_20099_f == var1.inventory.selectedSlot && var2 == itemToRender;
+        bool var4 = field_20099_f == var1.inventory.SelectedSlot && var2 == itemToRender;
         if (itemToRender == null && var2 == null)
         {
             var4 = true;
         }
 
-        if (var2 != null && itemToRender != null && var2 != itemToRender && var2.itemId == itemToRender.itemId && var2.getDamage() == itemToRender.getDamage())
+        if (var2 != null && itemToRender != null && var2 != itemToRender && var2.ItemId == itemToRender.ItemId && var2.getDamage() == itemToRender.getDamage())
         {
             itemToRender = var2;
             var4 = true;
@@ -484,7 +484,7 @@ public class HeldItemRenderer
         if (equippedProgress < 0.1F)
         {
             itemToRender = var2;
-            field_20099_f = var1.inventory.selectedSlot;
+            field_20099_f = var1.inventory.SelectedSlot;
         }
 
     }

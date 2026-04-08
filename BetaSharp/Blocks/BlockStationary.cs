@@ -63,5 +63,5 @@ internal class BlockStationary : BlockFluid
         }
     }
 
-    private bool isFlammable(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y, z).IsBurnable;
+    private static bool isFlammable(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y, z).IsBurnable;
 }

@@ -51,8 +51,8 @@ public class ScreenHandlerSlotUpdateS2CPacket() : Packet(PacketId.ScreenHandlerS
         }
         else
         {
-            stream.WriteShort((short)stack.itemId);
-            stream.WriteByte((byte)stack.count);
+            stream.WriteShort((short)stack.ItemId);
+            stream.WriteByte((byte)stack.Count);
             stream.WriteShort((short)stack.getDamage());
         }
 
