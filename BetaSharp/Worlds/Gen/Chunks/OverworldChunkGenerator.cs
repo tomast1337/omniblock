@@ -653,95 +653,97 @@ internal class OverworldChunkGenerator : IChunkSource
     /// <returns>The interpolated result.</returns>
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
-        byte blockZ = 64;
-        double chunkBiome = 1.0D / 32.0D;
-        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome, chunkBiome, 1.0D);
-        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, chunkBiome, 1.0D, chunkBiome);
-        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
+        const byte WATER_LEVEL = 64;
+        const byte CHUNK_HEIGHT = 128;
+        const double oneThirtySecond = 1.0D / 32.0D;
+        _sandBuffer = _sandGravelNoise.create(_sandBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond, oneThirtySecond, 1.0D);
+        _gravelBuffer = _sandGravelNoise.create(_gravelBuffer, chunkX * 16, 109.0134D, chunkZ * 16, 16, 1, 16, oneThirtySecond, 1.0D, oneThirtySecond);
+        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D, oneThirtySecond * 2.0D);
 
-        for (int horizontalScale = 0; horizontalScale < 16; ++horizontalScale)
+        for (int localX = 0; localX < 16; ++localX)
         {
-            for (int zOffset = 0; zOffset < 16; ++zOffset)
+            for (int localZ = 0; localZ < 16; ++localZ)
             {
-                Biome verticalScale = biomes[horizontalScale + zOffset * 16];
-                bool fraction = _sandBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 0.0D;
-                bool temperatureBuffer = _gravelBuffer[horizontalScale + zOffset * 16] + _random.NextDouble() * 0.2D > 3.0D;
-                int featureX = (int)(_depthBuffer[horizontalScale + zOffset * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
-                int featureY = -1;
-                byte featureZ = verticalScale.TopBlockId;
-                byte scaleFraction = verticalScale.SoilBlockId;
+                Biome localBiome = biomes[localX + localZ * 16];
+                bool sandActive = _sandBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
+                bool gravelActive = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 3.0D;
+                int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
+                int currentDepth = -1;
+                byte topBlock = localBiome.TopBlockId;
+                byte soilBlock = localBiome.SoilBlockId;
 
-                for (int iX = 127; iX >= 0; --iX)
+                for (int blockY = CHUNK_HEIGHT-1; blockY >= 0; --blockY)
                 {
-                    int treeFeature = (zOffset * 16 + horizontalScale) * 128 + iX;
-                    if (iX <= 0 + _random.NextInt(5))
+                    int blockIndex = (localZ * 16 + localX) * CHUNK_HEIGHT + blockY;
+                    // Generate Bedrock floor
+                    if (blockY <= 0 + _random.NextInt(5))
                     {
-                        blocks[treeFeature] = (byte)Block.Bedrock.id;
+                        blocks[blockIndex] = (byte)Block.Bedrock.id;
                     }
                     else
                     {
-                        byte z = blocks[treeFeature];
-                        if (z == 0)
+                        byte activeBlock = blocks[blockIndex];
+                        if (activeBlock == 0) // Air
                         {
-                            featureY = -1;
+                            currentDepth = -1;
                         }
-                        else if (z == Block.Stone.id)
+                        else if (activeBlock == Block.Stone.id)
                         {
-                            if (featureY == -1)
+                            if (currentDepth == -1)
                             {
-                                if (featureX <= 0)
+                                if (surfaceDepth <= 0)
                                 {
-                                    featureZ = 0;
-                                    scaleFraction = (byte)Block.Stone.id;
+                                    topBlock = 0;
+                                    soilBlock = (byte)Block.Stone.id;
                                 }
-                                else if (iX >= blockZ - 4 && iX <= blockZ + 1)
+                                else if (blockY >= WATER_LEVEL - 4 && blockY <= WATER_LEVEL + 1)
                                 {
-                                    featureZ = verticalScale.TopBlockId;
-                                    scaleFraction = verticalScale.SoilBlockId;
-                                    if (temperatureBuffer)
+                                    topBlock = localBiome.TopBlockId;
+                                    soilBlock = localBiome.SoilBlockId;
+                                    if (gravelActive)
                                     {
-                                        featureZ = 0;
+                                        topBlock = 0;
                                     }
 
-                                    if (temperatureBuffer)
+                                    if (gravelActive)
                                     {
-                                        scaleFraction = (byte)Block.Gravel.id;
+                                        soilBlock = (byte)Block.Gravel.id;
                                     }
 
-                                    if (fraction)
+                                    if (sandActive)
                                     {
-                                        featureZ = (byte)Block.Sand.id;
+                                        topBlock = (byte)Block.Sand.id;
                                     }
 
-                                    if (fraction)
+                                    if (sandActive)
                                     {
-                                        scaleFraction = (byte)Block.Sand.id;
+                                        soilBlock = (byte)Block.Sand.id;
                                     }
-                                }
-
-                                if (iX < blockZ && featureZ == 0)
-                                {
-                                    featureZ = (byte)Block.Water.id;
                                 }
 
-                                featureY = featureX;
-                                if (iX >= blockZ - 1)
+                                if (blockY < WATER_LEVEL && topBlock == 0)
                                 {
-                                    blocks[treeFeature] = featureZ;
+                                    topBlock = (byte)Block.Water.id;
+                                }
+
+                                currentDepth = surfaceDepth;
+                                if (blockY >= WATER_LEVEL - 1)
+                                {
+                                    blocks[blockIndex] = topBlock;
                                 }
                                 else
                                 {
-                                    blocks[treeFeature] = scaleFraction;
+                                    blocks[blockIndex] = soilBlock;
                                 }
                             }
-                            else if (featureY > 0)
+                            else if (currentDepth > 0)
                             {
-                                --featureY;
-                                blocks[treeFeature] = scaleFraction;
-                                if (featureY == 0 && scaleFraction == Block.Sand.id)
+                                --currentDepth;
+                                blocks[blockIndex] = soilBlock;
+                                if (currentDepth == 0 && soilBlock == Block.Sand.id)
                                 {
-                                    featureY = _random.NextInt(4);
-                                    scaleFraction = (byte)Block.Sandstone.id;
+                                    currentDepth = _random.NextInt(4);
+                                    soilBlock = (byte)Block.Sandstone.id;
                                 }
                             }
                         }
