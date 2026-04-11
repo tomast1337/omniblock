@@ -57,7 +57,7 @@ public class PlayerManager
         player.ChunksTerrainSentToClient.Clear();
         GetChunkMap(player.dimensionId).addPlayer(player);
         ServerWorld var2 = _server.getWorld(player.dimensionId);
-        var2.ChunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
+        var2.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
     }
 
     public int getBlockViewDistance()
@@ -85,11 +85,11 @@ public class PlayerManager
         players.Add(player);
         player.ResetChunkStreamingState();
         ServerWorld var2 = _server.getWorld(player.dimensionId);
-        var2.ChunkCache.LoadChunk((int)player.x >> 4, (int)player.z >> 4);
+        var2.ChunkCache.LoadChunk((int)player.X >> 4, (int)player.Z >> 4);
 
-        while (var2.Entities.GetEntityCollisions(player, player.boundingBox).Count != 0)
+        while (var2.Entities.GetEntityCollisions(player, player.BoundingBox).Count != 0)
         {
-            player.setPosition(player.x, player.y + 1.0, player.z);
+            player.setPosition(player.X, player.Y + 1.0, player.Z);
         }
 
         var2.Entities.SpawnEntity(player);
@@ -173,7 +173,7 @@ public class PlayerManager
             _server, _server.getWorld(player.dimensionId), player.name, new ServerPlayerInteractionManager(_server.getWorld(player.dimensionId))
         )
         {
-            id = player.id,
+            ID = player.ID,
             NetworkHandler = player.NetworkHandler
         };
         ServerWorld var5 = _server.getWorld(player.dimensionId);
@@ -192,15 +192,15 @@ public class PlayerManager
             }
         }
 
-        var5.ChunkCache.LoadChunk((int)serverPlayer.x >> 4, (int)serverPlayer.z >> 4);
+        var5.ChunkCache.LoadChunk((int)serverPlayer.X >> 4, (int)serverPlayer.Z >> 4);
 
-        while (var5.Entities.GetEntityCollisions(serverPlayer, serverPlayer.boundingBox).Count != 0)
+        while (var5.Entities.GetEntityCollisions(serverPlayer, serverPlayer.BoundingBox).Count != 0)
         {
-            serverPlayer.setPosition(serverPlayer.x, serverPlayer.y + 1.0, serverPlayer.z);
+            serverPlayer.setPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
         serverPlayer.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)serverPlayer.dimensionId));
-        serverPlayer.NetworkHandler.teleport(serverPlayer.x, serverPlayer.y, serverPlayer.z, serverPlayer.yaw, serverPlayer.pitch);
+        serverPlayer.NetworkHandler.teleport(serverPlayer.X, serverPlayer.Y, serverPlayer.Z, serverPlayer.Yaw, serverPlayer.Pitch);
         sendWorldInfo(serverPlayer, var5);
         GetChunkMap(serverPlayer.dimensionId).addPlayer(serverPlayer);
         var5.SpawnEntity(serverPlayer);
@@ -242,16 +242,16 @@ public class PlayerManager
         player.dimensionId = targetDim;
         player.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)player.dimensionId));
         currentWorld.Entities.ServerRemove(player);
-        player.dead = false;
-        double x = player.x;
-        double z = player.z;
+        player.Dead = false;
+        double x = player.X;
+        double z = player.Z;
         double scale = 8.0;
 
         if (player.dimensionId == -1)
         {
             x /= scale;
             z /= scale;
-            player.setPositionAndAnglesKeepPrevAngles(x, player.y, z, player.yaw, player.pitch);
+            player.setPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
             if (player.isAlive())
             {
                 currentWorld.Entities.UpdateEntity(player, false);
@@ -261,7 +261,7 @@ public class PlayerManager
         {
             x *= scale;
             z *= scale;
-            player.setPositionAndAnglesKeepPrevAngles(x, player.y, z, player.yaw, player.pitch);
+            player.setPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
             if (player.isAlive())
             {
                 currentWorld.Entities.UpdateEntity(player, false);
@@ -271,7 +271,7 @@ public class PlayerManager
         if (player.isAlive())
         {
             targetWorld.Entities.SpawnEntity(player);
-            player.setPositionAndAnglesKeepPrevAngles(x, player.y, z, player.yaw, player.pitch);
+            player.setPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
             targetWorld.Entities.UpdateEntity(player, false);
             targetWorld.ChunkCache.forceLoad = true;
             new PortalForcer().MoveToPortal(targetWorld, player);
@@ -283,7 +283,7 @@ public class PlayerManager
         }
 
         updatePlayerAfterDimensionChange(player);
-        player.NetworkHandler.teleport(player.x, player.y, player.z, player.yaw, player.pitch);
+        player.NetworkHandler.teleport(player.X, player.Y, player.Z, player.Yaw, player.Pitch);
         player.setWorld(targetWorld);
         sendWorldInfo(player, targetWorld);
         sendPlayerStatus(player);
@@ -561,9 +561,9 @@ public class PlayerManager
             ServerPlayerEntity var13 = players[var12];
             if (var13 != player && var13.dimensionId == dimensionId)
             {
-                double var14 = x - var13.x;
-                double var16 = y - var13.y;
-                double var18 = z - var13.z;
+                double var14 = x - var13.X;
+                double var16 = y - var13.Y;
+                double var18 = z - var13.Z;
                 if (var14 * var14 + var16 * var16 + var18 * var18 < range * range)
                 {
                     var13.NetworkHandler.SendPacket(packet);

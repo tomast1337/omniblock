@@ -11,12 +11,12 @@ public class EntityGiantZombie : EntityMonster
         movementSpeed = 0.5F;
         attackStrength = 50;
         health *= 10;
-        standingEyeHeight *= 6.0F;
-        setBoundingBoxSpacing(width * 6.0F, height * 6.0F);
+        StandingEyeHeight *= 6.0F;
+        setBoundingBoxSpacing(Width * 6.0F, Height * 6.0F);
     }
 
     protected override float getBlockPathWeight(int x, int y, int z)
     {
-        return world.Lighting.GetLuminance(x, y, z) - 0.5F;
+        return World.Lighting.GetLuminance(x, y, z) - 0.5F;
     }
 }

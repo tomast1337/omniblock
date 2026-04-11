@@ -19,16 +19,16 @@ public class OtherPlayerEntity : EntityPlayer
     public OtherPlayerEntity(World world, string name) : base(world)
     {
         base.name = name;
-        standingEyeHeight = 0.0F;
-        stepHeight = 0.0F;
-        noClip = true;
+        StandingEyeHeight = 0.0F;
+        StepHeight = 0.0F;
+        NoClip = true;
         sleepOffsetY = 0.25F;
-        renderDistanceWeight = 10.0D;
+        RenderDistanceWeight = 10.0D;
     }
 
     protected override void resetEyeHeight()
     {
-        standingEyeHeight = 0.0F;
+        StandingEyeHeight = 0.0F;
     }
 
     public override bool damage(Entity ent, int amount)
@@ -51,8 +51,8 @@ public class OtherPlayerEntity : EntityPlayer
         sleepOffsetY = 0.0F;
         base.tick();
         lastWalkAnimationSpeed = walkAnimationSpeed;
-        double dx = x - prevX;
-        double dz = z - prevZ;
+        double dx = X - PrevX;
+        double dz = Z - PrevZ;
         float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz) * 4.0F;
         if (horizontalDistance > 1.0F)
         {
@@ -73,12 +73,12 @@ public class OtherPlayerEntity : EntityPlayer
         base.tickLiving();
         if (lerpSteps > 0)
         {
-            double newX = x + (lerpX - x) / lerpSteps;
-            double newY = y + (lerpY - y) / lerpSteps;
-            double newZ = z + (lerpZ - z) / lerpSteps;
+            double newX = X + (lerpX - X) / lerpSteps;
+            double newY = Y + (lerpY - Y) / lerpSteps;
+            double newZ = Z + (lerpZ - Z) / lerpSteps;
 
             double dYaw;
-            for (dYaw = lerpYaw - yaw; dYaw < -180.0D; dYaw += 360.0D)
+            for (dYaw = lerpYaw - Yaw; dYaw < -180.0D; dYaw += 360.0D)
             {
             }
 
@@ -87,27 +87,27 @@ public class OtherPlayerEntity : EntityPlayer
                 dYaw -= 360.0D;
             }
 
-            yaw = (float)(yaw + dYaw / lerpSteps);
-            pitch = (float)(pitch + (lerpPitch - pitch) / lerpSteps);
+            Yaw = (float)(Yaw + dYaw / lerpSteps);
+            Pitch = (float)(Pitch + (lerpPitch - Pitch) / lerpSteps);
             --lerpSteps;
             setPosition(newX, newY, newZ);
-            setRotation(yaw, pitch);
+            setRotation(Yaw, Pitch);
         }
 
         prevStepBobbingAmount = stepBobbingAmount;
-        float horizontalSpeed = MathHelper.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-        float tiltAmount = (float)Math.Atan(-velocityY * (double)0.2F) * 15.0F;
+        float horizontalSpeed = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        float tiltAmount = (float)Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
         if (horizontalSpeed > 0.1F)
         {
             horizontalSpeed = 0.1F;
         }
 
-        if (!onGround || health <= 0)
+        if (!OnGround || health <= 0)
         {
             horizontalSpeed = 0.0F;
         }
 
-        if (onGround || health <= 0)
+        if (OnGround || health <= 0)
         {
             tiltAmount = 0.0F;
         }

@@ -13,22 +13,22 @@ public class EntityTNTPrimed : Entity
     public EntityTNTPrimed(IWorldContext world) : base(world)
     {
         fuse = 0;
-        preventEntitySpawning = true;
+        PreventEntitySpawning = true;
         setBoundingBoxSpacing(0.98F, 0.98F);
-        standingEyeHeight = height / 2.0F;
+        StandingEyeHeight = Height / 2.0F;
     }
 
     public EntityTNTPrimed(IWorldContext world, double x, double y, double z) : base(world)
     {
         setPosition(x, y, z);
-        float randomAngle = (float)(Random.Shared.NextSingle() * (Math.PI) * 2.0D);
-        velocityX = (double)(-MathHelper.Sin(randomAngle * (float)Math.PI / 180.0F) * 0.02F);
-        velocityY = (double)0.2F;
-        velocityZ = (double)(-MathHelper.Cos(randomAngle * (float)Math.PI / 180.0F) * 0.02F);
+        float randomAngle = (float)(System.Random.Shared.NextSingle() * (Math.PI) * 2.0D);
+        VelocityX = (double)(-MathHelper.Sin(randomAngle * (float)Math.PI / 180.0F) * 0.02F);
+        VelocityY = (double)0.2F;
+        VelocityZ = (double)(-MathHelper.Cos(randomAngle * (float)Math.PI / 180.0F) * 0.02F);
         fuse = 80;
-        prevX = x;
-        prevY = y;
-        prevZ = z;
+        PrevX = x;
+        PrevY = y;
+        PrevZ = z;
     }
 
 
@@ -39,29 +39,29 @@ public class EntityTNTPrimed : Entity
 
     public override bool isCollidable()
     {
-        return !dead;
+        return !Dead;
     }
 
     public override void tick()
     {
-        prevX = x;
-        prevY = y;
-        prevZ = z;
-        velocityY -= (double)0.04F;
-        move(velocityX, velocityY, velocityZ);
-        velocityX *= (double)0.98F;
-        velocityY *= (double)0.98F;
-        velocityZ *= (double)0.98F;
-        if (onGround)
+        PrevX = X;
+        PrevY = Y;
+        PrevZ = Z;
+        VelocityY -= (double)0.04F;
+        move(VelocityX, VelocityY, VelocityZ);
+        VelocityX *= (double)0.98F;
+        VelocityY *= (double)0.98F;
+        VelocityZ *= (double)0.98F;
+        if (OnGround)
         {
-            velocityX *= (double)0.7F;
-            velocityZ *= (double)0.7F;
-            velocityY *= -0.5D;
+            VelocityX *= (double)0.7F;
+            VelocityZ *= (double)0.7F;
+            VelocityY *= -0.5D;
         }
 
         if (fuse-- <= 0)
         {
-            if (!world.IsRemote)
+            if (!World.IsRemote)
             {
                 markDead();
                 explode();
@@ -73,20 +73,20 @@ public class EntityTNTPrimed : Entity
         }
         else
         {
-            world.Broadcaster.AddParticle("smoke", x, y + 0.5D, z, 0.0D, 0.0D, 0.0D);
+            World.Broadcaster.AddParticle("smoke", X, Y + 0.5D, Z, 0.0D, 0.0D, 0.0D);
         }
 
     }
 
     private void explode()
     {
-        if (!world.Rules.GetBool(DefaultRules.TntExplodes))
+        if (!World.Rules.GetBool(DefaultRules.TntExplodes))
         {
             return;
         }
 
         const float power = 4.0F;
-        world.CreateExplosion((Entity)null, x, y, z, power);
+        World.CreateExplosion((Entity)null, X, Y, Z, power);
     }
 
     public override void writeNbt(NBTTagCompound nbt)

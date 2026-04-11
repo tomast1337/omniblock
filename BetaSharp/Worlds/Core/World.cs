@@ -501,8 +501,8 @@ public abstract class World : IWorldContext
         for (int i = 0; i < Entities.Players.Count; ++i)
         {
             EntityPlayer player = Entities.Players[i];
-            int playerChunkX = MathHelper.Floor(player.x / 16.0D);
-            int playerChunkZ = MathHelper.Floor(player.z / 16.0D);
+            int playerChunkX = MathHelper.Floor(player.X / 16.0D);
+            int playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
             const byte viewDistance = 9;
 
             for (int xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)

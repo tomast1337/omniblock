@@ -100,19 +100,19 @@ public class Explosion
             double var13 = var33.getDistance(explosionX, explosionY, explosionZ) / explosionSize;
             if (var13 <= 1.0D)
             {
-                var15 = var33.x - explosionX;
-                var17 = var33.y - explosionY;
-                var19 = var33.z - explosionZ;
+                var15 = var33.X - explosionX;
+                var17 = var33.Y - explosionY;
+                var19 = var33.Z - explosionZ;
                 double var39 = MathHelper.Sqrt(var15 * var15 + var17 * var17 + var19 * var19);
                 var15 /= var39;
                 var17 /= var39;
                 var19 /= var39;
-                double var40 = _level.Reader.GetVisibilityRatio(var31, var33.boundingBox);
+                double var40 = _level.Reader.GetVisibilityRatio(var31, var33.BoundingBox);
                 double var41 = (1.0D - var13) * var40;
                 var33.damage(exploder, (int)((var41 * var41 + var41) / 2.0D * 8.0D * explosionSize + 1.0D));
-                var33.velocityX += var15 * var41;
-                var33.velocityY += var17 * var41;
-                var33.velocityZ += var19 * var41;
+                var33.VelocityX += var15 * var41;
+                var33.VelocityY += var17 * var41;
+                var33.VelocityZ += var19 * var41;
             }
         }
 

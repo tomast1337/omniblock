@@ -69,7 +69,7 @@ public class Hotbar : UIElement
         int armorValue = player.getPlayerArmorValue();
         int health = player.health;
         int lastHealth = player.lastHealth;
-        bool heartBlink = player.hearts / 3 % 2 == 1 && player.hearts >= 10;
+        bool heartBlink = player.Hearts / 3 % 2 == 1 && player.Hearts >= 10;
 
         _rand.SetSeed(_updateCounter * 312871);
 
@@ -110,7 +110,7 @@ public class Hotbar : UIElement
         // --- Air ---
         if (player.isInFluid(Material.Water) && player.GameMode.NeedsAir)
         {
-            int air = player.air;
+            int air = player.Air;
             int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
             int partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
 

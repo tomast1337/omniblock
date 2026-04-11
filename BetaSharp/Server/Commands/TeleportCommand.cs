@@ -30,7 +30,7 @@ public class TeleportCommand : Command.Command
             return 1;
         }
 
-        sender.NetworkHandler.teleport(pos.x, pos.y, pos.z, sender.yaw, sender.pitch);
+        sender.NetworkHandler.teleport(pos.x, pos.y, pos.z, sender.Yaw, sender.Pitch);
         context.Source.Output.SendMessage($"Teleported to {pos}");
 
         return 1;
@@ -41,7 +41,7 @@ public class TeleportCommand : Command.Command
         ServerPlayerEntity a1 = context.GetArgument<ServerPlayerEntity>("player");
         Vec3D pos = context.GetArgument<Vec3D>("position");
 
-        a1.NetworkHandler.teleport(pos.x, pos.y, pos.z, a1.yaw, a1.pitch);
+        a1.NetworkHandler.teleport(pos.x, pos.y, pos.z, a1.Yaw, a1.Pitch);
         context.Source.Output.SendMessage($"Teleported to {pos}");
 
         return 1;

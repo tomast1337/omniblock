@@ -445,9 +445,9 @@ public class WorldReader : IBlockReader
         {
             flowVector = flowVector.normalize();
             const double flowStrength = 0.014D;
-            entity.velocityX += flowVector.x * flowStrength;
-            entity.velocityY += flowVector.y * flowStrength;
-            entity.velocityZ += flowVector.z * flowStrength;
+            entity.VelocityX += flowVector.x * flowStrength;
+            entity.VelocityY += flowVector.y * flowStrength;
+            entity.VelocityZ += flowVector.z * flowStrength;
         }
 
         return isSubmerged;

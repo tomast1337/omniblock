@@ -33,7 +33,7 @@ internal class BlockFurnace : BlockWithEntity
 
         if (@event.Placer != null)
         {
-            int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
 
             int meta = direction switch
             {
@@ -183,9 +183,9 @@ internal class BlockFurnace : BlockWithEntity
                     stack.Count -= stackCount;
                     EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, stackCount, stack.getDamage()))
                     {
-                        velocityX = (float)s_random.NextGaussian() * DropSpread,
-                        velocityY = (float)s_random.NextGaussian() * DropSpread + 0.2F,
-                        velocityZ = (float)s_random.NextGaussian() * DropSpread
+                        VelocityX = (float)s_random.NextGaussian() * DropSpread,
+                        VelocityY = (float)s_random.NextGaussian() * DropSpread + 0.2F,
+                        VelocityZ = (float)s_random.NextGaussian() * DropSpread
                     };
                     @event.World.SpawnEntity(droppedItem);
                 }

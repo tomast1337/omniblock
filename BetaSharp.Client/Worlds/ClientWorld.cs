@@ -167,7 +167,7 @@ public class ClientWorld : World
         }
 
         forcedEntities.Add(ent);
-        ent.id = networkId;
+        ent.ID = networkId;
 
         if (!SpawnEntity(ent))
         {

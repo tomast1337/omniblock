@@ -187,8 +187,8 @@ internal class ChunkMap
     public void addPlayer(ServerPlayerEntity player)
     {
         player.ResetChunkStreamingState();
-        player.lastX = player.x;
-        player.lastZ = player.z;
+        player.lastX = player.X;
+        player.lastZ = player.Z;
 
         foreach (ChunkPos item in GetChunks(player))
         {
@@ -227,8 +227,8 @@ internal class ChunkMap
 
     public void updatePlayerChunks(ServerPlayerEntity player)
     {
-        int playerChunkCenterX = (int)player.x >> 4;
-        int playerChunkCenterZ = (int)player.z >> 4;
+        int playerChunkCenterX = (int)player.X >> 4;
+        int playerChunkCenterZ = (int)player.Z >> 4;
         int playerLastChunkCenterX = (int)player.lastX >> 4;
         int playerLastChunkCenterZ = (int)player.lastZ >> 4;
         int playerChunkCenterDeltaX = playerChunkCenterX - playerLastChunkCenterX;
@@ -277,8 +277,8 @@ internal class ChunkMap
             }
         }
 
-        player.lastX = player.x;
-        player.lastZ = player.z;
+        player.lastX = player.X;
+        player.lastZ = player.Z;
     }
 
     public int getBlockViewDistance()
@@ -293,8 +293,8 @@ internal class ChunkMap
 
     private static ReadOnlySpan<ChunkPos> GetChunks(ServerPlayerEntity player, int radius)
     {
-        int playerChunkX = (int)player.x >> 4;
-        int playerChunkZ = (int)player.z >> 4;
+        int playerChunkX = (int)player.X >> 4;
+        int playerChunkZ = (int)player.Z >> 4;
         int diameter = radius * 2 + 1;
         var chunks = new ChunkPos[diameter * diameter];
         int index = 0;

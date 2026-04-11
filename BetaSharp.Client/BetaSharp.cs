@@ -965,7 +965,7 @@ public partial class BetaSharp :
 
             if (!IsGamePaused && World != null)
             {
-                World.displayTick(MathHelper.Floor(Player.x), MathHelper.Floor(Player.y), MathHelper.Floor(Player.z));
+                World.displayTick(MathHelper.Floor(Player.X), MathHelper.Floor(Player.Y), MathHelper.Floor(Player.Z));
             }
 
             if (!IsGamePaused)
@@ -1400,7 +1400,7 @@ public partial class BetaSharp :
 
         if (Player is not null)
         {
-            previousPlayerId = Player.id;
+            previousPlayerId = Player.ID;
             World.Entities.Remove(Player);
         }
 
@@ -1422,7 +1422,7 @@ public partial class BetaSharp :
         PlayerController.flipPlayer(Player);
         World.AddPlayer(Player);
         Player.movementInput = new MovementInputFromOptions(Options);
-        Player.id = previousPlayerId;
+        Player.ID = previousPlayerId;
         Player.spawn();
         PlayerController.fillHotbar(Player);
 
@@ -1472,8 +1472,8 @@ public partial class BetaSharp :
 
         if (Player != null)
         {
-            centerPos.X = (int)Player.x;
-            centerPos.Z = (int)Player.z;
+            centerPos.X = (int)Player.X;
+            centerPos.Z = (int)Player.Z;
         }
 
         for (int xOffset = -loadingRadius; xOffset <= loadingRadius; xOffset += 16)

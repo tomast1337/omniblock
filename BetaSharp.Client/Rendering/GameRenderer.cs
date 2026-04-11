@@ -95,7 +95,7 @@ public class GameRenderer
         _targetedEntity = null;
 
         float searchMargin = 1.0F;
-        List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.boundingBox.Stretch(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).Expand((double)searchMargin, (double)searchMargin, (double)searchMargin));
+        List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).Expand((double)searchMargin, (double)searchMargin, (double)searchMargin));
 
         double closestDistance = 0.0D;
         for (int i = 0; i < entities.Count; ++i)
@@ -104,7 +104,7 @@ public class GameRenderer
             if (ent.isCollidable())
             {
                 float targetingMargin = ent.getTargetingMargin();
-                Box box = ent.boundingBox.Expand((double)targetingMargin, (double)targetingMargin, (double)targetingMargin);
+                Box box = ent.BoundingBox.Expand((double)targetingMargin, (double)targetingMargin, (double)targetingMargin);
                 HitResult hit = box.Raycast(cameraPosition, targetVec);
 
                 if (box.Contains(cameraPosition))
@@ -381,9 +381,9 @@ public class GameRenderer
         EntityLiving entity = _client.Camera;
         WorldRenderer worldRenderer = _client.WorldRenderer;
         ParticleManager particleManager = _client.ParticleManager;
-        double entX = entity.lastTickX + (entity.x - entity.lastTickX) * (double)tickDelta;
-        double entY = entity.lastTickY + (entity.y - entity.lastTickY) * (double)tickDelta;
-        double entZ = entity.lastTickZ + (entity.z - entity.lastTickZ) * (double)tickDelta;
+        double entX = entity.LastTickX + (entity.X - entity.LastTickX) * (double)tickDelta;
+        double entY = entity.LastTickY + (entity.Y - entity.LastTickY) * (double)tickDelta;
+        double entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * (double)tickDelta;
 
         using (Profiler.Begin("UpdateFog"))
         {
@@ -499,12 +499,12 @@ public class GameRenderer
     private void renderChunkBorders(float tickDelta)
     {
         EntityLiving camera = _client.Camera;
-        double camX = camera.lastTickX + (camera.x - camera.lastTickX) * tickDelta;
-        double camY = camera.lastTickY + (camera.y - camera.lastTickY) * tickDelta;
-        double camZ = camera.lastTickZ + (camera.z - camera.lastTickZ) * tickDelta;
+        double camX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
+        double camY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
+        double camZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
 
-        int playerChunkX = _client.Player.chunkX;
-        int playerChunkZ = _client.Player.chunkZ;
+        int playerChunkX = _client.Player.ChunkX;
+        int playerChunkZ = _client.Player.ChunkZ;
 
         GLManager.GL.MatrixMode(GLEnum.Modelview);
         GLManager.GL.PushMatrix();
@@ -600,9 +600,9 @@ public class GameRenderer
             _random.SetSeed(_ticks * 312987231L);
             EntityLiving var2 = _client.Camera;
             World var3 = _client.World;
-            int var4 = MathHelper.Floor(var2.x);
-            int var5 = MathHelper.Floor(var2.y);
-            int var6 = MathHelper.Floor(var2.z);
+            int var4 = MathHelper.Floor(var2.X);
+            int var5 = MathHelper.Floor(var2.Y);
+            int var6 = MathHelper.Floor(var2.Z);
             byte var7 = 10;
             double var8 = 0.0D;
             double var10 = 0.0D;
@@ -644,7 +644,7 @@ public class GameRenderer
             if (var14 > 0 && _random.NextInt(3) < _rainSoundCounter++)
             {
                 _rainSoundCounter = 0;
-                if (var10 > var2.y + 1.0D && var3.Reader.GetTopSolidBlockY(MathHelper.Floor(var2.x), MathHelper.Floor(var2.z)) > MathHelper.Floor(var2.y))
+                if (var10 > var2.Y + 1.0D && var3.Reader.GetTopSolidBlockY(MathHelper.Floor(var2.X), MathHelper.Floor(var2.Z)) > MathHelper.Floor(var2.Y))
                 {
                     _client.World.Broadcaster.PlaySoundAtPos(var8, var10, var12, "ambient.weather.rain", 0.1F, 0.5F);
                 }
@@ -663,9 +663,9 @@ public class GameRenderer
         {
             EntityLiving var3 = _client.Camera;
             World var4 = _client.World;
-            int var5 = MathHelper.Floor(var3.x);
-            int var6 = MathHelper.Floor(var3.y);
-            int var7 = MathHelper.Floor(var3.z);
+            int var5 = MathHelper.Floor(var3.X);
+            int var6 = MathHelper.Floor(var3.Y);
+            int var7 = MathHelper.Floor(var3.Z);
             Tessellator var8 = Tessellator.instance;
             GLManager.GL.Disable(GLEnum.CullFace);
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
@@ -673,9 +673,9 @@ public class GameRenderer
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
             GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/snow.png"));
-            double var9 = var3.lastTickX + (var3.x - var3.lastTickX) * (double)tickDelta;
-            double var11 = var3.lastTickY + (var3.y - var3.lastTickY) * (double)tickDelta;
-            double var13 = var3.lastTickZ + (var3.z - var3.lastTickZ) * (double)tickDelta;
+            double var9 = var3.LastTickX + (var3.X - var3.LastTickX) * (double)tickDelta;
+            double var11 = var3.LastTickY + (var3.Y - var3.LastTickY) * (double)tickDelta;
+            double var13 = var3.LastTickZ + (var3.Z - var3.LastTickZ) * (double)tickDelta;
             int var15 = MathHelper.Floor(var11);
             byte var16 = 10;
 
@@ -728,8 +728,8 @@ public class GameRenderer
                             float var28 = ((_ticks & 511) + tickDelta) / 512.0F;
                             float var29 = _random.NextFloat() + var27 * 0.01F * (float)_random.NextGaussian();
                             float var30 = _random.NextFloat() + var27 * (float)_random.NextGaussian() * 0.001F;
-                            double var31 = (double)(var19 + 0.5F) - var3.x;
-                            double var33 = (double)(var20 + 0.5F) - var3.z;
+                            double var31 = (double)(var19 + 0.5F) - var3.X;
+                            double var33 = (double)(var20 + 0.5F) - var3.Z;
                             float var35 = MathHelper.Sqrt(var31 * var31 + var33 * var33) / var16;
                             var8.startDrawingQuads();
                             float var36 = var4.GetLuminance(var19, var23, var20);
@@ -780,8 +780,8 @@ public class GameRenderer
                         {
                             _random.SetSeed(var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761);
                             var26 = ((_ticks + var19 * var19 * 3121 + var19 * 45238971 + var20 * var20 * 418711 + var20 * 13761 & 31) + tickDelta) / 32.0F * (3.0F + _random.NextFloat());
-                            double var38 = (double)(var19 + 0.5F) - var3.x;
-                            double var39 = (double)(var20 + 0.5F) - var3.z;
+                            double var38 = (double)(var19 + 0.5F) - var3.X;
+                            double var39 = (double)(var20 + 0.5F) - var3.Z;
                             float var40 = MathHelper.Sqrt(var38 * var38 + var39 * var39) / var16;
                             var8.startDrawingQuads();
                             float var32 = var4.GetLuminance(var19, 128, var20) * 0.85F + 0.15F;

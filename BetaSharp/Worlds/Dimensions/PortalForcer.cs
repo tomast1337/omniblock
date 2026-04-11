@@ -24,17 +24,17 @@ internal class PortalForcer
         int foundY = 0;
         int foundZ = 0;
 
-        int entityX = MathHelper.Floor(entity.x);
-        int entityZ = MathHelper.Floor(entity.z);
+        int entityX = MathHelper.Floor(entity.X);
+        int entityZ = MathHelper.Floor(entity.Z);
 
         // Phase 1: Search for an existing portal
         for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
         {
-            double dx = x + 0.5D - entity.x;
+            double dx = x + 0.5D - entity.X;
 
             for (int z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
             {
-                double dz = z + 0.5D - entity.z;
+                double dz = z + 0.5D - entity.Z;
 
                 for (int y = 127; y >= 0; --y)
                 {
@@ -46,7 +46,7 @@ internal class PortalForcer
                             --y;
                         }
 
-                        double dy = y + 0.5D - entity.y;
+                        double dy = y + 0.5D - entity.Y;
                         double distanceSq = dx * dx + dy * dy + dz * dz;
 
                         if (closestDistance < 0.0D || distanceSq < closestDistance)
@@ -88,8 +88,8 @@ internal class PortalForcer
                 targetZ += 0.5D;
             }
 
-            entity.setPositionAndAnglesKeepPrevAngles(targetX, targetY, targetZ, entity.yaw, 0.0F);
-            entity.velocityX = entity.velocityY = entity.velocityZ = 0.0D;
+            entity.setPositionAndAnglesKeepPrevAngles(targetX, targetY, targetZ, entity.Yaw, 0.0F);
+            entity.VelocityX = entity.VelocityY = entity.VelocityZ = 0.0D;
             return true;
         }
 
@@ -101,9 +101,9 @@ internal class PortalForcer
         byte searchRadius = 16;
         double closestDistance = -1.0D;
 
-        int entityX = MathHelper.Floor(entity.x);
-        int entityY = MathHelper.Floor(entity.y);
-        int entityZ = MathHelper.Floor(entity.z);
+        int entityX = MathHelper.Floor(entity.X);
+        int entityY = MathHelper.Floor(entity.Y);
+        int entityZ = MathHelper.Floor(entity.Z);
 
         int bestX = entityX;
         int bestY = entityY;
@@ -115,11 +115,11 @@ internal class PortalForcer
         // Phase 1: Search for an optimal flat 3x4 area of solid ground
         for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
         {
-            double dx = x + 0.5D - entity.x;
+            double dx = x + 0.5D - entity.X;
 
             for (int z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
             {
-                double dz = z + 0.5D - entity.z;
+                double dz = z + 0.5D - entity.Z;
 
                 for (int y = 127; y >= 0; --y)
                 {
@@ -161,7 +161,7 @@ internal class PortalForcer
 
                             if (validLocation)
                             {
-                                double dy = y + 0.5D - entity.y;
+                                double dy = y + 0.5D - entity.Y;
                                 double distanceSq = dx * dx + dy * dy + dz * dz;
                                 if (closestDistance < 0.0D || distanceSq < closestDistance)
                                 {
@@ -183,11 +183,11 @@ internal class PortalForcer
         {
             for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
             {
-                double dx = x + 0.5D - entity.x;
+                double dx = x + 0.5D - entity.X;
 
                 for (int z = entityZ - searchRadius; z <= entityZ + searchRadius; ++z)
                 {
-                    double dz = z + 0.5D - entity.z;
+                    double dz = z + 0.5D - entity.Z;
 
                     for (int y = 127; y >= 0; --y)
                     {
@@ -221,7 +221,7 @@ internal class PortalForcer
 
                                 if (validLocation)
                                 {
-                                    double dy = y + 0.5D - entity.y;
+                                    double dy = y + 0.5D - entity.Y;
                                     double distanceSq = dx * dx + dy * dy + dz * dz;
                                     if (closestDistance < 0.0D || distanceSq < closestDistance)
                                     {

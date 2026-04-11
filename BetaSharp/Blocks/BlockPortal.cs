@@ -156,7 +156,7 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
 
     public override void onEntityCollision(OnEntityCollisionEvent @event)
     {
-        if (@event.Entity.vehicle == null && @event.Entity.passenger == null)
+        if (@event.Entity.Vehicle == null && @event.Entity.Passenger == null)
         {
             @event.Entity.tickPortalCooldown();
         }

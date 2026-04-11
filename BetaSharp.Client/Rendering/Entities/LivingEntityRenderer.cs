@@ -46,8 +46,8 @@ public class LivingEntityRenderer : EntityRenderer
         try
         {
             float var10 = var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var9;
-            float var11 = var1.prevYaw + (var1.yaw - var1.prevYaw) * var9;
-            float var12 = var1.prevPitch + (var1.pitch - var1.prevPitch) * var9;
+            float var11 = var1.PrevYaw + (var1.Yaw - var1.PrevYaw) * var9;
+            float var12 = var1.PrevPitch + (var1.Pitch - var1.PrevPitch) * var9;
             Func_22012_b(var1, var2, var4, var6);
             float var13 = getAnimationProgress(var1, var9);
             RotateCorpse(var1, var13, var10, var9);
@@ -168,7 +168,7 @@ public class LivingEntityRenderer : EntityRenderer
 
     protected virtual float getAnimationProgress(EntityLiving var1, float var2)
     {
-        return var1.age + var2;
+        return var1.Age + var2;
     }
 
     protected virtual void RenderMore(EntityLiving var1, float var2)
@@ -203,7 +203,7 @@ public class LivingEntityRenderer : EntityRenderer
     {
         if (Dispatcher.Options.ShowDebugInfo)
         {
-            renderLivingLabel(var1, var1.id.ToString(), var2, var4, var6, 64);
+            renderLivingLabel(var1, var1.ID.ToString(), var2, var4, var6, 64);
         }
 
     }

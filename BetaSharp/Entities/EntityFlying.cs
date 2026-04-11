@@ -19,26 +19,26 @@ public abstract class EntityFlying : EntityLiving
         if (isInWater())
         {
             moveNonSolid(strafe, forward, 0.02F);
-            move(velocityX, velocityY, velocityZ);
-            velocityX *= (double)0.8F;
-            velocityY *= (double)0.8F;
-            velocityZ *= (double)0.8F;
+            move(VelocityX, VelocityY, VelocityZ);
+            VelocityX *= (double)0.8F;
+            VelocityY *= (double)0.8F;
+            VelocityZ *= (double)0.8F;
         }
         else if (isTouchingLava())
         {
             moveNonSolid(strafe, forward, 0.02F);
-            move(velocityX, velocityY, velocityZ);
-            velocityX *= 0.5D;
-            velocityY *= 0.5D;
-            velocityZ *= 0.5D;
+            move(VelocityX, VelocityY, VelocityZ);
+            VelocityX *= 0.5D;
+            VelocityY *= 0.5D;
+            VelocityZ *= 0.5D;
         }
         else
         {
             float friction = 0.91F;
-            if (onGround)
+            if (OnGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
+                int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
                     friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
@@ -46,27 +46,27 @@ public abstract class EntityFlying : EntityLiving
             }
 
             float accelerationFactor = 0.16277136F / (friction * friction * friction);
-            moveNonSolid(strafe, forward, onGround ? 0.1F * accelerationFactor : 0.02F);
+            moveNonSolid(strafe, forward, OnGround ? 0.1F * accelerationFactor : 0.02F);
             friction = 0.91F;
-            if (onGround)
+            if (OnGround)
             {
                 friction = 546.0F * 0.1F * 0.1F * 0.1F;
-                int groundBlockId = world.Reader.GetBlockId(MathHelper.Floor(x), MathHelper.Floor(boundingBox.MinY) - 1, MathHelper.Floor(z));
+                int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
                     friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
                 }
             }
 
-            move(velocityX, velocityY, velocityZ);
-            velocityX *= (double)friction;
-            velocityY *= (double)friction;
-            velocityZ *= (double)friction;
+            move(VelocityX, VelocityY, VelocityZ);
+            VelocityX *= (double)friction;
+            VelocityY *= (double)friction;
+            VelocityZ *= (double)friction;
         }
 
         lastWalkAnimationSpeed = walkAnimationSpeed;
-        double dx = x - prevX;
-        double dy = z - prevZ;
+        double dx = X - PrevX;
+        double dy = Z - PrevZ;
         float distanceMoved = MathHelper.Sqrt(dx * dx + dy * dy) * 4.0F;
         if (distanceMoved > 1.0F)
         {

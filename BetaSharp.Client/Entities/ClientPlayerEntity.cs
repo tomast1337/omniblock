@@ -78,7 +78,7 @@ public class ClientPlayerEntity : EntityPlayer
         lastScreenDistortion = changeDimensionCooldown;
         if (inTeleportationState)
         {
-            if (!world.IsRemote && vehicle != null)
+            if (!World.IsRemote && Vehicle != null)
             {
                 setVehicle((Entity)null);
             }
@@ -90,7 +90,7 @@ public class ClientPlayerEntity : EntityPlayer
 
             if (changeDimensionCooldown == 0.0F)
             {
-                Game.SoundManager.PlaySoundFX("portal.trigger", 1.0F, random.NextFloat() * 0.4F + 0.8F);
+                Game.SoundManager.PlaySoundFX("portal.trigger", 1.0F, Random.NextFloat() * 0.4F + 0.8F);
             }
 
             changeDimensionCooldown += 0.0125F;
@@ -123,44 +123,44 @@ public class ClientPlayerEntity : EntityPlayer
 
         if (!GameMode.DisallowFlying && (_isFlying || !GameMode.CanWalk))
         {
-            _isFlying &= !onGround;
+            _isFlying &= !OnGround;
 
             if (!movementInput.sneak)
             {
                 if (movementInput.jump)
                 {
                     // flying up
-                    velocityY += 0.1;
+                    VelocityY += 0.1;
                 }
                 else
                 {
                     // hold height, but smoothly
-                    velocityY = velocityY < -0.15 ? velocityY + 0.15 : Math.Max(0, velocityY);
+                    VelocityY = VelocityY < -0.15 ? VelocityY + 0.15 : Math.Max(0, VelocityY);
                 }
 
             }
             else if (movementInput.jump)
             {
                 // shift + space = hold height
-                velocityY = 0;
+                VelocityY = 0;
             }
             else
             {
                 // limit flying decent speed
-                velocityY = Math.Max(velocityY, -0.5);
+                VelocityY = Math.Max(VelocityY, -0.5);
             }
 
         }
 
-        if (movementInput.sneak && cameraOffset < 0.2F)
+        if (movementInput.sneak && CameraOffset < 0.2F)
         {
-            cameraOffset = 0.2F;
+            CameraOffset = 0.2F;
         }
 
-        pushOutOfBlocks(x - (double)width * 0.35D, boundingBox.MinY + 0.5D, z + (double)width * 0.35D);
-        pushOutOfBlocks(x - (double)width * 0.35D, boundingBox.MinY + 0.5D, z - (double)width * 0.35D);
-        pushOutOfBlocks(x + (double)width * 0.35D, boundingBox.MinY + 0.5D, z - (double)width * 0.35D);
-        pushOutOfBlocks(x + (double)width * 0.35D, boundingBox.MinY + 0.5D, z + (double)width * 0.35D);
+        pushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
+        pushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
+        pushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
+        pushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
         base.tickMovement();
     }
 
@@ -209,7 +209,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     public override void openCraftingScreen(int x, int y, int z)
     {
-        Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, inventory, (IWorldContext)world, x, y, z));
+        Game.Navigate(new CraftingScreen(Game.UIContext, this, Game.PlayerController, inventory, (IWorldContext)World, x, y, z));
     }
 
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
@@ -250,7 +250,7 @@ public class ClientPlayerEntity : EntityPlayer
             health = newHealth;
             if (damageAmount < 0)
             {
-                hearts = maxHealth / 2;
+                Hearts = maxHealth / 2;
             }
         }
         else
@@ -258,7 +258,7 @@ public class ClientPlayerEntity : EntityPlayer
             if (!GameMode.CanReceiveDamage) return;
             damageForDisplay = damageAmount;
             lastHealth = health;
-            hearts = maxHealth;
+            Hearts = maxHealth;
             applyDamage(damageAmount);
         }
     }
@@ -306,7 +306,7 @@ public class ClientPlayerEntity : EntityPlayer
 
     private bool isBlockTranslucent(int x, int y, int z)
     {
-        return world.Reader.ShouldSuffocate(x, y, z);
+        return World.Reader.ShouldSuffocate(x, y, z);
     }
 
     protected override bool pushOutOfBlocks(double posX, double posY, double posZ)
@@ -351,22 +351,22 @@ public class ClientPlayerEntity : EntityPlayer
             float pushStrength = 0.1F;
             if (pushDirection == 0)
             {
-                velocityX = (double)(-pushStrength);
+                VelocityX = (double)(-pushStrength);
             }
 
             if (pushDirection == 1)
             {
-                velocityX = (double)pushStrength;
+                VelocityX = (double)pushStrength;
             }
 
             if (pushDirection == 4)
             {
-                velocityZ = (double)(-pushStrength);
+                VelocityZ = (double)(-pushStrength);
             }
 
             if (pushDirection == 5)
             {
-                velocityZ = (double)pushStrength;
+                VelocityZ = (double)pushStrength;
             }
         }
 

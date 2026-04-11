@@ -46,7 +46,7 @@ public class EntityPig : EntityAnimal
 
     public override bool interact(EntityPlayer player)
     {
-        if (!Saddled.Value || world.IsRemote || passenger != null && passenger != player)
+        if (!Saddled.Value || World.IsRemote || Passenger != null && Passenger != player)
         {
             return false;
         }
@@ -59,16 +59,16 @@ public class EntityPig : EntityAnimal
 
     protected override int getDropItemId()
     {
-        return fireTicks > 0 ? Item.CookedPorkchop.id : Item.RawPorkchop.id;
+        return FireTicks > 0 ? Item.CookedPorkchop.id : Item.RawPorkchop.id;
     }
 
     public override void onStruckByLightning(EntityLightningBolt bolt)
     {
-        if (!world.IsRemote)
+        if (!World.IsRemote)
         {
-            EntityPigZombie pigZombie = new EntityPigZombie(world);
-            pigZombie.setPositionAndAnglesKeepPrevAngles(x, y, z, yaw, pitch);
-            world.SpawnEntity(pigZombie);
+            EntityPigZombie pigZombie = new EntityPigZombie(World);
+            pigZombie.setPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
+            World.SpawnEntity(pigZombie);
             markDead();
         }
     }
@@ -76,9 +76,9 @@ public class EntityPig : EntityAnimal
     protected override void onLanding(float fallDistance)
     {
         base.onLanding(fallDistance);
-        if (fallDistance > 5.0F && passenger is EntityPlayer)
+        if (fallDistance > 5.0F && Passenger is EntityPlayer)
         {
-            ((EntityPlayer)passenger).incrementStat(Achievements.KillPig);
+            ((EntityPlayer)Passenger).incrementStat(Achievements.KillPig);
         }
     }
 }

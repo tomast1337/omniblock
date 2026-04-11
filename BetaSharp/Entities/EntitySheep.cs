@@ -23,7 +23,7 @@ public class EntitySheep : EntityAnimal
 
     public override void PostSpawn()
     {
-        setFleeceColor(getRandomFleeceColor(world.Random));
+        setFleeceColor(getRandomFleeceColor(World.Random));
     }
 
     protected override void dropFewItems()
@@ -45,17 +45,17 @@ public class EntitySheep : EntityAnimal
         ItemStack heldItem = player.inventory.GetItemInHand();
         if (heldItem != null && heldItem.ItemId == Item.Shears.id && !getSheared())
         {
-            if (!world.IsRemote)
+            if (!World.IsRemote)
             {
                 setSheared(true);
-                int woolCount = 2 + random.NextInt(3);
+                int woolCount = 2 + Random.NextInt(3);
 
                 for (int i = 0; i < woolCount; ++i)
                 {
                     EntityItem woolItem = dropItem(new ItemStack(Block.Wool.id, 1, getFleeceColor()), 1.0F);
-                    woolItem.velocityY += (double)(random.NextFloat() * 0.05F);
-                    woolItem.velocityX += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
-                    woolItem.velocityZ += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
+                    woolItem.VelocityY += (double)(Random.NextFloat() * 0.05F);
+                    woolItem.VelocityX += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
+                    woolItem.VelocityZ += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
                 }
             }
 

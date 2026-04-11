@@ -29,7 +29,7 @@ public abstract class EntityCreature : EntityLiving
             playerToAttack = findPlayerToAttack();
             if (playerToAttack != null)
             {
-                pathToEntity = world.Pathing.findPath(this, playerToAttack, range);
+                pathToEntity = World.Pathing.findPath(this, playerToAttack, range);
             }
         }
         else if (!playerToAttack.isAlive())
@@ -49,28 +49,28 @@ public abstract class EntityCreature : EntityLiving
             }
         }
 
-        if (hasAttacked || playerToAttack == null || pathToEntity != null && random.NextInt(20) != 0)
+        if (hasAttacked || playerToAttack == null || pathToEntity != null && Random.NextInt(20) != 0)
         {
-            if (!hasAttacked && (pathToEntity == null && random.NextInt(80) == 0 || random.NextInt(80) == 0))
+            if (!hasAttacked && (pathToEntity == null && Random.NextInt(80) == 0 || Random.NextInt(80) == 0))
             {
                 findRandomWanderTarget();
             }
         }
         else
         {
-            pathToEntity = world.Pathing.findPath(this, playerToAttack, range);
+            pathToEntity = World.Pathing.findPath(this, playerToAttack, range);
         }
 
-        int floorY = MathHelper.Floor(boundingBox.MinY + 0.5D);
+        int floorY = MathHelper.Floor(BoundingBox.MinY + 0.5D);
         bool isInWater = base.isInWater();
         bool isTouchingLava = base.isTouchingLava();
-        pitch = 0.0F;
-        if (pathToEntity != null && random.NextInt(100) != 0)
+        Pitch = 0.0F;
+        if (pathToEntity != null && Random.NextInt(100) != 0)
         {
             Vec3D? pos = pathToEntity.GetPosition(this);
-            double distance = (double)(width * 2.0F);
+            double distance = (double)(Width * 2.0F);
 
-            while (pos != null && pos.Value.squareDistanceTo(new Vec3D(x, pos.Value.y, z)) < distance * distance)
+            while (pos != null && pos.Value.squareDistanceTo(new Vec3D(X, pos.Value.y, Z)) < distance * distance)
             {
                 pathToEntity.IncrementPathIndex();
                 if (pathToEntity.IsFinished)
@@ -87,11 +87,11 @@ public abstract class EntityCreature : EntityLiving
             jumping = false;
             if (pos != null)
             {
-                double dx = pos.Value.x - x;
-                double dz = pos.Value.z - z;
+                double dx = pos.Value.x - X;
+                double dz = pos.Value.z - Z;
                 double verticalOffset = pos.Value.y - (double)floorY;
                 float targetYaw = (float)(System.Math.Atan2(dz, dx) * 180.0D / (double)((float)System.Math.PI)) - 90.0F;
-                float yawDelta = targetYaw - yaw;
+                float yawDelta = targetYaw - Yaw;
 
                 for (forwardSpeed = movementSpeed; yawDelta < -180.0F; yawDelta += 360.0F)
                 {
@@ -112,14 +112,14 @@ public abstract class EntityCreature : EntityLiving
                     yawDelta = -30.0F;
                 }
 
-                yaw += yawDelta;
+                Yaw += yawDelta;
                 if (hasAttacked && playerToAttack != null)
                 {
-                    double targetDeltaX = playerToAttack.x - x;
-                    double targetDeltaZ = playerToAttack.z - z;
-                    float previousYaw = yaw;
-                    yaw = (float)(System.Math.Atan2(targetDeltaZ, targetDeltaX) * 180.0D / (double)((float)System.Math.PI)) - 90.0F;
-                    yawDelta = (previousYaw - yaw + 90.0F) * (float)System.Math.PI / 180.0F;
+                    double targetDeltaX = playerToAttack.X - X;
+                    double targetDeltaZ = playerToAttack.Z - Z;
+                    float previousYaw = Yaw;
+                    Yaw = (float)(System.Math.Atan2(targetDeltaZ, targetDeltaX) * 180.0D / (double)((float)System.Math.PI)) - 90.0F;
+                    yawDelta = (previousYaw - Yaw + 90.0F) * (float)System.Math.PI / 180.0F;
                     sidewaysSpeed = -MathHelper.Sin(yawDelta) * forwardSpeed * 1.0F;
                     forwardSpeed = MathHelper.Cos(yawDelta) * forwardSpeed * 1.0F;
                 }
@@ -135,12 +135,12 @@ public abstract class EntityCreature : EntityLiving
                 faceEntity(playerToAttack, 30.0F, 30.0F);
             }
 
-            if (horizontalCollison && !hasPath())
+            if (HorizontalCollison && !hasPath())
             {
                 jumping = true;
             }
 
-            if (random.NextFloat() < 0.8F && (isInWater || isTouchingLava))
+            if (Random.NextFloat() < 0.8F && (isInWater || isTouchingLava))
             {
                 jumping = true;
             }
@@ -163,9 +163,9 @@ public abstract class EntityCreature : EntityLiving
 
         for (int _ = 0; _ < 10; ++_)
         {
-            int floorX = MathHelper.Floor(x + (double)random.NextInt(13) - 6.0D);
-            int floorY = MathHelper.Floor(y + (double)random.NextInt(7) - 3.0D);
-            int floorZ = MathHelper.Floor(z + (double)random.NextInt(13) - 6.0D);
+            int floorX = MathHelper.Floor(X + (double)Random.NextInt(13) - 6.0D);
+            int floorY = MathHelper.Floor(Y + (double)Random.NextInt(7) - 3.0D);
+            int floorZ = MathHelper.Floor(Z + (double)Random.NextInt(13) - 6.0D);
             float cost = getBlockPathWeight(floorX, floorY, floorZ);
             if (cost > bestCost)
             {
@@ -179,7 +179,7 @@ public abstract class EntityCreature : EntityLiving
 
         if (foundWanderTarget)
         {
-            pathToEntity = world.Pathing.findPath(this, bestX, bestY, bestZ, 10.0F);
+            pathToEntity = World.Pathing.findPath(this, bestX, bestY, bestZ, 10.0F);
         }
     }
 
@@ -203,9 +203,9 @@ public abstract class EntityCreature : EntityLiving
 
     public override bool canSpawn()
     {
-        int floorX = MathHelper.Floor(x);
-        int floorY = MathHelper.Floor(boundingBox.MinY);
-        int floorZ = MathHelper.Floor(z);
+        int floorX = MathHelper.Floor(X);
+        int floorY = MathHelper.Floor(BoundingBox.MinY);
+        int floorZ = MathHelper.Floor(Z);
         return base.canSpawn() && getBlockPathWeight(floorX, floorY, floorZ) >= 0.0F;
     }
 

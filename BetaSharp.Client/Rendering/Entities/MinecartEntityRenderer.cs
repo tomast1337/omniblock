@@ -20,12 +20,12 @@ public class MinecartEntityRenderer : EntityRenderer
     public void render(EntityMinecart var1, double x, double y, double z, float yaw, float tickDelta)
     {
         GLManager.GL.PushMatrix();
-        double var10 = var1.lastTickX + (var1.x - var1.lastTickX) * (double)tickDelta;
-        double var12 = var1.lastTickY + (var1.y - var1.lastTickY) * (double)tickDelta;
-        double var14 = var1.lastTickZ + (var1.z - var1.lastTickZ) * (double)tickDelta;
+        double var10 = var1.LastTickX + (var1.X - var1.LastTickX) * (double)tickDelta;
+        double var12 = var1.LastTickY + (var1.Y - var1.LastTickY) * (double)tickDelta;
+        double var14 = var1.LastTickZ + (var1.Z - var1.LastTickZ) * (double)tickDelta;
         double var16 = (double)0.3F;
         Vec3D? var18 = var1.func_514_g(var10, var12, var14);
-        float var19 = var1.prevPitch + (var1.pitch - var1.prevPitch) * tickDelta;
+        float var19 = var1.PrevPitch + (var1.Pitch - var1.PrevPitch) * tickDelta;
         if (var18 != null)
         {
             Vec3D var20 = var1.func_515_a(var10, var12, var14, var16) ?? var18.Value;

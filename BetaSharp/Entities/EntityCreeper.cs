@@ -37,7 +37,7 @@ public class EntityCreeper : EntityMonster
 
     protected override void attackBlockedEntity(Entity entity, float distance)
     {
-        if (!world.IsRemote)
+        if (!World.IsRemote)
         {
             if (timeSinceIgnited > 0)
             {
@@ -54,12 +54,12 @@ public class EntityCreeper : EntityMonster
     public override void tick()
     {
         lastActiveTime = timeSinceIgnited;
-        if (world.IsRemote)
+        if (World.IsRemote)
         {
             int state = (sbyte)CreeperState.Value;
             if (state > 0 && timeSinceIgnited == 0)
             {
-                world.Broadcaster.PlaySoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
+                World.Broadcaster.PlaySoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
             }
 
             timeSinceIgnited += state;
@@ -75,7 +75,7 @@ public class EntityCreeper : EntityMonster
         }
 
         base.tick();
-        if (!world.IsRemote && playerToAttack == null && timeSinceIgnited > 0)
+        if (!World.IsRemote && playerToAttack == null && timeSinceIgnited > 0)
         {
             CreeperState.Value = 255;
             --timeSinceIgnited;
@@ -102,21 +102,21 @@ public class EntityCreeper : EntityMonster
         base.onKilledBy(entity);
         if (entity is EntitySkeleton)
         {
-            dropItem(Item.RecordThirteen.id + random.NextInt(2), 1);
+            dropItem(Item.RecordThirteen.id + Random.NextInt(2), 1);
         }
 
     }
 
     protected override void attackEntity(Entity entity, float distance)
     {
-        if (!world.IsRemote)
+        if (!World.IsRemote)
         {
             int state = (sbyte)CreeperState.Value;
             if (state <= 0 && distance < 3.0F || state > 0 && distance < 7.0F)
             {
                 if (timeSinceIgnited == 0)
                 {
-                    world.Broadcaster.PlaySoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
+                    World.Broadcaster.PlaySoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
                 }
 
                 CreeperState.Value = 1;
@@ -125,11 +125,11 @@ public class EntityCreeper : EntityMonster
                 {
                     if (Powered.Value)
                     {
-                        world.CreateExplosion(this, x, y, z, 6.0F);
+                        World.CreateExplosion(this, X, Y, Z, 6.0F);
                     }
                     else
                     {
-                        world.CreateExplosion(this, x, y, z, 3.0F);
+                        World.CreateExplosion(this, X, Y, Z, 3.0F);
                     }
 
                     markDead();

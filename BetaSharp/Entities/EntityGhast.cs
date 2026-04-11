@@ -22,7 +22,7 @@ public class EntityGhast : EntityFlying, Monster
     {
         texture = "/mob/ghast.png";
         setBoundingBoxSpacing(4.0F, 4.0F);
-        isImmuneToFire = true;
+        IsImmuneToFire = true;
         Charging = DataSynchronizer.MakeProperty<bool>(16, false);
     }
 
@@ -34,49 +34,49 @@ public class EntityGhast : EntityFlying, Monster
 
     public override void tickLiving()
     {
-        if (!world.IsRemote && world.Difficulty == 0)
+        if (!World.IsRemote && World.Difficulty == 0)
         {
             markDead();
         }
 
         func_27021_X();
         prevAttackCounter = attackCounter;
-        double dx1 = waypointX - x;
-        double dy1 = waypointY - y;
-        double dz1 = waypointZ - z;
+        double dx1 = waypointX - X;
+        double dy1 = waypointY - Y;
+        double dz1 = waypointZ - Z;
         double distance = (double)MathHelper.Sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1);
         if (distance < 1.0D || distance > 60.0D)
         {
-            waypointX = x + (double)((random.NextFloat() * 2.0F - 1.0F) * 16.0F);
-            waypointY = y + (double)((random.NextFloat() * 2.0F - 1.0F) * 16.0F);
-            waypointZ = z + (double)((random.NextFloat() * 2.0F - 1.0F) * 16.0F);
+            waypointX = X + (double)((Random.NextFloat() * 2.0F - 1.0F) * 16.0F);
+            waypointY = Y + (double)((Random.NextFloat() * 2.0F - 1.0F) * 16.0F);
+            waypointZ = Z + (double)((Random.NextFloat() * 2.0F - 1.0F) * 16.0F);
         }
 
         if (courseChangeCooldown-- <= 0)
         {
-            courseChangeCooldown += random.NextInt(5) + 2;
+            courseChangeCooldown += Random.NextInt(5) + 2;
             if (isCourseTraversable(waypointX, waypointY, waypointZ, distance))
             {
-                velocityX += dx1 / distance * 0.1D;
-                velocityY += dy1 / distance * 0.1D;
-                velocityZ += dz1 / distance * 0.1D;
+                VelocityX += dx1 / distance * 0.1D;
+                VelocityY += dy1 / distance * 0.1D;
+                VelocityZ += dz1 / distance * 0.1D;
             }
             else
             {
-                waypointX = x;
-                waypointY = y;
-                waypointZ = z;
+                waypointX = X;
+                waypointY = Y;
+                waypointZ = Z;
             }
         }
 
-        if (targetedEntity != null && targetedEntity.dead)
+        if (targetedEntity != null && targetedEntity.Dead)
         {
             targetedEntity = null;
         }
 
         if (targetedEntity == null || aggroCooldown-- <= 0)
         {
-            targetedEntity = world.Entities.GetClosestPlayerTarget(x, y, z, 100.0D);
+            targetedEntity = World.Entities.GetClosestPlayerTarget(X, Y, Z, 100.0D);
             if (targetedEntity != null)
             {
                 aggroCooldown = 20;
@@ -86,28 +86,28 @@ public class EntityGhast : EntityFlying, Monster
         double attackRange = 64.0D;
         if (targetedEntity != null && targetedEntity.getSquaredDistance(this) < attackRange * attackRange)
         {
-            double dx2 = targetedEntity.x - x;
-            double dy2 = targetedEntity.boundingBox.MinY + (double)(targetedEntity.height / 2.0F) - (y + (double)(height / 2.0F));
-            double dz2 = targetedEntity.z - z;
-            bodyYaw = yaw = -((float)System.Math.Atan2(dx2, dz2)) * 180.0F / (float)System.Math.PI;
+            double dx2 = targetedEntity.X - X;
+            double dy2 = targetedEntity.BoundingBox.MinY + (double)(targetedEntity.Height / 2.0F) - (Y + (double)(Height / 2.0F));
+            double dz2 = targetedEntity.Z - Z;
+            bodyYaw = Yaw = -((float)System.Math.Atan2(dx2, dz2)) * 180.0F / (float)System.Math.PI;
             if (canSee(targetedEntity))
             {
                 if (attackCounter == 10)
                 {
-                    world.Broadcaster.PlaySoundAtEntity(this, "mob.ghast.charge", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
+                    World.Broadcaster.PlaySoundAtEntity(this, "mob.ghast.charge", getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
                 }
 
                 ++attackCounter;
                 if (attackCounter == 20)
                 {
-                    world.Broadcaster.PlaySoundAtEntity(this, "mob.ghast.fireball", getSoundVolume(), (random.NextFloat() - random.NextFloat()) * 0.2F + 1.0F);
-                    EntityFireball fireball = new EntityFireball(world, this, dx2, dy2, dz2);
+                    World.Broadcaster.PlaySoundAtEntity(this, "mob.ghast.fireball", getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
+                    EntityFireball fireball = new EntityFireball(World, this, dx2, dy2, dz2);
                     double spawnOffset = 4.0D;
                     Vec3D lookDir = getLook(1.0F);
-                    fireball.x = x + lookDir.x * spawnOffset;
-                    fireball.y = y + (double)(height / 2.0F) + 0.5D;
-                    fireball.z = z + lookDir.z * spawnOffset;
-                    world.SpawnEntity(fireball);
+                    fireball.X = X + lookDir.x * spawnOffset;
+                    fireball.Y = Y + (double)(Height / 2.0F) + 0.5D;
+                    fireball.Z = Z + lookDir.z * spawnOffset;
+                    World.SpawnEntity(fireball);
                     attackCounter = -40;
                 }
             }
@@ -118,14 +118,14 @@ public class EntityGhast : EntityFlying, Monster
         }
         else
         {
-            bodyYaw = yaw = -((float)System.Math.Atan2(velocityX, velocityZ)) * 180.0F / (float)System.Math.PI;
+            bodyYaw = Yaw = -((float)System.Math.Atan2(VelocityX, VelocityZ)) * 180.0F / (float)System.Math.PI;
             if (attackCounter > 0)
             {
                 --attackCounter;
             }
         }
 
-        if (!world.IsRemote)
+        if (!World.IsRemote)
         {
             Charging.Value = attackCounter > 10;
         }
@@ -133,15 +133,15 @@ public class EntityGhast : EntityFlying, Monster
 
     private bool isCourseTraversable(double targetX, double targety, double targetZ, double distance)
     {
-        double stepX = (waypointX - x) / distance;
-        double stepY = (waypointY - y) / distance;
-        double stepZ = (waypointZ - z) / distance;
-        Box box = boundingBox;
+        double stepX = (waypointX - X) / distance;
+        double stepY = (waypointY - Y) / distance;
+        double stepZ = (waypointZ - Z) / distance;
+        Box box = BoundingBox;
 
         for (int i = 1; (double)i < distance; ++i)
         {
             box.Translate(stepX, stepY, stepZ);
-            if (world.Entities.GetEntityCollisionsScratch(this, box).Count > 0)
+            if (World.Entities.GetEntityCollisionsScratch(this, box).Count > 0)
             {
                 return false;
             }
@@ -177,7 +177,7 @@ public class EntityGhast : EntityFlying, Monster
 
     public override bool canSpawn()
     {
-        return random.NextInt(20) == 0 && base.canSpawn() && world.Difficulty > 0;
+        return Random.NextInt(20) == 0 && base.canSpawn() && World.Difficulty > 0;
     }
 
     public override int getMaxSpawnedInChunk()

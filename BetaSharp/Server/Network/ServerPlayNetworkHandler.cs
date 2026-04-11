@@ -62,7 +62,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         connection.disconnect();
         server.playerManager.disconnect(player);
         server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(
-            player.id,
+            player.ID,
             PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
             player.name
         ));
@@ -88,14 +88,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         if (teleported)
         {
-            if (player.vehicle != null)
+            if (player.Vehicle != null)
             {
-                float var27 = player.yaw;
-                float var4 = player.pitch;
-                player.vehicle.updatePassengerPosition();
-                double var28 = player.x;
-                double var29 = player.y;
-                double var30 = player.z;
+                float var27 = player.Yaw;
+                float var4 = player.Pitch;
+                player.Vehicle.updatePassengerPosition();
+                double var28 = player.X;
+                double var29 = player.Y;
+                double var30 = player.Z;
                 double var31 = 0.0;
                 double var34 = 0.0;
                 if (packet.changeLook)
@@ -110,26 +110,26 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     var34 = packet.z;
                 }
 
-                player.onGround = packet.onGround;
+                player.OnGround = packet.onGround;
                 player.PlayerTick(false);
                 player.move(var31, 0.0, var34);
                 player.setPositionAndAngles(var28, var29, var30, var27, var4);
-                player.velocityX = var31;
-                player.velocityZ = var34;
-                if (player.vehicle != null)
+                player.VelocityX = var31;
+                player.VelocityZ = var34;
+                if (player.Vehicle != null)
                 {
-                    sWorld.Entities.TickVehicleBypassingFilter(player.vehicle, true);
+                    sWorld.Entities.TickVehicleBypassingFilter(player.Vehicle, true);
                 }
 
-                if (player.vehicle != null)
+                if (player.Vehicle != null)
                 {
-                    player.vehicle.updatePassengerPosition();
+                    player.Vehicle.updatePassengerPosition();
                 }
 
                 server.playerManager.updatePlayerChunks(player);
-                teleportTargetX = player.x;
-                teleportTargetY = player.y;
-                teleportTargetZ = player.z;
+                teleportTargetX = player.X;
+                teleportTargetY = player.Y;
+                teleportTargetZ = player.Z;
                 sWorld.Entities.UpdateEntity(player, true);
                 return;
             }
@@ -137,20 +137,20 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             if (player.isSleeping())
             {
                 player.PlayerTick(false);
-                player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.yaw, player.pitch);
+                player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.Yaw, player.Pitch);
                 sWorld.Entities.UpdateEntity(player, true);
                 return;
             }
 
-            double var26 = player.y;
-            teleportTargetX = player.x;
-            teleportTargetY = player.y;
-            teleportTargetZ = player.z;
-            double var5 = player.x;
-            double var7 = player.y;
-            double var9 = player.z;
-            float var11 = player.yaw;
-            float var12 = player.pitch;
+            double var26 = player.Y;
+            teleportTargetX = player.X;
+            teleportTargetY = player.Y;
+            teleportTargetZ = player.Z;
+            double var5 = player.X;
+            double var7 = player.Y;
+            double var9 = player.Z;
+            float var11 = player.Yaw;
+            float var12 = player.Pitch;
             if (packet.changePosition && packet.y == -999.0 && packet.eyeHeight == -999.0)
             {
                 packet.changePosition = false;
@@ -183,16 +183,16 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             }
 
             player.PlayerTick(false);
-            player.cameraOffset = 0.0F;
+            player.CameraOffset = 0.0F;
             player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
             if (!teleported)
             {
                 return;
             }
 
-            double var32 = var5 - player.x;
-            double var15 = var7 - player.y;
-            double var17 = var9 - player.z;
+            double var32 = var5 - player.X;
+            double var15 = var7 - player.Y;
+            double var17 = var9 - player.Z;
             double var19 = var32 * var32 + var15 * var15 + var17 * var17;
             if (var19 > 100.0)
             {
@@ -202,16 +202,16 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             }
 
             float var21 = (1 / 16f);
-            bool var22 = sWorld.Entities.GetEntityCollisionsScratch(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var22 = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(var21, var21, var21)).Count == 0;
             player.move(var32, var15, var17);
-            var32 = var5 - player.x;
-            var15 = var7 - player.y;
+            var32 = var5 - player.X;
+            var15 = var7 - player.Y;
             if (var15 > -0.5 || var15 < 0.5)
             {
                 var15 = 0.0;
             }
 
-            var17 = var9 - player.z;
+            var17 = var9 - player.Z;
             var19 = var32 * var32 + var15 * var15 + var17 * var17;
             bool var23 = false;
             if (var19 > 0.0625 && !player.isSleeping())
@@ -219,18 +219,18 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 var23 = true;
                 _logger.LogWarning($"{player.name} moved wrongly!");
                 _logger.LogInformation($"Got position {var5}, {var7}, {var9}");
-                _logger.LogInformation($"Expected {player.x}, {player.y}, {player.z}");
+                _logger.LogInformation($"Expected {player.X}, {player.Y}, {player.Z}");
             }
 
             player.setPositionAndAngles(var5, var7, var9, var11, var12);
-            bool var24 = sWorld.Entities.GetEntityCollisionsScratch(player, player.boundingBox.Contract(var21, var21, var21)).Count == 0;
+            bool var24 = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
                 teleport(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
                 return;
             }
 
-            Box var25 = player.boundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
+            Box var25 = player.BoundingBox.Expand(var21, var21, var21).Stretch(0.0, -0.55, 0.0);
             if (server.flightEnabled || sWorld.Reader.IsMaterialInBox(var25, m => m != Material.Air))
             {
                 floatingTime = 0;
@@ -246,9 +246,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
             }
 
-            player.onGround = packet.onGround;
+            player.OnGround = packet.onGround;
             server.playerManager.updatePlayerChunks(player);
-            player.handleFall(player.y - var26, packet.onGround);
+            player.handleFall(player.Y - var26, packet.onGround);
         }
     }
 
@@ -278,7 +278,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             if (packet.action == 3)
             {
-                if (MathHelper.GetDistSqr(player.x, player.y, player.z, x, y, z) < 256.0)
+                if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) < 256.0)
                 {
                     player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
                 }
@@ -288,7 +288,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             if (packet.action == 0 || packet.action == 2)
             {
-                if (MathHelper.GetDistSqr(player.x, player.y, player.z, x, y, z) > 36.0)
+                if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) > 36.0)
                 {
                     return;
                 }
@@ -398,7 +398,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         _logger.LogInformation($"{player.name} lost connection: {reason}");
         server.playerManager.disconnect(player);
         server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(
-            player.id,
+            player.ID,
             PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
             player.name
         ));

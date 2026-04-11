@@ -12,7 +12,7 @@ internal class BlockSoulSand(int id, int textureId) : Block(id, textureId, Mater
 
     public override void onEntityCollision(OnEntityCollisionEvent @event)
     {
-        @event.Entity.velocityX *= 0.4;
-        @event.Entity.velocityZ *= 0.4;
+        @event.Entity.VelocityX *= 0.4;
+        @event.Entity.VelocityZ *= 0.4;
     }
 }

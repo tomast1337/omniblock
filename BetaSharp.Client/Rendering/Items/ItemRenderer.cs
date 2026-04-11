@@ -27,8 +27,8 @@ public class ItemRenderer : EntityRenderer
         random.SetSeed(187L);
         ItemStack var10 = var1.stack;
         GLManager.GL.PushMatrix();
-        float var11 = MathHelper.Sin((var1.age + var9) / 10.0F + var1.bobPhase) * 0.1F + 0.1F;
-        float var12 = ((var1.age + var9) / 20.0F + var1.bobPhase) * (180.0F / (float)Math.PI);
+        float var11 = MathHelper.Sin((var1.Age + var9) / 10.0F + var1.bobPhase) * 0.1F + 0.1F;
+        float var12 = ((var1.Age + var9) / 20.0F + var1.bobPhase) * (180.0F / (float)Math.PI);
         byte var13 = 1;
         if (var1.stack.Count > 1)
         {
