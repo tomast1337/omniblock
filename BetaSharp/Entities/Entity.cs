@@ -13,71 +13,71 @@ public abstract class Entity
 {
     public abstract EntityType? Type { get; }
     private static int _nextEntityID;
-    public int ID = _nextEntityID++;
-    public double RenderDistanceWeight = 1.0D;
-    public bool PreventEntitySpawning = false;
-    public Entity? Passenger;
-    public Entity? Vehicle;
-    public IWorldContext World;
-    public double PrevX;
-    public double PrevY;
-    public double PrevZ;
-    public double X;
-    public double Y;
-    public double Z;
-    public double VelocityX;
-    public double VelocityY;
-    public double VelocityZ;
-    public float Yaw;
-    public float Pitch;
-    public float PrevYaw;
-    public float PrevPitch;
-    public Box BoundingBox = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-    public bool OnGround;
-    public bool HorizontalCollison;
-    public bool VerticalCollision;
-    public bool HasCollided;
-    public bool VelocityModified;
-    public bool Slowed;
-    public bool KeepVelocityOnCollision = true;
-    public bool Dead;
-    public float StandingEyeHeight = 0.0F;
-    public float Width = 0.6F;
-    public float Height = 1.8F;
-    public float PrevHorizontalSpeed;
-    public float HorizontalSpeed;
-    protected float FallDistance;
+    public int ID { get; set; } = _nextEntityID++;
+    public double RenderDistanceWeight { get; set; } = 1.0D;
+    public bool PreventEntitySpawning { get; set; } = false;
+    public Entity? Passenger { get; set; }
+    public Entity? Vehicle { get; set; }
+    public IWorldContext World { get; set; }
+    public double PrevX { get; set; }
+    public double PrevY { get; set; }
+    public double PrevZ { get; set; }
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Z { get; set; }
+    public double VelocityX { get; set; }
+    public double VelocityY { get; set; }
+    public double VelocityZ { get; set; }
+    public float Yaw { get; set; }
+    public float Pitch { get; set; }
+    public float PrevYaw { get; set; }
+    public float PrevPitch { get; set; }
+    public Box BoundingBox { get; set; } = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+    public bool OnGround { get; set; }
+    public bool HorizontalCollison { get; set; }
+    public bool VerticalCollision { get; set; }
+    public bool HasCollided { get; set; }
+    public bool VelocityModified { get; set; }
+    public bool Slowed { get; set; }
+    public bool KeepVelocityOnCollision { get; set; } = true;
+    public bool Dead { get; set; }
+    public float StandingEyeHeight { get; set; } = 0.0F;
+    public float Width { get; set; } = 0.6F;
+    public float Height { get; set; } = 1.8F;
+    public float PrevHorizontalSpeed { get; set; }
+    public float HorizontalSpeed { get; set; }
+    protected float FallDistance { get; set; }
     private int _nextStepSoundDistance = 1;
-    public double LastTickX;
-    public double LastTickY;
-    public double LastTickZ;
-    public float CameraOffset;
-    public float StepHeight = 0.0F;
-    public bool NoClip = false;
-    public float PushSpeedReduction = 0.0F;
-    protected JavaRandom Random = new();
-    public int Age = 0;
-    public int FireImmunityTicks = 1;
-    public int FireTicks;
-    protected int MaxAir = 300;
-    protected bool InWater;
-    public int Hearts = 0;
-    public int Air = 300;
+    public double LastTickX { get; set; }
+    public double LastTickY { get; set; }
+    public double LastTickZ { get; set; }
+    public float CameraOffset { get; set; }
+    public float StepHeight { get; set; } = 0.0F;
+    public bool NoClip { get; set; } = false;
+    public float PushSpeedReduction { get; set; } = 0.0F;
+    protected JavaRandom Random { get; set; } = new();
+    public int Age { get; set; } = 0;
+    public int FireImmunityTicks { get; set; } = 1;
+    public int FireTicks { get; set; }
+    protected int MaxAir { get; set; } = 300;
+    protected bool InWater { get; set; }
+    public int Hearts { get; set; } = 0;
+    public int Air { get; set; } = 300;
     private bool _firstTick = true;
-    public string CloakUrl;
-    protected bool IsImmuneToFire = false;
-    public DataSynchronizer DataSynchronizer = new();
-    public float MinBrightness = 0.0F;
+    public string CloakUrl { get; set; }
+    protected bool IsImmuneToFire { get; set; } = false;
+    public DataSynchronizer DataSynchronizer { get; set; } = new();
+    public float MinBrightness { get; set; } = 0.0F;
     private double _vehiclePitchDelta;
     private double _vehicleYawDelta;
-    public bool IsPersistent = false;
-    public int ChunkX;
-    public int ChunkSlice;
-    public int ChunkZ;
-    public int TrackedPosX;
-    public int TrackedPosY;
-    public int TrackedPosZ;
-    public bool IgnoreFrustumCheck;
+    public bool IsPersistent { get; set; } = false;
+    public int ChunkX { get; set; }
+    public int ChunkSlice { get; set; }
+    public int ChunkZ { get; set; }
+    public int TrackedPosX { get; set; }
+    public int TrackedPosY { get; set; }
+    public int TrackedPosZ { get; set; }
+    public bool IgnoreFrustumCheck { get; set; }
     private readonly SyncedProperty<byte> _flags;
 
     public Entity(IWorldContext world)
