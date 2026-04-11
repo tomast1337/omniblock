@@ -88,7 +88,7 @@ internal class PortalForcer
                 targetZ += 0.5D;
             }
 
-            entity.setPositionAndAnglesKeepPrevAngles(targetX, targetY, targetZ, entity.Yaw, 0.0F);
+            entity.SetPositionAndAnglesKeepPrevAngles(targetX, targetY, targetZ, entity.Yaw, 0.0F);
             entity.VelocityX = entity.VelocityY = entity.VelocityZ = 0.0D;
             return true;
         }

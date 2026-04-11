@@ -6,7 +6,7 @@ namespace BetaSharp.Client.Rendering.Particles;
 public class LegacyParticleAdapter(EntityFX fx) : ISpecialParticle
 {
     public bool IsDead => fx.Dead;
-    public void Tick() => fx.tick();
+    public void Tick() => fx.Tick();
     public void Render(Tessellator t, float partialTick, double interpX, double interpY, double interpZ)
     {
         EntityFX.interpPosX = interpX;

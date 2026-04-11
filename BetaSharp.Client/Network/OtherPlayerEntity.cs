@@ -31,12 +31,12 @@ public class OtherPlayerEntity : EntityPlayer
         StandingEyeHeight = 0.0F;
     }
 
-    public override bool damage(Entity ent, int amount)
+    public override bool Damage(Entity ent, int amount)
     {
         return true;
     }
 
-    public override void setPositionAndAnglesAvoidEntities(double lerpX, double lerpY, double lerpZ, float lerpYaw, float lerpPitch, int lerpSteps)
+    public override void SetPositionAndAnglesAvoidEntities(double lerpX, double lerpY, double lerpZ, float lerpYaw, float lerpPitch, int lerpSteps)
     {
         this.lerpX = lerpX;
         this.lerpY = lerpY;
@@ -46,10 +46,10 @@ public class OtherPlayerEntity : EntityPlayer
         this.lerpSteps = lerpSteps;
     }
 
-    public override void tick()
+    public override void Tick()
     {
         sleepOffsetY = 0.0F;
-        base.tick();
+        base.Tick();
         lastWalkAnimationSpeed = walkAnimationSpeed;
         double dx = X - PrevX;
         double dz = Z - PrevZ;
@@ -63,7 +63,7 @@ public class OtherPlayerEntity : EntityPlayer
         animationPhase += walkAnimationSpeed;
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }
@@ -90,8 +90,8 @@ public class OtherPlayerEntity : EntityPlayer
             Yaw = (float)(Yaw + dYaw / lerpSteps);
             Pitch = (float)(Pitch + (lerpPitch - Pitch) / lerpSteps);
             --lerpSteps;
-            setPosition(newX, newY, newZ);
-            setRotation(Yaw, Pitch);
+            SetPosition(newX, newY, newZ);
+            SetRotation(Yaw, Pitch);
         }
 
         prevStepBobbingAmount = stepBobbingAmount;
@@ -116,7 +116,7 @@ public class OtherPlayerEntity : EntityPlayer
         tilt += (tiltAmount - tilt) * 0.8F;
     }
 
-    public override void setEquipmentStack(int slotIndex, int itemId, int damage)
+    public override void SetEquipmentStack(int slotIndex, int itemId, int damage)
     {
         ItemStack itemStack = null;
         if (itemId >= 0)

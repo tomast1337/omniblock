@@ -35,7 +35,7 @@ public class HeldItemRenderer
         if (item.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[item.ItemId].getRenderType()))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
-            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.ItemId], item.getDamage(), entity.getBrightnessAtEyes(1.0F), Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(Block.Blocks[item.ItemId], item.getDamage(), entity.GetBrightnessAtEyes(1.0F), Tessellator.instance);
         }
         else
         {
@@ -309,13 +309,13 @@ public class HeldItemRenderer
     {
         GLManager.GL.Disable(GLEnum.AlphaTest);
         int var2;
-        if (_game.Player.isOnFire())
+        if (_game.Player.IsOnFire())
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/terrain.png"));
             renderFireInFirstPerson(var1);
         }
 
-        if (_game.Player.isInsideWall())
+        if (_game.Player.IsInsideWall())
         {
             var2 = MathHelper.Floor(_game.Player.X);
             int var3 = MathHelper.Floor(_game.Player.Y);
@@ -349,7 +349,7 @@ public class HeldItemRenderer
             }
         }
 
-        if (_game.Player.isInFluid(Material.Water))
+        if (_game.Player.IsInFluid(Material.Water))
         {
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/misc/water.png"));
             renderWarpedTextureOverlay(var1);
@@ -361,7 +361,7 @@ public class HeldItemRenderer
     private void renderInsideOfBlock(float var1, int var2)
     {
         Tessellator var3 = Tessellator.instance;
-        _game.Player.getBrightnessAtEyes(var1);
+        _game.Player.GetBrightnessAtEyes(var1);
         float var4 = 0.1F;
         GLManager.GL.Color4(var4, var4, var4, 0.5F);
         GLManager.GL.PushMatrix();
@@ -388,7 +388,7 @@ public class HeldItemRenderer
     private void renderWarpedTextureOverlay(float var1)
     {
         Tessellator var2 = Tessellator.instance;
-        float var3 = _game.Player.getBrightnessAtEyes(var1);
+        float var3 = _game.Player.GetBrightnessAtEyes(var1);
         GLManager.GL.Color4(var3, var3, var3, 0.5F);
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
@@ -503,6 +503,6 @@ public class HeldItemRenderer
             return;
         }
 
-        _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId(_game.Player.getTexture()));
+        _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId(_game.Player.GetTexture()));
     }
 }

@@ -32,13 +32,13 @@ public abstract class EntityCreature : EntityLiving
                 pathToEntity = World.Pathing.findPath(this, playerToAttack, range);
             }
         }
-        else if (!playerToAttack.isAlive())
+        else if (!playerToAttack.IsAlive())
         {
             playerToAttack = null;
         }
         else
         {
-            float distance = playerToAttack.getDistance(this);
+            float distance = playerToAttack.GetDistance(this);
             if (canSee(playerToAttack))
             {
                 attackEntity(playerToAttack, distance);
@@ -62,8 +62,8 @@ public abstract class EntityCreature : EntityLiving
         }
 
         int floorY = MathHelper.Floor(BoundingBox.MinY + 0.5D);
-        bool isInWater = base.isInWater();
-        bool isTouchingLava = base.isTouchingLava();
+        bool isInWater = base.IsInWater();
+        bool isTouchingLava = base.IsTouchingLava();
         Pitch = 0.0F;
         if (pathToEntity != null && Random.NextInt(100) != 0)
         {

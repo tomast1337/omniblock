@@ -95,12 +95,12 @@ public class EntityManager
     {
         if (entity.Passenger != null)
         {
-            entity.Passenger.setVehicle(null);
+            entity.Passenger.SetVehicle(null);
         }
 
         if (entity.Vehicle != null)
         {
-            entity.setVehicle(null);
+            entity.SetVehicle(null);
         }
 
         RemoveEntityFromAllKnownChunkLists(entity);
@@ -201,15 +201,15 @@ public class EntityManager
     {
         if (entity.Passenger != null)
         {
-            entity.Passenger.setVehicle(null);
+            entity.Passenger.SetVehicle(null);
         }
 
         if (entity.Vehicle != null)
         {
-            entity.setVehicle(null);
+            entity.SetVehicle(null);
         }
 
-        entity.markDead();
+        entity.MarkDead();
 
         if (entity is EntityPlayer player)
         {
@@ -219,7 +219,7 @@ public class EntityManager
 
     public void ServerRemove(Entity entity)
     {
-        entity.markDead();
+        entity.MarkDead();
         RemoveEntityNow(entity);
     }
 
@@ -269,7 +269,7 @@ public class EntityManager
             for (int i = 0; i < GlobalEntities.Count; ++i)
             {
                 Entity globalEntity = GlobalEntities[i];
-                globalEntity.tick();
+                globalEntity.Tick();
                 if (globalEntity.Dead)
                 {
                     GlobalEntities.RemoveAt(i--);
@@ -376,11 +376,11 @@ public class EntityManager
             {
                 if (entity.Vehicle != null)
                 {
-                    entity.tickRiding();
+                    entity.TickRiding();
                 }
                 else
                 {
-                    entity.tick();
+                    entity.Tick();
                 }
             }
 
@@ -473,11 +473,11 @@ public class EntityManager
             {
                 if (vehicle.Vehicle != null)
                 {
-                    vehicle.tickRiding();
+                    vehicle.TickRiding();
                 }
                 else
                 {
-                    vehicle.tick();
+                    vehicle.Tick();
                 }
             }
 
@@ -616,14 +616,14 @@ public class EntityManager
                 break;
             }
 
-            Box? entityBox = other.getBoundingBox();
+            Box? entityBox = other.GetBoundingBox();
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
                 collisionCount++;
             }
 
-            entityBox = entity.getCollisionAgainstShape(other);
+            entityBox = entity.GetCollisionAgainstShape(other);
             if (entityBox != null && entityBox.Value.Intersects(area))
             {
                 collidingBoundingBoxes.Add(entityBox.Value);
@@ -721,7 +721,7 @@ public class EntityManager
         foreach (var player in Players)
         {
             if (!player.GameMode.VisibleToWorld) return null;
-            double distanceSquared = player.getSquaredDistance(x, y, z);
+            double distanceSquared = player.GetSquaredDistance(x, y, z);
 
             bool withinRange = range < 0.0D || distanceSquared < range * range;
             bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;
@@ -744,7 +744,7 @@ public class EntityManager
         foreach (var player in Players)
         {
             if (!player.GameMode.CanBeTargeted) return null;
-            double distanceSquared = player.getSquaredDistance(x, y, z);
+            double distanceSquared = player.GetSquaredDistance(x, y, z);
 
             bool withinRange = range < 0.0D || distanceSquared < range * range;
             bool isClosestSoFar = minDistanceSquared == -1.0D || distanceSquared < minDistanceSquared;

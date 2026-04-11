@@ -67,11 +67,11 @@ public class MinecartEntityRenderer : EntityRenderer
             GLManager.GL.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
             if (var1.type == 1)
             {
-                BlockRenderer.RenderBlockOnInventory(Block.Chest, 0, var1.getBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(Block.Chest, 0, var1.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
             }
             else if (var1.type == 2)
             {
-                BlockRenderer.RenderBlockOnInventory(Block.Furnace, 0, var1.getBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(Block.Furnace, 0, var1.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
             }
 
             GLManager.GL.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);

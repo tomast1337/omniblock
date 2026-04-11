@@ -80,7 +80,7 @@ public class ClientPlayerEntity : EntityPlayer
         {
             if (!World.IsRemote && Vehicle != null)
             {
-                setVehicle((Entity)null);
+                SetVehicle((Entity)null);
             }
 
             if (Game.CurrentScreen != null)
@@ -157,10 +157,10 @@ public class ClientPlayerEntity : EntityPlayer
             CameraOffset = 0.2F;
         }
 
-        pushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
-        pushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
-        pushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
-        pushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
+        PushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
+        PushOutOfBlocks(X - (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
+        PushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z - (double)Width * 0.35D);
+        PushOutOfBlocks(X + (double)Width * 0.35D, BoundingBox.MinY + 0.5D, Z + (double)Width * 0.35D);
         base.tickMovement();
     }
 
@@ -174,15 +174,15 @@ public class ClientPlayerEntity : EntityPlayer
         movementInput.checkKeyForMovementInput(key, isPressed);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetInteger("Score", score);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         score = nbt.GetInteger("Score");
     }
 
@@ -237,7 +237,7 @@ public class ClientPlayerEntity : EntityPlayer
         Game.HUD.AddChatMessage($"<{name}> {message}");
     }
 
-    public override bool isSneaking()
+    public override bool IsSneaking()
     {
         return movementInput.sneak && !sleeping;
     }
@@ -309,7 +309,7 @@ public class ClientPlayerEntity : EntityPlayer
         return World.Reader.ShouldSuffocate(x, y, z);
     }
 
-    protected override bool pushOutOfBlocks(double posX, double posY, double posZ)
+    protected override bool PushOutOfBlocks(double posX, double posY, double posZ)
     {
         int floorX = MathHelper.Floor(posX);
         int floorY = MathHelper.Floor(posY);
@@ -373,10 +373,10 @@ public class ClientPlayerEntity : EntityPlayer
         return false;
     }
 
-    public override void markDead()
+    public override void MarkDead()
     {
         _isFlying = false;
-        base.markDead();
+        base.MarkDead();
     }
 
     protected override float AirSpeed() => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;

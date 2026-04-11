@@ -42,13 +42,13 @@ public class EntityFish : Entity
         ticksInAir = 0;
         ticksCatchable = 0;
         bobber = null;
-        setBoundingBoxSpacing(0.25F, 0.25F);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
         IgnoreFrustumCheck = true;
     }
 
     public EntityFish(IWorldContext world, double x, double y, double z) : this(world)
     {
-        setPosition(x, y, z);
+        SetPosition(x, y, z);
         IgnoreFrustumCheck = true;
     }
 
@@ -66,12 +66,12 @@ public class EntityFish : Entity
         IgnoreFrustumCheck = true;
         angler = player;
         angler.fishHook = this;
-        setBoundingBoxSpacing(0.25F, 0.25F);
-        setPositionAndAnglesKeepPrevAngles(player.X, player.Y + 1.62D - (double)player.StandingEyeHeight, player.Z, player.Yaw, player.Pitch);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
+        SetPositionAndAnglesKeepPrevAngles(player.X, player.Y + 1.62D - (double)player.StandingEyeHeight, player.Z, player.Yaw, player.Pitch);
         X -= (double)(MathHelper.Cos(Yaw / 180.0F * (float)System.Math.PI) * 0.16F);
         Y -= (double)0.1F;
         Z -= (double)(MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * 0.16F);
-        setPosition(X, Y, Z);
+        SetPosition(X, Y, Z);
         StandingEyeHeight = 0.0F;
         float speed = 0.4F;
         base.VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * speed);
@@ -81,7 +81,7 @@ public class EntityFish : Entity
     }
 
 
-    public override bool shouldRender(double distanceSquared)
+    public override bool ShouldRender(double distanceSquared)
     {
         double renderDistance = BoundingBox.AverageEdgeLength * 4.0D;
         renderDistance *= 64.0D;
@@ -109,7 +109,7 @@ public class EntityFish : Entity
         ticksInGround = 0;
     }
 
-    public override void setPositionAndAnglesAvoidEntities(double newX, double newY, double newZ, float newYaw, float newPitch, int interpolationSteps)
+    public override void SetPositionAndAnglesAvoidEntities(double newX, double newY, double newZ, float newYaw, float newPitch, int interpolationSteps)
     {
         targetX = newX;
         targetY = newY;
@@ -122,16 +122,16 @@ public class EntityFish : Entity
         base.VelocityZ = clientVelocityZ;
     }
 
-    public override void setVelocityClient(double motionX, double motionY, double motionZ)
+    public override void SetVelocityClient(double motionX, double motionY, double motionZ)
     {
         clientVelocityX = base.VelocityX = motionX;
         clientVelocityY = base.VelocityY = motionY;
         clientVelocityZ = base.VelocityZ = motionZ;
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         if (positionUpdateTicks > 0)
         {
             double interpX = X + (targetX - X) / (double)positionUpdateTicks;
@@ -151,17 +151,17 @@ public class EntityFish : Entity
             Yaw = (float)((double)Yaw + yawDelta / (double)positionUpdateTicks);
             Pitch = (float)((double)Pitch + (targetPitch - (double)Pitch) / (double)positionUpdateTicks);
             --positionUpdateTicks;
-            setPosition(interpX, interpY, interpZ);
-            setRotation(Yaw, Pitch);
+            SetPosition(interpX, interpY, interpZ);
+            SetRotation(Yaw, Pitch);
         }
         else
         {
             if (!World.IsRemote)
             {
                 ItemStack heldItem = angler.getHand();
-                if (angler.Dead || !angler.isAlive() || heldItem == null || heldItem.getItem() != Item.FishingRod || getSquaredDistance(angler) > 1024.0D)
+                if (angler.Dead || !angler.IsAlive() || heldItem == null || heldItem.getItem() != Item.FishingRod || GetSquaredDistance(angler) > 1024.0D)
                 {
-                    markDead();
+                    MarkDead();
                     angler.fishHook = null;
                     return;
                 }
@@ -193,7 +193,7 @@ public class EntityFish : Entity
                     ++ticksInGround;
                     if (ticksInGround == 1200)
                     {
-                        markDead();
+                        MarkDead();
                     }
 
                     return;
@@ -229,7 +229,7 @@ public class EntityFish : Entity
             for (int i = 0; i < entities.Count; ++i)
             {
                 Entity entity = entities[i];
-                if (entity.isCollidable() && (entity != angler || ticksInAir >= 5))
+                if (entity.IsCollidable() && (entity != angler || ticksInAir >= 5))
                 {
                     float expandAmount = 0.3F;
                     Box expandedBox = entity.BoundingBox.Expand((double)expandAmount, (double)expandAmount, (double)expandAmount);
@@ -255,7 +255,7 @@ public class EntityFish : Entity
             {
                 if (hit.Entity != null)
                 {
-                    if (hit.Entity.damage(angler, 0))
+                    if (hit.Entity.Damage(angler, 0))
                     {
                         bobber = hit.Entity;
                     }
@@ -268,7 +268,7 @@ public class EntityFish : Entity
 
             if (!inGround)
             {
-                base.move(base.VelocityX, base.VelocityY, base.VelocityZ);
+                base.Move(base.VelocityX, base.VelocityY, base.VelocityZ);
                 float horizontalSpeed = MathHelper.Sqrt(base.VelocityX * base.VelocityX + base.VelocityZ * base.VelocityZ);
                 Yaw = (float)(System.Math.Atan2(base.VelocityX, base.VelocityZ) * 180.0D / (double)((float)System.Math.PI));
 
@@ -370,12 +370,12 @@ public class EntityFish : Entity
                 base.VelocityX *= (double)drag;
                 base.VelocityY *= (double)drag;
                 base.VelocityZ *= (double)drag;
-                setPosition(X, Y, Z);
+                SetPosition(X, Y, Z);
             }
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetShort("xTile", (short)xTile);
         nbt.SetShort("yTile", (short)yTile);
@@ -385,7 +385,7 @@ public class EntityFish : Entity
         nbt.SetByte("inGround", (sbyte)(inGround ? 1 : 0));
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         xTile = nbt.GetShort("xTile");
         yTile = nbt.GetShort("yTile");
@@ -395,7 +395,7 @@ public class EntityFish : Entity
         inGround = nbt.GetByte("inGround") == 1;
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }
@@ -436,7 +436,7 @@ public class EntityFish : Entity
             result = 2;
         }
 
-        markDead();
+        MarkDead();
         angler.fishHook = null;
         return result;
     }

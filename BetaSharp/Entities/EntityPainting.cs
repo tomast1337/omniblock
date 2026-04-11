@@ -21,7 +21,7 @@ public class EntityPainting : Entity
         _tickCounter = 0;
         Direction = 0;
         StandingEyeHeight = 0.0F;
-        setBoundingBoxSpacing(0.5F, 0.5F);
+        SetBoundingBoxSpacing(0.5F, 0.5F);
     }
 
     public EntityPainting(IWorldContext world, int xPosition, int yPosition, int zPosition, int direction) : this(world)
@@ -106,7 +106,7 @@ public class EntityPainting : Entity
         }
 
         centerY += GetArtOffset(Art.SizeY);
-        setPosition(centerX, centerY, centerZ);
+        SetPosition(centerX, centerY, centerZ);
 
         float margin = -(0.1F / 16.0F);
         BoundingBox = new Box(
@@ -123,7 +123,7 @@ public class EntityPainting : Entity
         return artSize == 32 ? 0.5F : (artSize == 64 ? 0.5F : 0.0F);
     }
 
-    public override void tick()
+    public override void Tick()
     {
         if (_tickCounter++ == 100 && !World.IsRemote)
         {
@@ -195,19 +195,19 @@ public class EntityPainting : Entity
         return true;
     }
 
-    public override bool isCollidable() => true;
+    public override bool IsCollidable() => true;
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
         if (!Dead && !World.IsRemote)
         {
-            scheduleVelocityUpdate();
+            ScheduleVelocityUpdate();
             DropAsItem();
         }
         return true;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetByte("Dir", (sbyte)Direction);
         nbt.SetString("Motive", Art.Title);
@@ -216,7 +216,7 @@ public class EntityPainting : Entity
         nbt.SetInteger("TileZ", ZPosition);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         Direction = nbt.GetByte("Dir");
         XPosition = nbt.GetInteger("TileX");
@@ -229,7 +229,7 @@ public class EntityPainting : Entity
         SetFacing(Direction);
     }
 
-    public override void move(double dx, double dy, double dz)
+    public override void Move(double dx, double dy, double dz)
     {
         if (!World.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D)
         {
@@ -237,7 +237,7 @@ public class EntityPainting : Entity
         }
     }
 
-    public override void addVelocity(double dx, double dy, double dz)
+    public override void AddVelocity(double dx, double dy, double dz)
     {
         if (!World.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D)
         {
@@ -249,7 +249,7 @@ public class EntityPainting : Entity
     {
         if (Dead || World.IsRemote) return;
 
-        markDead();
+        MarkDead();
         World.SpawnEntity(new EntityItem(World, X, Y, Z, new ItemStack(Item.Painting)));
     }
 }

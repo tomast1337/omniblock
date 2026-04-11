@@ -476,7 +476,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
 
     public bool CanPlayerUse(EntityPlayer entityPlayer)
     {
-        return !Player.Dead && entityPlayer.getSquaredDistance(Player) <= 64.0D;
+        return !Player.Dead && entityPlayer.GetSquaredDistance(Player) <= 64.0D;
     }
 
     public bool Contains(ItemStack itemStack)

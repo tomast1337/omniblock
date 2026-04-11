@@ -95,7 +95,7 @@ internal static class NaturalSpawner
 
                                 EntityLiving entity = toSpawn.Factory(world);
 
-                                entity.setPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
+                                entity.SetPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
                                     world.Random.NextFloat() * 360.0F, 0.0F);
 
                                 if (entity.canSpawn())
@@ -158,7 +158,7 @@ internal static class NaturalSpawner
 
                     // Feet must be on the validated air column (newSpawnY), not random spawnY — spawnY
                     // can be inside stone and collision resolution rockets mobs to the surface.
-                    entity.setPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, newSpawnY, spawnZ + 0.5D,
+                    entity.SetPositionAndAnglesKeepPrevAngles(spawnX + 0.5D, newSpawnY, spawnZ + 0.5D,
                         world.Random.NextFloat() * 360.0F, 0.0F);
                     if (entity.canSpawn())
                     {
@@ -174,7 +174,7 @@ internal static class NaturalSpawner
                                         MathHelper.Floor(player.Y), MathHelper.Floor(player.Z), 1) ??
                                     new Vec3i(spawnX, newSpawnY + 1, spawnZ);
 
-                                entity.setPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F, wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
+                                entity.SetPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F, wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
                                 world.Entities.SpawnEntity(entity);
                                 entity.PostSpawn();
                                 player.wakeUp(true, false, false);

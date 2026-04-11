@@ -27,18 +27,18 @@ public class EntitySquid : EntityWaterMob
     public EntitySquid(IWorldContext world) : base(world)
     {
         texture = "/mob/squid.png";
-        setBoundingBoxSpacing(0.95F, 0.95F);
+        SetBoundingBoxSpacing(0.95F, 0.95F);
         animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     protected override String getLivingSound()
@@ -72,17 +72,17 @@ public class EntitySquid : EntityWaterMob
 
         for (int _ = 0; _ < dropCount; ++_)
         {
-            dropItem(new ItemStack(Item.Dye, 1, 0), 0.0F);
+            DropItem(new ItemStack(Item.Dye, 1, 0), 0.0F);
         }
 
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         return false;
     }
 
-    public override bool isInWater()
+    public override bool IsInWater()
     {
         return World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, (double)-0.6F, 0.0D), Material.Water, this);
     }
@@ -104,7 +104,7 @@ public class EntitySquid : EntityWaterMob
             }
         }
 
-        if (isInWater())
+        if (IsInWater())
         {
             float phaseProgress;
             if (swimPhase < (float)Math.PI)
@@ -159,7 +159,7 @@ public class EntitySquid : EntityWaterMob
 
     public override void travel(float strafe, float forward)
     {
-        move(VelocityX, VelocityY, VelocityZ);
+        Move(VelocityX, VelocityY, VelocityZ);
     }
 
     public override void tickLiving()

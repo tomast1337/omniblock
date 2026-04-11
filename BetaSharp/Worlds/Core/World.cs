@@ -290,7 +290,7 @@ public abstract class World : IWorldContext
             NBTTagCompound? tag = Properties.PlayerTag;
             if (tag != null)
             {
-                player.read(tag);
+                player.Read(tag);
                 Properties.PlayerTag = null;
             }
 
@@ -541,7 +541,7 @@ public abstract class World : IWorldContext
                 {
                     EntityPlayer? closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
                     if (closest != null &&
-                        closest.getSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
+                        closest.GetSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
                     {
                         Broadcaster.PlaySoundAtPos(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
                             0.8F + Random.NextFloat() * 0.2F);

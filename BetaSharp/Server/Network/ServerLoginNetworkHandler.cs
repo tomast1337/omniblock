@@ -140,7 +140,7 @@ public class ServerLoginNetworkHandler : NetHandler
         if (ent != null)
         {
             server.playerManager.loadPlayerData(ent);
-            ent.setWorld(server.getWorld(ent.dimensionId));
+            ent.SetWorld(server.getWorld(ent.dimensionId));
             ent.GameModeHolder = server.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.ID} at ({ent.X}, {ent.Y}, {ent.Z})");
             ServerWorld var3 = server.getWorld(ent.dimensionId);

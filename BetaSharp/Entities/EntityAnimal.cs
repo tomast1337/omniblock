@@ -16,14 +16,14 @@ public abstract class EntityAnimal : EntityCreature, SpawnableEntity
         return World.Reader.GetBlockId(x, y - 1, z) == Block.GrassBlock.id ? 10.0F : World.Lighting.GetLuminance(x, y, z) - 0.5F;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     public override bool canSpawn()

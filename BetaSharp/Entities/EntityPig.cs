@@ -13,19 +13,19 @@ public class EntityPig : EntityAnimal
     public EntityPig(IWorldContext world) : base(world)
     {
         texture = "/mob/pig.png";
-        setBoundingBoxSpacing(0.9F, 0.9F);
+        SetBoundingBoxSpacing(0.9F, 0.9F);
         Saddled = DataSynchronizer.MakeProperty(16, false);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetBoolean("Saddle", Saddled.Value);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         Saddled.Value = nbt.GetBoolean("Saddle");
     }
 
@@ -44,7 +44,7 @@ public class EntityPig : EntityAnimal
         return "mob.pigdeath";
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         if (!Saddled.Value || World.IsRemote || Passenger != null && Passenger != player)
         {
@@ -52,7 +52,7 @@ public class EntityPig : EntityAnimal
         }
         else
         {
-            player.setVehicle(this);
+            player.SetVehicle(this);
             return true;
         }
     }
@@ -62,20 +62,20 @@ public class EntityPig : EntityAnimal
         return FireTicks > 0 ? Item.CookedPorkchop.id : Item.RawPorkchop.id;
     }
 
-    public override void onStruckByLightning(EntityLightningBolt bolt)
+    public override void OnStruckByLightning(EntityLightningBolt bolt)
     {
         if (!World.IsRemote)
         {
             EntityPigZombie pigZombie = new EntityPigZombie(World);
-            pigZombie.setPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
+            pigZombie.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
             World.SpawnEntity(pigZombie);
-            markDead();
+            MarkDead();
         }
     }
 
-    protected override void onLanding(float fallDistance)
+    protected override void OnLanding(float fallDistance)
     {
-        base.onLanding(fallDistance);
+        base.OnLanding(fallDistance);
         if (fallDistance > 5.0F && Passenger is EntityPlayer)
         {
             ((EntityPlayer)Passenger).incrementStat(Achievements.KillPig);

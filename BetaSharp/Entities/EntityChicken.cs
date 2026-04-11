@@ -18,7 +18,7 @@ public class EntityChicken : EntityAnimal
     public EntityChicken(IWorldContext world) : base(world)
     {
         texture = "/mob/chicken.png";
-        setBoundingBoxSpacing(0.3F, 0.4F);
+        SetBoundingBoxSpacing(0.3F, 0.4F);
         health = 4;
         timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
@@ -58,24 +58,24 @@ public class EntityChicken : EntityAnimal
         if (!World.IsRemote && --timeUntilNextEgg <= 0)
         {
             World.Broadcaster.PlaySoundAtEntity(this, "mob.chickenplop", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-            dropItem(Item.Egg.id, 1);
+            DropItem(Item.Egg.id, 1);
             timeUntilNextEgg = Random.NextInt(6000) + 6000;
         }
 
     }
 
-    protected override void onLanding(float fallDistance)
+    protected override void OnLanding(float fallDistance)
     {
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     protected override string getLivingSound()

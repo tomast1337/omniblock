@@ -61,7 +61,7 @@ public class EntityMinecart : Entity, IInventory
         minecartRockDirection = 1;
         yawFlipped = false;
         PreventEntitySpawning = true;
-        setBoundingBoxSpacing(0.98F, 0.7F);
+        SetBoundingBoxSpacing(0.98F, 0.7F);
         StandingEyeHeight = Height / 2.0F;
     }
 
@@ -77,46 +77,46 @@ public class EntityMinecart : Entity, IInventory
         this.type = type;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
-    public override Box? getCollisionAgainstShape(Entity entity)
+    public override Box? GetCollisionAgainstShape(Entity entity)
     {
         return entity.BoundingBox;
     }
 
-    public override Box? getBoundingBox()
+    public override Box? GetBoundingBox()
     {
         return BoundingBox;
     }
 
-    public override bool isPushable()
+    public override bool IsPushable()
     {
         return true;
     }
 
-    public override double getPassengerRidingHeight()
+    public override double GetPassengerRidingHeight()
     {
         return (double)Height * 0.0D - 0.3D;
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
         if (!World.IsRemote && !Dead)
         {
             minecartRockDirection = -minecartRockDirection;
             minecartTimeSinceHit = 10;
-            scheduleVelocityUpdate();
+            ScheduleVelocityUpdate();
             minecartCurrentDamage += amount * 10;
 
             if (minecartCurrentDamage > 40)
             {
-                Passenger?.setVehicle(this);
+                Passenger?.SetVehicle(this);
 
-                markDead();
-                dropItem(Item.Minecart.id, 1, 0.0F);
+                MarkDead();
+                DropItem(Item.Minecart.id, 1, 0.0F);
 
                 if (type == 1)
                 {
@@ -158,11 +158,11 @@ public class EntityMinecart : Entity, IInventory
                         }
                     }
 
-                    dropItem(Block.Chest.id, 1, 0.0F);
+                    DropItem(Block.Chest.id, 1, 0.0F);
                 }
                 else if (type == 2)
                 {
-                    dropItem(Block.Furnace.id, 1, 0.0F);
+                    DropItem(Block.Furnace.id, 1, 0.0F);
                 }
             }
 
@@ -172,7 +172,7 @@ public class EntityMinecart : Entity, IInventory
         return true;
     }
 
-    public override void animateHurt()
+    public override void AnimateHurt()
     {
         _logger.LogInformation("Animating hurt");
         minecartRockDirection = -minecartRockDirection;
@@ -180,12 +180,12 @@ public class EntityMinecart : Entity, IInventory
         minecartCurrentDamage += minecartCurrentDamage * 10;
     }
 
-    public override bool isCollidable()
+    public override bool IsCollidable()
     {
         return !Dead;
     }
 
-    public override void markDead()
+    public override void MarkDead()
     {
         for (int slotIndex = 0; slotIndex < Size; ++slotIndex)
         {
@@ -223,10 +223,10 @@ public class EntityMinecart : Entity, IInventory
             }
         }
 
-        base.markDead();
+        base.MarkDead();
     }
 
-    public override void tick()
+    public override void Tick()
     {
         if (minecartTimeSinceHit > 0)
         {
@@ -259,15 +259,15 @@ public class EntityMinecart : Entity, IInventory
             Pitch = (float)(Pitch + (clientTargetPitch - Pitch) / clientInterpolationSteps);
             --clientInterpolationSteps;
 
-            setPosition(interpolatedX, interpolatedY, interpolatedZ);
-            setRotation(Yaw, Pitch);
+            SetPosition(interpolatedX, interpolatedY, interpolatedZ);
+            SetRotation(Yaw, Pitch);
             return;
         }
 
         if (World.IsRemote)
         {
-            setPosition(X, Y, Z);
-            setRotation(Yaw, Pitch);
+            SetPosition(X, Y, Z);
+            SetRotation(Yaw, Pitch);
             return;
         }
 
@@ -429,7 +429,7 @@ public class EntityMinecart : Entity, IInventory
                 moveZ = maxSpeed;
             }
 
-            move(moveX, 0.0D, moveZ);
+            Move(moveX, 0.0D, moveZ);
 
             if (railEnds[0][1] != 0 &&
                 MathHelper.Floor(X) - blockX == railEnds[0][0] &&
@@ -589,7 +589,7 @@ public class EntityMinecart : Entity, IInventory
                 VelocityZ *= 0.5D;
             }
 
-            move(VelocityX, VelocityY, VelocityZ);
+            Move(VelocityX, VelocityY, VelocityZ);
 
             if (!OnGround)
             {
@@ -629,7 +629,7 @@ public class EntityMinecart : Entity, IInventory
             yawFlipped = !yawFlipped;
         }
 
-        setRotation(Yaw, Pitch);
+        SetRotation(Yaw, Pitch);
 
         var nearbyEntities = World.Entities.GetEntities(this, BoundingBox.Expand(0.2D, 0.0D, 0.2D));
         if (nearbyEntities != null && nearbyEntities.Count > 0)
@@ -637,9 +637,9 @@ public class EntityMinecart : Entity, IInventory
             for (int i = 0; i < nearbyEntities.Count; ++i)
             {
                 Entity otherEntity = nearbyEntities[i];
-                if (otherEntity != Passenger && otherEntity.isPushable() && otherEntity is EntityMinecart)
+                if (otherEntity != Passenger && otherEntity.IsPushable() && otherEntity is EntityMinecart)
                 {
-                    otherEntity.onCollision(this);
+                    otherEntity.OnCollision(this);
                 }
             }
         }
@@ -664,7 +664,7 @@ public class EntityMinecart : Entity, IInventory
 
     private void setTrackAlignedPosition(double x, double trackY, double z)
     {
-        setPosition(x, trackY + StandingEyeHeight, z);
+        SetPosition(x, trackY + StandingEyeHeight, z);
     }
 
     public Vec3D? getTrackPositionOffset(double x, double y, double z, double distanceAlongTrack)
@@ -813,7 +813,7 @@ public class EntityMinecart : Entity, IInventory
         return getTrackPosition(x, y, z);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetInteger("Type", type);
 
@@ -843,7 +843,7 @@ public class EntityMinecart : Entity, IInventory
         }
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         type = nbt.GetInteger("Type");
 
@@ -870,12 +870,12 @@ public class EntityMinecart : Entity, IInventory
         }
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }
 
-    public override void onCollision(Entity entity)
+    public override void OnCollision(Entity entity)
     {
         if (World.IsRemote)
         {
@@ -894,7 +894,7 @@ public class EntityMinecart : Entity, IInventory
             Passenger == null &&
             entity.Vehicle == null)
         {
-            entity.setVehicle(this);
+            entity.SetVehicle(this);
         }
 
         double deltaX = entity.X - X;
@@ -949,7 +949,7 @@ public class EntityMinecart : Entity, IInventory
             {
                 VelocityX *= 0.2F;
                 VelocityZ *= 0.2F;
-                addVelocity(entity.VelocityX - deltaX, 0.0D, entity.VelocityZ - deltaZ);
+                AddVelocity(entity.VelocityX - deltaX, 0.0D, entity.VelocityZ - deltaZ);
                 entity.VelocityX *= 0.7F;
                 entity.VelocityZ *= 0.7F;
             }
@@ -957,7 +957,7 @@ public class EntityMinecart : Entity, IInventory
             {
                 entity.VelocityX *= 0.2F;
                 entity.VelocityZ *= 0.2F;
-                entity.addVelocity(VelocityX + deltaX, 0.0D, VelocityZ + deltaZ);
+                entity.AddVelocity(VelocityX + deltaX, 0.0D, VelocityZ + deltaZ);
                 VelocityX *= 0.7F;
                 VelocityZ *= 0.7F;
             }
@@ -968,17 +968,17 @@ public class EntityMinecart : Entity, IInventory
 
                 VelocityX *= 0.2F;
                 VelocityZ *= 0.2F;
-                addVelocity(averageVelocityX - deltaX, 0.0D, averageVelocityZ - deltaZ);
+                AddVelocity(averageVelocityX - deltaX, 0.0D, averageVelocityZ - deltaZ);
 
                 entity.VelocityX *= 0.2F;
                 entity.VelocityZ *= 0.2F;
-                entity.addVelocity(averageVelocityX + deltaX, 0.0D, averageVelocityZ + deltaZ);
+                entity.AddVelocity(averageVelocityX + deltaX, 0.0D, averageVelocityZ + deltaZ);
             }
         }
         else
         {
-            addVelocity(-deltaX, 0.0D, -deltaZ);
-            entity.addVelocity(deltaX / 4.0D, 0.0D, deltaZ / 4.0D);
+            AddVelocity(-deltaX, 0.0D, -deltaZ);
+            entity.AddVelocity(deltaX / 4.0D, 0.0D, deltaZ / 4.0D);
         }
     }
 
@@ -1034,7 +1034,7 @@ public class EntityMinecart : Entity, IInventory
     {
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         if (type == 0)
         {
@@ -1045,7 +1045,7 @@ public class EntityMinecart : Entity, IInventory
 
             if (!World.IsRemote)
             {
-                player.setVehicle(this);
+                player.SetVehicle(this);
             }
         }
         else if (type == 1)
@@ -1075,7 +1075,7 @@ public class EntityMinecart : Entity, IInventory
         return true;
     }
 
-    public override void setPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int interpolationSteps)
+    public override void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int interpolationSteps)
     {
         clientTargetX = x;
         clientTargetY = y;
@@ -1089,7 +1089,7 @@ public class EntityMinecart : Entity, IInventory
         VelocityZ = clientVelocityZ;
     }
 
-    public override void setVelocityClient(double velocityX, double velocityY, double velocityZ)
+    public override void SetVelocityClient(double velocityX, double velocityY, double velocityZ)
     {
         clientVelocityX = base.VelocityX = velocityX;
         clientVelocityY = base.VelocityY = velocityY;
@@ -1098,6 +1098,6 @@ public class EntityMinecart : Entity, IInventory
 
     public bool CanPlayerUse(EntityPlayer player)
     {
-        return !Dead && player.getSquaredDistance(this) <= 64.0D;
+        return !Dead && player.GetSquaredDistance(this) <= 64.0D;
     }
 }

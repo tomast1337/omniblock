@@ -25,7 +25,7 @@ public class EntityWolf : EntityAnimal
     public EntityWolf(IWorldContext world) : base(world)
     {
         texture = "/mob/wolf.png";
-        setBoundingBoxSpacing(0.8F, 0.8F);
+        SetBoundingBoxSpacing(0.8F, 0.8F);
         movementSpeed = 1.1F;
         health = 8;
         WolfFlags = DataSynchronizer.MakeProperty<byte>(16, 0);
@@ -33,19 +33,19 @@ public class EntityWolf : EntityAnimal
         WolfHealth = DataSynchronizer.MakeProperty<int>(18, health);
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
-    public override string getTexture()
+    public override string GetTexture()
     {
-        return isWolfTamed() ? "/mob/wolf_tame.png" : (isWolfAngry() ? "/mob/wolf_angry.png" : base.getTexture());
+        return isWolfTamed() ? "/mob/wolf_tame.png" : (isWolfAngry() ? "/mob/wolf_angry.png" : base.GetTexture());
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetBoolean("Angry", isWolfAngry());
         nbt.SetBoolean("Sitting", isWolfSitting());
         if (getWolfOwner() == null)
@@ -59,9 +59,9 @@ public class EntityWolf : EntityAnimal
 
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         setWolfAngry(nbt.GetBoolean("Angry"));
         setWolfSitting(nbt.GetBoolean("Sitting"));
         string ownerName = nbt.GetString("Owner");
@@ -111,13 +111,13 @@ public class EntityWolf : EntityAnimal
             EntityPlayer? owner = World.Entities.Players.Find((player) => player.name.Equals(getWolfOwner(), StringComparison.OrdinalIgnoreCase));
             if (owner != null)
             {
-                float distance = owner.getDistance(this);
+                float distance = owner.GetDistance(this);
                 if (distance > 5.0F)
                 {
                     getPathOrWalkableBlock(owner, distance);
                 }
             }
-            else if (!isInWater())
+            else if (!IsInWater())
             {
                 setWolfSitting(true);
             }
@@ -131,7 +131,7 @@ public class EntityWolf : EntityAnimal
             }
         }
 
-        if (isInWater())
+        if (IsInWater())
         {
             setWolfSitting(false);
         }
@@ -178,9 +178,9 @@ public class EntityWolf : EntityAnimal
 
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         prevHeadTiltAmount = headTiltAmount;
         if (looksWithInterest)
         {
@@ -196,7 +196,7 @@ public class EntityWolf : EntityAnimal
             lookTimer = 10;
         }
 
-        if (isWet())
+        if (IsWet())
         {
             isWolfShaking = true;
             isShaking = false;
@@ -266,7 +266,7 @@ public class EntityWolf : EntityAnimal
         return (prevHeadTiltAmount + (headTiltAmount - prevHeadTiltAmount) * partialTick) * 0.15F * (float)System.Math.PI;
     }
 
-    public override float getEyeHeight()
+    public override float GetEyeHeight()
     {
         return Height * 0.8F;
     }
@@ -291,7 +291,7 @@ public class EntityWolf : EntityAnimal
                 {
                     if ((dx < 1 || dy < 1 || dx > 3 || dy > 3) && World.Reader.ShouldSuffocate(ownerBlockX + dx, ownerBlockZ - 1, ownerBlockY + dy) && !World.Reader.ShouldSuffocate(ownerBlockX + dx, ownerBlockZ, ownerBlockY + dy) && !World.Reader.ShouldSuffocate(ownerBlockX + dx, ownerBlockZ + 1, ownerBlockY + dy))
                     {
-                        setPositionAndAnglesKeepPrevAngles((double)((float)(ownerBlockX + dx) + 0.5F), (double)ownerBlockZ, (double)((float)(ownerBlockY + dy) + 0.5F), Yaw, Pitch);
+                        SetPositionAndAnglesKeepPrevAngles((double)((float)(ownerBlockX + dx) + 0.5F), (double)ownerBlockZ, (double)((float)(ownerBlockY + dy) + 0.5F), Yaw, Pitch);
                         return;
                     }
                 }
@@ -309,7 +309,7 @@ public class EntityWolf : EntityAnimal
         return isWolfSitting() || isShaking;
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
         setWolfSitting(false);
         if (entity != null && entity is not EntityPlayer && entity is not EntityArrow)
@@ -317,7 +317,7 @@ public class EntityWolf : EntityAnimal
             amount = (amount + 1) / 2;
         }
 
-        if (!base.damage((Entity)entity, amount))
+        if (!base.Damage((Entity)entity, amount))
         {
             return false;
         }
@@ -396,12 +396,12 @@ public class EntityWolf : EntityAnimal
                 damageAmount = 4;
             }
 
-            entity.damage(this, damageAmount);
+            entity.Damage(this, damageAmount);
         }
 
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         ItemStack heldItem = player.inventory.GetItemInHand();
         if (!isWolfTamed())
@@ -488,7 +488,7 @@ public class EntityWolf : EntityAnimal
 
     }
 
-    public override void processServerEntityStatus(sbyte status)
+    public override void ProcessServerEntityStatus(sbyte status)
     {
         if (status == 7)
         {
@@ -506,7 +506,7 @@ public class EntityWolf : EntityAnimal
         }
         else
         {
-            base.processServerEntityStatus(status);
+            base.ProcessServerEntityStatus(status);
         }
 
     }

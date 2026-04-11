@@ -16,7 +16,7 @@ public class EntityLightningBolt : EntityWeatherEffect
     public EntityLightningBolt(IWorldContext world) : this(world, 0, 0, 0) { }
     public EntityLightningBolt(IWorldContext world, double x, double y, double z) : base(world)
     {
-        setPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
+        SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
         flashTimer = 2;
         renderSeed = Random.NextLong();
         flashCount = Random.NextInt(3) + 1;
@@ -44,9 +44,9 @@ public class EntityLightningBolt : EntityWeatherEffect
 
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         if (flashTimer == 2)
         {
             World.Broadcaster.PlaySoundAtPos(X, Y, Z, "ambient.weather.thunder", 10000.0F, 0.8F + Random.NextFloat() * 0.2F);
@@ -58,7 +58,7 @@ public class EntityLightningBolt : EntityWeatherEffect
         {
             if (flashCount == 0)
             {
-                markDead();
+                MarkDead();
             }
             else if (flashTimer < -Random.NextInt(10))
             {
@@ -86,7 +86,7 @@ public class EntityLightningBolt : EntityWeatherEffect
             for (int i = 0; i < entities.Count; ++i)
             {
                 Entity entity = entities[i];
-                entity.onStruckByLightning(this);
+                entity.OnStruckByLightning(this);
             }
 
             World.Environment.LightningTicksLeft = 2;
@@ -95,15 +95,15 @@ public class EntityLightningBolt : EntityWeatherEffect
     }
 
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
     }
 
-    public override bool shouldRender(Vec3D cameraPos)
+    public override bool ShouldRender(Vec3D cameraPos)
     {
         return flashTimer >= 0;
     }

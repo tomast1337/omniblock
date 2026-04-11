@@ -52,7 +52,7 @@ public class ServerWorld : World
     {
         if (!server.spawnAnimals && (entity is EntityAnimal || entity is EntityWaterMob))
         {
-            entity.markDead();
+            entity.MarkDead();
             return false;
         }
 

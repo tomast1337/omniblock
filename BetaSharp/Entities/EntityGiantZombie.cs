@@ -12,7 +12,7 @@ public class EntityGiantZombie : EntityMonster
         attackStrength = 50;
         health *= 10;
         StandingEyeHeight *= 6.0F;
-        setBoundingBoxSpacing(Width * 6.0F, Height * 6.0F);
+        SetBoundingBoxSpacing(Width * 6.0F, Height * 6.0F);
     }
 
     protected override float getBlockPathWeight(int x, int y, int z)

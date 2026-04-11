@@ -22,7 +22,7 @@ public class KillSelfCommand : Command.Command
             return 1;
         }
 
-        player.damage(null, 1000);
+        player.Damage(null, 1000);
         return 1;
     }
 
@@ -34,7 +34,7 @@ public class KillSelfCommand : Command.Command
         {
             foreach (Entity entity in entities)
             {
-                entity.damage(null, 1000);
+                entity.Damage(null, 1000);
             }
         }
 

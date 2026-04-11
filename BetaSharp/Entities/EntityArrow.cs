@@ -24,13 +24,13 @@ public class EntityArrow : Entity
 
     public EntityArrow(IWorldContext world) : base(world)
     {
-        setBoundingBoxSpacing(0.5F, 0.5F);
+        SetBoundingBoxSpacing(0.5F, 0.5F);
     }
 
     public EntityArrow(IWorldContext world, double x, double y, double z) : base(world)
     {
-        setBoundingBoxSpacing(0.5F, 0.5F);
-        setPosition(x, y, z);
+        SetBoundingBoxSpacing(0.5F, 0.5F);
+        SetPosition(x, y, z);
         StandingEyeHeight = 0.0F;
     }
 
@@ -38,12 +38,12 @@ public class EntityArrow : Entity
     {
         this.owner = owner;
         doesArrowBelongToPlayer = owner is EntityPlayer;
-        setBoundingBoxSpacing(0.5F, 0.5F);
-        setPositionAndAnglesKeepPrevAngles(owner.X, owner.Y + (double)owner.getEyeHeight(), owner.Z, owner.Yaw, owner.Pitch);
+        SetBoundingBoxSpacing(0.5F, 0.5F);
+        SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y + (double)owner.GetEyeHeight(), owner.Z, owner.Yaw, owner.Pitch);
         X -= (double)(MathHelper.Cos(Yaw / 180.0F * (float)System.Math.PI) * 0.16F);
         Y -= (double)0.1F;
         Z -= (double)(MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * 0.16F);
-        setPosition(X, Y, Z);
+        SetPosition(X, Y, Z);
         StandingEyeHeight = 0.0F;
         VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI));
         VelocityZ = (double)(MathHelper.Cos(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI));
@@ -72,7 +72,7 @@ public class EntityArrow : Entity
         ticksInGround = 0;
     }
 
-    public override void setVelocityClient(double velocityX, double velocityY, double velocityZ)
+    public override void SetVelocityClient(double velocityX, double velocityY, double velocityZ)
     {
         base.VelocityX = velocityX;
         base.VelocityY = velocityY;
@@ -84,22 +84,22 @@ public class EntityArrow : Entity
             PrevPitch = Pitch = (float)(System.Math.Atan2(velocityY, (double)length) * 180.0D / (double)((float)System.Math.PI));
             PrevPitch = Pitch;
             PrevYaw = Yaw;
-            setPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
+            SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
             ticksInGround = 0;
         }
 
     }
 
     // Arrow inherits from base entity so it needs to set its position properly or it will default to the collide and move up on hit
-    public override void setPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int steps)
+    public override void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int steps)
     {
-        setPosition(x, y, z);
-        setRotation(yaw, pitch);
+        SetPosition(x, y, z);
+        SetRotation(yaw, pitch);
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         if (PrevPitch == 0.0F && PrevYaw == 0.0F)
         {
             float length = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
@@ -132,7 +132,7 @@ public class EntityArrow : Entity
                 ++ticksInGround;
                 if (ticksInGround == 1200)
                 {
-                    markDead();
+                    MarkDead();
                 }
 
             }
@@ -165,7 +165,7 @@ public class EntityArrow : Entity
             for (int i = 0; i < candidates.Count; ++i)
             {
                 Entity entity = candidates[i];
-                if (entity.isCollidable() && (entity != owner || ticksInAir >= 5))
+                if (entity.IsCollidable() && (entity != owner || ticksInAir >= 5))
                 {
                     expandAmount = 0.3F;
                     Box expandedBox = entity.BoundingBox.Expand((double)expandAmount, (double)expandAmount, (double)expandAmount);
@@ -192,10 +192,10 @@ public class EntityArrow : Entity
             {
                 if (hit.Entity != null)
                 {
-                    if (hit.Entity.damage(owner, 4))
+                    if (hit.Entity.Damage(owner, 4))
                     {
                         World.Broadcaster.PlaySoundAtEntity(this, "random.drr", 1.0F, 1.2F / (Random.NextFloat() * 0.2F + 0.9F));
-                        markDead();
+                        MarkDead();
                     }
                     else
                     {
@@ -256,7 +256,7 @@ public class EntityArrow : Entity
             Yaw = PrevYaw + (Yaw - PrevYaw) * 0.2F;
             float drag = 0.99F;
             expandAmount = 0.03F;
-            if (isInWater())
+            if (IsInWater())
             {
                 for (int _ = 0; _ < 4; ++_)
                 {
@@ -271,11 +271,11 @@ public class EntityArrow : Entity
             VelocityY *= (double)drag;
             VelocityZ *= (double)drag;
             VelocityY -= (double)expandAmount;
-            setPosition(X, Y, Z);
+            SetPosition(X, Y, Z);
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetShort("xTile", (short)xTile);
         nbt.SetShort("yTile", (short)yTile);
@@ -287,7 +287,7 @@ public class EntityArrow : Entity
         nbt.SetBoolean("player", doesArrowBelongToPlayer);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         xTile = nbt.GetShort("xTile");
         yTile = nbt.GetShort("yTile");
@@ -299,7 +299,7 @@ public class EntityArrow : Entity
         doesArrowBelongToPlayer = nbt.GetBoolean("player");
     }
 
-    public override void onPlayerInteraction(EntityPlayer player)
+    public override void OnPlayerInteraction(EntityPlayer player)
     {
         if (!World.IsRemote)
         {
@@ -307,13 +307,13 @@ public class EntityArrow : Entity
             {
                 World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
                 player.sendPickup(this, 1);
-                markDead();
+                MarkDead();
             }
 
         }
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }

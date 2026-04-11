@@ -83,19 +83,19 @@ public abstract class Entity
     public Entity(IWorldContext world)
     {
         this.World = world;
-        setPosition(0.0D, 0.0D, 0.0D);
+        SetPosition(0.0D, 0.0D, 0.0D);
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
     }
 
     public Vec3D Position => new Vec3D(X, Y, Z);
 
-    public virtual void teleportToTop()
+    public virtual void TeleportToTop()
     {
         if (World != null)
         {
             while (Y > 0.0D)
             {
-                setPosition(X, Y, Z);
+                SetPosition(X, Y, Z);
                 if (World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0)
                 {
                     break;
@@ -109,24 +109,24 @@ public abstract class Entity
         }
     }
 
-    public virtual void markDead()
+    public virtual void MarkDead()
     {
         Dead = true;
     }
 
-    protected virtual void setBoundingBoxSpacing(float width, float height)
+    protected virtual void SetBoundingBoxSpacing(float width, float height)
     {
         this.Width = width;
         this.Height = height;
     }
 
-    protected void setRotation(float yaw, float pitch)
+    protected void SetRotation(float yaw, float pitch)
     {
         this.Yaw = yaw % 360.0F;
         this.Pitch = pitch % 360.0F;
     }
 
-    public void setPosition(double x, double y, double z)
+    public void SetPosition(double x, double y, double z)
     {
         this.X = x;
         this.Y = y;
@@ -136,7 +136,7 @@ public abstract class Entity
         BoundingBox = new Box(x - (double)halfWidth, y - (double)StandingEyeHeight + (double)CameraOffset, z - (double)halfWidth, x + (double)halfWidth, y - (double)StandingEyeHeight + (double)CameraOffset + (double)height, z + (double)halfWidth);
     }
 
-    public void changeLookDirection(float yaw, float pitch)
+    public void ChangeLookDirection(float yaw, float pitch)
     {
         float oldPitch = this.Pitch;
         float oldYaw = this.Yaw;
@@ -156,12 +156,12 @@ public abstract class Entity
         PrevYaw += this.Yaw - oldYaw;
     }
 
-    public virtual void tick()
+    public virtual void Tick()
     {
-        baseTick();
+        BaseTick();
     }
 
-    public virtual void baseTick()
+    public virtual void BaseTick()
     {
         if (Vehicle != null && Vehicle.Dead)
         {
@@ -175,7 +175,7 @@ public abstract class Entity
         PrevZ = Z;
         PrevPitch = Pitch;
         PrevYaw = Yaw;
-        if (checkWaterCollisions())
+        if (CheckWaterCollisions())
         {
             if (!InWater && !_firstTick)
             {
@@ -233,21 +233,21 @@ public abstract class Entity
             {
                 if (FireTicks % 20 == 0)
                 {
-                    damage((Entity)null, 1);
+                    Damage((Entity)null, 1);
                 }
 
                 --FireTicks;
             }
         }
 
-        if (isTouchingLava())
+        if (IsTouchingLava())
         {
-            setOnFire();
+            SetOnFire();
         }
 
         if (Y < -64.0D)
         {
-            tickInVoid();
+            TickInVoid();
         }
 
         if (!World.IsRemote)
@@ -259,29 +259,29 @@ public abstract class Entity
         _firstTick = false;
     }
 
-    protected void setOnFire()
+    protected void SetOnFire()
     {
         if (!IsImmuneToFire)
         {
-            damage((Entity)null, 4);
+            Damage((Entity)null, 4);
             FireTicks = 600;
         }
 
     }
 
-    protected virtual void tickInVoid()
+    protected virtual void TickInVoid()
     {
-        markDead();
+        MarkDead();
     }
 
-    public bool getEntitiesInside(double x, double y, double z)
+    public bool GetEntitiesInside(double x, double y, double z)
     {
         Box box = BoundingBox.Offset(x, y, z);
         List<Box> entitiesInbound = World.Entities.GetEntityCollisionsScratch(this, box);
         return entitiesInbound.Count > 0 ? false : !World.Reader.IsMaterialInBox(box, m => m.IsFluid);
     }
 
-    public virtual void move(double x, double y, double z)
+    public virtual void Move(double x, double y, double z)
     {
         if (World.IsRemote && this is not EntityPlayer)
         {
@@ -331,7 +331,7 @@ public abstract class Entity
             double var13 = y;
             double var15 = z;
             Box var17 = BoundingBox;
-            bool var18 = OnGround && isSneaking();
+            bool var18 = OnGround && IsSneaking();
             if (var18)
             {
                 double var19;
@@ -508,7 +508,7 @@ public abstract class Entity
             VerticalCollision = var13 != y;
             OnGround = var13 != y && var13 < 0.0D;
             HasCollided = HorizontalCollison || VerticalCollision;
-            fall(y, OnGround);
+            Fall(y, OnGround);
             if (var11 != x)
             {
                 VelocityX = 0.0D;
@@ -529,7 +529,7 @@ public abstract class Entity
             int var26;
             int var38;
             int var39;
-            if (bypassesSteppingEffects() && !var18 && Vehicle == null)
+            if (BypassesSteppingEffects() && !var18 && Vehicle == null)
             {
                 HorizontalSpeed = (float)((double)HorizontalSpeed + (double)MathHelper.Sqrt(var37 * var37 + var23 * var23) * 0.6D);
 
@@ -587,10 +587,10 @@ public abstract class Entity
                 }
             }
 
-            bool var42 = isWet();
+            bool var42 = IsWet();
             if (World.Reader.IsMaterialInBox(BoundingBox.Contract(0.001D, 0.001D, 0.001D), m => m == Material.Fire || m == Material.Lava))
             {
-                damage(1);
+                Damage(1);
                 if (!var42)
                 {
                     ++FireTicks;
@@ -614,18 +614,18 @@ public abstract class Entity
         }
     }
 
-    protected virtual bool bypassesSteppingEffects()
+    protected virtual bool BypassesSteppingEffects()
     {
         return true;
     }
 
-    protected virtual void fall(double fallDistance, bool onGround)
+    protected virtual void Fall(double fallDistance, bool onGround)
     {
         if (onGround)
         {
             if (this.FallDistance > 0.0F)
             {
-                onLanding(this.FallDistance);
+                OnLanding(this.FallDistance);
                 this.FallDistance = 0.0F;
             }
         }
@@ -636,47 +636,47 @@ public abstract class Entity
 
     }
 
-    public virtual Box? getBoundingBox()
+    public virtual Box? GetBoundingBox()
     {
         return null;
     }
 
-    protected virtual void damage(int var1)
+    protected virtual void Damage(int var1)
     {
         if (!IsImmuneToFire)
         {
-            damage((Entity)null, var1);
+            Damage((Entity)null, var1);
         }
 
     }
 
-    protected virtual void onLanding(float fallDistance)
+    protected virtual void OnLanding(float fallDistance)
     {
         if (Passenger != null)
         {
-            Passenger.onLanding(fallDistance);
+            Passenger.OnLanding(fallDistance);
         }
 
     }
 
-    public bool isWet()
+    public bool IsWet()
     {
         return InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
     }
 
-    public virtual bool isInWater()
+    public virtual bool IsInWater()
     {
         return InWater;
     }
 
-    public virtual bool checkWaterCollisions()
+    public virtual bool CheckWaterCollisions()
     {
         return World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, (double)-0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
     }
 
-    public bool isInFluid(Material var1)
+    public bool IsInFluid(Material var1)
     {
-        double var2 = Y + (double)getEyeHeight();
+        double var2 = Y + (double)GetEyeHeight();
         int var4 = MathHelper.Floor(X);
         int var5 = MathHelper.Floor((float)MathHelper.Floor(var2));
         int var6 = MathHelper.Floor(Z);
@@ -693,17 +693,17 @@ public abstract class Entity
         }
     }
 
-    public virtual float getEyeHeight()
+    public virtual float GetEyeHeight()
     {
         return 0.0F;
     }
 
-    public bool isTouchingLava()
+    public bool IsTouchingLava()
     {
         return World.Reader.IsMaterialInBox(BoundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
     }
 
-    public void moveNonSolid(float strafe, float forward, float speed)
+    public void MoveNonSolid(float strafe, float forward, float speed)
     {
         float inputLength = MathHelper.Sqrt(strafe * strafe + forward * forward);
         if (inputLength >= 0.01F)
@@ -723,7 +723,7 @@ public abstract class Entity
         }
     }
 
-    public virtual float getBrightnessAtEyes(float var1)
+    public virtual float GetBrightnessAtEyes(float var1)
     {
         int var2 = MathHelper.Floor(X);
         double var3 = (BoundingBox.MaxY - BoundingBox.MinY) * 0.66D;
@@ -756,12 +756,12 @@ public abstract class Entity
         }
     }
 
-    public virtual void setWorld(IWorldContext world)
+    public virtual void SetWorld(IWorldContext world)
     {
         this.World = world;
     }
 
-    public void setPositionAndAngles(double x, double y, double z, float yaw, float pitch)
+    public void SetPositionAndAngles(double x, double y, double z, float yaw, float pitch)
     {
         PrevX = this.X = x;
         PrevY = this.Y = y;
@@ -780,21 +780,21 @@ public abstract class Entity
             PrevYaw -= 360.0F;
         }
 
-        setPosition(this.X, this.Y, this.Z);
-        setRotation(yaw, pitch);
+        SetPosition(this.X, this.Y, this.Z);
+        SetRotation(yaw, pitch);
     }
 
-    public void setPositionAndAnglesKeepPrevAngles(double x, double y, double z, float yaw, float pitch)
+    public void SetPositionAndAnglesKeepPrevAngles(double x, double y, double z, float yaw, float pitch)
     {
         LastTickX = PrevX = this.X = x;
         LastTickY = PrevY = this.Y = y + (double)StandingEyeHeight;
         LastTickZ = PrevZ = this.Z = z;
         this.Yaw = yaw;
         this.Pitch = pitch;
-        setPosition(this.X, this.Y, this.Z);
+        SetPosition(this.X, this.Y, this.Z);
     }
 
-    public float getDistance(Entity entity)
+    public float GetDistance(Entity entity)
     {
         float var2 = (float)(X - entity.X);
         float var3 = (float)(Y - entity.Y);
@@ -802,7 +802,7 @@ public abstract class Entity
         return MathHelper.Sqrt(var2 * var2 + var3 * var3 + var4 * var4);
     }
 
-    public double getSquaredDistance(double var1, double var3, double var5)
+    public double GetSquaredDistance(double var1, double var3, double var5)
     {
         double var7 = X - var1;
         double var9 = Y - var3;
@@ -810,7 +810,7 @@ public abstract class Entity
         return var7 * var7 + var9 * var9 + var11 * var11;
     }
 
-    public double getDistance(double var1, double var3, double var5)
+    public double GetDistance(double var1, double var3, double var5)
     {
         double var7 = X - var1;
         double var9 = Y - var3;
@@ -818,7 +818,7 @@ public abstract class Entity
         return (double)MathHelper.Sqrt(var7 * var7 + var9 * var9 + var11 * var11);
     }
 
-    public double getSquaredDistance(Entity entity)
+    public double GetSquaredDistance(Entity entity)
     {
         double var2 = X - entity.X;
         double var4 = Y - entity.Y;
@@ -826,11 +826,11 @@ public abstract class Entity
         return var2 * var2 + var4 * var4 + var6 * var6;
     }
 
-    public virtual void onPlayerInteraction(EntityPlayer player)
+    public virtual void OnPlayerInteraction(EntityPlayer player)
     {
     }
 
-    public virtual void onCollision(Entity entity)
+    public virtual void OnCollision(Entity entity)
     {
         if (entity.Passenger != this && entity.Vehicle != this)
         {
@@ -870,8 +870,8 @@ public abstract class Entity
                     var4 *= s;
                 }
 
-                addVelocity(-var2, 0.0D, -var4);
-                entity.addVelocity(var2, 0.0D, var4);
+                AddVelocity(-var2, 0.0D, -var4);
+                entity.AddVelocity(var2, 0.0D, var4);
 
                 double speedThis = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
                 if (speedThis > maxHorizontalSpeed)
@@ -893,66 +893,66 @@ public abstract class Entity
         }
     }
 
-    public virtual void addVelocity(double var1, double var3, double var5)
+    public virtual void AddVelocity(double var1, double var3, double var5)
     {
         VelocityX += var1;
         VelocityY += var3;
         VelocityZ += var5;
     }
 
-    protected void scheduleVelocityUpdate()
+    protected void ScheduleVelocityUpdate()
     {
         VelocityModified = true;
     }
 
-    public virtual bool damage(Entity? entity, int amount)
+    public virtual bool Damage(Entity? entity, int amount)
     {
-        scheduleVelocityUpdate();
+        ScheduleVelocityUpdate();
         return false;
     }
 
-    public virtual bool isCollidable()
-    {
-        return false;
-    }
-
-    public virtual bool isPushable()
+    public virtual bool IsCollidable()
     {
         return false;
     }
 
-    public virtual void updateKilledAchievement(Entity entity, int var2)
+    public virtual bool IsPushable()
+    {
+        return false;
+    }
+
+    public virtual void UpdateKilledAchievement(Entity entity, int var2)
     {
     }
 
-    public virtual bool shouldRender(Vec3D var1)
+    public virtual bool ShouldRender(Vec3D var1)
     {
         double var2 = X - var1.x;
         double var4 = Y - var1.y;
         double var6 = Z - var1.z;
         double var8 = var2 * var2 + var4 * var4 + var6 * var6;
-        return shouldRender(var8);
+        return ShouldRender(var8);
     }
 
-    public virtual bool shouldRender(double var1)
+    public virtual bool ShouldRender(double var1)
     {
         double var3 = BoundingBox.AverageEdgeLength;
         var3 *= 64.0D * RenderDistanceWeight;
         return var1 < var3 * var3;
     }
 
-    public virtual string getTexture()
+    public virtual string GetTexture()
     {
         return null;
     }
 
-    public bool saveSelfNbt(NBTTagCompound nbt)
+    public bool SaveSelfNbt(NBTTagCompound nbt)
     {
-        string var2 = getRegistryEntry();
+        string var2 = GetRegistryEntry();
         if (!Dead && var2 != null)
         {
             nbt.SetString("id", var2);
-            write(nbt);
+            Write(nbt);
             return true;
         }
         else
@@ -961,19 +961,19 @@ public abstract class Entity
         }
     }
 
-    public void write(NBTTagCompound nbt)
+    public void Write(NBTTagCompound nbt)
     {
-        nbt.SetTag("Pos", newDoubleNBTList(X, Y + (double)CameraOffset, Z));
-        nbt.SetTag("Motion", newDoubleNBTList(VelocityX, VelocityY, VelocityZ));
-        nbt.SetTag("Rotation", newFloatNBTList(Yaw, Pitch));
+        nbt.SetTag("Pos", NewDoubleNBTList(X, Y + (double)CameraOffset, Z));
+        nbt.SetTag("Motion", NewDoubleNBTList(VelocityX, VelocityY, VelocityZ));
+        nbt.SetTag("Rotation", NewFloatNBTList(Yaw, Pitch));
         nbt.SetFloat("FallDistance", FallDistance);
         nbt.SetShort("Fire", (short)FireTicks);
         nbt.SetShort("Air", (short)Air);
         nbt.SetBoolean("OnGround", OnGround);
-        writeNbt(nbt);
+        WriteNbt(nbt);
     }
 
-    public void read(NBTTagCompound nbt)
+    public void Read(NBTTagCompound nbt)
     {
         NBTTagList var2 = nbt.GetTagList("Pos");
         NBTTagList var3 = nbt.GetTagList("Motion");
@@ -1005,21 +1005,21 @@ public abstract class Entity
         FireTicks = nbt.GetShort("Fire");
         Air = nbt.GetShort("Air");
         OnGround = nbt.GetBoolean("OnGround");
-        setPosition(X, Y, Z);
-        setRotation(Yaw, Pitch);
-        readNbt(nbt);
+        SetPosition(X, Y, Z);
+        SetRotation(Yaw, Pitch);
+        ReadNbt(nbt);
     }
 
-    protected string? getRegistryEntry()
+    protected string? GetRegistryEntry()
     {
         return Type?.Id;
     }
 
-    public abstract void readNbt(NBTTagCompound nbt);
+    public abstract void ReadNbt(NBTTagCompound nbt);
 
-    public abstract void writeNbt(NBTTagCompound nbt);
+    public abstract void WriteNbt(NBTTagCompound nbt);
 
-    protected static NBTTagList newDoubleNBTList(params double[] var1)
+    protected static NBTTagList NewDoubleNBTList(params double[] var1)
     {
         NBTTagList var2 = new();
         double[] var3 = var1;
@@ -1034,7 +1034,7 @@ public abstract class Entity
         return var2;
     }
 
-    protected static NBTTagList newFloatNBTList(params float[] var1)
+    protected static NBTTagList NewFloatNBTList(params float[] var1)
     {
         NBTTagList var2 = new();
         float[] var3 = var1;
@@ -1049,22 +1049,22 @@ public abstract class Entity
         return var2;
     }
 
-    public virtual float getShadowRadius()
+    public virtual float GetShadowRadius()
     {
         return Height / 2.0F;
     }
 
-    public EntityItem dropItem(int var1, int var2)
+    public EntityItem DropItem(int var1, int var2)
     {
-        return dropItem(var1, var2, 0.0F);
+        return DropItem(var1, var2, 0.0F);
     }
 
-    public EntityItem dropItem(int var1, int var2, float var3)
+    public EntityItem DropItem(int var1, int var2, float var3)
     {
-        return dropItem(new ItemStack(var1, var2, 0), var3);
+        return DropItem(new ItemStack(var1, var2, 0), var3);
     }
 
-    public EntityItem dropItem(ItemStack var1, float var2)
+    public EntityItem DropItem(ItemStack var1, float var2)
     {
         EntityItem var3 = new EntityItem(World, X, Y + (double)var2, Z, var1);
         var3.delayBeforeCanPickup = 10;
@@ -1072,12 +1072,12 @@ public abstract class Entity
         return var3;
     }
 
-    public virtual bool isAlive()
+    public virtual bool IsAlive()
     {
         return !Dead;
     }
 
-    public virtual bool isInsideWall()
+    public virtual bool IsInsideWall()
     {
         for (int var1 = 0; var1 < 8; ++var1)
         {
@@ -1085,7 +1085,7 @@ public abstract class Entity
             float var3 = ((float)((var1 >> 1) % 2) - 0.5F) * 0.1F;
             float var4 = ((float)((var1 >> 2) % 2) - 0.5F) * Width * 0.9F;
             int var5 = MathHelper.Floor(X + (double)var2);
-            int var6 = MathHelper.Floor(Y + (double)getEyeHeight() + (double)var3);
+            int var6 = MathHelper.Floor(Y + (double)GetEyeHeight() + (double)var3);
             int var7 = MathHelper.Floor(Z + (double)var4);
             if (World.Reader.ShouldSuffocate(var5, var6, var7))
             {
@@ -1096,17 +1096,17 @@ public abstract class Entity
         return false;
     }
 
-    public virtual bool interact(EntityPlayer player)
+    public virtual bool Interact(EntityPlayer player)
     {
         return false;
     }
 
-    public virtual Box? getCollisionAgainstShape(Entity entity)
+    public virtual Box? GetCollisionAgainstShape(Entity entity)
     {
         return null;
     }
 
-    public virtual void tickRiding()
+    public virtual void TickRiding()
     {
         if (Vehicle.Dead)
         {
@@ -1117,10 +1117,10 @@ public abstract class Entity
             VelocityX = 0.0D;
             VelocityY = 0.0D;
             VelocityZ = 0.0D;
-            tick();
+            Tick();
             if (Vehicle != null)
             {
-                Vehicle.updatePassengerPosition();
+                Vehicle.UpdatePassengerPosition();
                 _vehicleYawDelta += (double)(Vehicle.Yaw - Vehicle.PrevYaw);
 
                 for (_vehiclePitchDelta += (double)(Vehicle.Pitch - Vehicle.PrevPitch); _vehicleYawDelta >= 180.0D; _vehicleYawDelta -= 360.0D)
@@ -1173,22 +1173,22 @@ public abstract class Entity
         }
     }
 
-    public virtual void updatePassengerPosition()
+    public virtual void UpdatePassengerPosition()
     {
-        Passenger.setPosition(X, Y + getPassengerRidingHeight() + Passenger.getStandingEyeHeight(), Z);
+        Passenger.SetPosition(X, Y + GetPassengerRidingHeight() + Passenger.GetStandingEyeHeight(), Z);
     }
 
-    public virtual double getStandingEyeHeight()
+    public virtual double GetStandingEyeHeight()
     {
         return (double)StandingEyeHeight;
     }
 
-    public virtual double getPassengerRidingHeight()
+    public virtual double GetPassengerRidingHeight()
     {
         return (double)Height * 0.75D;
     }
 
-    public virtual void setVehicle(Entity entity)
+    public virtual void SetVehicle(Entity entity)
     {
         _vehiclePitchDelta = 0.0D;
         _vehicleYawDelta = 0.0D;
@@ -1196,7 +1196,7 @@ public abstract class Entity
         {
             if (Vehicle != null)
             {
-                setPositionAndAnglesKeepPrevAngles(Vehicle.X, Vehicle.BoundingBox.MinY + (double)Vehicle.Height, Vehicle.Z, Yaw, Pitch);
+                SetPositionAndAnglesKeepPrevAngles(Vehicle.X, Vehicle.BoundingBox.MinY + (double)Vehicle.Height, Vehicle.Z, Yaw, Pitch);
                 Vehicle.Passenger = null;
             }
 
@@ -1206,7 +1206,7 @@ public abstract class Entity
         {
             Vehicle.Passenger = null;
             Vehicle = null;
-            setPositionAndAnglesKeepPrevAngles(entity.X, entity.BoundingBox.MinY + (double)entity.Height, entity.Z, Yaw, Pitch);
+            SetPositionAndAnglesKeepPrevAngles(entity.X, entity.BoundingBox.MinY + (double)entity.Height, entity.Z, Yaw, Pitch);
         }
         else
         {
@@ -1225,10 +1225,10 @@ public abstract class Entity
         }
     }
 
-    public virtual void setPositionAndAnglesAvoidEntities(double x, double y, double z, float var7, float var8, int var9)
+    public virtual void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float var7, float var8, int var9)
     {
-        setPosition(x, y, z);
-        setRotation(var7, var8);
+        SetPosition(x, y, z);
+        SetRotation(var7, var8);
         var var10 = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
         if (var10.Count > 0)
         {
@@ -1244,69 +1244,69 @@ public abstract class Entity
             }
 
             y += var11 - BoundingBox.MinY;
-            setPosition(x, y, z);
+            SetPosition(x, y, z);
         }
 
     }
 
-    public virtual float getTargetingMargin()
+    public virtual float GetTargetingMargin()
     {
         return 0.1F;
     }
 
-    public virtual Vec3D? getLookVector()
+    public virtual Vec3D? GetLookVector()
     {
         return null;
     }
 
-    public virtual void tickPortalCooldown()
+    public virtual void TickPortalCooldown()
     {
     }
 
-    public virtual void setVelocityClient(double var1, double var3, double var5)
+    public virtual void SetVelocityClient(double var1, double var3, double var5)
     {
         VelocityX = var1;
         VelocityY = var3;
         VelocityZ = var5;
     }
 
-    public virtual void processServerEntityStatus(sbyte var1)
+    public virtual void ProcessServerEntityStatus(sbyte var1)
     {
     }
 
-    public virtual void animateHurt()
+    public virtual void AnimateHurt()
     {
     }
 
-    public virtual void updateCloak()
+    public virtual void UpdateCloak()
     {
     }
 
-    public virtual void setEquipmentStack(int var1, int var2, int var3)
+    public virtual void SetEquipmentStack(int var1, int var2, int var3)
     {
     }
 
-    public bool isOnFire()
+    public bool IsOnFire()
     {
         return FireTicks > 0 || GetFlag(0);
     }
 
-    public bool hasVehicle()
+    public bool HasVehicle()
     {
         return Vehicle != null || GetFlag(2);
     }
 
-    public virtual ItemStack[] getEquipment()
+    public virtual ItemStack[] GetEquipment()
     {
         return null;
     }
 
-    public virtual bool isSneaking()
+    public virtual bool IsSneaking()
     {
         return GetFlag(1);
     }
 
-    public void setSneaking(bool sneaking)
+    public void SetSneaking(bool sneaking)
     {
         SetFlag(1, sneaking);
     }
@@ -1332,9 +1332,9 @@ public abstract class Entity
         _flags.Value = newValue;
     }
 
-    public virtual void onStruckByLightning(EntityLightningBolt bolt)
+    public virtual void OnStruckByLightning(EntityLightningBolt bolt)
     {
-        damage(5);
+        Damage(5);
         ++FireTicks;
         if (FireTicks == 0)
         {
@@ -1343,11 +1343,11 @@ public abstract class Entity
 
     }
 
-    public virtual void onKillOther(EntityLiving var1)
+    public virtual void OnKillOther(EntityLiving var1)
     {
     }
 
-    protected virtual bool pushOutOfBlocks(double x, double y, double z)
+    protected virtual bool PushOutOfBlocks(double x, double y, double z)
     {
         // Only players should attempt "push out of blocks".
         if (this is not EntityPlayer)

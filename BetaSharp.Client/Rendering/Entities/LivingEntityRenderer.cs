@@ -37,7 +37,7 @@ public class LivingEntityRenderer : EntityRenderer
             renderPassModel.onGround = mainModel.onGround;
         }
 
-        mainModel.isRiding = var1.hasVehicle();
+        mainModel.isRiding = var1.HasVehicle();
         if (renderPassModel != null)
         {
             renderPassModel.isRiding = mainModel.isRiding;
@@ -63,7 +63,7 @@ public class LivingEntityRenderer : EntityRenderer
                 var15 = 1.0F;
             }
 
-            LoadDownloadableImageTexture((var1 as EntityPlayer)?.name, var1.getTexture());
+            LoadDownloadableImageTexture((var1 as EntityPlayer)?.name, var1.GetTexture());
             GLManager.GL.Enable(GLEnum.AlphaTest);
             mainModel.setLivingAnimations(var1, var16, var15, var9);
             mainModel.render(var16, var15, var13, var11 - var10, var12, var14);
@@ -79,7 +79,7 @@ public class LivingEntityRenderer : EntityRenderer
             }
 
             RenderMore(var1, var9);
-            float var25 = var1.getBrightnessAtEyes(var9);
+            float var25 = var1.GetBrightnessAtEyes(var9);
             int var18 = getColorMultiplier(var1, var25, var9);
             if ((var18 >> 24 & 255) > 0 || var1.hurtTime > 0 || var1.deathTime > 0)
             {
@@ -210,7 +210,7 @@ public class LivingEntityRenderer : EntityRenderer
 
     protected void renderLivingLabel(EntityLiving var1, string var2, double var3, double var5, double var7, int var9)
     {
-        float var10 = var1.getDistance(Dispatcher.CameraEntity);
+        float var10 = var1.GetDistance(Dispatcher.CameraEntity);
         if (var10 <= var9)
         {
             TextRenderer var11 = TextRenderer;

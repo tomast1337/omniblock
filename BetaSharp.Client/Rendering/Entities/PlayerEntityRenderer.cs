@@ -53,9 +53,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     {
         ItemStack var10 = var1.inventory.GetItemInHand();
         _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = var10 != null;
-        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = var1.isSneaking();
+        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = var1.IsSneaking();
         double var11 = var4 - var1.StandingEyeHeight;
-        if (var1.isSneaking() && var1 is not ClientPlayerEntity)
+        if (var1.IsSneaking() && var1 is not ClientPlayerEntity)
         {
             var11 -= 0.125D;
         }
@@ -71,12 +71,12 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             float var8 = 1.6F;
             float var9 = (float)(1.0D / 60.0D) * var8;
-            float var10 = var1.getDistance(Dispatcher.CameraEntity);
-            float var11 = var1.isSneaking() ? 32.0F : 64.0F;
+            float var10 = var1.GetDistance(Dispatcher.CameraEntity);
+            float var11 = var1.IsSneaking() ? 32.0F : 64.0F;
             if (var10 < var11)
             {
                 string var12 = var1.name;
-                if (!var1.isSneaking())
+                if (!var1.IsSneaking())
                 {
                     if (var1.isSleeping())
                     {
@@ -194,7 +194,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
             float var18 = var1.prevStepBobbingAmount + (var1.stepBobbingAmount - var1.prevStepBobbingAmount) * var2;
             var15 += MathHelper.Sin((var1.PrevHorizontalSpeed + (var1.HorizontalSpeed - var1.PrevHorizontalSpeed) * var2) * 6.0F) * 32.0F * var18;
-            if (var1.isSneaking())
+            if (var1.IsSneaking())
             {
                 var15 += 25.0F;
             }
@@ -272,7 +272,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void func_22016_b(EntityPlayer var1, double var2, double var4, double var6)
     {
-        if (var1.isAlive() && var1.isSleeping())
+        if (var1.IsAlive() && var1.isSleeping())
         {
             base.Func_22012_b(var1, var2 + var1.sleepOffsetX, var4 + var1.sleepOffsetY, var6 + var1.sleepOffsetZ);
         }
@@ -285,7 +285,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     protected void func_22017_a(EntityPlayer var1, float var2, float var3, float var4)
     {
-        if (var1.isAlive() && var1.isSleeping())
+        if (var1.IsAlive() && var1.isSleeping())
         {
             GLManager.GL.Rotate(var1.getSleepingRotation(), 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(getDeathMaxRotation(var1), 0.0F, 0.0F, 1.0F);

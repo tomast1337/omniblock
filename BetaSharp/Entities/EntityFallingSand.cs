@@ -19,9 +19,9 @@ public class EntityFallingSand : Entity
     {
         this.blockId = blockId;
         PreventEntitySpawning = true;
-        setBoundingBoxSpacing(0.98F, 0.98F);
+        SetBoundingBoxSpacing(0.98F, 0.98F);
         StandingEyeHeight = Height / 2.0F;
-        setPosition(x, y, z);
+        SetPosition(x, y, z);
         VelocityX = 0.0D;
         VelocityY = 0.0D;
         VelocityZ = 0.0D;
@@ -30,22 +30,22 @@ public class EntityFallingSand : Entity
         PrevZ = z;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
 
-    public override bool isCollidable()
+    public override bool IsCollidable()
     {
         return !Dead;
     }
 
-    public override void tick()
+    public override void Tick()
     {
         if (blockId == 0)
         {
-            markDead();
+            MarkDead();
         }
         else
         {
@@ -54,7 +54,7 @@ public class EntityFallingSand : Entity
             PrevZ = Z;
             ++fallTime;
             VelocityY -= (double)0.04F;
-            move(VelocityX, VelocityY, VelocityZ);
+            Move(VelocityX, VelocityY, VelocityZ);
             VelocityX *= (double)0.98F;
             VelocityY *= (double)0.98F;
             VelocityZ *= (double)0.98F;
@@ -71,32 +71,32 @@ public class EntityFallingSand : Entity
                 VelocityX *= (double)0.7F;
                 VelocityZ *= (double)0.7F;
                 VelocityY *= -0.5D;
-                markDead();
+                MarkDead();
                 if ((!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)) || BlockSand.canFallThrough(new OnTickEvent(World, floorX, floorY - 1, floorZ, 0, blockId)) || !World.Writer.SetBlock(floorX, floorY, floorZ, blockId)) && !World.IsRemote)
                 {
-                    dropItem(blockId, 1);
+                    DropItem(blockId, 1);
                 }
             }
             else if (fallTime > 100 && !World.IsRemote)
             {
-                dropItem(blockId, 1);
-                markDead();
+                DropItem(blockId, 1);
+                MarkDead();
             }
 
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetByte("Tile", (sbyte)blockId);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         blockId = nbt.GetByte("Tile") & 255;
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }

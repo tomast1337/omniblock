@@ -70,5 +70,5 @@ internal class BlockCactus : Block
         return blockBelowId == Cactus.id || blockBelowId == Sand.id;
     }
 
-    public override void onEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.damage(null, 1);
+    public override void onEntityCollision(OnEntityCollisionEvent ctx) => ctx.Entity.Damage(null, 1);
 }

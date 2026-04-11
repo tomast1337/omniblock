@@ -29,7 +29,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         sendQueue = clientNetworkHandler;
     }
 
-    public override bool damage(Entity ent, int amount)
+    public override bool Damage(Entity ent, int amount)
     {
         return false;
     }
@@ -38,11 +38,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
     }
 
-    public override void tick()
+    public override void Tick()
     {
         if (World.Reader.IsPosLoaded(MathHelper.Floor(X), 64, MathHelper.Floor(Z)))
         {
-            base.tick();
+            base.Tick();
             func_4056_N();
         }
     }
@@ -55,7 +55,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
             inventorySyncTickCounter = 0;
         }
 
-        bool isSneaking = base.isSneaking();
+        bool isSneaking = base.IsSneaking();
         if (isSneaking != wasSneaking)
         {
             if (isSneaking)

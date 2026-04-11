@@ -23,11 +23,11 @@ public class EntityFireball : Entity
 
     public EntityFireball(IWorldContext world) : base(world)
     {
-        setBoundingBoxSpacing(1.0F, 1.0F);
+        SetBoundingBoxSpacing(1.0F, 1.0F);
     }
 
 
-    public override bool shouldRender(double var1)
+    public override bool ShouldRender(double var1)
     {
         double var3 = BoundingBox.AverageEdgeLength * 4.0D;
         var3 *= 64.0D;
@@ -36,9 +36,9 @@ public class EntityFireball : Entity
 
     public EntityFireball(IWorldContext world, double x, double y, double z, double var8, double var10, double var12) : base(world)
     {
-        setBoundingBoxSpacing(1.0F, 1.0F);
-        setPositionAndAnglesKeepPrevAngles(x, y, z, Yaw, Pitch);
-        setPosition(x, y, z);
+        SetBoundingBoxSpacing(1.0F, 1.0F);
+        SetPositionAndAnglesKeepPrevAngles(x, y, z, Yaw, Pitch);
+        SetPosition(x, y, z);
         double var14 = (double)MathHelper.Sqrt(var8 * var8 + var10 * var10 + var12 * var12);
         powerX = var8 / var14 * 0.1D;
         powerY = var10 / var14 * 0.1D;
@@ -48,9 +48,9 @@ public class EntityFireball : Entity
     public EntityFireball(IWorldContext world, EntityLiving var2, double var3, double var5, double var7) : base(world)
     {
         owner = var2;
-        setBoundingBoxSpacing(1.0F, 1.0F);
-        setPositionAndAnglesKeepPrevAngles(var2.X, var2.Y, var2.Z, var2.Yaw, var2.Pitch);
-        setPosition(X, Y, Z);
+        SetBoundingBoxSpacing(1.0F, 1.0F);
+        SetPositionAndAnglesKeepPrevAngles(var2.X, var2.Y, var2.Z, var2.Yaw, var2.Pitch);
+        SetPosition(X, Y, Z);
         StandingEyeHeight = 0.0F;
         VelocityX = VelocityY = VelocityZ = 0.0D;
         var3 += Random.NextGaussian() * 0.4D;
@@ -62,9 +62,9 @@ public class EntityFireball : Entity
         powerZ = var7 / var9 * 0.1D;
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         FireTicks = 10;
         if (shake > 0)
         {
@@ -79,7 +79,7 @@ public class EntityFireball : Entity
                 ++removalTimer;
                 if (removalTimer == 1200)
                 {
-                    markDead();
+                    MarkDead();
                 }
 
                 return;
@@ -114,7 +114,7 @@ public class EntityFireball : Entity
         for (int var8 = 0; var8 < var5.Count; ++var8)
         {
             Entity var9 = var5[var8];
-            if (var9.isCollidable() && (var9 != owner || inAirTime >= 25))
+            if (var9.IsCollidable() && (var9 != owner || inAirTime >= 25))
             {
                 float var10 = 0.3F;
                 Box var11 = var9.BoundingBox.Expand((double)var10, (double)var10, (double)var10);
@@ -140,14 +140,14 @@ public class EntityFireball : Entity
         {
             if (!World.IsRemote)
             {
-                if (var3.Entity != null && var3.Entity.damage(owner, 0))
+                if (var3.Entity != null && var3.Entity.Damage(owner, 0))
                 {
                 }
 
                 World.CreateExplosion(null, X, Y, Z, 1.0F, true);
             }
 
-            markDead();
+            MarkDead();
         }
 
         X += VelocityX;
@@ -178,7 +178,7 @@ public class EntityFireball : Entity
         Pitch = PrevPitch + (Pitch - PrevPitch) * 0.2F;
         Yaw = PrevYaw + (Yaw - PrevYaw) * 0.2F;
         float var17 = 0.95F;
-        if (isInWater())
+        if (IsInWater())
         {
             for (int var18 = 0; var18 < 4; ++var18)
             {
@@ -196,10 +196,10 @@ public class EntityFireball : Entity
         VelocityY *= (double)var17;
         VelocityZ *= (double)var17;
         World.Broadcaster.AddParticle("smoke", X, Y + 0.5D, Z, 0.0D, 0.0D, 0.0D);
-        setPosition(X, Y, Z);
+        SetPosition(X, Y, Z);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetShort("xTile", (short)blockX);
         nbt.SetShort("yTile", (short)blockY);
@@ -209,7 +209,7 @@ public class EntityFireball : Entity
         nbt.SetByte("inGround", (sbyte)(inGround ? 1 : 0));
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         blockX = nbt.GetShort("xTile");
         blockY = nbt.GetShort("yTile");
@@ -219,22 +219,22 @@ public class EntityFireball : Entity
         inGround = nbt.GetByte("inGround") == 1;
     }
 
-    public override bool isCollidable()
+    public override bool IsCollidable()
     {
         return true;
     }
 
-    public override float getTargetingMargin()
+    public override float GetTargetingMargin()
     {
         return 1.0F;
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
-        scheduleVelocityUpdate();
+        ScheduleVelocityUpdate();
         if (entity != null)
         {
-            Vec3D? var3 = entity.getLookVector();
+            Vec3D? var3 = entity.GetLookVector();
             if (var3 != null)
             {
                 VelocityX = var3.Value.x;
@@ -253,7 +253,7 @@ public class EntityFireball : Entity
         }
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }

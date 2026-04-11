@@ -66,7 +66,7 @@ public class CameraController
         EntityLiving cameraEntity = _game.Camera;
         float fov = isHand ? 70.0F : (30.0F + _game.Options.Fov * 90.0F);
 
-        if (cameraEntity.isInFluid(Material.Water))
+        if (cameraEntity.IsInFluid(Material.Water))
         {
             fov -= 10.0F;
         }

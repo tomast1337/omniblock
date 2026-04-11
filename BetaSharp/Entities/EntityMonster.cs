@@ -15,7 +15,7 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     public override void tickMovement()
     {
-        float brightness = getBrightnessAtEyes(1.0F);
+        float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F)
         {
             entityAge += 2;
@@ -24,12 +24,12 @@ public abstract class EntityMonster : EntityCreature, Monster
         base.tickMovement();
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         if (!World.IsRemote && World.Difficulty == 0)
         {
-            markDead();
+            MarkDead();
         }
 
     }
@@ -40,9 +40,9 @@ public abstract class EntityMonster : EntityCreature, Monster
         return player != null && canSee(player) ? player : null;
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
-        if (base.damage(entity, amount))
+        if (base.Damage(entity, amount))
         {
             if (Passenger != entity && Vehicle != entity)
             {
@@ -72,7 +72,7 @@ public abstract class EntityMonster : EntityCreature, Monster
         if (attackTime <= 0 && distance < 2.0F && entity.BoundingBox.MaxY > BoundingBox.MinY && entity.BoundingBox.MinY < BoundingBox.MaxY)
         {
             attackTime = 20;
-            entity.damage(this, attackStrength);
+            entity.Damage(this, attackStrength);
         }
 
     }
@@ -82,14 +82,14 @@ public abstract class EntityMonster : EntityCreature, Monster
         return 0.5F - World.Lighting.GetLuminance(x, y, z);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     public override bool canSpawn()

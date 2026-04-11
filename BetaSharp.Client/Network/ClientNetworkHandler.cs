@@ -217,7 +217,7 @@ public class ClientNetworkHandler : NetHandler
                     }
                 }
 
-                ((Entity)entity).setVelocityClient(packet.velocityX / 8000.0D, packet.velocityY / 8000.0D, packet.velocityZ / 8000.0D);
+                ((Entity)entity).SetVelocityClient(packet.velocityX / 8000.0D, packet.velocityY / 8000.0D, packet.velocityZ / 8000.0D);
             }
         }
 
@@ -256,7 +256,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onEntityVelocityUpdate(EntityVelocityUpdateS2CPacket packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        ent?.setVelocityClient(packet.motionX / 8000.0D, packet.motionY / 8000.0D, packet.motionZ / 8000.0D);
+        ent?.SetVelocityClient(packet.motionX / 8000.0D, packet.motionY / 8000.0D, packet.motionZ / 8000.0D);
     }
 
     public override void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet)
@@ -291,7 +291,7 @@ public class ClientNetworkHandler : NetHandler
             ent.inventory.Main[ent.inventory.SelectedSlot] = new ItemStack(currentItem, 1, 0);
         }
 
-        ent.setPositionAndAngles(x, y, z, rotation, pitch);
+        ent.SetPositionAndAngles(x, y, z, rotation, pitch);
         _worldClient.ForceEntity(packet.entityId, ent);
     }
 
@@ -308,7 +308,7 @@ public class ClientNetworkHandler : NetHandler
             double posZ = ent.TrackedPosZ / 32.0D;
             float yaw = packet.yaw * 360 / 256.0F;
             float pitch = packet.pitch * 360 / 256.0F;
-            ent.setPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
+            ent.SetPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
         }
     }
 
@@ -325,7 +325,7 @@ public class ClientNetworkHandler : NetHandler
             double posZ = ent.TrackedPosZ / 32.0D;
             float yaw = packet.rotate ? packet.yaw * 360 / 256.0F : ent.Yaw;
             float pitch = packet.rotate ? packet.pitch * 360 / 256.0F : ent.Pitch;
-            ent.setPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
+            ent.SetPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, 5);
         }
     }
 
@@ -357,7 +357,7 @@ public class ClientNetworkHandler : NetHandler
 
         ent.CameraOffset = 0.0F;
         ent.VelocityX = ent.VelocityY = ent.VelocityZ = 0.0D;
-        ent.setPositionAndAngles(x, y, z, yaw, pitch);
+        ent.SetPositionAndAngles(x, y, z, yaw, pitch);
         packet.x = ent.X;
         packet.y = ent.BoundingBox.MinY;
         packet.z = ent.Z;
@@ -475,7 +475,7 @@ public class ClientNetworkHandler : NetHandler
             }
             else if (packet.animationId == 2)
             {
-                ent.animateHurt();
+                ent.AnimateHurt();
             }
             else if (packet.animationId == 3)
             {
@@ -527,7 +527,7 @@ public class ClientNetworkHandler : NetHandler
         ent.TrackedPosY = packet.yPosition;
         ent.TrackedPosZ = packet.zPosition;
         ent.ID = packet.entityId;
-        ent.setPositionAndAngles(x, y, z, yaw, pitch);
+        ent.SetPositionAndAngles(x, y, z, yaw, pitch);
         ent.LastTickX = ent.X;
         ent.LastTickY = ent.Y;
         ent.LastTickZ = ent.Z;
@@ -558,14 +558,14 @@ public class ClientNetworkHandler : NetHandler
 
         if (rider is Entity riderEntity)
         {
-            riderEntity.setVehicle(ent);
+            riderEntity.SetVehicle(ent);
         }
     }
 
     public override void onEntityStatus(EntityStatusS2CPacket packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        ent?.processServerEntityStatus(packet.EntityStatus);
+        ent?.ProcessServerEntityStatus(packet.EntityStatus);
 
     }
 
@@ -739,7 +739,7 @@ public class ClientNetworkHandler : NetHandler
     public override void onEntityEquipmentUpdate(EntityEquipmentUpdateS2CPacket packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        ent?.setEquipmentStack(packet.slot, packet.itemRawId, packet.itemDamage);
+        ent?.SetEquipmentStack(packet.slot, packet.itemRawId, packet.itemDamage);
 
     }
 

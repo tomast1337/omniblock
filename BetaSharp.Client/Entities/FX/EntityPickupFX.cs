@@ -47,12 +47,12 @@ public class EntityPickupFX : EntityFX
         EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(target, (double)((float)renderX), (double)((float)renderY), (double)((float)renderZ), target.Yaw, partialTick);
     }
 
-    public override void tick()
+    public override void Tick()
     {
         ++currentAge;
         if (currentAge == maxAge)
         {
-            markDead();
+            MarkDead();
         }
 
     }

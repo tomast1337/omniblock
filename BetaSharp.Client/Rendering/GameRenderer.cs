@@ -101,9 +101,9 @@ public class GameRenderer
         for (int i = 0; i < entities.Count; ++i)
         {
             Entity ent = entities[i];
-            if (ent.isCollidable())
+            if (ent.IsCollidable())
             {
-                float targetingMargin = ent.getTargetingMargin();
+                float targetingMargin = ent.GetTargetingMargin();
                 Box box = ent.BoundingBox.Expand((double)targetingMargin, (double)targetingMargin, (double)targetingMargin);
                 HitResult hit = box.Raycast(cameraPosition, targetVec);
 
@@ -256,7 +256,7 @@ public class GameRenderer
                 var4 = _mouseFilterXAxis.Smooth(var4, 0.05F * var3);
                 var5 = _mouseFilterYAxis.Smooth(var5, 0.05F * var3);
             }
-            _client.Player.changeLookDirection(var4, var5 * var6);
+            _client.Player.ChangeLookDirection(var4, var5 * var6);
         }
 
         bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.keyCode)) || ControllerManager.IsZoomHeld();
@@ -435,7 +435,7 @@ public class GameRenderer
         }
 
         EntityPlayer entityPlayer = default;
-        if (_client.ObjectMouseOver.Type != HitResultType.MISS && entity.isInFluid(Material.Water) && entity is EntityPlayer)
+        if (_client.ObjectMouseOver.Type != HitResultType.MISS && entity.IsInFluid(Material.Water) && entity is EntityPlayer)
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -462,7 +462,7 @@ public class GameRenderer
         GLManager.GL.DepthMask(true);
         GLManager.GL.Enable(GLEnum.CullFace);
         GLManager.GL.Disable(GLEnum.Blend);
-        if (!cameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.MISS && !entity.isInFluid(Material.Water))
+        if (!cameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.MISS && !entity.IsInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -899,13 +899,13 @@ public class GameRenderer
             _fogColorGreen = (float)var16.Y;
             _fogColorBlue = (float)var16.Z;
         }
-        else if (var3.isInFluid(Material.Water))
+        else if (var3.IsInFluid(Material.Water))
         {
             _fogColorRed = 0.02F;
             _fogColorGreen = 0.02F;
             _fogColorBlue = 0.2F;
         }
-        else if (var3.isInFluid(Material.Lava))
+        else if (var3.IsInFluid(Material.Lava))
         {
             _fogColorRed = 0.6F;
             _fogColorGreen = 0.1F;
@@ -934,14 +934,14 @@ public class GameRenderer
             _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
             _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
         }
-        else if (var3.isInFluid(Material.Water))
+        else if (var3.IsInFluid(Material.Water))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
             _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
             _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
         }
-        else if (var3.isInFluid(Material.Lava))
+        else if (var3.IsInFluid(Material.Lava))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);

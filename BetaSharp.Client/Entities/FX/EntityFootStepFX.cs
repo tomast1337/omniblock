@@ -51,12 +51,12 @@ public class EntityFootStepFX : EntityFX
         GLManager.GL.Enable(GLEnum.Lighting);
     }
 
-    public override void tick()
+    public override void Tick()
     {
         ++localAge;
         if (localAge == maxAge)
         {
-            markDead();
+            MarkDead();
         }
 
     }

@@ -21,14 +21,14 @@ public class EntityGhast : EntityFlying, Monster
     public EntityGhast(IWorldContext world) : base(world)
     {
         texture = "/mob/ghast.png";
-        setBoundingBoxSpacing(4.0F, 4.0F);
+        SetBoundingBoxSpacing(4.0F, 4.0F);
         IsImmuneToFire = true;
         Charging = DataSynchronizer.MakeProperty<bool>(16, false);
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         texture = Charging.Value ? "/mob/ghast_fire.png" : "/mob/ghast.png";
     }
 
@@ -36,7 +36,7 @@ public class EntityGhast : EntityFlying, Monster
     {
         if (!World.IsRemote && World.Difficulty == 0)
         {
-            markDead();
+            MarkDead();
         }
 
         func_27021_X();
@@ -84,7 +84,7 @@ public class EntityGhast : EntityFlying, Monster
         }
 
         double attackRange = 64.0D;
-        if (targetedEntity != null && targetedEntity.getSquaredDistance(this) < attackRange * attackRange)
+        if (targetedEntity != null && targetedEntity.GetSquaredDistance(this) < attackRange * attackRange)
         {
             double dx2 = targetedEntity.X - X;
             double dy2 = targetedEntity.BoundingBox.MinY + (double)(targetedEntity.Height / 2.0F) - (Y + (double)(Height / 2.0F));

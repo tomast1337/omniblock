@@ -36,13 +36,13 @@ public class EntityBoat : Entity
         boatTimeSinceHit = 0;
         boatRockDirection = 1;
         PreventEntitySpawning = true;
-        setBoundingBoxSpacing(1.5F, 0.6F);
+        SetBoundingBoxSpacing(1.5F, 0.6F);
         StandingEyeHeight = Height / 2.0F;
     }
 
     public EntityBoat(IWorldContext world, double x, double y, double z) : this(world)
     {
-        setPosition(x, y + StandingEyeHeight, z);
+        SetPosition(x, y + StandingEyeHeight, z);
         VelocityX = 0.0D;
         VelocityY = 0.0D;
         VelocityZ = 0.0D;
@@ -51,58 +51,58 @@ public class EntityBoat : Entity
         PrevZ = z;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
-    public override Box? getCollisionAgainstShape(Entity entity)
+    public override Box? GetCollisionAgainstShape(Entity entity)
     {
         return entity.BoundingBox;
     }
 
-    public override Box? getBoundingBox()
+    public override Box? GetBoundingBox()
     {
         return BoundingBox;
     }
 
-    public override bool isPushable()
+    public override bool IsPushable()
     {
         return true;
     }
 
-    public override double getPassengerRidingHeight()
+    public override double GetPassengerRidingHeight()
     {
         return (double)Height * 0.0D - 0.3D;
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
         if (!World.IsRemote && !Dead)
         {
             boatRockDirection = -boatRockDirection;
             boatTimeSinceHit = 10;
             boatCurrentDamage += amount * 10;
-            scheduleVelocityUpdate();
+            ScheduleVelocityUpdate();
 
             if (boatCurrentDamage > 40)
             {
                 if (Passenger != null)
                 {
-                    Passenger.setVehicle(this);
+                    Passenger.SetVehicle(this);
                 }
 
                 for (int i = 0; i < 3; ++i)
                 {
-                    dropItem(Block.Planks.id, 1, 0.0F);
+                    DropItem(Block.Planks.id, 1, 0.0F);
                 }
 
                 for (int i = 0; i < 2; ++i)
                 {
-                    dropItem(Item.Stick.id, 1, 0.0F);
+                    DropItem(Item.Stick.id, 1, 0.0F);
                 }
 
-                markDead();
+                MarkDead();
             }
 
             return true;
@@ -111,19 +111,19 @@ public class EntityBoat : Entity
         return true;
     }
 
-    public override void animateHurt()
+    public override void AnimateHurt()
     {
         boatRockDirection = -boatRockDirection;
         boatTimeSinceHit = 10;
         boatCurrentDamage += boatCurrentDamage * 10;
     }
 
-    public override bool isCollidable()
+    public override bool IsCollidable()
     {
         return !Dead;
     }
 
-    public override void setPositionAndAnglesAvoidEntities(double targetX, double targetY, double targetZ, float targetYaw, float targetPitch, int lerpSteps)
+    public override void SetPositionAndAnglesAvoidEntities(double targetX, double targetY, double targetZ, float targetYaw, float targetPitch, int lerpSteps)
     {
         this.targetX = targetX;
         this.targetY = targetY;
@@ -136,16 +136,16 @@ public class EntityBoat : Entity
         VelocityZ = boatVelocityZ;
     }
 
-    public override void setVelocityClient(double velocityX, double velocityY, double velocityZ)
+    public override void SetVelocityClient(double velocityX, double velocityY, double velocityZ)
     {
         boatVelocityX = base.VelocityX = velocityX;
         boatVelocityY = base.VelocityY = velocityY;
         boatVelocityZ = base.VelocityZ = velocityZ;
     }
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
 
         if (boatTimeSinceHit > 0)
         {
@@ -199,15 +199,15 @@ public class EntityBoat : Entity
             Pitch = (float)(Pitch + (targetPitch - Pitch) / lerpSteps);
 
             --lerpSteps;
-            setPosition(nextX, nextY, nextZ);
-            setRotation(Yaw, Pitch);
+            SetPosition(nextX, nextY, nextZ);
+            SetRotation(Yaw, Pitch);
             return;
         }
 
         double movedX = X + VelocityX;
         double movedY = Y + VelocityY;
         double movedZ = Z + VelocityZ;
-        setPosition(movedX, movedY, movedZ);
+        SetPosition(movedX, movedY, movedZ);
 
         if (OnGround)
         {
@@ -270,7 +270,7 @@ public class EntityBoat : Entity
             VelocityZ *= 0.5D;
         }
 
-        move(VelocityX, VelocityY, VelocityZ);
+        Move(VelocityX, VelocityY, VelocityZ);
 
         double horizontalSpeed = System.Math.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
         if (horizontalSpeed > 0.15D)
@@ -282,16 +282,16 @@ public class EntityBoat : Entity
         {
             if (!World.IsRemote)
             {
-                markDead();
+                MarkDead();
 
                 for (int i = 0; i < 3; ++i)
                 {
-                    dropItem(Block.Planks.id, 1, 0.0F);
+                    DropItem(Block.Planks.id, 1, 0.0F);
                 }
 
                 for (int i = 0; i < 2; ++i)
                 {
-                    dropItem(Item.Stick.id, 1, 0.0F);
+                    DropItem(Item.Stick.id, 1, 0.0F);
                 }
             }
         }
@@ -311,9 +311,9 @@ public class EntityBoat : Entity
             for (int i = 0; i < nearbyEntities.Count; ++i)
             {
                 Entity entity = nearbyEntities[i];
-                if (entity != Passenger && entity.isPushable() && entity is EntityBoat)
+                if (entity != Passenger && entity.IsPushable() && entity is EntityBoat)
                 {
-                    entity.onCollision(this);
+                    entity.OnCollision(this);
                 }
             }
         }
@@ -381,7 +381,7 @@ public class EntityBoat : Entity
         }
 
         Yaw = (float)(Yaw + WrapDegrees(desiredYaw - Yaw) * YawSmoothing);
-        setRotation(Yaw, Pitch);
+        SetRotation(Yaw, Pitch);
     }
 
     private void spawnSplashParticles(double horizontalSpeed)
@@ -427,30 +427,30 @@ public class EntityBoat : Entity
         return angle;
     }
 
-    public override void updatePassengerPosition()
+    public override void UpdatePassengerPosition()
     {
         if (Passenger != null)
         {
             double xOffset = Math.Cos(Yaw * Math.PI / 180.0D) * 0.4D;
             double zOffset = Math.Sin(Yaw * Math.PI / 180.0D) * 0.4D;
-            Passenger.setPosition(X + xOffset, Y + getPassengerRidingHeight() + Passenger.getStandingEyeHeight(), Z + zOffset);
+            Passenger.SetPosition(X + xOffset, Y + GetPassengerRidingHeight() + Passenger.GetStandingEyeHeight(), Z + zOffset);
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }
 
-    public override bool interact(EntityPlayer player)
+    public override bool Interact(EntityPlayer player)
     {
         if (Passenger != null && Passenger is EntityPlayer && Passenger != player)
         {
@@ -459,7 +459,7 @@ public class EntityBoat : Entity
 
         if (!World.IsRemote)
         {
-            player.setVehicle(this);
+            player.SetVehicle(this);
         }
 
         return true;

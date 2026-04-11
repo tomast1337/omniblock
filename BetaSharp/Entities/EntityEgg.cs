@@ -21,11 +21,11 @@ public class EntityEgg : Entity
 
     public EntityEgg(IWorldContext world) : base(world)
     {
-        setBoundingBoxSpacing(0.25F, 0.25F);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
     }
 
 
-    public override bool shouldRender(double distanceSquared)
+    public override bool ShouldRender(double distanceSquared)
     {
         double renderDistance = BoundingBox.AverageEdgeLength * 4.0D;
         renderDistance *= 64.0D;
@@ -35,12 +35,12 @@ public class EntityEgg : Entity
     public EntityEgg(IWorldContext world, EntityLiving owner) : base(world)
     {
         thrower = owner;
-        setBoundingBoxSpacing(0.25F, 0.25F);
-        setPositionAndAnglesKeepPrevAngles(owner.X, owner.Y + (double)owner.getEyeHeight(), owner.Z, owner.Yaw, owner.Pitch);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
+        SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y + (double)owner.GetEyeHeight(), owner.Z, owner.Yaw, owner.Pitch);
         X -= (double)(MathHelper.Cos(Yaw / 180.0F * (float)Math.PI) * 0.16F);
         Y -= (double)0.1F;
         Z -= (double)(MathHelper.Sin(Yaw / 180.0F * (float)Math.PI) * 0.16F);
-        setPosition(X, Y, Z);
+        SetPosition(X, Y, Z);
         StandingEyeHeight = 0.0F;
         float speed = 0.4F;
         VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)Math.PI) * speed);
@@ -52,8 +52,8 @@ public class EntityEgg : Entity
     public EntityEgg(IWorldContext world, double x, double y, double z) : base(world)
     {
         ticksInGround = 0;
-        setBoundingBoxSpacing(0.25F, 0.25F);
-        setPosition(x, y, z);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
+        SetPosition(x, y, z);
         StandingEyeHeight = 0.0F;
     }
 
@@ -78,7 +78,7 @@ public class EntityEgg : Entity
         ticksInGround = 0;
     }
 
-    public override void setVelocityClient(double motionX, double motionY, double motionZ)
+    public override void SetVelocityClient(double motionX, double motionY, double motionZ)
     {
         VelocityX = motionX;
         VelocityY = motionY;
@@ -92,12 +92,12 @@ public class EntityEgg : Entity
 
     }
 
-    public override void tick()
+    public override void Tick()
     {
         LastTickX = X;
         LastTickY = Y;
         LastTickZ = Z;
-        base.tick();
+        base.Tick();
         if (shake > 0)
         {
             --shake;
@@ -111,7 +111,7 @@ public class EntityEgg : Entity
                 ++ticksInGround;
                 if (ticksInGround == 1200)
                 {
-                    markDead();
+                    MarkDead();
                 }
 
                 return;
@@ -148,7 +148,7 @@ public class EntityEgg : Entity
             for (int i = 0; i < entities.Count; ++i)
             {
                 Entity entity = entities[i];
-                if (entity.isCollidable() && (entity != thrower || ticksInAir >= 5))
+                if (entity.IsCollidable() && (entity != thrower || ticksInAir >= 5))
                 {
                     float expandAmount = 0.3F;
                     Box expandedBox = entity.BoundingBox.Expand((double)expandAmount, (double)expandAmount, (double)expandAmount);
@@ -173,7 +173,7 @@ public class EntityEgg : Entity
 
         if (hit.Type != HitResultType.MISS)
         {
-            if (hit.Entity != null && hit.Entity.damage(thrower, 0))
+            if (hit.Entity != null && hit.Entity.Damage(thrower, 0))
             {
             }
 
@@ -188,7 +188,7 @@ public class EntityEgg : Entity
                 for (int i = 0; i < chickenCount; ++i)
                 {
                     EntityChicken chicken = new EntityChicken(World);
-                    chicken.setPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
+                    chicken.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
                     World.SpawnEntity(chicken);
                 }
             }
@@ -198,7 +198,7 @@ public class EntityEgg : Entity
                 World.Broadcaster.AddParticle("snowballpoof", X, Y, Z, 0.0D, 0.0D, 0.0D);
             }
 
-            markDead();
+            MarkDead();
         }
 
         X += VelocityX;
@@ -230,7 +230,7 @@ public class EntityEgg : Entity
         Yaw = PrevYaw + (Yaw - PrevYaw) * 0.2F;
         float drag = 0.99F;
         float gravity = 0.03F;
-        if (isInWater())
+        if (IsInWater())
         {
             for (int i = 0; i < 4; ++i)
             {
@@ -245,10 +245,10 @@ public class EntityEgg : Entity
         VelocityY *= (double)drag;
         VelocityZ *= (double)drag;
         VelocityY -= (double)gravity;
-        setPosition(X, Y, Z);
+        SetPosition(X, Y, Z);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetShort("xTile", (short)xTile);
         nbt.SetShort("yTile", (short)yTile);
@@ -258,7 +258,7 @@ public class EntityEgg : Entity
         nbt.SetByte("inGround", (sbyte)(inGround ? 1 : 0));
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         xTile = nbt.GetShort("xTile");
         yTile = nbt.GetShort("yTile");
@@ -268,18 +268,18 @@ public class EntityEgg : Entity
         inGround = nbt.GetByte("inGround") == 1;
     }
 
-    public override void onPlayerInteraction(EntityPlayer player)
+    public override void OnPlayerInteraction(EntityPlayer player)
     {
         if (inGround && thrower == player && shake <= 0 && player.inventory.AddItemStackToInventory(new ItemStack(Item.ARROW, 1)))
         {
             World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
             player.sendPickup(this, 1);
-            markDead();
+            MarkDead();
         }
 
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }

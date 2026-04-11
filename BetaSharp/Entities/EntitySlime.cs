@@ -28,9 +28,9 @@ public class EntitySlime : EntityLiving, Monster
     public void setSlimeSize(int size)
     {
         SlimeSize.Value = (byte)size;
-        setBoundingBoxSpacing(0.6F * (float)size, 0.6F * (float)size);
+        SetBoundingBoxSpacing(0.6F * (float)size, 0.6F * (float)size);
         health = size * size;
-        setPosition(X, Y, Z);
+        SetPosition(X, Y, Z);
     }
 
     public int getSlimeSize()
@@ -38,23 +38,23 @@ public class EntitySlime : EntityLiving, Monster
         return SlimeSize.Value;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetInteger("Size", getSlimeSize() - 1);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         setSlimeSize(nbt.GetInteger("Size") + 1);
     }
 
-    public override void tick()
+    public override void Tick()
     {
         prevSquishAmount = squishAmount;
         bool wasOnGround = OnGround;
-        base.tick();
+        base.Tick();
         if (OnGround && !wasOnGround)
         {
             int size = getSlimeSize();
@@ -117,7 +117,7 @@ public class EntitySlime : EntityLiving, Monster
 
     }
 
-    public override void markDead()
+    public override void MarkDead()
     {
         int size = getSlimeSize();
         if (!World.IsRemote && size > 1 && health == 0)
@@ -128,18 +128,18 @@ public class EntitySlime : EntityLiving, Monster
                 float offsetY = ((float)(i / 2) - 0.5F) * (float)size / 4.0F;
                 EntitySlime slime = new EntitySlime(World);
                 slime.setSlimeSize(size / 2);
-                slime.setPositionAndAnglesKeepPrevAngles(X + (double)offsetX, Y + 0.5D, Z + (double)offsetY, Random.NextFloat() * 360.0F, 0.0F);
+                slime.SetPositionAndAnglesKeepPrevAngles(X + (double)offsetX, Y + 0.5D, Z + (double)offsetY, Random.NextFloat() * 360.0F, 0.0F);
                 World.SpawnEntity(slime);
             }
         }
 
-        base.markDead();
+        base.MarkDead();
     }
 
-    public override void onPlayerInteraction(EntityPlayer player)
+    public override void OnPlayerInteraction(EntityPlayer player)
     {
         int size = getSlimeSize();
-        if (size > 1 && canSee(player) && (double)getDistance(player) < 0.6D * (double)size && player.damage(this, size))
+        if (size > 1 && canSee(player) && (double)GetDistance(player) < 0.6D * (double)size && player.Damage(this, size))
         {
             World.Broadcaster.PlaySoundAtEntity(this, "mob.slimeattack", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
         }

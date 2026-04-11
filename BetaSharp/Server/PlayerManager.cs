@@ -89,7 +89,7 @@ public class PlayerManager
 
         while (var2.Entities.GetEntityCollisions(player, player.BoundingBox).Count != 0)
         {
-            player.setPosition(player.X, player.Y + 1.0, player.Z);
+            player.SetPosition(player.X, player.Y + 1.0, player.Z);
         }
 
         var2.Entities.SpawnEntity(player);
@@ -182,7 +182,7 @@ public class PlayerManager
             Vec3i? var6 = EntityPlayer.findRespawnPosition(_server.getWorld(player.dimensionId), var3);
             if (var6 is (int x2, int y2, int z2))
             {
-                serverPlayer.setPositionAndAnglesKeepPrevAngles(x2 + 0.5F, y2 + 0.1F, z2 + 0.5F, 0.0F, 0.0F);
+                serverPlayer.SetPositionAndAnglesKeepPrevAngles(x2 + 0.5F, y2 + 0.1F, z2 + 0.5F, 0.0F, 0.0F);
                 serverPlayer.setSpawnPos(var3);
 
             }
@@ -196,7 +196,7 @@ public class PlayerManager
 
         while (var5.Entities.GetEntityCollisions(serverPlayer, serverPlayer.BoundingBox).Count != 0)
         {
-            serverPlayer.setPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
+            serverPlayer.SetPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
         serverPlayer.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)serverPlayer.dimensionId));
@@ -251,8 +251,8 @@ public class PlayerManager
         {
             x /= scale;
             z /= scale;
-            player.setPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
-            if (player.isAlive())
+            player.SetPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
+            if (player.IsAlive())
             {
                 currentWorld.Entities.UpdateEntity(player, false);
             }
@@ -261,17 +261,17 @@ public class PlayerManager
         {
             x *= scale;
             z *= scale;
-            player.setPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
-            if (player.isAlive())
+            player.SetPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
+            if (player.IsAlive())
             {
                 currentWorld.Entities.UpdateEntity(player, false);
             }
         }
 
-        if (player.isAlive())
+        if (player.IsAlive())
         {
             targetWorld.Entities.SpawnEntity(player);
-            player.setPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
+            player.SetPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
             targetWorld.Entities.UpdateEntity(player, false);
             targetWorld.ChunkCache.forceLoad = true;
             new PortalForcer().MoveToPortal(targetWorld, player);
@@ -284,7 +284,7 @@ public class PlayerManager
 
         updatePlayerAfterDimensionChange(player);
         player.NetworkHandler.teleport(player.X, player.Y, player.Z, player.Yaw, player.Pitch);
-        player.setWorld(targetWorld);
+        player.SetWorld(targetWorld);
         sendWorldInfo(player, targetWorld);
         sendPlayerStatus(player);
     }

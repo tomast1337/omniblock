@@ -65,7 +65,7 @@ public class BlockEntityPiston : BlockEntity
         pushedEntities.AddRange(entitiesToPush);
         foreach (Entity entity in pushedEntities)
         {
-            entity.move(
+            entity.Move(
                 entityMoveMultiplier * PistonConstants.HeadOffsetX[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetY[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetZ[Facing]

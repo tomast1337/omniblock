@@ -216,7 +216,7 @@ public class WorldRenderer : IWorldEventListener
             {
                 var7 = _world.Entities.GlobalEntities[var6];
                 ++CountEntitiesRendered;
-                if (var7.shouldRender(var1))
+                if (var7.ShouldRender(var1))
                 {
                     EntityRenderDispatcher.Instance.RenderEntity(var7, var3);
                 }
@@ -241,7 +241,7 @@ public class WorldRenderer : IWorldEventListener
                         continue;
                     }
                 }
-                if (var7.shouldRender(var1) && (var7.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(var7.BoundingBox)) && (var7 != _game.Camera || _game.Options.CameraMode != EnumCameraMode.FirstPerson || _game.Camera.isSleeping()))
+                if (var7.ShouldRender(var1) && (var7.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(var7.BoundingBox)) && (var7 != _game.Camera || _game.Options.CameraMode != EnumCameraMode.FirstPerson || _game.Camera.isSleeping()))
                 {
                     int var8 = MathHelper.Floor(var7.Y);
                     if (var8 < 0)
@@ -774,7 +774,7 @@ public class WorldRenderer : IWorldEventListener
             var10 *= var8;
         }
 
-        if (_game.Camera.getSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
+        if (_game.Camera.GetSquaredDistance(var2, var4, var6) < (double)(var10 * var10))
         {
             _game.SoundManager.PlaySound(var1, (float)var2, (float)var4, (float)var6, var8, var9);
         }
@@ -817,7 +817,7 @@ public class WorldRenderer : IWorldEventListener
 
     public void NotifyEntityAdded(Entity var1)
     {
-        var1.updateCloak();
+        var1.UpdateCloak();
         EntityRenderDispatcher.Instance.SkinManager.RequestDownload((var1 as EntityPlayer)?.name);
     }
 

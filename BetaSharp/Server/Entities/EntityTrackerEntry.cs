@@ -59,7 +59,7 @@ internal class EntityTrackerEntry
     public void notifyNewLocation(IEnumerable<ServerPlayerEntity> players)
     {
         newPlayerDataUpdated = false;
-        if (!isInitialized || currentTrackedEntity.getSquaredDistance(x, y, z) > 16.0)
+        if (!isInitialized || currentTrackedEntity.GetSquaredDistance(x, y, z) > 16.0)
         {
             x = currentTrackedEntity.X;
             y = currentTrackedEntity.Y;
@@ -235,7 +235,7 @@ internal class EntityTrackerEntry
                             );
                     }
 
-                    ItemStack[] equipment = currentTrackedEntity.getEquipment();
+                    ItemStack[] equipment = currentTrackedEntity.GetEquipment();
                     if (equipment != null)
                     {
                         for (int slot = 0; slot < equipment.Length; slot++)

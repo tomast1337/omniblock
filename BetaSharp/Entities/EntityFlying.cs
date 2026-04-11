@@ -10,24 +10,24 @@ public abstract class EntityFlying : EntityLiving
     {
     }
 
-    protected override void onLanding(float fallDistance)
+    protected override void OnLanding(float fallDistance)
     {
     }
 
     public override void travel(float strafe, float forward)
     {
-        if (isInWater())
+        if (IsInWater())
         {
-            moveNonSolid(strafe, forward, 0.02F);
-            move(VelocityX, VelocityY, VelocityZ);
+            MoveNonSolid(strafe, forward, 0.02F);
+            Move(VelocityX, VelocityY, VelocityZ);
             VelocityX *= (double)0.8F;
             VelocityY *= (double)0.8F;
             VelocityZ *= (double)0.8F;
         }
-        else if (isTouchingLava())
+        else if (IsTouchingLava())
         {
-            moveNonSolid(strafe, forward, 0.02F);
-            move(VelocityX, VelocityY, VelocityZ);
+            MoveNonSolid(strafe, forward, 0.02F);
+            Move(VelocityX, VelocityY, VelocityZ);
             VelocityX *= 0.5D;
             VelocityY *= 0.5D;
             VelocityZ *= 0.5D;
@@ -46,7 +46,7 @@ public abstract class EntityFlying : EntityLiving
             }
 
             float accelerationFactor = 0.16277136F / (friction * friction * friction);
-            moveNonSolid(strafe, forward, OnGround ? 0.1F * accelerationFactor : 0.02F);
+            MoveNonSolid(strafe, forward, OnGround ? 0.1F * accelerationFactor : 0.02F);
             friction = 0.91F;
             if (OnGround)
             {
@@ -58,7 +58,7 @@ public abstract class EntityFlying : EntityLiving
                 }
             }
 
-            move(VelocityX, VelocityY, VelocityZ);
+            Move(VelocityX, VelocityY, VelocityZ);
             VelocityX *= (double)friction;
             VelocityY *= (double)friction;
             VelocityZ *= (double)friction;

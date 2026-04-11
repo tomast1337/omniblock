@@ -637,7 +637,7 @@ public partial class BetaSharp :
                         }
                     }
 
-                    if (Player != null && Player.isInsideWall())
+                    if (Player != null && Player.IsInsideWall())
                     {
                         Options.CameraMode = EnumCameraMode.FirstPerson;
                     }
@@ -1333,14 +1333,14 @@ public partial class BetaSharp :
             }
             else if (Player != null)
             {
-                Player.teleportToTop();
+                Player.TeleportToTop();
                 newWorld?.Entities.SpawnEntity(Player);
             }
 
             if (Player == null)
             {
                 Player = (ClientPlayerEntity)PlayerController.createPlayer(newWorld);
-                Player.teleportToTop();
+                Player.TeleportToTop();
                 PlayerController.flipPlayer(Player);
             }
 
@@ -1406,12 +1406,12 @@ public partial class BetaSharp :
 
         Player = (ClientPlayerEntity)PlayerController.createPlayer(World);
         Player.dimensionId = newDimensionId;
-        Player.teleportToTop();
+        Player.TeleportToTop();
 
         if (useBedSpawn)
         {
             Player.setSpawnPos(playerSpawnPos);
-            Player.setPositionAndAnglesKeepPrevAngles(
+            Player.SetPositionAndAnglesKeepPrevAngles(
                 finalRespawnPos.X + 0.5,
                 finalRespawnPos.Y + 0.1,
                 finalRespawnPos.Z + 0.5,

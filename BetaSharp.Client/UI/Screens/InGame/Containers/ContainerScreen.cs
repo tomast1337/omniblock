@@ -65,7 +65,7 @@ public abstract class ContainerScreen(
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        if (!player.isAlive() || player.Dead)
+        if (!player.IsAlive() || player.Dead)
         {
             player.closeHandledScreen();
         }

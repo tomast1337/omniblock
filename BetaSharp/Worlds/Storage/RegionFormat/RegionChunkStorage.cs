@@ -107,7 +107,7 @@ internal class RegionChunkStorage : IChunkStorage
             {
                 chunk.LastSaveHadEntities = true;
                 entityTag = new NBTTagCompound();
-                if (entity.saveSelfNbt(entityTag))
+                if (entity.SaveSelfNbt(entityTag))
                 {
                     entityTags.SetTag(entityTag);
                 }

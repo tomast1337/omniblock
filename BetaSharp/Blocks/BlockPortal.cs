@@ -158,7 +158,7 @@ public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, 
     {
         if (@event.Entity.Vehicle == null && @event.Entity.Passenger == null)
         {
-            @event.Entity.tickPortalCooldown();
+            @event.Entity.TickPortalCooldown();
         }
     }
 

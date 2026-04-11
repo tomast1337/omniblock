@@ -28,9 +28,9 @@ public class EntityFX : Entity
 
     public EntityFX(IWorldContext world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) : base(world)
     {
-        setBoundingBoxSpacing(0.2F, 0.2F);
+        SetBoundingBoxSpacing(0.2F, 0.2F);
         StandingEyeHeight = Height / 2.0F;
-        setPosition(x, y, z);
+        SetPosition(x, y, z);
         particleRed = particleGreen = particleBlue = 1.0F;
         base.VelocityX = velocityX + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
         base.VelocityY = velocityY + (double)((float)(System.Random.Shared.NextDouble() * 2.0D - 1.0D) * 0.4F);
@@ -57,28 +57,28 @@ public class EntityFX : Entity
 
     public EntityFX scaleSize(float scale)
     {
-        setBoundingBoxSpacing(0.2F * scale, 0.2F * scale);
+        SetBoundingBoxSpacing(0.2F * scale, 0.2F * scale);
         particleScale *= scale;
         return this;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
-    public override void tick()
+    public override void Tick()
     {
         PrevX = X;
         PrevY = Y;
         PrevZ = Z;
         if (particleAge++ >= particleMaxAge)
         {
-            markDead();
+            MarkDead();
         }
 
         VelocityY -= 0.04D * (double)particleGravity;
-        move(VelocityX, VelocityY, VelocityZ);
+        Move(VelocityX, VelocityY, VelocityZ);
         VelocityX *= (double)0.98F;
         VelocityY *= (double)0.98F;
         VelocityZ *= (double)0.98F;
@@ -100,7 +100,7 @@ public class EntityFX : Entity
         float x = (float)(PrevX + (base.X - PrevX) * (double)partialTick - interpPosX);
         float y = (float)(PrevY + (base.Y - PrevY) * (double)partialTick - interpPosY);
         float z = (float)(PrevZ + (base.Z - PrevZ) * (double)partialTick - interpPosZ);
-        float brightness = getBrightnessAtEyes(partialTick);
+        float brightness = GetBrightnessAtEyes(partialTick);
         t.setColorOpaque_F(particleRed * brightness, particleGreen * brightness, particleBlue * brightness);
         t.addVertexWithUV((double)(x - rotX * size - upX * size), (double)(y - rotY * size), (double)(z - rotZ * size - upZ * size), (double)maxU, (double)maxV);
         t.addVertexWithUV((double)(x - rotX * size + upX * size), (double)(y + rotY * size), (double)(z - rotZ * size + upZ * size), (double)maxU, (double)minV);
@@ -113,11 +113,11 @@ public class EntityFX : Entity
         return 0;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
     }
 }

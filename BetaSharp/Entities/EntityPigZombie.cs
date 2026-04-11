@@ -19,7 +19,7 @@ internal class EntityPigZombie : EntityZombie
         IsImmuneToFire = true;
     }
 
-    public override void tick()
+    public override void Tick()
     {
         movementSpeed = playerToAttack != null ? 0.95F : 0.5F;
         if (randomSoundDelay > 0 && --randomSoundDelay == 0)
@@ -27,7 +27,7 @@ internal class EntityPigZombie : EntityZombie
             World.Broadcaster.PlaySoundAtEntity(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F) * 1.8F);
         }
 
-        base.tick();
+        base.Tick();
     }
 
     public override bool canSpawn()
@@ -35,15 +35,15 @@ internal class EntityPigZombie : EntityZombie
         return World.Difficulty > 0 && World.Entities.CanSpawnEntity(BoundingBox) && World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0 && !World.Reader.IsMaterialInBox(BoundingBox, m => m.IsFluid);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetShort("Anger", (short)angerLevel);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         angerLevel = nbt.GetShort("Anger");
     }
 
@@ -57,7 +57,7 @@ internal class EntityPigZombie : EntityZombie
         base.tickMovement();
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
         if (entity is EntityPlayer { GameMode.CanBeTargeted: true })
         {
@@ -76,7 +76,7 @@ internal class EntityPigZombie : EntityZombie
             becomeAngryAt(entity);
         }
 
-        return base.damage(entity, amount);
+        return base.Damage(entity, amount);
     }
 
     private void becomeAngryAt(Entity entity)

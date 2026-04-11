@@ -92,7 +92,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 float var27 = player.Yaw;
                 float var4 = player.Pitch;
-                player.Vehicle.updatePassengerPosition();
+                player.Vehicle.UpdatePassengerPosition();
                 double var28 = player.X;
                 double var29 = player.Y;
                 double var30 = player.Z;
@@ -112,8 +112,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
                 player.OnGround = packet.onGround;
                 player.PlayerTick(false);
-                player.move(var31, 0.0, var34);
-                player.setPositionAndAngles(var28, var29, var30, var27, var4);
+                player.Move(var31, 0.0, var34);
+                player.SetPositionAndAngles(var28, var29, var30, var27, var4);
                 player.VelocityX = var31;
                 player.VelocityZ = var34;
                 if (player.Vehicle != null)
@@ -123,7 +123,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
                 if (player.Vehicle != null)
                 {
-                    player.Vehicle.updatePassengerPosition();
+                    player.Vehicle.UpdatePassengerPosition();
                 }
 
                 server.playerManager.updatePlayerChunks(player);
@@ -137,7 +137,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             if (player.isSleeping())
             {
                 player.PlayerTick(false);
-                player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.Yaw, player.Pitch);
+                player.SetPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, player.Yaw, player.Pitch);
                 sWorld.Entities.UpdateEntity(player, true);
                 return;
             }
@@ -184,7 +184,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             player.PlayerTick(false);
             player.CameraOffset = 0.0F;
-            player.setPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
+            player.SetPositionAndAngles(teleportTargetX, teleportTargetY, teleportTargetZ, var11, var12);
             if (!teleported)
             {
                 return;
@@ -203,7 +203,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             float var21 = (1 / 16f);
             bool var22 = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(var21, var21, var21)).Count == 0;
-            player.move(var32, var15, var17);
+            player.Move(var32, var15, var17);
             var32 = var5 - player.X;
             var15 = var7 - player.Y;
             if (var15 > -0.5 || var15 < 0.5)
@@ -222,7 +222,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 _logger.LogInformation($"Expected {player.X}, {player.Y}, {player.Z}");
             }
 
-            player.setPositionAndAngles(var5, var7, var9, var11, var12);
+            player.SetPositionAndAngles(var5, var7, var9, var11, var12);
             bool var24 = sWorld.Entities.GetEntityCollisionsScratch(player, player.BoundingBox.Contract(var21, var21, var21)).Count == 0;
             if (var22 && (var23 || !var24) && !player.isSleeping())
             {
@@ -258,7 +258,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         teleportTargetX = x;
         teleportTargetY = y;
         teleportTargetZ = z;
-        player.setPositionAndAngles(x, y, z, yaw, pitch);
+        player.SetPositionAndAngles(x, y, z, yaw, pitch);
         player.NetworkHandler.SendPacket(PlayerMoveFullPacket.Get(x, y + 1.62F, y, z, yaw, pitch, false));
     }
 
@@ -345,7 +345,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             int z = packet.z;
             int side = packet.side;
 
-            if (teleported && CanBypassSpawnProtection(x, z, world) && player.getSquaredDistance(x + 0.5, y + 0.5, z + 0.5) < 64.0)
+            if (teleported && CanBypassSpawnProtection(x, z, world) && player.GetSquaredDistance(x + 0.5, y + 0.5, z + 0.5) < 64.0)
             {
                 player.interactionManager.interactBlock(player, world, stack, x, y, z, side);
             }
@@ -504,11 +504,11 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         if (packet.mode == 1)
         {
-            player.setSneaking(true);
+            player.SetSneaking(true);
         }
         else if (packet.mode == 2)
         {
-            player.setSneaking(false);
+            player.SetSneaking(false);
         }
         else if (packet.mode == 3)
         {
@@ -544,7 +544,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         ServerWorld var2 = server.getWorld(player.dimensionId);
         Entity var3 = var2.getEntity(packet.entityId);
-        if (var3 != null && player.canSee(var3) && player.getSquaredDistance(var3) < 36.0)
+        if (var3 != null && player.canSee(var3) && player.GetSquaredDistance(var3) < 36.0)
         {
             if (packet.isLeftClick == 0)
             {

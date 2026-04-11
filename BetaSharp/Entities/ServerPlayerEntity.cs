@@ -66,7 +66,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             }
         }
 
-        setPositionAndAnglesKeepPrevAngles(x + 0.5, z, y + 0.5, 0.0F, 0.0F);
+        SetPositionAndAnglesKeepPrevAngles(x + 0.5, z, y + 0.5, 0.0F, 0.0F);
         this.server = server;
         StepHeight = 0.0F;
         this.name = name;
@@ -95,23 +95,23 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public void onPropertyUpdate(ScreenHandler handler, int syncId, int trackedValue) => NetworkHandler.SendPacket(ScreenHandlerPropertyUpdateS2CPacket.Get(handler.SyncId, syncId, trackedValue));
 
 
-    public override void setWorld(IWorldContext world)
+    public override void SetWorld(IWorldContext world)
     {
-        base.setWorld(world);
+        base.SetWorld(world);
         interactionManager = new ServerPlayerInteractionManager((ServerWorld)world);
         interactionManager.player = this;
     }
 
     public void initScreenHandler() => currentScreenHandler.AddListener(this);
 
-    public override ItemStack[] getEquipment() => equipment;
+    public override ItemStack[] GetEquipment() => equipment;
 
     protected override void resetEyeHeight() => StandingEyeHeight = 0.0F;
 
 
-    public override float getEyeHeight() => 1.62F;
+    public override float GetEyeHeight() => 1.62F;
 
-    public override void tick()
+    public override void Tick()
     {
         TickSleep();
 
@@ -132,7 +132,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public ItemStack getEquipment(int slot) => slot == 0 ? inventory.GetItemInHand() : inventory.Armor[slot - 1];
 
-    public override bool damage(Entity? damageSource, int amount)
+    public override bool Damage(Entity? damageSource, int amount)
     {
         if (joinInvulnerabilityTicks > 0)
         {
@@ -155,7 +155,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             }
         }
 
-        return base.damage(damageSource, amount);
+        return base.Damage(damageSource, amount);
     }
 
     protected override bool isPvpEnabled() => server.pvpEnabled;
@@ -168,7 +168,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void IdleTick()
     {
-        base.baseTick();
+        base.BaseTick();
         AfterLivingTickCosmetics();
         PickupAndInventorySubtick();
         CollideWithPickupEntities();
@@ -206,7 +206,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
                 if (Vehicle != null)
                 {
-                    setVehicle(Vehicle);
+                    SetVehicle(Vehicle);
                 }
                 else
                 {
@@ -408,19 +408,19 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     }
 
 
-    public override void setVehicle(Entity entity)
+    public override void SetVehicle(Entity entity)
     {
-        base.setVehicle(entity);
+        base.SetVehicle(entity);
         NetworkHandler.SendPacket(EntityVehicleSetS2CPacket.Get(this, Vehicle));
         NetworkHandler.teleport(X, Y, Z, Yaw, Pitch);
     }
 
 
-    protected override void fall(double heightDifference, bool onGround)
+    protected override void Fall(double heightDifference, bool onGround)
     {
     }
 
-    public void handleFall(double heightDifference, bool onGround) => base.fall(heightDifference, onGround);
+    public void handleFall(double heightDifference, bool onGround) => base.Fall(heightDifference, onGround);
 
     private void incrementScreenHandlerSyncId() => screenHandlerSyncId = screenHandlerSyncId % 100 + 1;
 
@@ -495,7 +495,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         this.sidewaysSpeed = sidewaysSpeed;
         this.forwardSpeed = forwardSpeed;
         this.jumping = jumping;
-        setSneaking(sneaking);
+        SetSneaking(sneaking);
         this.Pitch = pitch;
         this.Yaw = yaw;
     }
@@ -514,7 +514,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
 
         jumping = packet.isJumping();
-        setSneaking(packet.isSneaking());
+        SetSneaking(packet.isSneaking());
         Pitch = packet.getPitch();
         Yaw = packet.getYaw();
     }
@@ -546,12 +546,12 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         if (Vehicle != null)
         {
-            setVehicle(Vehicle);
+            SetVehicle(Vehicle);
         }
 
         if (Passenger != null)
         {
-            Passenger.setVehicle(this);
+            Passenger.SetVehicle(this);
         }
 
         if (sleeping)

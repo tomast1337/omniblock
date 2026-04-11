@@ -11,7 +11,7 @@ public class EntitySpider : EntityMonster
     public EntitySpider(IWorldContext world) : base(world)
     {
         texture = "/mob/spider.png";
-        setBoundingBoxSpacing(1.4F, 0.9F);
+        SetBoundingBoxSpacing(1.4F, 0.9F);
         movementSpeed = 0.8F;
     }
 
@@ -20,25 +20,25 @@ public class EntitySpider : EntityMonster
         if (World.Random.NextInt(100) == 0)
         {
             EntitySkeleton skeleton = new EntitySkeleton(World);
-            skeleton.setPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
+            skeleton.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
             World.SpawnEntity(skeleton);
-            skeleton.setVehicle(this);
+            skeleton.SetVehicle(this);
         }
     }
 
-    public override double getPassengerRidingHeight()
+    public override double GetPassengerRidingHeight()
     {
         return (double)Height * 0.75D - 0.5D;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
     protected override Entity? findPlayerToAttack()
     {
-        float brightness = getBrightnessAtEyes(1.0F);
+        float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness < 0.5F)
         {
             double distance = 16.0D;
@@ -67,7 +67,7 @@ public class EntitySpider : EntityMonster
 
     protected override void attackEntity(Entity entity, float distance)
     {
-        float brightness = getBrightnessAtEyes(1.0F);
+        float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F && Random.NextInt(100) == 0)
         {
             playerToAttack = null;
@@ -94,14 +94,14 @@ public class EntitySpider : EntityMonster
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
     }
 
     protected override int getDropItemId()

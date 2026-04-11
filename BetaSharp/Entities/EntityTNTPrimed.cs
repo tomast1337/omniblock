@@ -14,13 +14,13 @@ public class EntityTNTPrimed : Entity
     {
         fuse = 0;
         PreventEntitySpawning = true;
-        setBoundingBoxSpacing(0.98F, 0.98F);
+        SetBoundingBoxSpacing(0.98F, 0.98F);
         StandingEyeHeight = Height / 2.0F;
     }
 
     public EntityTNTPrimed(IWorldContext world, double x, double y, double z) : base(world)
     {
-        setPosition(x, y, z);
+        SetPosition(x, y, z);
         float randomAngle = (float)(System.Random.Shared.NextSingle() * (Math.PI) * 2.0D);
         VelocityX = (double)(-MathHelper.Sin(randomAngle * (float)Math.PI / 180.0F) * 0.02F);
         VelocityY = (double)0.2F;
@@ -32,23 +32,23 @@ public class EntityTNTPrimed : Entity
     }
 
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
-    public override bool isCollidable()
+    public override bool IsCollidable()
     {
         return !Dead;
     }
 
-    public override void tick()
+    public override void Tick()
     {
         PrevX = X;
         PrevY = Y;
         PrevZ = Z;
         VelocityY -= (double)0.04F;
-        move(VelocityX, VelocityY, VelocityZ);
+        Move(VelocityX, VelocityY, VelocityZ);
         VelocityX *= (double)0.98F;
         VelocityY *= (double)0.98F;
         VelocityZ *= (double)0.98F;
@@ -63,12 +63,12 @@ public class EntityTNTPrimed : Entity
         {
             if (!World.IsRemote)
             {
-                markDead();
+                MarkDead();
                 explode();
             }
             else
             {
-                markDead();
+                MarkDead();
             }
         }
         else
@@ -89,17 +89,17 @@ public class EntityTNTPrimed : Entity
         World.CreateExplosion((Entity)null, X, Y, Z, power);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetByte("Fuse", (sbyte)fuse);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         fuse = nbt.GetByte("Fuse");
     }
 
-    public override float getShadowRadius()
+    public override float GetShadowRadius()
     {
         return 0.0F;
     }

@@ -97,7 +97,7 @@ public class Explosion
         for (int var11 = 0; var11 < var9.Count; ++var11)
         {
             Entity var33 = var9[var11];
-            double var13 = var33.getDistance(explosionX, explosionY, explosionZ) / explosionSize;
+            double var13 = var33.GetDistance(explosionX, explosionY, explosionZ) / explosionSize;
             if (var13 <= 1.0D)
             {
                 var15 = var33.X - explosionX;
@@ -109,7 +109,7 @@ public class Explosion
                 var19 /= var39;
                 double var40 = _level.Reader.GetVisibilityRatio(var31, var33.BoundingBox);
                 double var41 = (1.0D - var13) * var40;
-                var33.damage(exploder, (int)((var41 * var41 + var41) / 2.0D * 8.0D * explosionSize + 1.0D));
+                var33.Damage(exploder, (int)((var41 * var41 + var41) / 2.0D * 8.0D * explosionSize + 1.0D));
                 var33.VelocityX += var15 * var41;
                 var33.VelocityY += var17 * var41;
                 var33.VelocityZ += var19 * var41;

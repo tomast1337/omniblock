@@ -108,7 +108,7 @@ public class Hotbar : UIElement
         }
 
         // --- Air ---
-        if (player.isInFluid(Material.Water) && player.GameMode.NeedsAir)
+        if (player.IsInFluid(Material.Water) && player.GameMode.NeedsAir)
         {
             int air = player.Air;
             int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);

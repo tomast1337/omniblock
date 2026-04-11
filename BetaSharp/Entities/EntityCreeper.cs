@@ -20,18 +20,18 @@ public class EntityCreeper : EntityMonster
         Powered = DataSynchronizer.MakeProperty<bool>(17, false);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         if (Powered.Value)
         {
             nbt.SetBoolean("powered", true);
         }
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         Powered.Value = nbt.GetBoolean("powered");
     }
 
@@ -51,7 +51,7 @@ public class EntityCreeper : EntityMonster
         }
     }
 
-    public override void tick()
+    public override void Tick()
     {
         lastActiveTime = timeSinceIgnited;
         if (World.IsRemote)
@@ -74,7 +74,7 @@ public class EntityCreeper : EntityMonster
             }
         }
 
-        base.tick();
+        base.Tick();
         if (!World.IsRemote && playerToAttack == null && timeSinceIgnited > 0)
         {
             CreeperState.Value = 255;
@@ -102,7 +102,7 @@ public class EntityCreeper : EntityMonster
         base.onKilledBy(entity);
         if (entity is EntitySkeleton)
         {
-            dropItem(Item.RecordThirteen.id + Random.NextInt(2), 1);
+            DropItem(Item.RecordThirteen.id + Random.NextInt(2), 1);
         }
 
     }
@@ -132,7 +132,7 @@ public class EntityCreeper : EntityMonster
                         World.CreateExplosion(this, X, Y, Z, 3.0F);
                     }
 
-                    markDead();
+                    MarkDead();
                 }
 
                 hasAttacked = true;
@@ -160,9 +160,9 @@ public class EntityCreeper : EntityMonster
         return Item.Gunpowder.id;
     }
 
-    public override void onStruckByLightning(EntityLightningBolt bolt)
+    public override void OnStruckByLightning(EntityLightningBolt bolt)
     {
-        base.onStruckByLightning(bolt);
+        base.OnStruckByLightning(bolt);
         Powered.Value = true;
     }
 }

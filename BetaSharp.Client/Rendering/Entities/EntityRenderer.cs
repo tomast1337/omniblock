@@ -130,7 +130,7 @@ public abstract class EntityRenderer
         float radius = ShadowRadius;
 
         double targetX = target.LastTickX + (target.X - target.LastTickX) * tickDelta;
-        double targetY = target.LastTickY + (target.Y - target.LastTickY) * tickDelta + target.getShadowRadius();
+        double targetY = target.LastTickY + (target.Y - target.LastTickY) * tickDelta + target.GetShadowRadius();
         double targetZ = target.LastTickZ + (target.Z - target.LastTickZ) * tickDelta;
 
         int minX = MathHelper.Floor(targetX - radius);
@@ -158,11 +158,11 @@ public abstract class EntityRenderer
                     {
                         renderShadowOnBlock(
                             Block.Blocks[blockId],
-                            new Vec3D(pos.x, pos.y + target.getShadowRadius(), pos.z),
+                            new Vec3D(pos.x, pos.y + target.GetShadowRadius(), pos.z),
                             blockX, blockY, blockZ,
                             shadowiness,
                             radius,
-                            new Vec3D(dx, dy + target.getShadowRadius(), dz)
+                            new Vec3D(dx, dy + target.GetShadowRadius(), dz)
                         );
                     }
                 }
@@ -307,7 +307,7 @@ public abstract class EntityRenderer
             }
         }
 
-        if (target.isOnFire())
+        if (target.IsOnFire())
         {
             RenderOnFire(target, pos, tickDelta);
         }

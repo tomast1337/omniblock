@@ -18,9 +18,9 @@ public class EntityItem : Entity
 
     public EntityItem(IWorldContext world, double x, double y, double z, ItemStack stack) : base(world)
     {
-        setBoundingBoxSpacing(0.25F, 0.25F);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
         StandingEyeHeight = Height / 2.0F;
-        setPosition(x, y, z);
+        SetPosition(x, y, z);
         this.stack = stack;
         Yaw = System.Random.Shared.NextSingle() * 360.0f;
         VelocityX = System.Random.Shared.NextDouble() * 0.2f - 0.1f;
@@ -28,21 +28,21 @@ public class EntityItem : Entity
         VelocityZ = System.Random.Shared.NextDouble() * 0.2f - 0.1f;
     }
 
-    protected override bool bypassesSteppingEffects()
+    protected override bool BypassesSteppingEffects()
     {
         return false;
     }
 
     public EntityItem(IWorldContext world) : base(world)
     {
-        setBoundingBoxSpacing(0.25F, 0.25F);
+        SetBoundingBoxSpacing(0.25F, 0.25F);
         StandingEyeHeight = Height / 2.0F;
     }
 
 
-    public override void tick()
+    public override void Tick()
     {
-        base.tick();
+        base.Tick();
         if (delayBeforeCanPickup > 0)
         {
             --delayBeforeCanPickup;
@@ -60,8 +60,8 @@ public class EntityItem : Entity
             World.Broadcaster.PlaySoundAtEntity(this, "random.fizz", 0.4F, 2.0F + Random.NextFloat() * 0.4F);
         }
 
-        pushOutOfBlocks(X, (BoundingBox.MinY + BoundingBox.MaxY) / 2.0D, Z);
-        move(VelocityX, VelocityY, VelocityZ);
+        PushOutOfBlocks(X, (BoundingBox.MinY + BoundingBox.MaxY) / 2.0D, Z);
+        Move(VelocityX, VelocityY, VelocityZ);
         float friction = 0.98F;
         if (OnGround)
         {
@@ -84,41 +84,41 @@ public class EntityItem : Entity
         ++itemAge;
         if (itemAge >= 6000)
         {
-            markDead();
+            MarkDead();
         }
 
     }
 
-    public override bool checkWaterCollisions()
+    public override bool CheckWaterCollisions()
     {
         return World.Reader.UpdateMovementInFluid(BoundingBox, Material.Water, this);
     }
 
-    protected override void damage(int amount)
+    protected override void Damage(int amount)
     {
-        damage((Entity)null, amount);
+        Damage((Entity)null, amount);
     }
 
-    public override bool damage(Entity entity, int amount)
+    public override bool Damage(Entity entity, int amount)
     {
-        scheduleVelocityUpdate();
+        ScheduleVelocityUpdate();
         health -= amount;
         if (health <= 0)
         {
-            markDead();
+            MarkDead();
         }
 
         return false;
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetShort("Health", (short)((byte)health));
         nbt.SetShort("Age", (short)itemAge);
         nbt.SetCompoundTag("Item", stack.writeToNBT(new NBTTagCompound()));
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         health = nbt.GetShort("Health") & 255;
         itemAge = nbt.GetShort("Age");
@@ -126,7 +126,7 @@ public class EntityItem : Entity
         stack = new ItemStack(itemTag);
     }
 
-    public override void onPlayerInteraction(EntityPlayer player)
+    public override void OnPlayerInteraction(EntityPlayer player)
     {
         if (!World.IsRemote && player.GameMode.CanPickup)
         {
@@ -147,7 +147,7 @@ public class EntityItem : Entity
                 player.sendPickup(this, pickedUpCount);
                 if (stack.Count <= 0)
                 {
-                    markDead();
+                    MarkDead();
                 }
             }
 
