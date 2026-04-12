@@ -179,30 +179,26 @@ public abstract class Entity
         {
             if (!InWater && !_firstTick)
             {
-                float var1 = MathHelper.Sqrt(VelocityX * VelocityX * (double)0.2F + VelocityY * VelocityY + VelocityZ * VelocityZ * (double)0.2F) * 0.2F;
-                if (var1 > 1.0F)
+                float volume = MathHelper.Sqrt(VelocityX * VelocityX * (double)0.2F + VelocityY * VelocityY + VelocityZ * VelocityZ * (double)0.2F) * 0.2F;
+                if (volume > 1.0F)
                 {
-                    var1 = 1.0F;
+                    volume = 1.0F;
                 }
 
-                World.Broadcaster.PlaySoundAtEntity(this, "random.splash", var1, 1.0F + (Random.NextFloat() - Random.NextFloat()) * 0.4F);
-                float var2 = (float)MathHelper.Floor(BoundingBox.MinY);
+                World.Broadcaster.PlaySoundAtEntity(this, "random.splash", volume, 1.0F + (Random.NextFloat() - Random.NextFloat()) * 0.4F);
+                float floorMinY = (float)MathHelper.Floor(BoundingBox.MinY);
 
-                int var3;
-                float var4;
-                float var5;
-                for (var3 = 0; (float)var3 < 1.0F + Width * 20.0F; ++var3)
+                double xOffset;
+                double zOffset;
+                for (int i = 0; (float)i < 1.0F + Width * 20.0F; ++i)
                 {
-                    var4 = (Random.NextFloat() * 2.0F - 1.0F) * Width;
-                    var5 = (Random.NextFloat() * 2.0F - 1.0F) * Width;
-                    World.Broadcaster.AddParticle("bubble", X + (double)var4, (double)(var2 + 1.0F), Z + (double)var5, VelocityX, VelocityY - (double)(Random.NextFloat() * 0.2F), VelocityZ);
-                }
+                    xOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
+                    zOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
+                    World.Broadcaster.AddParticle("bubble", X + xOffset, floorMinY + 1.0D, Z + zOffset, VelocityX, VelocityY - Random.NextFloat() * 0.2D, VelocityZ);
 
-                for (var3 = 0; (float)var3 < 1.0F + Width * 20.0F; ++var3)
-                {
-                    var4 = (Random.NextFloat() * 2.0F - 1.0F) * Width;
-                    var5 = (Random.NextFloat() * 2.0F - 1.0F) * Width;
-                    World.Broadcaster.AddParticle("splash", X + (double)var4, (double)(var2 + 1.0F), Z + (double)var5, VelocityX, VelocityY, VelocityZ);
+                    xOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
+                    zOffset = (Random.NextFloat() * 2.0F - 1.0F) * Width;
+                    World.Broadcaster.AddParticle("splash", X + xOffset, floorMinY + 1.0D, Z + zOffset, VelocityX, VelocityY, VelocityZ);
                 }
             }
 
@@ -233,7 +229,7 @@ public abstract class Entity
             {
                 if (FireTicks % 20 == 0)
                 {
-                    Damage((Entity)null, 1);
+                    Damage(null, 1);
                 }
 
                 --FireTicks;
@@ -314,8 +310,8 @@ public abstract class Entity
         else
         {
             CameraOffset *= 0.4F;
-            double var7 = this.X;
-            double var9 = this.Z;
+            double mx = this.X;
+            double my = this.Z;
             if (Slowed)
             {
                 Slowed = false;
@@ -330,9 +326,9 @@ public abstract class Entity
             double var11 = x;
             double var13 = y;
             double var15 = z;
-            Box var17 = BoundingBox;
-            bool var18 = OnGround && IsSneaking();
-            if (var18)
+            Box bound = BoundingBox;
+            bool sneakingOnGround = OnGround && IsSneaking();
+            if (sneakingOnGround)
             {
                 double var19;
                 for (var19 = 0.05D; x != 0.0D && World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Offset(x, -1.0D, 0.0D)).Count == 0; var11 = x)
@@ -370,9 +366,9 @@ public abstract class Entity
 
             List<Box> entitiesInbound = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Stretch(x, y, z));
 
-            for (int var20 = 0; var20 < entitiesInbound.Count; ++var20)
+            for (int i = 0; i < entitiesInbound.Count; ++i)
             {
-                y = entitiesInbound[var20].GetYOffset(BoundingBox, y);
+                y = entitiesInbound[i].GetYOffset(BoundingBox, y);
             }
 
             BoundingBox.Translate(0.0D, y, 0.0D);
@@ -385,8 +381,7 @@ public abstract class Entity
 
             bool var36 = OnGround || var13 != y && var13 < 0.0D;
 
-            int i;
-            for (i = 0; i < entitiesInbound.Count; ++i)
+            for (int i = 0; i < entitiesInbound.Count; ++i)
             {
                 x = entitiesInbound[i].GetXOffset(BoundingBox, x);
             }
@@ -399,7 +394,7 @@ public abstract class Entity
                 x = z;
             }
 
-            for (i = 0; i < entitiesInbound.Count; ++i)
+            for (int i = 0; i < entitiesInbound.Count; ++i)
             {
                 z = entitiesInbound[i].GetZOffset(BoundingBox, z);
             }
@@ -415,7 +410,7 @@ public abstract class Entity
             double var23;
             int var28;
             double var37;
-            if (StepHeight > 0.0F && var36 && (var18 || CameraOffset < 0.05F) && (var11 != x || var15 != z))
+            if (StepHeight > 0.0F && var36 && (sneakingOnGround || CameraOffset < 0.05F) && (var11 != x || var15 != z))
             {
                 var37 = x;
                 var23 = y;
@@ -424,7 +419,7 @@ public abstract class Entity
                 y = (double)StepHeight;
                 z = var15;
                 Box var27 = BoundingBox;
-                BoundingBox = var17;
+                BoundingBox = bound;
                 entitiesInbound = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Stretch(var11, y, var15));
 
                 for (var28 = 0; var28 < entitiesInbound.Count; ++var28)
@@ -524,12 +519,12 @@ public abstract class Entity
                 VelocityZ = 0.0D;
             }
 
-            var37 = this.X - var7;
-            var23 = this.Z - var9;
+            var37 = this.X - mx;
+            var23 = this.Z - my;
             int var26;
             int var38;
             int var39;
-            if (BypassesSteppingEffects() && !var18 && Vehicle == null)
+            if (BypassesSteppingEffects() && !sneakingOnGround && Vehicle == null)
             {
                 HorizontalSpeed = (float)((double)HorizontalSpeed + (double)MathHelper.Sqrt(var37 * var37 + var23 * var23) * 0.6D);
 
@@ -676,16 +671,16 @@ public abstract class Entity
 
     public bool IsInFluid(Material var1)
     {
-        double var2 = Y + (double)GetEyeHeight();
-        int var4 = MathHelper.Floor(X);
-        int var5 = MathHelper.Floor((float)MathHelper.Floor(var2));
-        int var6 = MathHelper.Floor(Z);
-        int var7 = World.Reader.GetBlockId(var4, var5, var6);
-        if (var7 != 0 && Block.Blocks[var7].material == var1)
+        double eyeY = Y + (double)GetEyeHeight();
+        int floorX = MathHelper.Floor(X);
+        int floorEyeY = MathHelper.Floor((float)MathHelper.Floor(eyeY));
+        int floorZ = MathHelper.Floor(Z);
+        int id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
+        if (id != 0 && Block.Blocks[id].material == var1)
         {
-            float var8 = BlockFluid.getFluidHeightFromMeta(World.Reader.GetBlockMeta(var4, var5, var6)) - 1.0F / 9.0F;
-            float var9 = (float)(var5 + 1) - var8;
-            return var2 < (double)var9;
+            float var8 = BlockFluid.getFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
+            float var9 = (float)(floorEyeY + 1) - var8;
+            return eyeY < (double)var9;
         }
         else
         {
@@ -725,10 +720,10 @@ public abstract class Entity
 
     public virtual float GetBrightnessAtEyes(float var1)
     {
-        int var2 = MathHelper.Floor(X);
+        int floorX = MathHelper.Floor(X);
         double var3 = (BoundingBox.MaxY - BoundingBox.MinY) * 0.66D;
-        int var5 = MathHelper.Floor(Y - (double)StandingEyeHeight + var3);
-        int var6 = MathHelper.Floor(Z);
+        int floorY = MathHelper.Floor(Y - (double)StandingEyeHeight + var3);
+        int floorZ = MathHelper.Floor(Z);
 
         int minX = MathHelper.Floor(BoundingBox.MinX);
         int minY = MathHelper.Floor(BoundingBox.MinY);
@@ -742,13 +737,13 @@ public abstract class Entity
 
         if (World.ChunkHost.IsRegionLoaded(minX, minY, minZ, maxX, maxY, maxZ))
         {
-            float var7 = World.Lighting.GetLuminance(var2, var5, var6);
-            if (var7 < MinBrightness)
+            float lum = World.Lighting.GetLuminance(floorX, floorY, floorZ);
+            if (lum < MinBrightness)
             {
-                var7 = MinBrightness;
+                lum = MinBrightness;
             }
 
-            return var7;
+            return lum;
         }
         else
         {
@@ -769,13 +764,13 @@ public abstract class Entity
         PrevYaw = this.Yaw = yaw;
         PrevPitch = this.Pitch = pitch;
         CameraOffset = 0.0F;
-        double var9 = (double)(PrevYaw - yaw);
-        if (var9 < -180.0D)
+        double diff = (double)(PrevYaw - yaw);
+        if (diff < -180.0D)
         {
             PrevYaw += 360.0F;
         }
 
-        if (var9 >= 180.0D)
+        if (diff >= 180.0D)
         {
             PrevYaw -= 360.0F;
         }
@@ -794,37 +789,19 @@ public abstract class Entity
         SetPosition(this.X, this.Y, this.Z);
     }
 
-    public float GetDistance(Entity entity)
+    public double GetSquaredDistance(double x, double y, double z)
     {
-        float var2 = (float)(X - entity.X);
-        float var3 = (float)(Y - entity.Y);
-        float var4 = (float)(Z - entity.Z);
-        return MathHelper.Sqrt(var2 * var2 + var3 * var3 + var4 * var4);
+        double diffX = X - x;
+        double diffY = Y - y;
+        double diffZ = Z - z;
+        return diffX * diffX + diffY * diffY + diffZ * diffZ;
     }
 
-    public double GetSquaredDistance(double var1, double var3, double var5)
-    {
-        double var7 = X - var1;
-        double var9 = Y - var3;
-        double var11 = Z - var5;
-        return var7 * var7 + var9 * var9 + var11 * var11;
-    }
+    public double GetSquaredDistance(Entity entity) => GetSquaredDistance(entity.X, entity.Y, entity.Z);
 
-    public double GetDistance(double var1, double var3, double var5)
-    {
-        double var7 = X - var1;
-        double var9 = Y - var3;
-        double var11 = Z - var5;
-        return (double)MathHelper.Sqrt(var7 * var7 + var9 * var9 + var11 * var11);
-    }
+    public double GetDistance(double x, double y, double z) => (double)MathHelper.Sqrt(GetSquaredDistance(x, y, z));
 
-    public double GetSquaredDistance(Entity entity)
-    {
-        double var2 = X - entity.X;
-        double var4 = Y - entity.Y;
-        double var6 = Z - entity.Z;
-        return var2 * var2 + var4 * var4 + var6 * var6;
-    }
+    public float GetDistance(Entity entity) => (float) GetDistance(entity.X, entity.Y, entity.Z);
 
     public virtual void OnPlayerInteraction(EntityPlayer player)
     {
@@ -834,44 +811,44 @@ public abstract class Entity
     {
         if (entity.Passenger != this && entity.Vehicle != this)
         {
-            double var2 = entity.X - X;
-            double var4 = entity.Z - Z;
-            double var6 = Math.Max(Math.Abs(var2), Math.Abs(var4));
-            if (var6 >= (double)0.01F)
+            double diffX = entity.X - X;
+            double diffY = entity.Z - Z;
+            double max = Math.Max(Math.Abs(diffX), Math.Abs(diffY));
+            if (max >= (double)0.01F)
             {
-                var6 = (double)MathHelper.Sqrt(var6);
-                var2 /= var6;
-                var4 /= var6;
-                double var8 = 1.0D / var6;
-                if (var8 > 1.0D)
+                max = (double)MathHelper.Sqrt(max);
+                diffX /= max;
+                diffY /= max;
+                double maxMulInverse = 1.0D / max;
+                if (maxMulInverse > 1.0D)
                 {
-                    var8 = 1.0D;
+                    maxMulInverse = 1.0D;
                 }
 
-                var2 *= var8;
-                var4 *= var8;
-                var2 *= (double)0.05F;
-                var4 *= (double)0.05F;
-                var2 *= (double)(1.0F - PushSpeedReduction);
-                var4 *= (double)(1.0F - PushSpeedReduction);
+                diffX *= maxMulInverse;
+                diffY *= maxMulInverse;
+                diffX *= (double)0.05F;
+                diffY *= (double)0.05F;
+                diffX *= (double)(1.0F - PushSpeedReduction);
+                diffY *= (double)(1.0F - PushSpeedReduction);
                 const double maxHorizontalImpulsePerCollision = 0.05D;
                 const double maxHorizontalSpeed = 0.05D;
-                if (var2 > maxHorizontalImpulsePerCollision) var2 = maxHorizontalImpulsePerCollision;
-                else if (var2 < -maxHorizontalImpulsePerCollision) var2 = -maxHorizontalImpulsePerCollision;
+                if (diffX > maxHorizontalImpulsePerCollision) diffX = maxHorizontalImpulsePerCollision;
+                else if (diffX < -maxHorizontalImpulsePerCollision) diffX = -maxHorizontalImpulsePerCollision;
 
-                if (var4 > maxHorizontalImpulsePerCollision) var4 = maxHorizontalImpulsePerCollision;
-                else if (var4 < -maxHorizontalImpulsePerCollision) var4 = -maxHorizontalImpulsePerCollision;
+                if (diffY > maxHorizontalImpulsePerCollision) diffY = maxHorizontalImpulsePerCollision;
+                else if (diffY < -maxHorizontalImpulsePerCollision) diffY = -maxHorizontalImpulsePerCollision;
 
-                double impulseMag = MathHelper.Sqrt(var2 * var2 + var4 * var4);
+                double impulseMag = MathHelper.Sqrt(diffX * diffX + diffY * diffY);
                 if (impulseMag > maxHorizontalImpulsePerCollision)
                 {
                     double s = maxHorizontalImpulsePerCollision / impulseMag;
-                    var2 *= s;
-                    var4 *= s;
+                    diffX *= s;
+                    diffY *= s;
                 }
 
-                AddVelocity(-var2, 0.0D, -var4);
-                entity.AddVelocity(var2, 0.0D, var4);
+                AddVelocity(-diffX, 0.0D, -diffY);
+                entity.AddVelocity(diffX, 0.0D, diffY);
 
                 double speedThis = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
                 if (speedThis > maxHorizontalSpeed)
@@ -893,11 +870,11 @@ public abstract class Entity
         }
     }
 
-    public virtual void AddVelocity(double var1, double var3, double var5)
+    public virtual void AddVelocity(double vx, double vy, double vz)
     {
-        VelocityX += var1;
-        VelocityY += var3;
-        VelocityZ += var5;
+        VelocityX += vx;
+        VelocityY += vy;
+        VelocityZ += vz;
     }
 
     protected void ScheduleVelocityUpdate()
@@ -925,20 +902,20 @@ public abstract class Entity
     {
     }
 
-    public virtual bool ShouldRender(Vec3D var1)
+    public virtual bool ShouldRender(Vec3D vec)
     {
-        double var2 = X - var1.x;
-        double var4 = Y - var1.y;
-        double var6 = Z - var1.z;
-        double var8 = var2 * var2 + var4 * var4 + var6 * var6;
-        return ShouldRender(var8);
+        double diffX = X - vec.x;
+        double diffY = Y - vec.y;
+        double diffZ = Z - vec.z;
+        double var8 = diffX * diffX + diffY * diffY + diffZ * diffZ;
+        return ShouldRender(GetSquaredDistance(vec.x, vec.y, vec.z));
     }
 
-    public virtual bool ShouldRender(double var1)
+    public virtual bool ShouldRender(double sqDist)
     {
         double var3 = BoundingBox.AverageEdgeLength;
         var3 *= 64.0D * RenderDistanceWeight;
-        return var1 < var3 * var3;
+        return sqDist < var3 * var3;
     }
 
     public virtual string GetTexture()
@@ -948,10 +925,10 @@ public abstract class Entity
 
     public bool SaveSelfNbt(NBTTagCompound nbt)
     {
-        string var2 = GetRegistryEntry();
-        if (!Dead && var2 != null)
+        string id = GetRegistryEntry();
+        if (!Dead && id != null)
         {
-            nbt.SetString("id", var2);
+            nbt.SetString("id", id);
             Write(nbt);
             return true;
         }
@@ -975,32 +952,32 @@ public abstract class Entity
 
     public void Read(NBTTagCompound nbt)
     {
-        NBTTagList var2 = nbt.GetTagList("Pos");
-        NBTTagList var3 = nbt.GetTagList("Motion");
-        NBTTagList var4 = nbt.GetTagList("Rotation");
-        VelocityX = ((NBTTagDouble)var3.TagAt(0)).Value;
-        VelocityY = ((NBTTagDouble)var3.TagAt(1)).Value;
-        VelocityZ = ((NBTTagDouble)var3.TagAt(2)).Value;
-        if (System.Math.Abs(VelocityX) > 10.0D)
+        NBTTagList pos = nbt.GetTagList("Pos");
+        NBTTagList mot = nbt.GetTagList("Motion");
+        NBTTagList rot = nbt.GetTagList("Rotation");
+        VelocityX = ((NBTTagDouble)mot.TagAt(0)).Value;
+        VelocityY = ((NBTTagDouble)mot.TagAt(1)).Value;
+        VelocityZ = ((NBTTagDouble)mot.TagAt(2)).Value;
+        if (Math.Abs(VelocityX) > 10.0D)
         {
             VelocityX = 0.0D;
         }
 
-        if (System.Math.Abs(VelocityY) > 10.0D)
+        if (Math.Abs(VelocityY) > 10.0D)
         {
             VelocityY = 0.0D;
         }
 
-        if (System.Math.Abs(VelocityZ) > 10.0D)
+        if (Math.Abs(VelocityZ) > 10.0D)
         {
             VelocityZ = 0.0D;
         }
 
-        PrevX = LastTickX = X = ((NBTTagDouble)var2.TagAt(0)).Value;
-        PrevY = LastTickY = Y = ((NBTTagDouble)var2.TagAt(1)).Value;
-        PrevZ = LastTickZ = Z = ((NBTTagDouble)var2.TagAt(2)).Value;
-        PrevYaw = Yaw = ((NBTTagFloat)var4.TagAt(0)).Value;
-        PrevPitch = Pitch = ((NBTTagFloat)var4.TagAt(1)).Value;
+        PrevX = LastTickX = X = ((NBTTagDouble)pos.TagAt(0)).Value;
+        PrevY = LastTickY = Y = ((NBTTagDouble)pos.TagAt(1)).Value;
+        PrevZ = LastTickZ = Z = ((NBTTagDouble)pos.TagAt(2)).Value;
+        PrevYaw = Yaw = ((NBTTagFloat)rot.TagAt(0)).Value;
+        PrevPitch = Pitch = ((NBTTagFloat)rot.TagAt(1)).Value;
         FallDistance = nbt.GetFloat("FallDistance");
         FireTicks = nbt.GetShort("Fire");
         Air = nbt.GetShort("Air");
@@ -1229,21 +1206,21 @@ public abstract class Entity
     {
         SetPosition(x, y, z);
         SetRotation(var7, var8);
-        var var10 = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
-        if (var10.Count > 0)
+        var collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
+        if (collisions.Count > 0)
         {
-            double var11 = 0.0D;
+            double maxMaxY = 0.0D;
 
-            for (int var13 = 0; var13 < var10.Count; ++var13)
+            for (int i = 0; i < collisions.Count; ++i)
             {
-                Box var14 = var10[var13];
-                if (var14.MaxY > var11)
+                Box box = collisions[i];
+                if (box.MaxY > maxMaxY)
                 {
-                    var11 = var14.MaxY;
+                    maxMaxY = box.MaxY;
                 }
             }
 
-            y += var11 - BoundingBox.MinY;
+            y += maxMaxY - BoundingBox.MinY;
             SetPosition(x, y, z);
         }
 
