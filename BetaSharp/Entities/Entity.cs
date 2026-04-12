@@ -14,8 +14,17 @@ public abstract class Entity
     public abstract EntityType? Type { get; }
     private static int _nextEntityID;
     public int ID { get; set; } = _nextEntityID++;
+
+    /// <summary>
+    /// Muitipler for rendering, based of the render distance, 
+    /// </summary>
     public double RenderDistanceWeight { get; set; } = 1.0D;
+
+    /// <summary>
+    /// Prevents another entity spawning near/in this entity.
+    /// </summary>
     public bool PreventEntitySpawning { get; set; } = false;
+
     public Entity? Passenger { get; set; }
     public Entity? Vehicle { get; set; }
     public IWorldContext World { get; set; }
@@ -34,13 +43,27 @@ public abstract class Entity
     public float PrevPitch { get; set; }
     public Box BoundingBox { get; set; } = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public bool OnGround { get; set; }
+
+    /// <summary>
+    /// If a collision occured in the X or Z directions.
+    /// </summary>
     public bool HorizontalCollison { get; set; }
+
+    /// <summary>
+    /// If a collision occured in the Y direction.
+    /// </summary>
     public bool VerticalCollision { get; set; }
+
+    /// <summary>
+    /// If a collision occured in either the X, Y, OR Z directions.
+    /// </summary>
     public bool HasCollided { get; set; }
+
     public bool VelocityModified { get; set; }
     public bool Slowed { get; set; }
     public bool KeepVelocityOnCollision { get; set; } = true;
     public bool Dead { get; set; }
+
     public float StandingEyeHeight { get; set; } = 0.0F;
     public float Width { get; set; } = 0.6F;
     public float Height { get; set; } = 1.8F;
@@ -77,6 +100,10 @@ public abstract class Entity
     public int TrackedPosX { get; set; }
     public int TrackedPosY { get; set; }
     public int TrackedPosZ { get; set; }
+
+    /// <summary>
+    /// If a entity should render even IF its outside the viewing angle.
+    /// </summary>
     public bool IgnoreFrustumCheck { get; set; }
     private readonly SyncedProperty<byte> _flags;
 
@@ -89,6 +116,13 @@ public abstract class Entity
 
     public Vec3D Position => new Vec3D(X, Y, Z);
 
+    /// <summary>
+    /// Keep moving up until theres no collison.
+    /// </summary>
+    /// <remarks>
+    /// Note that the Pitch will be reset to 0, and the Motion
+    /// will be fully zeroed, so the entity might fall for a bit
+    /// if the position was off at the start.</remarks>
     public virtual void TeleportToTop()
     {
         if (World != null)
@@ -136,6 +170,9 @@ public abstract class Entity
         BoundingBox = new Box(x - (double)halfWidth, y - (double)StandingEyeHeight + (double)CameraOffset, z - (double)halfWidth, x + (double)halfWidth, y - (double)StandingEyeHeight + (double)CameraOffset + (double)height, z + (double)halfWidth);
     }
 
+    /// <summary>
+    /// Change the current look direction, with capping the pitch.
+    /// </summary>
     public void ChangeLookDirection(float yaw, float pitch)
     {
         float oldPitch = this.Pitch;
@@ -277,6 +314,12 @@ public abstract class Entity
         return entitiesInbound.Count > 0 ? false : !World.Reader.IsMaterialInBox(box, m => m.IsFluid);
     }
 
+    /// <summary>
+    /// Move by a certain amount, making sure to handle collisions and the such.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="z"></param>
     public virtual void Move(double x, double y, double z)
     {
         if (World.IsRemote && this is not EntityPlayer)
@@ -636,11 +679,11 @@ public abstract class Entity
         return null;
     }
 
-    protected virtual void Damage(int var1)
+    protected virtual void Damage(int amt)
     {
         if (!IsImmuneToFire)
         {
-            Damage((Entity)null, var1);
+            Damage(null, amt);
         }
 
     }
@@ -669,14 +712,14 @@ public abstract class Entity
         return World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, (double)-0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
     }
 
-    public bool IsInFluid(Material var1)
+    public bool IsInFluid(Material mat)
     {
         double eyeY = Y + (double)GetEyeHeight();
         int floorX = MathHelper.Floor(X);
         int floorEyeY = MathHelper.Floor((float)MathHelper.Floor(eyeY));
         int floorZ = MathHelper.Floor(Z);
         int id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
-        if (id != 0 && Block.Blocks[id].material == var1)
+        if (id != 0 && Block.Blocks[id].material == mat)
         {
             float var8 = BlockFluid.getFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
             float var9 = (float)(floorEyeY + 1) - var8;
@@ -718,7 +761,7 @@ public abstract class Entity
         }
     }
 
-    public virtual float GetBrightnessAtEyes(float var1)
+    public virtual float GetBrightnessAtEyes()
     {
         int floorX = MathHelper.Floor(X);
         double var3 = (BoundingBox.MaxY - BoundingBox.MinY) * 0.66D;
@@ -996,34 +1039,28 @@ public abstract class Entity
 
     public abstract void WriteNbt(NBTTagCompound nbt);
 
-    protected static NBTTagList NewDoubleNBTList(params double[] var1)
+    protected static NBTTagList NewDoubleNBTList(params double[] arr)
     {
-        NBTTagList var2 = new();
-        double[] var3 = var1;
-        int var4 = var1.Length;
+        NBTTagList nbt = new();
 
-        for (int var5 = 0; var5 < var4; ++var5)
+        for (int i = 0; i < arr.Length; ++i)
         {
-            double var6 = var3[var5];
-            var2.SetTag(new NBTTagDouble(var6));
+            nbt.SetTag(new NBTTagDouble(arr[i]));
         }
 
-        return var2;
+        return nbt;
     }
 
-    protected static NBTTagList NewFloatNBTList(params float[] var1)
+    protected static NBTTagList NewFloatNBTList(params float[] arr)
     {
-        NBTTagList var2 = new();
-        float[] var3 = var1;
-        int var4 = var1.Length;
+        NBTTagList nbt = new();
 
-        for (int var5 = 0; var5 < var4; ++var5)
+        for (int i = 0; i < arr.Length; ++i)
         {
-            float var6 = var3[var5];
-            var2.SetTag(new NBTTagFloat(var6));
+            nbt.SetTag(new NBTTagFloat(arr[i]));
         }
 
-        return var2;
+        return nbt;
     }
 
     public virtual float GetShadowRadius()
@@ -1031,22 +1068,22 @@ public abstract class Entity
         return Height / 2.0F;
     }
 
-    public EntityItem DropItem(int var1, int var2)
+    public EntityItem DropItem(int id, int count)
     {
-        return DropItem(var1, var2, 0.0F);
+        return DropItem(id, count, 0.0F);
     }
 
-    public EntityItem DropItem(int var1, int var2, float var3)
+    public EntityItem DropItem(int id, int count, float y)
     {
-        return DropItem(new ItemStack(var1, var2, 0), var3);
+        return DropItem(new ItemStack(id, count, 0), y);
     }
 
-    public EntityItem DropItem(ItemStack var1, float var2)
+    public EntityItem DropItem(ItemStack stack, float y)
     {
-        EntityItem var3 = new EntityItem(World, X, Y + (double)var2, Z, var1);
-        var3.delayBeforeCanPickup = 10;
-        World.SpawnEntity(var3);
-        return var3;
+        EntityItem item = new EntityItem(World, X, Y + (double)y, Z, stack);
+        item.delayBeforeCanPickup = 10;
+        World.SpawnEntity(item);
+        return item;
     }
 
     public virtual bool IsAlive()
@@ -1056,15 +1093,15 @@ public abstract class Entity
 
     public virtual bool IsInsideWall()
     {
-        for (int var1 = 0; var1 < 8; ++var1)
+        for (int i = 0; i < 8; ++i)
         {
-            float var2 = ((float)((var1 >> 0) % 2) - 0.5F) * Width * 0.9F;
-            float var3 = ((float)((var1 >> 1) % 2) - 0.5F) * 0.1F;
-            float var4 = ((float)((var1 >> 2) % 2) - 0.5F) * Width * 0.9F;
-            int var5 = MathHelper.Floor(X + (double)var2);
-            int var6 = MathHelper.Floor(Y + (double)GetEyeHeight() + (double)var3);
-            int var7 = MathHelper.Floor(Z + (double)var4);
-            if (World.Reader.ShouldSuffocate(var5, var6, var7))
+            float var2 = ((float)((i >> 0) % 2) - 0.5F) * Width * 0.9F;
+            float var3 = ((float)((i >> 1) % 2) - 0.5F) * 0.1F;
+            float var4 = ((float)((i >> 2) % 2) - 0.5F) * Width * 0.9F;
+            int x = MathHelper.Floor(X + (double)var2);
+            int y = MathHelper.Floor(Y + (double)GetEyeHeight() + (double)var3);
+            int z = MathHelper.Floor(Z + (double)var4);
+            if (World.Reader.ShouldSuffocate(x, y, z))
             {
                 return true;
             }
@@ -1119,33 +1156,33 @@ public abstract class Entity
                     _vehiclePitchDelta += 360.0D;
                 }
 
-                double var1 = _vehicleYawDelta * 0.5D;
-                double var3 = _vehiclePitchDelta * 0.5D;
-                float var5 = 10.0F;
-                if (var1 > (double)var5)
+                double yawDelta = _vehicleYawDelta * 0.5D;
+                double pitchDelta = _vehiclePitchDelta * 0.5D;
+                double limit = 10.0F;
+                if (yawDelta > limit)
                 {
-                    var1 = (double)var5;
+                    yawDelta = limit;
                 }
 
-                if (var1 < (double)(-var5))
+                if (yawDelta < -limit)
                 {
-                    var1 = (double)(-var5);
+                    yawDelta = -limit;
                 }
 
-                if (var3 > (double)var5)
+                if (pitchDelta > limit)
                 {
-                    var3 = (double)var5;
+                    pitchDelta = limit;
                 }
 
-                if (var3 < (double)(-var5))
+                if (pitchDelta < limit)
                 {
-                    var3 = (double)(-var5);
+                    pitchDelta = limit;
                 }
 
-                _vehicleYawDelta -= var1;
-                _vehiclePitchDelta -= var3;
-                Yaw = (float)((double)Yaw + var1);
-                Pitch = (float)((double)Pitch + var3);
+                _vehicleYawDelta -= yawDelta;
+                _vehiclePitchDelta -= pitchDelta;
+                Yaw = (float)((double)Yaw + yawDelta);
+                Pitch = (float)((double)Pitch + pitchDelta);
             }
         }
     }
@@ -1202,10 +1239,10 @@ public abstract class Entity
         }
     }
 
-    public virtual void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float var7, float var8, int var9)
+    public virtual void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch)
     {
         SetPosition(x, y, z);
-        SetRotation(var7, var8);
+        SetRotation(yaw, pitch);
         var collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
         if (collisions.Count > 0)
         {
@@ -1223,7 +1260,6 @@ public abstract class Entity
             y += maxMaxY - BoundingBox.MinY;
             SetPosition(x, y, z);
         }
-
     }
 
     public virtual float GetTargetingMargin()
@@ -1240,14 +1276,14 @@ public abstract class Entity
     {
     }
 
-    public virtual void SetVelocityClient(double var1, double var3, double var5)
+    public virtual void SetVelocityClient(double vx, double vy, double vz)
     {
-        VelocityX = var1;
-        VelocityY = var3;
-        VelocityZ = var5;
+        VelocityX = vx;
+        VelocityY = vy;
+        VelocityZ = vz;
     }
 
-    public virtual void ProcessServerEntityStatus(sbyte var1)
+    public virtual void ProcessServerEntityStatus(sbyte statusID)
     {
     }
 
@@ -1259,7 +1295,7 @@ public abstract class Entity
     {
     }
 
-    public virtual void SetEquipmentStack(int var1, int var2, int var3)
+    public virtual void SetEquipmentStack(int slotIndex, int itemID, int damage)
     {
     }
 
