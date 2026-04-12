@@ -10,53 +10,53 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityLiving : Entity
 {
-    public int MaxHealth = 20;
-    public float LimbSwingPhase;
-    public float LimbSwingScale;
-    public float BodyYaw;
-    public float LastBodyYaw;
-    protected float LastWalkProgress;
-    protected float WalkProgress;
-    protected float TotalWalkDistance;
-    protected float LastTotalWalkDistance;
-    protected bool CanLookAround = true;
-    protected string Texture = "/mob/char.png";
-    protected float RotationOffset = 0.0F;
-    protected string ModelName = null;
-    protected float ModelScale = 1.0F;
-    protected int ScoreAmount = 0;
-    public bool InterpolateOnly = false;
-    public float LastSwingAnimationProgress;
-    public float SwingAnimationProgress;
-    public int Health = 10;
-    public int LastHealth;
-    private int _livingSoundTime;
-    public int HurtTime;
-    public int MaxHurtTime;
-    public float AttackedAtYaw;
-    public int DeathTime;
-    public int AttackTime;
-    public float CameraPitch;
-    public float Tilt;
-    public float LastWalkAnimationSpeed;
-    public float WalkAnimationSpeed;
-    public float AnimationPhase;
-    protected int NewPosRotationIncrements;
-    protected double NewPosX;
-    protected double NewPosY;
-    protected double NewPosZ;
-    protected double NewRotationYaw;
-    protected double NewRotationPitch;
-    protected int DamageForDisplay;
-    protected int EntityAge;
-    protected float SidewaysSpeed;
-    protected float ForwardSpeed;
-    protected float RotationSpeed;
-    protected bool Jumping;
-    protected float DefaultPitch = 0.0F;
-    protected float MovementSpeed = 0.7F;
+    public int MaxHealth { get; set; } = 20;
+    public float LimbSwingPhase { get; set; }
+    public float LimbSwingScale { get; set; }
+    public float BodyYaw { get; set; }
+    public float LastBodyYaw { get; set; }
+    protected float LastWalkProgress { get; set; }
+    protected float WalkProgress { get; set; }
+    protected float TotalWalkDistance { get; set; }
+    protected float LastTotalWalkDistance { get; set; }
+    protected bool CanLookAround { get; set; } = true;
+    protected string Texture { get; set; } = "/mob/char.png";
+    protected float RotationOffset { get; set; } = 0.0F;
+    protected string ModelName { get; set; } = null;
+    protected float ModelScale { get; set; } = 1.0F;
+    protected int ScoreAmount { get; set; } = 0;
+    public bool InterpolateOnly { get; set; } = false;
+    public float LastSwingAnimationProgress { get; set; }
+    public float SwingAnimationProgress { get; set; }
+    public int Health { get; set; } = 10;
+    public int LastHealth { get; set; }
+    private int _livingSoundTime { get; set; }
+    public int HurtTime { get; set; }
+    public int MaxHurtTime { get; set; }
+    public float AttackedAtYaw { get; set; }
+    public int DeathTime { get; set; }
+    public int AttackTime { get; set; }
+    public float CameraPitch { get; set; }
+    public float Tilt { get; set; }
+    public float LastWalkAnimationSpeed { get; set; }
+    public float WalkAnimationSpeed { get; set; }
+    public float AnimationPhase { get; set; }
+    protected int NewPosRotationIncrements { get; set; }
+    protected double NewPosX { get; set; }
+    protected double NewPosY { get; set; }
+    protected double NewPosZ { get; set; }
+    protected double NewRotationYaw { get; set; }
+    protected double NewRotationPitch { get; set; }
+    protected int DamageForDisplay { get; set; }
+    protected int EntityAge { get; set; }
+    protected float SidewaysSpeed { get; set; }
+    protected float ForwardSpeed { get; set; }
+    protected float RotationSpeed { get; set; }
+    protected bool Jumping { get; set; }
+    protected float DefaultPitch { get; set; } = 0.0F;
+    protected float MovementSpeed { get; set; } = 0.7F;
     private Entity _lookTarget;
-    protected int LookTimer;
+    protected int LookTimer { get; set; }
 
     public EntityLiving(IWorldContext world) : base(world)
     {
