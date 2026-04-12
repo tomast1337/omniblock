@@ -10,7 +10,7 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     public EntityMonster(IWorldContext world) : base(world)
     {
-        health = 20;
+        Health = 20;
     }
 
     public override void tickMovement()
@@ -18,7 +18,7 @@ public abstract class EntityMonster : EntityCreature, Monster
         float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F)
         {
-            entityAge += 2;
+            EntityAge += 2;
         }
 
         base.tickMovement();
@@ -69,9 +69,9 @@ public abstract class EntityMonster : EntityCreature, Monster
 
     protected override void attackEntity(Entity entity, float distance)
     {
-        if (attackTime <= 0 && distance < 2.0F && entity.BoundingBox.MaxY > BoundingBox.MinY && entity.BoundingBox.MinY < BoundingBox.MaxY)
+        if (AttackTime <= 0 && distance < 2.0F && entity.BoundingBox.MaxY > BoundingBox.MinY && entity.BoundingBox.MinY < BoundingBox.MaxY)
         {
-            attackTime = 20;
+            AttackTime = 20;
             entity.Damage(this, attackStrength);
         }
 

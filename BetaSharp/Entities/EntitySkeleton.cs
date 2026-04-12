@@ -12,7 +12,7 @@ public class EntitySkeleton : EntityMonster
 
     public EntitySkeleton(IWorldContext world) : base(world)
     {
-        texture = "/mob/skeleton.png";
+        Texture = "/mob/skeleton.png";
     }
 
     protected override String getLivingSound()
@@ -50,7 +50,7 @@ public class EntitySkeleton : EntityMonster
         {
             double dx = entity.X - X;
             double dy = entity.Z - Z;
-            if (attackTime == 0)
+            if (AttackTime == 0)
             {
                 EntityArrow arrow = new EntityArrow(World, this);
                 double targetHeightOffset = entity.Y + (double)entity.GetEyeHeight() - (double)0.2F - arrow.Y;
@@ -58,7 +58,7 @@ public class EntitySkeleton : EntityMonster
                 World.Broadcaster.PlaySoundAtEntity(this, "random.bow", 1.0F, 1.0F / (Random.NextFloat() * 0.4F + 0.8F));
                 World.SpawnEntity(arrow);
                 arrow.setArrowHeading(dx, targetHeightOffset + (double)distanceFactor, dy, 0.6F, 12.0F);
-                attackTime = 30;
+                AttackTime = 30;
             }
 
             Yaw = (float)(System.Math.Atan2(dy, dx) * 180.0D / (double)((float)Math.PI)) - 90.0F;

@@ -337,7 +337,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
         GLManager.GL.Disable(GLEnum.CullFace);
 
-        float bodyYaw = entity is EntityLiving el ? el.bodyYaw : entity.Yaw;
+        float bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
         float headYaw = entity.Yaw;
         float headPitch = entity.Pitch;
         float lookX = x + _translateX - mouseX;
@@ -350,7 +350,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         if (entity is EntityLiving el2)
         {
-            el2.bodyYaw = (float)Math.Atan(lookX / 40.0F) * 20.0F;
+            el2.BodyYaw = (float)Math.Atan(lookX / 40.0F) * 20.0F;
         }
         entity.Yaw = (float)Math.Atan(lookX / 40.0F) * 40.0F;
         entity.Pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
@@ -363,7 +363,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         entity.MinBrightness = 0.0F;
         if (entity is EntityLiving el3)
         {
-            el3.bodyYaw = bodyYaw;
+            el3.BodyYaw = bodyYaw;
         }
         entity.Yaw = headYaw;
         entity.Pitch = headPitch;

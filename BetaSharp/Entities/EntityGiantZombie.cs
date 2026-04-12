@@ -7,10 +7,10 @@ public class EntityGiantZombie : EntityMonster
     public override EntityType Type => EntityRegistry.Giant;
     public EntityGiantZombie(IWorldContext world) : base(world)
     {
-        texture = "/mob/zombie.png";
-        movementSpeed = 0.5F;
+        Texture = "/mob/zombie.png";
+        MovementSpeed = 0.5F;
         attackStrength = 50;
-        health *= 10;
+        Health *= 10;
         StandingEyeHeight *= 6.0F;
         SetBoundingBoxSpacing(Width * 6.0F, Height * 6.0F);
     }

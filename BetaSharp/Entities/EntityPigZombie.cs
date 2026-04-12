@@ -13,15 +13,15 @@ internal class EntityPigZombie : EntityZombie
 
     public EntityPigZombie(IWorldContext world) : base(world)
     {
-        texture = "/mob/pigzombie.png";
-        movementSpeed = 0.5F;
+        Texture = "/mob/pigzombie.png";
+        MovementSpeed = 0.5F;
         attackStrength = 5;
         IsImmuneToFire = true;
     }
 
     public override void Tick()
     {
-        movementSpeed = playerToAttack != null ? 0.95F : 0.5F;
+        MovementSpeed = playerToAttack != null ? 0.95F : 0.5F;
         if (randomSoundDelay > 0 && --randomSoundDelay == 0)
         {
             World.Broadcaster.PlaySoundAtEntity(this, "mob.zombiepig.zpigangry", getSoundVolume() * 2.0F, ((Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F) * 1.8F);

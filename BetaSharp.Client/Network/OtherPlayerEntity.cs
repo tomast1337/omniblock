@@ -50,7 +50,7 @@ public class OtherPlayerEntity : EntityPlayer
     {
         sleepOffsetY = 0.0F;
         base.Tick();
-        lastWalkAnimationSpeed = walkAnimationSpeed;
+        LastWalkAnimationSpeed = WalkAnimationSpeed;
         double dx = X - PrevX;
         double dz = Z - PrevZ;
         float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz) * 4.0F;
@@ -59,8 +59,8 @@ public class OtherPlayerEntity : EntityPlayer
             horizontalDistance = 1.0F;
         }
 
-        walkAnimationSpeed += (horizontalDistance - walkAnimationSpeed) * 0.4F;
-        animationPhase += walkAnimationSpeed;
+        WalkAnimationSpeed += (horizontalDistance - WalkAnimationSpeed) * 0.4F;
+        AnimationPhase += WalkAnimationSpeed;
     }
 
     public override float GetShadowRadius()
@@ -102,18 +102,18 @@ public class OtherPlayerEntity : EntityPlayer
             horizontalSpeed = 0.1F;
         }
 
-        if (!OnGround || health <= 0)
+        if (!OnGround || Health <= 0)
         {
             horizontalSpeed = 0.0F;
         }
 
-        if (OnGround || health <= 0)
+        if (OnGround || Health <= 0)
         {
             tiltAmount = 0.0F;
         }
 
         stepBobbingAmount += (horizontalSpeed - stepBobbingAmount) * 0.4F;
-        tilt += (tiltAmount - tilt) * 0.8F;
+        Tilt += (tiltAmount - Tilt) * 0.8F;
     }
 
     public override void SetEquipmentStack(int slotIndex, int itemId, int damage)

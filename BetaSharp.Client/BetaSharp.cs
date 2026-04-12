@@ -878,7 +878,7 @@ public partial class BetaSharp :
 
         if (CurrentScreen == null && Player != null)
         {
-            if (Player.health <= 0)
+            if (Player.Health <= 0)
             {
                 Navigate(null);
             }
@@ -1518,7 +1518,7 @@ public partial class BetaSharp :
         {
             newScreen = CreateMainMenuScreen();
         }
-        else if (newScreen == null && Player.health <= 0)
+        else if (newScreen == null && Player.Health <= 0)
         {
             newScreen = new GameOverScreen(UIContext, (int)Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
         }

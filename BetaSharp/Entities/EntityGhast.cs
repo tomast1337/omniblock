@@ -20,7 +20,7 @@ public class EntityGhast : EntityFlying, Monster
 
     public EntityGhast(IWorldContext world) : base(world)
     {
-        texture = "/mob/ghast.png";
+        Texture = "/mob/ghast.png";
         SetBoundingBoxSpacing(4.0F, 4.0F);
         IsImmuneToFire = true;
         Charging = DataSynchronizer.MakeProperty<bool>(16, false);
@@ -29,7 +29,7 @@ public class EntityGhast : EntityFlying, Monster
     public override void Tick()
     {
         base.Tick();
-        texture = Charging.Value ? "/mob/ghast_fire.png" : "/mob/ghast.png";
+        Texture = Charging.Value ? "/mob/ghast_fire.png" : "/mob/ghast.png";
     }
 
     public override void tickLiving()
@@ -89,7 +89,7 @@ public class EntityGhast : EntityFlying, Monster
             double dx2 = targetedEntity.X - X;
             double dy2 = targetedEntity.BoundingBox.MinY + (double)(targetedEntity.Height / 2.0F) - (Y + (double)(Height / 2.0F));
             double dz2 = targetedEntity.Z - Z;
-            bodyYaw = Yaw = -((float)System.Math.Atan2(dx2, dz2)) * 180.0F / (float)System.Math.PI;
+            BodyYaw = Yaw = -((float)System.Math.Atan2(dx2, dz2)) * 180.0F / (float)System.Math.PI;
             if (canSee(targetedEntity))
             {
                 if (attackCounter == 10)
@@ -118,7 +118,7 @@ public class EntityGhast : EntityFlying, Monster
         }
         else
         {
-            bodyYaw = Yaw = -((float)System.Math.Atan2(VelocityX, VelocityZ)) * 180.0F / (float)System.Math.PI;
+            BodyYaw = Yaw = -((float)System.Math.Atan2(VelocityX, VelocityZ)) * 180.0F / (float)System.Math.PI;
             if (attackCounter > 0)
             {
                 --attackCounter;

@@ -223,14 +223,14 @@ public class DataCommand : Command.Command
         output.SendMessage("dead: " + e.Dead);
         if (e is EntityPlayer player)
         {
-            output.SendMessage("deathTime: " + player.deathTime);
-            output.SendMessage("health: " + player.health);
+            output.SendMessage("deathTime: " + player.DeathTime);
+            output.SendMessage("health: " + player.Health);
             output.SendMessage("name: " + player.name);
         }
         else if (e is EntityLiving living)
         {
-            output.SendMessage("deathTime: " + living.deathTime);
-            output.SendMessage("health: " + living.health);
+            output.SendMessage("deathTime: " + living.DeathTime);
+            output.SendMessage("health: " + living.Health);
         }
 
         if (e.Passenger != null)

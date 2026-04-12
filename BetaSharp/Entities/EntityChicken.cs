@@ -17,9 +17,9 @@ public class EntityChicken : EntityAnimal
 
     public EntityChicken(IWorldContext world) : base(world)
     {
-        texture = "/mob/chicken.png";
+        Texture = "/mob/chicken.png";
         SetBoundingBoxSpacing(0.3F, 0.4F);
-        health = 4;
+        Health = 4;
         timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
 

@@ -761,7 +761,7 @@ public abstract class Entity
         }
     }
 
-    public virtual float GetBrightnessAtEyes()
+    public virtual float GetBrightnessAtEyes(float tickDelta)
     {
         int floorX = MathHelper.Floor(X);
         double var3 = (BoundingBox.MaxY - BoundingBox.MinY) * 0.66D;
@@ -1239,7 +1239,7 @@ public abstract class Entity
         }
     }
 
-    public virtual void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch)
+    public virtual void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int newPosRotationIncrements)
     {
         SetPosition(x, y, z);
         SetRotation(yaw, pitch);

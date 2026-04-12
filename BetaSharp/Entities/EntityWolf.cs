@@ -24,13 +24,13 @@ public class EntityWolf : EntityAnimal
 
     public EntityWolf(IWorldContext world) : base(world)
     {
-        texture = "/mob/wolf.png";
+        Texture = "/mob/wolf.png";
         SetBoundingBoxSpacing(0.8F, 0.8F);
-        movementSpeed = 1.1F;
-        health = 8;
+        MovementSpeed = 1.1F;
+        Health = 8;
         WolfFlags = DataSynchronizer.MakeProperty<byte>(16, 0);
         WolfOwner = DataSynchronizer.MakeProperty<string>(17, "");
-        WolfHealth = DataSynchronizer.MakeProperty<int>(18, health);
+        WolfHealth = DataSynchronizer.MakeProperty<int>(18, Health);
     }
 
     protected override bool BypassesSteppingEffects()
@@ -138,7 +138,7 @@ public class EntityWolf : EntityAnimal
 
         if (!World.IsRemote)
         {
-            WolfHealth.Value = health;
+            WolfHealth.Value = Health;
         }
 
     }
@@ -168,7 +168,7 @@ public class EntityWolf : EntityAnimal
             }
         }
 
-        if (!interpolateOnly && isWolfShaking && !isShaking && !hasPath() && OnGround)
+        if (!InterpolateOnly && isWolfShaking && !isShaking && !hasPath() && OnGround)
         {
             isShaking = true;
             timeWolfIsShaking = 0.0F;
@@ -193,7 +193,7 @@ public class EntityWolf : EntityAnimal
 
         if (looksWithInterest)
         {
-            lookTimer = 10;
+            LookTimer = 10;
         }
 
         if (IsWet())
@@ -389,7 +389,7 @@ public class EntityWolf : EntityAnimal
         }
         else if ((double)distance < 1.5D && entity.BoundingBox.MaxY > BoundingBox.MinY && entity.BoundingBox.MinY < BoundingBox.MaxY)
         {
-            attackTime = 20;
+            AttackTime = 20;
             byte damageAmount = 2;
             if (isWolfTamed())
             {
@@ -421,7 +421,7 @@ public class EntityWolf : EntityAnimal
                         setWolfTamed(true);
                         setPathToEntity((PathEntity)null);
                         setWolfSitting(true);
-                        health = 20;
+                        Health = 20;
                         setWolfOwner(player.name);
                         showHeartsOrSmokeFX(true);
                         World.Broadcaster.EntityEvent(this, 7);
@@ -459,7 +459,7 @@ public class EntityWolf : EntityAnimal
                 if (!World.IsRemote)
                 {
                     setWolfSitting(!isWolfSitting());
-                    jumping = false;
+                    Jumping = false;
                     setPathToEntity((PathEntity)null);
                 }
 

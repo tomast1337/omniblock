@@ -12,7 +12,7 @@ public class EntityPig : EntityAnimal
 
     public EntityPig(IWorldContext world) : base(world)
     {
-        texture = "/mob/pig.png";
+        Texture = "/mob/pig.png";
         SetBoundingBoxSpacing(0.9F, 0.9F);
         Saddled = DataSynchronizer.MakeProperty(16, false);
     }

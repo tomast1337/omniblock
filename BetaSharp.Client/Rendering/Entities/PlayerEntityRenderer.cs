@@ -148,7 +148,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             for (int var19 = 0; var19 < 2; ++var19)
             {
-                var5 = var1.PrevYaw + (var1.Yaw - var1.PrevYaw) * var2 - (var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var2);
+                var5 = var1.PrevYaw + (var1.Yaw - var1.PrevYaw) * var2 - (var1.LastBodyYaw + (var1.BodyYaw - var1.LastBodyYaw) * var2);
                 float var6 = var1.PrevPitch + (var1.Pitch - var1.PrevPitch) * var2;
                 GLManager.GL.PushMatrix();
                 GLManager.GL.Rotate(var5, 0.0F, 1.0F, 0.0F);
@@ -171,7 +171,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             double var20 = var1.prevCapeX + (var1.capeX - var1.prevCapeX) * (double)var2 - (var1.PrevX + (var1.X - var1.PrevX) * (double)var2);
             double var22 = var1.prevCapeY + (var1.capeY - var1.prevCapeY) * (double)var2 - (var1.PrevY + (var1.Y - var1.PrevY) * (double)var2);
             double var8 = var1.prevCapeZ + (var1.capeZ - var1.prevCapeZ) * (double)var2 - (var1.PrevZ + (var1.Z - var1.PrevZ) * (double)var2);
-            float var10 = var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var2;
+            float var10 = var1.LastBodyYaw + (var1.BodyYaw - var1.LastBodyYaw) * var2;
             double var11 = (double)MathHelper.Sin(var10 * (float)Math.PI / 180.0F);
             double var13 = (double)-MathHelper.Cos(var10 * (float)Math.PI / 180.0F);
             float var15 = (float)var22 * 10.0F;

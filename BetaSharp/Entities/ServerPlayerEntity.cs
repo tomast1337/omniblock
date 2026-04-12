@@ -240,10 +240,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             portalCooldown--;
         }
 
-        if (health != lastHealthScore)
+        if (Health != lastHealthScore)
         {
-            NetworkHandler.SendPacket(HealthUpdateS2CPacket.Get(health));
-            lastHealthScore = health;
+            NetworkHandler.SendPacket(HealthUpdateS2CPacket.Get(Health));
+            lastHealthScore = Health;
         }
     }
 
@@ -492,9 +492,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void updateInput(float sidewaysSpeed, float forwardSpeed, bool jumping, bool sneaking, float pitch, float yaw)
     {
-        this.sidewaysSpeed = sidewaysSpeed;
-        this.forwardSpeed = forwardSpeed;
-        this.jumping = jumping;
+        this.SidewaysSpeed = sidewaysSpeed;
+        this.ForwardSpeed = forwardSpeed;
+        this.Jumping = jumping;
         SetSneaking(sneaking);
         this.Pitch = pitch;
         this.Yaw = yaw;
@@ -504,16 +504,16 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         if (GameMode is { CanWalk: false, DisallowFlying: true })
         {
-            sidewaysSpeed = packet.getSideways();
-            forwardSpeed = packet.getForward();
+            SidewaysSpeed = packet.getSideways();
+            ForwardSpeed = packet.getForward();
         }
         else
         {
-            sidewaysSpeed = 0;
-            forwardSpeed = 0;
+            SidewaysSpeed = 0;
+            ForwardSpeed = 0;
         }
 
-        jumping = packet.isJumping();
+        Jumping = packet.isJumping();
         SetSneaking(packet.isSneaking());
         Pitch = packet.getPitch();
         Yaw = packet.getYaw();

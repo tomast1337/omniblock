@@ -45,7 +45,7 @@ public class LivingEntityRenderer : EntityRenderer
 
         try
         {
-            float var10 = var1.lastBodyYaw + (var1.bodyYaw - var1.lastBodyYaw) * var9;
+            float var10 = var1.LastBodyYaw + (var1.BodyYaw - var1.LastBodyYaw) * var9;
             float var11 = var1.PrevYaw + (var1.Yaw - var1.PrevYaw) * var9;
             float var12 = var1.PrevPitch + (var1.Pitch - var1.PrevPitch) * var9;
             Func_22012_b(var1, var2, var4, var6);
@@ -56,8 +56,8 @@ public class LivingEntityRenderer : EntityRenderer
             GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
             PreRenderCallback(var1, var9);
             GLManager.GL.Translate(0.0F, -24.0F * var14 - (1 / 128f), 0.0F);
-            float var15 = var1.lastWalkAnimationSpeed + (var1.walkAnimationSpeed - var1.lastWalkAnimationSpeed) * var9;
-            float var16 = var1.animationPhase - var1.walkAnimationSpeed * (1.0F - var9);
+            float var15 = var1.LastWalkAnimationSpeed + (var1.WalkAnimationSpeed - var1.LastWalkAnimationSpeed) * var9;
+            float var16 = var1.AnimationPhase - var1.WalkAnimationSpeed * (1.0F - var9);
             if (var15 > 1.0F)
             {
                 var15 = 1.0F;
@@ -81,14 +81,14 @@ public class LivingEntityRenderer : EntityRenderer
             RenderMore(var1, var9);
             float var25 = var1.GetBrightnessAtEyes(var9);
             int var18 = getColorMultiplier(var1, var25, var9);
-            if ((var18 >> 24 & 255) > 0 || var1.hurtTime > 0 || var1.deathTime > 0)
+            if ((var18 >> 24 & 255) > 0 || var1.HurtTime > 0 || var1.DeathTime > 0)
             {
                 GLManager.GL.Disable(GLEnum.Texture2D);
                 GLManager.GL.Disable(GLEnum.AlphaTest);
                 GLManager.GL.Enable(GLEnum.Blend);
                 GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
                 GLManager.GL.DepthFunc(GLEnum.Equal);
-                if (var1.hurtTime > 0 || var1.deathTime > 0)
+                if (var1.HurtTime > 0 || var1.DeathTime > 0)
                 {
                     GLManager.GL.Color4(var25, 0.0F, 0.0F, 0.4F);
                     mainModel.render(var16, var15, var13, var11 - var10, var12, var14);
@@ -147,9 +147,9 @@ public class LivingEntityRenderer : EntityRenderer
     protected virtual void RotateCorpse(EntityLiving var1, float var2, float var3, float var4)
     {
         GLManager.GL.Rotate(180.0F - var3, 0.0F, 1.0F, 0.0F);
-        if (var1.deathTime > 0)
+        if (var1.DeathTime > 0)
         {
-            float var5 = (var1.deathTime + var4 - 1.0F) / 20.0F * 1.6F;
+            float var5 = (var1.DeathTime + var4 - 1.0F) / 20.0F * 1.6F;
             var5 = MathHelper.Sqrt(var5);
             if (var5 > 1.0F)
             {

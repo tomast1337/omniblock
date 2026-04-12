@@ -68,11 +68,11 @@ public abstract class EntityPlayer : EntityLiving
         StandingEyeHeight = 1.62F;
         Vec3i var2 = world.Properties.GetSpawnPos();
         SetPositionAndAnglesKeepPrevAngles((double)var2.X + 0.5D, (double)(var2.Y + 1), (double)var2.Z + 0.5D, 0.0F, 0.0F);
-        health = 20;
-        modelName = "humanoid";
-        rotationOffset = 180.0F;
+        Health = 20;
+        ModelName = "humanoid";
+        RotationOffset = 180.0F;
         FireImmunityTicks = 20;
-        texture = "/mob/char.png";
+        Texture = "/mob/char.png";
     }
 
     public override bool canBreatheUnderwater() => !GameMode.NeedsAir;
@@ -193,7 +193,7 @@ public abstract class EntityPlayer : EntityLiving
 
     protected void PickupAndInventorySubtick()
     {
-        if (World.Difficulty == 0 && health < 20 && Age % 20 * 12 == 0)
+        if (World.Difficulty == 0 && Health < 20 && Age % 20 * 12 == 0)
         {
             heal(1);
         }
@@ -203,7 +203,7 @@ public abstract class EntityPlayer : EntityLiving
 
     protected void CollideWithPickupEntities()
     {
-        if (health <= 0) return;
+        if (Health <= 0) return;
 
         var entities = World.Entities.GetEntities(this, BoundingBox.Expand(1.0D, 0.0D, 1.0D));
 
@@ -218,7 +218,7 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override bool isMovementBlocked()
     {
-        return health <= 0 || isSleeping();
+        return Health <= 0 || isSleeping();
     }
 
     public virtual void closeHandledScreen()
@@ -253,8 +253,8 @@ public abstract class EntityPlayer : EntityLiving
         StandingEyeHeight = 1.62F;
         SetBoundingBoxSpacing(0.6F, 1.8F);
         base.TeleportToTop();
-        health = 20;
-        deathTime = 0;
+        Health = 20;
+        DeathTime = 0;
     }
 
     public override void tickLiving()
@@ -273,7 +273,7 @@ public abstract class EntityPlayer : EntityLiving
             handSwingTicks = 0;
         }
 
-        swingAnimationProgress = (float)handSwingTicks / 8.0F;
+        SwingAnimationProgress = (float)handSwingTicks / 8.0F;
     }
 
     public override void tickMovement()
@@ -288,18 +288,18 @@ public abstract class EntityPlayer : EntityLiving
             var1 = 0.1F;
         }
 
-        if (!OnGround || health <= 0)
+        if (!OnGround || Health <= 0)
         {
             var1 = 0.0F;
         }
 
-        if (OnGround || health <= 0)
+        if (OnGround || Health <= 0)
         {
             var2 = 0.0F;
         }
 
         stepBobbingAmount += (var1 - stepBobbingAmount) * 0.4F;
-        tilt += (var2 - tilt) * 0.8F;
+        Tilt += (var2 - Tilt) * 0.8F;
         CollideWithPickupEntities();
     }
 
@@ -327,8 +327,8 @@ public abstract class EntityPlayer : EntityLiving
         inventory.DropInventory();
         if (adversary != null)
         {
-            VelocityX = (double)(-MathHelper.Cos((attackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
-            VelocityZ = (double)(-MathHelper.Sin((attackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
+            VelocityX = (double)(-MathHelper.Cos((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
+            VelocityZ = (double)(-MathHelper.Sin((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
         }
         else
         {
@@ -488,8 +488,8 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (!GameMode.CanReceiveDamage) return false;
 
-        entityAge = 0;
-        if (health <= 0)
+        EntityAge = 0;
+        if (Health <= 0)
         {
             return false;
         }

@@ -531,7 +531,7 @@ public class ClientNetworkHandler : NetHandler
         ent.LastTickX = ent.X;
         ent.LastTickY = ent.Y;
         ent.LastTickZ = ent.Z;
-        ent.interpolateOnly = true;
+        ent.InterpolateOnly = true;
         _worldClient.ForceEntity(packet.entityId, ent);
         ent.DataSynchronizer.ApplyChanges(new MemoryStream(packet.Data));
     }

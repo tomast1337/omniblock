@@ -559,7 +559,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onPlayerRespawn(PlayerRespawnPacket packet)
     {
-        if (player.health <= 0)
+        if (player.Health <= 0)
         {
             player = server.playerManager.respawnPlayer(player, 0);
         }

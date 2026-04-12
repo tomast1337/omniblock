@@ -9,8 +9,8 @@ public class EntityZombie : EntityMonster
     public override EntityType Type => EntityRegistry.Zombie;
     public EntityZombie(IWorldContext world) : base(world)
     {
-        texture = "/mob/zombie.png";
-        movementSpeed = 0.5F;
+        Texture = "/mob/zombie.png";
+        MovementSpeed = 0.5F;
         attackStrength = 5;
     }
 

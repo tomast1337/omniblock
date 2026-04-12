@@ -10,65 +10,60 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityLiving : Entity
 {
-    public int maxHealth = 20;
-    public float limbSwingPhase;
-    public float limbSwingScale;
-    public float bodyYaw;
-    public float lastBodyYaw;
-    protected float lastWalkProgress;
-    protected float walkProgress;
-    protected float totalWalkDistance;
-    protected float lastTotalWalkDistance;
-    protected bool canLookAround = true;
-    protected string texture = "/mob/char.png";
-    protected bool field_9355_A = true;
-    protected float rotationOffset = 0.0F;
-    protected string modelName = null;
-    protected float modelScale = 1.0F;
-    protected int scoreAmount = 0;
-    protected float field_9345_F = 0.0F;
-    public bool interpolateOnly = false;
-    public float lastSwingAnimationProgress;
-    public float swingAnimationProgress;
-    public int health = 10;
-    public int lastHealth;
-    private int livingSoundTime;
-    public int hurtTime;
-    public int maxHurtTime;
-    public float attackedAtYaw;
-    public int deathTime;
-    public int attackTime;
-    public float cameraPitch;
-    public float tilt;
-    protected bool unused_flag;
-    public int field_9326_T = -1;
-    public float field_9325_U = System.Random.Shared.NextSingle() * 0.9f + 0.1f;
-    public float lastWalkAnimationSpeed;
-    public float walkAnimationSpeed;
-    public float animationPhase;
-    protected int newPosRotationIncrements;
-    protected double newPosX;
-    protected double newPosY;
-    protected double newPosZ;
-    protected double newRotationYaw;
-    protected double newRotationPitch;
-    protected int damageForDisplay;
-    protected int entityAge;
-    protected float sidewaysSpeed;
-    protected float forwardSpeed;
-    protected float rotationSpeed;
-    protected bool jumping;
-    protected float defaultPitch = 0.0F;
-    protected float movementSpeed = 0.7F;
-    private Entity lookTarget;
-    protected int lookTimer;
+    public int MaxHealth = 20;
+    public float LimbSwingPhase;
+    public float LimbSwingScale;
+    public float BodyYaw;
+    public float LastBodyYaw;
+    protected float LastWalkProgress;
+    protected float WalkProgress;
+    protected float TotalWalkDistance;
+    protected float LastTotalWalkDistance;
+    protected bool CanLookAround = true;
+    protected string Texture = "/mob/char.png";
+    protected float RotationOffset = 0.0F;
+    protected string ModelName = null;
+    protected float ModelScale = 1.0F;
+    protected int ScoreAmount = 0;
+    public bool InterpolateOnly = false;
+    public float LastSwingAnimationProgress;
+    public float SwingAnimationProgress;
+    public int Health = 10;
+    public int LastHealth;
+    private int _livingSoundTime;
+    public int HurtTime;
+    public int MaxHurtTime;
+    public float AttackedAtYaw;
+    public int DeathTime;
+    public int AttackTime;
+    public float CameraPitch;
+    public float Tilt;
+    public float LastWalkAnimationSpeed;
+    public float WalkAnimationSpeed;
+    public float AnimationPhase;
+    protected int NewPosRotationIncrements;
+    protected double NewPosX;
+    protected double NewPosY;
+    protected double NewPosZ;
+    protected double NewRotationYaw;
+    protected double NewRotationPitch;
+    protected int DamageForDisplay;
+    protected int EntityAge;
+    protected float SidewaysSpeed;
+    protected float ForwardSpeed;
+    protected float RotationSpeed;
+    protected bool Jumping;
+    protected float DefaultPitch = 0.0F;
+    protected float MovementSpeed = 0.7F;
+    private Entity _lookTarget;
+    protected int LookTimer;
 
     public EntityLiving(IWorldContext world) : base(world)
     {
         PreventEntitySpawning = true;
-        limbSwingScale = (System.Random.Shared.NextSingle() + 1.0f) * 0.01f;
+        LimbSwingScale = (System.Random.Shared.NextSingle() + 1.0f) * 0.01f;
         SetPosition(X, Y, Z);
-        limbSwingPhase = System.Random.Shared.NextSingle() * 12398.0f;
+        LimbSwingPhase = System.Random.Shared.NextSingle() * 12398.0f;
         Yaw = (System.Random.Shared.NextSingle() * (float)Math.PI) * 2.0f;
         StepHeight = 0.5F;
     }
@@ -86,7 +81,7 @@ public abstract class EntityLiving : Entity
 
     public override string GetTexture()
     {
-        return texture;
+        return Texture;
     }
 
     public override bool IsCollidable()
@@ -121,11 +116,11 @@ public abstract class EntityLiving : Entity
 
     public override void BaseTick()
     {
-        lastSwingAnimationProgress = swingAnimationProgress;
+        LastSwingAnimationProgress = SwingAnimationProgress;
         base.BaseTick();
-        if (Random.NextInt(1000) < livingSoundTime++)
+        if (Random.NextInt(1000) < _livingSoundTime++)
         {
-            livingSoundTime = -getTalkInterval();
+            _livingSoundTime = -getTalkInterval();
             playLivingSound();
         }
 
@@ -165,15 +160,15 @@ public abstract class EntityLiving : Entity
             Air = MaxAir;
         }
 
-        cameraPitch = tilt;
-        if (attackTime > 0)
+        CameraPitch = Tilt;
+        if (AttackTime > 0)
         {
-            --attackTime;
+            --AttackTime;
         }
 
-        if (hurtTime > 0)
+        if (HurtTime > 0)
         {
-            --hurtTime;
+            --HurtTime;
         }
 
         if (Hearts > 0)
@@ -181,10 +176,10 @@ public abstract class EntityLiving : Entity
             --Hearts;
         }
 
-        if (health <= 0)
+        if (Health <= 0)
         {
-            ++deathTime;
-            if (deathTime > 20)
+            ++DeathTime;
+            if (DeathTime > 20)
             {
                 onEntityDeath();
                 MarkDead();
@@ -199,15 +194,15 @@ public abstract class EntityLiving : Entity
             }
         }
 
-        lastTotalWalkDistance = totalWalkDistance;
-        lastBodyYaw = bodyYaw;
+        LastTotalWalkDistance = TotalWalkDistance;
+        LastBodyYaw = BodyYaw;
         PrevYaw = Yaw;
         PrevPitch = Pitch;
     }
 
     public override void Move(double x, double y, double z)
     {
-        if (!interpolateOnly/* || this is ClientPlayerEntity*/) base.Move(x, y, z);
+        if (!InterpolateOnly/* || this is ClientPlayerEntity*/) base.Move(x, y, z);
     }
 
     public void animateSpawn()
@@ -226,19 +221,19 @@ public abstract class EntityLiving : Entity
     public override void TickRiding()
     {
         base.TickRiding();
-        lastWalkProgress = walkProgress;
-        walkProgress = 0.0F;
+        LastWalkProgress = WalkProgress;
+        WalkProgress = 0.0F;
     }
 
     public override void SetPositionAndAnglesAvoidEntities(double newPosX, double newPosY, double newPosZ, float newRotationYaw, float newRotationPitch, int newPosRotationIncrements)
     {
         StandingEyeHeight = 0.0F;
-        this.newPosX = newPosX;
-        this.newPosY = newPosY;
-        this.newPosZ = newPosZ;
-        this.newRotationYaw = (double)newRotationYaw;
-        this.newRotationPitch = (double)newRotationPitch;
-        this.newPosRotationIncrements = newPosRotationIncrements;
+        this.NewPosX = newPosX;
+        this.NewPosY = newPosY;
+        this.NewPosZ = newPosZ;
+        this.NewRotationYaw = (double)newRotationYaw;
+        this.NewRotationPitch = (double)newRotationPitch;
+        this.NewPosRotationIncrements = newPosRotationIncrements;
     }
 
     public override void Tick()
@@ -248,9 +243,9 @@ public abstract class EntityLiving : Entity
         double dx = X - PrevX;
         double dz = Z - PrevZ;
         float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
-        float computedYaw = bodyYaw;
+        float computedYaw = BodyYaw;
         float walkSpeed = 0.0F;
-        lastWalkProgress = walkProgress;
+        LastWalkProgress = WalkProgress;
         float walkAmount = 0.0F;
         if (horizontalDistance > 0.05F)
         {
@@ -259,7 +254,7 @@ public abstract class EntityLiving : Entity
             computedYaw = (float)System.Math.Atan2(dz, dx) * 180.0F / (float)System.Math.PI - 90.0F;
         }
 
-        if (swingAnimationProgress > 0.0F)
+        if (SwingAnimationProgress > 0.0F)
         {
             computedYaw = base.Yaw;
         }
@@ -269,10 +264,10 @@ public abstract class EntityLiving : Entity
             walkAmount = 0.0F;
         }
 
-        walkProgress += (walkAmount - walkProgress) * 0.3F;
+        WalkProgress += (walkAmount - WalkProgress) * 0.3F;
 
         float yawDelta;
-        for (yawDelta = computedYaw - bodyYaw; yawDelta < -180.0F; yawDelta += 360.0F)
+        for (yawDelta = computedYaw - BodyYaw; yawDelta < -180.0F; yawDelta += 360.0F)
         {
         }
 
@@ -281,10 +276,10 @@ public abstract class EntityLiving : Entity
             yawDelta -= 360.0F;
         }
 
-        bodyYaw += yawDelta * 0.3F;
+        BodyYaw += yawDelta * 0.3F;
 
         float headYawDelta;
-        for (headYawDelta = base.Yaw - bodyYaw; headYawDelta < -180.0F; headYawDelta += 360.0F)
+        for (headYawDelta = base.Yaw - BodyYaw; headYawDelta < -180.0F; headYawDelta += 360.0F)
         {
         }
 
@@ -304,10 +299,10 @@ public abstract class EntityLiving : Entity
             headYawDelta = 75.0F;
         }
 
-        bodyYaw = base.Yaw - headYawDelta;
+        BodyYaw = base.Yaw - headYawDelta;
         if (headYawDelta * headYawDelta > 2500.0F)
         {
-            bodyYaw += headYawDelta * 0.2F;
+            BodyYaw += headYawDelta * 0.2F;
         }
 
         if (headFacingBackward)
@@ -325,14 +320,14 @@ public abstract class EntityLiving : Entity
             PrevYaw += 360.0F;
         }
 
-        while (bodyYaw - lastBodyYaw < -180.0F)
+        while (BodyYaw - LastBodyYaw < -180.0F)
         {
-            lastBodyYaw -= 360.0F;
+            LastBodyYaw -= 360.0F;
         }
 
-        while (bodyYaw - lastBodyYaw >= 180.0F)
+        while (BodyYaw - LastBodyYaw >= 180.0F)
         {
-            lastBodyYaw += 360.0F;
+            LastBodyYaw += 360.0F;
         }
 
         while (Pitch - PrevPitch < -180.0F)
@@ -345,7 +340,7 @@ public abstract class EntityLiving : Entity
             PrevPitch += 360.0F;
         }
 
-        totalWalkDistance += walkSpeed;
+        TotalWalkDistance += walkSpeed;
     }
 
     protected override void SetBoundingBoxSpacing(float widthOffset, float heightOffset)
@@ -355,15 +350,15 @@ public abstract class EntityLiving : Entity
 
     public virtual void heal(int amount)
     {
-        if (health > 0)
+        if (Health > 0)
         {
-            health += amount;
-            if (health > maxHealth)
+            Health += amount;
+            if (Health > MaxHealth)
             {
-                health = maxHealth;
+                Health = MaxHealth;
             }
 
-            Hearts = maxHealth / 2;
+            Hearts = MaxHealth / 2;
         }
     }
 
@@ -375,36 +370,36 @@ public abstract class EntityLiving : Entity
         }
         else
         {
-            entityAge = 0;
-            if (health <= 0)
+            EntityAge = 0;
+            if (Health <= 0)
             {
                 return false;
             }
             else
             {
-                walkAnimationSpeed = 1.5F;
+                WalkAnimationSpeed = 1.5F;
                 bool var3 = true;
-                if ((float)Hearts > (float)maxHealth / 2.0F)
+                if ((float)Hearts > (float)MaxHealth / 2.0F)
                 {
-                    if (amount <= damageForDisplay)
+                    if (amount <= DamageForDisplay)
                     {
                         return false;
                     }
 
-                    applyDamage(amount - damageForDisplay);
-                    damageForDisplay = amount;
+                    applyDamage(amount - DamageForDisplay);
+                    DamageForDisplay = amount;
                     var3 = false;
                 }
                 else
                 {
-                    damageForDisplay = amount;
-                    lastHealth = health;
-                    Hearts = maxHealth;
+                    DamageForDisplay = amount;
+                    LastHealth = Health;
+                    Hearts = MaxHealth;
                     applyDamage(amount);
-                    hurtTime = maxHurtTime = 10;
+                    HurtTime = MaxHurtTime = 10;
                 }
 
-                attackedAtYaw = 0.0F;
+                AttackedAtYaw = 0.0F;
                 if (var3)
                 {
                     World.Broadcaster.EntityEvent(this, (byte)2);
@@ -419,16 +414,16 @@ public abstract class EntityLiving : Entity
                             var4 = (System.Random.Shared.NextDouble() - System.Random.Shared.NextDouble()) * 0.01D;
                         }
 
-                        attackedAtYaw = (float)(System.Math.Atan2(var6, var4) * 180.0D / (double)((float)System.Math.PI)) - Yaw;
+                        AttackedAtYaw = (float)(System.Math.Atan2(var6, var4) * 180.0D / (double)((float)System.Math.PI)) - Yaw;
                         knockBack(entity, amount, var4, var6);
                     }
                     else
                     {
-                        attackedAtYaw = (float)((int)(System.Random.Shared.NextDouble() * 2.0D) * 180);
+                        AttackedAtYaw = (float)((int)(System.Random.Shared.NextDouble() * 2.0D) * 180);
                     }
                 }
 
-                if (health <= 0)
+                if (Health <= 0)
                 {
                     if (var3)
                     {
@@ -449,13 +444,13 @@ public abstract class EntityLiving : Entity
 
     public override void AnimateHurt()
     {
-        hurtTime = maxHurtTime = 10;
-        attackedAtYaw = 0.0F;
+        HurtTime = MaxHurtTime = 10;
+        AttackedAtYaw = 0.0F;
     }
 
     protected virtual void applyDamage(int amount)
     {
-        health -= amount;
+        Health -= amount;
     }
 
     protected virtual float getSoundVolume()
@@ -497,9 +492,9 @@ public abstract class EntityLiving : Entity
 
     public virtual void onKilledBy(Entity var1)
     {
-        if (scoreAmount >= 0 && var1 != null)
+        if (ScoreAmount >= 0 && var1 != null)
         {
-            var1.UpdateKilledAchievement(this, scoreAmount);
+            var1.UpdateKilledAchievement(this, ScoreAmount);
         }
 
         if (var1 != null)
@@ -507,7 +502,6 @@ public abstract class EntityLiving : Entity
             var1.OnKillOther(this);
         }
 
-        unused_flag = true;
         if (!World.IsRemote)
         {
             dropFewItems();
@@ -659,7 +653,7 @@ public abstract class EntityLiving : Entity
             VelocityZ *= (double)friction;
         }
 
-        lastWalkAnimationSpeed = walkAnimationSpeed;
+        LastWalkAnimationSpeed = WalkAnimationSpeed;
         previousY = X - PrevX;
         double deltaZ = Z - PrevZ;
         float distanceMoved = MathHelper.Sqrt(previousY * previousY + deltaZ * deltaZ) * 4.0F;
@@ -668,8 +662,8 @@ public abstract class EntityLiving : Entity
             distanceMoved = 1.0F;
         }
 
-        walkAnimationSpeed += (distanceMoved - walkAnimationSpeed) * 0.4F;
-        animationPhase += walkAnimationSpeed;
+        WalkAnimationSpeed += (distanceMoved - WalkAnimationSpeed) * 0.4F;
+        AnimationPhase += WalkAnimationSpeed;
     }
 
     public virtual bool isOnLadder()
@@ -682,28 +676,28 @@ public abstract class EntityLiving : Entity
 
     public override void WriteNbt(NBTTagCompound nbt)
     {
-        nbt.SetShort("Health", (short)health);
-        nbt.SetShort("HurtTime", (short)hurtTime);
-        nbt.SetShort("DeathTime", (short)deathTime);
-        nbt.SetShort("AttackTime", (short)attackTime);
+        nbt.SetShort("Health", (short)Health);
+        nbt.SetShort("HurtTime", (short)HurtTime);
+        nbt.SetShort("DeathTime", (short)DeathTime);
+        nbt.SetShort("AttackTime", (short)AttackTime);
     }
 
     public override void ReadNbt(NBTTagCompound nbt)
     {
-        health = nbt.GetShort("Health");
+        Health = nbt.GetShort("Health");
         if (!nbt.HasKey("Health"))
         {
-            health = 10;
+            Health = 10;
         }
 
-        hurtTime = nbt.GetShort("HurtTime");
-        deathTime = nbt.GetShort("DeathTime");
-        attackTime = nbt.GetShort("AttackTime");
+        HurtTime = nbt.GetShort("HurtTime");
+        DeathTime = nbt.GetShort("DeathTime");
+        AttackTime = nbt.GetShort("AttackTime");
     }
 
     public override bool IsAlive()
     {
-        return !Dead && health > 0;
+        return !Dead && Health > 0;
     }
 
     public virtual bool canBreatheUnderwater()
@@ -727,10 +721,10 @@ public abstract class EntityLiving : Entity
                     var chunk = World.ChunkHost.GetChunk(chunkX, chunkZ);
                     if (!chunk.Loaded)
                     {
-                        jumping = false;
-                        sidewaysSpeed = 0.0F;
-                        forwardSpeed = 0.0F;
-                        rotationSpeed = 0.0F;
+                        Jumping = false;
+                        SidewaysSpeed = 0.0F;
+                        ForwardSpeed = 0.0F;
+                        RotationSpeed = 0.0F;
                         VelocityX = VelocityY = VelocityZ = 0.0D;
                         return;
                     }
@@ -738,14 +732,14 @@ public abstract class EntityLiving : Entity
             }
         }
 
-        if (newPosRotationIncrements > 0)
+        if (NewPosRotationIncrements > 0)
         {
-            double newX = X + (newPosX - X) / (double)newPosRotationIncrements;
-            double newY = Y + (newPosY - Y) / (double)newPosRotationIncrements;
-            double newZ = Z + (newPosZ - Z) / (double)newPosRotationIncrements;
+            double newX = X + (NewPosX - X) / (double)NewPosRotationIncrements;
+            double newY = Y + (NewPosY - Y) / (double)NewPosRotationIncrements;
+            double newZ = Z + (NewPosZ - Z) / (double)NewPosRotationIncrements;
 
             double yawDelta;
-            for (yawDelta = newRotationYaw - (double)Yaw; yawDelta < -180.0D; yawDelta += 360.0D)
+            for (yawDelta = NewRotationYaw - (double)Yaw; yawDelta < -180.0D; yawDelta += 360.0D)
             {
             }
 
@@ -754,9 +748,9 @@ public abstract class EntityLiving : Entity
                 yawDelta -= 360.0D;
             }
 
-            Yaw = (float)(Yaw + yawDelta / newPosRotationIncrements);
-            Pitch = (float)(Pitch + (newRotationPitch - Pitch) / newPosRotationIncrements);
-            --newPosRotationIncrements;
+            Yaw = (float)(Yaw + yawDelta / NewPosRotationIncrements);
+            Pitch = (float)(Pitch + (NewRotationPitch - Pitch) / NewPosRotationIncrements);
+            --NewPosRotationIncrements;
             SetPosition(newX, newY, newZ);
             SetRotation(Yaw, Pitch);
             var collisions = World.Entities.GetEntityCollisionsScratch(this, BoundingBox.Contract(1.0D / 32.0D, 0.0D, 1.0D / 32.0D));
@@ -785,19 +779,19 @@ public abstract class EntityLiving : Entity
 
         if (isMovementBlocked())
         {
-            jumping = false;
-            sidewaysSpeed = 0.0F;
-            forwardSpeed = 0.0F;
-            rotationSpeed = 0.0F;
+            Jumping = false;
+            SidewaysSpeed = 0.0F;
+            ForwardSpeed = 0.0F;
+            RotationSpeed = 0.0F;
         }
-        else if (!interpolateOnly)
+        else if (!InterpolateOnly)
         {
             tickLiving();
         }
 
         bool isInWater = base.IsInWater();
         bool isTouchingLava = base.IsTouchingLava();
-        if (jumping)
+        if (Jumping)
         {
             if (isInWater)
             {
@@ -813,10 +807,10 @@ public abstract class EntityLiving : Entity
             }
         }
 
-        sidewaysSpeed *= 0.98F;
-        forwardSpeed *= 0.98F;
-        rotationSpeed *= 0.9F;
-        travel(sidewaysSpeed, forwardSpeed);
+        SidewaysSpeed *= 0.98F;
+        ForwardSpeed *= 0.98F;
+        RotationSpeed *= 0.9F;
+        travel(SidewaysSpeed, ForwardSpeed);
         var nearbyEntities = World.Entities.GetEntitiesScratch(this, BoundingBox.Expand((double)0.2F, 0.0D, (double)0.2F));
         if (nearbyEntities != null && nearbyEntities.Count > 0)
         {
@@ -834,7 +828,7 @@ public abstract class EntityLiving : Entity
 
     protected virtual bool isMovementBlocked()
     {
-        return health <= 0;
+        return Health <= 0;
     }
 
     protected virtual void jump()
@@ -861,11 +855,11 @@ public abstract class EntityLiving : Entity
                 MarkDead();
             }
 
-            if (entityAge > 600 && Random.NextInt(800) == 0)
+            if (EntityAge > 600 && Random.NextInt(800) == 0)
             {
                 if (squaredDistance < 1024.0D)
                 {
-                    entityAge = 0;
+                    EntityAge = 0;
                 }
                 else
                 {
@@ -878,49 +872,49 @@ public abstract class EntityLiving : Entity
 
     public virtual void tickLiving()
     {
-        ++entityAge;
+        ++EntityAge;
         func_27021_X();
-        sidewaysSpeed = 0.0F;
-        forwardSpeed = 0.0F;
+        SidewaysSpeed = 0.0F;
+        ForwardSpeed = 0.0F;
         const float lookRange = 8.0F;
         if (Random.NextFloat() < 0.02F)
         {
             EntityPlayer? closestPlayer = World.Entities.GetClosestPlayer(X, Y, Z, (double)lookRange);
             if (closestPlayer != null)
             {
-                lookTarget = closestPlayer;
-                lookTimer = 10 + Random.NextInt(20);
+                _lookTarget = closestPlayer;
+                LookTimer = 10 + Random.NextInt(20);
             }
             else
             {
-                rotationSpeed = (Random.NextFloat() - 0.5F) * 20.0F;
+                RotationSpeed = (Random.NextFloat() - 0.5F) * 20.0F;
             }
         }
 
-        if (lookTarget != null)
+        if (_lookTarget != null)
         {
-            faceEntity(lookTarget, 10.0F, (float)getMaxFallDistance());
-            if (lookTimer-- <= 0 || lookTarget.Dead || lookTarget.GetSquaredDistance(this) > (double)(lookRange * lookRange))
+            faceEntity(_lookTarget, 10.0F, (float)getMaxFallDistance());
+            if (LookTimer-- <= 0 || _lookTarget.Dead || _lookTarget.GetSquaredDistance(this) > (double)(lookRange * lookRange))
             {
-                lookTarget = null;
+                _lookTarget = null;
             }
         }
         else
         {
             if (Random.NextFloat() < 0.05F)
             {
-                rotationSpeed = (Random.NextFloat() - 0.5F) * 20.0F;
+                RotationSpeed = (Random.NextFloat() - 0.5F) * 20.0F;
             }
 
-            Yaw += rotationSpeed;
-            Pitch = defaultPitch;
+            Yaw += RotationSpeed;
+            Pitch = DefaultPitch;
         }
 
         bool isInWater = base.IsInWater();
         bool isTouchingLava = base.IsTouchingLava();
         if (isInWater || isTouchingLava)
         {
-            jumping = Random.NextFloat() < 0.8F;
+            Jumping = Random.NextFloat() < 0.8F;
         }
 
     }
@@ -954,12 +948,12 @@ public abstract class EntityLiving : Entity
 
     public bool hasCurrentTarget()
     {
-        return lookTarget != null;
+        return _lookTarget != null;
     }
 
     public Entity getCurrentTarget()
     {
-        return lookTarget;
+        return _lookTarget;
     }
 
     private static float updateRotation(float var1, float var2, float var3)
@@ -1003,13 +997,13 @@ public abstract class EntityLiving : Entity
 
     public float getSwingProgress(float partialTick)
     {
-        float var2 = swingAnimationProgress - lastSwingAnimationProgress;
+        float var2 = SwingAnimationProgress - LastSwingAnimationProgress;
         if (var2 < 0.0F)
         {
             ++var2;
         }
 
-        return lastSwingAnimationProgress + var2 * partialTick;
+        return LastSwingAnimationProgress + var2 * partialTick;
     }
 
     public Vec3D GetPosition()
@@ -1085,17 +1079,17 @@ public abstract class EntityLiving : Entity
     {
         if (statusId == 2)
         {
-            walkAnimationSpeed = 1.5F;
-            Hearts = maxHealth;
-            hurtTime = maxHurtTime = 10;
-            attackedAtYaw = 0.0F;
+            WalkAnimationSpeed = 1.5F;
+            Hearts = MaxHealth;
+            HurtTime = MaxHurtTime = 10;
+            AttackedAtYaw = 0.0F;
             World.Broadcaster.PlaySoundAtEntity(this, getHurtSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
             Damage(null, 0);
         }
         else if (statusId == 3)
         {
             World.Broadcaster.PlaySoundAtEntity(this, getDeathSound(), getSoundVolume(), (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-            health = 0;
+            Health = 0;
             onKilledBy(null);
         }
         else

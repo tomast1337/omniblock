@@ -84,7 +84,7 @@ public abstract class EntityCreature : EntityLiving
                 }
             }
 
-            jumping = false;
+            Jumping = false;
             if (pos != null)
             {
                 double dx = pos.Value.x - X;
@@ -93,7 +93,7 @@ public abstract class EntityCreature : EntityLiving
                 float targetYaw = (float)(System.Math.Atan2(dz, dx) * 180.0D / (double)((float)System.Math.PI)) - 90.0F;
                 float yawDelta = targetYaw - Yaw;
 
-                for (forwardSpeed = movementSpeed; yawDelta < -180.0F; yawDelta += 360.0F)
+                for (ForwardSpeed = MovementSpeed; yawDelta < -180.0F; yawDelta += 360.0F)
                 {
                 }
 
@@ -120,13 +120,13 @@ public abstract class EntityCreature : EntityLiving
                     float previousYaw = Yaw;
                     Yaw = (float)(System.Math.Atan2(targetDeltaZ, targetDeltaX) * 180.0D / (double)((float)System.Math.PI)) - 90.0F;
                     yawDelta = (previousYaw - Yaw + 90.0F) * (float)System.Math.PI / 180.0F;
-                    sidewaysSpeed = -MathHelper.Sin(yawDelta) * forwardSpeed * 1.0F;
-                    forwardSpeed = MathHelper.Cos(yawDelta) * forwardSpeed * 1.0F;
+                    SidewaysSpeed = -MathHelper.Sin(yawDelta) * ForwardSpeed * 1.0F;
+                    ForwardSpeed = MathHelper.Cos(yawDelta) * ForwardSpeed * 1.0F;
                 }
 
                 if (verticalOffset > 0.0D)
                 {
-                    jumping = true;
+                    Jumping = true;
                 }
             }
 
@@ -137,12 +137,12 @@ public abstract class EntityCreature : EntityLiving
 
             if (HorizontalCollison && !hasPath())
             {
-                jumping = true;
+                Jumping = true;
             }
 
             if (Random.NextFloat() < 0.8F && (isInWater || isTouchingLava))
             {
-                jumping = true;
+                Jumping = true;
             }
 
         }

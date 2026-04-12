@@ -64,7 +64,7 @@ public abstract class EntityFlying : EntityLiving
             VelocityZ *= (double)friction;
         }
 
-        lastWalkAnimationSpeed = walkAnimationSpeed;
+        LastWalkAnimationSpeed = WalkAnimationSpeed;
         double dx = X - PrevX;
         double dy = Z - PrevZ;
         float distanceMoved = MathHelper.Sqrt(dx * dx + dy * dy) * 4.0F;
@@ -73,8 +73,8 @@ public abstract class EntityFlying : EntityLiving
             distanceMoved = 1.0F;
         }
 
-        walkAnimationSpeed += (distanceMoved - walkAnimationSpeed) * 0.4F;
-        animationPhase += walkAnimationSpeed;
+        WalkAnimationSpeed += (distanceMoved - WalkAnimationSpeed) * 0.4F;
+        AnimationPhase += WalkAnimationSpeed;
     }
 
     public override bool isOnLadder()

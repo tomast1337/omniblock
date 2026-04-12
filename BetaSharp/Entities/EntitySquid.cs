@@ -26,7 +26,7 @@ public class EntitySquid : EntityWaterMob
 
     public EntitySquid(IWorldContext world) : base(world)
     {
-        texture = "/mob/squid.png";
+        Texture = "/mob/squid.png";
         SetBoundingBoxSpacing(0.95F, 0.95F);
         animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
     }
@@ -128,7 +128,7 @@ public class EntitySquid : EntityWaterMob
                 squidRotation *= 0.99F;
             }
 
-            if (!interpolateOnly)
+            if (!InterpolateOnly)
             {
                 VelocityX = (double)(randomMotionVecX * randomMotionSpeed);
                 VelocityY = (double)(randomMotionVecY * randomMotionSpeed);
@@ -136,15 +136,15 @@ public class EntitySquid : EntityWaterMob
             }
 
             phaseProgress = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
-            bodyYaw += (-((float)System.Math.Atan2(VelocityX, VelocityZ)) * 180.0F / (float)Math.PI - bodyYaw) * 0.1F;
-            Yaw = bodyYaw;
+            BodyYaw += (-((float)System.Math.Atan2(VelocityX, VelocityZ)) * 180.0F / (float)Math.PI - BodyYaw) * 0.1F;
+            Yaw = BodyYaw;
             tentaclePhase += (float)Math.PI * squidRotation * 1.5F;
             tiltAngle += (-((float)System.Math.Atan2((double)phaseProgress, VelocityY)) * 180.0F / (float)Math.PI - tiltAngle) * 0.1F;
         }
         else
         {
             tentacleSpread = MathHelper.Abs(MathHelper.Sin(swimPhase)) * (float)Math.PI * 0.25F;
-            if (!interpolateOnly)
+            if (!InterpolateOnly)
             {
                 VelocityX = 0.0D;
                 VelocityY -= 0.08D;

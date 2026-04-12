@@ -10,9 +10,9 @@ public class EntitySpider : EntityMonster
     public override EntityType Type => EntityRegistry.Spider;
     public EntitySpider(IWorldContext world) : base(world)
     {
-        texture = "/mob/spider.png";
+        Texture = "/mob/spider.png";
         SetBoundingBoxSpacing(1.4F, 0.9F);
-        movementSpeed = 0.8F;
+        MovementSpeed = 0.8F;
     }
 
     public override void PostSpawn()

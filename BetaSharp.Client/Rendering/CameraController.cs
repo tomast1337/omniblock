@@ -71,9 +71,9 @@ public class CameraController
             fov -= 10.0F;
         }
 
-        if (cameraEntity.health <= 0)
+        if (cameraEntity.Health <= 0)
         {
-            float deathTimeF = cameraEntity.deathTime + tickDelta;
+            float deathTimeF = cameraEntity.DeathTime + tickDelta;
             fov /= (1.0F - 500.0F / (deathTimeF + 500.0F)) * 2.0F + 1.0F;
         }
 
@@ -90,19 +90,19 @@ public class CameraController
     public void ApplyDamageTiltEffect(float tickDelta)
     {
         EntityLiving cameraEntity = _game.Camera;
-        float hurtTimeF = cameraEntity.hurtTime - tickDelta;
+        float hurtTimeF = cameraEntity.HurtTime - tickDelta;
 
-        if (cameraEntity.health <= 0)
+        if (cameraEntity.Health <= 0)
         {
-            float deathTimeF = cameraEntity.deathTime + tickDelta;
+            float deathTimeF = cameraEntity.DeathTime + tickDelta;
             GLManager.GL.Rotate(40.0F - 8000.0F / (deathTimeF + 200.0F), 0.0F, 0.0F, 1.0F);
         }
 
         if (hurtTimeF >= 0.0F)
         {
-            hurtTimeF /= cameraEntity.maxHurtTime;
+            hurtTimeF /= cameraEntity.MaxHurtTime;
             hurtTimeF = MathHelper.Sin(hurtTimeF * hurtTimeF * hurtTimeF * hurtTimeF * (float)Math.PI);
-            float attackedYaw = cameraEntity.attackedAtYaw;
+            float attackedYaw = cameraEntity.AttackedAtYaw;
             GLManager.GL.Rotate(-attackedYaw, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(-hurtTimeF * 14.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Rotate(attackedYaw, 0.0F, 1.0F, 0.0F);
@@ -116,7 +116,7 @@ public class CameraController
             float speedDelta = player.HorizontalSpeed - player.PrevHorizontalSpeed;
             float speed = -(player.HorizontalSpeed + speedDelta * tickDelta);
             float bobAmount = player.prevStepBobbingAmount + (player.stepBobbingAmount - player.prevStepBobbingAmount) * tickDelta;
-            float pitch = player.cameraPitch + (player.tilt - player.cameraPitch) * tickDelta;
+            float pitch = player.CameraPitch + (player.Tilt - player.CameraPitch) * tickDelta;
 
             GLManager.GL.Translate(MathHelper.Sin(speed * (float)Math.PI) * bobAmount * 0.5F, -Math.Abs(MathHelper.Cos(speed * (float)Math.PI) * bobAmount), 0.0F);
             GLManager.GL.Rotate(MathHelper.Sin(speed * (float)Math.PI) * bobAmount * 3.0F, 0.0F, 0.0F, 1.0F);

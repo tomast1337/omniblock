@@ -67,8 +67,8 @@ public class Hotbar : UIElement
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/icons.png"));
 
         int armorValue = player.getPlayerArmorValue();
-        int health = player.health;
-        int lastHealth = player.lastHealth;
+        int health = player.Health;
+        int lastHealth = player.LastHealth;
         bool heartBlink = player.Hearts / 3 % 2 == 1 && player.Hearts >= 10;
 
         _rand.SetSeed(_updateCounter * 312871);

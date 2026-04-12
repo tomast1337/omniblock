@@ -15,7 +15,7 @@ public class EntityCreeper : EntityMonster
 
     public EntityCreeper(IWorldContext world) : base(world)
     {
-        texture = "/mob/creeper.png";
+        Texture = "/mob/creeper.png";
         CreeperState = DataSynchronizer.MakeProperty<byte>(16, 255); // -1
         Powered = DataSynchronizer.MakeProperty<bool>(17, false);
     }

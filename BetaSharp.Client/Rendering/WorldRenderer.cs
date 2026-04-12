@@ -229,7 +229,7 @@ public class WorldRenderer : IWorldEventListener
                 {
                     if (var5[var6] is EntityLiving living)
                     {
-                        if (living.deathTime >= 20)
+                        if (living.DeathTime >= 20)
                         {
                             var5.RemoveAt(var6--);
                             continue;

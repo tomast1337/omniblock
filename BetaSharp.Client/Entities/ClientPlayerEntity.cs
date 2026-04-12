@@ -35,24 +35,24 @@ public class ClientPlayerEntity : EntityPlayer
         base.tickLiving();
         if (GameMode is { CanWalk: false, DisallowFlying: true })
         {
-            sidewaysSpeed = 0;
-            forwardSpeed = 0;
+            SidewaysSpeed = 0;
+            ForwardSpeed = 0;
         }
         else if (!GameMode.DisallowFlying)
         {
-            sidewaysSpeed = movementInput.moveStrafe * AirFlySpeedMult;
-            forwardSpeed = movementInput.moveForward * AirFlySpeedMult;
+            SidewaysSpeed = movementInput.moveStrafe * AirFlySpeedMult;
+            ForwardSpeed = movementInput.moveForward * AirFlySpeedMult;
         }
         else
         {
-            sidewaysSpeed = movementInput.moveStrafe;
-            forwardSpeed = movementInput.moveForward;
+            SidewaysSpeed = movementInput.moveStrafe;
+            ForwardSpeed = movementInput.moveForward;
         }
 
-        if (jumping != movementInput.jump)
+        if (Jumping != movementInput.jump)
         {
-            jumping = movementInput.jump;
-            if (jumping)
+            Jumping = movementInput.jump;
+            if (Jumping)
             {
                 // double jump
                 if (!GameMode.DisallowFlying && _lastJump <= 2)
@@ -244,21 +244,21 @@ public class ClientPlayerEntity : EntityPlayer
 
     public virtual void setHealth(int newHealth)
     {
-        int damageAmount = health - newHealth;
+        int damageAmount = Health - newHealth;
         if (damageAmount <= 0)
         {
-            health = newHealth;
+            Health = newHealth;
             if (damageAmount < 0)
             {
-                Hearts = maxHealth / 2;
+                Hearts = MaxHealth / 2;
             }
         }
         else
         {
             if (!GameMode.CanReceiveDamage) return;
-            damageForDisplay = damageAmount;
-            lastHealth = health;
-            Hearts = maxHealth;
+            DamageForDisplay = damageAmount;
+            LastHealth = Health;
+            Hearts = MaxHealth;
             applyDamage(damageAmount);
         }
     }

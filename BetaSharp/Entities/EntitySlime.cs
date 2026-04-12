@@ -17,7 +17,7 @@ public class EntitySlime : EntityLiving, Monster
 
     public EntitySlime(IWorldContext world) : base(world)
     {
-        texture = "/mob/slime.png";
+        Texture = "/mob/slime.png";
         SlimeSize = DataSynchronizer.MakeProperty<byte>(16, 1);
         int size = 1 << Random.NextInt(3);
         StandingEyeHeight = 0.0F;
@@ -29,7 +29,7 @@ public class EntitySlime : EntityLiving, Monster
     {
         SlimeSize.Value = (byte)size;
         SetBoundingBoxSpacing(0.6F * (float)size, 0.6F * (float)size);
-        health = size * size;
+        Health = size * size;
         SetPosition(X, Y, Z);
     }
 
@@ -96,22 +96,22 @@ public class EntitySlime : EntityLiving, Monster
                 slimeJumpDelay /= 3;
             }
 
-            jumping = true;
+            Jumping = true;
             if (getSlimeSize() > 1)
             {
                 World.Broadcaster.PlaySoundAtEntity(this, "mob.slime", getSoundVolume(), ((Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F) * 0.8F);
             }
 
             squishAmount = 1.0F;
-            sidewaysSpeed = 1.0F - Random.NextFloat() * 2.0F;
-            forwardSpeed = (float)(1 * getSlimeSize());
+            SidewaysSpeed = 1.0F - Random.NextFloat() * 2.0F;
+            ForwardSpeed = (float)(1 * getSlimeSize());
         }
         else
         {
-            jumping = false;
+            Jumping = false;
             if (OnGround)
             {
-                sidewaysSpeed = forwardSpeed = 0.0F;
+                SidewaysSpeed = ForwardSpeed = 0.0F;
             }
         }
 
@@ -120,7 +120,7 @@ public class EntitySlime : EntityLiving, Monster
     public override void MarkDead()
     {
         int size = getSlimeSize();
-        if (!World.IsRemote && size > 1 && health == 0)
+        if (!World.IsRemote && size > 1 && Health == 0)
         {
             for (int i = 0; i < 4; ++i)
             {

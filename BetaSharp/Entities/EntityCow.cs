@@ -9,7 +9,7 @@ public class EntityCow : EntityAnimal
 
     public EntityCow(IWorldContext world) : base(world)
     {
-        this.texture = "/mob/cow.png";
+        this.Texture = "/mob/cow.png";
         this.SetBoundingBoxSpacing(0.9F, 1.3F);
     }
 

@@ -164,7 +164,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     protected override void applyDamage(int amount)
     {
-        health -= amount;
+        Health -= amount;
     }
 
     public override void closeHandledScreen()
@@ -182,7 +182,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         }
         else
         {
-            health = amount;
+            Health = amount;
             hasReceivedInitialHealth = true;
         }
 
