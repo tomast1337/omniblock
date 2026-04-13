@@ -61,7 +61,7 @@ public class GameOptions
     public BoolOption ShowCoordinatesOption { get; private set; }
 
 
-    public GameOption[] MainScreenOptions => [DifficultyOption, FovOption];
+    public GameOption[] MainScreenOptions => [FovOption, DifficultyOption];
     public GameOption[] AudioScreenOptions => [MusicVolumeOption, SoundVolumeOption, MenuMusicOption];
 
     public GameOption[] VideoScreenOptions =>

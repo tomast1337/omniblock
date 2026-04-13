@@ -1,12 +1,14 @@
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class OptionsScreen(
     UIContext context,
-    UIScreen? parent) : BaseOptionsScreen(context, parent, "options.title")
+    UIScreen? parent,
+    TexturePacks texturePacks) : BaseOptionsScreen(context, parent, "options.title")
 {
     protected override List<OptionSection> GetOptions() => [  ];
 
@@ -59,6 +61,7 @@ public class OptionsScreen(
         AddSubButton("UI Settings", () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
         AddSubButton("Audio Settings", () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
         AddSubButton(translations.TranslateKey("options.controls"), () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
+        AddSubButton("Texture Packs", () => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePacks)));
         AddSubButton("Credits", () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
 
         return list;

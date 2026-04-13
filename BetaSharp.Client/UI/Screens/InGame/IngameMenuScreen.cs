@@ -1,4 +1,5 @@
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -13,7 +14,8 @@ public class IngameMenuScreen(
     Action onResume,
     string quitButtonText,
     Action quit,
-    Func<bool> isSavingComplete) : UIScreen(context)
+    Func<bool> isSavingComplete,
+    TexturePacks texturePacks) : UIScreen(context)
 {
     protected override void Init()
     {
@@ -63,7 +65,7 @@ public class IngameMenuScreen(
 
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
-        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this));
+        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
 
