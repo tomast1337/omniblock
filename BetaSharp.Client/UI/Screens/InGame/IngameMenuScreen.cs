@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
@@ -63,12 +64,33 @@ public class IngameMenuScreen(
         rowStats.AddChild(btnStats);
         Root.AddChild(rowStats);
 
+        // --- Send Feedback and Report Bugs Row ---
+        Panel feedbackRow = new();
+        feedbackRow.Style.FlexDirection = FlexDirection.Row;
+        feedbackRow.Style.JustifyContent = Justify.SpaceBetween;
+        feedbackRow.Style.Width = 200;
+        feedbackRow.Style.MarginBottom = 4;
+
+        Button btnFeedback = CreateButton();
+        btnFeedback.Text = "Send Feedback";
+        btnFeedback.Style.Width = 98;
+        btnFeedback.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new");
+
+        Button btnReport = CreateButton();
+        btnReport.Text = "Report Bugs";
+        btnReport.Style.Width = 98;
+        btnReport.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new?template=bug_report.yml");
+
+        feedbackRow.AddChild(btnFeedback);
+        feedbackRow.AddChild(btnReport);
+        Root.AddChild(feedbackRow);
+
         Button btnOptions = CreateButton();
         btnOptions.Text = translator.TranslateKey("menu.options");
         btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
         btnOptions.Style.MarginBottom = 4;
         Root.AddChild(btnOptions);
-
+   
         Button btnQuit = CreateButton();
         btnQuit.Text = quitButtonText;
         btnQuit.OnClick += (e) =>
@@ -84,5 +106,13 @@ public class IngameMenuScreen(
         savingIndicator.Style.Left = 4;
         savingIndicator.Style.Bottom = 4;
         Root.AddChild(savingIndicator);
+    }
+
+    private void OpenLink(string url) {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = url,
+            UseShellExecute = true
+        });
     }
 }
