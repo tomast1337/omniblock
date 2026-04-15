@@ -19,6 +19,7 @@ public sealed class SkinManager : IDisposable
     private readonly ConcurrentDictionary<string, bool> _downloading = new();
 
     private const string SkinCacheDirectoryName = "SkinCache";
+    private const int CacheValidForDays = 14;
 
     public SkinManager(TextureManager textureManager)
     {
@@ -29,6 +30,30 @@ public sealed class SkinManager : IDisposable
         };
 
         _httpClient.DefaultRequestHeaders.Add("User-Agent", nameof(BetaSharp));
+
+        InvalidateCache();
+    }
+
+    private void InvalidateCache()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName);
+        if (!Directory.Exists(path)) return;
+
+        DateTime cacheAgeLimit = DateTime.Now.AddDays(-CacheValidForDays);
+        foreach (string file in Directory.GetFiles(path))
+        {
+            if (File.GetCreationTime(file) >= cacheAgeLimit) continue;
+
+            try
+            {
+                File.Delete(file);
+                _logger.LogInformation("Deleted old cached skin for {name}", Path.GetFileNameWithoutExtension(file));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete old cached skin for {name}", Path.GetFileNameWithoutExtension(file));
+            }
+        }
     }
 
     public void RequestDownload(string? username, bool cache = false)
@@ -118,11 +143,10 @@ public sealed class SkinManager : IDisposable
 
     private async Task SaveSkinToCache(string username, Image image)
     {
-        string path = Path.Combine(Path.GetTempPath(), "BetaSharp");
-        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-        path = Path.Combine(path, SkinCacheDirectoryName);
+        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName);
         if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         path = Path.Combine(path, username + ".png");
+
         await using var cacheStream = new FileStream(path, FileMode.Create, FileAccess.Write);
         await image.SaveAsPngAsync(cacheStream);
         cacheStream.Close();
