@@ -140,7 +140,7 @@ public sealed class BlockDispenserTests
     }
 
     [Fact]
-    public void OnTick_PoweredWithArrow_SpawnsArrowEntity()
+    public void OnTick_PoweredWithARROW_SpawnsARROWEntity()
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(3, 63, 3, Block.LitRedstoneTorch.id);
