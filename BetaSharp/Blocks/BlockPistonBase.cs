@@ -2,6 +2,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
@@ -301,7 +302,7 @@ public class BlockPistonBase : Block
         {
             if (pushCount >= 13) return true;
 
-            if (checkY is <= 0 or >= 127) return false;
+            if (checkY <= 0 || checkY >= ChuckFormat.WorldHeight - 1) return false;
 
             int blockId = ctx.Reader.GetBlockId(checkX, checkY, checkZ);
             if (blockId == 0) return true;
@@ -333,7 +334,7 @@ public class BlockPistonBase : Block
         {
             if (pushCount < 13)
             {
-                if (nextY is <= 0 or >= 127) return false;
+                if (nextY <= 0 || nextY >= ChuckFormat.WorldHeight - 1) return false;
 
                 int blockId = ctx.Reader.GetBlockId(nextX, nextY, nextZ);
                 if (blockId != 0)
