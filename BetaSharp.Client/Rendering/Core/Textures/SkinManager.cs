@@ -87,7 +87,7 @@ public sealed class SkinManager : IDisposable
         }
         catch (ProfileException)
         {
-            _logger.LogWarning("Failed to download skin for {Name}{br}Profile does not found.", username, Environment.NewLine);
+            _logger.LogWarning("Failed to download skin for {Name}{br}Profile not found.", username, Environment.NewLine);
         }
         catch (Exception ex)
         {
