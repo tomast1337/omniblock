@@ -113,16 +113,34 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         Vector2D<int> displaySize = getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
-        int scale = res.ScaleFactor;
-        int scaledWindowHeight = displaySize.Y;
+        float left = x + _translateX;
+        float top = y + _translateY;
+        float right = left + width;
+        float bottom = top + height;
 
-        int physicalX = (int)((x + _translateX) * scale);
-        int physicalWidth = width * scale;
-        int physicalHeight = height * scale;
-        int physicalY = scaledWindowHeight - (int)((y + _translateY) * scale) - physicalHeight;
+        // UI coordinates are in scaled-resolution space; scissor rectangles must use framebuffer pixels.
+        int framebufferWidth = Display.getFramebufferWidth();
+        int framebufferHeight = Display.getFramebufferHeight();
+        float scaleX = framebufferWidth / (float)res.ScaledWidth;
+        float scaleY = framebufferHeight / (float)res.ScaledHeight;
+
+        int physicalLeft = (int)MathF.Floor(left * scaleX);
+        int physicalTop = (int)MathF.Floor(top * scaleY);
+        int physicalRight = (int)MathF.Ceiling(right * scaleX);
+        int physicalBottom = (int)MathF.Ceiling(bottom * scaleY);
+
+        int clampedLeft = Math.Clamp(physicalLeft, 0, framebufferWidth);
+        int clampedTop = Math.Clamp(physicalTop, 0, framebufferHeight);
+        int clampedRight = Math.Clamp(physicalRight, 0, framebufferWidth);
+        int clampedBottom = Math.Clamp(physicalBottom, 0, framebufferHeight);
+
+        int physicalX = clampedLeft;
+        int physicalY = framebufferHeight - clampedBottom;
+        int physicalWidth = clampedRight - clampedLeft;
+        int physicalHeight = clampedBottom - clampedTop;
 
         GLManager.GL.Enable(GLEnum.ScissorTest);
-        GLManager.GL.Scissor(physicalX, physicalY, (uint)physicalWidth, (uint)physicalHeight);
+        GLManager.GL.Scissor(physicalX, physicalY, (uint)Math.Max(0, physicalWidth), (uint)Math.Max(0, physicalHeight));
     }
 
     public void DisableClipping()
