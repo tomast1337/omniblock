@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(NETCoreSdkRuntimeIdentifier)' == 'linux-x64'">linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,15 +27,7 @@
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="CopyNativeLibrariesToOutputRoot" AfterTargets="Build">
-    <ItemGroup>
-      <NativeLibs Include="@(RuntimeTargetsCopyLocalItems)"
-                  Condition="'%(RuntimeTargetsCopyLocalItems.AssetType)' == 'native'" />
-    </ItemGroup>
-    <Copy SourceFiles="@(NativeLibs)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
-  </Target>
-
-  <Target Name="CopyGlfwAliasForImGui" AfterTargets="CopyNativeLibrariesToOutputRoot"
+  <Target Name="CopyGlfwAliasForImGui" AfterTargets="Build"
           Condition="'$(OS)' != 'Windows_NT'">
     <Copy SourceFiles="$(OutputPath)libglfw.so.3"
           DestinationFiles="$(OutputPath)libglfw.so"
