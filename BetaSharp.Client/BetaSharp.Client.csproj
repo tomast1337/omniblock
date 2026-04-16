@@ -26,4 +26,20 @@
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <Target Name="CopyNativeLibrariesToOutputRoot" AfterTargets="Build">
+    <ItemGroup>
+      <NativeLibs Include="@(RuntimeTargetsCopyLocalItems)"
+                  Condition="'%(RuntimeTargetsCopyLocalItems.AssetType)' == 'native'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeLibs)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyGlfwAliasForImGui" AfterTargets="CopyNativeLibrariesToOutputRoot"
+          Condition="'$(OS)' != 'Windows_NT'">
+    <Copy SourceFiles="$(OutputPath)libglfw.so.3"
+          DestinationFiles="$(OutputPath)libglfw.so"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(OutputPath)libglfw.so.3')" />
+  </Target>
+
 </Project>
