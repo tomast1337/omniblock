@@ -34,8 +34,8 @@ internal class BlockTorch : Block
             return true;
         }
 
-        double vx = placer.x - (torchX + 0.5);
-        double vz = placer.z - (torchZ + 0.5);
+        double vx = placer.X - (torchX + 0.5);
+        double vz = placer.Z - (torchZ + 0.5);
         h = Math.Sqrt((vx * vx) + (vz * vz));
         if (h >= 1e-4)
         {
