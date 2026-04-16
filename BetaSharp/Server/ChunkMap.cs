@@ -4,6 +4,7 @@ using BetaSharp.Entities;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
@@ -447,17 +448,17 @@ internal class ChunkMap
 
             if (_dirtyBlockCount < MaxDirtyBlocks)
             {
-                short var4 = (short)(x << 12 | z << 8 | y);
+                short blockArrayIndex = (short)(ChuckFormat.GetIndex(x, y, z));
 
-                for (int var5 = 0; var5 < _dirtyBlockCount; var5++)
+                for (int i = 0; i < _dirtyBlockCount; i++)
                 {
-                    if (_dirtyBlocks[var5] == var4)
+                    if (_dirtyBlocks[i] == blockArrayIndex)
                     {
                         return;
                     }
                 }
 
-                _dirtyBlocks[_dirtyBlockCount++] = var4;
+                _dirtyBlocks[_dirtyBlockCount++] = blockArrayIndex;
             }
         }
 

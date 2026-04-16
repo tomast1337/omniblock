@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 
 namespace BetaSharp.Worlds.Dimensions;
@@ -111,6 +112,7 @@ internal class PortalForcer
         int bestDirection = 0;
 
         int randomDirection = Random.Shared.Next(4);
+        int h1 = ChuckFormat.WorldHeight - 1;
 
         // Phase 1: Search for an optimal flat 3x4 area of solid ground
         for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
@@ -121,7 +123,7 @@ internal class PortalForcer
             {
                 double dz = z + 0.5D - entity.Z;
 
-                for (int y = 127; y >= 0; --y)
+                for (int y = h1; y >= 0; --y)
                 {
                     if (world.Reader.IsAir(x, y, z))
                     {
@@ -189,7 +191,7 @@ internal class PortalForcer
                 {
                     double dz = z + 0.5D - entity.Z;
 
-                    for (int y = 127; y >= 0; --y)
+                    for (int y = h1; y >= 0; --y)
                     {
                         if (world.Reader.IsAir(x, y, z))
                         {

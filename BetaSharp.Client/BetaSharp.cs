@@ -452,6 +452,8 @@ public partial class BetaSharp :
         ));
 
         FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
+
+        EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
     }
 
     private void LoadVersion()

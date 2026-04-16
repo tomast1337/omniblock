@@ -16,6 +16,7 @@ using BetaSharp.Profiling;
 using BetaSharp.Util;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using Silk.NET.Maths;
 
@@ -243,18 +244,17 @@ public class WorldRenderer : IWorldEventListener
                 }
                 if (var7.ShouldRender(var1) && (var7.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(var7.BoundingBox)) && (var7 != _game.Camera || _game.Options.CameraMode != EnumCameraMode.FirstPerson || _game.Camera.isSleeping()))
                 {
-                    int var8 = MathHelper.Floor(var7.Y);
-                    if (var8 < 0)
+                    int yFloor = MathHelper.Floor(var7.Y);
+                    if (yFloor < 0)
                     {
-                        var8 = 0;
+                        yFloor = 0;
+                    }
+                    else if (yFloor >= ChuckFormat.WorldHeight)
+                    {
+                        yFloor = ChuckFormat.WorldHeight - 1;
                     }
 
-                    if (var8 >= 128)
-                    {
-                        var8 = 127;
-                    }
-
-                    if (_world.Reader.IsPosLoaded(MathHelper.Floor(var7.X), var8, MathHelper.Floor(var7.Z)))
+                    if (_world.Reader.IsPosLoaded(MathHelper.Floor(var7.X), yFloor, MathHelper.Floor(var7.Z)))
                     {
                         ++CountEntitiesRendered;
                         EntityRenderDispatcher.Instance.RenderEntity(var7, var3);

@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.NBT;
 using BetaSharp.Profiling;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -16,7 +17,7 @@ public class Chunk
     public ChunkNibbleArray Meta;
     public ChunkNibbleArray SkyLight;
     public ChunkNibbleArray BlockLight;
-    public byte[] HeightMap;
+    public byte[] HeightMap = new byte[256];
 
     public bool Loaded;
     public IWorldContext World;
@@ -44,12 +45,22 @@ public class Chunk
         World = world;
         X = x;
         Z = z;
-        HeightMap = new byte[256];
 
         for (int i = 0; i < Entities.Length; i++)
         {
             Entities[i] = [];
         }
+    }
+
+    public Chunk(IWorldContext world, NBTTagCompound nbt) : this(world, nbt.GetInteger("xPos"), nbt.GetInteger("zPos"))
+    {
+        Blocks = nbt.GetByteArray("Blocks");
+        HeightMap = nbt.GetByteArray("HeightMap");
+        TerrainPopulated = nbt.GetBoolean("TerrainPopulated");
+
+        Meta = new ChunkNibbleArray(nbt.GetByteArray("Data"));
+        SkyLight = new ChunkNibbleArray(nbt.GetByteArray("SkyLight"));
+        BlockLight = new ChunkNibbleArray(nbt.GetByteArray("BlockLight"));
     }
 
     public Chunk(IWorldContext world, byte[] blocks, int x, int z) : this(world, x, z)
@@ -67,20 +78,19 @@ public class Chunk
         return HeightMap[localZ << 4 | localX];
     }
 
-    public virtual void PopulateLight()
-    {
-    }
+    public virtual void PopulateLight() { }
 
     public virtual void PopulateHeightMapOnly()
     {
-        int minHeight = 127;
+        int h = ChuckFormat.ChunkHeight - 1;
+        int minHeight = h;
 
         for (int localX = 0; localX < 16; ++localX)
         {
             for (int localZ = 0; localZ < 16; ++localZ)
             {
-                int y = 127;
-                int index = localX << 11 | localZ << 7;
+                int y = h;
+                int index = ChuckFormat.GetIndex(localX, localZ);
 
                 while (y > 0 && Block.BlockLightOpacity[Blocks[index + y - 1]] == 0)
                 {
@@ -98,14 +108,15 @@ public class Chunk
 
     public virtual void PopulateHeightMap()
     {
-        int minHeight = 127;
+        int h = ChuckFormat.ChunkHeight - 1;
+        int minHeight = h;
 
         for (int localX = 0; localX < 16; ++localX)
         {
             for (int localZ = 0; localZ < 16; ++localZ)
             {
-                int y = 127;
-                int index = localX << 11 | localZ << 7;
+                int y = h;
+                int index = ChuckFormat.GetIndex(localX, localZ);
 
                 while (y > 0 && Block.BlockLightOpacity[Blocks[index + y - 1]] == 0)
                 {
@@ -118,7 +129,7 @@ public class Chunk
                 if (!World.Dimension.HasCeiling)
                 {
                     int lightLevel = 15;
-                    int currentY = 127;
+                    int currentY = h;
 
                     do
                     {
@@ -147,9 +158,7 @@ public class Chunk
         Dirty = true;
     }
 
-    public virtual void PopulateBlockLight()
-    {
-    }
+    public virtual void PopulateBlockLight() { }
 
     private void LightGaps(int localX, int localZ)
     {
@@ -185,7 +194,7 @@ public class Chunk
 
         if (y > oldHeight) newHeight = y;
 
-        int index = localX << 11 | localZ << 7;
+        int index = ChuckFormat.GetIndex(localX, localZ);
         while (newHeight > 0 && Block.BlockLightOpacity[Blocks[index + newHeight - 1]] == 0)
         {
             --newHeight;
@@ -202,7 +211,7 @@ public class Chunk
         }
         else
         {
-            int min = 127;
+            int min = ChuckFormat.ChunkHeight - 1;
             for (int i = 0; i < 16; ++i)
             {
                 for (int j = 0; j < 16; ++j)
@@ -264,22 +273,27 @@ public class Chunk
         Dirty = true;
     }
 
-    public virtual int GetBlockId(int x, int y, int z)
+    public virtual int GetBlockId(int x, int y, int z) => this[x, y, z];
+
+    public virtual int this[int x, int y, int z]
     {
-        return Blocks[x << 11 | z << 7 | y] & 255;
+        get => Blocks[ChuckFormat.GetIndex(x, y, z)];
+        set => Blocks[ChuckFormat.GetIndex(x, y, z)] = (byte)value;
     }
+
 
     public virtual bool SetBlock(int localX, int y, int localZ, int rawId, int meta, bool notifyBlockPlaced = true)
     {
+        int pos = ChuckFormat.GetIndex(localX,  y, localZ);
         byte newId = (byte)rawId;
         int height = HeightMap[localZ << 4 | localX];
-        int oldId = Blocks[localX << 11 | localZ << 7 | y];
+        int oldId = Blocks[pos];
 
         if (oldId == rawId && Meta.GetNibble(localX, y, localZ) == meta) return false;
 
         int worldX = X * 16 + localX;
         int worldZ = Z * 16 + localZ;
-        Blocks[localX << 11 | localZ << 7 | y] = newId;
+        Blocks[pos] = newId;
 
         if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
         {
@@ -317,15 +331,16 @@ public class Chunk
 
     public virtual bool SetBlock(int localX, int y, int localZ, int rawId, bool notifyBlockPlaced = true)
     {
+        int pos = ChuckFormat.GetIndex(localX,  y, localZ);
         byte newId = (byte)rawId;
         int height = HeightMap[localZ << 4 | localX];
-        int oldId = Blocks[localX << 11 | localZ << 7 | y];
+        int oldId = Blocks[pos];
 
         if (oldId == rawId) return false;
 
         int worldX = X * 16 + localX;
         int worldZ = Z * 16 + localZ;
-        Blocks[localX << 11 | localZ << 7 | y] = newId;
+        Blocks[pos] = newId;
 
         if (oldId != 0)
         {
@@ -577,7 +592,7 @@ public class Chunk
         int sizeX = maxX - minX;
         int sizeY = maxY - minY;
         int sizeZ = maxZ - minZ;
-        bool isFullChunk = sizeX == 16 && sizeY == 128 && sizeZ == 16;
+        bool isFullChunk = sizeX == 16 && sizeY == ChuckFormat.ChunkHeight && sizeZ == 16;
 
         using (Profiler.Begin(isFullChunk ? "LoadChunkFull" : "LoadChunkPartial"))
         {
@@ -585,7 +600,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    int index = x << 11 | z << 7 | minY;
+                    int index = ChuckFormat.GetIndex(x, minY, z);
                     Buffer.BlockCopy(bytes, offset, Blocks, index, sizeY);
                     offset += sizeY;
                 }
@@ -599,7 +614,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
                     Buffer.BlockCopy(bytes, offset, Meta.Bytes, index, halfSizeY);
                     offset += halfSizeY;
                 }
@@ -609,7 +624,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
                     Buffer.BlockCopy(bytes, offset, BlockLight.Bytes, index, halfSizeY);
                     offset += halfSizeY;
                 }
@@ -619,7 +634,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
                     Buffer.BlockCopy(bytes, offset, SkyLight.Bytes, index, halfSizeY);
                     offset += halfSizeY;
                 }
@@ -668,7 +683,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    int index = x << 11 | z << 7 | minY;
+                    int index = ChuckFormat.GetIndex(x, minY, z);
                     Buffer.BlockCopy(Blocks, index, bytes, offset, sizeY);
                     offset += sizeY;
                 }
@@ -680,7 +695,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
                     Buffer.BlockCopy(Meta.Bytes, index, bytes, offset, halfSizeY);
                     offset += halfSizeY;
                 }
@@ -690,7 +705,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
                     Buffer.BlockCopy(BlockLight.Bytes, index, bytes, offset, halfSizeY);
                     offset += halfSizeY;
                 }
@@ -700,7 +715,7 @@ public class Chunk
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    int index = (x << 11 | z << 7 | minY) >> 1;
+                    int index = (ChuckFormat.GetIndex(x, minY, z)) >> 1;
                     Buffer.BlockCopy(SkyLight.Bytes, index, bytes, offset, halfSizeY);
                     offset += halfSizeY;
                 }
