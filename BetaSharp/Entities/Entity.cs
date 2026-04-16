@@ -41,7 +41,7 @@ public abstract class Entity
     public float Pitch { get; set; }
     public float PrevYaw { get; set; }
     public float PrevPitch { get; set; }
-    public Box BoundingBox { get; set; } = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+    public Box BoundingBox = new Box(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public bool OnGround { get; set; }
 
     /// <summary>
