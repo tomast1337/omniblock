@@ -8,9 +8,9 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
 {
     public override int GetTexture(Side side) => side switch
     {
-        Side.Down => TextureId + 2,
-        Side.Up => TextureId + 1,
-        _ => TextureId
+        Side.Down => BlockTextures.TntBottom,
+        Side.Up => BlockTextures.TntTop,
+        _ => BlockTextures.TntSide
     };
 
     public override void onPlaced(OnPlacedEvent @event)

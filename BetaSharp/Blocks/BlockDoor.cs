@@ -14,12 +14,8 @@ internal class BlockDoor : Block
 
     public BlockDoor(int id, Material material) : base(id, material)
     {
-        TextureId = 97;
-        if (material == Material.Metal)
-        {
-            ++TextureId;
-        }
-
+        TextureId = BlockTextures.DoorWood;
+        if (material == Material.Metal) TextureId = BlockTextures.DoorIron;
         setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, Height, 0.5F + HalfWidth);
     }
 

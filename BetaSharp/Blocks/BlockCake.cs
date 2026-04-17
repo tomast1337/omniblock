@@ -35,7 +35,7 @@ internal class BlockCake : Block
 
     public override int GetTexture(Side side, int meta)
     {
-        if (side == Side.Up)return TextureId;
+        if (side == Side.Up)return BlockTextures.Cake;
         if (side == Side.Down)return TextureId + 3;
         if (meta > 0 && side == Side.West)return TextureId + 2;
         return TextureId + 1;

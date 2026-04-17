@@ -54,12 +54,12 @@ public class BlockRail : Block
         {
             if (id == PoweredRail.id && (meta & 8) == 0)
             {
-                return TextureId - 16;
+                return BlockTextures.PoweredRailOff;
             }
         }
         else if (meta >= 6)
         {
-            return TextureId - 16;
+            return BlockTextures.PoweredRailOff;
         }
 
         return TextureId;

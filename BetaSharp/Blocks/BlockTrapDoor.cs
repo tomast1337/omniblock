@@ -12,8 +12,8 @@ internal class BlockTrapDoor : Block
     private const float Thickness = 3.0F / 16.0F;
     public BlockTrapDoor(int id, Material material) : base(id, material)
     {
-        TextureId = 84;
-        if (material == Material.Metal) ++TextureId;
+        TextureId = BlockTextures.TrapdoorWood;
+        if (material == Material.Metal) TextureId = BlockTextures.TrapdoorIron;
         setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, FullHeight, 0.5F + HalfWidth);
     }
 

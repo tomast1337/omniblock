@@ -8,7 +8,7 @@ internal class BlockSlab : Block
     public static readonly string[] Names = ["stone", "sand", "wood", "cobble"];
     private readonly bool _doubleSlab;
 
-    public BlockSlab(int id, bool doubleSlab) : base(id, 6, Material.Stone)
+    public BlockSlab(int id, bool doubleSlab) : base(id, BlockTextures.StoneSlabTop, Material.Stone)
     {
         _doubleSlab = doubleSlab;
         if (!doubleSlab)
@@ -21,16 +21,16 @@ internal class BlockSlab : Block
 
     public override int GetTexture(Side side, int meta) => meta switch
     {
-        0 => side <= Side.Up ? 6 : 5,
+        0 => side <= Side.Up ? BlockTextures.StoneSlabTop : BlockTextures.StoneSlabSide,
         1 => side switch
         {
-            Side.Down => 208,
-            Side.Up => 176,
-            _ => 192
+            Side.Down => BlockTextures.SandstoneBottom,
+            Side.Up => BlockTextures.SandstoneTop,
+            _ => BlockTextures.SandstoneSide
         },
-        2 => 4,
-        3 => 16,
-        _ => 6
+        2 => BlockTextures.OakPlanks,
+        3 => BlockTextures.Cobblestone,
+        _ => BlockTextures.StoneSlabSide
     };
 
     public override int GetTexture(Side side) => GetTexture(side, 0);

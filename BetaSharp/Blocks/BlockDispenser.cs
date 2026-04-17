@@ -13,7 +13,7 @@ internal class BlockDispenser : BlockWithEntity
 
     private static readonly ThreadLocal<JavaRandom> s_random = new(() => new JavaRandom());
 
-    public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = 45;
+    public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = BlockTextures.FurnaceSide;
 
     public override int getTickRate() => 4;
 
@@ -75,9 +75,9 @@ internal class BlockDispenser : BlockWithEntity
 
     public override int GetTexture(Side side) => side switch
     {
-        Side.Up or 0 => TextureId + 17,
-        Side.South => TextureId + 1,
-        _ => TextureId
+        Side.Up or 0 => BlockTextures.FurnaceTop,
+        Side.South => BlockTextures.DispenserFront,
+        _ => BlockTextures.FurnaceSide
     };
 
     public override bool onUse(OnUseEvent @event)

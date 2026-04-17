@@ -5,7 +5,7 @@ namespace BetaSharp.Blocks;
 internal class BlockSponge : Block
 {
     private const sbyte AbsorbRadius = 2;
-    public BlockSponge(int id) : base(id, Material.Sponge) => TextureId = 48;
+    public BlockSponge(int id) : base(id, Material.Sponge) => TextureId = BlockTextures.Sponge;
 
     public override void onPlaced(OnPlacedEvent @event)
     {

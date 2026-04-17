@@ -22,7 +22,7 @@ internal class BlockFurnace : BlockWithEntity
     public BlockFurnace(int id, bool lit) : base(id, Material.Stone)
     {
         _lit = lit;
-        TextureId = 45;
+        TextureId = BlockTextures.FurnaceSide;
     }
 
     public override int getDroppedItemId(int blockMeta) => Furnace.id;
@@ -77,16 +77,15 @@ internal class BlockFurnace : BlockWithEntity
         if (isWestOpaque && !isEastOpaque) direction = 5;
         else if (isEastOpaque && !isWestOpaque) direction = 4;
 
-
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
     public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
-        if (side is Side.Up or Side.Down) return TextureId + 17;
+        if (side is Side.Up or Side.Down) return BlockTextures.FurnaceTop;
 
         Side meta = iBlockReader.GetBlockMeta(x, y, z).ToSide();
-        return side != meta ? TextureId : _lit ? TextureId + 16 : TextureId - 1;
+        return side != meta ? TextureId : _lit ? BlockTextures.FurnaceFrontLit : BlockTextures.FurnaceFrontUnlit;
     }
 
 
@@ -123,9 +122,9 @@ internal class BlockFurnace : BlockWithEntity
 
     public override int GetTexture(Side side) => side switch
     {
-        Side.Up or Side.Down => TextureId + 17,
-        Side.South => TextureId - 1,
-        _ => TextureId
+        Side.Up or Side.Down => BlockTextures.FurnaceTop,
+        Side.South => BlockTextures.FurnaceFrontUnlit,
+        _ => BlockTextures.FurnaceSide
     };
 
     public override bool onUse(OnUseEvent @event)

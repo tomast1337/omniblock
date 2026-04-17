@@ -4,15 +4,15 @@ namespace BetaSharp.Blocks;
 
 internal class BlockWorkbench : Block
 {
-    public BlockWorkbench(int id) : base(id, Material.Wood) => TextureId = 59;
+    public BlockWorkbench(int id) : base(id, Material.Wood) => TextureId = BlockTextures.CraftingTableSide;
 
     public override int GetTexture(Side side)
     {
         return side switch
         {
-            Side.Up => TextureId - 16,
-            Side.Down => Planks.GetTexture(0),
-            _ => side != Side.North && side != Side.West ? TextureId : TextureId + 1
+            Side.Up => BlockTextures.CraftingTableTop,
+            Side.Down => BlockTextures.OakPlanks,
+            _ => side != Side.North && side != Side.West ? BlockTextures.CraftingTableSide : BlockTextures.CraftingTableFront
         };
     }
 

@@ -188,6 +188,7 @@ public class ClientWorld : World
             forcedEntities.Remove(ent);
             Remove(ent);
         }
+
         return ent;
     }
 
@@ -204,6 +205,4 @@ public class ClientWorld : World
     }
 
     public override void Disconnect() => _networkHandler.SendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));
-
-
 }

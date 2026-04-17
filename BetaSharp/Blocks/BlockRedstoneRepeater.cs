@@ -50,9 +50,9 @@ public class BlockRedstoneRepeater : Block
 
     public override int GetTexture(Side side, int meta) => side switch
     {
-        0 => _lit ? 99 : 115,
-        Side.Up => _lit ? 147 : 131,
-        _ => 5
+        Side.Down => _lit ? BlockTextures.RedstoneTorchLit : BlockTextures.RedstoneTorchUnlit,
+        Side.Up => _lit ? BlockTextures.RepeaterTopLit : BlockTextures.RepeaterTopUnlit,
+        _ => BlockTextures.StoneSlabSide
     };
 
     public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => side != 0 && side != Side.Up;
