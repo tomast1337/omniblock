@@ -54,7 +54,7 @@ internal class BlockCake : Block
 
     public override bool onUse(OnUseEvent @event)
     {
-        if (@event.Player.health >= 20) return true;
+        if (@event.Player.Health >= 20) return true;
 
         @event.Player.heal(3);
         int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;
@@ -73,7 +73,7 @@ internal class BlockCake : Block
 
     public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
     {
-        if (@event.Player.health >= 20) return;
+        if (@event.Player.Health >= 20) return;
 
         @event.Player.heal(3);
         int slicesEaten = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) + 1;

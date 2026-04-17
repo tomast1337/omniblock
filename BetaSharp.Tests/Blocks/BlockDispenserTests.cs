@@ -360,7 +360,7 @@ public sealed class BlockDispenserTests
         int x = 60, y = 64, z = 60;
         world.ReaderWriter.SetInitial(x, y, z, Block.Dispenser.id, 0);
 
-        CapturingDispenserPlayer placer = new(world) { yaw = 90f };
+        CapturingDispenserPlayer placer = new(world) { Yaw = 90f };
         Block.Dispenser.onPlaced(new OnPlacedEvent(world, placer, Side.Up, Side.Up, x, y, z));
 
         Assert.Equal(Side.East.ToInt(), world.Reader.GetBlockMeta(x, y, z));

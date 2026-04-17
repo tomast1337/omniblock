@@ -65,14 +65,14 @@ public abstract class EntityPlayer : EntityLiving
         inventory = new InventoryPlayer(this);
         playerScreenHandler = new PlayerScreenHandler(inventory, !world.IsRemote);
         currentScreenHandler = playerScreenHandler;
-        standingEyeHeight = 1.62F;
+        StandingEyeHeight = 1.62F;
         Vec3i var2 = world.Properties.GetSpawnPos();
-        setPositionAndAnglesKeepPrevAngles((double)var2.X + 0.5D, (double)(var2.Y + 1), (double)var2.Z + 0.5D, 0.0F, 0.0F);
-        health = 20;
-        modelName = "humanoid";
-        rotationOffset = 180.0F;
-        fireImmunityTicks = 20;
-        texture = "/mob/char.png";
+        SetPositionAndAnglesKeepPrevAngles((double)var2.X + 0.5D, (double)(var2.Y + 1), (double)var2.Z + 0.5D, 0.0F, 0.0F);
+        Health = 20;
+        ModelName = "humanoid";
+        RotationOffset = 180.0F;
+        FireImmunityTicks = 20;
+        Texture = "/mob/char.png";
     }
 
     public override bool canBreatheUnderwater() => !GameMode.NeedsAir;
@@ -87,13 +87,13 @@ public abstract class EntityPlayer : EntityLiving
                 sleepTimer = 100;
             }
 
-            if (!world.IsRemote)
+            if (!World.IsRemote)
             {
                 if (!isSleepingInBed())
                 {
                     wakeUp(true, true, false);
                 }
-                else if (world.Environment.CanMonsterSpawn())
+                else if (World.Environment.CanMonsterSpawn())
                 {
                     wakeUp(false, true, true);
                 }
@@ -115,12 +115,12 @@ public abstract class EntityPlayer : EntityLiving
     /// <remarks>
     /// Events that should occur on both client and server should go in <see cref="GenericTick"/>
     /// </remarks>
-    public override void tick()
+    public override void Tick()
     {
         TickSleep();
         GenericTick();
 
-        if (!world.IsRemote && currentScreenHandler != null && !currentScreenHandler.canUse(this))
+        if (!World.IsRemote && currentScreenHandler != null && !currentScreenHandler.canUse(this))
         {
             closeHandledScreen();
             currentScreenHandler = playerScreenHandler;
@@ -131,61 +131,61 @@ public abstract class EntityPlayer : EntityLiving
     /// Tick events that needs both server and client goes here.
     /// </summary>
     /// <remarks>
-    /// Called from both <see cref="tick"/> and <see cref="ServerPlayerEntity.PlayerTick"/>
+    /// Called from both <see cref="Tick"/> and <see cref="ServerPlayerEntity.PlayerTick"/>
     /// </remarks>
     protected void GenericTick()
     {
-        base.tick();
+        base.Tick();
         AfterLivingTickCosmetics();
     }
 
     /// <summary>
-    /// Cape, play time stat, and minecart state — runs after <see cref="EntityLiving.tick"/> (or after <see cref="EntityLiving.baseTick"/> on idle server ticks).
+    /// Cape, play time stat, and minecart state — runs after <see cref="EntityLiving.Tick"/> (or after <see cref="EntityLiving.BaseTick"/> on idle server ticks).
     /// </summary>
     protected void AfterLivingTickCosmetics()
     {
         prevCapeX = capeX;
         prevCapeY = capeY;
         prevCapeZ = capeZ;
-        double var1 = x - capeX;
-        double var3 = y - capeY;
-        double var5 = z - capeZ;
+        double var1 = X - capeX;
+        double var3 = Y - capeY;
+        double var5 = Z - capeZ;
         double var7 = 10.0D;
         if (var1 > var7)
         {
-            prevCapeX = capeX = x;
+            prevCapeX = capeX = X;
         }
 
         if (var5 > var7)
         {
-            prevCapeZ = capeZ = z;
+            prevCapeZ = capeZ = Z;
         }
 
         if (var3 > var7)
         {
-            prevCapeY = capeY = y;
+            prevCapeY = capeY = Y;
         }
 
         if (var1 < -var7)
         {
-            prevCapeX = capeX = x;
+            prevCapeX = capeX = X;
         }
 
         if (var5 < -var7)
         {
-            prevCapeZ = capeZ = z;
+            prevCapeZ = capeZ = Z;
         }
 
         if (var3 < -var7)
         {
-            prevCapeY = capeY = y;
+            prevCapeY = capeY = Y;
         }
 
         capeX += var1 * 0.25D;
         capeZ += var5 * 0.25D;
         capeY += var3 * 0.25D;
         increaseStat(Stats.Stats.MinutesPlayedStat, 1);
-        if (vehicle == null)
+        if (Vehicle == null)
         {
             startMinecartRidingCoordinate = null;
         }
@@ -193,7 +193,7 @@ public abstract class EntityPlayer : EntityLiving
 
     protected void PickupAndInventorySubtick()
     {
-        if (world.Difficulty == 0 && health < 20 && age % 20 * 12 == 0)
+        if (World.Difficulty == 0 && Health < 20 && Age % 20 * 12 == 0)
         {
             heal(1);
         }
@@ -203,13 +203,13 @@ public abstract class EntityPlayer : EntityLiving
 
     protected void CollideWithPickupEntities()
     {
-        if (health <= 0) return;
+        if (Health <= 0) return;
 
-        var entities = world.Entities.GetEntities(this, boundingBox.Expand(1.0D, 0.0D, 1.0D));
+        var entities = World.Entities.GetEntities(this, BoundingBox.Expand(1.0D, 0.0D, 1.0D));
 
         foreach (var entity in entities)
         {
-            if (!entity.dead)
+            if (!entity.Dead)
             {
                 collideWithEntity(entity);
             }
@@ -218,7 +218,7 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override bool isMovementBlocked()
     {
-        return health <= 0 || isSleeping();
+        return Health <= 0 || isSleeping();
     }
 
     public virtual void closeHandledScreen()
@@ -226,10 +226,10 @@ public abstract class EntityPlayer : EntityLiving
         currentScreenHandler = playerScreenHandler;
     }
 
-    public override void updateCloak()
+    public override void UpdateCloak()
     {
         playerCloakUrl = "http://s3.amazonaws.com/MinecraftCloaks/" + name + ".png";
-        cloakUrl = playerCloakUrl;
+        CloakUrl = playerCloakUrl;
     }
 
     protected virtual bool isPvpEnabled()
@@ -237,24 +237,24 @@ public abstract class EntityPlayer : EntityLiving
         return false;
     }
 
-    public override void tickRiding()
+    public override void TickRiding()
     {
-        double var1 = x;
-        double var3 = y;
-        double var5 = z;
-        base.tickRiding();
+        double var1 = X;
+        double var3 = Y;
+        double var5 = Z;
+        base.TickRiding();
         prevStepBobbingAmount = stepBobbingAmount;
         stepBobbingAmount = 0.0F;
-        increaseRidingMotionStats(x - var1, y - var3, z - var5);
+        increaseRidingMotionStats(X - var1, Y - var3, Z - var5);
     }
 
-    public override void teleportToTop()
+    public override void TeleportToTop()
     {
-        standingEyeHeight = 1.62F;
-        setBoundingBoxSpacing(0.6F, 1.8F);
-        base.teleportToTop();
-        health = 20;
-        deathTime = 0;
+        StandingEyeHeight = 1.62F;
+        SetBoundingBoxSpacing(0.6F, 1.8F);
+        base.TeleportToTop();
+        Health = 20;
+        DeathTime = 0;
     }
 
     public override void tickLiving()
@@ -273,7 +273,7 @@ public abstract class EntityPlayer : EntityLiving
             handSwingTicks = 0;
         }
 
-        swingAnimationProgress = (float)handSwingTicks / 8.0F;
+        SwingAnimationProgress = (float)handSwingTicks / 8.0F;
     }
 
     public override void tickMovement()
@@ -281,31 +281,31 @@ public abstract class EntityPlayer : EntityLiving
         PickupAndInventorySubtick();
         prevStepBobbingAmount = stepBobbingAmount;
         base.tickMovement();
-        float var1 = MathHelper.Sqrt(velocityX * velocityX + velocityZ * velocityZ);
-        float var2 = (float)System.Math.Atan(-velocityY * (double)0.2F) * 15.0F;
+        float var1 = MathHelper.Sqrt(VelocityX * VelocityX + VelocityZ * VelocityZ);
+        float var2 = (float)System.Math.Atan(-VelocityY * (double)0.2F) * 15.0F;
         if (var1 > 0.1F)
         {
             var1 = 0.1F;
         }
 
-        if (!onGround || health <= 0)
+        if (!OnGround || Health <= 0)
         {
             var1 = 0.0F;
         }
 
-        if (onGround || health <= 0)
+        if (OnGround || Health <= 0)
         {
             var2 = 0.0F;
         }
 
         stepBobbingAmount += (var1 - stepBobbingAmount) * 0.4F;
-        tilt += (var2 - tilt) * 0.8F;
+        Tilt += (var2 - Tilt) * 0.8F;
         CollideWithPickupEntities();
     }
 
     private void collideWithEntity(Entity entity)
     {
-        entity.onPlayerInteraction(this);
+        entity.OnPlayerInteraction(this);
     }
 
     public int getScore()
@@ -316,9 +316,9 @@ public abstract class EntityPlayer : EntityLiving
     public override void onKilledBy(Entity adversary)
     {
         base.onKilledBy(adversary);
-        setBoundingBoxSpacing(0.2F, 0.2F);
-        setPosition(x, y, z);
-        velocityY = (double)0.1F;
+        SetBoundingBoxSpacing(0.2F, 0.2F);
+        SetPosition(X, Y, Z);
+        VelocityY = (double)0.1F;
         if (name.Equals("Notch"))
         {
             DropItem(new ItemStack(Item.Apple, 1), true);
@@ -327,19 +327,19 @@ public abstract class EntityPlayer : EntityLiving
         inventory.DropInventory();
         if (adversary != null)
         {
-            velocityX = (double)(-MathHelper.Cos((attackedAtYaw + yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
-            velocityZ = (double)(-MathHelper.Sin((attackedAtYaw + yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
+            VelocityX = (double)(-MathHelper.Cos((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
+            VelocityZ = (double)(-MathHelper.Sin((AttackedAtYaw + Yaw) * (float)System.Math.PI / 180.0F) * 0.1F);
         }
         else
         {
-            velocityX = velocityZ = 0.0D;
+            VelocityX = VelocityZ = 0.0D;
         }
 
-        standingEyeHeight = 0.1F;
+        StandingEyeHeight = 0.1F;
         increaseStat(Stats.Stats.DeathsStat, 1);
     }
 
-    public override void updateKilledAchievement(Entity entityKilled, int score)
+    public override void UpdateKilledAchievement(Entity entityKilled, int score)
     {
         this.score += score;
         if (entityKilled is EntityPlayer)
@@ -369,30 +369,30 @@ public abstract class EntityPlayer : EntityLiving
         if (!GameMode.CanDrop) return false;
         if (stack == null) return true;
 
-        EntityItem var3 = new EntityItem(world, x, y - (double)0.3F + (double)getEyeHeight(), z, stack);
+        EntityItem var3 = new EntityItem(World, X, Y - (double)0.3F + (double)GetEyeHeight(), Z, stack);
         var3.delayBeforeCanPickup = 40;
         float var4 = 0.1F;
         float var5;
         if (throwRandomly)
         {
-            var5 = random.NextFloat() * 0.5F;
-            float var6 = random.NextFloat() * (float)System.Math.PI * 2.0F;
-            var3.velocityX = (double)(-MathHelper.Sin(var6) * var5);
-            var3.velocityZ = (double)(MathHelper.Cos(var6) * var5);
-            var3.velocityY = (double)0.2F;
+            var5 = Random.NextFloat() * 0.5F;
+            float var6 = Random.NextFloat() * (float)System.Math.PI * 2.0F;
+            var3.VelocityX = (double)(-MathHelper.Sin(var6) * var5);
+            var3.VelocityZ = (double)(MathHelper.Cos(var6) * var5);
+            var3.VelocityY = (double)0.2F;
         }
         else
         {
             var4 = 0.3F;
-            var3.velocityX = (double)(-MathHelper.Sin(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
-            var3.velocityZ = (double)(MathHelper.Cos(yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(pitch / 180.0F * (float)System.Math.PI) * var4);
-            var3.velocityY = (double)(-MathHelper.Sin(pitch / 180.0F * (float)System.Math.PI) * var4 + 0.1F);
+            var3.VelocityX = (double)(-MathHelper.Sin(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * var4);
+            var3.VelocityZ = (double)(MathHelper.Cos(Yaw / 180.0F * (float)System.Math.PI) * MathHelper.Cos(Pitch / 180.0F * (float)System.Math.PI) * var4);
+            var3.VelocityY = (double)(-MathHelper.Sin(Pitch / 180.0F * (float)System.Math.PI) * var4 + 0.1F);
             var4 = 0.02F;
-            var5 = random.NextFloat() * (float)System.Math.PI * 2.0F;
-            var4 *= random.NextFloat();
-            var3.velocityX += Math.Cos((double)var5) * (double)var4;
-            var3.velocityY += (double)((random.NextFloat() - random.NextFloat()) * 0.1F);
-            var3.velocityZ += Math.Sin((double)var5) * (double)var4;
+            var5 = Random.NextFloat() * (float)System.Math.PI * 2.0F;
+            var4 *= Random.NextFloat();
+            var3.VelocityX += Math.Cos((double)var5) * (double)var4;
+            var3.VelocityY += (double)((Random.NextFloat() - Random.NextFloat()) * 0.1F);
+            var3.VelocityZ += Math.Sin((double)var5) * (double)var4;
         }
 
         spawnItem(var3);
@@ -403,18 +403,18 @@ public abstract class EntityPlayer : EntityLiving
 
     protected virtual void spawnItem(EntityItem itemEntity)
     {
-        world.SpawnEntity(itemEntity);
+        World.SpawnEntity(itemEntity);
     }
 
     public float getBlockBreakingSpeed(Block block)
     {
         float var2 = inventory.GetStrVsBlock(block);
-        if (isInFluid(Material.Water))
+        if (IsInFluid(Material.Water))
         {
             var2 /= 5.0F;
         }
 
-        if (!onGround)
+        if (!OnGround)
         {
             var2 /= 5.0F;
         }
@@ -427,9 +427,9 @@ public abstract class EntityPlayer : EntityLiving
         return inventory.CanHarvestBlock(block);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
+        base.ReadNbt(nbt);
         NBTTagList var2 = nbt.GetTagList("Inventory");
         inventory.ReadFromNBT(var2);
         dimensionId = nbt.GetInteger("Dimension");
@@ -437,7 +437,7 @@ public abstract class EntityPlayer : EntityLiving
         sleepTimer = nbt.GetShort("SleepTimer");
         if (sleeping)
         {
-            sleepingPos = new Vec3i(MathHelper.Floor(x), MathHelper.Floor(y), MathHelper.Floor(z));
+            sleepingPos = new Vec3i(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
             wakeUp(true, true, false);
         }
 
@@ -447,9 +447,9 @@ public abstract class EntityPlayer : EntityLiving
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
+        base.WriteNbt(nbt);
         nbt.SetTag("Inventory", inventory.WriteToNBT(new NBTTagList()));
         nbt.SetInteger("Dimension", dimensionId);
         nbt.SetBoolean("Sleeping", sleeping);
@@ -474,35 +474,35 @@ public abstract class EntityPlayer : EntityLiving
     {
     }
 
-    public override float getEyeHeight()
+    public override float GetEyeHeight()
     {
         return 0.12F;
     }
 
     protected virtual void resetEyeHeight()
     {
-        standingEyeHeight = 1.62F;
+        StandingEyeHeight = 1.62F;
     }
 
-    public override bool damage(Entity? damageSource, int amount)
+    public override bool Damage(Entity? damageSource, int amount)
     {
         if (!GameMode.CanReceiveDamage) return false;
 
-        entityAge = 0;
-        if (health <= 0)
+        EntityAge = 0;
+        if (Health <= 0)
         {
             return false;
         }
         else
         {
-            if (isSleeping() && !world.IsRemote)
+            if (isSleeping() && !World.IsRemote)
             {
                 wakeUp(true, true, false);
             }
 
             if (damageSource is EntityMonster || damageSource is EntityArrow)
             {
-                switch (world.Difficulty)
+                switch (World.Difficulty)
                 {
                     case 0:
                         amount = 0;
@@ -532,7 +532,7 @@ public abstract class EntityPlayer : EntityLiving
             }
 
             increaseStat(Stats.Stats.DamageTakenStat, amount);
-            return base.damage(damageSource, amount);
+            return base.Damage(damageSource, amount);
         }
     }
 
@@ -550,7 +550,7 @@ public abstract class EntityPlayer : EntityLiving
 
             if (entity is not EntityPlayer p || isPvpEnabled() && p.GameMode.CanBeTargeted)
             {
-                var var7 = world.Entities.CollectEntitiesOfType<EntityWolf>(new Box(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
+                var var7 = World.Entities.CollectEntitiesOfType<EntityWolf>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
 
                 foreach (EntityWolf var6 in var7)
                 {
@@ -591,7 +591,7 @@ public abstract class EntityPlayer : EntityLiving
     public void interact(Entity entity)
     {
         if (!GameMode.CanInteract) return;
-        if (!entity.interact(this))
+        if (!entity.Interact(this))
         {
             ItemStack itemStackInHand = getHand();
             if (itemStackInHand != null && entity is EntityLiving living)
@@ -616,9 +616,9 @@ public abstract class EntityPlayer : EntityLiving
         inventory.SetStack(inventory.SelectedSlot, (ItemStack)null);
     }
 
-    public override double getStandingEyeHeight()
+    public override double GetStandingEyeHeight()
     {
-        return (double)(standingEyeHeight - 0.5F);
+        return (double)(StandingEyeHeight - 0.5F);
     }
 
     public virtual void swingHand()
@@ -633,12 +633,12 @@ public abstract class EntityPlayer : EntityLiving
         int var2 = inventory.GetDamageVsEntity(target);
         if (var2 > 0)
         {
-            if (velocityY < 0.0D)
+            if (VelocityY < 0.0D)
             {
                 ++var2;
             }
 
-            target.damage(this, var2);
+            target.Damage(this, var2);
             if (target is EntityLiving living)
             {
                 ItemStack itemStackInHand = getHand();
@@ -652,7 +652,7 @@ public abstract class EntityPlayer : EntityLiving
                     }
                 }
 
-                if (living.isAlive())
+                if (living.IsAlive())
                 {
                     commandWolvesToAttack(living, true);
                 }
@@ -672,9 +672,9 @@ public abstract class EntityPlayer : EntityLiving
     {
     }
 
-    public override void markDead()
+    public override void MarkDead()
     {
-        base.markDead();
+        base.MarkDead();
         playerScreenHandler.onClosed(this);
         if (currentScreenHandler != null)
         {
@@ -682,41 +682,41 @@ public abstract class EntityPlayer : EntityLiving
         }
     }
 
-    public override bool isInsideWall()
+    public override bool IsInsideWall()
     {
-        return !sleeping && base.isInsideWall();
+        return !sleeping && base.IsInsideWall();
     }
 
     public virtual SleepAttemptResult trySleep(int x, int y, int z)
     {
-        if (!world.IsRemote)
+        if (!World.IsRemote)
         {
-            if (isSleeping() || !isAlive())
+            if (isSleeping() || !IsAlive())
             {
                 return SleepAttemptResult.OTHER_PROBLEM;
             }
 
-            if (world.Dimension.IsNether)
+            if (World.Dimension.IsNether)
             {
                 return SleepAttemptResult.NOT_POSSIBLE_HERE;
             }
 
-            if (world.Environment.CanMonsterSpawn())
+            if (World.Environment.CanMonsterSpawn())
             {
                 return SleepAttemptResult.NOT_POSSIBLE_NOW;
             }
 
-            if (Math.Abs(base.x - (double)x) > 3.0D || Math.Abs(base.y - (double)y) > 2.0D || Math.Abs(base.z - (double)z) > 3.0D)
+            if (Math.Abs(base.X - (double)x) > 3.0D || Math.Abs(base.Y - (double)y) > 2.0D || Math.Abs(base.Z - (double)z) > 3.0D)
             {
                 return SleepAttemptResult.TOO_FAR_AWAY;
             }
         }
 
-        setBoundingBoxSpacing(0.2F, 0.2F);
-        standingEyeHeight = 0.2F;
-        if (world.Reader.IsPosLoaded(x, y, z))
+        SetBoundingBoxSpacing(0.2F, 0.2F);
+        StandingEyeHeight = 0.2F;
+        if (World.Reader.IsPosLoaded(x, y, z))
         {
-            int var4 = world.Reader.GetBlockMeta(x, y, z);
+            int var4 = World.Reader.GetBlockMeta(x, y, z);
             int var5 = BlockBed.getDirection(var4);
             float var6 = 0.5F;
             float var7 = 0.5F;
@@ -737,20 +737,20 @@ public abstract class EntityPlayer : EntityLiving
             }
 
             calculateSleepOffset(var5);
-            setPosition((double)((float)x + var6), (double)((float)y + 15.0F / 16.0F), (double)((float)z + var7));
+            SetPosition((double)((float)x + var6), (double)((float)y + 15.0F / 16.0F), (double)((float)z + var7));
         }
         else
         {
-            setPosition((double)((float)x + 0.5F), (double)((float)y + 15.0F / 16.0F), (double)((float)z + 0.5F));
+            SetPosition((double)((float)x + 0.5F), (double)((float)y + 15.0F / 16.0F), (double)((float)z + 0.5F));
         }
 
         sleeping = true;
         sleepTimer = 0;
         sleepingPos = new Vec3i(x, y, z);
-        velocityX = velocityZ = velocityY = 0.0D;
-        if (!world.IsRemote)
+        VelocityX = VelocityZ = VelocityY = 0.0D;
+        if (!World.IsRemote)
         {
-            world.Entities.UpdateSleepingPlayers();
+            World.Entities.UpdateSleepingPlayers();
         }
 
         return SleepAttemptResult.OK;
@@ -779,26 +779,26 @@ public abstract class EntityPlayer : EntityLiving
 
     public virtual void wakeUp(bool resetSleepTimer, bool updateSleepingPlayers, bool setSpawnPos)
     {
-        setBoundingBoxSpacing(0.6F, 1.8F);
+        SetBoundingBoxSpacing(0.6F, 1.8F);
         resetEyeHeight();
         Vec3i? var4 = sleepingPos;
-        if (var4 is (int x, int y, int z) && world.Reader.GetBlockId(x, y, z) == Block.Bed.id)
+        if (var4 is (int x, int y, int z) && World.Reader.GetBlockId(x, y, z) == Block.Bed.id)
         {
-            int bedMeta = world.Reader.GetBlockMeta(x, y, z);
-            BlockBed.updateState(world.Writer, x, y, z, bedMeta, false);
-            Vec3i? var5 = BlockBed.findWakeUpPosition(world.Reader, x, y, z, 0);
+            int bedMeta = World.Reader.GetBlockMeta(x, y, z);
+            BlockBed.updateState(World.Writer, x, y, z, bedMeta, false);
+            Vec3i? var5 = BlockBed.findWakeUpPosition(World.Reader, x, y, z, 0);
             if (var5 == null)
             {
                 var5 = new Vec3i(x, y + 1, z);
             }
 
-            setPosition(var5.Value.X + 0.5F, var5.Value.Y + standingEyeHeight + 0.1F, var5.Value.Z + 0.5F);
+            SetPosition(var5.Value.X + 0.5F, var5.Value.Y + StandingEyeHeight + 0.1F, var5.Value.Z + 0.5F);
         }
 
         sleeping = false;
-        if (!world.IsRemote && updateSleepingPlayers)
+        if (!World.IsRemote && updateSleepingPlayers)
         {
-            world.Entities.UpdateSleepingPlayers();
+            World.Entities.UpdateSleepingPlayers();
         }
 
         if (resetSleepTimer)
@@ -818,7 +818,7 @@ public abstract class EntityPlayer : EntityLiving
 
     private bool isSleepingInBed()
     {
-        return world.Reader.GetBlockId(sleepingPos.X, sleepingPos.Y, sleepingPos.Z) == Block.Bed.id;
+        return World.Reader.GetBlockId(sleepingPos.X, sleepingPos.Y, sleepingPos.Z) == Block.Bed.id;
     }
 
     public static Vec3i? findRespawnPosition(IWorldContext world, Vec3i? spawnPos)
@@ -847,7 +847,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         if (sleepingPos != null)
         {
-            int var1 = world.Reader.GetBlockMeta(sleepingPos.X, sleepingPos.Y, sleepingPos.Z);
+            int var1 = World.Reader.GetBlockMeta(sleepingPos.X, sleepingPos.Y, sleepingPos.Z);
             int var2 = BlockBed.getDirection(var1);
             switch (var2)
             {
@@ -918,19 +918,19 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void travel(float x, float z)
     {
-        double var3 = base.x;
-        double var5 = y;
-        double var7 = base.z;
+        double var3 = base.X;
+        double var5 = Y;
+        double var7 = base.Z;
         base.travel(x, z);
-        updateMovementStat(base.x - var3, y - var5, base.z - var7);
+        updateMovementStat(base.X - var3, Y - var5, base.Z - var7);
     }
 
     private void updateMovementStat(double x, double y, double z)
     {
-        if (vehicle == null)
+        if (Vehicle == null)
         {
             int var7;
-            if (isInFluid(Material.Water))
+            if (IsInFluid(Material.Water))
             {
                 var7 = MathHelper.Round(MathHelper.Sqrt(x * x + y * y + z * z) * 100.0F);
                 if (var7 > 0)
@@ -938,7 +938,7 @@ public abstract class EntityPlayer : EntityLiving
                     increaseStat(Stats.Stats.DistanceDoveStat, var7);
                 }
             }
-            else if (isInWater())
+            else if (IsInWater())
             {
                 var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 0)
@@ -953,7 +953,7 @@ public abstract class EntityPlayer : EntityLiving
                     increaseStat(Stats.Stats.DistanceClimbedStat, (int)MathHelper.Round(y * 100.0D));
                 }
             }
-            else if (onGround)
+            else if (OnGround)
             {
                 var7 = MathHelper.Round(MathHelper.Sqrt(x * x + z * z) * 100.0F);
                 if (var7 > 0)
@@ -974,20 +974,20 @@ public abstract class EntityPlayer : EntityLiving
 
     private void increaseRidingMotionStats(double x, double y, double z)
     {
-        if (vehicle is null) return;
+        if (Vehicle is null) return;
 
         int distanceScaled = (int)Math.Round(Math.Sqrt(x * x + y * y + z * z) * 100.0);
 
         if (distanceScaled <= 0) return;
 
-        switch (vehicle)
+        switch (Vehicle)
         {
             case EntityMinecart:
                 increaseStat(Stats.Stats.DistanceByMinecartStat, distanceScaled);
 
-                int currentX = MathHelper.Floor(this.x);
-                int currentY = MathHelper.Floor(this.y);
-                int currentZ = MathHelper.Floor(this.z);
+                int currentX = MathHelper.Floor(this.X);
+                int currentY = MathHelper.Floor(this.Y);
+                int currentZ = MathHelper.Floor(this.Z);
 
                 if (startMinecartRidingCoordinate is null)
                 {
@@ -1009,17 +1009,17 @@ public abstract class EntityPlayer : EntityLiving
         }
     }
 
-    protected override void onLanding(float fallDistance)
+    protected override void OnLanding(float fallDistance)
     {
         if (fallDistance >= 2.0F)
         {
             increaseStat(Stats.Stats.DistanceFallenStat, (int)MathHelper.Round((double)fallDistance * 100.0D));
         }
 
-        base.onLanding(fallDistance);
+        base.OnLanding(fallDistance);
     }
 
-    public override void onKillOther(EntityLiving other)
+    public override void OnKillOther(EntityLiving other)
     {
         if (other is EntityMonster)
         {
@@ -1038,7 +1038,7 @@ public abstract class EntityPlayer : EntityLiving
         return var2;
     }
 
-    public override void tickPortalCooldown()
+    public override void TickPortalCooldown()
     {
         if (portalCooldown <= 0)
         {

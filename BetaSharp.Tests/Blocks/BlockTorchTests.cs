@@ -88,10 +88,10 @@ public sealed class BlockTorchTests
         // Placer east of the cell, looking into the gap (−X): wall torch faces is west (meta 1).
         TestPlayer player = new(world)
         {
-            x = x + 8.0,
-            z = z + 0.2,
-            yaw = 90f,
-            pitch = -35f
+            X = x + 8.0,
+            Y = z + 0.2,
+            Yaw = 90f,
+            Pitch = -35f
         };
 
         Block.Torch.onPlaced(new OnPlacedEvent(world, player, Side.Down, Side.Down, x, y, z));
@@ -113,10 +113,10 @@ public sealed class BlockTorchTests
 
         TestPlayer player = new(world)
         {
-            x = x - 8.0,
-            z = z + 0.2,
-            yaw = 270f,
-            pitch = -35f
+            X = x - 8.0,
+            Z = z + 0.2,
+            Yaw = 270f,
+            Pitch = -35f
         };
 
         Block.Torch.onPlaced(new OnPlacedEvent(world, player, Side.Down, Side.Down, x, y, z));
@@ -138,10 +138,10 @@ public sealed class BlockTorchTests
 
         TestPlayer player = new(world)
         {
-            x = x + 0.2,
-            z = z + 6.0,
-            yaw = 180f,
-            pitch = -35f
+            X = x + 0.2,
+            Z = z + 6.0,
+            Yaw = 180f,
+            Pitch = -35f
         };
 
         Block.Torch.onPlaced(new OnPlacedEvent(world, player, Side.Down, Side.Down, x, y, z));
@@ -163,10 +163,10 @@ public sealed class BlockTorchTests
 
         TestPlayer player = new(world)
         {
-            x = x + 0.2,
-            z = z - 6.0,
-            yaw = 0f,
-            pitch = -35f
+            X = x + 0.2,
+            Z = z - 6.0,
+            Yaw = 0f,
+            Pitch = -35f
         };
 
         Block.Torch.onPlaced(new OnPlacedEvent(world, player, Side.Down, Side.Down, x, y, z));
@@ -208,10 +208,10 @@ public sealed class BlockTorchTests
 
         TestPlayer player = new(world)
         {
-            x = x + 0.5,
-            z = z + 8.0,
-            yaw = 0f,
-            pitch = -35f
+            X = x + 0.5,
+            Z = z + 8.0,
+            Yaw = 0f,
+            Pitch = -35f
         };
 
         Block.Torch.onPlaced(new OnPlacedEvent(world, player, Side.Down, Side.Down, x, y, z));

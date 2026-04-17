@@ -405,8 +405,8 @@ public class Chunk
     public virtual void AddEntity(Entity entity)
     {
         LastSaveHadEntities = true;
-        int chunkX = MathHelper.Floor(entity.x / 16.0D);
-        int chunkZ = MathHelper.Floor(entity.z / 16.0D);
+        int chunkX = MathHelper.Floor(entity.X / 16.0D);
+        int chunkZ = MathHelper.Floor(entity.Z / 16.0D);
 
         if (chunkX != X || chunkZ != Z)
         {
@@ -414,18 +414,18 @@ public class Chunk
             s_logger.LogDebug(Environment.StackTrace);
         }
 
-        int slice = MathHelper.Floor(entity.y / 16.0D);
+        int slice = MathHelper.Floor(entity.Y / 16.0D);
         if (slice < 0) slice = 0;
         if (slice >= Entities.Length) slice = Entities.Length - 1;
 
-        entity.isPersistent = true;
-        entity.chunkX = X;
-        entity.chunkSlice = slice;
-        entity.chunkZ = Z;
+        entity.IsPersistent = true;
+        entity.ChunkX = X;
+        entity.ChunkSlice = slice;
+        entity.ChunkZ = Z;
         Entities[slice].Add(entity);
     }
 
-    public virtual void RemoveEntity(Entity entity) => RemoveEntity(entity, entity.chunkSlice);
+    public virtual void RemoveEntity(Entity entity) => RemoveEntity(entity, entity.ChunkSlice);
 
     public virtual void RemoveEntity(Entity entity, int chunkSlice)
     {
@@ -543,7 +543,7 @@ public class Chunk
         {
             foreach (Entity entity in Entities[i])
             {
-                if (entity != except && entity.boundingBox.Intersects(box) && !entity.dead)
+                if (entity != except && entity.BoundingBox.Intersects(box) && !entity.Dead)
                 {
                     result.Add(entity);
                 }
@@ -563,7 +563,7 @@ public class Chunk
         {
             foreach (Entity entity in Entities[i])
             {
-                if (!entity.dead && entity is T typedEntity && entity.boundingBox.Intersects(box))
+                if (!entity.Dead && entity is T typedEntity && entity.BoundingBox.Intersects(box))
                 {
                     result.Add(typedEntity);
                 }

@@ -42,21 +42,21 @@ public class ServerWorld : World
         return ChunkCache;
     }
 
-    private void HandleEntityAdded(Entity entity) => entitiesById.TryAdd(entity.id, entity);
+    private void HandleEntityAdded(Entity entity) => entitiesById.TryAdd(entity.ID, entity);
 
-    private void HandleEntityRemoved(Entity entity) => entitiesById.Remove(entity.id);
+    private void HandleEntityRemoved(Entity entity) => entitiesById.Remove(entity.ID);
 
-    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.x, entity.y, entity.z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
+    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.X, entity.Y, entity.Z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
 
     private bool HandleEntityUpdating(Entity entity)
     {
         if (!server.spawnAnimals && (entity is EntityAnimal || entity is EntityWaterMob))
         {
-            entity.markDead();
+            entity.MarkDead();
             return false;
         }
 
-        if (entity.passenger != null && entity.passenger is EntityPlayer)
+        if (entity.Passenger != null && entity.Passenger is EntityPlayer)
         {
             return false;
         }

@@ -28,7 +28,7 @@ internal class BlockDispenser : BlockWithEntity
         }
         else
         {
-            int direction = MathHelper.Floor(@event.Placer.yaw * 4.0F / 360.0F + 0.5D) & 3;
+            int direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
             int meta = direction switch
             {
                 0 => 2,
@@ -150,13 +150,13 @@ internal class BlockDispenser : BlockWithEntity
         {
             EntityItem item = new(@event.World, spawnX, spawnY - 0.3D, spawnZ, itemStack);
             double randomVelocity = Random.Shared.NextDouble() * 0.1D + 0.2D;
-            item.velocityX = dirX * randomVelocity;
-            item.velocityY = 0.2F;
-            item.velocityZ = dirZ * randomVelocity;
+            item.VelocityX = dirX * randomVelocity;
+            item.VelocityY = 0.2F;
+            item.VelocityZ = dirZ * randomVelocity;
 
-            item.velocityX += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
-            item.velocityY += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
-            item.velocityZ += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+            item.VelocityX += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+            item.VelocityY += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
+            item.VelocityZ += @event.World.Random.NextGaussian() * 0.0075D * 6.0D;
 
             @event.World.Entities.SpawnEntity(item);
             @event.World.Broadcaster.WorldEvent(1000, @event.X, @event.Y, @event.Z, 0);
@@ -216,9 +216,9 @@ internal class BlockDispenser : BlockWithEntity
                     stack.Count -= amount;
                     EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()))
                     {
-                        velocityX = (float)random.NextGaussian() * LaunchSpread,
-                        velocityY = (float)random.NextGaussian() * LaunchSpread + 0.2F,
-                        velocityZ = (float)random.NextGaussian() * LaunchSpread
+                        VelocityX = (float)random.NextGaussian() * LaunchSpread,
+                        VelocityY = (float)random.NextGaussian() * LaunchSpread + 0.2F,
+                        VelocityZ = (float)random.NextGaussian() * LaunchSpread
                     };
 
                     @event.World.Entities.SpawnEntity(entityItem);

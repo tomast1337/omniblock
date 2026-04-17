@@ -279,7 +279,7 @@ public abstract class World : IWorldContext
             NBTTagCompound? tag = Properties.PlayerTag;
             if (tag != null)
             {
-                player.read(tag);
+                player.Read(tag);
                 Properties.PlayerTag = null;
             }
 
@@ -490,8 +490,8 @@ public abstract class World : IWorldContext
         for (int i = 0; i < Entities.Players.Count; ++i)
         {
             EntityPlayer player = Entities.Players[i];
-            int playerChunkX = MathHelper.Floor(player.x / 16.0D);
-            int playerChunkZ = MathHelper.Floor(player.z / 16.0D);
+            int playerChunkX = MathHelper.Floor(player.X / 16.0D);
+            int playerChunkZ = MathHelper.Floor(player.Z / 16.0D);
             const byte viewDistance = 9;
 
             for (int xOffset = -viewDistance; xOffset <= viewDistance; ++xOffset)
@@ -530,7 +530,7 @@ public abstract class World : IWorldContext
                 {
                     EntityPlayer? closest = Entities.GetClosestPlayer(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, 8.0D);
                     if (closest != null &&
-                        closest.getSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
+                        closest.GetSquaredDistance(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D) > 4.0D)
                     {
                         Broadcaster.PlaySoundAtPos(worldX + 0.5D, localY + 0.5D, worldZ + 0.5D, "ambient.cave.cave", 0.7F,
                             0.8F + Random.NextFloat() * 0.2F);

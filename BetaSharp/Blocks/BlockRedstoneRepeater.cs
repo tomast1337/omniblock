@@ -130,7 +130,7 @@ public class BlockRedstoneRepeater : Block
     {
         if (@event.Placer != null)
         {
-            float yaw = @event.Placer.yaw;
+            float yaw = @event.Placer.Yaw;
             int facing = ((MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, facing);
         }
