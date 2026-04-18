@@ -81,9 +81,9 @@ public class GiveCommand : Command.Command
             return;
         }
 
-        target.inventory.AddItemStackToInventoryOrDrop(stack);
-        string msg = $"Gave {count} [{ItemLookup.ResolveItemName(stack)}] to {target.name}";
-        source.LogOp($"{target.name} {msg}");
+        target.Inventory.AddItemStackToInventoryOrDrop(stack);
+        string msg = $"Gave {count} [{ItemLookup.ResolveItemName(stack)}] to {target.Name}";
+        source.LogOp($"{target.Name} {msg}");
         source.Output.SendMessage(msg);
     }
 }
