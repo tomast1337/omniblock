@@ -861,6 +861,10 @@ public class WorldRenderer : IWorldEventListener
                 break;
             case 1004:
                 _game.SoundManager.PlaySound("random.fizz", var3 + 0.5F, var4 + 0.5F, var5 + 0.5F, 0.5F, 2.6F + (var7.NextFloat() - var7.NextFloat()) * 0.8F);
+                for (int particleIndex = 0; particleIndex < Random.Shared.Next(8, 12); ++particleIndex)
+                {
+                    _world.Broadcaster.AddParticle("largesmoke", var3 + var7.NextDouble(), var4 + 1.2D, var5 + var7.NextDouble(), 0.0D, 0.0D, 0.0D);
+                }
                 break;
             case 1005:
                 if (Item.ITEMS[var6] is ItemRecord)
