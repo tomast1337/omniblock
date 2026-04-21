@@ -35,7 +35,7 @@ public class EntityRenderDispatcher
     {
         RegisterRenderer(typeof(EntitySpider), new SpiderEntityRenderer());
         RegisterRenderer(typeof(EntityPig), new PigEntityRenderer(new ModelPig(), new ModelPig(0.5F), 0.7F));
-        RegisterRenderer(typeof(EntitySheep), new SheepEntityRenderer(new ModelSheep2(), new ModelSheep1(), 0.7F));
+        RegisterRenderer(typeof(EntitySheep), new SheepEntityRenderer(new SheepModel(), new SheepFurModel(), 0.7F));
         RegisterRenderer(typeof(EntityCow), new CowEntityRenderer(new ModelCow(), 0.7F));
         RegisterRenderer(typeof(EntityWolf), new WolfEntityRenderer(new ModelWolf(), 0.5F));
         RegisterRenderer(typeof(EntityChicken), new ChickenEntityRenderer(new ModelChicken(), 0.3F));

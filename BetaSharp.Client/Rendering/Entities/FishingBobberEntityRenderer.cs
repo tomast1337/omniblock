@@ -52,7 +52,7 @@ public class FishingBobberEntityRenderer : EntityRenderer
             double lineStartX = bobberEntity.angler.PrevX + (bobberEntity.angler.X - bobberEntity.angler.PrevX) * (double)tickDelta + rodOffset.x;
             double lineStartY = bobberEntity.angler.PrevY + (bobberEntity.angler.Y - bobberEntity.angler.PrevY) * (double)tickDelta + rodOffset.y;
             double lineStartZ = bobberEntity.angler.PrevZ + (bobberEntity.angler.Z - bobberEntity.angler.PrevZ) * (double)tickDelta + rodOffset.z;
-            if (Dispatcher.Options.CameraMode != EnumCameraMode.FirstPerson)
+            if (Dispatcher.Options.CameraMode != CameraMode.FirstPerson)
             {
                 anglerYawRadians = (bobberEntity.angler.LastBodyYaw + (bobberEntity.angler.BodyYaw - bobberEntity.angler.LastBodyYaw) * tickDelta) * (float)Math.PI / 180.0F;
                 sinYaw = (double)MathHelper.Sin(anglerYawRadians);

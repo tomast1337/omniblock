@@ -641,7 +641,7 @@ public partial class BetaSharp :
 
                     if (Player != null && Player.IsInsideWall())
                     {
-                        Options.CameraMode = EnumCameraMode.FirstPerson;
+                        Options.CameraMode = CameraMode.FirstPerson;
                     }
 
                     int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
@@ -1113,7 +1113,7 @@ public partial class BetaSharp :
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F5)
                     {
-                        Options.CameraMode = (EnumCameraMode)((int)(Options.CameraMode + 2) % 3);
+                        Options.CameraMode = (CameraMode)((int)(Options.CameraMode + 2) % 3);
                     }
 
                     if (Keyboard.getEventKey() == Keyboard.KEY_F8) Options.SmoothCamera = !Options.SmoothCamera;

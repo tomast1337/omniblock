@@ -194,13 +194,13 @@ public class GameRenderer
             cameraController.ApplyViewBobbing(tickDelta);
         }
 
-        if (_client.Options.CameraMode == EnumCameraMode.FirstPerson && !_client.Camera.isSleeping() && !_client.Options.HideGUI)
+        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.isSleeping() && !_client.Options.HideGUI)
         {
             itemRenderer.renderItemInFirstPerson(tickDelta);
         }
 
         GLManager.GL.PopMatrix();
-        if (_client.Options.CameraMode == EnumCameraMode.FirstPerson && !_client.Camera.isSleeping())
+        if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.isSleeping())
         {
             itemRenderer.renderOverlays(tickDelta);
             cameraController.ApplyDamageTiltEffect(tickDelta);

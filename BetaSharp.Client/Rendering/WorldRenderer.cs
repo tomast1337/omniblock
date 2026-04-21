@@ -242,7 +242,7 @@ public class WorldRenderer : IWorldEventListener
                         continue;
                     }
                 }
-                if (entity.ShouldRender(cameraPos) && (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) && (entity != _game.Camera || _game.Options.CameraMode != EnumCameraMode.FirstPerson || _game.Camera.isSleeping()))
+                if (entity.ShouldRender(cameraPos) && (entity.IgnoreFrustumCheck || culler.IsBoundingBoxInFrustum(entity.BoundingBox)) && (entity != _game.Camera || _game.Options.CameraMode != CameraMode.FirstPerson || _game.Camera.isSleeping()))
                 {
                     int yFloor = MathHelper.Floor(entity.Y);
                     if (yFloor < 0)
