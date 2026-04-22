@@ -101,17 +101,29 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
             scroll.AddContent(lbl);
         }
 
-        Header("BetaSharp");
-        Text("Port of Minecraft Beta 1.7.3 to C#");
-        Link("On GitHub", "https://github.com/betasharp-official/betasharp/");
-        Text("Version " + BetaSharp.Version);
-        Text("");
+        void Seperator() {
+            var ele = new UIElement();
+            ele.Style.Height = 10;
+            scroll.AddContent(ele);
+        }
 
-        Header("Developers");
+        const int scale = 20;
+        const int imageWidth = 1000 / scale;
+        const int imageHeight = 675 / scale;
+
+        var image = new Image();
+        image.Texture = Context.TextureManager.GetTextureId("gui/Logo.png");
+        image.Style.Width = imageWidth;
+        image.Style.Height = imageHeight;
+        image.Style.AlignSelf = Align.Center;
+        image.Style.MarginBottom = 10;
+        scroll.AddContent(image);
+
+        Header("BetaSharp Version " + BetaSharp.Version);
+        Text("An enhanced of Minecraft Beta 1.7.3, written in C#.");
+        Link("On GitHub", "https://github.com/betasharp-official/betasharp/");
         Link("Made by Fazin85", "https://github.com/Fazin85");
-        Link("With help by TheVeryStarlk", "https://github.com/TheVeryStarlk");
-        Link("and many others!", "https://github.com/betasharp-official/betasharp/graphs/contributors");
-        Text("");
+        Seperator();
 
         Header("Libraries");
         Link("Slik.NET - Graphics", "https://github.com/dotnet/Silk.NET");
