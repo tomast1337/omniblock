@@ -1501,7 +1501,8 @@ public partial class BetaSharp :
 
     public void Navigate(UIScreen? newScreen)
     {
-        Mouse.ClearEvents();
+        Mouse.Flush();
+        Keyboard.Flush();
         Controller.ClearEvents();
         CurrentScreen?.Uninit();
 
@@ -1516,13 +1517,16 @@ public partial class BetaSharp :
         }
 
         StatFileWriter.SyncStats();
-        if (newScreen == null && World == null)
+        if (newScreen == null)
         {
-            newScreen = CreateMainMenuScreen();
-        }
-        else if (newScreen == null && Player.Health <= 0)
-        {
-            newScreen = new GameOverScreen(UIContext, (int)Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
+            if (World == null)
+            {
+                newScreen = CreateMainMenuScreen();
+            }
+            else if (Player.Health <= 0)
+            {
+                newScreen = new GameOverScreen(UIContext, Player.getScore(), Player.respawn, canRespawn: Session != null, exitToTitle: () => ChangeWorld(null!));
+            }
         }
 
         if (newScreen is MainMenuScreen)
