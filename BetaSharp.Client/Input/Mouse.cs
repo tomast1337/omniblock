@@ -267,7 +267,7 @@ public static class Mouse
         s_eventQueue.Clear();
     }
 
-    public static void ClearEvents()
+    public static void Flush()
     {
         if (!s_created) return;
         s_eventQueue.Clear();
