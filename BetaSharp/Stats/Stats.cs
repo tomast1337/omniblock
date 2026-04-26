@@ -66,7 +66,7 @@ public static class Stats
         {
             HashSet<int> craftedIds = new HashSet<int>();
 
-            foreach (IRecipe recipe in RecipesCrafting.Recipes)
+            foreach (IRecipe recipe in RecipesCrafting.Recipes.Values)
             {
                 craftedIds.Add(recipe.GetRecipeOutput().ItemId);
             }

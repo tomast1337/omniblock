@@ -7,6 +7,15 @@ public class RecipeManager : IRegistryReloadListener
 {
     private static readonly ILogger<RecipeManager> s_logger = Log.Instance.For<RecipeManager>();
 
+    /// <summary>
+    /// Registered crafting recipe asset handlers.
+    /// </summary>
+    public static List<ICraftingRegistry> CraftingTypes = [
+        new ShapedCraftingRegistry(),
+        new ShapelessCraftingRegistry(),
+        new SmeltingCraftingRegistry()
+    ];
+
     public void OnRegistriesRebuilt(RegistryAccess registryAccess)
     {
         ClearRecipes();
@@ -21,17 +30,9 @@ public class RecipeManager : IRegistryReloadListener
         {
             try
             {
-                if (string.Equals(def.Type, "shapeless", StringComparison.OrdinalIgnoreCase))
+                if (!BuildRecipe(def))
                 {
-                    RecipesCrafting.BuildShapelessRecipe(def);
-                }
-                else if (string.Equals(def.Type, "shaped", StringComparison.OrdinalIgnoreCase))
-                {
-                    RecipesCrafting.BuildShapedRecipe(def);
-                }
-                else if (string.Equals(def.Type, "smelting", StringComparison.OrdinalIgnoreCase))
-                {
-                    RecipesSmelting.BuildSmeltRecipe(def);
+                    throw new InvalidOperationException($"Unknown crafting type: {def.Type}");
                 }
             }
             catch (Exception ex)
@@ -40,13 +41,31 @@ public class RecipeManager : IRegistryReloadListener
             }
         }
 
-        s_logger.LogInformation("{Count} crafting recipes loaded.", RecipesCrafting.Recipes.Count);
-        s_logger.LogInformation("{Count} smelting recipes loaded.", RecipesSmelting.Recipes.Count);
+        foreach (ICraftingRegistry craftingType in CraftingTypes)
+        {
+            s_logger.LogInformation("{Count} {Type} recipes loaded.", craftingType.Count, craftingType.Name);
+        }
+    }
+
+    private static bool BuildRecipe(RecipeDefinition def)
+    {
+        foreach (ICraftingRegistry craftingType in CraftingTypes)
+        {
+            if (string.Equals(def.Type, craftingType.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                craftingType.BuildRecipe(def);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void ClearRecipes()
     {
-        RecipesCrafting.Recipes.Clear();
-        RecipesSmelting.Recipes.Clear();
+        foreach (ICraftingRegistry craftingType in CraftingTypes)
+        {
+            craftingType.Clear();
+        }
     }
 }
