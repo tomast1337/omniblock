@@ -3,31 +3,17 @@ using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Recipes;
 
-public class RecipeManager
+public class RecipeManager : IRegistryReloadListener
 {
-    private static RecipeManager? s_instance;
+    private static readonly ILogger<RecipeManager> s_logger = Log.Instance.For<RecipeManager>();
 
-    private readonly ILogger<RecipeManager> _logger = Log.Instance.For<RecipeManager>();
-
-    public static RecipeManager getInstance()
+    public void OnRegistriesRebuilt(RegistryAccess registryAccess)
     {
-        if (s_instance == null)
-        {
-            var loader = RegistryDefinitions.Recipes.CreateLoader();
-            loader.LoadFromPaths(null, null, null);
-            loader.Freeze();
-            s_instance = new RecipeManager(loader);
-        }
-
-        return s_instance;
+        ClearRecipes();
+        BuildRecipes(registryAccess.GetOrThrow(RegistryKeys.Recipes));
     }
 
-    public static void Initialize(IReadableRegistry<RecipeDefinition> registry)
-    {
-        s_instance = new RecipeManager(registry);
-    }
-
-    private RecipeManager(IReadableRegistry<RecipeDefinition> registry)
+    private static void BuildRecipes(IReadableRegistry<RecipeDefinition> registry)
     {
         ItemLookup.Initialize();
 
@@ -50,11 +36,17 @@ public class RecipeManager
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to load recipe '{Name}'", def.Name);
+                s_logger.LogWarning(ex, "Failed to load recipe '{Name}'", def.Name);
             }
         }
 
-        _logger.LogInformation("{Count} crafting recipes loaded.", RecipesCrafting.Recipes.Count);
-        _logger.LogInformation("{Count} smelting recipes loaded.", RecipesSmelting.Recipes.Count);
+        s_logger.LogInformation("{Count} crafting recipes loaded.", RecipesCrafting.Recipes.Count);
+        s_logger.LogInformation("{Count} smelting recipes loaded.", RecipesSmelting.Recipes.Count);
+    }
+
+    private static void ClearRecipes()
+    {
+        RecipesCrafting.Recipes.Clear();
+        RecipesSmelting.Recipes.Clear();
     }
 }

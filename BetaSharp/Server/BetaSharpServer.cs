@@ -85,6 +85,7 @@ public abstract class BetaSharpServer : ICommandOutput
         _commandHandler = new ServerCommandHandler(this);
 
         RegisterReloadListener(new DefaultGameModeListener(this));
+        RegisterReloadListener(new RecipeManager());
 
         onlineMode = config.GetOnlineMode(true);
         spawnAnimals = config.GetSpawnAnimals(true);
@@ -575,7 +576,6 @@ public abstract class BetaSharpServer : ICommandOutput
         try
         {
             RegistryAccess = RegistryAccess.Rebuild();
-            RecipeManager.Initialize(RegistryAccess.GetOrThrow(RegistryKeys.Recipes));
 
             RegistryReloadPipeline.SyncToPlayers(RegistryAccess, _reloadListeners, playerManager.players);
 

@@ -33,7 +33,6 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         }
 
         RegistryAccess = RegistryAccess.Build(datapackPath: ".");
-        RecipeManager.Initialize(RegistryAccess.GetOrThrow(RegistryKeys.Recipes));
 
         s_logger.LogInformation("Loading properties");
 

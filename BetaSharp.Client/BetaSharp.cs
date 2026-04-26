@@ -414,7 +414,6 @@ public partial class BetaSharp :
     private void SetupResourcesAndPostProcessing()
     {
         RegistryAccess = RegistryAccess.Build();
-        RecipeManager.Initialize(RegistryAccess.GetOrThrow(RegistryKeys.Recipes));
 
         SoundManager.LoadSoundSettings(Options);
         DefaultMusicCategories.Register(SoundManager);
