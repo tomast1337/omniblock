@@ -225,7 +225,6 @@ public sealed class SkinManager : IDisposable
 
         if (!await TryLoadTextureFromCache(id, id + ".png", CapeCacheDirectoryName))
         {
-            Console.WriteLine("await DownloadCapeFromId(id)");
             await DownloadCapeFromId(id);
         }
 
