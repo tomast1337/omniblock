@@ -1,14 +1,14 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "XXX",
-    "X X",
-    "X X"
-  ],
-  "key": {
-    "X": "Fire"
-  },
-  "result": {
-    "id": "ChainLeggings"
-  }
+    "type": "shaped",
+    "pattern": [
+        "XXX",
+        "X X",
+        "X X"
+    ],
+    "key": {
+        "X": "betasharp:Fire"
+    },
+    "result": {
+        "id": "betasharp:ChainLeggings"
+    }
 }

@@ -1,13 +1,13 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "#"
-  ],
-  "key": {
-    "#": "GoldBlock"
-  },
-  "result": {
-    "id": "GoldIngot",
-    "count": 9
-  }
+    "type": "shaped",
+    "pattern": [
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:GoldBlock"
+    },
+    "result": {
+        "id": "betasharp:GoldIngot",
+        "count": 9
+    }
 }

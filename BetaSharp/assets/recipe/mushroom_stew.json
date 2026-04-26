@@ -1,16 +1,16 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "Y",
-    "X",
-    "#"
-  ],
-  "key": {
-    "X": "BrownMushroom",
-    "Y": "RedMushroom",
-    "#": "Bowl"
-  },
-  "result": {
-    "id": "MushroomStew"
-  }
+    "type": "shaped",
+    "pattern": [
+        "Y",
+        "X",
+        "#"
+    ],
+    "key": {
+        "X": "betasharp:BrownMushroom",
+        "Y": "betasharp:RedMushroom",
+        "#": "betasharp:Bowl"
+    },
+    "result": {
+        "id": "betasharp:MushroomStew"
+    }
 }

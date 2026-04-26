@@ -1,13 +1,13 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "##",
-    "##"
-  ],
-  "key": {
-    "#": "GlowstoneDust"
-  },
-  "result": {
-    "id": "Glowstone"
-  }
+    "type": "shaped",
+    "pattern": [
+        "##",
+        "##"
+    ],
+    "key": {
+        "#": "betasharp:GlowstoneDust"
+    },
+    "result": {
+        "id": "betasharp:Glowstone"
+    }
 }

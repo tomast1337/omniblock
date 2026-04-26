@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###",
-    "#X#",
-    "###"
-  ],
-  "key": {
-    "#": "GoldBlock",
-    "X": "Apple"
-  },
-  "result": {
-    "id": "GoldenApple"
-  }
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "#X#",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:GoldBlock",
+        "X": "betasharp:Apple"
+    },
+    "result": {
+        "id": "betasharp:GoldenApple"
+    }
 }

@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "XXX",
-    " # ",
-    " # "
-  ],
-  "key": {
-    "X": "Diamond",
-    "#": "Stick"
-  },
-  "result": {
-    "id": "DiamondPickaxe"
-  }
+    "type": "shaped",
+    "pattern": [
+        "XXX",
+        " # ",
+        " # "
+    ],
+    "key": {
+        "X": "betasharp:Diamond",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:DiamondPickaxe"
+    }
 }

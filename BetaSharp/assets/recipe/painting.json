@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###",
-    "#X#",
-    "###"
-  ],
-  "key": {
-    "#": "Stick",
-    "X": "Wool"
-  },
-  "result": {
-    "id": "Painting"
-  }
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "#X#",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Stick",
+        "X": "betasharp:Wool"
+    },
+    "result": {
+        "id": "betasharp:Painting"
+    }
 }

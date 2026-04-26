@@ -1,1 +1,7 @@
-{ "type": "smelting", "input": "RawFish", "result": { "id": "CookedFish" } }
+{
+    "type": "smelting",
+    "input": "betasharp:RawFish",
+    "result": {
+        "id": "betasharp:CookedFish"
+    }
+}

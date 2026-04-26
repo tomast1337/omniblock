@@ -1,13 +1,13 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###"
-  ],
-  "key": {
-    "#": "Cobblestone"
-  },
-  "result": {
-    "id": "Slab:3",
-    "count": 3
-  }
+    "type": "shaped",
+    "pattern": [
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Cobblestone"
+    },
+    "result": {
+        "id": "betasharp:Slab:3",
+        "count": 3
+    }
 }

@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###",
-    "###",
-    " X "
-  ],
-  "key": {
-    "#": "Planks",
-    "X": "Stick"
-  },
-  "result": {
-    "id": "Sign"
-  }
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "###",
+        " X "
+    ],
+    "key": {
+        "#": "betasharp:Planks",
+        "X": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:Sign"
+    }
 }

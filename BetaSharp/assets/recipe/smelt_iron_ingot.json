@@ -1,1 +1,7 @@
-{ "type": "smelting", "input": "IronOre", "result": { "id": "IronIngot" } }
+{
+    "type": "smelting",
+    "input": "betasharp:IronOre",
+    "result": {
+        "id": "betasharp:IronIngot"
+    }
+}

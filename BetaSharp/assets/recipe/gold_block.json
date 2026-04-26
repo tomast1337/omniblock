@@ -1,14 +1,14 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###",
-    "###",
-    "###"
-  ],
-  "key": {
-    "#": "GoldIngot"
-  },
-  "result": {
-    "id": "GoldBlock"
-  }
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "###",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:GoldIngot"
+    },
+    "result": {
+        "id": "betasharp:GoldBlock"
+    }
 }

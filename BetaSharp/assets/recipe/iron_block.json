@@ -1,14 +1,14 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###",
-    "###",
-    "###"
-  ],
-  "key": {
-    "#": "IronIngot"
-  },
-  "result": {
-    "id": "IronBlock"
-  }
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "###",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:IronIngot"
+    },
+    "result": {
+        "id": "betasharp:IronBlock"
+    }
 }

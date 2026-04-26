@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "X",
-    "#",
-    "#"
-  ],
-  "key": {
-    "X": "Planks",
-    "#": "Stick"
-  },
-  "result": {
-    "id": "WoodenShovel"
-  }
+    "type": "shaped",
+    "pattern": [
+        "X",
+        "#",
+        "#"
+    ],
+    "key": {
+        "X": "betasharp:Planks",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:WoodenShovel"
+    }
 }

@@ -1,16 +1,16 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "X X",
-    "X#X",
-    "X X"
-  ],
-  "key": {
-    "X": "IronIngot",
-    "#": "Stick"
-  },
-  "result": {
-    "id": "Rail",
-    "count": 16
-  }
+    "type": "shaped",
+    "pattern": [
+        "X X",
+        "X#X",
+        "X X"
+    ],
+    "key": {
+        "X": "betasharp:IronIngot",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:Rail",
+        "count": 16
+    }
 }

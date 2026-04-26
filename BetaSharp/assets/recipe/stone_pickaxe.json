@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "XXX",
-    " # ",
-    " # "
-  ],
-  "key": {
-    "X": "Cobblestone",
-    "#": "Stick"
-  },
-  "result": {
-    "id": "StonePickaxe"
-  }
+    "type": "shaped",
+    "pattern": [
+        "XXX",
+        " # ",
+        " # "
+    ],
+    "key": {
+        "X": "betasharp:Cobblestone",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:StonePickaxe"
+    }
 }

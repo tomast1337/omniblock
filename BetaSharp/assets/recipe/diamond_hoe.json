@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "XX",
-    " #",
-    " #"
-  ],
-  "key": {
-    "X": "Diamond",
-    "#": "Stick"
-  },
-  "result": {
-    "id": "DiamondHoe"
-  }
+    "type": "shaped",
+    "pattern": [
+        "XX",
+        " #",
+        " #"
+    ],
+    "key": {
+        "X": "betasharp:Diamond",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:DiamondHoe"
+    }
 }

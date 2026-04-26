@@ -1,10 +1,10 @@
 {
-  "type": "shapeless",
-  "ingredients": [
-    "Dandelion"
-  ],
-  "result": {
-    "id": "Dye:11",
-    "count": 2
-  }
+    "type": "shapeless",
+    "ingredients": [
+        "betasharp:Dandelion"
+    ],
+    "result": {
+        "id": "betasharp:Dye:11",
+        "count": 2
+    }
 }

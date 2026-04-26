@@ -1,13 +1,13 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "#"
-  ],
-  "key": {
-    "#": "DiamondBlock"
-  },
-  "result": {
-    "id": "Diamond",
-    "count": 9
-  }
+    "type": "shaped",
+    "pattern": [
+        "#"
+    ],
+    "key": {
+        "#": "betasharp:DiamondBlock"
+    },
+    "result": {
+        "id": "betasharp:Diamond",
+        "count": 9
+    }
 }

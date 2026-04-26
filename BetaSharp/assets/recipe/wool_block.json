@@ -1,13 +1,13 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "##",
-    "##"
-  ],
-  "key": {
-    "#": "String"
-  },
-  "result": {
-    "id": "Wool"
-  }
+    "type": "shaped",
+    "pattern": [
+        "##",
+        "##"
+    ],
+    "key": {
+        "#": "betasharp:String"
+    },
+    "result": {
+        "id": "betasharp:Wool"
+    }
 }

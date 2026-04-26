@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###",
-    "#X#",
-    "###"
-  ],
-  "key": {
-    "#": "Planks",
-    "X": "Diamond"
-  },
-  "result": {
-    "id": "Jukebox"
-  }
+    "type": "shaped",
+    "pattern": [
+        "###",
+        "#X#",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Planks",
+        "X": "betasharp:Diamond"
+    },
+    "result": {
+        "id": "betasharp:Jukebox"
+    }
 }

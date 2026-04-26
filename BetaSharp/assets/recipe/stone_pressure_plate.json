@@ -1,12 +1,12 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "##"
-  ],
-  "key": {
-    "#": "Stone"
-  },
-  "result": {
-    "id": "StonePressurePlate"
-  }
+    "type": "shaped",
+    "pattern": [
+        "##"
+    ],
+    "key": {
+        "#": "betasharp:Stone"
+    },
+    "result": {
+        "id": "betasharp:StonePressurePlate"
+    }
 }

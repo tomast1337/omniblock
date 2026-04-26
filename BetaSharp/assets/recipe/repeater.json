@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "#X#",
-    "III"
-  ],
-  "key": {
-    "#": "LitRedstoneTorch",
-    "X": "Redstone",
-    "I": "Stone"
-  },
-  "result": {
-    "id": "Repeater"
-  }
+    "type": "shaped",
+    "pattern": [
+        "#X#",
+        "III"
+    ],
+    "key": {
+        "#": "betasharp:LitRedstoneTorch",
+        "X": "betasharp:Redstone",
+        "I": "betasharp:Stone"
+    },
+    "result": {
+        "id": "betasharp:Repeater"
+    }
 }

@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "#  ",
-    "## ",
-    "###"
-  ],
-  "key": {
-    "#": "Cobblestone"
-  },
-  "result": {
-    "id": "CobblestoneStairs",
-    "count": 4
-  }
+    "type": "shaped",
+    "pattern": [
+        "#  ",
+        "## ",
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:Cobblestone"
+    },
+    "result": {
+        "id": "betasharp:CobblestoneStairs",
+        "count": 4
+    }
 }

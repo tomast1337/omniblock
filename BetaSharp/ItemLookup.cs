@@ -14,6 +14,27 @@ internal static class ItemLookup
 
     internal static bool TryGetItemId(string input, out int itemId)
     {
+        int colon = input.IndexOf(':');
+        if (colon < 0) return TryGetItemId(input, out itemId, false);
+
+        string a = input[..colon];
+        string b = input[(colon + 1)..];
+        if (!int.TryParse(b, out _))
+        {
+            // Ignore item meta/damage
+            TryGetItemId(a, out itemId, false);
+        }
+
+        // found namespace
+        return TryGetItemId(Namespace.Get(a), b, out itemId);
+    }
+
+    // TODO: respect namespace in item ID lookup.
+    internal static bool TryGetItemId(Namespace @namespace, string input, out int itemId) =>
+        TryGetItemId(input, out itemId, true);
+
+    private static bool TryGetItemId(string input, out int itemId, bool haveNamespace)
+    {
         if (int.TryParse(input, out itemId))
         {
             return itemId >= 0 && itemId < Item.ITEMS.Length && Item.ITEMS[itemId] != null;
@@ -25,7 +46,10 @@ internal static class ItemLookup
     /// <summary>
     /// Parses "id", "name", "id:damage", or "name:damage" into an ItemStack.
     /// </summary>
-    internal static bool TryGetItem(string input, [NotNullWhen(true)] out ItemStack? itemId, int itemCount = 1, int meta = 0)
+    internal static bool TryGetItem(string input, [NotNullWhen(true)] out ItemStack? itemId, int itemCount = 1, int meta = 0) =>
+        TryGetItem(input, out itemId, itemCount, meta, false);
+
+    private static bool TryGetItem(string input, [NotNullWhen(true)] out ItemStack? itemId, int itemCount, int meta, bool haveNamespace)
     {
         int colon = input.IndexOf(':');
 
@@ -40,7 +64,18 @@ internal static class ItemLookup
         else
         {
             name = input[..colon];
-            damage = int.Parse(input[(colon + 1)..]);
+            string damageStr = input[(colon + 1)..];
+            if (!int.TryParse(damageStr, out damage))
+            {
+                if (haveNamespace)
+                {
+                    throw new Exception("Inavlid item meta. Expected number found \"" + damageStr + "\"");
+                }
+
+                // damageStr is the item name.
+                // name is the namespace.
+                return TryGetItem(Namespace.Get(name), damageStr, out itemId, itemCount, meta);
+            }
         }
 
         if (!TryGetItemId(name, out int id))
@@ -52,6 +87,10 @@ internal static class ItemLookup
         itemId = new ItemStack(id, itemCount, damage);
         return true;
     }
+
+    // TODO: respect namespace in item lookup.
+    internal static bool TryGetItem(Namespace @namespace, string input, [NotNullWhen(true)] out ItemStack? itemId, int itemCount = 1, int meta = 0) =>
+        TryGetItem(input, out itemId, itemCount, meta, true);
 
     internal static string ResolveItemName(ItemStack item) =>
         s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.ItemId).Key ?? item.getItemName();

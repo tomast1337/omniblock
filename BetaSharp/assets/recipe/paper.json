@@ -1,13 +1,13 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "###"
-  ],
-  "key": {
-    "#": "SugarCane"
-  },
-  "result": {
-    "id": "Paper",
-    "count": 3
-  }
+    "type": "shaped",
+    "pattern": [
+        "###"
+    ],
+    "key": {
+        "#": "betasharp:SugarCane"
+    },
+    "result": {
+        "id": "betasharp:Paper",
+        "count": 3
+    }
 }

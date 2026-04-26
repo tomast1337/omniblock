@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    "XX",
-    " #",
-    " #"
-  ],
-  "key": {
-    "X": "GoldIngot",
-    "#": "Stick"
-  },
-  "result": {
-    "id": "GoldenHoe"
-  }
+    "type": "shaped",
+    "pattern": [
+        "XX",
+        " #",
+        " #"
+    ],
+    "key": {
+        "X": "betasharp:GoldIngot",
+        "#": "betasharp:Stick"
+    },
+    "result": {
+        "id": "betasharp:GoldenHoe"
+    }
 }

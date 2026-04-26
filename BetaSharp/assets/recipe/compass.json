@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    " # ",
-    "#X#",
-    " # "
-  ],
-  "key": {
-    "#": "IronIngot",
-    "X": "Redstone"
-  },
-  "result": {
-    "id": "Compass"
-  }
+    "type": "shaped",
+    "pattern": [
+        " # ",
+        "#X#",
+        " # "
+    ],
+    "key": {
+        "#": "betasharp:IronIngot",
+        "X": "betasharp:Redstone"
+    },
+    "result": {
+        "id": "betasharp:Compass"
+    }
 }

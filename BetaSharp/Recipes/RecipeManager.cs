@@ -54,7 +54,7 @@ public class RecipeManager
             }
         }
 
-        _logger.LogInformation("{Count} crafting recipes", RecipesCrafting.Recipes.Count);
-        _logger.LogInformation("{Count} smelting recipes", RecipesSmelting.Recipes.Count);
+        _logger.LogInformation("{Count} crafting recipes loaded.", RecipesCrafting.Recipes.Count);
+        _logger.LogInformation("{Count} smelting recipes loaded.", RecipesSmelting.Recipes.Count);
     }
 }

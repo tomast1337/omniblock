@@ -1,1 +1,7 @@
-{ "type": "smelting", "input": "Log", "result": { "id": "Coal:1" } }
+{
+    "type": "smelting",
+    "input": "betasharp:Log",
+    "result": {
+        "id": "betasharp:Coal:1"
+    }
+}

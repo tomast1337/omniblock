@@ -1,15 +1,15 @@
 {
-  "type": "shaped",
-  "pattern": [
-    " # ",
-    "#X#",
-    " # "
-  ],
-  "key": {
-    "#": "GoldIngot",
-    "X": "Redstone"
-  },
-  "result": {
-    "id": "Clock"
-  }
+    "type": "shaped",
+    "pattern": [
+        " # ",
+        "#X#",
+        " # "
+    ],
+    "key": {
+        "#": "betasharp:GoldIngot",
+        "X": "betasharp:Redstone"
+    },
+    "result": {
+        "id": "betasharp:Clock"
+    }
 }
