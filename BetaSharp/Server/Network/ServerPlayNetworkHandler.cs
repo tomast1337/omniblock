@@ -104,7 +104,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     pitch = packet.pitch;
                 }
 
-                if (packet.changePosition && packet.y == -999.0 && packet.eyeHeight == -999.0)
+                if (packet.changePosition && packet.y <= -999.0 && packet.eyeHeight <= -999.0)
                 {
                     moveX = packet.x;
                     moveZ = packet.z;
@@ -151,7 +151,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             double targetZ = player.Z;
             float targetYaw = player.Yaw;
             float targetPitch = player.Pitch;
-            if (packet.changePosition && packet.y == -999.0 && packet.eyeHeight == -999.0)
+            if (packet.changePosition && packet.y <= -999.0 && packet.eyeHeight <= -999.0)
             {
                 packet.changePosition = false;
             }

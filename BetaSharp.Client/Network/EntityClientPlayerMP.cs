@@ -82,11 +82,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             if (rotationChanged)
             {
-                sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(VelocityX, -999.0D, -999.0D, VelocityZ, OnGround));
+                sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(VelocityX, -1000.0D, -1000.0D, VelocityZ, OnGround));
             }
             else
             {
-                sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(VelocityX, -999.0D, -999.0D, VelocityZ, Yaw, Pitch, OnGround));
+                sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(VelocityX, -1000.0D, -1000.0D, VelocityZ, Yaw, Pitch, OnGround));
             }
 
             positionChanged = false;
