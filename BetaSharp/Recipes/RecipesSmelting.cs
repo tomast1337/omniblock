@@ -27,9 +27,7 @@ public static class RecipesSmelting
             throw new InvalidOperationException($"Unknown result '{def.Result.Id}'.");
 
         if (!Recipes.TryAdd(inputId, output))
-        {
             throw new OverlappingRecipeException(def.Input, SmeltingCraftingRegistry.Name);
-        }
     }
 
     public static ItemStack? Craft(int inputId)
