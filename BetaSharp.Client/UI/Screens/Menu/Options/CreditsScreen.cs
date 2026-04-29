@@ -90,11 +90,7 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
             {
                 if (e.Button == MouseButton.Left)
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = url,
-                        UseShellExecute = true
-                    });
+                    OpenBrowser(url);
                 }
             };
 
@@ -130,5 +126,24 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         Link("ImGui - Debug UI", "https://github.com/ocornut/imgui");
         Link("SFML.NET - Audio", "https://github.com/SFML/SFML.Net");
         Link("SixLabors - Fonts, image processing", "https://github.com/sixlabors");
+    }
+
+    private static void OpenBrowser(string url)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // Windows requires UseShellExecute to be true for URLs
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            // Linux uses xdg-open
+            Process.Start("xdg-open", url);
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            // macOS uses the open command
+            Process.Start("open", url);
+        }
     }
 }
