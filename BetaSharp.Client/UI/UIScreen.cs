@@ -424,7 +424,7 @@ public abstract class UIScreen
         UpdateHovers(mouseX, mouseY);
 
         Renderer.Begin();
-        Root.Draw(Renderer);
+        Root.Render(Renderer);
         Renderer.End();
     }
 

@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace BetaSharp.Client.UI;
 
 public class UIElement
@@ -99,38 +97,13 @@ public class UIElement
         {
             renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, bg);
         }
-    }
-
-    public void Draw(Rendering.UIRenderer renderer)
-    {
-        Render(renderer);
 
         foreach (UIElement child in Children)
         {
             renderer.PushTranslate(child.ComputedX, child.ComputedY);
-            child.Draw(renderer);
+            child.Render(renderer);
             renderer.PopTranslate();
         }
-    }
-
-    public void DrawClipped(Rendering.UIRenderer renderer, float top, float bottom)
-    {
-        if (ScreenY + ComputedHeight < top) return;
-        if (ScreenY > bottom) return;
-
-        if (Style.BackgroundColor is { } bg)
-        {
-            renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, bg);
-        }
-
-        foreach (UIElement child in Children)
-        {
-            renderer.PushTranslate(child.ComputedX, child.ComputedY);
-            child.DrawClipped(renderer, top, bottom);
-            renderer.PopTranslate();
-        }
-
-        Render(renderer);
     }
 
     // Fired automatically by the layout engine

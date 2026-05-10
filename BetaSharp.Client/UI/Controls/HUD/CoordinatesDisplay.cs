@@ -4,11 +4,6 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
-/// <summary>
-/// Display the current coordinates for a entity.
-/// </summary>
-/// <param name="getEntity">Function to get the entity to show</param>
-/// <param name="showCoordinates">Function to see if it should be rendered</param>
 public class CoordinatesDisplay(Func<Entity?> getEntity, Func<bool> showCoordinates) : UIElement
 {
     public override void Render(UIRenderer renderer)

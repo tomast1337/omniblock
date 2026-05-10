@@ -11,9 +11,6 @@ public enum BackgroundType
     GameOver
 }
 
-/// <summary>
-/// Element for the background. Can be Dirt (main menus), world (pause menu and such), and game over.
-/// </summary>
 public class Background : UIElement
 {
     public BackgroundType Type { get; set; } = BackgroundType.Dirt;

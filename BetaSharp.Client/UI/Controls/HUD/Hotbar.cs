@@ -8,9 +8,6 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
-/// <summary>
-/// Element for the hotbar, for any player.
-/// </summary>
 public class Hotbar : UIElement
 {
     private readonly Func<ClientPlayerEntity?> _getPlayer;
