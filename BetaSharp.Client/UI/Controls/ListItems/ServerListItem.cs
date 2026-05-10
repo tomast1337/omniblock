@@ -5,9 +5,6 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
-/// <summary>
-/// List item for a server, display name and MOTD
-/// </summary>
 public class ServerListItem(ServerData data) : ListItem<ServerData>(data)
 {
     public override void Render(UIRenderer renderer)

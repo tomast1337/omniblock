@@ -1,6 +1,4 @@
 namespace BetaSharp.Client.UI.Controls.Core;
 
-/// <summary>
-/// Like a div.
-/// </summary>
+// Like a div
 public class Panel : UIElement { }

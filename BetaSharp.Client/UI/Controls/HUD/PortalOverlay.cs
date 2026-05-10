@@ -4,9 +4,6 @@ using BetaSharp.Client.UI.Rendering;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
-/// <summary>
-/// Overlay that appears when a player enters a portal.
-/// </summary>
 public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
 {
     private float _partialTicks;
