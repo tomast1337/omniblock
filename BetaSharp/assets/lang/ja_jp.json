@@ -1,0 +1,1297 @@
+{
+    "lang": {
+        "name": "日本語"
+    },
+    "gui": {
+        "edit": "編集",
+        "rename": "名前を変更",
+        "refresh": "更新",
+        "done": "完了",
+        "cancel": "キャンセル",
+        "delete": "削除",
+        "toMenu": "タイトル画面に戻る",
+        "up": "上",
+        "down": "下",
+        "yes": "はい",
+        "no": "いいえ",
+        "connect": "接続",
+        "directConnect": "ダイレクト接続",
+        "addServer": "サーバーを追加",
+        "create": "作成",
+        "customize": "カスタマイズ",
+        "achievements": "実績",
+        "stats": "統計",
+        "container": {
+            "crafting": "クラフト",
+            "inventory": "インベントリ",
+            "dispenser": "ディスペンサー",
+            "furnace": "かまど",
+            "tip": {
+                "move": "Move",
+                "quickMove": "Quick Move",
+                "takeHalf": "Take Half",
+                "place": "Place",
+                "placeOne": "Place One"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "シングルプレイ",
+        "multiplayer": "マルチプレイ",
+        "texturePacks": "テクスチャパック",
+        "options": "設定…",
+        "language": "言語設定",
+        "quit": "終了",
+        "credits": "クレジット",
+        "sendFeedback": "フィードバックを送る",
+        "reportBugs": "バグを報告する",
+        "saveAndQuitToTitle": "セーブしてタイトルへ戻る",
+        "disconnect": "切断"
+    },
+    "selectWorld": {
+        "title": "ワールドを選択",
+        "empty": "未選択",
+        "world": "ワールド",
+        "select": "選択したワールドで遊ぶ",
+        "create": "ワールド新規作成",
+        "createDemo": "新しいデモワールドで遊ぶ",
+        "rename": "名前を変更",
+        "deleteQuestion": "このワールドを削除しますか？",
+        "deleteWarning": "は完全に削除され、二度と元に戻せません！",
+        "renameButton": "名前を変更",
+        "renameTitle": "ワールド名を変更",
+        "conversion": "ワールドデータを変換する必要があります",
+        "newWorld": "新規ワールド",
+        "enterName": "ワールド名",
+        "resultFolder": "保存先：",
+        "enterSeed": "ワールド生成のシード値",
+        "seedInfo": "空白でランダムシード値",
+        "selectWorldType": "ワールドタイプ:",
+        "worldType": "ワールドタイプ",
+        "customize": "カスタマイズ",
+        "moreWorldOptions": "その他のワールド設定…"
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "スーパーフラットのカスタマイズ"
+            },
+            "removeLayer": "地層を削除",
+            "presets": "プリセット"
+        }
+    },
+    "world": {
+        "world": "ワールド",
+        "unsupportedFormat": "サポートされていないフォーマットです！"
+    },
+    "multiplayer": {
+        "title": "マルチプレイで遊ぶ",
+        "betasharpServer": "BetaSharp サーバー",
+        "info1": "Minecraftのマルチプレイヤーは未完成の状態ですが、",
+        "info2": "初期段階のテストが実施されています。",
+        "ipinfo": "接続先のサーバーIPアドレスを入力してください：",
+        "deleteQuestion": "このサーバーを削除してもよろしいですか？",
+        "deleteWarning": "は完全に削除され、二度と元に戻せません！",
+        "downloadingTerrain": "地形情報をダウンロード中",
+        "stopSleeping": "ベッドから出る"
+    },
+    "loading": {
+        "loadingLevel": "ロード中",
+        "startingServer": "サーバーを起動中…"
+    },
+    "achievements": {
+        "title": "実績"
+    },
+    "gameover": {
+        "title": "ゲームオーバー！",
+        "score": "スコア",
+        "respawn": "リスポーン",
+        "titleMenu": "タイトルメニュー"
+    },
+    "gamemenu": {
+        "title": "ゲームメニュー",
+        "backToGame": "ゲームに戻る"
+    },
+    "sign": {
+        "title": "看板を編集:"
+    },
+    "stats": {
+        "title": "統計",
+        "general": "一般",
+        "blocks": {
+            "name": "ブロック",
+            "mined": "採取した回数",
+            "crafted": "作った回数",
+            "used": "使った回数"
+        },
+        "items": {
+            "name": "アイテム",
+            "broken": "消耗した回数",
+            "crafted": "作った回数",
+            "used": "使った回数"
+        },
+        "item": "アイテム",
+        "done": "完了"
+    },
+    "demo": {
+        "day": {
+            "1": "トライアルバージョンでは5日間ご利用いただけます。頑張ってください！",
+            "2": "2日目",
+            "3": "3日目",
+            "4": "4日目",
+            "5": "今日が最終日です！",
+            "warning": "もうすぐ時間切れです！",
+            "6": "5日目が終了しました。F2ボタンであなたの作品のスクリーンショットが撮れます。"
+        },
+        "reminder": "デモ版の期限が終了しました。ゲームを購入するか、新しくワールドを作成して下さい！",
+        "help": {
+            "movement": "%1$s, %2$s, %3$s, %4$s とマウスで移動します",
+            "jump": "%1$sでジャンプします",
+            "inventory": "%1$sで所持品を確認できます"
+        }
+    },
+    "connect": {
+        "connecting": "サーバーに接続中…",
+        "authorizing": "ログイン中…",
+        "failed": "サーバーへの接続に失敗しました"
+    },
+    "disconnect": {
+        "genericReason": "%s",
+        "disconnected": "サーバーから切断されました",
+        "lost": "接続を維持できません",
+        "kicked": "ゲームからキックされました",
+        "timeout": "タイムアウトしました",
+        "closed": "接続が終了しました",
+        "loginFailed": "ログイン失敗",
+        "loginFailedInfo": "ログイン失敗: %s",
+        "quitting": "終了中",
+        "endOfStream": "接続が終了されました",
+        "overflow": "バッファオーバーフローが発生しました"
+    },
+    "options": {
+        "off": "オフ",
+        "on": "オン",
+        "title": "設定",
+        "controls": "操作設定…",
+        "keyboardControls": "キー設定…",
+        "controllerSettings": "コントローラー設定…",
+        "controllerType": "コントローラータイプ",
+        "video": {
+            "text": "ビデオ設定…",
+            "performance": "パフォーマンス",
+            "display": "ディスプレイ"
+        },
+        "uiSettings": "UI設定…",
+        "audioSettings": "サウンド設定…",
+        "audioTitle": "サウンド設定",
+        "videoTitle": "ビデオ設定",
+        "language": "言語設定…",
+        "anisoLevel": "異方性フィルタリング",
+        "music": "BGM",
+        "sound": "サウンド",
+        "invertMouse": "マウス操作の反転",
+        "alternateBlocks": "ブロックの変化",
+        "chunkFade": "チャンクのフェード",
+        "environmentAnim": "環境アニメーション",
+        "sensitivity": {
+            "text": "マウス感度",
+            "controllerText": "コントローラー感度",
+            "min": "*あくび*",
+            "max": "猛スピード！！！"
+        },
+        "renderDistance": {
+            "text": "描画距離",
+            "chunks": "チャンク",
+            "tiny": "最短",
+            "short": "短い",
+            "normal": "ノーマル",
+            "far": "遠い"
+        },
+        "viewBobbing": "画面の揺れ",
+        "ao": "スムースライティング",
+        "anaglyph": "3Dアナグリフ",
+        "framerateLimit": "パフォーマンス",
+        "difficulty": {
+            "text": "難易度",
+            "peaceful": "ピースフル",
+            "easy": "イージー",
+            "normal": "ノーマル",
+            "hard": "ハード"
+        },
+        "graphics": {
+            "text": "グラフィックス",
+            "fancy": "描画優先",
+            "fast": "処理優先"
+        },
+        "guiScale": {
+            "text": "GUIの大きさ",
+            "auto": "自動",
+            "small": "小さい",
+            "normal": "ノーマル",
+            "large": "大きい"
+        },
+        "advancedOpengl": "高度なOpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "Max FPS",
+            "unlimited": "無制限"
+        },
+        "showCoordinates": "座標を表示",
+        "uiCursors": "UIカーソル",
+        "gamma": "ガンマ",
+        "vSync": "垂直同期",
+        "mipmaps": "ミップマップ",
+        "menuMusic": "メニューBGM",
+        "msaa": "MSAA",
+        "fov": "視野",
+        "movement": {
+            "text": "移動"
+        },
+        "view": {
+            "text": "表示"
+        },
+        "other": {
+            "text": "その他"
+        },
+                "editBindings": "割り当てを編集…",
+        "resetBindings": "割り当てのリセット…",
+        "controllerBindings": "コントローラーの割り当て"
+    },
+    "performance": {
+        "max": "最高",
+        "balanced": "バランス",
+        "powersaver": "パワーセーブ"
+    },
+    "controls": {
+        "title": "操作設定"
+    },
+    "key": {
+        "forward": "前進",
+        "left": "左手",
+        "back": "戻る",
+        "right": "右手",
+        "jump": "ジャンプ",
+        "inventory": "インベントリ",
+        "drop": "捨てる",
+        "chat": "チャット",
+        "fog": "視野の切り替え",
+        "sneak": "スニーク",
+        "playerlist": "プレイヤーリスト",
+        "zoom": "ズーム",
+        "hotbarLeft": "ホットバーを左へ",
+        "hotbarRight": "ホットバーを右へ",
+        "pickBlock": "ブロック選択",
+        "camera": "カメラモード",
+        "pause": "一時停止"
+    },
+    "texturePack": {
+        "openFolder": "フォルダを開く",
+        "title": "テクスチャーパック選択",
+        "folderInfo": "(テクスチャーパックをここへ)"
+    },
+    "tile": {
+        "stone": {
+            "name": "石",
+            "desc": ""
+        },
+        "grass": {
+            "name": "草",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "土",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "丸石",
+            "desc": ""
+        },
+        "wood": {
+            "name": "木材",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "苗木",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "岩盤",
+            "desc": ""
+        },
+        "water": {
+            "name": "水",
+            "desc": ""
+        },
+        "lava": {
+            "name": "溶岩",
+            "desc": ""
+        },
+        "sand": {
+            "name": "砂",
+            "desc": ""
+        },
+        "sandStone": { "name": "砂岩" },
+        "gravel": {
+            "name": "砂利",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "金鉱石",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "鉄鉱石",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "石炭鉱石",
+            "desc": ""
+        },
+        "log": {
+            "name": "原木",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "木の葉",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "スポンジ",
+            "desc": ""
+        },
+        "glass": {
+            "name": "ガラス",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "羊毛",
+            "desc": "",
+            "black": {
+                "name": "黒色の羊毛",
+                "desc": ""
+            },
+            "red": {
+                "name": "赤色の羊毛",
+                "desc": ""
+            },
+            "green": {
+                "name": "緑色の羊毛",
+                "desc": ""
+            },
+            "brown": {
+                "name": "茶色の羊毛",
+                "desc": ""
+            },
+            "blue": {
+                "name": "青色の羊毛",
+                "desc": ""
+            },
+            "purple": {
+                "name": "紫色の羊毛",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "青緑色の羊毛",
+                "desc": ""
+            },
+            "silver": {
+                "name": "薄灰色の羊毛",
+                "desc": ""
+            },
+            "gray": {
+                "name": "灰色の羊毛",
+                "desc": ""
+            },
+            "pink": {
+                "name": "桃色の羊毛",
+                "desc": ""
+            },
+            "lime": {
+                "name": "黄緑色の羊毛",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "黄色の羊毛",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "空色の羊毛",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "赤紫色の羊毛",
+                "desc": ""
+            },
+            "orange": {
+                "name": "橙色の羊毛",
+                "desc": ""
+            },
+            "white": {
+                "name": "羊毛",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "タンポポ",
+            "desc": ""
+        },
+        "rose": {
+            "name": "バラ",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "キノコ",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "金ブロック",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "鉄ブロック",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "石のハーフブロック",
+                "desc": ""
+            },
+            "sand": {
+                "name": "砂岩のハーフブロック",
+                "desc": ""
+            },
+            "wood": {
+                "name": "木材ハーフブロック",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "石のハーフブロック",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "レンガ",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "本棚",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "苔石",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "黒曜石",
+            "desc": ""
+        },
+        "torch": {
+            "name": "松明",
+            "desc": ""
+        },
+        "fire": {
+            "name": "炎",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "モンスタースポナー",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "木の階段",
+            "desc": ""
+        },
+        "chest": {
+            "name": "チェスト",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "レッドストーンダスト",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "ダイヤモンド鉱石",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "ダイヤモンドブロック",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "作業台",
+            "desc": ""
+        },
+        "crops": {
+            "name": "作物",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "耕地",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "かまど",
+            "desc": ""
+        },
+        "sign": {
+            "name": "看板",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "木のドア",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "はしご",
+            "desc": ""
+        },
+        "rail": {
+            "name": "レール",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "パワードレール",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "ディテクターレール",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "石の階段",
+            "desc": ""
+        },
+        "lever": {
+            "name": "レバー",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "感圧式スイッチ",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "鉄のドア",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "レッドストーン鉱石",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "レッドストーントーチ",
+            "desc": ""
+        },
+        "button": {
+            "name": "ボタン",
+            "desc": ""
+        },
+        "snow": {
+            "name": "雪",
+            "desc": ""
+        },
+        "ice": {
+            "name": "氷",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "サボテン",
+            "desc": ""
+        },
+        "clay": {
+            "name": "粘土",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "サトウキビ",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "ジュークボックス",
+            "desc": ""
+        },
+        "fence": {
+            "name": "フェンス",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "カボチャ",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "ジャック・オ・ランタン",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "ネザーラック",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "ソウルサンド",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "グロウストーン",
+            "desc": ""
+        },
+        "portal": {
+            "name": "ポータル",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "ラピスラズリ鉱石",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "ラピスラズリブロック",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "ディスペンサー",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "音符ブロック",
+            "desc": ""
+        },
+        "cake": {
+            "name": "ケーキ",
+            "desc": ""
+        },
+        "bed": {
+            "name": "ベッド",
+            "desc": "",
+            "occupied": "このベッドは既に使われています",
+            "noSleep": "夜にしか眠ることはできません",
+            "notValid": "ベッドが存在しないか、あるいは塞がれています"
+        },
+        "lockedchest": {
+            "name": "鍵のかかったチェスト",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "トラップドア",
+            "desc": ""
+        },
+        "web": {
+            "name": "クモの巣",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "石レンガ",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "ピストン",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "粘着ピストン",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "鉄のシャベル",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "鉄のツルハシ",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "鉄の斧",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "火打石と打ち金",
+            "desc": ""
+        },
+        "apple": {
+            "name": "リンゴ",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "クッキー",
+            "desc": ""
+        },
+        "bow": {
+            "name": "弓",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "矢",
+            "desc": ""
+        },
+        "coal": {
+            "name": "石炭",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "木炭",
+            "desc": ""
+        },
+        "emerald": {
+            "name": "ダイヤモンド",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "鉄インゴット",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "金インゴット",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "鉄の剣",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "木の剣",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "木のシャベル",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "木のツルハシ",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "木の斧",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "石の剣",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "石のシャベル",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "石のツルハシ",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "石の斧",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "ダイヤモンドの剣",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "ダイヤモンドのシャベル",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "ダイヤモンドのツルハシ",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "ダイヤモンドの斧",
+            "desc": ""
+        },
+        "stick": {
+            "name": "棒",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "ボウル",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "キノコシチュー",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "金の剣",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "金のシャベル",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "金のツルハシ",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "金の斧",
+            "desc": ""
+        },
+        "string": {
+            "name": "糸",
+            "desc": ""
+        },
+        "feather": {
+            "name": "羽根",
+            "desc": ""
+        },
+        "sulphur": {
+            "name": "火薬",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "木のクワ",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "石のクワ",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "鉄のクワ",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "ダイヤモンドのクワ",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "金のクワ",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "種",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "小麦",
+            "desc": ""
+        },
+        "bread": {
+            "name": "パン",
+            "desc": ""
+        },
+        "helmetCloth": {
+            "name": "革の帽子",
+            "desc": ""
+        },
+        "chestplateCloth": {
+            "name": "革の上着",
+            "desc": ""
+        },
+        "leggingsCloth": {
+            "name": "革のズボン",
+            "desc": ""
+        },
+        "bootsCloth": {
+            "name": "革のブーツ",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "チェーンヘルメット",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "チェーンチェストプレート",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "チェーンレギンス",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "チェーンブーツ",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "鉄のヘルメット",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "鉄のチェストプレート",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "鉄のレギンス",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "鉄のブーツ",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "ダイヤモンドのヘルメット",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "ダイヤモンドのチェストプレート",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "ダイヤモンドのレギンス",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "ダイヤモンドのブーツ",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "金のヘルメット",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "金のチェストプレート",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "金のレギンス",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "金のブーツ",
+            "desc": ""
+        },
+        "flint": {
+            "name": "火打石",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "生の豚肉",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "焼き豚",
+            "desc": ""
+        },
+        "painting": {
+            "name": "絵画",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "金のリンゴ",
+            "desc": ""
+        },
+        "sign": {
+            "name": "看板",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "木のドア",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "バケツ",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "水入りバケツ",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "溶岩入りバケツ",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "トロッコ",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "鞍",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "鉄のドア",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "レッドストーン",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "雪玉",
+            "desc": ""
+        },
+        "boat": {
+            "name": "ボート",
+            "desc": ""
+        },
+        "leather": {
+            "name": "革",
+            "desc": ""
+        },
+        "milk": {
+            "name": "牛乳",
+            "desc": ""
+        },
+        "brick": {
+            "name": "レンガ",
+            "desc": ""
+        },
+        "clay": {
+            "name": "粘土",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "サトウキビ",
+            "desc": ""
+        },
+        "paper": {
+            "name": "紙",
+            "desc": ""
+        },
+        "book": {
+            "name": "本",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "スライムボール",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "チェスト付きのトロッコ",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "かまど付きのトロッコ",
+            "desc": ""
+        },
+        "egg": {
+            "name": "卵",
+            "desc": ""
+        },
+        "compass": {
+            "name": "コンパス",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "釣竿",
+            "desc": ""
+        },
+        "clock": {
+            "name": "時計",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "グロウストーンダスト",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "生魚",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "焼き魚",
+            "desc": ""
+        },
+        "record": {
+            "name": "レコード",
+            "desc": ""
+        },
+        "bone": {
+            "name": "骨",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "イカスミ",
+                "desc": ""
+            },
+            "red": {
+                "name": "赤色の染料",
+                "desc": ""
+            },
+            "green": {
+                "name": "緑色の染料",
+                "desc": ""
+            },
+            "brown": {
+                "name": "カカオ豆",
+                "desc": ""
+            },
+            "blue": {
+                "name": "ラピスラズリ",
+                "desc": ""
+            },
+            "purple": {
+                "name": "紫色の染料",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "青緑色の染料",
+                "desc": ""
+            },
+            "silver": {
+                "name": "薄灰色の染料",
+                "desc": ""
+            },
+            "gray": {
+                "name": "灰色の染料",
+                "desc": ""
+            },
+            "pink": {
+                "name": "桃色の染料",
+                "desc": ""
+            },
+            "lime": {
+                "name": "黄緑色の染料",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "黄色の染料",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "空色の染料",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "赤紫色の染料",
+                "desc": ""
+            },
+            "orange": {
+                "name": "橙色の染料",
+                "desc": ""
+            },
+            "white": {
+                "name": "骨粉",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "砂糖",
+            "desc": ""
+        },
+        "cake": {
+            "name": "ケーキ",
+            "desc": ""
+        },
+        "bed": {
+            "name": "ベッド",
+            "desc": ""
+        },
+        "diode": {
+            "name": "レッドストーンリピーター",
+            "desc": ""
+        },
+        "map": {
+            "name": "地図",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "葉",
+            "desc": ""
+        },
+        "shears": {
+            "name": "ハサミ",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "一般",
+        "blocksButton": "ブロック",
+        "itemsButton": "アイテム",
+        "used": "使用した回数",
+        "mined": "採取した回数",
+        "depleted": "消耗した回数",
+        "crafted": "クラフトした回数",
+        "startGame": "ゲームを起動した回数",
+        "createWorld": "遊んだワールドの数",
+        "loadWorld": "読み込まれたワールドの数",
+        "joinMultiplayer": "マルチプレイで遊んだ回数",
+        "leaveGame": "ゲームを終了した回数",
+        "playOneMinute": "ゲームプレイ時間",
+        "walkOneCm": "歩いた距離",
+        "fallOneCm": "落下した距離",
+        "swimOneCm": "泳いだ距離",
+        "flyOneCm": "空中を移動した距離",
+        "climbOneCm": "登った距離",
+        "diveOneCm": "水中歩行した距離",
+        "minecartOneCm": "トロッコで移動した距離",
+        "boatOneCm": "ボートで移動した距離",
+        "pigOneCm": "ブタで移動した距離",
+        "jump": "ジャンプした回数",
+        "drop": "アイテムを捨てた回数",
+        "damageDealt": "与えたダメージ",
+        "damageTaken": "受けたダメージ",
+        "deaths": "死んだ回数",
+        "mobKills": "Mobを倒した回数",
+        "playerKills": "プレイヤーを倒した回数",
+        "fishCaught": "魚を釣った回数",
+        "mineBlock": "{0}を採取した回数",
+        "craftItem": "{0}を作った回数",
+        "useItem": "{0}を使った回数",
+        "breakItem": "{0}を消耗した回数"
+    },
+    "achievements.title": "実績",
+    "achievement": {
+        "get": "実績解除！",
+        "taken": "獲得済！",
+        "challenge": "挑戦中",
+        "unlocked": "解除済み",
+        "locked": "未解除",
+        "requires": "「{0}」が必要",
+    "openInventory": {
+        "title": "所持品の確認",
+        "desc": "持ち物をみる"
+    },
+    "mineWood": {
+        "title": "木を手に入れる",
+        "desc": "ブロックになるまで木を叩く"
+    },
+    "buildWorkBench": {
+        "title": "土台作り",
+        "desc": "木材を4つ使い、作業台を作る"
+    },
+    "buildPickaxe": {
+        "title": "いざ採掘！",
+        "desc": "木材と棒を使い、ツルハシを作る"
+    },
+    "buildFurnace": {
+        "title": "ホットな話題",
+        "desc": "石のブロックを8つ使い、かまどを作る"
+    },
+    "acquireIron": {
+        "title": "金属を手に入れる",
+        "desc": "鉄鉱石を製錬する"
+    },
+    "buildHoe": {
+        "title": "いざ農業！",
+        "desc": "木材と棒を使い、クワを作る"
+    },
+    "makeBread": {
+        "title": "パンを焼く",
+        "desc": "小麦をパンにする"
+    },
+    "bakeCake": {
+        "title": "the cake is a lie",
+        "desc": "小麦に砂糖、牛乳、それから卵！"
+    },
+    "buildBetterPickaxe": {
+        "title": "上位互換",
+        "desc": "よりよいツルハシをつくる"
+    },
+    "cookFish": {
+        "title": "美味しい魚",
+        "desc": "魚を釣って焼く！"
+    },
+    "onARail": {
+        "title": "線路の上で",
+        "desc": "トロッコに乗って出発地点から1km以上走行する"
+    },
+    "buildSword": {
+        "title": "いざ突撃！",
+        "desc": "木材と棒を使い、剣を作る"
+    },
+    "killEnemy": {
+        "title": "モンスターハンター",
+        "desc": "モンスターを攻撃して倒す"
+    },
+    "killCow": {
+        "title": "牛転がし",
+        "desc": "革を手に入れる"
+    },
+    "flyPig": {
+        "title": "ブタさんの飛ぶ頃に",
+        "desc": "ブタに乗って崖から落ちる"
+    }
+    }
+}

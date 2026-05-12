@@ -17,7 +17,10 @@ public class TextRenderer
     private readonly ILogger<TextRenderer> _logger = Log.Instance.For<TextRenderer>();
 
     private const char ColorCodeChar = '§';
-    private const string FontPath = "assets/font/Monocraft.ttc";
+
+    private const string MonocraftFontPath = "assets/font/Monocraft.ttc";
+    private const string UnifontPath = "assets/font/unifont.ttf";
+
     private const int AtlasSize = 2048;
     private const int AtlasFontSize = 64;
     private const int GlyphPadding = 2;
@@ -126,17 +129,37 @@ public class TextRenderer
     {
         _textureManager = textureManager;
 
-        string path = Path.Combine(AppContext.BaseDirectory, "font", "Monocraft.ttc");
-        if (!File.Exists(path)) path = FontPath;
+        string monoPath = Path.Combine(AppContext.BaseDirectory, "font", "Monocraft.ttc");
 
-        if (!File.Exists(path))
-        {
-            throw new InvalidOperationException($"Font file not found at {path}");
-        }
+        string uniPath = Path.Combine(AppContext.BaseDirectory, "font", "unifont.ttf");
+
+        if (!File.Exists(monoPath))
+            monoPath = MonocraftFontPath;
+
+        if (!File.Exists(uniPath))
+            uniPath = UnifontPath;
+
+        if (!File.Exists(monoPath))
+            throw new InvalidOperationException(
+                $"Monocraft font not found at {monoPath}");
+
+        if (!File.Exists(uniPath))
+            throw new InvalidOperationException(
+                $"Unifont font not found at {uniPath}");
 
         var collection = new FontCollection();
-        _font = collection.AddCollection(path).First().CreateFont(AtlasFontSize);
-        _textOptions = new TextOptions(_font);
+
+        FontFamily monoFamily = collection.AddCollection(monoPath).First();
+
+        FontFamily uniFamily = collection.Add(uniPath);
+
+        _font = monoFamily.CreateFont(AtlasFontSize);
+
+
+        _textOptions = new TextOptions(_font)
+        {
+            FallbackFontFamilies = [uniFamily]
+        };
 
         _rowHeight = AtlasFontSize + GlyphPadding;
         _atlasImage = new Image<Rgba32>(AtlasSize, AtlasSize);
@@ -173,10 +196,24 @@ public class TextRenderer
         if (_glyphCache.TryGetValue(c, out GlyphInfo info))
             return info;
 
-        ReadOnlySpan<char> charSpan = stackalloc char[] { c };
-        FontRectangle advanceRect = TextMeasurer.MeasureAdvance(charSpan, _textOptions);
+        if (char.IsControl(c))
+            c = '?';
 
-        FontRectangle boundsRect = TextMeasurer.MeasureBounds(charSpan, _textOptions);
+        char[] charArray = [c];
+        ReadOnlySpan<char> charSpan = charArray;
+
+        FontRectangle advanceRect;
+
+        try
+        {
+            advanceRect = TextMeasurer.MeasureAdvance(charSpan, _textOptions);
+        }
+        catch
+        {
+            c = '?';
+            charSpan = "?";
+            advanceRect = TextMeasurer.MeasureAdvance(charSpan, _textOptions);
+        }
 
         float advanceWidth = advanceRect.Width;
         int cellW = Math.Max(1, (int)Math.Ceiling(advanceRect.Width) + GlyphPadding);
@@ -208,11 +245,19 @@ public class TextRenderer
             float drawX = 1f;
             float drawY = 1f;
 
-            glyphImage.Mutate(ctx => ctx.DrawText(
-                c.ToString(),
-                _font,
-                Color.White,
-                new PointF(drawX, drawY)));
+            glyphImage.Mutate(ctx =>
+            {
+                RichTextOptions options = new(_font)
+                {
+                    Origin = new PointF(drawX, drawY),
+                    FallbackFontFamilies = _textOptions.FallbackFontFamilies
+                };
+
+                ctx.DrawText(
+                    options,
+                    c.ToString(),
+                    Color.White);
+            });
 
             glyphImage.ProcessPixelRows(_atlasImage, (srcAccessor, dstAccessor) =>
             {
