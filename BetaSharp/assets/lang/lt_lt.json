@@ -224,7 +224,7 @@
             "max": "HIPERGREITIS!!!"
         },
         "renderDistance": {
-            "text": "Mat. atstumas",
+            "text": "Matymo atstumas",
             "chunks": "Blokų fragmentai (Chunks)",
             "tiny": "Mažas",
             "short": "Trumpas",

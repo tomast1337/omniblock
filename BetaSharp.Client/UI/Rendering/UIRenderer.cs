@@ -459,8 +459,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     private static float ComputeTextScrollOffset(int overflow)
     {
-        const float scrollSpeed = 30f;
-        const float pauseSeconds = 1.0f;
+        const float scrollSpeed = 15f;
+        const float pauseSeconds = 2.0f;
         float scrollDuration = overflow / scrollSpeed;
         float period = (pauseSeconds + scrollDuration) * 2f;
 
