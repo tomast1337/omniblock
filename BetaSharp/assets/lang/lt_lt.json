@@ -1,6 +1,7 @@
 ﻿{
     "lang": {
-        "name": "Lietuvių (Lietuva)"
+        "name": "Lietuvių (Lietuva)",
+        "font": "unifont"
     },
     "gui": {
         "joinServer": "Prisijungti prie serverio",

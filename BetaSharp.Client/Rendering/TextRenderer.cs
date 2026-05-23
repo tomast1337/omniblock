@@ -26,8 +26,10 @@ public class TextRenderer
     private const int GlyphPadding = 2;
     private const float DisplayScale = 0.125f;
 
-    private readonly Font _font;
-    private readonly TextOptions _textOptions;
+    private FontFamily _monoFamily;
+    private FontFamily _uniFamily;
+    private Font _font;
+    private TextOptions _textOptions;
     private readonly Image<Rgba32> _atlasImage;
     private readonly Dictionary<char, GlyphInfo> _glyphCache = [];
     private int _atlasX;
@@ -130,7 +132,6 @@ public class TextRenderer
         _textureManager = textureManager;
 
         string monoPath = Path.Combine(AppContext.BaseDirectory, "font", "Monocraft.ttc");
-
         string uniPath = Path.Combine(AppContext.BaseDirectory, "font", "unifont.ttf");
 
         if (!File.Exists(monoPath))
@@ -140,46 +141,70 @@ public class TextRenderer
             uniPath = UnifontPath;
 
         if (!File.Exists(monoPath))
-            throw new InvalidOperationException(
-                $"Monocraft font not found at {monoPath}");
+            throw new InvalidOperationException($"Monocraft font not found at {monoPath}");
 
         if (!File.Exists(uniPath))
-            throw new InvalidOperationException(
-                $"Unifont font not found at {uniPath}");
+            throw new InvalidOperationException($"Unifont font not found at {uniPath}");
 
         var collection = new FontCollection();
-
-        FontFamily monoFamily = collection.AddCollection(monoPath).First();
-
-        FontFamily uniFamily = collection.Add(uniPath);
-
-        _font = monoFamily.CreateFont(AtlasFontSize);
-
-
-        _textOptions = new TextOptions(_font)
-        {
-            FallbackFontFamilies = [uniFamily]
-        };
+        _monoFamily = collection.AddCollection(monoPath).First();
+        _uniFamily = collection.Add(uniPath);
 
         _rowHeight = AtlasFontSize + GlyphPadding;
         _atlasImage = new Image<Rgba32>(AtlasSize, AtlasSize);
-        ClearAtlasRegion(0, 0, AtlasSize, AtlasSize);
 
         fontTextureName = textureManager.Load(_atlasImage);
         fontTextureName.Texture?.SetFilter(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
 
-        try
-        {
-            AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
-            using var stream = new MemoryStream(asset.GetBinaryContent());
-            using var classicFontImage = Image.Load<Rgba32>(stream);
+        // placeholder — will be set by ApplyFontForLanguage below
+        _font = _monoFamily.CreateFont(AtlasFontSize);
+        _textOptions = new TextOptions(_font);
 
-            LoadClassicFontIntoAtlas(classicFontImage);
-        }
-        catch (Exception ex)
+        ApplyFontForLanguage();
+
+        TranslationStorage.LanguageChanged += ReloadForLanguage;
+    }
+
+    private bool UseUnifontPrimary =>
+        TranslationStorage.Instance.TranslateKey("lang.font") == "unifont";
+
+    private void ApplyFontForLanguage()
+    {
+        ClearAtlasRegion(0, 0, AtlasSize, AtlasSize);
+        _atlasX = 0;
+        _atlasY = 0;
+        _glyphCache.Clear();
+
+        if (UseUnifontPrimary)
         {
-            _logger.LogWarning(ex, "Failed to load classic font. Falling back entirely to TrueType.");
+            _font = _uniFamily.CreateFont(AtlasFontSize);
+            _textOptions = new TextOptions(_font);
         }
+        else
+        {
+            _font = _monoFamily.CreateFont(AtlasFontSize);
+            _textOptions = new TextOptions(_font)
+            {
+                FallbackFontFamilies = [_uniFamily]
+            };
+
+            try
+            {
+                AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
+                using var stream = new MemoryStream(asset.GetBinaryContent());
+                using var classicFontImage = Image.Load<Rgba32>(stream);
+                LoadClassicFontIntoAtlas(classicFontImage);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to load classic font. Falling back entirely to TrueType.");
+            }
+        }
+    }
+
+    public void ReloadForLanguage()
+    {
+        ApplyFontForLanguage();
     }
     private static void ClearAtlasRegion(Image<Rgba32> image, int x, int y, int w, int h)
     {
@@ -232,10 +257,13 @@ public class TextRenderer
             _atlasX = 0;
             _atlasY = 0;
 
-            AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
-            using var stream = new MemoryStream(asset.GetBinaryContent());
-            using var classicFontImage = Image.Load<Rgba32>(stream);
-            LoadClassicFontIntoAtlas(classicFontImage);
+            if (!UseUnifontPrimary)
+            {
+                AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
+                using var stream = new MemoryStream(asset.GetBinaryContent());
+                using var classicFontImage = Image.Load<Rgba32>(stream);
+                LoadClassicFontIntoAtlas(classicFontImage);
+            }
         }
 
         using (Image<Rgba32> glyphImage = new Image<Rgba32>(cellW, cellH))

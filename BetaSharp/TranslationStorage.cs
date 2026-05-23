@@ -22,9 +22,12 @@ public class TranslationStorage
         _translateTable[key] = translation;
     }
 
+    public static event Action? LanguageChanged;
+
     public void SwitchLanguage(string lang)
     {
         _instance = new TranslationStorage(lang);
+        LanguageChanged?.Invoke();
     }
 
     private void LoadLanguageFile(string assetPath)
