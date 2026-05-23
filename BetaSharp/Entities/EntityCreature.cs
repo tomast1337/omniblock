@@ -26,7 +26,7 @@ public abstract class EntityCreature(IWorldContext world) : EntityLiving(world)
                 _pathToEntity = World.Pathing.findPath(this, Target, Range);
             }
         }
-        else if (!Target.IsAlive)
+        else if (!Target.CanBeTargeted)
         {
             Target = null;
         }

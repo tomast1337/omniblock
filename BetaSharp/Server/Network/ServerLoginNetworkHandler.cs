@@ -140,7 +140,6 @@ public class ServerLoginNetworkHandler : NetHandler
         {
             server.playerManager.loadPlayerData(ent);
             ent.SetWorld(server.getWorld(ent.DimensionId));
-            ent.GameModeHolder = server.DefaultGameMode;
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.ID} at ({ent.X}, {ent.Y}, {ent.Z})");
             ServerWorld playerWorld = server.getWorld(ent.DimensionId);
             Vec3i spawnPos = playerWorld.Properties.GetSpawnPos();
