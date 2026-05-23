@@ -72,7 +72,7 @@ public class Slider : UIElement
         renderer.DrawTexturedModalRect(texture, knobX + knobWidth / 2f, 0, 200 - knobWidth / 2f, 66, knobWidth / 2f, ComputedHeight);
 
         Color tColor = IsHovered ? Color.HoverYellow : Color.GrayE0;
-        renderer.DrawCenteredText(Text, ComputedWidth / 2, ComputedHeight / 2 - 4, tColor);
+        renderer.DrawScrollingCenteredText(Text, (int)ComputedWidth, (int)ComputedHeight, ComputedHeight / 2 - 4, tColor);
 
         base.Render(renderer);
     }

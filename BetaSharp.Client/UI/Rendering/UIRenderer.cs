@@ -439,6 +439,47 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Enable(GLEnum.Texture2D);
     }
 
+    public void DrawScrollingCenteredText(string text, int containerWidth, int containerHeight, float textY, Color color, int padding = 2)
+    {
+        int availableWidth = containerWidth - padding * 2;
+        int textWidth = TextRenderer.GetStringWidth(text);
+
+        if (availableWidth > 0 && textWidth > availableWidth)
+        {
+            float scrollOffset = ComputeTextScrollOffset(textWidth - availableWidth);
+            EnableClipping(padding, 0, availableWidth, containerHeight);
+            DrawText(text, padding - scrollOffset, textY, color);
+            DisableClipping();
+        }
+        else
+        {
+            DrawCenteredText(text, containerWidth / 2f, textY, color);
+        }
+    }
+
+    private static float ComputeTextScrollOffset(int overflow)
+    {
+        const float scrollSpeed = 30f;
+        const float pauseSeconds = 1.0f;
+        float scrollDuration = overflow / scrollSpeed;
+        float period = (pauseSeconds + scrollDuration) * 2f;
+
+        long periodMs = Math.Max(1L, (long)(period * 1000));
+        float t = (float)(Environment.TickCount64 % periodMs) / 1000f;
+
+        float offset;
+        if (t < pauseSeconds)
+            offset = 0f;
+        else if (t < pauseSeconds + scrollDuration)
+            offset = (t - pauseSeconds) * scrollSpeed;
+        else if (t < pauseSeconds * 2f + scrollDuration)
+            offset = overflow;
+        else
+            offset = overflow - (t - pauseSeconds * 2f - scrollDuration) * scrollSpeed;
+
+        return Math.Clamp(offset, 0f, overflow);
+    }
+
     private void DrawCenteredStringRaw(string text, int x, int y, Color color)
     {
         TextRenderer.DrawStringWithShadow(text, x - TextRenderer.GetStringWidth(text) / 2, y, color);
