@@ -3,6 +3,7 @@
         "name": "Lietuvių (Lietuva)"
     },
     "gui": {
+        "joinServer": "Prisijungti prie serverio",
         "edit": "Redaguoti",
         "rename": "Pervadinti",
         "refresh": "Atnaujinti",
@@ -69,7 +70,21 @@
         "selectWorldType": "Pasirinkti pasaulio tipą",
         "worldType": "Pasaulio tipas",
         "customize": "Pritaikyti",
-        "moreWorldOptions": "Daugiau pasaulio parinkčių..."
+        "moreWorldOptions": "Daugiau pasaulio parinkčių...",
+        "type": {
+            "default": {
+                "title": "Numatytasis",
+                "description": "Standartinis Minecraft pasaulis."
+            },
+            "flat": {
+                "title": "Lygus",
+                "description": "Visiškai lygus pasaulis."
+            },
+            "sky": {
+                "title": "Dangus",
+                "description": "Pasaulis, kabantis danguje."
+            }
+        }
     },
     "newWorld": {
         "customize": {
@@ -77,7 +92,9 @@
                 "title": "Pritaikyti superplokščią pasaulį"
             },
             "removeLayer": "Pašalinti sluoksnį",
-            "presets": "Išankstiniai nustatymai"
+            "presets": "Išankstiniai nustatymai",
+            "height": "Aukštis",
+            "unknown": "???"
         }
     },
     "world": {
@@ -93,11 +110,16 @@
         "deleteQuestion": "Ar tikrai norite ištrinti šį serverį?",
         "deleteWarning": "bus prarasta amžiams! (Ilgam laikui!)",
         "downloadingTerrain": "Atsisiunčiamas reljefas",
-        "stopSleeping": "Išlipti iš lovos"
+        "stopSleeping": "Išlipti iš lovos",
+        "editServerTitle": "Redaguoti serverio informaciją",
+        "addServerTitle": "Pridėti serverio informaciją",
+        "serverName": "Serverio pavadinimas",
+        "serverAddress": "Serverio adresas"
     },
     "loading": {
         "loadingLevel": "Įkeliamas lygis",
-        "startingServer": "Paleidžiamas serveris..."
+        "startingServer": "Paleidžiamas serveris...",
+        "preparingSpawnArea": "Ruošiama atsiradimo vieta"
     },
     "achievements": {
         "title": "Pasiekimai"
@@ -171,6 +193,7 @@
     "options": {
         "off": "IŠJUNGTA",
         "on": "ĮJUNGTA",
+        "disabled": "Išjungta",
         "title": "Parinktys",
         "controls": "Valdymas...",
         "keyboardControls": "Klaviatūros valdymas...",
@@ -223,12 +246,28 @@
             "fancy": "Prašmatnus",
             "fast": "Greita"
         },
+        "cloudsQuality": {
+            "text": "Debesų kokybė",
+            "off": "Be debesų",
+            "legacy": "Seni debesys",
+            "2d": "2D debesys",
+            "parallax": "Paralaksas %1$s"
+        },
+        "softClouds": {
+            "text": "Minkšti debesys"
+        },
         "guiScale": {
             "text": "Sąsajos dydis",
             "auto": "Automatinis",
             "small": "Mažas",
             "normal": "Normalus",
             "large": "Didelis"
+        },
+        "chatScale": {
+            "text": "Pokalbių skalė"
+        },
+        "chatWidth": {
+            "text": "Pokalbių plotis"
         },
         "advancedOpengl": "Išplėstinis OpenGL",
         "fps": {
@@ -290,6 +329,10 @@
         "folderInfo": "(Įdėkite tekstūrų paketų failus čia)"
     },
     "tile": {
+        "tallgrass": {
+            "name": "Aukšta žolė",
+            "desc": ""
+        },
         "stone": {
             "name": "Akmuo",
             "desc": ""
