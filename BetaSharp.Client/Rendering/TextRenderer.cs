@@ -156,6 +156,7 @@ public class TextRenderer
         fontTextureName = textureManager.Load(_atlasImage);
         fontTextureName.Texture?.SetFilter(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
 
+        // placeholder — will be set by ApplyFontForLanguage below
         _font = _monoFamily.CreateFont(AtlasFontSize);
         _textOptions = new TextOptions(_font);
 
