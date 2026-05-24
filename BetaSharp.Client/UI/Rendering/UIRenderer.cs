@@ -298,22 +298,16 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawRepeatingTexture(TextureHandle texture, float x, float y, float width, float height, float textureScale, float scrollOffsetY = 0f)
     {
-        _batch.Flush();
-        TextureManager.BindTexture(texture);
-        Tessellator tess = Tessellator.instance;
-
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
 
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        float u0 = finalX / textureScale;
+        float v0 = (finalY + scrollOffsetY) / textureScale;
+        float u1 = (finalX + width) / textureScale;
+        float v1 = (finalY + height + scrollOffsetY) / textureScale;
 
-        tess.startDrawingQuads();
-        tess.setColorOpaque_I(0x404040);
-        tess.addVertexWithUV(finalX, finalY + height, 0.0, finalX / textureScale, (finalY + height + scrollOffsetY) / textureScale);
-        tess.addVertexWithUV(finalX + width, finalY + height, 0.0, (finalX + width) / textureScale, (finalY + height + scrollOffsetY) / textureScale);
-        tess.addVertexWithUV(finalX + width, finalY, 0.0, (finalX + width) / textureScale, (finalY + scrollOffsetY) / textureScale);
-        tess.addVertexWithUV(finalX, finalY, 0.0, finalX / textureScale, (finalY + scrollOffsetY) / textureScale);
-        tess.draw();
+        _batch.SetTexture((uint)texture.Id);
+        _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, u0, v0, u1, v1, (uint)Color.FromRgb(0x404040));
     }
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
