@@ -118,12 +118,19 @@ public sealed class UIBatchRenderer : IDisposable
     {
         if (_vertexCount == 0) return;
 
-        // Ensure UIShader is active — a 3D escape hatch may have changed the program
+        // 3D escape hatches (block item renders) may disable blend; re-enable it
+        // without touching the blend function, which PushBlend may have customised.
+        _silkGL.Enable(EnableCap.Blend);
+
+        // Ensure UIShader is active.
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetUseTexture(_useTexture);
 
         if (_useTexture && _currentTextureId != 0)
+        {
+            _silkGL.ActiveTexture(TextureUnit.Texture0);
             _silkGL.BindTexture(TextureTarget.Texture2D, _currentTextureId);
+        }
 
         _silkGL.BindVertexArray(_vaoId);
         _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);

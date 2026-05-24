@@ -356,8 +356,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
                 ? TextureManager.GetTextureId("/terrain.png")
                 : TextureManager.GetTextureId("/gui/items.png");
 
-            int colorMult = Item.ITEMS[stack.ItemId]!.getColorMultiplier(stack.getDamage());
-            uint rgba = (uint)Color.FromRgb((uint)colorMult);
+            int colorMultiplier = Item.ITEMS[stack.ItemId]!.getColorMultiplier(stack.getDamage());
+            uint rgba = (uint)Color.FromRgb((uint)colorMultiplier);
 
             float finalX = MathF.Floor(x + _translateX);
             float finalY = MathF.Floor(y + _translateY);
@@ -372,10 +372,27 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     {
         if (stack == null) return;
 
-        _batch.Flush();
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.DepthTest);
-        _itemRenderer.renderItemOverlayIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+        int bx = (int)(x + _translateX);
+        int by = (int)(y + _translateY);
+
+        if (stack.Count > 1)
+        {
+            string stackText = stack.Count.ToString();
+            int textX = bx + 17 - TextRenderer.GetStringWidth(stackText);
+            TextRenderer.DrawStringWithShadow(stackText, textX, by + 9, Color.White, batch: _batch);
+        }
+
+        if (stack.isDamaged())
+        {
+            int barWidth = (int)Math.Round(13.0 - stack.getDamage2() * 13.0 / stack.getMaxDamage());
+            int damageColor = (int)Math.Round(255.0 - stack.getDamage2() * 255.0 / stack.getMaxDamage());
+            int barColor = (255 - damageColor) << 16 | damageColor << 8;
+            int bgColor = (255 - damageColor) / 4 << 16 | 16128;
+
+            _batch.AddColoredQuad(bx + 2, by + 13, 13, 2, (uint)Color.FromRgb(0));
+            _batch.AddColoredQuad(bx + 2, by + 13, 12, 1, (uint)Color.FromRgb((uint)bgColor));
+            _batch.AddColoredQuad(bx + 2, by + 13, barWidth, 1, (uint)Color.FromRgb((uint)barColor));
+        }
     }
 
     public void DrawEntity(Entity entity, float x, float y, float scale, float mouseX, float mouseY)
