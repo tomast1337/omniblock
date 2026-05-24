@@ -29,6 +29,11 @@ public abstract class TexturePack
     {
     }
 
+    public virtual TextureHandle GetThumbnailTexture(TextureManager textureManager)
+    {
+        return textureManager.GetTextureId("/gui/unknown_pack.png");
+    }
+
     public virtual Stream? GetResourceAsStream(string path)
     {
         try

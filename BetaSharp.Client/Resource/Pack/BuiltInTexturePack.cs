@@ -58,4 +58,14 @@ public class BuiltInTexturePack : TexturePack
         }
 
     }
+
+    public override TextureHandle GetThumbnailTexture(TextureManager textureManager)
+    {
+        if (texturePackThumbnail != null && _texturePackName == null)
+        {
+            _texturePackName = textureManager.Load(texturePackThumbnail);
+        }
+
+        return _texturePackName ?? textureManager.GetTextureId("/gui/unknown_pack.png");
+    }
 }

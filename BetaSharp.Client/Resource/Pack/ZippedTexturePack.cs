@@ -88,6 +88,16 @@ public class ZippedTexturePack : TexturePack
 
     }
 
+    public override TextureHandle GetThumbnailTexture(TextureManager textureManager)
+    {
+        if (_texturePackThumbnail != null && _texturePackName == null)
+        {
+            _texturePackName = textureManager.Load(_texturePackThumbnail);
+        }
+
+        return _texturePackName ?? textureManager.GetTextureId("/gui/unknown_pack.png");
+    }
+
     public override void func_6482_a()
     {
         try

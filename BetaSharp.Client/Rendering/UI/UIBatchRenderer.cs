@@ -1,0 +1,150 @@
+using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Core.OpenGL;
+using Silk.NET.Maths;
+using Silk.NET.OpenGL;
+
+namespace BetaSharp.Client.Rendering.UI;
+
+public sealed class UIBatchRenderer : IDisposable
+{
+    private const int MaxQuads = 2048;
+    private const int MaxVertices = MaxQuads * 6;
+
+    private readonly UIShader _shader;
+    private readonly GL _silkGL;
+    private readonly uint _vaoId;
+    private readonly uint _vboId;
+    private readonly UIVertex[] _vertices = new UIVertex[MaxVertices];
+
+    private int _vertexCount;
+    private uint _currentTextureId;
+    private bool _useTexture;
+
+    public unsafe UIBatchRenderer()
+    {
+        _shader = new UIShader();
+        _silkGL = ((LegacyGL)GLManager.GL).SilkGL;
+
+        _vaoId = _silkGL.GenVertexArray();
+        _vboId = _silkGL.GenBuffer();
+
+        _silkGL.BindVertexArray(_vaoId);
+        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);
+        _silkGL.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(MaxVertices * sizeof(UIVertex)), null, BufferUsageARB.StreamDraw);
+
+        _silkGL.EnableVertexAttribArray(0);
+        _silkGL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 20, (void*)0);
+
+        _silkGL.EnableVertexAttribArray(1);
+        _silkGL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 20, (void*)8);
+
+        _silkGL.EnableVertexAttribArray(2);
+        _silkGL.VertexAttribPointer(2, 4, VertexAttribPointerType.UnsignedByte, true, 20, (void*)16);
+
+        _silkGL.BindVertexArray(0);
+        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+    }
+
+    public void Begin(Matrix4X4<float> proj)
+    {
+        // Set projection once per frame, then immediately reset to neutral so
+        // Tessellator draws before the first batch flush still work correctly.
+        GLManager.GL.UseProgram(_shader.ProgramId);
+        _shader.SetProjection(proj);
+        GLManager.GL.UseProgram(0);
+        _vertexCount = 0;
+        _currentTextureId = 0;
+        _useTexture = false;
+    }
+
+    public void End()
+    {
+        Flush();
+        GLManager.GL.UseProgram(0);
+    }
+
+    public void SetTexture(uint texId)
+    {
+        if (_useTexture && _currentTextureId == texId) return;
+        Flush();
+        _currentTextureId = texId;
+        _useTexture = true;
+    }
+
+    public void SetNoTexture()
+    {
+        if (!_useTexture) return;
+        Flush();
+        _useTexture = false;
+    }
+
+    public void AddQuad(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, uint rgba)
+    {
+        if (_vertexCount + 6 > MaxVertices)
+            Flush();
+
+        _vertices[_vertexCount++] = new UIVertex { X = x0, Y = y0, U = u0, V = v0, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x0, Y = y1, U = u0, V = v1, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = u1, V = v1, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x0, Y = y0, U = u0, V = v0, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = u1, V = v1, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y0, U = u1, V = v0, Rgba = rgba };
+    }
+
+    public void AddColoredQuad(float x, float y, float w, float h, uint rgba)
+    {
+        SetNoTexture();
+        AddQuad(x, y, x + w, y + h, 0f, 0f, 0f, 0f, rgba);
+    }
+
+    public void AddGradientQuad(float x, float y, float w, float h, uint topRgba, uint bottomRgba)
+    {
+        SetNoTexture();
+
+        if (_vertexCount + 6 > MaxVertices)
+            Flush();
+
+        float x1 = x + w, y1 = y + h;
+
+        _vertices[_vertexCount++] = new UIVertex { X = x, Y = y, U = 0, V = 0, Rgba = topRgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x, Y = y1, U = 0, V = 0, Rgba = bottomRgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = 0, V = 0, Rgba = bottomRgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x, Y = y, U = 0, V = 0, Rgba = topRgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = 0, V = 0, Rgba = bottomRgba };
+        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y, U = 0, V = 0, Rgba = topRgba };
+    }
+
+    public unsafe void Flush()
+    {
+        if (_vertexCount == 0) return;
+
+        // Ensure UIShader is active — a 3D escape hatch may have changed the program
+        GLManager.GL.UseProgram(_shader.ProgramId);
+        _shader.SetUseTexture(_useTexture);
+
+        if (_useTexture && _currentTextureId != 0)
+            _silkGL.BindTexture(TextureTarget.Texture2D, _currentTextureId);
+
+        _silkGL.BindVertexArray(_vaoId);
+        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);
+
+        fixed (UIVertex* ptr = _vertices)
+        {
+            _silkGL.BufferSubData(BufferTargetARB.ArrayBuffer, 0, (nuint)(_vertexCount * sizeof(UIVertex)), ptr);
+        }
+
+        _silkGL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexCount);
+        _silkGL.BindVertexArray(0);
+        _vertexCount = 0;
+
+        // Reset EmulatedGL to neutral so subsequent Tessellator draws re-activate FixedFunctionShader
+        GLManager.GL.UseProgram(0);
+    }
+
+    public void Dispose()
+    {
+        _silkGL.DeleteVertexArray(_vaoId);
+        _silkGL.DeleteBuffer(_vboId);
+        _shader.Dispose();
+    }
+}

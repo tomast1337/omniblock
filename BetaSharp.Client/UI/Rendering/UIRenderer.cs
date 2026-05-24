@@ -8,6 +8,7 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
+using BetaSharp.Client.Rendering.UI;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using Silk.NET.Maths;
@@ -24,9 +25,11 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     public TextRenderer TextRenderer { get; } = textRenderer;
     private readonly ItemRenderer _itemRenderer = new();
     private readonly GameOptions _gameOptions = gameOptions;
+    private readonly UIBatchRenderer _batch = new();
 
     private float _translateX = 0;
     private float _translateY = 0;
+    private uint _currentTint = 0xFFFFFFFF;
     private readonly Stack<Vector2D<float>> _translationStack = new();
 
     public void Begin()
@@ -41,44 +44,68 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         _translateX = 0;
         _translateY = 0;
+        _currentTint = 0xFFFFFFFF;
         _translationStack.Clear();
+
+        Vector2D<int> displaySize = getDisplaySize();
+        ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
+        Matrix4X4<float> proj = Matrix4X4.CreateOrthographicOffCenter(0f, res.ScaledWidth, res.ScaledHeight, 0f, -1f, 1f);
+        _batch.Begin(proj);
     }
 
     public void End()
     {
+        _batch.End();
         GLManager.GL.PopMatrix();
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void PushColor(Color color)
     {
+        uint newTint = (uint)color;
+        if (_currentTint != newTint)
+        {
+            _batch.Flush();
+            _currentTint = newTint;
+        }
         GLManager.GL.Color4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
     }
 
     public void PopColor()
     {
+        _batch.Flush();
+        _currentTint = 0xFFFFFFFF;
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public void SetDepthMask(bool flag) => GLManager.GL.DepthMask(flag);
+    public void SetDepthMask(bool flag)
+    {
+        _batch.Flush();
+        GLManager.GL.DepthMask(flag);
+    }
+
     public void SetAlphaTest(bool flag)
     {
+        _batch.Flush();
         if (flag) GLManager.GL.Enable(GLEnum.AlphaTest);
         else GLManager.GL.Disable(GLEnum.AlphaTest);
     }
 
     public void PushBlend(GLEnum s, GLEnum d)
     {
+        _batch.Flush();
         GLManager.GL.BlendFunc(s, d);
     }
 
     public void PopBlend()
     {
+        _batch.Flush();
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
     }
 
     public void ClearDepth()
     {
+        _batch.Flush();
         GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
     }
 
@@ -110,6 +137,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void EnableClipping(int x, int y, int width, int height)
     {
+        _batch.Flush();
+
         Vector2D<int> displaySize = getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
@@ -145,29 +174,32 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DisableClipping()
     {
+        _batch.Flush();
         GLManager.GL.Disable(GLEnum.ScissorTest);
     }
 
     public void DrawRect(float x, float y, float width, float height, Color color)
     {
-        int ix1 = (int)MathF.Floor(x + _translateX);
-        int iy1 = (int)MathF.Floor(y + _translateY);
-        int ix2 = (int)MathF.Floor(x + _translateX + width);
-        int iy2 = (int)MathF.Floor(y + _translateY + height);
-        DrawRectRaw(ix1, iy1, ix2, iy2, color);
+        float x1 = MathF.Floor(x + _translateX);
+        float y1 = MathF.Floor(y + _translateY);
+        float x2 = MathF.Floor(x + _translateX + width);
+        float y2 = MathF.Floor(y + _translateY + height);
+        _batch.AddColoredQuad(x1, y1, x2 - x1, y2 - y1, (uint)color);
     }
 
     public void DrawGradientRect(float x, float y, float width, float height, Color topColor, Color bottomColor)
     {
-        int ix1 = (int)MathF.Floor(x + _translateX);
-        int iy1 = (int)MathF.Floor(y + _translateY);
-        int ix2 = (int)MathF.Floor(x + _translateX + width);
-        int iy2 = (int)MathF.Floor(y + _translateY + height);
-        DrawGradientRectRaw(ix1, iy1, ix2, iy2, topColor, bottomColor);
+        float x1 = MathF.Floor(x + _translateX);
+        float y1 = MathF.Floor(y + _translateY);
+        float x2 = MathF.Floor(x + _translateX + width);
+        float y2 = MathF.Floor(y + _translateY + height);
+        _batch.AddGradientQuad(x1, y1, x2 - x1, y2 - y1, (uint)topColor, (uint)bottomColor);
     }
 
     public void DrawText(string text, float x, float y, Color color, float scale = 1.0f, bool shadow = true)
     {
+        _batch.Flush();
+
         if (scale == 1.0f)
         {
             if (shadow)
@@ -197,11 +229,14 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawTextWrapped(string text, float x, float y, float maxWidth, Color color)
     {
+        _batch.Flush();
         TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color);
     }
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
     {
+        _batch.Flush();
+
         if (rotation == 0 && scale == 1.0f)
         {
             if (shadow)
@@ -234,12 +269,15 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawTexture(TextureHandle texture, float x, float y, float width, float height)
     {
-        TextureManager.BindTexture(texture);
-        DrawBoundTexture(x, y, width, height);
+        float finalX = MathF.Floor(x + _translateX);
+        float finalY = MathF.Floor(y + _translateY);
+        _batch.SetTexture((uint)texture.Id);
+        _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, 0f, 0f, 1f, 1f, _currentTint);
     }
 
     public void DrawBoundTexture(float x, float y, float width, float height)
     {
+        _batch.Flush();
         Tessellator tess = Tessellator.instance;
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
@@ -264,22 +302,18 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight, float z)
     {
-        TextureManager.BindTexture(texture);
-        float f = 0.00390625F;
-        Tessellator tess = Tessellator.instance;
+        const float f = 0.00390625F; // 1/256
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
-
-        tess.startDrawingQuads();
-        tess.addVertexWithUV(finalX + 0, finalY + height, z, (double)((u + 0) * f), (double)((v + uvHeight) * f));
-        tess.addVertexWithUV(finalX + width, finalY + height, z, (double)((u + uvWidth) * f), (double)((v + uvHeight) * f));
-        tess.addVertexWithUV(finalX + width, finalY + 0, z, (double)((u + uvWidth) * f), (double)((v + 0) * f));
-        tess.addVertexWithUV(finalX + 0, finalY + 0, z, (double)((u + 0) * f), (double)((v + 0) * f));
-        tess.draw();
+        _batch.SetTexture((uint)texture.Id);
+        _batch.AddQuad(finalX, finalY, finalX + width, finalY + height,
+            u * f, v * f, (u + uvWidth) * f, (v + uvHeight) * f,
+            _currentTint);
     }
 
     public void DrawRepeatingTexture(TextureHandle texture, float x, float y, float width, float height, float textureScale, float scrollOffsetY = 0f)
     {
+        _batch.Flush();
         TextureManager.BindTexture(texture);
         Tessellator tess = Tessellator.instance;
 
@@ -299,12 +333,15 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
+        _batch.Flush();
         itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
     }
 
     public void DrawItem(ItemStack stack, float x, float y)
     {
         if (stack == null) return;
+
+        _batch.Flush();
 
         bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].getRenderType());
 
@@ -338,6 +375,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     {
         if (stack == null) return;
 
+        _batch.Flush();
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.DepthTest);
         _itemRenderer.renderItemOverlayIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
@@ -345,6 +383,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawEntity(Entity entity, float x, float y, float scale, float mouseX, float mouseY)
     {
+        _batch.Flush();
+
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.ColorMaterial);
         GLManager.GL.Enable(GLEnum.DepthTest);
@@ -392,51 +432,6 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.GL.Disable(GLEnum.ColorMaterial);
-    }
-
-    private static void DrawRectRaw(int x1, int y1, int x2, int y2, Color color)
-    {
-        if (x1 < x2) (x1, x2) = (x2, x1);
-        if (y1 < y2) (y1, y2) = (y2, y1);
-
-        Tessellator tess = Tessellator.instance;
-
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-
-        tess.startDrawingQuads();
-        tess.setColorRGBA(color);
-        tess.addVertex(x1, y2, 0.0D);
-        tess.addVertex(x2, y2, 0.0D);
-        tess.addVertex(x2, y1, 0.0D);
-        tess.addVertex(x1, y1, 0.0D);
-        tess.draw();
-
-        GLManager.GL.Enable(GLEnum.Texture2D);
-    }
-
-    private static void DrawGradientRectRaw(int right, int bottom, int left, int top, Color topColor, Color bottomColor)
-    {
-        GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.Disable(GLEnum.AlphaTest);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        GLManager.GL.ShadeModel(GLEnum.Smooth);
-
-        Tessellator tess = Tessellator.instance;
-        tess.startDrawingQuads();
-        tess.setColorRGBA(topColor);
-        tess.addVertex(left, bottom, 0.0D);
-        tess.addVertex(right, bottom, 0.0D);
-        tess.setColorRGBA(bottomColor);
-        tess.addVertex(right, top, 0.0D);
-        tess.addVertex(left, top, 0.0D);
-        tess.draw();
-
-        GLManager.GL.ShadeModel(GLEnum.Flat);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.Enable(GLEnum.Texture2D);
     }
 
     public void DrawScrollingCenteredText(string text, int containerWidth, int containerHeight, float textY, Color color, int padding = 2)
@@ -487,6 +482,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawSign(BlockEntitySign sign, float x, float y, float scale)
     {
+        _batch.Flush();
+
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.DepthTest);
         GLManager.GL.PushMatrix();
