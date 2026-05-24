@@ -198,71 +198,56 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawText(string text, float x, float y, Color color, float scale = 1.0f, bool shadow = true)
     {
-        _batch.Flush();
-
         if (scale == 1.0f)
         {
+            int ix = (int)MathF.Floor(x + _translateX);
+            int iy = (int)MathF.Floor(y + _translateY);
             if (shadow)
-            {
-                TextRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
-            }
+                TextRenderer.DrawStringWithShadow(text, ix, iy, color, batch: _batch);
             else
-            {
-                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
-            }
+                TextRenderer.DrawString(text, ix, iy, color, batch: _batch);
             return;
         }
 
+        _batch.Flush();
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
         GLManager.GL.Scale(scale, scale, 1);
         if (shadow)
-        {
             TextRenderer.DrawStringWithShadow(text, 0, 0, color);
-        }
         else
-        {
             TextRenderer.DrawString(text, 0, 0, color);
-        }
         GLManager.GL.PopMatrix();
     }
 
     public void DrawTextWrapped(string text, float x, float y, float maxWidth, Color color)
     {
-        _batch.Flush();
-        TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color);
+        TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color, batch: _batch);
     }
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
     {
-        _batch.Flush();
-
         if (rotation == 0 && scale == 1.0f)
         {
+            int ix = (int)MathF.Floor(x + _translateX);
+            int iy = (int)MathF.Floor(y + _translateY);
             if (shadow)
-            {
-                DrawCenteredStringRaw(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
-            }
+                DrawCenteredStringRaw(text, ix, iy, color, _batch);
             else
-            {
-                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, HorizontalAlignment.Center);
-            }
+                TextRenderer.DrawString(text, ix, iy, color, HorizontalAlignment.Center, batch: _batch);
             return;
         }
 
+        _batch.Flush();
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
         if (rotation != 0) GLManager.GL.Rotate(rotation, 0, 0, 1);
         if (scale != 1.0f) GLManager.GL.Scale(scale, scale, 1);
 
         if (shadow)
-        {
             DrawCenteredStringRaw(text, 0, 0, color);
-        }
         else
-        {
             TextRenderer.DrawString(text, 0, 0, color, HorizontalAlignment.Center);
-        }
 
         GLManager.GL.PopMatrix();
     }
@@ -341,12 +326,11 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     {
         if (stack == null) return;
 
-        _batch.Flush();
-
         bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].getRenderType());
 
         if (isBlock)
         {
+            _batch.Flush();
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(0, 0, 32.0f);
 
@@ -365,9 +349,22 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         }
         else
         {
-            GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.GL.Disable(GLEnum.DepthTest);
-            _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+            int iconIndex = stack.getTextureId();
+            if (iconIndex < 0) return;
+
+            TextureHandle texHandle = stack.ItemId < 256
+                ? TextureManager.GetTextureId("/terrain.png")
+                : TextureManager.GetTextureId("/gui/items.png");
+
+            int colorMult = Item.ITEMS[stack.ItemId]!.getColorMultiplier(stack.getDamage());
+            uint rgba = (uint)Color.FromRgb((uint)colorMult);
+
+            float finalX = MathF.Floor(x + _translateX);
+            float finalY = MathF.Floor(y + _translateY);
+            float u0 = (iconIndex % 16 * 16) / 256f;
+            float v0 = (iconIndex / 16 * 16) / 256f;
+            _batch.SetTexture((uint)texHandle.Id);
+            _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, rgba);
         }
     }
 
@@ -475,9 +472,9 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         return Math.Clamp(offset, 0f, overflow);
     }
 
-    private void DrawCenteredStringRaw(string text, int x, int y, Color color)
+    private void DrawCenteredStringRaw(string text, int x, int y, Color color, UIBatchRenderer? batch = null)
     {
-        TextRenderer.DrawStringWithShadow(text, x - TextRenderer.GetStringWidth(text) / 2, y, color);
+        TextRenderer.DrawStringWithShadow(text, x - TextRenderer.GetStringWidth(text) / 2, y, color, batch: batch);
     }
 
     public void DrawSign(BlockEntitySign sign, float x, float y, float scale)

@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.UI;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using SixLabors.Fonts;
@@ -352,29 +353,23 @@ public class TextRenderer
         }
     }
 
-    public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
+    public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
     {
-        RenderString(text, x + 1, y + 1, color, true, align);
-        DrawString(text, x, y, color, align);
+        RenderString(text, x + 1, y + 1, color, true, align, batch);
+        DrawString(text, x, y, color, align, batch);
     }
 
-    public void DrawString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
+    public void DrawString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
     {
-        RenderString(text, x, y, color, false, align);
+        RenderString(text, x, y, color, false, align, batch);
     }
 
-    public void RenderString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, bool darken, HorizontalAlignment align)
+    public void RenderString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null)
     {
         if (text.IsEmpty) return;
 
         if (darken)
             color = color.Darken();
-
-        fontTextureName?.Bind();
-
-        Tessellator tessellator = Tessellator.instance;
-        tessellator.startDrawingQuads();
-        tessellator.setColorRGBA(color);
 
         float currentX = x;
         float currentY = y;
@@ -382,6 +377,41 @@ public class TextRenderer
         int width = GetStringWidth(text);
         if (align == HorizontalAlignment.Center) currentX -= width / 2;
         else if (align == HorizontalAlignment.Right) currentX -= width;
+
+        if (batch != null)
+        {
+            batch.SetTexture((uint)fontTextureName!.Id);
+            uint currentRgba = (uint)color;
+
+            for (int i = 0; i < text.Length; ++i)
+            {
+                for (; text.Length > i + 1 && text[i] == ColorCodeChar; i += 2)
+                {
+                    if (TryHexToDec(text[i + 1], out int colorCode))
+                        currentRgba = (uint)Guis.Color.FromColorCode(colorCode, (byte)color.A, darken);
+                }
+
+                if (i < text.Length)
+                {
+                    GlyphInfo glyph = GetOrCreateGlyph(text[i]);
+                    if (glyph.Width > 0 && glyph.Height > 0)
+                    {
+                        float w = glyph.Width * DisplayScale;
+                        float h = glyph.Height * DisplayScale;
+                        batch.AddQuad(currentX, currentY, currentX + w, currentY + h, glyph.U0, glyph.V0, glyph.U1, glyph.V1, currentRgba);
+                    }
+
+                    currentX = MathF.Floor(currentX + glyph.AdvanceWidth * DisplayScale);
+                }
+            }
+            return;
+        }
+
+        fontTextureName?.Bind();
+
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.setColorRGBA(color);
 
         for (int i = 0; i < text.Length; ++i)
         {
@@ -486,7 +516,7 @@ public class TextRenderer
         return text.Length;
     }
 
-    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, bool draw, ref int outHeight, HorizontalAlignment align)
+    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, bool draw, ref int outHeight, HorizontalAlignment align, UIBatchRenderer? batch = null)
     {
         if (text.IsEmpty) return;
 
@@ -519,7 +549,7 @@ public class TextRenderer
                 if (subline.Length > 0 || fitLength > 0)
                 {
                     if (draw && subline.Length > 0)
-                        DrawString(subline, x, currentY, color, align);
+                        DrawString(subline, x, currentY, color, align, batch);
                     currentY += lineHeight;
                     totalHeight += lineHeight;
                 }
@@ -534,10 +564,10 @@ public class TextRenderer
         outHeight = totalHeight;
     }
 
-    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
+    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
     {
         int dummyHeight = 0;
-        ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight, align);
+        ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight, align, batch);
     }
 
     public int GetStringHeight(ReadOnlySpan<char> text, int maxWidth)
