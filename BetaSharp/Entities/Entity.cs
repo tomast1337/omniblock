@@ -138,6 +138,8 @@ public abstract class Entity
 
     public virtual bool IsAlive => !Dead;
 
+    public virtual bool CanBeTargeted => IsAlive;
+
     public virtual float EyeHeight => 0.0F;
 
     public virtual bool HasCollision => false;

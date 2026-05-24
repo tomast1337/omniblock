@@ -77,6 +77,8 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override float AirSpeed => GameMode.DisallowFlying ? 0.02f : AirFlySpeedMult * 0.02f;
 
+    public override bool CanBeTargeted => IsAlive && GameMode.CanBeTargeted;
+
     protected override bool canBreatheUnderwater() => !GameMode.NeedsAir;
 
     protected void TickSleep()

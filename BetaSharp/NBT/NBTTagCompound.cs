@@ -180,6 +180,8 @@ public sealed class NBTTagCompound : NBTBase
         return GetByte(key) != 0;
     }
 
+    public bool RemoveTag(string key) => _dictionary.Remove(key);
+
     public override string ToString()
     {
         return $"{_dictionary.Count} entries";

@@ -1,10 +1,12 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
+using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Registries;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
 using BetaSharp.Server;
@@ -41,6 +43,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public ServerPlayerEntity(BetaSharpServer server, IWorldContext world, string name, ServerPlayerInteractionManager interactionManager) : base(world)
     {
+        GameModeHolder = server.DefaultGameMode;
         interactionManager.player = this;
         InteractionManager = interactionManager;
         Vec3i spawnPos = world.Properties.GetSpawnPos();
@@ -247,6 +250,33 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         NetworkHandler?.SendPacket(HealthUpdateS2CPacket.Get(Health));
         _lastHealthScore = Health;
+    }
+
+    protected override void ReadNbt(NBTTagCompound nbt)
+    {
+        base.ReadNbt(nbt);
+        if (nbt.HasKey("Gamemode"))
+        {
+            if (_server.RegistryAccess.GetOrThrow(RegistryKeys.GameModes).AsAssetLoader().TryGetHolder(nbt.GetString("Gamemode"), out Holder<GameMode>? holder))
+            {
+                GameModeHolder = holder;
+            }
+        }
+    }
+
+    protected override void WriteNbt(NBTTagCompound nbt)
+    {
+        base.WriteNbt(nbt);
+
+        // If default gamemode, clear stored gamemode in case the default gamemode is changed.
+        if (GameModeHolder.Value != _server.DefaultGameMode.Value)
+        {
+            nbt.SetString("Gamemode", GameModeHolder.Value.ToString());
+        }
+        else
+        {
+            nbt.RemoveTag("Gamemode");
+        }
     }
 
     private bool CanSendMoreChunkData() => NetworkHandler != null && NetworkHandler.getBlockDataSendQueueSize() < MaxChunkPackets;
