@@ -27,6 +27,19 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
         Root.AddChild(btnStopSleep);
     }
 
+    public override void Render(int mouseX, int mouseY, float partialTicks)
+    {
+        int alpha = (int)((1 - player.SleepAmount) * 255 + 0.5f);
+        if (alpha > 0)
+        {
+            Renderer.Begin();
+            Renderer.DrawRect(0, 0, Context.DisplayWidth, Context.DisplayHeight, new(0, 0, 0, alpha));
+            Renderer.End();
+        }
+
+        base.Render(mouseX, mouseY, partialTicks);
+    }
+
     public override void KeyTyped(int key, char character)
     {
         if (key == Input.Keyboard.KEY_ESCAPE)

@@ -81,6 +81,19 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override bool canBreatheUnderwater() => !GameMode.NeedsAir;
 
+    public float SleepAmount
+    {
+        get
+        {
+            if (!Sleeping)
+            {
+                return 0.0F;
+            }
+
+            return _sleepTimer / 100.0F;
+        }
+    }
+
     protected void TickSleep()
     {
         if (IsSleeping)
