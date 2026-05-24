@@ -312,8 +312,28 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
-        _batch.Flush();
-        itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+        bool isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[itemId].getRenderType());
+
+        if (isBlock3D)
+        {
+            _batch.Flush();
+            itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+            return;
+        }
+
+        if (textureId < 0) return;
+
+        TextureHandle texHandle = itemId < 256
+            ? TextureManager.GetTextureId("/terrain.png")
+            : TextureManager.GetTextureId("/gui/items.png");
+
+        int colorMultiplier = Item.ITEMS[itemId]!.getColorMultiplier(itemMeta);
+        float finalX = MathF.Floor(x + _translateX);
+        float finalY = MathF.Floor(y + _translateY);
+        float u0 = (textureId % 16 * 16) / 256f;
+        float v0 = (textureId / 16 * 16) / 256f;
+        _batch.SetTexture((uint)texHandle.Id);
+        _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, (uint)Color.FromRgb((uint)colorMultiplier));
     }
 
     public void DrawItem(ItemStack stack, float x, float y)
