@@ -12,7 +12,7 @@ public sealed class PigBbModelModel : BbModelEntityModel
     private readonly ModelPart _leg3;
     private readonly ModelPart _leg4;
 
-    public PigBbModelModel() : base("pig")
+    public PigBbModelModel(float inflationOffset = 0f) : base("pig", inflationOffset)
     {
         _head = GetPart("head");
         _body = GetPart("body");

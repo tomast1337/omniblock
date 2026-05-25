@@ -1,5 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Entities.BbModel;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
@@ -9,9 +10,9 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class CreeperEntityRenderer : LivingEntityRenderer
 {
 
-    private readonly ModelBase model = new ModelCreeper(2.0F);
+    private readonly ModelBase model = new CreeperBbModelModel(2.0F);
 
-    public CreeperEntityRenderer() : base(new ModelCreeper(), 0.5F)
+    public CreeperEntityRenderer() : base(new CreeperBbModelModel(), 0.5F)
     {
     }
 

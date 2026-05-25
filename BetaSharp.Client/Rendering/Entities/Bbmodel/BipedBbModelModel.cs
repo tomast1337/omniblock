@@ -5,23 +5,25 @@ namespace BetaSharp.Client.Rendering.Entities.BbModel;
 
 public class BipedBbModelModel : BbModelEntityModel
 {
-    protected readonly ModelPart BipedBody;
-    protected readonly ModelPart BipedHead;
-    protected readonly ModelPart BipedHeadwear;
-    protected readonly ModelPart BipedLeftArm;
-    protected readonly ModelPart BipedLeftLeg;
-    protected readonly ModelPart BipedRightArm;
-    protected readonly ModelPart BipedRightLeg;
+    public readonly ModelPart BipedBody;
+    public readonly ModelPart BipedHead;
+    public readonly ModelPart BipedHeadwear;
+    public readonly ModelPart BipedLeftArm;
+    public readonly ModelPart BipedLeftLeg;
+    public readonly ModelPart BipedRightArm;
+    public readonly ModelPart BipedRightLeg;
+    public readonly ModelPart BipedEars;
+    public readonly ModelPart BipedCloak;
     public bool Field1278I;
     public bool Field1279H;
 
     public bool IsSneak;
 
-    public BipedBbModelModel() : this("biped")
+    public BipedBbModelModel(float inflationOffset = 0f) : this("biped", inflationOffset)
     {
     }
 
-    protected BipedBbModelModel(string entityId) : base(entityId)
+    protected BipedBbModelModel(string entityId, float inflationOffset = 0f) : base(entityId, inflationOffset)
     {
         BipedHead = GetPart("bipedHead");
         BipedHeadwear = GetPart("bipedHeadwear");
@@ -30,6 +32,24 @@ public class BipedBbModelModel : BbModelEntityModel
         BipedLeftArm = GetPart("bipedLeftArm");
         BipedRightLeg = GetPart("bipedRightLeg");
         BipedLeftLeg = GetPart("bipedLeftLeg");
+        BipedEars = new ModelPart(24, 0);
+        BipedEars.addBox(-3.0f, -6.0f, -1.0f, 6, 6, 1, inflationOffset);
+        BipedCloak = new ModelPart(0, 0);
+        BipedCloak.addBox(-5.0f, 0.0f, -1.0f, 10, 16, 1, inflationOffset);
+    }
+
+    public void RenderEars(float scale)
+    {
+        BipedEars.rotateAngleY = BipedHead.rotateAngleY;
+        BipedEars.rotateAngleX = BipedHead.rotateAngleX;
+        BipedEars.rotationPointX = 0.0f;
+        BipedEars.rotationPointY = 0.0f;
+        BipedEars.render(scale);
+    }
+
+    public void RenderCloak(float scale)
+    {
+        BipedCloak.render(scale);
     }
 
     public override void setRotationAngles( float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)

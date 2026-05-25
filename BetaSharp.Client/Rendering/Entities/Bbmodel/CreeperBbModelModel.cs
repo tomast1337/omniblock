@@ -12,8 +12,8 @@ public sealed class CreeperBbModelModel : BbModelEntityModel
     private readonly ModelPart _leg3;
     private readonly ModelPart _leg4;
 
-    public CreeperBbModelModel()
-        : base("creeper")
+    public CreeperBbModelModel(float inflationOffset = 0f)
+        : base("creeper", inflationOffset)
     {
         _head = GetPart("head");
         _body = GetPart("body");

@@ -1,0 +1,110 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "modded_entity",
+		"box_uv": true
+	},
+	"name": "sign",
+	"resolution": {
+		"width": 64,
+		"height": 32
+	},
+	"elements": [
+		{
+			"name": "signBoard",
+			"type": "cube",
+			"uuid": "10000004-0000-4000-8000-000000000001",
+			"from": [-12, 26, -1],
+			"to": [12, 38, 1],
+			"autouv": 0,
+			"color": 0,
+			"origin": [0, 24, 0],
+			"uv_offset": [0, 0],
+			"rotation": [0, 0, 0],
+			"shade": true,
+			"visibility": true,
+			"export": true,
+			"inflate": 0,
+			"mirror_uv": false,
+			"faces": {
+				"north": {"uv": [0, 0, 0, 0], "texture": null},
+				"east": {"uv": [0, 0, 0, 0], "texture": null},
+				"south": {"uv": [0, 0, 0, 0], "texture": null},
+				"west": {"uv": [0, 0, 0, 0], "texture": null},
+				"up": {"uv": [0, 0, 0, 0], "texture": null},
+				"down": {"uv": [0, 0, 0, 0], "texture": null}
+			}
+		},
+		{
+			"name": "signStick",
+			"type": "cube",
+			"uuid": "10000004-0000-4000-8000-000000000002",
+			"from": [-1, 12, -1],
+			"to": [1, 26, 1],
+			"autouv": 0,
+			"color": 0,
+			"origin": [0, 24, 0],
+			"uv_offset": [0, 14],
+			"rotation": [0, 0, 0],
+			"shade": true,
+			"visibility": true,
+			"export": true,
+			"inflate": 0,
+			"mirror_uv": false,
+			"faces": {
+				"north": {"uv": [0, 0, 0, 0], "texture": null},
+				"east": {"uv": [0, 0, 0, 0], "texture": null},
+				"south": {"uv": [0, 0, 0, 0], "texture": null},
+				"west": {"uv": [0, 0, 0, 0], "texture": null},
+				"up": {"uv": [0, 0, 0, 0], "texture": null},
+				"down": {"uv": [0, 0, 0, 0], "texture": null}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "signBoard",
+			"origin": [0, 24, 0],
+			"rotation": [0, 0, 0],
+			"uuid": "20000004-0000-4000-8000-000000000001",
+			"shade": true,
+			"mirror_uv": false,
+			"reset": false,
+			"visibility": true,
+			"export": true,
+			"autouv": 0
+		},
+		{
+			"name": "signStick",
+			"origin": [0, 24, 0],
+			"rotation": [0, 0, 0],
+			"uuid": "20000004-0000-4000-8000-000000000002",
+			"shade": true,
+			"mirror_uv": false,
+			"reset": false,
+			"visibility": true,
+			"export": true,
+			"autouv": 0
+		}
+	],
+	"outliner": [
+		{"uuid": "20000004-0000-4000-8000-000000000001", "isOpen": true, "children": ["10000004-0000-4000-8000-000000000001"]},
+		{"uuid": "20000004-0000-4000-8000-000000000002", "isOpen": true, "children": ["10000004-0000-4000-8000-000000000002"]}
+	],
+	"textures": [
+		{
+			"name": "sign",
+			"path": "",
+			"relative_path": "../../textures/item/sign.png",
+			"folder": "block",
+			"namespace": "",
+			"id": "sign",
+			"uuid": "30000004-0000-4000-8000-000000000001",
+			"uv_width": 64,
+			"uv_height": 32,
+			"particle": false,
+			"use_as_default": true
+		}
+	],
+	"animation_variable_placeholders": ""
+}

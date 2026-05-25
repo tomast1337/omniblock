@@ -1,5 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.Models;
+using BetaSharp.Client.Rendering.Entities.BbModel;
 using BetaSharp.Entities;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -7,7 +7,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class SquidEntityRenderer : LivingEntityRenderer
 {
 
-    public SquidEntityRenderer(ModelBase mainModel, float shadowRadius) : base(mainModel, shadowRadius)
+    public SquidEntityRenderer(BbModelEntityModel mainModel, float shadowRadius) : base(mainModel, shadowRadius)
     {
     }
 

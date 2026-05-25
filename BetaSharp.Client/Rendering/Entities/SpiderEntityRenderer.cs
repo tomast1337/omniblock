@@ -1,6 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
-using BetaSharp.Client.Rendering.Entities.Models;
+using BetaSharp.Client.Rendering.Entities.BbModel;
 using BetaSharp.Entities;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -8,9 +8,9 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class SpiderEntityRenderer : LivingEntityRenderer
 {
 
-    public SpiderEntityRenderer() : base(new ModelSpider(), 1.0F)
+    public SpiderEntityRenderer() : base(new SpiderBbModelModel(), 1.0F)
     {
-        setRenderPassModel(new ModelSpider());
+        setRenderPassModel(new SpiderBbModelModel());
     }
 
     protected float setSpiderDeathMaxRotation(EntitySpider spiderEntity)
