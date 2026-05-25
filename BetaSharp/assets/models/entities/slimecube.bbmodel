@@ -1,0 +1,153 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "modded_entity",
+		"box_uv": true
+	},
+	"name": "slimecube",
+	"resolution": {
+		"width": 64,
+		"height": 32
+	},
+	"elements": [
+		{
+			"name": "slimeBodies",
+			"type": "cube",
+			"uuid": "c99c4d27-3907-4a76-91c3-7423739e5e63",
+			"from": [
+				-4,
+				0,
+				-4
+			],
+			"to": [
+				4,
+				8,
+				4
+			],
+			"autouv": 0,
+			"color": 0,
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"uv_offset": [
+				0,
+				0
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"shade": true,
+			"visibility": true,
+			"export": true,
+			"inflate": 0,
+			"mirror_uv": false,
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "slimeBodies",
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"uuid": "0ee91511-2760-45b1-a435-ce76f39f59f0",
+			"shade": true,
+			"mirror_uv": false,
+			"reset": false,
+			"visibility": true,
+			"export": true,
+			"autouv": 0
+		}
+	],
+	"outliner": [
+		{
+			"uuid": "0ee91511-2760-45b1-a435-ce76f39f59f0",
+			"isOpen": true,
+			"children": [
+				"c99c4d27-3907-4a76-91c3-7423739e5e63"
+			]
+		}
+	],
+	"textures": [
+		{
+			"name": "slimecube",
+			"path": "",
+			"relative_path": "../../textures/mob/slimecube.png",
+			"folder": "block",
+			"namespace": "",
+			"id": "slimecube",
+			"uuid": "a4488a8b-790d-4ced-b690-41d2f29ef0e0",
+			"uv_width": 64,
+			"uv_height": 32,
+			"particle": false,
+			"use_as_default": true
+		}
+	],
+	"animation_variable_placeholders": ""
+}

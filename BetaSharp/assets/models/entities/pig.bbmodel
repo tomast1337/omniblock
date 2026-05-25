@@ -1,0 +1,29 @@
+{
+	"meta": { "format_version": "4.10", "model_format": "modded_entity", "box_uv": true },
+	"name": "pig",
+	"resolution": { "width": 64, "height": 32 },
+	"elements": [
+		{ "name": "head", "type": "cube", "uuid": "ee000001-0000-0000-0000-010000000001", "from": [-4, 8, -14], "to": [4, 16, -6], "uv_offset": [0, 0], "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "body", "type": "cube", "uuid": "ee000001-0000-0000-0000-010000000002", "from": [-5, 7, -5], "to": [5, 23, 3], "uv_offset": [28, 8], "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg1", "type": "cube", "uuid": "ee000001-0000-0000-0000-010000000003", "from": [1, 0, 5], "to": [5, 6, 9], "uv_offset": [0, 16], "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg2", "type": "cube", "uuid": "ee000001-0000-0000-0000-010000000004", "from": [-5, 0, 5], "to": [-1, 6, 9], "uv_offset": [0, 16], "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg3", "type": "cube", "uuid": "ee000001-0000-0000-0000-010000000005", "from": [1, 0, -7], "to": [5, 6, -3], "uv_offset": [0, 16], "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg4", "type": "cube", "uuid": "ee000001-0000-0000-0000-010000000006", "from": [-5, 0, -7], "to": [-1, 6, -3], "uv_offset": [0, 16], "inflate": 0, "mirror_uv": false, "export": true }
+	],
+	"groups": [
+		{ "name": "head", "uuid": "gg000001-0000-0000-0000-010000000001", "origin": [0, 12, -6], "export": true },
+		{ "name": "body", "uuid": "gg000001-0000-0000-0000-010000000002", "origin": [0, 13, 2], "export": true },
+		{ "name": "leg1", "uuid": "gg000001-0000-0000-0000-010000000003", "origin": [3, 6, 7], "export": true },
+		{ "name": "leg2", "uuid": "gg000001-0000-0000-0000-010000000004", "origin": [-3, 6, 7], "export": true },
+		{ "name": "leg3", "uuid": "gg000001-0000-0000-0000-010000000005", "origin": [3, 6, -5], "export": true },
+		{ "name": "leg4", "uuid": "gg000001-0000-0000-0000-010000000006", "origin": [-3, 6, -5], "export": true }
+	],
+	"outliner": [
+		{ "uuid": "gg000001-0000-0000-0000-010000000001", "children": ["ee000001-0000-0000-0000-010000000001"] },
+		{ "uuid": "gg000001-0000-0000-0000-010000000002", "children": ["ee000001-0000-0000-0000-010000000002"] },
+		{ "uuid": "gg000001-0000-0000-0000-010000000003", "children": ["ee000001-0000-0000-0000-010000000003"] },
+		{ "uuid": "gg000001-0000-0000-0000-010000000004", "children": ["ee000001-0000-0000-0000-010000000004"] },
+		{ "uuid": "gg000001-0000-0000-0000-010000000005", "children": ["ee000001-0000-0000-0000-010000000005"] },
+		{ "uuid": "gg000001-0000-0000-0000-010000000006", "children": ["ee000001-0000-0000-0000-010000000006"] }
+	]
+}

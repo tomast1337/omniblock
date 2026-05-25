@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\BetaSharp\assets\models\entities\*.bbmodel" Link="assets\models\entities\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!--
