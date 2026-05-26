@@ -1,12 +1,11 @@
-﻿{
+{
     "lang": {
-        "name": "Lietuvių (Lietuva)",
-        "font": "unifont"
+        "name": "Lietuvių (Lietuva)"
     },
     "gui": {
         "joinServer": "Prisijungti prie serverio",
-        "edit": "Redaguoti",
         "rename": "Pervadinti",
+        "edit": "Redaguoti",
         "refresh": "Atnaujinti",
         "done": "Atlikta",
         "cancel": "Atšaukti",
@@ -57,10 +56,8 @@
         "select": "Žaisti pasirinktame pasaulyje",
         "create": "Sukurti naują pasaulį",
         "createDemo": "Žaisti naują demonstracinį pasaulį",
-        "rename": "Pervadinti",
         "deleteQuestion": "Ar tikrai norite ištrinti šį pasaulį?",
         "deleteWarning": "bus prarasta amžiams! (Ilgam laikui!)",
-        "renameButton": "Pervadinti",
         "renameTitle": "Pervadinti pasaulį",
         "conversion": "Turi būti konvertuotas!",
         "newWorld": "Naujas pasaulis",
@@ -153,25 +150,7 @@
             "crafted": "Pagaminta",
             "used": "Panaudota"
         },
-        "item": "Daiktas",
-        "done": "Atlikta"
-    },
-    "demo": {
-        "day": {
-            "1": "Ši demonstracija truks penkias žaidimo dienas, pasistenkite!",
-            "2": "Antra diena",
-            "3": "Trečia diena",
-            "4": "Ketvirta diena",
-            "5": "Tai jūsų paskutinė diena!",
-            "warning": "Jūsų laikas beveik baigėsi!",
-            "6": "Praėjote penktą dieną, naudokite F2, kad išsaugotumėte savo kūrinio ekrano kopiją"
-        },
-        "reminder": "Demonstracijos laikas baigėsi, nusipirkite žaidimą, kad tęstumėte, arba pradėkite naują pasaulį!",
-        "help": {
-            "movement": "Naudokite %1$s, %2$s, %3$s, %4$s ir pelę, kad judėtumėte",
-            "jump": "Šokinėkite paspaudę %1$s",
-            "inventory": "Naudokite %1$s, kad atidarytumėte inventorių"
-        }
+        "item": "Daiktas"
     },
     "connect": {
         "connecting": "Jungiamasi prie serverio...",
@@ -186,7 +165,6 @@
         "timeout": "Baigėsi laikas",
         "closed": "Ryšys uždarytas",
         "loginFailed": "Nepavyko prisijungti",
-        "loginFailedInfo": "Nepavyko prisijungti: %s",
         "quitting": "Išeinama",
         "endOfStream": "Srauto pabaiga",
         "overflow": "Buferio perpildymas"
@@ -251,8 +229,7 @@
             "text": "Debesų kokybė",
             "off": "Be debesų",
             "legacy": "Seni debesys",
-            "2d": "2D debesys",
-            "parallax": "Paralaksas %1$s"
+            "shader": "Šeideris"
         },
         "softClouds": {
             "text": "Minkšti debesys"
@@ -295,7 +272,39 @@
         },
         "editBindings": "Redaguoti klavišus...",
         "resetBindings": "Atkurti klavišus...",
-        "controllerBindings": "Pultelio mygtukai"
+        "controllerBindings": "Pultelio mygtukai",
+        "shader": {
+            "text": "Šeiderių nustatymai",
+            "cloud": {
+                "text": "Debesys",
+                "minParallax": "Minimalus paralaksas",
+                "maxParallax": "Maksimalus paralaksas",
+                "minGradient": "Minimalus gradientas",
+                "maxGradient": "Maksimalus gradientas",
+                "cloudHeight": "Debesų aukštis",
+                "shadow": "Šešėlio spalva",
+                "smoothWidth": "Švelninimo plotis",
+                "smoothSamples": "Švelninimo pavyzdžiai",
+                "closeFade": "Artimas išblukimas",
+                "smoothTop": "Švelni viršūnė",
+                "smoothEdge": "Švelnus kraštas",
+                "smoothBottom": "Švelni apačia",
+                "smoothBottomTopDown": "Švelni apačia (iš viršaus į apačią)"
+            },
+
+            "preset": {
+                "text": "Preset",
+                "disabled": "Disabled",
+                "default": "Default",
+                "custom": "Custom",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High",
+                "ultra": "Ultra"
+            }
+        }
     },
     "performance": {
         "max": "Maksimalus kadrų dažnis",
@@ -374,7 +383,9 @@
             "name": "Smėlis",
             "desc": ""
         },
-        "sandStone": { "name": "Smiltainis" },
+        "sandStone": {
+            "name": "Smiltainis"
+        },
         "gravel": {
             "name": "Žvyras",
             "desc": ""
@@ -1337,5 +1348,6 @@
             "title": "Kai kiaulės skraido",
             "desc": "Nuskriskite su kiaule nuo skardžio"
         }
-    }
+    },
+    "demo": {}
 }
