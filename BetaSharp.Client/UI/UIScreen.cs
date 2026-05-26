@@ -165,7 +165,6 @@ public abstract class UIScreen
 
     public virtual void Uninit()
     {
-        Renderer.Dispose();
         Keyboard.enableRepeatEvents(false);
     }
 

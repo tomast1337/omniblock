@@ -1521,7 +1521,9 @@ public partial class BetaSharp :
         Mouse.Flush();
         Keyboard.Flush();
         Controller.ClearEvents();
-        CurrentScreen?.Uninit();
+        UIScreen? oldScreen = CurrentScreen;
+        oldScreen?.Uninit();
+        oldScreen?.Renderer.Dispose();
 
         if (newScreen is MainMenuScreen)
         {
