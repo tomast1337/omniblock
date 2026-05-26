@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
-using BetaSharp.Client.Rendering.Entities.Models;
 
-namespace BetaSharp.Client.Rendering.Entities.BbModel;
+namespace BetaSharp.Client.Rendering.Entities.Models;
 
 public sealed class BbModelDocument
 {

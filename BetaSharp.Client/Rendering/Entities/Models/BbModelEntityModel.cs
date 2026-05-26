@@ -1,6 +1,4 @@
-using BetaSharp.Client.Rendering.Entities.Models;
-
-namespace BetaSharp.Client.Rendering.Entities.BbModel;
+namespace BetaSharp.Client.Rendering.Entities.Models;
 
 public class BbModelEntityModel : ModelBase
 {
@@ -22,12 +20,12 @@ public class BbModelEntityModel : ModelBase
 
     protected bool TryGetPart(string name, out ModelPart part) => _parts.TryGetValue(name, out part!);
 
-    public override void render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
+    public override void Render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
+        SetRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
         foreach (string boneName in _renderOrder)
         {
-            _parts[boneName].render(scale);
+            _parts[boneName].Render(scale);
         }
     }
 }

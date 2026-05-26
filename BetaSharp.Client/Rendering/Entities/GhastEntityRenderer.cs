@@ -1,5 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.BbModel;
+using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -7,7 +7,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class GhastEntityRenderer : LivingEntityRenderer
 {
 
-    public GhastEntityRenderer() : base(new GhastBbModelModel(), 0.5F)
+    public GhastEntityRenderer() : base(new ModelGhast(), 0.5F)
     {
     }
 

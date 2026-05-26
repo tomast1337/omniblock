@@ -28,6 +28,10 @@
     <None Include="..\BetaSharp\assets\models\entities\*.bbmodel" Link="assets\models\entities\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Rendering\Entities\Bbmodel\" />
+  </ItemGroup>
+
   <!--
     ImGuiImplGLFW.so has RUNPATH $ORIGIN and a NEEDED entry for "libglfw.so", but the
     bundled GLFW from ultz.native.glfw is named "libglfw.so.3". The OS dynamic linker

@@ -1,5 +1,5 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.BbModel;
+using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
@@ -8,7 +8,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class BoatEntityRenderer : EntityRenderer
 {
 
-    private readonly BoatBbModelModel _modelBoat = new();
+    private readonly ModelBoat _modelBoat = new();
 
     public BoatEntityRenderer()
     {
@@ -38,7 +38,7 @@ public class BoatEntityRenderer : EntityRenderer
         GLManager.GL.Scale(1.0F / modelScale, 1.0F / modelScale, 1.0F / modelScale);
         loadTexture("/item/boat.png");
         GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
-        _modelBoat.render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
+        _modelBoat.Render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
         GLManager.GL.PopMatrix();
     }
 

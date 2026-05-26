@@ -4,7 +4,7 @@ using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
-using BetaSharp.Client.Rendering.Entities.BbModel;
+using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
@@ -14,14 +14,14 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class PlayerEntityRenderer : LivingEntityRenderer
 {
 
-    private readonly BipedBbModelModel _modelBipedMain;
-    private readonly BipedBbModelModel _modelArmorChestplate = new(1.0F);
-    private readonly BipedBbModelModel _modelArmor = new(0.5F);
+    private readonly ModelBiped _modelBipedMain;
+    private readonly ModelBiped _armorChestplate = new(1.0F);
+    private readonly ModelBiped _armor = new(0.5F);
     private static readonly string[] s_armorFilenamePrefix = ["cloth", "chain", "iron", "diamond", "gold"];
 
-    public PlayerEntityRenderer() : base(new BipedBbModelModel(0.0F), 0.5F)
+    public PlayerEntityRenderer() : base(new ModelBiped(0.0F), 0.5F)
     {
-        _modelBipedMain = (BipedBbModelModel)mainModel;
+        _modelBipedMain = (ModelBiped)Main;
     }
 
     protected bool SetArmorModel(EntityPlayer playerEntity, int renderPass, float tickDelta)
@@ -33,14 +33,14 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             if (armorItem is ItemArmor armor)
             {
                 loadTexture("/armor/" + s_armorFilenamePrefix[armor.renderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
-                BipedBbModelModel armorModel = renderPass == 2 ? _modelArmor : _modelArmorChestplate;
-                armorModel.BipedHead.visible = renderPass == 0;
-                armorModel.BipedHeadwear.visible = renderPass == 0;
-                armorModel.BipedBody.visible = renderPass == 1 || renderPass == 2;
-                armorModel.BipedRightArm.visible = renderPass == 1;
-                armorModel.BipedLeftArm.visible = renderPass == 1;
-                armorModel.BipedRightLeg.visible = renderPass == 2 || renderPass == 3;
-                armorModel.BipedLeftLeg.visible = renderPass == 2 || renderPass == 3;
+                ModelBiped armorModel = renderPass == 2 ? _modelBipedMain : _armorChestplate;
+                armorModel.BipedHead.Visible = renderPass == 0;
+                armorModel.BipedHeadwear.Visible = renderPass == 0;
+                armorModel.BipedBody.Visible = renderPass == 1 || renderPass == 2;
+                armorModel.BipedRightArm.Visible = renderPass == 1;
+                armorModel.BipedLeftArm.Visible = renderPass == 1;
+                armorModel.BipedRightLeg.Visible = renderPass == 2 || renderPass == 3;
+                armorModel.BipedLeftLeg.Visible = renderPass == 2 || renderPass == 3;
                 setRenderPassModel(armorModel);
                 return true;
             }
@@ -52,8 +52,8 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     public void RenderPlayer(EntityPlayer playerEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         ItemStack heldItem = playerEntity.Inventory.ItemInHand;
-        _modelArmorChestplate.Field1278I = _modelArmor.Field1278I = _modelBipedMain.Field1278I = heldItem != null;
-        _modelArmorChestplate.IsSneak = _modelArmor.IsSneak = _modelBipedMain.IsSneak = playerEntity.IsSneaking();
+        _armorChestplate.Field1278I = _armor.Field1278I = _modelBipedMain.Field1278I = heldItem != null;
+        _armorChestplate.IsSneak = _armor.IsSneak = _modelBipedMain.IsSneak = playerEntity.IsSneaking();
         double renderY = y - playerEntity.StandingEyeHeight;
         if (playerEntity.IsSneaking() && playerEntity is not ClientPlayerEntity)
         {
@@ -61,8 +61,8 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         }
 
         base.DoRenderLiving(playerEntity, x, renderY, z, yaw, tickDelta);
-        _modelArmorChestplate.IsSneak = _modelArmor.IsSneak = _modelBipedMain.IsSneak = false;
-        _modelArmorChestplate.Field1278I = _modelArmor.Field1278I = _modelBipedMain.Field1278I = false;
+        _armorChestplate.IsSneak = _armor.IsSneak = _modelBipedMain.IsSneak = false;
+        _armorChestplate.Field1278I = _armor.Field1278I = _modelBipedMain.Field1278I = false;
     }
 
     protected void RenderName(EntityPlayer playerEntity, double x, double y, double z)
@@ -130,7 +130,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         if (helmetStack != null && helmetStack.getItem().id < 256)
         {
             GLManager.GL.PushMatrix();
-            _modelBipedMain.BipedHead.transform(1.0F / 16.0F);
+            _modelBipedMain.BipedHead.Transform(1.0F / 16.0F);
             if (BlockRenderer.IsSideLit(Block.Blocks[helmetStack.ItemId].getRenderType()))
             {
                 float helmetScale = 10.0F / 16.0F;
@@ -211,7 +211,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         if (heldItem != null)
         {
             GLManager.GL.PushMatrix();
-            _modelBipedMain.BipedRightArm.transform(1.0F / 16.0F);
+            _modelBipedMain.BipedRightArm.Transform(1.0F / 16.0F);
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             if (playerEntity.FishHook != null)
             {
@@ -265,9 +265,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     public void DrawFirstPersonHand()
     {
-        _modelBipedMain.onGround = 0.0F;
-        _modelBipedMain.setRotationAngles(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F / 16.0F);
-        _modelBipedMain.BipedRightArm.render(1.0F / 16.0F);
+        _modelBipedMain.OnGround = 0.0F;
+        _modelBipedMain.SetRotationAngles(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F / 16.0F);
+        _modelBipedMain.BipedRightArm.Render(1.0F / 16.0F);
     }
 
     protected void func_22016_b(EntityPlayer playerEntity, double x, double y, double z)

@@ -1,7 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.BbModel;
+using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 
@@ -9,7 +9,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 
 public class MinecartEntityRenderer : EntityRenderer
 {
-    private readonly MinecartBbModelModel _modelMinecart = new();
+    private readonly ModelMinecart _modelMinecart = new();
 
     public MinecartEntityRenderer()
     {
@@ -80,7 +80,7 @@ public class MinecartEntityRenderer : EntityRenderer
 
         loadTexture("/item/cart.png");
         GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
-        _modelMinecart.render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
+        _modelMinecart.Render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
         GLManager.GL.PopMatrix();
     }
 

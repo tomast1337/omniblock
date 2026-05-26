@@ -6,37 +6,32 @@ namespace BetaSharp.Client.Rendering.Entities.Models;
 
 public class ModelPart
 {
-    private PositionTextureVertex[] corners;
-    private Quad[] faces;
-    private readonly int textureOffsetX;
-    private readonly int textureOffsetY;
-    public float rotationPointX;
-    public float rotationPointY;
-    public float rotationPointZ;
-    public float rotateAngleX;
-    public float rotateAngleY;
-    public float rotateAngleZ;
-    private bool compiled;
-    private uint displayList;
-    public bool mirror = false;
-    public bool visible = true;
-    public bool hidden = false;
+    private PositionTextureVertex[] Corners;
+    private Quad[] Faces;
+    private readonly int TextureOffsetX;
+    private readonly int TextureOffsetY;
+    public float RotationPointX;
+    public float RotationPointY;
+    public float RotationPointZ;
+    public float RotateAngleX;
+    public float RotateAngleY;
+    public float RotateAngleZ;
+    private bool Compiled;
+    private uint DisplayList;
+    public bool Mirror = false;
+    public bool Visible = true;
+    public bool Hidden = false;
 
     public ModelPart(int textureOffsetX, int textureOffsetY)
     {
-        this.textureOffsetX = textureOffsetX;
-        this.textureOffsetY = textureOffsetY;
+        TextureOffsetX = textureOffsetX;
+        TextureOffsetY = textureOffsetY;
     }
 
-    public void addBox(float x, float y, float z, int width, int height, int depth)
+    public void AddBox(float x, float y, float z, int width, int height, int depth, float inflation)
     {
-        addBox(x, y, z, width, height, depth, 0.0F);
-    }
-
-    public void addBox(float x, float y, float z, int width, int height, int depth, float inflation)
-    {
-        corners = new PositionTextureVertex[8];
-        faces = new Quad[6];
+        Corners = new PositionTextureVertex[8];
+        Faces = new Quad[6];
 
         float minX = x - inflation;
         float minY = y - inflation;
@@ -45,7 +40,7 @@ public class ModelPart
         float maxY = y + height + inflation;
         float maxZ = z + depth + inflation;
 
-        if (mirror)
+        if (Mirror)
         {
             (maxX, minX) = (minX, maxX);
         }
@@ -60,204 +55,162 @@ public class ModelPart
         PositionTextureVertex backBottomRight = new(maxX, maxY, maxZ, 8.0F, 8.0F);
         PositionTextureVertex backBottomLeft = new(minX, maxY, maxZ, 8.0F, 0.0F);
 
-        corners[0] = frontTopLeft;
-        corners[1] = frontTopRight;
-        corners[2] = frontBottomRight;
-        corners[3] = frontBottomLeft;
-        corners[4] = backTopLeft;
-        corners[5] = backTopRight;
-        corners[6] = backBottomRight;
-        corners[7] = backBottomLeft;
+        Corners[0] = frontTopLeft;
+        Corners[1] = frontTopRight;
+        Corners[2] = frontBottomRight;
+        Corners[3] = frontBottomLeft;
+        Corners[4] = backTopLeft;
+        Corners[5] = backTopRight;
+        Corners[6] = backBottomRight;
+        Corners[7] = backBottomLeft;
 
-        faces[0] = new Quad(
+        Faces[0] = new Quad(
             [backTopRight, frontTopRight, frontBottomRight, backBottomRight],
-            this.textureOffsetX + depth + width,
-            this.textureOffsetY + depth,
-            this.textureOffsetX + depth + width + depth,
-            this.textureOffsetY + depth + height);
-        faces[1] = new Quad(
+            this.TextureOffsetX + depth + width,
+            this.TextureOffsetY + depth,
+            this.TextureOffsetX + depth + width + depth,
+            this.TextureOffsetY + depth + height);
+        Faces[1] = new Quad(
             [frontTopLeft, backTopLeft, backBottomLeft, frontBottomLeft],
-            this.textureOffsetX,
-            this.textureOffsetY + depth,
-            this.textureOffsetX + depth,
-            this.textureOffsetY + depth + height);
-        faces[2] = new Quad(
+            this.TextureOffsetX,
+            this.TextureOffsetY + depth,
+            this.TextureOffsetX + depth,
+            this.TextureOffsetY + depth + height);
+        Faces[2] = new Quad(
             [backTopRight, backTopLeft, frontTopLeft, frontTopRight],
-            this.textureOffsetX + depth,
-            this.textureOffsetY,
-            this.textureOffsetX + depth + width,
-            this.textureOffsetY + depth);
-        faces[3] = new Quad(
+            this.TextureOffsetX + depth,
+            this.TextureOffsetY,
+            this.TextureOffsetX + depth + width,
+            this.TextureOffsetY + depth);
+        Faces[3] = new Quad(
             [backBottomRight, backBottomLeft, frontBottomLeft, frontBottomRight],
-            this.textureOffsetX + depth + width,
-            this.textureOffsetY,
-            this.textureOffsetX + depth + width + width,
-            this.textureOffsetY + depth);
-        faces[4] = new Quad(
+            this.TextureOffsetX + depth + width,
+            this.TextureOffsetY,
+            this.TextureOffsetX + depth + width + width,
+            this.TextureOffsetY + depth);
+        Faces[4] = new Quad(
             [frontTopRight, frontTopLeft, frontBottomLeft, frontBottomRight],
-            this.textureOffsetX + depth,
-            this.textureOffsetY + depth,
-            this.textureOffsetX + depth + width,
-            this.textureOffsetY + depth + height);
-        faces[5] = new Quad(
+            this.TextureOffsetX + depth,
+            this.TextureOffsetY + depth,
+            this.TextureOffsetX + depth + width,
+            this.TextureOffsetY + depth + height);
+        Faces[5] = new Quad(
             [backTopLeft, backTopRight, backBottomRight, backBottomLeft],
-            this.textureOffsetX + depth + width + depth,
-            this.textureOffsetY + depth,
-            this.textureOffsetX + depth + width + depth + width,
-            this.textureOffsetY + depth + height);
+            this.TextureOffsetX + depth + width + depth,
+            this.TextureOffsetY + depth,
+            this.TextureOffsetX + depth + width + depth + width,
+            this.TextureOffsetY + depth + height);
 
-        if (mirror)
+        if (!Mirror) return;
+
+        for (int faceIndex = 0; faceIndex < Faces.Length; ++faceIndex)
         {
-            for (int faceIndex = 0; faceIndex < faces.Length; ++faceIndex)
+            Faces[faceIndex].flipFace();
+        }
+    }
+
+    public void SetRotationPoint(float x, float y, float z)
+    {
+        RotationPointX = x;
+        RotationPointY = y;
+        RotationPointZ = z;
+    }
+
+    public void Render(float scale)
+    {
+        if (Hidden) return;
+
+        if (!Visible) return;
+
+        if (!Compiled) CompileDisplayList(scale);
+
+        if (RotateAngleX == 0.0F && RotateAngleY == 0.0F && RotateAngleZ == 0.0F)
+        {
+            if (RotationPointX == 0.0F && RotationPointY == 0.0F && RotationPointZ == 0.0F)
             {
-                faces[faceIndex].flipFace();
+                GLManager.GL.CallList(DisplayList);
+            }
+            else
+            {
+                GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                GLManager.GL.CallList(DisplayList);
+                GLManager.GL.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
+            }
+        }
+        else
+        {
+            GLManager.GL.PushMatrix();
+            GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            if (RotateAngleZ != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+            }
+
+            if (RotateAngleY != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+            }
+
+            if (RotateAngleX != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+            }
+
+            GLManager.GL.CallList(DisplayList);
+            GLManager.GL.PopMatrix();
+        }
+    }
+
+    public void Transform(float scale)
+    {
+        if (Hidden) return;
+
+        if (!Visible) return;
+
+        if (!Compiled)
+        {
+            CompileDisplayList(scale);
+        }
+
+        if (RotateAngleX == 0.0F && RotateAngleY == 0.0F && RotateAngleZ == 0.0F)
+        {
+            if (RotationPointX != 0.0F || RotationPointY != 0.0F || RotationPointZ != 0.0F)
+            {
+                GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            }
+        }
+        else
+        {
+            GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            if (RotateAngleZ != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+            }
+
+            if (RotateAngleY != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+            }
+
+            if (RotateAngleX != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
             }
         }
     }
 
-    public void setRotationPoint(float x, float y, float z)
+    private void CompileDisplayList(float scale)
     {
-        rotationPointX = x;
-        rotationPointY = y;
-        rotationPointZ = z;
-    }
-
-    public void render(float scale)
-    {
-        if (!hidden)
-        {
-            if (visible)
-            {
-                if (!compiled)
-                {
-                    compileDisplayList(scale);
-                }
-
-                if (rotateAngleX == 0.0F && rotateAngleY == 0.0F && rotateAngleZ == 0.0F)
-                {
-                    if (rotationPointX == 0.0F && rotationPointY == 0.0F && rotationPointZ == 0.0F)
-                    {
-                        GLManager.GL.CallList(displayList);
-                    }
-                    else
-                    {
-                        GLManager.GL.Translate(rotationPointX * scale, rotationPointY * scale, rotationPointZ * scale);
-                        GLManager.GL.CallList(displayList);
-                        GLManager.GL.Translate(-rotationPointX * scale, -rotationPointY * scale, -rotationPointZ * scale);
-                    }
-                }
-                else
-                {
-                    GLManager.GL.PushMatrix();
-                    GLManager.GL.Translate(rotationPointX * scale, rotationPointY * scale, rotationPointZ * scale);
-                    if (rotateAngleZ != 0.0F)
-                    {
-                        GLManager.GL.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
-                    }
-
-                    if (rotateAngleY != 0.0F)
-                    {
-                        GLManager.GL.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
-                    }
-
-                    if (rotateAngleX != 0.0F)
-                    {
-                        GLManager.GL.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
-                    }
-
-                    GLManager.GL.CallList(displayList);
-                    GLManager.GL.PopMatrix();
-                }
-            }
-        }
-    }
-
-    public void renderWithRotation(float scale)
-    {
-        if (!hidden)
-        {
-            if (visible)
-            {
-                if (!compiled)
-                {
-                    compileDisplayList(scale);
-                }
-
-                GLManager.GL.PushMatrix();
-                GLManager.GL.Translate(rotationPointX * scale, rotationPointY * scale, rotationPointZ * scale);
-                if (rotateAngleY != 0.0F)
-                {
-                    GLManager.GL.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
-                }
-
-                if (rotateAngleX != 0.0F)
-                {
-                    GLManager.GL.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
-                }
-
-                if (rotateAngleZ != 0.0F)
-                {
-                    GLManager.GL.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
-                }
-
-                GLManager.GL.CallList(displayList);
-                GLManager.GL.PopMatrix();
-            }
-        }
-    }
-
-    public void transform(float scale)
-    {
-        if (!hidden)
-        {
-            if (visible)
-            {
-                if (!compiled)
-                {
-                    compileDisplayList(scale);
-                }
-
-                if (rotateAngleX == 0.0F && rotateAngleY == 0.0F && rotateAngleZ == 0.0F)
-                {
-                    if (rotationPointX != 0.0F || rotationPointY != 0.0F || rotationPointZ != 0.0F)
-                    {
-                        GLManager.GL.Translate(rotationPointX * scale, rotationPointY * scale, rotationPointZ * scale);
-                    }
-                }
-                else
-                {
-                    GLManager.GL.Translate(rotationPointX * scale, rotationPointY * scale, rotationPointZ * scale);
-                    if (rotateAngleZ != 0.0F)
-                    {
-                        GLManager.GL.Rotate(rotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
-                    }
-
-                    if (rotateAngleY != 0.0F)
-                    {
-                        GLManager.GL.Rotate(rotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
-                    }
-
-                    if (rotateAngleX != 0.0F)
-                    {
-                        GLManager.GL.Rotate(rotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
-                    }
-                }
-            }
-        }
-    }
-
-    private void compileDisplayList(float scale)
-    {
-        displayList = (uint)GLAllocation.generateDisplayLists(1);
-        GLManager.GL.NewList(displayList, GLEnum.Compile);
+        DisplayList = (uint)GLAllocation.generateDisplayLists(1);
+        GLManager.GL.NewList(DisplayList, GLEnum.Compile);
         Tessellator tessellator = Tessellator.instance;
 
-        for (int faceIndex = 0; faceIndex < faces.Length; ++faceIndex)
+        for (int faceIndex = 0; faceIndex < Faces.Length; ++faceIndex)
         {
-            faces[faceIndex].draw(tessellator, scale);
+            Faces[faceIndex].draw(tessellator, scale);
         }
 
         GLManager.GL.EndList();
-        compiled = true;
+        Compiled = true;
     }
 }

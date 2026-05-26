@@ -1,6 +1,4 @@
-using BetaSharp.Client.Rendering.Entities.Models;
-
-namespace BetaSharp.Client.Rendering.Entities.BbModel;
+namespace BetaSharp.Client.Rendering.Entities.Models;
 
 public static class BbModelModelBuilder
 {
@@ -85,10 +83,10 @@ public static class BbModelModelBuilder
     {
         ModelPart part = new(geometry.UvU, geometry.UvV)
         {
-            mirror = geometry.Mirror
+            Mirror = geometry.Mirror
         };
-        part.addBox(geometry.BoxX, geometry.BoxY, geometry.BoxZ, geometry.SizeX, geometry.SizeY, geometry.SizeZ, geometry.Inflate);
-        part.setRotationPoint(geometry.PivotX, geometry.PivotY, geometry.PivotZ);
+        part.AddBox(geometry.BoxX, geometry.BoxY, geometry.BoxZ, geometry.SizeX, geometry.SizeY, geometry.SizeZ, geometry.Inflate);
+        part.SetRotationPoint(geometry.PivotX, geometry.PivotY, geometry.PivotZ);
         return part;
     }
 }

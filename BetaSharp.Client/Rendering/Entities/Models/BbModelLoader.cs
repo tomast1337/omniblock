@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Client.Rendering.Entities.BbModel;
+namespace BetaSharp.Client.Rendering.Entities.Models;
 
 public static class BbModelLoader
 {
