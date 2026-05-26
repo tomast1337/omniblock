@@ -229,8 +229,7 @@
             "text": "Clouds Quality",
             "off": "No Clouds",
             "legacy": "Old Clouds",
-            "2d": "2D Clouds",
-            "parallax": "Parallax %1$s"
+            "shader": "Shader"
         },
         "softClouds": {
             "text": "Soft Clouds"
@@ -273,7 +272,38 @@
         },
         "editBindings": "Edit Bindings...",
         "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings"
+        "controllerBindings": "Controller Bindings",
+        "shader": {
+            "text": "Shader Options",
+            "cloud": {
+                "text": "Clouds",
+                "minParallax": "Min Parallax",
+                "maxParallax": "Max Parallax",
+                "minGradient": "Min Gradient",
+                "maxGradient": "Max Gradient",
+                "cloudHeight": "Cloud Height",
+                "shadow": "Shadow Color",
+                "smoothWidth": "Smooth Width",
+                "smoothSamples": "Smooth Samples",
+                "closeFade": "Close Fade",
+                "smoothTop": "Smooth Top",
+                "smoothEdge": "Smooth Edge",
+                "smoothBottom": "Smooth Bottom",
+                "smoothBottomTopDown": "Smooth Bottom Top Down"
+            },
+            "preset": {
+                "text": "Preset",
+                "disabled": "Disabled",
+                "default": "Default",
+                "custom": "Custom",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High",
+                "ultra": "Ultra"
+            }
+        }
     },
     "performance": {
         "max": "Max FPS",

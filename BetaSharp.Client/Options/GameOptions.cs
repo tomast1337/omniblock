@@ -31,8 +31,7 @@ public class GameOptions
     [
         "options.cloudsQuality.legacy",
         "options.cloudsQuality.off",
-        "options.cloudsQuality.2d",
-        "options.cloudsQuality.parallax"
+        "options.cloudsQuality.shader",
     ];
 
     private static readonly string[] AnisoLabels = ["options.off", "2x", "4x", "8x", "16x"];
@@ -180,6 +179,8 @@ public class GameOptions
 
     public event Action ReloadTextures;
     public event Action ReloadChunks;
+
+    public ShaderOptionsRegistry ShaderOptions { get; } = new();
 
     public GameOptions(BetaSharp game, string gameDataDir)
     {
@@ -366,11 +367,7 @@ public class GameOptions
             Steps = 64,
             Formatter = (f, _) => $"{(int)(f * 64 + 32f)}"
         };
-        CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", CloudsQualityLabels, 4, 7)
-        {
-            Formatter = (v, t) =>
-                t.TranslateKeyFormat(v < CloudsQualityOption.Labels.Length ? CloudsQualityOption.Labels[v] : CloudsQualityOption.Labels.Last(), v - 2)
-        };
+        CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", CloudsQualityLabels, 2);
         SoftCloudsOption = new BoolOption("options.softClouds.text", "softClouds", true);
         DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
         GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
@@ -500,6 +497,14 @@ public class GameOptions
             return;
         }
 
+        if (key.StartsWith("shaderOpt_", StringComparison.Ordinal))
+        {
+            string rest = key["shaderOpt_".Length..];
+            int dot = rest.IndexOf('.');
+            if (dot > 0) ShaderOptions.Load(rest[..dot], rest[(dot + 1)..], value);
+            return;
+        }
+
         switch (key)
         {
             case "skin": Skin = value; break;
@@ -552,6 +557,9 @@ public class GameOptions
             {
                 writer.WriteLine($"{option.SaveKey}:{option.Save()}");
             }
+
+            foreach ((string key, string val) in ShaderOptions.Save())
+                writer.WriteLine($"{key}:{val}");
 
             writer.WriteLine($"skin:{Skin}");
             writer.WriteLine($"advancedItemTooltips:{AdvancedItemTooltips.ToString().ToLower()}");

@@ -45,10 +45,10 @@ public class WorldRenderer : IWorldEventListener
     private readonly Shader _skyShader;
     private readonly int _skyShaderMvLoc;
     private readonly int _skyShaderProjLoc;
-    private readonly Shader _cloudShader;
-    private readonly int _cloudShaderMvLoc;
-    private readonly int _cloudShaderProjLoc;
-    private readonly int _cloudShaderTexMatLoc;
+    private Shader _cloudShader;
+    private int _cloudShaderMvLoc;
+    private int _cloudShaderProjLoc;
+    private int _cloudShaderTexMatLoc;
     private Vector3D<float> _fogColor;
     private int _cloudsQuality = -1;
 
@@ -56,6 +56,7 @@ public class WorldRenderer : IWorldEventListener
     {
         _game = gameInstance;
         _textureManager = textureManager;
+        _game.Options.ShaderOptions.GetOrCreate("cloud").Changed += BuildCloudShader;
 
         _starGLCallList = GLAllocation.generateDisplayLists(3);
         GLManager.GL.PushMatrix();
@@ -113,10 +114,7 @@ public class WorldRenderer : IWorldEventListener
         _skyShaderMvLoc = _skyShader.GetUniformLocation("u_ModelView");
         _skyShaderProjLoc = _skyShader.GetUniformLocation("u_Projection");
 
-        _cloudShader = new Shader(AssetManager.Instance.getAsset("shaders/cloud.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/cloud.frag").GetTextContent());
-        _cloudShaderMvLoc = _cloudShader.GetUniformLocation("u_ModelView");
-        _cloudShaderProjLoc = _cloudShader.GetUniformLocation("u_Projection");
-        _cloudShaderTexMatLoc = _cloudShader.GetUniformLocation("u_TextureMatrix");
+        BuildCloudShader();
     }
 
     private void OnCloudsQualityChanged()
@@ -129,6 +127,19 @@ public class WorldRenderer : IWorldEventListener
         }
 
         _cloudsQuality = _game.Options.CloudsQuality;
+    }
+
+    private void BuildCloudShader()
+    {
+        _cloudShader?.Dispose();
+        string vert = AssetManager.Instance.getAsset("shaders/cloud.vert").GetTextContent();
+        string frag = AssetManager.Instance.getAsset("shaders/cloud.frag").GetTextContent();
+        ShaderOptionSet opts = _game.Options.ShaderOptions.GetOrCreate("cloud");
+        opts.Parse(frag);
+        _cloudShader = new Shader(vert, opts.Inject(frag));
+        _cloudShaderMvLoc = _cloudShader.GetUniformLocation("u_ModelView");
+        _cloudShaderProjLoc = _cloudShader.GetUniformLocation("u_Projection");
+        _cloudShaderTexMatLoc = _cloudShader.GetUniformLocation("u_TextureMatrix");
     }
 
     public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
@@ -632,11 +643,11 @@ public class WorldRenderer : IWorldEventListener
 
         _cloudShader.Bind();
         _cloudShader.SetUniform1("u_Texture", 0);
-        _cloudShader.SetUniform3("u_FogColor", _fogColor);
+        //_cloudShader.SetUniform3("u_FogColor", _fogColor);
         _cloudShader.SetUniform1("u_FogStart", ChunkRenderer.FogStart);
         _cloudShader.SetUniform1("u_FogEnd", ChunkRenderer.FogEnd);
         _cloudShader.SetUniform3("u_CloudOffset", new Vector3D<float>(-subCloudOffsetX, cloudY, -subCloudOffsetZ));
-        _cloudShader.SetUniform1("u_CloudScale", cloudScale);
+        _cloudShader.SetUniform1("u_CloudScale", cloudScale / 2f);
         _cloudShader.SetUniform1("u_Quality", _game.Options.CloudsQuality - 2);
         GLManager.GL.BeginExternalShader(_cloudShaderMvLoc, _cloudShaderProjLoc, _cloudShaderTexMatLoc);
 

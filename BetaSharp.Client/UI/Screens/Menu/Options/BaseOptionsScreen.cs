@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -186,17 +187,60 @@ public abstract class BaseOptionsScreen(
                 floatOpt.Set(v);
                 slider.Text = option.GetDisplayString(translations);
             };
+            slider.OnMouseDown += (e) =>
+            {
+                if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.scanCode))
+                {
+                    option.Reset();
+                    slider.Value = floatOpt.Value;
+                    slider.Text = option.GetDisplayString(translations);
+                }
+            };
+            return slider;
+        }
+        else if (option is ShaderRangeOption rangeOpt)
+        {
+            Slider slider = CreateSlider();
+            slider.Value = rangeOpt.NormalizedValue;
+            slider.Text = option.GetDisplayString(translations);
+            slider.OnValueChanged += v =>
+            {
+                rangeOpt.SetNormalized(v);
+                slider.Text = option.GetDisplayString(translations);
+            };
+            slider.OnMouseDown += (e) =>
+            {
+                if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.scanCode))
+                {
+                    option.Reset();
+                    slider.Value = rangeOpt.NormalizedValue;
+                    slider.Text = option.GetDisplayString(translations);
+                }
+            };
             return slider;
         }
         else
         {
             Button btn = CreateButton();
             btn.Text = option.GetDisplayString(translations);
-            btn.OnClick += (e) =>
+            btn.OnMouseDown += (e) =>
             {
-                if (option is BoolOption boolOpt) boolOpt.Toggle();
-                else if (option is CycleOption cycleOpt) cycleOpt.Cycle();
-
+                if (Keyboard.isKeyDown(Options.KeyBindSneak.scanCode))
+                {
+                    option.Reset();
+                }
+                else if (e.Button == MouseButton.Right)
+                {
+                    if (option is CycleOption cycleOpt) cycleOpt.Cycle(-1);
+                    else if (option is ShaderConstOption shaderOpt) shaderOpt.Cycle(-1);
+                }
+                else if (e.Button == MouseButton.Left)
+                {
+                    if (option is BoolOption boolOpt) boolOpt.Toggle();
+                    else if (option is CycleOption cycleOpt) cycleOpt.Cycle();
+                    else if (option is ShaderConstOption shaderOpt) shaderOpt.Cycle();
+                    else if (option is NavigationOption navOpt) navOpt.Execute();
+                }
                 btn.Text = option.GetDisplayString(translations);
             };
             return btn;

@@ -5,7 +5,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.videoTitle")
 {
-    protected override List<OptionSection> GetOptions() => [
+    protected override List<OptionSection> GetOptions() =>
+    [
         new(TranslationStorage.Instance.TranslateKey("options.video.performance"), [
             Options.RenderDistanceOption,
             Options.FramerateLimitOption,
@@ -14,7 +15,9 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
             Options.MipmapsOption,
             Options.AnisotropicOption,
             Options.CloudsQualityOption,
-            Options.SoftCloudsOption
+            Options.SoftCloudsOption,
+            new NavigationOption("options.shader.text",
+                () => Context.Navigator.Navigate(new ShaderOptionsScreen(Context, this)))
         ]),
 
         new(TranslationStorage.Instance.TranslateKey("options.video.display"), [
