@@ -65,6 +65,7 @@ public sealed class UIBatchRenderer : IDisposable
 
     public void SetTexture(uint texId)
     {
+        if (texId == 0) { SetNoTexture(); return; }
         if (_useTexture && _currentTextureId == texId) return;
         Flush();
         _currentTextureId = texId;

@@ -13,7 +13,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace BetaSharp.Client.Rendering;
 
-public class TextRenderer
+public class TextRenderer : IDisposable
 {
     private readonly ILogger<TextRenderer> _logger = Log.Instance.For<TextRenderer>();
 
@@ -207,6 +207,12 @@ public class TextRenderer
     {
         ApplyFontForLanguage();
     }
+
+    public void Dispose()
+    {
+        TranslationStorage.LanguageChanged -= ReloadForLanguage;
+    }
+
     private static void ClearAtlasRegion(Image<Rgba32> image, int x, int y, int w, int h)
     {
         image.Mutate(ctx => ctx.Fill(SixLabors.ImageSharp.Color.Transparent, new Rectangle(x, y, w, h)));

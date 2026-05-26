@@ -19,7 +19,7 @@ using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
 namespace BetaSharp.Client.UI.Rendering;
 
-public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize)
+public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize) : IDisposable
 {
     public TextureManager TextureManager { get; } = textureManager;
     public TextRenderer TextRenderer { get; } = textRenderer;
@@ -59,6 +59,8 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.PopMatrix();
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
+
+    public void Dispose() => _batch.Dispose();
 
     public void PushColor(Color color)
     {
@@ -263,6 +265,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     public void DrawBoundTexture(float x, float y, float width, float height)
     {
         _batch.Flush();
+        GLManager.GL.Enable(GLEnum.Blend);
         Tessellator tess = Tessellator.instance;
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
@@ -403,7 +406,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
             int barColor = (255 - damageColor) << 16 | damageColor << 8;
             int bgColor = (255 - damageColor) / 4 << 16 | 16128;
 
-            _batch.AddColoredQuad(bx + 2, by + 13, 13, 2, (uint)Color.FromRgb(0));
+            _batch.AddColoredQuad(bx + 2, by + 13, 13, 1, (uint)Color.FromRgb(0));
             _batch.AddColoredQuad(bx + 2, by + 13, 12, 1, (uint)Color.FromRgb((uint)bgColor));
             _batch.AddColoredQuad(bx + 2, by + 13, barWidth, 1, (uint)Color.FromRgb((uint)barColor));
         }
