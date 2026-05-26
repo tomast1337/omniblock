@@ -141,10 +141,10 @@ public class TextRenderer
             uniPath = UnifontPath;
 
         if (!File.Exists(monoPath))
-            throw new InvalidOperationException($"Monocraft font not found at {monoPath}");
+            throw new FileNotFoundException("Monocraft font not found", monoPath);
 
         if (!File.Exists(uniPath))
-            throw new InvalidOperationException($"Unifont font not found at {uniPath}");
+            throw new FileNotFoundException("Unifont font not found", uniPath);
 
         var collection = new FontCollection();
         _monoFamily = collection.AddCollection(monoPath).First();
