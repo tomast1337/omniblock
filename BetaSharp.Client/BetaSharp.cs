@@ -178,6 +178,7 @@ public partial class BetaSharp :
 
     private bool _hasCrashed;
     private bool _isTakingScreenshot;
+    private bool _imguiSizePatchLogged;
 
     private int _leftClickCounter;
     private int _tempDisplayWidth;
@@ -599,6 +600,35 @@ public partial class BetaSharp :
                     {
                         ImGuiImplOpenGL3.NewFrame();
                         ImGuiImplGLFW.NewFrame();
+
+                        // On Linux/Wayland, glfwGetWindowSize() permanently returns (0,0) on some
+                        // compositor configurations, leaving io.DisplaySize at (0,0). Patch it here —
+                        // after ImGuiImplGLFW.NewFrame() writes the broken value but before
+                        // ImGui.NewFrame() bakes it into all viewport and clip-rect calculations.
+                        unsafe
+                        {
+                            ImGuiIO* io = ImGui.GetIO();
+                            if (io->DisplaySize.X < 100 || io->DisplaySize.Y < 100)
+                            {
+                                int w = Display.getWidth();
+                                int h = Display.getHeight();
+                                if (w >= 100 && h >= 100)
+                                {
+                                    if (!_imguiSizePatchLogged)
+                                    {
+                                        _logger.LogWarning(
+                                            "GLFW reports io.DisplaySize=({iw},{ih}); patching to ({w},{h}). " +
+                                            "Likely cause: glfwGetWindowSize returns 0 on this Wayland compositor.",
+                                            io->DisplaySize.X, io->DisplaySize.Y, w, h);
+                                        _imguiSizePatchLogged = true;
+                                    }
+                                    io->DisplaySize = new Vector2(w, h);
+                                    if (io->DisplayFramebufferScale.X <= 0 || io->DisplayFramebufferScale.Y <= 0)
+                                        io->DisplayFramebufferScale = Vector2.One;
+                                }
+                            }
+                        }
+
                         ImGui.NewFrame();
                         ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard && !_debugWindowManager.GameViewportFocused;
                     }
