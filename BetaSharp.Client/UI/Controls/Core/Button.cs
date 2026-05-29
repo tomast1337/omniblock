@@ -62,7 +62,8 @@ public class Button : UIElement
         renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, vStart, ComputedWidth / 2, ComputedHeight, ComputedWidth / 2, uvHeight);
 
         Color tColor = !Enabled ? Color.GrayA0 : (IsHovered ? HoverTextColor : TextColor);
-        renderer.DrawCenteredText(Text, ComputedWidth / 2, (float)Math.Floor(ComputedHeight / 2) - 4, tColor);
+        float textY = (float)Math.Floor(ComputedHeight / 2.0) - 4;
+        renderer.DrawScrollingCenteredText(Text, (int)ComputedWidth, (int)ComputedHeight, textY, tColor);
 
         base.Render(renderer);
     }
