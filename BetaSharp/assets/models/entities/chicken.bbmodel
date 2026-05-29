@@ -1,0 +1,35 @@
+{
+	"meta": { "format_version": "4.10", "model_format": "modded_entity", "box_uv": true },
+	"name": "chicken",
+	"resolution": { "width": 64, "height": 32 },
+	"elements": [
+		{ "name": "head",      "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000001", "from": [-2, 9, -6],  "to": [2, 15, -3],  "uv_offset": [0, 0],   "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "bill",      "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000002", "from": [-2, 11, -8], "to": [2, 13, -6],  "uv_offset": [14, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "chin",      "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000003", "from": [-1, 9, -7],  "to": [1, 11, -5],  "uv_offset": [14, 4],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "body",      "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000004", "from": [-3, 4, -3],  "to": [3, 12, 3],   "uv_offset": [0, 9],   "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "rightLeg",  "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000005", "from": [0, 0, -2],   "to": [3, 5, 1],    "uv_offset": [26, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leftLeg",   "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000006", "from": [-3, 0, -2],  "to": [0, 5, 1],    "uv_offset": [26, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "rightWing", "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000007", "from": [3, 7, -3],   "to": [4, 11, 3],   "uv_offset": [24, 13], "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leftWing",  "type": "cube", "uuid": "ee000001-0000-0000-0000-030000000008", "from": [-4, 7, -3],  "to": [-3, 11, 3],  "uv_offset": [24, 13], "inflate": 0, "mirror_uv": false, "export": true }
+	],
+	"groups": [
+		{ "name": "head",      "uuid": "gg000001-0000-0000-0000-030000000001", "origin": [0, 9, -4],   "export": true },
+		{ "name": "bill",      "uuid": "gg000001-0000-0000-0000-030000000002", "origin": [0, 9, -4],   "export": true },
+		{ "name": "chin",      "uuid": "gg000001-0000-0000-0000-030000000003", "origin": [0, 9, -4],   "export": true },
+		{ "name": "body",      "uuid": "gg000001-0000-0000-0000-030000000004", "origin": [0, 8, 0],    "export": true },
+		{ "name": "rightLeg",  "uuid": "gg000001-0000-0000-0000-030000000005", "origin": [2, 5, 1],    "export": true },
+		{ "name": "leftLeg",   "uuid": "gg000001-0000-0000-0000-030000000006", "origin": [-1, 5, 1],   "export": true },
+		{ "name": "rightWing", "uuid": "gg000001-0000-0000-0000-030000000007", "origin": [4, 11, 0],   "export": true },
+		{ "name": "leftWing",  "uuid": "gg000001-0000-0000-0000-030000000008", "origin": [-4, 11, 0],  "export": true }
+	],
+	"outliner": [
+		{ "uuid": "gg000001-0000-0000-0000-030000000001", "children": ["ee000001-0000-0000-0000-030000000001"] },
+		{ "uuid": "gg000001-0000-0000-0000-030000000002", "children": ["ee000001-0000-0000-0000-030000000002"] },
+		{ "uuid": "gg000001-0000-0000-0000-030000000003", "children": ["ee000001-0000-0000-0000-030000000003"] },
+		{ "uuid": "gg000001-0000-0000-0000-030000000004", "children": ["ee000001-0000-0000-0000-030000000004"] },
+		{ "uuid": "gg000001-0000-0000-0000-030000000005", "children": ["ee000001-0000-0000-0000-030000000005"] },
+		{ "uuid": "gg000001-0000-0000-0000-030000000006", "children": ["ee000001-0000-0000-0000-030000000006"] },
+		{ "uuid": "gg000001-0000-0000-0000-030000000007", "children": ["ee000001-0000-0000-0000-030000000007"] },
+		{ "uuid": "gg000001-0000-0000-0000-030000000008", "children": ["ee000001-0000-0000-0000-030000000008"] }
+	]
+}

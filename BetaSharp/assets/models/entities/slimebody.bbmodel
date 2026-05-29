@@ -1,0 +1,510 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "modded_entity",
+		"box_uv": true
+	},
+	"name": "slimebody",
+	"resolution": {
+		"width": 64,
+		"height": 32
+	},
+	"elements": [
+		{
+			"name": "slimeBodies",
+			"type": "cube",
+			"uuid": "50c90572-2608-499c-9885-d96885a4aea3",
+			"from": [
+				-3,
+				1,
+				-3
+			],
+			"to": [
+				3,
+				7,
+				3
+			],
+			"autouv": 0,
+			"color": 0,
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"uv_offset": [
+				0,
+				16
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"shade": true,
+			"visibility": true,
+			"export": true,
+			"inflate": 0,
+			"mirror_uv": false,
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				}
+			}
+		},
+		{
+			"name": "slimeRightEye",
+			"type": "cube",
+			"uuid": "ab18dd1c-99c0-47f6-9d02-b67e46957f1d",
+			"from": [
+				1.25,
+				4,
+				-3.5
+			],
+			"to": [
+				3.25,
+				6,
+				-1.5
+			],
+			"autouv": 0,
+			"color": 0,
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"uv_offset": [
+				32,
+				0
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"shade": true,
+			"visibility": true,
+			"export": true,
+			"inflate": 0,
+			"mirror_uv": false,
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				}
+			}
+		},
+		{
+			"name": "slimeLeftEye",
+			"type": "cube",
+			"uuid": "7ec65137-28a6-49bf-aa13-3892eef4cfb9",
+			"from": [
+				-3.25,
+				4,
+				-3.5
+			],
+			"to": [
+				-1.25,
+				6,
+				-1.5
+			],
+			"autouv": 0,
+			"color": 0,
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"uv_offset": [
+				32,
+				4
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"shade": true,
+			"visibility": true,
+			"export": true,
+			"inflate": 0,
+			"mirror_uv": false,
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				}
+			}
+		},
+		{
+			"name": "slimeMouth",
+			"type": "cube",
+			"uuid": "2bcd478a-99c7-4e94-af41-7334d031c8ae",
+			"from": [
+				-1,
+				2,
+				-3.5
+			],
+			"to": [
+				0,
+				3,
+				-2.5
+			],
+			"autouv": 0,
+			"color": 0,
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"uv_offset": [
+				32,
+				8
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"shade": true,
+			"visibility": true,
+			"export": true,
+			"inflate": 0,
+			"mirror_uv": false,
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						0,
+						0
+					],
+					"texture": null
+				}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "slimeBodies",
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"uuid": "08f2f643-3d6d-4f9b-82e0-2f89b13bb060",
+			"shade": true,
+			"mirror_uv": false,
+			"reset": false,
+			"visibility": true,
+			"export": true,
+			"autouv": 0
+		},
+		{
+			"name": "slimeRightEye",
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"uuid": "6c25c8a5-9300-4a62-a905-0a20c731f444",
+			"shade": true,
+			"mirror_uv": false,
+			"reset": false,
+			"visibility": true,
+			"export": true,
+			"autouv": 0
+		},
+		{
+			"name": "slimeLeftEye",
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"uuid": "21a76b8c-1600-40fd-985a-acdbf0ae7d6c",
+			"shade": true,
+			"mirror_uv": false,
+			"reset": false,
+			"visibility": true,
+			"export": true,
+			"autouv": 0
+		},
+		{
+			"name": "slimeMouth",
+			"origin": [
+				0,
+				24,
+				0
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"uuid": "428a9d5f-c3f1-4a08-a9f7-887c4cc5c2b9",
+			"shade": true,
+			"mirror_uv": false,
+			"reset": false,
+			"visibility": true,
+			"export": true,
+			"autouv": 0
+		}
+	],
+	"outliner": [
+		{
+			"uuid": "08f2f643-3d6d-4f9b-82e0-2f89b13bb060",
+			"isOpen": true,
+			"children": [
+				"50c90572-2608-499c-9885-d96885a4aea3"
+			]
+		},
+		{
+			"uuid": "6c25c8a5-9300-4a62-a905-0a20c731f444",
+			"isOpen": true,
+			"children": [
+				"ab18dd1c-99c0-47f6-9d02-b67e46957f1d"
+			]
+		},
+		{
+			"uuid": "21a76b8c-1600-40fd-985a-acdbf0ae7d6c",
+			"isOpen": true,
+			"children": [
+				"7ec65137-28a6-49bf-aa13-3892eef4cfb9"
+			]
+		},
+		{
+			"uuid": "428a9d5f-c3f1-4a08-a9f7-887c4cc5c2b9",
+			"isOpen": true,
+			"children": [
+				"2bcd478a-99c7-4e94-af41-7334d031c8ae"
+			]
+		}
+	],
+	"textures": [
+		{
+			"name": "slimebody",
+			"path": "",
+			"relative_path": "../../textures/mob/slimebody.png",
+			"folder": "block",
+			"namespace": "",
+			"id": "slimebody",
+			"uuid": "00fe10ae-6140-49f9-a597-b61399128857",
+			"uv_width": 64,
+			"uv_height": 32,
+			"particle": false,
+			"use_as_default": true
+		}
+	],
+	"animation_variable_placeholders": ""
+}

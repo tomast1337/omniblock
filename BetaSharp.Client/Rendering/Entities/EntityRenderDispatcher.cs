@@ -35,16 +35,16 @@ public class EntityRenderDispatcher
     {
         RegisterRenderer(typeof(EntitySpider), new SpiderEntityRenderer());
         RegisterRenderer(typeof(EntityPig), new PigEntityRenderer(new ModelPig(), new ModelPig(0.5F), 0.7F));
-        RegisterRenderer(typeof(EntitySheep), new SheepEntityRenderer(new SheepModel(), new SheepFurModel(), 0.7F));
+        RegisterRenderer(typeof(EntitySheep), new SheepEntityRenderer(new ModelSheep(), new ModelSheepFur(), 0.7F));
         RegisterRenderer(typeof(EntityCow), new CowEntityRenderer(new ModelCow(), 0.7F));
         RegisterRenderer(typeof(EntityWolf), new WolfEntityRenderer(new ModelWolf(), 0.5F));
         RegisterRenderer(typeof(EntityChicken), new ChickenEntityRenderer(new ModelChicken(), 0.3F));
         RegisterRenderer(typeof(EntityCreeper), new CreeperEntityRenderer());
-        RegisterRenderer(typeof(EntitySkeleton), new UndeadEntityRenderer(new ModelSkeleton(), 0.5F));
-        RegisterRenderer(typeof(EntityZombie), new UndeadEntityRenderer(new ModelZombie(), 0.5F));
-        RegisterRenderer(typeof(EntitySlime), new SlimeEntityRenderer(new ModelSlime(16), new ModelSlime(0), 0.25F));
+        RegisterRenderer(typeof(EntitySkeleton), new UndeadEntityRenderer(new Skeleton(), 0.5F));
+        RegisterRenderer(typeof(EntityZombie), new UndeadEntityRenderer(new Zombie(), 0.5F));
+        RegisterRenderer(typeof(EntitySlime), new SlimeEntityRenderer(new ModelSlime(), new ModelSlimeCube(), 0.25F));
         RegisterRenderer(typeof(EntityPlayer), new PlayerEntityRenderer());
-        RegisterRenderer(typeof(EntityGiantZombie), new GiantEntityRenderer(new ModelZombie(), 0.5F, 6.0F));
+        RegisterRenderer(typeof(EntityGiantZombie), new GiantEntityRenderer(new Zombie(), 0.5F, 6.0F));
         RegisterRenderer(typeof(EntityGhast), new GhastEntityRenderer());
         RegisterRenderer(typeof(EntitySquid), new SquidEntityRenderer(new ModelSquid(), 0.7F));
         RegisterRenderer(typeof(EntityLiving), new LivingEntityRenderer(new ModelBiped(), 0.5F));

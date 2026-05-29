@@ -1,54 +1,45 @@
+using BetaSharp.Util.Maths;
+
 namespace BetaSharp.Client.Rendering.Entities.Models;
 
-public class ModelCow : ModelQuadruped
+public sealed class ModelCow : BbModelEntityModel
 {
-    private readonly ModelPart udders;
-    private readonly ModelPart horn1;
-    private readonly ModelPart horn2;
+    private readonly ModelPart _body;
+    private readonly ModelPart _head;
+    private readonly ModelPart _horn1;
+    private readonly ModelPart _horn2;
+    private readonly ModelPart _leg1;
+    private readonly ModelPart _leg2;
+    private readonly ModelPart _leg3;
+    private readonly ModelPart _leg4;
+    private readonly ModelPart _udders;
 
-
-    public ModelCow() : base(12, 0.0f)
+    public ModelCow() : base("cow")
     {
-        head = new ModelPart(0, 0);
-        head.addBox(-4.0F, -4.0F, -6.0F, 8, 8, 6, 0.0F);
-        head.setRotationPoint(0.0F, 4.0F, -8.0F);
-        horn1 = new ModelPart(22, 0);
-        horn1.addBox(-4.0F, -5.0F, -4.0F, 1, 3, 1, 0.0F);
-        horn1.setRotationPoint(0.0F, 3.0F, -7.0F);
-        horn2 = new ModelPart(22, 0);
-        horn2.addBox(3.0F, -5.0F, -4.0F, 1, 3, 1, 0.0F);
-        horn2.setRotationPoint(0.0F, 3.0F, -7.0F);
-        udders = new ModelPart(52, 0);
-        udders.addBox(-2.0F, -3.0F, 0.0F, 4, 6, 2, 0.0F);
-        udders.setRotationPoint(0.0F, 14.0F, 6.0F);
-        udders.rotateAngleX = (float)Math.PI * 0.5F;
-        body = new ModelPart(18, 4);
-        body.addBox(-6.0F, -10.0F, -7.0F, 12, 18, 10, 0.0F);
-        body.setRotationPoint(0.0F, 5.0F, 2.0F);
-        --leg1.rotationPointX;
-        ++leg2.rotationPointX;
-        leg1.rotationPointZ += 0.0F;
-        leg2.rotationPointZ += 0.0F;
-        --leg3.rotationPointX;
-        ++leg4.rotationPointX;
-        --leg3.rotationPointZ;
-        --leg4.rotationPointZ;
+        _head = GetPart("head");
+        _body = GetPart("body");
+        _leg1 = GetPart("leg1");
+        _leg2 = GetPart("leg2");
+        _leg3 = GetPart("leg3");
+        _leg4 = GetPart("leg4");
+        _horn1 = GetPart("horn1");
+        _horn2 = GetPart("horn2");
+        _udders = GetPart("udders");
+        _udders.RotateAngleX = MathF.PI * 0.5f;
     }
 
-    public override void render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
+    public override void SetRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
     {
-        base.render(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
-        horn1.render(scale);
-        horn2.render(scale);
-        udders.render(scale);
-    }
-
-    public override void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
-    {
-        base.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
-        horn1.rotateAngleY = head.rotateAngleY;
-        horn1.rotateAngleX = head.rotateAngleX;
-        horn2.rotateAngleY = head.rotateAngleY;
-        horn2.rotateAngleX = head.rotateAngleX;
+        _head.RotateAngleX = headPitch / (180.0f / MathF.PI);
+        _head.RotateAngleY = netHeadYaw / (180.0f / MathF.PI);
+        _body.RotateAngleX = MathF.PI * 0.5f;
+        _leg1.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
+        _leg2.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f + MathF.PI) * 1.4f * limbSwingAmount;
+        _leg3.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f + MathF.PI) * 1.4f * limbSwingAmount;
+        _leg4.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
+        _horn1.RotateAngleX = _head.RotateAngleX;
+        _horn1.RotateAngleY = _head.RotateAngleY;
+        _horn2.RotateAngleX = _head.RotateAngleX;
+        _horn2.RotateAngleY = _head.RotateAngleY;
     }
 }

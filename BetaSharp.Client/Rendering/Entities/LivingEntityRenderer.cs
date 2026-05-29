@@ -12,13 +12,13 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class LivingEntityRenderer : EntityRenderer
 {
 
-    protected ModelBase mainModel;
+    protected ModelBase Main;
     protected ModelBase renderPassModel;
     private readonly ILogger<LivingEntityRenderer> _logger = Log.Instance.For<LivingEntityRenderer>();
 
-    public LivingEntityRenderer(ModelBase mainModel, float shadowRadius)
+    public LivingEntityRenderer(ModelBase main, float shadowRadius)
     {
-        this.mainModel = mainModel;
+        this.Main = main;
         ShadowRadius = shadowRadius;
     }
 
@@ -31,16 +31,16 @@ public class LivingEntityRenderer : EntityRenderer
     {
         GLManager.GL.PushMatrix();
         GLManager.GL.Disable(GLEnum.CullFace);
-        mainModel.onGround = func_167_c(entity, tickDelta);
+        Main.OnGround = func_167_c(entity, tickDelta);
         if (renderPassModel != null)
         {
-            renderPassModel.onGround = mainModel.onGround;
+            renderPassModel.OnGround = Main.OnGround;
         }
 
-        mainModel.isRiding = entity.HasVehicle;
+        Main.IsRiding = entity.HasVehicle;
         if (renderPassModel != null)
         {
-            renderPassModel.isRiding = mainModel.isRiding;
+            renderPassModel.IsRiding = Main.IsRiding;
         }
 
         try
@@ -65,14 +65,14 @@ public class LivingEntityRenderer : EntityRenderer
 
             LoadDownloadableImageTexture((entity as EntityPlayer)?.Name, entity.GetTexture());
             GLManager.GL.Enable(GLEnum.AlphaTest);
-            mainModel.setLivingAnimations(entity, walkPhase, walkSpeed, tickDelta);
-            mainModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+            Main.SetLivingAnimations(entity, walkPhase, walkSpeed, tickDelta);
+            Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
             for (int renderPass = 0; renderPass < 4; ++renderPass)
             {
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
-                    renderPassModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                    renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                     GLManager.GL.Disable(GLEnum.Blend);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                 }
@@ -91,14 +91,14 @@ public class LivingEntityRenderer : EntityRenderer
                 if (entity.HurtTime > 0 || entity.DeathTime > 0)
                 {
                     GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
-                    mainModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                    Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
                     for (int damagePass = 0; damagePass < 4; ++damagePass)
                     {
                         if (func_27005_b(entity, damagePass, tickDelta))
                         {
                             GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
-                            renderPassModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }
@@ -110,14 +110,14 @@ public class LivingEntityRenderer : EntityRenderer
                     float blue = (colorMultiplier & 255) / 255.0F;
                     float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
                     GLManager.GL.Color4(red, green, blue, alpha);
-                    mainModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                    Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
                     for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
                     {
                         if (func_27005_b(entity, overlayPass, tickDelta))
                         {
                             GLManager.GL.Color4(red, green, blue, alpha);
-                            renderPassModel.render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
                 }

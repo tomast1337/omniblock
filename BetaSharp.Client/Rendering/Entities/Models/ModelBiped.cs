@@ -2,177 +2,145 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities.Models;
 
-public class ModelBiped : ModelBase
+public class ModelBiped : BbModelEntityModel
 {
-    public ModelPart bipedHead;
-    public ModelPart bipedHeadwear;
-    public ModelPart bipedBody;
-    public ModelPart bipedRightArm;
-    public ModelPart bipedLeftArm;
-    public ModelPart bipedRightLeg;
-    public ModelPart bipedLeftLeg;
-    public ModelPart bipedEars;
-    public ModelPart bipedCloak;
-    public bool field_1279_h;
-    public bool field_1278_i;
-    public bool isSneak;
+    public readonly ModelPart BipedBody;
+    public readonly ModelPart BipedHead;
+    public readonly ModelPart BipedHeadwear;
+    public readonly ModelPart BipedLeftArm;
+    public readonly ModelPart BipedLeftLeg;
+    public readonly ModelPart BipedRightArm;
+    public readonly ModelPart BipedRightLeg;
+    public readonly ModelPart BipedEars;
+    public readonly ModelPart BipedCloak;
+    public bool Field1278I;
+    public bool Field1279H;
 
-    public ModelBiped() : this(0.0f)
+    public bool IsSneak;
+
+    public ModelBiped(float inflationOffset = 0f) : this("biped", inflationOffset)
     {
     }
 
-    public ModelBiped(float scale) : this(scale, 0.0f)
+    protected ModelBiped(string entityId, float inflationOffset = 0f) : base(entityId, inflationOffset)
     {
+        BipedHead = GetPart("bipedHead");
+        BipedHeadwear = GetPart("bipedHeadwear");
+        BipedBody = GetPart("bipedBody");
+        BipedRightArm = GetPart("bipedRightArm");
+        BipedLeftArm = GetPart("bipedLeftArm");
+        BipedRightLeg = GetPart("bipedRightLeg");
+        BipedLeftLeg = GetPart("bipedLeftLeg");
+        BipedEars = new ModelPart(24, 0);
+        BipedEars.AddBox(-3.0f, -6.0f, -1.0f, 6, 6, 1, inflationOffset);
+        BipedCloak = new ModelPart(0, 0);
+        BipedCloak.AddBox(-5.0f, 0.0f, -1.0f, 10, 16, 1, inflationOffset);
     }
 
-    public ModelBiped(float scale, float yOffset)
+    public void RenderEars(float scale)
     {
-        field_1279_h = false;
-        field_1278_i = false;
-        isSneak = false;
-        bipedCloak = new ModelPart(0, 0);
-        bipedCloak.addBox(-5.0F, 0.0F, -1.0F, 10, 16, 1, scale);
-        bipedEars = new ModelPart(24, 0);
-        bipedEars.addBox(-3.0F, -6.0F, -1.0F, 6, 6, 1, scale);
-        bipedHead = new ModelPart(0, 0);
-        bipedHead.addBox(-4.0F, -8.0F, -4.0F, 8, 8, 8, scale);
-        bipedHead.setRotationPoint(0.0F, 0.0F + yOffset, 0.0F);
-        bipedHeadwear = new ModelPart(32, 0);
-        bipedHeadwear.addBox(-4.0F, -8.0F, -4.0F, 8, 8, 8, scale + 0.5F);
-        bipedHeadwear.setRotationPoint(0.0F, 0.0F + yOffset, 0.0F);
-        bipedBody = new ModelPart(16, 16);
-        bipedBody.addBox(-4.0F, 0.0F, -2.0F, 8, 12, 4, scale);
-        bipedBody.setRotationPoint(0.0F, 0.0F + yOffset, 0.0F);
-        bipedRightArm = new ModelPart(40, 16);
-        bipedRightArm.addBox(-3.0F, -2.0F, -2.0F, 4, 12, 4, scale);
-        bipedRightArm.setRotationPoint(-5.0F, 2.0F + yOffset, 0.0F);
-        bipedLeftArm = new ModelPart(40, 16)
+        BipedEars.RotateAngleY = BipedHead.RotateAngleY;
+        BipedEars.RotateAngleX = BipedHead.RotateAngleX;
+        BipedEars.RotationPointX = 0.0f;
+        BipedEars.RotationPointY = 0.0f;
+        BipedEars.Render(scale);
+    }
+
+    public void RenderCloak(float scale)
+    {
+        BipedCloak.Render(scale);
+    }
+
+    public override void SetRotationAngles( float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
+    {
+        BipedHead.RotateAngleY = netHeadYaw / (180.0f / MathF.PI);
+        BipedHead.RotateAngleX = headPitch / (180.0f / MathF.PI);
+        BipedHeadwear.RotateAngleY = BipedHead.RotateAngleY;
+        BipedHeadwear.RotateAngleX = BipedHead.RotateAngleX;
+        BipedRightArm.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f + MathF.PI) * 2.0f * limbSwingAmount * 0.5f;
+        BipedLeftArm.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 2.0f * limbSwingAmount * 0.5f;
+        BipedRightArm.RotateAngleZ = 0.0f;
+        BipedLeftArm.RotateAngleZ = 0.0f;
+        BipedRightLeg.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
+        BipedLeftLeg.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f + MathF.PI) * 1.4f * limbSwingAmount;
+        BipedRightLeg.RotateAngleY = 0.0f;
+        BipedLeftLeg.RotateAngleY = 0.0f;
+
+        if (IsRiding)
         {
-            mirror = true
-        };
-        bipedLeftArm.addBox(-1.0F, -2.0F, -2.0F, 4, 12, 4, scale);
-        bipedLeftArm.setRotationPoint(5.0F, 2.0F + yOffset, 0.0F);
-        bipedRightLeg = new ModelPart(0, 16);
-        bipedRightLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, scale);
-        bipedRightLeg.setRotationPoint(-2.0F, 12.0F + yOffset, 0.0F);
-        bipedLeftLeg = new ModelPart(0, 16)
-        {
-            mirror = true
-        };
-        bipedLeftLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, scale);
-        bipedLeftLeg.setRotationPoint(2.0F, 12.0F + yOffset, 0.0F);
-    }
-
-    public override void render(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
-    {
-        setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
-        bipedHead.render(scale);
-        bipedBody.render(scale);
-        bipedRightArm.render(scale);
-        bipedLeftArm.render(scale);
-        bipedRightLeg.render(scale);
-        bipedLeftLeg.render(scale);
-        bipedHeadwear.render(scale);
-    }
-
-    public override void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale)
-    {
-        bipedHead.rotateAngleY = netHeadYaw / (180.0F / (float)Math.PI);
-        bipedHead.rotateAngleX = headPitch / (180.0F / (float)Math.PI);
-        bipedHeadwear.rotateAngleY = bipedHead.rotateAngleY;
-        bipedHeadwear.rotateAngleX = bipedHead.rotateAngleX;
-        bipedRightArm.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F + (float)Math.PI) * 2.0F * limbSwingAmount * 0.5F;
-        bipedLeftArm.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F) * 2.0F * limbSwingAmount * 0.5F;
-        bipedRightArm.rotateAngleZ = 0.0F;
-        bipedLeftArm.rotateAngleZ = 0.0F;
-        bipedRightLeg.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-        bipedLeftLeg.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
-        bipedRightLeg.rotateAngleY = 0.0F;
-        bipedLeftLeg.rotateAngleY = 0.0F;
-        if (isRiding)
-        {
-            bipedRightArm.rotateAngleX += (float)Math.PI * -0.2F;
-            bipedLeftArm.rotateAngleX += (float)Math.PI * -0.2F;
-            bipedRightLeg.rotateAngleX = (float)Math.PI * -0.4F;
-            bipedLeftLeg.rotateAngleX = (float)Math.PI * -0.4F;
-            bipedRightLeg.rotateAngleY = (float)Math.PI * 0.1F;
-            bipedLeftLeg.rotateAngleY = (float)Math.PI * -0.1F;
+            BipedRightArm.RotateAngleX += MathF.PI * -0.2f;
+            BipedLeftArm.RotateAngleX += MathF.PI * -0.2f;
+            BipedRightLeg.RotateAngleX = MathF.PI * -0.4f;
+            BipedLeftLeg.RotateAngleX = MathF.PI * -0.4f;
+            BipedRightLeg.RotateAngleY = MathF.PI * 0.1f;
+            BipedLeftLeg.RotateAngleY = MathF.PI * -0.1f;
         }
 
-        if (field_1279_h)
+        if (Field1279H)
         {
-            bipedLeftArm.rotateAngleX = bipedLeftArm.rotateAngleX * 0.5F - (float)Math.PI * 0.1F;
+            BipedLeftArm.RotateAngleX = BipedLeftArm.RotateAngleX * 0.5f - MathF.PI * 0.1f;
         }
 
-        if (field_1278_i)
+        if (Field1278I)
         {
-            bipedRightArm.rotateAngleX = bipedRightArm.rotateAngleX * 0.5F - (float)Math.PI * 0.1F;
+            BipedRightArm.RotateAngleX = BipedRightArm.RotateAngleX * 0.5f - MathF.PI * 0.1f;
         }
 
-        bipedRightArm.rotateAngleY = 0.0F;
-        bipedLeftArm.rotateAngleY = 0.0F;
-        if (onGround > -9990.0F)
+        BipedRightArm.RotateAngleY = 0.0f;
+        BipedLeftArm.RotateAngleY = 0.0f;
+
+        if (OnGround > -9990.0f)
         {
-            float swingProgress = onGround;
-            bipedBody.rotateAngleY = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI * 2.0F) * 0.2F;
-            bipedRightArm.rotationPointZ = MathHelper.Sin(bipedBody.rotateAngleY) * 5.0F;
-            bipedRightArm.rotationPointX = -MathHelper.Cos(bipedBody.rotateAngleY) * 5.0F;
-            bipedLeftArm.rotationPointZ = -MathHelper.Sin(bipedBody.rotateAngleY) * 5.0F;
-            bipedLeftArm.rotationPointX = MathHelper.Cos(bipedBody.rotateAngleY) * 5.0F;
-            bipedRightArm.rotateAngleY += bipedBody.rotateAngleY;
-            bipedLeftArm.rotateAngleY += bipedBody.rotateAngleY;
-            bipedLeftArm.rotateAngleX += bipedBody.rotateAngleY;
-            swingProgress = 1.0F - onGround;
+            float swingProgress = OnGround;
+            BipedBody.RotateAngleY = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * MathF.PI * 2.0f) * 0.2f;
+            BipedRightArm.RotationPointZ = MathHelper.Sin(BipedBody.RotateAngleY) * 5.0f;
+            BipedRightArm.RotationPointX = -MathHelper.Cos(BipedBody.RotateAngleY) * 5.0f;
+            BipedLeftArm.RotationPointZ = -MathHelper.Sin(BipedBody.RotateAngleY) * 5.0f;
+            BipedLeftArm.RotationPointX = MathHelper.Cos(BipedBody.RotateAngleY) * 5.0f;
+            BipedRightArm.RotateAngleY += BipedBody.RotateAngleY;
+            BipedLeftArm.RotateAngleY += BipedBody.RotateAngleY;
+            BipedLeftArm.RotateAngleX += BipedBody.RotateAngleY;
+            swingProgress = 1.0f - OnGround;
             swingProgress *= swingProgress;
             swingProgress *= swingProgress;
-            swingProgress = 1.0F - swingProgress;
-            float attackSwing = MathHelper.Sin(swingProgress * (float)Math.PI);
-            float headOffset = MathHelper.Sin(onGround * (float)Math.PI) * -(bipedHead.rotateAngleX - 0.7F) * (12.0F / 16.0F);
-            bipedRightArm.rotateAngleX = (float)(bipedRightArm.rotateAngleX - ((double)attackSwing * 1.2D + (double)headOffset));
-            bipedRightArm.rotateAngleY += bipedBody.rotateAngleY * 2.0F;
-            bipedRightArm.rotateAngleZ = MathHelper.Sin(onGround * (float)Math.PI) * -0.4F;
-        }
-
-        if (isSneak)
-        {
-            bipedBody.rotateAngleX = 0.5F;
-            bipedRightLeg.rotateAngleX -= 0.0F;
-            bipedLeftLeg.rotateAngleX -= 0.0F;
-            bipedRightArm.rotateAngleX += 0.4F;
-            bipedLeftArm.rotateAngleX += 0.4F;
-            bipedRightLeg.rotationPointZ = 4.0F;
-            bipedLeftLeg.rotationPointZ = 4.0F;
-            bipedRightLeg.rotationPointY = 9.0F;
-            bipedLeftLeg.rotationPointY = 9.0F;
-            bipedHead.rotationPointY = 1.0F;
+            swingProgress = 1.0f - swingProgress;
+            float attackSwing = MathHelper.Sin(swingProgress * MathF.PI);
+            float headOffset = MathHelper.Sin(OnGround * MathF.PI) * -(BipedHead.RotateAngleX - 0.7f) * (12.0f / 16.0f);
+            BipedRightArm.RotateAngleX -= (float)(attackSwing * 1.2d + headOffset);
+            BipedRightArm.RotateAngleY += BipedBody.RotateAngleY * 2.0f;
+            BipedRightArm.RotateAngleZ = MathHelper.Sin(OnGround * MathF.PI) * -0.4f;
         }
         else
         {
-            bipedBody.rotateAngleX = 0.0F;
-            bipedRightLeg.rotationPointZ = 0.0F;
-            bipedLeftLeg.rotationPointZ = 0.0F;
-            bipedRightLeg.rotationPointY = 12.0F;
-            bipedLeftLeg.rotationPointY = 12.0F;
-            bipedHead.rotationPointY = 0.0F;
+            BipedBody.RotateAngleY = 0.0f;
+            BipedRightArm.RotationPointX = -5.0f;
+            BipedRightArm.RotationPointZ = 0.0f;
+            BipedLeftArm.RotationPointX = 5.0f;
+            BipedLeftArm.RotationPointZ = 0.0f;
         }
 
-        bipedRightArm.rotateAngleZ += MathHelper.Cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-        bipedLeftArm.rotateAngleZ -= MathHelper.Cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-        bipedRightArm.rotateAngleX += MathHelper.Sin(ageInTicks * 0.067F) * 0.05F;
-        bipedLeftArm.rotateAngleX -= MathHelper.Sin(ageInTicks * 0.067F) * 0.05F;
-    }
+        if (IsSneak)
+        {
+            BipedBody.RotateAngleX = 0.5f;
+            BipedRightLeg.RotationPointZ = 4.0f;
+            BipedLeftLeg.RotationPointZ = 4.0f;
+            BipedRightLeg.RotationPointY = 9.0f;
+            BipedLeftLeg.RotationPointY = 9.0f;
+            BipedHead.RotationPointY = 1.0f;
+        }
+        else
+        {
+            BipedBody.RotateAngleX = 0.0f;
+            BipedRightLeg.RotationPointZ = 0.0f;
+            BipedLeftLeg.RotationPointZ = 0.0f;
+            BipedRightLeg.RotationPointY = 12.0f;
+            BipedLeftLeg.RotationPointY = 12.0f;
+            BipedHead.RotationPointY = 0.0f;
+        }
 
-    public void renderEars(float scale)
-    {
-        bipedEars.rotateAngleY = bipedHead.rotateAngleY;
-        bipedEars.rotateAngleX = bipedHead.rotateAngleX;
-        bipedEars.rotationPointX = 0.0F;
-        bipedEars.rotationPointY = 0.0F;
-        bipedEars.render(scale);
-    }
-
-    public void renderCloak(float scale)
-    {
-        bipedCloak.render(scale);
+        BipedRightArm.RotateAngleZ += MathHelper.Cos(ageInTicks * 0.09f) * 0.05f + 0.05f;
+        BipedLeftArm.RotateAngleZ -= MathHelper.Cos(ageInTicks * 0.09f) * 0.05f + 0.05f;
+        BipedRightArm.RotateAngleX += MathHelper.Sin(ageInTicks * 0.067f) * 0.05f;
+        BipedLeftArm.RotateAngleX -= MathHelper.Sin(ageInTicks * 0.067f) * 0.05f;
     }
 }

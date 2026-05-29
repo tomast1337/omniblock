@@ -1,0 +1,38 @@
+{
+	"meta": { "format_version": "4.10", "model_format": "modded_entity", "box_uv": true },
+	"name": "cow",
+	"resolution": { "width": 64, "height": 32 },
+	"elements": [
+		{ "name": "head",   "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000001", "from": [-4, 16, -14], "to": [4, 24, -8],  "uv_offset": [0, 0],   "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "horn1",  "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000002", "from": [3, 23, -11],  "to": [4, 26, -10], "uv_offset": [22, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "horn2",  "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000003", "from": [-4, 23, -11], "to": [-3, 26, -10],"uv_offset": [22, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "udders", "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000004", "from": [-2, 7, 6],    "to": [2, 13, 8],   "uv_offset": [52, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "body",   "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000005", "from": [-6, 11, -5],  "to": [6, 29, 5],   "uv_offset": [18, 4],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg1",   "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000006", "from": [2, 0, 5],     "to": [6, 12, 9],   "uv_offset": [0, 16],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg2",   "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000007", "from": [-6, 0, 5],    "to": [-2, 12, 9],  "uv_offset": [0, 16],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg3",   "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000008", "from": [2, 0, -8],    "to": [6, 12, -4],  "uv_offset": [0, 16],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "leg4",   "type": "cube", "uuid": "ee000001-0000-0000-0000-020000000009", "from": [-6, 0, -8],   "to": [-2, 12, -4], "uv_offset": [0, 16],  "inflate": 0, "mirror_uv": false, "export": true }
+	],
+	"groups": [
+		{ "name": "head",   "uuid": "gg000001-0000-0000-0000-020000000001", "origin": [0, 20, -8],  "export": true },
+		{ "name": "horn1",  "uuid": "gg000001-0000-0000-0000-020000000002", "origin": [0, 21, -7],  "export": true },
+		{ "name": "horn2",  "uuid": "gg000001-0000-0000-0000-020000000003", "origin": [0, 21, -7],  "export": true },
+		{ "name": "udders", "uuid": "gg000001-0000-0000-0000-020000000004", "origin": [0, 10, 6],   "export": true },
+		{ "name": "body",   "uuid": "gg000001-0000-0000-0000-020000000005", "origin": [0, 19, 2],   "export": true },
+		{ "name": "leg1",   "uuid": "gg000001-0000-0000-0000-020000000006", "origin": [4, 12, 7],   "export": true },
+		{ "name": "leg2",   "uuid": "gg000001-0000-0000-0000-020000000007", "origin": [-4, 12, 7],  "export": true },
+		{ "name": "leg3",   "uuid": "gg000001-0000-0000-0000-020000000008", "origin": [4, 12, -6],  "export": true },
+		{ "name": "leg4",   "uuid": "gg000001-0000-0000-0000-020000000009", "origin": [-4, 12, -6], "export": true }
+	],
+	"outliner": [
+		{ "uuid": "gg000001-0000-0000-0000-020000000001", "children": ["ee000001-0000-0000-0000-020000000001"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000002", "children": ["ee000001-0000-0000-0000-020000000002"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000003", "children": ["ee000001-0000-0000-0000-020000000003"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000004", "children": ["ee000001-0000-0000-0000-020000000004"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000005", "children": ["ee000001-0000-0000-0000-020000000005"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000006", "children": ["ee000001-0000-0000-0000-020000000006"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000007", "children": ["ee000001-0000-0000-0000-020000000007"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000008", "children": ["ee000001-0000-0000-0000-020000000008"] },
+		{ "uuid": "gg000001-0000-0000-0000-020000000009", "children": ["ee000001-0000-0000-0000-020000000009"] }
+	]
+}

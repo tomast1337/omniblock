@@ -1,0 +1,32 @@
+{
+	"meta": { "format_version": "4.10", "model_format": "modded_entity", "box_uv": true },
+	"name": "zombie",
+	"resolution": { "width": 64, "height": 32 },
+	"elements": [
+		{ "name": "bipedHead",     "type": "cube", "uuid": "ee000001-0000-0000-0000-070000000001", "from": [-4, 24, -4], "to": [4, 32, 4],  "uv_offset": [0, 0],   "inflate": 0,   "mirror_uv": false, "export": true },
+		{ "name": "bipedHeadwear", "type": "cube", "uuid": "ee000001-0000-0000-0000-070000000002", "from": [-4, 24, -4], "to": [4, 32, 4],  "uv_offset": [32, 0],  "inflate": 0.5, "mirror_uv": false, "export": true },
+		{ "name": "bipedBody",     "type": "cube", "uuid": "ee000001-0000-0000-0000-070000000003", "from": [-4, 12, -2], "to": [4, 24, 2],  "uv_offset": [16, 16], "inflate": 0,   "mirror_uv": false, "export": true },
+		{ "name": "bipedRightArm", "type": "cube", "uuid": "ee000001-0000-0000-0000-070000000004", "from": [4, 12, -2],  "to": [8, 24, 2],  "uv_offset": [40, 16], "inflate": 0,   "mirror_uv": false, "export": true },
+		{ "name": "bipedLeftArm",  "type": "cube", "uuid": "ee000001-0000-0000-0000-070000000005", "from": [-8, 12, -2], "to": [-4, 24, 2], "uv_offset": [40, 16], "inflate": 0,   "mirror_uv": true,  "export": true },
+		{ "name": "bipedRightLeg", "type": "cube", "uuid": "ee000001-0000-0000-0000-070000000006", "from": [0, 0, -2],   "to": [4, 12, 2],  "uv_offset": [0, 16],  "inflate": 0,   "mirror_uv": false, "export": true },
+		{ "name": "bipedLeftLeg",  "type": "cube", "uuid": "ee000001-0000-0000-0000-070000000007", "from": [-4, 0, -2],  "to": [0, 12, 2],  "uv_offset": [0, 16],  "inflate": 0,   "mirror_uv": true,  "export": true }
+	],
+	"groups": [
+		{ "name": "bipedHead",     "uuid": "gg000001-0000-0000-0000-070000000001", "origin": [0, 24, 0],   "export": true },
+		{ "name": "bipedHeadwear", "uuid": "gg000001-0000-0000-0000-070000000002", "origin": [0, 24, 0],   "export": true },
+		{ "name": "bipedBody",     "uuid": "gg000001-0000-0000-0000-070000000003", "origin": [0, 24, 0],   "export": true },
+		{ "name": "bipedRightArm", "uuid": "gg000001-0000-0000-0000-070000000004", "origin": [5, 22, 0],   "export": true },
+		{ "name": "bipedLeftArm",  "uuid": "gg000001-0000-0000-0000-070000000005", "origin": [-5, 22, 0],  "export": true },
+		{ "name": "bipedRightLeg", "uuid": "gg000001-0000-0000-0000-070000000006", "origin": [2, 12, 0],   "export": true },
+		{ "name": "bipedLeftLeg",  "uuid": "gg000001-0000-0000-0000-070000000007", "origin": [-2, 12, 0],  "export": true }
+	],
+	"outliner": [
+		{ "uuid": "gg000001-0000-0000-0000-070000000001", "children": ["ee000001-0000-0000-0000-070000000001"] },
+		{ "uuid": "gg000001-0000-0000-0000-070000000003", "children": ["ee000001-0000-0000-0000-070000000003"] },
+		{ "uuid": "gg000001-0000-0000-0000-070000000004", "children": ["ee000001-0000-0000-0000-070000000004"] },
+		{ "uuid": "gg000001-0000-0000-0000-070000000005", "children": ["ee000001-0000-0000-0000-070000000005"] },
+		{ "uuid": "gg000001-0000-0000-0000-070000000006", "children": ["ee000001-0000-0000-0000-070000000006"] },
+		{ "uuid": "gg000001-0000-0000-0000-070000000007", "children": ["ee000001-0000-0000-0000-070000000007"] },
+		{ "uuid": "gg000001-0000-0000-0000-070000000002", "children": ["ee000001-0000-0000-0000-070000000002"] }
+	]
+}

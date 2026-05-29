@@ -9,7 +9,7 @@ namespace BetaSharp.Client.Rendering.Blocks.Entities;
 public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
 {
 
-    private readonly SignModel signModel = new();
+    private readonly ModelSign _modelSign = new();
 
     public void renderTileEntitySignAt(BlockEntitySign sign, double x, double y, double z, float tickDelta)
     {
@@ -22,7 +22,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
             GLManager.GL.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
             float rotationDegrees = sign.PushedBlockData * 360 / 16.0F;
             GLManager.GL.Rotate(-rotationDegrees, 0.0F, 1.0F, 0.0F);
-            signModel.signStick.visible = true;
+            _modelSign.SignStick.Visible = true;
         }
         else
         {
@@ -46,13 +46,13 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
             GLManager.GL.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
             GLManager.GL.Rotate(-rotationYaw, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Translate(0.0F, -(5.0F / 16.0F), -(7.0F / 16.0F));
-            signModel.signStick.visible = false;
+            _modelSign.SignStick.Visible = false;
         }
 
         bindTextureByName("/item/sign.png");
         GLManager.GL.PushMatrix();
         GLManager.GL.Scale(modelScale, -modelScale, -modelScale);
-        signModel.Render();
+        _modelSign.Render();
         GLManager.GL.PopMatrix();
         TextRenderer fontRenderer = getFontRenderer();
         rotationYaw = (float)(1.0D / 60.0D) * modelScale;

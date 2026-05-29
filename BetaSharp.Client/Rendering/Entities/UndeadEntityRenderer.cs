@@ -10,11 +10,11 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class UndeadEntityRenderer : LivingEntityRenderer
 {
 
-    protected ModelBiped modelBipedMain;
+    protected ModelBiped ModelBipedMain;
 
-    public UndeadEntityRenderer(ModelBiped mainModel, float shadowRadius) : base(mainModel, shadowRadius)
+    public UndeadEntityRenderer(ModelBiped main, float shadowRadius) : base(main, shadowRadius)
     {
-        modelBipedMain = mainModel;
+        ModelBipedMain = main;
     }
 
     protected override void RenderMore(EntityLiving entity, float tickDelta)
@@ -23,7 +23,7 @@ public class UndeadEntityRenderer : LivingEntityRenderer
         if (heldItem != null)
         {
             GLManager.GL.PushMatrix();
-            modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
+            ModelBipedMain.BipedRightArm.Transform(1.0F / 16.0F);
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             float itemScale;
             if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldItem.ItemId].getRenderType()))

@@ -15,13 +15,13 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 {
 
     private readonly ModelBiped _modelBipedMain;
-    private readonly ModelBiped _modelArmorChestplate = new(1.0F);
-    private readonly ModelBiped _modelArmor = new(0.5F);
+    private readonly ModelBiped _armorChestplate = new(1.0F);
+    private readonly ModelBiped _armor = new(0.5F);
     private static readonly string[] s_armorFilenamePrefix = ["cloth", "chain", "iron", "diamond", "gold"];
 
     public PlayerEntityRenderer() : base(new ModelBiped(0.0F), 0.5F)
     {
-        _modelBipedMain = (ModelBiped)mainModel;
+        _modelBipedMain = (ModelBiped)Main;
     }
 
     protected bool SetArmorModel(EntityPlayer playerEntity, int renderPass, float tickDelta)
@@ -33,14 +33,14 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             if (armorItem is ItemArmor armor)
             {
                 loadTexture("/armor/" + s_armorFilenamePrefix[armor.renderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
-                ModelBiped armorModel = renderPass == 2 ? _modelArmor : _modelArmorChestplate;
-                armorModel.bipedHead.visible = renderPass == 0;
-                armorModel.bipedHeadwear.visible = renderPass == 0;
-                armorModel.bipedBody.visible = renderPass == 1 || renderPass == 2;
-                armorModel.bipedRightArm.visible = renderPass == 1;
-                armorModel.bipedLeftArm.visible = renderPass == 1;
-                armorModel.bipedRightLeg.visible = renderPass == 2 || renderPass == 3;
-                armorModel.bipedLeftLeg.visible = renderPass == 2 || renderPass == 3;
+                ModelBiped armorModel = renderPass == 2 ? _modelBipedMain : _armorChestplate;
+                armorModel.BipedHead.Visible = renderPass == 0;
+                armorModel.BipedHeadwear.Visible = renderPass == 0;
+                armorModel.BipedBody.Visible = renderPass == 1 || renderPass == 2;
+                armorModel.BipedRightArm.Visible = renderPass == 1;
+                armorModel.BipedLeftArm.Visible = renderPass == 1;
+                armorModel.BipedRightLeg.Visible = renderPass == 2 || renderPass == 3;
+                armorModel.BipedLeftLeg.Visible = renderPass == 2 || renderPass == 3;
                 setRenderPassModel(armorModel);
                 return true;
             }
@@ -52,8 +52,8 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     public void RenderPlayer(EntityPlayer playerEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         ItemStack heldItem = playerEntity.Inventory.ItemInHand;
-        _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = heldItem != null;
-        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = playerEntity.IsSneaking();
+        _armorChestplate.Field1278I = _armor.Field1278I = _modelBipedMain.Field1278I = heldItem != null;
+        _armorChestplate.IsSneak = _armor.IsSneak = _modelBipedMain.IsSneak = playerEntity.IsSneaking();
         double renderY = y - playerEntity.StandingEyeHeight;
         if (playerEntity.IsSneaking() && playerEntity is not ClientPlayerEntity)
         {
@@ -61,8 +61,8 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         }
 
         base.DoRenderLiving(playerEntity, x, renderY, z, yaw, tickDelta);
-        _modelArmorChestplate.isSneak = _modelArmor.isSneak = _modelBipedMain.isSneak = false;
-        _modelArmorChestplate.field_1278_i = _modelArmor.field_1278_i = _modelBipedMain.field_1278_i = false;
+        _armorChestplate.IsSneak = _armor.IsSneak = _modelBipedMain.IsSneak = false;
+        _armorChestplate.Field1278I = _armor.Field1278I = _modelBipedMain.Field1278I = false;
     }
 
     protected void RenderName(EntityPlayer playerEntity, double x, double y, double z)
@@ -130,7 +130,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         if (helmetStack != null && helmetStack.getItem().id < 256)
         {
             GLManager.GL.PushMatrix();
-            _modelBipedMain.bipedHead.transform(1.0F / 16.0F);
+            _modelBipedMain.BipedHead.Transform(1.0F / 16.0F);
             if (BlockRenderer.IsSideLit(Block.Blocks[helmetStack.ItemId].getRenderType()))
             {
                 float helmetScale = 10.0F / 16.0F;
@@ -159,7 +159,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Rotate(-heldItemScale, 0.0F, 1.0F, 0.0F);
                 float earScale = 4.0F / 3.0F;
                 GLManager.GL.Scale(earScale, earScale, earScale);
-                _modelBipedMain.renderEars(1.0F / 16.0F);
+                _modelBipedMain.RenderEars(1.0F / 16.0F);
                 GLManager.GL.PopMatrix();
             }
         }
@@ -203,7 +203,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             GLManager.GL.Rotate(capeSwingSide / 2.0F, 0.0F, 0.0F, 1.0F);
             GLManager.GL.Rotate(-capeSwingSide / 2.0F, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
-            _modelBipedMain.renderCloak(1.0F / 16.0F);
+            _modelBipedMain.RenderCloak(1.0F / 16.0F);
             GLManager.GL.PopMatrix();
         }
 
@@ -211,7 +211,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         if (heldItem != null)
         {
             GLManager.GL.PushMatrix();
-            _modelBipedMain.bipedRightArm.transform(1.0F / 16.0F);
+            _modelBipedMain.BipedRightArm.Transform(1.0F / 16.0F);
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             if (playerEntity.FishHook != null)
             {
@@ -265,9 +265,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
 
     public void DrawFirstPersonHand()
     {
-        _modelBipedMain.onGround = 0.0F;
-        _modelBipedMain.setRotationAngles(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F / 16.0F);
-        _modelBipedMain.bipedRightArm.render(1.0F / 16.0F);
+        _modelBipedMain.OnGround = 0.0F;
+        _modelBipedMain.SetRotationAngles(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F / 16.0F);
+        _modelBipedMain.BipedRightArm.Render(1.0F / 16.0F);
     }
 
     protected void func_22016_b(EntityPlayer playerEntity, double x, double y, double z)

@@ -4,150 +4,108 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities.Models;
 
-public class ModelWolf : ModelBase
+public sealed class ModelWolf : BbModelEntityModel
 {
+    private readonly ModelPart _wolfBody;
+    private readonly ModelPart _wolfHeadMain;
+    private readonly ModelPart _wolfLeftEar;
+    private readonly ModelPart _wolfLeg1;
+    private readonly ModelPart _wolfLeg2;
+    private readonly ModelPart _wolfLeg3;
+    private readonly ModelPart _wolfLeg4;
+    private readonly ModelPart _wolfMane;
+    private readonly ModelPart _wolfRightEar;
+    private readonly ModelPart _wolfSnout;
+    private readonly ModelPart _wolfTail;
 
-    public ModelPart wolfHeadMain;
-    public ModelPart wolfBody;
-    public ModelPart wolfLeg1;
-    public ModelPart wolfLeg2;
-    public ModelPart wolfLeg3;
-    public ModelPart wolfLeg4;
-    readonly ModelPart wolfRightEar;
-    readonly ModelPart wolfLeftEar;
-    readonly ModelPart wolfSnout;
-    readonly ModelPart wolfTail;
-    readonly ModelPart wolfMane;
-
-    public ModelWolf()
+    public ModelWolf() : base("wolf")
     {
-        float scale = 0.0F;
-        float headHeight = 13.5F;
-        wolfHeadMain = new ModelPart(0, 0);
-        wolfHeadMain.addBox(-3.0F, -3.0F, -2.0F, 6, 6, 4, scale);
-        wolfHeadMain.setRotationPoint(-1.0F, headHeight, -7.0F);
-        wolfBody = new ModelPart(18, 14);
-        wolfBody.addBox(-4.0F, -2.0F, -3.0F, 6, 9, 6, scale);
-        wolfBody.setRotationPoint(0.0F, 14.0F, 2.0F);
-        wolfMane = new ModelPart(21, 0);
-        wolfMane.addBox(-4.0F, -3.0F, -3.0F, 8, 6, 7, scale);
-        wolfMane.setRotationPoint(-1.0F, 14.0F, 2.0F);
-        wolfLeg1 = new ModelPart(0, 18);
-        wolfLeg1.addBox(-1.0F, 0.0F, -1.0F, 2, 8, 2, scale);
-        wolfLeg1.setRotationPoint(-2.5F, 16.0F, 7.0F);
-        wolfLeg2 = new ModelPart(0, 18);
-        wolfLeg2.addBox(-1.0F, 0.0F, -1.0F, 2, 8, 2, scale);
-        wolfLeg2.setRotationPoint(0.5F, 16.0F, 7.0F);
-        wolfLeg3 = new ModelPart(0, 18);
-        wolfLeg3.addBox(-1.0F, 0.0F, -1.0F, 2, 8, 2, scale);
-        wolfLeg3.setRotationPoint(-2.5F, 16.0F, -4.0F);
-        wolfLeg4 = new ModelPart(0, 18);
-        wolfLeg4.addBox(-1.0F, 0.0F, -1.0F, 2, 8, 2, scale);
-        wolfLeg4.setRotationPoint(0.5F, 16.0F, -4.0F);
-        wolfTail = new ModelPart(9, 18);
-        wolfTail.addBox(-1.0F, 0.0F, -1.0F, 2, 8, 2, scale);
-        wolfTail.setRotationPoint(-1.0F, 12.0F, 8.0F);
-        wolfRightEar = new ModelPart(16, 14);
-        wolfRightEar.addBox(-3.0F, -5.0F, 0.0F, 2, 2, 1, scale);
-        wolfRightEar.setRotationPoint(-1.0F, headHeight, -7.0F);
-        wolfLeftEar = new ModelPart(16, 14);
-        wolfLeftEar.addBox(1.0F, -5.0F, 0.0F, 2, 2, 1, scale);
-        wolfLeftEar.setRotationPoint(-1.0F, headHeight, -7.0F);
-        wolfSnout = new ModelPart(0, 10);
-        wolfSnout.addBox(-2.0F, 0.0F, -5.0F, 3, 3, 4, scale);
-        wolfSnout.setRotationPoint(-0.5F, headHeight, -7.0F);
+        _wolfHeadMain = GetPart("wolfHeadMain");
+        _wolfBody = GetPart("wolfBody");
+        _wolfMane = GetPart("wolfMane");
+        _wolfLeg1 = GetPart("wolfLeg1");
+        _wolfLeg2 = GetPart("wolfLeg2");
+        _wolfLeg3 = GetPart("wolfLeg3");
+        _wolfLeg4 = GetPart("wolfLeg4");
+        _wolfTail = GetPart("wolfTail");
+        _wolfRightEar = GetPart("wolfRightEar");
+        _wolfLeftEar = GetPart("wolfLeftEar");
+        _wolfSnout = GetPart("wolfSnout");
     }
 
-    public override void render(float limbSwing, float limbSwingAmount, float tailPitch, float netHeadYaw, float headPitch, float scale)
-    {
-        base.render(limbSwing, limbSwingAmount, tailPitch, netHeadYaw, headPitch, scale);
-        setRotationAngles(limbSwing, limbSwingAmount, tailPitch, netHeadYaw, headPitch, scale);
-        wolfHeadMain.renderWithRotation(scale);
-        wolfBody.render(scale);
-        wolfLeg1.render(scale);
-        wolfLeg2.render(scale);
-        wolfLeg3.render(scale);
-        wolfLeg4.render(scale);
-        wolfRightEar.renderWithRotation(scale);
-        wolfLeftEar.renderWithRotation(scale);
-        wolfSnout.renderWithRotation(scale);
-        wolfTail.renderWithRotation(scale);
-        wolfMane.render(scale);
-    }
-
-    public override void setLivingAnimations(EntityLiving entity, float limbSwing, float limbSwingAmount, float partialTick)
+    public override void SetLivingAnimations(EntityLiving entity, float limbSwing, float limbSwingAmount, float partialTick)
     {
         EntityWolf wolf = (EntityWolf)entity;
+
         if (wolf.IsWolfAngry)
         {
-            wolfTail.rotateAngleY = 0.0F;
+            _wolfTail.RotateAngleY = 0.0f;
         }
         else
         {
-            wolfTail.rotateAngleY = MathHelper.Cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+            _wolfTail.RotateAngleY = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
         }
 
         if (wolf.IsWolfSitting)
         {
-            wolfMane.setRotationPoint(-1.0F, 16.0F, -3.0F);
-            wolfMane.rotateAngleX = (float)Math.PI * 0.4F;
-            wolfMane.rotateAngleY = 0.0F;
-            wolfBody.setRotationPoint(0.0F, 18.0F, 0.0F);
-            wolfBody.rotateAngleX = (float)Math.PI * 0.25F;
-            wolfTail.setRotationPoint(-1.0F, 21.0F, 6.0F);
-            wolfLeg1.setRotationPoint(-2.5F, 22.0F, 2.0F);
-            wolfLeg1.rotateAngleX = (float)Math.PI * 3.0F / 2.0F;
-            wolfLeg2.setRotationPoint(0.5F, 22.0F, 2.0F);
-            wolfLeg2.rotateAngleX = (float)Math.PI * 3.0F / 2.0F;
-            wolfLeg3.rotateAngleX = (float)Math.PI * 1.85F;
-            wolfLeg3.setRotationPoint(-2.49F, 17.0F, -4.0F);
-            wolfLeg4.rotateAngleX = (float)Math.PI * 1.85F;
-            wolfLeg4.setRotationPoint(0.51F, 17.0F, -4.0F);
+            _wolfMane.SetRotationPoint(-1.0f, 16.0f, -3.0f);
+            _wolfMane.RotateAngleX = MathF.PI * 0.4f;
+            _wolfMane.RotateAngleY = 0.0f;
+            _wolfBody.SetRotationPoint(0.0f, 18.0f, 0.0f);
+            _wolfBody.RotateAngleX = MathF.PI * 0.25f;
+            _wolfTail.SetRotationPoint(-1.0f, 21.0f, 6.0f);
+            _wolfLeg1.SetRotationPoint(-2.5f, 22.0f, 2.0f);
+            _wolfLeg1.RotateAngleX = MathF.PI * 3.0f / 2.0f;
+            _wolfLeg2.SetRotationPoint(0.5f, 22.0f, 2.0f);
+            _wolfLeg2.RotateAngleX = MathF.PI * 3.0f / 2.0f;
+            _wolfLeg3.RotateAngleX = MathF.PI * 1.85f;
+            _wolfLeg3.SetRotationPoint(-2.49f, 17.0f, -4.0f);
+            _wolfLeg4.RotateAngleX = MathF.PI * 1.85f;
+            _wolfLeg4.SetRotationPoint(0.51f, 17.0f, -4.0f);
         }
         else
         {
-            wolfBody.setRotationPoint(0.0F, 14.0F, 2.0F);
-            wolfBody.rotateAngleX = (float)Math.PI * 0.5F;
-            wolfMane.setRotationPoint(-1.0F, 14.0F, -3.0F);
-            wolfMane.rotateAngleX = wolfBody.rotateAngleX;
-            wolfTail.setRotationPoint(-1.0F, 12.0F, 8.0F);
-            wolfLeg1.setRotationPoint(-2.5F, 16.0F, 7.0F);
-            wolfLeg2.setRotationPoint(0.5F, 16.0F, 7.0F);
-            wolfLeg3.setRotationPoint(-2.5F, 16.0F, -4.0F);
-            wolfLeg4.setRotationPoint(0.5F, 16.0F, -4.0F);
-            wolfLeg1.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-            wolfLeg2.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
-            wolfLeg3.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
-            wolfLeg4.rotateAngleX = MathHelper.Cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+            _wolfBody.SetRotationPoint(0.0f, 14.0f, 2.0f);
+            _wolfBody.RotateAngleX = MathF.PI * 0.5f;
+            _wolfMane.SetRotationPoint(-1.0f, 14.0f, -3.0f);
+            _wolfMane.RotateAngleX = _wolfBody.RotateAngleX;
+            _wolfTail.SetRotationPoint(-1.0f, 12.0f, 8.0f);
+            _wolfLeg1.SetRotationPoint(-2.5f, 16.0f, 7.0f);
+            _wolfLeg2.SetRotationPoint(0.5f, 16.0f, 7.0f);
+            _wolfLeg3.SetRotationPoint(-2.5f, 16.0f, -4.0f);
+            _wolfLeg4.SetRotationPoint(0.5f, 16.0f, -4.0f);
+            _wolfLeg1.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
+            _wolfLeg2.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f + MathF.PI) * 1.4f * limbSwingAmount;
+            _wolfLeg3.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f + MathF.PI) * 1.4f * limbSwingAmount;
+            _wolfLeg4.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
         }
 
-        float shakeAngle = wolf.getInterestedAngle(partialTick) + wolf.getShakeAngle(partialTick, 0.0F);
-        wolfHeadMain.rotateAngleZ = shakeAngle;
-        wolfRightEar.rotateAngleZ = shakeAngle;
-        wolfLeftEar.rotateAngleZ = shakeAngle;
-        wolfSnout.rotateAngleZ = shakeAngle;
-        wolfMane.rotateAngleZ = wolf.getShakeAngle(partialTick, -0.08F);
-        wolfBody.rotateAngleZ = wolf.getShakeAngle(partialTick, -0.16F);
-        wolfTail.rotateAngleZ = wolf.getShakeAngle(partialTick, -0.2F);
+        float shakeAngle = wolf.getInterestedAngle(partialTick) + wolf.getShakeAngle(partialTick, 0.0f);
+        _wolfHeadMain.RotateAngleZ = shakeAngle;
+        _wolfRightEar.RotateAngleZ = shakeAngle;
+        _wolfLeftEar.RotateAngleZ = shakeAngle;
+        _wolfSnout.RotateAngleZ = shakeAngle;
+        _wolfMane.RotateAngleZ = wolf.getShakeAngle(partialTick, -0.08f);
+        _wolfBody.RotateAngleZ = wolf.getShakeAngle(partialTick, -0.16f);
+        _wolfTail.RotateAngleZ = wolf.getShakeAngle(partialTick, -0.2f);
+
         if (wolf.getWolfShaking())
         {
             float shakeBrightness = wolf.GetBrightnessAtEyes(partialTick) * wolf.getShadingWhileShaking(partialTick);
             GLManager.GL.Color3(shakeBrightness, shakeBrightness, shakeBrightness);
         }
-
     }
 
-    public override void setRotationAngles(float limbSwing, float limbSwingAmount, float tailPitch, float netHeadYaw, float headPitch, float scale)
+    public override void SetRotationAngles(float limbSwing, float limbSwingAmount, float tailPitch, float netHeadYaw, float headPitch, float scale)
     {
-        base.setRotationAngles(limbSwing, limbSwingAmount, tailPitch, netHeadYaw, headPitch, scale);
-        wolfHeadMain.rotateAngleX = headPitch / (180.0F / (float)Math.PI);
-        wolfHeadMain.rotateAngleY = netHeadYaw / (180.0F / (float)Math.PI);
-        wolfRightEar.rotateAngleY = wolfHeadMain.rotateAngleY;
-        wolfRightEar.rotateAngleX = wolfHeadMain.rotateAngleX;
-        wolfLeftEar.rotateAngleY = wolfHeadMain.rotateAngleY;
-        wolfLeftEar.rotateAngleX = wolfHeadMain.rotateAngleX;
-        wolfSnout.rotateAngleY = wolfHeadMain.rotateAngleY;
-        wolfSnout.rotateAngleX = wolfHeadMain.rotateAngleX;
-        wolfTail.rotateAngleX = tailPitch;
+        _wolfHeadMain.RotateAngleX = headPitch / (180.0f / MathF.PI);
+        _wolfHeadMain.RotateAngleY = netHeadYaw / (180.0f / MathF.PI);
+        _wolfRightEar.RotateAngleY = _wolfHeadMain.RotateAngleY;
+        _wolfRightEar.RotateAngleX = _wolfHeadMain.RotateAngleX;
+        _wolfLeftEar.RotateAngleY = _wolfHeadMain.RotateAngleY;
+        _wolfLeftEar.RotateAngleX = _wolfHeadMain.RotateAngleX;
+        _wolfSnout.RotateAngleY = _wolfHeadMain.RotateAngleY;
+        _wolfSnout.RotateAngleX = _wolfHeadMain.RotateAngleX;
+        _wolfTail.RotateAngleX = tailPitch;
     }
 }

@@ -1,0 +1,44 @@
+{
+	"meta": { "format_version": "4.10", "model_format": "modded_entity", "box_uv": true },
+	"name": "spider",
+	"resolution": { "width": 32, "height": 32 },
+	"elements": [
+		{ "name": "spiderHead",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000001", "from": [-4, 5, -11],  "to": [4, 13, -3],  "uv_offset": [32, 4],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderNeck",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000002", "from": [-3, 6, -3],   "to": [3, 12, 3],   "uv_offset": [0, 0],   "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderBody",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000003", "from": [-5, 5, 3],    "to": [5, 13, 15],  "uv_offset": [0, 12],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg1",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000004", "from": [3, 8, 1],     "to": [19, 10, 3],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg2",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000005", "from": [-19, 8, 1],   "to": [-3, 10, 3],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg3",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000006", "from": [3, 8, 0],     "to": [19, 10, 2],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg4",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000007", "from": [-19, 8, 0],   "to": [-3, 10, 2],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg5",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000008", "from": [3, 8, -1],    "to": [19, 10, 1],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg6",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a0000000009", "from": [-19, 8, -1],  "to": [-3, 10, 1],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg7",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a000000000a", "from": [3, 8, -2],    "to": [19, 10, 0],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true },
+		{ "name": "spiderLeg8",  "type": "cube", "uuid": "ee000001-0000-0000-0000-0a000000000b", "from": [-19, 8, -2],  "to": [-3, 10, 0],  "uv_offset": [18, 0],  "inflate": 0, "mirror_uv": false, "export": true }
+	],
+	"groups": [
+		{ "name": "spiderHead",  "uuid": "gg000001-0000-0000-0000-0a0000000001", "origin": [0, 9, -3],   "export": true },
+		{ "name": "spiderNeck",  "uuid": "gg000001-0000-0000-0000-0a0000000002", "origin": [0, 9, 0],    "export": true },
+		{ "name": "spiderBody",  "uuid": "gg000001-0000-0000-0000-0a0000000003", "origin": [0, 9, 9],    "export": true },
+		{ "name": "spiderLeg1",  "uuid": "gg000001-0000-0000-0000-0a0000000004", "origin": [4, 9, 2],    "export": true },
+		{ "name": "spiderLeg2",  "uuid": "gg000001-0000-0000-0000-0a0000000005", "origin": [-4, 9, 2],   "export": true },
+		{ "name": "spiderLeg3",  "uuid": "gg000001-0000-0000-0000-0a0000000006", "origin": [4, 9, 1],    "export": true },
+		{ "name": "spiderLeg4",  "uuid": "gg000001-0000-0000-0000-0a0000000007", "origin": [-4, 9, 1],   "export": true },
+		{ "name": "spiderLeg5",  "uuid": "gg000001-0000-0000-0000-0a0000000008", "origin": [4, 9, 0],    "export": true },
+		{ "name": "spiderLeg6",  "uuid": "gg000001-0000-0000-0000-0a0000000009", "origin": [-4, 9, 0],   "export": true },
+		{ "name": "spiderLeg7",  "uuid": "gg000001-0000-0000-0000-0a000000000a", "origin": [4, 9, -1],   "export": true },
+		{ "name": "spiderLeg8",  "uuid": "gg000001-0000-0000-0000-0a000000000b", "origin": [-4, 9, -1],  "export": true }
+	],
+	"outliner": [
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000001", "children": ["ee000001-0000-0000-0000-0a0000000001"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000002", "children": ["ee000001-0000-0000-0000-0a0000000002"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000003", "children": ["ee000001-0000-0000-0000-0a0000000003"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000004", "children": ["ee000001-0000-0000-0000-0a0000000004"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000005", "children": ["ee000001-0000-0000-0000-0a0000000005"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000006", "children": ["ee000001-0000-0000-0000-0a0000000006"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000007", "children": ["ee000001-0000-0000-0000-0a0000000007"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000008", "children": ["ee000001-0000-0000-0000-0a0000000008"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a0000000009", "children": ["ee000001-0000-0000-0000-0a0000000009"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a000000000a", "children": ["ee000001-0000-0000-0000-0a000000000a"] },
+		{ "uuid": "gg000001-0000-0000-0000-0a000000000b", "children": ["ee000001-0000-0000-0000-0a000000000b"] }
+	]
+}

@@ -2,7 +2,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities.Models;
 
-public sealed class ModelPig : BbModelEntityModel
+public sealed class ModelSheep : BbModelEntityModel
 {
     private readonly ModelPart _body;
     private readonly ModelPart _head;
@@ -11,7 +11,7 @@ public sealed class ModelPig : BbModelEntityModel
     private readonly ModelPart _leg3;
     private readonly ModelPart _leg4;
 
-    public ModelPig(float inflationOffset = 0f) : base("pig", inflationOffset)
+    public ModelSheep() : base("sheep")
     {
         _head = GetPart("head");
         _body = GetPart("body");

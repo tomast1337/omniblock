@@ -9,12 +9,11 @@ namespace BetaSharp.Client.Rendering.Entities;
 
 public class MinecartEntityRenderer : EntityRenderer
 {
-    protected ModelBase modelMinecart;
+    private readonly ModelMinecart _modelMinecart = new();
 
     public MinecartEntityRenderer()
     {
         ShadowRadius = 0.5F;
-        modelMinecart = new ModelMinecart();
     }
 
     public void render(EntityMinecart minecart, double x, double y, double z, float yaw, float tickDelta)
@@ -81,7 +80,7 @@ public class MinecartEntityRenderer : EntityRenderer
 
         loadTexture("/item/cart.png");
         GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
-        modelMinecart.render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
+        _modelMinecart.Render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
         GLManager.GL.PopMatrix();
     }
 
