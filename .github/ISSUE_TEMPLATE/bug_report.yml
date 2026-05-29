@@ -7,7 +7,7 @@ body:
         attributes:
             value: |
                 Thanks for taking the time to report a bug!
-    - type: input
+    -   type: input
         id: version
         attributes:
           label: Game Version
