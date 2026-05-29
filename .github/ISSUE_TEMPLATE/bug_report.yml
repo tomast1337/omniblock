@@ -7,6 +7,14 @@ body:
         attributes:
             value: |
                 Thanks for taking the time to report a bug!
+    - type: input
+        id: version
+        attributes:
+          label: Game Version
+          description: Version of Betasharp where the issue was encountered. (release tag or hash)
+          placeholder: ex. snapshot-pre1.0_5
+        validations:
+          required: true
     -   type: textarea
         id: description
         attributes:
