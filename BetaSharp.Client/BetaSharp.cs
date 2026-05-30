@@ -630,7 +630,16 @@ public partial class BetaSharp :
                         }
 
                         ImGui.NewFrame();
-                        ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard && !_debugWindowManager.GameViewportFocused;
+                        // Don't steal keyboard:
+                        // - from the game when the player has in-game focus (cursor grabbed)
+                        // - from game screens (pause menu, inventory, etc.) that need keyboard input
+                        // NoMouse is set when InGameHasFocus is true, so IsMouseHoveringRect
+                        // never fires, making GameViewportFocused always false — without these
+                        // guards, NavEnableKeyboard would block all game/screen keyboard input.
+                        ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard
+                            && !_debugWindowManager.GameViewportFocused
+                            && !InGameHasFocus
+                            && CurrentScreen == null;
                     }
                     else
                     {
@@ -864,7 +873,7 @@ public partial class BetaSharp :
         // F3 uses edge detection so it works even when
         // CurrentScreen.HandleInput() has already consumed all keyboard events.
         bool f3Down = Keyboard.isKeyDown(Keyboard.KEY_F3);
-        if (f3Down && !_prevF3Down && !ImGuiInput.CapturingKeyboard)
+        if (f3Down && !_prevF3Down)
         {
             Options.ShowDebugInfo = !Options.ShowDebugInfo;
         }
