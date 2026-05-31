@@ -44,8 +44,8 @@
         <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1">
             <TextBlock Text="This looks rather empty..." Opacity="0.5" Classes.hidden="{CompiledBinding Releases.Count}" />
 
-            <Grid RowDefinitions="Auto *" RowSpacing="15" Classes="hidden" Classes.shown="{CompiledBinding Releases.Count}">
-                <TextBlock Text="Releases" Grid.Row="0" />
+            <Grid RowDefinitions="Auto *" RowSpacing="10" Classes="hidden" Classes.shown="{CompiledBinding Releases.Count}">
+                <TextBlock Text="Releases" Margin="8 0 0 0" Grid.Row="0" />
 
                 <ScrollViewer CornerRadius="{StaticResource ControlCornerRadius}" Grid.Row="1">
                     <ItemsControl ItemsSource="{CompiledBinding Releases}">
