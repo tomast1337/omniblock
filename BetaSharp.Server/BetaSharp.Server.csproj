@@ -12,4 +12,18 @@
     <ProjectReference Include="..\BetaSharp\BetaSharp.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\BetaSharp\assets\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\BetaSharp.Client\assets\lang\en_us.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>assets\lang\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
 </Project>
