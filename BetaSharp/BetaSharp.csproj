@@ -31,13 +31,4 @@
   <ItemGroup>
     <InternalsVisibleTo Include="BetaSharp.Tests" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\**\*" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="assets\lang\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>
