@@ -35,11 +35,26 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
 
         Root.AddChild(scroll);
 
+        Panel bottomButtons = new();
+        bottomButtons.Style.FlexDirection = FlexDirection.Row;
+        bottomButtons.Style.MarginBottom = 20;
+
         Button btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
-        btnDone.Style.MarginBottom = 20;
+        btnDone.Style.MarginRight = 4;
         btnDone.OnClick += (e) => Context.Navigator.Navigate(parent);
-        Root.AddChild(btnDone);
+        bottomButtons.AddChild(btnDone);
+
+        ImageButton btnLang = CreateImageButton();
+        btnLang.OnClick += (e) => Context.Navigator.Navigate(new TranslationsCreditsScreen(Context, this));
+        btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
+        btnLang.U = 0;
+        btnLang.V = 0;
+        btnLang.UWidth = 24;
+        btnLang.VHeight = 24;
+        bottomButtons.AddChild(btnLang);
+
+        Root.AddChild(bottomButtons);
     }
 
     private void Content(ScrollView scroll)

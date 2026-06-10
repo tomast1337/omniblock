@@ -1352,6 +1352,7 @@
         "slik": "Slik.NET - Graphics",
         "imgui": "ImGui - Debug UI",
         "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing"
+        "sixlabors": "SixLabors - Fonts, image processing",
+        "translations": "Translations Credits"
     }
 }
