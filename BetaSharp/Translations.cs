@@ -33,7 +33,7 @@ public class Translations
 
             Languages.Add(code, new Language(code, name, author));
 
-            if (code == "en-us") DefaultLanguage = Languages[code];
+            if (code == "en_us") DefaultLanguage = Languages[code];
         }
 
         CurrentLanguage = DefaultLanguage;

@@ -13,6 +13,7 @@ internal sealed class TranslationsWindow : DebugWindow
     private int _currentIndex = -1;
     private Language? _language = null;
     private string _search = string.Empty;
+    private bool _displayMissing = false;
 
     private Dictionary<string, Language> _nameToLanguage = new();
     private string[] _languageNames = Array.Empty<string>();
@@ -75,6 +76,9 @@ internal sealed class TranslationsWindow : DebugWindow
             }
         }
 
+        // display missing
+        ImGui.Checkbox("Display missing translations", ref _displayMissing);
+
         // search bar
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         ImGui.InputText("##Search", ref _search, 256);
@@ -98,34 +102,58 @@ internal sealed class TranslationsWindow : DebugWindow
                 if (_language.Translations is null)
                 {
                     ImGui.TextDisabled($"Translations were not loaded, and failed to load!");
+
+                    ImGui.EndChild();
+                    return;
                 }
-                else
+
+                if (_displayMissing)
                 {
-                    bool noTranslations = true;
-
-                    foreach (var translation in _language.Translations)
+                    if (Translations.Instance.DefaultLanguage is null)
                     {
-                        // filter
-                        if (!string.IsNullOrWhiteSpace(_search))
+                        ImGui.TextDisabled("Cannot show missing translations - default language is null.");
+                    }
+                    else
+                    {
+                        ImGui.TextDisabled("Displaying translations missing in this language:");
+
+                        bool anyMissing = false;
+                        foreach (var translation in Translations.Instance.DefaultLanguage.Translations)
                         {
-                            bool matchesKey = translation.Key.Contains(_search, StringComparison.OrdinalIgnoreCase);
-                            bool matchesValue = translation.Value?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false;
+                            if (_language.Translations.ContainsKey(translation.Key)) continue;
 
-                            if (!matchesKey && !matchesValue)
-                                continue;
+                            ImGui.TextColored(new System.Numerics.Vector4(0.8f, 0.4f, 0.4f, 1f), $"{translation.Key}: {translation.Value}");
 
-                            noTranslations = false;
+                            anyMissing = true;
                         }
-
-                        ImGui.Text($"{translation.Key}:");
-                        ImGui.SameLine();
-                        ImGui.TextColored(new System.Numerics.Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value);
+                        if (anyMissing) ImGui.Separator();
                     }
+                }
 
-                    if (noTranslations)
+                bool noTranslations = true;
+
+                foreach (var translation in _language.Translations)
+                {
+                    // filter
+                    if (!string.IsNullOrWhiteSpace(_search))
                     {
-                        ImGui.TextDisabled("No translation matched your filter.");
+                        bool matchesKey = translation.Key.Contains(_search, StringComparison.OrdinalIgnoreCase);
+                        bool matchesValue = translation.Value?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false;
+
+                        if (!matchesKey && !matchesValue)
+                            continue;
+
+                        noTranslations = false;
                     }
+
+                    ImGui.Text($"{translation.Key}:");
+                    ImGui.SameLine();
+                    ImGui.TextColored(new System.Numerics.Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value);
+                }
+
+                if (noTranslations)
+                {
+                    ImGui.TextDisabled("No translation matched your filter.");
                 }
             }
             else
