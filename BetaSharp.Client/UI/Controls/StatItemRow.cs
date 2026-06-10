@@ -46,7 +46,7 @@ public class StatItemRow : UIElement
         if (tileName.StartsWith("item."))
             tileName = tileName.Replace("item.", "tile.");
 
-        string? name = TranslationStorage.Instance.TranslateKey($"{tileName}.name");
+        string? name = Translations.Get($"{tileName}.name");
 
         if (!string.IsNullOrWhiteSpace(name) && !name.Contains('.'))
         {

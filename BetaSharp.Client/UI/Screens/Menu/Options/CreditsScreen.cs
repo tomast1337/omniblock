@@ -39,7 +39,7 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         Root.AddChild(scroll);
 
         Button btnDone = CreateButton();
-        btnDone.Text = TranslationStorage.Instance.TranslateKey("gui.done");
+        btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginBottom = 20;
         btnDone.OnClick += (e) => Context.Navigator.Navigate(parent);
         Root.AddChild(btnDone);

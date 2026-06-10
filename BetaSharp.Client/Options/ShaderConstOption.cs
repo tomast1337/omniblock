@@ -21,7 +21,7 @@ public class ShaderConstOption : GameOption
 
     public override void Reset() => _set.SetIndex(_def.Name, _def.DefaultIndex);
 
-    public override string FormatValue(TranslationStorage _) =>
+    public override string FormatValue() =>
         _def.AllowedValues[_set.GetIndex(_def.Name)];
 
     public override void Load(string raw) { }

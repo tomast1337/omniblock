@@ -6,7 +6,7 @@ public class CycleOption : GameOption
     public int DefaultIndex { get; }
     public int Length { get; }
     public string[] Labels { get; }
-    public Func<int, TranslationStorage, string>? Formatter { get; init; }
+    public Func<int, string>? Formatter { get; init; }
     public Action<int>? OnChanged { get; init; }
 
     public CycleOption(string translationKey, string saveKey, string[] labels, int defaultValue = 0) : this(translationKey, saveKey, labels, defaultValue, labels.Length) { }
@@ -31,16 +31,16 @@ public class CycleOption : GameOption
         OnChanged?.Invoke(Value);
     }
 
-    public override string FormatValue(TranslationStorage translations)
+    public override string FormatValue()
     {
         if (Formatter != null)
         {
-            return Formatter(Value, translations);
+            return Formatter(Value);
         }
 
         if (Labels.Length <= Length)
-            return translations.TranslateKeyFormat(Labels[Value]);
-        return Labels.Length <= Value ? translations.TranslateKey(Labels[Value]) : translations.TranslateKey(Labels.Last());
+            return Translations.Get(Labels[Value]);
+        return Labels.Length <= Value ? Translations.Get(Labels[Value]) : Translations.Get(Labels.Last());
     }
 
     public override void Load(string raw)

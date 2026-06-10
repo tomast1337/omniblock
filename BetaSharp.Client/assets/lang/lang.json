@@ -1,0 +1,22 @@
+﻿{
+    "en_us": {
+        "name": "English (United States)",
+        "author": "BetaSharp Team"
+    },
+    "ja_jp": {
+        "name": "日本語",
+        "author": "tomodesuyo"
+    },
+    "pl_pl": {
+        "name": "Polski",
+        "author": "Patryk Wierzbicki"
+    },
+    "pt_br": {
+        "name": "Português (Brasil)",
+        "author": "Nicolas Vyčas Nery"
+    },
+    "lt_lt": {
+        "name": "Lietuvių (Lietuva)",
+        "author": "Nicolas Vyčas Nery"
+    }
+}

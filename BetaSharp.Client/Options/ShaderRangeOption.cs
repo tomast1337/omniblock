@@ -30,7 +30,7 @@ public class ShaderRangeOption : GameOption
         _set.SetFloat(_def.Name, actual);
     }
 
-    public override string FormatValue(TranslationStorage _) =>
+    public override string FormatValue() =>
         ShaderOptionSet.FormatShaderValue(
             _set.GetFloat(_def.Name, (_def.RangeMin + _def.RangeMax) / 2f),
             _def.GlslType,

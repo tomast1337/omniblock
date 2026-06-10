@@ -6,7 +6,7 @@ public class FloatOption : GameOption
 {
     public float Value { get; set; }
     public float DefaultValue { get; }
-    public Func<float, TranslationStorage, string>? Formatter { get; init; }
+    public Func<float, string>? Formatter { get; init; }
     public Action<float>? OnChanged { get; init; }
     public int? Steps { get; init; }
 
@@ -30,15 +30,15 @@ public class FloatOption : GameOption
         OnChanged?.Invoke(Value);
     }
 
-    public override string FormatValue(TranslationStorage translations)
+    public override string FormatValue()
     {
         if (Formatter != null)
         {
-            return Formatter(Value, translations);
+            return Formatter(Value);
         }
 
         return Value == 0.0F
-            ? translations.TranslateKey("options.off")
+            ? Translations.Get("options.off")
             : $"{(int)(Value * 100.0F)}%";
     }
 

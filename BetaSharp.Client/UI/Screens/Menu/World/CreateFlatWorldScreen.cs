@@ -21,13 +21,11 @@ public class CreateFlatWorldScreen(
 
     protected override void Init()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = translationStorage.TranslateKey("newWorld.customize.superflatWorld.title"), TextColor = Color.White };
+        Label title = new() { Text = Translations.Get("newWorld.customize.superflatWorld.title"), TextColor = Color.White };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
@@ -48,7 +46,7 @@ public class CreateFlatWorldScreen(
         row1.Style.FlexDirection = FlexDirection.Row;
 
         _btnRemove = CreateButton();
-        _btnRemove.Text = translationStorage.TranslateKey("newWorld.customize.removeLayer");
+        _btnRemove.Text = Translations.Get("newWorld.customize.removeLayer");
         _btnRemove.Style.Width = 150;
         _btnRemove.Style.SetMargin(2);
         _btnRemove.Enabled = false;
@@ -56,7 +54,7 @@ public class CreateFlatWorldScreen(
         row1.AddChild(_btnRemove);
 
         Button btnPresets = CreateButton();
-        btnPresets.Text = translationStorage.TranslateKey("newWorld.customize.presets");
+        btnPresets.Text = Translations.Get("newWorld.customize.presets");
         btnPresets.Style.Width = 150;
         btnPresets.Style.SetMargin(2);
         btnPresets.OnClick += (e) => Context.Navigator.Navigate(new FlatPresetsScreen(Context, this));
@@ -68,7 +66,7 @@ public class CreateFlatWorldScreen(
         row2.Style.FlexDirection = FlexDirection.Row;
 
         Button btnDone = CreateButton();
-        btnDone.Text = translationStorage.TranslateKey("gui.done");
+        btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 150;
         btnDone.Style.SetMargin(2);
         btnDone.OnClick += (e) =>
@@ -79,7 +77,7 @@ public class CreateFlatWorldScreen(
         row2.AddChild(btnDone);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translationStorage.TranslateKey("gui.cancel");
+        btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);

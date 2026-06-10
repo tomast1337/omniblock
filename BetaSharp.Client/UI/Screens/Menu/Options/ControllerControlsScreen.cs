@@ -14,8 +14,6 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
     protected override UIElement CreateContent()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Panel list = CreateTwoColumnList();
 
         // Sensitivity
@@ -36,7 +34,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
 
         // Edit Bindings Button
         Button btnBindings = CreateButton();
-        btnBindings.Text = translationStorage.TranslateKey("options.editBindings");
+        btnBindings.Text = Translations.Get("options.editBindings");
         btnBindings.Style.Width = ButtonSize;
         btnBindings.Style.MarginLeft = ButtonPadding;
         btnBindings.Style.MarginRight = ButtonPadding;
@@ -53,7 +51,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
         btnReset.Style.MarginLeft = ButtonPadding;
         btnReset.Style.MarginRight = ButtonPadding;
         btnReset.Style.MarginBottom = 4;
-        btnReset.Text = translationStorage.TranslateKey("options.resetBindings");
+        btnReset.Text = Translations.Get("options.resetBindings");
         btnReset.OnClick += (e) =>
         {
             foreach (ControllerBinding cb in Options.ControllerBindings)

@@ -22,15 +22,13 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
 
     protected override void Init()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Root.AddChild(new Background());
         LoadServerList();
 
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = translationStorage.TranslateKey("multiplayer.title"), TextColor = Color.White };
+        Label title = new() { Text = Translations.Get("multiplayer.title"), TextColor = Color.White };
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
         AddTitleSpacer();
@@ -56,24 +54,24 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row1.Style.MarginBottom = 2;
 
         _btnJoin = CreateButton();
-        _btnJoin.Text = translationStorage.TranslateKey("gui.connect");
+        _btnJoin.Text = Translations.Get("gui.connect");
         _btnJoin.Style.Width = 100;
         _btnJoin.Style.SetMargin(2);
         _btnJoin.OnClick += (e) => ConnectSelected();
         row1.AddChild(_btnJoin);
 
         Button btnDirect = CreateButton();
-        btnDirect.Text = translationStorage.TranslateKey("gui.directConnect");
+        btnDirect.Text = Translations.Get("gui.directConnect");
         btnDirect.Style.Width = 100;
         btnDirect.Style.SetMargin(2);
-        btnDirect.OnClick += (e) => Context.Navigator.Navigate(new DirectConnectScreen(Context, this, new ServerData(translationStorage.TranslateKey("multiplayer.betasharpServer"), ""), networkContext));
+        btnDirect.OnClick += (e) => Context.Navigator.Navigate(new DirectConnectScreen(Context, this, new ServerData(Translations.Get("multiplayer.betasharpServer"), ""), networkContext));
         row1.AddChild(btnDirect);
 
         Button btnAdd = CreateButton();
-        btnAdd.Text = translationStorage.TranslateKey("gui.addServer");
+        btnAdd.Text = Translations.Get("gui.addServer");
         btnAdd.Style.Width = 100;
         btnAdd.Style.SetMargin(2);
-        btnAdd.OnClick += (e) => Context.Navigator.Navigate(new EditServerScreen(Context, this, new ServerData(translationStorage.TranslateKey("multiplayer.betasharpServer"), ""), false));
+        btnAdd.OnClick += (e) => Context.Navigator.Navigate(new EditServerScreen(Context, this, new ServerData(Translations.Get("multiplayer.betasharpServer"), ""), false));
         row1.AddChild(btnAdd);
 
         buttonContainer.AddChild(row1);
@@ -83,28 +81,28 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row2.Style.JustifyContent = Justify.Center;
 
         _btnEdit = CreateButton();
-        _btnEdit.Text = translationStorage.TranslateKey("gui.edit");
+        _btnEdit.Text = Translations.Get("gui.edit");
         _btnEdit.Style.Width = 75;
         _btnEdit.Style.SetMargin(2);
         _btnEdit.OnClick += (e) => EditSelected();
         row2.AddChild(_btnEdit);
 
         _btnDelete = CreateButton();
-        _btnDelete.Text = translationStorage.TranslateKey("gui.delete");
+        _btnDelete.Text = Translations.Get("gui.delete");
         _btnDelete.Style.Width = 75;
         _btnDelete.Style.SetMargin(2);
         _btnDelete.OnClick += (e) => DeleteSelected();
         row2.AddChild(_btnDelete);
 
         Button btnRefresh = CreateButton();
-        btnRefresh.Text = translationStorage.TranslateKey("gui.refresh");
+        btnRefresh.Text = Translations.Get("gui.refresh");
         btnRefresh.Style.Width = 75;
         btnRefresh.Style.SetMargin(2);
         btnRefresh.OnClick += (e) => { LoadServerList(); PopulateServerList(); };
         row2.AddChild(btnRefresh);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translationStorage.TranslateKey("gui.cancel");
+        btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 75;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(null);
@@ -223,14 +221,12 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
 
     private void DeleteSelected()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         if (_selectedServerIndex < 0) return;
         ServerData server = _serverList[_selectedServerIndex];
-        string q = translationStorage.TranslateKey("multiplayer.deleteQuestion");
-        string w = "'" + server.Name + "' " + translationStorage.TranslateKey("multiplayer.deleteWarning");
+        string q = Translations.Get("multiplayer.deleteQuestion");
+        string w = "'" + server.Name + "' " + Translations.Get("multiplayer.deleteWarning");
 
-        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, q, w, translationStorage.TranslateKey("gui.delete"), translationStorage.TranslateKey("gui.cancel"), (result) =>
+        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, q, w, Translations.Get("gui.delete"), Translations.Get("gui.cancel"), (result) =>
         {
             if (result)
             {

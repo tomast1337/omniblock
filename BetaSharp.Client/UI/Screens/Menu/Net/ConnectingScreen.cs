@@ -30,8 +30,6 @@ public class ConnectingScreen : UIScreen
 
     protected override void Init()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -59,18 +57,16 @@ public class ConnectingScreen : UIScreen
         }
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translationStorage.TranslateKey("gui.cancel");
+        btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.OnClick += (e) => Cancel();
         Root.AddChild(btnCancel);
     }
 
     private string GetStatusText()
     {
-        TranslationStorage translations = TranslationStorage.Instance;
-
         return ClientHandler == null
-            ? translations.TranslateKey("connect.connecting")
-            : translations.TranslateKey("connect.authorizing");
+            ? Translations.Get("connect.connecting")
+            : Translations.Get("connect.authorizing");
     }
 
     public void Cancel()

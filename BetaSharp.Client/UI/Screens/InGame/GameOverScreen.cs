@@ -16,8 +16,6 @@ public class GameOverScreen(
 
     protected override void Init()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
 
@@ -29,7 +27,7 @@ public class GameOverScreen(
 
         Label title = new()
         {
-            Text = translationStorage.TranslateKey("gameover.title"),
+            Text = Translations.Get("gameover.title"),
             TextColor = Color.White,
             Scale = 2.0f,
             Centered = true
@@ -39,14 +37,14 @@ public class GameOverScreen(
 
         Label scoreLabel = new()
         {
-            Text = translationStorage.TranslateKey("gameover.score") + ": &e" + score,
+            Text = Translations.Get("gameover.score") + ": &e" + score,
             TextColor = Color.White
         };
         scoreLabel.Style.MarginBottom = 20;
         Root.AddChild(scoreLabel);
 
         Button btnRespawn = CreateButton();
-        btnRespawn.Text = translationStorage.TranslateKey("gameover.respawn");
+        btnRespawn.Text = Translations.Get("gameover.respawn");
         btnRespawn.OnClick += (e) =>
         {
             respawn();
@@ -61,7 +59,7 @@ public class GameOverScreen(
         Root.AddChild(btnRespawn);
 
         Button btnTitle = CreateButton();
-        btnTitle.Text = translationStorage.TranslateKey("gameover.titleMenu");
+        btnTitle.Text = Translations.Get("gameover.titleMenu");
         btnTitle.OnClick += (e) =>
         {
             exitToTitle();

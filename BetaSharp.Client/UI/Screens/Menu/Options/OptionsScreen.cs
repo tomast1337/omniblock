@@ -14,8 +14,6 @@ public class OptionsScreen(
 
     protected override UIElement CreateContent()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-  
         Panel list = CreateTwoColumnList();
 
         // Main options list
@@ -40,10 +38,10 @@ public class OptionsScreen(
         list.AddChild(separator);
 
         // Sub-menu buttons
-        void AddSubButton(string text, Action onClick)
+        void AddSubButton(string key, Action onClick)
         {
             Button btn = CreateButton();
-            btn.Text = text;
+            btn.Text = Translations.Get(key);
             btn.Style.MarginTop = 2;
             btn.Style.MarginBottom = 2;
             btn.Style.MarginLeft = 4;
@@ -57,12 +55,12 @@ public class OptionsScreen(
             list.AddChild(btn);
         }
 
-        AddSubButton(translationStorage.TranslateKey("options.video.text"), () => Context.Navigator.Navigate(new VideoSettingsScreen(Context, this)));
-        AddSubButton(translationStorage.TranslateKey("options.uiSettings"), () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
-        AddSubButton(translationStorage.TranslateKey("options.audioSettings"), () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
-        AddSubButton(translationStorage.TranslateKey("options.controls"), () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
-        AddSubButton(translationStorage.TranslateKey("menu.texturePacks"), () => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePacks)));
-        AddSubButton(translationStorage.TranslateKey("menu.credits"), () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
+        AddSubButton("options.video.text", () => Context.Navigator.Navigate(new VideoSettingsScreen(Context, this)));
+        AddSubButton("options.uiSettings", () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
+        AddSubButton("options.audioSettings", () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
+        AddSubButton("options.controls", () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
+        AddSubButton("menu.texturePacks", () => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePacks)));
+        AddSubButton("menu.credits", () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
 
         return list;
     }

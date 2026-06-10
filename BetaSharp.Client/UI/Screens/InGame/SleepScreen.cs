@@ -17,10 +17,8 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
         Root.Style.JustifyContent = Justify.FlexEnd;
         Root.Style.PaddingBottom = 40;
 
-        TranslationStorage translations = TranslationStorage.Instance;
-
         Button btnStopSleep = CreateButton();
-        btnStopSleep.Text = translations.TranslateKey("multiplayer.stopSleeping");
+        btnStopSleep.Text = Translations.Get("multiplayer.stopSleeping");
         btnStopSleep.Style.Width = 200;
         btnStopSleep.OnClick += (_) => SendStopSleepingCommand();
 

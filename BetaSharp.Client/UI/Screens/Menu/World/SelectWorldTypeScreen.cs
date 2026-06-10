@@ -19,13 +19,11 @@ public class SelectWorldTypeScreen(
 
     protected override void Init()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = translationStorage.TranslateKey("selectWorld.selectWorldType"), TextColor = Color.White };
+        Label title = new() { Text = Translations.Get("selectWorld.selectWorldType"), TextColor = Color.White };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
@@ -42,7 +40,7 @@ public class SelectWorldTypeScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnDone = CreateButton();
-        btnDone.Text = translationStorage.TranslateKey("gui.done");
+        btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(2);
         btnDone.OnClick += (e) =>
@@ -56,7 +54,7 @@ public class SelectWorldTypeScreen(
         buttonPanel.AddChild(btnDone);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translationStorage.TranslateKey("gui.cancel");
+        btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
@@ -73,8 +71,8 @@ public class SelectWorldTypeScreen(
         _listItems.Clear();
         foreach (WorldType type in _types)
         {
-            type.SetDisplayName(TranslationStorage.Instance.TranslateKey($"selectWorld.type.{type.Name.ToLowerInvariant()}.title"))
-                .SetDescription(TranslationStorage.Instance.TranslateKey($"selectWorld.type.{type.Name.ToLowerInvariant()}.description"));
+            type.SetDisplayName(Translations.Get($"selectWorld.type.{type.Name.ToLowerInvariant()}.title"))
+                .SetDescription(Translations.Get($"selectWorld.type.{type.Name.ToLowerInvariant()}.description"));
 
             int index = _listItems.Count;
             var item = new SelectWorldTypeListItem(type);

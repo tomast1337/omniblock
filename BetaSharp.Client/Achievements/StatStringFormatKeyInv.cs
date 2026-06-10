@@ -5,10 +5,9 @@ namespace BetaSharp.Client.Achievements;
 public class StatStringFormatKeyInv(BetaSharp game) : AchievementStatFormatter
 {
     private readonly BetaSharp _game = game;
-    private static readonly TranslationStorage s_localizedName = TranslationStorage.Instance;
 
     public string formatString(string key)
     {
-        return s_localizedName.TranslateKeyFormat(key, Keyboard.getKeyName(_game.Options.KeyBindings[7].scanCode));
+        return Translations.GetFormat(key, Keyboard.getKeyName(_game.Options.KeyBindings[7].scanCode));
     }
 }

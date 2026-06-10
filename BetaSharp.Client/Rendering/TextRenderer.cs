@@ -161,11 +161,11 @@ public class TextRenderer
 
         ApplyFontForLanguage();
 
-        TranslationStorage.LanguageChanged += ReloadForLanguage;
+        Translations.LanguageChanged += ReloadForLanguage;
     }
 
     private bool UseUnifontPrimary =>
-        TranslationStorage.Instance.TranslateKey("lang.font") == "unifont";
+        Translations.Get("lang.font") == "unifont";
 
     private void ApplyFontForLanguage()
     {

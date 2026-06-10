@@ -63,7 +63,6 @@ public class AssetManager
     private static readonly object s_instanceLock = new();
     private static AssetManager? s_instance;
     private static AssetProfile? s_configuredProfile;
-    public static Dictionary<string, string> Languages = new Dictionary<string, string>();
 
     public static AssetManager Instance => s_instance ?? throw new InvalidOperationException("AssetManager was not initialized.");
 
@@ -126,27 +125,13 @@ public class AssetManager
 
                 foreach (var file in langFiles)
                 {
-                    string? name = null;
-
-                    try
+                    if (file == "assets/lang/lang.json")
                     {
-                        string json = File.ReadAllText(file);
-                        using JsonDocument doc = JsonDocument.Parse(json);
-
-                        if (doc.RootElement.TryGetProperty("lang", out var langObj) &&
-                            langObj.TryGetProperty("name", out var nameProp))
-                        {
-                            name = nameProp.GetString();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Invalid JSON in {file}: {ex.Message}");
+                        continue;
                     }
 
                     string fileName = Path.GetFileName(file);
 
-                    Languages.Add(fileName, name ?? "Unknown");
                     defineAsset("lang/" + fileName, AssetType.Text);
                 }
             }
@@ -307,6 +292,8 @@ public class AssetManager
         defineEmbeddedAsset("shaders/quad.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/sky.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/sky.frag", AssetType.Text);
+
+        defineAsset("lang/lang.json", AssetType.Text);
     }
 
     public Asset getAsset(string assetPath)

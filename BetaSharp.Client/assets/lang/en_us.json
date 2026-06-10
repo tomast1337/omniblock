@@ -1,7 +1,4 @@
 ﻿{
-    "lang": {
-        "name": "English (United States)"
-    },
     "gui": {
         "joinServer": "Join Server",
         "rename": "Rename",

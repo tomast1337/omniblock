@@ -30,9 +30,7 @@ public class WorldScreen(
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        TranslationStorage translations = TranslationStorage.Instance;
-
-        Label title = new() { Text = translations.TranslateKey("selectWorld.title"), TextColor = Color.White };
+        Label title = new() { Text = Translations.Get("selectWorld.title"), TextColor = Color.White };
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
         AddTitleSpacer();
@@ -58,14 +56,14 @@ public class WorldScreen(
         row1.Style.MarginBottom = 2;
 
         _btnSelect = CreateButton();
-        _btnSelect.Text = translations.TranslateKey("selectWorld.select");
+        _btnSelect.Text = Translations.Get("selectWorld.select");
         _btnSelect.Style.Width = 150;
         _btnSelect.Style.SetMargin(2);
         _btnSelect.OnClick += (e) => SelectWorld(_selectedWorldIndex);
         row1.AddChild(_btnSelect);
 
         Button btnCreate = CreateButton();
-        btnCreate.Text = translations.TranslateKey("selectWorld.create");
+        btnCreate.Text = Translations.Get("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
         btnCreate.OnClick += (e) => Context.Navigator.Navigate(new CreateWorldScreen(Context, singleplayerHost));
@@ -78,21 +76,21 @@ public class WorldScreen(
         row2.Style.JustifyContent = Justify.Center;
 
         _btnRename = CreateButton();
-        _btnRename.Text = translations.TranslateKey("gui.rename");
+        _btnRename.Text = Translations.Get("gui.rename");
         _btnRename.Style.Width = 72;
         _btnRename.Style.SetMargin(2);
         _btnRename.OnClick += (e) => RenameSelected();
         row2.AddChild(_btnRename);
 
         _btnDelete = CreateButton();
-        _btnDelete.Text = translations.TranslateKey("gui.delete");
+        _btnDelete.Text = Translations.Get("gui.delete");
         _btnDelete.Style.Width = 72;
         _btnDelete.Style.SetMargin(2);
         _btnDelete.OnClick += (e) => DeleteSelected();
         row2.AddChild(_btnDelete);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translations.TranslateKey("gui.cancel");
+        btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(null);
@@ -187,11 +185,10 @@ public class WorldScreen(
         if (_selectedWorldIndex < 0) return;
         WorldSaveInfo worldInfo = _saveList[_selectedWorldIndex];
 
-        TranslationStorage translations = TranslationStorage.Instance;
-        string deleteQuestion = translations.TranslateKey("selectWorld.deleteQuestion");
-        string deleteWarning = "'" + worldInfo.DisplayName + "' " + translations.TranslateKey("selectWorld.deleteWarning");
+        string deleteQuestion = Translations.Get("selectWorld.deleteQuestion");
+        string deleteWarning = "'" + worldInfo.DisplayName + "' " + Translations.Get("selectWorld.deleteWarning");
 
-        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, deleteQuestion, deleteWarning, translations.TranslateKey("gui.delete"), translations.TranslateKey("gui.cancel"), (confirmed) =>
+        Context.Navigator.Navigate(new ConfirmationScreen(Context, this, deleteQuestion, deleteWarning, Translations.Get("gui.delete"), Translations.Get("gui.cancel"), (confirmed) =>
         {
             if (confirmed)
             {

@@ -4,7 +4,7 @@ public class BoolOption : GameOption
 {
     public bool Value { get; set; }
     public bool DefaultValue { get; }
-    public Func<bool, TranslationStorage, string>? Formatter { get; init; }
+    public Func<bool, string>? Formatter { get; init; }
     public Action<bool>? OnChanged { get; init; }
 
     public BoolOption(string translationKey, string saveKey, bool defaultValue = false) : base(translationKey, saveKey)
@@ -25,14 +25,14 @@ public class BoolOption : GameOption
         OnChanged?.Invoke(Value);
     }
 
-    public override string FormatValue(TranslationStorage translations)
+    public override string FormatValue()
     {
         if (Formatter != null)
         {
-            return Formatter(Value, translations);
+            return Formatter(Value);
         }
 
-        return Value ? translations.TranslateKey("options.on") : translations.TranslateKey("options.off");
+        return Value ? Translations.Get("options.on") : Translations.Get("options.off");
     }
 
     public override void Load(string raw) => Value = raw == "true";

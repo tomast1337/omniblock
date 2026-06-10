@@ -15,7 +15,7 @@ public abstract class BaseOptionsScreen(
 {
     protected readonly UIScreen? Parent = parent;
     protected GameOptions Options => Context.Options;
-    protected string TitleText = TranslationStorage.Instance.TranslateKey(titleKey);
+    protected string TitleText = Translations.Get(titleKey);
 
     protected const int ButtonSize = 150;
     protected const int ButtonPadding = 4;
@@ -54,7 +54,7 @@ public abstract class BaseOptionsScreen(
         Root.AddChild(scroll);
 
         Button btnDone = CreateButton();
-        btnDone.Text = TranslationStorage.Instance.TranslateKey("gui.done");
+        btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginBottom = 20;
         btnDone.OnClick += (e) => OnDone();
         Root.AddChild(btnDone);
@@ -175,17 +175,15 @@ public abstract class BaseOptionsScreen(
 
     protected virtual UIElement CreateControlForOption(GameOption option)
     {
-        TranslationStorage translations = TranslationStorage.Instance;
-
         if (option is FloatOption floatOpt)
         {
             Slider slider = CreateSlider();
             slider.Value = floatOpt.Value;
-            slider.Text = option.GetDisplayString(translations);
+            slider.Text = option.GetDisplayString();
             slider.OnValueChanged += (v) =>
             {
                 floatOpt.Set(v);
-                slider.Text = option.GetDisplayString(translations);
+                slider.Text = option.GetDisplayString();
             };
             slider.OnMouseDown += (e) =>
             {
@@ -193,7 +191,7 @@ public abstract class BaseOptionsScreen(
                 {
                     option.Reset();
                     slider.Value = floatOpt.Value;
-                    slider.Text = option.GetDisplayString(translations);
+                    slider.Text = option.GetDisplayString();
                 }
             };
             return slider;
@@ -202,11 +200,11 @@ public abstract class BaseOptionsScreen(
         {
             Slider slider = CreateSlider();
             slider.Value = rangeOpt.NormalizedValue;
-            slider.Text = option.GetDisplayString(translations);
+            slider.Text = option.GetDisplayString();
             slider.OnValueChanged += v =>
             {
                 rangeOpt.SetNormalized(v);
-                slider.Text = option.GetDisplayString(translations);
+                slider.Text = option.GetDisplayString();
             };
             slider.OnMouseDown += (e) =>
             {
@@ -214,7 +212,7 @@ public abstract class BaseOptionsScreen(
                 {
                     option.Reset();
                     slider.Value = rangeOpt.NormalizedValue;
-                    slider.Text = option.GetDisplayString(translations);
+                    slider.Text = option.GetDisplayString();
                 }
             };
             return slider;
@@ -222,7 +220,7 @@ public abstract class BaseOptionsScreen(
         else
         {
             Button btn = CreateButton();
-            btn.Text = option.GetDisplayString(translations);
+            btn.Text = option.GetDisplayString();
             btn.OnMouseDown += (e) =>
             {
                 if (Keyboard.isKeyDown(Options.KeyBindSneak.scanCode))
@@ -241,7 +239,7 @@ public abstract class BaseOptionsScreen(
                     else if (option is ShaderConstOption shaderOpt) shaderOpt.Cycle();
                     else if (option is NavigationOption navOpt) navOpt.Execute();
                 }
-                btn.Text = option.GetDisplayString(translations);
+                btn.Text = option.GetDisplayString();
             };
             return btn;
         }
