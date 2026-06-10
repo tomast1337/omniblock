@@ -295,9 +295,8 @@ public class GameOptions
         };
         ControlTooltip.ControllerType = ControllerType.ControllerTypes[ControllerTypeOption.Value];
 
-        FramerateLimitOption = new FloatOption("options.framerateLimit", "fpsLimit", 0.42857143f)
+        FramerateLimitOption = new FloatOption("options.fps.maxFps", "fpsLimit", 0.42857143f)
         {
-            LabelOverride = Translations.Get("options.fps.maxFps"),
             Steps = 210,
             Formatter = (v) =>
             {
@@ -307,7 +306,6 @@ public class GameOptions
         };
         FovOption = new FloatOption("options.fov", "fov", 0.44444445F)
         {
-            LabelOverride = Translations.Get("options.fov"),
             Steps = 90,
             Formatter = (v) => (30 + (int)(v * 90.0f)).ToString()
         };
@@ -315,7 +313,6 @@ public class GameOptions
         UICursorsOption = new BoolOption("options.uiCursors", "uiCursors", true);
         GammaOption = new FloatOption("options.gamma", "gamma", 0.5F)
         {
-            LabelOverride = Translations.Get("options.gamma"),
             Steps = 100,
             Formatter = (v) => $"{(int)(v * 100.0f)}"
         };
@@ -324,7 +321,6 @@ public class GameOptions
         ViewBobbingOption = new BoolOption("options.viewBobbing", "bobView", true);
         VSyncOption = new BoolOption("options.vSync", "vsync")
         {
-            LabelOverride = Translations.Get("options.vSync"),
             OnChanged = v => Display.getGlfw().SwapInterval(v ? 1 : 0)
         };
         MipmapsOption = new BoolOption("options.mipmaps", "useMipmaps", true)
