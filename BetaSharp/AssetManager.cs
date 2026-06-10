@@ -163,7 +163,6 @@ public class AssetManager
 
     private void defineHeadlessAssets()
     {
-        defineAsset("font.txt", AssetType.Text);
         defineAsset("achievement/map.txt", AssetType.Text);
     }
 
