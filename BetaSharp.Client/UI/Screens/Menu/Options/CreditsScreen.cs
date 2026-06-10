@@ -1,7 +1,4 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using BetaSharp.Client.Guis;
-using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -19,7 +16,7 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
 
         Label title = new()
         {
-            Text = "Credits",
+            Text = Translations.Get("menu.credits"),
             TextColor = Color.White,
             Centered = true
         };
@@ -47,7 +44,7 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
 
     private void Content(ScrollView scroll)
     {
-        void ColoredText(string text, Color color, float scale)
+        void ColoredTextUntranslated(string text, Color color, float scale)
         {
             Label lbl = new Label()
             {
@@ -61,17 +58,22 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
             scroll.AddContent(lbl);
         }
 
-        void Text(string text, float scale = 1.0F)
-            => ColoredText(text, Color.White, scale);
+        void ColoredText(string key, Color color, float scale)
+            => ColoredTextUntranslated(Translations.Get(key), color, scale);
 
-        void Header(string text)
-            => ColoredText(text, Color.Yellow, 1f);
+        void Text(string key, float scale = 1.0F)
+            => ColoredText(key, Color.White, scale);
 
-        void Link(string text, string url, float scale = 1.0F)
+        void HeaderFormat(string key)
+            => ColoredText(Translations.GetFormat(key), Color.Yellow, 1f);
+        void Header(string key)
+            => ColoredText(key, Color.Yellow, 1f);
+
+        void Link(string key, string url, float scale = 1.0F)
         {
             Link lbl = new Link()
             {
-                Text = text,
+                Text = Translations.Get(key),
                 Scale = scale,
                 Centered = true,
                 URL = url
@@ -99,18 +101,16 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         image.Style.MarginBottom = 10;
         scroll.AddContent(image);
 
-        Header("BetaSharp Version " + BetaSharp.Version);
-        Text("An enhanced of Minecraft Beta 1.7.3, written in C#.");
-        Link("On GitHub", "https://github.com/betasharp-official/betasharp/");
-        Link("Made by Fazin85", "https://github.com/Fazin85");
+        ColoredTextUntranslated(Translations.GetFormat("credits.version", BetaSharp.Version), Color.Yellow, 1f);
+        Text("credits.description");
+        Link("credits.github", "https://github.com/betasharp-official/betasharp/");
+        Link("credits.author", "https://github.com/Fazin85");
         Seperator();
 
-        Header("Libraries");
-        Link("Slik.NET - Graphics", "https://github.com/dotnet/Silk.NET");
-        Link("ImGui - Debug UI", "https://github.com/ocornut/imgui");
-        Link("SFML.NET - Audio", "https://github.com/SFML/SFML.Net");
-        Link("SixLabors - Fonts, image processing", "https://github.com/sixlabors");
+        Header("credits.libs");
+        Link("credits.slik", "https://github.com/dotnet/Silk.NET");
+        Link("credits.imgui", "https://github.com/ocornut/imgui");
+        Link("credits.sfml", "https://github.com/SFML/SFML.Net");
+        Link("credits.sixlabors", "https://github.com/sixlabors");
     }
-
-    
 }
