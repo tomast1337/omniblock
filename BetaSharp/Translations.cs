@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Hexa.NET.ImGui.Backends.Vulkan;
 
 namespace BetaSharp;
@@ -32,6 +33,11 @@ public class Translations
             var author = value.GetProperty("author").GetString();
 
             Languages.Add(code, new Language(code, name, author));
+
+            if (value.TryGetProperty("unifont", out JsonElement propertyValue))
+            {
+                Languages[code].Unifont = propertyValue.GetBoolean();+
+            }
 
             if (code == "en_us") DefaultLanguage = Languages[code];
         }

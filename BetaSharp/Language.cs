@@ -10,6 +10,7 @@ public class Language
     public string Code { get; init; }
     public string Name { get; init; }
     public string Author { get; init; }
+    public bool Unifont { get; set; }
     
     public IReadOnlyDictionary<string, string>? Translations { get; private set; }
 
@@ -18,6 +19,7 @@ public class Language
         Code = code;
         Name = name;
         Author = author;
+        Unifont = false;
     }
 
     public void LoadTranslations()

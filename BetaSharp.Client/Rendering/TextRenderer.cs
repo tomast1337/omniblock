@@ -165,7 +165,7 @@ public class TextRenderer
     }
 
     private bool UseUnifontPrimary =>
-        Translations.Get("lang.font") == "unifont";
+        Translations.Instance.CurrentLanguage.Unifont;
 
     private void ApplyFontForLanguage()
     {
