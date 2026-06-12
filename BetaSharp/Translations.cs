@@ -36,7 +36,7 @@ public class Translations
 
             if (value.TryGetProperty("unifont", out JsonElement propertyValue))
             {
-                Languages[code].Unifont = propertyValue.GetBoolean();+
+                Languages[code].Unifont = propertyValue.GetBoolean();
             }
 
             if (code == "en_us") DefaultLanguage = Languages[code];
