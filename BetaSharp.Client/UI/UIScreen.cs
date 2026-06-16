@@ -112,7 +112,7 @@ public abstract class UIScreen
         Root = new UIElement();
         Root.Style.Width = null;
         Root.Style.Height = null;
-        Renderer = new UIRenderer(context.TextRenderer, context.TextureManager, context.Options, context.DisplaySize);
+        Renderer = new UIRenderer(context.TextRenderer, context.TextureManager, context.Options, context.DisplaySize, context.TerrainTexture, context.ItemsTexture);
 
         CreateButton = () => new(context.PlayClickSound);
         CreateImageButton = () => new(context.PlayClickSound);

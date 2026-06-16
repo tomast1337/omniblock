@@ -301,10 +301,15 @@ public partial class BetaSharp :
         TextureManager = new TextureManager(this, TexturePackList, Options);
         TextRenderer = new TextRenderer(Options, TextureManager);
 
+        TextureHandle terrainTexture = TextureManager.GetTextureId("/terrain.png");
+        TextureHandle itemsTexture = TextureManager.GetTextureId("/gui/items.png");
+
         UIContext = new UIContext(
             Options,
             TextRenderer,
             TextureManager,
+            terrainTexture,
+            itemsTexture,
             playClickSound: () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
             displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
             inputDisplaySize: () =>

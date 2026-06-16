@@ -11,6 +11,8 @@ public sealed class UIContext(
     GameOptions options,
     TextRenderer textRenderer,
     TextureManager textureManager,
+    TextureHandle terrainTexture,
+    TextureHandle itemsTexture,
     Action playClickSound,
     Func<Vector2D<int>> displaySize,
     Func<Vector2D<int>> inputDisplaySize,
@@ -26,6 +28,8 @@ public sealed class UIContext(
     public GameOptions Options => options;
     public TextRenderer TextRenderer => textRenderer;
     public TextureManager TextureManager => textureManager;
+    public TextureHandle TerrainTexture => terrainTexture;
+    public TextureHandle ItemsTexture => itemsTexture;
     public Action PlayClickSound => playClickSound;
     public VirtualCursor VirtualCursor => virtualCursor;
     public Timer Timer => timer;

@@ -19,18 +19,31 @@ using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
 namespace BetaSharp.Client.UI.Rendering;
 
-public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize) : IDisposable
+public class UIRenderer : IDisposable
 {
-    public TextureManager TextureManager { get; } = textureManager;
-    public TextRenderer TextRenderer { get; } = textRenderer;
+    public TextureManager TextureManager { get; }
+    public TextRenderer TextRenderer { get; }
     private readonly ItemRenderer _itemRenderer = new();
-    private readonly GameOptions _gameOptions = gameOptions;
     private readonly UIBatchRenderer _batch = new();
 
     private float _translateX = 0;
     private float _translateY = 0;
     private uint _currentTint = 0xFFFFFFFF;
     private readonly Stack<Vector2D<float>> _translationStack = new();
+    private readonly GameOptions _gameOptions;
+    private readonly Func<Vector2D<int>> _getDisplaySize;
+    private readonly TextureHandle _terrainTexture;
+    private readonly TextureHandle _itemsTexture;
+
+    public UIRenderer(TextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize, TextureHandle terrainTexture, TextureHandle itemsTexture)
+    {
+        _gameOptions = gameOptions;
+        _getDisplaySize = getDisplaySize;
+        _terrainTexture = terrainTexture;
+        _itemsTexture = itemsTexture;
+        TextureManager = textureManager;
+        TextRenderer = textRenderer;
+    }
 
     public void Begin()
     {
@@ -47,7 +60,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         _currentTint = 0xFFFFFFFF;
         _translationStack.Clear();
 
-        Vector2D<int> displaySize = getDisplaySize();
+        Vector2D<int> displaySize = _getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
         Matrix4X4<float> proj = Matrix4X4.CreateOrthographicOffCenter(0f, res.ScaledWidth, res.ScaledHeight, 0f, -1f, 1f);
         _batch.Begin(proj);
@@ -141,7 +154,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
     {
         _batch.Flush();
 
-        Vector2D<int> displaySize = getDisplaySize();
+        Vector2D<int> displaySize = _getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
         float left = x + _translateX;
@@ -200,7 +213,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawText(string text, float x, float y, Color color, float scale = 1.0f, bool shadow = true)
     {
-        if (scale == 1.0f)
+        if (Math.Abs(scale - 1.0f) < 0.01F)
         {
             int ix = (int)MathF.Floor(x + _translateX);
             int iy = (int)MathF.Floor(y + _translateY);
@@ -229,7 +242,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
     {
-        if (rotation == 0 && scale == 1.0f)
+        if (rotation == 0 && Math.Abs(scale - 1.0f) < 0.01F)
         {
             int ix = (int)MathF.Floor(x + _translateX);
             int iy = (int)MathF.Floor(y + _translateY);
@@ -244,7 +257,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
         if (rotation != 0) GLManager.GL.Rotate(rotation, 0, 0, 1);
-        if (scale != 1.0f) GLManager.GL.Scale(scale, scale, 1);
+        if (Math.Abs(scale - 1.0f) > 0.01F) GLManager.GL.Scale(scale, scale, 1);
 
         if (shadow)
             DrawCenteredStringRaw(text, 0, 0, color);
@@ -326,9 +339,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         if (textureId < 0) return;
 
-        TextureHandle texHandle = itemId < 256
-            ? TextureManager.GetTextureId("/terrain.png")
-            : TextureManager.GetTextureId("/gui/items.png");
+        TextureHandle texHandle = itemId < 256 ? _terrainTexture : _itemsTexture;
 
         int colorMultiplier = Item.ITEMS[itemId]!.getColorMultiplier(itemMeta);
         float finalX = MathF.Floor(x + _translateX);
@@ -339,7 +350,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, (uint)Color.FromRgb((uint)colorMultiplier));
     }
 
-    public void DrawItem(ItemStack stack, float x, float y)
+    public void DrawItem(ItemStack? stack, float x, float y)
     {
         if (stack == null) return;
 
@@ -369,9 +380,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
             int iconIndex = stack.getTextureId();
             if (iconIndex < 0) return;
 
-            TextureHandle texHandle = stack.ItemId < 256
-                ? TextureManager.GetTextureId("/terrain.png")
-                : TextureManager.GetTextureId("/gui/items.png");
+            TextureHandle texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
 
             int colorMultiplier = Item.ITEMS[stack.ItemId]!.getColorMultiplier(stack.getDamage());
             uint rgba = (uint)Color.FromRgb((uint)colorMultiplier);
@@ -385,7 +394,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         }
     }
 
-    public void DrawItemOverlay(ItemStack stack, float x, float y)
+    public void DrawItemOverlay(ItemStack? stack, float x, float y)
     {
         if (stack == null) return;
 
