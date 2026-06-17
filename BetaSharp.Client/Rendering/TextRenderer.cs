@@ -210,7 +210,7 @@ public class TextRenderer : IDisposable
 
     public void Dispose()
     {
-        TranslationStorage.LanguageChanged -= ReloadForLanguage;
+        Translations.LanguageChanged -= ReloadForLanguage;
     }
 
     private static void ClearAtlasRegion(Image<Rgba32> image, int x, int y, int w, int h)

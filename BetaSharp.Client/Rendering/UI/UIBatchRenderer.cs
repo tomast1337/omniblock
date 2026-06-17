@@ -47,8 +47,6 @@ public sealed class UIBatchRenderer : IDisposable
 
     public void Begin(Matrix4X4<float> proj)
     {
-        // Set projection once per frame, then immediately reset to neutral so
-        // Tessellator draws before the first batch flush still work correctly.
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetProjection(proj);
         GLManager.GL.UseProgram(0);
@@ -72,7 +70,7 @@ public sealed class UIBatchRenderer : IDisposable
         _useTexture = true;
     }
 
-    public void SetNoTexture()
+    private void SetNoTexture()
     {
         if (!_useTexture) return;
         Flush();
@@ -119,11 +117,8 @@ public sealed class UIBatchRenderer : IDisposable
     {
         if (_vertexCount == 0) return;
 
-        // 3D escape hatches (block item renders) may disable blend; re-enable it
-        // without touching the blend function, which PushBlend may have customised.
         _silkGL.Enable(EnableCap.Blend);
 
-        // Ensure UIShader is active.
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetUseTexture(_useTexture);
 
@@ -145,7 +140,6 @@ public sealed class UIBatchRenderer : IDisposable
         _silkGL.BindVertexArray(0);
         _vertexCount = 0;
 
-        // Reset EmulatedGL to neutral so subsequent Tessellator draws re-activate FixedFunctionShader
         GLManager.GL.UseProgram(0);
     }
 
