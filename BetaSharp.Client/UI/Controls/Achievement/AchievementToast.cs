@@ -21,7 +21,7 @@ public class AchievementToast : UIElement
     public void QueueAchievement(global::BetaSharp.Achievement ach)
     {
         _achievement = ach;
-        _title = TranslationStorage.Instance.TranslateKey("achievement.get");
+        _title = Translations.Get("achievement.get");
         _description = ach.GetTranslatedTitle;
         _startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _isInfo = false;

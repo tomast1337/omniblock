@@ -1,7 +1,4 @@
 ﻿{
-    "lang": {
-        "name": "English (United States)"
-    },
     "gui": {
         "joinServer": "Join Server",
         "rename": "Rename",
@@ -1345,5 +1342,17 @@
             "title": "When Pigs Fly",
             "desc": "Fly a pig off a cliff"
         }
+    },
+    "credits": {
+        "version": "BetaSharp Version %1$s",
+        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
+        "github": "On GitHub",
+        "author": "Made by Fazin85",
+        "libs": "Libraries",
+        "slik": "Slik.NET - Graphics",
+        "imgui": "ImGui - Debug UI",
+        "sfml": "SFML.NET - Audio",
+        "sixlabors": "SixLabors - Fonts, image processing",
+        "translations": "Translations Credits"
     }
 }

@@ -25,9 +25,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        TranslationStorage translations = TranslationStorage.Instance;
-
-        Label title = new() { Text = translations.TranslateKey("menu.language"), TextColor = Color.White };
+        Label title = new() { Text = Translations.Get("menu.language"), TextColor = Color.White };
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
         AddTitleSpacer();
@@ -59,7 +57,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         row2.Style.JustifyContent = Justify.Center;
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translations.TranslateKey("gui.done");
+        btnCancel.Text = Translations.Get("gui.done");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(null);
@@ -79,7 +77,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         _scrollView.ContentContainer.Children.Clear();
         _listItems.Clear();
 
-        foreach (var lang in AssetManager.Languages)
+        foreach (var lang in Translations.Instance.Languages)
         {
             LanguageListItem item = new(lang.Value);
             item.OnClick += (e) => SelectListItem(item, lang.Key);

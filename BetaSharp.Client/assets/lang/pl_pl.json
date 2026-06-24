@@ -1,7 +1,4 @@
 ﻿{
-    "lang": {
-        "name": "Polski"
-    },
     "gui": {
         "joinServer": "Dołącz do serwera",
         "rename": "Zmień nazwę",

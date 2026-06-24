@@ -23,13 +23,11 @@ public class RenameWorldScreen(
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        TranslationStorage translations = TranslationStorage.Instance;
-
-        Label title = new() { Text = translations.TranslateKey("selectWorld.renameTitle"), TextColor = Color.White };
+        Label title = new() { Text = Translations.Get("selectWorld.renameTitle"), TextColor = Color.White };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
-        Label lName = new() { Text = translations.TranslateKey("selectWorld.enterName"), TextColor = Color.GrayA0 };
+        Label lName = new() { Text = Translations.Get("selectWorld.enterName"), TextColor = Color.GrayA0 };
         lName.Style.MarginBottom = 4;
         Root.AddChild(lName);
 
@@ -45,7 +43,7 @@ public class RenameWorldScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnRename = CreateButton();
-        btnRename.Text = translations.TranslateKey("gui.rename");
+        btnRename.Text = Translations.Get("gui.rename");
         btnRename.Style.Width = 100;
         btnRename.Style.SetMargin(2);
         btnRename.OnClick += (e) =>
@@ -59,7 +57,7 @@ public class RenameWorldScreen(
         buttonPanel.AddChild(btnRename);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translations.TranslateKey("gui.cancel");
+        btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);

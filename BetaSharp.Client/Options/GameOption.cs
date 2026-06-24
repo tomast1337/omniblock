@@ -13,13 +13,13 @@ public abstract class GameOption
         SaveKey = saveKey;
     }
 
-    public string GetLabel(TranslationStorage translations) =>
-        LabelOverride ?? translations.TranslateKey(TranslationKey);
+    public string GetLabel() =>
+        LabelOverride ?? Translations.Get(TranslationKey);
 
-    public virtual string GetDisplayString(TranslationStorage translations) =>
-        GetLabel(translations) + ": " + FormatValue(translations);
+    public virtual string GetDisplayString() =>
+        GetLabel() + ": " + FormatValue();
 
-    public abstract string FormatValue(TranslationStorage translations);
+    public abstract string FormatValue();
     public abstract void Load(string raw);
     public abstract string Save();
     public virtual void Reset() { }

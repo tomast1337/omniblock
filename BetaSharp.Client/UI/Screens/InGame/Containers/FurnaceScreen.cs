@@ -27,8 +27,6 @@ public class FurnaceScreen(
     {
         base.Init();
 
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         // Background Image
         var background = new Image
         {
@@ -46,7 +44,7 @@ public class FurnaceScreen(
         // Labels
         var lblFurnace = new Label
         {
-            Text = translationStorage.TranslateKey("gui.container.furnace"),
+            Text = Translations.Get("gui.container.furnace"),
             HasShadow = false,
             TextColor = Color.Gray40
         };
@@ -57,7 +55,7 @@ public class FurnaceScreen(
 
         var lblInventory = new Label
         {
-            Text = translationStorage.TranslateKey("gui.container.inventory"),
+            Text = Translations.Get("gui.container.inventory"),
             HasShadow = false,
             TextColor = Color.Gray40
         };

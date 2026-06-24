@@ -33,8 +33,8 @@ public class ShaderPresetOption : GameOption
         _set.ApplyPreset(presets[next].Name);
     }
 
-    public override string FormatValue(TranslationStorage t) =>
-        t.TranslateKey("options.shader.preset." + _set.GetCurrentPresetName());
+    public override string FormatValue() =>
+        Translations.Get("options.shader.preset." + _set.GetCurrentPresetName());
 
     public override void Reset() { }
     public override void Load(string raw) { }

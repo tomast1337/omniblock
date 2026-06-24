@@ -16,7 +16,7 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
 
     protected override void Init()
     {
-        TitleText = TranslationStorage.Instance.TranslateKey("options.controllerBindings");
+        TitleText = Translations.Get("options.controllerBindings");
         base.Init();
     }
 

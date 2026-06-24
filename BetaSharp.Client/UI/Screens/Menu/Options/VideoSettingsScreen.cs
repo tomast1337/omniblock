@@ -7,7 +7,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
 {
     protected override List<OptionSection> GetOptions() =>
     [
-        new(TranslationStorage.Instance.TranslateKey("options.video.performance"), [
+        new(Translations.Get("options.video.performance"), [
             Options.RenderDistanceOption,
             Options.FramerateLimitOption,
             Options.VSyncOption,
@@ -20,7 +20,7 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
                 () => Context.Navigator.Navigate(new ShaderOptionsScreen(Context, this)))
         ]),
 
-        new(TranslationStorage.Instance.TranslateKey("options.video.display"), [
+        new(Translations.Get("options.video.display"), [
             Options.ViewBobbingOption,
             Options.EnvironmentAnimationOption,
             Options.ChunkFadeOption,

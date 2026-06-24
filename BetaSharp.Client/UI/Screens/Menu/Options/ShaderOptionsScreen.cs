@@ -23,7 +23,7 @@ public class ShaderOptionsScreen(UIContext context, UIScreen? parent)
                 : new ShaderConstOption(set, def)));
 
             sections.Add(new(
-                TranslationStorage.Instance.TranslateKey("options.shader." + set.Key + ".text"),
+                Translations.Get("options.shader." + set.Key + ".text"),
                 options));
         }
         return sections;
@@ -33,9 +33,8 @@ public class ShaderOptionsScreen(UIContext context, UIScreen? parent)
     {
         if (option is ShaderPresetOption presetOpt)
         {
-            TranslationStorage translations = TranslationStorage.Instance;
             Button btn = CreateButton();
-            btn.Text = option.GetDisplayString(translations);
+            btn.Text = option.GetDisplayString();
             btn.OnMouseDown += (e) =>
             {
                 if (e.Button == MouseButton.Left) presetOpt.Cycle();

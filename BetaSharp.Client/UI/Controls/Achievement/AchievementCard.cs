@@ -24,8 +24,6 @@ public class AchievementCard : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         bool unlocked = _stats.HasAchievementUnlocked(_achievement);
         bool canUnlock = _stats.CanUnlockAchievement(_achievement);
 
@@ -48,7 +46,7 @@ public class AchievementCard : UIElement
         Color titleColor = unlocked ? (_achievement.isChallenge() ? Color.AchievementChallengeYellow : Color.White)
                                    : (canUnlock ? Color.GrayE0 : Color.Gray80);
 
-        string name = translationStorage.TranslateKey(_achievement.StatName);
+        string name = Translations.Get(_achievement.StatName);
         renderer.DrawText(name, 46, 8, titleColor);
 
         string? desc = _achievement.GetTranslatedDescription;
@@ -59,17 +57,17 @@ public class AchievementCard : UIElement
         else if (!canUnlock)
         {
             string reqName = _achievement.parent?.GetTranslatedTitle ?? "Unknown";
-            renderer.DrawTextWrapped(string.Format(translationStorage.TranslateKey("achievement.requires"), reqName), 46, 22, ComputedWidth - 120, Color.AchievementRequiresRed);
+            renderer.DrawTextWrapped(string.Format(Translations.Get("achievement.requires"), reqName), 46, 22, ComputedWidth - 120, Color.AchievementRequiresRed);
         }
 
         // --- Status Markers ---
         if (unlocked)
         {
-            renderer.DrawText(translationStorage.TranslateKey("achievement.unlocked"), ComputedWidth - 65, 16, Color.AchievementTakenBlue);
+            renderer.DrawText(Translations.Get("achievement.unlocked"), ComputedWidth - 65, 16, Color.AchievementTakenBlue);
         }
         else if (_achievement.isChallenge())
         {
-            renderer.DrawText(translationStorage.TranslateKey("achievement.challenge"), ComputedWidth - 75, 16, Color.AchievementChallengeYellow);
+            renderer.DrawText(Translations.Get("achievement.challenge"), ComputedWidth - 75, 16, Color.AchievementChallengeYellow);
         }
 
         base.Render(renderer);

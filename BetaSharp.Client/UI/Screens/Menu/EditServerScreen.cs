@@ -17,18 +17,16 @@ public class EditServerScreen(
 
     protected override void Init()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = isEditing ? translationStorage.TranslateKey("multiplayer.editServerTitle") : translationStorage.TranslateKey("multiplayer.addServerTitle"), TextColor = Color.White };
+        Label title = new() { Text = isEditing ? Translations.Get("multiplayer.editServerTitle") : Translations.Get("multiplayer.addServerTitle"), TextColor = Color.White };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
-        Label lName = new() { Text = translationStorage.TranslateKey("multiplayer.serverName"), TextColor = Color.GrayA0 };
+        Label lName = new() { Text = Translations.Get("multiplayer.serverName"), TextColor = Color.GrayA0 };
         lName.Style.MarginBottom = 4;
         Root.AddChild(lName);
 
@@ -38,7 +36,7 @@ public class EditServerScreen(
         _txfName.Text = serverData.Name;
         Root.AddChild(_txfName);
 
-        Label lAddr = new() { Text = translationStorage.TranslateKey("multiplayer.serverAddress"), TextColor = Color.GrayA0 };
+        Label lAddr = new() { Text = Translations.Get("multiplayer.serverAddress"), TextColor = Color.GrayA0 };
         lAddr.Style.MarginBottom = 4;
         Root.AddChild(lAddr);
 
@@ -52,7 +50,7 @@ public class EditServerScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnDone = CreateButton();
-        btnDone.Text = translationStorage.TranslateKey("gui.done");
+        btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(0, 4, 0, 0);
         btnDone.OnClick += (e) =>
@@ -65,7 +63,7 @@ public class EditServerScreen(
         buttonPanel.AddChild(btnDone);
 
         Button btnCancel = CreateButton();
-        btnCancel.Text = translationStorage.TranslateKey("gui.cancel");
+        btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);

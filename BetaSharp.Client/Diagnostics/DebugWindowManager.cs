@@ -49,6 +49,7 @@ internal sealed class DebugWindowManager
             new RenderInfoWindow(),
             new AudioDebugWindow(ctx),
             new ProfilerWindow(),
+            new TranslationsWindow(),
             _consoleWindow,
             new UIInspectorWindow(ctx)
         ];

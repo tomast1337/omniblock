@@ -97,7 +97,7 @@ public class GameOptions
         set
         {
             LanguageOption.Value = value;
-            TranslationStorage.Instance.SwitchLanguage(Language);
+            Translations.SwitchLanguage(Language);
         }
     }
 
@@ -187,8 +187,6 @@ public class GameOptions
         _game = game;
         _optionsPath = System.IO.Path.Combine(gameDataDir, "options.txt");
 
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         InitializeOptions();
 
         KeyBindings =
@@ -207,7 +205,7 @@ public class GameOptions
         ];
 
         KeyBindingGroups = [
-            new(translationStorage.TranslateKey("options.movement.text"), [
+            new(Translations.Get("options.movement.text"), [
                 KeyBindForward,
                 KeyBindLeft,
                 KeyBindBack,
@@ -216,36 +214,36 @@ public class GameOptions
                 KeyBindSneak,
             ]),
 
-            new(translationStorage.TranslateKey("options.view.text"), [
+            new(Translations.Get("options.view.text"), [
                 KeyBindInventory,
                 KeyBindChat,
                 KeyBindToggleFog,
                 KeyBindZoom,
             ]),
 
-            new(translationStorage.TranslateKey("options.other.text"), [
+            new(Translations.Get("options.other.text"), [
                 KeyBindDrop
             ]),
         ];
 
         ControllerBindings =
         [
-            new ControllerBinding("controller.jump", translationStorage.TranslateKey("key.jump"), GamepadButton.A),
-            new ControllerBinding("controller.inventory", translationStorage.TranslateKey("key.inventory"), GamepadButton.Y),
-            new ControllerBinding("controller.drop", translationStorage.TranslateKey("key.drop"), GamepadButton.B),
-            new ControllerBinding("controller.hotbarLeft", translationStorage.TranslateKey("key.hotbarLeft"), GamepadButton.LeftBumper),
-            new ControllerBinding("controller.hotbarRight", translationStorage.TranslateKey("key.hotbarRight"), GamepadButton.RightBumper),
-            new ControllerBinding("controller.sneak", translationStorage.TranslateKey("key.sneak"), GamepadButton.RightStick),
-            new ControllerBinding("controller.zoom", translationStorage.TranslateKey("key.zoom"), (GamepadButton)(-1)),
-            new ControllerBinding("controller.pickBlock", translationStorage.TranslateKey("key.pickBlock"), GamepadButton.DPadUp),
-            new ControllerBinding("controller.camera", translationStorage.TranslateKey("key.camera"), GamepadButton.LeftStick),
-            new ControllerBinding("controller.pause", translationStorage.TranslateKey("key.pause"), GamepadButton.Start),
+            new ControllerBinding("controller.jump", Translations.Get("key.jump"), GamepadButton.A),
+            new ControllerBinding("controller.inventory", Translations.Get("key.inventory"), GamepadButton.Y),
+            new ControllerBinding("controller.drop", Translations.Get("key.drop"), GamepadButton.B),
+            new ControllerBinding("controller.hotbarLeft", Translations.Get("key.hotbarLeft"), GamepadButton.LeftBumper),
+            new ControllerBinding("controller.hotbarRight", Translations.Get("key.hotbarRight"), GamepadButton.RightBumper),
+            new ControllerBinding("controller.sneak", Translations.Get("key.sneak"), GamepadButton.RightStick),
+            new ControllerBinding("controller.zoom", Translations.Get("key.zoom"), (GamepadButton)(-1)),
+            new ControllerBinding("controller.pickBlock", Translations.Get("key.pickBlock"), GamepadButton.DPadUp),
+            new ControllerBinding("controller.camera", Translations.Get("key.camera"), GamepadButton.LeftStick),
+            new ControllerBinding("controller.pause", Translations.Get("key.pause"), GamepadButton.Start),
         ];
 
         LoadOptions();
         INITIAL_MSAA = MSAALevel;
 
-        if(AssetManager.Languages.ContainsKey(LanguageOption!.Value + ".json"))
+        if(Translations.Instance.Languages.ContainsKey(LanguageOption!.Value))
         {
             Language = LanguageOption!.Value;
         }
@@ -276,57 +274,53 @@ public class GameOptions
         MouseSensitivityOption = new FloatOption("options.sensitivity.text", "mouseSensitivity", 0.5F)
         {
             Steps = 200,
-            Formatter = (v, t) => v == 0.0F
-                ? t.TranslateKey("options.sensitivity.min")
+            Formatter = (v) => v == 0.0F
+                ? Translations.Get("options.sensitivity.min")
                 : v == 1.0F
-                    ? t.TranslateKey("options.sensitivity.max")
+                    ? Translations.Get("options.sensitivity.max")
                     : (int)(v * 200.0F) + "%"
         };
         ControllerSensitivityOption = new FloatOption("options.sensitivity.controllerText", "controllerSensitivity", 0.5F)
         {
             Steps = 200,
-            Formatter = (v, _) => (int)(v * 200.0F) + "%"
+            Formatter = (v) => (int)(v * 200.0F) + "%"
         };
 
         string[] _ctlTypeLabels = [.. ControllerType.ControllerTypes.Select(x => x.Label)];
         string[] _ctlTypeKeys = [.. ControllerType.ControllerTypes.Select(x => x.Key)];
         ControllerTypeOption = new CycleOption("options.controllerType", "controllerType", _ctlTypeLabels, 1)
         {
-            Formatter = (v, _) => _ctlTypeLabels[v],
+            Formatter = (v) => _ctlTypeLabels[v],
             OnChanged = v => ControlTooltip.ControllerType = ControllerType.ControllerTypes[v]
         };
         ControlTooltip.ControllerType = ControllerType.ControllerTypes[ControllerTypeOption.Value];
 
-        FramerateLimitOption = new FloatOption("options.framerateLimit", "fpsLimit", 0.42857143f)
+        FramerateLimitOption = new FloatOption("options.fps.maxFps", "fpsLimit", 0.42857143f)
         {
-            LabelOverride = TranslationStorage.Instance.TranslateKey("options.fps.maxFps"),
             Steps = 210,
-            Formatter = (v, _) =>
+            Formatter = (v) =>
             {
                 int fps = 30 + (int)(v * 210.0f);
-                return fps == 240 ? TranslationStorage.Instance.TranslateKey("options.fps.unlimited") : fps + " " + TranslationStorage.Instance.TranslateKey("options.fps.text");
+                return fps == 240 ? Translations.Get("options.fps.unlimited") : fps + " " + Translations.Get("options.fps.text");
             }
         };
         FovOption = new FloatOption("options.fov", "fov", 0.44444445F)
         {
-            LabelOverride = TranslationStorage.Instance.TranslateKey("options.fov"),
             Steps = 90,
-            Formatter = (v, _) => (30 + (int)(v * 90.0f)).ToString()
+            Formatter = (v) => (30 + (int)(v * 90.0f)).ToString()
         };
         ShowCoordinatesOption = new BoolOption("options.showCoordinates", "showCoordinates");
         UICursorsOption = new BoolOption("options.uiCursors", "uiCursors", true);
         GammaOption = new FloatOption("options.gamma", "gamma", 0.5F)
         {
-            LabelOverride = TranslationStorage.Instance.TranslateKey("options.gamma"),
             Steps = 100,
-            Formatter = (v, _) => $"{(int)(v * 100.0f)}"
+            Formatter = (v) => $"{(int)(v * 100.0f)}"
         };
 
         InvertMouseOption = new BoolOption("options.invertMouse", "invertYMouse");
         ViewBobbingOption = new BoolOption("options.viewBobbing", "bobView", true);
         VSyncOption = new BoolOption("options.vSync", "vsync")
         {
-            LabelOverride = TranslationStorage.Instance.TranslateKey("options.vSync"),
             OnChanged = v => Display.getGlfw().SwapInterval(v ? 1 : 0)
         };
         MipmapsOption = new BoolOption("options.mipmaps", "useMipmaps", true)
@@ -348,7 +342,7 @@ public class GameOptions
         RenderDistanceOption = new FloatOption("options.renderDistance.text", "viewDistance", 0.2f)
         {
             Steps = 28,
-            Formatter = (v, t) => $"{4 + (int)(v * 28.0f)} " + TranslationStorage.Instance.TranslateKey("options.renderDistance.chunks"),
+            Formatter = (v) => $"{4 + (int)(v * 28.0f)} " + Translations.Get("options.renderDistance.chunks"),
             OnChanged = _ =>
             {
                 if (_game?.InternalServer != null)
@@ -360,12 +354,12 @@ public class GameOptions
         ChatScaleOption = new FloatOption("options.chatScale.text", "chatScale", 1f/3f)
         {
             Steps = 30,
-            Formatter = (f, _) => $"{(int)(f * 150.0F + 50f)}%"
+            Formatter = (f) => $"{(int)(f * 150.0F + 50f)}%"
         };
         ChatWidthOption = new FloatOption("options.chatWidth.text", "chatWidth", 0.5f)
         {
             Steps = 64,
-            Formatter = (f, _) => $"{(int)(f * 64 + 32f)}"
+            Formatter = (f) => $"{(int)(f * 64 + 32f)}"
         };
         CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", CloudsQualityLabels, 2);
         SoftCloudsOption = new BoolOption("options.softClouds.text", "softClouds", true);
@@ -373,7 +367,7 @@ public class GameOptions
         GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
         AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
         {
-            Formatter = (v, t) => v == 0 ? t.TranslateKey("options.off") : AnisoLabels[v],
+            Formatter = (v) => v == 0 ? Translations.Get("options.off") : AnisoLabels[v],
             OnChanged = v =>
             {
                 int anisoValue = v == 0 ? 0 : (int)Math.Pow(2, v);
@@ -387,9 +381,9 @@ public class GameOptions
         };
         MsaaOption = new CycleOption("options.msaa", "msaaLevel", MSAALabels)
         {
-            Formatter = (v, t) =>
+            Formatter = (v) =>
             {
-                string result = v == 0 ? t.TranslateKey("options.off") : MSAALabels[v];
+                string result = v == 0 ? Translations.Get("options.off") : MSAALabels[v];
                 if (v != INITIAL_MSAA) result += " (Reload required)";
                 return result;
             }
@@ -441,8 +435,7 @@ public class GameOptions
 
     public string GetKeyBindingDescription(KeyBinding binding)
     {
-        TranslationStorage translations = TranslationStorage.Instance;
-        return translations.TranslateKey(binding.keyDescription);
+        return Translations.Get(binding.keyDescription);
     }
 
     public string GetOptionDisplayString(KeyBinding binding)

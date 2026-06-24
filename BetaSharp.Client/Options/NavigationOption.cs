@@ -10,8 +10,8 @@ public class NavigationOption : GameOption
     }
 
     public void Execute() => _navigate();
-    public override string GetDisplayString(TranslationStorage translations) => translations.TranslateKey(TranslationKey);
-    public override string FormatValue(TranslationStorage _) => string.Empty;
+    public override string GetDisplayString() => Translations.Get(TranslationKey);
+    public override string FormatValue() => string.Empty;
     public override void Load(string raw) { }
     public override string Save() => string.Empty;
 }

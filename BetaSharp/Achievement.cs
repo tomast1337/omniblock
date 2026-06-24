@@ -77,8 +77,8 @@ public class Achievement : StatBase
         return true;
     }
 
-    public string? GetTranslatedTitle => TranslationStorage.Instance.TranslateKey($"{TranslationKey}.title");
-    public string? GetTranslatedDescription => TranslationStorage.Instance.TranslateKey($"{TranslationKey}.desc");
+    public string? GetTranslatedTitle => Translations.Get($"{TranslationKey}.title");
+    public string? GetTranslatedDescription => Translations.Get($"{TranslationKey}.desc");
 
     public bool isChallenge()
     {

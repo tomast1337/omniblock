@@ -20,21 +20,19 @@ public class IngameMenuScreen(
 {
     protected override void Init()
     {
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.FlexStart;
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = translationStorage.TranslateKey("gamemenu.title"), TextColor = Color.White };
+        Label title = new() { Text = Translations.Get("gamemenu.title"), TextColor = Color.White };
         title.Style.MarginTop = 20;
         //title.Style.MarginBottom = 8;
         Root.AddChild(title);
         AddTitleSpacer();
 
         Button btnBack = CreateButton();
-        btnBack.Text = translationStorage.TranslateKey("gamemenu.backToGame");
+        btnBack.Text = Translations.Get("gamemenu.backToGame");
         btnBack.OnClick += (e) =>
         {
             Context.Navigator.Navigate(null);
@@ -51,12 +49,12 @@ public class IngameMenuScreen(
         rowStats.Style.MarginBottom = 4;
 
         Button btnAchievements = CreateButton();
-        btnAchievements.Text = translationStorage.TranslateKey("achievements.title");
+        btnAchievements.Text = Translations.Get("achievements.title");
         btnAchievements.Style.Width = 98;
         btnAchievements.OnClick += (e) => Context.Navigator.Navigate(new AchievementsScreen(Context, this, statFileWriter));
 
         Button btnStats = CreateButton();
-        btnStats.Text = translationStorage.TranslateKey("gui.stats");
+        btnStats.Text = Translations.Get("gui.stats");
         btnStats.Style.Width = 98;
         btnStats.OnClick += (e) => Context.Navigator.Navigate(new StatsScreen(Context, this, statFileWriter));
 
@@ -72,12 +70,12 @@ public class IngameMenuScreen(
         feedbackRow.Style.MarginBottom = 4;
 
         Button btnFeedback = CreateButton();
-        btnFeedback.Text = translationStorage.TranslateKey("menu.sendFeedback");
+        btnFeedback.Text = Translations.Get("menu.sendFeedback");
         btnFeedback.Style.Width = 98;
         btnFeedback.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new");
 
         Button btnReport = CreateButton();
-        btnReport.Text = translationStorage.TranslateKey("menu.reportBugs");
+        btnReport.Text = Translations.Get("menu.reportBugs");
         btnReport.Style.Width = 98;
         btnReport.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new?template=bug_report.yml");
 
@@ -101,7 +99,7 @@ public class IngameMenuScreen(
         optionsRow.AddChild(btnLang);
 
         Button btnOptions = CreateButton();
-        btnOptions.Text = translationStorage.TranslateKey("menu.options");
+        btnOptions.Text = Translations.Get("menu.options");
         btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
         btnOptions.Style.MarginBottom = 4;
         optionsRow.AddChild(btnOptions);

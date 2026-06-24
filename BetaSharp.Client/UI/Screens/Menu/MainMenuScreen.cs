@@ -50,16 +50,14 @@ public class MainMenuScreen(
         AddTitleSpacer(LogoTopPadding + 64f, 48f);
 
         // --- Buttons ---
-        TranslationStorage translator = TranslationStorage.Instance;
-
         Button btnSingleplayer = CreateButton();
-        btnSingleplayer.Text = translator.TranslateKey("menu.singleplayer");
+        btnSingleplayer.Text = Translations.Get("menu.singleplayer");
         btnSingleplayer.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 
         Button btnMultiplayer = CreateButton();
-        btnMultiplayer.Text = translator.TranslateKey("menu.multiplayer");
+        btnMultiplayer.Text = Translations.Get("menu.multiplayer");
         btnMultiplayer.OnClick += (e) => Context.Navigator.Navigate(new MultiplayerScreen(Context, networkContext));
         btnMultiplayer.Style.MarginBottom = 4;
 
@@ -85,12 +83,12 @@ public class MainMenuScreen(
         btnLang.VHeight = 24;
 
         Button btnOptions = CreateButton();
-        btnOptions.Text = translator.TranslateKey("menu.options");
+        btnOptions.Text = Translations.Get("menu.options");
         btnOptions.Style.Width = 98;
         btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePackList));
 
         Button btnQuit = CreateButton();
-        btnQuit.Text = translator.TranslateKey("menu.quit");
+        btnQuit.Text = Translations.Get("menu.quit");
         btnQuit.Style.Width = 98;
         btnQuit.OnClick += (e) => shutdown();
 

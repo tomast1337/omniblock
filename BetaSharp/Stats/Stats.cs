@@ -6,8 +6,6 @@ namespace BetaSharp.Stats;
 
 public static class Stats
 {
-    private static TranslationStorage TranslationStorage = TranslationStorage.Instance;
-
     public static Dictionary<int, StatBase> IdToStat = [];
     public static List<StatBase> AllStats = [];
     public static List<StatBase> GeneralStats = [];

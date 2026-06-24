@@ -29,8 +29,6 @@ public class InventoryScreen : ContainerScreen
     {
         base.Init();
 
-        TranslationStorage translationStorage = TranslationStorage.Instance;
-
         // Background Image
         var background = new Image
         {
@@ -60,7 +58,7 @@ public class InventoryScreen : ContainerScreen
         // Labels
         var lblCrafting = new Label
         {
-            Text = translationStorage.TranslateKey("gui.container.crafting"),
+            Text = Translations.Get("gui.container.crafting"),
             HasShadow = false,
             TextColor = Color.Gray40
         };
