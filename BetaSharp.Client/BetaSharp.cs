@@ -600,8 +600,23 @@ public partial class BetaSharp :
                     {
                         ImGuiImplOpenGL3.NewFrame();
                         ImGuiImplGLFW.NewFrame();
+
+                        unsafe
+                        {
+                            ImGuiIO* io = ImGui.GetIO();
+                            int w = Math.Max(1, Display.getWidth());
+                            int h = Math.Max(1, Display.getHeight());
+                            io->DisplaySize = new Vector2(w, h);
+                            io->DisplayFramebufferScale = new Vector2(
+                                Display.getFramebufferWidth() / (float)w,
+                                Display.getFramebufferHeight() / (float)h);
+                        }
+
                         ImGui.NewFrame();
-                        ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard && !_debugWindowManager.GameViewportFocused;
+                        ImGuiInput.CapturingKeyboard = ImGui.GetIO().WantCaptureKeyboard
+                            && !_debugWindowManager.GameViewportFocused
+                            && !InGameHasFocus
+                            && CurrentScreen == null;
                     }
                     else
                     {
@@ -835,7 +850,7 @@ public partial class BetaSharp :
         // F3 uses edge detection so it works even when
         // CurrentScreen.HandleInput() has already consumed all keyboard events.
         bool f3Down = Keyboard.isKeyDown(Keyboard.KEY_F3);
-        if (f3Down && !_prevF3Down && !ImGuiInput.CapturingKeyboard)
+        if (f3Down && !_prevF3Down)
         {
             Options.ShowDebugInfo = !Options.ShowDebugInfo;
         }
