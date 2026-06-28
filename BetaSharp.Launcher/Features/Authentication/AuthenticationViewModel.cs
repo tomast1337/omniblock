@@ -89,7 +89,7 @@ internal sealed partial class AuthenticationViewModel(
                 "Uh-oh!",
                 "Try again shortly. If the problem persists, create an issue on GitHub."
                 + Environment.NewLine
-                + "https://git.gay/betasharp-official/betasharp/issuess");
+                + "https://git.gay/betasharp-official/betasharp/issues");
         }
     }
 }
