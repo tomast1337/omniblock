@@ -114,7 +114,7 @@ public class MainMenuScreen(
         {
             Text = "BetaSharp " + BetaSharp.Version,
             TextColor = Guis.Color.White,
-            URL = "https://github.com/betasharp-official/betasharp"
+            URL = "https://git.gay/betasharp-official/betasharp"
         };
         versionLabel.Style.Position = PositionType.Absolute;
         versionLabel.Style.Left = 2;

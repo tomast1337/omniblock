@@ -72,12 +72,12 @@ public class IngameMenuScreen(
         Button btnFeedback = CreateButton();
         btnFeedback.Text = Translations.Get("menu.sendFeedback");
         btnFeedback.Style.Width = 98;
-        btnFeedback.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new");
+        btnFeedback.OnClick += (e) => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new/choose");
 
         Button btnReport = CreateButton();
         btnReport.Text = Translations.Get("menu.reportBugs");
         btnReport.Style.Width = 98;
-        btnReport.OnClick += (e) => OpenLink("https://github.com/betasharp-official/betasharp/issues/new?template=bug_report.yml");
+        btnReport.OnClick += (e) => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new?template=.github%2fISSUE_TEMPLATE%2fbug_report.yml");
 
         feedbackRow.AddChild(btnFeedback);
         feedbackRow.AddChild(btnReport);

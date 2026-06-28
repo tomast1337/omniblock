@@ -118,8 +118,8 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
 
         ColoredTextUntranslated(Translations.GetFormat("credits.version", BetaSharp.Version), Color.Yellow, 1f);
         Text("credits.description");
-        Link("credits.github", "https://github.com/betasharp-official/betasharp/");
-        Link("credits.author", "https://github.com/Fazin85");
+        Link("credits.github", "https://git.gay/betasharp-official/betasharp");
+        Link("credits.author", "https://git.gay/Fazin85");
         Seperator();
 
         Header("credits.libs");
