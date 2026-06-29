@@ -220,26 +220,12 @@ public class UIRenderer : IDisposable
 
     public void DrawText(string text, float x, float y, Color color, float scale = 1.0f, bool shadow = true)
     {
-        if (Math.Abs(scale - 1.0f) < 0.01F)
-        {
-            int ix = (int)MathF.Floor(x + _translateX);
-            int iy = (int)MathF.Floor(y + _translateY);
-            if (shadow)
-                TextRenderer.DrawStringWithShadow(text, ix, iy, color, batch: _batch);
-            else
-                TextRenderer.DrawString(text, ix, iy, color, batch: _batch);
-            return;
-        }
-
-        _batch.Flush();
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
-        GLManager.GL.Scale(scale, scale, 1);
+        float ix = MathF.Floor(x + _translateX);
+        float iy = MathF.Floor(y + _translateY);
         if (shadow)
-            TextRenderer.DrawStringWithShadow(text, 0, 0, color);
+            TextRenderer.DrawStringWithShadow(text, ix, iy, color, batch: _batch, scale: scale);
         else
-            TextRenderer.DrawString(text, 0, 0, color);
-        GLManager.GL.PopMatrix();
+            TextRenderer.DrawString(text, ix, iy, color, batch: _batch, scale: scale);
     }
 
     public void DrawTextWrapped(string text, float x, float y, float maxWidth, Color color)
@@ -249,29 +235,28 @@ public class UIRenderer : IDisposable
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
     {
-        if (rotation == 0 && Math.Abs(scale - 1.0f) < 0.01F)
+        float pivotX = MathF.Floor(x + _translateX);
+        float pivotY = MathF.Floor(y + _translateY);
+
+        if (rotation == 0)
         {
-            int ix = (int)MathF.Floor(x + _translateX);
-            int iy = (int)MathF.Floor(y + _translateY);
+            // Axis-aligned: pass screen coords directly; centering subtracts width*scale/2 inside.
             if (shadow)
-                DrawCenteredStringRaw(text, ix, iy, color, _batch);
+                TextRenderer.DrawStringWithShadow(text, pivotX, pivotY, color, HorizontalAlignment.Center, _batch, scale);
             else
-                TextRenderer.DrawString(text, ix, iy, color, HorizontalAlignment.Center, batch: _batch);
+                TextRenderer.DrawString(text, pivotX, pivotY, color, HorizontalAlignment.Center, _batch, scale);
             return;
         }
 
-        _batch.Flush();
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
-        if (rotation != 0) GLManager.GL.Rotate(rotation, 0, 0, 1);
-        if (Math.Abs(scale - 1.0f) > 0.01F) GLManager.GL.Scale(scale, scale, 1);
+        // Rotated: pass local (0,0) so centering lands at -width*scale/2 relative to pivot.
+        float rad = rotation * MathF.PI / 180f;
+        float cos = MathF.Cos(rad);
+        float sin = MathF.Sin(rad);
 
         if (shadow)
-            DrawCenteredStringRaw(text, 0, 0, color);
+            TextRenderer.DrawStringWithShadow(text, 0f, 0f, color, HorizontalAlignment.Center, _batch, scale, cos, sin, pivotX, pivotY);
         else
-            TextRenderer.DrawString(text, 0, 0, color, HorizontalAlignment.Center);
-
-        GLManager.GL.PopMatrix();
+            TextRenderer.DrawString(text, 0f, 0f, color, HorizontalAlignment.Center, _batch, scale, cos, sin, pivotX, pivotY);
     }
 
     public void DrawTexture(TextureHandle texture, float x, float y, float width, float height)
@@ -508,11 +493,6 @@ public class UIRenderer : IDisposable
             offset = overflow - (t - pauseSeconds * 2f - scrollDuration) * scrollSpeed;
 
         return Math.Clamp(offset, 0f, overflow);
-    }
-
-    private void DrawCenteredStringRaw(string text, int x, int y, Color color, UIBatchRenderer? batch = null)
-    {
-        TextRenderer.DrawStringWithShadow(text, x - TextRenderer.GetStringWidth(text) / 2, y, color, batch: batch);
     }
 
     public void DrawSign(BlockEntitySign sign, float x, float y, float scale)

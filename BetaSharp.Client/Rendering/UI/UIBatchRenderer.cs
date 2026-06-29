@@ -88,6 +88,24 @@ public sealed class UIBatchRenderer : IDisposable
         _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y0, U = u1, V = v0, Rgba = rgba };
     }
 
+    internal void AddQuadCorners(
+        float tlX, float tlY,
+        float blX, float blY,
+        float brX, float brY,
+        float trX, float trY,
+        float u0, float v0, float u1, float v1, uint rgba)
+    {
+        if (_vertexCount + 6 > MaxVertices)
+            Flush();
+
+        _vertices[_vertexCount++] = new UIVertex { X = tlX, Y = tlY, U = u0, V = v0, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = blX, Y = blY, U = u0, V = v1, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = brX, Y = brY, U = u1, V = v1, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = tlX, Y = tlY, U = u0, V = v0, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = brX, Y = brY, U = u1, V = v1, Rgba = rgba };
+        _vertices[_vertexCount++] = new UIVertex { X = trX, Y = trY, U = u1, V = v0, Rgba = rgba };
+    }
+
     public void AddColoredQuad(float x, float y, float w, float h, uint rgba)
     {
         SetNoTexture();

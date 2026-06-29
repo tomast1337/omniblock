@@ -359,18 +359,18 @@ public class TextRenderer : IDisposable
         }
     }
 
-    public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
+    public void DrawStringWithShadow(ReadOnlySpan<char> text, float x, float y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
-        RenderString(text, x + 1, y + 1, color, true, align, batch);
-        DrawString(text, x, y, color, align, batch);
+        RenderString(text, x + 1, y + 1, color, true, align, batch, scale, cos, sin, pivotX, pivotY);
+        DrawString(text, x, y, color, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void DrawString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
+    public void DrawString(ReadOnlySpan<char> text, float x, float y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
-        RenderString(text, x, y, color, false, align, batch);
+        RenderString(text, x, y, color, false, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void RenderString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null)
+    public void RenderString(ReadOnlySpan<char> text, float x, float y, Guis.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         if (text.IsEmpty) return;
 
@@ -381,13 +381,14 @@ public class TextRenderer : IDisposable
         float currentY = y;
 
         int width = GetStringWidth(text);
-        if (align == HorizontalAlignment.Center) currentX -= width / 2;
-        else if (align == HorizontalAlignment.Right) currentX -= width;
+        if (align == HorizontalAlignment.Center) currentX -= width * scale / 2f;
+        else if (align == HorizontalAlignment.Right) currentX -= width * scale;
 
         if (batch != null)
         {
             batch.SetTexture((uint)fontTextureName!.Id);
             uint currentRgba = (uint)color;
+            bool isRotated = sin != 0f;
 
             for (int i = 0; i < text.Length; ++i)
             {
@@ -402,12 +403,31 @@ public class TextRenderer : IDisposable
                     GlyphInfo glyph = GetOrCreateGlyph(text[i]);
                     if (glyph.Width > 0 && glyph.Height > 0)
                     {
-                        float w = glyph.Width * DisplayScale;
-                        float h = glyph.Height * DisplayScale;
-                        batch.AddQuad(currentX, currentY, currentX + w, currentY + h, glyph.U0, glyph.V0, glyph.U1, glyph.V1, currentRgba);
+                        float w = glyph.Width * DisplayScale * scale;
+                        float h = glyph.Height * DisplayScale * scale;
+
+                        if (!isRotated)
+                        {
+                            batch.AddQuad(currentX, currentY, currentX + w, currentY + h, glyph.U0, glyph.V0, glyph.U1, glyph.V1, currentRgba);
+                        }
+                        else
+                        {
+                            float lx0 = currentX, ly0 = currentY;
+                            float lx1 = currentX, ly1 = currentY + h;
+                            float lx2 = currentX + w, ly2 = currentY + h;
+                            float lx3 = currentX + w, ly3 = currentY;
+                            batch.AddQuadCorners(
+                                pivotX + lx0 * cos - ly0 * sin, pivotY + lx0 * sin + ly0 * cos,
+                                pivotX + lx1 * cos - ly1 * sin, pivotY + lx1 * sin + ly1 * cos,
+                                pivotX + lx2 * cos - ly2 * sin, pivotY + lx2 * sin + ly2 * cos,
+                                pivotX + lx3 * cos - ly3 * sin, pivotY + lx3 * sin + ly3 * cos,
+                                glyph.U0, glyph.V0, glyph.U1, glyph.V1, currentRgba);
+                        }
                     }
 
-                    currentX = MathF.Floor(currentX + glyph.AdvanceWidth * DisplayScale);
+                    float advance = glyph.AdvanceWidth * DisplayScale * scale;
+                    // Pixel-snap advances only on the axis-aligned path; rotation breaks snapping.
+                    currentX = isRotated ? currentX + advance : MathF.Floor(currentX + advance);
                 }
             }
             return;
