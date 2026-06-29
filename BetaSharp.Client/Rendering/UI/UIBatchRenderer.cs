@@ -48,6 +48,7 @@ public sealed class UIBatchRenderer : IDisposable
 
     public void Begin(Matrix4X4<float> proj)
     {
+        _silkGL.Enable(EnableCap.Blend);
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetProjection(proj);
         GLManager.GL.UseProgram(0);
@@ -56,11 +57,7 @@ public sealed class UIBatchRenderer : IDisposable
         _useTexture = false;
     }
 
-    public void End()
-    {
-        Flush();
-        GLManager.GL.UseProgram(0);
-    }
+    public void End() => Flush();
 
     public void SetTexture(uint texId)
     {
@@ -78,7 +75,7 @@ public sealed class UIBatchRenderer : IDisposable
         _useTexture = false;
     }
 
-    public void AddQuad(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, uint rgba)
+    internal void AddQuad(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, uint rgba)
     {
         if (_vertexCount + 6 > MaxVertices)
             Flush();
@@ -118,6 +115,8 @@ public sealed class UIBatchRenderer : IDisposable
     {
         if (_vertexCount == 0) return;
 
+        // Legacy GL calls between flushes (e.g. 3D block rendering) can disable blend.
+        // Restore it here so transparent font atlas pixels are not written as opaque black.
         _silkGL.Enable(EnableCap.Blend);
 
         GLManager.GL.UseProgram(_shader.ProgramId);

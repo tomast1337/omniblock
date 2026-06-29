@@ -282,22 +282,6 @@ public class UIRenderer : IDisposable
         _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, 0f, 0f, 1f, 1f, _currentTint);
     }
 
-    public void DrawBoundTexture(float x, float y, float width, float height)
-    {
-        _batch.Flush();
-        GLManager.GL.Enable(GLEnum.Blend);
-        Tessellator tess = Tessellator.instance;
-        float finalX = MathF.Floor(x + _translateX);
-        float finalY = MathF.Floor(y + _translateY);
-
-        tess.startDrawingQuads();
-        tess.addVertexWithUV(finalX, finalY + height, 0.0D, 0.0D, 1.0D);
-        tess.addVertexWithUV(finalX + width, finalY + height, 0.0D, 1.0D, 1.0D);
-        tess.addVertexWithUV(finalX + width, finalY, 0.0D, 1.0D, 0.0D);
-        tess.addVertexWithUV(finalX, finalY, 0.0D, 0.0D, 0.0D);
-        tess.draw();
-    }
-
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height)
     {
         DrawTexturedModalRect(texture, x, y, u, v, width, height, width, height, 0.0f);
