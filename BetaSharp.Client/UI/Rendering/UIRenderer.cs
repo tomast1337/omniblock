@@ -32,6 +32,10 @@ public class UIRenderer : IDisposable
     private float _translateY = 0;
     private uint _currentTint = 0xFFFFFFFF;
     private readonly Stack<Vector2D<float>> _translationStack = new();
+
+    private bool _scissorEnabled;
+    private (int X, int Y, int W, int H) _scissorRect;
+    private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
     private readonly GameOptions _gameOptions;
     private readonly Func<Vector2D<int>> _getDisplaySize;
     private readonly TextureHandle _terrainTexture;
@@ -62,6 +66,8 @@ public class UIRenderer : IDisposable
         _translateY = 0;
         _currentTint = 0xFFFFFFFF;
         _translationStack.Clear();
+        _scissorEnabled = false;
+        _scissorStack.Clear();
 
         Vector2D<int> displaySize = _getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
@@ -190,13 +196,42 @@ public class UIRenderer : IDisposable
         int physicalWidth = clampedRight - clampedLeft;
         int physicalHeight = clampedBottom - clampedTop;
 
+        // Intersect with the currently active scissor so nested clips never escape a parent clip.
+        if (_scissorEnabled)
+        {
+            int parentRight = _scissorRect.X + _scissorRect.W;
+            int parentTop = _scissorRect.Y + _scissorRect.H;
+            physicalX = Math.Max(physicalX, _scissorRect.X);
+            physicalY = Math.Max(physicalY, _scissorRect.Y);
+            physicalWidth = Math.Max(0, Math.Min(physicalX + physicalWidth, parentRight) - physicalX);
+            physicalHeight = Math.Max(0, Math.Min(physicalY + physicalHeight, parentTop) - physicalY);
+        }
+
+        _scissorStack.Push((_scissorEnabled, _scissorRect.X, _scissorRect.Y, _scissorRect.W, _scissorRect.H));
+        _scissorEnabled = true;
+        _scissorRect = (physicalX, physicalY, physicalWidth, physicalHeight);
         GLManager.GL.Enable(GLEnum.ScissorTest);
-        GLManager.GL.Scissor(physicalX, physicalY, (uint)Math.Max(0, physicalWidth), (uint)Math.Max(0, physicalHeight));
+        GLManager.GL.Scissor(physicalX, physicalY, (uint)physicalWidth, (uint)physicalHeight);
     }
 
     public void DisableClipping()
     {
         _batch.Flush();
+        if (_scissorStack.TryPop(out var prev))
+        {
+            _scissorEnabled = prev.Enabled;
+            _scissorRect = (prev.X, prev.Y, prev.W, prev.H);
+            if (prev.Enabled)
+            {
+                GLManager.GL.Enable(GLEnum.ScissorTest);
+                GLManager.GL.Scissor(prev.X, prev.Y, (uint)Math.Max(0, prev.W), (uint)Math.Max(0, prev.H));
+                return;
+            }
+        }
+        else
+        {
+            _scissorEnabled = false;
+        }
         GLManager.GL.Disable(GLEnum.ScissorTest);
     }
 
@@ -452,6 +487,24 @@ public class UIRenderer : IDisposable
         GLManager.GL.Disable(GLEnum.DepthTest);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.GL.Disable(GLEnum.ColorMaterial);
+    }
+
+    public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, bool scroll, int rightPadding = 2)
+    {
+        int availableWidth = containerWidth - (int)x - rightPadding;
+        int textWidth = TextRenderer.GetStringWidth(text);
+
+        if (availableWidth > 0 && textWidth > availableWidth)
+        {
+            float scrollOffset = scroll ? ComputeTextScrollOffset(textWidth - availableWidth) : 0f;
+            EnableClipping((int)x, 0, availableWidth, containerHeight);
+            DrawText(text, x - scrollOffset, y, color);
+            DisableClipping();
+        }
+        else
+        {
+            DrawText(text, x, y, color);
+        }
     }
 
     public void DrawScrollingCenteredText(string text, int containerWidth, int containerHeight, float textY, Color color, int padding = 2)

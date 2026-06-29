@@ -29,6 +29,6 @@ public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
             secondary = Translations.Get("world.unsupportedFormat") + " " + secondary;
         }
 
-        renderer.DrawText(secondary, 5, 17, Color.GrayA0);
+        renderer.DrawScrollingText(secondary, 5, 17, (int)ComputedWidth, (int)ComputedHeight, Color.GrayA0, IsHovered);
     }
 }
