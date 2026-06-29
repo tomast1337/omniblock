@@ -24,7 +24,9 @@ public class UIRenderer : IDisposable
     public TextureManager TextureManager { get; }
     public TextRenderer TextRenderer { get; }
     private readonly ItemRenderer _itemRenderer = new();
-    private readonly UIBatchRenderer _batch = new();
+    private readonly UIBatchRenderer _batch;
+
+    public bool IsDisposed { get; private set; }
 
     private float _translateX = 0;
     private float _translateY = 0;
@@ -43,6 +45,7 @@ public class UIRenderer : IDisposable
         _itemsTexture = itemsTexture;
         TextureManager = textureManager;
         TextRenderer = textRenderer;
+        _batch = new UIBatchRenderer(gameOptions);
     }
 
     public void Begin()
@@ -73,7 +76,11 @@ public class UIRenderer : IDisposable
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public void Dispose() => _batch.Dispose();
+    public void Dispose()
+    {
+        _batch.Dispose();
+        IsDisposed = true;
+    }
 
     public void PushColor(Color color)
     {
@@ -333,7 +340,11 @@ public class UIRenderer : IDisposable
         if (isBlock3D)
         {
             _batch.Flush();
+            GLManager.GL.Enable(GLEnum.RescaleNormal);
+            Lighting.turnOnGui();
             itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+            Lighting.turnOff();
+            GLManager.GL.Disable(GLEnum.RescaleNormal);
             return;
         }
 

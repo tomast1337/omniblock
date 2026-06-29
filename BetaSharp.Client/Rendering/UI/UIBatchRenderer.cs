@@ -1,3 +1,4 @@
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using Silk.NET.Maths;
@@ -20,9 +21,9 @@ public sealed class UIBatchRenderer : IDisposable
     private uint _currentTextureId;
     private bool _useTexture;
 
-    public unsafe UIBatchRenderer()
+    public unsafe UIBatchRenderer(GameOptions gameOptions)
     {
-        _shader = new UIShader();
+        _shader = new UIShader(gameOptions);
         _silkGL = ((LegacyGL)GLManager.GL).SilkGL;
 
         _vaoId = _silkGL.GenVertexArray();

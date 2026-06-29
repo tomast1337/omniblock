@@ -121,6 +121,9 @@ public abstract class UIScreen
 
     public void Initialize()
     {
+        if (Renderer.IsDisposed)
+            Renderer = new UIRenderer(Context.TextRenderer, Context.TextureManager, Context.Options, Context.DisplaySize, Context.TerrainTexture, Context.ItemsTexture);
+
         Keyboard.enableRepeatEvents(true);
         if (!_isInitialized)
         {
