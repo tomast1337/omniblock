@@ -157,7 +157,6 @@ public class TextRenderer : IDisposable
         fontTextureName = textureManager.Load(_atlasImage);
         fontTextureName.Texture?.SetFilter(TextureMinFilter.Nearest, TextureMagFilter.Nearest);
 
-        // placeholder — will be set by ApplyFontForLanguage below
         _font = _monoFamily.CreateFont(AtlasFontSize);
         _textOptions = new TextOptions(_font);
 
@@ -426,7 +425,6 @@ public class TextRenderer : IDisposable
                     }
 
                     float advance = glyph.AdvanceWidth * DisplayScale * scale;
-                    // Pixel-snap advances only on the axis-aligned path; rotation breaks snapping.
                     currentX = isRotated ? currentX + advance : MathF.Floor(currentX + advance);
                 }
             }

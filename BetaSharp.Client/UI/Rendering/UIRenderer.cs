@@ -158,7 +158,6 @@ public class UIRenderer : IDisposable
             _translateY = 0;
         }
 
-        // Stability
         if (MathF.Abs(_translateX) < 0.0001f) _translateX = 0;
         if (MathF.Abs(_translateY) < 0.0001f) _translateY = 0;
     }
@@ -175,7 +174,6 @@ public class UIRenderer : IDisposable
         float right = left + width;
         float bottom = top + height;
 
-        // UI coordinates are in scaled-resolution space; scissor rectangles must use framebuffer pixels.
         int framebufferWidth = Display.getFramebufferWidth();
         int framebufferHeight = Display.getFramebufferHeight();
         float scaleX = framebufferWidth / (float)res.ScaledWidth;
@@ -196,7 +194,6 @@ public class UIRenderer : IDisposable
         int physicalWidth = clampedRight - clampedLeft;
         int physicalHeight = clampedBottom - clampedTop;
 
-        // Intersect with the currently active scissor so nested clips never escape a parent clip.
         if (_scissorEnabled)
         {
             int parentRight = _scissorRect.X + _scissorRect.W;
@@ -275,7 +272,6 @@ public class UIRenderer : IDisposable
 
         if (rotation == 0)
         {
-            // Axis-aligned: pass screen coords directly; centering subtracts width*scale/2 inside.
             if (shadow)
                 TextRenderer.DrawStringWithShadow(text, pivotX, pivotY, color, HorizontalAlignment.Center, _batch, scale);
             else
@@ -283,7 +279,6 @@ public class UIRenderer : IDisposable
             return;
         }
 
-        // Rotated: pass local (0,0) so centering lands at -width*scale/2 relative to pivot.
         float rad = rotation * MathF.PI / 180f;
         float cos = MathF.Cos(rad);
         float sin = MathF.Sin(rad);
@@ -489,14 +484,14 @@ public class UIRenderer : IDisposable
         GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
 
-    public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, bool scroll, int rightPadding = 2)
+    public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, long scrollStartMs, int rightPadding = 2)
     {
         int availableWidth = containerWidth - (int)x - rightPadding;
         int textWidth = TextRenderer.GetStringWidth(text);
 
         if (availableWidth > 0 && textWidth > availableWidth)
         {
-            float scrollOffset = scroll ? ComputeTextScrollOffset(textWidth - availableWidth) : 0f;
+            float scrollOffset = scrollStartMs > 0 ? ComputeTextScrollOffset(textWidth - availableWidth, scrollStartMs) : 0f;
             EnableClipping((int)x, 0, availableWidth, containerHeight);
             DrawText(text, x - scrollOffset, y, color);
             DisableClipping();
@@ -525,25 +520,41 @@ public class UIRenderer : IDisposable
         }
     }
 
-    private static float ComputeTextScrollOffset(int overflow)
+    private static float ComputeTextScrollOffset(int overflow) =>
+        ComputeTextScrollOffset(overflow, 0L);
+
+    private static float ComputeTextScrollOffset(int overflow, long startMs)
     {
         const float scrollSpeed = 30f;
         const float pauseSeconds = 1.0f;
         float scrollDuration = overflow / scrollSpeed;
         float period = (pauseSeconds + scrollDuration) * 2f;
 
+        long elapsedMs = startMs > 0 ? Environment.TickCount64 - startMs : Environment.TickCount64;
         long periodMs = Math.Max(1L, (long)(period * 1000));
-        float t = (float)(Environment.TickCount64 % periodMs) / 1000f;
+        float t = (float)(elapsedMs % periodMs) / 1000f;
+
+        static float Smoothstep(float x) => x * x * (3f - 2f * x);
 
         float offset;
         if (t < pauseSeconds)
+        {
             offset = 0f;
+        }
         else if (t < pauseSeconds + scrollDuration)
-            offset = (t - pauseSeconds) * scrollSpeed;
+        {
+            float p = (t - pauseSeconds) / scrollDuration;
+            offset = Smoothstep(p) * overflow;
+        }
         else if (t < pauseSeconds * 2f + scrollDuration)
+        {
             offset = overflow;
+        }
         else
-            offset = overflow - (t - pauseSeconds * 2f - scrollDuration) * scrollSpeed;
+        {
+            float p = (t - pauseSeconds * 2f - scrollDuration) / scrollDuration;
+            offset = (1f - Smoothstep(p)) * overflow;
+        }
 
         return Math.Clamp(offset, 0f, overflow);
     }
