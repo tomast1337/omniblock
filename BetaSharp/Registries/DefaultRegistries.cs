@@ -23,7 +23,9 @@ public static class DefaultRegistries
         new IndexedRegistry<IGameRule>(ResourceLocation.Parse("game_rules"));
 
     /// <summary>
-    /// Item definition registry. Populated in Phase 3 from item static field definitions.
+    /// Item definition registry. Each <see cref="ItemDefinition"/> registers itself here as a
+    /// side effect of <see cref="ItemFactory.Create"/>, so the static fields on <see cref="Item"/>
+    /// remain the single source of truth — there is no separate, duplicated registration list.
     /// </summary>
     public static readonly IndexedRegistry<ItemDefinition> Items =
         new IndexedRegistry<ItemDefinition>(ResourceLocation.Parse("items"));
@@ -35,6 +37,10 @@ public static class DefaultRegistries
         BlockEntityTypes.Bootstrap(typeof(BlockEntity));
 
         MetricRegistry.Bootstrap(typeof(ServerMetrics));
+
+        // Force Item's static field initializers to run now, so every ItemDefinition has
+        // registered into Items before it gets frozen below.
+        _ = Item.Stick.id;
 
         RegistryAccess.AddBuiltIn(RegistryKeys.EntityTypes, EntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.Biomes, Biomes);

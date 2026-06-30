@@ -506,7 +506,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "leather",
-            Slot = 0
+            Slot = ArmorSlot.Helmet
         }
     });
 
@@ -519,7 +519,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "leather",
-            Slot = 1
+            Slot = ArmorSlot.Chestplate
         }
     });
 
@@ -532,7 +532,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "leather",
-            Slot = 2
+            Slot = ArmorSlot.Leggings
         }
     });
 
@@ -545,7 +545,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "leather",
-            Slot = 3
+            Slot = ArmorSlot.Boots
         }
     });
 
@@ -558,7 +558,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "chain",
-            Slot = 0
+            Slot = ArmorSlot.Helmet
         }
     });
 
@@ -571,7 +571,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "chain",
-            Slot = 1
+            Slot = ArmorSlot.Chestplate
         }
     });
 
@@ -584,7 +584,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "chain",
-            Slot = 2
+            Slot = ArmorSlot.Leggings
         }
     });
 
@@ -597,7 +597,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "chain",
-            Slot = 3
+            Slot = ArmorSlot.Boots
         }
     });
 
@@ -610,7 +610,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "iron",
-            Slot = 0
+            Slot = ArmorSlot.Helmet
         }
     });
 
@@ -623,7 +623,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "iron",
-            Slot = 1
+            Slot = ArmorSlot.Chestplate
         }
     });
 
@@ -636,7 +636,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "iron",
-            Slot = 2
+            Slot = ArmorSlot.Leggings
         }
     });
 
@@ -649,7 +649,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "iron",
-            Slot = 3
+            Slot = ArmorSlot.Boots
         }
     });
 
@@ -662,7 +662,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "diamond",
-            Slot = 0
+            Slot = ArmorSlot.Helmet
         }
     });
 
@@ -675,7 +675,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "diamond",
-            Slot = 1
+            Slot = ArmorSlot.Chestplate
         }
     });
 
@@ -688,7 +688,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "diamond",
-            Slot = 2
+            Slot = ArmorSlot.Leggings
         }
     });
 
@@ -701,7 +701,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "diamond",
-            Slot = 3
+            Slot = ArmorSlot.Boots
         }
     });
 
@@ -714,7 +714,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "gold",
-            Slot = 0
+            Slot = ArmorSlot.Helmet
         }
     });
 
@@ -727,7 +727,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "gold",
-            Slot = 1
+            Slot = ArmorSlot.Chestplate
         }
     });
 
@@ -740,7 +740,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "gold",
-            Slot = 2
+            Slot = ArmorSlot.Leggings
         }
     });
 
@@ -753,7 +753,7 @@ public class Item
         Behavior = new ArmorBehaviorDefinition
         {
             Material = "gold",
-            Slot = 3
+            Slot = ArmorSlot.Boots
         }
     });
 

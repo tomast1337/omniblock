@@ -5,17 +5,18 @@ public sealed class ArmorBehavior : IItemBehavior
     private static readonly int[] s_damageReduceAmountArray = [3, 8, 6, 3];
     private static readonly int[] s_maxDamageArray = [11, 16, 15, 13];
 
-    public ArmorBehavior(ArmorMaterial material, int armorType)
+    public ArmorBehavior(ArmorMaterial material, ArmorSlot slot)
     {
         Material = material;
-        ArmorType = armorType;
-        DamageReduceAmount = s_damageReduceAmountArray[armorType];
+        Slot = slot;
+        DamageReduceAmount = s_damageReduceAmountArray[(int)slot];
     }
 
     public ArmorMaterial Material { get; }
+    public ArmorSlot Slot { get; }
     public int ArmorLevel => Material.ArmorLevel;
     public int RenderIndex => Material.RenderIndex;
-    public int ArmorType { get; }
+    public int ArmorType => (int)Slot;
     public int DamageReduceAmount { get; }
 
     public void Apply(Item item)

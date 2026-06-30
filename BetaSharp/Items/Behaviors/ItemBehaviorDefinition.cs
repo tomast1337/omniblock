@@ -85,7 +85,7 @@ public sealed class HoeBehaviorDefinition : ItemBehaviorDefinition
 public sealed class ArmorBehaviorDefinition : ItemBehaviorDefinition
 {
     public string Material { get; init; } = "iron";
-    public int Slot { get; init; } // 0=helmet, 1=chestplate, 2=leggings, 3=boots
+    public ArmorSlot Slot { get; init; }
     public override IItemBehavior Build() => new ArmorBehavior(ArmorMaterialRegistry.Get(Material), Slot);
 }
 
