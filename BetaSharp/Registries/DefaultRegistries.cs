@@ -46,6 +46,7 @@ public static class DefaultRegistries
         RegistryAccess.AddBuiltIn(RegistryKeys.Biomes, Biomes);
         RegistryAccess.AddBuiltIn(RegistryKeys.BlockEntityTypes, BlockEntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.GameRules, GameRules);
+        RegistryAccess.AddBuiltIn(RegistryKeys.Items, Items);
         RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
         RegistryAccess.AddDynamic(RegistryDefinitions.Recipes);
 

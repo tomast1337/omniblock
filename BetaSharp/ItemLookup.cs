@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Items;
+using BetaSharp.Registries;
 
 namespace BetaSharp;
 
@@ -154,6 +155,15 @@ internal static class ItemLookup
             {
                 s_itemNameToId.TryAdd(field.Name.ToLower(), block.id);
                 BuildItemLookupAlias(block);
+            }
+        }
+
+        foreach (ItemDefinition definition in DefaultRegistries.Items)
+        {
+            ResourceLocation? location = DefaultRegistries.Items.GetKey(definition);
+            if (location is not null)
+            {
+                s_itemNameToId.TryAdd(location.Path, definition.ProtocolId);
             }
         }
     }
