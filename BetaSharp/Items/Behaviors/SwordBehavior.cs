@@ -11,13 +11,13 @@ internal sealed class SwordBehavior : IItemBehavior
     internal SwordBehavior(ToolMaterial toolMaterial)
     {
         _toolMaterial = toolMaterial;
-        _weaponDamage = 4 + toolMaterial.getDamageVsEntity() * 2;
+        _weaponDamage = 4 + toolMaterial.DamageBonus * 2;
     }
 
     public void Apply(Item item)
     {
         item.maxCount = 1;
-        item.setMaxDamage(_toolMaterial.getMaxUses());
+        item.setMaxDamage(_toolMaterial.MaxUses);
     }
 
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)

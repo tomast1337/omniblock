@@ -14,8 +14,8 @@ internal sealed class ToolBehavior : IItemBehavior
     internal ToolBehavior(ToolMaterial toolMaterial, int baseDamage, Block[] effectiveBlocks, Func<Block, bool>? suitableFor = null)
     {
         _toolMaterial = toolMaterial;
-        _efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
-        _damageVsEntity = baseDamage + toolMaterial.getDamageVsEntity();
+        _efficiencyOnProperMaterial = toolMaterial.Efficiency;
+        _damageVsEntity = baseDamage + toolMaterial.DamageBonus;
         _effectiveBlocks = effectiveBlocks;
         _suitableFor = suitableFor;
     }
@@ -23,7 +23,7 @@ internal sealed class ToolBehavior : IItemBehavior
     public void Apply(Item item)
     {
         item.maxCount = 1;
-        item.setMaxDamage(_toolMaterial.getMaxUses());
+        item.setMaxDamage(_toolMaterial.MaxUses);
     }
 
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)

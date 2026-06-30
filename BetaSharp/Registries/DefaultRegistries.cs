@@ -1,6 +1,7 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
+using BetaSharp.Items;
 using BetaSharp.Rules;
 using BetaSharp.Worlds.Generation.Biomes;
 
@@ -20,6 +21,12 @@ public static class DefaultRegistries
     //TODO: Implement this properly
     public static readonly IRegistry<IGameRule> GameRules =
         new IndexedRegistry<IGameRule>(ResourceLocation.Parse("game_rules"));
+
+    /// <summary>
+    /// Item definition registry. Populated in Phase 3 from item static field definitions.
+    /// </summary>
+    public static readonly IndexedRegistry<ItemDefinition> Items =
+        new IndexedRegistry<ItemDefinition>(ResourceLocation.Parse("items"));
 
     public static void Initialize()
     {
@@ -44,5 +51,6 @@ public static class DefaultRegistries
         EntityTypes.Freeze();
         Biomes.Freeze();
         BlockEntityTypes.Freeze();
+        Items.Freeze();
     }
 }
