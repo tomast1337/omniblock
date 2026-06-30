@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.NBT;
 
 namespace BetaSharp.Inventorys;
@@ -398,14 +399,14 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         for (int slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
             ItemStack? stack = Armor[slotIndex];
-            if (stack != null && stack.getItem() is ItemArmor armor)
+            if (stack != null && stack.getItem().GetBehavior<ArmorBehavior>() is { } armor)
             {
                 int maxDurability = stack.getMaxDamage();
                 int pieceDamage = stack.getDamage2();
                 int remainingDurability = maxDurability - pieceDamage;
                 durabilitySum += remainingDurability;
                 totalMaxDurability += maxDurability;
-                int armorValue = armor.damageReduceAmount;
+                int armorValue = armor.DamageReduceAmount;
                 totalArmor += armorValue;
             }
         }
@@ -425,7 +426,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         for (int slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
             ItemStack? stack = Armor[slotIndex];
-            if (stack != null && stack.getItem() is ItemArmor)
+            if (stack != null && stack.getItem().GetBehavior<ArmorBehavior>() != null)
             {
                 stack.DamageItem(durabilityLoss, Player);
                 if (stack.Count == 0)

@@ -7,6 +7,7 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -30,9 +31,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         if (armorStack != null)
         {
             Item armorItem = armorStack.getItem();
-            if (armorItem is ItemArmor armor)
+            if (armorItem.GetBehavior<ArmorBehavior>() is { } armor)
             {
-                loadTexture("/armor/" + s_armorFilenamePrefix[armor.renderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
+                loadTexture("/armor/" + s_armorFilenamePrefix[armor.RenderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
                 ModelBiped armorModel = renderPass == 2 ? _modelBipedMain : _armorChestplate;
                 armorModel.BipedHead.Visible = renderPass == 0;
                 armorModel.BipedHeadwear.Visible = renderPass == 0;

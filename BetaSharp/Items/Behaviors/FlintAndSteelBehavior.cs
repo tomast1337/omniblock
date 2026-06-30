@@ -1,20 +1,18 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
-namespace BetaSharp.Items;
+namespace BetaSharp.Items.Behaviors;
 
-internal class ItemFlintAndSteel : Item
+internal sealed class FlintAndSteelBehavior : IItemBehavior
 {
-
-    public ItemFlintAndSteel(int id) : base(id)
+    public void Apply(Item item)
     {
-        maxCount = 1;
-        setMaxDamage(64);
+        item.maxCount = 1;
+        item.setMaxDamage(64);
     }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         if (meta == 0)
         {
@@ -49,11 +47,11 @@ internal class ItemFlintAndSteel : Item
         int blockId = world.Reader.GetBlockId(x, y, z);
         if (blockId == 0)
         {
-            world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "fire.ignite", 1.0F, itemRand.NextFloat() * 0.4F + 0.8F);
+            world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "fire.ignite", 1.0F, Item.itemRand.NextFloat() * 0.4F + 0.8F);
             world.Writer.SetBlock(x, y, z, Block.Fire.id);
         }
 
-        itemStack.DamageItem(1, entityPlayer);
+        itemStack.DamageItem(1, player);
         return true;
     }
 }

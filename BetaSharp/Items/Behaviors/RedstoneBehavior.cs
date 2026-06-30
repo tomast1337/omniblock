@@ -1,18 +1,12 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
-namespace BetaSharp.Items;
+namespace BetaSharp.Items.Behaviors;
 
-internal class ItemRedstone : Item
+internal sealed class RedstoneBehavior : IItemBehavior
 {
-
-    public ItemRedstone(int id) : base(id)
-    {
-    }
-
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         if (world.Reader.GetBlockId(x, y, z) != Block.Snow.id)
         {
@@ -54,7 +48,7 @@ internal class ItemRedstone : Item
 
         if (Block.RedstoneWire.canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
-            itemStack.ConsumeItem(entityPlayer);
+            itemStack.ConsumeItem(player);
             world.Writer.SetBlock(x, y, z, Block.RedstoneWire.id);
         }
 

@@ -2,37 +2,55 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
-namespace BetaSharp.Items;
+namespace BetaSharp.Items.Behaviors;
 
-internal class ItemDoor : Item
+internal sealed class DoorBehavior : IItemBehavior
 {
+    private readonly Material _doorMaterial;
 
-    private Material doorMaterial;
+    internal DoorBehavior(Material doorMaterial) => _doorMaterial = doorMaterial;
 
-    public ItemDoor(int id, Material material) : base(id)
+    public void Apply(Item item) => item.maxCount = 1;
+
+    public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int side)
     {
-        doorMaterial = material;
-        maxCount = 1;
-    }
+        if (side != 1)
+        {
+            return false;
+        }
 
-    public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int side)
-    {
-        if (side != 1) return false;
         y++;
 
-        int blockId = doorMaterial == Material.Wood ? Block.Door.id : Block.IronDoor.id;
-        if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z))) return false;
+        int blockId = _doorMaterial == Material.Wood ? Block.Door.id : Block.IronDoor.id;
+        if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        {
+            return false;
+        }
 
-        int facing = MathHelper.Floor((entityPlayer.Yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
+        int facing = MathHelper.Floor((player.Yaw + 180.0f) * 4.0f / 360.0f - 0.5f) & 3;
         int offsetX = 0;
         int offsetZ = 0;
-        if (facing == 0) offsetZ = 1;
-        if (facing == 1) offsetX = -1;
-        if (facing == 2) offsetZ = -1;
-        if (facing == 3) offsetX = 1;
+        if (facing == 0)
+        {
+            offsetZ = 1;
+        }
+
+        if (facing == 1)
+        {
+            offsetX = -1;
+        }
+
+        if (facing == 2)
+        {
+            offsetZ = -1;
+        }
+
+        if (facing == 3)
+        {
+            offsetX = 1;
+        }
 
         int leftSolid = (world.Reader.ShouldSuffocate(x - offsetX, y, z - offsetZ) ? 1 : 0) +
                         (world.Reader.ShouldSuffocate(x - offsetX, y + 1, z - offsetZ) ? 1 : 0);
@@ -42,7 +60,7 @@ internal class ItemDoor : Item
                            world.Reader.GetBlockId(x - offsetX, y + 1, z - offsetZ) == blockId;
         bool rightHasDoor = world.Reader.GetBlockId(x + offsetX, y, z + offsetZ) == blockId ||
                             world.Reader.GetBlockId(x + offsetX, y + 1, z + offsetZ) == blockId;
-        bool mirror = (leftHasDoor && !rightHasDoor) || (rightSolid > leftSolid);
+        bool mirror = (leftHasDoor && !rightHasDoor) || rightSolid > leftSolid;
 
         if (mirror)
         {
@@ -54,9 +72,10 @@ internal class ItemDoor : Item
         world.Writer.SetBlock(x, y + 1, z, blockId, facing + 8);
         world.Broadcaster.NotifyNeighbors(x, y, z, blockId);
         world.Broadcaster.NotifyNeighbors(x, y + 1, z, blockId);
-        itemStack.ConsumeItem(entityPlayer);
+        itemStack.ConsumeItem(player);
         return true;
     }
 
-    public override IReadOnlyList<string> GetItemAlias => doorMaterial == Material.Wood ? ["door", "woodDoor"] : [];
+    public IReadOnlyList<string> GetItemAliases(Item item)
+        => _doorMaterial == Material.Wood ? ["door", "woodDoor"] : [];
 }

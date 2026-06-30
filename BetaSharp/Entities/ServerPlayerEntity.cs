@@ -186,7 +186,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 continue;
             }
 
-            Packet? packet = ((NetworkSyncedItem)Item.ITEMS[itemStack.ItemId]!).getUpdatePacket(itemStack, World, this);
+            Packet? packet = Item.ITEMS[itemStack.ItemId]!.getUpdatePacket(itemStack, World, this);
             if (packet != null)
             {
                 NetworkHandler?.SendPacket(packet);

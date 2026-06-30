@@ -12,6 +12,7 @@ using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.Network;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
@@ -810,7 +811,7 @@ public class ClientNetworkHandler : NetHandler
     {
         if (packet.ItemRawId == Item.Map.id)
         {
-            ItemMap.getMapState(packet.MapId, _context.WorldHost.World).UpdateData(packet.UpdateData);
+            MapBehavior.GetMapState(packet.MapId, _context.WorldHost.World).UpdateData(packet.UpdateData);
         }
         else
         {

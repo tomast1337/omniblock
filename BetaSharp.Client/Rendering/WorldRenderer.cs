@@ -12,6 +12,7 @@ using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.Profiling;
 using BetaSharp.Util;
 using BetaSharp.Util.Hit;
@@ -987,9 +988,9 @@ public class WorldRenderer : IWorldEventListener
 
                 break;
             case 1005:
-                if (Item.ITEMS[data] is ItemRecord)
+                if (Item.ITEMS[data]?.GetBehavior<RecordBehavior>() is { } record)
                 {
-                    _game.SoundManager.PlayStreaming(((ItemRecord)Item.ITEMS[data]).recordName, x, y, z, 1.0F, 1.0F);
+                    _game.SoundManager.PlayStreaming(record.RecordName, x, y, z, 1.0F, 1.0F);
                 }
                 else
                 {

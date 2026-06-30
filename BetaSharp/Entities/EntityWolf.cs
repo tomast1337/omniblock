@@ -1,4 +1,5 @@
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.PathFinding;
@@ -168,7 +169,7 @@ public class EntityWolf : EntityAnimal
                     _looksWithInterest = IsWolfTamed switch
                     {
                         false when heldItem.ItemId == Item.Bone.id => true,
-                        true when Item.ITEMS[heldItem.ItemId] is ItemFood => ((ItemFood)Item.ITEMS[heldItem.ItemId]!).getIsWolfsFavoriteMeat(),
+                        true when Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() is { } food => food.IsWolfsFavoriteMeat,
                         _ => _looksWithInterest
                     };
                 }
@@ -410,18 +411,18 @@ public class EntityWolf : EntityAnimal
         }
         else
         {
-            if (heldItem != null && Item.ITEMS[heldItem.ItemId] is ItemFood)
+            FoodBehavior? heldFood = heldItem != null ? Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() : null;
+            if (heldFood != null)
             {
-                ItemFood? food = (ItemFood?)Item.ITEMS[heldItem.ItemId];
-                if (food != null && food.getIsWolfsFavoriteMeat() && _wolfHealth.Value < 20)
+                if (heldFood.IsWolfsFavoriteMeat && _wolfHealth.Value < 20)
                 {
-                    heldItem.ConsumeItem(player);
+                    heldItem!.ConsumeItem(player);
                     if (heldItem.Count <= 0)
                     {
                         player.Inventory.SetStack(player.Inventory.SelectedSlot, null);
                     }
 
-                    Heal(((ItemFood)Item.RawPorkchop).getHealAmount());
+                    Heal(Item.RawPorkchop.GetBehavior<FoodBehavior>()!.HealAmount);
                     return true;
                 }
             }
