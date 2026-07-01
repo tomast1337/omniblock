@@ -783,7 +783,7 @@
             "name": "Charcoal",
             "desc": ""
         },
-        "emerald": {
+        "diamond": {
             "name": "Diamond",
             "desc": ""
         },
@@ -883,7 +883,7 @@
             "name": "Feather",
             "desc": ""
         },
-        "sulphur": {
+        "gunpowder": {
             "name": "Gunpowder",
             "desc": ""
         },
@@ -919,19 +919,19 @@
             "name": "Bread",
             "desc": ""
         },
-        "helmetCloth": {
+        "helmetLeather": {
             "name": "Leather Cap",
             "desc": ""
         },
-        "chestplateCloth": {
+        "chestplateLeather": {
             "name": "Leather Tunic",
             "desc": ""
         },
-        "leggingsCloth": {
+        "leggingsLeather": {
             "name": "Leather Pants",
             "desc": ""
         },
-        "bootsCloth": {
+        "bootsLeather": {
             "name": "Leather Boots",
             "desc": ""
         },
@@ -1079,7 +1079,7 @@
             "name": "Clay",
             "desc": ""
         },
-        "reeds": {
+        "sugarCanes": {
             "name": "Sugar Canes",
             "desc": ""
         },
@@ -1217,7 +1217,7 @@
             "name": "Bed",
             "desc": ""
         },
-        "diode": {
+        "redstoneRepeater": {
             "name": "Redstone Repeater",
             "desc": ""
         },

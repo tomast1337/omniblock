@@ -10,6 +10,6 @@
         "I": "betasharp:Stone"
     },
     "result": {
-        "id": "betasharp:diode"
+        "id": "betasharp:redstone_repeater"
     }
 }

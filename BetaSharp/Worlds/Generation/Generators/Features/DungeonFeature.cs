@@ -149,7 +149,7 @@ internal class DungeonFeature : Feature
             1 => new ItemStack(Item.ByName("ingot_iron"), rand.NextInt(4) + 1),
             2 => new ItemStack(Item.ByName("bread")),
             3 => new ItemStack(Item.ByName("wheat"), rand.NextInt(4) + 1),
-            4 => new ItemStack(Item.ByName("sulphur"), rand.NextInt(4) + 1),
+            4 => new ItemStack(Item.ByName("gunpowder"), rand.NextInt(4) + 1),
             5 => new ItemStack(Item.ByName("string"), rand.NextInt(4) + 1),
             6 => new ItemStack(Item.ByName("bucket")),
             7 => rand.NextInt(100) == 0 ? new ItemStack(Item.ByName("apple_gold")) : null,

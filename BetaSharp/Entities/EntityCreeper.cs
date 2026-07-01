@@ -131,7 +131,7 @@ public class EntityCreeper : EntityMonster
 
     public float GetCreeperFlashTime(float partialTick) => (_lastActiveTime + (_timeSinceIgnited - _lastActiveTime) * partialTick) / 28.0F;
 
-    protected override int DropItemId => Item.ByName("sulphur").id;
+    protected override int DropItemId => Item.ByName("gunpowder").id;
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)
     {
