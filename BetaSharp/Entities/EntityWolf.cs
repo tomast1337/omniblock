@@ -168,7 +168,7 @@ public class EntityWolf : EntityAnimal
                 {
                     _looksWithInterest = IsWolfTamed switch
                     {
-                        false when heldItem.ItemId == Item.Bone.id => true,
+                        false when heldItem.ItemId == Item.ByName("bone").id => true,
                         true when Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() is { } food => food.IsWolfsFavoriteMeat,
                         _ => _looksWithInterest
                     };
@@ -383,7 +383,7 @@ public class EntityWolf : EntityAnimal
         ItemStack? heldItem = player.Inventory.ItemInHand;
         if (!IsWolfTamed)
         {
-            if (heldItem == null || heldItem.ItemId != Item.Bone.id || IsWolfAngry) return false;
+            if (heldItem == null || heldItem.ItemId != Item.ByName("bone").id || IsWolfAngry) return false;
 
             heldItem.ConsumeItem(player);
             if (heldItem.Count <= 0)
@@ -422,7 +422,7 @@ public class EntityWolf : EntityAnimal
                         player.Inventory.SetStack(player.Inventory.SelectedSlot, null);
                     }
 
-                    Heal(Item.RawPorkchop.GetBehavior<FoodBehavior>()!.HealAmount);
+                    Heal(Item.ByName("porkchop_raw").GetBehavior<FoodBehavior>()!.HealAmount);
                     return true;
                 }
             }

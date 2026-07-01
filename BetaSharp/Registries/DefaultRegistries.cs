@@ -1,3 +1,4 @@
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
@@ -22,25 +23,27 @@ public static class DefaultRegistries
     public static readonly IRegistry<IGameRule> GameRules =
         new IndexedRegistry<IGameRule>(ResourceLocation.Parse("game_rules"));
 
-    /// <summary>
-    /// Item definition registry. Each <see cref="ItemDefinition"/> registers itself here as a
-    /// side effect of <see cref="ItemFactory.Create"/>, so the static fields on <see cref="Item"/>
-    /// remain the single source of truth — there is no separate, duplicated registration list.
-    /// </summary>
     public static readonly IndexedRegistry<ItemDefinition> Items =
         new IndexedRegistry<ItemDefinition>(ResourceLocation.Parse("items"));
 
     public static void Initialize()
     {
+        _ = Block.Stone.id;
+
+        ItemDefinitionJsonLoader.LoadInto(Items, Path.Combine(AppContext.BaseDirectory, "assets"));
+        foreach (ItemDefinition definition in Items)
+        {
+            Item.ITEMS[definition.ProtocolId] = ItemFactory.Create(definition);
+        }
+
+        Stats.Stats.InitializeItemStats();
+        Stats.Stats.InitializeExtendedItemStats();
+
         EntityTypes.Bootstrap(typeof(EntityRegistry));
         Biomes.Bootstrap(typeof(Biome));
         BlockEntityTypes.Bootstrap(typeof(BlockEntity));
 
         MetricRegistry.Bootstrap(typeof(ServerMetrics));
-
-        // Force Item's static field initializers to run now, so every ItemDefinition has
-        // registered into Items before it gets frozen below.
-        _ = Item.Stick.id;
 
         RegistryAccess.AddBuiltIn(RegistryKeys.EntityTypes, EntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.Biomes, Biomes);

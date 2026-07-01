@@ -145,17 +145,17 @@ internal class DungeonFeature : Feature
 
         return chance switch
         {
-            0 => new ItemStack(Item.Saddle),
-            1 => new ItemStack(Item.IronIngot, rand.NextInt(4) + 1),
-            2 => new ItemStack(Item.Bread),
-            3 => new ItemStack(Item.Wheat, rand.NextInt(4) + 1),
-            4 => new ItemStack(Item.Gunpowder, rand.NextInt(4) + 1),
-            5 => new ItemStack(Item.String, rand.NextInt(4) + 1),
-            6 => new ItemStack(Item.Bucket),
-            7 => rand.NextInt(100) == 0 ? new ItemStack(Item.GoldenApple) : null,
-            8 => rand.NextInt(2) == 0 ? new ItemStack(Item.Redstone, rand.NextInt(4) + 1) : null,
-            9 => rand.NextInt(10) == 0 ? new ItemStack(Item.ITEMS[Item.RecordThirteen.id + rand.NextInt(2)]) : null,
-            10 => new ItemStack(Item.Dye, 1, 3),
+            0 => new ItemStack(Item.ByName("saddle")),
+            1 => new ItemStack(Item.ByName("ingot_iron"), rand.NextInt(4) + 1),
+            2 => new ItemStack(Item.ByName("bread")),
+            3 => new ItemStack(Item.ByName("wheat"), rand.NextInt(4) + 1),
+            4 => new ItemStack(Item.ByName("sulphur"), rand.NextInt(4) + 1),
+            5 => new ItemStack(Item.ByName("string"), rand.NextInt(4) + 1),
+            6 => new ItemStack(Item.ByName("bucket")),
+            7 => rand.NextInt(100) == 0 ? new ItemStack(Item.ByName("apple_gold")) : null,
+            8 => rand.NextInt(2) == 0 ? new ItemStack(Item.ByName("redstone"), rand.NextInt(4) + 1) : null,
+            9 => rand.NextInt(10) == 0 ? new ItemStack(Item.ITEMS[Item.ByName("record").id + rand.NextInt(2)]) : null,
+            10 => new ItemStack(Item.ByName("dye_powder"), 1, 3),
             _ => null
         };
     }

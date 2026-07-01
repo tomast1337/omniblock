@@ -92,7 +92,7 @@ public class EntityCreeper : EntityMonster
         base.OnKilledBy(entity);
         if (entity is EntitySkeleton)
         {
-            DropItem(Item.RecordThirteen.id + Random.NextInt(2), 1);
+            DropItem(Item.ByName("record").id + Random.NextInt(2), 1);
         }
     }
 
@@ -131,7 +131,7 @@ public class EntityCreeper : EntityMonster
 
     public float GetCreeperFlashTime(float partialTick) => (_lastActiveTime + (_timeSinceIgnited - _lastActiveTime) * partialTick) / 28.0F;
 
-    protected override int DropItemId => Item.Gunpowder.id;
+    protected override int DropItemId => Item.ByName("sulphur").id;
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)
     {

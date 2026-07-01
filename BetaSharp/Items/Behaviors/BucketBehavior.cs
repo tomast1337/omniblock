@@ -53,20 +53,20 @@ internal sealed class BucketBehavior : IItemBehavior
                 if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Water && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                 {
                     world.Writer.SetBlock(hitX, hitY, hitZ, 0);
-                    return new ItemStack(Item.WaterBucket);
+                    return new ItemStack(Item.ByName("bucket_water"));
                 }
 
                 if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Lava && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                 {
                     world.Writer.SetBlock(hitX, hitY, hitZ, 0);
-                    return new ItemStack(Item.LavaBucket);
+                    return new ItemStack(Item.ByName("bucket_lava"));
                 }
             }
             else
             {
                 if (_isFull < 0)
                 {
-                    return new ItemStack(Item.Bucket);
+                    return new ItemStack(Item.ByName("bucket"));
                 }
 
                 if (hitResult.Side == 0)
@@ -114,13 +114,13 @@ internal sealed class BucketBehavior : IItemBehavior
                         world.Writer.SetBlock(hitX, hitY, hitZ, _isFull, 0);
                     }
 
-                    return new ItemStack(Item.Bucket);
+                    return new ItemStack(Item.ByName("bucket"));
                 }
             }
         }
         else if (_isFull == 0 && hitResult.Entity is EntityCow)
         {
-            return new ItemStack(Item.MilkBucket);
+            return new ItemStack(Item.ByName("milk"));
         }
 
         return itemStack;

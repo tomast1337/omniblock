@@ -306,7 +306,7 @@ public abstract class EntityPlayer : EntityLiving
         VelocityY = 0.1F;
         if (Name is "Notch")
         {
-            DropItem(new ItemStack(Item.Apple, 1), true);
+            DropItem(new ItemStack(Item.ByName("apple"), 1), true);
         }
 
         Inventory.DropInventory();
@@ -901,7 +901,7 @@ public abstract class EntityPlayer : EntityLiving
     public override int GetItemStackTextureId(ItemStack stack)
     {
         int textureId = base.GetItemStackTextureId(stack);
-        if (stack.ItemId == Item.FishingRod.id && FishHook != null)
+        if (stack.ItemId == Item.ByName("fishing_rod").id && FishHook != null)
         {
             textureId = stack.getTextureId() + 16;
         }

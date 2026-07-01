@@ -53,7 +53,7 @@ public class EntitySquid : EntityWaterMob
 
         for (int _ = 0; _ < dropCount; ++_)
         {
-            DropItem(new ItemStack(Item.Dye, 1, 0), 0.0F);
+            DropItem(new ItemStack(Item.ByName("dye_powder"), 1, 0), 0.0F);
         }
     }
 

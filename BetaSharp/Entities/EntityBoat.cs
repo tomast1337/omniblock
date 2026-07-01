@@ -81,7 +81,7 @@ public sealed class EntityBoat : Entity
 
         for (int i = 0; i < 2; ++i)
         {
-            DropItem(Item.Stick.id, 1, 0.0F);
+            DropItem(Item.ByName("stick").id, 1, 0.0F);
         }
 
         MarkDead();
@@ -253,7 +253,7 @@ public sealed class EntityBoat : Entity
 
                 for (int i = 0; i < 2; ++i)
                 {
-                    DropItem(Item.Stick.id, 1, 0.0F);
+                    DropItem(Item.ByName("stick").id, 1, 0.0F);
                 }
             }
         }

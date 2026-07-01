@@ -260,6 +260,6 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         }
 
         int itemId = itemStack.getItem().id;
-        return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == Item.Stick.id ? 100 : itemId == Item.Coal.id ? 1600 : itemId == Item.LavaBucket.id ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
+        return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == Item.ByName("stick").id ? 100 : itemId == Item.ByName("coal").id ? 1600 : itemId == Item.ByName("bucket_lava").id ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
     }
 }

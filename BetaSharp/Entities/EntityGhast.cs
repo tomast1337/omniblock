@@ -161,7 +161,7 @@ public class EntityGhast : EntityFlying, Monster
         return true;
     }
 
-    protected override int DropItemId => Item.Gunpowder.id;
+    protected override int DropItemId => Item.ByName("sulphur").id;
 
     public override bool CanSpawn() => Random.NextInt(20) == 0 && base.CanSpawn() && World.Difficulty > 0;
 }

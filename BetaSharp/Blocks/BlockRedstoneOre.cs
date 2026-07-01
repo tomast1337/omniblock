@@ -55,7 +55,7 @@ internal class BlockRedstoneOre : Block
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.Redstone.id;
+    public override int getDroppedItemId(int blockMeta) => Item.ByName("redstone").id;
 
     public override int getDroppedItemCount() => 4 + Random.Shared.Next(2);
 

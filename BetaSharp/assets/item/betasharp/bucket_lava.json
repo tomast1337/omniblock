@@ -1,0 +1,1 @@
+{"ProtocolId":327,"TranslationKey":"bucketLava","MaxStackSize":64,"MaxDurability":0,"TextureX":12,"TextureY":4,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":325,"Behavior":{"type":"bucket","Liquid":"lava"}}

@@ -1,0 +1,1 @@
+{"ProtocolId":297,"TranslationKey":"bread","MaxStackSize":64,"MaxDurability":0,"TextureX":9,"TextureY":2,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"food","HealAmount":5,"IsWolfsFavoriteMeat":false,"MaxCount":1,"ReturnItemProtocolId":null}}

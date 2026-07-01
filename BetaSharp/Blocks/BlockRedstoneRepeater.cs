@@ -172,7 +172,7 @@ public class BlockRedstoneRepeater : Block
 
     public override bool isOpaque() => false;
 
-    public override int getDroppedItemId(int blockMeta) => Item.Repeater.id;
+    public override int getDroppedItemId(int blockMeta) => Item.ByName("diode").id;
 
     public override void randomDisplayTick(OnTickEvent ctx)
     {

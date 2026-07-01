@@ -150,7 +150,7 @@ public class EntityFish : Entity
         if (!World.IsRemote)
         {
             ItemStack? heldItem = Angler?.GetHand();
-            if (Angler != null && (Angler.Dead || !Angler.IsAlive || heldItem == null || heldItem.getItem() != Item.FishingRod || GetSquaredDistance(Angler) > 1024.0D))
+            if (Angler != null && (Angler.Dead || !Angler.IsAlive || heldItem == null || heldItem.getItem() != Item.ByName("fishing_rod") || GetSquaredDistance(Angler) > 1024.0D))
             {
                 MarkDead();
                 Angler.FishHook = null;
@@ -390,7 +390,7 @@ public class EntityFish : Entity
         }
         else if (_ticksCatchable > 0)
         {
-            EntityItem fishItem = new(World, X, Y, Z, new ItemStack(Item.RawFish));
+            EntityItem fishItem = new(World, X, Y, Z, new ItemStack(Item.ByName("fish_raw")));
             if (Angler != null)
             {
                 double deltaX = Angler.X - X;

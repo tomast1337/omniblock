@@ -157,7 +157,7 @@ public class EntityMinecart : Entity, IInventory
         Passenger?.SetVehicle(this);
 
         MarkDead();
-        DropItem(Item.Minecart.id, 1, 0.0F);
+        DropItem(Item.ByName("minecart").id, 1, 0.0F);
 
         if (type == 1)
         {
@@ -995,7 +995,7 @@ public class EntityMinecart : Entity, IInventory
         else if (type == 2)
         {
             ItemStack? heldItem = player.Inventory.ItemInHand;
-            if (heldItem != null && heldItem.ItemId == Item.Coal.id)
+            if (heldItem != null && heldItem.ItemId == Item.ByName("coal").id)
             {
                 if (--heldItem.Count == 0)
                 {

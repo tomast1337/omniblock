@@ -1,0 +1,1 @@
+{"ProtocolId":335,"TranslationKey":"milk","MaxStackSize":64,"MaxDurability":0,"TextureX":13,"TextureY":4,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":325,"Behavior":{"type":"bucket","Liquid":"milk"}}

@@ -216,7 +216,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             if (playerEntity.FishHook != null)
             {
-                heldItem = new ItemStack(Item.Stick);
+                heldItem = new ItemStack(Item.ByName("stick"));
             }
 
             if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldItem.ItemId].getRenderType()))

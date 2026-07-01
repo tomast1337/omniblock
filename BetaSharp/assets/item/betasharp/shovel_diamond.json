@@ -1,0 +1,1 @@
+{"ProtocolId":277,"TranslationKey":"shovelDiamond","MaxStackSize":64,"MaxDurability":0,"TextureX":3,"TextureY":5,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"tool","ToolType":"shovel","Material":"emerald"}}

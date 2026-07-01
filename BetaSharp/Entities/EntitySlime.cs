@@ -154,7 +154,7 @@ public class EntitySlime : EntityLiving, Monster
         }
     }
 
-    protected override int DropItemId => SlimeSize == 1 ? Item.Slimeball.id : 0;
+    protected override int DropItemId => SlimeSize == 1 ? Item.ByName("slimeball").id : 0;
 
     public override bool CanSpawn()
     {

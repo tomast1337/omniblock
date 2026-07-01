@@ -247,6 +247,6 @@ public sealed class EntityPainting : Entity
     {
         if (Dead || World.IsRemote) return;
         MarkDead();
-        World.SpawnEntity(new EntityItem(World, X, Y, Z, new ItemStack(Item.Painting)));
+        World.SpawnEntity(new EntityItem(World, X, Y, Z, new ItemStack(Item.ByName("painting"))));
     }
 }

@@ -136,17 +136,6 @@ internal static class ItemLookup
 
         s_lookupTablesBuilt = true;
 
-        IEnumerable<FieldInfo> itemFields = typeof(Item).GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Where(f => f.FieldType.IsAssignableTo(typeof(Item)));
-        foreach (FieldInfo field in itemFields)
-        {
-            if (field.GetValue(null) is Item item)
-            {
-                s_itemNameToId.TryAdd(field.Name.ToLower(), item.id);
-                BuildItemLookupAlias(item);
-            }
-        }
-
         IEnumerable<FieldInfo> blockFields = typeof(Block).GetFields(BindingFlags.Static | BindingFlags.Public)
             .Where(f => f.FieldType.IsAssignableTo(typeof(Block)));
         foreach (FieldInfo field in blockFields)
@@ -164,6 +153,11 @@ internal static class ItemLookup
             if (location is not null)
             {
                 s_itemNameToId.TryAdd(location.Path, definition.ProtocolId);
+            }
+
+            if (Item.ITEMS[definition.ProtocolId] is { } item)
+            {
+                BuildItemLookupAlias(item);
             }
         }
     }

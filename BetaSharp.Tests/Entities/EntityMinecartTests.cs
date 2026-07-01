@@ -220,7 +220,7 @@ public sealed class EntityMinecartTests
         var player = new TestEntityPlayer(world);
         player.SetPosition(12.0, 65.0, 10.5);
         Assert.True(world.Entities.SpawnEntity(player));
-        player.Inventory.SetStack(0, new ItemStack(Item.Coal, 16));
+        player.Inventory.SetStack(0, new ItemStack(Item.ByName("coal"), 16));
         player.Inventory.SelectedSlot = 0;
 
         bool interacted = cart.Interact(player);
@@ -256,9 +256,9 @@ public sealed class EntityMinecartTests
         FakeWorldContext world = new();
         EntityTestHarness.PlaceRailRunX(world, 4, 10, 64, 4);
         var cart = new EntityMinecart(world, 8.5, 65.0, 4.5, 1);
-        cart.SetStack(3, new ItemStack(Item.Stick, 4));
+        cart.SetStack(3, new ItemStack(Item.ByName("stick"), 4));
         Assert.Equal(2, cart.RemoveStack(3, 2)!.Count);
-        cart.SetStack(3, new ItemStack(Item.Stick, 4));
+        cart.SetStack(3, new ItemStack(Item.ByName("stick"), 4));
 
         Assert.True(world.Entities.SpawnEntity(cart));
 
@@ -338,7 +338,7 @@ public sealed class EntityMinecartTests
         FakeWorldContext worldA = new();
         EntityTestHarness.PlaceStoneFloor(worldA, 0, 15, 0, 15, 63);
         var original = new EntityMinecart(worldA, 8.5, 65.0, 8.5, 1);
-        original.SetStack(5, new ItemStack(Item.Stick, 3));
+        original.SetStack(5, new ItemStack(Item.ByName("stick"), 3));
 
         var nbt = new NBTTagCompound();
         Assert.True(original.SaveSelfNbt(nbt));
@@ -405,7 +405,7 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         var cart = new EntityMinecart(world, 8.5, 65.0, 8.5, 1);
-        cart.SetStack(0, new ItemStack(Item.Stick, 24));
+        cart.SetStack(0, new ItemStack(Item.ByName("stick"), 24));
         Assert.True(world.Entities.SpawnEntity(cart));
         cart.MarkDead();
         Assert.True(cart.Dead);

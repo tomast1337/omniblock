@@ -809,7 +809,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onMapUpdate(MapUpdateS2CPacket packet)
     {
-        if (packet.ItemRawId == Item.Map.id)
+        if (packet.ItemRawId == Item.ByName("map").id)
         {
             MapBehavior.GetMapState(packet.MapId, _context.WorldHost.World).UpdateData(packet.UpdateData);
         }

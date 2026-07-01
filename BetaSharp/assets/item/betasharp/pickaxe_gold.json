@@ -1,0 +1,1 @@
+{"ProtocolId":285,"TranslationKey":"pickaxeGold","MaxStackSize":64,"MaxDurability":0,"TextureX":4,"TextureY":6,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"tool","ToolType":"pickaxe","Material":"gold"}}

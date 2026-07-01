@@ -21,13 +21,13 @@ public class EntityCow : EntityAnimal
 
     protected override float SoundVolume => 0.4F;
 
-    protected override int DropItemId => Item.Leather.id;
+    protected override int DropItemId => Item.ByName("leather").id;
 
     public override bool Interact(EntityPlayer player)
     {
         ItemStack? heldBucket = player.Inventory.ItemInHand;
-        if (heldBucket == null || heldBucket.ItemId != Item.Bucket.id) return false;
-        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(Item.MilkBucket));
+        if (heldBucket == null || heldBucket.ItemId != Item.ByName("bucket").id) return false;
+        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(Item.ByName("milk")));
         return true;
     }
 }

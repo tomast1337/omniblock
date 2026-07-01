@@ -1,0 +1,1 @@
+{"ProtocolId":256,"TranslationKey":"shovelIron","MaxStackSize":64,"MaxDurability":0,"TextureX":2,"TextureY":5,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"tool","ToolType":"shovel","Material":"iron"}}

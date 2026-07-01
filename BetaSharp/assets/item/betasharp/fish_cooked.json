@@ -1,0 +1,1 @@
+{"ProtocolId":350,"TranslationKey":"fishCooked","MaxStackSize":64,"MaxDurability":0,"TextureX":10,"TextureY":5,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"food","HealAmount":5,"IsWolfsFavoriteMeat":false,"MaxCount":1,"ReturnItemProtocolId":null}}

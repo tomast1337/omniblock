@@ -58,7 +58,7 @@ internal class BlockSnow : Block
 
     public override void onAfterBreak(OnAfterBreakEvent @event)
     {
-        int snowballId = Item.Snowball.id;
+        int snowballId = Item.ByName("snowball").id;
         double offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
@@ -71,7 +71,7 @@ internal class BlockSnow : Block
         @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.Snowball.id;
+    public override int getDroppedItemId(int blockMeta) => Item.ByName("snowball").id;
 
     public override int getDroppedItemCount() => 0;
 

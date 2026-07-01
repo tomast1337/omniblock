@@ -29,7 +29,7 @@ internal class CraftingResultSlot : Slot
         {
             thePlayer.IncreaseStat(Achievements.BuildWorkbench, 1);
         }
-        else if (stack.ItemId == Item.WoodenPickaxe.id)
+        else if (stack.ItemId == Item.ByName("pickaxe_wood").id)
         {
             thePlayer.IncreaseStat(Achievements.BuildPickaxe, 1);
         }
@@ -37,23 +37,23 @@ internal class CraftingResultSlot : Slot
         {
             thePlayer.IncreaseStat(Achievements.BuildFurnace, 1);
         }
-        else if (stack.ItemId == Item.WoodenHoe.id)
+        else if (stack.ItemId == Item.ByName("hoe_wood").id)
         {
             thePlayer.IncreaseStat(Achievements.BuildHoe, 1);
         }
-        else if (stack.ItemId == Item.Bread.id)
+        else if (stack.ItemId == Item.ByName("bread").id)
         {
             thePlayer.IncreaseStat(Achievements.MakeBread, 1);
         }
-        else if (stack.ItemId == Item.Cake.id)
+        else if (stack.ItemId == Item.ByName("cake").id)
         {
             thePlayer.IncreaseStat(Achievements.MakeCake, 1);
         }
-        else if (stack.ItemId == Item.StonePickaxe.id)
+        else if (stack.ItemId == Item.ByName("pickaxe_stone").id)
         {
             thePlayer.IncreaseStat(Achievements.CraftStonePickaxe, 1);
         }
-        else if (stack.ItemId == Item.WoodenSword.id)
+        else if (stack.ItemId == Item.ByName("sword_wood").id)
         {
             thePlayer.IncreaseStat(Achievements.CraftSword, 1);
         }

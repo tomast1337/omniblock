@@ -25,7 +25,7 @@ public sealed class EntityCombatBehaviorTests
 
         Assert.Equal(30, skeleton.ExposedAttackTime);
         Assert.True(skeleton.ExposedHasAttacked);
-        Assert.Equal(Item.BOW.id, skeleton.HeldItem.ItemId);
+        Assert.Equal(Item.ByName("bow").id, skeleton.HeldItem.ItemId);
     }
 
     [Fact]

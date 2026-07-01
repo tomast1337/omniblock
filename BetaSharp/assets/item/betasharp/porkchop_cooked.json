@@ -1,0 +1,1 @@
+{"ProtocolId":320,"TranslationKey":"porkchopCooked","MaxStackSize":64,"MaxDurability":0,"TextureX":8,"TextureY":5,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"food","HealAmount":8,"IsWolfsFavoriteMeat":true,"MaxCount":1,"ReturnItemProtocolId":null}}

@@ -503,11 +503,11 @@ public class WorldRenderer : IWorldEventListener
         float tile = tileSize * uvScale;
         byte cloudRadius = 3;
 
-                tessellator.setNormal(0.0F, -1.0F, 0.0F);
-                tessellator.addVertexWithUV(0, 0.0, tileSize, 0, tile);
-                tessellator.addVertexWithUV(tileSize, 0.0, tileSize, tile, tile);
-                tessellator.addVertexWithUV(tileSize, 0.0, 0, tile, 0);
-                tessellator.addVertexWithUV(0, 0.0, 0, 0, 0);
+        tessellator.setNormal(0.0F, -1.0F, 0.0F);
+        tessellator.addVertexWithUV(0, 0.0, tileSize, 0, tile);
+        tessellator.addVertexWithUV(tileSize, 0.0, tileSize, tile, tile);
+        tessellator.addVertexWithUV(tileSize, 0.0, 0, tile, 0);
+        tessellator.addVertexWithUV(0, 0.0, 0, 0, 0);
 
         tessellator.draw();
         GLManager.GL.EndList();
@@ -937,9 +937,9 @@ public class WorldRenderer : IWorldEventListener
                     case "splash": pm.AddSplash(x, y, z, velocityX, velocityY, velocityZ); break;
                     case "largesmoke": pm.AddSmoke(x, y, z, velocityX, velocityY, velocityZ, 2.5f); break;
                     case "reddust": pm.AddReddust(x, y, z, (float)velocityX, (float)velocityY, (float)velocityZ); break;
-                    case "snowballpoof": pm.AddSlime(x, y, z, Item.Snowball); break;
+                    case "snowballpoof": pm.AddSlime(x, y, z, Item.ByName("snowball")); break;
                     case "snowshovel": pm.AddSnowShovel(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "slime": pm.AddSlime(x, y, z, Item.Slimeball); break;
+                    case "slime": pm.AddSlime(x, y, z, Item.ByName("slimeball")); break;
                     case "heart": pm.AddHeart(x, y, z, velocityX, velocityY, velocityZ); break;
                 }
             }

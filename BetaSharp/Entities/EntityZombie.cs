@@ -35,5 +35,5 @@ public class EntityZombie : EntityMonster
 
     protected override string? DeathSound => "mob.zombiedeath";
 
-    protected override int DropItemId => Item.Feather.id;
+    protected override int DropItemId => Item.ByName("feather").id;
 }

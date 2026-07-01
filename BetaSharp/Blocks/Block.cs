@@ -199,7 +199,6 @@ public class Block
         }
 
         BlocksAllowVision[0] = true;
-        Stats.Stats.InitializeItemStats();
     }
 
     protected Block(int id, Material material)

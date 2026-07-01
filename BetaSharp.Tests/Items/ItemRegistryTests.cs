@@ -6,19 +6,13 @@ namespace BetaSharp.Tests.Items;
 
 public sealed class ItemRegistryTests
 {
-    public ItemRegistryTests()
-    {
-        // Trigger Item's static field initializers, mirroring EntityTestsFixture.
-        _ = Item.Stick.id;
-    }
-
     [Fact]
     public void Apple_RegistersUnderExpectedResourceLocation()
     {
         Holder<ItemDefinition>? holder = DefaultRegistries.Items.Get(ResourceLocation.Parse("betasharp:apple"));
 
         Assert.NotNull(holder);
-        Assert.Equal(Item.Apple.id, holder.Value.ProtocolId);
+        Assert.Equal(Item.ByName("apple").id, holder.Value.ProtocolId);
         Assert.IsType<FoodBehaviorDefinition>(holder.Value.Behavior);
     }
 
@@ -28,19 +22,19 @@ public sealed class ItemRegistryTests
         // Both records share the translation key "record"; the first declared keeps the plain
         // name and the second is disambiguated with its protocol ID suffix.
         Holder<ItemDefinition>? thirteen = DefaultRegistries.Items.Get(ResourceLocation.Parse("betasharp:record"));
-        Holder<ItemDefinition>? cat = DefaultRegistries.Items.Get(ResourceLocation.Parse($"betasharp:record_{Item.RecordCat.id}"));
+        Holder<ItemDefinition>? cat = DefaultRegistries.Items.Get(ResourceLocation.Parse($"betasharp:record_{Item.ByName("record_2257").id}"));
 
         Assert.NotNull(thirteen);
         Assert.NotNull(cat);
-        Assert.Equal(Item.RecordThirteen.id, thirteen.Value.ProtocolId);
-        Assert.Equal(Item.RecordCat.id, cat.Value.ProtocolId);
+        Assert.Equal(Item.ByName("record").id, thirteen.Value.ProtocolId);
+        Assert.Equal(Item.ByName("record_2257").id, cat.Value.ProtocolId);
     }
 
     [Fact]
-    public void EveryStaticItem_IsRegistered()
+    public void JsonLoadedItems_AreRegistered()
     {
-        Assert.True(DefaultRegistries.Items.ContainsId(Item.IronShovel.id));
-        Assert.True(DefaultRegistries.Items.ContainsId(Item.DiamondBoots.id));
-        Assert.True(DefaultRegistries.Items.ContainsId(Item.Map.id));
+        Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("shovel_iron").id));
+        Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("boots_diamond").id));
+        Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("map").id));
     }
 }

@@ -64,7 +64,7 @@ public class EntityChicken : EntityAnimal
         }
 
         World.Broadcaster.PlaySoundAtEntity(this, "mob.chickenplop", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-        DropItem(Item.Egg.id, 1);
+        DropItem(Item.ByName("egg").id, 1);
         _timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
 
@@ -78,5 +78,5 @@ public class EntityChicken : EntityAnimal
 
     protected override string? DeathSound => "mob.chickenhurt";
 
-    protected override int DropItemId => Item.Feather.id;
+    protected override int DropItemId => Item.ByName("feather").id;
 }

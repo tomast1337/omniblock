@@ -276,7 +276,7 @@ public class EntityArrow : Entity
     public override void OnPlayerInteraction(EntityPlayer player)
     {
         if (World.IsRemote) return;
-        if (!_inGround || !DoesArrowBelongToPlayer || ArrowShake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ARROW, 1))) return;
+        if (!_inGround || !DoesArrowBelongToPlayer || ArrowShake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ByName("arrow"), 1))) return;
 
         World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
         player.sendPickup(this, 1);

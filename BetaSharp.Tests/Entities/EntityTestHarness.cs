@@ -89,7 +89,7 @@ public static class EntityTestHarness
     {
         if (type == EntityRegistry.Item)
         {
-            return new EntityItem(world, 8.5, 65.0, 8.5, new ItemStack(Item.Stick, 1));
+            return new EntityItem(world, 8.5, 65.0, 8.5, new ItemStack(Item.ByName("stick"), 1));
         }
 
         if (type == EntityRegistry.PrimedTnt)

@@ -8,17 +8,12 @@ public sealed class ItemLookupRegistryTests
     public ItemLookupRegistryTests() => ItemLookup.Initialize();
 
     [Fact]
-    public void LegacyFieldName_StillResolves()
+    public void RegistryDerivedName_Resolves()
     {
-        Assert.True(ItemLookup.TryGetItemId("ironshovel", out int itemId));
-        Assert.Equal(Item.IronShovel.id, itemId);
-    }
-
-    [Fact]
-    public void RegistryDerivedName_AlsoResolves()
-    {
+        // Since Phase 4, items load from JSON (no more static Item.* fields), so the registry
+        // path is the only name ItemLookup knows about — there is no legacy field-name alias.
         Assert.True(ItemLookup.TryGetItemId("betasharp:shovel_iron", out int itemId));
-        Assert.Equal(Item.IronShovel.id, itemId);
+        Assert.Equal(Item.ByName("shovel_iron").id, itemId);
     }
 
     [Fact]

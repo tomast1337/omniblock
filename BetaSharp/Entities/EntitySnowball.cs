@@ -244,7 +244,7 @@ public sealed class EntitySnowball : Entity
 
     public override void OnPlayerInteraction(EntityPlayer player)
     {
-        if (!_inGround || !Equals(_thrower, player) || _shake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ARROW, 1)))
+        if (!_inGround || !Equals(_thrower, player) || _shake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ByName("arrow"), 1)))
         {
             return;
         }

@@ -25,7 +25,7 @@ public class EntitySpider : EntityMonster
 
     protected override string? DeathSound => "mob.spiderdeath";
 
-    protected override int DropItemId => Item.String.id;
+    protected override int DropItemId => Item.ByName("string").id;
 
     protected override bool IsOnLadder => HorizontalCollision;
 
