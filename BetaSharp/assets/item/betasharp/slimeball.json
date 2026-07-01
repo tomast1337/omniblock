@@ -1,1 +1,6 @@
-{"ProtocolId":341,"TranslationKey":"slimeball","MaxStackSize":64,"MaxDurability":0,"TextureX":14,"TextureY":1,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 341,
+    "TranslationKey": "slimeball",
+    "TextureX": 14,
+    "TextureY": 1
+}

@@ -1,24 +1,34 @@
+using System.Text.Json;
+
 namespace BetaSharp;
 
-public sealed record ArmorMaterial(string Name, int ArmorLevel, int RenderIndex)
-{
-    public static readonly ArmorMaterial Leather = new("leather", 0, 0);
-    public static readonly ArmorMaterial Chain = new("chain", 1, 1);
-    public static readonly ArmorMaterial Iron = new("iron", 2, 2);
-    public static readonly ArmorMaterial Diamond = new("diamond", 3, 3);
-    public static readonly ArmorMaterial Gold = new("gold", 1, 4);
-}
+public sealed record ArmorMaterial(string Name, int ArmorLevel, int RenderIndex);
 
 public static class ArmorMaterialRegistry
 {
-    private static readonly Dictionary<string, ArmorMaterial> s_materials = new()
+    private static readonly JsonSerializerOptions s_options = new();
+    private static readonly Dictionary<string, ArmorMaterial> s_materials = [];
+
+    internal static void LoadFrom(string assetsPath)
     {
-        [ArmorMaterial.Leather.Name] = ArmorMaterial.Leather,
-        [ArmorMaterial.Chain.Name] = ArmorMaterial.Chain,
-        [ArmorMaterial.Iron.Name] = ArmorMaterial.Iron,
-        [ArmorMaterial.Diamond.Name] = ArmorMaterial.Diamond,
-        [ArmorMaterial.Gold.Name] = ArmorMaterial.Gold,
-    };
+        s_materials.Clear();
+
+        string dir = Path.Combine(assetsPath, "armor_material", "betasharp");
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+            return;
+        }
+
+        foreach (string file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
+        {
+            ArmorMaterialDefinition def = JsonSerializer.Deserialize<ArmorMaterialDefinition>(File.ReadAllText(file), s_options)
+                ?? throw new InvalidOperationException($"Failed to parse armor material from '{file}'.");
+
+            string name = Path.GetFileNameWithoutExtension(file);
+            s_materials[name] = new ArmorMaterial(name, def.ArmorLevel, def.RenderIndex);
+        }
+    }
 
     public static ArmorMaterial Get(string name) => s_materials[name];
 }

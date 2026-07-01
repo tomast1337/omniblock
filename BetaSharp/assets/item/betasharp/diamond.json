@@ -1,1 +1,6 @@
-{"ProtocolId":264,"TranslationKey":"diamond","MaxStackSize":64,"MaxDurability":0,"TextureX":7,"TextureY":3,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 264,
+    "TranslationKey": "diamond",
+    "TextureX": 7,
+    "TextureY": 3
+}

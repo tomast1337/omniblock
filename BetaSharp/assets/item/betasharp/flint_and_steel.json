@@ -1,1 +1,9 @@
-{"ProtocolId":259,"TranslationKey":"flintAndSteel","MaxStackSize":64,"MaxDurability":0,"TextureX":5,"TextureY":0,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"flint_and_steel"}}
+{
+    "ProtocolId": 259,
+    "TranslationKey": "flintAndSteel",
+    "TextureX": 5,
+    "TextureY": 0,
+    "Behavior": {
+        "type": "flint_and_steel"
+    }
+}

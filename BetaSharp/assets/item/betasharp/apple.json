@@ -1,1 +1,13 @@
-{"ProtocolId":260,"TranslationKey":"apple","MaxStackSize":64,"MaxDurability":0,"TextureX":10,"TextureY":0,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"food","HealAmount":4,"IsWolfsFavoriteMeat":false,"MaxCount":1,"ReturnItemProtocolId":null}}
+{
+    "ProtocolId": 260,
+    "TranslationKey": "apple",
+    "TextureX": 10,
+    "TextureY": 0,
+    "Behavior": {
+        "type": "food",
+        "HealAmount": 4,
+        "IsWolfsFavoriteMeat": false,
+        "MaxCount": 1,
+        "ReturnItemProtocolId": null
+    }
+}

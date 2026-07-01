@@ -1,1 +1,6 @@
-{"ProtocolId":347,"TranslationKey":"clock","MaxStackSize":64,"MaxDurability":0,"TextureX":6,"TextureY":4,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 347,
+    "TranslationKey": "clock",
+    "TextureX": 6,
+    "TextureY": 4
+}

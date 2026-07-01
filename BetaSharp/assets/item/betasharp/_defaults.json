@@ -1,0 +1,9 @@
+{
+    "MaxStackSize": 64,
+    "MaxDurability": 0,
+    "Handheld": false,
+    "HandheldRod": false,
+    "HasSubtypes": false,
+    "CraftingReturnItemProtocolId": null,
+    "Behavior": null
+}

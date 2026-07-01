@@ -1,1 +1,6 @@
-{"ProtocolId":336,"TranslationKey":"brick","MaxStackSize":64,"MaxDurability":0,"TextureX":6,"TextureY":1,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 336,
+    "TranslationKey": "brick",
+    "TextureX": 6,
+    "TextureY": 1
+}

@@ -1,1 +1,11 @@
-{"ProtocolId":310,"TranslationKey":"helmetDiamond","MaxStackSize":64,"MaxDurability":0,"TextureX":3,"TextureY":0,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"armor","Material":"diamond","Slot":0}}
+{
+    "ProtocolId": 310,
+    "TranslationKey": "helmetDiamond",
+    "TextureX": 3,
+    "TextureY": 0,
+    "Behavior": {
+        "type": "armor",
+        "Material": "diamond",
+        "Slot": 0
+    }
+}

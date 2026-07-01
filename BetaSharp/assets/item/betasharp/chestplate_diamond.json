@@ -1,1 +1,11 @@
-{"ProtocolId":311,"TranslationKey":"chestplateDiamond","MaxStackSize":64,"MaxDurability":0,"TextureX":3,"TextureY":1,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"armor","Material":"diamond","Slot":1}}
+{
+    "ProtocolId": 311,
+    "TranslationKey": "chestplateDiamond",
+    "TextureX": 3,
+    "TextureY": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "diamond",
+        "Slot": 1
+    }
+}

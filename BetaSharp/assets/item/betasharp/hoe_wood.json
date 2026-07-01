@@ -1,1 +1,10 @@
-{"ProtocolId":290,"TranslationKey":"hoeWood","MaxStackSize":64,"MaxDurability":0,"TextureX":0,"TextureY":8,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"hoe","Material":"wood"}}
+{
+    "ProtocolId": 290,
+    "TranslationKey": "hoeWood",
+    "TextureX": 0,
+    "TextureY": 8,
+    "Behavior": {
+        "type": "hoe",
+        "Material": "wood"
+    }
+}

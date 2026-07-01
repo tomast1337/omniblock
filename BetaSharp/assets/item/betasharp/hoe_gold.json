@@ -1,1 +1,10 @@
-{"ProtocolId":294,"TranslationKey":"hoeGold","MaxStackSize":64,"MaxDurability":0,"TextureX":4,"TextureY":8,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"hoe","Material":"gold"}}
+{
+    "ProtocolId": 294,
+    "TranslationKey": "hoeGold",
+    "TextureX": 4,
+    "TextureY": 8,
+    "Behavior": {
+        "type": "hoe",
+        "Material": "gold"
+    }
+}

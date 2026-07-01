@@ -1,1 +1,6 @@
-{"ProtocolId":265,"TranslationKey":"ingotIron","MaxStackSize":64,"MaxDurability":0,"TextureX":7,"TextureY":1,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 265,
+    "TranslationKey": "ingotIron",
+    "TextureX": 7,
+    "TextureY": 1
+}

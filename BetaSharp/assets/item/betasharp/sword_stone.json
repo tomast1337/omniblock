@@ -1,1 +1,10 @@
-{"ProtocolId":272,"TranslationKey":"swordStone","MaxStackSize":64,"MaxDurability":0,"TextureX":1,"TextureY":4,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"sword","Material":"stone"}}
+{
+    "ProtocolId": 272,
+    "TranslationKey": "swordStone",
+    "TextureX": 1,
+    "TextureY": 4,
+    "Behavior": {
+        "type": "sword",
+        "Material": "stone"
+    }
+}

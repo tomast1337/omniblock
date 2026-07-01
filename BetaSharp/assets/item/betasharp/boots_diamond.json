@@ -1,1 +1,11 @@
-{"ProtocolId":313,"TranslationKey":"bootsDiamond","MaxStackSize":64,"MaxDurability":0,"TextureX":3,"TextureY":3,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"armor","Material":"diamond","Slot":3}}
+{
+    "ProtocolId": 313,
+    "TranslationKey": "bootsDiamond",
+    "TextureX": 3,
+    "TextureY": 3,
+    "Behavior": {
+        "type": "armor",
+        "Material": "diamond",
+        "Slot": 3
+    }
+}

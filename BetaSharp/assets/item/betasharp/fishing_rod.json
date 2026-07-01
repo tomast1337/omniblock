@@ -1,1 +1,9 @@
-{"ProtocolId":346,"TranslationKey":"fishingRod","MaxStackSize":64,"MaxDurability":0,"TextureX":5,"TextureY":4,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"fishing_rod"}}
+{
+    "ProtocolId": 346,
+    "TranslationKey": "fishingRod",
+    "TextureX": 5,
+    "TextureY": 4,
+    "Behavior": {
+        "type": "fishing_rod"
+    }
+}

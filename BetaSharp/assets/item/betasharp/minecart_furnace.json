@@ -1,1 +1,10 @@
-{"ProtocolId":343,"TranslationKey":"minecartFurnace","MaxStackSize":64,"MaxDurability":0,"TextureX":7,"TextureY":10,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"minecart","CartType":2}}
+{
+    "ProtocolId": 343,
+    "TranslationKey": "minecartFurnace",
+    "TextureX": 7,
+    "TextureY": 10,
+    "Behavior": {
+        "type": "minecart",
+        "CartType": 2
+    }
+}

@@ -1,1 +1,11 @@
-{"ProtocolId":300,"TranslationKey":"leggingsLeather","MaxStackSize":64,"MaxDurability":0,"TextureX":0,"TextureY":2,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"armor","Material":"leather","Slot":2}}
+{
+    "ProtocolId": 300,
+    "TranslationKey": "leggingsLeather",
+    "TextureX": 0,
+    "TextureY": 2,
+    "Behavior": {
+        "type": "armor",
+        "Material": "leather",
+        "Slot": 2
+    }
+}

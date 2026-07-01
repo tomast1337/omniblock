@@ -1,1 +1,7 @@
-{"ProtocolId":353,"TranslationKey":"sugar","MaxStackSize":64,"MaxDurability":0,"TextureX":13,"TextureY":0,"Handheld":true,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 353,
+    "TranslationKey": "sugar",
+    "TextureX": 13,
+    "TextureY": 0,
+    "Handheld": true
+}

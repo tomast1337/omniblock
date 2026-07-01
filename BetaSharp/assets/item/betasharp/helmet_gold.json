@@ -1,1 +1,11 @@
-{"ProtocolId":314,"TranslationKey":"helmetGold","MaxStackSize":64,"MaxDurability":0,"TextureX":4,"TextureY":0,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"armor","Material":"gold","Slot":0}}
+{
+    "ProtocolId": 314,
+    "TranslationKey": "helmetGold",
+    "TextureX": 4,
+    "TextureY": 0,
+    "Behavior": {
+        "type": "armor",
+        "Material": "gold",
+        "Slot": 0
+    }
+}

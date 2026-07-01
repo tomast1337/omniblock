@@ -1,1 +1,11 @@
-{"ProtocolId":279,"TranslationKey":"hatchetDiamond","MaxStackSize":64,"MaxDurability":0,"TextureX":3,"TextureY":7,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"tool","ToolType":"axe","Material":"diamond"}}
+{
+    "ProtocolId": 279,
+    "TranslationKey": "hatchetDiamond",
+    "TextureX": 3,
+    "TextureY": 7,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "axe",
+        "Material": "diamond"
+    }
+}

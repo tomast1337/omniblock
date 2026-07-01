@@ -1,1 +1,13 @@
-{"ProtocolId":319,"TranslationKey":"porkchopRaw","MaxStackSize":64,"MaxDurability":0,"TextureX":7,"TextureY":5,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"food","HealAmount":3,"IsWolfsFavoriteMeat":true,"MaxCount":1,"ReturnItemProtocolId":null}}
+{
+    "ProtocolId": 319,
+    "TranslationKey": "porkchopRaw",
+    "TextureX": 7,
+    "TextureY": 5,
+    "Behavior": {
+        "type": "food",
+        "HealAmount": 3,
+        "IsWolfsFavoriteMeat": true,
+        "MaxCount": 1,
+        "ReturnItemProtocolId": null
+    }
+}

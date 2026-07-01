@@ -1,1 +1,11 @@
-{"ProtocolId":332,"TranslationKey":"snowball","MaxStackSize":64,"MaxDurability":0,"TextureX":14,"TextureY":0,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"throwable","MaxCount":16,"ProjectileType":"snowball"}}
+{
+    "ProtocolId": 332,
+    "TranslationKey": "snowball",
+    "TextureX": 14,
+    "TextureY": 0,
+    "Behavior": {
+        "type": "throwable",
+        "MaxCount": 16,
+        "ProjectileType": "snowball"
+    }
+}

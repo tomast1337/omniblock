@@ -1,1 +1,6 @@
-{"ProtocolId":262,"TranslationKey":"arrow","MaxStackSize":64,"MaxDurability":0,"TextureX":5,"TextureY":2,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 262,
+    "TranslationKey": "arrow",
+    "TextureX": 5,
+    "TextureY": 2
+}

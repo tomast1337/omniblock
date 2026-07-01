@@ -1,1 +1,9 @@
-{"ProtocolId":263,"TranslationKey":"coal","MaxStackSize":64,"MaxDurability":0,"TextureX":7,"TextureY":0,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"coal"}}
+{
+    "ProtocolId": 263,
+    "TranslationKey": "coal",
+    "TextureX": 7,
+    "TextureY": 0,
+    "Behavior": {
+        "type": "coal"
+    }
+}

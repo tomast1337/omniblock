@@ -30,7 +30,11 @@ public static class DefaultRegistries
     {
         _ = Block.Stone.id;
 
-        ItemDefinitionJsonLoader.LoadInto(Items, Path.Combine(AppContext.BaseDirectory, "assets"));
+        string assetsPath = Path.Combine(AppContext.BaseDirectory, "assets");
+        ToolMaterialRegistry.LoadFrom(assetsPath);
+        ArmorMaterialRegistry.LoadFrom(assetsPath);
+
+        ItemDefinitionJsonLoader.LoadInto(Items, assetsPath);
         foreach (ItemDefinition definition in Items)
         {
             Item.ITEMS[definition.ProtocolId] = ItemFactory.Create(definition);

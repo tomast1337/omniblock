@@ -1,1 +1,11 @@
-{"ProtocolId":344,"TranslationKey":"egg","MaxStackSize":64,"MaxDurability":0,"TextureX":12,"TextureY":0,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"throwable","MaxCount":16,"ProjectileType":"egg"}}
+{
+    "ProtocolId": 344,
+    "TranslationKey": "egg",
+    "TextureX": 12,
+    "TextureY": 0,
+    "Behavior": {
+        "type": "throwable",
+        "MaxCount": 16,
+        "ProjectileType": "egg"
+    }
+}

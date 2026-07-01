@@ -1,1 +1,10 @@
-{"ProtocolId":2256,"TranslationKey":"record","MaxStackSize":64,"MaxDurability":0,"TextureX":0,"TextureY":15,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"record","RecordName":"13"}}
+{
+    "ProtocolId": 2256,
+    "TranslationKey": "record",
+    "TextureX": 0,
+    "TextureY": 15,
+    "Behavior": {
+        "type": "record",
+        "RecordName": "13"
+    }
+}

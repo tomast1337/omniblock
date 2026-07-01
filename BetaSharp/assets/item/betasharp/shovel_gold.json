@@ -1,1 +1,11 @@
-{"ProtocolId":284,"TranslationKey":"shovelGold","MaxStackSize":64,"MaxDurability":0,"TextureX":4,"TextureY":5,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"tool","ToolType":"shovel","Material":"gold"}}
+{
+    "ProtocolId": 284,
+    "TranslationKey": "shovelGold",
+    "TextureX": 4,
+    "TextureY": 5,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "shovel",
+        "Material": "gold"
+    }
+}

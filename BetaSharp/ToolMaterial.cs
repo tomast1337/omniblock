@@ -1,24 +1,34 @@
+using System.Text.Json;
+
 namespace BetaSharp;
 
-public sealed record ToolMaterial(string Name, int MaxUses, float Efficiency, int DamageBonus, int HarvestLevel)
-{
-    public static readonly ToolMaterial WOOD = new("wood", 59, 2.0f, 0, 0);
-    public static readonly ToolMaterial STONE = new("stone", 131, 4.0f, 1, 1);
-    public static readonly ToolMaterial IRON = new("iron", 250, 6.0f, 2, 2);
-    public static readonly ToolMaterial DIAMOND = new("diamond", 1561, 8.0f, 3, 3);
-    public static readonly ToolMaterial GOLD = new("gold", 32, 12.0f, 0, 0);
-}
+public sealed record ToolMaterial(string Name, int MaxUses, float Efficiency, int DamageBonus, int HarvestLevel);
 
 public static class ToolMaterialRegistry
 {
-    private static readonly Dictionary<string, ToolMaterial> s_materials = new()
+    private static readonly JsonSerializerOptions s_options = new();
+    private static readonly Dictionary<string, ToolMaterial> s_materials = [];
+
+    internal static void LoadFrom(string assetsPath)
     {
-        [ToolMaterial.WOOD.Name] = ToolMaterial.WOOD,
-        [ToolMaterial.STONE.Name] = ToolMaterial.STONE,
-        [ToolMaterial.IRON.Name] = ToolMaterial.IRON,
-        [ToolMaterial.DIAMOND.Name] = ToolMaterial.DIAMOND,
-        [ToolMaterial.GOLD.Name] = ToolMaterial.GOLD,
-    };
+        s_materials.Clear();
+
+        string dir = Path.Combine(assetsPath, "item_material", "betasharp");
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+            return;
+        }
+
+        foreach (string file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
+        {
+            ToolMaterialDefinition def = JsonSerializer.Deserialize<ToolMaterialDefinition>(File.ReadAllText(file), s_options)
+                ?? throw new InvalidOperationException($"Failed to parse tool material from '{file}'.");
+
+            string name = Path.GetFileNameWithoutExtension(file);
+            s_materials[name] = new ToolMaterial(name, def.MaxUses, def.Efficiency, def.DamageBonus, def.HarvestLevel);
+        }
+    }
 
     public static ToolMaterial Get(string name) => s_materials[name];
 }

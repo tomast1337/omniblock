@@ -1,1 +1,7 @@
-{"ProtocolId":352,"TranslationKey":"bone","MaxStackSize":64,"MaxDurability":0,"TextureX":12,"TextureY":1,"Handheld":true,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 352,
+    "TranslationKey": "bone",
+    "TextureX": 12,
+    "TextureY": 1,
+    "Handheld": true
+}

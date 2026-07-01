@@ -1,1 +1,11 @@
-{"ProtocolId":275,"TranslationKey":"hatchetStone","MaxStackSize":64,"MaxDurability":0,"TextureX":1,"TextureY":7,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"tool","ToolType":"axe","Material":"stone"}}
+{
+    "ProtocolId": 275,
+    "TranslationKey": "hatchetStone",
+    "TextureX": 1,
+    "TextureY": 7,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "axe",
+        "Material": "stone"
+    }
+}

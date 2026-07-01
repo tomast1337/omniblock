@@ -1,1 +1,6 @@
-{"ProtocolId":289,"TranslationKey":"gunpowder","MaxStackSize":64,"MaxDurability":0,"TextureX":8,"TextureY":2,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 289,
+    "TranslationKey": "gunpowder",
+    "TextureX": 8,
+    "TextureY": 2
+}

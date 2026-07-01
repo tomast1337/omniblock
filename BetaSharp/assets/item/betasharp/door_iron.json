@@ -1,1 +1,10 @@
-{"ProtocolId":330,"TranslationKey":"doorIron","MaxStackSize":64,"MaxDurability":0,"TextureX":12,"TextureY":2,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"door","DoorMaterial":"iron"}}
+{
+    "ProtocolId": 330,
+    "TranslationKey": "doorIron",
+    "TextureX": 12,
+    "TextureY": 2,
+    "Behavior": {
+        "type": "door",
+        "DoorMaterial": "iron"
+    }
+}

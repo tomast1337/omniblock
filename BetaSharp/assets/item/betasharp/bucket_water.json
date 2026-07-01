@@ -1,1 +1,11 @@
-{"ProtocolId":326,"TranslationKey":"bucketWater","MaxStackSize":64,"MaxDurability":0,"TextureX":11,"TextureY":4,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":325,"Behavior":{"type":"bucket","Liquid":"water"}}
+{
+    "ProtocolId": 326,
+    "TranslationKey": "bucketWater",
+    "TextureX": 11,
+    "TextureY": 4,
+    "CraftingReturnItemProtocolId": 325,
+    "Behavior": {
+        "type": "bucket",
+        "Liquid": "water"
+    }
+}

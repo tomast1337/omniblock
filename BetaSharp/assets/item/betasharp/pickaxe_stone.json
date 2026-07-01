@@ -1,1 +1,11 @@
-{"ProtocolId":274,"TranslationKey":"pickaxeStone","MaxStackSize":64,"MaxDurability":0,"TextureX":1,"TextureY":6,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"tool","ToolType":"pickaxe","Material":"stone"}}
+{
+    "ProtocolId": 274,
+    "TranslationKey": "pickaxeStone",
+    "TextureX": 1,
+    "TextureY": 6,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "pickaxe",
+        "Material": "stone"
+    }
+}

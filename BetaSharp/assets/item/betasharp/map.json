@@ -1,1 +1,9 @@
-{"ProtocolId":358,"TranslationKey":"map","MaxStackSize":64,"MaxDurability":0,"TextureX":12,"TextureY":3,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":{"type":"map"}}
+{
+    "ProtocolId": 358,
+    "TranslationKey": "map",
+    "TextureX": 12,
+    "TextureY": 3,
+    "Behavior": {
+        "type": "map"
+    }
+}

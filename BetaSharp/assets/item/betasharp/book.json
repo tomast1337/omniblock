@@ -1,1 +1,6 @@
-{"ProtocolId":340,"TranslationKey":"book","MaxStackSize":64,"MaxDurability":0,"TextureX":11,"TextureY":3,"Handheld":false,"HandheldRod":false,"HasSubtypes":false,"CraftingReturnItemProtocolId":null,"Behavior":null}
+{
+    "ProtocolId": 340,
+    "TranslationKey": "book",
+    "TextureX": 11,
+    "TextureY": 3
+}
