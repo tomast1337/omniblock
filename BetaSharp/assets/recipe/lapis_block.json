@@ -6,7 +6,7 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Dye:4"
+        "#": "betasharp:dye_powder:4"
     },
     "result": {
         "id": "betasharp:LapisBlock"

@@ -7,8 +7,8 @@
     ],
     "key": {
         "#": "betasharp:Cobblestone",
-        "X": "betasharp:BOW",
-        "R": "betasharp:Redstone"
+        "X": "betasharp:bow",
+        "R": "betasharp:redstone"
     },
     "result": {
         "id": "betasharp:Dispenser"

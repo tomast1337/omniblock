@@ -5,9 +5,9 @@
         "X X"
     ],
     "key": {
-        "X": "betasharp:Leather"
+        "X": "betasharp:leather"
     },
     "result": {
-        "id": "betasharp:LeatherHelmet"
+        "id": "betasharp:helmet_cloth"
     }
 }

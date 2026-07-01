@@ -7,9 +7,9 @@
     ],
     "key": {
         "X": "betasharp:Planks",
-        "#": "betasharp:Stick"
+        "#": "betasharp:stick"
     },
     "result": {
-        "id": "betasharp:WoodenShovel"
+        "id": "betasharp:shovel_wood"
     }
 }

@@ -1,11 +1,11 @@
 {
     "type": "shapeless",
     "ingredients": [
-        "betasharp:Dye:0",
-        "betasharp:Dye:15"
+        "betasharp:dye_powder:0",
+        "betasharp:dye_powder:15"
     ],
     "result": {
-        "id": "betasharp:Dye:8",
+        "id": "betasharp:dye_powder:8",
         "count": 2
     }
 }

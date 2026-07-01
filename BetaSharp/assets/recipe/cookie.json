@@ -4,11 +4,11 @@
         "#X#"
     ],
     "key": {
-        "X": "betasharp:Dye:3",
-        "#": "betasharp:Wheat"
+        "X": "betasharp:dye_powder:3",
+        "#": "betasharp:wheat"
     },
     "result": {
-        "id": "betasharp:Cookie",
+        "id": "betasharp:cookie",
         "count": 8
     }
 }

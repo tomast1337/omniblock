@@ -2,6 +2,6 @@
     "type": "smelting",
     "input": "betasharp:Cactus",
     "result": {
-        "id": "betasharp:Dye:2"
+        "id": "betasharp:dye_powder:2"
     }
 }

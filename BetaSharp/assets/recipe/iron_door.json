@@ -6,9 +6,9 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:IronIngot"
+        "#": "betasharp:ingot_iron"
     },
     "result": {
-        "id": "betasharp:IronDoor"
+        "id": "betasharp:door_iron"
     }
 }

@@ -1,7 +1,7 @@
 {
     "type": "shapeless",
     "ingredients": [
-        "betasharp:Dye:7",
+        "betasharp:dye_powder:7",
         "betasharp:Wool:0"
     ],
     "result": {

@@ -2,6 +2,6 @@
     "type": "smelting",
     "input": "betasharp:Log",
     "result": {
-        "id": "betasharp:Coal:1"
+        "id": "betasharp:coal:1"
     }
 }

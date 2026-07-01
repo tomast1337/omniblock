@@ -6,9 +6,9 @@
     ],
     "key": {
         "A": "betasharp:Chest",
-        "B": "betasharp:Minecart"
+        "B": "betasharp:minecart"
     },
     "result": {
-        "id": "betasharp:ChestMinecart"
+        "id": "betasharp:minecart_chest"
     }
 }

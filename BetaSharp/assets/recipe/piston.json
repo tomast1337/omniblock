@@ -7,8 +7,8 @@
     ],
     "key": {
         "#": "betasharp:Cobblestone",
-        "X": "betasharp:IronIngot",
-        "R": "betasharp:Redstone",
+        "X": "betasharp:ingot_iron",
+        "R": "betasharp:redstone",
         "T": "betasharp:Planks"
     },
     "result": {

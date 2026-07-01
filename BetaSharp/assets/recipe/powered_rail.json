@@ -6,9 +6,9 @@
         "XRX"
     ],
     "key": {
-        "X": "betasharp:GoldIngot",
-        "#": "betasharp:Stick",
-        "R": "betasharp:Redstone"
+        "X": "betasharp:ingot_gold",
+        "#": "betasharp:stick",
+        "R": "betasharp:redstone"
     },
     "result": {
         "id": "betasharp:PoweredRail",

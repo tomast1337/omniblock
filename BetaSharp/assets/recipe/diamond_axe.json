@@ -6,10 +6,10 @@
         " #"
     ],
     "key": {
-        "X": "betasharp:Diamond",
-        "#": "betasharp:Stick"
+        "X": "betasharp:emerald",
+        "#": "betasharp:stick"
     },
     "result": {
-        "id": "betasharp:DiamondAxe"
+        "id": "betasharp:hatchet_diamond"
     }
 }

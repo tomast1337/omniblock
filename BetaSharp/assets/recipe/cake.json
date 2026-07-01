@@ -6,12 +6,12 @@
         "CCC"
     ],
     "key": {
-        "A": "betasharp:MilkBucket",
-        "B": "betasharp:Sugar",
+        "A": "betasharp:milk",
+        "B": "betasharp:sugar",
         "C": "Wheat",
         "E": "Egg"
     },
     "result": {
-        "id": "betasharp:Cake"
+        "id": "betasharp:cake"
     }
 }

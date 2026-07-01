@@ -7,9 +7,9 @@
     ],
     "key": {
         "#": "betasharp:GoldBlock",
-        "X": "betasharp:Apple"
+        "X": "betasharp:apple"
     },
     "result": {
-        "id": "betasharp:GoldenApple"
+        "id": "betasharp:apple_gold"
     }
 }

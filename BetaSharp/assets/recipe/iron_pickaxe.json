@@ -6,10 +6,10 @@
         " # "
     ],
     "key": {
-        "X": "betasharp:IronIngot",
-        "#": "betasharp:Stick"
+        "X": "betasharp:ingot_iron",
+        "#": "betasharp:stick"
     },
     "result": {
-        "id": "betasharp:IronPickaxe"
+        "id": "betasharp:pickaxe_iron"
     }
 }

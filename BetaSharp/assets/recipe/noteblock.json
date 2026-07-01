@@ -7,7 +7,7 @@
     ],
     "key": {
         "#": "betasharp:Planks",
-        "X": "betasharp:Redstone"
+        "X": "betasharp:redstone"
     },
     "result": {
         "id": "betasharp:Noteblock"

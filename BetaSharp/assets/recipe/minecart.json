@@ -5,9 +5,9 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:IronIngot"
+        "#": "betasharp:ingot_iron"
     },
     "result": {
-        "id": "betasharp:Minecart"
+        "id": "betasharp:minecart"
     }
 }

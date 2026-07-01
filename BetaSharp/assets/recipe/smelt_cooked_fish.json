@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:RawFish",
+    "input": "betasharp:fish_raw",
     "result": {
-        "id": "betasharp:CookedFish"
+        "id": "betasharp:fish_cooked"
     }
 }
