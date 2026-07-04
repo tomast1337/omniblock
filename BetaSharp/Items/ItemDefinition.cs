@@ -5,7 +5,7 @@ namespace BetaSharp.Items;
 
 public sealed class ItemDefinition : DataAsset
 {
-    public int ProtocolId { get; init; }
+    public required int ProtocolId { get; init; }
     public string TranslationKey { get; init; } = string.Empty;
     public int MaxStackSize { get; init; } = 64;
     public int MaxDurability { get; init; } = 0;

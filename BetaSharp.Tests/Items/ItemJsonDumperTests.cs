@@ -23,7 +23,7 @@ public sealed class ItemJsonDumperTests
         string outDir = Path.Combine(FindRepoRoot(), "BetaSharp", "assets", "item", "betasharp");
         Directory.CreateDirectory(outDir);
 
-        JsonElement fullDefaults = JsonSerializer.SerializeToElement(new ItemDefinition(), s_options);
+        JsonElement fullDefaults = JsonSerializer.SerializeToElement(new ItemDefinition { ProtocolId = 0 }, s_options);
         JsonElement defaults = StripAlwaysKeepFields(fullDefaults);
         File.WriteAllText(Path.Combine(outDir, "_defaults.json"), JsonSerializer.Serialize(defaults, s_options));
 
