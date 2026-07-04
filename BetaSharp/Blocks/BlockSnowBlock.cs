@@ -5,13 +5,11 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSnowBlock : Block
 {
-    private static readonly int s_snowballId = Item.ByName("snowball").Id;
-
-    public BlockSnowBlock(int id, int textureId) : base(id, textureId, Material.SnowBlock) => setTickRandomly(true);
-
-    public override int getDroppedItemId(int blockMeta) => s_snowballId;
-
-    public override int getDroppedItemCount() => 4;
+    public BlockSnowBlock(int id, int textureId) : base(id, textureId, Material.SnowBlock)
+    {
+        setTickRandomly(true);
+        setDrops(() => Item.ByName("snowball").Id, 4);
+    }
 
     public override void onTick(OnTickEvent @event)
     {
