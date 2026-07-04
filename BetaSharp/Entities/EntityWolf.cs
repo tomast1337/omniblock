@@ -11,6 +11,7 @@ namespace BetaSharp.Entities;
 
 public class EntityWolf : EntityAnimal
 {
+    private static readonly int s_boneId = Item.ByName("bone").id;
     private readonly SyncedProperty<byte> _wolfFlags;
     private readonly SyncedProperty<int> _wolfHealth;
     private readonly SyncedProperty<string?> _wolfOwner;
@@ -168,7 +169,7 @@ public class EntityWolf : EntityAnimal
                 {
                     _looksWithInterest = IsWolfTamed switch
                     {
-                        false when heldItem.ItemId == Item.ByName("bone").id => true,
+                        false when heldItem.ItemId == s_boneId => true,
                         true when Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() is { } food => food.IsWolfsFavoriteMeat,
                         _ => _looksWithInterest
                     };
@@ -383,7 +384,7 @@ public class EntityWolf : EntityAnimal
         ItemStack? heldItem = player.Inventory.ItemInHand;
         if (!IsWolfTamed)
         {
-            if (heldItem == null || heldItem.ItemId != Item.ByName("bone").id || IsWolfAngry) return false;
+            if (heldItem == null || heldItem.ItemId != s_boneId || IsWolfAngry) return false;
 
             heldItem.ConsumeItem(player);
             if (heldItem.Count <= 0)

@@ -8,6 +8,7 @@ namespace BetaSharp.Blocks;
 public class BlockRedstoneWire : Block
 {
     private static readonly ThreadLocal<bool> s_wiresProvidePower = new(() => true);
+    private static readonly int s_redstoneId = Item.ByName("redstone").id;
 
     private readonly HashSet<BlockPos> _blocksNeedingUpdate = [];
 
@@ -257,7 +258,7 @@ public class BlockRedstoneWire : Block
         base.neighborUpdate(@event);
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.ByName("redstone").id;
+    public override int getDroppedItemId(int blockMeta) => s_redstoneId;
 
     public override bool isStrongPoweringSide(IBlockReader reader, int x, int y, int z, int side) => s_wiresProvidePower.Value && isPoweringSide(reader, x, y, z, side);
 

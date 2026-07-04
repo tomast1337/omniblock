@@ -8,6 +8,8 @@ namespace BetaSharp.Blocks;
 
 public class BlockBed : Block
 {
+    private static readonly int s_bedId = Item.ByName("bed").id;
+
     public static readonly Side[][] BedFacings =
     [
         [Side.Up, Side.Down, Side.South, Side.North, Side.East, Side.West],
@@ -182,7 +184,7 @@ public class BlockBed : Block
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => isHeadOfBed(blockMeta) ? 0 : Item.ByName("bed").id;
+    public override int getDroppedItemId(int blockMeta) => isHeadOfBed(blockMeta) ? 0 : s_bedId;
 
     private void setDefaultShape() => setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 9.0F / 16.0F, 1.0F);
 

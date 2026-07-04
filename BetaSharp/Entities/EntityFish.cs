@@ -10,6 +10,7 @@ namespace BetaSharp.Entities;
 public class EntityFish : Entity
 {
     private const double PullStrength = 0.1D;
+    private static readonly Item s_fishingRod = Item.ByName("fishing_rod");
     private Entity? _bobber;
     private double _clientVelocityX;
     private double _clientVelocityY;
@@ -150,7 +151,7 @@ public class EntityFish : Entity
         if (!World.IsRemote)
         {
             ItemStack? heldItem = Angler?.GetHand();
-            if (Angler != null && (Angler.Dead || !Angler.IsAlive || heldItem == null || heldItem.getItem() != Item.ByName("fishing_rod") || GetSquaredDistance(Angler) > 1024.0D))
+            if (Angler != null && (Angler.Dead || !Angler.IsAlive || heldItem == null || heldItem.getItem() != s_fishingRod || GetSquaredDistance(Angler) > 1024.0D))
             {
                 MarkDead();
                 Angler.FishHook = null;

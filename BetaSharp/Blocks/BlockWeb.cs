@@ -7,6 +7,8 @@ namespace BetaSharp.Blocks;
 
 internal class BlockWeb : Block
 {
+    private static readonly int s_stringId = Item.ByName("string").id;
+
     public BlockWeb(int id, int texturePosition) : base(id, texturePosition, Material.Cobweb)
     {
     }
@@ -21,5 +23,5 @@ internal class BlockWeb : Block
 
     public override bool isFullCube() => false;
 
-    public override int getDroppedItemId(int blockMeta) => Item.ByName("string").id;
+    public override int getDroppedItemId(int blockMeta) => s_stringId;
 }

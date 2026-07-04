@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 public sealed class EntitySnowball : Entity
 {
     private const float Gravity = 0.03F;
+    private static readonly Item s_arrow = Item.ByName("arrow");
     private readonly EntityLiving? _thrower;
     private bool _inGround;
     private int _inTile;
@@ -244,7 +245,7 @@ public sealed class EntitySnowball : Entity
 
     public override void OnPlayerInteraction(EntityPlayer player)
     {
-        if (!_inGround || !Equals(_thrower, player) || _shake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ByName("arrow"), 1)))
+        if (!_inGround || !Equals(_thrower, player) || _shake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(s_arrow, 1)))
         {
             return;
         }

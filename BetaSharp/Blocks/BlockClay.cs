@@ -5,7 +5,9 @@ namespace BetaSharp.Blocks;
 
 internal class BlockClay(int id, int textureId) : Block(id, textureId, Material.Clay)
 {
-    public override int getDroppedItemId(int blockMeta) => Item.ByName("clay").id;
+    private static readonly int s_clayId = Item.ByName("clay").id;
+
+    public override int getDroppedItemId(int blockMeta) => s_clayId;
 
     public override int getDroppedItemCount() => 4;
 }

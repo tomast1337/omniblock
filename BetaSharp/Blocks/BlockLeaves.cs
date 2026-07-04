@@ -7,6 +7,7 @@ namespace BetaSharp.Blocks;
 
 public class BlockLeaves : BlockLeavesBase
 {
+    private static readonly int s_shearsId = Item.ByName("shears").id;
     private readonly ThreadLocal<int[]?> s_decayRegion = new(() => null);
     private readonly int spriteIndex;
 
@@ -170,7 +171,7 @@ public class BlockLeaves : BlockLeavesBase
 
     public override void onAfterBreak(OnAfterBreakEvent ctx)
     {
-        if (!ctx.World.IsRemote && ctx.Player.GetHand() != null && ctx.Player.GetHand().ItemId == Item.ByName("shears").id)
+        if (!ctx.World.IsRemote && ctx.Player.GetHand() != null && ctx.Player.GetHand().ItemId == s_shearsId)
         {
             ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
             dropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(Leaves.id, 1, ctx.Meta & 3));

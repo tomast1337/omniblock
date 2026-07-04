@@ -10,6 +10,10 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntityFurnace : BlockEntity, IInventory
 {
+    private static readonly int s_stickId = Item.ByName("stick").id;
+    private static readonly int s_coalId = Item.ByName("coal").id;
+    private static readonly int s_bucketLavaId = Item.ByName("bucket_lava").id;
+
     public override BlockEntityType Type => Furnace;
     private ItemStack?[] _inventory = new ItemStack[3];
     public int BurnTime { get; set; }
@@ -260,6 +264,6 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         }
 
         int itemId = itemStack.getItem().id;
-        return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == Item.ByName("stick").id ? 100 : itemId == Item.ByName("coal").id ? 1600 : itemId == Item.ByName("bucket_lava").id ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
+        return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
     }
 }

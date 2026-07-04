@@ -9,6 +9,7 @@ namespace BetaSharp.Blocks;
 internal class BlockSnow : Block
 {
     private const float DropSpread = 0.7F;
+    private static readonly int s_snowballId = Item.ByName("snowball").id;
 
     public BlockSnow(int id, int textureId) : base(id, textureId, Material.SnowLayer)
     {
@@ -58,11 +59,10 @@ internal class BlockSnow : Block
 
     public override void onAfterBreak(OnAfterBreakEvent @event)
     {
-        int snowballId = Item.ByName("snowball").id;
         double offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
-        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(snowballId, 1, 0))
+        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(s_snowballId, 1, 0))
         {
             DelayBeforeCanPickup = 10
         };
@@ -71,7 +71,7 @@ internal class BlockSnow : Block
         @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.ByName("snowball").id;
+    public override int getDroppedItemId(int blockMeta) => s_snowballId;
 
     public override int getDroppedItemCount() => 0;
 

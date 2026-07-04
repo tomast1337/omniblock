@@ -6,6 +6,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockRedstoneOre : Block
 {
+    private static readonly int s_redstoneId = Item.ByName("redstone").id;
     private readonly bool lit;
 
     public BlockRedstoneOre(int id, int textureId, bool lit) : base(id, textureId, Material.Stone)
@@ -55,7 +56,7 @@ internal class BlockRedstoneOre : Block
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.ByName("redstone").id;
+    public override int getDroppedItemId(int blockMeta) => s_redstoneId;
 
     public override int getDroppedItemCount() => 4 + Random.Shared.Next(2);
 

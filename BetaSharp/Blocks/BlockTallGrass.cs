@@ -7,6 +7,7 @@ namespace BetaSharp.Blocks;
 public class BlockTallGrass : BlockPlant
 {
     private const float HalfSize = 0.4F;
+    private static readonly int s_seedsId = Item.ByName("seeds").id;
 
     public BlockTallGrass(int i, int j) : base(i, j) => setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, 0.8F, 0.5F + HalfSize);
 
@@ -51,5 +52,5 @@ public class BlockTallGrass : BlockPlant
         return GrassColors.getColor(temperature, downfall);
     }
 
-    public override int getDroppedItemId(int blockMeta) => Random.Shared.Next(8) == 0 ? Item.ByName("seeds").id : -1;
+    public override int getDroppedItemId(int blockMeta) => Random.Shared.Next(8) == 0 ? s_seedsId : -1;
 }
