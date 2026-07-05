@@ -2,6 +2,7 @@
     "ProtocolId": 305,
     "TranslationKey": "bootsChain",
     "TextureId": 49,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "chain",

@@ -2,6 +2,7 @@
     "ProtocolId": 303,
     "TranslationKey": "chestplateChain",
     "TextureId": 17,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "chain",

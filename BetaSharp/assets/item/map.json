@@ -1,6 +1,7 @@
 {
   "ProtocolId": 358,
   "TextureId": 60,
+  "MaxStackSize": 1,
   "Behavior": {
     "type": "map"
   }

@@ -1,6 +1,7 @@
 {
   "ProtocolId": 325,
   "TextureId": 74,
+  "MaxStackSize": 1,
   "Behavior": {
     "type": "bucket",
     "Liquid": "empty"

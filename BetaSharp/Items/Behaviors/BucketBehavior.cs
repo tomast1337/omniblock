@@ -13,8 +13,6 @@ internal sealed class BucketBehavior : IItemBehavior
 
     internal BucketBehavior(int isFull) => _isFull = isFull;
 
-    public void Apply(Item item) => item.maxCount = 1;
-
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
         float partialTick = 1.0F;

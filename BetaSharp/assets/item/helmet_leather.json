@@ -2,6 +2,7 @@
     "ProtocolId": 298,
     "TranslationKey": "helmetLeather",
     "TextureId": 0,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "leather",

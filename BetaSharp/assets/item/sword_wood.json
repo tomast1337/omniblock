@@ -2,6 +2,7 @@
     "ProtocolId": 268,
     "TranslationKey": "swordWood",
     "TextureId": 64,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "sword",
         "Material": "wood"

@@ -2,6 +2,7 @@
     "ProtocolId": 283,
     "TranslationKey": "swordGold",
     "TextureId": 68,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "sword",
         "Material": "gold"

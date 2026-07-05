@@ -5,12 +5,6 @@ namespace BetaSharp.Items.Behaviors;
 
 internal sealed class ShearsBehavior : IItemBehavior
 {
-    public void Apply(Item item)
-    {
-        item.setMaxCount(1);
-        item.setMaxDamage(238);
-    }
-
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)
     {
         if (block.id == Block.Cobweb.id || block.id == Block.Leaves.id)

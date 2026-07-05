@@ -2,6 +2,7 @@
     "ProtocolId": 306,
     "TranslationKey": "helmetIron",
     "TextureId": 2,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "iron",

@@ -2,6 +2,7 @@
     "ProtocolId": 311,
     "TranslationKey": "chestplateDiamond",
     "TextureId": 19,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "diamond",

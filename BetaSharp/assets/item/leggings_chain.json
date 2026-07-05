@@ -2,6 +2,7 @@
     "ProtocolId": 304,
     "TranslationKey": "leggingsChain",
     "TextureId": 33,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "chain",

@@ -2,6 +2,7 @@
     "ProtocolId": 313,
     "TranslationKey": "bootsDiamond",
     "TextureId": 51,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "diamond",

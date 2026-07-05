@@ -20,11 +20,7 @@ internal sealed class ToolBehavior : IItemBehavior
         _suitableFor = suitableFor;
     }
 
-    public void Apply(Item item)
-    {
-        item.maxCount = 1;
-        item.setMaxDamage(_toolMaterial.MaxUses);
-    }
+    public void Apply(Item item) => item.setMaxDamage(_toolMaterial.MaxUses);
 
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)
     {

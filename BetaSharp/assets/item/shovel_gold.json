@@ -2,6 +2,7 @@
     "ProtocolId": 284,
     "TranslationKey": "shovelGold",
     "TextureId": 84,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",
         "ToolType": "shovel",

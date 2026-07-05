@@ -1,9 +1,9 @@
 {
   "ProtocolId": 344,
   "TextureId": 12,
+  "MaxStackSize": 16,
   "Behavior": {
     "type": "throwable",
-    "MaxCount": 16,
     "ProjectileType": "egg"
   }
 }

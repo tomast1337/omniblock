@@ -10,8 +10,6 @@ public sealed class RecordBehavior : IItemBehavior
 
     public string RecordName { get; }
 
-    public void Apply(Item item) => item.maxCount = 1;
-
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         if (world.Reader.GetBlockId(x, y, z) != Block.Jukebox.id || world.Reader.GetBlockMeta(x, y, z) != 0)

@@ -2,6 +2,7 @@
     "ProtocolId": 309,
     "TranslationKey": "bootsIron",
     "TextureId": 50,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "iron",

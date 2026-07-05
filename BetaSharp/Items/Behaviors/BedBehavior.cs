@@ -7,8 +7,6 @@ namespace BetaSharp.Items.Behaviors;
 
 internal sealed class BedBehavior : IItemBehavior
 {
-    public void Apply(Item item) => item.maxCount = 1;
-
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         if (meta != 1)

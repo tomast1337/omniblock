@@ -2,6 +2,7 @@
     "ProtocolId": 308,
     "TranslationKey": "leggingsIron",
     "TextureId": 34,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",
         "Material": "iron",

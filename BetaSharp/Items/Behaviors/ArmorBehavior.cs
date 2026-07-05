@@ -19,9 +19,5 @@ public sealed class ArmorBehavior : IItemBehavior
     public int ArmorType => (int)Slot;
     public int DamageReduceAmount { get; }
 
-    public void Apply(Item item)
-    {
-        item.maxCount = 1;
-        item.setMaxDamage((s_maxDamageArray[ArmorType] * 3) << Material.ArmorLevel);
-    }
+    public void Apply(Item item) => item.setMaxDamage((s_maxDamageArray[ArmorType] * 3) << Material.ArmorLevel);
 }

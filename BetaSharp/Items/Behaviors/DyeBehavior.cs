@@ -18,12 +18,6 @@ internal sealed class DyeBehavior : IItemBehavior
         0x434343, 0xD88198, 0x41CD34, 0xDECF2A, 0x6689D3, 0xC354CD, 0xEB8844, 0xF0F0F0
     ];
 
-    public void Apply(Item item)
-    {
-        item.setHasSubtypes(true);
-        item.setMaxDamage(0);
-    }
-
     public int GetTextureId(Item item, int meta)
         => item.textureId + meta % 8 * 16 + meta / 8;
 

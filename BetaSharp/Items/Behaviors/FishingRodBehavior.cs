@@ -5,12 +5,6 @@ namespace BetaSharp.Items.Behaviors;
 
 internal sealed class FishingRodBehavior : IItemBehavior
 {
-    public void Apply(Item item)
-    {
-        item.setMaxDamage(64);
-        item.setMaxCount(1);
-    }
-
     public bool IsHandheld(Item item) => true;
     public bool IsHandheldRod(Item item) => true;
 

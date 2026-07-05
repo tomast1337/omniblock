@@ -6,12 +6,6 @@ namespace BetaSharp.Items.Behaviors;
 
 internal sealed class FlintAndSteelBehavior : IItemBehavior
 {
-    public void Apply(Item item)
-    {
-        item.maxCount = 1;
-        item.setMaxDamage(64);
-    }
-
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         if (meta == 0)

@@ -4,8 +4,6 @@ namespace BetaSharp.Items.Behaviors;
 
 internal sealed class SaddleBehavior : IItemBehavior
 {
-    public void Apply(Item item) => item.maxCount = 1;
-
     public void UseOnEntity(Item item, ItemStack itemStack, EntityLiving target, EntityPlayer player)
     {
         if (target is EntityPig pig && !pig.Saddled.Value)

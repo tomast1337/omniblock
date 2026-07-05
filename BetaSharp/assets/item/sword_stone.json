@@ -2,6 +2,7 @@
     "ProtocolId": 272,
     "TranslationKey": "swordStone",
     "TextureId": 65,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "sword",
         "Material": "stone"

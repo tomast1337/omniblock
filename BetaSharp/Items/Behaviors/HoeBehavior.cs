@@ -10,11 +10,7 @@ internal sealed class HoeBehavior : IItemBehavior
 
     internal HoeBehavior(ToolMaterial toolMaterial) => _toolMaterial = toolMaterial;
 
-    public void Apply(Item item)
-    {
-        item.maxCount = 1;
-        item.setMaxDamage(_toolMaterial.MaxUses);
-    }
+    public void Apply(Item item) => item.setMaxDamage(_toolMaterial.MaxUses);
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {

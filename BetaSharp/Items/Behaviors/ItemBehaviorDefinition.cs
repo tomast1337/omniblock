@@ -182,7 +182,6 @@ public sealed class PlaceBlockBehaviorDefinition : ItemBehaviorDefinition
 
 public sealed class ThrowableBehaviorDefinition : ItemBehaviorDefinition
 {
-    public int MaxCount { get; init; } = 16;
     public string ProjectileType { get; init; } = "snowball"; // "snowball" or "egg"
 
     public override IItemBehavior Build()
@@ -192,7 +191,7 @@ public sealed class ThrowableBehaviorDefinition : ItemBehaviorDefinition
             "egg" => (w, p) => new EntityEgg(w, p),
             _ => (w, p) => new EntitySnowball(w, p),
         };
-        return new ThrowableBehavior(MaxCount, factory);
+        return new ThrowableBehavior(factory);
     }
 }
 

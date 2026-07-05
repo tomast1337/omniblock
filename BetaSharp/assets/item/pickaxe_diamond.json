@@ -2,6 +2,7 @@
     "ProtocolId": 278,
     "TranslationKey": "pickaxeDiamond",
     "TextureId": 99,
+    "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",
         "ToolType": "pickaxe",

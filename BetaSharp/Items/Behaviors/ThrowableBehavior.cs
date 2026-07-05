@@ -6,15 +6,8 @@ namespace BetaSharp.Items.Behaviors;
 internal sealed class ThrowableBehavior : IItemBehavior
 {
     private readonly Func<IWorldContext, EntityPlayer, Entity> _createProjectile;
-    private readonly int _maxCount;
 
-    internal ThrowableBehavior(int maxCount, Func<IWorldContext, EntityPlayer, Entity> createProjectile)
-    {
-        _maxCount = maxCount;
-        _createProjectile = createProjectile;
-    }
-
-    public void Apply(Item item) => item.maxCount = _maxCount;
+    internal ThrowableBehavior(Func<IWorldContext, EntityPlayer, Entity> createProjectile) => _createProjectile = createProjectile;
 
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {

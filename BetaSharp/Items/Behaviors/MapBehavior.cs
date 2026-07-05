@@ -14,8 +14,6 @@ public sealed class MapBehavior : IItemBehavior
     private const short MapWidth = 128;
     private const short MapHeight = 128;
 
-    public void Apply(Item item) => item.setMaxCount(1);
-
     public void InventoryTick(Item item, ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
     {
         if (world.IsRemote)

@@ -10,8 +10,6 @@ internal sealed class MinecartBehavior : IItemBehavior
 
     internal MinecartBehavior(int minecartType) => _minecartType = minecartType;
 
-    public void Apply(Item item) => item.maxCount = 1;
-
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         int blockId = world.Reader.GetBlockId(x, y, z);
