@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 331,
-    "TranslationKey": "redstone",
-    "TextureX": 8,
-    "TextureY": 3,
-    "Behavior": {
-        "type": "redstone"
-    }
+  "ProtocolId": 331,
+  "TextureX": 8,
+  "TextureY": 3,
+  "Behavior": {
+    "type": "redstone"
+  }
 }

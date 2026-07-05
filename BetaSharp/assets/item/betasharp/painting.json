@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 321,
-    "TranslationKey": "painting",
-    "TextureX": 10,
-    "TextureY": 1,
-    "Behavior": {
-        "type": "painting"
-    }
+  "ProtocolId": 321,
+  "TextureX": 10,
+  "TextureY": 1,
+  "Behavior": {
+    "type": "painting"
+  }
 }

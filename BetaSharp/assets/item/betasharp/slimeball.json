@@ -1,6 +1,5 @@
 {
-    "ProtocolId": 341,
-    "TranslationKey": "slimeball",
-    "TextureX": 14,
-    "TextureY": 1
+  "ProtocolId": 341,
+  "TextureX": 14,
+  "TextureY": 1
 }

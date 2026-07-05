@@ -5,7 +5,7 @@ public static class ItemFactory
     public static Item Create(ItemDefinition def)
     {
         var item = new Item(def.ProtocolId - 256);
-        item.setItemName(def.TranslationKey);
+        item.setItemName(def.TranslationKey ?? def.Name);
         if (def.MaxStackSize != 64) item.setMaxCount(def.MaxStackSize);
         if (def.MaxDurability > 0) item.setMaxDamage(def.MaxDurability);
         item.setTexturePosition(def.TextureX, def.TextureY);

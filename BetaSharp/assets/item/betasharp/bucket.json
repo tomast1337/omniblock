@@ -1,10 +1,9 @@
 {
-    "ProtocolId": 325,
-    "TranslationKey": "bucket",
-    "TextureX": 10,
-    "TextureY": 4,
-    "Behavior": {
-        "type": "bucket",
-        "Liquid": "empty"
-    }
+  "ProtocolId": 325,
+  "TextureX": 10,
+  "TextureY": 4,
+  "Behavior": {
+    "type": "bucket",
+    "Liquid": "empty"
+  }
 }

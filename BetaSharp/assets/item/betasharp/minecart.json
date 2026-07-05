@@ -1,10 +1,9 @@
 {
-    "ProtocolId": 328,
-    "TranslationKey": "minecart",
-    "TextureX": 7,
-    "TextureY": 8,
-    "Behavior": {
-        "type": "minecart",
-        "CartType": 0
-    }
+  "ProtocolId": 328,
+  "TextureX": 7,
+  "TextureY": 8,
+  "Behavior": {
+    "type": "minecart",
+    "CartType": 0
+  }
 }

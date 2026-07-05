@@ -1,7 +1,6 @@
 {
-    "ProtocolId": 352,
-    "TranslationKey": "bone",
-    "TextureX": 12,
-    "TextureY": 1,
-    "Handheld": true
+  "ProtocolId": 352,
+  "TextureX": 12,
+  "TextureY": 1,
+  "Handheld": true
 }

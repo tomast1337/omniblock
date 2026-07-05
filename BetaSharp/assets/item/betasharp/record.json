@@ -1,10 +1,9 @@
 {
-    "ProtocolId": 2256,
-    "TranslationKey": "record",
-    "TextureX": 0,
-    "TextureY": 15,
-    "Behavior": {
-        "type": "record",
-        "RecordName": "13"
-    }
+  "ProtocolId": 2256,
+  "TextureX": 0,
+  "TextureY": 15,
+  "Behavior": {
+    "type": "record",
+    "RecordName": "13"
+  }
 }

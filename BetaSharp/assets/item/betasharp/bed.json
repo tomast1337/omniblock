@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 355,
-    "TranslationKey": "bed",
-    "TextureX": 13,
-    "TextureY": 2,
-    "Behavior": {
-        "type": "bed"
-    }
+  "ProtocolId": 355,
+  "TextureX": 13,
+  "TextureY": 2,
+  "Behavior": {
+    "type": "bed"
+  }
 }

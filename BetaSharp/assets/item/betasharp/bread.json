@@ -1,13 +1,12 @@
 {
-    "ProtocolId": 297,
-    "TranslationKey": "bread",
-    "TextureX": 9,
-    "TextureY": 2,
-    "Behavior": {
-        "type": "food",
-        "HealAmount": 5,
-        "IsWolfsFavoriteMeat": false,
-        "MaxCount": 1,
-        "ReturnItemProtocolId": null
-    }
+  "ProtocolId": 297,
+  "TextureX": 9,
+  "TextureY": 2,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 5,
+    "IsWolfsFavoriteMeat": false,
+    "MaxCount": 1,
+    "ReturnItemProtocolId": null
+  }
 }

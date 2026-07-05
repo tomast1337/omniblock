@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 263,
-    "TranslationKey": "coal",
-    "TextureX": 7,
-    "TextureY": 0,
-    "Behavior": {
-        "type": "coal"
-    }
+  "ProtocolId": 263,
+  "TextureX": 7,
+  "TextureY": 0,
+  "Behavior": {
+    "type": "coal"
+  }
 }

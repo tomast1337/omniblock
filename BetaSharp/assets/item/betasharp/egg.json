@@ -1,11 +1,10 @@
 {
-    "ProtocolId": 344,
-    "TranslationKey": "egg",
-    "TextureX": 12,
-    "TextureY": 0,
-    "Behavior": {
-        "type": "throwable",
-        "MaxCount": 16,
-        "ProjectileType": "egg"
-    }
+  "ProtocolId": 344,
+  "TextureX": 12,
+  "TextureY": 0,
+  "Behavior": {
+    "type": "throwable",
+    "MaxCount": 16,
+    "ProjectileType": "egg"
+  }
 }

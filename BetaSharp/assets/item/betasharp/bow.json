@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 261,
-    "TranslationKey": "bow",
-    "TextureX": 5,
-    "TextureY": 1,
-    "Behavior": {
-        "type": "bow"
-    }
+  "ProtocolId": 261,
+  "TextureX": 5,
+  "TextureY": 1,
+  "Behavior": {
+    "type": "bow"
+  }
 }

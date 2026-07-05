@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 359,
-    "TranslationKey": "shears",
-    "TextureX": 13,
-    "TextureY": 5,
-    "Behavior": {
-        "type": "shears"
-    }
+  "ProtocolId": 359,
+  "TextureX": 13,
+  "TextureY": 5,
+  "Behavior": {
+    "type": "shears"
+  }
 }

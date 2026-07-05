@@ -1,7 +1,6 @@
 {
-    "ProtocolId": 280,
-    "TranslationKey": "stick",
-    "TextureX": 5,
-    "TextureY": 3,
-    "Handheld": true
+  "ProtocolId": 280,
+  "TextureX": 5,
+  "TextureY": 3,
+  "Handheld": true
 }

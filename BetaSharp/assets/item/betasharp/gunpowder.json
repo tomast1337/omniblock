@@ -1,6 +1,5 @@
 {
-    "ProtocolId": 289,
-    "TranslationKey": "gunpowder",
-    "TextureX": 8,
-    "TextureY": 2
+  "ProtocolId": 289,
+  "TextureX": 8,
+  "TextureY": 2
 }

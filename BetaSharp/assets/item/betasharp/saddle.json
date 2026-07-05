@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 329,
-    "TranslationKey": "saddle",
-    "TextureX": 8,
-    "TextureY": 6,
-    "Behavior": {
-        "type": "saddle"
-    }
+  "ProtocolId": 329,
+  "TextureX": 8,
+  "TextureY": 6,
+  "Behavior": {
+    "type": "saddle"
+  }
 }

@@ -1,6 +1,5 @@
 {
-    "ProtocolId": 264,
-    "TranslationKey": "diamond",
-    "TextureX": 7,
-    "TextureY": 3
+  "ProtocolId": 264,
+  "TextureX": 7,
+  "TextureY": 3
 }

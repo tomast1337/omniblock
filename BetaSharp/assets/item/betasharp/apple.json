@@ -1,13 +1,12 @@
 {
-    "ProtocolId": 260,
-    "TranslationKey": "apple",
-    "TextureX": 10,
-    "TextureY": 0,
-    "Behavior": {
-        "type": "food",
-        "HealAmount": 4,
-        "IsWolfsFavoriteMeat": false,
-        "MaxCount": 1,
-        "ReturnItemProtocolId": null
-    }
+  "ProtocolId": 260,
+  "TextureX": 10,
+  "TextureY": 0,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 4,
+    "IsWolfsFavoriteMeat": false,
+    "MaxCount": 1,
+    "ReturnItemProtocolId": null
+  }
 }

@@ -1,6 +1,5 @@
 {
-    "ProtocolId": 296,
-    "TranslationKey": "wheat",
-    "TextureX": 9,
-    "TextureY": 1
+  "ProtocolId": 296,
+  "TextureX": 9,
+  "TextureY": 1
 }

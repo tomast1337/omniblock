@@ -1,6 +1,5 @@
 {
-    "ProtocolId": 345,
-    "TranslationKey": "compass",
-    "TextureX": 6,
-    "TextureY": 3
+  "ProtocolId": 345,
+  "TextureX": 6,
+  "TextureY": 3
 }

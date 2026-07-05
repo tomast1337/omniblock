@@ -1,13 +1,12 @@
 {
-    "ProtocolId": 357,
-    "TranslationKey": "cookie",
-    "TextureX": 12,
-    "TextureY": 5,
-    "Behavior": {
-        "type": "food",
-        "HealAmount": 1,
-        "IsWolfsFavoriteMeat": false,
-        "MaxCount": 8,
-        "ReturnItemProtocolId": null
-    }
+  "ProtocolId": 357,
+  "TextureX": 12,
+  "TextureY": 5,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 1,
+    "IsWolfsFavoriteMeat": false,
+    "MaxCount": 8,
+    "ReturnItemProtocolId": null
+  }
 }

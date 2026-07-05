@@ -1,6 +1,5 @@
 {
-    "ProtocolId": 337,
-    "TranslationKey": "clay",
-    "TextureX": 9,
-    "TextureY": 3
+  "ProtocolId": 337,
+  "TextureX": 9,
+  "TextureY": 3
 }

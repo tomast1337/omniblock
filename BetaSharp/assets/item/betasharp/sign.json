@@ -1,9 +1,8 @@
 {
-    "ProtocolId": 323,
-    "TranslationKey": "sign",
-    "TextureX": 10,
-    "TextureY": 2,
-    "Behavior": {
-        "type": "sign"
-    }
+  "ProtocolId": 323,
+  "TextureX": 10,
+  "TextureY": 2,
+  "Behavior": {
+    "type": "sign"
+  }
 }

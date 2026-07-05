@@ -1,10 +1,9 @@
 {
-    "ProtocolId": 295,
-    "TranslationKey": "seeds",
-    "TextureX": 9,
-    "TextureY": 0,
-    "Behavior": {
-        "type": "seeds",
-        "CropBlockId": 59
-    }
+  "ProtocolId": 295,
+  "TextureX": 9,
+  "TextureY": 0,
+  "Behavior": {
+    "type": "seeds",
+    "CropBlockId": 59
+  }
 }
