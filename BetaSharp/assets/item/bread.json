@@ -5,7 +5,7 @@
     "type": "food",
     "HealAmount": 5,
     "IsMeat": false,
-    "MaxCount": 1,
     "ReturnItem": null
-  }
+  },
+  "MaxStackSize": 1
 }

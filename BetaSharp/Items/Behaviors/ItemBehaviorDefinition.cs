@@ -42,7 +42,6 @@ public sealed class FoodBehaviorDefinition : ItemBehaviorDefinition
 {
     public int HealAmount { get; init; }
     public bool IsMeat { get; init; }
-    public int MaxCount { get; init; } = 1;
     public string? ReturnItem { get; init; }
 
     public override IItemBehavior Build()
@@ -63,7 +62,6 @@ public sealed class FoodBehaviorDefinition : ItemBehaviorDefinition
         return new FoodBehavior(
             HealAmount,
             IsMeat,
-            MaxCount,
             returnItem
         );
     }
