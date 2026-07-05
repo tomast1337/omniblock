@@ -5,8 +5,8 @@
     "Behavior": {
         "type": "food",
         "HealAmount": 10,
-        "IsWolfsFavoriteMeat": false,
+        "IsMeat": false,
         "MaxCount": 1,
-        "ReturnItemProtocolId": 281
+        "ReturnItem": "betasharp:bowl"
     }
 }

@@ -170,7 +170,7 @@ public class EntityWolf : EntityAnimal
                     _looksWithInterest = IsWolfTamed switch
                     {
                         false when heldItem.ItemId == s_boneId => true,
-                        true when Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() is { } food => food.IsWolfsFavoriteMeat,
+                        true when Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() is { } food => food.IsMeat,
                         _ => _looksWithInterest
                     };
                 }
@@ -415,7 +415,7 @@ public class EntityWolf : EntityAnimal
             FoodBehavior? heldFood = heldItem != null ? Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() : null;
             if (heldFood != null)
             {
-                if (heldFood.IsWolfsFavoriteMeat && _wolfHealth.Value < 20)
+                if (heldFood.IsMeat && _wolfHealth.Value < 20)
                 {
                     heldItem!.ConsumeItem(player);
                     if (heldItem.Count <= 0)

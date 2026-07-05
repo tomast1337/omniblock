@@ -5,8 +5,8 @@
     "Behavior": {
         "type": "food",
         "HealAmount": 8,
-        "IsWolfsFavoriteMeat": true,
+        "IsMeat": true,
         "MaxCount": 1,
-        "ReturnItemProtocolId": null
+        "ReturnItem": null
     }
 }

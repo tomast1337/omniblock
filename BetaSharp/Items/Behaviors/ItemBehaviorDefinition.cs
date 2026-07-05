@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
-using BetaSharp.Items;
+using BetaSharp.Registries;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
@@ -41,16 +41,32 @@ public abstract class ItemBehaviorDefinition
 public sealed class FoodBehaviorDefinition : ItemBehaviorDefinition
 {
     public int HealAmount { get; init; }
-    public bool IsWolfsFavoriteMeat { get; init; }
+    public bool IsMeat { get; init; }
     public int MaxCount { get; init; } = 1;
-    public int? ReturnItemProtocolId { get; init; }
+    public string? ReturnItem { get; init; }
 
-    public override IItemBehavior Build() =>
-        new FoodBehavior(
+    public override IItemBehavior Build()
+    {
+        Item? returnItem;
+        if (ReturnItem != null)
+        {
+            if (DefaultRegistries.Items.Get(ResourceLocation.Parse(ReturnItem))?.Value is { } def)
+                returnItem = Item.ITEMS[def.ProtocolId];
+            else
+                throw new ArgumentException($"Unknown item: '{ReturnItem}'", nameof(ReturnItem));
+        }
+        else
+        {
+            returnItem = null;
+        }
+
+        return new FoodBehavior(
             HealAmount,
-            IsWolfsFavoriteMeat,
+            IsMeat,
             MaxCount,
-            returnItem: ReturnItemProtocolId is int id ? Item.ITEMS[id] : null);
+            returnItem
+        );
+    }
 }
 
 public sealed class ToolBehaviorDefinition : ItemBehaviorDefinition
@@ -141,6 +157,7 @@ public sealed class BedBehaviorDefinition : ItemBehaviorDefinition
 public sealed class DoorBehaviorDefinition : ItemBehaviorDefinition
 {
     public string DoorMaterial { get; init; } = "wood"; // "wood" or "iron"
+
     public override IItemBehavior Build() => new DoorBehavior(
         DoorMaterial == "iron" ? Material.Metal : Material.Wood);
 }
