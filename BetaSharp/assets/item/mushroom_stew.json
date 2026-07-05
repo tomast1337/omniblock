@@ -1,8 +1,7 @@
 {
     "ProtocolId": 282,
     "TranslationKey": "mushroomStew",
-    "TextureX": 8,
-    "TextureY": 4,
+    "TextureId": 72,
     "Behavior": {
         "type": "food",
         "HealAmount": 10,

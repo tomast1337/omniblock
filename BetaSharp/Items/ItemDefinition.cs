@@ -9,8 +9,7 @@ public sealed class ItemDefinition : DataAsset
     public string? TranslationKey { get; init; }
     public int MaxStackSize { get; init; } = 64;
     public int MaxDurability { get; init; } = 0;
-    public int TextureX { get; init; }
-    public int TextureY { get; init; }
+    public int TextureId { get; init; }
     public bool Handheld { get; init; }
     public bool HandheldRod { get; init; }
     public bool HasSubtypes { get; init; }

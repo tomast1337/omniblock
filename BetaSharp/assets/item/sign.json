@@ -1,7 +1,6 @@
 {
   "ProtocolId": 323,
-  "TextureX": 10,
-  "TextureY": 2,
+  "TextureId": 42,
   "Behavior": {
     "type": "sign"
   }

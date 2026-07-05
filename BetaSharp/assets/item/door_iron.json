@@ -1,8 +1,7 @@
 {
     "ProtocolId": 330,
     "TranslationKey": "doorIron",
-    "TextureX": 12,
-    "TextureY": 2,
+    "TextureId": 44,
     "Behavior": {
         "type": "door",
         "DoorMaterial": "iron"

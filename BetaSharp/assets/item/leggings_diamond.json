@@ -1,8 +1,7 @@
 {
     "ProtocolId": 312,
     "TranslationKey": "leggingsDiamond",
-    "TextureX": 3,
-    "TextureY": 2,
+    "TextureId": 35,
     "Behavior": {
         "type": "armor",
         "Material": "diamond",

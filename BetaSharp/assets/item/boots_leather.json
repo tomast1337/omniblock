@@ -1,8 +1,7 @@
 {
     "ProtocolId": 301,
     "TranslationKey": "bootsLeather",
-    "TextureX": 0,
-    "TextureY": 3,
+    "TextureId": 48,
     "Behavior": {
         "type": "armor",
         "Material": "leather",

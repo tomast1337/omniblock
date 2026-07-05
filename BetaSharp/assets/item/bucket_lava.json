@@ -1,8 +1,7 @@
 {
     "ProtocolId": 327,
     "TranslationKey": "bucketLava",
-    "TextureX": 12,
-    "TextureY": 4,
+    "TextureId": 76,
     "CraftingReturnItemProtocolId": 325,
     "Behavior": {
         "type": "bucket",

@@ -1,8 +1,7 @@
 {
     "ProtocolId": 294,
     "TranslationKey": "hoeGold",
-    "TextureX": 4,
-    "TextureY": 8,
+    "TextureId": 132,
     "Behavior": {
         "type": "hoe",
         "Material": "gold"

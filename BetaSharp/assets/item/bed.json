@@ -1,7 +1,6 @@
 {
   "ProtocolId": 355,
-  "TextureX": 13,
-  "TextureY": 2,
+  "TextureId": 45,
   "Behavior": {
     "type": "bed"
   }

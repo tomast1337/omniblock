@@ -1,7 +1,6 @@
 {
   "ProtocolId": 263,
-  "TextureX": 7,
-  "TextureY": 0,
+  "TextureId": 7,
   "Behavior": {
     "type": "coal"
   }

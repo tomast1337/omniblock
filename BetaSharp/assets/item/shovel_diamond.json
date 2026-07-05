@@ -1,8 +1,7 @@
 {
     "ProtocolId": 277,
     "TranslationKey": "shovelDiamond",
-    "TextureX": 3,
-    "TextureY": 5,
+    "TextureId": 83,
     "Behavior": {
         "type": "tool",
         "ToolType": "shovel",

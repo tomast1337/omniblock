@@ -1,7 +1,6 @@
 {
   "ProtocolId": 335,
-  "TextureX": 13,
-  "TextureY": 4,
+  "TextureId": 77,
   "CraftingReturnItemProtocolId": 325,
   "Behavior": {
     "type": "bucket",

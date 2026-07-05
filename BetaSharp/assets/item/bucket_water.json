@@ -1,8 +1,7 @@
 {
     "ProtocolId": 326,
     "TranslationKey": "bucketWater",
-    "TextureX": 11,
-    "TextureY": 4,
+    "TextureId": 75,
     "CraftingReturnItemProtocolId": 325,
     "Behavior": {
         "type": "bucket",

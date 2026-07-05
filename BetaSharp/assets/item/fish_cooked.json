@@ -1,8 +1,7 @@
 {
     "ProtocolId": 350,
     "TranslationKey": "fishCooked",
-    "TextureX": 10,
-    "TextureY": 5,
+    "TextureId": 90,
     "Behavior": {
         "type": "food",
         "HealAmount": 5,

@@ -8,13 +8,19 @@ public static class ItemFactory
         item.setItemName(def.TranslationKey ?? def.Name);
         if (def.MaxStackSize != 64) item.setMaxCount(def.MaxStackSize);
         if (def.MaxDurability > 0) item.setMaxDamage(def.MaxDurability);
-        item.setTexturePosition(def.TextureX, def.TextureY);
+        item.setTextureId(def.TextureId);
         if (def.Handheld) item.setHandheld();
         if (def.HasSubtypes) item.setHasSubtypes(true);
         if (def.Behavior is not null) item.SetBehavior(def.Behavior.Build());
-        if (def.CraftingReturnItemProtocolId.HasValue)
-            item.setCraftingReturnItem(Item.ITEMS[def.CraftingReturnItemProtocolId.Value]!);
 
         return item;
+    }
+
+    public static void ResolveCrossReferences(ItemDefinition def)
+    {
+        if (def.CraftingReturnItemProtocolId is { } returnId)
+        {
+            Item.ITEMS[def.ProtocolId]!.setCraftingReturnItem(Item.ITEMS[returnId]!);
+        }
     }
 }

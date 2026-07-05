@@ -1,8 +1,7 @@
 {
     "ProtocolId": 268,
     "TranslationKey": "swordWood",
-    "TextureX": 0,
-    "TextureY": 4,
+    "TextureId": 64,
     "Behavior": {
         "type": "sword",
         "Material": "wood"

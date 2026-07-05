@@ -1,7 +1,6 @@
 {
   "ProtocolId": 358,
-  "TextureX": 12,
-  "TextureY": 3,
+  "TextureId": 60,
   "Behavior": {
     "type": "map"
   }

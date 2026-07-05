@@ -1,7 +1,6 @@
 {
   "ProtocolId": 332,
-  "TextureX": 14,
-  "TextureY": 0,
+  "TextureId": 14,
   "Behavior": {
     "type": "throwable",
     "MaxCount": 16,

@@ -1,8 +1,7 @@
 {
     "ProtocolId": 313,
     "TranslationKey": "bootsDiamond",
-    "TextureX": 3,
-    "TextureY": 3,
+    "TextureId": 51,
     "Behavior": {
         "type": "armor",
         "Material": "diamond",

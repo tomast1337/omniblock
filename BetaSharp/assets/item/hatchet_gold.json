@@ -1,8 +1,7 @@
 {
     "ProtocolId": 286,
     "TranslationKey": "hatchetGold",
-    "TextureX": 4,
-    "TextureY": 7,
+    "TextureId": 116,
     "Behavior": {
         "type": "tool",
         "ToolType": "axe",

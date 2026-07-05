@@ -1,8 +1,7 @@
 {
     "ProtocolId": 274,
     "TranslationKey": "pickaxeStone",
-    "TextureX": 1,
-    "TextureY": 6,
+    "TextureId": 97,
     "Behavior": {
         "type": "tool",
         "ToolType": "pickaxe",

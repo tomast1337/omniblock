@@ -1,8 +1,7 @@
 {
     "ProtocolId": 310,
     "TranslationKey": "helmetDiamond",
-    "TextureX": 3,
-    "TextureY": 0,
+    "TextureId": 3,
     "Behavior": {
         "type": "armor",
         "Material": "diamond",

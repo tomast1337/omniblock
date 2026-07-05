@@ -1,7 +1,6 @@
 {
   "ProtocolId": 325,
-  "TextureX": 10,
-  "TextureY": 4,
+  "TextureId": 74,
   "Behavior": {
     "type": "bucket",
     "Liquid": "empty"

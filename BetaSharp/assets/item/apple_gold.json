@@ -1,8 +1,7 @@
 {
     "ProtocolId": 322,
     "TranslationKey": "appleGold",
-    "TextureX": 11,
-    "TextureY": 0,
+    "TextureId": 11,
     "Behavior": {
         "type": "food",
         "HealAmount": 42,

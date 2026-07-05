@@ -1,7 +1,6 @@
 {
   "ProtocolId": 321,
-  "TextureX": 10,
-  "TextureY": 1,
+  "TextureId": 26,
   "Behavior": {
     "type": "painting"
   }

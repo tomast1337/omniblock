@@ -1,8 +1,7 @@
 {
     "ProtocolId": 304,
     "TranslationKey": "leggingsChain",
-    "TextureX": 1,
-    "TextureY": 2,
+    "TextureId": 33,
     "Behavior": {
         "type": "armor",
         "Material": "chain",

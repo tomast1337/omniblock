@@ -1,6 +1,5 @@
 {
     "ProtocolId": 334,
     "TranslationKey": "Leather",
-    "TextureX": 7,
-    "TextureY": 6
+    "TextureId": 103
 }

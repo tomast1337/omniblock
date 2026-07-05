@@ -1,7 +1,6 @@
 {
   "ProtocolId": 2256,
-  "TextureX": 0,
-  "TextureY": 15,
+  "TextureId": 240,
   "Behavior": {
     "type": "record",
     "RecordName": "13"

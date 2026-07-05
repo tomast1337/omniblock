@@ -1,7 +1,6 @@
 {
   "ProtocolId": 331,
-  "TextureX": 8,
-  "TextureY": 3,
+  "TextureId": 56,
   "Behavior": {
     "type": "redstone"
   }

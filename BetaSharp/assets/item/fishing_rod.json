@@ -1,8 +1,7 @@
 {
     "ProtocolId": 346,
     "TranslationKey": "fishingRod",
-    "TextureX": 5,
-    "TextureY": 4,
+    "TextureId": 69,
     "Behavior": {
         "type": "fishing_rod"
     }

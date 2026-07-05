@@ -1,6 +1,5 @@
 {
     "ProtocolId": 266,
     "TranslationKey": "ingotGold",
-    "TextureX": 7,
-    "TextureY": 2
+    "TextureId": 39
 }

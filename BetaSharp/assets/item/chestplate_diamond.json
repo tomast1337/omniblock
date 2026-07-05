@@ -1,8 +1,7 @@
 {
     "ProtocolId": 311,
     "TranslationKey": "chestplateDiamond",
-    "TextureX": 3,
-    "TextureY": 1,
+    "TextureId": 19,
     "Behavior": {
         "type": "armor",
         "Material": "diamond",

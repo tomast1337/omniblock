@@ -1,8 +1,7 @@
 {
     "ProtocolId": 315,
     "TranslationKey": "chestplateGold",
-    "TextureX": 4,
-    "TextureY": 1,
+    "TextureId": 20,
     "Behavior": {
         "type": "armor",
         "Material": "gold",

@@ -1,8 +1,7 @@
 {
     "ProtocolId": 319,
     "TranslationKey": "porkchopRaw",
-    "TextureX": 7,
-    "TextureY": 5,
+    "TextureId": 87,
     "Behavior": {
         "type": "food",
         "HealAmount": 3,

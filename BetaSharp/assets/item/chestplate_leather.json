@@ -1,8 +1,7 @@
 {
     "ProtocolId": 299,
     "TranslationKey": "chestplateLeather",
-    "TextureX": 0,
-    "TextureY": 1,
+    "TextureId": 16,
     "Behavior": {
         "type": "armor",
         "Material": "leather",

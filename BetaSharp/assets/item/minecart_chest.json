@@ -1,8 +1,7 @@
 {
     "ProtocolId": 342,
     "TranslationKey": "minecartChest",
-    "TextureX": 7,
-    "TextureY": 9,
+    "TextureId": 151,
     "Behavior": {
         "type": "minecart",
         "CartType": 1

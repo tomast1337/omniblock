@@ -8,7 +8,7 @@ namespace BetaSharp.Tests.Items;
 public sealed class ItemJsonDumperTests
 {
     private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
-    private static readonly HashSet<string> s_alwaysKeepFields = ["ProtocolId", "TextureX", "TextureY"];
+    private static readonly HashSet<string> s_alwaysKeepFields = ["ProtocolId", "TextureId"];
 
     [Fact]
     public void DumpItemDefinitionsToJson()

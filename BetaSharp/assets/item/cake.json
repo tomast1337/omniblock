@@ -1,8 +1,7 @@
 {
   "ProtocolId": 354,
   "MaxStackSize": 1,
-  "TextureX": 13,
-  "TextureY": 1,
+  "TextureId": 29,
   "Behavior": {
     "type": "reed",
     "BlockId": 92

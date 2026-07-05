@@ -37,4 +37,41 @@ public sealed class ItemRegistryTests
         Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("boots_diamond").id));
         Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("map").id));
     }
+
+    [Fact]
+    public void CraftingReturnItems_AreWiredAfterBoot()
+    {
+        Item bucket = Item.ByName("bucket");
+
+        Assert.Same(bucket, Item.ByName("bucket_water").getContainerItem());
+        Assert.Same(bucket, Item.ByName("bucket_lava").getContainerItem());
+        Assert.Same(bucket, Item.ByName("milk").getContainerItem());
+    }
+
+    [Fact]
+    public void ResolveCrossReferences_ResolvesReferenceToLaterCreatedItem()
+    {
+        // The loader enumerates definitions alphabetically by filename, so a definition can
+        // reference an item whose file sorts after it. Mirror that: create the referencing
+        // item first, its target second, then run the second pass.
+        var referencing = new ItemDefinition
+        {
+            Name = "test_filled_container",
+            ProtocolId = 31900,
+            MaxStackSize = 1,
+            CraftingReturnItemProtocolId = 31901,
+        };
+        var target = new ItemDefinition
+        {
+            Name = "test_empty_container",
+            ProtocolId = 31901,
+        };
+
+        Item.ITEMS[referencing.ProtocolId] = ItemFactory.Create(referencing);
+        Item.ITEMS[target.ProtocolId] = ItemFactory.Create(target);
+        ItemFactory.ResolveCrossReferences(referencing);
+        ItemFactory.ResolveCrossReferences(target);
+
+        Assert.Same(Item.ITEMS[31901], Item.ITEMS[31900]!.getContainerItem());
+    }
 }

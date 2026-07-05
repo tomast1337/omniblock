@@ -1,8 +1,7 @@
 {
     "ProtocolId": 275,
     "TranslationKey": "hatchetStone",
-    "TextureX": 1,
-    "TextureY": 7,
+    "TextureId": 113,
     "Behavior": {
         "type": "tool",
         "ToolType": "axe",

@@ -1,8 +1,7 @@
 {
     "ProtocolId": 316,
     "TranslationKey": "leggingsGold",
-    "TextureX": 4,
-    "TextureY": 2,
+    "TextureId": 36,
     "Behavior": {
         "type": "armor",
         "Material": "gold",

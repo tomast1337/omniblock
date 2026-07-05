@@ -1,7 +1,6 @@
 {
   "ProtocolId": 295,
-  "TextureX": 9,
-  "TextureY": 0,
+  "TextureId": 9,
   "Behavior": {
     "type": "seeds",
     "CropBlockId": 59

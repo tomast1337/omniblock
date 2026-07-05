@@ -1,8 +1,7 @@
 {
     "ProtocolId": 356,
     "TranslationKey": "redstoneRepeater",
-    "TextureX": 6,
-    "TextureY": 5,
+    "TextureId": 86,
     "Behavior": {
         "type": "reed",
         "BlockId": 93

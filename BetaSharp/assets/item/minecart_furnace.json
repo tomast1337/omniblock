@@ -1,8 +1,7 @@
 {
     "ProtocolId": 343,
     "TranslationKey": "minecartFurnace",
-    "TextureX": 7,
-    "TextureY": 10,
+    "TextureId": 167,
     "Behavior": {
         "type": "minecart",
         "CartType": 2

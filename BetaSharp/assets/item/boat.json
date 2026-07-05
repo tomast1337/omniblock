@@ -1,7 +1,6 @@
 {
   "ProtocolId": 333,
-  "TextureX": 8,
-  "TextureY": 8,
+  "TextureId": 136,
   "Behavior": {
     "type": "boat"
   }

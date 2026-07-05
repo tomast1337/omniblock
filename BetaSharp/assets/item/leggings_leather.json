@@ -1,8 +1,7 @@
 {
     "ProtocolId": 300,
     "TranslationKey": "leggingsLeather",
-    "TextureX": 0,
-    "TextureY": 2,
+    "TextureId": 32,
     "Behavior": {
         "type": "armor",
         "Material": "leather",

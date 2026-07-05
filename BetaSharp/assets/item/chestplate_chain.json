@@ -1,8 +1,7 @@
 {
     "ProtocolId": 303,
     "TranslationKey": "chestplateChain",
-    "TextureX": 1,
-    "TextureY": 1,
+    "TextureId": 17,
     "Behavior": {
         "type": "armor",
         "Material": "chain",

@@ -1,8 +1,7 @@
 {
     "ProtocolId": 259,
     "TranslationKey": "flintAndSteel",
-    "TextureX": 5,
-    "TextureY": 0,
+    "TextureId": 5,
     "Behavior": {
         "type": "flint_and_steel"
     }

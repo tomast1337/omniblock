@@ -1,8 +1,7 @@
 {
     "ProtocolId": 317,
     "TranslationKey": "bootsGold",
-    "TextureX": 4,
-    "TextureY": 3,
+    "TextureId": 52,
     "Behavior": {
         "type": "armor",
         "Material": "gold",

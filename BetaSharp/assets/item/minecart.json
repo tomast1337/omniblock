@@ -1,7 +1,6 @@
 {
   "ProtocolId": 328,
-  "TextureX": 7,
-  "TextureY": 8,
+  "TextureId": 135,
   "Behavior": {
     "type": "minecart",
     "CartType": 0

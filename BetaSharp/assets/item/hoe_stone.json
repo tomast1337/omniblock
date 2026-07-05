@@ -1,8 +1,7 @@
 {
     "ProtocolId": 291,
     "TranslationKey": "hoeStone",
-    "TextureX": 1,
-    "TextureY": 8,
+    "TextureId": 129,
     "Behavior": {
         "type": "hoe",
         "Material": "stone"

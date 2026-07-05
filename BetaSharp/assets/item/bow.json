@@ -1,7 +1,6 @@
 {
   "ProtocolId": 261,
-  "TextureX": 5,
-  "TextureY": 1,
+  "TextureId": 21,
   "Behavior": {
     "type": "bow"
   }

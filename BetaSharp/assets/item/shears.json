@@ -1,7 +1,6 @@
 {
   "ProtocolId": 359,
-  "TextureX": 13,
-  "TextureY": 5,
+  "TextureId": 93,
   "Behavior": {
     "type": "shears"
   }

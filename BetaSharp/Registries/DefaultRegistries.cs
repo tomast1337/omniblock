@@ -42,10 +42,18 @@ public static class DefaultRegistries
             throw new AssetLoadException(itemBootLoader.FirstErrorMessage ?? "Failed to load item definitions.");
         }
 
+        // Two-pass construction: create every item first, then resolve cross-references.
+        // CraftingReturnItemProtocolId can point at an item that sorts later in the loader's
+        // alphabetical enumeration — a single-pass loop would deref null through the suppressed `!`.
         foreach (ItemDefinition definition in itemBootLoader)
         {
             Items.Register(definition.ProtocolId, new ResourceLocation(definition.Namespace, definition.Name), definition);
             Item.ITEMS[definition.ProtocolId] = ItemFactory.Create(definition);
+        }
+
+        foreach (ItemDefinition definition in itemBootLoader)
+        {
+            ItemFactory.ResolveCrossReferences(definition);
         }
 
         Stats.Stats.InitializeItemStats();

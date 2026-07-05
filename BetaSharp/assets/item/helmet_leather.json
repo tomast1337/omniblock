@@ -1,8 +1,7 @@
 {
     "ProtocolId": 298,
     "TranslationKey": "helmetLeather",
-    "TextureX": 0,
-    "TextureY": 0,
+    "TextureId": 0,
     "Behavior": {
         "type": "armor",
         "Material": "leather",

@@ -1,7 +1,6 @@
 {
   "ProtocolId": 329,
-  "TextureX": 8,
-  "TextureY": 6,
+  "TextureId": 104,
   "Behavior": {
     "type": "saddle"
   }

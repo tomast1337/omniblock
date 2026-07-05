@@ -1,8 +1,7 @@
 {
     "ProtocolId": 351,
     "TranslationKey": "dyePowder",
-    "TextureX": 14,
-    "TextureY": 4,
+    "TextureId": 78,
     "Behavior": {
         "type": "dye"
     }

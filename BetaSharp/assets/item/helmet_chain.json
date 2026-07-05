@@ -1,8 +1,7 @@
 {
     "ProtocolId": 302,
     "TranslationKey": "helmetChain",
-    "TextureX": 1,
-    "TextureY": 0,
+    "TextureId": 1,
     "Behavior": {
         "type": "armor",
         "Material": "chain",

@@ -1,7 +1,6 @@
 {
   "ProtocolId": 357,
-  "TextureX": 12,
-  "TextureY": 5,
+  "TextureId": 92,
   "Behavior": {
     "type": "food",
     "HealAmount": 1,

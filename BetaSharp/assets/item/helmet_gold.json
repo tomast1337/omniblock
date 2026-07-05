@@ -1,8 +1,7 @@
 {
     "ProtocolId": 314,
     "TranslationKey": "helmetGold",
-    "TextureX": 4,
-    "TextureY": 0,
+    "TextureId": 4,
     "Behavior": {
         "type": "armor",
         "Material": "gold",

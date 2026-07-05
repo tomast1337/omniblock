@@ -1,8 +1,7 @@
 {
     "ProtocolId": 305,
     "TranslationKey": "bootsChain",
-    "TextureX": 1,
-    "TextureY": 3,
+    "TextureId": 49,
     "Behavior": {
         "type": "armor",
         "Material": "chain",
