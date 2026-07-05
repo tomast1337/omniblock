@@ -4,6 +4,6 @@
   "TextureId": 29,
   "Behavior": {
     "type": "reed",
-    "BlockId": 92
+    "PlacesBlock": "betasharp:cake"
   }
 }

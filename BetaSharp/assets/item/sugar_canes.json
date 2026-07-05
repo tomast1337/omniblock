@@ -1,9 +1,9 @@
 {
-    "ProtocolId": 338,
-    "TranslationKey": "sugarCanes",
-    "TextureId": 27,
-    "Behavior": {
-        "type": "reed",
-        "BlockId": 83
-    }
+  "ProtocolId": 338,
+  "TranslationKey": "sugarCanes",
+  "TextureId": 27,
+  "Behavior": {
+    "type": "reed",
+    "PlacesBlock": "betasharp:reeds"
+  }
 }

@@ -3,6 +3,6 @@
   "TextureId": 9,
   "Behavior": {
     "type": "seeds",
-    "CropBlockId": 59
+    "PlacesBlock": "betasharp:crops"
   }
 }

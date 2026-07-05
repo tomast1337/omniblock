@@ -1,9 +1,9 @@
 {
-    "ProtocolId": 356,
-    "TranslationKey": "redstoneRepeater",
-    "TextureId": 86,
-    "Behavior": {
-        "type": "reed",
-        "BlockId": 93
-    }
+  "ProtocolId": 356,
+  "TranslationKey": "redstoneRepeater",
+  "TextureId": 86,
+  "Behavior": {
+    "type": "reed",
+    "PlacesBlock": "betasharp:diode"
+  }
 }

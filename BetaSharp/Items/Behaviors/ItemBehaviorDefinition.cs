@@ -162,14 +162,22 @@ public sealed class DoorBehaviorDefinition : ItemBehaviorDefinition
 
 public sealed class SeedsBehaviorDefinition : ItemBehaviorDefinition
 {
-    public int CropBlockId { get; init; }
-    public override IItemBehavior Build() => new SeedsBehavior(CropBlockId);
+    public string? PlacesBlock { get; init; }
+    public override IItemBehavior Build()
+    {
+        var block = Block.ByName(PlacesBlock!);
+        return new SeedsBehavior(block!.id);
+    }
 }
 
 public sealed class ReedBehaviorDefinition : ItemBehaviorDefinition
 {
-    public int BlockId { get; init; }
-    public override IItemBehavior Build() => new ReedBehavior(Block.Blocks[BlockId]);
+    public string? PlacesBlock { get; init; }
+    public override IItemBehavior Build()
+    {
+        var block = Block.ByName(PlacesBlock!);
+        return new ReedBehavior(block!);
+    }
 }
 
 public sealed class ThrowableBehaviorDefinition : ItemBehaviorDefinition
