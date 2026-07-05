@@ -11,7 +11,8 @@ public sealed class RegistryDefinition<T>(
     RegistryKey<T> key,
     string assetPath,
     LoadLocations locations = LoadLocations.AllData,
-    bool isReloadable = true, bool serversideOnly = false) where T : class, IDataAsset
+    bool isReloadable = true, bool serversideOnly = false,
+    Func<string, LoadLocations, DataAssetLoader>? loaderFactory = null) where T : class, IDataAsset
 {
     public RegistryKey<T> Key { get; } = key;
     internal string AssetPath { get; } = assetPath;
@@ -30,5 +31,10 @@ public sealed class RegistryDefinition<T>(
     /// </summary>
     public bool CanSync { get; } = !(serversideOnly || locations == LoadLocations.Resourcepack);
 
-    internal DataAssetLoader<T> CreateLoader() => new(AssetPath, Locations , !CanSync);
+    /// <summary>
+    /// Builds this registry's loader — <see cref="DataAssetLoader{T}"/> by default (auto-incrementing IDs), or
+    /// <paramref name="loaderFactory"/>'s custom loader when this registry needs explicit numeric IDs instead
+    /// (e.g. items — <see cref="DataAssetLoader{T}.GetId"/>() always returns -1, unsuitable for a fixed protocol-ID space).
+    /// </summary>
+    internal DataAssetLoader CreateLoader() => loaderFactory is not null ? loaderFactory(AssetPath, Locations) : new DataAssetLoader<T>(AssetPath, Locations, !CanSync);
 }

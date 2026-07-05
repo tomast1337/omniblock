@@ -3,6 +3,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Registries.Data;
 using BetaSharp.Rules;
 using BetaSharp.Worlds.Generation.Biomes;
 
@@ -34,9 +35,16 @@ public static class DefaultRegistries
         ToolMaterialRegistry.LoadFrom(assetsPath);
         ArmorMaterialRegistry.LoadFrom(assetsPath);
 
-        ItemDefinitionJsonLoader.LoadInto(Items, assetsPath);
-        foreach (ItemDefinition definition in Items)
+        var itemBootLoader = new ItemDefinitionJsonLoader(RegistryDefinitions.Items.AssetPath, LoadLocations.Assets);
+        itemBootLoader.LoadFromPaths(null, null, null);
+        if (itemBootLoader.HasErrors)
         {
+            throw new AssetLoadException(itemBootLoader.FirstErrorMessage ?? "Failed to load item definitions.");
+        }
+
+        foreach (ItemDefinition definition in itemBootLoader)
+        {
+            Items.Register(definition.ProtocolId, new ResourceLocation(definition.Namespace, definition.Name), definition);
             Item.ITEMS[definition.ProtocolId] = ItemFactory.Create(definition);
         }
 
@@ -56,6 +64,7 @@ public static class DefaultRegistries
         RegistryAccess.AddBuiltIn(RegistryKeys.Items, Items);
         RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
         RegistryAccess.AddDynamic(RegistryDefinitions.Recipes);
+        RegistryAccess.AddDynamic(RegistryDefinitions.Items);
 
         FreezeAll();
     }

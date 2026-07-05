@@ -20,7 +20,7 @@ public sealed class ItemJsonDumperTests
 
         _ = Item.ByName("stick").id;
 
-        string outDir = Path.Combine(FindRepoRoot(), "BetaSharp", "assets", "item", "betasharp");
+        string outDir = Path.Combine(FindRepoRoot(), "BetaSharp", "assets", "item");
         Directory.CreateDirectory(outDir);
 
         JsonElement fullDefaults = JsonSerializer.SerializeToElement(new ItemDefinition { ProtocolId = 0 }, s_options);

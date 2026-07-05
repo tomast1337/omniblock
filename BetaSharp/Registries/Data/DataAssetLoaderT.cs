@@ -26,7 +26,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     /// Creates a copy of this loader with all currently-loaded assets, then applies
     /// <paramref name="worldDatapackPath"/> on top. The original loader is unaffected.
     /// </summary>
-    internal DataAssetLoader<T>? CloneForWorldDatapacks(string worldDatapackPath)
+    internal override DataAssetLoader<T>? CloneForWorldDatapacks(string worldDatapackPath)
     {
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
         var clone = new DataAssetLoader<T>(_path, Locations, _allowUnhandled);
