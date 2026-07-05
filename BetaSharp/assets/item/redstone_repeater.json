@@ -3,7 +3,7 @@
   "TranslationKey": "redstoneRepeater",
   "TextureId": 86,
   "Behavior": {
-    "type": "reed",
+    "type": "place_block",
     "PlacesBlock": "betasharp:diode"
   }
 }

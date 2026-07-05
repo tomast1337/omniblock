@@ -23,7 +23,7 @@ namespace BetaSharp.Items.Behaviors;
 [JsonDerivedType(typeof(BedBehaviorDefinition), "bed")]
 [JsonDerivedType(typeof(DoorBehaviorDefinition), "door")]
 [JsonDerivedType(typeof(SeedsBehaviorDefinition), "seeds")]
-[JsonDerivedType(typeof(ReedBehaviorDefinition), "reed")]
+[JsonDerivedType(typeof(PlaceBlockBehaviorDefinition), "place_block")]
 [JsonDerivedType(typeof(ThrowableBehaviorDefinition), "throwable")]
 [JsonDerivedType(typeof(DyeBehaviorDefinition), "dye")]
 [JsonDerivedType(typeof(CoalBehaviorDefinition), "coal")]
@@ -170,13 +170,13 @@ public sealed class SeedsBehaviorDefinition : ItemBehaviorDefinition
     }
 }
 
-public sealed class ReedBehaviorDefinition : ItemBehaviorDefinition
+public sealed class PlaceBlockBehaviorDefinition : ItemBehaviorDefinition
 {
     public string? PlacesBlock { get; init; }
     public override IItemBehavior Build()
     {
         var block = Block.ByName(PlacesBlock!);
-        return new ReedBehavior(block!);
+        return new PlaceBlockBehavior(block!);
     }
 }
 

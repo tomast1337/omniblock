@@ -3,7 +3,7 @@
   "MaxStackSize": 1,
   "TextureId": 29,
   "Behavior": {
-    "type": "reed",
+    "type": "place_block",
     "PlacesBlock": "betasharp:cake"
   }
 }

@@ -4,11 +4,11 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
 
-internal sealed class ReedBehavior : IItemBehavior
+internal sealed class PlaceBlockBehavior : IItemBehavior
 {
     private readonly int _blockId;
 
-    internal ReedBehavior(Block block) => _blockId = block.id;
+    internal PlaceBlockBehavior(Block block) => _blockId = block.id;
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
