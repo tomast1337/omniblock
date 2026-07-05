@@ -31,9 +31,17 @@ public static class DefaultRegistries
     {
         _ = Block.Stone.id;
 
-        string assetsPath = Path.Combine(AppContext.BaseDirectory, "assets");
-        ToolMaterialRegistry.LoadFrom(assetsPath);
-        ArmorMaterialRegistry.LoadFrom(assetsPath);
+        var toolMaterialBootLoader = new DataAssetLoader<ToolMaterialDefinition>(RegistryDefinitions.ToolMaterials.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+        toolMaterialBootLoader.LoadFromPaths(null, null, null);
+        var armorMaterialBootLoader = new DataAssetLoader<ArmorMaterialDefinition>(RegistryDefinitions.ArmorMaterials.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+        armorMaterialBootLoader.LoadFromPaths(null, null, null);
+        if (toolMaterialBootLoader.HasErrors || armorMaterialBootLoader.HasErrors)
+        {
+            throw new AssetLoadException(toolMaterialBootLoader.FirstErrorMessage ?? armorMaterialBootLoader.FirstErrorMessage ?? "Failed to load material definitions.");
+        }
+
+        ToolMaterialRegistry.LoadFrom(toolMaterialBootLoader);
+        ArmorMaterialRegistry.LoadFrom(armorMaterialBootLoader);
 
         var itemBootLoader = new ItemDefinitionJsonLoader(RegistryDefinitions.Items.AssetPath, LoadLocations.Assets);
         itemBootLoader.LoadFromPaths(null, null, null);
@@ -42,9 +50,6 @@ public static class DefaultRegistries
             throw new AssetLoadException(itemBootLoader.FirstErrorMessage ?? "Failed to load item definitions.");
         }
 
-        // Two-pass construction: create every item first, then resolve cross-references.
-        // CraftingReturnItemProtocolId can point at an item that sorts later in the loader's
-        // alphabetical enumeration — a single-pass loop would deref null through the suppressed `!`.
         foreach (ItemDefinition definition in itemBootLoader)
         {
             Items.Register(definition.ProtocolId, new ResourceLocation(definition.Namespace, definition.Name), definition);
@@ -72,6 +77,8 @@ public static class DefaultRegistries
         RegistryAccess.AddBuiltIn(RegistryKeys.Items, Items);
         RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
         RegistryAccess.AddDynamic(RegistryDefinitions.Recipes);
+        RegistryAccess.AddDynamic(RegistryDefinitions.ToolMaterials);
+        RegistryAccess.AddDynamic(RegistryDefinitions.ArmorMaterials);
         RegistryAccess.AddDynamic(RegistryDefinitions.Items);
 
         FreezeAll();

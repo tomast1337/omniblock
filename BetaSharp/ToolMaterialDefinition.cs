@@ -1,6 +1,8 @@
+using BetaSharp.Registries.Data;
+
 namespace BetaSharp;
 
-public sealed class ToolMaterialDefinition
+public sealed class ToolMaterialDefinition : DataAsset
 {
     public int MaxUses { get; init; }
     public float Efficiency { get; init; }

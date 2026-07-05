@@ -20,4 +20,6 @@ public static class RegistryKeys
     public static readonly RegistryKey<GameMode> GameModes = new("betasharp:game_mode");
     public static readonly RegistryKey<RecipeDefinition> Recipes = new("betasharp:recipe");
     public static readonly RegistryKey<ItemDefinition> Items = new("betasharp:item");
+    public static readonly RegistryKey<ToolMaterialDefinition> ToolMaterials = new("betasharp:item_material");
+    public static readonly RegistryKey<ArmorMaterialDefinition> ArmorMaterials = new("betasharp:armor_material");
 }
