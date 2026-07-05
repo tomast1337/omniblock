@@ -12,8 +12,6 @@ internal sealed class DoorBehavior : IItemBehavior
 
     internal DoorBehavior(Material doorMaterial) => _doorMaterial = doorMaterial;
 
-    public void Apply(Item item) => item.maxCount = 1;
-
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int side)
     {
         if (side != 1)
