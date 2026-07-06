@@ -209,8 +209,6 @@ public partial class BetaSharp :
     {
         LoadVersion();
         Translations.Init();
-
-        Bootstrap.Initialize();
         MetricRegistry.Bootstrap(typeof(ClientMetrics));
         MetricRegistry.Bootstrap(typeof(RenderMetrics));
 
@@ -1925,6 +1923,7 @@ public partial class BetaSharp :
 
         PlayerNameValidator.Validate(result.Name);
 
+        Bootstrap.Initialize();
         StartMainThread(result.Name, result.Session);
     }
 
