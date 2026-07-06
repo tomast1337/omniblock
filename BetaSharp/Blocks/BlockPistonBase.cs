@@ -183,7 +183,7 @@ public class BlockPistonBase : Block
                         _deaf = true;
                     }
                     else if (targetId > 0 && CanMoveBlock(targetId, @event.World, targetX, targetY, targetZ, false) &&
-                             (Blocks[targetId].getPistonBehavior() == 0 || targetId == Piston.id || targetId == StickyPiston.id))
+                             (Blocks[targetId].getPistonBehavior() == PistonBehavior.Normal || targetId == Piston.id || targetId == StickyPiston.id))
                     {
                         _deaf = false;
                         @event.World.Writer.SetBlock(headX, headY, headZ, 0);
@@ -286,8 +286,8 @@ public class BlockPistonBase : Block
         if (id != Piston.id && id != StickyPiston.id)
         {
             if (Math.Abs(Blocks[id].getHardness() - (-1.0F)) < 0.001F) return false;
-            if (Blocks[id].getPistonBehavior() == 2) return false;
-            if (!allowBreaking && Blocks[id].getPistonBehavior() == 1) return false;
+            if (Blocks[id].getPistonBehavior() == PistonBehavior.Unpushable) return false;
+            if (!allowBreaking && Blocks[id].getPistonBehavior() == PistonBehavior.Destroy) return false;
         }
         else if (IsExtended(ctx.Reader.GetBlockMeta(x, y, z))) return false;
 
@@ -316,7 +316,7 @@ public class BlockPistonBase : Block
                 return false;
             }
 
-            if (Blocks[blockId].getPistonBehavior() == 1) return true;
+            if (Blocks[blockId].getPistonBehavior() == PistonBehavior.Destroy) return true;
 
             if (pushCount == 12) return false;
 
@@ -348,7 +348,7 @@ public class BlockPistonBase : Block
                         return false;
                     }
 
-                    if (Blocks[blockId].getPistonBehavior() != 1)
+                    if (Blocks[blockId].getPistonBehavior() != PistonBehavior.Destroy)
                     {
                         if (pushCount == 12)
                         {

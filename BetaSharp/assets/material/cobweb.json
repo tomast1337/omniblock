@@ -1,0 +1,5 @@
+{
+    "MapColor": "cloth",
+    "IsHandHarvestable": false,
+    "PistonBehavior": "Destroy"
+}

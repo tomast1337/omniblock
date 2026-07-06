@@ -1,0 +1,7 @@
+{
+    "MapColor": "foliage",
+    "IsSolid": false,
+    "BlocksVision": false,
+    "BlocksMovement": false,
+    "PistonBehavior": "Destroy"
+}

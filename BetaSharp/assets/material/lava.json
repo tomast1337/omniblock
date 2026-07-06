@@ -1,0 +1,8 @@
+{
+    "MapColor": "tnt",
+    "IsFluid": true,
+    "IsSolid": false,
+    "BlocksMovement": false,
+    "IsReplaceable": true,
+    "PistonBehavior": "Destroy"
+}

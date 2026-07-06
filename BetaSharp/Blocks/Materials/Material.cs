@@ -1,94 +1,57 @@
 using BetaSharp.Worlds.Maps;
 
-namespace BetaSharp.Blocks.Materials
+namespace BetaSharp.Blocks.Materials;
+
+/// <summary>
+/// Immutable physical properties shared by blocks, loaded from <c>assets/material/*.json</c>.
+/// <para>
+/// Instances are canonical: every key maps to exactly one instance for the lifetime of the
+/// process (built once by <see cref="MaterialRegistry"/>), so reference equality
+/// (<c>material == Material.Water</c>) is the correct comparison. Do not construct materials
+/// outside the registry.
+/// </para>
+/// </summary>
+public sealed class Material
 {
-    public class Material
-    {
-        public static readonly Material Air = new MaterialTransparent(MapColor.Air);
-        public static readonly Material SolidOrganic = new(MapColor.Grass);
-        public static readonly Material Soil = new(MapColor.Dirt);
-        public static readonly Material Wood = new Material(MapColor.Wood).SetBurning();
-        public static readonly Material Stone = new Material(MapColor.Stone).SetRequiresTool();
-        public static readonly Material Metal = new Material(MapColor.Iron).SetRequiresTool();
-        public static readonly Material Water = new MaterialLiquid(MapColor.Water).SetDestroyPistonBehavior();
-        public static readonly Material Lava = new MaterialLiquid(MapColor.TNT).SetDestroyPistonBehavior();
-        public static readonly Material Leaves = new Material(MapColor.Foliage).SetBurning().SetTransparent().SetDestroyPistonBehavior();
-        public static readonly Material Plant = new MaterialLogic(MapColor.Foliage).SetDestroyPistonBehavior();
-        public static readonly Material Sponge = new(MapColor.Cloth);
-        public static readonly Material Wool = new Material(MapColor.Cloth).SetBurning();
-        public static readonly Material Fire = new MaterialTransparent(MapColor.Air).SetDestroyPistonBehavior();
-        public static readonly Material Sand = new(MapColor.Sand);
-        public static readonly Material PistonBreakable = new MaterialLogic(MapColor.Air).SetDestroyPistonBehavior();
-        public static readonly Material Glass = new Material(MapColor.Air).SetTransparent();
-        public static readonly Material Tnt = new Material(MapColor.TNT).SetBurning().SetTransparent();
-        public static readonly Material Foliage = new Material(MapColor.Foliage).SetDestroyPistonBehavior();
-        public static readonly Material Ice = new Material(MapColor.Ice).SetTransparent();
-        public static readonly Material SnowLayer = new MaterialLogic(MapColor.Snow).SetReplaceable().SetTransparent().SetRequiresTool().SetDestroyPistonBehavior();
-        public static readonly Material SnowBlock = new Material(MapColor.Snow).SetRequiresTool();
-        public static readonly Material Cactus = new Material(MapColor.Foliage).SetTransparent().SetDestroyPistonBehavior();
-        public static readonly Material Clay = new(MapColor.Clay);
-        public static readonly Material Pumpkin = new Material(MapColor.Foliage).SetDestroyPistonBehavior();
-        public static readonly Material NetherPortal = new MaterialPortal(MapColor.Air).SetUnpushablePistonBehavior();
-        public static readonly Material Cake = new Material(MapColor.Air).SetDestroyPistonBehavior();
-        public static readonly Material Cobweb = new Material(MapColor.Cloth).SetRequiresTool().SetDestroyPistonBehavior();
-        public static readonly Material Piston = new Material(MapColor.Stone).SetUnpushablePistonBehavior();
+    public static Material Air => MaterialRegistry.Get("air");
+    public static Material SolidOrganic => MaterialRegistry.Get("solid_organic");
+    public static Material Soil => MaterialRegistry.Get("soil");
+    public static Material Wood => MaterialRegistry.Get("wood");
+    public static Material Stone => MaterialRegistry.Get("stone");
+    public static Material Metal => MaterialRegistry.Get("metal");
+    public static Material Water => MaterialRegistry.Get("water");
+    public static Material Lava => MaterialRegistry.Get("lava");
+    public static Material Leaves => MaterialRegistry.Get("leaves");
+    public static Material Plant => MaterialRegistry.Get("plant");
+    public static Material Sponge => MaterialRegistry.Get("sponge");
+    public static Material Wool => MaterialRegistry.Get("wool");
+    public static Material Fire => MaterialRegistry.Get("fire");
+    public static Material Sand => MaterialRegistry.Get("sand");
+    public static Material PistonBreakable => MaterialRegistry.Get("piston_breakable");
+    public static Material Glass => MaterialRegistry.Get("glass");
+    public static Material Tnt => MaterialRegistry.Get("tnt");
+    public static Material Foliage => MaterialRegistry.Get("foliage");
+    public static Material Ice => MaterialRegistry.Get("ice");
+    public static Material SnowLayer => MaterialRegistry.Get("snow_layer");
+    public static Material SnowBlock => MaterialRegistry.Get("snow_block");
+    public static Material Cactus => MaterialRegistry.Get("cactus");
+    public static Material Clay => MaterialRegistry.Get("clay");
+    public static Material Pumpkin => MaterialRegistry.Get("pumpkin");
+    public static Material NetherPortal => MaterialRegistry.Get("nether_portal");
+    public static Material Cake => MaterialRegistry.Get("cake");
+    public static Material Cobweb => MaterialRegistry.Get("cobweb");
+    public static Material Piston => MaterialRegistry.Get("piston");
 
-        private bool _transparent;
+    public required MapColor MapColor { get; init; }
+    public bool IsFluid { get; init; }
+    public bool IsSolid { get; init; } = true;
+    public bool BlocksVision { get; init; } = true;
+    public bool BlocksMovement { get; init; } = true;
+    public bool IsBurnable { get; init; }
+    public bool IsReplaceable { get; init; }
+    public bool IsHandHarvestable { get; init; } = true;
+    public bool IsTransparent { get; init; }
+    public PistonBehavior PistonBehavior { get; init; }
 
-        public MapColor MapColor { get; }
-        public virtual bool IsFluid => false;
-        public virtual bool IsSolid => true;
-        public virtual bool BlocksVision => true;
-        public virtual bool BlocksMovement => true;
-        public bool IsBurnable { get; private set; }
-
-        public bool IsReplaceable { get; private set; }
-
-        public bool IsHandHarvestable { get; private set; } = true;
-
-        public int PistonBehavior { get; private set; }
-
-        public bool Suffocates => _transparent ? false : BlocksMovement;
-
-        public Material(MapColor mapColor)
-        {
-            MapColor = mapColor;
-        }
-
-        private Material SetTransparent()
-        {
-            _transparent = true;
-            return this;
-        }
-
-        private Material SetRequiresTool()
-        {
-            IsHandHarvestable = false;
-            return this;
-        }
-
-        private Material SetBurning()
-        {
-            IsBurnable = true;
-            return this;
-        }
-
-        public Material SetReplaceable()
-        {
-            IsReplaceable = true;
-            return this;
-        }
-
-        protected Material SetDestroyPistonBehavior()
-        {
-            PistonBehavior = 1;
-            return this;
-        }
-
-        protected Material SetUnpushablePistonBehavior()
-        {
-            PistonBehavior = 2;
-            return this;
-        }
-    }
+    public bool Suffocates => !IsTransparent && BlocksMovement;
 }

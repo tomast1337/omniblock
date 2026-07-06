@@ -13,15 +13,15 @@ namespace BetaSharp.Blocks;
 
 public class Block
 {
-    public static readonly BlockSoundGroup SoundPowderFootstep = new("stone", 1.0F, 1.0F);
-    public static readonly BlockSoundGroup SoundWoodFootstep = new("wood", 1.0F, 1.0F);
-    public static readonly BlockSoundGroup SoundGravelFootstep = new("gravel", 1.0F, 1.0F);
-    public static readonly BlockSoundGroup SoundGrassFootstep = new("grass", 1.0F, 1.0F);
-    public static readonly BlockSoundGroup SoundStoneFootstep = new("stone", 1.0F, 1.0F);
-    public static readonly BlockSoundGroup SoundMetalFootstep = new("stone", 1.0F, 1.5F);
-    public static readonly BlockSoundGroup SoundGlassFootstep = new("stone", 1.0F, 1.0F, "random.glass");
-    public static readonly BlockSoundGroup SoundClothFootstep = new("cloth", 1.0F, 1.0F);
-    public static readonly BlockSoundGroup SoundSandFootstep = new("sand", 1.0F, 1.0F, "step.gravel");
+    public static BlockSoundGroup SoundPowderFootstep => SoundGroupRegistry.Get("powder");
+    public static BlockSoundGroup SoundWoodFootstep => SoundGroupRegistry.Get("wood");
+    public static BlockSoundGroup SoundGravelFootstep => SoundGroupRegistry.Get("gravel");
+    public static BlockSoundGroup SoundGrassFootstep => SoundGroupRegistry.Get("grass");
+    public static BlockSoundGroup SoundStoneFootstep => SoundGroupRegistry.Get("stone");
+    public static BlockSoundGroup SoundMetalFootstep => SoundGroupRegistry.Get("metal");
+    public static BlockSoundGroup SoundGlassFootstep => SoundGroupRegistry.Get("glass");
+    public static BlockSoundGroup SoundClothFootstep => SoundGroupRegistry.Get("cloth");
+    public static BlockSoundGroup SoundSandFootstep => SoundGroupRegistry.Get("sand");
 
     public static readonly Block[] Blocks = new Block[256];
     public static readonly bool[] BlocksRandomTick = new bool[256];
@@ -628,5 +628,5 @@ public class Block
         return this;
     }
 
-    public virtual int getPistonBehavior() => material.PistonBehavior;
+    public virtual PistonBehavior getPistonBehavior() => material.PistonBehavior;
 }

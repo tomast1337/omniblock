@@ -1,0 +1,10 @@
+{
+    "MapColor": "snow",
+    "IsSolid": false,
+    "BlocksVision": false,
+    "BlocksMovement": false,
+    "IsReplaceable": true,
+    "IsTransparent": true,
+    "IsHandHarvestable": false,
+    "PistonBehavior": "Destroy"
+}

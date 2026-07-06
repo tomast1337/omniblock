@@ -255,5 +255,5 @@ public class BlockBed : Block
         if (!isHeadOfBed(@event.Meta)) base.dropStacks(@event);
     }
 
-    public override int getPistonBehavior() => 1;
+    public override PistonBehavior getPistonBehavior() => PistonBehavior.Destroy;
 }

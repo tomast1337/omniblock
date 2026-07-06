@@ -260,5 +260,5 @@ public class BlockRail : Block
         return true;
     }
 
-    public override int getPistonBehavior() => 0;
+    public override PistonBehavior getPistonBehavior() => PistonBehavior.Normal;
 }

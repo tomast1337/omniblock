@@ -1,0 +1,7 @@
+{
+    "MapColor": "air",
+    "IsSolid": false,
+    "BlocksVision": false,
+    "BlocksMovement": false,
+    "PistonBehavior": "Unpushable"
+}

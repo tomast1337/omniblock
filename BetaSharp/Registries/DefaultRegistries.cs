@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -29,6 +30,11 @@ public static class DefaultRegistries
 
     public static void Initialize()
     {
+        // Must load before anything touches Block — its static fields consume
+        // materials and sound groups during type initialization.
+        MaterialRegistry.Initialize();
+        SoundGroupRegistry.Initialize();
+
         _ = Block.Stone.id;
 
         var toolMaterialBootLoader = new DataAssetLoader<ToolMaterialDefinition>(RegistryDefinitions.ToolMaterials.AssetPath, LoadLocations.Assets, allowUnhandled: false);

@@ -1,0 +1,6 @@
+{
+    "MapColor": "foliage",
+    "IsBurnable": true,
+    "IsTransparent": true,
+    "PistonBehavior": "Destroy"
+}

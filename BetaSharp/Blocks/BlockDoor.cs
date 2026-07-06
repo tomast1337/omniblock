@@ -226,5 +226,5 @@ internal class BlockDoor : Block
 
     public static bool isOpen(int meta) => (meta & 4) != 0;
 
-    public override int getPistonBehavior() => 1;
+    public override PistonBehavior getPistonBehavior() => PistonBehavior.Destroy;
 }

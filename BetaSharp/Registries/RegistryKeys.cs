@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Recipes;
@@ -22,4 +23,6 @@ public static class RegistryKeys
     public static readonly RegistryKey<ItemDefinition> Items = new("betasharp:item");
     public static readonly RegistryKey<ToolMaterialDefinition> ToolMaterials = new("betasharp:item_material");
     public static readonly RegistryKey<ArmorMaterialDefinition> ArmorMaterials = new("betasharp:armor_material");
+    public static readonly RegistryKey<MaterialDefinition> Materials = new("betasharp:material");
+    public static readonly RegistryKey<SoundGroupDefinition> SoundGroups = new("betasharp:sound_group");
 }

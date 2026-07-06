@@ -1,0 +1,8 @@
+{
+    "MapColor": "air",
+    "IsSolid": false,
+    "BlocksVision": false,
+    "BlocksMovement": false,
+    "IsReplaceable": true,
+    "PistonBehavior": "Destroy"
+}
