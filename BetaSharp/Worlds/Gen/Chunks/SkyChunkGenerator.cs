@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
 using BetaSharp.Util.Maths.Noise;
@@ -56,7 +57,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public IChunkSource CreateParallelInstance() => new SkyChunkGenerator(_world, _seed, new BiomeSource(_world));
 
-    private SkyChunkGenerator(IWorldContext world, long seed, BiomeSource biomeSource) : this(world,seed)
+    private SkyChunkGenerator(IWorldContext world, long seed, BiomeSource biomeSource) : this(world, seed)
     {
         _biomeSource = biomeSource;
     }
@@ -289,7 +290,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int chunkX, int chunkZ)
     {
-        BlockSand.FallInstantly = true;
+        FallingBlockTicker.FallInstantly = true;
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
         Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
@@ -550,7 +551,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
             }
         }
 
-        BlockSand.FallInstantly = false;
+        FallingBlockTicker.FallInstantly = false;
     }
 
     public bool Save(bool b, LoadingDisplay display) => true;

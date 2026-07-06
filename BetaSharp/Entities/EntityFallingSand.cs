@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -66,7 +67,7 @@ public sealed class EntityFallingSand : Entity
             VelocityZ *= 0.7F;
             VelocityY *= -0.5D;
             MarkDead();
-            if ((!Block.Blocks[BlockId].canPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)) || BlockSand.canFallThrough(new OnTickEvent(World, floorX, floorY - 1, floorZ, 0, BlockId)) ||
+            if ((!Block.Blocks[BlockId].canPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)) || FallingBlockTicker.canFallThrough(new OnTickEvent(World, floorX, floorY - 1, floorZ, 0, BlockId)) ||
                  !World.Writer.SetBlock(floorX, floorY, floorZ, BlockId)) && !World.IsRemote)
             {
                 DropItem(BlockId, 1);

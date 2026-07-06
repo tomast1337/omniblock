@@ -417,13 +417,17 @@ public class Block
 
     public virtual bool hasCollision() => true;
 
-    public virtual void onTick(OnTickEvent e)
+    public IBlockTicker? Ticker { get; private set; }
+
+    public Block SetTicker(IBlockTicker ticker)
     {
+        Ticker = ticker;
+        return this;
     }
 
-    public virtual void randomDisplayTick(OnTickEvent e)
-    {
-    }
+    public virtual void onTick(OnTickEvent e) => Ticker?.OnTick(this, e);
+
+    public virtual void randomDisplayTick(OnTickEvent e) => Ticker?.RandomDisplayTick(this, e);
 
     public virtual void onMetadataChange(OnMetadataChangeEvent ctx)
     {

@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
 using BetaSharp.Util.Maths.Noise;
@@ -121,7 +122,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
     /// <param name="chunkZ">The z-coordinate of the chunk</param>
     public void DecorateTerrain(IChunkSource source, int chunkX, int chunkZ)
     {
-        BlockSand.FallInstantly = true;
+        FallingBlockTicker.FallInstantly = true;
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
         Biome chunkBiome = _biomeSource.GetBiome(blockX + 16, blockZ + 16);
@@ -484,7 +485,7 @@ internal class OverworldChunkGenerator : CommonChunkGenerator, IChunkSource
             }
         }
 
-        BlockSand.FallInstantly = false;
+        FallingBlockTicker.FallInstantly = false;
     }
 
     public bool Save(bool saveEntities, LoadingDisplay display) => true;

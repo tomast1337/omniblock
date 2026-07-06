@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Util.Maths;
 using BetaSharp.Util.Maths.Noise;
 using BetaSharp.Worlds.Chunks;
@@ -65,7 +66,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     public void DecorateTerrain(IChunkSource source, int x, int z)
     {
-        BlockSand.FallInstantly = true;
+        FallingBlockTicker.FallInstantly = true;
         int blockX = x * 16;
         int blockZ = z * 16;
 
@@ -126,7 +127,7 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
             _featureRedMushroom.Generate(_world, _random, featureX, featureY, featureZ);
         }
 
-        BlockSand.FallInstantly = false;
+        FallingBlockTicker.FallInstantly = false;
     }
 
     public bool Save(bool bl, LoadingDisplay display) => true;
