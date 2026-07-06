@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-public class BlockPortal(int id, int textureId) : BlockBreakable(id, textureId, Material.NetherPortal, false)
+public class BlockPortal(int id, int textureId) : Block(id, textureId, Material.NetherPortal)
 {
     private const float Thickness = 2.0F / 16.0F;
     private const float HalfExtent = 0.5F;

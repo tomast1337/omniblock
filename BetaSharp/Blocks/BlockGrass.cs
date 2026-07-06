@@ -1,6 +1,5 @@
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds.ClientData.Colors;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
@@ -9,41 +8,9 @@ public class BlockGrass : Block
     public BlockGrass(int id) : base(id, Material.SolidOrganic)
     {
         TextureId = BlockTextures.GrassSide;
+        setTopBottomTextures(BlockTextures.GrassTop, BlockTextures.Dirt);
+        SetVisuals(new GrassVisualBehavior());
         setTickRandomly(true);
-    }
-
-    public override int GetTexture(Side side) =>
-        side switch
-        {
-            Side.Up => BlockTextures.GrassTop,
-            Side.Down => BlockTextures.Dirt,
-            _ => BlockTextures.GrassSide
-        };
-
-    public override int getColorForFace(int meta, int face) => face == 1 ? GrassColors.getDefaultColor() : 0xFFFFFF;
-
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
-    {
-        switch (side)
-        {
-            case Side.Up:
-                return BlockTextures.GrassTop;
-            case Side.Down:
-                return BlockTextures.Dirt;
-            default:
-                {
-                    Material materialAbove = iBlockReader.GetMaterial(x, y + 1, z);
-                    return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? BlockTextures.GrassSide : BlockTextures.GrassSideSnowy;
-                }
-        }
-    }
-
-    public override int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z)
-    {
-        iBlockReader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
-        double temperature = iBlockReader.GetBiomeSource().TemperatureMap[0];
-        double downfall = iBlockReader.GetBiomeSource().DownfallMap[0];
-        return GrassColors.getColor(temperature, downfall);
     }
 
     public override void onTick(OnTickEvent ctx)

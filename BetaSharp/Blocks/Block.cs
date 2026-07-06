@@ -64,7 +64,8 @@ public class Block
         .SetVariance(TextureVariance.All, TextureVariance.Rotate180);
 
     public static readonly Block Sponge = new BlockSponge(19).setHardness(0.6F).setSoundGroup(SoundGrassFootstep).setBlockName("sponge").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
-    public static readonly Block Glass = new BlockGlass(20, BlockTextures.Glass, Material.Glass, false).setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setBlockName("glass").SetVariance(TextureVariance.Rotate180);
+    public static readonly Block Glass = new Block(20, BlockTextures.Glass, Material.Glass).setNonOpaque().setDropCount(0).SetVisuals(new GlassVisualBehavior(false))
+        .setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setBlockName("glass").SetVariance(TextureVariance.Rotate180);
 
     public static readonly Block LapisOre = new Block(21, BlockTextures.LapisOre, Material.Stone).setDrops(() => Item.ByName("dye_powder").Id, 4, 8, 4).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreLapis")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
@@ -82,7 +83,13 @@ public class Block
     public static readonly BlockDeadBush DeadBush = (BlockDeadBush)new BlockDeadBush(32, BlockTextures.DeadBush).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("deadbush");
     public static readonly Block Piston = new BlockPistonBase(33, BlockTextures.PistonTopNormal, false).setBlockName("pistonBase").IgnoreMetaUpdates();
     public static readonly BlockPistonExtension PistonHead = (BlockPistonExtension)new BlockPistonExtension(34, BlockTextures.PistonTopNormal).IgnoreMetaUpdates();
-    public static readonly Block Wool = new BlockCloth().setHardness(0.8F).setSoundGroup(SoundClothFootstep).setBlockName("cloth").IgnoreMetaUpdates().SetVariance(TextureVariance.None, TextureVariance.FlipBoth);
+    public static readonly Block Wool = new Block(35, 64, Material.Wool).SetVisuals(new ClothVisualBehavior()).preserveMetaOnDrop()
+        .setBlockAlias(
+            "blackWool:15", "redWool:14", "greenWool:13", "brownWool:12",
+            "blueWool:11", "purpleWool:10", "cyanWool:9", "silverWool:8",
+            "grayWool:7", "pinkWool:6", "limeWool:5", "yellowWool:4",
+            "lightBlueWool:3", "magentaWool:2", "orangeWool:1", "whiteWool:0")
+        .setHardness(0.8F).setSoundGroup(SoundClothFootstep).setBlockName("cloth").IgnoreMetaUpdates().SetVariance(TextureVariance.None, TextureVariance.FlipBoth);
     public static readonly BlockPistonMoving MovingPiston = new(36);
     public static readonly BlockPlant Dandelion = (BlockPlant)new BlockPlant(37, BlockTextures.Dandelion).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("flower");
     public static readonly BlockPlant Rose = (BlockPlant)new BlockPlant(38, BlockTextures.Rose).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("rose");
@@ -186,6 +193,9 @@ public class Block
     private int _minDroppedCount = 1;
     private int _maxDroppedCount = 1;
     private int _droppedItemMetaValue;
+    private bool _dropsWithBlockMeta;
+    private bool _isOpaque = true;
+    private string[]? _blockAlias;
 
     static Block()
     {
@@ -258,6 +268,16 @@ public class Block
         return this;
     }
 
+    protected Block setNonOpaque()
+    {
+        // The constructor caches isOpaque() into these arrays before fluent setters run,
+        // so they must be refreshed here.
+        _isOpaque = false;
+        BlocksOpaque[id] = false;
+        BlockLightOpacity[id] = 0;
+        return this;
+    }
+
     protected Block setLuminance(float fractionalValue)
     {
         BlocksLightLuminance[id] = (int)(15.0F * fractionalValue);
@@ -297,6 +317,19 @@ public class Block
     {
         _minDroppedCount = count;
         _maxDroppedCount = count;
+        return this;
+    }
+
+    /// <summary>Makes drops carry the broken block's metadata (e.g. wool color) instead of a fixed value.</summary>
+    protected Block preserveMetaOnDrop()
+    {
+        _dropsWithBlockMeta = true;
+        return this;
+    }
+
+    protected Block setBlockAlias(params string[] aliases)
+    {
+        _blockAlias = aliases;
         return this;
     }
 
@@ -375,27 +408,40 @@ public class Block
         double maxY = BoundingBox.MaxY;
         double maxZ = BoundingBox.MaxZ;
 
-        if (!side.IsValidSide()) return !iBlockReader.IsOpaque(x, y, z);
-
-        return side switch
-        {
-            Side.Down => minY > 0.0D || !iBlockReader.IsOpaque(x, y, z),
-            Side.Up => maxY < 1.0D || !iBlockReader.IsOpaque(x, y, z),
-            Side.North => minZ > 0.0D || !iBlockReader.IsOpaque(x, y, z),
-            Side.South => maxZ < 1.0D || !iBlockReader.IsOpaque(x, y, z),
-            Side.West => minX > 0.0D || !iBlockReader.IsOpaque(x, y, z),
-            Side.East => maxX < 1.0D || !iBlockReader.IsOpaque(x, y, z),
-            _ => !iBlockReader.IsOpaque(x, y, z)
-        };
+        bool baseVisibility = !side.IsValidSide()
+            ? !iBlockReader.IsOpaque(x, y, z)
+            : side switch
+            {
+                Side.Down => minY > 0.0D || !iBlockReader.IsOpaque(x, y, z),
+                Side.Up => maxY < 1.0D || !iBlockReader.IsOpaque(x, y, z),
+                Side.North => minZ > 0.0D || !iBlockReader.IsOpaque(x, y, z),
+                Side.South => maxZ < 1.0D || !iBlockReader.IsOpaque(x, y, z),
+                Side.West => minX > 0.0D || !iBlockReader.IsOpaque(x, y, z),
+                Side.East => maxX < 1.0D || !iBlockReader.IsOpaque(x, y, z),
+                _ => !iBlockReader.IsOpaque(x, y, z)
+            };
+        return Visuals == null ? baseVisibility : Visuals.IsSideVisible(this, iBlockReader, x, y, z, side, baseVisibility);
     }
 
     public virtual bool isSolidFace(IBlockReader iBlockReader, int x, int y, int z, int face) => iBlockReader.GetMaterial(x, y, z).IsSolid;
 
-    public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side) => GetTexture(side, iBlockReader.GetBlockMeta(x, y, z));
+    public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
+    {
+        int baseTexture = GetTexture(side, iBlockReader.GetBlockMeta(x, y, z));
+        return Visuals == null ? baseTexture : Visuals.GetTextureId(this, iBlockReader, x, y, z, side, baseTexture);
+    }
 
-    public virtual int GetTexture(Side side, int meta) => GetTexture(side);
+    public virtual int GetTexture(Side side, int meta)
+    {
+        int baseTexture = GetTexture(side);
+        return Visuals == null ? baseTexture : Visuals.GetTexture(this, side, meta, baseTexture);
+    }
 
-    public virtual int GetTexture(Side side) => _faceTextureIds?[(int)side] ?? TextureId;
+    public virtual int GetTexture(Side side)
+    {
+        int baseTexture = _faceTextureIds?[(int)side] ?? TextureId;
+        return Visuals == null ? baseTexture : Visuals.GetTexture(this, side, baseTexture);
+    }
 
     public virtual Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
 
@@ -410,7 +456,7 @@ public class Block
 
     public virtual Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
 
-    public virtual bool isOpaque() => true;
+    public virtual bool isOpaque() => _isOpaque;
 
     public virtual bool hasCollision(int meta, bool allowLiquids) => hasCollision();
 
@@ -484,7 +530,7 @@ public class Block
         }
     }
 
-    protected virtual int getDroppedItemMeta(int blockMeta) => _droppedItemMetaValue;
+    protected virtual int getDroppedItemMeta(int blockMeta) => _dropsWithBlockMeta ? blockMeta : _droppedItemMetaValue;
 
     public virtual float getBlastResistance(Entity entity) => resistance / 5.0F;
 
@@ -525,6 +571,14 @@ public class Block
         return this;
     }
 
+    public IBlockVisuals? Visuals { get; private set; }
+
+    public Block SetVisuals(IBlockVisuals visuals)
+    {
+        Visuals = visuals;
+        return this;
+    }
+
     public virtual bool onUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
 
     public virtual void onSteppedOn(OnEntityStepEvent @event)
@@ -543,13 +597,21 @@ public class Block
     {
     }
 
-    public virtual int getColor(int meta) => 0xFFFFFF;
+    public virtual int getColor(int meta) => Visuals == null ? 0xFFFFFF : Visuals.GetColor(this, meta, 0xFFFFFF);
 
-    public virtual int getColorForFace(int meta, int face) => getColor(meta);
+    public virtual int getColorForFace(int meta, int face)
+    {
+        int baseColor = getColor(meta);
+        return Visuals == null ? baseColor : Visuals.GetColorForFace(this, meta, face, baseColor);
+    }
 
-    public virtual int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z) => 0xFFFFFF;
+    public virtual int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z) => Visuals == null ? 0xFFFFFF : Visuals.GetColorMultiplier(this, iBlockReader, x, y, z, 0xFFFFFF);
 
-    public virtual int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta) => getColorMultiplier(iBlockReader, x, y, z);
+    public virtual int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
+    {
+        int baseColor = getColorMultiplier(iBlockReader, x, y, z);
+        return Visuals == null ? baseColor : Visuals.GetColorMultiplier(this, iBlockReader, x, y, z, knownMeta, baseColor);
+    }
 
     public virtual bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => false;
 
@@ -614,7 +676,7 @@ public class Block
         return s_registryNameToId.TryGetValue(location.Path, out int id) ? Blocks[id] : null;
     }
 
-    public virtual IReadOnlyList<string> GetBlockAlias => [];
+    public virtual IReadOnlyList<string> GetBlockAlias => _blockAlias ?? [];
 
     public virtual void onBlockAction(OnBlockActionEvent ctx)
     {

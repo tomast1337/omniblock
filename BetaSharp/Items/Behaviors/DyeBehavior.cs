@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -104,7 +105,7 @@ internal sealed class DyeBehavior : IItemBehavior
     {
         if (target is EntitySheep sheep)
         {
-            int woolColor = BlockCloth.getBlockMeta(itemStack.getDamage());
+            int woolColor = ClothVisualBehavior.getBlockMeta(itemStack.getDamage());
             if (!sheep.IsSheared && sheep.FleeceColor != woolColor)
             {
                 sheep.FleeceColor = woolColor;

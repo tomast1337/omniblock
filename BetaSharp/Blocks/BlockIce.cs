@@ -3,17 +3,22 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockIce : BlockBreakable
+internal class BlockIce : Block
 {
-    public BlockIce(int id, int textureId) : base(id, textureId, Material.Ice, false)
+    public BlockIce(int id, int textureId) : base(id, textureId, Material.Ice)
     {
         Slipperiness = 0.98F;
         setTickRandomly(true);
     }
 
+    public override bool isOpaque() => false;
+
     public override int getRenderLayer() => 1;
 
-    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side) => base.isSideVisible(iBlockReader, x, y, z, 1 - side);
+    // Culls against same-id neighbors like glass, but tests the *opposite* face's geometry —
+    // the flip must happen before the base test, so this cannot be a GlassVisualBehavior.
+    public override bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
+        => iBlockReader.GetBlockId(x, y, z) != id && base.isSideVisible(iBlockReader, x, y, z, 1 - side);
 
     public override void onAfterBreak(OnAfterBreakEvent @event)
     {
