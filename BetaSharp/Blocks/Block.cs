@@ -1,3 +1,4 @@
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
@@ -107,7 +108,9 @@ public class Block
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
     public static readonly Block DiamondBlock = new BlockOreStorage(57, BlockTextures.BlockDiamond).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockDiamond");
-    public static readonly Block CraftingTable = new BlockWorkbench(58).setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("workbench");
+    public static readonly Block CraftingTable = new Block(58, BlockTextures.CraftingTableSide, Material.Wood).setTopBottomTextures(BlockTextures.CraftingTableTop, BlockTextures.OakPlanks)
+        .setFaceTexture(Side.North, BlockTextures.CraftingTableFront).setFaceTexture(Side.West, BlockTextures.CraftingTableFront)
+        .setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("workbench").SetInteractable(new WorkbenchInteractBehavior());
     public static readonly Block Wheat = new BlockCrops(59, BlockTextures.WheatStageBase).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("crops").disableStats().IgnoreMetaUpdates();
     public static readonly Block Farmland = new BlockFarmland(60).setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("farmland");
     public static readonly Block Furnace = new BlockFurnace(61, false).setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setBlockName("furnace").IgnoreMetaUpdates();
@@ -178,8 +181,7 @@ public class Block
     public float Slipperiness;
     public BlockSoundGroup SoundGroup;
     public int TextureId;
-    private int? _topTextureId;
-    private int? _bottomTextureId;
+    private int?[]? _faceTextureIds;
     private Func<int>? _droppedItemIdProvider;
     private int _minDroppedCount = 1;
     private int _maxDroppedCount = 1;
@@ -268,10 +270,12 @@ public class Block
         return this;
     }
 
-    protected Block setTopBottomTextures(int topTextureId, int bottomTextureId)
+    protected Block setTopBottomTextures(int topTextureId, int bottomTextureId) => setFaceTexture(Side.Up, topTextureId).setFaceTexture(Side.Down, bottomTextureId);
+
+    protected Block setFaceTexture(Side side, int textureId)
     {
-        _topTextureId = topTextureId;
-        _bottomTextureId = bottomTextureId;
+        _faceTextureIds ??= new int?[6];
+        _faceTextureIds[(int)side] = textureId;
         return this;
     }
 
@@ -391,12 +395,7 @@ public class Block
 
     public virtual int GetTexture(Side side, int meta) => GetTexture(side);
 
-    public virtual int GetTexture(Side side) => side switch
-    {
-        Side.Up => _topTextureId ?? TextureId,
-        Side.Down => _bottomTextureId ?? TextureId,
-        _ => TextureId
-    };
+    public virtual int GetTexture(Side side) => _faceTextureIds?[(int)side] ?? TextureId;
 
     public virtual Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
 
@@ -518,7 +517,15 @@ public class Block
         return blockId == 0 || Blocks[blockId].material.IsReplaceable;
     }
 
-    public virtual bool onUse(OnUseEvent _) => false;
+    public IBlockInteractable? Interactable { get; private set; }
+
+    public Block SetInteractable(IBlockInteractable interactable)
+    {
+        Interactable = interactable;
+        return this;
+    }
+
+    public virtual bool onUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
 
     public virtual void onSteppedOn(OnEntityStepEvent @event)
     {
