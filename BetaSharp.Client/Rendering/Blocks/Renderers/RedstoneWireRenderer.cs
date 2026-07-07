@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -39,32 +40,32 @@ public class RedstoneWireRenderer : IBlockRenderer
         float maxV = (texV + 15.99F) / 256.0F;
 
         // --- 3. Connection Logic ---
-        bool connectsWest = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y, pos.z, 1) ||
+        bool connectsWest = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y, pos.z, 1) ||
                             (!ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                             BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y - 1, pos.z, -1));
-        bool connectsEast = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y, pos.z, 3) ||
+                             RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y - 1, pos.z, -1));
+        bool connectsEast = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y, pos.z, 3) ||
                             (!ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                             BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y - 1, pos.z, -1));
-        bool connectsNorth = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z - 1, 2) ||
+                             RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y - 1, pos.z, -1));
+        bool connectsNorth = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z - 1, 2) ||
                              (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                              BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z - 1, -1));
-        bool connectsSouth = BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z + 1, 0) ||
+                              RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z - 1, -1));
+        bool connectsSouth = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z + 1, 0) ||
                              (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                              BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z + 1, -1));
+                              RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z + 1, -1));
 
         if (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y + 1, pos.z))
         {
             if (ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y + 1, pos.z, -1))
+                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y + 1, pos.z, -1))
                 connectsWest = true;
             if (ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y + 1, pos.z, -1))
+                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y + 1, pos.z, -1))
                 connectsEast = true;
             if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z - 1, -1))
+                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z - 1, -1))
                 connectsNorth = true;
             if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                BlockRedstoneWire.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z + 1, -1))
+                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z + 1, -1))
                 connectsSouth = true;
         }
 

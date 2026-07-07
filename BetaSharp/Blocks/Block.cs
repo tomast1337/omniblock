@@ -40,6 +40,7 @@ public class Block
     private static readonly LogBehavior s_logBehavior = new();
     private static readonly MeltBehavior s_iceMelt = new(() => Water.id, subtractOpacity: true, () => FlowingWater.id);
     private static readonly MeltBehavior s_snowMelt = new(() => 0);
+    private static readonly RedstoneWireBehavior s_redstoneWire = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -153,7 +154,12 @@ public class Block
     public static readonly Block Spawner = new BlockMobSpawner(52, BlockTextures.Spawner).setHardness(5.0F).setSoundGroup(SoundMetalFootstep).setBlockName("mobSpawner").disableStats();
     public static readonly Block WoodenStairs = new BlockStairs(53, Planks).setBlockName("stairsWood").IgnoreMetaUpdates();
     public static readonly Block Chest = new BlockChest(54).setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("chest").IgnoreMetaUpdates();
-    public static readonly Block RedstoneWire = new BlockRedstoneWire(55, BlockTextures.RedstoneWireCross).setHardness(0.0F).setSoundGroup(SoundPowderFootstep).setBlockName("redstoneDust").disableStats().IgnoreMetaUpdates();
+    public static readonly Block RedstoneWire = new Block(55, BlockTextures.RedstoneWireCross, Material.PistonBreakable)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.RedstoneWire)
+        .SetRedstone(s_redstoneWire).SetPhysics(s_redstoneWire).SetTicker(s_redstoneWire).SetLifecycle(s_redstoneWire).SetVisuals(s_redstoneWire)
+        .setDrops(() => Item.Redstone.id)
+        .setHardness(0.0F).setSoundGroup(SoundPowderFootstep).setBlockName("redstoneDust").disableStats().IgnoreMetaUpdates();
 
     public static readonly Block DiamondOre = new Block(56, BlockTextures.DiamondOre, Material.Stone).setDrops(() => Item.ByName("diamond").Id).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreDiamond")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
@@ -685,6 +691,14 @@ public class Block
         return this;
     }
 
+    public IRedstoneComponent? Redstone { get; private set; }
+
+    public Block SetRedstone(IRedstoneComponent redstone)
+    {
+        Redstone = redstone;
+        return this;
+    }
+
     public virtual bool onUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
 
     public virtual void onSteppedOn(OnEntityStepEvent @event)
@@ -719,9 +733,9 @@ public class Block
         return Visuals == null ? baseColor : Visuals.GetColorMultiplier(this, iBlockReader, x, y, z, knownMeta, baseColor);
     }
 
-    public virtual bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => false;
+    public virtual bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => Redstone != null && Redstone.IsPoweringSide(this, iBlockReader, x, y, z, side);
 
-    public virtual bool canEmitRedstonePower() => false;
+    public virtual bool canEmitRedstonePower() => Redstone != null && Redstone.CanEmitRedstonePower(this);
 
     public virtual bool isFlammable(IBlockReader iBlockReader, int x, int y, int z) => false;
 
@@ -729,7 +743,7 @@ public class Block
     {
     }
 
-    public virtual bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => false;
+    public virtual bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => Redstone != null && Redstone.IsStrongPoweringSide(this, world, x, y, z, side);
 
     public virtual void setupRenderBoundingBox()
     {
