@@ -49,7 +49,7 @@ internal sealed class TNTBehavior : IBlockPhysics, IBlockLifecycle, IBlockIntera
 
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
     {
-        if (@event.Player.GetHand() != null && @event.Player.GetHand().ItemId == Item.FlintAndSteel.id)
+        if (@event.Player.GetHand() != null && @event.Player.GetHand().ItemId == Item.ByName("flint_and_steel").Id)
         {
             @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, 1);
         }

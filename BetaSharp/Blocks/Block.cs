@@ -96,7 +96,7 @@ public class Block
     private static readonly StationaryFluidBehavior s_stationaryFluidBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
-        .setDrops(() => Cobblestone.id)
+        .setLootTable(new LootTable(new LootEntry(() => Cobblestone.id)))
         .setHardness(1.5F)
         .setResistance(10.0F)
         .setSoundGroup(SoundStoneFootstep)
@@ -106,7 +106,7 @@ public class Block
         .SetVisuals(new GrassVisualBehavior())
         .SetTicker(new GrassTickerBehavior())
         .setTickRandomly(true)
-        .setDrops(() => Dirt.id)
+        .setLootTable(new LootTable(new LootEntry(() => Dirt.id)))
         .setHardness(0.6F)
         .setSoundGroup(SoundGrassFootstep)
         .setBlockName("grass")
@@ -152,7 +152,7 @@ public class Block
         .setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("sand").SetVariance(TextureVariance.Rotations);
     public static readonly Block Gravel = new Block(13, BlockTextures.Gravel, Material.Sand)
         .SetTicker(s_fallingBehavior).SetLifecycle(s_fallingBehavior).SetPhysics(s_fallingBehavior).setTickRate(3)
-        .setDrops(() => Random.Shared.Next(10) == 0 ? Item.ByName("flint").Id : Gravel.id)
+        .setLootTable(new LootTable(new LootEntry(() => Gravel.id, weight: 9), new LootEntry(() => Item.ByName("flint").Id, weight: 1)))
         .setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("gravel").SetVariance(TextureVariance.Rotations);
 
     public static readonly Block GoldOre = new Block(14, BlockTextures.GoldOre, Material.Stone).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreGold")
@@ -161,7 +161,7 @@ public class Block
     public static readonly Block IronOre = new Block(15, BlockTextures.IronOre, Material.Stone).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreIron")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
-    public static readonly Block CoalOre = new Block(16, BlockTextures.CoalOre, Material.Stone).setDrops(() => Item.ByName("coal").Id).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreCoal")
+    public static readonly Block CoalOre = new Block(16, BlockTextures.CoalOre, Material.Stone).setLootTable(new LootTable(new LootEntry(() => Item.ByName("coal").Id))).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreCoal")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
     public static readonly Block Log = new Block(17, BlockTextures.LogOakSide, Material.Wood)
@@ -182,7 +182,7 @@ public class Block
     public static readonly Block Glass = new Block(20, BlockTextures.Glass, Material.Glass).setNonOpaque().setDropCount(0).SetVisuals(new GlassVisualBehavior(false))
         .setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setBlockName("glass").SetVariance(TextureVariance.Rotate180);
 
-    public static readonly Block LapisOre = new Block(21, BlockTextures.LapisOre, Material.Stone).setDrops(() => Item.ByName("dye_powder").Id, 4, 8, 4).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreLapis")
+    public static readonly Block LapisOre = new Block(21, BlockTextures.LapisOre, Material.Stone).setLootTable(new LootTable(new LootEntry(() => Item.ByName("dye_powder").Id)), 4, 8, 4).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreLapis")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
     public static readonly Block LapisBlock = new Block(22, BlockTextures.BlockLapis, Material.Stone).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("blockLapis");
@@ -219,7 +219,7 @@ public class Block
         .setSoundGroup(SoundStoneFootstep).setHardness(0.5F).setBlockName("pistonStickyBase").IgnoreMetaUpdates();
     public static readonly Block Cobweb = new Block(30, BlockTextures.Cobweb, Material.Cobweb)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
-        .SetInteractable(s_webBehavior).setDrops(() => Item.ByName("string").Id)
+        .SetInteractable(s_webBehavior).setLootTable(new LootTable(new LootEntry(() => Item.ByName("string").Id)))
         .setOpacity(1).setHardness(4.0F).setBlockName("web");
     public static readonly Block Grass = new Block(31, BlockTextures.TallGrass, Material.Plant)
         .setTickRandomly(true).setBoundingBox(0.5F - 0.4F, 0.0F, 0.5F - 0.4F, 0.5F + 0.4F, 0.8F, 0.5F + 0.4F)
@@ -274,13 +274,13 @@ public class Block
     public static readonly Block IronBlock = new Block(42, BlockTextures.BlockIron, Material.Metal).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockIron");
     public static readonly Block DoubleSlab = new Block(43, BlockTextures.StoneSlabTop, Material.Stone)
         .SetPhysics(s_doubleSlab).SetLifecycle(s_doubleSlab).SetVisuals(s_doubleSlab)
-        .setDrops(() => Slab.id).setDropCount(2).preserveMetaOnDrop()
+        .setLootTable(new LootTable(new LootEntry(() => Slab.id))).setDropCount(2).preserveMetaOnDrop()
         .setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
     public static readonly Block Slab = new Block(44, BlockTextures.StoneSlabTop, Material.Stone)
         .setNonOpaque().setNotFullCube().setOpacity(255)
         .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F)
         .SetPhysics(s_singleSlab).SetLifecycle(s_singleSlab).SetVisuals(s_singleSlab)
-        .setDrops(() => Slab.id).preserveMetaOnDrop()
+        .setLootTable(new LootTable(new LootEntry(() => Slab.id))).preserveMetaOnDrop()
         .setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
     public static readonly Block Bricks = new Block(45, BlockTextures.Bricks, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("brick");
     public static readonly Block TNT = new Block(46, BlockTextures.TntSide, Material.Tnt)
@@ -317,10 +317,10 @@ public class Block
         .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.RedstoneWire)
         .SetRedstone(s_redstoneWire).SetPhysics(s_redstoneWire).SetTicker(s_redstoneWire).SetLifecycle(s_redstoneWire).SetVisuals(s_redstoneWire)
-        .setDrops(() => Item.ByName("redstone").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("redstone").Id)))
         .setHardness(0.0F).setSoundGroup(SoundPowderFootstep).setBlockName("redstoneDust").disableStats().IgnoreMetaUpdates();
 
-    public static readonly Block DiamondOre = new Block(56, BlockTextures.DiamondOre, Material.Stone).setDrops(() => Item.ByName("diamond").Id).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreDiamond")
+    public static readonly Block DiamondOre = new Block(56, BlockTextures.DiamondOre, Material.Stone).setLootTable(new LootTable(new LootEntry(() => Item.ByName("diamond").Id))).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreDiamond")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
     public static readonly Block DiamondBlock = new Block(57, BlockTextures.BlockDiamond, Material.Metal).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockDiamond");
@@ -344,20 +344,20 @@ public class Block
     public static readonly Block LitFurnace = new Block(62, BlockTextures.FurnaceSide, Material.Stone)
         .setHasTileEntity(() => new BlockEntityFurnace())
         .SetInteractable(s_furnaceLit).SetLifecycle(s_furnaceLit).SetPhysics(s_furnaceLit).SetTicker(s_furnaceLit).SetVisuals(s_furnaceLit)
-        .setDrops(() => Furnace.id)
+        .setLootTable(new LootTable(new LootEntry(() => Furnace.id)))
         .setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setLuminance(14.0F / 16.0F).setBlockName("furnace").IgnoreMetaUpdates();
     public static readonly Block Sign = new Block(63, BlockTextures.OakPlanks, Material.Wood)
         .setHasTileEntity(() => new BlockEntitySign())
         .setBoundingBox(0.25F, 0.0F, 0.25F, 0.75F, 1.0F, 0.75F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Entity)
         .SetPhysics(s_standingSign).SetLifecycle(s_tileEntityLifecycle)
-        .setDrops(() => Item.ByName("sign").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("sign").Id)))
         .setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("sign").disableStats().IgnoreMetaUpdates();
     public static readonly Block Door = new Block(64, BlockTextures.DoorWood, Material.Wood)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Door)
         .setPistonBehavior(PistonBehavior.Destroy)
         .SetPhysics(s_woodDoor).SetInteractable(s_woodDoor).SetLifecycle(s_woodDoor).SetVisuals(s_woodDoor)
-        .setDrops(() => Item.ByName("door_wood").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("door_wood").Id)))
         .setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("doorWood").disableStats().IgnoreMetaUpdates();
     public static readonly Block Ladder = new Block(65, BlockTextures.Ladder, Material.PistonBreakable)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Ladder)
@@ -378,7 +378,7 @@ public class Block
         .setBoundingBox(0.25F, 0.0F, 0.25F, 0.75F, 1.0F, 0.75F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Entity)
         .SetPhysics(s_wallSign).SetLifecycle(s_tileEntityLifecycle)
-        .setDrops(() => Item.ByName("sign").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("sign").Id)))
         .setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("sign").disableStats().IgnoreMetaUpdates();
     public static readonly Block Lever = new Block(69, BlockTextures.Lever, Material.PistonBreakable)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Lever)
@@ -397,7 +397,7 @@ public class Block
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Door)
         .setPistonBehavior(PistonBehavior.Destroy)
         .SetPhysics(s_ironDoor).SetInteractable(s_ironDoor).SetLifecycle(s_ironDoor).SetVisuals(s_ironDoor)
-        .setDrops(() => Item.ByName("door_iron").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("door_iron").Id)))
         .setHardness(5.0F).setSoundGroup(SoundMetalFootstep).setBlockName("doorIron").disableStats().IgnoreMetaUpdates();
 
     public static readonly Block WoodenPressurePlate = new Block(72, BlockTextures.OakPlanks, Material.Wood)
@@ -412,14 +412,14 @@ public class Block
     public static readonly Block RedstoneOre = new Block(73, BlockTextures.RedstoneOre, Material.Stone)
         .setTickRate(30)
         .SetTicker(s_redstoneOreBehavior).SetInteractable(s_redstoneOreBehavior)
-        .setDrops(() => Item.ByName("redstone").Id, 4, 5)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("redstone").Id)), 4, 5)
         .setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreRedstone").IgnoreMetaUpdates()
         .SetVariance(TextureVariance.Rotate180, TextureVariance.FlipBoth);
 
     public static readonly Block LitRedstoneOre = new Block(74, BlockTextures.RedstoneOre, Material.Stone)
         .setTickRandomly(true).setTickRate(30)
         .SetTicker(s_redstoneOreBehavior).SetInteractable(s_redstoneOreBehavior)
-        .setDrops(() => Item.ByName("redstone").Id, 4, 5)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("redstone").Id)), 4, 5)
         .setLuminance(10.0F / 16.0F).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreRedstone")
         .IgnoreMetaUpdates()
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
@@ -427,12 +427,12 @@ public class Block
     public static readonly Block RedstoneTorch = new Block(75, BlockTextures.RedstoneTorchUnlit, Material.PistonBreakable)
         .setTickRandomly(true).setTickRate(2).setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Torch)
         .SetPhysics(s_redstoneTorchBehavior).SetLifecycle(s_redstoneTorchBehavior).SetRedstone(s_redstoneTorchBehavior).SetTicker(s_redstoneTorchBehavior).SetVisuals(s_redstoneTorchBehavior)
-        .setDrops(() => LitRedstoneTorch.id)
+        .setLootTable(new LootTable(new LootEntry(() => LitRedstoneTorch.id)))
         .setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
     public static readonly Block LitRedstoneTorch = new Block(76, BlockTextures.RedstoneTorchLit, Material.PistonBreakable)
         .setTickRandomly(true).setTickRate(2).setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Torch)
         .SetPhysics(s_redstoneTorchBehavior).SetLifecycle(s_redstoneTorchBehavior).SetRedstone(s_redstoneTorchBehavior).SetTicker(s_redstoneTorchBehavior).SetVisuals(s_redstoneTorchBehavior)
-        .setDrops(() => LitRedstoneTorch.id)
+        .setLootTable(new LootTable(new LootEntry(() => LitRedstoneTorch.id)))
         .setHardness(0.0F).setLuminance(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
     public static readonly Block Button = new Block(77, BlockTextures.Stone, Material.PistonBreakable)
         .setTickRandomly(true).setTickRate(20)
@@ -449,7 +449,7 @@ public class Block
         .SetVisuals(new GlassVisualBehavior(false)).SetTicker(s_iceMelt).SetLifecycle(s_iceMelt)
         .setHardness(0.5F).setOpacity(3).setSoundGroup(SoundGlassFootstep).setBlockName("ice").SetVariance(TextureVariance.Rotate180);
     public static readonly Block SnowBlock = new Block(80, BlockTextures.Snow, Material.SnowBlock)
-        .setTickRandomly(true).SetTicker(s_snowMelt).setDrops(() => Item.ByName("snowball").Id, 4)
+        .setTickRandomly(true).SetTicker(s_snowMelt).setLootTable(new LootTable(new LootEntry(() => Item.ByName("snowball").Id)), 4)
         .setHardness(0.2F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
 
     public static readonly Block Cactus = new Block(81, BlockTextures.CactusSide, Material.Cactus)
@@ -459,18 +459,18 @@ public class Block
         .setHardness(0.4F).setSoundGroup(SoundClothFootstep).setBlockName("cactus")
         .SetVariance(TextureVariance.All, TextureVariance.All, TextureVariance.Rotate180);
 
-    public static readonly Block Clay = new Block(82, BlockTextures.Clay, Material.Clay).setDrops(() => Item.ByName("clay").Id, 4).setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("clay").SetVariance(TextureVariance.Rotations);
+    public static readonly Block Clay = new Block(82, BlockTextures.Clay, Material.Clay).setLootTable(new LootTable(new LootEntry(() => Item.ByName("clay").Id)), 4).setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("clay").SetVariance(TextureVariance.Rotations);
     public static readonly Block SugarCane = new Block(83, BlockTextures.SugarCane, Material.Plant)
         .setTickRandomly(true).setBoundingBox(0.5F - 6.0F / 16.0F, 0.0F, 0.5F - 6.0F / 16.0F, 0.5F + 6.0F / 16.0F, 1.0F, 0.5F + 6.0F / 16.0F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
         .SetTicker(s_reedBehavior).SetPhysics(s_reedBehavior)
-        .setDrops(() => Item.ByName("sugar_canes").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("sugar_canes").Id)))
         .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("reeds").disableStats();
     public static readonly Block Jukebox = new Block(84, BlockTextures.NoteBlock, Material.Wood)
         .setHasTileEntity(() => new BlockEntityRecordPlayer())
         .setFaceTexture(Side.Up, BlockTextures.JukeboxTop)
         .SetInteractable(s_jukeboxBehavior).SetLifecycle(s_jukeboxBehavior)
-        .setDrops(() => Jukebox.id)
+        .setLootTable(new LootTable(new LootEntry(() => Jukebox.id)))
         .setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("jukebox").IgnoreMetaUpdates();
     public static readonly Block Fence = new Block(85, BlockTextures.OakPlanks, Material.Wood)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Fence)
@@ -485,7 +485,7 @@ public class Block
         .SetPhysics(s_soulSandBehavior).SetInteractable(s_soulSandBehavior)
         .setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("hellsand");
 
-    public static readonly Block Glowstone = new Block(89, BlockTextures.Glowstone, Material.Stone).setDrops(() => Item.ByName("yellow_dust").Id, 2, 4).setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setLuminance(1.0F).setBlockName("lightgem")
+    public static readonly Block Glowstone = new Block(89, BlockTextures.Glowstone, Material.Stone).setLootTable(new LootTable(new LootEntry(() => Item.ByName("yellow_dust").Id)), 2, 4).setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setLuminance(1.0F).setBlockName("lightgem")
         .SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
 
     public static readonly Block NetherPortal = new Block(90, BlockTextures.Portal, Material.NetherPortal)
@@ -509,13 +509,13 @@ public class Block
         .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Repeater)
         .SetRedstone(s_repeaterBehavior).SetTicker(s_repeaterBehavior).SetPhysics(s_repeaterBehavior).SetInteractable(s_repeaterBehavior).SetLifecycle(s_repeaterBehavior).SetVisuals(s_repeaterBehavior)
-        .setDrops(() => Item.ByName("redstone_repeater").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("redstone_repeater").Id)))
         .setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().IgnoreMetaUpdates();
     public static readonly Block PoweredRepeater = new Block(94, 6, Material.PistonBreakable)
         .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Repeater)
         .SetRedstone(s_repeaterBehavior).SetTicker(s_repeaterBehavior).SetPhysics(s_repeaterBehavior).SetInteractable(s_repeaterBehavior).SetLifecycle(s_repeaterBehavior).SetVisuals(s_repeaterBehavior)
-        .setDrops(() => Item.ByName("redstone_repeater").Id)
+        .setLootTable(new LootTable(new LootEntry(() => Item.ByName("redstone_repeater").Id)))
         .setHardness(0.0F).setLuminance(10.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().IgnoreMetaUpdates();
     public static readonly Block Trapdoor = new Block(96, BlockTextures.TrapdoorWood, Material.Wood)
         .setNonOpaque().setNotFullCube()
@@ -534,7 +534,7 @@ public class Block
     public BlockSoundGroup SoundGroup;
     public int TextureId;
     private int?[]? _faceTextureIds;
-    private Func<int>? _droppedItemIdProvider;
+    private LootTable? _lootTable;
     private int _minDroppedCount = 1;
     private int _maxDroppedCount = 1;
     private int _droppedItemMetaValue;
@@ -649,14 +649,12 @@ public class Block
         return this;
     }
 
-    /// <summary>
-    /// Configures a fixed or ranged simple drop. <paramref name="itemId"/> is deferred (invoked only when the
-    /// block actually drops), never evaluated during static field initialization, so it may safely reference
-    /// another block's or item's static field regardless of declaration order.
-    /// </summary>
-    protected Block setDrops(Func<int> itemId, int minCount = 1, int maxCount = -1, int meta = 0)
+    /// <summary>Configures the block's weighted drop table (e.g. gravel's flint chance). Item ids inside
+    /// each <see cref="LootEntry"/> are deferred, so they may safely reference another block's or item's
+    /// static field regardless of declaration order.</summary>
+    protected Block setLootTable(LootTable table, int minCount = 1, int maxCount = -1, int meta = 0)
     {
-        _droppedItemIdProvider = itemId;
+        _lootTable = table;
         _minDroppedCount = minCount;
         _maxDroppedCount = maxCount < 0 ? minCount : maxCount;
         _droppedItemMetaValue = meta;
@@ -892,7 +890,7 @@ public class Block
 
     public virtual int getDroppedItemId(int blockMeta)
     {
-        int defaultId = _droppedItemIdProvider?.Invoke() ?? id;
+        int defaultId = _lootTable == null ? id : _lootTable.Roll(Random.Shared);
         return Lifecycle == null ? defaultId : Lifecycle.GetDroppedItemId(this, blockMeta, defaultId);
     }
 

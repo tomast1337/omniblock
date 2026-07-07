@@ -50,6 +50,23 @@ public sealed class BlockDropsAndTexturesTests
     }
 
     [Fact]
+    public void Gravel_DropsOnlyGravelOrFlint()
+    {
+        bool sawGravel = false;
+        bool sawFlint = false;
+        for (int i = 0; i < 200; i++)
+        {
+            int itemId = Block.Gravel.getDroppedItemId(0);
+            Assert.True(itemId == Block.Gravel.id || itemId == Item.ByName("flint").Id);
+            sawGravel |= itemId == Block.Gravel.id;
+            sawFlint |= itemId == Item.ByName("flint").Id;
+        }
+
+        Assert.True(sawGravel);
+        Assert.True(sawFlint);
+    }
+
+    [Fact]
     public void Bookshelf_DropsNothing() => Assert.Equal(0, Block.Bookshelf.getDroppedItemCount());
 
     [Fact]
