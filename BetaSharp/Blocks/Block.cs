@@ -41,6 +41,8 @@ public class Block
     private static readonly MeltBehavior s_iceMelt = new(() => Water.id, subtractOpacity: true, () => FlowingWater.id);
     private static readonly MeltBehavior s_snowMelt = new(() => 0);
     private static readonly RedstoneWireBehavior s_redstoneWire = new();
+    private static readonly ButtonBehavior s_buttonBehavior = new();
+    private static readonly LeverBehavior s_leverBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -178,7 +180,10 @@ public class Block
     public static readonly Block Rail = new BlockRail(66, BlockTextures.RailStraight, false).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("rail").IgnoreMetaUpdates();
     public static readonly Block CobblestoneStairs = new BlockStairs(67, Cobblestone).setBlockName("stairsStone").IgnoreMetaUpdates();
     public static readonly Block WallSign = new BlockSign(68, typeof(BlockEntitySign), false).setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("sign").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Lever = new BlockLever(69, BlockTextures.Lever).setHardness(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("lever").IgnoreMetaUpdates();
+    public static readonly Block Lever = new Block(69, BlockTextures.Lever, Material.PistonBreakable)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Lever)
+        .SetRedstone(s_leverBehavior).SetPhysics(s_leverBehavior).SetInteractable(s_leverBehavior).SetLifecycle(s_leverBehavior)
+        .setHardness(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("lever").IgnoreMetaUpdates();
 
     public static readonly Block StonePressurePlate = new BlockPressurePlate(70, BlockTextures.Stone, PressurePlateActiviationRule.MOBS, Material.Stone).setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("pressurePlate")
         .IgnoreMetaUpdates();
@@ -198,7 +203,11 @@ public class Block
 
     public static readonly Block RedstoneTorch = new BlockRedstoneTorch(75, BlockTextures.RedstoneTorchUnlit, false).setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
     public static readonly Block LitRedstoneTorch = new BlockRedstoneTorch(76, BlockTextures.RedstoneTorchLit, true).setHardness(0.0F).setLuminance(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
-    public static readonly Block Button = new BlockButton(77, BlockTextures.Stone).setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("button").IgnoreMetaUpdates();
+    public static readonly Block Button = new Block(77, BlockTextures.Stone, Material.PistonBreakable)
+        .setTickRandomly(true).setTickRate(20)
+        .setNonOpaque().setNotFullCube().setNoCollision()
+        .SetRedstone(s_buttonBehavior).SetPhysics(s_buttonBehavior).SetTicker(s_buttonBehavior).SetInteractable(s_buttonBehavior).SetLifecycle(s_buttonBehavior)
+        .setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("button").IgnoreMetaUpdates();
     public static readonly Block Snow = new BlockSnow(78, BlockTextures.Snow).setHardness(0.1F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
     public static readonly Block Ice = new Block(79, BlockTextures.Ice, Material.Ice)
         .setTickRandomly(true).setNonOpaque().setRenderLayer(1).setSlipperiness(0.98F).setDropCount(0)
@@ -705,17 +714,13 @@ public class Block
     {
     }
 
-    public virtual void onBlockBreakStart(OnBlockBreakStartEvent @event)
-    {
-    }
+    public virtual void onBlockBreakStart(OnBlockBreakStartEvent @event) => Interactable?.OnBlockBreakStart(this, @event);
 
     public virtual Vec3D applyVelocity(OnApplyVelocityEvent @event) => Vec3D.Zero;
 
     public void updateBoundingBox(IBlockReader blockReader, int x, int y, int z) => updateBoundingBox(blockReader, null, x, y, z);
 
-    public virtual void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z)
-    {
-    }
+    public virtual void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Physics?.UpdateBoundingBox(this, blockReader, x, y, z);
 
     public virtual int getColor(int meta) => Visuals == null ? 0xFFFFFF : Visuals.GetColor(this, meta, 0xFFFFFF);
 
@@ -745,9 +750,7 @@ public class Block
 
     public virtual bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => Redstone != null && Redstone.IsStrongPoweringSide(this, world, x, y, z, side);
 
-    public virtual void setupRenderBoundingBox()
-    {
-    }
+    public virtual void setupRenderBoundingBox() => Physics?.SetupRenderBoundingBox(this);
 
     public virtual void onAfterBreak(OnAfterBreakEvent ctx)
     {

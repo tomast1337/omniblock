@@ -1,9 +1,17 @@
+using BetaSharp.Worlds.Core.Systems;
+
 namespace BetaSharp.Blocks;
 
 /// <summary>Composable capability for neighbor updates and placement/growth rules.</summary>
 public interface IBlockPhysics
 {
     void NeighborUpdate(Block block, OnTickEvent @event) { }
+
+    /// <summary>Recomputes the block's metadata-driven bounding box for the given position.</summary>
+    void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z) { }
+
+    /// <summary>Sets the bounding box used when the block is rendered as an item (held/dropped).</summary>
+    void SetupRenderBoundingBox(Block block) { }
 
     /// <summary>
     /// Additional placement restriction. Combined with (never replaces) the base
