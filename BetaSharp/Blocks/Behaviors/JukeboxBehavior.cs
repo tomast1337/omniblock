@@ -1,24 +1,22 @@
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Blocks;
+namespace BetaSharp.Blocks.Behaviors;
 
-internal class BlockJukeBox(int id, int textureId) : BlockWithEntity(id, textureId, Material.Wood)
+/// <summary>
+/// Jukebox: right-click ejects the current record (insertion happens from <c>ItemRecord</c>),
+/// metadata 1 marks "record loaded", and breaking ejects before the tile entity is removed.
+/// Assign to the Interactable and Lifecycle slots.
+/// </summary>
+public sealed class JukeboxBehavior : IBlockInteractable, IBlockLifecycle
 {
     private const float DropSpread = 0.7F;
-    private static readonly ILogger<BlockJukeBox> s_logger = BetaSharp.Log.Instance.For<BlockJukeBox>();
+    private static readonly ILogger<JukeboxBehavior> s_logger = BetaSharp.Log.Instance.For<JukeboxBehavior>();
 
-    public override int GetTexture(Side side) => side switch
-    {
-        Side.Up => BlockTextures.JukeboxTop,
-        _ => BlockTextures.NoteBlock
-    };
-
-    public override bool onUse(OnUseEvent @event)
+    public bool OnUse(Block block, OnUseEvent @event)
     {
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0) return false;
 
@@ -66,16 +64,17 @@ internal class BlockJukeBox(int id, int textureId) : BlockWithEntity(id, texture
         level.SpawnEntity(entityItem);
     }
 
-    public override void onBreak(OnBreakEvent @event)
+    public void OnPlaced(Block block, OnPlacedEvent @event)
+    {
+        if (block.getBlockEntity() is { } blockEntity)
+        {
+            @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
+        }
+    }
+
+    public void OnBreak(Block block, OnBreakEvent @event)
     {
         tryEjectRecord(@event.World, @event.X, @event.Y, @event.Z);
-        base.onBreak(@event);
+        @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
     }
-
-    public override void dropStacks(OnDropEvent @event)
-    {
-        if (!@event.World.IsRemote) base.dropStacks(@event);
-    }
-
-    public override BlockEntity getBlockEntity() => new BlockEntityRecordPlayer();
 }

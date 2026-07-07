@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -22,7 +23,7 @@ public sealed class RecordBehavior : IItemBehavior
             return true;
         }
 
-        BlockJukeBox.insertRecord(world, x, y, z, item.Id);
+        JukeboxBehavior.insertRecord(world, x, y, z, item.Id);
         world.Broadcaster.WorldEvent(1005, x, y, z, item.Id);
         itemStack.ConsumeItem(player);
         return true;
