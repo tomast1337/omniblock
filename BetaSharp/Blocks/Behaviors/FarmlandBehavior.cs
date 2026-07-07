@@ -96,8 +96,8 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side switch
     {
-        Side.Up when meta > 0 => BlockTextures.FarmlandWet - 1,
-        Side.Up => BlockTextures.FarmlandWet,
+        Side.Up when meta > 0 => BlockTextures.FarmlandWet,
+        Side.Up => BlockTextures.FarmlandDry,
         _ => BlockTextures.Dirt
     };
 
