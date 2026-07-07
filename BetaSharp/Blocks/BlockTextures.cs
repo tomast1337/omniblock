@@ -57,8 +57,8 @@ public static class BlockTextures
     public const int CraftingTableFront = 60;
     public const int FurnaceFrontLit = 61;
     public const int FurnaceTop = 62;
-    public const int SaplingOak   = 15;
-    public const int SaplingPine  = 63;
+    public const int SaplingOak = 15;
+    public const int SaplingPine = 63;
     public const int SaplingBirch = 79;
     public const int Spawner = 65;
     public const int Snow = 66;
@@ -101,10 +101,11 @@ public static class BlockTextures
     public const int BedEndHead = 152;
     public const int BlockLapis = 144;
     public const int RedstoneWireCross = 164;
-    public const int RailStraight   = 128;
-    public const int PoweredRailOn  = 179;
+    public const int RailStraight = 128;
+    public const int PoweredRailOn = 179;
     public const int PoweredRailOff = 163;
-    public const int DetectorRail   = 195;
+    public const int DetectorRail = 195;
+    public const int RailCorner = 112;
     public const int RepeaterTopUnlit = 131;
     public const int RepeaterTopLit = 147;
     public const int SandstoneSide = 192;

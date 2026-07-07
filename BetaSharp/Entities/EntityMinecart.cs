@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -313,7 +314,7 @@ public class EntityMinecart : Entity, IInventory
         int blockY = MathHelper.Floor(Y);
         int blockZ = MathHelper.Floor(Z);
 
-        if (BlockRail.isRail(World, blockX, blockY - 1, blockZ))
+        if (RailBehavior.IsRail(World, blockX, blockY - 1, blockZ))
         {
             --blockY;
         }
@@ -322,7 +323,7 @@ public class EntityMinecart : Entity, IInventory
         bool shouldEmitSmoke = false;
 
         int railBlockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (BlockRail.isRail(railBlockId))
+        if (RailBehavior.IsRail(railBlockId))
         {
             Vec3D? previousTrackPosition = GetTrackPosition(X, Y, Z);
             int railMeta = World.Reader.GetBlockMeta(blockX, blockY, blockZ);
@@ -337,7 +338,7 @@ public class EntityMinecart : Entity, IInventory
                 poweredRailBraking = !poweredRailActive;
             }
 
-            if (((BlockRail)Block.Blocks[railBlockId]).isAlwaysStraight())
+            if (RailBehavior.IsAlwaysStraight(Block.Blocks[railBlockId]))
             {
                 railMeta &= 7;
             }
@@ -699,19 +700,19 @@ public class EntityMinecart : Entity, IInventory
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (BlockRail.isRail(World, blockX, blockY - 1, blockZ))
+        if (RailBehavior.IsRail(World, blockX, blockY - 1, blockZ))
         {
             --blockY;
         }
 
         int blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!BlockRail.isRail(blockId))
+        if (!RailBehavior.IsRail(blockId))
         {
             return null;
         }
 
         int railMeta = World.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
+        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId]))
         {
             railMeta &= 7;
         }
@@ -755,13 +756,13 @@ public class EntityMinecart : Entity, IInventory
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (BlockRail.isRail(World, blockX, blockY - 1, blockZ))
+        if (RailBehavior.IsRail(World, blockX, blockY - 1, blockZ))
         {
             --blockY;
         }
 
         int blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!BlockRail.isRail(blockId))
+        if (!RailBehavior.IsRail(blockId))
         {
             return null;
         }
@@ -769,7 +770,7 @@ public class EntityMinecart : Entity, IInventory
         int railMeta = World.Reader.GetBlockMeta(blockX, blockY, blockZ);
         y = blockY;
 
-        if (((BlockRail)Block.Blocks[blockId]).isAlwaysStraight())
+        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId]))
         {
             railMeta &= 7;
         }

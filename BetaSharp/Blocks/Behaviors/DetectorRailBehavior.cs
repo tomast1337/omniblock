@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks.Behaviors;
 /// <summary>
 /// Detector rail: powers (metadata bit 8) while a minecart sits inside the detection volume,
 /// re-checking every <c>getTickRate()</c> ticks. Track shape and rendering stay in
-/// <see cref="BlockRail"/>. Assign to the Redstone, Interactable, and Ticker slots.
+/// <see cref="RailBehavior"/>. Assign to the Redstone, Interactable, and Ticker slots.
 /// </summary>
 public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractable, IBlockTicker
 {

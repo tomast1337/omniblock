@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -7,24 +8,21 @@ public class MinecartTrackRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        // Cast the generic block to a BlockRail to access rail-specific methods
-        BlockRail rail = (BlockRail)block;
-
         int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
-        int textureId = rail.GetTexture(0, metadata);
+        int textureId = block.GetTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
         {
             textureId = ctx.OverrideTexture;
         }
 
         // Powered/Detector rails use bit 3 for state, but the first 8 shapes are identical
-        if (rail.isAlwaysStraight())
+        if (RailBehavior.IsAlwaysStraight(block))
         {
             metadata &= 7;
         }
 
-        float luminance = rail.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         int texU = (textureId & 15) << 4;

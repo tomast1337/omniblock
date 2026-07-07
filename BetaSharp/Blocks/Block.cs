@@ -61,6 +61,11 @@ public class Block
     private static readonly SlabBehavior s_doubleSlab = new(true);
     private static readonly StairsBehavior s_woodStairs = new(() => Planks);
     private static readonly StairsBehavior s_cobbleStairs = new(() => Cobblestone);
+    private static readonly DoorBehavior s_woodDoor = new(Material.Wood);
+    private static readonly DoorBehavior s_ironDoor = new(Material.Metal);
+    private static readonly TrapDoorBehavior s_trapDoor = new(Material.Wood);
+    private static readonly RailBehavior s_normalRail = new(false);
+    private static readonly RailBehavior s_poweredRail = new(true);
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -135,8 +140,15 @@ public class Block
         .SetInteractable(s_noteblockBehavior).SetLifecycle(s_noteblockBehavior).SetPhysics(s_noteblockBehavior)
         .setHardness(0.8F).setBlockName("musicBlock").IgnoreMetaUpdates();
     public static readonly Block Bed = new BlockBed(26).setHardness(0.2F).setBlockName("bed").disableStats().IgnoreMetaUpdates();
-    public static readonly Block PoweredRail = new BlockRail(27, BlockTextures.PoweredRailOn, true).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("goldenRail").IgnoreMetaUpdates();
-    public static readonly Block DetectorRail = new BlockRail(28, BlockTextures.DetectorRail, true)
+    public static readonly Block PoweredRail = new Block(27, BlockTextures.PoweredRailOn, Material.PistonBreakable)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.MinecartTrack).setNoCollision()
+        .setPistonBehavior(PistonBehavior.Normal)
+        .SetPhysics(s_poweredRail).SetLifecycle(s_poweredRail).SetVisuals(s_poweredRail)
+        .setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("goldenRail").IgnoreMetaUpdates();
+    public static readonly Block DetectorRail = new Block(28, BlockTextures.DetectorRail, Material.PistonBreakable)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.MinecartTrack).setNoCollision()
+        .setPistonBehavior(PistonBehavior.Normal)
+        .SetPhysics(s_poweredRail).SetLifecycle(s_poweredRail).SetVisuals(s_poweredRail)
         .setTickRandomly(true).setTickRate(20)
         .SetRedstone(s_detectorRail).SetTicker(s_detectorRail).SetInteractable(s_detectorRail)
         .setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("detectorRail").IgnoreMetaUpdates();
@@ -235,9 +247,18 @@ public class Block
         .SetPhysics(s_standingSign).SetLifecycle(s_tileEntityLifecycle)
         .setDrops(() => Item.ByName("sign").Id)
         .setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("sign").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Door = new BlockDoor(64, Material.Wood).setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("doorWood").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Door = new Block(64, BlockTextures.DoorWood, Material.Wood)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Door)
+        .setPistonBehavior(PistonBehavior.Destroy)
+        .SetPhysics(s_woodDoor).SetInteractable(s_woodDoor).SetLifecycle(s_woodDoor).SetVisuals(s_woodDoor)
+        .setDrops(() => Item.ByName("door_wood").Id)
+        .setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("doorWood").disableStats().IgnoreMetaUpdates();
     public static readonly Block Ladder = new BlockLadder(65, BlockTextures.Ladder).setHardness(0.4F).setSoundGroup(SoundWoodFootstep).setBlockName("ladder").IgnoreMetaUpdates();
-    public static readonly Block Rail = new BlockRail(66, BlockTextures.RailStraight, false).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("rail").IgnoreMetaUpdates();
+    public static readonly Block Rail = new Block(66, BlockTextures.RailStraight, Material.PistonBreakable)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.MinecartTrack).setNoCollision()
+        .setPistonBehavior(PistonBehavior.Normal)
+        .SetPhysics(s_normalRail).SetLifecycle(s_normalRail).SetVisuals(s_normalRail)
+        .setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("rail").IgnoreMetaUpdates();
     public static readonly Block CobblestoneStairs = new Block(67, Cobblestone.TextureId, Cobblestone.material)
         .setHardness(Cobblestone.hardness).setResistance(Cobblestone.resistance / 3.0F).setSoundGroup(Cobblestone.SoundGroup)
         .setOpacity(255).setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Stairs)
@@ -263,7 +284,12 @@ public class Block
         .setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("pressurePlate")
         .IgnoreMetaUpdates();
 
-    public static readonly Block IronDoor = new BlockDoor(71, Material.Metal).setHardness(5.0F).setSoundGroup(SoundMetalFootstep).setBlockName("doorIron").disableStats().IgnoreMetaUpdates();
+    public static readonly Block IronDoor = new Block(71, BlockTextures.DoorIron, Material.Metal)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Door)
+        .setPistonBehavior(PistonBehavior.Destroy)
+        .SetPhysics(s_ironDoor).SetInteractable(s_ironDoor).SetLifecycle(s_ironDoor).SetVisuals(s_ironDoor)
+        .setDrops(() => Item.ByName("door_iron").Id)
+        .setHardness(5.0F).setSoundGroup(SoundMetalFootstep).setBlockName("doorIron").disableStats().IgnoreMetaUpdates();
 
     public static readonly Block WoodenPressurePlate = new Block(72, BlockTextures.OakPlanks, Material.Wood)
         .setTickRandomly(true).setTickRate(20)
@@ -342,7 +368,10 @@ public class Block
         .SetRedstone(s_repeaterBehavior).SetTicker(s_repeaterBehavior).SetPhysics(s_repeaterBehavior).SetInteractable(s_repeaterBehavior).SetLifecycle(s_repeaterBehavior).SetVisuals(s_repeaterBehavior)
         .setDrops(() => Item.ByName("redstone_repeater").Id)
         .setHardness(0.0F).setLuminance(10.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Trapdoor = new BlockTrapDoor(96, Material.Wood).setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("trapdoor").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Trapdoor = new Block(96, BlockTextures.TrapdoorWood, Material.Wood)
+        .setNonOpaque().setNotFullCube()
+        .SetPhysics(s_trapDoor).SetInteractable(s_trapDoor).SetLifecycle(s_trapDoor)
+        .setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("trapdoor").disableStats().IgnoreMetaUpdates();
 
     public readonly int id;
     public readonly Material material;
@@ -640,7 +669,11 @@ public class Block
         return Visuals == null ? baseTexture : Visuals.GetTexture(this, side, baseTexture);
     }
 
-    public virtual Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
+    public virtual Box getBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
+    {
+        updateBoundingBox(world, entities, x, y, z);
+        return BoundingBox.Offset(x, y, z);
+    }
 
     public virtual void addIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
@@ -658,7 +691,11 @@ public class Block
         }
     }
 
-    public virtual Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => _hasCollision ? BoundingBox.Offset(x, y, z) : null;
+    public virtual Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    {
+        updateBoundingBox(world, entities, x, y, z);
+        return _hasCollision ? BoundingBox.Offset(x, y, z) : null;
+    }
 
     public virtual bool isOpaque() => _isOpaque;
 

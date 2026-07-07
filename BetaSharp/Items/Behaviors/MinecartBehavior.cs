@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -13,7 +14,7 @@ internal sealed class MinecartBehavior : IItemBehavior
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (!BlockRail.isRail(blockId))
+        if (!RailBehavior.IsRail(blockId))
         {
             return false;
         }

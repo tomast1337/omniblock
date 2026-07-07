@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -12,7 +13,7 @@ public sealed class EntityMinecartTests
 {
     private static void PlaceRailWithFloor(FakeWorldContext world, int x, int y, int z, int railBlockId, int meta)
     {
-        if (!BlockRail.isRail(railBlockId))
+        if (!RailBehavior.IsRail(railBlockId))
         {
             throw new ArgumentException("Not a rail block id", nameof(railBlockId));
         }
@@ -21,7 +22,7 @@ public sealed class EntityMinecartTests
         world.Writer.SetBlock(x, y, z, railBlockId, meta);
     }
 
-    /// <summary>Opaque neighbor required for slope rails to stay valid (see <see cref="BlockRail.neighborUpdate"/>).</summary>
+    /// <summary>Opaque neighbor required for slope rails to stay valid (see <see cref="RailBehavior.NeighborUpdate"/>).</summary>
     private static void PlaceSlopeSupport(FakeWorldContext world, int x, int railY, int z, int slopeMeta)
     {
         switch (slopeMeta)

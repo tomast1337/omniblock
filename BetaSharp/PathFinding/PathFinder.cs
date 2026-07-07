@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Profiling;
@@ -270,7 +271,7 @@ internal class PathFinder
                         else
                         {
                             int meta = _worldMap.GetBlockMeta(ix, iy, iz);
-                            if (!BlockDoor.isOpen(meta))
+                            if (!DoorBehavior.IsOpen(meta))
                             {
                                 return 0;
                             }
