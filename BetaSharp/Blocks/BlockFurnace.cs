@@ -1,22 +1,18 @@
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
-using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockFurnace : BlockWithEntity
+internal class BlockFurnace : Block
 {
     private const float FlameParticleOffset = 0.52F;
-    private const float DropSpread = 0.05F;
 
     private static readonly ILogger<BlockFurnace> s_logger = BetaSharp.Log.Instance.For<BlockFurnace>();
-    private static readonly ThreadLocal<bool> s_ignoreBlockRemoval = new(() => false);
-
-    private static readonly JavaRandom s_random = new();
     private readonly bool _lit;
 
     public BlockFurnace(int id, bool lit) : base(id, Material.Stone)
@@ -142,55 +138,13 @@ internal class BlockFurnace : BlockWithEntity
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);
         BlockEntity? furnace = world.Entities.GetBlockEntity<BlockEntity>(x, y, z);
-        s_ignoreBlockRemoval.Value = true;
+        InventoryLifecycleBehavior.IgnoreBlockRemoval.Value = true;
         world.Writer.SetBlock(x, y, z, lit ? LitFurnace.id : Furnace.id);
 
-        s_ignoreBlockRemoval.Value = false;
+        InventoryLifecycleBehavior.IgnoreBlockRemoval.Value = false;
         world.Writer.SetBlockMeta(x, y, z, meta);
         furnace?.cancelRemoval();
         world.Entities.SetBlockEntity(x, y, z, furnace!);
     }
 
-    public override BlockEntity getBlockEntity() => new BlockEntityFurnace();
-
-    public override void onBreak(OnBreakEvent @event)
-    {
-        if (!s_ignoreBlockRemoval.Value)
-        {
-            BlockEntityFurnace? furnace = @event.World.Entities.GetBlockEntity<BlockEntityFurnace>(@event.X, @event.Y, @event.Z);
-
-            if (furnace == null)
-            {
-                s_logger.LogWarning("BlockEntityFurnace not found at {X}, {Y}, {Z}", @event.X, @event.Y, @event.Z);
-                return;
-            }
-
-            for (int slotIndex = 0; slotIndex < furnace.Size; ++slotIndex)
-            {
-                ItemStack? stack = furnace.GetStack(slotIndex);
-                if (stack == null) continue;
-
-                float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
-                float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
-                float offsetZ = s_random.NextFloat() * 0.8F + 0.1F;
-
-                while (stack.Count > 0)
-                {
-                    int stackCount = s_random.NextInt(21) + 10;
-                    if (stackCount > stack.Count) stackCount = stack.Count;
-
-                    stack.Count -= stackCount;
-                    EntityItem droppedItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, stackCount, stack.getDamage()))
-                    {
-                        VelocityX = (float)s_random.NextGaussian() * DropSpread,
-                        VelocityY = (float)s_random.NextGaussian() * DropSpread + 0.2F,
-                        VelocityZ = (float)s_random.NextGaussian() * DropSpread
-                    };
-                    @event.World.SpawnEntity(droppedItem);
-                }
-            }
-        }
-
-        base.onBreak(@event);
-    }
 }

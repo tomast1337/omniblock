@@ -50,6 +50,7 @@ public class Block
     private static readonly RedstoneOreBehavior s_redstoneOreBehavior = new();
     private static readonly RepeaterBehavior s_repeaterBehavior = new();
     private static readonly TileEntityLifecycleBehavior s_tileEntityLifecycle = new();
+    private static readonly InventoryLifecycleBehavior s_inventoryLifecycle = new();
     private static readonly JukeboxBehavior s_jukeboxBehavior = new();
     private static readonly SignBehavior s_standingSign = new(true);
     private static readonly SignBehavior s_wallSign = new(false);
@@ -116,7 +117,10 @@ public class Block
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
     public static readonly Block LapisBlock = new Block(22, BlockTextures.BlockLapis, Material.Stone).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("blockLapis");
-    public static readonly Block Dispenser = new BlockDispenser(23).setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setBlockName("dispenser").IgnoreMetaUpdates();
+    public static readonly Block Dispenser = new BlockDispenser(23)
+        .setHasTileEntity(() => new BlockEntityDispenser())
+        .SetLifecycle(s_inventoryLifecycle)
+        .setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setBlockName("dispenser").IgnoreMetaUpdates();
     public static readonly Block Sandstone = new Block(24, BlockTextures.SandstoneSide, Material.Stone).setTopBottomTextures(BlockTextures.SandstoneTop, BlockTextures.SandstoneBottom).setSoundGroup(SoundStoneFootstep).setHardness(0.8F).setBlockName("sandStone").SetVariance(TextureVariance.Rotations, TextureVariance.None);
     public static readonly Block Noteblock = new Block(25, BlockTextures.NoteBlock, Material.Wood)
         .setHasTileEntity(() => new BlockEntityNote())
@@ -175,7 +179,10 @@ public class Block
         .setDropCount(0).setNonOpaque()
         .setHardness(5.0F).setSoundGroup(SoundMetalFootstep).setBlockName("mobSpawner").disableStats();
     public static readonly Block WoodenStairs = new BlockStairs(53, Planks).setBlockName("stairsWood").IgnoreMetaUpdates();
-    public static readonly Block Chest = new BlockChest(54).setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("chest").IgnoreMetaUpdates();
+    public static readonly Block Chest = new BlockChest(54)
+        .setHasTileEntity(() => new BlockEntityChest())
+        .SetLifecycle(s_inventoryLifecycle)
+        .setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("chest").IgnoreMetaUpdates();
     public static readonly Block RedstoneWire = new Block(55, BlockTextures.RedstoneWireCross, Material.PistonBreakable)
         .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.RedstoneWire)
@@ -192,8 +199,14 @@ public class Block
         .setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("workbench").SetInteractable(new WorkbenchInteractBehavior());
     public static readonly Block Wheat = new BlockCrops(59, BlockTextures.WheatStageBase).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("crops").disableStats().IgnoreMetaUpdates();
     public static readonly Block Farmland = new BlockFarmland(60).setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("farmland");
-    public static readonly Block Furnace = new BlockFurnace(61, false).setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setBlockName("furnace").IgnoreMetaUpdates();
-    public static readonly Block LitFurnace = new BlockFurnace(62, true).setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setLuminance(14.0F / 16.0F).setBlockName("furnace").IgnoreMetaUpdates();
+    public static readonly Block Furnace = new BlockFurnace(61, false)
+        .setHasTileEntity(() => new BlockEntityFurnace())
+        .SetLifecycle(s_inventoryLifecycle)
+        .setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setBlockName("furnace").IgnoreMetaUpdates();
+    public static readonly Block LitFurnace = new BlockFurnace(62, true)
+        .setHasTileEntity(() => new BlockEntityFurnace())
+        .SetLifecycle(s_inventoryLifecycle)
+        .setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setLuminance(14.0F / 16.0F).setBlockName("furnace").IgnoreMetaUpdates();
     public static readonly Block Sign = new Block(63, BlockTextures.OakPlanks, Material.Wood)
         .setHasTileEntity(() => new BlockEntitySign())
         .setBoundingBox(0.25F, 0.0F, 0.25F, 0.75F, 1.0F, 0.75F)

@@ -9,10 +9,8 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks;
 
 //NOTE: CHESTS DON'T ROTATE BASED ON PLAYER ORIENTATION, THIS IS VANILLA BEHAVIOR, NOT A BUG
-internal class BlockChest : BlockWithEntity
+internal class BlockChest : Block
 {
-    private const float DropSpread = 0.05F;
-    private static readonly JavaRandom s_random = new();
 
     public BlockChest(int id) : base(id, Material.Wood) => TextureId = BlockTextures.ChestSingleSide;
 
@@ -124,45 +122,6 @@ internal class BlockChest : BlockWithEntity
         evt.World.Reader.GetBlockId(evt.X + 1, evt.Y, evt.Z) == id ? true :
         evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z - 1) == id ? true : evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z + 1) == id;
 
-    public override void onBreak(OnBreakEvent @event)
-    {
-        BlockEntityChest? chest = @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z);
-
-        if (chest == null)
-        {
-            return;
-        }
-
-        for (int slot = 0; slot < chest.Size; ++slot)
-        {
-            ItemStack? stack = chest.GetStack(slot);
-            if (stack == null) continue;
-
-            float offsetX = s_random.NextFloat() * 0.8F + 0.1F;
-            float offsetY = s_random.NextFloat() * 0.8F + 0.1F;
-            float offsetZ = s_random.NextFloat() * 0.8F + 0.1F;
-
-            while (stack.Count > 0)
-            {
-                int amount = s_random.NextInt(21) + 10;
-                if (amount > stack.Count)
-                {
-                    amount = stack.Count;
-                }
-
-                stack.Count -= amount;
-                EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()));
-
-                entityItem.VelocityX = s_random.NextGaussian() * DropSpread;
-                entityItem.VelocityY = s_random.NextGaussian() * DropSpread + 0.2F;
-                entityItem.VelocityZ = s_random.NextGaussian() * DropSpread;
-                @event.World.Entities.SpawnEntity(entityItem);
-            }
-        }
-
-        base.onBreak(@event);
-    }
-
     public override bool onUse(OnUseEvent @event)
     {
         IInventory? chestInventory = @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z);
@@ -220,5 +179,4 @@ internal class BlockChest : BlockWithEntity
         return true;
     }
 
-    public override BlockEntity getBlockEntity() => new BlockEntityChest();
 }

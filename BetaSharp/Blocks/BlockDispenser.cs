@@ -7,11 +7,8 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockDispenser : BlockWithEntity
+internal class BlockDispenser : Block
 {
-    private const float LaunchSpread = 0.05F;
-
-    private static readonly ThreadLocal<JavaRandom> s_random = new(() => new JavaRandom());
     private static readonly int s_arrowId = Item.ByName("arrow").Id;
     private static readonly int s_eggId = Item.ByName("egg").Id;
     private static readonly int s_snowballId = Item.ByName("snowball").Id;
@@ -189,46 +186,4 @@ internal class BlockDispenser : BlockWithEntity
         }
     }
 
-    public override BlockEntity getBlockEntity() => new BlockEntityDispenser();
-
-    public override void onBreak(OnBreakEvent @event)
-    {
-        BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
-
-        if (dispenser != null)
-        {
-            JavaRandom random = s_random.Value!;
-
-            for (int slotIndex = 0; slotIndex < dispenser.Size; ++slotIndex)
-            {
-                ItemStack? stack = dispenser.GetStack(slotIndex);
-                if (stack == null) continue;
-
-                float offsetX = random.NextFloat() * 0.8F + 0.1F;
-                float offsetY = random.NextFloat() * 0.8F + 0.1F;
-                float offsetZ = random.NextFloat() * 0.8F + 0.1F;
-
-                while (stack.Count > 0)
-                {
-                    int amount = random.NextInt(21) + 10;
-                    if (amount > stack.Count)
-                    {
-                        amount = stack.Count;
-                    }
-
-                    stack.Count -= amount;
-                    EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()))
-                    {
-                        VelocityX = (float)random.NextGaussian() * LaunchSpread,
-                        VelocityY = (float)random.NextGaussian() * LaunchSpread + 0.2F,
-                        VelocityZ = (float)random.NextGaussian() * LaunchSpread
-                    };
-
-                    @event.World.Entities.SpawnEntity(entityItem);
-                }
-            }
-        }
-
-        base.onBreak(@event);
-    }
 }

@@ -5,11 +5,9 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-public class BlockPistonMoving : BlockWithEntity
+public class BlockPistonMoving : Block
 {
     public BlockPistonMoving(int id) : base(id, Material.Piston) => setHardness(-1.0F);
-
-    public override BlockEntity getBlockEntity() => null;
 
     public override void onPlaced(OnPlacedEvent @event)
     {
@@ -24,7 +22,7 @@ public class BlockPistonMoving : BlockWithEntity
         }
         else
         {
-            base.onBreak(@event);
+            @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
         }
     }
 
