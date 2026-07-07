@@ -21,8 +21,8 @@ internal sealed class DoorBehavior : IItemBehavior
 
         y++;
 
-        int blockId = _doorMaterial == Material.Wood ? Block.Door.id : Block.IronDoor.id;
-        if (!Block.Blocks[blockId].canPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        int blockId = _doorMaterial == Material.Wood ? Block.Door.Id : Block.IronDoor.Id;
+        if (!Block.Blocks[blockId].CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             return false;
         }

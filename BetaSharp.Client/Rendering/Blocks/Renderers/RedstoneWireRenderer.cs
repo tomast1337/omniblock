@@ -16,7 +16,7 @@ public class RedstoneWireRenderer : IBlockRenderer
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
         // --- 1. Calculate the Glow Color & Emissive Lighting ---
-        float baseLuminance = block.getLuminance(ctx.Lighting, pos.x, pos.y + 1, pos.z);
+        float baseLuminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y + 1, pos.z);
         float powerPercent = powerLevel / 15.0F;
 
         float luminance = Math.Max(baseLuminance, powerPercent * 0.4F);
@@ -40,32 +40,32 @@ public class RedstoneWireRenderer : IBlockRenderer
         float maxV = (texV + 15.99F) / 256.0F;
 
         // --- 3. Connection Logic ---
-        bool connectsWest = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y, pos.z, 1) ||
+        bool connectsWest = RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y, pos.z, 1) ||
                             (!ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                             RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y - 1, pos.z, -1));
-        bool connectsEast = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y, pos.z, 3) ||
+                             RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y - 1, pos.z, -1));
+        bool connectsEast = RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y, pos.z, 3) ||
                             (!ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                             RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y - 1, pos.z, -1));
-        bool connectsNorth = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z - 1, 2) ||
+                             RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y - 1, pos.z, -1));
+        bool connectsNorth = RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z - 1, 2) ||
                              (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                              RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z - 1, -1));
-        bool connectsSouth = RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z + 1, 0) ||
+                              RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z - 1, -1));
+        bool connectsSouth = RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z + 1, 0) ||
                              (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                              RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z + 1, -1));
+                              RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z + 1, -1));
 
         if (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y + 1, pos.z))
         {
             if (ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y + 1, pos.z, -1))
+                RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y + 1, pos.z, -1))
                 connectsWest = true;
             if (ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y + 1, pos.z, -1))
+                RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y + 1, pos.z, -1))
                 connectsEast = true;
             if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z - 1, -1))
+                RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z - 1, -1))
                 connectsNorth = true;
             if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                RedstoneWireBehavior.isPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z + 1, -1))
+                RedstoneWireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z + 1, -1))
                 connectsSouth = true;
         }
 
@@ -160,7 +160,7 @@ public class RedstoneWireRenderer : IBlockRenderer
 
         // West Slope
         if (ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-            ctx.BlockReader.GetBlockId(pos.x - 1, pos.y + 1, pos.z) == block.id)
+            ctx.BlockReader.GetBlockId(pos.x - 1, pos.y + 1, pos.z) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
             ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, slopeHeight, pos.z + 1, maxU, minV);
@@ -177,7 +177,7 @@ public class RedstoneWireRenderer : IBlockRenderer
 
         // East Slope
         if (ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-            ctx.BlockReader.GetBlockId(pos.x + 1, pos.y + 1, pos.z) == block.id)
+            ctx.BlockReader.GetBlockId(pos.x + 1, pos.y + 1, pos.z) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
             ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, pos.y, pos.z + 1, minU, maxV);
@@ -194,7 +194,7 @@ public class RedstoneWireRenderer : IBlockRenderer
 
         // North Slope
         if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-            ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z - 1) == block.id)
+            ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z - 1) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
             ctx.Tess.addVertexWithUV(pos.x + 1, pos.y, pos.z + QuarterPixel, minU, maxV);
@@ -211,7 +211,7 @@ public class RedstoneWireRenderer : IBlockRenderer
 
         // South Slope
         if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-            ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z + 1) == block.id)
+            ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z + 1) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
             ctx.Tess.addVertexWithUV(pos.x + 1, slopeHeight, pos.z + 1 - QuarterPixel, maxU, minV);

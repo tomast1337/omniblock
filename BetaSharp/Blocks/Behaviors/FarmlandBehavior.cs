@@ -5,15 +5,32 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Farmland: moisture-driven wetness (metadata 0-7) that decays without nearby water/rain and
-/// reverts to dirt, entity trampling, and a fixed-shape collision box independent of the
-/// slightly-recessed render bounding box.
+///     Farmland: moisture-driven wetness (metadata 0-7) that decays without nearby water/rain and
+///     reverts to dirt, entity trampling, and a fixed-shape collision box independent of the
+///     slightly-recessed render bounding box.
 /// </summary>
 internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
-    private const sbyte CropRadius = 0;
+    public void OnSteppedOn(Block block, OnEntityStepEvent @event)
+    {
+        if (Random.Shared.Next(4) == 0)
+        {
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.Dirt.Id);
+        }
+    }
 
-    // ── IBlockTicker ──────────────────────────────────────────────
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Block.Dirt.GetDroppedItemId(0);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid)
+        {
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.Dirt.Id);
+        }
+    }
+
+    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
+        => new Box(x, y, z, x + 1, y + 1, z + 1);
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -28,7 +45,7 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
             }
             else if (!HasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.Dirt.id);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.Dirt.Id);
             }
         }
         else
@@ -37,13 +54,20 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
         }
     }
 
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side switch
+    {
+        Side.Up when meta > 0 => BlockTextures.FarmlandWet,
+        Side.Up => BlockTextures.FarmlandDry,
+        _ => BlockTextures.Dirt
+    };
+
     private static bool HasCrop(IBlockReader world, int x, int y, int z)
     {
-        for (int dx = x - CropRadius; dx <= x + CropRadius; ++dx)
+        for (int dx = x - 0; dx <= x + 0; ++dx)
         {
-            for (int dy = z - CropRadius; dy <= z + CropRadius; ++dy)
+            for (int dy = z - 0; dy <= z + 0; ++dy)
             {
-                if (world.GetBlockId(dx, y + 1, dy) == Block.Wheat.id) return true;
+                if (world.GetBlockId(dx, y + 1, dy) == Block.Wheat.Id) return true;
             }
         }
 
@@ -68,40 +92,4 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
 
         return false;
     }
-
-    // ── IBlockInteractable ────────────────────────────────────────
-
-    public void OnSteppedOn(Block block, OnEntityStepEvent @event)
-    {
-        if (Random.Shared.Next(4) == 0)
-        {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.Dirt.id);
-        }
-    }
-
-    // ── IBlockPhysics ─────────────────────────────────────────────
-
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid)
-        {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.Dirt.id);
-        }
-    }
-
-    public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
-        => new Box(x, y, z, x + 1, y + 1, z + 1);
-
-    // ── IBlockVisuals ─────────────────────────────────────────────
-
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side switch
-    {
-        Side.Up when meta > 0 => BlockTextures.FarmlandWet,
-        Side.Up => BlockTextures.FarmlandDry,
-        _ => BlockTextures.Dirt
-    };
-
-    // ── IBlockLifecycle ───────────────────────────────────────────
-
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Block.Dirt.getDroppedItemId(0);
 }

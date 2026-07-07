@@ -181,9 +181,9 @@ public class FlatGeneratorInfo
             Biome = 1
         };
 
-        info.FlatLayers.Add(new FlatLayerInfo(1, Block.Bedrock.id));
-        info.FlatLayers.Add(new FlatLayerInfo(2, Block.Dirt.id));
-        info.FlatLayers.Add(new FlatLayerInfo(1, Block.GrassBlock.id));
+        info.FlatLayers.Add(new FlatLayerInfo(1, Block.Bedrock.Id));
+        info.FlatLayers.Add(new FlatLayerInfo(2, Block.Dirt.Id));
+        info.FlatLayers.Add(new FlatLayerInfo(1, Block.GrassBlock.Id));
         info.UpdateLayerHeights();
         info.WorldFeatures["village"] = [];
         return info;

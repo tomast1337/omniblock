@@ -319,7 +319,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             for (index = 0; index < _world.Entities.BlockEntities.Count; ++index)
             {
                 BlockEntity blockEntity = _world.Entities.BlockEntities[index];
-                if (!blockEntity.isRemoved() && culler.IsBoundingBoxInFrustum(new Box(blockEntity.X, blockEntity.Y, blockEntity.Z, blockEntity.X + 1, blockEntity.Y + 1, blockEntity.Z + 1)))
+                if (!blockEntity.IsRemoved() && culler.IsBoundingBoxInFrustum(new Box(blockEntity.X, blockEntity.Y, blockEntity.Z, blockEntity.X + 1, blockEntity.Y + 1, blockEntity.Z + 1)))
                 {
                     BlockEntityRenderer.Instance.RenderTileEntity(blockEntity, partialTicks);
                 }
@@ -812,11 +812,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             int blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             if (blockId > 0)
             {
-                Block.Blocks[blockId].updateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
+                Block.Blocks[blockId].UpdateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
                 double renderX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
                 double renderY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
                 double renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;
-                DrawOutlinedBoundingBox(Block.Blocks[blockId].getBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
+                DrawOutlinedBoundingBox(Block.Blocks[blockId].GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
             }
 
             GLManager.GL.DepthMask(true);

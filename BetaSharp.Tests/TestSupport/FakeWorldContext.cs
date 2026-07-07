@@ -143,7 +143,7 @@ public sealed class TestWorldEventBroadcaster(IWorldContext ctx, World world) : 
         int blockId = ctx.Reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
-            Block.Blocks[blockId].onBlockAction(new OnBlockActionEvent(ctx, soundType, pitch, x, y, z));
+            Block.Blocks[blockId].OnBlockAction(new OnBlockActionEvent(ctx, soundType, pitch, x, y, z));
         }
     }
 }
@@ -232,7 +232,7 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     public Material GetMaterial(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id == 0 ? Material.Air : Block.Blocks[id].material;
+        return id == 0 ? Material.Air : Block.Blocks[id].Material;
     }
 
     public bool IsOpaque(int x, int y, int z)

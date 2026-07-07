@@ -47,9 +47,38 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
         InventoryUtility.OnPlaced(block, @event);
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event)
+    public void OnBreak(Block block, OnBreakEvent @event) => InventoryUtility.OnBreak(block, @event);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        InventoryUtility.OnBreak(block, @event);
+        bool emits = @event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower();
+        bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
+                         @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
+        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].CanEmitRedstonePower())return;
+        if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
+    }
+
+    public void OnTick(Block block, OnTickEvent @event)
+    {
+        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z))
+        {
+            Dispense(@event);
+        }
+    }
+
+    public int GetTexture(Block block, Side side, int defaultTexture) =>
+        side switch
+        {
+            Side.Up or Side.Down => block.TextureId + 17,
+            Side.South => block.TextureId + 1,
+            _ => defaultTexture
+        };
+
+    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
+    {
+        if (side is Side.Up or Side.Down) return block.TextureId + 17;
+        Side facing = reader.GetBlockMeta(x, y, z).ToSide();
+        return side != facing ? block.TextureId : block.TextureId + 1;
     }
 
     private static void UpdateDirection(OnPlacedEvent @event)
@@ -73,28 +102,7 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        bool emits = @event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower();
-        bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
-                         @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
-
-        Console.WriteLine($"[Dispenser Check] Triggered By ID: {@event.BlockId} | Emits Power: {emits} | Grid Powered: {isPowered}");
-
-        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].canEmitRedstonePower()) return;
-
-        if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
-    }
-
-    public void OnTick(Block block, OnTickEvent @event)
-    {
-        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z))
-        {
-            Dispense(@event);
-        }
-    }
-
-    public static void Dispense(OnTickEvent @event)
+    private static void Dispense(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int dirX = 0;
@@ -119,7 +127,7 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
         BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
         if (dispenser == null) return;
 
-        ItemStack? itemStack = dispenser.getItemToDispose();
+        ItemStack? itemStack = dispenser.GetItemToDispose();
         double spawnX = @event.X + dirX * 0.6D + 0.5D;
         double spawnY = @event.Y + 0.5D;
         double spawnZ = @event.Z + dirZ * 0.6D + 0.5D;
@@ -169,23 +177,5 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
         }
 
         @event.World.Broadcaster.WorldEvent(2000, @event.X, @event.Y, @event.Z, dirX + 1 + (dirZ + 1) * 3);
-    }
-
-    public int GetTexture(Block block, Side side, int defaultTexture)
-    {
-        return side switch
-        {
-            Side.Up or Side.Down => block.TextureId + 17,
-            Side.South => block.TextureId + 1,
-            _ => defaultTexture
-        };
-    }
-
-    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
-    {
-        if (side is Side.Up or Side.Down) return block.TextureId + 17;
-
-        Side facing = reader.GetBlockMeta(x, y, z).ToSide();
-        return side != facing ? block.TextureId : block.TextureId + 1;
     }
 }

@@ -5,25 +5,31 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Cake: eating (right-click or left-click-start, both heal 3 and advance the slice counter)
-/// shrinks the collision/visible box from the west edge as slices are eaten, and it wilts when
-/// the block below is no longer solid.
+///     Cake: eating (right-click or left-click-start, both heal 3 and advance the slice counter)
+///     shrinks the collision/visible box from the west edge as slices are eaten, and it wilts when
+///     the block below is no longer solid.
 /// </summary>
 internal sealed class CakeBehavior : IBlockPhysics, IBlockVisuals, IBlockInteractable
 {
     private const float CakeHeight = 0.5F;
     private const float EdgeInset = 1.0F / 16.0F;
 
-    // ── IBlockPhysics ─────────────────────────────────────────────
+    public bool OnUse(Block block, OnUseEvent @event)
+    {
+        Eat(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
+        return true;
+    }
+
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => Eat(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
         int slicesEaten = reader.GetBlockMeta(x, y, z);
         float minX = (1 + slicesEaten * 2) / 16.0F;
-        block.setBoundingBox(minX, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
+        block.SetBoundingBox(minX, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
     }
 
-    public void SetupRenderBoundingBox(Block block) => block.setBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
+    public void SetupRenderBoundingBox(Block block) => block.SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
     {
@@ -36,17 +42,13 @@ internal sealed class CakeBehavior : IBlockPhysics, IBlockVisuals, IBlockInterac
 
     public bool CanGrow(Block block, OnTickEvent @event) => CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z);
 
-    private static bool CanGrow(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y - 1, z).IsSolid;
-
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         if (CanGrow(@event.World.Reader, @event.X, @event.Y, @event.Z)) return;
 
-        block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
-
-    // ── IBlockVisuals ─────────────────────────────────────────────
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {
@@ -63,15 +65,7 @@ internal sealed class CakeBehavior : IBlockPhysics, IBlockVisuals, IBlockInterac
         _ => block.TextureId + 1
     };
 
-    // ── IBlockInteractable ────────────────────────────────────────
-
-    public bool OnUse(Block block, OnUseEvent @event)
-    {
-        Eat(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
-        return true;
-    }
-
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => Eat(@event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    private static bool CanGrow(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y - 1, z).IsSolid;
 
     private static void Eat(EntityPlayer player, IWorldContext world, int x, int y, int z)
     {

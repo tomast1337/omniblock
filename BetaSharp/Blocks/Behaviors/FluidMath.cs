@@ -6,11 +6,11 @@ using Silk.NET.Maths;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Fluid geometry shared by both the flowing and stationary variants of water/lava. Every
-/// function is parameterized by <see cref="Material"/> rather than a block instance — the
-/// original per-instance <c>getFlow</c> never actually depended on anything but the material, so
-/// there's no need for separate behavior instances per fluid type here. Consumed cross-assembly
-/// by the client's fluid/particle renderers and by <c>Entity</c>'s swim-height check.
+///     Fluid geometry shared by both the flowing and stationary variants of water/lava. Every
+///     function is parameterized by <see cref="Material" /> rather than a block instance — the
+///     original per-instance <c>getFlow</c> never actually depended on anything but the material, so
+///     there's no need for separate behavior instances per fluid type here. Consumed cross-assembly
+///     by the client's fluid/particle renderers and by <c>Entity</c>'s swim-height check.
 /// </summary>
 public static class FluidMath
 {
@@ -30,7 +30,7 @@ public static class FluidMath
         return flowVec is { X: 0.0D, Z: 0.0D } ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
     }
 
-    public static Vector3D<double> GetFlow(IBlockReader reader, int x, int y, int z, Material material)
+    private static Vector3D<double> GetFlow(IBlockReader reader, int x, int y, int z, Material material)
     {
         Vector3D<double> flowVector = new(0.0);
         int depth = GetLiquidDepth(reader, x, y, z, material);
@@ -80,22 +80,21 @@ public static class FluidMath
             flowVector += new Vector3D<double>((neighborX - x) * depthDiff, 0.0, (neighborZ - z) * depthDiff);
         }
 
-        if (reader.GetBlockMeta(x, y, z) >= 8)
-        {
-            bool hasAdjacentSolid =
-                IsSolidFace(reader, x, y, z - 1, 2, material) ||
-                IsSolidFace(reader, x, y, z + 1, 3, material) ||
-                IsSolidFace(reader, x - 1, y, z, 4, material) ||
-                IsSolidFace(reader, x + 1, y, z, 5, material) ||
-                IsSolidFace(reader, x, y + 1, z - 1, 2, material) ||
-                IsSolidFace(reader, x, y + 1, z + 1, 3, material) ||
-                IsSolidFace(reader, x - 1, y + 1, z, 4, material) ||
-                IsSolidFace(reader, x + 1, y + 1, z, 5, material);
+        if (reader.GetBlockMeta(x, y, z) < 8) return Normalize(flowVector);
 
-            if (hasAdjacentSolid)
-            {
-                flowVector = Normalize(flowVector) + new Vector3D<double>(0.0, -0.6, 0.0);
-            }
+        bool hasAdjacentSolid =
+            IsSolidFace(reader, x, y, z - 1, 2, material) ||
+            IsSolidFace(reader, x, y, z + 1, 3, material) ||
+            IsSolidFace(reader, x - 1, y, z, 4, material) ||
+            IsSolidFace(reader, x + 1, y, z, 5, material) ||
+            IsSolidFace(reader, x, y + 1, z - 1, 2, material) ||
+            IsSolidFace(reader, x, y + 1, z + 1, 3, material) ||
+            IsSolidFace(reader, x - 1, y + 1, z, 4, material) ||
+            IsSolidFace(reader, x + 1, y + 1, z, 5, material);
+
+        if (hasAdjacentSolid)
+        {
+            flowVector = Normalize(flowVector) + new Vector3D<double>(0.0, -0.6, 0.0);
         }
 
         return Normalize(flowVector);
@@ -103,8 +102,8 @@ public static class FluidMath
 
     public static void CheckBlockCollisions(Block block, IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (reader.GetBlockId(x, y, z) != block.id) return;
-        if (block.material != Material.Lava) return;
+        if (reader.GetBlockId(x, y, z) != block.Id) return;
+        if (block.Material != Material.Lava) return;
 
         bool hasWaterAdjacent =
             reader.GetMaterial(x, y, z - 1) == Material.Water ||
@@ -118,14 +117,14 @@ public static class FluidMath
         int meta = reader.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
-            writer.SetBlock(x, y, z, Block.Obsidian.id);
+            writer.SetBlock(x, y, z, Block.Obsidian.Id);
             Fizz(broadcaster, x, y, z);
             return;
         }
 
         if (meta > 4) return;
 
-        writer.SetBlock(x, y, z, Block.Cobblestone.id);
+        writer.SetBlock(x, y, z, Block.Cobblestone.Id);
         Fizz(broadcaster, x, y, z);
     }
 
@@ -134,7 +133,7 @@ public static class FluidMath
     public static bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
     {
         Material mat = reader.GetMaterial(x, y, z);
-        return mat != block.material && mat != Material.Ice && (side == Side.Up || defaultVisibility);
+        return mat != block.Material && mat != Material.Ice && (side == Side.Up || defaultVisibility);
     }
 
     public static float GetLuminance(ILightProvider lighting, int x, int y, int z)
@@ -162,7 +161,7 @@ public static class FluidMath
 
     public static void RandomDisplayTick(Block block, OnTickEvent @event)
     {
-        if (block.material == Material.Water && Random.Shared.Next(64) == 0)
+        if (block.Material == Material.Water && Random.Shared.Next(64) == 0)
         {
             int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta is > 0 and < 8)
@@ -178,7 +177,7 @@ public static class FluidMath
             }
         }
 
-        if (block.material != Material.Lava ||
+        if (block.Material != Material.Lava ||
             @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z) != Material.Air ||
             @event.World.Reader.IsOpaque(@event.X, @event.Y + 1, @event.Z) || Random.Shared.Next(100) != 0)
         {

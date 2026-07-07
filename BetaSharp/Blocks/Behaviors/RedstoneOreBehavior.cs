@@ -3,38 +3,27 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Redstone ore: touching it (walk, punch, click) lights it up and sparks; the lit block
-/// reverts on its next tick. One instance is shared by both ore blocks — lit state is derived
-/// from the block id. Assign to the Ticker and Interactable slots.
+///     Redstone ore: touching it (walk, punch, click) lights it up and sparks; the lit block
+///     reverts on its next tick. One instance is shared by both ore blocks — lit state is derived
+///     from the block id. Assign to the Ticker and Interactable slots.
 /// </summary>
 public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
 {
-    private static bool IsLit(Block block) => block.id == Block.LitRedstoneOre.id;
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-
-    public void OnSteppedOn(Block block, OnEntityStepEvent @event) => light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+    public void OnSteppedOn(Block block, OnEntityStepEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
     public bool OnUse(Block block, OnUseEvent @event)
     {
-        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
         return false;
-    }
-
-    private static void light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
-    {
-        spawnParticles(worldRead, broadcaster, x, y, z);
-        if (worldRead.GetBlockId(x, y, z) == Block.RedstoneOre.id)
-        {
-            worldWriter.SetBlock(x, y, z, Block.LitRedstoneOre.id);
-        }
     }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (IsLit(block))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.RedstoneOre.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.RedstoneOre.Id);
         }
     }
 
@@ -42,13 +31,24 @@ public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
     {
         if (IsLit(block))
         {
-            spawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+            SpawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
-    private static void spawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private static bool IsLit(Block block) => block.Id == Block.LitRedstoneOre.Id;
+
+    private static void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        double faceOffset = 1.0D / 16.0D;
+        SpawnParticles(worldRead, broadcaster, x, y, z);
+        if (worldRead.GetBlockId(x, y, z) == Block.RedstoneOre.Id)
+        {
+            worldWriter.SetBlock(x, y, z, Block.LitRedstoneOre.Id);
+        }
+    }
+
+    private static void SpawnParticles(IBlockReader reader, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    {
+        const double faceOffset = 1.0D / 16.0D;
         for (int direction = 0; direction < 6; ++direction)
         {
             double particleX = x + Random.Shared.NextSingle();

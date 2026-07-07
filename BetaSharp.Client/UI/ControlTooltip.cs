@@ -43,17 +43,17 @@ public static class ControlTooltip
             int blockZ = hit.BlockZ;
             int blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
 
-            if (blockId == Block.Chest.id || blockId == Block.Furnace.id || blockId == Block.LitFurnace.id || blockId == Block.CraftingTable.id || blockId == Block.Dispenser.id)
+            if (blockId == Block.Chest.Id || blockId == Block.Furnace.Id || blockId == Block.LitFurnace.Id || blockId == Block.CraftingTable.Id || blockId == Block.Dispenser.Id)
                 useAction = "Interact";
-            else if (blockId == Block.Door.id || blockId == Block.IronDoor.id || blockId == Block.Trapdoor.id)
+            else if (blockId == Block.Door.Id || blockId == Block.IronDoor.Id || blockId == Block.Trapdoor.Id)
                 useAction = "Open/Close";
-            else if (blockId == Block.Lever.id || blockId == Block.Button.id || blockId == Block.Repeater.id || blockId == Block.PoweredRepeater.id)
+            else if (blockId == Block.Lever.Id || blockId == Block.Button.Id || blockId == Block.Repeater.Id || blockId == Block.PoweredRepeater.Id)
                 useAction = "Use";
-            else if (blockId == Block.Bed.id)
+            else if (blockId == Block.Bed.Id)
                 useAction = "Sleep";
-            else if (blockId == Block.Cake.id)
+            else if (blockId == Block.Cake.Id)
                 useAction = "Eat";
-            else if (blockId == Block.Jukebox.id)
+            else if (blockId == Block.Jukebox.Id)
                 useAction = "Use";
             else if (IsItemUsable(held))
             {

@@ -23,16 +23,16 @@ public interface IBlockLifecycle
     int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta) => defaultMeta;
 
     /// <summary>
-    /// Called once per block, after every block's static field has been assigned (see
-    /// <see cref="Block.init"/>), for setup that must reference other block statics regardless of
-    /// declaration order (e.g. fire's flammability registry).
+    ///     Called once per block, after every block's static field has been assigned (see
+    ///     <see cref="Block.Init" />), for setup that must reference other block statics regardless of
+    ///     declaration order (e.g. fire's flammability registry).
     /// </summary>
     void OnInit(Block block) { }
 
     /// <summary>
-    /// Called after the default single-item drop resolution in <see cref="Block.dropStacks"/>,
-    /// for blocks with bonus/variable drops beyond the id/count model (e.g. crops scattering
-    /// extra seeds).
+    ///     Called after the default single-item drop resolution in <see cref="Block.DropStacks" />,
+    ///     for blocks with bonus/variable drops beyond the id/count model (e.g. crops scattering
+    ///     extra seeds).
     /// </summary>
     void OnDropStacks(Block block, OnDropEvent @event) { }
 

@@ -374,7 +374,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
 
     public bool CanHarvestBlock(Block block)
     {
-        if (block.material.IsHandHarvestable)
+        if (block.Material.IsHandHarvestable)
         {
             return true;
         }

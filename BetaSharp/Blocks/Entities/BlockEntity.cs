@@ -12,13 +12,6 @@ public abstract class BlockEntity : IEntity
 {
     private static readonly IRegistry<BlockEntityType> s_registry = DefaultRegistries.BlockEntityTypes;
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
-    public IWorldContext World { get; set; }
-    protected bool Removed;
-    public abstract BlockEntityType Type { get; }
-
-    public int X;
-    public int Y;
-    public int Z;
 
     public Vec3D Position => new(X, Y, Z);
 
@@ -30,36 +23,56 @@ public abstract class BlockEntity : IEntity
     public static readonly BlockEntityType MobSpawner = Register(() => new BlockEntityMobSpawner(), "MobSpawner");
     public static readonly BlockEntityType Note = Register(() => new BlockEntityNote(), "Music");
     public static readonly BlockEntityType Piston = Register(() => new BlockEntityPiston(), "Piston");
+    protected bool Removed;
+    public IWorldContext World;
+
+    public int X;
+    public int Y;
+    public int Z;
+
+    static BlockEntity()
+    {
+    }
+
+    public abstract BlockEntityType Type { get; }
+
+    public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
 
     private static BlockEntityType Register<T>(Func<T> factory, string id) where T : BlockEntity
     {
-        var type = new BlockEntityType(() => factory(), id);
+        BlockEntityType type = new(factory, id);
         s_registry.Register(ResourceLocation.Parse(id.ToLower()), type);
         return type;
     }
 
-    public void Read(NBTTagCompound nbt)
+    public virtual void ReadNbt(NBTTagCompound nbt)
     {
         X = nbt.GetInteger("x");
         Y = nbt.GetInteger("y");
         Z = nbt.GetInteger("z");
-        ReadNbt(nbt);
     }
 
-    public void Write(NBTTagCompound nbt)
+    public virtual void WriteNbt(NBTTagCompound nbt)
     {
         nbt.SetString("id", Type.Id);
         nbt.SetInteger("x", X);
         nbt.SetInteger("y", Y);
         nbt.SetInteger("z", Z);
-        WriteNbt(nbt);
     }
 
-    public abstract void ReadNbt(NBTTagCompound nbt);
+    public virtual void Tick(EntityManager entities)
+    {
+    }
 
-    public abstract void WriteNbt(NBTTagCompound nbt);
+    void IEntity.Read(NBTTagCompound nbt) => ReadNbt(nbt);
 
-    public virtual void Tick() { }
+    void IEntity.Write(NBTTagCompound nbt) => WriteNbt(nbt);
+
+    void IEntity.Tick() => Tick(World.Entities);
+
+    int IEntity.GetId() => GetBlock().Id;
+
+    IWorldContext IEntity.World => World;
 
     public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
@@ -76,7 +89,7 @@ public abstract class BlockEntity : IEntity
         try
         {
             BlockEntity blockEntity = type.Create();
-            blockEntity.Read(nbt);
+            blockEntity.ReadNbt(nbt);
             return blockEntity;
         }
         catch (Exception exception)
@@ -85,8 +98,6 @@ public abstract class BlockEntity : IEntity
             return null;
         }
     }
-
-    public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
 
     public void MarkDirty()
     {
@@ -98,7 +109,7 @@ public abstract class BlockEntity : IEntity
         World.Broadcaster.UpdateBlockEntity(X, Y, Z, this);
     }
 
-    public double distanceFrom(double x, double y, double z)
+    public double DistanceFrom(double x, double y, double z)
     {
         double dx = X + 0.5D - x;
         double dy = Y + 0.5D - y;
@@ -106,12 +117,11 @@ public abstract class BlockEntity : IEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block getBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
-    public int GetId() => getBlock().id;
+    public Block GetBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
 
-    public virtual Packet createUpdatePacket() => null;
+    public virtual Packet CreateUpdatePacket() => null;
 
-    public bool isRemoved()
+    public bool IsRemoved()
     {
         if (Removed)
         {
@@ -130,11 +140,7 @@ public abstract class BlockEntity : IEntity
         return false;
     }
 
-    public void markRemoved() => Removed = true;
+    public void MarkRemoved() => Removed = true;
 
-    public void cancelRemoval() => Removed = false;
-
-    static BlockEntity()
-    {
-    }
+    public void CancelRemoval() => Removed = false;
 }

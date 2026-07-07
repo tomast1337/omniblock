@@ -353,7 +353,7 @@ public class UIRenderer
     {
         if (stack == null) return;
 
-        bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].getRenderType());
+        bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].GetRenderType());
 
         if (isBlock)
         {
@@ -560,7 +560,7 @@ public class UIRenderer
         GLManager.GL.Scale(-scale, -scale, -scale);
         GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
 
-        Block signBlock = sign.getBlock();
+        Block signBlock = sign.GetBlock();
         if (signBlock == Block.Sign)
         {
             float rotation = sign.PushedBlockData * 360 / 16.0F;

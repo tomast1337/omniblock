@@ -15,6 +15,7 @@ public static class SideExtensions
     public static bool IsValidSide(this Side v) => (byte)v <= 5;
     public static Side ToSide(this int v) => ((Side)v).IsValidSide() ? (Side)v : throw new ArgumentException("Invalid side");
     public static int ToInt(this Side s) => (int)s;
+
     public static Side OppositeFace(this Side side) => side switch
     {
         Side.Down => Side.Up,

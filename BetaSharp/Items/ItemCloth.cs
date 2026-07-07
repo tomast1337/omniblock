@@ -12,9 +12,9 @@ internal class ItemCloth : ItemBlock
         setHasSubtypes(true);
     }
 
-    public override int getTextureId(int meta) => Block.Wool.GetTexture(2.ToSide(), ClothVisualBehavior.getBlockMeta(meta));
+    public override int getTextureId(int meta) => Block.Wool.GetTexture(2.ToSide(), ClothVisualBehavior.GetBlockMeta(meta));
 
     public override int getPlacementMetadata(int meta) => meta;
 
-    public override string getItemNameIS(ItemStack itemStack) => base.getItemName() + "." + DyeBehavior.ColorNames[ClothVisualBehavior.getBlockMeta(itemStack.getDamage())];
+    public override string getItemNameIS(ItemStack itemStack) => base.getItemName() + "." + DyeBehavior.ColorNames[ClothVisualBehavior.GetBlockMeta(itemStack.getDamage())];
 }

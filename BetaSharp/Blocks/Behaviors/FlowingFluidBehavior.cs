@@ -6,11 +6,11 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Flowing (non-source) water/lava: spreads outward from the shortest path to a gap, drops to
-/// source state when fed from 2+ adjacent sources (water) or falling from a source above, and
-/// reverts to its stationary/source counterpart (<c>block.id + 1</c>, the vanilla water/lava
-/// id-pairing convention) once its level stabilizes. A single shared instance serves both water
-/// and lava — all per-tick state is thread-local and reset at the top of every call.
+///     Flowing (non-source) water/lava: spreads outward from the shortest path to a gap, drops to
+///     source state when fed from 2+ adjacent sources (water) or falling from a source above, and
+///     reverts to its stationary/source counterpart (<c>block.id + 1</c>, the vanilla water/lava
+///     id-pairing convention) once its level stabilizes. A single shared instance serves both water
+///     and lava — all per-tick state is thread-local and reset at the top of every call.
 /// </summary>
 public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
@@ -18,57 +18,36 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
     private readonly ThreadLocal<int[]> _distanceToGap = new(() => new int[4]);
     private readonly ThreadLocal<bool[]> _spread = new(() => new bool[4]);
 
-    private static void ConvertToSource(Block block, IWorldContext world, int x, int y, int z)
-    {
-        int meta = world.Reader.GetBlockMeta(x, y, z);
-        world.Writer.SetBlockWithoutNotifyingNeighbors(x, y, z, block.id + 1, meta, false);
-    }
-
-    // ── IBlockVisuals ─────────────────────────────────────────────
-
-    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(block, side);
-
-    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
-
-    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
-
-    // ── IBlockPhysics ─────────────────────────────────────────────
-
-    public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => allowLiquids && meta == 0;
-
-    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.material);
-
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == block.id)
-        {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
-        }
-    }
-
-    // ── IBlockLifecycle ───────────────────────────────────────────
-
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
         FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
         int placedId = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z);
-        if (placedId == block.id && !@event.World.IsRemote)
+        if (placedId == block.Id && !@event.World.IsRemote)
         {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
         }
     }
 
-    // ── IBlockTicker ──────────────────────────────────────────────
+    public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => allowLiquids && meta == 0;
+
+    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.Material);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == block.Id)
+        {
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
+        }
+    }
 
     public void RandomDisplayTick(Block block, OnTickEvent @event) => FluidMath.RandomDisplayTick(block, @event);
 
     public void OnTick(Block block, OnTickEvent ctx)
     {
-        int currentState = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z, block.material);
+        int currentState = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z, block.Material);
         sbyte spreadRate = 1;
-        if (block.material == Material.Lava && !ctx.World.Dimension.EvaporatesWater)
+        if (block.Material == Material.Lava && !ctx.World.Dimension.EvaporatesWater)
         {
             spreadRate = 2;
         }
@@ -79,17 +58,17 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         {
             const int minDepth = -100;
             _adjacentSources.Value = 0;
-            int lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth, block.material);
-            lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, lowestNeighborDepth, block.material);
-            lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1, lowestNeighborDepth, block.material);
-            lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, lowestNeighborDepth, block.material);
+            int lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth, block.Material);
+            lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, lowestNeighborDepth, block.Material);
+            lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1, lowestNeighborDepth, block.Material);
+            lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, lowestNeighborDepth, block.Material);
             newLevel = lowestNeighborDepth + spreadRate;
             if (newLevel >= 8 || lowestNeighborDepth < 0)
             {
                 newLevel = -1;
             }
 
-            int stateAbove = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z, block.material);
+            int stateAbove = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z, block.Material);
             if (stateAbove >= 0)
             {
                 if (stateAbove >= 8)
@@ -102,16 +81,16 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
                 }
             }
 
-            if (_adjacentSources.Value >= 2 && block.material == Material.Water)
+            if (_adjacentSources.Value >= 2 && block.Material == Material.Water)
             {
-                var matUnder = ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z);
+                Material matUnder = ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z);
                 // block under is solid or water source
-                if (matUnder.IsSolid || (matUnder == block.material && ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0))
+                if (matUnder.IsSolid || (matUnder == block.Material && ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0))
                 {
                     newLevel = 0;
                 }
             }
-            else if (block.material == Material.Lava && currentState < 8 && newLevel < 8 && newLevel > currentState && ctx.World.Random.NextInt(4) != 0)
+            else if (block.Material == Material.Lava && currentState < 8 && newLevel < 8 && newLevel > currentState && ctx.World.Random.NextInt(4) != 0)
             {
                 newLevel = currentState;
                 convertToSource = false;
@@ -134,17 +113,17 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
             }
             else
             {
-                ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, block.id, block.getTickRate());
+                ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, block.Id, block.GetTickRate());
             }
         }
         else
         {
             const int minDepth = -100;
             _adjacentSources.Value = 0;
-            GetLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth, block.material);
-            GetLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, minDepth, block.material);
-            GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1, minDepth, block.material);
-            GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, minDepth, block.material);
+            GetLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth, block.Material);
+            GetLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, minDepth, block.Material);
+            GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1, minDepth, block.Material);
+            GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, minDepth, block.Material);
         }
 
         if (currentState < 0)
@@ -169,7 +148,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
                 newLevel = 1;
             }
 
-            bool[] spreadArray = GetSpread(ctx.World, ctx.X, ctx.Y, ctx.Z, block.material);
+            bool[] spreadArray = GetSpread(ctx.World, ctx.X, ctx.Y, ctx.Z, block.Material);
 
             if (newLevel < 8)
             {
@@ -183,30 +162,43 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
             }
         }
 
-        if (currentState == 0 && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == block.id)
+        if (currentState == 0 && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == block.Id)
         {
             ConvertToSource(block, ctx.World, ctx.X, ctx.Y, ctx.Z);
         }
     }
 
+    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(block, side);
+
+    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
+        => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
+
+    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
+
+    private static void ConvertToSource(Block block, IWorldContext world, int x, int y, int z)
+    {
+        int meta = world.Reader.GetBlockMeta(x, y, z);
+        world.Writer.SetBlockWithoutNotifyingNeighbors(x, y, z, block.Id + 1, meta, false);
+    }
+
     private static void SpreadTo(Block block, IWorldContext world, int x, int y, int z, int depth)
     {
-        if (!CanSpreadTo(world, x, y, z, block.material)) return;
+        if (!CanSpreadTo(world, x, y, z, block.Material)) return;
 
         int currentId = world.Reader.GetBlockId(x, y, z);
         if (currentId > 0)
         {
-            if (block.material == Material.Lava)
+            if (block.Material == Material.Lava)
             {
                 FluidMath.Fizz(world.Broadcaster, x, y, z);
             }
             else
             {
-                Block.Blocks[currentId].dropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
+                Block.Blocks[currentId].DropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
             }
         }
 
-        world.Writer.SetBlock(x, y, z, block.id, depth);
+        world.Writer.SetBlock(x, y, z, block.Id, depth);
     }
 
     private static int GetDistanceToGap(IWorldContext world, int x, int y, int z, int distance, int fromDirection, Material material)
@@ -333,11 +325,11 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         if (!world.Reader.IsPosLoaded(x, y, z)) return true;
 
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == Block.Door.id || blockId == Block.IronDoor.id || blockId == Block.Sign.id || blockId == Block.Ladder.id || blockId == Block.SugarCane.id) return true;
+        if (blockId == Block.Door.Id || blockId == Block.IronDoor.Id || blockId == Block.Sign.Id || blockId == Block.Ladder.Id || blockId == Block.SugarCane.Id) return true;
 
         if (blockId == 0) return false;
 
-        Material mat = Block.Blocks[blockId].material;
+        Material mat = Block.Blocks[blockId].Material;
         return mat.BlocksMovement;
     }
 

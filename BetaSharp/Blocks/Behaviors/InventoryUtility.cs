@@ -3,13 +3,14 @@ using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
+
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Shared static helpers for blocks whose tile entity implements <see cref="IInventory"/>:
-/// scatters inventory contents on break and creates the entity on placement. The public
-/// <see cref="IgnoreBlockRemoval"/> flag is used by <c>FurnaceBehavior.UpdateLitState</c> to
-/// suppress drops during the lit/unlit id swap.
+///     Shared static helpers for blocks whose tile entity implements <see cref="IInventory" />:
+///     scatters inventory contents on break and creates the entity on placement. The public
+///     <see cref="IgnoreBlockRemoval" /> flag is used by <c>FurnaceBehavior.UpdateLitState</c> to
+///     suppress drops during the lit/unlit id swap.
 /// </summary>
 public static class InventoryUtility
 {
@@ -20,7 +21,7 @@ public static class InventoryUtility
 
     public static void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (block.getBlockEntity() is { } blockEntity)
+        if (block.GetBlockEntity() is { } blockEntity)
         {
             @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
         }

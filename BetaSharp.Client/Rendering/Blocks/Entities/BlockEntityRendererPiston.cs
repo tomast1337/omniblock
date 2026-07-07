@@ -21,7 +21,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
         }
 
         Block block = Block.Blocks[piston.PushedBlockId];
-        if (piston.getProgress(tickDelta) < 1.0F)
+        if (piston.GetProgress(tickDelta) < 1.0F)
         {
             Tessellator tess = Tessellator.instance;
             bindTextureByName("/terrain.png");
@@ -51,14 +51,14 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 
             BlockPos pos = new(piston.X, piston.Y, piston.Z);
 
-            if (block == Block.PistonHead && piston.getProgress(tickDelta) < 0.5F)
+            if (block == Block.PistonHead && piston.GetProgress(tickDelta) < 0.5F)
             {
                 var ctx = baseCtx with { CustomFlag = true };
                 _pistonExtensionRenderer.Draw(block, pos, ref ctx);
             }
             else if (piston.IsSource && !piston.IsExtending)
             {
-                var headCtx = baseCtx with { OverrideTexture = ((PistonBaseBehavior)block.Physics!).GetTopTexture(), CustomFlag = piston.getProgress(tickDelta) < 0.5F };
+                var headCtx = baseCtx with { OverrideTexture = ((PistonBaseBehavior)block.Physics!).GetTopTexture(), CustomFlag = piston.GetProgress(tickDelta) < 0.5F };
 
                 _pistonExtensionRenderer.Draw(Block.PistonHead, pos, ref headCtx);
 

@@ -13,7 +13,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
 
     public void renderTileEntitySignAt(BlockEntitySign sign, double x, double y, double z, float tickDelta)
     {
-        Block signBlock = sign.getBlock();
+        Block signBlock = sign.GetBlock();
         GLManager.GL.PushMatrix();
         float modelScale = 2.0F / 3.0F;
         float rotationYaw;

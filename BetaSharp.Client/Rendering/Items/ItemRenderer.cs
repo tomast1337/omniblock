@@ -50,13 +50,13 @@ public class ItemRenderer : EntityRenderer
         float minU;
         float maxU;
         float minV;
-        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].getRenderType()))
+        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].GetRenderType()))
         {
             GLManager.GL.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             float blockScale = 0.25F;
-            if (!Block.Blocks[stack.ItemId].isFullCube() && stack.ItemId != Block.Slab.id
-                && Block.Blocks[stack.ItemId].getRenderType() != BlockRendererType.PistonBase)
+            if (!Block.Blocks[stack.ItemId].IsFullCube() && stack.ItemId != Block.Slab.Id
+                && Block.Blocks[stack.ItemId].GetRenderType() != BlockRendererType.PistonBase)
             {
                 blockScale = 0.5F;
             }
@@ -143,7 +143,7 @@ public class ItemRenderer : EntityRenderer
     public void drawItemIntoGui(TextRenderer fontRenderer, TextureManager textureManager, int itemId, int itemDamage, int iconIndex, int x, int y)
     {
         float blue;
-        if (itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[itemId].getRenderType()))
+        if (itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[itemId].GetRenderType()))
         {
             textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
             Block block = Block.Blocks[itemId];

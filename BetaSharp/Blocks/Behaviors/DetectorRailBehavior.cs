@@ -5,9 +5,9 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Detector rail: powers (metadata bit 8) while a minecart sits inside the detection volume,
-/// re-checking every <c>getTickRate()</c> ticks. Track shape and rendering stay in
-/// <see cref="RailBehavior"/>. Assign to the Redstone, Interactable, and Ticker slots.
+///     Detector rail: powers (metadata bit 8) while a minecart sits inside the detection volume,
+///     re-checking every <c>getTickRate()</c> ticks. Track shape and rendering stay in
+///     <see cref="RailBehavior" />. Assign to the Redstone, Interactable, and Ticker slots.
 /// </summary>
 public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractable, IBlockTicker
 {
@@ -20,7 +20,7 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) == 0)
         {
-            updatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
+            UpdatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
         }
     }
 
@@ -31,7 +31,7 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) != 0)
         {
-            updatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
+            UpdatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
         }
     }
 
@@ -41,7 +41,7 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
 
     public bool CanEmitRedstonePower(Block block) => true;
 
-    private static void updatePoweredStatus(Block block, IWorldContext context, int x, int y, int z, int meta)
+    private static void UpdatePoweredStatus(Block block, IWorldContext context, int x, int y, int z, int meta)
     {
         bool isPowered = (meta & 8) != 0;
         bool hasMinecart = false;
@@ -52,22 +52,22 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
         if (hasMinecart && !isPowered)
         {
             context.Writer.SetBlockMeta(x, y, z, meta | 8);
-            context.Broadcaster.NotifyNeighbors(x, y, z, block.id);
-            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.id);
+            context.Broadcaster.NotifyNeighbors(x, y, z, block.Id);
+            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.Id);
             context.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         }
 
         if (!hasMinecart && isPowered)
         {
             context.Writer.SetBlockMeta(x, y, z, meta & 7);
-            context.Broadcaster.NotifyNeighbors(x, y, z, block.id);
-            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.id);
+            context.Broadcaster.NotifyNeighbors(x, y, z, block.Id);
+            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.Id);
             context.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         }
 
         if (hasMinecart)
         {
-            context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.id, block.getTickRate());
+            context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.GetTickRate());
         }
     }
 }

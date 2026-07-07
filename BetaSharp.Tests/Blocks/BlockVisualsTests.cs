@@ -35,7 +35,7 @@ public class BlockVisualsTests
     {
         for (int itemMeta = 0; itemMeta < 16; itemMeta++)
         {
-            Assert.Equal(itemMeta, ClothVisualBehavior.getItemMeta(ClothVisualBehavior.getBlockMeta(itemMeta)));
+            Assert.Equal(itemMeta, ClothVisualBehavior.GetItemMeta(ClothVisualBehavior.GetBlockMeta(itemMeta)));
         }
     }
 
@@ -53,22 +53,22 @@ public class BlockVisualsTests
         // Glass: plain Block composed with GlassVisualBehavior, non-opaque, drops nothing.
         Assert.IsType<Block>(Block.Glass);
         Assert.IsType<GlassVisualBehavior>(Block.Glass.Visuals);
-        Assert.False(Block.Glass.isOpaque());
-        Assert.False(Block.BlocksOpaque[Block.Glass.id]);
-        Assert.Equal(0, Block.BlockLightOpacity[Block.Glass.id]);
-        Assert.Equal(0, Block.Glass.getDroppedItemCount());
+        Assert.False(Block.Glass.IsOpaque());
+        Assert.False(Block.BlocksOpaque[Block.Glass.Id]);
+        Assert.Equal(0, Block.BlockLightOpacity[Block.Glass.Id]);
+        Assert.Equal(0, Block.Glass.GetDroppedItemCount());
 
         // Wool: plain Block composed with ClothVisualBehavior.
         Assert.IsType<Block>(Block.Wool);
         Assert.IsType<ClothVisualBehavior>(Block.Wool.Visuals);
-        Assert.True(Block.Wool.isOpaque());
+        Assert.True(Block.Wool.IsOpaque());
 
         // Grass keeps its subclass (tick spreading) but visuals moved to the behavior.
         Assert.IsType<GrassVisualBehavior>(Block.GrassBlock.Visuals);
 
         // Ice/portal kept non-opacity after losing BlockBreakable.
-        Assert.False(Block.Ice.isOpaque());
-        Assert.False(Block.NetherPortal.isOpaque());
+        Assert.False(Block.Ice.IsOpaque());
+        Assert.False(Block.NetherPortal.IsOpaque());
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class BlockVisualsTests
     [Fact]
     public void Grass_TopFaceUsesGrassColor()
     {
-        Assert.NotEqual(0xFFFFFF, Block.GrassBlock.getColorForFace(0, 1));
-        Assert.Equal(0xFFFFFF, Block.GrassBlock.getColorForFace(0, 0));
+        Assert.NotEqual(0xFFFFFF, Block.GrassBlock.GetColorForFace(0, 1));
+        Assert.Equal(0xFFFFFF, Block.GrassBlock.GetColorForFace(0, 0));
     }
 }

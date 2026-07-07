@@ -142,7 +142,7 @@ internal static class ItemLookup
         {
             if (field.GetValue(null) is Block block)
             {
-                s_itemNameToId.TryAdd(field.Name.ToLower(), block.id);
+                s_itemNameToId.TryAdd(field.Name.ToLower(), block.Id);
                 BuildItemLookupAlias(block);
             }
         }
@@ -184,12 +184,12 @@ internal static class ItemLookup
         {
             string s = alias.ToLower();
             int i = s.LastIndexOf(':');
-            if (i == -1) s_itemNameToId.TryAdd(s, block.id);
+            if (i == -1) s_itemNameToId.TryAdd(s, block.Id);
             else
             {
                 int meta = int.Parse(s.Substring(i + 1, s.Length - i - 1));
-                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), block.id);
-                else s_alias.TryAdd(s.Substring(0, i), (block.id, meta));
+                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), block.Id);
+                else s_alias.TryAdd(s.Substring(0, i), (block.Id, meta));
             }
         }
     }

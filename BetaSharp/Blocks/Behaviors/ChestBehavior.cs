@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -11,31 +10,21 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
     {
         IInventory? chestInventory = @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z);
         if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z))
-        {
             return true;
-        }
 
-        int chestId = block.id;
+        int chestId = block.Id;
 
         if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == chestId && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y + 1, @event.Z))
-        {
             return true;
-        }
 
         if (@event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == chestId && @event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y + 1, @event.Z))
-        {
             return true;
-        }
 
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == chestId && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z - 1))
-        {
             return true;
-        }
 
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == chestId && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z + 1))
-        {
             return true;
-        }
 
         if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == chestId)
         {
@@ -66,19 +55,13 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
         return true;
     }
 
-    public void OnPlaced(Block block, OnPlacedEvent @event)
-    {
-        InventoryUtility.OnPlaced(block, @event);
-    }
+    public void OnPlaced(Block block, OnPlacedEvent @event) => InventoryUtility.OnPlaced(block, @event);
 
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        InventoryUtility.OnBreak(block, @event);
-    }
+    public void OnBreak(Block block, OnBreakEvent @event) => InventoryUtility.OnBreak(block, @event);
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext context)
     {
-        int chestId = block.id;
+        int chestId = block.Id;
         int adjacentChestCount = 0;
         if (context.World.Reader.GetBlockId(context.X - 1, context.Y, context.Z) == chestId)
         {
@@ -100,32 +83,22 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
             ++adjacentChestCount;
         }
 
-        return adjacentChestCount > 1 ? false : !HasNeighbor(chestId, context);
+        return adjacentChestCount <= 1 && !HasNeighbor(chestId, context);
     }
 
-    private static bool HasNeighbor(int chestId, CanPlaceAtContext ctx)
-    {
-        return ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) != chestId ? false :
-            ctx.World.Reader.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == chestId ? true :
-            ctx.World.Reader.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == chestId ? true :
-            ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == chestId ? true : ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == chestId;
-    }
-
-    public int GetTexture(Block block, Side side, int defaultTexture)
-    {
-        return side switch
+    public int GetTexture(Block block, Side side, int defaultTexture) =>
+        side switch
         {
             Side.Up or Side.Down => BlockTextures.ChestSingleSide,
             Side.South => BlockTextures.ChestSingleFront,
             _ => BlockTextures.ChestSingleSide
         };
-    }
 
     public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
     {
         if (side is Side.Up or Side.Down) return BlockTextures.ChestTopBottom;
 
-        int chestId = block.id;
+        int chestId = block.Id;
         int blockNorth = reader.GetBlockId(x, y, z - 1);
         int blockSouth = reader.GetBlockId(x, y, z + 1);
         int blockWest = reader.GetBlockId(x - 1, y, z);
@@ -141,7 +114,6 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
             if (Block.BlocksOpaque[blockSouth] && !Block.BlocksOpaque[blockNorth]) facing = Side.North;
             if (Block.BlocksOpaque[blockWest] && !Block.BlocksOpaque[blockEast]) facing = Side.East;
             if (Block.BlocksOpaque[blockEast] && !Block.BlocksOpaque[blockWest]) facing = Side.West;
-
             return side == facing ? BlockTextures.ChestSingleFront : BlockTextures.ChestSingleSide;
         }
 
@@ -181,6 +153,15 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
 
         return BlockTextures.ChestSingleSide;
     }
+
+    private static bool HasNeighbor(int chestId, CanPlaceAtContext ctx) =>
+        ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == chestId &&
+            (
+                ctx.World.Reader.GetBlockId(ctx.X - 1, ctx.Y, ctx.Z) == chestId ||
+                ctx.World.Reader.GetBlockId(ctx.X + 1, ctx.Y, ctx.Z) == chestId ||
+                ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z - 1) == chestId ||
+                ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == chestId
+            );
 
     private static int GetDoubleChestTexture(Side renderSide, Side frontFacing, bool isRightHalf)
     {

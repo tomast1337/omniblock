@@ -5,12 +5,16 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Tall grass / fern: meta-driven texture and biome-tinted color (meta 0 = dead bush palette,
-/// untinted white). Survival is a plain <see cref="PlantSurvivalBehavior"/> on the Physics/Ticker
-/// slots — no extra per-tick logic beyond that.
+///     Tall grass / fern: meta-driven texture and biome-tinted color (meta 0 = dead bush palette,
+///     untinted white). Survival is a plain <see cref="PlantSurvivalBehavior" /> on the Physics/Ticker
+///     slots — no extra per-tick logic beyond that.
 /// </summary>
 internal sealed class TallGrassBehavior : IBlockVisuals, IBlockLifecycle
 {
+    private static readonly int s_seedsId = Item.ByName("seeds").Id;
+
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Random.Shared.Next(8) == 0 ? s_seedsId : -1;
+
     public int GetTexture(Block block, Side side, int meta, int defaultTexture) => meta switch
     {
         1 => block.TextureId,
@@ -25,7 +29,6 @@ internal sealed class TallGrassBehavior : IBlockVisuals, IBlockLifecycle
     {
         int meta = reader.GetBlockMeta(x, y, z);
         if (meta == 0) return 0xFFFFFF;
-
         return BiomeTintedColor(reader, x, y, z);
     }
 
@@ -44,6 +47,4 @@ internal sealed class TallGrassBehavior : IBlockVisuals, IBlockLifecycle
         double downfall = reader.GetBiomeSource().DownfallMap[0];
         return GrassColors.getColor(temperature, downfall);
     }
-
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Random.Shared.Next(8) == 0 ? Item.ByName("seeds").Id : -1;
 }

@@ -14,29 +14,29 @@ internal class FlatChunkGenerator : IChunkSource
     private readonly FlatGeneratorInfo _generatorInfo;
     private readonly JavaRandom _random;
 
-    private readonly LakeFeature _featureWaterLake = new(Block.Water.id);
-    private readonly LakeFeature _featureLavaLake = new(Block.Lava.id);
+    private readonly LakeFeature _featureWaterLake = new(Block.Water.Id);
+    private readonly LakeFeature _featureLavaLake = new(Block.Lava.Id);
     private readonly DungeonFeature _featureDungeon = new();
     private readonly ClayOreFeature _featureClay = new(32);
-    private readonly OreFeature _featureDirt = new(Block.Dirt.id, 32);
-    private readonly OreFeature _featureGravel = new(Block.Gravel.id, 32);
-    private readonly OreFeature _featureCoal = new(Block.CoalOre.id, 16);
-    private readonly OreFeature _featureIron = new(Block.IronOre.id, 8);
-    private readonly OreFeature _featureGold = new(Block.GoldOre.id, 8);
-    private readonly OreFeature _featureRedstone = new(Block.RedstoneOre.id, 7);
-    private readonly OreFeature _featureDiamond = new(Block.DiamondOre.id, 7);
-    private readonly OreFeature _featureLapis = new(Block.LapisOre.id, 6);
-    private readonly PlantPatchFeature _featureDandelion = new(Block.Dandelion.id);
-    private readonly PlantPatchFeature _featureRose = new(Block.Rose.id);
-    private readonly PlantPatchFeature _featureBrownMushroom = new(Block.BrownMushroom.id);
-    private readonly PlantPatchFeature _featureRedMushroom = new(Block.RedMushroom.id);
+    private readonly OreFeature _featureDirt = new(Block.Dirt.Id, 32);
+    private readonly OreFeature _featureGravel = new(Block.Gravel.Id, 32);
+    private readonly OreFeature _featureCoal = new(Block.CoalOre.Id, 16);
+    private readonly OreFeature _featureIron = new(Block.IronOre.Id, 8);
+    private readonly OreFeature _featureGold = new(Block.GoldOre.Id, 8);
+    private readonly OreFeature _featureRedstone = new(Block.RedstoneOre.Id, 7);
+    private readonly OreFeature _featureDiamond = new(Block.DiamondOre.Id, 7);
+    private readonly OreFeature _featureLapis = new(Block.LapisOre.Id, 6);
+    private readonly PlantPatchFeature _featureDandelion = new(Block.Dandelion.Id);
+    private readonly PlantPatchFeature _featureRose = new(Block.Rose.Id);
+    private readonly PlantPatchFeature _featureBrownMushroom = new(Block.BrownMushroom.Id);
+    private readonly PlantPatchFeature _featureRedMushroom = new(Block.RedMushroom.Id);
     private readonly SugarCanePatchFeature _featureSugarcane = new();
     private readonly PumpkinPatchFeature _featurePumpkin = new();
     private readonly CactusPatchFeature _featureCactus = new();
-    private readonly DeadBushPatchFeature _featureDeadBush = new(Block.DeadBush.id);
-    private readonly GrassPatchFeature _featureGrass = new(Block.Grass.id, 1);
-    private readonly SpringFeature _featureWaterSpring = new(Block.FlowingWater.id);
-    private readonly SpringFeature _featureLavaSpring = new(Block.FlowingLava.id);
+    private readonly DeadBushPatchFeature _featureDeadBush = new(Block.DeadBush.Id);
+    private readonly GrassPatchFeature _featureGrass = new(Block.Grass.Id, 1);
+    private readonly SpringFeature _featureWaterSpring = new(Block.FlowingWater.Id);
+    private readonly SpringFeature _featureLavaSpring = new(Block.FlowingLava.Id);
 
     public FlatChunkGenerator(IWorldContext world)
     {

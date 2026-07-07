@@ -3,13 +3,13 @@ using BetaSharp.Worlds.Maps;
 namespace BetaSharp.Blocks.Materials;
 
 /// <summary>
-/// Immutable physical properties shared by blocks, loaded from <c>assets/material/*.json</c>.
-/// <para>
-/// Instances are canonical: every key maps to exactly one instance for the lifetime of the
-/// process (built once by <see cref="MaterialRegistry"/>), so reference equality
-/// (<c>material == Material.Water</c>) is the correct comparison. Do not construct materials
-/// outside the registry.
-/// </para>
+///     Immutable physical properties shared by blocks, loaded from <c>assets/material/*.json</c>.
+///     <para>
+///         Instances are canonical: every key maps to exactly one instance for the lifetime of the
+///         process (built once by <see cref="MaterialRegistry" />), so reference equality
+///         (<c>material == Material.Water</c>) is the correct comparison. Do not construct materials
+///         outside the registry.
+///     </para>
 /// </summary>
 public sealed class Material
 {

@@ -3,9 +3,9 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Sign support physics: the standing variant needs solid ground below and keeps its fixed
-/// post bounding box; the wall variant hangs off the face its metadata points away from and
-/// recomputes its slab-shaped box from that facing. Assign to the Physics slot.
+///     Sign support physics: the standing variant needs solid ground below and keeps its fixed
+///     post bounding box; the wall variant hangs off the face its metadata points away from and
+///     recomputes its slab-shaped box from that facing. Assign to the Physics slot.
 /// </summary>
 public sealed class SignBehavior(bool isStanding) : IBlockPhysics
 {
@@ -21,20 +21,20 @@ public sealed class SignBehavior(bool isStanding) : IBlockPhysics
 
         Side facing = reader.GetBlockMeta(x, y, z).ToSide();
 
-        block.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         switch (facing)
         {
             case Side.North:
-                block.setBoundingBox(MinExtent, TopOffset, 1.0F - Thickness, MaxExtent, BottomOffset, 1.0F);
+                block.SetBoundingBox(MinExtent, TopOffset, 1.0F - Thickness, MaxExtent, BottomOffset, 1.0F);
                 break;
             case Side.South:
-                block.setBoundingBox(MinExtent, TopOffset, 0.0F, MaxExtent, BottomOffset, Thickness);
+                block.SetBoundingBox(MinExtent, TopOffset, 0.0F, MaxExtent, BottomOffset, Thickness);
                 break;
             case Side.West:
-                block.setBoundingBox(1.0F - Thickness, TopOffset, MinExtent, 1.0F, BottomOffset, MaxExtent);
+                block.SetBoundingBox(1.0F - Thickness, TopOffset, MinExtent, 1.0F, BottomOffset, MaxExtent);
                 break;
             case Side.East:
-                block.setBoundingBox(0.0F, TopOffset, MinExtent, Thickness, BottomOffset, MaxExtent);
+                block.SetBoundingBox(0.0F, TopOffset, MinExtent, Thickness, BottomOffset, MaxExtent);
                 break;
         }
     }
@@ -64,10 +64,8 @@ public sealed class SignBehavior(bool isStanding) : IBlockPhysics
             }
         }
 
-        if (shouldBreak)
-        {
-            block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        }
+        if (!shouldBreak) return;
+        block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 }

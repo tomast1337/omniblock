@@ -3,23 +3,13 @@ using BetaSharp.Blocks.Entities;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Note block: right-click cycles the note, left-click and redstone rising edges play it, and
-/// the block action packet renders the sound and particle client-side. The tile entity itself
-/// comes from the block's <c>setHasTileEntity</c> factory. Assign to the Interactable,
-/// Lifecycle, and Physics slots.
+///     Note block: right-click cycles the note, left-click and redstone rising edges play it, and
+///     the block action packet renders the sound and particle client-side. The tile entity itself
+///     comes from the block's <c>setHasTileEntity</c> factory. Assign to the Interactable,
+///     Lifecycle, and Physics slots.
 /// </summary>
 public sealed class NoteBlockBehavior : IBlockInteractable, IBlockLifecycle, IBlockPhysics
 {
-    public void OnPlaced(Block block, OnPlacedEvent @event)
-    {
-        if (block.getBlockEntity() is { } blockEntity)
-        {
-            @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
-        }
-    }
-
-    public void OnBreak(Block block, OnBreakEvent @event) => @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
-
     public bool OnUse(Block block, OnUseEvent @event)
     {
         if (@event.World.IsRemote) return true;
@@ -27,8 +17,8 @@ public sealed class NoteBlockBehavior : IBlockInteractable, IBlockLifecycle, IBl
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
         if (blockEntity == null) return false;
 
-        blockEntity.cycleNote();
-        blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
+        blockEntity.CycleNote();
+        blockEntity.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
         return true;
     }
 
@@ -37,24 +27,18 @@ public sealed class NoteBlockBehavior : IBlockInteractable, IBlockLifecycle, IBl
         if (@event.World.IsRemote) return;
 
         BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        blockEntity?.playNote(@event.World, @event.X, @event.Y, @event.Z);
+        blockEntity?.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public void NeighborUpdate(Block block, OnTickEvent @event)
+    public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (!(@event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower())) return;
-
-        bool isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
-        BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        if (blockEntity == null || blockEntity.powered == isPowered) return;
-
-        if (isPowered)
+        if (block.GetBlockEntity() is { } blockEntity)
         {
-            blockEntity.playNote(@event.World, @event.X, @event.Y, @event.Z);
+            @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
         }
-
-        blockEntity.powered = isPowered;
     }
+
+    public void OnBreak(Block block, OnBreakEvent @event) => @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
 
     public void OnBlockAction(Block block, OnBlockActionEvent @event)
     {
@@ -70,5 +54,27 @@ public sealed class NoteBlockBehavior : IBlockInteractable, IBlockLifecycle, IBl
 
         @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5D, @event.Y + 0.5D, @event.Z + 0.5D, "note." + instrumentName, 3.0F, pitch);
         @event.World.Broadcaster.AddParticle("note", @event.X + 0.5D, @event.Y + 1.2D, @event.Z + 0.5D, @event.Data2 / 24.0D, 0.0D, 0.0D);
+    }
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        if (!(@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower()))
+        {
+            return;
+        }
+
+        bool isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
+        BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
+        if (blockEntity == null || blockEntity.powered == isPowered)
+        {
+            return;
+        }
+
+        if (isPowered)
+        {
+            blockEntity.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
+        }
+
+        blockEntity.powered = isPowered;
     }
 }

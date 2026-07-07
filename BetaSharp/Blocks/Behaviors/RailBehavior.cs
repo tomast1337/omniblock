@@ -4,11 +4,11 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Physics, lifecycle, and visuals for track blocks (rail, powered rail, detector rail).
-/// <c>isPoweredTrack</c> disables corner curving (straight/ramp shapes only, metadata 0-5)
-/// and switches the texture/neighbor-update rules to the golden-rail variant. Detector rail
-/// shares this instance for shape/placement rules but keeps its own <see cref="DetectorRailBehavior"/>
-/// for the actual minecart-detection redstone signal.
+///     Physics, lifecycle, and visuals for track blocks (rail, powered rail, detector rail).
+///     <c>isPoweredTrack</c> disables corner curving (straight/ramp shapes only, metadata 0-5)
+///     and switches the texture/neighbor-update rules to the golden-rail variant. Detector rail
+///     shares this instance for shape/placement rules but keeps its own <see cref="DetectorRailBehavior" />
+///     for the actual minecart-detection redstone signal.
 /// </summary>
 public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
@@ -16,30 +16,26 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 
     public RailBehavior(bool isPoweredTrack) => _isPoweredTrack = isPoweredTrack;
 
-    // ── IBlockLifecycle ───────────────────────────────────────────
-
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
         if (@event.World.IsRemote) return;
-
         UpdateShape(@event.World, @event.X, @event.Y, @event.Z, true);
-
-        if (block.id == Block.PoweredRail.id)
-        {
-            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-            NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, block.id));
-        }
+        if (block.Id != Block.PoweredRail.Id) return;
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, block.Id));
     }
-
-    // ── IBlockPhysics ─────────────────────────────────────────────
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
         int meta = reader.GetBlockMeta(x, y, z);
         if (meta is >= 2 and <= 5)
-            block.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
+        {
+            block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
+        }
         else
-            block.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+        {
+            block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+        }
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
@@ -60,15 +56,15 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 
         if (shouldBreak)
         {
-            block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
-        else if (block.id == Block.PoweredRail.id)
+        else if (block.Id == Block.PoweredRail.Id)
         {
             bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
             isPowered = isPowered
-                || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, true, 0)
-                || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, false, 0);
+                        || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, true, 0)
+                        || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, false, 0);
 
             bool stateChanged = false;
             if (isPowered && (meta & 8) == 0)
@@ -84,14 +80,14 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 
             if (!stateChanged) return;
 
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
 
-            if (railMeta is 2 or 3 or 4 or 5) @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.id);
+            if (railMeta is 2 or 3 or 4 or 5) @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.Id);
 
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
         }
-        else if (block.id > 0 &&
-                 Block.Blocks[block.id].canEmitRedstonePower() &&
+        else if (block.Id > 0 &&
+                 Block.Blocks[block.Id].CanEmitRedstonePower() &&
                  !_isPoweredTrack &&
                  new TrackLogic(@event.World, new Vec3i(@event.X, @event.Y, @event.Z)).GetAdjacentTracks() == 3)
         {
@@ -99,19 +95,28 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
         }
     }
 
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    {
+        if (_isPoweredTrack)
+        {
+            if (block.Id == Block.PoweredRail.Id && (meta & 8) == 0) return BlockTextures.PoweredRailOff;
+        }
+        else if (meta >= 6)
+        {
+            return BlockTextures.RailCorner;
+        }
+
+        return defaultTexture;
+    }
+
     private static void UpdateShape(IWorldContext level, int x, int y, int z, bool force)
     {
         if (!level.IsRemote) new TrackLogic(level, new Vec3i(x, y, z)).UpdateState(level.Redstone.IsPowered(x, y, z), force);
     }
 
-    // ── Golden rail power propagation ────────────────────────────
-
     private static bool IsPoweredByConnectedRails(IWorldContext level, int x, int y, int z, int meta, bool towardsNegative, int depth)
     {
-        if (depth >= 8)
-        {
-            return false;
-        }
+        if (depth >= 8) return false;
 
         int shape = meta & 7;
         bool isSameY = true;
@@ -146,13 +151,13 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
         }
 
         return IsPoweredByRail(level, x, y, z, towardsNegative, depth, shape) ||
-               isSameY && IsPoweredByRail(level, x, y - 1, z, towardsNegative, depth, shape);
+               (isSameY && IsPoweredByRail(level, x, y - 1, z, towardsNegative, depth, shape));
     }
 
     private static bool IsPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
         int blockId = level.Reader.GetBlockId(x, y, z);
-        if (blockId != Block.PoweredRail.id) return false;
+        if (blockId != Block.PoweredRail.Id) return false;
 
         int meta = level.Reader.GetBlockMeta(x, y, z);
         int railMeta = meta & 7;
@@ -170,28 +175,6 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
         return true;
     }
 
-    // ── IBlockVisuals ─────────────────────────────────────────────
-
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-    {
-        if (_isPoweredTrack)
-        {
-            if (block.id == Block.PoweredRail.id && (meta & 8) == 0)
-            {
-                return BlockTextures.PoweredRailOff;
-            }
-        }
-        else if (meta >= 6)
-        {
-            // Curve texture sits one row above the straight rail in terrain.png (index 112 vs 128).
-            return BlockTextures.RailCorner;
-        }
-
-        return defaultTexture;
-    }
-
-    // ── Rail identity helpers (consumed by ItemMinecart, EntityMinecart) ──
-
     public static bool IsRail(IWorldContext level, int x, int y, int z)
     {
         int blockId = level.Reader.GetBlockId(x, y, z);
@@ -199,7 +182,7 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     }
 
     public static bool IsRail(int blockId)
-        => blockId == Block.Rail.id || blockId == Block.PoweredRail.id || blockId == Block.DetectorRail.id;
+        => blockId == Block.Rail.Id || blockId == Block.PoweredRail.Id || blockId == Block.DetectorRail.Id;
 
     /// <summary>True for powered/detector rail: straight+ramp shapes only, no corners.</summary>
     public static bool IsAlwaysStraight(Block block) => block.Physics is RailBehavior { _isPoweredTrack: true };
@@ -207,16 +190,16 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     // ── Track shape solver ────────────────────────────────────────
 
     /// <summary>
-    /// Computes the metadata (0-9) representing which two neighbors a rail piece connects to,
-    /// propagating connection updates to adjacent track pieces exactly like vanilla's recursive
-    /// rail-shape recalculation.
+    ///     Computes the metadata (0-9) representing which two neighbors a rail piece connects to,
+    ///     propagating connection updates to adjacent track pieces exactly like vanilla's recursive
+    ///     rail-shape recalculation.
     /// </summary>
     private sealed class TrackLogic
     {
+        private readonly List<Vec3i> _connectedTracks = [];
+        private readonly bool _isPoweredRail;
         private readonly IWorldContext _level;
         private readonly Vec3i _trackPos;
-        private readonly bool _isPoweredRail;
-        private readonly List<Vec3i> _connectedTracks = [];
 
         public TrackLogic(IWorldContext level, Vec3i pos)
         {
@@ -305,21 +288,16 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
                 finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
             }
 
-            if (forceUpdate || _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) != finalMeta)
+            if (!forceUpdate && _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) == finalMeta) return;
+            _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
+            foreach (Vec3i pos in _connectedTracks)
             {
-                _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
-
-                foreach (Vec3i pos in _connectedTracks)
+                TrackLogic? logic = GetMinecartTrackLogic(pos);
+                if (logic == null) continue;
+                logic.RefreshConnectedTracks();
+                if (logic.CanConnectTo(this))
                 {
-                    TrackLogic? logic = GetMinecartTrackLogic(pos);
-                    if (logic != null)
-                    {
-                        logic.RefreshConnectedTracks();
-                        if (logic.CanConnectTo(this))
-                        {
-                            logic.ConnectTo(this);
-                        }
-                    }
+                    logic.ConnectTo(this);
                 }
             }
         }
@@ -376,24 +354,16 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
             }
         }
 
-        private bool IsMinecartTrack(Vec3i pos)
-        {
-            return IsRail(_level, pos.X, pos.Y, pos.Z) ||
-                   IsRail(_level, pos.X, pos.Y + 1, pos.Z) ||
-                   IsRail(_level, pos.X, pos.Y - 1, pos.Z);
-        }
+        private bool IsMinecartTrack(Vec3i pos) =>
+            IsRail(_level, pos.X, pos.Y, pos.Z) ||
+            IsRail(_level, pos.X, pos.Y + 1, pos.Z) ||
+            IsRail(_level, pos.X, pos.Y - 1, pos.Z);
 
         private TrackLogic? GetMinecartTrackLogic(Vec3i pos)
         {
-            if (IsRail(_level, pos.X, pos.Y, pos.Z))
-                return new TrackLogic(_level, pos);
-
-            if (IsRail(_level, pos.X, pos.Y + 1, pos.Z))
-                return new TrackLogic(_level, new Vec3i(pos.X, pos.Y + 1, pos.Z));
-
-            if (IsRail(_level, pos.X, pos.Y - 1, pos.Z))
-                return new TrackLogic(_level, new Vec3i(pos.X, pos.Y - 1, pos.Z));
-
+            if (IsRail(_level, pos.X, pos.Y, pos.Z)) return new TrackLogic(_level, pos);
+            if (IsRail(_level, pos.X, pos.Y + 1, pos.Z)) return new TrackLogic(_level, new Vec3i(pos.X, pos.Y + 1, pos.Z));
+            if (IsRail(_level, pos.X, pos.Y - 1, pos.Z)) return new TrackLogic(_level, new Vec3i(pos.X, pos.Y - 1, pos.Z));
             return null;
         }
 
@@ -401,8 +371,12 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
         {
             foreach (Vec3i pos in _connectedTracks)
             {
-                if (pos.X == targetLogic._trackPos.X && pos.Z == targetLogic._trackPos.Z) return true;
+                if (pos.X == targetLogic._trackPos.X && pos.Z == targetLogic._trackPos.Z)
+                {
+                    return true;
+                }
             }
+
             return false;
         }
 
@@ -410,8 +384,12 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
         {
             foreach (Vec3i connectedPos in _connectedTracks)
             {
-                if (connectedPos.X == pos.X && connectedPos.Z == pos.Z) return true;
+                if (connectedPos.X == pos.X && connectedPos.Z == pos.Z)
+                {
+                    return true;
+                }
             }
+
             return false;
         }
 

@@ -97,9 +97,9 @@ public static class Stats
 
         for (int i = 0; i < 256; ++i)
         {
-            if (Block.Blocks[i] != null && Block.Blocks[i].getEnableStats())
+            if (Block.Blocks[i] != null && Block.Blocks[i].GetEnableStats())
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Block.Blocks[i].translateBlockName());
+                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Block.Blocks[i].TranslateBlockName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
                 BlocksMinedStats.Add(statsArray[i]);
             }
@@ -150,17 +150,17 @@ public static class Stats
 
     private static void ReplaceAllSimilarBlocks(StatBase[] statsArray)
     {
-        ReplaceSimilarBlocks(statsArray, Block.Water.id, Block.FlowingWater.id);
-        ReplaceSimilarBlocks(statsArray, Block.Lava.id, Block.Lava.id);
-        ReplaceSimilarBlocks(statsArray, Block.JackLantern.id, Block.Pumpkin.id);
-        ReplaceSimilarBlocks(statsArray, Block.LitFurnace.id, Block.Furnace.id);
-        ReplaceSimilarBlocks(statsArray, Block.LitRedstoneOre.id, Block.RedstoneOre.id);
-        ReplaceSimilarBlocks(statsArray, Block.PoweredRepeater.id, Block.Repeater.id);
-        ReplaceSimilarBlocks(statsArray, Block.LitRedstoneTorch.id, Block.RedstoneTorch.id);
-        ReplaceSimilarBlocks(statsArray, Block.RedMushroom.id, Block.BrownMushroom.id);
-        ReplaceSimilarBlocks(statsArray, Block.DoubleSlab.id, Block.Slab.id);
-        ReplaceSimilarBlocks(statsArray, Block.GrassBlock.id, Block.Dirt.id);
-        ReplaceSimilarBlocks(statsArray, Block.Farmland.id, Block.Dirt.id);
+        ReplaceSimilarBlocks(statsArray, Block.Water.Id, Block.FlowingWater.Id);
+        ReplaceSimilarBlocks(statsArray, Block.Lava.Id, Block.Lava.Id);
+        ReplaceSimilarBlocks(statsArray, Block.JackLantern.Id, Block.Pumpkin.Id);
+        ReplaceSimilarBlocks(statsArray, Block.LitFurnace.Id, Block.Furnace.Id);
+        ReplaceSimilarBlocks(statsArray, Block.LitRedstoneOre.Id, Block.RedstoneOre.Id);
+        ReplaceSimilarBlocks(statsArray, Block.PoweredRepeater.Id, Block.Repeater.Id);
+        ReplaceSimilarBlocks(statsArray, Block.LitRedstoneTorch.Id, Block.RedstoneTorch.Id);
+        ReplaceSimilarBlocks(statsArray, Block.RedMushroom.Id, Block.BrownMushroom.Id);
+        ReplaceSimilarBlocks(statsArray, Block.DoubleSlab.Id, Block.Slab.Id);
+        ReplaceSimilarBlocks(statsArray, Block.GrassBlock.Id, Block.Dirt.Id);
+        ReplaceSimilarBlocks(statsArray, Block.Farmland.Id, Block.Dirt.Id);
     }
 
     private static void ReplaceSimilarBlocks(StatBase[] statsArray, int sourceId, int targetId)

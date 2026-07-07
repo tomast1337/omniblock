@@ -1,19 +1,13 @@
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Log rendering and leaf decay: bark texture varies by species metadata, and breaking a log
-/// marks all leaves within a 4-block radius for decay. Assign to the Visuals and Lifecycle slots.
+///     Log rendering and leaf decay: bark texture varies by species metadata, and breaking a log
+///     marks all leaves within a 4-block radius for decay. Assign to the Visuals and Lifecycle slots.
 /// </summary>
 public sealed class LogBehavior : IBlockVisuals, IBlockLifecycle
 {
     private const sbyte SearchRadius = 4;
     private const int RegionExtent = SearchRadius + 1;
-
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side switch
-    {
-        Side.Up or Side.Down => BlockTextures.LogTop,
-        _ => meta == 1 ? BlockTextures.LogPineSide : meta == 2 ? BlockTextures.LogBirchSide : BlockTextures.LogOakSide
-    };
 
     public void OnBreak(Block block, OnBreakEvent @event)
     {
@@ -29,7 +23,7 @@ public sealed class LogBehavior : IBlockVisuals, IBlockLifecycle
                 for (int offsetZ = -SearchRadius; offsetZ <= SearchRadius; ++offsetZ)
                 {
                     int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (neighborBlockId != Block.Leaves.id) continue;
+                    if (neighborBlockId != Block.Leaves.Id) continue;
 
                     int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                     if ((leavesMeta & 8) == 0)
@@ -40,4 +34,15 @@ public sealed class LogBehavior : IBlockVisuals, IBlockLifecycle
             }
         }
     }
+
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side switch
+    {
+        Side.Up or Side.Down => BlockTextures.LogTop,
+        _ => meta switch
+        {
+            1 => BlockTextures.LogPineSide,
+            2 => BlockTextures.LogBirchSide,
+            _ => BlockTextures.LogOakSide
+        }
+    };
 }

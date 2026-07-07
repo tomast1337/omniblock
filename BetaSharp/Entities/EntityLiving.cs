@@ -90,7 +90,7 @@ public abstract class EntityLiving : Entity
             int x = MathHelper.Floor(X);
             int y = MathHelper.Floor(BoundingBox.MinY);
             int z = MathHelper.Floor(Z);
-            return World.Reader.GetBlockId(x, y, z) == Block.Ladder.id;
+            return World.Reader.GetBlockId(x, y, z) == Block.Ladder.Id;
         }
     }
 

@@ -8,52 +8,43 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntityDispenser : BlockEntity, IInventory
 {
-    public override BlockEntityType Type => Dispenser;
-    private ItemStack?[] _itemStacks = new ItemStack[9];
     private readonly JavaRandom _random = new();
+    private ItemStack?[] _itemStacks = new ItemStack[9];
+    public override BlockEntityType Type => Dispenser;
 
     public int Size => 9;
 
-    public ItemStack? GetStack(int slot)
-    {
-        return _itemStacks[slot];
-    }
+    public ItemStack? GetStack(int slot) => _itemStacks[slot];
 
     public ItemStack? RemoveStack(int slot, int amount)
     {
         ItemStack? item = _itemStacks[slot];
-        if (item != null)
+        if (item == null) return null;
+
+        ItemStack removedStack;
+        if (item.Count <= amount)
         {
-            ItemStack removedStack;
-            if (item.Count <= amount)
-            {
-                removedStack = item;
-                _itemStacks[slot] = null;
-                MarkDirty();
-                return removedStack;
-            }
-
-            removedStack = item.Split(amount);
-            if (item.Count == 0)
-            {
-                _itemStacks[slot] = null;
-            }
-
+            removedStack = item;
+            _itemStacks[slot] = null;
             MarkDirty();
             return removedStack;
         }
 
-        return null;
+        removedStack = item.Split(amount);
+        if (item.Count == 0)
+        {
+            _itemStacks[slot] = null;
+        }
+
+        MarkDirty();
+        return removedStack;
+
     }
 
     public void SetStack(int slot, ItemStack? stack)
     {
         _itemStacks[slot] = stack;
-        if (stack != null && stack.Count > MaxCountPerStack)
-        {
-            stack.Count = MaxCountPerStack;
-        }
-
+        if (stack != null && stack.Count > MaxCountPerStack) stack.Count = MaxCountPerStack;
         MarkDirty();
     }
 
@@ -61,12 +52,9 @@ public class BlockEntityDispenser : BlockEntity, IInventory
 
     public int MaxCountPerStack => 64;
 
-    public bool CanPlayerUse(EntityPlayer player)
-    {
-        return World.Entities.GetBlockEntity<BlockEntityDispenser>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
-    }
+    public bool CanPlayerUse(EntityPlayer player) => World.Entities.GetBlockEntity<BlockEntityDispenser>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
-    public ItemStack? getItemToDispose()
+    public ItemStack? GetItemToDispose()
     {
         int selectedSlot = -1;
         int nonNullCount = 1;
@@ -79,16 +67,12 @@ public class BlockEntityDispenser : BlockEntity, IInventory
             }
         }
 
-        if (selectedSlot >= 0)
-        {
-            return RemoveStack(selectedSlot, 1);
-        }
-
-        return null;
+        return selectedSlot >= 0 ? RemoveStack(selectedSlot, 1) : null;
     }
 
     public override void ReadNbt(NBTTagCompound nbt)
     {
+        base.ReadNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");
         _itemStacks = new ItemStack[Size];
 
@@ -105,6 +89,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
 
     public override void WriteNbt(NBTTagCompound nbt)
     {
+        base.WriteNbt(nbt);
         NBTTagList itemList = new();
 
 

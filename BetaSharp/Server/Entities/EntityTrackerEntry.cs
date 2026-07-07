@@ -354,12 +354,12 @@ internal class EntityTrackerEntry
             {
                 if (currentTrackedEntity is EntityFallingSand fallingSandEntity)
                 {
-                    if (fallingSandEntity.BlockId == Block.Sand.id)
+                    if (fallingSandEntity.BlockId == Block.Sand.Id)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 70);
                     }
 
-                    if (fallingSandEntity.BlockId == Block.Gravel.id)
+                    if (fallingSandEntity.BlockId == Block.Gravel.Id)
                     {
                         return EntitySpawnS2CPacket.Get(currentTrackedEntity, 71);
                     }

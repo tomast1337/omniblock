@@ -1,18 +1,30 @@
 using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Mushroom: darkness-gated survival/spread. Self-contained (not composed with
-/// <see cref="PlantSurvivalBehavior"/>) since its <see cref="CanGrow"/> requires a light check
-/// beyond plain ground validity, and — with no subclass left to shadow it — the capability hook
-/// is now the single source of truth for both placement and the neighbor-update break check.
+///     Mushroom: darkness-gated survival/spread. Self-contained (not composed with
+///     <see cref="PlantSurvivalBehavior" />) since its <see cref="CanGrow" /> requires a light check
+///     beyond plain ground validity, and — with no subclass left to shadow it — the capability hook
+///     is now the single source of truth for both placement and the neighbor-update break check.
 /// </summary>
 internal sealed class MushroomBehavior : IBlockTicker, IBlockPhysics
 {
-    // ── IBlockTicker ──────────────────────────────────────────────
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
+        => CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
 
+    public bool CanGrow(Block block, OnTickEvent ctx)
+        => ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight
+                      && ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13
+                      && CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        if (CanGrow(block, @event)) return;
+
+        block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+    }
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (Random.Shared.Next(100) != 0) return;
@@ -27,27 +39,9 @@ internal sealed class MushroomBehavior : IBlockTicker, IBlockPhysics
             return;
         }
 
-        @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.id);
-    }
-
-    // ── IBlockPhysics ─────────────────────────────────────────────
-
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
-
-    public bool CanGrow(Block block, OnTickEvent ctx)
-        => ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight
-           && ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13
-           && CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
-
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        if (CanGrow(block, @event)) return;
-
-        block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
-        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+        @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.Id);
     }
 
     private static bool CanPlantOnTop(int id)
-        => id == Block.GrassBlock.id || id == Block.Dirt.id || id == Block.Stone.id || id == Block.Gravel.id || id == Block.Cobblestone.id;
+        => id == Block.GrassBlock.Id || id == Block.Dirt.Id || id == Block.Stone.Id || id == Block.Gravel.Id || id == Block.Cobblestone.Id;
 }

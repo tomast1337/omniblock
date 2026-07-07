@@ -10,5 +10,5 @@ public enum PistonBehavior : byte
     Destroy = 1,
 
     /// <summary>Cannot be pushed at all (obsidian-class, portals, extended pistons).</summary>
-    Unpushable = 2,
+    Unpushable = 2
 }

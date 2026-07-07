@@ -359,7 +359,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private void updateBlockEntity(BlockEntity? blockEntity)
     {
-        Packet? packet = blockEntity?.createUpdatePacket();
+        Packet? packet = blockEntity?.CreateUpdatePacket();
         if (packet != null)
         {
             NetworkHandler?.SendPacket(packet);

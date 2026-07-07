@@ -201,11 +201,11 @@ public class EntityMinecart : Entity, IInventory
                 }
             }
 
-            DropItem(Block.Chest.id, 1, 0.0F);
+            DropItem(Block.Chest.Id, 1, 0.0F);
         }
         else if (type == 2)
         {
-            DropItem(Block.Furnace.id, 1, 0.0F);
+            DropItem(Block.Furnace.Id, 1, 0.0F);
         }
 
         return true;
@@ -332,7 +332,7 @@ public class EntityMinecart : Entity, IInventory
             bool poweredRailActive = false;
             bool poweredRailBraking = false;
 
-            if (railBlockId == Block.PoweredRail.id)
+            if (railBlockId == Block.PoweredRail.Id)
             {
                 poweredRailActive = (railMeta & 8) != 0;
                 poweredRailBraking = !poweredRailActive;

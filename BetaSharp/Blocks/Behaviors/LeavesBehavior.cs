@@ -5,11 +5,11 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Leaves: distance-to-log decay (breadth-first flood fill capped at radius 4, re-derived from
-/// scratch every check since no per-block decay-distance cache persists across ticks), sapling
-/// drop chance, shears harvesting, and the fancy/fast graphics opacity toggle. The toggle is
-/// process-wide (there is only one leaves block in Beta 1.7.3), so <see cref="SetGraphicsLevel"/>
-/// mutates shared state on this singleton rather than per-<see cref="Block"/> instance state.
+///     Leaves: distance-to-log decay (breadth-first flood fill capped at radius 4, re-derived from
+///     scratch every check since no per-block decay-distance cache persists across ticks), sapling
+///     drop chance, shears harvesting, and the fancy/fast graphics opacity toggle. The toggle is
+///     process-wide (there is only one leaves block in Beta 1.7.3), so <see cref="SetGraphicsLevel" />
+///     mutates shared state on this singleton rather than per-<see cref="Block" /> instance state.
 /// </summary>
 public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
@@ -19,10 +19,51 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
     private const int PlaneSize = RegionSize * RegionSize;
     private const int CenterOffset = RegionSize / 2;
 
+    private static readonly int s_shearsId = Item.ByName("shears").Id;
+
     private readonly ThreadLocal<int[]?> _decayRegion = new(() => null);
     private bool _graphicsLevel;
 
-    // ── IBlockTicker ──────────────────────────────────────────────
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        const sbyte searchRadius = 1;
+        const int loadCheckExtent = searchRadius + 1;
+        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
+        {
+            return;
+        }
+
+        for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
+        {
+            for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
+            {
+                for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
+                {
+                    int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+                    if (blockId != Block.Leaves.Id)
+                    {
+                        continue;
+                    }
+
+                    int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+                    @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
+                }
+            }
+        }
+    }
+
+    public void OnAfterBreak(Block block, OnAfterBreakEvent ctx)
+    {
+        ItemStack? hand = ctx.Player.GetHand();
+        if (ctx.World.IsRemote || hand == null || hand.ItemId != s_shearsId) return;
+
+        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
+        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(Block.Leaves.Id, 1, ctx.Meta & 3));
+    }
+
+    public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
+
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Block.Sapling.Id;
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -45,11 +86,11 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                     for (int dy = -DecayRadius; dy <= DecayRadius; ++dy)
                     {
                         int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
-                        if (blockId == Block.Log.id)
+                        if (blockId == Block.Log.Id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
                         }
-                        else if (blockId == Block.Leaves.id)
+                        else if (blockId == Block.Leaves.Id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
                         }
@@ -122,55 +163,6 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
         }
     }
 
-    private static void BreakLeaves(Block block, IWorldContext level, int x, int y, int z)
-    {
-        block.dropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
-        level.Writer.SetBlock(x, y, z, 0);
-    }
-
-    // ── IBlockLifecycle ───────────────────────────────────────────
-
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        const sbyte searchRadius = 1;
-        int loadCheckExtent = searchRadius + 1;
-        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
-        {
-            return;
-        }
-
-        for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
-        {
-            for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
-            {
-                for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
-                {
-                    int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != Block.Leaves.id) continue;
-
-                    int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
-                }
-            }
-        }
-    }
-
-    public void OnAfterBreak(Block block, OnAfterBreakEvent ctx)
-    {
-        ItemStack? hand = ctx.Player.GetHand();
-        if (!ctx.World.IsRemote && hand != null && hand.ItemId == Item.ByName("shears").Id)
-        {
-            ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
-            Block.dropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(Block.Leaves.id, 1, ctx.Meta & 3));
-        }
-    }
-
-    public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
-
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Block.Sapling.id;
-
-    // ── IBlockVisuals ─────────────────────────────────────────────
-
     public int GetColor(Block block, int meta, int defaultColor)
         => (meta & 1) == 1 ? FoliageColors.getSpruceColor() : (meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
 
@@ -188,9 +180,15 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
     public int GetTexture(Block block, Side side, int meta, int defaultTexture) => (meta & 3) == 1 ? defaultTexture + 80 : defaultTexture;
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.id) && defaultVisibility;
+        => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
 
     public bool IsOpaque(Block block, bool defaultOpaque) => !_graphicsLevel;
+
+    private static void BreakLeaves(Block block, IWorldContext level, int x, int y, int z)
+    {
+        block.DropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
+        level.Writer.SetBlock(x, y, z, 0);
+    }
 
     /// <summary>Toggles fancy (translucent) vs fast (opaque) leaves rendering.</summary>
     public static void SetGraphicsLevel(Block block, bool fancy)

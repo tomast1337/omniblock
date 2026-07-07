@@ -1,17 +1,16 @@
-using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Redstone wire: power emission with directional connectivity, current propagation, survival
-/// (breaks without solid ground), and the powered-dust particles. One shared instance assigned
-/// to the Redstone, Physics, Ticker, Lifecycle, and Visuals slots.
-/// <para>
-/// <see cref="WiresProvidePower"/> is thread-local: propagation temporarily blinds the engine
-/// to wires while measuring indirect power, exactly like the original static flag.
-/// </para>
+///     Redstone wire: power emission with directional connectivity, current propagation, survival
+///     (breaks without solid ground), and the powered-dust particles. One shared instance assigned
+///     to the Redstone, Physics, Ticker, Lifecycle, and Visuals slots.
+///     <para>
+///         <see cref="WiresProvidePower" /> is thread-local: propagation temporarily blinds the engine
+///         to wires while measuring indirect power, exactly like the original static flag.
+///     </para>
 /// </summary>
 public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
@@ -20,41 +19,25 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
 
     private readonly HashSet<BlockPos> _blocksNeedingUpdate = [];
 
-    // ---- IRedstoneComponent ----
-
-    public bool CanEmitRedstonePower(Block block) => s_wiresProvidePower.Value;
-
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (!s_wiresProvidePower.Value) return false;
-        if (reader.GetBlockMeta(x, y, z) == 0) return false;
-        if (side == 1) return true;
+        if (@event.World.IsRemote) return;
 
-        bool connectsMinusX = isPowerProviderOrWire(reader, x - 1, y, z, 1) || (!reader.ShouldSuffocate(x - 1, y, z) && isPowerProviderOrWire(reader, x - 1, y - 1, z, -1));
-        bool connectsPlusX = isPowerProviderOrWire(reader, x + 1, y, z, 3) || (!reader.ShouldSuffocate(x + 1, y, z) && isPowerProviderOrWire(reader, x + 1, y - 1, z, -1));
-        bool connectsMinusZ = isPowerProviderOrWire(reader, x, y, z - 1, 2) || (!reader.ShouldSuffocate(x, y, z - 1) && isPowerProviderOrWire(reader, x, y - 1, z - 1, -1));
-        bool connectsPlusZ = isPowerProviderOrWire(reader, x, y, z + 1, 0) || (!reader.ShouldSuffocate(x, y, z + 1) && isPowerProviderOrWire(reader, x, y - 1, z + 1, -1));
-
-        if (!reader.ShouldSuffocate(x, y + 1, z))
-        {
-            if (reader.ShouldSuffocate(x - 1, y, z) && isPowerProviderOrWire(reader, x - 1, y + 1, z, -1)) connectsMinusX = true;
-            if (reader.ShouldSuffocate(x + 1, y, z) && isPowerProviderOrWire(reader, x + 1, y + 1, z, -1)) connectsPlusX = true;
-            if (reader.ShouldSuffocate(x, y, z - 1) && isPowerProviderOrWire(reader, x, y + 1, z - 1, -1)) connectsMinusZ = true;
-            if (reader.ShouldSuffocate(x, y, z + 1) && isPowerProviderOrWire(reader, x, y + 1, z + 1, -1)) connectsPlusZ = true;
-        }
-
-        return !connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5 ||
-               side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX ||
-               side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX ||
-               side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ ||
-               side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ;
+        UpdateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
+        NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => s_wiresProvidePower.Value && IsPoweringSide(block, reader, x, y, z, side);
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        if (@event.World.IsRemote) return;
 
-    // ---- IBlockVisuals ----
-
-    public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor) => 8388608;
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
+        UpdateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
+        NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
+    }
 
     // ---- IBlockPhysics ----
 
@@ -69,55 +52,14 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
         // wire's own (occupied) position and would always fail here.
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z))
         {
-            block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
+            block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
-            updateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
+            UpdateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
         }
     }
-
-    // ---- IBlockLifecycle ----
-
-    public void OnPlaced(Block block, OnPlacedEvent @event)
-    {
-        if (@event.World.IsRemote) return;
-
-        updateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.id);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
-        NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
-    }
-
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        if (@event.World.IsRemote) return;
-
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.id);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
-        updateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
-        NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
-    }
-
-    /// <summary>
-    /// Notifies the wires laterally adjacent to (x, y, z), stepping up over solid neighbors
-    /// and down past non-solid ones — identical on place and on break.
-    /// </summary>
-    private void NotifySurroundingWires(IWorldContext level, int x, int y, int z)
-    {
-        NotifyWireNeighborsOfNeighborChange(level, x - 1, y, z);
-        NotifyWireNeighborsOfNeighborChange(level, x + 1, y, z);
-        NotifyWireNeighborsOfNeighborChange(level, x, y, z - 1);
-        NotifyWireNeighborsOfNeighborChange(level, x, y, z + 1);
-
-        NotifyWireNeighborsOfNeighborChange(level, x - 1, y + (level.Reader.ShouldSuffocate(x - 1, y, z) ? 1 : -1), z);
-        NotifyWireNeighborsOfNeighborChange(level, x + 1, y + (level.Reader.ShouldSuffocate(x + 1, y, z) ? 1 : -1), z);
-        NotifyWireNeighborsOfNeighborChange(level, x, y + (level.Reader.ShouldSuffocate(x, y, z - 1) ? 1 : -1), z - 1);
-        NotifyWireNeighborsOfNeighborChange(level, x, y + (level.Reader.ShouldSuffocate(x, y, z + 1) ? 1 : -1), z + 1);
-    }
-
-    // ---- IBlockTicker ----
 
     public void RandomDisplayTick(Block block, OnTickEvent @event)
     {
@@ -145,22 +87,82 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
         @event.World.Broadcaster.AddParticle("reddust", x, y, z, xVel, yVel, zVel);
     }
 
-    // ---- Propagation ----
+    public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor) => 8388608;
 
-    private void updateAndPropagateCurrentStrength(IWorldContext level, int startX, int startY, int startZ)
+    public bool CanEmitRedstonePower(Block block) => s_wiresProvidePower.Value;
+
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
     {
-        calculateCurrentChanges(level, startX, startY, startZ, -1, -1, -1);
+        if (!s_wiresProvidePower.Value) return false;
+        if (reader.GetBlockMeta(x, y, z) == 0) return false;
+        if (side == 1) return true;
+
+        bool connectsMinusX = IsPowerProviderOrWire(reader, x - 1, y, z, 1) || (!reader.ShouldSuffocate(x - 1, y, z) && IsPowerProviderOrWire(reader, x - 1, y - 1, z, -1));
+        bool connectsPlusX = IsPowerProviderOrWire(reader, x + 1, y, z, 3) || (!reader.ShouldSuffocate(x + 1, y, z) && IsPowerProviderOrWire(reader, x + 1, y - 1, z, -1));
+        bool connectsMinusZ = IsPowerProviderOrWire(reader, x, y, z - 1, 2) || (!reader.ShouldSuffocate(x, y, z - 1) && IsPowerProviderOrWire(reader, x, y - 1, z - 1, -1));
+        bool connectsPlusZ = IsPowerProviderOrWire(reader, x, y, z + 1, 0) || (!reader.ShouldSuffocate(x, y, z + 1) && IsPowerProviderOrWire(reader, x, y - 1, z + 1, -1));
+
+        if (reader.ShouldSuffocate(x, y + 1, z))
+        {
+            return (!connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5) ||
+                   (side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX) ||
+                   (side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX) ||
+                   (side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ) ||
+                   (side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ);
+        }
+
+        if (reader.ShouldSuffocate(x - 1, y, z) && IsPowerProviderOrWire(reader, x - 1, y + 1, z, -1))
+            connectsMinusX = true;
+
+        if (reader.ShouldSuffocate(x + 1, y, z) && IsPowerProviderOrWire(reader, x + 1, y + 1, z, -1))
+            connectsPlusX = true;
+
+        if (reader.ShouldSuffocate(x, y, z - 1) && IsPowerProviderOrWire(reader, x, y + 1, z - 1, -1))
+            connectsMinusZ = true;
+
+        if (reader.ShouldSuffocate(x, y, z + 1) && IsPowerProviderOrWire(reader, x, y + 1, z + 1, -1))
+            connectsPlusZ = true;
+
+        return (!connectsMinusZ && !connectsPlusX && !connectsMinusX && !connectsPlusZ && side is >= 2 and <= 5) ||
+               (side == 2 && connectsMinusZ && !connectsMinusX && !connectsPlusX) ||
+               (side == 3 && connectsPlusZ && !connectsMinusX && !connectsPlusX) ||
+               (side == 4 && connectsMinusX && !connectsMinusZ && !connectsPlusZ) ||
+               (side == 5 && connectsPlusX && !connectsMinusZ && !connectsPlusZ);
+    }
+
+    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => s_wiresProvidePower.Value && IsPoweringSide(block, reader, x, y, z, side);
+
+    /// <summary>
+    ///     Notifies the wires laterally adjacent to (x, y, z), stepping up over solid neighbors
+    ///     and down past non-solid ones — identical on place and on break.
+    /// </summary>
+    private void NotifySurroundingWires(IWorldContext level, int x, int y, int z)
+    {
+        NotifyWireNeighborsOfNeighborChange(level, x - 1, y, z);
+        NotifyWireNeighborsOfNeighborChange(level, x + 1, y, z);
+        NotifyWireNeighborsOfNeighborChange(level, x, y, z - 1);
+        NotifyWireNeighborsOfNeighborChange(level, x, y, z + 1);
+
+        NotifyWireNeighborsOfNeighborChange(level, x - 1, y + (level.Reader.ShouldSuffocate(x - 1, y, z) ? 1 : -1), z);
+        NotifyWireNeighborsOfNeighborChange(level, x + 1, y + (level.Reader.ShouldSuffocate(x + 1, y, z) ? 1 : -1), z);
+        NotifyWireNeighborsOfNeighborChange(level, x, y + (level.Reader.ShouldSuffocate(x, y, z - 1) ? 1 : -1), z - 1);
+        NotifyWireNeighborsOfNeighborChange(level, x, y + (level.Reader.ShouldSuffocate(x, y, z + 1) ? 1 : -1), z + 1);
+    }
+
+    private void UpdateAndPropagateCurrentStrength(IWorldContext level, int startX, int startY, int startZ)
+    {
+        CalculateCurrentChanges(level, startX, startY, startZ, -1, -1, -1);
 
         List<BlockPos> updateList = [.. _blocksNeedingUpdate];
         _blocksNeedingUpdate.Clear();
 
         foreach (BlockPos pos in updateList)
         {
-            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, Block.RedstoneWire.id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, Block.RedstoneWire.Id);
         }
     }
 
-    private void calculateCurrentChanges(IWorldContext level, int x, int y, int z, int sourceX, int sourceY, int sourceZ)
+    private void CalculateCurrentChanges(IWorldContext level, int x, int y, int z, int sourceX, int sourceY, int sourceZ)
     {
         int oldMeta = level.Reader.GetBlockMeta(x, y, z);
 
@@ -182,19 +184,19 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
 
                 if (nx != sourceX || nz != sourceZ)
                 {
-                    maxCurrent = getMaxCurrentStrength(level.Reader, nx, y, nz, maxCurrent);
+                    maxCurrent = GetMaxCurrentStrength(level.Reader, nx, y, nz, maxCurrent);
                 }
 
                 if (level.Reader.ShouldSuffocate(nx, y, nz))
                 {
                     if (!level.Reader.ShouldSuffocate(x, y + 1, z) && (nx != sourceX || nz != sourceZ))
                     {
-                        maxCurrent = getMaxCurrentStrength(level.Reader, nx, y + 1, nz, maxCurrent);
+                        maxCurrent = GetMaxCurrentStrength(level.Reader, nx, y + 1, nz, maxCurrent);
                     }
                 }
                 else if (nx != sourceX || nz != sourceZ)
                 {
-                    maxCurrent = getMaxCurrentStrength(level.Reader, nx, y - 1, nz, maxCurrent);
+                    maxCurrent = GetMaxCurrentStrength(level.Reader, nx, y - 1, nz, maxCurrent);
                 }
             }
 
@@ -215,65 +217,64 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
 
             if (level.Reader.ShouldSuffocate(nx, y, nz)) ny += 2;
 
-            int neighborMax = getMaxCurrentStrength(level.Reader, nx, y, nz, -1);
+            int neighborMax = GetMaxCurrentStrength(level.Reader, nx, y, nz, -1);
             if (neighborMax >= 0 && neighborMax != (maxCurrent > 0 ? maxCurrent - 1 : 0))
             {
-                calculateCurrentChanges(level, nx, y, nz, x, y, z);
+                CalculateCurrentChanges(level, nx, y, nz, x, y, z);
             }
 
-            neighborMax = getMaxCurrentStrength(level.Reader, nx, ny, nz, -1);
+            neighborMax = GetMaxCurrentStrength(level.Reader, nx, ny, nz, -1);
             if (neighborMax >= 0 && neighborMax != (maxCurrent > 0 ? maxCurrent - 1 : 0))
             {
-                calculateCurrentChanges(level, nx, ny, nz, x, y, z);
+                CalculateCurrentChanges(level, nx, ny, nz, x, y, z);
             }
         }
 
-        if (oldMeta == 0 || maxCurrent == 0)
-        {
-            _blocksNeedingUpdate.Add(new BlockPos(x, y, z));
-            _blocksNeedingUpdate.Add(new BlockPos(x - 1, y, z));
-            _blocksNeedingUpdate.Add(new BlockPos(x + 1, y, z));
-            _blocksNeedingUpdate.Add(new BlockPos(x, y - 1, z));
-            _blocksNeedingUpdate.Add(new BlockPos(x, y + 1, z));
-            _blocksNeedingUpdate.Add(new BlockPos(x, y, z - 1));
-            _blocksNeedingUpdate.Add(new BlockPos(x, y, z + 1));
-        }
+        if (oldMeta != 0 && maxCurrent != 0) return;
+        _blocksNeedingUpdate.Add(new BlockPos(x, y, z));
+        _blocksNeedingUpdate.Add(new BlockPos(x - 1, y, z));
+        _blocksNeedingUpdate.Add(new BlockPos(x + 1, y, z));
+        _blocksNeedingUpdate.Add(new BlockPos(x, y - 1, z));
+        _blocksNeedingUpdate.Add(new BlockPos(x, y + 1, z));
+        _blocksNeedingUpdate.Add(new BlockPos(x, y, z - 1));
+        _blocksNeedingUpdate.Add(new BlockPos(x, y, z + 1));
     }
 
-    private void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
+    private static void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y, z) != Block.RedstoneWire.id) return;
-
-        level.Broadcaster.NotifyNeighbors(x, y, z, Block.RedstoneWire.id);
-        level.Broadcaster.NotifyNeighbors(x - 1, y, z, Block.RedstoneWire.id);
-        level.Broadcaster.NotifyNeighbors(x + 1, y, z, Block.RedstoneWire.id);
-        level.Broadcaster.NotifyNeighbors(x, y, z - 1, Block.RedstoneWire.id);
-        level.Broadcaster.NotifyNeighbors(x, y, z + 1, Block.RedstoneWire.id);
-        level.Broadcaster.NotifyNeighbors(x, y - 1, z, Block.RedstoneWire.id);
-        level.Broadcaster.NotifyNeighbors(x, y + 1, z, Block.RedstoneWire.id);
+        if (level.Reader.GetBlockId(x, y, z) != Block.RedstoneWire.Id) return;
+        level.Broadcaster.NotifyNeighbors(x, y, z, Block.RedstoneWire.Id);
+        level.Broadcaster.NotifyNeighbors(x - 1, y, z, Block.RedstoneWire.Id);
+        level.Broadcaster.NotifyNeighbors(x + 1, y, z, Block.RedstoneWire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y, z - 1, Block.RedstoneWire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y, z + 1, Block.RedstoneWire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y - 1, z, Block.RedstoneWire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y + 1, z, Block.RedstoneWire.Id);
     }
 
-    private static int getMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int power)
+    private static int GetMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int power)
     {
-        if (reader.GetBlockId(x, y, z) != Block.RedstoneWire.id) return power;
+        if (reader.GetBlockId(x, y, z) != Block.RedstoneWire.Id) return power;
         int currentStrength = reader.GetBlockMeta(x, y, z);
         return currentStrength > power ? currentStrength : power;
     }
 
     /// <summary>Connectivity test shared with the client wire renderer.</summary>
-    public static bool isPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int direction)
+    public static bool IsPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int direction)
     {
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId == 0) return false;
-        if (blockId == Block.RedstoneWire.id) return true;
-        if (blockId == Block.StonePressurePlate.id ||
-            blockId == Block.WoodenPressurePlate.id ||
-            blockId == Block.Button.id ||
-            blockId == Block.Lever.id)
+        if (blockId == Block.RedstoneWire.Id) return true;
+
+        if (blockId == Block.StonePressurePlate.Id ||
+            blockId == Block.WoodenPressurePlate.Id ||
+            blockId == Block.Button.Id ||
+            blockId == Block.Lever.Id)
+        {
             return true;
+        }
 
-        if (blockId != Block.Repeater.id && blockId != Block.PoweredRepeater.id) return Block.Blocks[blockId].canEmitRedstonePower();
-
+        if (blockId != Block.Repeater.Id && blockId != Block.PoweredRepeater.Id) return Block.Blocks[blockId].CanEmitRedstonePower();
         if (direction < 0) return false;
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;

@@ -132,7 +132,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.BipedHead.Transform(1.0F / 16.0F);
-            if (BlockRenderer.IsSideLit(Block.Blocks[helmetStack.ItemId].getRenderType()))
+            if (BlockRenderer.IsSideLit(Block.Blocks[helmetStack.ItemId].GetRenderType()))
             {
                 float helmetScale = 10.0F / 16.0F;
                 GLManager.GL.Translate(0.0F, -0.25F, 0.0F);
@@ -219,7 +219,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 heldItem = new ItemStack(Item.ByName("stick"));
             }
 
-            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldItem.ItemId].getRenderType()))
+            if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldItem.ItemId].GetRenderType()))
             {
                 heldItemScale = 0.5F;
                 GLManager.GL.Translate(0.0F, 3.0F / 16.0F, -(5.0F / 16.0F));

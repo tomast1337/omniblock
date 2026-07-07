@@ -1,9 +1,10 @@
 namespace BetaSharp.Blocks;
 
 /// <summary>
-/// Sprite indices into <c>/terrain.png</c> for block rendering (Beta 1.7.3–style atlas).
-/// Each index selects a 16×16 tile in a 16-column-wide grid: row <c>index / 16</c>, column <c>index % 16</c>.
-/// TODO: This should probably be moved to the BetaSharp.Client.Rendering.Core.TexturesAtlas class were we can have methods to name and retrieve ids
+///     Sprite indices into <c>/terrain.png</c> for block rendering (Beta 1.7.3–style atlas).
+///     Each index selects a 16×16 tile in a 16-column-wide grid: row <c>index / 16</c>, column <c>index % 16</c>.
+///     TODO: This should probably be moved to the BetaSharp.Client.Rendering.Core.TexturesAtlas class were we can have
+///     methods to name and retrieve ids
 /// </summary>
 public static class BlockTextures
 {

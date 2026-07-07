@@ -3,80 +3,59 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Redstone torch power emission, burnout tracking, and lit/unlit toggling. One instance is
-/// shared by both torch blocks — lit state is derived from the block id, and the burnout
-/// history must span both blocks since a toggling torch alternates between them.
-/// <para>
-/// Wall-mount placement/facing/support-break is delegated to the shared <see cref="WallMountBehavior"/>
-/// torch instance (composition, not inheritance, now that <c>BlockTorch</c> is flattened) —
-/// this class layers redstone-specific neighbor notification and burnout scheduling on top.
-/// Assign to the Redstone, Ticker, Visuals, Physics, and Lifecycle slots.
-/// </para>
+///     Redstone torch power emission, burnout tracking, and lit/unlit toggling. One instance is
+///     shared by both torch blocks — lit state is derived from the block id, and the burnout
+///     history must span both blocks since a toggling torch alternates between them.
+///     <para>
+///         Wall-mount placement/facing/support-break is delegated to the shared <see cref="WallMountBehavior" />
+///         torch instance (composition, not inheritance, now that <c>BlockTorch</c> is flattened) —
+///         this class layers redstone-specific neighbor notification and burnout scheduling on top.
+///         Assign to the Redstone, Ticker, Visuals, Physics, and Lifecycle slots.
+///     </para>
 /// </summary>
 public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IBlockVisuals, IBlockPhysics, IBlockLifecycle
 {
     private const double VerticalOffset = 0.22F;
     private const double HorizontalOffset = 0.27F;
+    private readonly WallMountBehavior _torchPhysics;
 
     private readonly List<RedstoneUpdateInfo> _torchUpdates = [];
     private readonly Lock _updateLock = new();
-    private readonly WallMountBehavior _torchPhysics;
 
     public RedstoneTorchBehavior(WallMountBehavior torchPhysics) => _torchPhysics = torchPhysics;
 
-    private static bool IsLit(Block block) => block.id == Block.LitRedstoneTorch.id;
-
-    public bool CanEmitRedstonePower(Block block) => true;
-
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (!IsLit(block)) return false;
-
-        int meta = reader.GetBlockMeta(x, y, z);
-        return (meta != 5 || side != 1) && (meta != 3 || side != 3) && (meta != 4 || side != 2) && (meta != 1 || side != 5) && (meta != 2 || side != 4);
+        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0) _torchPhysics.OnPlaced(block, @event);
+        if (!IsLit(block)) return;
+        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.Id);
     }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => side == 0 && IsPoweringSide(block, reader, x, y, z, side);
-
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-        => side == Side.Up ? Block.RedstoneWire.GetTexture(side, meta) : defaultTexture;
-
-    private bool isBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
+    public void OnBreak(Block block, OnBreakEvent @event)
     {
-        lock (_updateLock)
+        if (!IsLit(block))
         {
-            if (recordUpdate)
-            {
-                _torchUpdates.Add(new RedstoneUpdateInfo(ctx.X, ctx.Y, ctx.Z, currentTime));
-            }
-
-            int updateCount = 0;
-
-            foreach (var updateInfo in _torchUpdates)
-            {
-                if (updateInfo.x != ctx.X || updateInfo.y != ctx.Y || updateInfo.z != ctx.Z) continue;
-
-                ++updateCount;
-                if (updateCount >= 8) return true;
-            }
-
-            return false;
+            return;
         }
+
+        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.Id);
     }
 
-    private static bool shouldUnpower(OnTickEvent @event)
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => _torchPhysics.CanPlaceAt(block, @event);
+
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
+        => _torchPhysics.UpdateBoundingBox(block, reader, x, y, z);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
-        RedstoneEngine redstoneEngine = @event.World.Redstone;
-        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
-        return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0)) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2)) ||
-               (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, 3)) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, 4)) || (meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, 5));
+        _torchPhysics.NeighborUpdate(block, @event);
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
     }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
-        bool shouldTurnOff = shouldUnpower(@event);
+        bool shouldTurnOff = ShouldUnpower(@event);
 
         long currentTime = @event.World.GetTime();
 
@@ -92,9 +71,9 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
         {
             if (!shouldTurnOff) return;
 
-            @event.World.Writer.SetBlock(x, y, z, Block.RedstoneTorch.id, @event.World.Reader.GetBlockMeta(x, y, z));
+            @event.World.Writer.SetBlock(x, y, z, Block.RedstoneTorch.Id, @event.World.Reader.GetBlockMeta(x, y, z));
 
-            if (!isBurnedOut(@event, true, currentTime)) return;
+            if (!IsBurnedOut(@event, true, currentTime)) return;
 
             @event.World.Broadcaster.WorldEvent(1004, x, y, z, 0);
 
@@ -107,11 +86,11 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
             }
 
             int spatialBias = (x + y + z) % 3;
-            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, Block.RedstoneTorch.id, 160 + spatialBias);
+            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, Block.RedstoneTorch.Id, 160 + spatialBias);
         }
-        else if (!shouldTurnOff && !isBurnedOut(@event, false, currentTime))
+        else if (!shouldTurnOff && !IsBurnedOut(@event, false, currentTime))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.LitRedstoneTorch.id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.LitRedstoneTorch.Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
         }
     }
 
@@ -143,38 +122,55 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
         }
     }
 
-    // ── IBlockPhysics (wall-mount delegated to the torch behavior) ───
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+        => side == Side.Up ? Block.RedstoneWire.GetTexture(side, meta) : defaultTexture;
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => _torchPhysics.CanPlaceAt(block, @event);
+    public bool CanEmitRedstonePower(Block block) => true;
 
-    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-        => _torchPhysics.UpdateBoundingBox(block, reader, x, y, z);
-
-    public void NeighborUpdate(Block block, OnTickEvent @event)
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
     {
-        _torchPhysics.NeighborUpdate(block, @event);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
+        if (!IsLit(block)) return false;
+        int meta = reader.GetBlockMeta(x, y, z);
+        return (meta != 5 || side != 1) && (meta != 3 || side != 3) && (meta != 4 || side != 2) && (meta != 1 || side != 5) && (meta != 2 || side != 4);
     }
 
-    // ── IBlockLifecycle ───────────────────────────────────────────
+    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => side == 0 && IsPoweringSide(block, reader, x, y, z, side);
 
-    public void OnPlaced(Block block, OnPlacedEvent @event)
+    private static bool IsLit(Block block) => block.Id == Block.LitRedstoneTorch.Id;
+
+    private bool IsBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
     {
-        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0)
+        lock (_updateLock)
         {
-            _torchPhysics.OnPlaced(block, @event);
+            if (recordUpdate) _torchUpdates.Add(new RedstoneUpdateInfo(ctx.X, ctx.Y, ctx.Z, currentTime));
+
+            int updateCount = 0;
+
+            foreach (RedstoneUpdateInfo updateInfo in _torchUpdates)
+            {
+                if (updateInfo.x != ctx.X || updateInfo.y != ctx.Y || updateInfo.z != ctx.Z)
+                {
+                    continue;
+                }
+
+                ++updateCount;
+                if (updateCount >= 8)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
-
-        if (!IsLit(block)) return;
-
-        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.id);
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event)
+    private static bool ShouldUnpower(OnTickEvent @event)
     {
-        if (!IsLit(block)) return;
-
-        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.id);
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
+        RedstoneEngine redstoneEngine = @event.World.Redstone;
+        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0)) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2)) ||
+               (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, 3)) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, 4)) || (meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, 5));
     }
 
     private static void NotifyAllNeighbors(IWorldContext world, int x, int y, int z, int id)

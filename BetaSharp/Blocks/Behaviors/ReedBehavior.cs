@@ -1,27 +1,37 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Items;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Sugar cane: vertical growth up to 3 tall (metadata 0-15 counts ticks toward the next
-/// segment), requiring valid ground adjacent to water. The ground+water check is a private
-/// helper reused directly by <see cref="CanGrow"/>/<see cref="NeighborUpdate"/> rather than
-/// routed through the full <c>canPlaceAt</c> dispatch — that dispatch ANDs with the base
-/// replaceability check, which is false for the reed's own (non-replaceable) material and would
-/// make the break-recheck always fail.
+///     Sugar cane: vertical growth up to 3 tall (metadata 0-15 counts ticks toward the next
+///     segment), requiring valid ground adjacent to water. The ground+water check is a private
+///     helper reused directly by <see cref="CanGrow" />/<see cref="NeighborUpdate" /> rather than
+///     routed through the full <c>canPlaceAt</c> dispatch — that dispatch ANDs with the base
+///     replaceability check, which is false for the reed's own (non-replaceable) material and would
+///     make the break-recheck always fail.
 /// </summary>
 internal sealed class ReedBehavior : IBlockTicker, IBlockPhysics
 {
-    // ── IBlockTicker ──────────────────────────────────────────────
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
+        => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
 
+    public bool CanGrow(Block block, OnTickEvent @event)
+        => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        if (CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z)) return;
+
+        block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+    }
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
 
         int heightBelow = 1;
-        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.id)
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.Id)
         {
             heightBelow++;
         }
@@ -31,29 +41,13 @@ internal sealed class ReedBehavior : IBlockTicker, IBlockPhysics
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (meta == 15)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.Id);
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta + 1);
         }
-    }
-
-    // ── IBlockPhysics ─────────────────────────────────────────────
-
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => CanSurviveAt(@event.World.Reader, block.id, @event.X, @event.Y, @event.Z);
-
-    public bool CanGrow(Block block, OnTickEvent @event)
-        => CanSurviveAt(@event.World.Reader, block.id, @event.X, @event.Y, @event.Z);
-
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        if (CanSurviveAt(@event.World.Reader, block.id, @event.X, @event.Y, @event.Z)) return;
-
-        block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
-        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
     private static bool CanSurviveAt(IBlockReader reader, int selfId, int x, int y, int z)
@@ -64,10 +58,10 @@ internal sealed class ReedBehavior : IBlockTicker, IBlockPhysics
         if (blockBelowId == selfId) return true;
 
         // Valid block below.
-        if (blockBelowId != Block.GrassBlock.id &&
-            blockBelowId != Block.Dirt.id &&
-            blockBelowId != Block.Sand.id &&
-            blockBelowId != Block.Gravel.id) return false;
+        if (blockBelowId != Block.GrassBlock.Id &&
+            blockBelowId != Block.Dirt.Id &&
+            blockBelowId != Block.Sand.Id &&
+            blockBelowId != Block.Gravel.Id) return false;
 
         // Water adjacent.
         return reader.GetMaterial(x - 1, y - 1, z) == Material.Water ||

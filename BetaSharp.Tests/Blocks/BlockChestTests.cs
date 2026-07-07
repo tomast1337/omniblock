@@ -19,8 +19,8 @@ public sealed class BlockChestTests
     {
         FakeWorldContext world = new();
         PlaceNorthSouthDoubleChest(world);
-        world.ReaderWriter.SetInitial(1, 64, 0, Block.Stone.id);
-        world.ReaderWriter.SetInitial(1, 64, 1, Block.Stone.id);
+        world.ReaderWriter.SetInitial(1, 64, 0, Block.Stone.Id);
+        world.ReaderWriter.SetInitial(1, 64, 1, Block.Stone.Id);
 
         Assert.Equal(BlockTextures.ChestDoubleFrontLeft, Block.Chest.GetTextureId(world.Reader, 0, 64, 0, Side.West));
         Assert.Equal(BlockTextures.ChestDoubleFrontRight, Block.Chest.GetTextureId(world.Reader, 0, 64, 1, Side.West));
@@ -28,7 +28,7 @@ public sealed class BlockChestTests
 
     private static void PlaceNorthSouthDoubleChest(FakeWorldContext world)
     {
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Chest.id);
-        world.ReaderWriter.SetInitial(0, 64, 1, Block.Chest.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, Block.Chest.Id);
+        world.ReaderWriter.SetInitial(0, 64, 1, Block.Chest.Id);
     }
 }

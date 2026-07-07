@@ -1,5 +1,4 @@
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
@@ -10,13 +9,10 @@ internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBl
 {
     private const float FlameParticleOffset = 0.52F;
 
-    private static readonly ILogger<FurnaceBehavior> s_logger = BetaSharp.Log.Instance.For<FurnaceBehavior>();
+    private static readonly ILogger<FurnaceBehavior> s_logger = Log.Instance.For<FurnaceBehavior>();
     private readonly bool _lit;
 
-    public FurnaceBehavior(bool lit)
-    {
-        _lit = lit;
-    }
+    public FurnaceBehavior(bool lit) => _lit = lit;
 
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -59,32 +55,7 @@ internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBl
         InventoryUtility.OnPlaced(block, @event);
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        InventoryUtility.OnBreak(block, @event);
-    }
-
-    private static void UpdateDirection(OnPlacedEvent @event)
-    {
-        if (@event.World.IsRemote) return;
-
-        IBlockReader reader = @event.World.Reader;
-        int x = @event.X, y = @event.Y, z = @event.Z;
-
-        bool isNorthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
-        bool isSouthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
-        bool isWestOpaque = Block.BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
-        bool isEastOpaque = Block.BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
-
-        byte direction = 3;
-        if (isNorthOpaque && !isSouthOpaque) direction = 3;
-        else if (isSouthOpaque && !isNorthOpaque) direction = 2;
-
-        if (isWestOpaque && !isEastOpaque) direction = 5;
-        else if (isEastOpaque && !isWestOpaque) direction = 4;
-
-        @event.World.Writer.SetBlockMeta(x, y, z, direction);
-    }
+    public void OnBreak(Block block, OnBreakEvent @event) => InventoryUtility.OnBreak(block, @event);
 
     public void RandomDisplayTick(Block block, OnTickEvent @event)
     {
@@ -117,15 +88,13 @@ internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBl
         }
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture)
-    {
-        return side switch
+    public int GetTexture(Block block, Side side, int defaultTexture) =>
+        side switch
         {
             Side.Up or Side.Down => BlockTextures.FurnaceTop,
             Side.South => BlockTextures.FurnaceFrontUnlit,
             _ => defaultTexture
         };
-    }
 
     public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
     {
@@ -137,15 +106,52 @@ internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBl
         return _lit ? BlockTextures.FurnaceFrontLit : BlockTextures.FurnaceFrontUnlit;
     }
 
+    private static void UpdateDirection(OnPlacedEvent @event)
+    {
+        if (@event.World.IsRemote)
+        {
+            return;
+        }
+
+        IBlockReader reader = @event.World.Reader;
+        int x = @event.X, y = @event.Y, z = @event.Z;
+
+        bool isNorthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
+        bool isSouthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
+        bool isWestOpaque = Block.BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
+        bool isEastOpaque = Block.BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
+
+        byte direction = 3;
+        if (isNorthOpaque && !isSouthOpaque)
+        {
+            direction = 3;
+        }
+        else if (isSouthOpaque && !isNorthOpaque)
+        {
+            direction = 2;
+        }
+
+        if (isWestOpaque && !isEastOpaque)
+        {
+            direction = 5;
+        }
+        else if (isEastOpaque && !isWestOpaque)
+        {
+            direction = 4;
+        }
+
+        @event.World.Writer.SetBlockMeta(x, y, z, direction);
+    }
+
     public static void UpdateLitState(bool lit, IWorldContext world, int x, int y, int z)
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);
         BlockEntity? furnace = world.Entities.GetBlockEntity<BlockEntity>(x, y, z);
         InventoryUtility.IgnoreBlockRemoval.Value = true;
-        world.Writer.SetBlock(x, y, z, lit ? Block.LitFurnace.id : Block.Furnace.id);
+        world.Writer.SetBlock(x, y, z, lit ? Block.LitFurnace.Id : Block.Furnace.Id);
         InventoryUtility.IgnoreBlockRemoval.Value = false;
         world.Writer.SetBlockMeta(x, y, z, meta);
-        furnace?.cancelRemoval();
+        furnace?.CancelRemoval();
         world.Entities.SetBlockEntity(x, y, z, furnace!);
     }
 }

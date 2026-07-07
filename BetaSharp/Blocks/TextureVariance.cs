@@ -1,3 +1,5 @@
+namespace BetaSharp.Blocks;
+
 [Flags]
 public enum TextureVariance : byte
 {
@@ -9,5 +11,5 @@ public enum TextureVariance : byte
     FlipV = 0b1000,
     FlipBoth = FlipU | FlipV,
     Rotations = Rotate90 | Rotate180 | Rotate270,
-    All = Rotations | FlipBoth,
+    All = Rotations | FlipBoth
 }

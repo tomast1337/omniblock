@@ -61,12 +61,12 @@ public class PlayerControllerMP : PlayerController
             int blockId = Game.World.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
-                Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
+                Block.Blocks[blockId].OnBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
             }
 
             if (!Game.Player.GameMode.CanBreak) return;
 
-            if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.Player) >= Game.Player.GameMode.BreakSpeed)
+            if (blockId > 0 && Block.Blocks[blockId].GetHardness(Game.Player) >= Game.Player.GameMode.BreakSpeed)
             {
                 int meta = Game.World.Reader.GetBlockMeta(x, y, z);
                 if (SendBlockRemoved(x, y, z, direction))
@@ -126,7 +126,7 @@ public class PlayerControllerMP : PlayerController
                         return;
                     }
 
-                    _curBlockDamageMp += block.getHardness(Game.Player);
+                    _curBlockDamageMp += block.GetHardness(Game.Player);
                     if (_mineSoundTimer++ % 4 == 0)
                     {
                         Game.SoundManager.PlayStepSound(block.SoundGroup, x, y, z);

@@ -5,9 +5,9 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Pressure plate: presses (metadata 1) while entities matching the activation rule stand on it,
-/// emits power while pressed, and pops back out after <c>getTickRate()</c> ticks without weight.
-/// Assign to the Redstone, Interactable, Ticker, Physics, and Lifecycle slots.
+///     Pressure plate: presses (metadata 1) while entities matching the activation rule stand on it,
+///     emits power while pressed, and pops back out after <c>getTickRate()</c> ticks without weight.
+///     Assign to the Redstone, Interactable, Ticker, Physics, and Lifecycle slots.
 /// </summary>
 public sealed class PressurePlateBehavior(PressurePlateActiviationRule activationRule) : IRedstoneComponent, IBlockInteractable, IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
@@ -18,22 +18,10 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
 
     private const float DetectionInset = 2.0F / 16.0F;
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
-
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
-
-        if (!shouldBreak) return;
-
-        block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
-        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-    }
-
-    public void OnTick(Block block, OnTickEvent @event)
+    public void OnEntityCollision(Block block, OnEntityCollisionEvent @event)
     {
         bool wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
-        if (wasPressed)
+        if (!wasPressed)
         {
             UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, wasPressed);
         }
@@ -49,14 +37,55 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
         }
     }
 
-    public void OnEntityCollision(Block block, OnEntityCollisionEvent @event)
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        int plateState = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        if (plateState <= 0) return;
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
+    }
+
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+
+        if (!shouldBreak) return;
+
+        block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+    }
+
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
+    {
+        bool isPressed = reader.GetBlockMeta(x, y, z) == 1;
+        if (isPressed)
+        {
+            block.SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
+        }
+        else
+        {
+            block.SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
+        }
+    }
+
+    public void SetupRenderBoundingBox(Block block) => block.SetBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
+
+    public void OnTick(Block block, OnTickEvent @event)
     {
         bool wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
-        if (!wasPressed)
+        if (wasPressed)
         {
             UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, wasPressed);
         }
     }
+
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) > 0;
+
+    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) != 0 && side == 1;
+
+    public bool CanEmitRedstonePower(Block block) => true;
 
     private void UpdatePlateState(Block block, IWorldContext ctx, int x, int y, int z, bool wasPressed)
     {
@@ -78,7 +107,7 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
             ctx.Writer.SetBlockMeta(x, y, z, shouldBePressed ? 1 : 0);
             if (!ctx.IsRemote)
             {
-                ctx.Broadcaster.NotifyNeighborsFloor(x, y, z, block.id);
+                ctx.Broadcaster.NotifyNeighborsFloor(x, y, z, block.Id);
                 ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
             }
             else
@@ -89,38 +118,7 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
 
         if (shouldBePressed)
         {
-            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.id, block.getTickRate());
+            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.GetTickRate());
         }
     }
-
-    public void OnBreak(Block block, OnBreakEvent @event)
-    {
-        int plateState = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if (plateState > 0)
-        {
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.id);
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
-        }
-    }
-
-    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-    {
-        bool isPressed = reader.GetBlockMeta(x, y, z) == 1;
-        if (isPressed)
-        {
-            block.setBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
-        }
-        else
-        {
-            block.setBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
-        }
-    }
-
-    public void SetupRenderBoundingBox(Block block) => block.setBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
-
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) > 0;
-
-    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) != 0 && side == 1;
-
-    public bool CanEmitRedstonePower(Block block) => true;
 }

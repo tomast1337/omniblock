@@ -3,12 +3,12 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks;
 
 /// <summary>
-/// Composable capability for stateless visual overrides: metadata-driven textures,
-/// biome-driven color multipliers, and adjacent-face culling.
-/// <para>
-/// Every hook receives the base logic's result as a trailing <c>default*</c> parameter and
-/// returns the primitive directly — no <see cref="Nullable{T}"/> on the hot path.
-/// </para>
+///     Composable capability for stateless visual overrides: metadata-driven textures,
+///     biome-driven color multipliers, and adjacent-face culling.
+///     <para>
+///         Every hook receives the base logic's result as a trailing <c>default*</c> parameter and
+///         returns the primitive directly — no <see cref="Nullable{T}" /> on the hot path.
+///     </para>
 /// </summary>
 public interface IBlockVisuals
 {
@@ -24,11 +24,14 @@ public interface IBlockVisuals
     bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) => defaultVisibility;
 
     /// <summary>
-    /// Overrides opacity for blocks whose transparency is a runtime toggle (e.g. leaves under
-    /// fancy/fast graphics) rather than a fixed construction-time value.
+    ///     Overrides opacity for blocks whose transparency is a runtime toggle (e.g. leaves under
+    ///     fancy/fast graphics) rather than a fixed construction-time value.
     /// </summary>
     bool IsOpaque(Block block, bool defaultOpaque) => defaultOpaque;
 
-    /// <summary>Overrides the light level a block emits/reflects at a position (e.g. fluids sample the brighter of this and the cell above).</summary>
+    /// <summary>
+    ///     Overrides the light level a block emits/reflects at a position (e.g. fluids sample the brighter of this and
+    ///     the cell above).
+    /// </summary>
     float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => defaultLuminance;
 }

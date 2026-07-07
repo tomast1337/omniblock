@@ -12,39 +12,39 @@ internal class SpringFeature : Feature
 
     public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y + 1, z) != Block.Stone.id)
+        if (level.Reader.GetBlockId(x, y + 1, z) != Block.Stone.Id)
         {
             return false;
         }
 
-        if (level.Reader.GetBlockId(x, y - 1, z) != Block.Stone.id)
+        if (level.Reader.GetBlockId(x, y - 1, z) != Block.Stone.Id)
         {
             return false;
         }
 
         int targetId = level.Reader.GetBlockId(x, y, z);
-        if (targetId != 0 && targetId != Block.Stone.id)
+        if (targetId != 0 && targetId != Block.Stone.Id)
         {
             return false;
         }
 
         int stoneNeighbors = 0;
-        if (level.Reader.GetBlockId(x - 1, y, z) == Block.Stone.id)
+        if (level.Reader.GetBlockId(x - 1, y, z) == Block.Stone.Id)
         {
             ++stoneNeighbors;
         }
 
-        if (level.Reader.GetBlockId(x + 1, y, z) == Block.Stone.id)
+        if (level.Reader.GetBlockId(x + 1, y, z) == Block.Stone.Id)
         {
             ++stoneNeighbors;
         }
 
-        if (level.Reader.GetBlockId(x, y, z - 1) == Block.Stone.id)
+        if (level.Reader.GetBlockId(x, y, z - 1) == Block.Stone.Id)
         {
             ++stoneNeighbors;
         }
 
-        if (level.Reader.GetBlockId(x, y, z + 1) == Block.Stone.id)
+        if (level.Reader.GetBlockId(x, y, z + 1) == Block.Stone.Id)
         {
             ++stoneNeighbors;
         }

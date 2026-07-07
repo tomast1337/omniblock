@@ -3,19 +3,20 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Lever: use toggles metadata bit 8 and holds power until toggled back. Supports wall and
-/// floor mounting. Assign to the Redstone, Interactable, Physics, and Lifecycle slots.
+///     Lever: use toggles metadata bit 8 and holds power until toggled back. Supports wall and
+///     floor mounting. Assign to the Redstone, Interactable, Physics, and Lifecycle slots.
 /// </summary>
 public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlockPhysics, IBlockLifecycle
 {
-    private static bool hasSupport(IBlockReader reader, int x, int y, int z) =>
-        reader.ShouldSuffocate(x - 1, y, z) ||
-        reader.ShouldSuffocate(x + 1, y, z) ||
-        reader.ShouldSuffocate(x, y, z - 1) ||
-        reader.ShouldSuffocate(x, y, z + 1) ||
-        reader.ShouldSuffocate(x, y - 1, z);
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => ToggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => hasSupport(context.World.Reader, context.X, context.Y, context.Z);
+    public bool OnUse(Block block, OnUseEvent @event)
+    {
+        if (@event.World.IsRemote) return true;
+
+        ToggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
+        return true;
+    }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -69,7 +70,7 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
 
         if (meta == -1)
         {
-            block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+            block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
@@ -78,9 +79,39 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         }
     }
 
+    public void OnBreak(Block block, OnBreakEvent ctx)
+    {
+        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        if ((meta & 8) <= 0) return;
+
+        ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, block.Id);
+        int direction = meta & 7;
+
+        switch (direction)
+        {
+            case 1:
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, block.Id);
+                break;
+            case 2:
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, block.Id);
+                break;
+            case 3:
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, block.Id);
+                break;
+            case 4:
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, block.Id);
+                break;
+            default:
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, block.Id);
+                break;
+        }
+    }
+
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => HasSupport(context.World.Reader, context.X, context.Y, context.Z);
+
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (!breakIfCannotPlaceAt(block, @event)) return;
+        if (!BreakIfCannotPlaceAt(block, @event)) return;
 
         int direction = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
 
@@ -93,19 +124,8 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
 
         if (!shouldDrop) return;
 
-        block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-    }
-
-    private static bool breakIfCannotPlaceAt(Block block, OnTickEvent ctx)
-    {
-        // Direct support check — the composed Block.canPlaceAt also tests replaceability of the
-        // lever's own occupied position and would always fail here.
-        if (hasSupport(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z)) return true;
-
-        block.dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
-        ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
-        return false;
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
@@ -116,91 +136,21 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         switch (meta)
         {
             case 1:
-                block.setBoundingBox(0.0F, 0.2F, 0.5F - width, width * 2.0F, 0.8F, 0.5F + width);
+                block.SetBoundingBox(0.0F, 0.2F, 0.5F - width, width * 2.0F, 0.8F, 0.5F + width);
                 break;
             case 2:
-                block.setBoundingBox(1.0F - width * 2.0F, 0.2F, 0.5F - width, 1.0F, 0.8F, 0.5F + width);
+                block.SetBoundingBox(1.0F - width * 2.0F, 0.2F, 0.5F - width, 1.0F, 0.8F, 0.5F + width);
                 break;
             case 3:
-                block.setBoundingBox(0.5F - width, 0.2F, 0.0F, 0.5F + width, 0.8F, width * 2.0F);
+                block.SetBoundingBox(0.5F - width, 0.2F, 0.0F, 0.5F + width, 0.8F, width * 2.0F);
                 break;
             case 4:
-                block.setBoundingBox(0.5F - width, 0.2F, 1.0F - width * 2.0F, 0.5F + width, 0.8F, 1.0F);
+                block.SetBoundingBox(0.5F - width, 0.2F, 1.0F - width * 2.0F, 0.5F + width, 0.8F, 1.0F);
                 break;
             default:
                 width = 0.25F;
-                block.setBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, 0.6F, 0.5F + width);
+                block.SetBoundingBox(0.5F - width, 0.0F, 0.5F - width, 0.5F + width, 0.6F, 0.5F + width);
                 break;
-        }
-    }
-
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => toggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
-
-    public bool OnUse(Block block, OnUseEvent @event)
-    {
-        if (@event.World.IsRemote) return true;
-
-        toggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
-        return true;
-    }
-
-    private static void toggleLever(Block block, IWorldContext world, int x, int y, int z)
-    {
-        int meta = world.Reader.GetBlockMeta(x, y, z);
-        int direction = meta & 7;
-        int powered = 8 - (meta & 8);
-
-        world.Writer.SetBlockMeta(x, y, z, direction + powered);
-        world.Broadcaster.SetBlocksDirty(x, y, z);
-        world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, powered > 0 ? 0.6F : 0.5F);
-        world.Broadcaster.NotifyNeighbors(x, y, z, block.id);
-
-        switch (direction)
-        {
-            case 1:
-                world.Broadcaster.NotifyNeighbors(x - 1, y, z, block.id);
-                break;
-            case 2:
-                world.Broadcaster.NotifyNeighbors(x + 1, y, z, block.id);
-                break;
-            case 3:
-                world.Broadcaster.NotifyNeighbors(x, y, z - 1, block.id);
-                break;
-            case 4:
-                world.Broadcaster.NotifyNeighbors(x, y, z + 1, block.id);
-                break;
-            default:
-                world.Broadcaster.NotifyNeighbors(x, y - 1, z, block.id);
-                break;
-        }
-    }
-
-    public void OnBreak(Block block, OnBreakEvent ctx)
-    {
-        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        if ((meta & 8) > 0)
-        {
-            ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, block.id);
-            int direction = meta & 7;
-
-            switch (direction)
-            {
-                case 1:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, block.id);
-                    break;
-                case 2:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, block.id);
-                    break;
-                case 3:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, block.id);
-                    break;
-                case 4:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, block.id);
-                    break;
-                default:
-                    ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, block.id);
-                    break;
-            }
         }
     }
 
@@ -222,4 +172,53 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
     }
 
     public bool CanEmitRedstonePower(Block block) => true;
+
+    private static bool HasSupport(IBlockReader reader, int x, int y, int z) =>
+        reader.ShouldSuffocate(x - 1, y, z) ||
+        reader.ShouldSuffocate(x + 1, y, z) ||
+        reader.ShouldSuffocate(x, y, z - 1) ||
+        reader.ShouldSuffocate(x, y, z + 1) ||
+        reader.ShouldSuffocate(x, y - 1, z);
+
+    private static bool BreakIfCannotPlaceAt(Block block, OnTickEvent ctx)
+    {
+        // Direct support check — the composed Block.canPlaceAt also tests replaceability of the
+        // lever's own occupied position and would always fail here.
+        if (HasSupport(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z)) return true;
+
+        block.DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));
+        ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
+        return false;
+    }
+
+    private static void ToggleLever(Block block, IWorldContext world, int x, int y, int z)
+    {
+        int meta = world.Reader.GetBlockMeta(x, y, z);
+        int direction = meta & 7;
+        int powered = 8 - (meta & 8);
+
+        world.Writer.SetBlockMeta(x, y, z, direction + powered);
+        world.Broadcaster.SetBlocksDirty(x, y, z);
+        world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, powered > 0 ? 0.6F : 0.5F);
+        world.Broadcaster.NotifyNeighbors(x, y, z, block.Id);
+
+        switch (direction)
+        {
+            case 1:
+                world.Broadcaster.NotifyNeighbors(x - 1, y, z, block.Id);
+                break;
+            case 2:
+                world.Broadcaster.NotifyNeighbors(x + 1, y, z, block.Id);
+                break;
+            case 3:
+                world.Broadcaster.NotifyNeighbors(x, y, z - 1, block.Id);
+                break;
+            case 4:
+                world.Broadcaster.NotifyNeighbors(x, y, z + 1, block.Id);
+                break;
+            default:
+                world.Broadcaster.NotifyNeighbors(x, y - 1, z, block.Id);
+                break;
+        }
+    }
 }

@@ -5,12 +5,12 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Fire: per-block-id burn/spread chance registry (vanilla Beta 1.7.3 values), age-driven
-/// extinguishing, and neighbor ignition. The registry is built in <see cref="OnInit"/> rather
-/// than the constructor, since it references other block statics (<c>Block.Fence</c>,
-/// <c>Block.TNT</c>, ...) that may not all be assigned yet at behavior-construction time —
-/// <see cref="Block.init"/> runs only after every block's static field is set, regardless of
-/// declaration order.
+///     Fire: per-block-id burn/spread chance registry (vanilla Beta 1.7.3 values), age-driven
+///     extinguishing, and neighbor ignition. The registry is built in <see cref="OnInit" /> rather
+///     than the constructor, since it references other block statics (<c>Block.Fence</c>,
+///     <c>Block.TNT</c>, ...) that may not all be assigned yet at behavior-construction time —
+///     <see cref="Block.Init" /> runs only after every block's static field is set, regardless of
+///     declaration order.
 /// </summary>
 internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
@@ -18,30 +18,22 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     private readonly int[] _burnChances = new int[256];
     private readonly int[] _spreadChances = new int[256];
 
-    // ── IBlockLifecycle ───────────────────────────────────────────
-
     public void OnInit(Block block)
     {
-        RegisterFlammableBlock(Block.Planks.id, 5, 20);
-        RegisterFlammableBlock(Block.Fence.id, 5, 20);
-        RegisterFlammableBlock(Block.WoodenStairs.id, 5, 20);
-        RegisterFlammableBlock(Block.Log.id, 5, 5);
-        RegisterFlammableBlock(Block.Leaves.id, 30, 60);
-        RegisterFlammableBlock(Block.Bookshelf.id, 30, 20);
-        RegisterFlammableBlock(Block.TNT.id, 15, 100);
-        RegisterFlammableBlock(Block.Grass.id, 60, 100);
-        RegisterFlammableBlock(Block.Wool.id, 30, 60);
-    }
-
-    private void RegisterFlammableBlock(int blockId, int burnChance, int spreadChance)
-    {
-        _burnChances[blockId] = burnChance;
-        _spreadChances[blockId] = spreadChance;
+        RegisterFlammableBlock(Block.Planks.Id, 5, 20);
+        RegisterFlammableBlock(Block.Fence.Id, 5, 20);
+        RegisterFlammableBlock(Block.WoodenStairs.Id, 5, 20);
+        RegisterFlammableBlock(Block.Log.Id, 5, 5);
+        RegisterFlammableBlock(Block.Leaves.Id, 30, 60);
+        RegisterFlammableBlock(Block.Bookshelf.Id, 30, 20);
+        RegisterFlammableBlock(Block.TNT.Id, 15, 100);
+        RegisterFlammableBlock(Block.Grass.Id, 60, 100);
+        RegisterFlammableBlock(Block.Wool.Id, 30, 60);
     }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Obsidian.Id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
         {
             return;
         }
@@ -52,11 +44,9 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
         }
         else
         {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
         }
     }
-
-    // ── IBlockPhysics ─────────────────────────────────────────────
 
     public bool HasCollision(Block block, bool defaultHasCollision) => false;
 
@@ -73,8 +63,6 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
         }
     }
 
-    // ── IBlockTicker ──────────────────────────────────────────────
-
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick))
@@ -82,8 +70,8 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
             return;
         }
 
-        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Netherrack.id;
-        if (!block.canPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Netherrack.Id;
+        if (!block.CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
@@ -102,7 +90,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
                 @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, fireAge + @event.World.Random.NextInt(3) / 2);
             }
 
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
             if (!isOnNetherrack && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
                 if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || fireAge > 3)
@@ -155,7 +143,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
                                             spreadChance = 15;
                                         }
 
-                                        @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.id, spreadChance);
+                                        @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.Id, spreadChance);
                                     }
                                 }
                             }
@@ -168,63 +156,6 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
-    }
-
-    private void TrySpreadingFire(Block block, IWorldContext level, int x, int y, int z, int spreadFactor, JavaRandom random, int currentAge)
-    {
-        int targetSpreadChance = _spreadChances[level.Reader.GetBlockId(x, y, z)];
-        if (random.NextInt(spreadFactor) < targetSpreadChance)
-        {
-            bool isTnt = level.Reader.GetBlockId(x, y, z) == Block.TNT.id;
-            if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
-            {
-                int newFireAge = currentAge + random.NextInt(5) / 4;
-                if (newFireAge > 15)
-                {
-                    newFireAge = 15;
-                }
-
-                level.Writer.SetBlock(x, y, z, block.id, newFireAge);
-            }
-            else
-            {
-                level.Writer.SetBlock(x, y, z, 0);
-            }
-
-            if (isTnt)
-            {
-                Block.TNT.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
-            }
-        }
-    }
-
-    private bool AreBlocksAroundFlammable(IBlockReader world, int x, int y, int z)
-        => IsFlammableId(world, x + 1, y, z) ||
-           IsFlammableId(world, x - 1, y, z) ||
-           IsFlammableId(world, x, y - 1, z) ||
-           IsFlammableId(world, x, y + 1, z) ||
-           IsFlammableId(world, x, y, z - 1) ||
-           IsFlammableId(world, x, y, z + 1);
-
-    private bool IsFlammableId(IBlockReader world, int x, int y, int z) => _burnChances[world.GetBlockId(x, y, z)] > 0;
-
-    private int GetBurnChance(IBlockReader world, int x, int y, int z)
-    {
-        if (!world.IsAir(x, y, z)) return 0;
-
-        int maxChance = GetBurnChance(world, x + 1, y, z, InitialMax);
-        maxChance = GetBurnChance(world, x - 1, y, z, maxChance);
-        maxChance = GetBurnChance(world, x, y - 1, z, maxChance);
-        maxChance = GetBurnChance(world, x, y + 1, z, maxChance);
-        maxChance = GetBurnChance(world, x, y, z - 1, maxChance);
-        maxChance = GetBurnChance(world, x, y, z + 1, maxChance);
-        return maxChance;
-    }
-
-    private int GetBurnChance(IBlockReader world, int x, int y, int z, int currentChance)
-    {
-        int blockBurnChance = _burnChances[world.GetBlockId(x, y, z)];
-        return blockBurnChance > currentChance ? blockBurnChance : currentChance;
     }
 
     public void RandomDisplayTick(Block block, OnTickEvent @event)
@@ -305,5 +236,71 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
                 @event.World.Broadcaster.AddParticle("largesmoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
         }
+    }
+
+    private void RegisterFlammableBlock(int blockId, int burnChance, int spreadChance)
+    {
+        _burnChances[blockId] = burnChance;
+        _spreadChances[blockId] = spreadChance;
+    }
+
+    private void TrySpreadingFire(Block block, IWorldContext level, int x, int y, int z, int spreadFactor, JavaRandom random, int currentAge)
+    {
+        int targetSpreadChance = _spreadChances[level.Reader.GetBlockId(x, y, z)];
+        if (random.NextInt(spreadFactor) < targetSpreadChance)
+        {
+            bool isTnt = level.Reader.GetBlockId(x, y, z) == Block.TNT.Id;
+            if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
+            {
+                int newFireAge = currentAge + random.NextInt(5) / 4;
+                if (newFireAge > 15)
+                {
+                    newFireAge = 15;
+                }
+
+                level.Writer.SetBlock(x, y, z, block.Id, newFireAge);
+            }
+            else
+            {
+                level.Writer.SetBlock(x, y, z, 0);
+            }
+
+            if (isTnt)
+            {
+                Block.TNT.OnMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
+            }
+        }
+    }
+
+    private bool AreBlocksAroundFlammable(IBlockReader world, int x, int y, int z)
+        => IsFlammableId(world, x + 1, y, z) ||
+           IsFlammableId(world, x - 1, y, z) ||
+           IsFlammableId(world, x, y - 1, z) ||
+           IsFlammableId(world, x, y + 1, z) ||
+           IsFlammableId(world, x, y, z - 1) ||
+           IsFlammableId(world, x, y, z + 1);
+
+    private bool IsFlammableId(IBlockReader world, int x, int y, int z) => _burnChances[world.GetBlockId(x, y, z)] > 0;
+
+    private int GetBurnChance(IBlockReader world, int x, int y, int z)
+    {
+        if (!world.IsAir(x, y, z))
+        {
+            return 0;
+        }
+
+        int maxChance = GetBurnChance(world, x + 1, y, z, InitialMax);
+        maxChance = GetBurnChance(world, x - 1, y, z, maxChance);
+        maxChance = GetBurnChance(world, x, y - 1, z, maxChance);
+        maxChance = GetBurnChance(world, x, y + 1, z, maxChance);
+        maxChance = GetBurnChance(world, x, y, z - 1, maxChance);
+        maxChance = GetBurnChance(world, x, y, z + 1, maxChance);
+        return maxChance;
+    }
+
+    private int GetBurnChance(IBlockReader world, int x, int y, int z, int currentChance)
+    {
+        int blockBurnChance = _burnChances[world.GetBlockId(x, y, z)];
+        return blockBurnChance > currentChance ? blockBurnChance : currentChance;
     }
 }

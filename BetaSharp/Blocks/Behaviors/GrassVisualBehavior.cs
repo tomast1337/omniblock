@@ -5,18 +5,15 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Grass rendering: snowy side texture when snow sits on top, and biome-driven green tint.
-/// Top/bottom textures are declarative (<c>setTopBottomTextures</c>); this only handles the
-/// world-aware pieces.
+///     Grass rendering: snowy side texture when snow sits on top, and biome-driven green tint.
+///     Top/bottom textures are declarative (<c>setTopBottomTextures</c>); this only handles the
+///     world-aware pieces.
 /// </summary>
 public sealed class GrassVisualBehavior : IBlockVisuals
 {
     public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
     {
-        if (side is Side.Up or Side.Down)
-        {
-            return defaultTexture;
-        }
+        if (side is Side.Up or Side.Down) return defaultTexture;
 
         Material materialAbove = reader.GetMaterial(x, y + 1, z);
         return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? BlockTextures.GrassSide : BlockTextures.GrassSideSnowy;

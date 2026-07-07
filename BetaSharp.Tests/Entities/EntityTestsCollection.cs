@@ -31,7 +31,7 @@ public sealed class EntityTestsFixture
 
             // Trigger class initialization in a stable order for tests.
             _ = Item.ByName("stick").Id;
-            _ = Block.Stone.id;
+            _ = Block.Stone.Id;
 
             s_initialized = true;
         }

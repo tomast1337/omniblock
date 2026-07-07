@@ -5,49 +5,30 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Source water/lava: reverts to its flowing counterpart (<c>block.id - 1</c>) whenever a
-/// neighbor changes (the "check every tick" quasi-flow-restart vanilla does via neighbor
-/// notification), and lava sources randomly ignite nearby flammable terrain. A single shared
-/// instance serves both water and lava.
+///     Source water/lava: reverts to its flowing counterpart (<c>block.id - 1</c>) whenever a
+///     neighbor changes (the "check every tick" quasi-flow-restart vanilla does via neighbor
+///     notification), and lava sources randomly ignite nearby flammable terrain. A single shared
+///     instance serves both water and lava.
 /// </summary>
 public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
-    // ── IBlockVisuals ─────────────────────────────────────────────
-
-    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(block, side);
-
-    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
-
-    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
-
-    // ── IBlockPhysics ─────────────────────────────────────────────
+    public void OnPlaced(Block block, OnPlacedEvent @event)
+        => FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
     public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => allowLiquids && meta == 0;
 
-    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.material);
+    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.Material);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != block.id) return;
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != block.Id)
+        {
+            return;
+        }
 
         ConvertToFlowing(block, @event);
     }
-
-    private static void ConvertToFlowing(Block block, OnTickEvent @event)
-    {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, block.id - 1, meta, false);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id - 1, block.getTickRate());
-    }
-
-    // ── IBlockLifecycle ───────────────────────────────────────────
-
-    public void OnPlaced(Block block, OnPlacedEvent @event)
-        => FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-
-    // ── IBlockTicker ──────────────────────────────────────────────
 
     public void RandomDisplayTick(Block block, OnTickEvent @event) => FluidMath.RandomDisplayTick(block, @event);
 
@@ -55,7 +36,7 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
     {
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
 
-        if (block.material != Material.Lava) return;
+        if (block.Material != Material.Lava) return;
 
         int attempts = @event.World.Random.NextInt(3);
 
@@ -73,15 +54,29 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
                     continue;
                 }
 
-                @event.World.Writer.SetBlock(x, y, z, Block.Fire.id);
+                @event.World.Writer.SetBlock(x, y, z, Block.Fire.Id);
                 return;
             }
 
-            if (Block.Blocks[neighborBlockId].material.BlocksMovement)
+            if (Block.Blocks[neighborBlockId].Material.BlocksMovement)
             {
                 return;
             }
         }
+    }
+
+    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(block, side);
+
+    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
+        => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
+
+    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
+
+    private static void ConvertToFlowing(Block block, OnTickEvent @event)
+    {
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, block.Id - 1, meta, false);
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id - 1, block.GetTickRate());
     }
 
     private static bool IsFlammable(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y, z).IsBurnable;

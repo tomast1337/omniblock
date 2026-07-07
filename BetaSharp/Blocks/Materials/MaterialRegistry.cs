@@ -7,13 +7,13 @@ using BetaSharp.Worlds.Maps;
 namespace BetaSharp.Blocks.Materials;
 
 /// <summary>
-/// Process-global registry of canonical <see cref="Material"/> instances, loaded once from
-/// <c>assets/material/*.json</c> during <see cref="Bootstrap.Initialize"/> — before anything
-/// touches <see cref="Block"/>, whose static fields consume materials.
-/// <para>
-/// <see cref="Get"/> always returns the same instance for a key, which is what keeps the many
-/// <c>material == Material.Water</c> reference comparisons across the codebase correct.
-/// </para>
+///     Process-global registry of canonical <see cref="Material" /> instances, loaded once from
+///     <c>assets/material/*.json</c> during <see cref="Bootstrap.Initialize" /> — before anything
+///     touches <see cref="Block" />, whose static fields consume materials.
+///     <para>
+///         <see cref="Get" /> always returns the same instance for a key, which is what keeps the many
+///         <c>material == Material.Water</c> reference comparisons across the codebase correct.
+///     </para>
 /// </summary>
 public static class MaterialRegistry
 {
@@ -36,10 +36,10 @@ public static class MaterialRegistry
         ["dirt"] = MapColor.Dirt,
         ["stone"] = MapColor.Stone,
         ["water"] = MapColor.Water,
-        ["wood"] = MapColor.Wood,
+        ["wood"] = MapColor.Wood
     }.ToFrozenDictionary();
 
-    /// <summary>Returns the canonical material for <paramref name="key"/>. Throws on unknown key.</summary>
+    /// <summary>Returns the canonical material for <paramref name="key" />. Throws on unknown key.</summary>
     public static Material Get(string key) => s_registry.Get(key);
 
     public static bool TryGet(string key, [NotNullWhen(true)] out Material? material)
@@ -78,7 +78,7 @@ public static class MaterialRegistry
             IsReplaceable = definition.IsReplaceable,
             IsHandHarvestable = definition.IsHandHarvestable,
             IsTransparent = definition.IsTransparent,
-            PistonBehavior = definition.PistonBehavior,
+            PistonBehavior = definition.PistonBehavior
         };
     }
 }

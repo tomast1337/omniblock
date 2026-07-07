@@ -5,11 +5,11 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Wall-mounted blocks: torches (meta 1-5, custom wall-attach encoding, may also stand on the
-/// ground or a fence post) and ladders (meta is the <see cref="Side"/> facing directly, wall-only).
-/// The two encodings and placement rules are different enough that every hook branches on
-/// <c>_isLadder</c> rather than sharing formulas; only the random-tick/particle hooks are
-/// torch-only (ladders never get a Ticker slot assigned, so those simply aren't invoked for them).
+///     Wall-mounted blocks: torches (meta 1-5, custom wall-attach encoding, may also stand on the
+///     ground or a fence post) and ladders (meta is the <see cref="Side" /> facing directly, wall-only).
+///     The two encodings and placement rules are different enough that every hook branches on
+///     <c>_isLadder</c> rather than sharing formulas; only the random-tick/particle hooks are
+///     torch-only (ladders never get a Ticker slot assigned, so those simply aren't invoked for them).
 /// </summary>
 public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTicker
 {
@@ -20,32 +20,6 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
     private readonly bool _isLadder;
 
     public WallMountBehavior(bool isLadder) => _isLadder = isLadder;
-
-    // ── IBlockPhysics: CanPlaceAt ─────────────────────────────────
-
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-    {
-        IBlockReader reader = @event.World.Reader;
-        int x = @event.X, y = @event.Y, z = @event.Z;
-
-        if (_isLadder)
-        {
-            return reader.ShouldSuffocate(x - 1, y, z) ? true :
-                   reader.ShouldSuffocate(x + 1, y, z) ? true :
-                   reader.ShouldSuffocate(x, y, z - 1) ? true : reader.ShouldSuffocate(x, y, z + 1);
-        }
-
-        return reader.ShouldSuffocate(x - 1, y, z) ||
-               reader.ShouldSuffocate(x + 1, y, z) ||
-               reader.ShouldSuffocate(x, y, z - 1) ||
-               reader.ShouldSuffocate(x, y, z + 1) ||
-               CanPlaceOnGround(reader, x, y - 1, z);
-    }
-
-    private static bool CanPlaceOnGround(IBlockReader world, int x, int y, int z)
-        => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Block.Fence.id;
-
-    // ── IBlockLifecycle: OnPlaced ─────────────────────────────────
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -59,13 +33,111 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
         }
     }
 
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
+    {
+        IBlockReader reader = @event.World.Reader;
+        int x = @event.X, y = @event.Y, z = @event.Z;
+
+        if (_isLadder)
+        {
+            return reader.ShouldSuffocate(x - 1, y, z) ||
+                   reader.ShouldSuffocate(x + 1, y, z) ||
+                   reader.ShouldSuffocate(x, y, z - 1) ||
+                   reader.ShouldSuffocate(x, y, z + 1);
+        }
+
+        return reader.ShouldSuffocate(x - 1, y, z) ||
+               reader.ShouldSuffocate(x + 1, y, z) ||
+               reader.ShouldSuffocate(x, y, z - 1) ||
+               reader.ShouldSuffocate(x, y, z + 1) ||
+               CanPlaceOnGround(reader, x, y - 1, z);
+    }
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        if (_isLadder) LadderNeighborUpdate(block, @event);
+        else TorchNeighborUpdate(block, @event);
+    }
+
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
+    {
+        if (_isLadder) UpdateLadderBoundingBox(block, reader, x, y, z);
+        else UpdateTorchBoundingBox(block, reader, x, y, z);
+    }
+
+    public void OnTick(Block block, OnTickEvent @event)
+    {
+        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 0) return;
+
+        int resolved = ResolveTorchMetaVanillaOrder(@event.World.Reader, @event.X, @event.Y, @event.Z);
+        if (resolved != -1)
+        {
+            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, resolved);
+        }
+
+        BreakIfCannotPlaceAt(block, @event, @event.X, @event.Y, @event.Z);
+    }
+
+    public void RandomDisplayTick(Block block, OnTickEvent @event)
+    {
+        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        float flameX = @event.X + 0.5F;
+        float flameY = @event.Y + 0.7F;
+        float flameZ = @event.Z + 0.5F;
+        const float yOffset = 0.22F;
+        const float xOffset = 0.27F;
+
+        switch (meta)
+        {
+            case 1:
+                @event.World.Broadcaster.AddParticle("smoke", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+                @event.World.Broadcaster.AddParticle("flame", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+                break;
+            case 2:
+                @event.World.Broadcaster.AddParticle("smoke", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+                @event.World.Broadcaster.AddParticle("flame", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
+                break;
+            case 3:
+                @event.World.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
+                @event.World.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
+                break;
+            case 4:
+                @event.World.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
+                @event.World.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
+                break;
+            default:
+                @event.World.Broadcaster.AddParticle("smoke", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
+                @event.World.Broadcaster.AddParticle("flame", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
+                break;
+        }
+    }
+
+    private static bool CanPlaceOnGround(IBlockReader world, int x, int y, int z)
+        => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Block.Fence.Id;
+
     private static void OnLadderPlaced(OnPlacedEvent ctx)
     {
         Side rotation = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z).ToSide();
-        if ((rotation == 0 || ctx.Direction == Side.North) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1)) rotation = Side.North;
-        if ((rotation == 0 || ctx.Direction == Side.South) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1)) rotation = Side.South;
-        if ((rotation == 0 || ctx.Direction == Side.West) && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z)) rotation = Side.West;
-        if ((rotation == 0 || ctx.Direction == Side.East) && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z)) rotation = Side.East;
+        if ((rotation == 0 || ctx.Direction == Side.North) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
+        {
+            rotation = Side.North;
+        }
+
+        if ((rotation == 0 || ctx.Direction == Side.South) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
+        {
+            rotation = Side.South;
+        }
+
+        if ((rotation == 0 || ctx.Direction == Side.West) && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
+        {
+            rotation = Side.West;
+        }
+
+        if ((rotation == 0 || ctx.Direction == Side.East) && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
+        {
+            rotation = Side.East;
+        }
+
         ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, rotation.ToInt());
     }
 
@@ -119,7 +191,7 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
     private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
     {
         Vec3D look = placer.GetLook(1.0F);
-        double h = Math.Sqrt((look.x * look.x) + (look.z * look.z));
+        double h = Math.Sqrt(look.x * look.x + look.z * look.z);
         if (h >= 1e-3)
         {
             lx = look.x / h;
@@ -129,7 +201,7 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
 
         double vx = placer.X - (torchX + 0.5);
         double vz = placer.Z - (torchZ + 0.5);
-        h = Math.Sqrt((vx * vx) + (vz * vz));
+        h = Math.Sqrt(vx * vx + vz * vz);
         if (h >= 1e-4)
         {
             lx = vx / h;
@@ -159,10 +231,10 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
             }
 
             const double tieEps = 1e-4;
-            double westScore = west ? (lx * -1.0) + (lz * 0.0) : double.NegativeInfinity;
-            double eastScore = east ? (lx * 1.0) + (lz * 0.0) : double.NegativeInfinity;
-            double northScore = north ? (lx * 0.0) + (lz * -1.0) : double.NegativeInfinity;
-            double southScore = south ? (lx * 0.0) + (lz * 1.0) : double.NegativeInfinity;
+            double westScore = west ? lx * -1.0 + lz * 0.0 : double.NegativeInfinity;
+            double eastScore = east ? lx * 1.0 + lz * 0.0 : double.NegativeInfinity;
+            double northScore = north ? lx * 0.0 + lz * -1.0 : double.NegativeInfinity;
+            double southScore = south ? lx * 0.0 + lz * 1.0 : double.NegativeInfinity;
             double maxD = Math.Max(Math.Max(westScore, eastScore), Math.Max(northScore, southScore));
 
             for (int meta = 1; meta <= 4; meta++)
@@ -194,20 +266,6 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
         return vanilla == -1 ? null : vanilla;
     }
 
-    // ── IBlockPhysics: NeighborUpdate ─────────────────────────────
-
-    public void NeighborUpdate(Block block, OnTickEvent @event)
-    {
-        if (_isLadder)
-        {
-            LadderNeighborUpdate(block, @event);
-        }
-        else
-        {
-            TorchNeighborUpdate(block, @event);
-        }
-    }
-
     private static void LadderNeighborUpdate(Block block, OnTickEvent ctx)
     {
         Side rotation = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z).ToSide();
@@ -216,11 +274,9 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
                           rotation == Side.West && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ||
                           rotation == Side.East && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z);
 
-        if (!hasSupport)
-        {
-            block.dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, rotation.ToInt()));
-            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
-        }
+        if (hasSupport) return;
+        block.DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, rotation.ToInt()));
+        ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, 0);
     }
 
     private void TorchNeighborUpdate(Block block, OnTickEvent @event)
@@ -235,31 +291,16 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
                           !CanPlaceOnGround(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5;
 
         if (!shouldDrop) return;
-        block.dropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
+        block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
     private bool BreakIfCannotPlaceAt(Block block, OnTickEvent @event, int x, int y, int z)
     {
         if (CanPlaceAt(block, new CanPlaceAtContext(@event.World, 0, x, y, z))) return true;
-
-        block.dropStacks(new OnDropEvent(@event.World, x, y, z, @event.World.Reader.GetBlockMeta(x, y, z)));
+        block.DropStacks(new OnDropEvent(@event.World, x, y, z, @event.World.Reader.GetBlockMeta(x, y, z)));
         @event.World.Writer.SetBlock(x, y, z, 0);
         return false;
-    }
-
-    // ── IBlockPhysics: UpdateBoundingBox ──────────────────────────
-
-    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-    {
-        if (_isLadder)
-        {
-            UpdateLadderBoundingBox(block, reader, x, y, z);
-        }
-        else
-        {
-            UpdateTorchBoundingBox(block, reader, x, y, z);
-        }
     }
 
     private static void UpdateLadderBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
@@ -268,16 +309,16 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
         switch (rotation)
         {
             case Side.North:
-                block.setBoundingBox(0.0F, 0.0F, 1.0F - LadderThickness, 1.0F, 1.0F, 1.0F);
+                block.SetBoundingBox(0.0F, 0.0F, 1.0F - LadderThickness, 1.0F, 1.0F, 1.0F);
                 break;
             case Side.South:
-                block.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, LadderThickness);
+                block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, LadderThickness);
                 break;
             case Side.West:
-                block.setBoundingBox(1.0F - LadderThickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                block.SetBoundingBox(1.0F - LadderThickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
             case Side.East:
-                block.setBoundingBox(0.0F, 0.0F, 0.0F, LadderThickness, 1.0F, 1.0F);
+                block.SetBoundingBox(0.0F, 0.0F, 0.0F, LadderThickness, 1.0F, 1.0F);
                 break;
         }
     }
@@ -288,68 +329,19 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
         switch (rotation)
         {
             case 1:
-                block.setBoundingBox(0.0F, 0.2F, 0.5F - TorchWidth, TorchWidth * 2.0F, 0.8F, 0.5F + TorchWidth);
+                block.SetBoundingBox(0.0F, 0.2F, 0.5F - TorchWidth, TorchWidth * 2.0F, 0.8F, 0.5F + TorchWidth);
                 break;
             case 2:
-                block.setBoundingBox(1.0F - TorchWidth * 2.0F, 0.2F, 0.5F - TorchWidth, 1.0F, 0.8F, 0.5F + TorchWidth);
+                block.SetBoundingBox(1.0F - TorchWidth * 2.0F, 0.2F, 0.5F - TorchWidth, 1.0F, 0.8F, 0.5F + TorchWidth);
                 break;
             case 3:
-                block.setBoundingBox(0.5F - TorchWidth, 0.2F, 0.0F, 0.5F + TorchWidth, 0.8F, TorchWidth * 2.0F);
+                block.SetBoundingBox(0.5F - TorchWidth, 0.2F, 0.0F, 0.5F + TorchWidth, 0.8F, TorchWidth * 2.0F);
                 break;
             case 4:
-                block.setBoundingBox(0.5F - TorchWidth, 0.2F, 1.0F - TorchWidth * 2.0F, 0.5F + TorchWidth, 0.8F, 1.0F);
+                block.SetBoundingBox(0.5F - TorchWidth, 0.2F, 1.0F - TorchWidth * 2.0F, 0.5F + TorchWidth, 0.8F, 1.0F);
                 break;
             default:
-                block.setBoundingBox(0.5F - TorchWidthGround, 0.0F, 0.5F - TorchWidthGround, 0.5F + TorchWidthGround, 0.6F, 0.5F + TorchWidthGround);
-                break;
-        }
-    }
-
-    // ── IBlockTicker (torch only — ladder never gets a Ticker slot) ──
-
-    public void OnTick(Block block, OnTickEvent @event)
-    {
-        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 0) return;
-
-        int resolved = ResolveTorchMetaVanillaOrder(@event.World.Reader, @event.X, @event.Y, @event.Z);
-        if (resolved != -1)
-        {
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, resolved);
-        }
-
-        BreakIfCannotPlaceAt(block, @event, @event.X, @event.Y, @event.Z);
-    }
-
-    public void RandomDisplayTick(Block block, OnTickEvent @event)
-    {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        float flameX = @event.X + 0.5F;
-        float flameY = @event.Y + 0.7F;
-        float flameZ = @event.Z + 0.5F;
-        const float yOffset = 0.22F;
-        const float xOffset = 0.27F;
-
-        switch (meta)
-        {
-            case 1:
-                @event.World.Broadcaster.AddParticle("smoke", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
-                @event.World.Broadcaster.AddParticle("flame", flameX - xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
-                break;
-            case 2:
-                @event.World.Broadcaster.AddParticle("smoke", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
-                @event.World.Broadcaster.AddParticle("flame", flameX + xOffset, flameY + yOffset, flameZ, 0.0D, 0.0D, 0.0D);
-                break;
-            case 3:
-                @event.World.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
-                @event.World.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ - xOffset, 0.0D, 0.0D, 0.0D);
-                break;
-            case 4:
-                @event.World.Broadcaster.AddParticle("smoke", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
-                @event.World.Broadcaster.AddParticle("flame", flameX, flameY + yOffset, flameZ + xOffset, 0.0D, 0.0D, 0.0D);
-                break;
-            default:
-                @event.World.Broadcaster.AddParticle("smoke", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
-                @event.World.Broadcaster.AddParticle("flame", flameX, flameY, flameZ, 0.0D, 0.0D, 0.0D);
+                block.SetBoundingBox(0.5F - TorchWidthGround, 0.0F, 0.5F - TorchWidthGround, 0.5F + TorchWidthGround, 0.6F, 0.5F + TorchWidthGround);
                 break;
         }
     }
