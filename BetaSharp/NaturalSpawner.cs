@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
 using BetaSharp.PathFinding;
 using BetaSharp.Util.Maths;
@@ -170,7 +171,7 @@ internal static class NaturalSpawner
                                 Math.Abs(pathPoint.Y - player.Y) < 1.5D)
                             {
                                 Vec3i wakeUpPos =
-                                    BlockBed.findWakeUpPosition(world.Reader, MathHelper.Floor(player.X),
+                                    BedBehavior.FindWakeUpPosition(world.Reader, MathHelper.Floor(player.X),
                                         MathHelper.Floor(player.Y), MathHelper.Floor(player.Z), 1) ??
                                     new Vec3i(spawnX, newSpawnY + 1, spawnZ);
 

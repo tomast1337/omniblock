@@ -35,4 +35,7 @@ public interface IBlockLifecycle
     /// extra seeds).
     /// </summary>
     void OnDropStacks(Block block, OnDropEvent @event) { }
+
+    /// <summary>Called when an explosion destroys this block, before it's removed from the world.</summary>
+    void OnDestroyedByExplosion(Block block, OnDestroyedByExplosionEvent @event) { }
 }

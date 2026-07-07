@@ -35,8 +35,6 @@ public static class DefaultRegistries
         MaterialRegistry.Initialize();
         SoundGroupRegistry.Initialize();
 
-        _ = Block.Stone.id;
-
         var toolMaterialBootLoader = new DataAssetLoader<ToolMaterialDefinition>(RegistryDefinitions.ToolMaterials.AssetPath, LoadLocations.Assets, allowUnhandled: false);
         toolMaterialBootLoader.LoadFromPaths(null, null, null);
         var armorMaterialBootLoader = new DataAssetLoader<ArmorMaterialDefinition>(RegistryDefinitions.ArmorMaterials.AssetPath, LoadLocations.Assets, allowUnhandled: false);
@@ -66,6 +64,10 @@ public static class DefaultRegistries
         {
             ItemFactory.ResolveCrossReferences(definition);
         }
+
+        // Now safe: items are fully loaded, so Item.ByName lookups inside Block's
+        // static field initializers (behaviors) will succeed.
+        _ = Block.Stone.id;
 
         Stats.Stats.InitializeItemStats();
         Stats.Stats.InitializeExtendedItemStats();

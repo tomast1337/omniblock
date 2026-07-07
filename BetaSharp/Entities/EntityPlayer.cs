@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Inventorys;
@@ -644,7 +645,7 @@ public abstract class EntityPlayer : EntityLiving
         if (World.Reader.IsPosLoaded(x, y, z))
         {
             int bedMeta = World.Reader.GetBlockMeta(x, y, z);
-            int bedDirection = BlockBed.getDirection(bedMeta);
+            int bedDirection = BedBehavior.GetDirection(bedMeta);
             float sleepX = 0.5F;
             float sleepZ = 0.5F;
             switch (bedDirection)
@@ -712,8 +713,8 @@ public abstract class EntityPlayer : EntityLiving
         if (bedPos is var (x, y, z) && World.Reader.GetBlockId(x, y, z) == Block.Bed.id)
         {
             int bedMeta = World.Reader.GetBlockMeta(x, y, z);
-            BlockBed.updateState(World.Writer, x, y, z, bedMeta, false);
-            Vec3i? wakeUpPos = BlockBed.findWakeUpPosition(World.Reader, x, y, z, 0) ?? new Vec3i(x, y + 1, z);
+            BedBehavior.UpdateState(World.Writer, x, y, z, bedMeta, false);
+            Vec3i? wakeUpPos = BedBehavior.FindWakeUpPosition(World.Reader, x, y, z, 0) ?? new Vec3i(x, y + 1, z);
             SetPosition(wakeUpPos.Value.X + 0.5F, wakeUpPos.Value.Y + StandingEyeHeight + 0.1F, wakeUpPos.Value.Z + 0.5F);
         }
 
@@ -744,7 +745,7 @@ public abstract class EntityPlayer : EntityLiving
         chunkSource.LoadChunk((x - 3) >> 4, (z + 3) >> 4);
         chunkSource.LoadChunk((x + 3) >> 4, (z + 3) >> 4);
 
-        return world.Reader.GetBlockId(x, y, z) != Block.Bed.id ? null : BlockBed.findWakeUpPosition(world.Reader, x, y, z, 0);
+        return world.Reader.GetBlockId(x, y, z) != Block.Bed.id ? null : BedBehavior.FindWakeUpPosition(world.Reader, x, y, z, 0);
     }
 
     public float GetSleepingRotation()
@@ -752,7 +753,7 @@ public abstract class EntityPlayer : EntityLiving
         if (SleepingPos == null) return 0.0F;
 
         int blockMeta = World.Reader.GetBlockMeta(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z);
-        int direction = BlockBed.getDirection(blockMeta);
+        int direction = BedBehavior.GetDirection(blockMeta);
         return direction switch
         {
             0 => 90.0F,

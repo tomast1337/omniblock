@@ -41,7 +41,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Obsidian.id && BlockPortal.create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
         {
             return;
         }

@@ -82,6 +82,12 @@ public class Block
     private static readonly SoulSandBehavior s_soulSandBehavior = new();
     private static readonly WebBehavior s_webBehavior = new();
     private static readonly FireBehavior s_fireBehavior = new();
+    private static readonly BedBehavior s_bedBehavior = new();
+    private static readonly CakeBehavior s_cakeBehavior = new();
+    private static readonly TNTBehavior s_tntBehavior = new();
+    private static readonly PumpkinBehavior s_pumpkinBehavior = new(false);
+    private static readonly PumpkinBehavior s_jackLanternBehavior = new(true);
+    private static readonly PortalBehavior s_portalBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -164,7 +170,11 @@ public class Block
         .setHasTileEntity(() => new BlockEntityNote())
         .SetInteractable(s_noteblockBehavior).SetLifecycle(s_noteblockBehavior).SetPhysics(s_noteblockBehavior)
         .setHardness(0.8F).setBlockName("musicBlock").IgnoreMetaUpdates();
-    public static readonly Block Bed = new BlockBed(26).setHardness(0.2F).setBlockName("bed").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Bed = new Block(26, BlockTextures.BedTopFoot, Material.Wool)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 9.0F / 16.0F, 1.0F)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Bed).setPistonBehavior(PistonBehavior.Destroy)
+        .SetInteractable(s_bedBehavior).SetPhysics(s_bedBehavior).SetLifecycle(s_bedBehavior).SetVisuals(s_bedBehavior)
+        .setHardness(0.2F).setBlockName("bed").disableStats().IgnoreMetaUpdates();
     public static readonly Block PoweredRail = new Block(27, BlockTextures.PoweredRailOn, Material.PistonBreakable)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.MinecartTrack).setNoCollision()
         .setPistonBehavior(PistonBehavior.Normal)
@@ -235,7 +245,10 @@ public class Block
         .setDrops(() => Slab.id).preserveMetaOnDrop()
         .setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
     public static readonly Block Bricks = new Block(45, BlockTextures.Bricks, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("brick");
-    public static readonly Block TNT = new BlockTNT(46, BlockTextures.TntSide).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tnt");
+    public static readonly Block TNT = new Block(46, BlockTextures.TntSide, Material.Tnt)
+        .SetPhysics(s_tntBehavior).SetLifecycle(s_tntBehavior).SetInteractable(s_tntBehavior).SetVisuals(s_tntBehavior)
+        .setDropCount(0)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tnt");
     public static readonly Block Bookshelf = new Block(47, BlockTextures.Bookshelf, Material.Wood).setTopBottomTextures(BlockTextures.OakPlanks, BlockTextures.OakPlanks).setDropCount(0).setHardness(1.5F).setSoundGroup(SoundWoodFootstep).setBlockName("bookshelf").SetVariance(TextureVariance.None, TextureVariance.FlipU);
     public static readonly Block MossyCobblestone = new Block(48, BlockTextures.MossyCobblestone, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneMoss");
     public static readonly Block Obsidian = new Block(49, BlockTextures.Obsidian, Material.Stone).setHardness(10.0F).setResistance(2000.0F).setSoundGroup(SoundStoneFootstep).setBlockName("obsidian");
@@ -425,7 +438,10 @@ public class Block
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Fence)
         .SetPhysics(s_fenceBehavior)
         .setHardness(2.0F).setResistance(5.0F).setSoundGroup(SoundWoodFootstep).setBlockName("fence").IgnoreMetaUpdates();
-    public static readonly Block Pumpkin = new BlockPumpkin(86, BlockTextures.PumpkinBase, false).setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("pumpkin").IgnoreMetaUpdates();
+    public static readonly Block Pumpkin = new Block(86, BlockTextures.PumpkinBase, Material.Pumpkin)
+        .setTickRandomly(true)
+        .SetPhysics(s_pumpkinBehavior).SetLifecycle(s_pumpkinBehavior).SetVisuals(s_pumpkinBehavior)
+        .setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("pumpkin").IgnoreMetaUpdates();
     public static readonly Block Netherrack = new Block(87, BlockTextures.Netherrack, Material.Stone).setHardness(0.4F).setSoundGroup(SoundStoneFootstep).setBlockName("hellrock").SetVariance(TextureVariance.All);
     public static readonly Block Soulsand = new Block(88, BlockTextures.SoulSand, Material.Sand)
         .SetPhysics(s_soulSandBehavior).SetInteractable(s_soulSandBehavior)
@@ -434,12 +450,23 @@ public class Block
     public static readonly Block Glowstone = new Block(89, BlockTextures.Glowstone, Material.Stone).setDrops(() => Item.ByName("yellow_dust").Id, 2, 4).setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setLuminance(1.0F).setBlockName("lightgem")
         .SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
 
-    public static readonly BlockPortal NetherPortal = (BlockPortal)new BlockPortal(90, BlockTextures.Portal).setHardness(-1.0F).setSoundGroup(SoundGlassFootstep).setLuminance(12.0F / 16.0F).setBlockName("portal");
+    public static readonly Block NetherPortal = new Block(90, BlockTextures.Portal, Material.NetherPortal)
+        .setNonOpaque().setNotFullCube().setRenderLayer(1)
+        .SetPhysics(s_portalBehavior).SetVisuals(s_portalBehavior).SetInteractable(s_portalBehavior).SetTicker(s_portalBehavior)
+        .setDropCount(0)
+        .setHardness(-1.0F).setSoundGroup(SoundGlassFootstep).setLuminance(12.0F / 16.0F).setBlockName("portal");
 
-    public static readonly Block JackLantern = new BlockPumpkin(91, BlockTextures.PumpkinBase, true).setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setLuminance(1.0F).setBlockName("litpumpkin").IgnoreMetaUpdates()
+    public static readonly Block JackLantern = new Block(91, BlockTextures.PumpkinBase, Material.Pumpkin)
+        .setTickRandomly(true)
+        .SetPhysics(s_jackLanternBehavior).SetLifecycle(s_jackLanternBehavior).SetVisuals(s_jackLanternBehavior)
+        .setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setLuminance(1.0F).setBlockName("litpumpkin").IgnoreMetaUpdates()
         .SetVariance(TextureVariance.All, TextureVariance.None);
 
-    public static readonly Block Cake = new BlockCake(92, BlockTextures.Cake).setHardness(0.5F).setSoundGroup(SoundClothFootstep).setBlockName("cake").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Cake = new Block(92, BlockTextures.Cake, Material.Cake)
+        .setTickRandomly(true).setNonOpaque().setNotFullCube()
+        .SetPhysics(s_cakeBehavior).SetVisuals(s_cakeBehavior).SetInteractable(s_cakeBehavior)
+        .setDropCount(0)
+        .setHardness(0.5F).setSoundGroup(SoundClothFootstep).setBlockName("cake").disableStats().IgnoreMetaUpdates();
     public static readonly Block Repeater = new Block(93, 6, Material.PistonBreakable)
         .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Repeater)
@@ -887,9 +914,7 @@ public class Block
         return res;
     }
 
-    public virtual void onDestroyedByExplosion(OnDestroyedByExplosionEvent @event)
-    {
-    }
+    public virtual void onDestroyedByExplosion(OnDestroyedByExplosionEvent @event) => Lifecycle?.OnDestroyedByExplosion(this, @event);
 
     public virtual int getRenderLayer() => _renderLayer;
 

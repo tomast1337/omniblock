@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -9,8 +10,8 @@ public class BedRenderer : IBlockRenderer
     {
         Box bounds = ctx.OverrideBounds ?? block.BoundingBox;
         int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
-        int direction = BlockBed.getDirection(metadata);
-        bool isHead = BlockBed.isHeadOfBed(metadata);
+        int direction = BedBehavior.GetDirection(metadata);
+        bool isHead = BedBehavior.IsHeadOfBed(metadata);
 
         const float lightBottom = 0.5F;
         const float lightTop = 1.0F;
