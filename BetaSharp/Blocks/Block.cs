@@ -37,6 +37,7 @@ public class Block
     private static readonly FallingBlockBehavior s_fallingBehavior = new();
     private static readonly PlantSurvivalBehavior s_plantSurvival = new();
     private static readonly PlantSurvivalBehavior s_deadBushSurvival = new(id => id == Sand.id);
+    private static readonly LogBehavior s_logBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -83,12 +84,16 @@ public class Block
     public static readonly Block CoalOre = new Block(16, BlockTextures.CoalOre, Material.Stone).setDrops(() => Item.ByName("coal").Id).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreCoal")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
-    public static readonly Block Log = new BlockLog(17).setHardness(2.0F).setSoundGroup(SoundWoodFootstep).setBlockName("log").IgnoreMetaUpdates().SetVariance(TextureVariance.All, TextureVariance.Rotate180);
+    public static readonly Block Log = new Block(17, BlockTextures.LogOakSide, Material.Wood)
+        .SetVisuals(s_logBehavior).SetLifecycle(s_logBehavior).preserveMetaOnDrop()
+        .setHardness(2.0F).setSoundGroup(SoundWoodFootstep).setBlockName("log").IgnoreMetaUpdates().SetVariance(TextureVariance.All, TextureVariance.Rotate180);
 
     public static readonly BlockLeaves Leaves = (BlockLeaves)new BlockLeaves(18, BlockTextures.LeavesOak).setHardness(0.2F).setOpacity(1).setSoundGroup(SoundGrassFootstep).setBlockName("leaves").disableStats().IgnoreMetaUpdates()
         .SetVariance(TextureVariance.All, TextureVariance.Rotate180);
 
-    public static readonly Block Sponge = new BlockSponge(19).setHardness(0.6F).setSoundGroup(SoundGrassFootstep).setBlockName("sponge").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
+    public static readonly Block Sponge = new Block(19, BlockTextures.Sponge, Material.Sponge)
+        .SetLifecycle(new SpongeLifecycleBehavior())
+        .setHardness(0.6F).setSoundGroup(SoundGrassFootstep).setBlockName("sponge").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
     public static readonly Block Glass = new Block(20, BlockTextures.Glass, Material.Glass).setNonOpaque().setDropCount(0).SetVisuals(new GlassVisualBehavior(false))
         .setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setBlockName("glass").SetVariance(TextureVariance.Rotate180);
 
@@ -132,8 +137,8 @@ public class Block
         .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("rose");
     public static readonly Block BrownMushroom = new BlockMushroom(39, BlockTextures.BrownMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setLuminance(2.0F / 16.0F).setBlockName("mushroom");
     public static readonly Block RedMushroom = new BlockMushroom(40, BlockTextures.RedMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("mushroom");
-    public static readonly Block GoldBlock = new BlockOreStorage(41, BlockTextures.BlockGold).setHardness(3.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockGold");
-    public static readonly Block IronBlock = new BlockOreStorage(42, BlockTextures.BlockIron).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockIron");
+    public static readonly Block GoldBlock = new Block(41, BlockTextures.BlockGold, Material.Metal).setHardness(3.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockGold");
+    public static readonly Block IronBlock = new Block(42, BlockTextures.BlockIron, Material.Metal).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockIron");
     public static readonly Block DoubleSlab = new BlockSlab(43, true).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
     public static readonly Block Slab = new BlockSlab(44, false).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
     public static readonly Block Bricks = new Block(45, BlockTextures.Bricks, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("brick");
@@ -151,7 +156,7 @@ public class Block
     public static readonly Block DiamondOre = new Block(56, BlockTextures.DiamondOre, Material.Stone).setDrops(() => Item.ByName("diamond").Id).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreDiamond")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
-    public static readonly Block DiamondBlock = new BlockOreStorage(57, BlockTextures.BlockDiamond).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockDiamond");
+    public static readonly Block DiamondBlock = new Block(57, BlockTextures.BlockDiamond, Material.Metal).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockDiamond");
     public static readonly Block CraftingTable = new Block(58, BlockTextures.CraftingTableSide, Material.Wood).setTopBottomTextures(BlockTextures.CraftingTableTop, BlockTextures.OakPlanks)
         .setFaceTexture(Side.North, BlockTextures.CraftingTableFront).setFaceTexture(Side.West, BlockTextures.CraftingTableFront)
         .setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("workbench").SetInteractable(new WorkbenchInteractBehavior());
