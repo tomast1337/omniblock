@@ -1,78 +1,93 @@
 name: Release
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version name (e.g. 1.0, 1.2.4, snapshot-pre1.0_1)'
-        required: true
-        default: 'snapshot'
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'Version name (e.g. 1.0, 1.2.4, snapshot-pre1.0_1)'
+                type: string
+                required: true
+                default: 'snapshot'
 jobs:
-  build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    env:
-        DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            rid: win-x64
-          - os: docker
-            rid: linux-x64
-          - os: macos-latest
-            rid: osx-x64
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-      - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
-      - name: Publish
-        run: >
-          dotnet publish BetaSharp.Launcher/BetaSharp.Launcher.csproj
-          --configuration Release
-          --runtime ${{ matrix.rid }}
-          --self-contained true
-          --output ./publish/${{ matrix.rid }}
-      - name: Create version.txt
-        shell: bash
-        run: echo "${{ github.event.inputs.version }}" > ./publish/${{ matrix.rid }}/Client/version.txt
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.rid }}
-          path: ./publish/${{ matrix.rid }}/
-  release:
-    name: Create Release
-    runs-on: docker
-    needs: build
-    if: github.event_name == 'workflow_dispatch'
-    permissions:
-      contents: write
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-      - name: Zip artifacts
-        run: |
-          for dir in ./artifacts/*/; do
-            name=$(basename "$dir")
-            (cd "$dir" && zip -r "../../artifacts/${name}.zip" .)
-            rm -rf "$dir"
-          done
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.version }}
-          name: ${{ github.event.inputs.version }}
-          prerelease: ${{ contains(github.event.inputs.version, 'snapshot') || contains(github.event.inputs.version, 'pre') || contains(github.event.inputs.version, 'alpha') || contains(github.event.inputs.version, 'beta') }}
-          files: ./artifacts/*.zip
+    build:
+        name: Build (${{ matrix.rid }})
+        runs-on: ${{ matrix.os }}
+        env:
+            DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    # - os: windows-latest
+                    #   rid: win-x64
+                    - os: docker
+                      rid: linux-x64
+                    # - os: macos-latest
+                    #   rid: osx-x64
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: '10.0.x'
+            - name: Restore dependencies
+              run: dotnet restore
+            - name: Build
+              run: dotnet build --configuration Release --no-restore
+            - name: Test
+              run: dotnet test --configuration Release --no-build --verbosity normal
+            - name: Publish
+              run: >
+                  dotnet publish BetaSharp.Launcher/BetaSharp.Launcher.csproj
+                  --configuration Release
+                  --runtime ${{ matrix.rid }}
+                  --self-contained true
+                  --output ./publish/${{ matrix.rid }}
+            - name: Create version.txt
+              shell: bash
+              run: echo "${{ github.event.inputs.version }}" > ./publish/${{ matrix.rid }}/Client/version.txt
+            - name: Zip artifact
+              shell: bash
+              run: |
+                  cd ./publish/${{ matrix.rid }}
+                  zip -r ../../${{ matrix.rid }}.zip .
+            - name: Upload artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: ${{ matrix.rid }}
+                  path: ./${{ matrix.rid }}.zip
+    release:
+        name: Create Release
+        runs-on: docker
+        needs: build
+        if: github.event_name == 'workflow_dispatch'
+        permissions:
+            contents: write
+        steps:
+            - name: Download all artifacts
+              uses: actions/download-artifact@v3
+              with:
+                  path: ./artifacts
+            - name: Flatten zips
+              run: |
+                  find ./artifacts -name '*.zip' -exec mv {} ./artifacts/ \;
+            - name: Create Release
+              shell: bash
+              env:
+                  FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  VERSION="${{ github.event.inputs.version }}"
+                  IS_PRE="false"
+                  if echo "$VERSION" | grep -qiE 'snapshot|pre|alpha|beta'; then IS_PRE="true"; fi
+                  RELEASE_ID=$(curl -s -X POST \
+                    "${GITHUB_SERVER_URL}/api/v1/repos/${GITHUB_REPOSITORY}/releases" \
+                    -H "Authorization: token ${FORGEJO_TOKEN}" \
+                    -H "Content-Type: application/json" \
+                    -d "{\"tag_name\":\"${VERSION}\",\"name\":\"${VERSION}\",\"prerelease\":${IS_PRE}}" \
+                    | jq -r .id)
+                  for f in ./artifacts/*.zip; do
+                    curl -s -X POST \
+                      "${GITHUB_SERVER_URL}/api/v1/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets" \
+                      -H "Authorization: token ${FORGEJO_TOKEN}" \
+                      -F "attachment=@${f}"
+                  done
