@@ -46,6 +46,9 @@ public class Block
     private static readonly PressurePlateBehavior s_mobPlate = new(PressurePlateActiviationRule.MOBS);
     private static readonly PressurePlateBehavior s_everythingPlate = new(PressurePlateActiviationRule.EVERYTHING);
     private static readonly DetectorRailBehavior s_detectorRail = new();
+    private static readonly NoteBlockBehavior s_noteblockBehavior = new();
+    private static readonly RedstoneOreBehavior s_redstoneOreBehavior = new();
+    private static readonly RepeaterBehavior s_repeaterBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -111,7 +114,10 @@ public class Block
     public static readonly Block LapisBlock = new Block(22, BlockTextures.BlockLapis, Material.Stone).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("blockLapis");
     public static readonly Block Dispenser = new BlockDispenser(23).setHardness(3.5F).setSoundGroup(SoundStoneFootstep).setBlockName("dispenser").IgnoreMetaUpdates();
     public static readonly Block Sandstone = new Block(24, BlockTextures.SandstoneSide, Material.Stone).setTopBottomTextures(BlockTextures.SandstoneTop, BlockTextures.SandstoneBottom).setSoundGroup(SoundStoneFootstep).setHardness(0.8F).setBlockName("sandStone").SetVariance(TextureVariance.Rotations, TextureVariance.None);
-    public static readonly Block Noteblock = new BlockNote(25).setHardness(0.8F).setBlockName("musicBlock").IgnoreMetaUpdates();
+    public static readonly Block Noteblock = new Block(25, BlockTextures.NoteBlock, Material.Wood)
+        .setHasTileEntity(() => new BlockEntityNote())
+        .SetInteractable(s_noteblockBehavior).SetLifecycle(s_noteblockBehavior).SetPhysics(s_noteblockBehavior)
+        .setHardness(0.8F).setBlockName("musicBlock").IgnoreMetaUpdates();
     public static readonly Block Bed = new BlockBed(26).setHardness(0.2F).setBlockName("bed").disableStats().IgnoreMetaUpdates();
     public static readonly Block PoweredRail = new BlockRail(27, BlockTextures.PoweredRailOn, true).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("goldenRail").IgnoreMetaUpdates();
     public static readonly Block DetectorRail = new BlockRail(28, BlockTextures.DetectorRail, true)
@@ -166,7 +172,7 @@ public class Block
         .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.RedstoneWire)
         .SetRedstone(s_redstoneWire).SetPhysics(s_redstoneWire).SetTicker(s_redstoneWire).SetLifecycle(s_redstoneWire).SetVisuals(s_redstoneWire)
-        .setDrops(() => Item.Redstone.id)
+        .setDrops(() => Item.ByName("redstone").Id)
         .setHardness(0.0F).setSoundGroup(SoundPowderFootstep).setBlockName("redstoneDust").disableStats().IgnoreMetaUpdates();
 
     public static readonly Block DiamondOre = new Block(56, BlockTextures.DiamondOre, Material.Stone).setDrops(() => Item.ByName("diamond").Id).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreDiamond")
@@ -210,10 +216,18 @@ public class Block
         .setBlockName("pressurePlate")
         .IgnoreMetaUpdates();
 
-    public static readonly Block RedstoneOre = new BlockRedstoneOre(73, BlockTextures.RedstoneOre, false).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreRedstone").IgnoreMetaUpdates()
+    public static readonly Block RedstoneOre = new Block(73, BlockTextures.RedstoneOre, Material.Stone)
+        .setTickRate(30)
+        .SetTicker(s_redstoneOreBehavior).SetInteractable(s_redstoneOreBehavior)
+        .setDrops(() => Item.ByName("redstone").Id, 4, 5)
+        .setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreRedstone").IgnoreMetaUpdates()
         .SetVariance(TextureVariance.Rotate180, TextureVariance.FlipBoth);
 
-    public static readonly Block LitRedstoneOre = new BlockRedstoneOre(74, BlockTextures.RedstoneOre, true).setLuminance(10.0F / 16.0F).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreRedstone")
+    public static readonly Block LitRedstoneOre = new Block(74, BlockTextures.RedstoneOre, Material.Stone)
+        .setTickRandomly(true).setTickRate(30)
+        .SetTicker(s_redstoneOreBehavior).SetInteractable(s_redstoneOreBehavior)
+        .setDrops(() => Item.ByName("redstone").Id, 4, 5)
+        .setLuminance(10.0F / 16.0F).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreRedstone")
         .IgnoreMetaUpdates()
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
@@ -253,8 +267,18 @@ public class Block
         .SetVariance(TextureVariance.All, TextureVariance.None);
 
     public static readonly Block Cake = new BlockCake(92, BlockTextures.Cake).setHardness(0.5F).setSoundGroup(SoundClothFootstep).setBlockName("cake").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Repeater = new BlockRedstoneRepeater(93, false).setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().IgnoreMetaUpdates();
-    public static readonly Block PoweredRepeater = new BlockRedstoneRepeater(94, true).setHardness(0.0F).setLuminance(10.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Repeater = new Block(93, 6, Material.PistonBreakable)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Repeater)
+        .SetRedstone(s_repeaterBehavior).SetTicker(s_repeaterBehavior).SetPhysics(s_repeaterBehavior).SetInteractable(s_repeaterBehavior).SetLifecycle(s_repeaterBehavior).SetVisuals(s_repeaterBehavior)
+        .setDrops(() => Item.ByName("redstone_repeater").Id)
+        .setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().IgnoreMetaUpdates();
+    public static readonly Block PoweredRepeater = new Block(94, 6, Material.PistonBreakable)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Repeater)
+        .SetRedstone(s_repeaterBehavior).SetTicker(s_repeaterBehavior).SetPhysics(s_repeaterBehavior).SetInteractable(s_repeaterBehavior).SetLifecycle(s_repeaterBehavior).SetVisuals(s_repeaterBehavior)
+        .setDrops(() => Item.ByName("redstone_repeater").Id)
+        .setHardness(0.0F).setLuminance(10.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("diode").disableStats().IgnoreMetaUpdates();
     public static readonly Block Trapdoor = new BlockTrapDoor(96, Material.Wood).setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("trapdoor").disableStats().IgnoreMetaUpdates();
 
     public readonly int id;
@@ -280,6 +304,7 @@ public class Block
     private bool _isFullCube = true;
     private bool _hasCollision = true;
     private PistonBehavior? _pistonBehaviorOverride;
+    private Func<BlockEntity>? _blockEntityFactory;
     private BlockRendererType _renderType = BlockRendererType.Standard;
     private int _renderLayer;
 
@@ -813,9 +838,7 @@ public class Block
 
     public virtual IReadOnlyList<string> GetBlockAlias => _blockAlias ?? [];
 
-    public virtual void onBlockAction(OnBlockActionEvent ctx)
-    {
-    }
+    public virtual void onBlockAction(OnBlockActionEvent ctx) => Lifecycle?.OnBlockAction(this, ctx);
 
     public bool getEnableStats() => shouldTrackStatistics;
 
@@ -833,4 +856,17 @@ public class Block
         _pistonBehaviorOverride = behavior;
         return this;
     }
+
+    /// <summary>
+    /// Declares that this block carries a tile entity, created by <paramref name="factory"/>.
+    /// The factory is deferred, so it may safely reference types regardless of declaration order.
+    /// </summary>
+    protected Block setHasTileEntity(Func<BlockEntity> factory)
+    {
+        BlocksWithEntity[id] = true;
+        _blockEntityFactory = factory;
+        return this;
+    }
+
+    public virtual BlockEntity? getBlockEntity() => _blockEntityFactory?.Invoke();
 }

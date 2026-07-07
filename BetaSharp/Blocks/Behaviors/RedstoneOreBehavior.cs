@@ -1,68 +1,46 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Items;
 using BetaSharp.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks;
+namespace BetaSharp.Blocks.Behaviors;
 
-internal class BlockRedstoneOre : Block
+/// <summary>
+/// Redstone ore: touching it (walk, punch, click) lights it up and sparks; the lit block
+/// reverts on its next tick. One instance is shared by both ore blocks — lit state is derived
+/// from the block id. Assign to the Ticker and Interactable slots.
+/// </summary>
+public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
 {
-    private static readonly int s_redstoneId = Item.ByName("redstone").Id;
-    private readonly bool lit;
+    private static bool IsLit(Block block) => block.id == Block.LitRedstoneOre.id;
 
-    public BlockRedstoneOre(int id, int textureId, bool lit) : base(id, textureId, Material.Stone)
-    {
-        if (lit)
-        {
-            setTickRandomly(true);
-        }
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
-        this.lit = lit;
-    }
+    public void OnSteppedOn(Block block, OnEntityStepEvent @event) => light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
-    public override int getTickRate() => 30;
-
-    public override void onBlockBreakStart(OnBlockBreakStartEvent @event)
+    public bool OnUse(Block block, OnUseEvent @event)
     {
         light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        base.onBlockBreakStart(@event);
+        return false;
     }
 
-    public override void onSteppedOn(OnEntityStepEvent @event)
-    {
-        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        base.onSteppedOn(@event);
-    }
-
-    public override bool onUse(OnUseEvent @event)
-    {
-        light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        return base.onUse(@event);
-    }
-
-    private void light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private static void light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         spawnParticles(worldRead, broadcaster, x, y, z);
-        if (worldRead.GetBlockId(x, y, z) == RedstoneOre.id)
+        if (worldRead.GetBlockId(x, y, z) == Block.RedstoneOre.id)
         {
-            worldWriter.SetBlock(x, y, z, LitRedstoneOre.id);
+            worldWriter.SetBlock(x, y, z, Block.LitRedstoneOre.id);
         }
     }
 
-    public override void onTick(OnTickEvent @event)
+    public void OnTick(Block block, OnTickEvent @event)
     {
-        if (id == LitRedstoneOre.id)
+        if (IsLit(block))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, RedstoneOre.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.RedstoneOre.id);
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => s_redstoneId;
-
-    public override int getDroppedItemCount() => 4 + Random.Shared.Next(2);
-
-    public override void randomDisplayTick(OnTickEvent ctx)
+    public void RandomDisplayTick(Block block, OnTickEvent ctx)
     {
-        if (lit)
+        if (IsLit(block))
         {
             spawnParticles(ctx.World.Reader, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
         }

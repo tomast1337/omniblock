@@ -495,7 +495,7 @@ public class Chunk
         blockEntity.Z = Z * 16 + localZ;
 
         int id = GetBlockId(localX, y, localZ);
-        if (id != 0 && Block.Blocks[id] is BlockWithEntity)
+        if (id != 0 && Block.BlocksWithEntity[id])
         {
             blockEntity.cancelRemoval();
             BlockEntities[pos] = blockEntity;

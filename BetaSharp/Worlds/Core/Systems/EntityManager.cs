@@ -852,8 +852,7 @@ public class EntityManager
             return null;
         }
 
-        BlockWithEntity blockWithEntity = (BlockWithEntity)Block.Blocks[blockId];
-        entity = blockWithEntity.getBlockEntity();
+        entity = Block.Blocks[blockId].getBlockEntity();
 
         if (entity == null)
         {

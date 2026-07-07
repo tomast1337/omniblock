@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -35,19 +36,19 @@ public class RepeaterRenderer : IBlockRenderer
         {
             case 0: // South
                 delayTorchZ = -0.3125f;
-                staticTorchZ = BlockRedstoneRepeater.RenderOffset[delay];
+                staticTorchZ = RepeaterBehavior.RenderOffset[delay];
                 break;
             case 1: // West
                 delayTorchX = 0.3125f;
-                staticTorchX = -BlockRedstoneRepeater.RenderOffset[delay];
+                staticTorchX = -RepeaterBehavior.RenderOffset[delay];
                 break;
             case 2: // North
                 delayTorchZ = 0.3125f;
-                staticTorchZ = -BlockRedstoneRepeater.RenderOffset[delay];
+                staticTorchZ = -RepeaterBehavior.RenderOffset[delay];
                 break;
             case 3: // East
                 delayTorchX = -0.3125f;
-                staticTorchX = BlockRedstoneRepeater.RenderOffset[delay];
+                staticTorchX = RepeaterBehavior.RenderOffset[delay];
                 break;
         }
 

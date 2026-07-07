@@ -9,4 +9,7 @@ public interface IBlockLifecycle
 
     /// <summary>Called when the block's metadata changes (e.g. client-side state sync).</summary>
     void OnMetadataChange(Block block, OnMetadataChangeEvent @event) { }
+
+    /// <summary>Called when a block action network packet arrives (e.g. note played, piston moved).</summary>
+    void OnBlockAction(Block block, OnBlockActionEvent @event) { }
 }
