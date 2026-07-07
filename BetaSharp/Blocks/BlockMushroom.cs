@@ -1,15 +1,24 @@
+using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Worlds.Chunks;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockMushroom : BlockPlant
+internal class BlockMushroom : Block
 {
     private const float HalfSize = 0.2F;
 
-    public BlockMushroom(int i, int j) : base(i, j)
+    public BlockMushroom(int i, int j) : base(i, j, Material.Plant)
     {
-        setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 2.0F, 0.5F + HalfSize);
         setTickRandomly(true);
+        setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 2.0F, 0.5F + HalfSize);
+        setNonOpaque();
+        setNotFullCube();
+        setNoCollision();
+        setRenderType(BlockRendererType.Reed);
+        // Physics only: ground placement check + break on neighbor change (routed through the
+        // canGrow override below). No Ticker — mushrooms never break on random tick, they spread.
+        SetPhysics(new PlantSurvivalBehavior(canPlantOnTop));
     }
 
     public override void onTick(OnTickEvent @event)
@@ -30,7 +39,7 @@ internal class BlockMushroom : BlockPlant
         }
     }
 
-    protected override bool canPlantOnTop(int id) => id == GrassBlock.id || id == Dirt.id || id == Stone.id || id == Gravel.id || id == Cobblestone.id;
+    private static bool canPlantOnTop(int id) => id == GrassBlock.id || id == Dirt.id || id == Stone.id || id == Gravel.id || id == Cobblestone.id;
 
     public override bool canGrow(OnTickEvent ctx) => ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight && (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13 && canPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z)));
 }

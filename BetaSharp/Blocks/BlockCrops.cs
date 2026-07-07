@@ -1,3 +1,5 @@
+using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Rules;
@@ -5,21 +7,24 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockCrops : BlockPlant
+internal class BlockCrops : Block
 {
     private const float DropSpread = 0.7F;
-    private const float HalfWidth = 0.5F;
     private static readonly Item s_seeds = Item.ByName("seeds");
     private static readonly int s_wheatId = Item.ByName("wheat").Id;
 
-    public BlockCrops(int i, int j) : base(i, j)
+    public BlockCrops(int i, int j) : base(i, j, Material.Plant)
     {
-        TextureId = j;
         setTickRandomly(true);
-        setBoundingBox(0.5F - HalfWidth, 0.0F, 0.5F - HalfWidth, 0.5F + HalfWidth, 0.25F, 0.5F + HalfWidth);
+        setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+        setNonOpaque();
+        setNotFullCube();
+        setNoCollision();
+        setRenderType(BlockRendererType.Crops);
+        var survival = new PlantSurvivalBehavior(id => id == Farmland.id);
+        SetTicker(survival);
+        SetPhysics(survival);
     }
-
-    protected override bool canPlantOnTop(int id) => id == Farmland.id;
 
     public override void onTick(OnTickEvent @event)
     {
@@ -94,8 +99,6 @@ internal class BlockCrops : BlockPlant
 
         return TextureId + meta;
     }
-
-    public override BlockRendererType getRenderType() => BlockRendererType.Crops;
 
     public override void dropStacks(OnDropEvent @event)
     {

@@ -35,6 +35,8 @@ public class Block
     // Stateless and shared: declared before the block fields below because static
     // field initializers run in textual order.
     private static readonly FallingBlockBehavior s_fallingBehavior = new();
+    private static readonly PlantSurvivalBehavior s_plantSurvival = new();
+    private static readonly PlantSurvivalBehavior s_deadBushSurvival = new(id => id == Sand.id);
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -102,8 +104,12 @@ public class Block
     public static readonly Block DetectorRail = new BlockDetectorRail(28, BlockTextures.DetectorRail).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("detectorRail").IgnoreMetaUpdates();
     public static readonly Block StickyPiston = new BlockPistonBase(29, BlockTextures.PistonTopSticky, true).setBlockName("pistonStickyBase").IgnoreMetaUpdates();
     public static readonly Block Cobweb = new BlockWeb(30, BlockTextures.Cobweb).setOpacity(1).setHardness(4.0F).setBlockName("web");
-    public static readonly BlockTallGrass Grass = (BlockTallGrass)new BlockTallGrass(31, BlockTextures.TallGrass).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tallgrass");
-    public static readonly BlockDeadBush DeadBush = (BlockDeadBush)new BlockDeadBush(32, BlockTextures.DeadBush).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("deadbush");
+    public static readonly Block Grass = new BlockTallGrass(31, BlockTextures.TallGrass).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tallgrass");
+    public static readonly Block DeadBush = new Block(32, BlockTextures.DeadBush, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.1F, 0.0F, 0.1F, 0.9F, 0.8F, 0.9F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_deadBushSurvival).SetPhysics(s_deadBushSurvival).setDropCount(0)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("deadbush");
     public static readonly Block Piston = new BlockPistonBase(33, BlockTextures.PistonTopNormal, false).setBlockName("pistonBase").IgnoreMetaUpdates();
     public static readonly BlockPistonExtension PistonHead = (BlockPistonExtension)new BlockPistonExtension(34, BlockTextures.PistonTopNormal).IgnoreMetaUpdates();
     public static readonly Block Wool = new Block(35, 64, Material.Wool).SetVisuals(new ClothVisualBehavior()).preserveMetaOnDrop()
@@ -114,10 +120,18 @@ public class Block
             "lightBlueWool:3", "magentaWool:2", "orangeWool:1", "whiteWool:0")
         .setHardness(0.8F).setSoundGroup(SoundClothFootstep).setBlockName("cloth").IgnoreMetaUpdates().SetVariance(TextureVariance.None, TextureVariance.FlipBoth);
     public static readonly BlockPistonMoving MovingPiston = new(36);
-    public static readonly BlockPlant Dandelion = (BlockPlant)new BlockPlant(37, BlockTextures.Dandelion).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("flower");
-    public static readonly BlockPlant Rose = (BlockPlant)new BlockPlant(38, BlockTextures.Rose).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("rose");
-    public static readonly BlockPlant BrownMushroom = (BlockPlant)new BlockMushroom(39, BlockTextures.BrownMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setLuminance(2.0F / 16.0F).setBlockName("mushroom");
-    public static readonly BlockPlant RedMushroom = (BlockPlant)new BlockMushroom(40, BlockTextures.RedMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("mushroom");
+    public static readonly Block Dandelion = new Block(37, BlockTextures.Dandelion, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.3F, 0.0F, 0.3F, 0.7F, 0.6F, 0.7F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_plantSurvival).SetPhysics(s_plantSurvival)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("flower");
+    public static readonly Block Rose = new Block(38, BlockTextures.Rose, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.3F, 0.0F, 0.3F, 0.7F, 0.6F, 0.7F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_plantSurvival).SetPhysics(s_plantSurvival)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("rose");
+    public static readonly Block BrownMushroom = new BlockMushroom(39, BlockTextures.BrownMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setLuminance(2.0F / 16.0F).setBlockName("mushroom");
+    public static readonly Block RedMushroom = new BlockMushroom(40, BlockTextures.RedMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("mushroom");
     public static readonly Block GoldBlock = new BlockOreStorage(41, BlockTextures.BlockGold).setHardness(3.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockGold");
     public static readonly Block IronBlock = new BlockOreStorage(42, BlockTextures.BlockIron).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockIron");
     public static readonly Block DoubleSlab = new BlockSlab(43, true).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
@@ -220,6 +234,9 @@ public class Block
     private bool _isOpaque = true;
     private string[]? _blockAlias;
     private int _tickRate = 10;
+    private bool _isFullCube = true;
+    private bool _hasCollision = true;
+    private BlockRendererType _renderType = BlockRendererType.Standard;
 
     static Block()
     {
@@ -357,9 +374,28 @@ public class Block
         return this;
     }
 
-    public virtual bool isFullCube() => true;
+    public virtual bool isFullCube() => _isFullCube;
 
-    public virtual BlockRendererType getRenderType() => BlockRendererType.Standard;
+    public virtual BlockRendererType getRenderType() => _renderType;
+
+    protected Block setNotFullCube()
+    {
+        _isFullCube = false;
+        return this;
+    }
+
+    protected Block setRenderType(BlockRendererType renderType)
+    {
+        _renderType = renderType;
+        return this;
+    }
+
+    /// <summary>Entities pass through this block (plants, portals, ...).</summary>
+    protected Block setNoCollision()
+    {
+        _hasCollision = false;
+        return this;
+    }
 
     public Block SetVariance(TextureVariance allFaces)
     {
@@ -410,7 +446,11 @@ public class Block
         return this;
     }
 
-    public void setBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) => BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
+    public Block setBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+    {
+        BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
+        return this;
+    }
 
     public virtual float getLuminance(ILightProvider lighting, int x, int y, int z)
     {
@@ -478,7 +518,7 @@ public class Block
         }
     }
 
-    public virtual Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => BoundingBox.Offset(x, y, z);
+    public virtual Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => _hasCollision ? BoundingBox.Offset(x, y, z) : null;
 
     public virtual bool isOpaque() => _isOpaque;
 

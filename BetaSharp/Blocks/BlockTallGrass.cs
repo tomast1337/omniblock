@@ -1,15 +1,28 @@
+using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.Worlds.ClientData.Colors;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks;
 
-public class BlockTallGrass : BlockPlant
+public class BlockTallGrass : Block
 {
     private const float HalfSize = 0.4F;
     private static readonly int s_seedsId = Item.ByName("seeds").Id;
 
-    public BlockTallGrass(int i, int j) : base(i, j) => setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, 0.8F, 0.5F + HalfSize);
+    public BlockTallGrass(int i, int j) : base(i, j, Material.Plant)
+    {
+        setTickRandomly(true);
+        setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, 0.8F, 0.5F + HalfSize);
+        setNonOpaque();
+        setNotFullCube();
+        setNoCollision();
+        setRenderType(BlockRendererType.Reed);
+        var survival = new PlantSurvivalBehavior();
+        SetTicker(survival);
+        SetPhysics(survival);
+    }
 
     public override int GetTexture(Side side, int meta) => meta switch
     {

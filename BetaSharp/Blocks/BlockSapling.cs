@@ -1,17 +1,27 @@
+using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Generation.Generators.Features;
 
 namespace BetaSharp.Blocks;
 
-internal class BlockSapling : BlockPlant
+internal class BlockSapling : Block
 {
     private static readonly JavaRandom s_random = new ();
     private const float HalfSize = 0.4F;
 
-    public BlockSapling(int id) : base(id, BlockTextures.SaplingOak)
+    public BlockSapling(int id) : base(id, BlockTextures.SaplingOak, Material.Plant)
     {
+        setTickRandomly(true);
         setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, HalfSize * 2.0F, 0.5F + HalfSize);
+        setNonOpaque();
+        setNotFullCube();
+        setNoCollision();
+        setRenderType(BlockRendererType.Reed);
+        var survival = new PlantSurvivalBehavior();
+        SetTicker(survival);
+        SetPhysics(survival);
     }
 
     public override void onTick(OnTickEvent @event)
@@ -47,7 +57,7 @@ internal class BlockSapling : BlockPlant
     {
         int saplingType = world.Reader.GetBlockMeta(x, y, z) & 3;
         world.Writer.SetBlock(x, y, z, 0);
-        Feature? treeFeature = null; 
+        Feature? treeFeature = null;
         if (saplingType == 1)
         {
             treeFeature = new SpruceTreeFeature();
