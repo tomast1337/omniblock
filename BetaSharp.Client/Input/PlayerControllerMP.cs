@@ -68,9 +68,10 @@ public class PlayerControllerMP : PlayerController
 
             if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.Player) >= Game.Player.GameMode.BreakSpeed)
             {
+                int meta = Game.World.Reader.GetBlockMeta(x, y, z);
                 if (SendBlockRemoved(x, y, z, direction))
                 {
-                    Game.WorldRenderer.WorldEventBreak(blockId, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
+                    Game.WorldRenderer.WorldEventBreak(blockId, meta, x, y, z);
                 }
             }
             else
