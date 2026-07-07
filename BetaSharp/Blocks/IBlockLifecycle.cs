@@ -19,6 +19,16 @@ public interface IBlockLifecycle
     /// <summary>Overrides how many items this block drops (independent of the meta-driven id).</summary>
     int GetDroppedItemCount(Block block, int defaultCount) => defaultCount;
 
+    /// <summary>Overrides the metadata/damage value stamped onto the dropped item stack.</summary>
+    int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta) => defaultMeta;
+
+    /// <summary>
+    /// Called once per block, after every block's static field has been assigned (see
+    /// <see cref="Block.init"/>), for setup that must reference other block statics regardless of
+    /// declaration order (e.g. fire's flammability registry).
+    /// </summary>
+    void OnInit(Block block) { }
+
     /// <summary>
     /// Called after the default single-item drop resolution in <see cref="Block.dropStacks"/>,
     /// for blocks with bonus/variable drops beyond the id/count model (e.g. crops scattering

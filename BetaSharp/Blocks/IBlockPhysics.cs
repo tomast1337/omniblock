@@ -34,4 +34,13 @@ public interface IBlockPhysics
     /// farmland collides as a full cube while rendering with a recessed top).
     /// </summary>
     Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape) => defaultShape;
+
+    /// <summary>
+    /// Coarse "does this block collide at all" flag consumed by movement/raycast pre-checks,
+    /// independent of <see cref="GetCollisionShape"/> (e.g. fire has no collision shape at all).
+    /// </summary>
+    bool HasCollision(Block block, bool defaultHasCollision) => defaultHasCollision;
+
+    /// <summary>Whether this block can catch fire from the given neighbor position (fire's own spread registry).</summary>
+    bool IsFlammable(Block block, IBlockReader reader, int x, int y, int z, bool defaultFlammable) => defaultFlammable;
 }

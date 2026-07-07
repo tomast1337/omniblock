@@ -77,6 +77,11 @@ public class Block
     private static readonly WallMountBehavior s_torchBehavior = new(false);
     private static readonly WallMountBehavior s_ladderBehavior = new(true);
     private static readonly RedstoneTorchBehavior s_redstoneTorchBehavior = new(s_torchBehavior);
+    private static readonly SaplingBehavior s_saplingBehavior = new();
+    private static readonly TallGrassBehavior s_tallGrassBehavior = new();
+    private static readonly SoulSandBehavior s_soulSandBehavior = new();
+    private static readonly WebBehavior s_webBehavior = new();
+    private static readonly FireBehavior s_fireBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -97,7 +102,11 @@ public class Block
     public static readonly Block Dirt = new Block(3, BlockTextures.Dirt, Material.Soil).setHardness(0.5F).setSoundGroup(SoundGravelFootstep).setBlockName("dirt").SetVariance(TextureVariance.All);
     public static readonly Block Cobblestone = new Block(4, BlockTextures.Cobblestone, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stonebrick");
     public static readonly Block Planks = new Block(5, BlockTextures.OakPlanks, Material.Wood).setHardness(2.0F).setResistance(5.0F).setSoundGroup(SoundWoodFootstep).setBlockName("wood").IgnoreMetaUpdates();
-    public static readonly Block Sapling = new BlockSapling(6).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("sapling").IgnoreMetaUpdates();
+    public static readonly Block Sapling = new Block(6, BlockTextures.SaplingOak, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.5F - 0.4F, 0.0F, 0.5F - 0.4F, 0.5F + 0.4F, 0.8F, 0.5F + 0.4F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_saplingBehavior).SetPhysics(s_plantSurvival).SetVisuals(s_saplingBehavior).SetLifecycle(s_saplingBehavior)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("sapling").IgnoreMetaUpdates();
 
     public static readonly Block Bedrock = new Block(7, BlockTextures.Bedrock, Material.Stone).setUnbreakable().setResistance(6000000.0F).setSoundGroup(SoundStoneFootstep).setBlockName("bedrock").disableStats()
         .SetVariance(TextureVariance.All);
@@ -169,8 +178,15 @@ public class Block
         .SetRedstone(s_detectorRail).SetTicker(s_detectorRail).SetInteractable(s_detectorRail)
         .setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("detectorRail").IgnoreMetaUpdates();
     public static readonly Block StickyPiston = new BlockPistonBase(29, BlockTextures.PistonTopSticky, true).setBlockName("pistonStickyBase").IgnoreMetaUpdates();
-    public static readonly Block Cobweb = new BlockWeb(30, BlockTextures.Cobweb).setOpacity(1).setHardness(4.0F).setBlockName("web");
-    public static readonly Block Grass = new BlockTallGrass(31, BlockTextures.TallGrass).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tallgrass");
+    public static readonly Block Cobweb = new Block(30, BlockTextures.Cobweb, Material.Cobweb)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetInteractable(s_webBehavior).setDrops(() => Item.ByName("string").Id)
+        .setOpacity(1).setHardness(4.0F).setBlockName("web");
+    public static readonly Block Grass = new Block(31, BlockTextures.TallGrass, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.5F - 0.4F, 0.0F, 0.5F - 0.4F, 0.5F + 0.4F, 0.8F, 0.5F + 0.4F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_plantSurvival).SetPhysics(s_plantSurvival).SetVisuals(s_tallGrassBehavior).SetLifecycle(s_tallGrassBehavior)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tallgrass");
     public static readonly Block DeadBush = new Block(32, BlockTextures.DeadBush, Material.Plant)
         .setTickRandomly(true).setBoundingBox(0.1F, 0.0F, 0.1F, 0.9F, 0.8F, 0.9F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
@@ -227,7 +243,11 @@ public class Block
         .setTickRandomly(true).setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Torch)
         .SetPhysics(s_torchBehavior).SetLifecycle(s_torchBehavior).SetTicker(s_torchBehavior)
         .setHardness(0.0F).setLuminance(15.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("torch").IgnoreMetaUpdates();
-    public static readonly Block Fire = (BlockFire)new BlockFire(51, BlockTextures.Fire).setHardness(0.0F).setLuminance(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("fire").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Fire = new Block(51, BlockTextures.Fire, Material.Fire)
+        .setTickRandomly(true).setTickRate(40).setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Fire)
+        .SetTicker(s_fireBehavior).SetPhysics(s_fireBehavior).SetLifecycle(s_fireBehavior)
+        .setDropCount(0)
+        .setHardness(0.0F).setLuminance(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("fire").disableStats().IgnoreMetaUpdates();
     public static readonly Block Spawner = new Block(52, BlockTextures.Spawner, Material.Stone)
         .setHasTileEntity(() => new BlockEntityMobSpawner())
         .SetLifecycle(s_tileEntityLifecycle)
@@ -407,7 +427,9 @@ public class Block
         .setHardness(2.0F).setResistance(5.0F).setSoundGroup(SoundWoodFootstep).setBlockName("fence").IgnoreMetaUpdates();
     public static readonly Block Pumpkin = new BlockPumpkin(86, BlockTextures.PumpkinBase, false).setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("pumpkin").IgnoreMetaUpdates();
     public static readonly Block Netherrack = new Block(87, BlockTextures.Netherrack, Material.Stone).setHardness(0.4F).setSoundGroup(SoundStoneFootstep).setBlockName("hellrock").SetVariance(TextureVariance.All);
-    public static readonly Block Soulsand = new BlockSoulSand(88, BlockTextures.SoulSand).setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("hellsand");
+    public static readonly Block Soulsand = new Block(88, BlockTextures.SoulSand, Material.Sand)
+        .SetPhysics(s_soulSandBehavior).SetInteractable(s_soulSandBehavior)
+        .setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("hellsand");
 
     public static readonly Block Glowstone = new Block(89, BlockTextures.Glowstone, Material.Stone).setDrops(() => Item.ByName("yellow_dust").Id, 2, 4).setHardness(0.3F).setSoundGroup(SoundGlassFootstep).setLuminance(1.0F).setBlockName("lightgem")
         .SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
@@ -517,9 +539,7 @@ public class Block
         return this;
     }
 
-    protected virtual void init()
-    {
-    }
+    protected virtual void init() => Lifecycle?.OnInit(this);
 
     protected Block setSoundGroup(BlockSoundGroup soundGroup)
     {
@@ -764,7 +784,7 @@ public class Block
 
     public virtual bool hasCollision(int meta, bool allowLiquids) => hasCollision();
 
-    public virtual bool hasCollision() => true;
+    public virtual bool hasCollision() => Physics == null || Physics.HasCollision(this, true);
 
     public IBlockTicker? Ticker { get; private set; }
 
@@ -842,7 +862,11 @@ public class Block
         }
     }
 
-    protected virtual int getDroppedItemMeta(int blockMeta) => _dropsWithBlockMeta ? blockMeta : _droppedItemMetaValue;
+    protected virtual int getDroppedItemMeta(int blockMeta)
+    {
+        int defaultMeta = _dropsWithBlockMeta ? blockMeta : _droppedItemMetaValue;
+        return Lifecycle == null ? defaultMeta : Lifecycle.GetDroppedItemMeta(this, blockMeta, defaultMeta);
+    }
 
     public virtual float getBlastResistance(Entity entity) => resistance / 5.0F;
 
@@ -960,7 +984,7 @@ public class Block
 
     public virtual bool canEmitRedstonePower() => Redstone != null && Redstone.CanEmitRedstonePower(this);
 
-    public virtual bool isFlammable(IBlockReader iBlockReader, int x, int y, int z) => false;
+    public virtual bool isFlammable(IBlockReader iBlockReader, int x, int y, int z) => Physics != null && Physics.IsFlammable(this, iBlockReader, x, y, z, false);
 
     public virtual void onEntityCollision(OnEntityCollisionEvent @event) => Interactable?.OnEntityCollision(this, @event);
 
