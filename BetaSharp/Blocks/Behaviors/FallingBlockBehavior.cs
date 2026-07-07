@@ -3,7 +3,12 @@ using BetaSharp.Entities;
 
 namespace BetaSharp.Blocks.Behaviors;
 
-public class FallingBlockTicker : IBlockTicker
+/// <summary>
+/// Gravity-affected blocks (sand, gravel): schedules a fall check when placed or when a
+/// neighbor changes, and falls on tick. Spans three capabilities — assign the same instance
+/// to the Ticker, Lifecycle, and Physics slots.
+/// </summary>
+public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
 {
     private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
 
@@ -16,6 +21,10 @@ public class FallingBlockTicker : IBlockTicker
     }
 
     public void OnTick(Block block, OnTickEvent @event) => processFall(block, @event);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
+
+    public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
 
     private static void processFall(Block block, OnTickEvent @event)
     {

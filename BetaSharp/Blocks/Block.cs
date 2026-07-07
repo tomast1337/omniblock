@@ -32,6 +32,10 @@ public class Block
     public static readonly int[] BlocksLightLuminance = new int[256];
     public static readonly bool[] BlocksIgnoreMetaUpdate = new bool[256];
 
+    // Stateless and shared: declared before the block fields below because static
+    // field initializers run in textual order.
+    private static readonly FallingBlockBehavior s_fallingBehavior = new();
+
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
         .setHardness(1.5F)
@@ -60,8 +64,13 @@ public class Block
     public static readonly Block Water = new BlockStationary(9, Material.Water).setHardness(100.0F).setOpacity(3).setBlockName("water").disableStats().IgnoreMetaUpdates();
     public static readonly Block FlowingLava = new BlockFlowing(10, Material.Lava).setHardness(0.0F).setLuminance(1.0F).setOpacity(255).setBlockName("lava").disableStats().IgnoreMetaUpdates();
     public static readonly Block Lava = new BlockStationary(11, Material.Lava).setHardness(100.0F).setLuminance(1.0F).setOpacity(255).setBlockName("lava").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Sand = new BlockSand(12, BlockTextures.Sand).setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("sand").SetVariance(TextureVariance.Rotations);
-    public static readonly Block Gravel = new BlockGravel(13, BlockTextures.Gravel).setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("gravel").SetVariance(TextureVariance.Rotations);
+    public static readonly Block Sand = new Block(12, BlockTextures.Sand, Material.Sand)
+        .SetTicker(s_fallingBehavior).SetLifecycle(s_fallingBehavior).SetPhysics(s_fallingBehavior).setTickRate(3)
+        .setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("sand").SetVariance(TextureVariance.Rotations);
+    public static readonly Block Gravel = new Block(13, BlockTextures.Gravel, Material.Sand)
+        .SetTicker(s_fallingBehavior).SetLifecycle(s_fallingBehavior).SetPhysics(s_fallingBehavior).setTickRate(3)
+        .setDrops(() => Random.Shared.Next(10) == 0 ? Item.ByName("flint").Id : Gravel.id)
+        .setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("gravel").SetVariance(TextureVariance.Rotations);
 
     public static readonly Block GoldOre = new Block(14, BlockTextures.GoldOre, Material.Stone).setHardness(3.0F).setResistance(5.0F).setSoundGroup(SoundStoneFootstep).setBlockName("oreGold")
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
@@ -210,6 +219,7 @@ public class Block
     private bool _dropsWithBlockMeta;
     private bool _isOpaque = true;
     private string[]? _blockAlias;
+    private int _tickRate = 10;
 
     static Block()
     {
@@ -492,17 +502,19 @@ public class Block
     {
     }
 
-    public virtual void neighborUpdate(OnTickEvent e) => Ticker?.NeighborUpdate(this, e);
+    public virtual void neighborUpdate(OnTickEvent e) => Physics?.NeighborUpdate(this, e);
 
-    public virtual int getTickRate() => 10;
+    public virtual int getTickRate() => _tickRate;
 
-    public virtual void onPlaced(OnPlacedEvent e)
+    public virtual void onPlaced(OnPlacedEvent e) => Lifecycle?.OnPlaced(this, e);
+
+    protected Block setTickRate(int rate)
     {
+        _tickRate = rate;
+        return this;
     }
 
-    public virtual void onBreak(OnBreakEvent e)
-    {
-    }
+    public virtual void onBreak(OnBreakEvent e) => Lifecycle?.OnBreak(this, e);
 
     public virtual int getDroppedItemCount() => _minDroppedCount == _maxDroppedCount ? _minDroppedCount : _minDroppedCount + Random.Shared.Next(_maxDroppedCount - _minDroppedCount + 1);
 
@@ -572,7 +584,8 @@ public class Block
     public virtual bool canPlaceAt(CanPlaceAtContext evt)
     {
         int blockId = evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z);
-        return blockId == 0 || Blocks[blockId].material.IsReplaceable;
+        bool baseResult = blockId == 0 || Blocks[blockId].material.IsReplaceable;
+        return Physics == null ? baseResult : baseResult && Physics.CanPlaceAt(this, evt);
     }
 
     public IBlockInteractable? Interactable { get; private set; }
@@ -588,6 +601,22 @@ public class Block
     public Block SetVisuals(IBlockVisuals visuals)
     {
         Visuals = visuals;
+        return this;
+    }
+
+    public IBlockLifecycle? Lifecycle { get; private set; }
+
+    public Block SetLifecycle(IBlockLifecycle lifecycle)
+    {
+        Lifecycle = lifecycle;
+        return this;
+    }
+
+    public IBlockPhysics? Physics { get; private set; }
+
+    public Block SetPhysics(IBlockPhysics physics)
+    {
+        Physics = physics;
         return this;
     }
 
@@ -645,9 +674,10 @@ public class Block
     {
         ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
         dropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.Meta));
+        Lifecycle?.OnAfterBreak(this, ctx);
     }
 
-    public virtual bool canGrow(OnTickEvent ctx) => true;
+    public virtual bool canGrow(OnTickEvent ctx) => Physics == null || Physics.CanGrow(this, ctx);
 
     public Block setBlockName(string name)
     {
