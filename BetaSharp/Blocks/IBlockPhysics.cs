@@ -28,4 +28,10 @@ public interface IBlockPhysics
     /// skipped entirely.
     /// </summary>
     void AddCollisionBoxes(Block block, IBlockReader reader, int x, int y, int z, Box queryBox, List<Box> results) { }
+
+    /// <summary>
+    /// Overrides the single-box collision shape independent of the render bounding box (e.g.
+    /// farmland collides as a full cube while rendering with a recessed top).
+    /// </summary>
+    Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape) => defaultShape;
 }

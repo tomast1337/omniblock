@@ -12,4 +12,17 @@ public interface IBlockLifecycle
 
     /// <summary>Called when a block action network packet arrives (e.g. note played, piston moved).</summary>
     void OnBlockAction(Block block, OnBlockActionEvent @event) { }
+
+    /// <summary>Overrides which item id this block drops for the given metadata.</summary>
+    int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => defaultItemId;
+
+    /// <summary>Overrides how many items this block drops (independent of the meta-driven id).</summary>
+    int GetDroppedItemCount(Block block, int defaultCount) => defaultCount;
+
+    /// <summary>
+    /// Called after the default single-item drop resolution in <see cref="Block.dropStacks"/>,
+    /// for blocks with bonus/variable drops beyond the id/count model (e.g. crops scattering
+    /// extra seeds).
+    /// </summary>
+    void OnDropStacks(Block block, OnDropEvent @event) { }
 }

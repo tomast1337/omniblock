@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities.FX;
 using BetaSharp.Client.Options;
@@ -230,7 +231,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void LoadRenderers()
     {
-        Block.Leaves.setGraphicsLevel(true);
+        LeavesBehavior.SetGraphicsLevel(Block.Leaves, true);
         _renderDistance = _game.Options.RenderDistance;
 
         ChunkRenderer?.Dispose();

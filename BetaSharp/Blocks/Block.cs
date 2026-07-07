@@ -66,6 +66,12 @@ public class Block
     private static readonly TrapDoorBehavior s_trapDoor = new(Material.Wood);
     private static readonly RailBehavior s_normalRail = new(false);
     private static readonly RailBehavior s_poweredRail = new(true);
+    private static readonly CropBehavior s_cropBehavior = new();
+    private static readonly FarmlandBehavior s_farmlandBehavior = new();
+    private static readonly ReedBehavior s_reedBehavior = new();
+    private static readonly CactusBehavior s_cactusBehavior = new();
+    private static readonly MushroomBehavior s_mushroomBehavior = new();
+    private static readonly LeavesBehavior s_leavesBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -116,7 +122,12 @@ public class Block
         .SetVisuals(s_logBehavior).SetLifecycle(s_logBehavior).preserveMetaOnDrop()
         .setHardness(2.0F).setSoundGroup(SoundWoodFootstep).setBlockName("log").IgnoreMetaUpdates().SetVariance(TextureVariance.All, TextureVariance.Rotate180);
 
-    public static readonly BlockLeaves Leaves = (BlockLeaves)new BlockLeaves(18, BlockTextures.LeavesOak).setHardness(0.2F).setOpacity(1).setSoundGroup(SoundGrassFootstep).setBlockName("leaves").disableStats().IgnoreMetaUpdates()
+    // isOpaque() is cached into BlocksOpaque[id] before SetVisuals runs, so it snapshots the base
+    // default (true) here — matching original BlockLeavesBase(..., graphicsLevel: false). The live
+    // isOpaque() call (used for rendering) toggles dynamically via LeavesBehavior once Visuals is set.
+    public static readonly Block Leaves = new Block(18, BlockTextures.LeavesOak, Material.Leaves)
+        .SetTicker(s_leavesBehavior).SetLifecycle(s_leavesBehavior).SetVisuals(s_leavesBehavior)
+        .setHardness(0.2F).setOpacity(1).setSoundGroup(SoundGrassFootstep).setBlockName("leaves").disableStats().IgnoreMetaUpdates()
         .SetVariance(TextureVariance.All, TextureVariance.Rotate180);
 
     public static readonly Block Sponge = new Block(19, BlockTextures.Sponge, Material.Sponge)
@@ -180,8 +191,16 @@ public class Block
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
         .SetTicker(s_plantSurvival).SetPhysics(s_plantSurvival)
         .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("rose");
-    public static readonly Block BrownMushroom = new BlockMushroom(39, BlockTextures.BrownMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setLuminance(2.0F / 16.0F).setBlockName("mushroom");
-    public static readonly Block RedMushroom = new BlockMushroom(40, BlockTextures.RedMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("mushroom");
+    public static readonly Block BrownMushroom = new Block(39, BlockTextures.BrownMushroom, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.3F, 0.0F, 0.3F, 0.7F, 0.4F, 0.7F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_mushroomBehavior).SetPhysics(s_mushroomBehavior)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setLuminance(2.0F / 16.0F).setBlockName("mushroom");
+    public static readonly Block RedMushroom = new Block(40, BlockTextures.RedMushroom, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.3F, 0.0F, 0.3F, 0.7F, 0.4F, 0.7F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_mushroomBehavior).SetPhysics(s_mushroomBehavior)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("mushroom");
     public static readonly Block GoldBlock = new Block(41, BlockTextures.BlockGold, Material.Metal).setHardness(3.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockGold");
     public static readonly Block IronBlock = new Block(42, BlockTextures.BlockIron, Material.Metal).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockIron");
     public static readonly Block DoubleSlab = new Block(43, BlockTextures.StoneSlabTop, Material.Stone)
@@ -229,8 +248,16 @@ public class Block
     public static readonly Block CraftingTable = new Block(58, BlockTextures.CraftingTableSide, Material.Wood).setTopBottomTextures(BlockTextures.CraftingTableTop, BlockTextures.OakPlanks)
         .setFaceTexture(Side.North, BlockTextures.CraftingTableFront).setFaceTexture(Side.West, BlockTextures.CraftingTableFront)
         .setHardness(2.5F).setSoundGroup(SoundWoodFootstep).setBlockName("workbench").SetInteractable(new WorkbenchInteractBehavior());
-    public static readonly Block Wheat = new BlockCrops(59, BlockTextures.WheatStageBase).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("crops").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Farmland = new BlockFarmland(60).setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("farmland");
+    public static readonly Block Wheat = new Block(59, BlockTextures.WheatStageBase, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Crops)
+        .SetTicker(s_cropBehavior).SetPhysics(s_cropBehavior).SetLifecycle(s_cropBehavior).SetVisuals(s_cropBehavior)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("crops").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Farmland = new Block(60, BlockTextures.FarmlandDry, Material.Soil)
+        .setTickRandomly(true).setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 15.0F / 16.0F, 1.0F)
+        .setNonOpaque().setNotFullCube().setOpacity(255)
+        .SetTicker(s_farmlandBehavior).SetPhysics(s_farmlandBehavior).SetInteractable(s_farmlandBehavior).SetLifecycle(s_farmlandBehavior).SetVisuals(s_farmlandBehavior)
+        .setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("farmland");
     public static readonly Block Furnace = new Block(61, BlockTextures.FurnaceSide, Material.Stone)
         .setHasTileEntity(() => new BlockEntityFurnace())
         .SetInteractable(s_furnaceUnlit).SetLifecycle(s_furnaceUnlit).SetPhysics(s_furnaceUnlit).SetTicker(s_furnaceUnlit).SetVisuals(s_furnaceUnlit)
@@ -331,11 +358,20 @@ public class Block
         .setTickRandomly(true).SetTicker(s_snowMelt).setDrops(() => Item.ByName("snowball").Id, 4)
         .setHardness(0.2F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
 
-    public static readonly Block Cactus = new BlockCactus(81, BlockTextures.CactusSide).setHardness(0.4F).setSoundGroup(SoundClothFootstep).setBlockName("cactus")
+    public static readonly Block Cactus = new Block(81, BlockTextures.CactusSide, Material.Cactus)
+        .setTickRandomly(true).setBoundingBox(1.0F / 16.0F, 0.0F, 1.0F / 16.0F, 1.0F - 1.0F / 16.0F, 1.0F, 1.0F - 1.0F / 16.0F)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Cactus)
+        .SetTicker(s_cactusBehavior).SetPhysics(s_cactusBehavior).SetInteractable(s_cactusBehavior).SetVisuals(s_cactusBehavior)
+        .setHardness(0.4F).setSoundGroup(SoundClothFootstep).setBlockName("cactus")
         .SetVariance(TextureVariance.All, TextureVariance.All, TextureVariance.Rotate180);
 
     public static readonly Block Clay = new Block(82, BlockTextures.Clay, Material.Clay).setDrops(() => Item.ByName("clay").Id, 4).setHardness(0.6F).setSoundGroup(SoundGravelFootstep).setBlockName("clay").SetVariance(TextureVariance.Rotations);
-    public static readonly Block SugarCane = new BlockReed(83, BlockTextures.SugarCane).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("reeds").disableStats();
+    public static readonly Block SugarCane = new Block(83, BlockTextures.SugarCane, Material.Plant)
+        .setTickRandomly(true).setBoundingBox(0.5F - 6.0F / 16.0F, 0.0F, 0.5F - 6.0F / 16.0F, 0.5F + 6.0F / 16.0F, 1.0F, 0.5F + 6.0F / 16.0F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
+        .SetTicker(s_reedBehavior).SetPhysics(s_reedBehavior)
+        .setDrops(() => Item.ByName("sugar_canes").Id)
+        .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("reeds").disableStats();
     public static readonly Block Jukebox = new Block(84, BlockTextures.NoteBlock, Material.Wood)
         .setHasTileEntity(() => new BlockEntityRecordPlayer())
         .setFaceTexture(Side.Up, BlockTextures.JukeboxTop)
@@ -694,10 +730,11 @@ public class Block
     public virtual Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
         updateBoundingBox(world, entities, x, y, z);
-        return _hasCollision ? BoundingBox.Offset(x, y, z) : null;
+        Box? defaultShape = _hasCollision ? BoundingBox.Offset(x, y, z) : null;
+        return Physics == null ? defaultShape : Physics.GetCollisionShape(this, world, entities, x, y, z, defaultShape);
     }
 
-    public virtual bool isOpaque() => _isOpaque;
+    public virtual bool isOpaque() => Visuals == null ? _isOpaque : Visuals.IsOpaque(this, _isOpaque);
 
     public virtual bool hasCollision(int meta, bool allowLiquids) => hasCollision();
 
@@ -731,9 +768,17 @@ public class Block
 
     public virtual void onBreak(OnBreakEvent e) => Lifecycle?.OnBreak(this, e);
 
-    public virtual int getDroppedItemCount() => _minDroppedCount == _maxDroppedCount ? _minDroppedCount : _minDroppedCount + Random.Shared.Next(_maxDroppedCount - _minDroppedCount + 1);
+    public virtual int getDroppedItemCount()
+    {
+        int defaultCount = _minDroppedCount == _maxDroppedCount ? _minDroppedCount : _minDroppedCount + Random.Shared.Next(_maxDroppedCount - _minDroppedCount + 1);
+        return Lifecycle == null ? defaultCount : Lifecycle.GetDroppedItemCount(this, defaultCount);
+    }
 
-    public virtual int getDroppedItemId(int blockMeta) => _droppedItemIdProvider?.Invoke() ?? id;
+    public virtual int getDroppedItemId(int blockMeta)
+    {
+        int defaultId = _droppedItemIdProvider?.Invoke() ?? id;
+        return Lifecycle == null ? defaultId : Lifecycle.GetDroppedItemId(this, blockMeta, defaultId);
+    }
 
     public float getHardness(EntityPlayer player) => hardness < 0.0F ? 0.0F : !player.CanHarvest(this) ? 1.0F / hardness / 100.0F : player.GetBlockBreakingSpeed(this) / hardness / 30.0F;
 
@@ -755,9 +800,11 @@ public class Block
                 }
             }
         }
+
+        Lifecycle?.OnDropStacks(this, ctx);
     }
 
-    protected static void dropStack(IWorldContext world, int x, int y, int z, ItemStack itemStack)
+    public static void dropStack(IWorldContext world, int x, int y, int z, ItemStack itemStack)
     {
         if (!world.IsRemote && world.Rules.GetBool(DefaultRules.DoTileDrops))
         {

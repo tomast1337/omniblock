@@ -48,7 +48,7 @@ internal sealed class DyeBehavior : IItemBehavior
         {
             if (!world.IsRemote)
             {
-                BlockCrops.applyFullGrowth(world, x, y, z);
+                CropBehavior.ApplyFullGrowth(world, x, y, z);
                 itemStack.ConsumeItem(player);
             }
 

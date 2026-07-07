@@ -22,4 +22,10 @@ public interface IBlockVisuals
     int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int knownMeta, int defaultColor) => defaultColor;
 
     bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) => defaultVisibility;
+
+    /// <summary>
+    /// Overrides opacity for blocks whose transparency is a runtime toggle (e.g. leaves under
+    /// fancy/fast graphics) rather than a fixed construction-time value.
+    /// </summary>
+    bool IsOpaque(Block block, bool defaultOpaque) => defaultOpaque;
 }
