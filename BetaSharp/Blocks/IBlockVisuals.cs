@@ -28,4 +28,7 @@ public interface IBlockVisuals
     /// fancy/fast graphics) rather than a fixed construction-time value.
     /// </summary>
     bool IsOpaque(Block block, bool defaultOpaque) => defaultOpaque;
+
+    /// <summary>Overrides the light level a block emits/reflects at a position (e.g. fluids sample the brighter of this and the cell above).</summary>
+    float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => defaultLuminance;
 }

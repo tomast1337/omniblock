@@ -92,6 +92,8 @@ public class Block
     private static readonly PistonBaseBehavior s_stickyPistonBaseBehavior = new(true);
     private static readonly PistonExtensionBehavior s_pistonExtensionBehavior = new();
     private static readonly PistonMovingBehavior s_pistonMovingBehavior = new();
+    private static readonly FlowingFluidBehavior s_flowingFluidBehavior = new();
+    private static readonly StationaryFluidBehavior s_stationaryFluidBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -121,10 +123,30 @@ public class Block
     public static readonly Block Bedrock = new Block(7, BlockTextures.Bedrock, Material.Stone).setUnbreakable().setResistance(6000000.0F).setSoundGroup(SoundStoneFootstep).setBlockName("bedrock").disableStats()
         .SetVariance(TextureVariance.All);
 
-    public static readonly Block FlowingWater = new BlockFlowing(8, Material.Water).setHardness(100.0F).setOpacity(3).setBlockName("water").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Water = new BlockStationary(9, Material.Water).setHardness(100.0F).setOpacity(3).setBlockName("water").disableStats().IgnoreMetaUpdates();
-    public static readonly Block FlowingLava = new BlockFlowing(10, Material.Lava).setHardness(0.0F).setLuminance(1.0F).setOpacity(255).setBlockName("lava").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Lava = new BlockStationary(11, Material.Lava).setHardness(100.0F).setLuminance(1.0F).setOpacity(255).setBlockName("lava").disableStats().IgnoreMetaUpdates();
+    public static readonly Block FlowingWater = new Block(8, (Material.Water == Material.Lava ? 14 : 12) * 16 + 13, Material.Water)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F).setTickRandomly(true).setTickRate(5)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Fluids)
+        .SetPhysics(s_flowingFluidBehavior).SetVisuals(s_flowingFluidBehavior).SetLifecycle(s_flowingFluidBehavior).SetTicker(s_flowingFluidBehavior)
+        .setDropCount(0).setRenderLayer(1)
+        .setHardness(100.0F).setOpacity(3).setBlockName("water").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Water = new Block(9, (Material.Water == Material.Lava ? 14 : 12) * 16 + 13, Material.Water)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F).setTickRandomly(false).setTickRate(5)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Fluids)
+        .SetPhysics(s_stationaryFluidBehavior).SetVisuals(s_stationaryFluidBehavior).SetLifecycle(s_stationaryFluidBehavior).SetTicker(s_stationaryFluidBehavior)
+        .setDropCount(0).setRenderLayer(1)
+        .setHardness(100.0F).setOpacity(3).setBlockName("water").disableStats().IgnoreMetaUpdates();
+    public static readonly Block FlowingLava = new Block(10, (Material.Lava == Material.Lava ? 14 : 12) * 16 + 13, Material.Lava)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F).setTickRandomly(true).setTickRate(30)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Fluids)
+        .SetPhysics(s_flowingFluidBehavior).SetVisuals(s_flowingFluidBehavior).SetLifecycle(s_flowingFluidBehavior).SetTicker(s_flowingFluidBehavior)
+        .setDropCount(0)
+        .setHardness(0.0F).setLuminance(1.0F).setOpacity(255).setBlockName("lava").disableStats().IgnoreMetaUpdates();
+    public static readonly Block Lava = new Block(11, (Material.Lava == Material.Lava ? 14 : 12) * 16 + 13, Material.Lava)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F).setTickRandomly(true).setTickRate(30)
+        .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Fluids)
+        .SetPhysics(s_stationaryFluidBehavior).SetVisuals(s_stationaryFluidBehavior).SetLifecycle(s_stationaryFluidBehavior).SetTicker(s_stationaryFluidBehavior)
+        .setDropCount(0)
+        .setHardness(100.0F).setLuminance(1.0F).setOpacity(255).setBlockName("lava").disableStats().IgnoreMetaUpdates();
     public static readonly Block Sand = new Block(12, BlockTextures.Sand, Material.Sand)
         .SetTicker(s_fallingBehavior).SetLifecycle(s_fallingBehavior).SetPhysics(s_fallingBehavior).setTickRate(3)
         .setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("sand").SetVariance(TextureVariance.Rotations);
@@ -741,13 +763,18 @@ public class Block
 
     public virtual float getLuminance(ILightProvider lighting, int x, int y, int z)
     {
+        float baseLuminance;
         if (lighting != null)
         {
-            return lighting.GetNaturalBrightness(x, y, z, BlocksLightLuminance[id]);
+            baseLuminance = lighting.GetNaturalBrightness(x, y, z, BlocksLightLuminance[id]);
+        }
+        else
+        {
+            int baseLum = BlocksLightLuminance[id];
+            baseLuminance = baseLum > 0 ? baseLum / 15.0f : 1.0f;
         }
 
-        int baseLum = BlocksLightLuminance[id];
-        return baseLum > 0 ? baseLum / 15.0f : 1.0f;
+        return Visuals == null ? baseLuminance : Visuals.GetLuminance(this, lighting!, x, y, z, baseLuminance);
     }
 
     public virtual bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
@@ -825,7 +852,7 @@ public class Block
 
     public virtual bool isOpaque() => Visuals == null ? _isOpaque : Visuals.IsOpaque(this, _isOpaque);
 
-    public virtual bool hasCollision(int meta, bool allowLiquids) => hasCollision();
+    public virtual bool hasCollision(int meta, bool allowLiquids) => Physics == null ? hasCollision() : Physics.HasCollision(this, meta, allowLiquids, hasCollision());
 
     public virtual bool hasCollision() => Physics == null || Physics.HasCollision(this, true);
 
@@ -999,7 +1026,7 @@ public class Block
 
     public virtual void onBlockBreakStart(OnBlockBreakStartEvent @event) => Interactable?.OnBlockBreakStart(this, @event);
 
-    public virtual Vec3D applyVelocity(OnApplyVelocityEvent @event) => Vec3D.Zero;
+    public virtual Vec3D applyVelocity(OnApplyVelocityEvent @event) => Physics == null ? Vec3D.Zero : Physics.ApplyVelocity(this, @event, Vec3D.Zero);
 
     public void updateBoundingBox(IBlockReader blockReader, int x, int y, int z) => updateBoundingBox(blockReader, null, x, y, z);
 

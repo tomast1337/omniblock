@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Util.Maths;
 
@@ -54,7 +55,7 @@ public class FluidsRenderer : IBlockRenderer
         {
             hasRendered = true;
             int textureId = block.GetTexture(Side.Up, meta);
-            float flowAngle = (float)BlockFluid.getFlowingAngle(ctx.BlockReader, pos.x, pos.y, pos.z, material);
+            float flowAngle = (float)FluidMath.GetFlowingAngle(ctx.BlockReader, pos.x, pos.y, pos.z, material);
 
             // If flowing, switch to the flowing texture variant
             if (flowAngle > -999.0F)
@@ -230,7 +231,7 @@ public class FluidsRenderer : IBlockRenderer
             else
             {
                 int neighborMeta = ctx.BlockReader.GetBlockMeta(checkX, y, checkZ);
-                float fluidDepth = BlockFluid.getFluidHeightFromMeta(neighborMeta);
+                float fluidDepth = FluidMath.GetFluidHeightFromMeta(neighborMeta);
 
                 // Meta >= 8 (falling fluid) or Meta == 0 (source block)
                 if (neighborMeta >= 8 || neighborMeta == 0)

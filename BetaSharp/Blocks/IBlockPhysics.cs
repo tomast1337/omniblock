@@ -48,6 +48,15 @@ public interface IBlockPhysics
     /// </summary>
     bool HasCollision(Block block, bool defaultHasCollision) => defaultHasCollision;
 
+    /// <summary>
+    /// Meta/liquid-aware overload (e.g. fluids only collide for entities that opt into liquid
+    /// collision, and only in their source-block meta state). Defaults to the simpler overload.
+    /// </summary>
+    bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => defaultHasCollision;
+
     /// <summary>Whether this block can catch fire from the given neighbor position (fire's own spread registry).</summary>
     bool IsFlammable(Block block, IBlockReader reader, int x, int y, int z, bool defaultFlammable) => defaultFlammable;
+
+    /// <summary>Overrides the velocity applied to entities standing in/on this block (e.g. fluid current).</summary>
+    Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => defaultVelocity;
 }

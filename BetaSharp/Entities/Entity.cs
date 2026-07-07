@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -709,7 +710,7 @@ public abstract class Entity : IEntity
         int id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
         if (id != 0 && Block.Blocks[id].material == mat)
         {
-            float fluidHeight = BlockFluid.getFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
+            float fluidHeight = FluidMath.GetFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
             float fluidSurfaceY = floorEyeY + 1 - fluidHeight;
             return eyeY < fluidSurfaceY;
         }

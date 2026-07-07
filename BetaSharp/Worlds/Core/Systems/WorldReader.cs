@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Hit;
@@ -428,7 +429,7 @@ public class WorldReader : IBlockReader
                     Block? block = Block.Blocks[GetBlockId(x, y, z)];
                     if (block != null && block.material == fluidMaterial)
                     {
-                        double fluidSurfaceY = y + 1 - BlockFluid.getFluidHeightFromMeta(GetBlockMeta(x, y, z));
+                        double fluidSurfaceY = y + 1 - FluidMath.GetFluidHeightFromMeta(GetBlockMeta(x, y, z));
 
                         if (maxY >= fluidSurfaceY)
                         {
