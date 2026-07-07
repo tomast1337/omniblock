@@ -43,6 +43,9 @@ public class Block
     private static readonly RedstoneWireBehavior s_redstoneWire = new();
     private static readonly ButtonBehavior s_buttonBehavior = new();
     private static readonly LeverBehavior s_leverBehavior = new();
+    private static readonly PressurePlateBehavior s_mobPlate = new(PressurePlateActiviationRule.MOBS);
+    private static readonly PressurePlateBehavior s_everythingPlate = new(PressurePlateActiviationRule.EVERYTHING);
+    private static readonly DetectorRailBehavior s_detectorRail = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -111,7 +114,10 @@ public class Block
     public static readonly Block Noteblock = new BlockNote(25).setHardness(0.8F).setBlockName("musicBlock").IgnoreMetaUpdates();
     public static readonly Block Bed = new BlockBed(26).setHardness(0.2F).setBlockName("bed").disableStats().IgnoreMetaUpdates();
     public static readonly Block PoweredRail = new BlockRail(27, BlockTextures.PoweredRailOn, true).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("goldenRail").IgnoreMetaUpdates();
-    public static readonly Block DetectorRail = new BlockDetectorRail(28, BlockTextures.DetectorRail).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("detectorRail").IgnoreMetaUpdates();
+    public static readonly Block DetectorRail = new BlockRail(28, BlockTextures.DetectorRail, true)
+        .setTickRandomly(true).setTickRate(20)
+        .SetRedstone(s_detectorRail).SetTicker(s_detectorRail).SetInteractable(s_detectorRail)
+        .setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("detectorRail").IgnoreMetaUpdates();
     public static readonly Block StickyPiston = new BlockPistonBase(29, BlockTextures.PistonTopSticky, true).setBlockName("pistonStickyBase").IgnoreMetaUpdates();
     public static readonly Block Cobweb = new BlockWeb(30, BlockTextures.Cobweb).setOpacity(1).setHardness(4.0F).setBlockName("web");
     public static readonly Block Grass = new BlockTallGrass(31, BlockTextures.TallGrass).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tallgrass");
@@ -185,12 +191,22 @@ public class Block
         .SetRedstone(s_leverBehavior).SetPhysics(s_leverBehavior).SetInteractable(s_leverBehavior).SetLifecycle(s_leverBehavior)
         .setHardness(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("lever").IgnoreMetaUpdates();
 
-    public static readonly Block StonePressurePlate = new BlockPressurePlate(70, BlockTextures.Stone, PressurePlateActiviationRule.MOBS, Material.Stone).setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("pressurePlate")
+    public static readonly Block StonePressurePlate = new Block(70, BlockTextures.Stone, Material.Stone)
+        .setTickRandomly(true).setTickRate(20)
+        .setBoundingBox(1.0F / 16.0F, 0.0F, 1.0F / 16.0F, 15.0F / 16.0F, 1.0F / 32.0F, 15.0F / 16.0F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setPistonBehavior(PistonBehavior.Destroy)
+        .SetRedstone(s_mobPlate).SetPhysics(s_mobPlate).SetTicker(s_mobPlate).SetInteractable(s_mobPlate).SetLifecycle(s_mobPlate)
+        .setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("pressurePlate")
         .IgnoreMetaUpdates();
 
     public static readonly Block IronDoor = new BlockDoor(71, Material.Metal).setHardness(5.0F).setSoundGroup(SoundMetalFootstep).setBlockName("doorIron").disableStats().IgnoreMetaUpdates();
 
-    public static readonly Block WoodenPressurePlate = new BlockPressurePlate(72, BlockTextures.OakPlanks, PressurePlateActiviationRule.EVERYTHING, Material.Wood).setHardness(0.5F).setSoundGroup(SoundWoodFootstep)
+    public static readonly Block WoodenPressurePlate = new Block(72, BlockTextures.OakPlanks, Material.Wood)
+        .setTickRandomly(true).setTickRate(20)
+        .setBoundingBox(1.0F / 16.0F, 0.0F, 1.0F / 16.0F, 15.0F / 16.0F, 1.0F / 32.0F, 15.0F / 16.0F)
+        .setNonOpaque().setNotFullCube().setNoCollision().setPistonBehavior(PistonBehavior.Destroy)
+        .SetRedstone(s_everythingPlate).SetPhysics(s_everythingPlate).SetTicker(s_everythingPlate).SetInteractable(s_everythingPlate).SetLifecycle(s_everythingPlate)
+        .setHardness(0.5F).setSoundGroup(SoundWoodFootstep)
         .setBlockName("pressurePlate")
         .IgnoreMetaUpdates();
 
@@ -263,6 +279,7 @@ public class Block
     private int _tickRate = 10;
     private bool _isFullCube = true;
     private bool _hasCollision = true;
+    private PistonBehavior? _pistonBehaviorOverride;
     private BlockRendererType _renderType = BlockRendererType.Standard;
     private int _renderLayer;
 
@@ -566,9 +583,7 @@ public class Block
 
     public virtual void randomDisplayTick(OnTickEvent e) => Ticker?.RandomDisplayTick(this, e);
 
-    public virtual void onMetadataChange(OnMetadataChangeEvent ctx)
-    {
-    }
+    public virtual void onMetadataChange(OnMetadataChangeEvent ctx) => Lifecycle?.OnMetadataChange(this, ctx);
 
     public virtual void neighborUpdate(OnTickEvent e) => Physics?.NeighborUpdate(this, e);
 
@@ -710,9 +725,7 @@ public class Block
 
     public virtual bool onUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
 
-    public virtual void onSteppedOn(OnEntityStepEvent @event)
-    {
-    }
+    public virtual void onSteppedOn(OnEntityStepEvent @event) => Interactable?.OnSteppedOn(this, @event);
 
     public virtual void onBlockBreakStart(OnBlockBreakStartEvent @event) => Interactable?.OnBlockBreakStart(this, @event);
 
@@ -744,9 +757,7 @@ public class Block
 
     public virtual bool isFlammable(IBlockReader iBlockReader, int x, int y, int z) => false;
 
-    public virtual void onEntityCollision(OnEntityCollisionEvent @event)
-    {
-    }
+    public virtual void onEntityCollision(OnEntityCollisionEvent @event) => Interactable?.OnEntityCollision(this, @event);
 
     public virtual bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => Redstone != null && Redstone.IsStrongPoweringSide(this, world, x, y, z, side);
 
@@ -814,5 +825,12 @@ public class Block
         return this;
     }
 
-    public virtual PistonBehavior getPistonBehavior() => material.PistonBehavior;
+    public virtual PistonBehavior getPistonBehavior() => _pistonBehaviorOverride ?? material.PistonBehavior;
+
+    /// <summary>Overrides the material-derived piston behavior (e.g. plates are destroyed when pushed).</summary>
+    protected Block setPistonBehavior(PistonBehavior behavior)
+    {
+        _pistonBehaviorOverride = behavior;
+        return this;
+    }
 }
