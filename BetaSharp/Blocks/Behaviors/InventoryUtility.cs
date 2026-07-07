@@ -3,26 +3,22 @@ using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
-using Microsoft.Extensions.Logging;
-
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-/// Shared behavior for blocks whose tile entity implements <see cref="IInventory"/>: scatters
-/// inventory contents on break and creates the entity on placement. The public
-/// <see cref="IgnoreBlockRemoval"/> flag is used by <c>BlockFurnace.updateLitState</c> to
+/// Shared static helpers for blocks whose tile entity implements <see cref="IInventory"/>:
+/// scatters inventory contents on break and creates the entity on placement. The public
+/// <see cref="IgnoreBlockRemoval"/> flag is used by <c>FurnaceBehavior.UpdateLitState</c> to
 /// suppress drops during the lit/unlit id swap.
-/// Assign to the Lifecycle slot.
 /// </summary>
-public sealed class InventoryLifecycleBehavior : IBlockLifecycle
+public static class InventoryUtility
 {
     private const float DropSpread = 0.05F;
     public static readonly ThreadLocal<bool> IgnoreBlockRemoval = new(() => false);
 
     private static readonly ThreadLocal<JavaRandom> s_random = new(() => new JavaRandom());
-    private static readonly ILogger<InventoryLifecycleBehavior> s_logger = BetaSharp.Log.Instance.For<InventoryLifecycleBehavior>();
 
-    public void OnPlaced(Block block, OnPlacedEvent @event)
+    public static void OnPlaced(Block block, OnPlacedEvent @event)
     {
         if (block.getBlockEntity() is { } blockEntity)
         {
@@ -30,7 +26,7 @@ public sealed class InventoryLifecycleBehavior : IBlockLifecycle
         }
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event)
+    public static void OnBreak(Block block, OnBreakEvent @event)
     {
         if (IgnoreBlockRemoval.Value) return;
 
@@ -39,7 +35,6 @@ public sealed class InventoryLifecycleBehavior : IBlockLifecycle
         {
             if (entity != null)
             {
-                // Entity exists but isn't an inventory — still clean it up.
                 @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
             }
 

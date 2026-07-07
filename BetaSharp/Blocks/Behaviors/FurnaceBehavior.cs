@@ -1,32 +1,36 @@
-using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Blocks;
+namespace BetaSharp.Blocks.Behaviors;
 
-internal class BlockFurnace : Block
+internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {
     private const float FlameParticleOffset = 0.52F;
 
-    private static readonly ILogger<BlockFurnace> s_logger = BetaSharp.Log.Instance.For<BlockFurnace>();
+    private static readonly ILogger<FurnaceBehavior> s_logger = BetaSharp.Log.Instance.For<FurnaceBehavior>();
     private readonly bool _lit;
 
-    public BlockFurnace(int id, bool lit) : base(id, Material.Stone)
+    public FurnaceBehavior(bool lit)
     {
         _lit = lit;
-        TextureId = BlockTextures.FurnaceSide;
     }
 
-    public override int getDroppedItemId(int blockMeta) => Furnace.id;
-
-    public override void onPlaced(OnPlacedEvent @event)
+    public bool OnUse(Block block, OnUseEvent @event)
     {
-        base.onPlaced(@event);
+        if (@event.World.IsRemote) return true;
 
+        BlockEntityFurnace? furnace = @event.World.Entities.GetBlockEntity<BlockEntityFurnace>(@event.X, @event.Y, @event.Z);
+        if (furnace == null) return false;
+
+        @event.Player.openFurnaceScreen(furnace);
+        return true;
+    }
+
+    public void OnPlaced(Block block, OnPlacedEvent @event)
+    {
         if (@event.Placer != null)
         {
             int direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
@@ -49,26 +53,32 @@ internal class BlockFurnace : Block
         }
         else
         {
-            updateDirection(@event);
+            UpdateDirection(@event);
         }
+
+        InventoryUtility.OnPlaced(block, @event);
     }
 
-    private static void updateDirection(OnPlacedEvent @event)
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        InventoryUtility.OnBreak(block, @event);
+    }
+
+    private static void UpdateDirection(OnPlacedEvent @event)
     {
         if (@event.World.IsRemote) return;
 
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
-        bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
-        bool isSouthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
-        bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
-        bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
+        bool isNorthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
+        bool isSouthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
+        bool isWestOpaque = Block.BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
+        bool isEastOpaque = Block.BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
 
         byte direction = 3;
         if (isNorthOpaque && !isSouthOpaque) direction = 3;
         else if (isSouthOpaque && !isNorthOpaque) direction = 2;
-
 
         if (isWestOpaque && !isEastOpaque) direction = 5;
         else if (isEastOpaque && !isWestOpaque) direction = 4;
@@ -76,16 +86,7 @@ internal class BlockFurnace : Block
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
-    {
-        if (side is Side.Up or Side.Down) return BlockTextures.FurnaceTop;
-
-        Side meta = iBlockReader.GetBlockMeta(x, y, z).ToSide();
-        return side != meta ? TextureId : _lit ? BlockTextures.FurnaceFrontLit : BlockTextures.FurnaceFrontUnlit;
-    }
-
-
-    public override void randomDisplayTick(OnTickEvent @event)
+    public void RandomDisplayTick(Block block, OnTickEvent @event)
     {
         if (!_lit) return;
 
@@ -116,35 +117,35 @@ internal class BlockFurnace : Block
         }
     }
 
-    public override int GetTexture(Side side) => side switch
+    public int GetTexture(Block block, Side side, int defaultTexture)
     {
-        Side.Up or Side.Down => BlockTextures.FurnaceTop,
-        Side.South => BlockTextures.FurnaceFrontUnlit,
-        _ => BlockTextures.FurnaceSide
-    };
-
-    public override bool onUse(OnUseEvent @event)
-    {
-        if (@event.World.IsRemote) return true;
-
-        BlockEntityFurnace? furnace = @event.World.Entities.GetBlockEntity<BlockEntityFurnace>(@event.X, @event.Y, @event.Z);
-        if (furnace == null) return false;
-
-        @event.Player.openFurnaceScreen(furnace);
-        return true;
+        return side switch
+        {
+            Side.Up or Side.Down => BlockTextures.FurnaceTop,
+            Side.South => BlockTextures.FurnaceFrontUnlit,
+            _ => defaultTexture
+        };
     }
 
-    public static void updateLitState(bool lit, IWorldContext world, int x, int y, int z)
+    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
+    {
+        if (side is Side.Up or Side.Down) return BlockTextures.FurnaceTop;
+
+        Side facing = reader.GetBlockMeta(x, y, z).ToSide();
+        if (side != facing) return block.TextureId;
+
+        return _lit ? BlockTextures.FurnaceFrontLit : BlockTextures.FurnaceFrontUnlit;
+    }
+
+    public static void UpdateLitState(bool lit, IWorldContext world, int x, int y, int z)
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);
         BlockEntity? furnace = world.Entities.GetBlockEntity<BlockEntity>(x, y, z);
-        InventoryLifecycleBehavior.IgnoreBlockRemoval.Value = true;
-        world.Writer.SetBlock(x, y, z, lit ? LitFurnace.id : Furnace.id);
-
-        InventoryLifecycleBehavior.IgnoreBlockRemoval.Value = false;
+        InventoryUtility.IgnoreBlockRemoval.Value = true;
+        world.Writer.SetBlock(x, y, z, lit ? Block.LitFurnace.id : Block.Furnace.id);
+        InventoryUtility.IgnoreBlockRemoval.Value = false;
         world.Writer.SetBlockMeta(x, y, z, meta);
         furnace?.cancelRemoval();
         world.Entities.SetBlockEntity(x, y, z, furnace!);
     }
-
 }

@@ -1,30 +1,30 @@
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks;
+namespace BetaSharp.Blocks.Behaviors;
 
-internal class BlockDispenser : Block
+internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {
     private static readonly int s_arrowId = Item.ByName("arrow").Id;
     private static readonly int s_eggId = Item.ByName("egg").Id;
     private static readonly int s_snowballId = Item.ByName("snowball").Id;
 
-    public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = BlockTextures.FurnaceSide;
-
-    public override int getTickRate() => 4;
-
-    public override int getDroppedItemId(int blockMeta) => Dispenser.id;
-
-    public override void onPlaced(OnPlacedEvent @event)
+    public bool OnUse(Block block, OnUseEvent @event)
     {
-        base.onPlaced(@event);
+        if (@event.World.IsRemote) return true;
+        BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
+        if (dispenser != null) @event.Player.openDispenserScreen(dispenser);
+        return true;
+    }
+
+    public void OnPlaced(Block block, OnPlacedEvent @event)
+    {
         if (@event.Placer == null)
         {
-            updateDirection(@event);
+            UpdateDirection(@event);
         }
         else
         {
@@ -43,19 +43,26 @@ internal class BlockDispenser : Block
                 @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
             }
         }
+
+        InventoryUtility.OnPlaced(block, @event);
     }
 
-    private static void updateDirection(OnPlacedEvent @event)
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        InventoryUtility.OnBreak(block, @event);
+    }
+
+    private static void UpdateDirection(OnPlacedEvent @event)
     {
         if (@event.World.IsRemote) return;
 
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
-        bool isNorthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
-        bool isSouthOpaque = BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
-        bool isWestOpaque = BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
-        bool isEastOpaque = BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
+        bool isNorthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
+        bool isSouthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
+        bool isWestOpaque = Block.BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
+        bool isEastOpaque = Block.BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
 
         byte direction = 3;
         if (isNorthOpaque && !isSouthOpaque) direction = 3;
@@ -66,29 +73,28 @@ internal class BlockDispenser : Block
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
-    public override int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
+    public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (side is Side.Up or Side.Down) return TextureId + 17;
-        Side meta = iBlockReader.GetBlockMeta(x, y, z).ToSide();
-        return side != meta ? TextureId : TextureId + 1;
+        bool emits = @event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower();
+        bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
+                         @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
+
+        Console.WriteLine($"[Dispenser Check] Triggered By ID: {@event.BlockId} | Emits Power: {emits} | Grid Powered: {isPowered}");
+
+        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].canEmitRedstonePower()) return;
+
+        if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
     }
 
-    public override int GetTexture(Side side) => side switch
+    public void OnTick(Block block, OnTickEvent @event)
     {
-        Side.Up or 0 => BlockTextures.FurnaceTop,
-        Side.South => BlockTextures.DispenserFront,
-        _ => BlockTextures.FurnaceSide
-    };
-
-    public override bool onUse(OnUseEvent @event)
-    {
-        if (@event.World.IsRemote) return true;
-        BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
-        if (dispenser != null) @event.Player.openDispenserScreen(dispenser);
-        return true;
+        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z))
+        {
+            Dispense(@event);
+        }
     }
 
-    private static void dispense(OnTickEvent @event)
+    public static void Dispense(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int dirX = 0;
@@ -165,25 +171,21 @@ internal class BlockDispenser : Block
         @event.World.Broadcaster.WorldEvent(2000, @event.X, @event.Y, @event.Z, dirX + 1 + (dirZ + 1) * 3);
     }
 
-    public override void neighborUpdate(OnTickEvent @event)
+    public int GetTexture(Block block, Side side, int defaultTexture)
     {
-        bool emits = @event.BlockId > 0 && Blocks[@event.BlockId].canEmitRedstonePower();
-        bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
-                         @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
-
-        Console.WriteLine($"[Dispenser Check] Triggered By ID: {@event.BlockId} | Emits Power: {emits} | Grid Powered: {isPowered}");
-
-        if (@event.BlockId <= 0 || !Blocks[@event.BlockId].canEmitRedstonePower()) return;
-
-        if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, id, getTickRate());
-    }
-
-    public override void onTick(OnTickEvent @event)
-    {
-        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z))
+        return side switch
         {
-            dispense(@event);
-        }
+            Side.Up or Side.Down => block.TextureId + 17,
+            Side.South => block.TextureId + 1,
+            _ => defaultTexture
+        };
     }
 
+    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
+    {
+        if (side is Side.Up or Side.Down) return block.TextureId + 17;
+
+        Side facing = reader.GetBlockMeta(x, y, z).ToSide();
+        return side != facing ? block.TextureId : block.TextureId + 1;
+    }
 }

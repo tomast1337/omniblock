@@ -1,3 +1,4 @@
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
@@ -178,7 +179,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             if (wasBurning != BurnTime > 0)
             {
                 stateChanged = true;
-                BlockFurnace.updateLitState(BurnTime > 0, World, X, Y, Z);
+                FurnaceBehavior.UpdateLitState(BurnTime > 0, World, X, Y, Z);
             }
         }
 
