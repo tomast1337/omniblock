@@ -11,6 +11,7 @@ public abstract partial class Command
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(Command));
 
+    public virtual string[] Usages { get => [Usage]; }
     public abstract string Usage { get; }
     public abstract string Description { get; }
     public abstract string[] Names { get; }

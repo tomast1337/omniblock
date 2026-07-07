@@ -3,6 +3,7 @@ using BetaSharp.Server.Internal;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Brigadier.NET.Tree;
+using StringReader = Brigadier.NET.StringReader;
 
 namespace BetaSharp.Server.Commands;
 
@@ -16,7 +17,7 @@ public class HelpCommand : Command.Command
 
     public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
         argBuilder
-            .Then(ArgumentString("command").Executes(HelpTargeted))
+            .Then(ArgumentGreedy("command").Executes(HelpTargeted))
             .Executes(HelpAll);
 
     private int HelpAll(CommandContext<CommandSource> context)
@@ -38,7 +39,10 @@ public class HelpCommand : Command.Command
                 continue;
             }
 
-            c.Output.SendMessage($"  {cmd.Usage,-30} - {cmd.Description}");
+            foreach (string usage in cmd.Usages)
+            {
+                c.Output.SendMessage($"  {usage,-30} - {cmd.Description}");
+            }
         }
 
         return 1;
@@ -49,22 +53,81 @@ public class HelpCommand : Command.Command
         CommandSource c = context.Source;
 
         string arg = context.GetArgument<string>("command");
-        string s = context.Input;
-        s = s.Substring(s.IndexOf(' ') + 1);
+        string[] s = arg.Split(' ');
         bool found = false;
 
-        var command = _helpEntries.Find(v => v.Names.Contains(arg, StringComparer.OrdinalIgnoreCase));
-        if (command != null && !(c.Server is InternalServer && command.DisallowInternalServer))
+        CommandNode<CommandSource>? node = c.Handler.Dispatcher.Root.GetChild(s[0]);
+        int i = 0;
+        if (node != null)
         {
-            CommandNode<CommandSource>? a = c.Handler.Dispatcher.FindNode(s.Split(' '));
-            if (a != null)
+            found = true;
+            for (i = 1; i < s.Length; i++)
             {
-                found = true;
-                BuildHelp('/' + s, c.Output, a);
+                CommandNode<CommandSource>? a = node.GetChild(s[i]);
+                if (a != null)
+                {
+                    node = a;
+                    continue;
+                }
+
+                var relevantNodes = node.GetRelevantNodes(new StringReader(s[i])).ToArray();
+                if (relevantNodes.Length == 1)
+                {
+                    node = relevantNodes[0];
+                    continue;
+                }
+
+                foreach (var r2 in relevantNodes)
+                {
+                    Type type = r2.GetType();
+                    if (type.IsGenericType &&
+                        type.GetGenericTypeDefinition() == typeof(ArgumentCommandNode<,>))
+                    {
+                        Type[] args = type.GetGenericArguments();
+                        Type valueType = args[1];
+
+                        if (valueType.IsEnum)
+                        {
+                            if (Enum.TryParse(valueType, s[i], true, out object? _))
+                            {
+                                a = r2;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (a != null)
+                {
+                    node = a;
+                    continue;
+                }
+
+                found = false;
+                break;
             }
         }
 
-        if (!found)
+        if (node != null)
+        {
+            if (found)
+            {
+                // full find.
+                BuildHelp('/' + arg, c.Output, node);
+            }
+            else
+            {
+                // partial find.
+                string arg2 = string.Join(' ', s, 0, i);
+                // list relevant nodes.
+                var relevantNodes = node.GetRelevantNodes(new StringReader(s[i])).ToArray();
+                foreach (var n in relevantNodes)
+                {
+                    BuildHelp('/' + arg2 + ' ' + n.UsageText, c.Output, n);
+                }
+            }
+        }
+        else
         {
             c.Output.SendMessage($"Command \"{arg}\" not found, use /help to list all commands");
         }
