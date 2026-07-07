@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Rendering.Blocks.Renderers;
 using BetaSharp.Client.Rendering.Core;
@@ -57,7 +58,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             }
             else if (piston.IsSource && !piston.IsExtending)
             {
-                var headCtx = baseCtx with { OverrideTexture = ((BlockPistonBase)block).getTopTexture(), CustomFlag = piston.getProgress(tickDelta) < 0.5F };
+                var headCtx = baseCtx with { OverrideTexture = ((PistonBaseBehavior)block.Physics!).GetTopTexture(), CustomFlag = piston.getProgress(tickDelta) < 0.5F };
 
                 _pistonExtensionRenderer.Draw(Block.PistonHead, pos, ref headCtx);
 

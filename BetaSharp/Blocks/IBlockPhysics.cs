@@ -11,6 +11,13 @@ public interface IBlockPhysics
     /// <summary>Recomputes the block's metadata-driven bounding box for the given position.</summary>
     void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z) { }
 
+    /// <summary>
+    /// Entity-manager-aware overload for blocks whose bounding box depends on tile-entity state
+    /// (e.g. a moving piston's in-flight push progress). Defaults to the simpler overload.
+    /// </summary>
+    void UpdateBoundingBox(Block block, IBlockReader reader, EntityManager? entities, int x, int y, int z)
+        => UpdateBoundingBox(block, reader, x, y, z);
+
     /// <summary>Sets the bounding box used when the block is rendered as an item (held/dropped).</summary>
     void SetupRenderBoundingBox(Block block) { }
 

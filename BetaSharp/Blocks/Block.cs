@@ -88,6 +88,10 @@ public class Block
     private static readonly PumpkinBehavior s_pumpkinBehavior = new(false);
     private static readonly PumpkinBehavior s_jackLanternBehavior = new(true);
     private static readonly PortalBehavior s_portalBehavior = new();
+    private static readonly PistonBaseBehavior s_pistonBaseBehavior = new(false);
+    private static readonly PistonBaseBehavior s_stickyPistonBaseBehavior = new(true);
+    private static readonly PistonExtensionBehavior s_pistonExtensionBehavior = new();
+    private static readonly PistonMovingBehavior s_pistonMovingBehavior = new();
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -187,7 +191,10 @@ public class Block
         .setTickRandomly(true).setTickRate(20)
         .SetRedstone(s_detectorRail).SetTicker(s_detectorRail).SetInteractable(s_detectorRail)
         .setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("detectorRail").IgnoreMetaUpdates();
-    public static readonly Block StickyPiston = new BlockPistonBase(29, BlockTextures.PistonTopSticky, true).setBlockName("pistonStickyBase").IgnoreMetaUpdates();
+    public static readonly Block StickyPiston = new Block(29, BlockTextures.PistonTopSticky, Material.Piston)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.PistonBase)
+        .SetPhysics(s_stickyPistonBaseBehavior).SetLifecycle(s_stickyPistonBaseBehavior).SetTicker(s_stickyPistonBaseBehavior).SetVisuals(s_stickyPistonBaseBehavior)
+        .setSoundGroup(SoundStoneFootstep).setHardness(0.5F).setBlockName("pistonStickyBase").IgnoreMetaUpdates();
     public static readonly Block Cobweb = new Block(30, BlockTextures.Cobweb, Material.Cobweb)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
         .SetInteractable(s_webBehavior).setDrops(() => Item.ByName("string").Id)
@@ -202,8 +209,14 @@ public class Block
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
         .SetTicker(s_deadBushSurvival).SetPhysics(s_deadBushSurvival).setDropCount(0)
         .setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("deadbush");
-    public static readonly Block Piston = new BlockPistonBase(33, BlockTextures.PistonTopNormal, false).setBlockName("pistonBase").IgnoreMetaUpdates();
-    public static readonly BlockPistonExtension PistonHead = (BlockPistonExtension)new BlockPistonExtension(34, BlockTextures.PistonTopNormal).IgnoreMetaUpdates();
+    public static readonly Block Piston = new Block(33, BlockTextures.PistonTopNormal, Material.Piston)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.PistonBase)
+        .SetPhysics(s_pistonBaseBehavior).SetLifecycle(s_pistonBaseBehavior).SetTicker(s_pistonBaseBehavior).SetVisuals(s_pistonBaseBehavior)
+        .setSoundGroup(SoundStoneFootstep).setHardness(0.5F).setBlockName("pistonBase").IgnoreMetaUpdates();
+    public static readonly Block PistonHead = new Block(34, BlockTextures.PistonTopNormal, Material.Piston)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.PistonExtension).setDropCount(0)
+        .SetPhysics(s_pistonExtensionBehavior).SetLifecycle(s_pistonExtensionBehavior).SetVisuals(s_pistonExtensionBehavior)
+        .setSoundGroup(SoundStoneFootstep).setHardness(0.5F).IgnoreMetaUpdates();
     public static readonly Block Wool = new Block(35, 64, Material.Wool).SetVisuals(new ClothVisualBehavior()).preserveMetaOnDrop()
         .setBlockAlias(
             "blackWool:15", "redWool:14", "greenWool:13", "brownWool:12",
@@ -211,7 +224,10 @@ public class Block
             "grayWool:7", "pinkWool:6", "limeWool:5", "yellowWool:4",
             "lightBlueWool:3", "magentaWool:2", "orangeWool:1", "whiteWool:0")
         .setHardness(0.8F).setSoundGroup(SoundClothFootstep).setBlockName("cloth").IgnoreMetaUpdates().SetVariance(TextureVariance.None, TextureVariance.FlipBoth);
-    public static readonly BlockPistonMoving MovingPiston = new(36);
+    public static readonly Block MovingPiston = new Block(36, Material.Piston)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Entity)
+        .SetPhysics(s_pistonMovingBehavior).SetLifecycle(s_pistonMovingBehavior).SetInteractable(s_pistonMovingBehavior)
+        .setHardness(-1.0F);
     public static readonly Block Dandelion = new Block(37, BlockTextures.Dandelion, Material.Plant)
         .setTickRandomly(true).setBoundingBox(0.3F, 0.0F, 0.3F, 0.7F, 0.6F, 0.7F)
         .setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Reed)
@@ -987,7 +1003,7 @@ public class Block
 
     public void updateBoundingBox(IBlockReader blockReader, int x, int y, int z) => updateBoundingBox(blockReader, null, x, y, z);
 
-    public virtual void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Physics?.UpdateBoundingBox(this, blockReader, x, y, z);
+    public virtual void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Physics?.UpdateBoundingBox(this, blockReader, entities, x, y, z);
 
     public virtual int getColor(int meta) => Visuals == null ? 0xFFFFFF : Visuals.GetColor(this, meta, 0xFFFFFF);
 

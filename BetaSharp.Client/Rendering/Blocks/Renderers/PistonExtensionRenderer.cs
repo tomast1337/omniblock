@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -8,7 +9,7 @@ public class PistonExtensionRenderer : IBlockRenderer
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
-        Side facing = BlockPistonExtension.getFacing(metadata);
+        Side facing = PistonExtensionBehavior.GetFacing(metadata);
         float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
 
         // Using CustomFlag to track if this is a ShortArm rendering phase

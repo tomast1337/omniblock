@@ -1,0 +1,95 @@
+using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core.Systems;
+
+namespace BetaSharp.Blocks.Behaviors;
+
+/// <summary>
+/// Piston head/extension: never independently placeable, breaks the base piston behind it when
+/// destroyed, and forwards neighbor updates to the base piston it's still attached to.
+/// </summary>
+public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+{
+    private const int PistonHeadSprite = -1;
+
+    public static Side GetFacing(int meta) => (meta & 7).ToSide();
+
+    // ── IBlockLifecycle ───────────────────────────────────────────
+
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
+        int blockMeta = @event.World.Reader.GetBlockMeta(x, y, z);
+        Side oppositeFace = GetFacing(blockMeta).OppositeFace();
+
+        x += PistonConstants.HeadOffsetX[oppositeFace.ToInt()];
+        y += PistonConstants.HeadOffsetY[oppositeFace.ToInt()];
+        z += PistonConstants.HeadOffsetZ[oppositeFace.ToInt()];
+
+        int blockId = @event.World.Reader.GetBlockId(x, y, z);
+        if (blockId != Block.Piston.id && blockId != Block.StickyPiston.id) return;
+
+        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        if (!PistonBaseBehavior.IsExtended(meta)) return;
+
+        Block.Blocks[blockId].dropStacks(new OnDropEvent(@event.World, x, y, z, meta));
+        @event.World.Writer.SetBlock(x, y, z, 0);
+    }
+
+    // ── IBlockVisuals ─────────────────────────────────────────────
+
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    {
+        Side facing = GetFacing(meta);
+        if (side == facing)
+        {
+            return PistonHeadSprite >= 0 ? PistonHeadSprite : (meta & 8) != 0 ? block.TextureId - 1 : block.TextureId;
+        }
+
+        return side == facing.OppositeFace() ? 107 : 108;
+    }
+
+    // ── IBlockPhysics ─────────────────────────────────────────────
+
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => false;
+
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
+    {
+        int meta = reader.GetBlockMeta(x, y, z);
+        switch (GetFacing(meta))
+        {
+            case Side.Down:
+                block.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+                break;
+            case Side.Up:
+                block.setBoundingBox(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                break;
+            case Side.North:
+                block.setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
+                break;
+            case Side.South:
+                block.setBoundingBox(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
+                break;
+            case Side.West:
+                block.setBoundingBox(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
+                break;
+            case Side.East:
+                block.setBoundingBox(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                break;
+        }
+    }
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        int facing = GetFacing(@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)).ToInt();
+        int blockId = @event.World.Reader.GetBlockId(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]);
+        if (blockId != Block.Piston.id && blockId != Block.StickyPiston.id)
+        {
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
+        }
+        else
+        {
+            Block.Blocks[blockId].neighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
+                @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]), block.id));
+        }
+    }
+}

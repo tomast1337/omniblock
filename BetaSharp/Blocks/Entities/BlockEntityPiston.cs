@@ -1,3 +1,4 @@
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
@@ -55,7 +56,7 @@ public class BlockEntityPiston : BlockEntity
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
         }
 
-        Box? pushCollisionBox = Block.MovingPiston.getPushedBlockCollisionShape(World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
+        Box? pushCollisionBox = PistonMovingBehavior.GetPushedBlockCollisionShape(Block.MovingPiston, World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
         if (pushCollisionBox == null) return;
 
         List<Entity> entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);

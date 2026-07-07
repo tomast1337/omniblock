@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 
 namespace BetaSharp.Tests.Blocks;
@@ -104,7 +105,7 @@ public sealed class BlockPistonTests
         world.ReaderWriter.SetInitial(0, 64, 0, Block.StickyPiston.id, 13); // facing +X, extended
         world.ReaderWriter.SetInitial(1, 64, 0, Block.PistonHead.id, 5);
         world.ReaderWriter.SetInitial(2, 64, 0, Block.MovingPiston.id);
-        world.Entities.SetBlockEntity(2, 64, 0, BlockPistonMoving.CreatePistonBlockEntity(Block.Stone.id, 0, 5, true, false));
+        world.Entities.SetBlockEntity(2, 64, 0, PistonMovingBehavior.CreatePistonBlockEntity(Block.Stone.id, 0, 5, true, false));
 
         Block.StickyPiston.onBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
 
