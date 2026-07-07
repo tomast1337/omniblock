@@ -72,6 +72,11 @@ public class Block
     private static readonly CactusBehavior s_cactusBehavior = new();
     private static readonly MushroomBehavior s_mushroomBehavior = new();
     private static readonly LeavesBehavior s_leavesBehavior = new();
+    private static readonly FenceBehavior s_fenceBehavior = new();
+    private static readonly SnowBehavior s_snowBehavior = new();
+    private static readonly WallMountBehavior s_torchBehavior = new(false);
+    private static readonly WallMountBehavior s_ladderBehavior = new(true);
+    private static readonly RedstoneTorchBehavior s_redstoneTorchBehavior = new(s_torchBehavior);
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -218,7 +223,10 @@ public class Block
     public static readonly Block Bookshelf = new Block(47, BlockTextures.Bookshelf, Material.Wood).setTopBottomTextures(BlockTextures.OakPlanks, BlockTextures.OakPlanks).setDropCount(0).setHardness(1.5F).setSoundGroup(SoundWoodFootstep).setBlockName("bookshelf").SetVariance(TextureVariance.None, TextureVariance.FlipU);
     public static readonly Block MossyCobblestone = new Block(48, BlockTextures.MossyCobblestone, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneMoss");
     public static readonly Block Obsidian = new Block(49, BlockTextures.Obsidian, Material.Stone).setHardness(10.0F).setResistance(2000.0F).setSoundGroup(SoundStoneFootstep).setBlockName("obsidian");
-    public static readonly Block Torch = new BlockTorch(50, BlockTextures.Torch).setHardness(0.0F).setLuminance(15.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("torch").IgnoreMetaUpdates();
+    public static readonly Block Torch = new Block(50, BlockTextures.Torch, Material.PistonBreakable)
+        .setTickRandomly(true).setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Torch)
+        .SetPhysics(s_torchBehavior).SetLifecycle(s_torchBehavior).SetTicker(s_torchBehavior)
+        .setHardness(0.0F).setLuminance(15.0F / 16.0F).setSoundGroup(SoundWoodFootstep).setBlockName("torch").IgnoreMetaUpdates();
     public static readonly Block Fire = (BlockFire)new BlockFire(51, BlockTextures.Fire).setHardness(0.0F).setLuminance(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("fire").disableStats().IgnoreMetaUpdates();
     public static readonly Block Spawner = new Block(52, BlockTextures.Spawner, Material.Stone)
         .setHasTileEntity(() => new BlockEntityMobSpawner())
@@ -280,7 +288,10 @@ public class Block
         .SetPhysics(s_woodDoor).SetInteractable(s_woodDoor).SetLifecycle(s_woodDoor).SetVisuals(s_woodDoor)
         .setDrops(() => Item.ByName("door_wood").Id)
         .setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("doorWood").disableStats().IgnoreMetaUpdates();
-    public static readonly Block Ladder = new BlockLadder(65, BlockTextures.Ladder).setHardness(0.4F).setSoundGroup(SoundWoodFootstep).setBlockName("ladder").IgnoreMetaUpdates();
+    public static readonly Block Ladder = new Block(65, BlockTextures.Ladder, Material.PistonBreakable)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Ladder)
+        .SetPhysics(s_ladderBehavior).SetLifecycle(s_ladderBehavior)
+        .setHardness(0.4F).setSoundGroup(SoundWoodFootstep).setBlockName("ladder").IgnoreMetaUpdates();
     public static readonly Block Rail = new Block(66, BlockTextures.RailStraight, Material.PistonBreakable)
         .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.MinecartTrack).setNoCollision()
         .setPistonBehavior(PistonBehavior.Normal)
@@ -342,14 +353,26 @@ public class Block
         .IgnoreMetaUpdates()
         .SetVariance(TextureVariance.Rotate180, TextureVariance.Rotate180);
 
-    public static readonly Block RedstoneTorch = new BlockRedstoneTorch(75, BlockTextures.RedstoneTorchUnlit, false).setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
-    public static readonly Block LitRedstoneTorch = new BlockRedstoneTorch(76, BlockTextures.RedstoneTorchLit, true).setHardness(0.0F).setLuminance(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
+    public static readonly Block RedstoneTorch = new Block(75, BlockTextures.RedstoneTorchUnlit, Material.PistonBreakable)
+        .setTickRandomly(true).setTickRate(2).setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Torch)
+        .SetPhysics(s_redstoneTorchBehavior).SetLifecycle(s_redstoneTorchBehavior).SetRedstone(s_redstoneTorchBehavior).SetTicker(s_redstoneTorchBehavior).SetVisuals(s_redstoneTorchBehavior)
+        .setDrops(() => LitRedstoneTorch.id)
+        .setHardness(0.0F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
+    public static readonly Block LitRedstoneTorch = new Block(76, BlockTextures.RedstoneTorchLit, Material.PistonBreakable)
+        .setTickRandomly(true).setTickRate(2).setNonOpaque().setNotFullCube().setNoCollision().setRenderType(BlockRendererType.Torch)
+        .SetPhysics(s_redstoneTorchBehavior).SetLifecycle(s_redstoneTorchBehavior).SetRedstone(s_redstoneTorchBehavior).SetTicker(s_redstoneTorchBehavior).SetVisuals(s_redstoneTorchBehavior)
+        .setDrops(() => LitRedstoneTorch.id)
+        .setHardness(0.0F).setLuminance(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
     public static readonly Block Button = new Block(77, BlockTextures.Stone, Material.PistonBreakable)
         .setTickRandomly(true).setTickRate(20)
         .setNonOpaque().setNotFullCube().setNoCollision()
         .SetRedstone(s_buttonBehavior).SetPhysics(s_buttonBehavior).SetTicker(s_buttonBehavior).SetInteractable(s_buttonBehavior).SetLifecycle(s_buttonBehavior)
         .setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("button").IgnoreMetaUpdates();
-    public static readonly Block Snow = new BlockSnow(78, BlockTextures.Snow).setHardness(0.1F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
+    public static readonly Block Snow = new Block(78, BlockTextures.Snow, Material.SnowLayer)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F).setTickRandomly(true)
+        .setNonOpaque().setNotFullCube()
+        .SetPhysics(s_snowBehavior).SetTicker(s_snowBehavior).SetLifecycle(s_snowBehavior).SetVisuals(s_snowBehavior)
+        .setHardness(0.1F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
     public static readonly Block Ice = new Block(79, BlockTextures.Ice, Material.Ice)
         .setTickRandomly(true).setNonOpaque().setRenderLayer(1).setSlipperiness(0.98F).setDropCount(0)
         .SetVisuals(new GlassVisualBehavior(false)).SetTicker(s_iceMelt).SetLifecycle(s_iceMelt)
@@ -378,7 +401,10 @@ public class Block
         .SetInteractable(s_jukeboxBehavior).SetLifecycle(s_jukeboxBehavior)
         .setDrops(() => Jukebox.id)
         .setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("jukebox").IgnoreMetaUpdates();
-    public static readonly Block Fence = new BlockFence(85, BlockTextures.OakPlanks).setHardness(2.0F).setResistance(5.0F).setSoundGroup(SoundWoodFootstep).setBlockName("fence").IgnoreMetaUpdates();
+    public static readonly Block Fence = new Block(85, BlockTextures.OakPlanks, Material.Wood)
+        .setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Fence)
+        .SetPhysics(s_fenceBehavior)
+        .setHardness(2.0F).setResistance(5.0F).setSoundGroup(SoundWoodFootstep).setBlockName("fence").IgnoreMetaUpdates();
     public static readonly Block Pumpkin = new BlockPumpkin(86, BlockTextures.PumpkinBase, false).setHardness(1.0F).setSoundGroup(SoundWoodFootstep).setBlockName("pumpkin").IgnoreMetaUpdates();
     public static readonly Block Netherrack = new Block(87, BlockTextures.Netherrack, Material.Stone).setHardness(0.4F).setSoundGroup(SoundStoneFootstep).setBlockName("hellrock").SetVariance(TextureVariance.All);
     public static readonly Block Soulsand = new BlockSoulSand(88, BlockTextures.SoulSand).setHardness(0.5F).setSoundGroup(SoundSandFootstep).setBlockName("hellsand");

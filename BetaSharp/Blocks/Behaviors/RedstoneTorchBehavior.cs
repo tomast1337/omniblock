@@ -6,15 +6,23 @@ namespace BetaSharp.Blocks.Behaviors;
 /// Redstone torch power emission, burnout tracking, and lit/unlit toggling. One instance is
 /// shared by both torch blocks — lit state is derived from the block id, and the burnout
 /// history must span both blocks since a toggling torch alternates between them.
-/// Assign to the Redstone, Ticker, and Visuals slots.
+/// <para>
+/// Wall-mount placement/facing/support-break is delegated to the shared <see cref="WallMountBehavior"/>
+/// torch instance (composition, not inheritance, now that <c>BlockTorch</c> is flattened) —
+/// this class layers redstone-specific neighbor notification and burnout scheduling on top.
+/// Assign to the Redstone, Ticker, Visuals, Physics, and Lifecycle slots.
+/// </para>
 /// </summary>
-public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IBlockVisuals
+public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IBlockVisuals, IBlockPhysics, IBlockLifecycle
 {
     private const double VerticalOffset = 0.22F;
     private const double HorizontalOffset = 0.27F;
 
     private readonly List<RedstoneUpdateInfo> _torchUpdates = [];
     private readonly Lock _updateLock = new();
+    private readonly WallMountBehavior _torchPhysics;
+
+    public RedstoneTorchBehavior(WallMountBehavior torchPhysics) => _torchPhysics = torchPhysics;
 
     private static bool IsLit(Block block) => block.id == Block.LitRedstoneTorch.id;
 
@@ -133,5 +141,49 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
                 @event.World.Broadcaster.AddParticle("reddust", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
                 break;
         }
+    }
+
+    // ── IBlockPhysics (wall-mount delegated to the torch behavior) ───
+
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => _torchPhysics.CanPlaceAt(block, @event);
+
+    public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
+        => _torchPhysics.UpdateBoundingBox(block, reader, x, y, z);
+
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        _torchPhysics.NeighborUpdate(block, @event);
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.getTickRate());
+    }
+
+    // ── IBlockLifecycle ───────────────────────────────────────────
+
+    public void OnPlaced(Block block, OnPlacedEvent @event)
+    {
+        if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0)
+        {
+            _torchPhysics.OnPlaced(block, @event);
+        }
+
+        if (!IsLit(block)) return;
+
+        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.id);
+    }
+
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        if (!IsLit(block)) return;
+
+        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.id);
+    }
+
+    private static void NotifyAllNeighbors(IWorldContext world, int x, int y, int z, int id)
+    {
+        world.Broadcaster.NotifyNeighbors(x, y - 1, z, id);
+        world.Broadcaster.NotifyNeighbors(x, y + 1, z, id);
+        world.Broadcaster.NotifyNeighbors(x - 1, y, z, id);
+        world.Broadcaster.NotifyNeighbors(x + 1, y, z, id);
+        world.Broadcaster.NotifyNeighbors(x, y, z - 1, id);
+        world.Broadcaster.NotifyNeighbors(x, y, z + 1, id);
     }
 }
