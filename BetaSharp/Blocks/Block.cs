@@ -32,8 +32,22 @@ public class Block
     public static readonly int[] BlocksLightLuminance = new int[256];
     public static readonly bool[] BlocksIgnoreMetaUpdate = new bool[256];
 
-    public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone).setDrops(() => Cobblestone.id).setHardness(1.5F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stone");
-    public static readonly BlockGrass GrassBlock = (BlockGrass)new BlockGrass(2).setHardness(0.6F).setSoundGroup(SoundGrassFootstep).setBlockName("grass").SetVariance(TextureVariance.Rotations, TextureVariance.All, TextureVariance.None);
+    public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
+        .setDrops(() => Cobblestone.id)
+        .setHardness(1.5F)
+        .setResistance(10.0F)
+        .setSoundGroup(SoundStoneFootstep)
+        .setBlockName("stone");
+    public static readonly Block GrassBlock = new Block(2, BlockTextures.GrassSide, Material.SolidOrganic)
+        .setTopBottomTextures(BlockTextures.GrassTop, BlockTextures.Dirt)
+        .SetVisuals(new GrassVisualBehavior())
+        .SetTicker(new GrassTickerBehavior())
+        .setTickRandomly(true)
+        .setDrops(() => Dirt.id)
+        .setHardness(0.6F)
+        .setSoundGroup(SoundGrassFootstep)
+        .setBlockName("grass")
+        .SetVariance(TextureVariance.Rotations, TextureVariance.All, TextureVariance.None);
     public static readonly Block Dirt = new Block(3, BlockTextures.Dirt, Material.Soil).setHardness(0.5F).setSoundGroup(SoundGravelFootstep).setBlockName("dirt").SetVariance(TextureVariance.All);
     public static readonly Block Cobblestone = new Block(4, BlockTextures.Cobblestone, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stonebrick");
     public static readonly Block Planks = new Block(5, BlockTextures.OakPlanks, Material.Wood).setHardness(2.0F).setResistance(5.0F).setSoundGroup(SoundWoodFootstep).setBlockName("wood").IgnoreMetaUpdates();
@@ -478,9 +492,7 @@ public class Block
     {
     }
 
-    public virtual void neighborUpdate(OnTickEvent e)
-    {
-    }
+    public virtual void neighborUpdate(OnTickEvent e) => Ticker?.NeighborUpdate(this, e);
 
     public virtual int getTickRate() => 10;
 
