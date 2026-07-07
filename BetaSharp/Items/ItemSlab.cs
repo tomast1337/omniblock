@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 
 namespace BetaSharp.Items;
 
@@ -16,9 +17,9 @@ internal class ItemSlab : ItemBlock
 
     public override string getItemNameIS(ItemStack itemStack)
     {
-        if (BlockSlab.Names.Length > itemStack.getDamage())
+        if (SlabBehavior.Names.Length > itemStack.getDamage())
         {
-            return base.getItemName() + "." + BlockSlab.Names[itemStack.getDamage()];
+            return base.getItemName() + "." + SlabBehavior.Names[itemStack.getDamage()];
         }
 
         return "";

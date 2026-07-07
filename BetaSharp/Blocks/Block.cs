@@ -57,6 +57,10 @@ public class Block
     private static readonly JukeboxBehavior s_jukeboxBehavior = new();
     private static readonly SignBehavior s_standingSign = new(true);
     private static readonly SignBehavior s_wallSign = new(false);
+    private static readonly SlabBehavior s_singleSlab = new(false);
+    private static readonly SlabBehavior s_doubleSlab = new(true);
+    private static readonly StairsBehavior s_woodStairs = new(() => Planks);
+    private static readonly StairsBehavior s_cobbleStairs = new(() => Cobblestone);
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -168,8 +172,16 @@ public class Block
     public static readonly Block RedMushroom = new BlockMushroom(40, BlockTextures.RedMushroom).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("mushroom");
     public static readonly Block GoldBlock = new Block(41, BlockTextures.BlockGold, Material.Metal).setHardness(3.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockGold");
     public static readonly Block IronBlock = new Block(42, BlockTextures.BlockIron, Material.Metal).setHardness(5.0F).setResistance(10.0F).setSoundGroup(SoundMetalFootstep).setBlockName("blockIron");
-    public static readonly Block DoubleSlab = new BlockSlab(43, true).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
-    public static readonly Block Slab = new BlockSlab(44, false).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
+    public static readonly Block DoubleSlab = new Block(43, BlockTextures.StoneSlabTop, Material.Stone)
+        .SetPhysics(s_doubleSlab).SetLifecycle(s_doubleSlab).SetVisuals(s_doubleSlab)
+        .setDrops(() => Slab.id).setDropCount(2).preserveMetaOnDrop()
+        .setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
+    public static readonly Block Slab = new Block(44, BlockTextures.StoneSlabTop, Material.Stone)
+        .setNonOpaque().setNotFullCube().setOpacity(255)
+        .setBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F)
+        .SetPhysics(s_singleSlab).SetLifecycle(s_singleSlab).SetVisuals(s_singleSlab)
+        .setDrops(() => Slab.id).preserveMetaOnDrop()
+        .setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("stoneSlab");
     public static readonly Block Bricks = new Block(45, BlockTextures.Bricks, Material.Stone).setHardness(2.0F).setResistance(10.0F).setSoundGroup(SoundStoneFootstep).setBlockName("brick");
     public static readonly Block TNT = new BlockTNT(46, BlockTextures.TntSide).setHardness(0.0F).setSoundGroup(SoundGrassFootstep).setBlockName("tnt");
     public static readonly Block Bookshelf = new Block(47, BlockTextures.Bookshelf, Material.Wood).setTopBottomTextures(BlockTextures.OakPlanks, BlockTextures.OakPlanks).setDropCount(0).setHardness(1.5F).setSoundGroup(SoundWoodFootstep).setBlockName("bookshelf").SetVariance(TextureVariance.None, TextureVariance.FlipU);
@@ -182,7 +194,11 @@ public class Block
         .SetLifecycle(s_tileEntityLifecycle)
         .setDropCount(0).setNonOpaque()
         .setHardness(5.0F).setSoundGroup(SoundMetalFootstep).setBlockName("mobSpawner").disableStats();
-    public static readonly Block WoodenStairs = new BlockStairs(53, Planks).setBlockName("stairsWood").IgnoreMetaUpdates();
+    public static readonly Block WoodenStairs = new Block(53, Planks.TextureId, Planks.material)
+        .setHardness(Planks.hardness).setResistance(Planks.resistance / 3.0F).setSoundGroup(Planks.SoundGroup)
+        .setOpacity(255).setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Stairs)
+        .SetPhysics(s_woodStairs).SetLifecycle(s_woodStairs).SetVisuals(s_woodStairs)
+        .setBlockName("stairsWood").IgnoreMetaUpdates();
     public static readonly Block Chest = new Block(54, BlockTextures.ChestSingleSide, Material.Wood)
         .setHasTileEntity(() => new BlockEntityChest())
         .SetInteractable(s_chestBehavior).SetLifecycle(s_chestBehavior).SetPhysics(s_chestBehavior).SetVisuals(s_chestBehavior)
@@ -222,7 +238,11 @@ public class Block
     public static readonly Block Door = new BlockDoor(64, Material.Wood).setHardness(3.0F).setSoundGroup(SoundWoodFootstep).setBlockName("doorWood").disableStats().IgnoreMetaUpdates();
     public static readonly Block Ladder = new BlockLadder(65, BlockTextures.Ladder).setHardness(0.4F).setSoundGroup(SoundWoodFootstep).setBlockName("ladder").IgnoreMetaUpdates();
     public static readonly Block Rail = new BlockRail(66, BlockTextures.RailStraight, false).setHardness(0.7F).setSoundGroup(SoundMetalFootstep).setBlockName("rail").IgnoreMetaUpdates();
-    public static readonly Block CobblestoneStairs = new BlockStairs(67, Cobblestone).setBlockName("stairsStone").IgnoreMetaUpdates();
+    public static readonly Block CobblestoneStairs = new Block(67, Cobblestone.TextureId, Cobblestone.material)
+        .setHardness(Cobblestone.hardness).setResistance(Cobblestone.resistance / 3.0F).setSoundGroup(Cobblestone.SoundGroup)
+        .setOpacity(255).setNonOpaque().setNotFullCube().setRenderType(BlockRendererType.Stairs)
+        .SetPhysics(s_cobbleStairs).SetLifecycle(s_cobbleStairs).SetVisuals(s_cobbleStairs)
+        .setBlockName("stairsStone").IgnoreMetaUpdates();
     public static readonly Block WallSign = new Block(68, BlockTextures.OakPlanks, Material.Wood)
         .setHasTileEntity(() => new BlockEntitySign())
         .setBoundingBox(0.25F, 0.0F, 0.25F, 0.75F, 1.0F, 0.75F)
@@ -624,6 +644,13 @@ public class Block
 
     public virtual void addIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
+        if (Physics != null)
+        {
+            int countBefore = boxes.Count;
+            Physics.AddCollisionBoxes(this, world, x, y, z, box, boxes);
+            if (boxes.Count > countBefore) return;
+        }
+
         Box? collisionBox = getCollisionShape(world, entities, x, y, z);
         if (collisionBox != null && box.Intersects(collisionBox.Value))
         {
