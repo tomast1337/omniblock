@@ -38,6 +38,8 @@ public class Block
     private static readonly PlantSurvivalBehavior s_plantSurvival = new();
     private static readonly PlantSurvivalBehavior s_deadBushSurvival = new(id => id == Sand.id);
     private static readonly LogBehavior s_logBehavior = new();
+    private static readonly MeltBehavior s_iceMelt = new(() => Water.id, subtractOpacity: true, () => FlowingWater.id);
+    private static readonly MeltBehavior s_snowMelt = new(() => 0);
 
     public static readonly Block Stone = new Block(1, BlockTextures.Stone, Material.Stone)
         .setDrops(() => Cobblestone.id)
@@ -192,8 +194,13 @@ public class Block
     public static readonly Block LitRedstoneTorch = new BlockRedstoneTorch(76, BlockTextures.RedstoneTorchLit, true).setHardness(0.0F).setLuminance(0.5F).setSoundGroup(SoundWoodFootstep).setBlockName("notGate").IgnoreMetaUpdates();
     public static readonly Block Button = new BlockButton(77, BlockTextures.Stone).setHardness(0.5F).setSoundGroup(SoundStoneFootstep).setBlockName("button").IgnoreMetaUpdates();
     public static readonly Block Snow = new BlockSnow(78, BlockTextures.Snow).setHardness(0.1F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
-    public static readonly Block Ice = new BlockIce(79, BlockTextures.Ice).setHardness(0.5F).setOpacity(3).setSoundGroup(SoundGlassFootstep).setBlockName("ice").SetVariance(TextureVariance.Rotate180);
-    public static readonly Block SnowBlock = new BlockSnowBlock(80, BlockTextures.Snow).setHardness(0.2F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
+    public static readonly Block Ice = new Block(79, BlockTextures.Ice, Material.Ice)
+        .setTickRandomly(true).setNonOpaque().setRenderLayer(1).setSlipperiness(0.98F).setDropCount(0)
+        .SetVisuals(new GlassVisualBehavior(false)).SetTicker(s_iceMelt).SetLifecycle(s_iceMelt)
+        .setHardness(0.5F).setOpacity(3).setSoundGroup(SoundGlassFootstep).setBlockName("ice").SetVariance(TextureVariance.Rotate180);
+    public static readonly Block SnowBlock = new Block(80, BlockTextures.Snow, Material.SnowBlock)
+        .setTickRandomly(true).SetTicker(s_snowMelt).setDrops(() => Item.ByName("snowball").Id, 4)
+        .setHardness(0.2F).setSoundGroup(SoundClothFootstep).setBlockName("snow").SetVariance(TextureVariance.All, TextureVariance.FlipBoth);
 
     public static readonly Block Cactus = new BlockCactus(81, BlockTextures.CactusSide).setHardness(0.4F).setSoundGroup(SoundClothFootstep).setBlockName("cactus")
         .SetVariance(TextureVariance.All, TextureVariance.All, TextureVariance.Rotate180);
@@ -242,6 +249,7 @@ public class Block
     private bool _isFullCube = true;
     private bool _hasCollision = true;
     private BlockRendererType _renderType = BlockRendererType.Standard;
+    private int _renderLayer;
 
     static Block()
     {
@@ -624,7 +632,19 @@ public class Block
     {
     }
 
-    public virtual int getRenderLayer() => 0;
+    public virtual int getRenderLayer() => _renderLayer;
+
+    protected Block setRenderLayer(int layer)
+    {
+        _renderLayer = layer;
+        return this;
+    }
+
+    protected Block setSlipperiness(float slipperiness)
+    {
+        Slipperiness = slipperiness;
+        return this;
+    }
 
     public virtual bool canPlaceAt(CanPlaceAtContext evt)
     {
