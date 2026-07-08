@@ -1,0 +1,30 @@
+{
+  "ProtocolId": 27,
+  "Name": "powered_rail",
+  "TranslationKey": "goldenRail",
+  "Material": "piston_breakable",
+  "SoundGroup": "metal",
+  "Hardness": 0.7,
+  "Resistance": 1.1666666,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 179,
+  "RenderType": "MinecartTrack",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "PistonBehavior": "Normal",
+  "Behaviors": {
+    "Physics": {
+      "Type": "rail",
+      "powered": true
+    },
+    "Lifecycle": {
+      "Type": "rail",
+      "powered": true
+    },
+    "Visuals": {
+      "Type": "rail",
+      "powered": true
+    }
+  }
+}

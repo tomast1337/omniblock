@@ -46,6 +46,18 @@ internal sealed class CanonicalRegistry<T>(string registryName) where T : class
         return _entries.TryGetValue(key, out value);
     }
 
+    /// <summary>Reverse lookup used by data dumpers to recover the key an instance was loaded under.</summary>
+    public string? TryGetKey(T value)
+    {
+        if (_entries == null) throw NotInitialized();
+        foreach (KeyValuePair<string, T> entry in _entries)
+        {
+            if (ReferenceEquals(entry.Value, value)) return entry.Key;
+        }
+
+        return null;
+    }
+
     private InvalidOperationException NotInitialized() => new(
         $"The {registryName} registry has not been initialized. " +
         $"Call Bootstrap.Initialize() before accessing {registryName} data (e.g. before touching Block).");

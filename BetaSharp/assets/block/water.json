@@ -1,0 +1,33 @@
+{
+  "ProtocolId": 9,
+  "Name": "water",
+  "Material": "water",
+  "SoundGroup": "powder",
+  "Hardness": 100,
+  "Resistance": 166.66667,
+  "Opacity": 3,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 205,
+  "RenderType": "Fluids",
+  "RenderLayer": 1,
+  "TickRate": 5,
+  "NotFullCube": true,
+  "NoCollision": true,
+  "DropCount": 0,
+  "Behaviors": {
+    "Physics": {
+      "Type": "stationary_fluid"
+    },
+    "Visuals": {
+      "Type": "stationary_fluid"
+    },
+    "Lifecycle": {
+      "Type": "stationary_fluid"
+    },
+    "Ticker": {
+      "Type": "stationary_fluid"
+    }
+  }
+}

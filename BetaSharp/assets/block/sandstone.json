@@ -1,0 +1,15 @@
+{
+  "ProtocolId": 24,
+  "Name": "sandstone",
+  "TranslationKey": "sandStone",
+  "SoundGroup": "stone",
+  "Hardness": 0.8,
+  "Resistance": 1.3333334,
+  "TextureId": 192,
+  "FaceTextures": {
+    "down": 208,
+    "up": 176
+  },
+  "TopVariance": 3,
+  "BottomVariance": 3
+}

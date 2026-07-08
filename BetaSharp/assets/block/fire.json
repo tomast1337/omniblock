@@ -1,0 +1,28 @@
+{
+  "ProtocolId": 51,
+  "Name": "fire",
+  "Material": "fire",
+  "SoundGroup": "wood",
+  "Luminance": 1,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 31,
+  "RenderType": "Fire",
+  "TickRate": 40,
+  "NotFullCube": true,
+  "NoCollision": true,
+  "DropCount": 0,
+  "Behaviors": {
+    "Ticker": {
+      "Type": "fire"
+    },
+    "Physics": {
+      "Type": "fire"
+    },
+    "Lifecycle": {
+      "Type": "fire"
+    }
+  }
+}

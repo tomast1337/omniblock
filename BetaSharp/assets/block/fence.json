@@ -1,0 +1,18 @@
+{
+  "ProtocolId": 85,
+  "Name": "fence",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 2,
+  "Resistance": 5,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 4,
+  "RenderType": "Fence",
+  "NotFullCube": true,
+  "Behaviors": {
+    "Physics": {
+      "Type": "fence"
+    }
+  }
+}

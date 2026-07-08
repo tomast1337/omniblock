@@ -1,0 +1,50 @@
+{
+  "ProtocolId": 55,
+  "Name": "redstone_wire",
+  "TranslationKey": "redstoneDust",
+  "Material": "piston_breakable",
+  "SoundGroup": "powder",
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 164,
+  "RenderType": "RedstoneWire",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0,
+    "MinY": 0,
+    "MinZ": 0,
+    "MaxX": 1,
+    "MaxY": 0.0625,
+    "MaxZ": 1
+  },
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "redstone",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Redstone": {
+      "Type": "redstone_wire"
+    },
+    "Physics": {
+      "Type": "redstone_wire"
+    },
+    "Ticker": {
+      "Type": "redstone_wire"
+    },
+    "Lifecycle": {
+      "Type": "redstone_wire"
+    },
+    "Visuals": {
+      "Type": "redstone_wire"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "ProtocolId": 73,
+  "Name": "redstone_ore",
+  "TranslationKey": "oreRedstone",
+  "SoundGroup": "stone",
+  "Hardness": 3,
+  "Resistance": 5,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 51,
+  "TopVariance": 2,
+  "BottomVariance": 2,
+  "SideVariance": 12,
+  "TickRate": 30,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "redstone",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 4,
+    "MaxCount": 5,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "redstone_ore"
+    },
+    "Interactable": {
+      "Type": "redstone_ore"
+    }
+  }
+}

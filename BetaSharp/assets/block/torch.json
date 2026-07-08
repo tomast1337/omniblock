@@ -1,0 +1,28 @@
+{
+  "ProtocolId": 50,
+  "Name": "torch",
+  "Material": "piston_breakable",
+  "SoundGroup": "wood",
+  "Luminance": 0.93333334,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 80,
+  "RenderType": "Torch",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "Behaviors": {
+    "Physics": {
+      "Type": "wall_mount",
+      "is_ladder": false
+    },
+    "Lifecycle": {
+      "Type": "wall_mount",
+      "is_ladder": false
+    },
+    "Ticker": {
+      "Type": "wall_mount",
+      "is_ladder": false
+    }
+  }
+}

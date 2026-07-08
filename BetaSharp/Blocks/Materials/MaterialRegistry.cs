@@ -45,6 +45,9 @@ public static class MaterialRegistry
     public static bool TryGet(string key, [NotNullWhen(true)] out Material? material)
         => s_registry.TryGet(key, out material);
 
+    /// <summary>Reverse lookup used by data dumpers to recover the name a material was loaded under.</summary>
+    public static string? TryGetName(Material material) => s_registry.TryGetKey(material);
+
     internal static void Initialize()
     {
         if (s_registry.IsInitialized) return;

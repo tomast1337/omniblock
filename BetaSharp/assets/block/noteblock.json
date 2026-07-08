@@ -1,0 +1,23 @@
+{
+  "ProtocolId": 25,
+  "Name": "noteblock",
+  "TranslationKey": "musicBlock",
+  "Material": "wood",
+  "SoundGroup": "powder",
+  "Hardness": 0.8,
+  "Resistance": 1.3333334,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 74,
+  "TileEntity": "note",
+  "Behaviors": {
+    "Interactable": {
+      "Type": "noteblock"
+    },
+    "Lifecycle": {
+      "Type": "noteblock"
+    },
+    "Physics": {
+      "Type": "noteblock"
+    }
+  }
+}

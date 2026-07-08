@@ -1,0 +1,21 @@
+{
+  "ProtocolId": 58,
+  "Name": "crafting_table",
+  "TranslationKey": "workbench",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 2.5,
+  "Resistance": 4.1666665,
+  "TextureId": 59,
+  "FaceTextures": {
+    "down": 4,
+    "up": 43,
+    "north": 60,
+    "west": 60
+  },
+  "Behaviors": {
+    "Interactable": {
+      "Type": "workbench_interact"
+    }
+  }
+}

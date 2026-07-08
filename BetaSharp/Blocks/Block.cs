@@ -657,7 +657,7 @@ public class Block
         BlocksWithEntity[id] = false;
     }
 
-    protected Block(int id, int textureId, Material material) : this(id, material) => TextureId = textureId;
+    protected internal Block(int id, int textureId, Material material) : this(id, material) => TextureId = textureId;
 
     public Block(float particleFallSpeedModifier)
     {
@@ -692,7 +692,7 @@ public class Block
 
     public virtual IReadOnlyList<string> GetBlockAlias => _blockAlias ?? [];
 
-    protected Block IgnoreMetaUpdates()
+    protected internal Block IgnoreMetaUpdates()
     {
         BlocksIgnoreMetaUpdate[Id] = true;
         return this;
@@ -700,19 +700,19 @@ public class Block
 
     protected virtual void Init() => Lifecycle?.OnInit(this);
 
-    protected Block setSoundGroup(BlockSoundGroup soundGroup)
+    protected internal Block setSoundGroup(BlockSoundGroup soundGroup)
     {
         SoundGroup = soundGroup;
         return this;
     }
 
-    protected Block setOpacity(int opacity)
+    protected internal Block setOpacity(int opacity)
     {
         BlockLightOpacity[Id] = opacity;
         return this;
     }
 
-    protected Block SetNonOpaque()
+    protected internal Block SetNonOpaque()
     {
         // The constructor caches isOpaque() into these arrays before fluent setters run,
         // so they must be refreshed here.
@@ -722,21 +722,21 @@ public class Block
         return this;
     }
 
-    protected Block SetLuminance(float fractionalValue)
+    protected internal Block SetLuminance(float fractionalValue)
     {
         BlocksLightLuminance[Id] = (int)(15.0F * fractionalValue);
         return this;
     }
 
-    protected Block SetResistance(float resistance)
+    protected internal Block SetResistance(float resistance)
     {
         this.Resistance = resistance * 3.0F;
         return this;
     }
 
-    protected Block SetTopBottomTextures(int topTextureId, int bottomTextureId) => SetFaceTexture(Side.Up, topTextureId).SetFaceTexture(Side.Down, bottomTextureId);
+    protected internal Block SetTopBottomTextures(int topTextureId, int bottomTextureId) => SetFaceTexture(Side.Up, topTextureId).SetFaceTexture(Side.Down, bottomTextureId);
 
-    protected Block SetFaceTexture(Side side, int textureId)
+    protected internal Block SetFaceTexture(Side side, int textureId)
     {
         _faceTextureIds ??= new int?[6];
         _faceTextureIds[(int)side] = textureId;
@@ -748,7 +748,7 @@ public class Block
     ///     each <see cref="LootEntry" /> are deferred, so they may safely reference another block's or item's
     ///     static field regardless of declaration order.
     /// </summary>
-    protected Block SetLootTable(LootTable table, int minCount = 1, int maxCount = -1, int meta = 0)
+    protected internal Block SetLootTable(LootTable table, int minCount = 1, int maxCount = -1, int meta = 0)
     {
         _lootTable = table;
         _minDroppedCount = minCount;
@@ -757,7 +757,7 @@ public class Block
         return this;
     }
 
-    protected Block SetDropCount(int count)
+    protected internal Block SetDropCount(int count)
     {
         _minDroppedCount = count;
         _maxDroppedCount = count;
@@ -765,13 +765,13 @@ public class Block
     }
 
     /// <summary>Makes drops carry the broken block's metadata (e.g. wool color) instead of a fixed value.</summary>
-    protected Block preserveMetaOnDrop()
+    protected internal Block preserveMetaOnDrop()
     {
         _dropsWithBlockMeta = true;
         return this;
     }
 
-    protected Block SetBlockAlias(params string[] aliases)
+    protected internal Block SetBlockAlias(params string[] aliases)
     {
         _blockAlias = aliases;
         return this;
@@ -781,20 +781,20 @@ public class Block
 
     public virtual BlockRendererType GetRenderType() => _renderType;
 
-    protected Block SetNotFullCube()
+    protected internal Block SetNotFullCube()
     {
         _isFullCube = false;
         return this;
     }
 
-    protected Block SetRenderType(BlockRendererType renderType)
+    protected internal Block SetRenderType(BlockRendererType renderType)
     {
         _renderType = renderType;
         return this;
     }
 
     /// <summary>Entities pass through this block (plants, portals, ...).</summary>
-    protected Block SetNoCollision()
+    protected internal Block SetNoCollision()
     {
         _hasCollision = false;
         return this;
@@ -824,7 +824,7 @@ public class Block
         return this;
     }
 
-    protected Block SetHardness(float hardness)
+    protected internal Block SetHardness(float hardness)
     {
         this.Hardness = hardness;
         if (Resistance < hardness * 5.0F) Resistance = hardness * 5.0F;
@@ -832,7 +832,7 @@ public class Block
         return this;
     }
 
-    protected Block SetUnbreakable()
+    protected internal Block SetUnbreakable()
     {
         SetHardness(-1.0F);
         return this;
@@ -840,7 +840,7 @@ public class Block
 
     public float GetHardness() => Hardness;
 
-    protected Block SetTickRandomly(bool tickRandomly)
+    protected internal Block SetTickRandomly(bool tickRandomly)
     {
         BlocksRandomTick[Id] = tickRandomly;
         return this;
@@ -968,7 +968,7 @@ public class Block
 
     public virtual void OnPlaced(OnPlacedEvent e) => Lifecycle?.OnPlaced(this, e);
 
-    protected Block SetTickRate(int rate)
+    protected internal Block SetTickRate(int rate)
     {
         _tickRate = rate;
         return this;
@@ -1050,13 +1050,13 @@ public class Block
 
     public virtual int GetRenderLayer() => _renderLayer;
 
-    protected Block SetRenderLayer(int layer)
+    protected internal Block SetRenderLayer(int layer)
     {
         _renderLayer = layer;
         return this;
     }
 
-    protected Block SetSlipperiness(float slipperiness)
+    protected internal Block SetSlipperiness(float slipperiness)
     {
         Slipperiness = slipperiness;
         return this;
@@ -1191,7 +1191,7 @@ public class Block
 
     public bool GetEnableStats() => ShouldTrackStatistics;
 
-    protected Block DisableStats()
+    protected internal Block DisableStats()
     {
         ShouldTrackStatistics = false;
         return this;
@@ -1200,7 +1200,7 @@ public class Block
     public virtual PistonBehavior GetPistonBehavior() => _pistonBehaviorOverride ?? Material.PistonBehavior;
 
     /// <summary>Overrides the material-derived piston behavior (e.g. plates are destroyed when pushed).</summary>
-    protected Block SetPistonBehavior(PistonBehavior behavior)
+    protected internal Block SetPistonBehavior(PistonBehavior behavior)
     {
         _pistonBehaviorOverride = behavior;
         return this;
@@ -1210,7 +1210,7 @@ public class Block
     ///     Declares that this block carries a tile entity, created by <paramref name="factory" />.
     ///     The factory is deferred, so it may safely reference types regardless of declaration order.
     /// </summary>
-    protected Block SetHasTileEntity(Func<BlockEntity> factory)
+    protected internal Block SetHasTileEntity(Func<BlockEntity> factory)
     {
         BlocksWithEntity[Id] = true;
         _blockEntityFactory = factory;

@@ -1,0 +1,25 @@
+{
+  "ProtocolId": 54,
+  "Name": "chest",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 2.5,
+  "Resistance": 4.1666665,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 26,
+  "TileEntity": "chest",
+  "Behaviors": {
+    "Interactable": {
+      "Type": "chest"
+    },
+    "Lifecycle": {
+      "Type": "chest"
+    },
+    "Physics": {
+      "Type": "chest"
+    },
+    "Visuals": {
+      "Type": "chest"
+    }
+  }
+}

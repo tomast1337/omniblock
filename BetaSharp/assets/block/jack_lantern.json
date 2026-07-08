@@ -1,0 +1,29 @@
+{
+  "ProtocolId": 91,
+  "Name": "jack_lantern",
+  "TranslationKey": "litpumpkin",
+  "Material": "pumpkin",
+  "SoundGroup": "wood",
+  "Hardness": 1,
+  "Resistance": 1.6666666,
+  "Luminance": 1,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 102,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "Behaviors": {
+    "Physics": {
+      "Type": "pumpkin",
+      "lit": true
+    },
+    "Lifecycle": {
+      "Type": "pumpkin",
+      "lit": true
+    },
+    "Visuals": {
+      "Type": "pumpkin",
+      "lit": true
+    }
+  }
+}

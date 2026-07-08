@@ -1,0 +1,16 @@
+{
+  "ProtocolId": 95,
+  "Name": "locked_chest",
+  "TranslationKey": "lockedchest",
+  "Material": "wood",
+  "SoundGroup": "powder",
+  "TextureId": 26,
+  "Behaviors": {
+    "Ticker": {
+      "Type": "locked_chest"
+    },
+    "Visuals": {
+      "Type": "locked_chest"
+    }
+  }
+}

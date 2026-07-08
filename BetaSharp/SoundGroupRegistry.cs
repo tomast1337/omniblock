@@ -19,6 +19,9 @@ public static class SoundGroupRegistry
     public static bool TryGet(string key, [NotNullWhen(true)] out BlockSoundGroup? group)
         => s_registry.TryGet(key, out group);
 
+    /// <summary>Reverse lookup used by data dumpers to recover the name a sound group was loaded under.</summary>
+    public static string? TryGetName(BlockSoundGroup group) => s_registry.TryGetKey(group);
+
     internal static void Initialize()
     {
         if (s_registry.IsInitialized) return;

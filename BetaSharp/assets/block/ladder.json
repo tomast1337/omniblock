@@ -1,0 +1,23 @@
+{
+  "ProtocolId": 65,
+  "Name": "ladder",
+  "Material": "piston_breakable",
+  "SoundGroup": "wood",
+  "Hardness": 0.4,
+  "Resistance": 0.6666667,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 83,
+  "RenderType": "Ladder",
+  "NotFullCube": true,
+  "Behaviors": {
+    "Physics": {
+      "Type": "wall_mount",
+      "is_ladder": true
+    },
+    "Lifecycle": {
+      "Type": "wall_mount",
+      "is_ladder": true
+    }
+  }
+}

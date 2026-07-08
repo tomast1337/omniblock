@@ -1,0 +1,23 @@
+{
+  "ProtocolId": 56,
+  "Name": "diamond_ore",
+  "TranslationKey": "oreDiamond",
+  "SoundGroup": "stone",
+  "Hardness": 3,
+  "Resistance": 5,
+  "TextureId": 50,
+  "TopVariance": 2,
+  "BottomVariance": 2,
+  "SideVariance": 2,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "diamond",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  }
+}

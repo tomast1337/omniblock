@@ -1,0 +1,25 @@
+{
+  "ProtocolId": 86,
+  "Name": "pumpkin",
+  "Material": "pumpkin",
+  "SoundGroup": "wood",
+  "Hardness": 1,
+  "Resistance": 1.6666666,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 102,
+  "Behaviors": {
+    "Physics": {
+      "Type": "pumpkin",
+      "lit": false
+    },
+    "Lifecycle": {
+      "Type": "pumpkin",
+      "lit": false
+    },
+    "Visuals": {
+      "Type": "pumpkin",
+      "lit": false
+    }
+  }
+}

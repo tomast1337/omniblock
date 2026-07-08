@@ -1,0 +1,26 @@
+{
+  "ProtocolId": 18,
+  "Name": "leaves",
+  "Material": "leaves",
+  "SoundGroup": "grass",
+  "Hardness": 0.2,
+  "Resistance": 0.33333334,
+  "Opacity": 1,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 52,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "SideVariance": 2,
+  "Behaviors": {
+    "Ticker": {
+      "Type": "leaves"
+    },
+    "Lifecycle": {
+      "Type": "leaves"
+    },
+    "Visuals": {
+      "Type": "leaves"
+    }
+  }
+}

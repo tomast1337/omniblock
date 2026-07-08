@@ -1,0 +1,26 @@
+{
+  "ProtocolId": 34,
+  "Name": "piston_head",
+  "TranslationKey": "",
+  "Material": "piston",
+  "SoundGroup": "stone",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 107,
+  "RenderType": "PistonExtension",
+  "NotFullCube": true,
+  "DropCount": 0,
+  "Behaviors": {
+    "Physics": {
+      "Type": "piston_extension"
+    },
+    "Lifecycle": {
+      "Type": "piston_extension"
+    },
+    "Visuals": {
+      "Type": "piston_extension"
+    }
+  }
+}

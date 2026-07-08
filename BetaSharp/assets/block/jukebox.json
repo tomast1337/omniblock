@@ -1,0 +1,33 @@
+{
+  "ProtocolId": 84,
+  "Name": "jukebox",
+  "Material": "wood",
+  "SoundGroup": "stone",
+  "Hardness": 2,
+  "Resistance": 10,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 74,
+  "FaceTextures": {
+    "up": 75
+  },
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "jukebox",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "TileEntity": "record_player",
+  "Behaviors": {
+    "Interactable": {
+      "Type": "jukebox"
+    },
+    "Lifecycle": {
+      "Type": "jukebox"
+    }
+  }
+}

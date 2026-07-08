@@ -1,0 +1,32 @@
+{
+  "ProtocolId": 77,
+  "Name": "button",
+  "Material": "piston_breakable",
+  "SoundGroup": "stone",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 1,
+  "TickRate": 20,
+  "NotFullCube": true,
+  "NoCollision": true,
+  "Behaviors": {
+    "Redstone": {
+      "Type": "button"
+    },
+    "Physics": {
+      "Type": "button"
+    },
+    "Ticker": {
+      "Type": "button"
+    },
+    "Interactable": {
+      "Type": "button"
+    },
+    "Lifecycle": {
+      "Type": "button"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "ProtocolId": 61,
+  "Name": "furnace",
+  "SoundGroup": "stone",
+  "Hardness": 3.5,
+  "Resistance": 5.8333335,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 45,
+  "TileEntity": "furnace",
+  "Behaviors": {
+    "Interactable": {
+      "Type": "furnace",
+      "lit": false
+    },
+    "Lifecycle": {
+      "Type": "furnace",
+      "lit": false
+    },
+    "Physics": {
+      "Type": "furnace",
+      "lit": false
+    },
+    "Ticker": {
+      "Type": "furnace",
+      "lit": false
+    },
+    "Visuals": {
+      "Type": "furnace",
+      "lit": false
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "ProtocolId": 71,
+  "Name": "iron_door",
+  "TranslationKey": "doorIron",
+  "Material": "metal",
+  "SoundGroup": "metal",
+  "Hardness": 5,
+  "Resistance": 8.333333,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 98,
+  "RenderType": "Door",
+  "NotFullCube": true,
+  "PistonBehavior": "Destroy",
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "door_iron",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Physics": {
+      "Type": "door",
+      "material": "metal"
+    },
+    "Interactable": {
+      "Type": "door",
+      "material": "metal"
+    },
+    "Lifecycle": {
+      "Type": "door",
+      "material": "metal"
+    },
+    "Visuals": {
+      "Type": "door",
+      "material": "metal"
+    }
+  }
+}

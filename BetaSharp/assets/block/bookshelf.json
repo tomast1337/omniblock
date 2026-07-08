@@ -1,0 +1,15 @@
+{
+  "ProtocolId": 47,
+  "Name": "bookshelf",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 1.5,
+  "Resistance": 2.5,
+  "TextureId": 35,
+  "FaceTextures": {
+    "down": 4,
+    "up": 4
+  },
+  "SideVariance": 4,
+  "DropCount": 0
+}

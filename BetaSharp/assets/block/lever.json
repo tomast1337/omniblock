@@ -1,0 +1,28 @@
+{
+  "ProtocolId": 69,
+  "Name": "lever",
+  "Material": "piston_breakable",
+  "SoundGroup": "wood",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 96,
+  "RenderType": "Lever",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "Behaviors": {
+    "Redstone": {
+      "Type": "lever"
+    },
+    "Physics": {
+      "Type": "lever"
+    },
+    "Interactable": {
+      "Type": "lever"
+    },
+    "Lifecycle": {
+      "Type": "lever"
+    }
+  }
+}

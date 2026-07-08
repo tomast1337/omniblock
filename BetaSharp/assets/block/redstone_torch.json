@@ -1,0 +1,43 @@
+{
+  "ProtocolId": 75,
+  "Name": "redstone_torch",
+  "TranslationKey": "notGate",
+  "Material": "piston_breakable",
+  "SoundGroup": "wood",
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 115,
+  "RenderType": "Torch",
+  "TickRate": 2,
+  "NotFullCube": true,
+  "NoCollision": true,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "litredstonetorch",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Physics": {
+      "Type": "redstone_torch"
+    },
+    "Lifecycle": {
+      "Type": "redstone_torch"
+    },
+    "Redstone": {
+      "Type": "redstone_torch"
+    },
+    "Ticker": {
+      "Type": "redstone_torch"
+    },
+    "Visuals": {
+      "Type": "redstone_torch"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "ProtocolId": 1,
+  "Name": "stone",
+  "SoundGroup": "stone",
+  "Hardness": 1.5,
+  "Resistance": 10,
+  "TextureId": 1,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "cobblestone",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  }
+}

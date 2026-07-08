@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 41,
+  "Name": "gold_block",
+  "TranslationKey": "blockGold",
+  "Material": "metal",
+  "SoundGroup": "metal",
+  "Hardness": 3,
+  "Resistance": 10,
+  "TextureId": 23
+}

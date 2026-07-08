@@ -1,0 +1,35 @@
+{
+  "ProtocolId": 6,
+  "Name": "sapling",
+  "Material": "plant",
+  "SoundGroup": "grass",
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 15,
+  "RenderType": "Reed",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.099999994,
+    "MinY": 0,
+    "MinZ": 0.099999994,
+    "MaxX": 0.9,
+    "MaxY": 0.8,
+    "MaxZ": 0.9
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "sapling"
+    },
+    "Physics": {
+      "Type": "plant_survival"
+    },
+    "Visuals": {
+      "Type": "sapling"
+    },
+    "Lifecycle": {
+      "Type": "sapling"
+    }
+  }
+}

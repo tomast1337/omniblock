@@ -1,0 +1,41 @@
+{
+  "ProtocolId": 83,
+  "Name": "sugar_cane",
+  "TranslationKey": "reeds",
+  "Material": "plant",
+  "SoundGroup": "grass",
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TrackStatistics": false,
+  "TextureId": 73,
+  "RenderType": "Reed",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.125,
+    "MinY": 0,
+    "MinZ": 0.125,
+    "MaxX": 0.875,
+    "MaxY": 1,
+    "MaxZ": 0.875
+  },
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "sugar_canes",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "reed"
+    },
+    "Physics": {
+      "Type": "reed"
+    }
+  }
+}

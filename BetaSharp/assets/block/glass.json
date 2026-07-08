@@ -1,0 +1,20 @@
+{
+  "ProtocolId": 20,
+  "Name": "glass",
+  "Material": "glass",
+  "SoundGroup": "glass",
+  "Hardness": 0.3,
+  "Resistance": 0.5,
+  "NonOpaque": true,
+  "TextureId": 49,
+  "TopVariance": 2,
+  "BottomVariance": 2,
+  "SideVariance": 2,
+  "DropCount": 0,
+  "Behaviors": {
+    "Visuals": {
+      "Type": "glass_visual",
+      "hide_adjacent_faces": false
+    }
+  }
+}

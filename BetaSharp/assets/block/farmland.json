@@ -1,0 +1,38 @@
+{
+  "ProtocolId": 60,
+  "Name": "farmland",
+  "Material": "soil",
+  "SoundGroup": "gravel",
+  "Hardness": 0.6,
+  "Resistance": 1,
+  "Opacity": 255,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TextureId": 87,
+  "NotFullCube": true,
+  "BoundingBox": {
+    "MinX": 0,
+    "MinY": 0,
+    "MinZ": 0,
+    "MaxX": 1,
+    "MaxY": 0.9375,
+    "MaxZ": 1
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "farmland"
+    },
+    "Physics": {
+      "Type": "farmland"
+    },
+    "Interactable": {
+      "Type": "farmland"
+    },
+    "Lifecycle": {
+      "Type": "farmland"
+    },
+    "Visuals": {
+      "Type": "farmland"
+    }
+  }
+}

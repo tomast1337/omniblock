@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 87,
+  "Name": "netherrack",
+  "TranslationKey": "hellrock",
+  "SoundGroup": "stone",
+  "Hardness": 0.4,
+  "Resistance": 0.6666667,
+  "TextureId": 103,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "SideVariance": 15
+}

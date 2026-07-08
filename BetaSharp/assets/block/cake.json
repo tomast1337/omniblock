@@ -1,0 +1,26 @@
+{
+  "ProtocolId": 92,
+  "Name": "cake",
+  "Material": "cake",
+  "SoundGroup": "cloth",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 121,
+  "NotFullCube": true,
+  "DropCount": 0,
+  "Behaviors": {
+    "Physics": {
+      "Type": "cake"
+    },
+    "Visuals": {
+      "Type": "cake"
+    },
+    "Interactable": {
+      "Type": "cake"
+    }
+  }
+}

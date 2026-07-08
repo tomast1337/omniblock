@@ -1,0 +1,32 @@
+{
+  "ProtocolId": 29,
+  "Name": "sticky_piston",
+  "TranslationKey": "pistonStickyBase",
+  "Material": "piston",
+  "SoundGroup": "stone",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 106,
+  "RenderType": "PistonBase",
+  "NotFullCube": true,
+  "Behaviors": {
+    "Physics": {
+      "Type": "piston_base",
+      "sticky": true
+    },
+    "Lifecycle": {
+      "Type": "piston_base",
+      "sticky": true
+    },
+    "Ticker": {
+      "Type": "piston_base",
+      "sticky": true
+    },
+    "Visuals": {
+      "Type": "piston_base",
+      "sticky": true
+    }
+  }
+}

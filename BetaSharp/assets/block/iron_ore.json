@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 15,
+  "Name": "iron_ore",
+  "TranslationKey": "oreIron",
+  "SoundGroup": "stone",
+  "Hardness": 3,
+  "Resistance": 5,
+  "TextureId": 33,
+  "TopVariance": 2,
+  "BottomVariance": 2,
+  "SideVariance": 2
+}

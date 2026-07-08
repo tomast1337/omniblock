@@ -1,0 +1,22 @@
+{
+  "ProtocolId": 17,
+  "Name": "log",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 2,
+  "Resistance": 3.3333333,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 20,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "SideVariance": 2,
+  "PreservesMetaOnDrop": true,
+  "Behaviors": {
+    "Visuals": {
+      "Type": "log"
+    },
+    "Lifecycle": {
+      "Type": "log"
+    }
+  }
+}

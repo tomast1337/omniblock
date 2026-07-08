@@ -1,0 +1,22 @@
+{
+  "ProtocolId": 46,
+  "Name": "tnt",
+  "Material": "tnt",
+  "SoundGroup": "grass",
+  "TextureId": 8,
+  "DropCount": 0,
+  "Behaviors": {
+    "Physics": {
+      "Type": "tnt"
+    },
+    "Lifecycle": {
+      "Type": "tnt"
+    },
+    "Interactable": {
+      "Type": "tnt"
+    },
+    "Visuals": {
+      "Type": "tnt"
+    }
+  }
+}

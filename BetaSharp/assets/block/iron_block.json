@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 42,
+  "Name": "iron_block",
+  "TranslationKey": "blockIron",
+  "Material": "metal",
+  "SoundGroup": "metal",
+  "Hardness": 5,
+  "Resistance": 10,
+  "TextureId": 22
+}

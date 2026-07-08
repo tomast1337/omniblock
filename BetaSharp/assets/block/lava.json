@@ -1,0 +1,34 @@
+{
+  "ProtocolId": 11,
+  "Name": "lava",
+  "Material": "lava",
+  "SoundGroup": "powder",
+  "Hardness": 100,
+  "Resistance": 166.66667,
+  "Luminance": 1,
+  "Opacity": 255,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 237,
+  "RenderType": "Fluids",
+  "TickRate": 30,
+  "NotFullCube": true,
+  "NoCollision": true,
+  "DropCount": 0,
+  "Behaviors": {
+    "Physics": {
+      "Type": "stationary_fluid"
+    },
+    "Visuals": {
+      "Type": "stationary_fluid"
+    },
+    "Lifecycle": {
+      "Type": "stationary_fluid"
+    },
+    "Ticker": {
+      "Type": "stationary_fluid"
+    }
+  }
+}

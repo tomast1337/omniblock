@@ -1,0 +1,44 @@
+{
+  "ProtocolId": 63,
+  "Name": "sign",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 1,
+  "Resistance": 1.6666666,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 4,
+  "RenderType": "Entity",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.25,
+    "MinY": 0,
+    "MinZ": 0.25,
+    "MaxX": 0.75,
+    "MaxY": 1,
+    "MaxZ": 0.75
+  },
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "item.sign",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "TileEntity": "sign",
+  "Behaviors": {
+    "Physics": {
+      "Type": "sign",
+      "standing": true
+    },
+    "Lifecycle": {
+      "Type": "tile_entity_lifecycle"
+    }
+  }
+}

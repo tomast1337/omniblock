@@ -1,0 +1,35 @@
+{
+  "ProtocolId": 43,
+  "Name": "double_slab",
+  "TranslationKey": "stoneSlab",
+  "SoundGroup": "stone",
+  "Hardness": 2,
+  "Resistance": 10,
+  "TextureId": 6,
+  "PreservesMetaOnDrop": true,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "slab",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 2,
+    "MaxCount": 2,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Physics": {
+      "Type": "slab",
+      "is_double": true
+    },
+    "Lifecycle": {
+      "Type": "slab",
+      "is_double": true
+    },
+    "Visuals": {
+      "Type": "slab",
+      "is_double": true
+    }
+  }
+}

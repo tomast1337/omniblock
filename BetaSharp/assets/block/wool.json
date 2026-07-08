@@ -1,0 +1,36 @@
+{
+  "ProtocolId": 35,
+  "Name": "wool",
+  "TranslationKey": "cloth",
+  "Material": "wool",
+  "SoundGroup": "cloth",
+  "Hardness": 0.8,
+  "Resistance": 1.3333334,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 64,
+  "SideVariance": 12,
+  "PreservesMetaOnDrop": true,
+  "BlockAlias": [
+    "blackWool:15",
+    "redWool:14",
+    "greenWool:13",
+    "brownWool:12",
+    "blueWool:11",
+    "purpleWool:10",
+    "cyanWool:9",
+    "silverWool:8",
+    "grayWool:7",
+    "pinkWool:6",
+    "limeWool:5",
+    "yellowWool:4",
+    "lightBlueWool:3",
+    "magentaWool:2",
+    "orangeWool:1",
+    "whiteWool:0"
+  ],
+  "Behaviors": {
+    "Visuals": {
+      "Type": "cloth_visual"
+    }
+  }
+}

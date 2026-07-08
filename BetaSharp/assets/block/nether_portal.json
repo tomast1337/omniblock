@@ -1,0 +1,28 @@
+{
+  "ProtocolId": 90,
+  "Name": "nether_portal",
+  "TranslationKey": "portal",
+  "Material": "nether_portal",
+  "SoundGroup": "glass",
+  "Hardness": -1,
+  "Luminance": 0.73333335,
+  "NonOpaque": true,
+  "TextureId": 14,
+  "RenderLayer": 1,
+  "NotFullCube": true,
+  "DropCount": 0,
+  "Behaviors": {
+    "Physics": {
+      "Type": "portal"
+    },
+    "Visuals": {
+      "Type": "portal"
+    },
+    "Interactable": {
+      "Type": "portal"
+    },
+    "Ticker": {
+      "Type": "portal"
+    }
+  }
+}

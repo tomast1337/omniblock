@@ -1,0 +1,53 @@
+{
+  "ProtocolId": 94,
+  "Name": "powered_repeater",
+  "TranslationKey": "diode",
+  "Material": "piston_breakable",
+  "SoundGroup": "wood",
+  "Luminance": 0.6,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 6,
+  "RenderType": "Repeater",
+  "NotFullCube": true,
+  "BoundingBox": {
+    "MinX": 0,
+    "MinY": 0,
+    "MinZ": 0,
+    "MaxX": 1,
+    "MaxY": 0.125,
+    "MaxZ": 1
+  },
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "redstone_repeater",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Redstone": {
+      "Type": "repeater"
+    },
+    "Ticker": {
+      "Type": "repeater"
+    },
+    "Physics": {
+      "Type": "repeater"
+    },
+    "Interactable": {
+      "Type": "repeater"
+    },
+    "Lifecycle": {
+      "Type": "repeater"
+    },
+    "Visuals": {
+      "Type": "repeater"
+    }
+  }
+}

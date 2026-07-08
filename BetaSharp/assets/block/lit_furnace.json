@@ -1,0 +1,45 @@
+{
+  "ProtocolId": 62,
+  "Name": "lit_furnace",
+  "TranslationKey": "furnace",
+  "SoundGroup": "stone",
+  "Hardness": 3.5,
+  "Resistance": 5.8333335,
+  "Luminance": 0.8666667,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 45,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "furnace",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "TileEntity": "furnace",
+  "Behaviors": {
+    "Interactable": {
+      "Type": "furnace",
+      "lit": true
+    },
+    "Lifecycle": {
+      "Type": "furnace",
+      "lit": true
+    },
+    "Physics": {
+      "Type": "furnace",
+      "lit": true
+    },
+    "Ticker": {
+      "Type": "furnace",
+      "lit": true
+    },
+    "Visuals": {
+      "Type": "furnace",
+      "lit": true
+    }
+  }
+}

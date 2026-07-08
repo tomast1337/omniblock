@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 57,
+  "Name": "diamond_block",
+  "TranslationKey": "blockDiamond",
+  "Material": "metal",
+  "SoundGroup": "metal",
+  "Hardness": 5,
+  "Resistance": 10,
+  "TextureId": 24
+}

@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 45,
+  "Name": "bricks",
+  "TranslationKey": "brick",
+  "SoundGroup": "stone",
+  "Hardness": 2,
+  "Resistance": 10,
+  "TextureId": 7
+}

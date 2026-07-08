@@ -1,0 +1,23 @@
+{
+  "ProtocolId": 16,
+  "Name": "coal_ore",
+  "TranslationKey": "oreCoal",
+  "SoundGroup": "stone",
+  "Hardness": 3,
+  "Resistance": 5,
+  "TextureId": 34,
+  "TopVariance": 2,
+  "BottomVariance": 2,
+  "SideVariance": 2,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "coal",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  }
+}

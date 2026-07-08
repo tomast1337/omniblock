@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 49,
+  "Name": "obsidian",
+  "SoundGroup": "stone",
+  "Hardness": 10,
+  "Resistance": 2000,
+  "TextureId": 37
+}

@@ -1,0 +1,45 @@
+{
+  "ProtocolId": 64,
+  "Name": "door",
+  "TranslationKey": "doorWood",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 3,
+  "Resistance": 5,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TrackStatistics": false,
+  "TextureId": 97,
+  "RenderType": "Door",
+  "NotFullCube": true,
+  "PistonBehavior": "Destroy",
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "door_wood",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Physics": {
+      "Type": "door",
+      "material": "wood"
+    },
+    "Interactable": {
+      "Type": "door",
+      "material": "wood"
+    },
+    "Lifecycle": {
+      "Type": "door",
+      "material": "wood"
+    },
+    "Visuals": {
+      "Type": "door",
+      "material": "wood"
+    }
+  }
+}

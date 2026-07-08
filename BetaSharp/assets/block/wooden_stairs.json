@@ -1,0 +1,28 @@
+{
+  "ProtocolId": 53,
+  "Name": "wooden_stairs",
+  "TranslationKey": "stairsWood",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 2,
+  "Resistance": 5,
+  "NonOpaque": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 4,
+  "RenderType": "Stairs",
+  "NotFullCube": true,
+  "Behaviors": {
+    "Physics": {
+      "Type": "stairs",
+      "base": "planks"
+    },
+    "Lifecycle": {
+      "Type": "stairs",
+      "base": "planks"
+    },
+    "Visuals": {
+      "Type": "stairs",
+      "base": "planks"
+    }
+  }
+}

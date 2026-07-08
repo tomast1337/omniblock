@@ -1,0 +1,28 @@
+{
+  "ProtocolId": 23,
+  "Name": "dispenser",
+  "SoundGroup": "stone",
+  "Hardness": 3.5,
+  "Resistance": 5.8333335,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 45,
+  "TickRate": 4,
+  "TileEntity": "dispenser",
+  "Behaviors": {
+    "Interactable": {
+      "Type": "dispenser"
+    },
+    "Lifecycle": {
+      "Type": "dispenser"
+    },
+    "Physics": {
+      "Type": "dispenser"
+    },
+    "Ticker": {
+      "Type": "dispenser"
+    },
+    "Visuals": {
+      "Type": "dispenser"
+    }
+  }
+}

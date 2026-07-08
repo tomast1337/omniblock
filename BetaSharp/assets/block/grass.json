@@ -1,0 +1,35 @@
+{
+  "ProtocolId": 31,
+  "Name": "grass",
+  "TranslationKey": "tallgrass",
+  "Material": "plant",
+  "SoundGroup": "grass",
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TextureId": 39,
+  "RenderType": "Reed",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.099999994,
+    "MinY": 0,
+    "MinZ": 0.099999994,
+    "MaxX": 0.9,
+    "MaxY": 0.8,
+    "MaxZ": 0.9
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "plant_survival"
+    },
+    "Physics": {
+      "Type": "plant_survival"
+    },
+    "Visuals": {
+      "Type": "tall_grass"
+    },
+    "Lifecycle": {
+      "Type": "tall_grass"
+    }
+  }
+}

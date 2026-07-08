@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 22,
+  "Name": "lapis_block",
+  "TranslationKey": "blockLapis",
+  "SoundGroup": "stone",
+  "Hardness": 3,
+  "Resistance": 5,
+  "TextureId": 144
+}

@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 3,
+  "Name": "dirt",
+  "Material": "soil",
+  "SoundGroup": "gravel",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "TextureId": 2,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "SideVariance": 15
+}

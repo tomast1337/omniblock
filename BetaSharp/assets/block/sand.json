@@ -1,0 +1,24 @@
+{
+  "ProtocolId": 12,
+  "Name": "sand",
+  "Material": "sand",
+  "SoundGroup": "sand",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "TextureId": 18,
+  "TopVariance": 3,
+  "BottomVariance": 3,
+  "SideVariance": 3,
+  "TickRate": 3,
+  "Behaviors": {
+    "Ticker": {
+      "Type": "falling_block"
+    },
+    "Lifecycle": {
+      "Type": "falling_block"
+    },
+    "Physics": {
+      "Type": "falling_block"
+    }
+  }
+}

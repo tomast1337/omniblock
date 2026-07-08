@@ -1,0 +1,38 @@
+{
+  "ProtocolId": 81,
+  "Name": "cactus",
+  "Material": "cactus",
+  "SoundGroup": "cloth",
+  "Hardness": 0.4,
+  "Resistance": 0.6666667,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TextureId": 70,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "SideVariance": 2,
+  "RenderType": "Cactus",
+  "NotFullCube": true,
+  "BoundingBox": {
+    "MinX": 0.0625,
+    "MinY": 0,
+    "MinZ": 0.0625,
+    "MaxX": 0.9375,
+    "MaxY": 1,
+    "MaxZ": 0.9375
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "cactus"
+    },
+    "Physics": {
+      "Type": "cactus"
+    },
+    "Interactable": {
+      "Type": "cactus"
+    },
+    "Visuals": {
+      "Type": "cactus"
+    }
+  }
+}

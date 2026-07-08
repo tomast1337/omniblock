@@ -1,0 +1,23 @@
+{
+  "ProtocolId": 21,
+  "Name": "lapis_ore",
+  "TranslationKey": "oreLapis",
+  "SoundGroup": "stone",
+  "Hardness": 3,
+  "Resistance": 5,
+  "TextureId": 160,
+  "TopVariance": 2,
+  "BottomVariance": 2,
+  "SideVariance": 2,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "dye_powder",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 4,
+    "MaxCount": 8,
+    "Meta": 4
+  }
+}

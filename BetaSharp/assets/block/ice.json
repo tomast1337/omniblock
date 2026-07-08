@@ -1,0 +1,36 @@
+{
+  "ProtocolId": 79,
+  "Name": "ice",
+  "Material": "ice",
+  "SoundGroup": "glass",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "Opacity": 3,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TextureId": 67,
+  "TopVariance": 2,
+  "BottomVariance": 2,
+  "SideVariance": 2,
+  "RenderLayer": 1,
+  "Slipperiness": 0.98,
+  "DropCount": 0,
+  "Behaviors": {
+    "Visuals": {
+      "Type": "glass_visual",
+      "hide_adjacent_faces": false
+    },
+    "Ticker": {
+      "Type": "melt",
+      "melt_replacement": "water",
+      "subtract_opacity": true,
+      "broken_replacement": "flowing_water"
+    },
+    "Lifecycle": {
+      "Type": "melt",
+      "melt_replacement": "water",
+      "subtract_opacity": true,
+      "broken_replacement": "flowing_water"
+    }
+  }
+}

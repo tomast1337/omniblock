@@ -1,0 +1,29 @@
+{
+  "ProtocolId": 40,
+  "Name": "red_mushroom",
+  "TranslationKey": "mushroom",
+  "Material": "plant",
+  "SoundGroup": "grass",
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TextureId": 28,
+  "RenderType": "Reed",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.3,
+    "MinY": 0,
+    "MinZ": 0.3,
+    "MaxX": 0.7,
+    "MaxY": 0.4,
+    "MaxZ": 0.7
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "mushroom"
+    },
+    "Physics": {
+      "Type": "mushroom"
+    }
+  }
+}

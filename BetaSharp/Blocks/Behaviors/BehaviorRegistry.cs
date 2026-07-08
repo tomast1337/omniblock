@@ -31,9 +31,9 @@ internal static class BehaviorRegistry
             ? new PlantSurvivalBehavior(id => id == ResolveBlock(soil.GetString()!).Id)
             : new PlantSurvivalBehavior(),
         ["melt"] = json => new MeltBehavior(
-            () => ResolveBlock(json.GetProperty("melt_replacement").GetString()!).Id,
+            () => ResolveBlockOrAir(json.GetProperty("melt_replacement").GetString()!),
             json.TryGetProperty("subtract_opacity", out var sub) && sub.GetBoolean(),
-            json.TryGetProperty("broken_replacement", out var broken) ? () => ResolveBlock(broken.GetString()!).Id : null),
+            json.TryGetProperty("broken_replacement", out var broken) ? () => ResolveBlockOrAir(broken.GetString()!) : null),
 
         // Nested/composite behaviors — construct their own private sub-behavior inline
         // rather than reference another JSON-declared entry (see wrinkle #2): these
@@ -90,4 +90,9 @@ internal static class BehaviorRegistry
 
     private static Block ResolveBlock(string name) =>
         Block.ByName(name) ?? throw new ArgumentException($"Unknown block: '{name}'");
+
+    // Air (id 0) never has a registered Block instance, so Block.ByName can't resolve it —
+    // snow's melt-to-air case needs this sentinel alongside real block-name lookups.
+    private static int ResolveBlockOrAir(string name) =>
+        name == "air" ? 0 : ResolveBlock(name).Id;
 }

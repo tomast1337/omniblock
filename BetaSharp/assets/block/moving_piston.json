@@ -1,0 +1,22 @@
+{
+  "ProtocolId": 36,
+  "Name": "moving_piston",
+  "TranslationKey": "",
+  "Material": "piston",
+  "SoundGroup": "powder",
+  "Hardness": -1,
+  "NonOpaque": true,
+  "RenderType": "Entity",
+  "NotFullCube": true,
+  "Behaviors": {
+    "Physics": {
+      "Type": "piston_moving"
+    },
+    "Lifecycle": {
+      "Type": "piston_moving"
+    },
+    "Interactable": {
+      "Type": "piston_moving"
+    }
+  }
+}

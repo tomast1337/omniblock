@@ -1,0 +1,11 @@
+{
+  "ProtocolId": 5,
+  "Name": "planks",
+  "TranslationKey": "wood",
+  "Material": "wood",
+  "SoundGroup": "wood",
+  "Hardness": 2,
+  "Resistance": 5,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 4
+}

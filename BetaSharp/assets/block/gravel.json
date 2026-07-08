@@ -1,0 +1,39 @@
+{
+  "ProtocolId": 13,
+  "Name": "gravel",
+  "Material": "sand",
+  "SoundGroup": "gravel",
+  "Hardness": 0.6,
+  "Resistance": 1,
+  "TextureId": 19,
+  "TopVariance": 3,
+  "BottomVariance": 3,
+  "SideVariance": 3,
+  "TickRate": 3,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "gravel",
+        "Weight": 9
+      },
+      {
+        "ItemName": "flint",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "falling_block"
+    },
+    "Lifecycle": {
+      "Type": "falling_block"
+    },
+    "Physics": {
+      "Type": "falling_block"
+    }
+  }
+}

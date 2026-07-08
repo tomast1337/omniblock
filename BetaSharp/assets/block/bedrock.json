@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 7,
+  "Name": "bedrock",
+  "SoundGroup": "stone",
+  "Hardness": -1,
+  "Resistance": 6000000,
+  "TrackStatistics": false,
+  "TextureId": 17,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "SideVariance": 15
+}

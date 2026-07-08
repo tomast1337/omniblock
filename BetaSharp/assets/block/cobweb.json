@@ -1,0 +1,31 @@
+{
+  "ProtocolId": 30,
+  "Name": "cobweb",
+  "TranslationKey": "web",
+  "Material": "cobweb",
+  "SoundGroup": "powder",
+  "Hardness": 4,
+  "Resistance": 6.6666665,
+  "Opacity": 1,
+  "NonOpaque": true,
+  "TextureId": 11,
+  "RenderType": "Reed",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "string",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Interactable": {
+      "Type": "web"
+    }
+  }
+}

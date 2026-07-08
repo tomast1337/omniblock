@@ -1,0 +1,41 @@
+{
+  "ProtocolId": 28,
+  "Name": "detector_rail",
+  "TranslationKey": "detectorRail",
+  "Material": "piston_breakable",
+  "SoundGroup": "metal",
+  "Hardness": 0.7,
+  "Resistance": 1.1666666,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 195,
+  "RenderType": "MinecartTrack",
+  "TickRate": 20,
+  "NotFullCube": true,
+  "NoCollision": true,
+  "PistonBehavior": "Normal",
+  "Behaviors": {
+    "Physics": {
+      "Type": "rail",
+      "powered": true
+    },
+    "Lifecycle": {
+      "Type": "rail",
+      "powered": true
+    },
+    "Visuals": {
+      "Type": "rail",
+      "powered": true
+    },
+    "Redstone": {
+      "Type": "detector_rail"
+    },
+    "Ticker": {
+      "Type": "detector_rail"
+    },
+    "Interactable": {
+      "Type": "detector_rail"
+    }
+  }
+}

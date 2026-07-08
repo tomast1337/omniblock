@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 48,
+  "Name": "mossy_cobblestone",
+  "TranslationKey": "stoneMoss",
+  "SoundGroup": "stone",
+  "Hardness": 2,
+  "Resistance": 10,
+  "TextureId": 36
+}

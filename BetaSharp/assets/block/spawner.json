@@ -1,0 +1,18 @@
+{
+  "ProtocolId": 52,
+  "Name": "spawner",
+  "TranslationKey": "mobSpawner",
+  "SoundGroup": "metal",
+  "Hardness": 5,
+  "Resistance": 8.333333,
+  "NonOpaque": true,
+  "TrackStatistics": false,
+  "TextureId": 65,
+  "DropCount": 0,
+  "TileEntity": "mob_spawner",
+  "Behaviors": {
+    "Lifecycle": {
+      "Type": "tile_entity_lifecycle"
+    }
+  }
+}

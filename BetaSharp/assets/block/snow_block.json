@@ -1,0 +1,31 @@
+{
+  "ProtocolId": 80,
+  "Name": "snow_block",
+  "TranslationKey": "snow",
+  "Material": "snow_block",
+  "SoundGroup": "cloth",
+  "Hardness": 0.2,
+  "Resistance": 0.33333334,
+  "TickRandomly": true,
+  "TextureId": 66,
+  "TopVariance": 15,
+  "BottomVariance": 15,
+  "SideVariance": 12,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "snowball",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 4,
+    "MaxCount": 4,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "melt",
+      "melt_replacement": "air"
+    }
+  }
+}

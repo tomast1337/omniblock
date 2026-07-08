@@ -1,0 +1,29 @@
+{
+  "ProtocolId": 37,
+  "Name": "dandelion",
+  "TranslationKey": "flower",
+  "Material": "plant",
+  "SoundGroup": "grass",
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TextureId": 13,
+  "RenderType": "Reed",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.3,
+    "MinY": 0,
+    "MinZ": 0.3,
+    "MaxX": 0.7,
+    "MaxY": 0.6,
+    "MaxZ": 0.7
+  },
+  "Behaviors": {
+    "Ticker": {
+      "Type": "plant_survival"
+    },
+    "Physics": {
+      "Type": "plant_survival"
+    }
+  }
+}

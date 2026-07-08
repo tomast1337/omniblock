@@ -1,0 +1,46 @@
+{
+  "ProtocolId": 44,
+  "Name": "slab",
+  "TranslationKey": "stoneSlab",
+  "SoundGroup": "stone",
+  "Hardness": 2,
+  "Resistance": 10,
+  "Opacity": 255,
+  "NonOpaque": true,
+  "TextureId": 6,
+  "NotFullCube": true,
+  "BoundingBox": {
+    "MinX": 0,
+    "MinY": 0,
+    "MinZ": 0,
+    "MaxX": 1,
+    "MaxY": 0.5,
+    "MaxZ": 1
+  },
+  "PreservesMetaOnDrop": true,
+  "LootTable": {
+    "Entries": [
+      {
+        "ItemName": "slab",
+        "Weight": 1
+      }
+    ],
+    "MinCount": 1,
+    "MaxCount": 1,
+    "Meta": 0
+  },
+  "Behaviors": {
+    "Physics": {
+      "Type": "slab",
+      "is_double": false
+    },
+    "Lifecycle": {
+      "Type": "slab",
+      "is_double": false
+    },
+    "Visuals": {
+      "Type": "slab",
+      "is_double": false
+    }
+  }
+}

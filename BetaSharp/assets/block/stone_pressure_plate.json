@@ -1,0 +1,46 @@
+{
+  "ProtocolId": 70,
+  "Name": "stone_pressure_plate",
+  "TranslationKey": "pressurePlate",
+  "SoundGroup": "stone",
+  "Hardness": 0.5,
+  "Resistance": 0.8333333,
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "IgnoreMetaUpdates": true,
+  "TextureId": 1,
+  "TickRate": 20,
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.0625,
+    "MinY": 0,
+    "MinZ": 0.0625,
+    "MaxX": 0.9375,
+    "MaxY": 0.03125,
+    "MaxZ": 0.9375
+  },
+  "PistonBehavior": "Destroy",
+  "Behaviors": {
+    "Redstone": {
+      "Type": "pressure_plate",
+      "activation_rule": "MOBS"
+    },
+    "Physics": {
+      "Type": "pressure_plate",
+      "activation_rule": "MOBS"
+    },
+    "Ticker": {
+      "Type": "pressure_plate",
+      "activation_rule": "MOBS"
+    },
+    "Interactable": {
+      "Type": "pressure_plate",
+      "activation_rule": "MOBS"
+    },
+    "Lifecycle": {
+      "Type": "pressure_plate",
+      "activation_rule": "MOBS"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "ProtocolId": 32,
+  "Name": "dead_bush",
+  "TranslationKey": "deadbush",
+  "Material": "plant",
+  "SoundGroup": "grass",
+  "NonOpaque": true,
+  "TickRandomly": true,
+  "TextureId": 55,
+  "RenderType": "Reed",
+  "NotFullCube": true,
+  "NoCollision": true,
+  "BoundingBox": {
+    "MinX": 0.1,
+    "MinY": 0,
+    "MinZ": 0.1,
+    "MaxX": 0.9,
+    "MaxY": 0.8,
+    "MaxZ": 0.9
+  },
+  "DropCount": 0,
+  "Behaviors": {
+    "Ticker": {
+      "Type": "plant_survival",
+      "valid_soil": "sand"
+    },
+    "Physics": {
+      "Type": "plant_survival",
+      "valid_soil": "sand"
+    }
+  }
+}
