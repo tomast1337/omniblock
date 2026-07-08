@@ -1,5 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Inventorys;
 using BetaSharp.Server.Command;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -242,12 +243,12 @@ public class DataCommand : Command.Command
 
         if (e.Passenger != null)
         {
-            output.SendMessage("Passenger: " + e.Passenger.ID);
+            output.SendMessage("passenger: " + e.Passenger.ID);
         }
 
         if (e.Vehicle != null)
         {
-            output.SendMessage("Vehicle: " + e.Vehicle.ID);
+            output.SendMessage("vehicle: " + e.Vehicle.ID);
         }
     }
 
@@ -256,7 +257,30 @@ public class DataCommand : Command.Command
         output.SendMessage("type: " + e.GetType().Name);
         output.SendMessage("name: " + e.getBlock().getBlockName());
         output.SendMessage($"pos: {e.X} {e.Y} {e.Z}");
-        output.SendMessage("Removed: " + e.isRemoved());
+        output.SendMessage("removed: " + e.isRemoved());
+
+        if (e is IInventory inventory)
+        {
+            output.SendMessage("size: " + inventory.Size);
+        }
+
+        if (e is BlockEntitySign sign)
+        {
+            output.SendMessage("text: " + string.Join(" | ", sign.Texts));
+        }
+        else if (e is BlockEntityMobSpawner spawner)
+        {
+            output.SendMessage("entitySpawned: " + spawner.GetSpawnedEntityId());
+            output.SendMessage("spawnDelay: " + spawner.SpawnDelay);
+        }
+        else if (e is BlockEntityNote note)
+        {
+            output.SendMessage("note: " + note.note);
+        }
+        else if (e is BlockEntityRecordPlayer recordPlayer)
+        {
+            output.SendMessage("record: " + recordPlayer.recordId);
+        }
     }
 
     private enum ListKindEntity
@@ -267,8 +291,8 @@ public class DataCommand : Command.Command
         P = 1,
         Global = 2,
         G = 2,
-        Block,
-        B,
+        Block = 3,
+        B = 3,
     }
 
     private enum Selector
