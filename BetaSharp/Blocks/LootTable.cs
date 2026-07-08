@@ -1,5 +1,9 @@
 namespace BetaSharp.Blocks;
 
+public sealed record LootEntryDefinition(string ItemName, int Weight = 1);
+
+public sealed record LootTableDefinition(LootEntryDefinition[] Entries, int MinCount = 1, int MaxCount = -1, int Meta = 0);
+
 /// <summary>
 ///     One weighted possibility in a <see cref="LootTable" />. The item id is resolved lazily via
 ///     <paramref name="itemId" /> so it may reference another block's or item's static field
