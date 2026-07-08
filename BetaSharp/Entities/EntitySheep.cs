@@ -68,7 +68,7 @@ public class EntitySheep : EntityAnimal
         }
     }
 
-    protected override int DropItemId => BlockRegistry.Get("wool").Id;
+    protected override int DropItem => BlockRegistry.Get("wool").Id;
 
     public override bool Interact(EntityPlayer player)
     {

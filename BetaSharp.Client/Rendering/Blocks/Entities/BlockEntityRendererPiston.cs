@@ -20,7 +20,8 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             throw new ArgumentException("BlockEntity is not a Piston");
         }
 
-        Block block = Block.Blocks[piston.PushedBlockId];
+        Block? block = Block.Blocks[piston.PushedBlockId];
+        if (block == null) return;
         if (piston.GetProgress(tickDelta) < 1.0F)
         {
             Tessellator tess = Tessellator.instance;
