@@ -5,7 +5,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockGlowstone(int i, int j, Material material) : Block(i, j, material)
 {
-    private static readonly int s_glowstoneDustId = Item.ByName("yellow_dust").id;
+    private static readonly int s_glowstoneDustId = Item.ByName("yellow_dust").Id;
 
     public override int getDroppedItemCount() => 2 + Random.Shared.Next(3);
 

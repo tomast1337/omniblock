@@ -168,12 +168,12 @@ internal static class ItemLookup
         {
             string s = alias.ToLower();
             int i = s.LastIndexOf(':');
-            if (i == -1) s_itemNameToId.TryAdd(s, item.id);
+            if (i == -1) s_itemNameToId.TryAdd(s, item.Id);
             else
             {
                 int meta = int.Parse(s.Substring(i + 1, s.Length - i - 1));
-                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), item.id);
-                else s_alias.TryAdd(s.Substring(0, i), (item.id, meta));
+                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), item.Id);
+                else s_alias.TryAdd(s.Substring(0, i), (item.Id, meta));
             }
         }
     }

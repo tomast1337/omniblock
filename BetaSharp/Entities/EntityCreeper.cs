@@ -7,6 +7,8 @@ namespace BetaSharp.Entities;
 
 public class EntityCreeper : EntityMonster
 {
+    private static readonly Item s_record = Item.ByName("record");
+    private static readonly Item s_gunpowder = Item.ByName("gunpowder");
     private readonly SyncedProperty<byte> _creeperState;
     public readonly SyncedProperty<bool> Powered;
     private int _lastActiveTime;
@@ -92,7 +94,7 @@ public class EntityCreeper : EntityMonster
         base.OnKilledBy(entity);
         if (entity is EntitySkeleton)
         {
-            DropItem(Item.ByName("record").id + Random.NextInt(2), 1);
+            DropItem(s_record.Id + Random.NextInt(2), 1);
         }
     }
 
@@ -131,7 +133,7 @@ public class EntityCreeper : EntityMonster
 
     public float GetCreeperFlashTime(float partialTick) => (_lastActiveTime + (_timeSinceIgnited - _lastActiveTime) * partialTick) / 28.0F;
 
-    protected override int DropItemId => Item.ByName("gunpowder").id;
+    protected override int DropItem => s_gunpowder.Id;
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)
     {

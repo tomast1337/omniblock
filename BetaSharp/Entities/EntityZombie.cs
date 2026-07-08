@@ -6,6 +6,7 @@ namespace BetaSharp.Entities;
 
 public class EntityZombie : EntityMonster
 {
+    private static readonly int s_feather = Item.ByName("feather").Id;
     public EntityZombie(IWorldContext world) : base(world)
     {
         Texture = "/mob/zombie.png";
@@ -35,5 +36,5 @@ public class EntityZombie : EntityMonster
 
     protected override string? DeathSound => "mob.zombiedeath";
 
-    protected override int DropItemId => Item.ByName("feather").id;
+    protected override int DropItem => s_feather;
 }

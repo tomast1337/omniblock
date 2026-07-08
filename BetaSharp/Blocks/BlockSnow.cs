@@ -9,7 +9,7 @@ namespace BetaSharp.Blocks;
 internal class BlockSnow : Block
 {
     private const float DropSpread = 0.7F;
-    private static readonly int s_snowballId = Item.ByName("snowball").id;
+    private static readonly int s_snowballId = Item.ByName("snowball").Id;
 
     public BlockSnow(int id, int textureId) : base(id, textureId, Material.SnowLayer)
     {

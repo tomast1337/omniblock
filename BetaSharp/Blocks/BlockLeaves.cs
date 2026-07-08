@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks;
 
 public class BlockLeaves : BlockLeavesBase
 {
-    private static readonly int s_shearsId = Item.ByName("shears").id;
+    private static readonly int s_shearsId = Item.ByName("shears").Id;
     private readonly ThreadLocal<int[]?> s_decayRegion = new(() => null);
     private readonly int spriteIndex;
 

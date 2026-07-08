@@ -12,8 +12,8 @@ internal class BlockDoor : Block
     private const float HalfWidth = 0.5F;
     private const float Height = 1.0F;
     private const float Thickness = 3.0F / 16.0F;
-    private static readonly int s_doorIronId = Item.ByName("door_iron").id;
-    private static readonly int s_doorWoodId = Item.ByName("door_wood").id;
+    private static readonly int s_doorIronId = Item.ByName("door_iron").Id;
+    private static readonly int s_doorWoodId = Item.ByName("door_wood").Id;
 
     public BlockDoor(int id, Material material) : base(id, material)
     {

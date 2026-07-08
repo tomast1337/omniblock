@@ -7,6 +7,8 @@ namespace BetaSharp.Entities;
 
 public class EntityPig : EntityAnimal
 {
+    private static readonly Item s_porkchopCooked = Item.ByName("porkchop_cooked");
+    private static readonly Item s_porkchopRaw = Item.ByName("porkchop_raw");
     public readonly SyncedProperty<bool> Saddled;
 
     public EntityPig(IWorldContext world) : base(world)
@@ -46,7 +48,7 @@ public class EntityPig : EntityAnimal
         return true;
     }
 
-    protected override int DropItemId => FireTicks > 0 ? Item.ByName("porkchop_cooked").id : Item.ByName("porkchop_raw").id;
+    protected override int DropItem => FireTicks > 0 ? s_porkchopCooked.Id : s_porkchopRaw.Id;
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)
     {

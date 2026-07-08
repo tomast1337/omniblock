@@ -10,6 +10,8 @@ namespace BetaSharp.Entities;
 
 public class EntityMinecart : Entity, IInventory
 {
+    private static readonly Item s_minecart = Item.ByName("minecart");
+    private static readonly Item s_coal = Item.ByName("coal");
     const double maxSpeed = 0.4D;
     const double slopeAcceleration = 1.0D / 128.0D;
     const double poweredRailBoost = 0.06D;
@@ -157,7 +159,7 @@ public class EntityMinecart : Entity, IInventory
         Passenger?.SetVehicle(this);
 
         MarkDead();
-        DropItem(Item.ByName("minecart").id, 1, 0.0F);
+        DropItem(s_minecart.Id, 1, 0.0F);
 
         if (type == 1)
         {
@@ -995,7 +997,7 @@ public class EntityMinecart : Entity, IInventory
         else if (type == 2)
         {
             ItemStack? heldItem = player.Inventory.ItemInHand;
-            if (heldItem != null && heldItem.ItemId == Item.ByName("coal").id)
+            if (heldItem != null && heldItem.ItemId == s_coal.Id)
             {
                 if (--heldItem.Count == 0)
                 {

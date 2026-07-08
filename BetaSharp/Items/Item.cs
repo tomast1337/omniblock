@@ -30,8 +30,8 @@ public class Item
     /// Resolves an item by its registry path (e.g. <c>"apple"</c>, <c>"shovel_iron"</c> —
     /// see <c>BetaSharp/assets/item/betasharp/*.json</c> for the full list of names).
     /// Requires <see cref="Registries.DefaultRegistries.Initialize"/> to have run.
-    /// 
-    /// TODO: This will become obsolete once Entities and Blocks are fully data-driven 
+    ///
+    /// TODO: This will become obsolete once Entities and Blocks are fully data-driven
     /// and resolve their drops/interactions via ResourceLocations directly from JSON data files.
     /// </summary>
     public static Item ByName(string name)
@@ -47,19 +47,19 @@ public class Item
 
     private readonly ILogger<Item> _logger = Log.Instance.For<Item>();
 
-    public readonly int id;
+    public readonly int Id;
     private IItemBehavior? _behavior;
-    private Item craftingReturnItem;
-    internal bool handheld;
-    internal bool hasSubtypes;
-    public int maxCount = 64;
-    private int maxDamage;
-    internal int textureId;
-    private string translationKey;
+    private Item _craftingReturnItem;
+    public bool Handheld;
+    public bool HasSubtypes;
+    private int MaxCount = 64;
+    private int _maxDamage;
+    internal int _textureId;
+    private string _translationKey;
 
     internal Item(int id)
     {
-        this.id = 256 + id;
+        this.Id = 256 + id;
         if (ITEMS[256 + id] != null)
         {
             _logger.LogInformation($"CONFLICT @ {id}");
@@ -81,23 +81,23 @@ public class Item
 
     public Item setTextureId(int textureId)
     {
-        this.textureId = textureId;
+        this._textureId = textureId;
         return this;
     }
 
     public Item setMaxCount(int maxCount)
     {
-        this.maxCount = maxCount;
+        this.MaxCount = maxCount;
         return this;
     }
 
     public Item setTexturePosition(int x, int y)
     {
-        textureId = x + y * 16;
+        _textureId = x + y * 16;
         return this;
     }
 
-    public virtual int getTextureId(int damage) => _behavior?.GetTextureId(this, damage) ?? textureId;
+    public virtual int getTextureId(int damage) => _behavior?.GetTextureId(this, damage) ?? _textureId;
 
     public int getTextureId(ItemStack stack) => getTextureId(stack.getDamage());
 
@@ -107,27 +107,27 @@ public class Item
 
     public virtual ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer) => _behavior?.Use(this, itemStack, world, entityPlayer) ?? itemStack;
 
-    public int getMaxCount() => maxCount;
+    public int getMaxCount() => MaxCount;
 
     public virtual int getPlacementMetadata(int meta) => 0;
 
-    public bool getHasSubtypes() => hasSubtypes;
+    public bool getHasSubtypes() => HasSubtypes;
 
     internal Item setHasSubtypes(bool has)
     {
-        hasSubtypes = has;
+        HasSubtypes = has;
         return this;
     }
 
-    public int getMaxDamage() => maxDamage;
+    public int getMaxDamage() => _maxDamage;
 
     internal Item setMaxDamage(int dmg)
     {
-        maxDamage = dmg;
+        _maxDamage = dmg;
         return this;
     }
 
-    public bool isDamagable() => maxDamage > 0 && !hasSubtypes;
+    public bool isDamagable() => _maxDamage > 0 && !HasSubtypes;
 
     public virtual bool postHit(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer) => _behavior?.PostHit(this, itemStack, entityLiving, entityPlayer) ?? false;
 
@@ -141,38 +141,38 @@ public class Item
 
     public Item setHandheld()
     {
-        handheld = true;
+        Handheld = true;
         return this;
     }
 
-    public virtual bool isHandheld() => _behavior?.IsHandheld(this) ?? handheld;
+    public virtual bool isHandheld() => _behavior?.IsHandheld(this) ?? Handheld;
 
     public virtual bool isHandheldRod() => _behavior?.IsHandheldRod(this) ?? false;
 
     public Item setItemName(string name)
     {
-        translationKey = "item." + name;
+        _translationKey = "item." + name;
         return this;
     }
 
-    public virtual string getItemName() => translationKey;
+    public virtual string getItemName() => _translationKey;
 
-    public virtual string getItemNameIS(ItemStack itemStack) => _behavior?.GetItemNameIS(this, itemStack) ?? translationKey;
+    public virtual string getItemNameIS(ItemStack itemStack) => _behavior?.GetItemNameIS(this, itemStack) ?? _translationKey;
 
     public Item setCraftingReturnItem(Item item)
     {
-        if (maxCount > 1)
+        if (MaxCount > 1)
         {
             throw new ArgumentException("Max stack size must be 1 for items with crafting results");
         }
 
-        craftingReturnItem = item;
+        _craftingReturnItem = item;
         return this;
     }
 
-    public Item getContainerItem() => craftingReturnItem;
+    public Item getContainerItem() => _craftingReturnItem;
 
-    public bool hasContainerItem() => craftingReturnItem != null;
+    public bool hasContainerItem() => _craftingReturnItem != null;
 
     public string getStatName()
         => StatCollector.TranslateToLocal(getItemName() + ".name");

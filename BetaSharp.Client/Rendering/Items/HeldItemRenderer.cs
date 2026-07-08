@@ -174,7 +174,7 @@ public class HeldItemRenderer
         }
 
         float baseScale;
-        if (itemToRender != null && itemToRender.ItemId == Item.ByName("map").id)
+        if (itemToRender != null && itemToRender.ItemId == Item.ByName("map").Id)
         {
             GLManager.GL.PushMatrix();
             baseScale = 0.8F;

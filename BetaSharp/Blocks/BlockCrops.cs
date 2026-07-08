@@ -10,7 +10,7 @@ internal class BlockCrops : BlockPlant
     private const float DropSpread = 0.7F;
     private const float HalfWidth = 0.5F;
     private static readonly Item s_seeds = Item.ByName("seeds");
-    private static readonly int s_wheatId = Item.ByName("wheat").id;
+    private static readonly int s_wheatId = Item.ByName("wheat").Id;
 
     public BlockCrops(int i, int j) : base(i, j)
     {

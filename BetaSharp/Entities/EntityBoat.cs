@@ -13,7 +13,7 @@ public sealed class EntityBoat : Entity
     private const double RiderInputAcceleration = 0.18D;
     private const double RiderTurnVelocityBlend = 0.25D;
     private const double YawSmoothing = 0.35D;
-    private static readonly int s_stickId = Item.ByName("stick").id;
+    private static readonly int s_stickId = Item.ByName("stick").Id;
 
     public int BoatCurrentDamage;
     public int BoatRockDirection;

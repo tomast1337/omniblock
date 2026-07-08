@@ -12,9 +12,9 @@ internal class BlockDispenser : BlockWithEntity
     private const float LaunchSpread = 0.05F;
 
     private static readonly ThreadLocal<JavaRandom> s_random = new(() => new JavaRandom());
-    private static readonly int s_arrowId = Item.ByName("arrow").id;
-    private static readonly int s_eggId = Item.ByName("egg").id;
-    private static readonly int s_snowballId = Item.ByName("snowball").id;
+    private static readonly int s_arrowId = Item.ByName("arrow").Id;
+    private static readonly int s_eggId = Item.ByName("egg").Id;
+    private static readonly int s_snowballId = Item.ByName("snowball").Id;
 
     public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = BlockTextures.FurnaceSide;
 

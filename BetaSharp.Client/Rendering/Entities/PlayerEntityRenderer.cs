@@ -128,7 +128,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     protected void RenderSpecials(EntityPlayer playerEntity, float tickDelta)
     {
         ItemStack helmetStack = playerEntity.Inventory.ArmorItemBySlot(3);
-        if (helmetStack != null && helmetStack.getItem().id < 256)
+        if (helmetStack != null && helmetStack.getItem().Id < 256)
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.BipedHead.Transform(1.0F / 16.0F);

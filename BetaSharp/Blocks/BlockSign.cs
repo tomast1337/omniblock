@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSign : BlockWithEntity
 {
-    private static readonly int s_signId = Item.ByName("sign").id;
+    private static readonly int s_signId = Item.ByName("sign").Id;
     private readonly Type _blockEntityType;
     private readonly bool _standing;
 

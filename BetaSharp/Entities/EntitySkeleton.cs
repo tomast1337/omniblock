@@ -7,6 +7,8 @@ namespace BetaSharp.Entities;
 public class EntitySkeleton : EntityMonster
 {
     private static readonly ItemStack s_defaultHeldItem = new(Item.ByName("bow"), 1);
+    private static readonly Item s_arrow = Item.ByName("arrow");
+    private static readonly Item s_bone = Item.ByName("bone");
 
     public EntitySkeleton(IWorldContext world) : base(world) => Texture = "/mob/skeleton.png";
     public override EntityType Type => EntityRegistry.Skeleton;
@@ -54,7 +56,7 @@ public class EntitySkeleton : EntityMonster
         HasAttacked = true;
     }
 
-    protected override int DropItemId => Item.ByName("arrow").id;
+    protected override int DropItem => s_arrow.Id;
 
     protected override void DropFewItems()
     {
@@ -63,14 +65,14 @@ public class EntitySkeleton : EntityMonster
         int i;
         for (i = 0; i < amount; ++i)
         {
-            DropItem(Item.ByName("arrow").id, 1);
+            DropItem(s_arrow.Id, 1);
         }
 
         amount = Random.NextInt(3);
 
         for (i = 0; i < amount; ++i)
         {
-            DropItem(Item.ByName("bone").id, 1);
+            DropItem(s_bone.Id, 1);
         }
     }
 }

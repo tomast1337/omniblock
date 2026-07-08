@@ -19,7 +19,7 @@ internal sealed class DyeBehavior : IItemBehavior
     ];
 
     public int GetTextureId(Item item, int meta)
-        => item.textureId + meta % 8 * 16 + meta / 8;
+        => item._textureId + meta % 8 * 16 + meta / 8;
 
     public string GetItemNameIS(Item item, ItemStack itemStack)
         => item.getItemName() + "." + ColorNames[itemStack.getDamage()];

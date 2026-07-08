@@ -51,7 +51,7 @@ public sealed class MapBehavior : IItemBehavior
     public Packet? GetUpdatePacket(Item item, ItemStack stack, IWorldContext world, EntityPlayer player)
     {
         byte[]? updateData = GetMapState(stack.getDamage(), world).GetPlayerMarkerPacket(player);
-        return updateData == null ? null : MapUpdateS2CPacket.Get((short)item.id, (short)stack.getDamage(), updateData);
+        return updateData == null ? null : MapUpdateS2CPacket.Get((short)item.Id, (short)stack.getDamage(), updateData);
     }
 
     public static MapState GetMapState(int mapId, IWorldContext world)

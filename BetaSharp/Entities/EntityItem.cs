@@ -9,7 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntityItem : Entity
 {
-    private static readonly int s_leatherId = Item.ByName("leather").id;
+    private static readonly int s_leatherId = Item.ByName("leather").Id;
     public readonly float BobPhase = System.Random.Shared.NextSingle() * (float)Math.PI * 2.0f;
     private int _health = 5;
     private int _itemAge;

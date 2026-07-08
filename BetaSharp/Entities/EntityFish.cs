@@ -11,6 +11,7 @@ public class EntityFish : Entity
 {
     private const double PullStrength = 0.1D;
     private static readonly Item s_fishingRod = Item.ByName("fishing_rod");
+    private static readonly Item s_fishRaw = Item.ByName("fish_raw");
     private Entity? _bobber;
     private double _clientVelocityX;
     private double _clientVelocityY;
@@ -391,7 +392,7 @@ public class EntityFish : Entity
         }
         else if (_ticksCatchable > 0)
         {
-            EntityItem fishItem = new(World, X, Y, Z, new ItemStack(Item.ByName("fish_raw")));
+            EntityItem fishItem = new(World, X, Y, Z, new ItemStack(s_fishRaw));
             if (Angler != null)
             {
                 double deltaX = Angler.X - X;

@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockWeb : Block
 {
-    private static readonly int s_stringId = Item.ByName("string").id;
+    private static readonly int s_stringId = Item.ByName("string").Id;
 
     public BlockWeb(int id, int texturePosition) : base(id, texturePosition, Material.Cobweb)
     {

@@ -8,6 +8,7 @@ namespace BetaSharp.Entities;
 
 public sealed class EntityPainting : Entity
 {
+    private static readonly Item s_painting = Item.ByName("painting");
     private const float WallOffset = 9.0F / 16.0F;
     private int _tickCounter;
     public Painting? Art;
@@ -247,6 +248,6 @@ public sealed class EntityPainting : Entity
     {
         if (Dead || World.IsRemote) return;
         MarkDead();
-        World.SpawnEntity(new EntityItem(World, X, Y, Z, new ItemStack(Item.ByName("painting"))));
+        World.SpawnEntity(new EntityItem(World, X, Y, Z, new ItemStack(s_painting)));
     }
 }

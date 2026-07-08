@@ -15,6 +15,8 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityPlayer : EntityLiving
 {
+    private static readonly Item s_apple = Item.ByName("apple");
+    private static readonly Item s_fishingRod = Item.ByName("fishing_rod");
     protected const float AirFlySpeedMult = 5f;
     public readonly InventoryPlayer Inventory;
     public readonly ScreenHandler PlayerScreenHandler;
@@ -306,7 +308,7 @@ public abstract class EntityPlayer : EntityLiving
         VelocityY = 0.1F;
         if (Name is "Notch")
         {
-            DropItem(new ItemStack(Item.ByName("apple"), 1), true);
+            DropItem(new ItemStack(s_apple, 1), true);
         }
 
         Inventory.DropInventory();
@@ -901,7 +903,7 @@ public abstract class EntityPlayer : EntityLiving
     public override int GetItemStackTextureId(ItemStack stack)
     {
         int textureId = base.GetItemStackTextureId(stack);
-        if (stack.ItemId == Item.ByName("fishing_rod").id && FishHook != null)
+        if (stack.ItemId == s_fishingRod.Id && FishHook != null)
         {
             textureId = stack.getTextureId() + 16;
         }

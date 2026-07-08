@@ -6,7 +6,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockRedstoneOre : Block
 {
-    private static readonly int s_redstoneId = Item.ByName("redstone").id;
+    private static readonly int s_redstoneId = Item.ByName("redstone").Id;
     private readonly bool lit;
 
     public BlockRedstoneOre(int id, int textureId, bool lit) : base(id, textureId, Material.Stone)

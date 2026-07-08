@@ -24,15 +24,15 @@ public class ItemStack
     {
     }
 
-    public ItemStack(Item item) : this(item.id, 1, 0)
+    public ItemStack(Item item) : this(item.Id, 1, 0)
     {
     }
 
-    public ItemStack(Item item, int count) : this(item.id, count, 0)
+    public ItemStack(Item item, int count) : this(item.Id, count, 0)
     {
     }
 
-    public ItemStack(Item item, int count, int damage) : this(item.id, count, damage)
+    public ItemStack(Item item, int count, int damage) : this(item.Id, count, damage)
     {
     }
 

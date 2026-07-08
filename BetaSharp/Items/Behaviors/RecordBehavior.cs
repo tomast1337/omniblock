@@ -22,8 +22,8 @@ public sealed class RecordBehavior : IItemBehavior
             return true;
         }
 
-        BlockJukeBox.insertRecord(world, x, y, z, item.id);
-        world.Broadcaster.WorldEvent(1005, x, y, z, item.id);
+        BlockJukeBox.insertRecord(world, x, y, z, item.Id);
+        world.Broadcaster.WorldEvent(1005, x, y, z, item.Id);
         itemStack.ConsumeItem(player);
         return true;
     }

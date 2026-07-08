@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks;
 public class BlockTallGrass : BlockPlant
 {
     private const float HalfSize = 0.4F;
-    private static readonly int s_seedsId = Item.ByName("seeds").id;
+    private static readonly int s_seedsId = Item.ByName("seeds").Id;
 
     public BlockTallGrass(int i, int j) : base(i, j) => setBoundingBox(0.5F - HalfSize, 0.0F, 0.5F - HalfSize, 0.5F + HalfSize, 0.8F, 0.5F + HalfSize);
 

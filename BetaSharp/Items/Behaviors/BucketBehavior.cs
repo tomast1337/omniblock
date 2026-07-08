@@ -11,6 +11,11 @@ internal sealed class BucketBehavior : IItemBehavior
 {
     private readonly int _isFull;
 
+    private static readonly Item s_bucket = Item.ByName("bucket");
+    private static readonly Item s_bucketWater = Item.ByName("bucket_water");
+    private static readonly Item s_bucketLava = Item.ByName("bucket_lava");
+    private static readonly Item s_milk = Item.ByName("milk");
+
     internal BucketBehavior(int isFull) => _isFull = isFull;
 
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
@@ -51,20 +56,20 @@ internal sealed class BucketBehavior : IItemBehavior
                 if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Water && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                 {
                     world.Writer.SetBlock(hitX, hitY, hitZ, 0);
-                    return new ItemStack(Item.ByName("bucket_water"));
+                    return new ItemStack(s_bucketWater);
                 }
 
                 if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Lava && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                 {
                     world.Writer.SetBlock(hitX, hitY, hitZ, 0);
-                    return new ItemStack(Item.ByName("bucket_lava"));
+                    return new ItemStack(s_bucketLava);
                 }
             }
             else
             {
                 if (_isFull < 0)
                 {
-                    return new ItemStack(Item.ByName("bucket"));
+                    return new ItemStack(s_bucket);
                 }
 
                 if (hitResult.Side == 0)
@@ -112,13 +117,13 @@ internal sealed class BucketBehavior : IItemBehavior
                         world.Writer.SetBlock(hitX, hitY, hitZ, _isFull, 0);
                     }
 
-                    return new ItemStack(Item.ByName("bucket"));
+                    return new ItemStack(s_bucket);
                 }
             }
         }
         else if (_isFull == 0 && hitResult.Entity is EntityCow)
         {
-            return new ItemStack(Item.ByName("milk"));
+            return new ItemStack(s_milk);
         }
 
         return itemStack;

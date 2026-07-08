@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks;
 public class BlockRedstoneWire : Block
 {
     private static readonly ThreadLocal<bool> s_wiresProvidePower = new(() => true);
-    private static readonly int s_redstoneId = Item.ByName("redstone").id;
+    private static readonly int s_redstoneId = Item.ByName("redstone").Id;
 
     private readonly HashSet<BlockPos> _blocksNeedingUpdate = [];
 

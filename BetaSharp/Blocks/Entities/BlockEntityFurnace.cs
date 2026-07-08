@@ -10,9 +10,9 @@ namespace BetaSharp.Blocks.Entities;
 
 public class BlockEntityFurnace : BlockEntity, IInventory
 {
-    private static readonly int s_stickId = Item.ByName("stick").id;
-    private static readonly int s_coalId = Item.ByName("coal").id;
-    private static readonly int s_bucketLavaId = Item.ByName("bucket_lava").id;
+    private static readonly int s_stickId = Item.ByName("stick").Id;
+    private static readonly int s_coalId = Item.ByName("coal").Id;
+    private static readonly int s_bucketLavaId = Item.ByName("bucket_lava").Id;
 
     public override BlockEntityType Type => Furnace;
     private ItemStack?[] _inventory = new ItemStack[3];
@@ -196,7 +196,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             return false;
         }
 
-        ItemStack? output = RecipesSmelting.Craft(input.getItem().id);
+        ItemStack? output = RecipesSmelting.Craft(input.getItem().Id);
         if (output is null)
         {
             return false;
@@ -227,7 +227,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
             if (inv0 is null) return;
 
-            ItemStack? outputStack = RecipesSmelting.Craft(inv0.getItem().id);
+            ItemStack? outputStack = RecipesSmelting.Craft(inv0.getItem().Id);
 
             if (outputStack == null) return;
 
@@ -263,7 +263,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             return 0;
         }
 
-        int itemId = itemStack.getItem().id;
+        int itemId = itemStack.getItem().Id;
         return itemId < 256 && Block.Blocks[itemId].material == Material.Wood ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == Block.Sapling.id ? 100 : 0;
     }
 }

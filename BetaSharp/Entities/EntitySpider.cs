@@ -6,6 +6,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySpider : EntityMonster
 {
+    private static readonly Item s_string = Item.ByName("string");
     private const double ViewDistance = 16.0D;
 
     public EntitySpider(IWorldContext world) : base(world)
@@ -25,7 +26,7 @@ public class EntitySpider : EntityMonster
 
     protected override string? DeathSound => "mob.spiderdeath";
 
-    protected override int DropItemId => Item.ByName("string").id;
+    protected override int DropItem => s_string.Id;
 
     protected override bool IsOnLadder => HorizontalCollision;
 

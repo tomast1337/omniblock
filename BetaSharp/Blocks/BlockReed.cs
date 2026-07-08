@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks;
 internal class BlockReed : Block
 {
     private const float HalfWidth = 6.0F / 16.0F;
-    private static readonly int s_sugarCanesId = Item.ByName("sugar_canes").id;
+    private static readonly int s_sugarCanesId = Item.ByName("sugar_canes").Id;
 
     public BlockReed(int id, int textureId) : base(id, Material.Plant)
     {

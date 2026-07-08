@@ -18,7 +18,7 @@ public sealed class ItemJsonDumperTests
             return;
         }
 
-        _ = Item.ByName("stick").id;
+        _ = Item.ByName("stick").Id;
 
         string outDir = Path.Combine(FindRepoRoot(), "BetaSharp", "assets", "item");
         Directory.CreateDirectory(outDir);

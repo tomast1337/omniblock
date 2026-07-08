@@ -6,7 +6,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.Tnt)
 {
-    private static readonly int s_flintAndSteelId = Item.ByName("flint_and_steel").id;
+    private static readonly int s_flintAndSteelId = Item.ByName("flint_and_steel").Id;
 
     public override int GetTexture(Side side) => side switch
     {

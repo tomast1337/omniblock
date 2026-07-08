@@ -29,6 +29,6 @@ class SlotArmor : Slot
         ArmorBehavior? armor = stack.getItem().GetBehavior<ArmorBehavior>();
         return armor != null
             ? armor.ArmorType == armorType
-            : stack.getItem().id == Block.Pumpkin.id && armorType == 0;
+            : stack.getItem().Id == Block.Pumpkin.id && armorType == 0;
     }
 }

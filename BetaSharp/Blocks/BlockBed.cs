@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks;
 
 public class BlockBed : Block
 {
-    private static readonly int s_bedId = Item.ByName("bed").id;
+    private static readonly int s_bedId = Item.ByName("bed").Id;
 
     public static readonly Side[][] BedFacings =
     [

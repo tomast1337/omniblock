@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySheep : EntityAnimal
 {
+    private static readonly Item s_shears = Item.ByName("shears");
     public static readonly float[][] FleeceColorTable =
     [
         [1.0F, 1.0F, 1.0F], [0.95F, 0.7F, 0.2F], [0.9F, 0.5F, 0.85F], [0.6F, 0.7F, 0.95F], [0.9F, 0.9F, 0.2F], [0.5F, 0.8F, 0.1F], [0.95F, 0.7F, 0.8F], [0.3F, 0.3F, 0.3F], [0.6F, 0.6F, 0.6F], [0.3F, 0.6F, 0.7F], [0.7F, 0.4F, 0.9F],
@@ -67,12 +68,12 @@ public class EntitySheep : EntityAnimal
         }
     }
 
-    protected override int DropItemId => Block.Wool.id;
+    protected override int DropItem => Block.Wool.id;
 
     public override bool Interact(EntityPlayer player)
     {
         ItemStack? heldItem = player.Inventory.ItemInHand;
-        if (heldItem == null || heldItem.ItemId != Item.ByName("shears").id || IsSheared) return false;
+        if (heldItem == null || heldItem.ItemId != s_shears.Id || IsSheared) return false;
 
         if (!World.IsRemote)
         {

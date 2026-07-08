@@ -234,7 +234,7 @@ public sealed class BlockDispenserTests
 
         Block.Dispenser.onTick(DispenserTick(world, 6, 64, 6));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityItem ei && ei.Stack.ItemId == Item.ByName("stick").id);
+        Assert.Contains(world.Entities.Entities, e => e is EntityItem ei && ei.Stack.ItemId == Item.ByName("stick").Id);
     }
 
     [Fact]

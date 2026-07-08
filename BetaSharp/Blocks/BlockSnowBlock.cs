@@ -5,7 +5,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSnowBlock : Block
 {
-    private static readonly int s_snowballId = Item.ByName("snowball").id;
+    private static readonly int s_snowballId = Item.ByName("snowball").Id;
 
     public BlockSnowBlock(int id, int textureId) : base(id, textureId, Material.SnowBlock) => setTickRandomly(true);
 
