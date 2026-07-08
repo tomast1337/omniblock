@@ -10,15 +10,13 @@ internal class BlockEntityNote : BlockEntity
     public sbyte note;
     public bool powered = false;
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
         nbt.SetByte("note", note);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
         note = nbt.GetByte("note");
         if (note < 0)
         {

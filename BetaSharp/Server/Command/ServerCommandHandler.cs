@@ -81,6 +81,8 @@ internal class ServerCommandHandler : ICommandHandler
         // Info commands
         Register(new ListCommand());
         Register(new DataCommand());
+        Register(new BlockCommand());
+
 
         // World commands
         Register(new TimeCommand());

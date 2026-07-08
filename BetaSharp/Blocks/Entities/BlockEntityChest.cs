@@ -65,9 +65,8 @@ internal class BlockEntityChest : BlockEntity, IInventory
         return World.Entities.GetBlockEntity<BlockEntityChest>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");
         _inventory = new ItemStack[Size];
 
@@ -82,9 +81,8 @@ internal class BlockEntityChest : BlockEntity, IInventory
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
         NBTTagList itemList = new();
 
         for (int slotIndex = 0; slotIndex < _inventory.Length; ++slotIndex)

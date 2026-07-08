@@ -10,7 +10,7 @@ using Math = System.Math;
 
 namespace BetaSharp.Entities;
 
-public abstract class Entity
+public abstract class Entity : IEntity
 {
     private static int s_nextEntityId;
     private readonly SyncedProperty<byte> _flags;
@@ -29,6 +29,7 @@ public abstract class Entity
 
     public abstract EntityType? Type { get; }
     public int ID { get; set; } = s_nextEntityId++;
+    public int GetId() => ID;
 
     /// <summary>
     ///     Multiplayer for rendering, based of the render distance,

@@ -120,7 +120,7 @@ internal class RegionChunkStorage : IChunkStorage
         foreach (BlockEntity blockEntity in chunk.BlockEntities.Values)
         {
             entityTag = new NBTTagCompound();
-            blockEntity.writeNbt(entityTag);
+            blockEntity.Write(entityTag);
             blockEntityTags.SetTag(entityTag);
         }
 

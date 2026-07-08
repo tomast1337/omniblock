@@ -69,9 +69,8 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         return World.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");
         _inventory = new ItemStack[Size];
 
@@ -90,9 +89,8 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         FuelTime = GetFuelTime(_inventory[1]);
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
         nbt.SetShort("BurnTime", (short)BurnTime);
         nbt.SetShort("CookTime", (short)CookTime);
         NBTTagList itemList = new();
@@ -129,7 +127,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public bool IsBurning => BurnTime > 0;
 
-    public override void tick(EntityManager entities)
+    public override void Tick()
     {
         bool wasBurning = BurnTime > 0;
         bool stateChanged = false;

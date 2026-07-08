@@ -87,9 +87,8 @@ public class BlockEntityDispenser : BlockEntity, IInventory
         return null;
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
-        base.readNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");
         _itemStacks = new ItemStack[Size];
 
@@ -104,9 +103,8 @@ public class BlockEntityDispenser : BlockEntity, IInventory
         }
     }
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
         NBTTagList itemList = new();
 
 

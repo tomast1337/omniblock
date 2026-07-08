@@ -313,7 +313,7 @@ public class EntityManager
                 BlockEntity blockEntity = BlockEntities[i];
                 if (!blockEntity.isRemoved())
                 {
-                    blockEntity.tick(this);
+                    blockEntity.Tick();
                 }
 
                 if (blockEntity.isRemoved())
