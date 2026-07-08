@@ -56,10 +56,10 @@ public class BlockEntityPiston : BlockEntity
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
         }
 
-        Box? pushCollisionBox = PistonMovingBehavior.GetPushedBlockCollisionShape(BlockRegistry.Get("moving_piston"), World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
+        Box? pushCollisionBox = PistonMovingBehavior.GetPushedBlockCollisionShape(BlockRegistry.Get("moving_piston"), World!.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
         if (pushCollisionBox == null) return;
 
-        var entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);
+        var entitiesToPush = World!.Entities.GetEntities(null!, pushCollisionBox.Value);
         if (entitiesToPush.Count <= 0) return;
 
         List<Entity> pushedEntities = [];
@@ -80,22 +80,22 @@ public class BlockEntityPiston : BlockEntity
 
     private void FinalizeBlock()
     {
-        if (World.Reader.GetBlockId(X, Y, Z) == BlockRegistry.Get("moving_piston").Id)
+        if (World!.Reader.GetBlockId(X, Y, Z) == BlockRegistry.Get("moving_piston").Id)
         {
-            World.Writer.SetBlock(X, Y, Z, PushedBlockId, PushedBlockData);
-            if (!World.IsRemote)
+            World!.Writer.SetBlock(X, Y, Z, PushedBlockId, PushedBlockData);
+            if (!World!.IsRemote)
             {
-                World.Broadcaster.NotifyNeighbors(X, Y, Z, PushedBlockId);
-                World.Broadcaster.BlockUpdateEvent(X, Y, Z);
+                World!.Broadcaster.NotifyNeighbors(X, Y, Z, PushedBlockId);
+                World!.Broadcaster.BlockUpdateEvent(X, Y, Z);
 
                 if (PushedBlockId == BlockRegistry.Get("piston").Id || PushedBlockId == BlockRegistry.Get("sticky_piston").Id)
                 {
-                    World.TickScheduler.ScheduleBlockUpdate(X, Y, Z, PushedBlockId, 1);
+                    World!.TickScheduler.ScheduleBlockUpdate(X, Y, Z, PushedBlockId, 1);
                 }
             }
         }
 
-        World.Entities.RemoveBlockEntity(X, Y, Z);
+        World!.Entities.RemoveBlockEntity(X, Y, Z);
         MarkRemoved();
     }
 

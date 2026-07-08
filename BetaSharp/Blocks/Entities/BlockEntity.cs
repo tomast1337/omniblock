@@ -26,7 +26,10 @@ public abstract class BlockEntity : IEntity
 
     private bool _removed;
 
-    public IWorldContext World = null!;
+    // Genuinely null until EntityManager.SetBlockEntity/Chunk.SetBlockEntity attaches this entity
+    // to its world — freshly constructed entities (e.g. PistonMovingBehavior.CreatePistonBlockEntity)
+    // are checked via IsRemoved() before that attachment happens.
+    public IWorldContext? World;
 
     public int X;
     public int Y;
@@ -38,7 +41,8 @@ public abstract class BlockEntity : IEntity
 
     protected abstract BlockEntityType Type { get; }
 
-    public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
+    // Only valid once attached; PushedBlockData is read after that point.
+    public int PushedBlockData => World!.Reader.GetBlockMeta(X, Y, Z);
 
     private static BlockEntityType Register<T>(Func<T> factory, string id) where T : BlockEntity
     {
@@ -103,8 +107,8 @@ public abstract class BlockEntity : IEntity
 
     public void MarkDirty()
     {
-        if (World.IsRemote) return;
-        World.Broadcaster.UpdateBlockEntity(X, Y, Z, this);
+        if (World is not { } world || world.IsRemote) return;
+        world.Broadcaster.UpdateBlockEntity(X, Y, Z, this);
     }
 
     public double DistanceFrom(double x, double y, double z)
@@ -115,14 +119,17 @@ public abstract class BlockEntity : IEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block GetBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
+    public Block GetBlock() => Block.Blocks[World!.Reader.GetBlockId(X, Y, Z)];
 
     public virtual Packet? CreateUpdatePacket() => null;
 
     public bool IsRemoved()
     {
         if (_removed) return true;
-        int id = World.Reader.GetBlockId(X, Y, Z);
+        // Not yet attached to a world (e.g. checked by SetBlockEntity right after construction,
+        // before World/X/Y/Z are assigned) — can't be removed if it was never placed.
+        if (World is not { } world) return false;
+        int id = world.Reader.GetBlockId(X, Y, Z);
         return id == 0 || !Block.BlocksWithEntity[id];
     }
 

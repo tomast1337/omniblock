@@ -52,7 +52,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
 
     public int MaxCountPerStack => 64;
 
-    public bool CanPlayerUse(EntityPlayer player) => World.Entities.GetBlockEntity<BlockEntityDispenser>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
+    public bool CanPlayerUse(EntityPlayer player) => World!.Entities.GetBlockEntity<BlockEntityDispenser>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
     public ItemStack? GetItemToDispose()
     {

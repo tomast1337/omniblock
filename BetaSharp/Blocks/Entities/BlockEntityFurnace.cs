@@ -63,7 +63,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public int MaxCountPerStack => 64;
 
-    public bool CanPlayerUse(EntityPlayer player) => World.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
+    public bool CanPlayerUse(EntityPlayer player) => World!.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
     protected override void ReadNbt(NBTTagCompound nbt)
     {
@@ -123,7 +123,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             --BurnTime;
         }
 
-        if (!World.IsRemote)
+        if (!World!.IsRemote)
         {
             if (BurnTime == 0 && CanAcceptRecipeOutput())
             {

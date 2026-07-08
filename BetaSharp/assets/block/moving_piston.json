@@ -8,6 +8,7 @@
   "NonOpaque": true,
   "RenderType": "Entity",
   "NotFullCube": true,
+  "TileEntity": "piston",
   "Behaviors": {
     "Physics": {
       "Type": "piston_moving"
