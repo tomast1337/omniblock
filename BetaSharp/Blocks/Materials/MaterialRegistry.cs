@@ -49,7 +49,7 @@ public static class MaterialRegistry
     {
         if (s_registry.IsInitialized) return;
 
-        DataAssetLoader<MaterialDefinition> loader = RegistryDefinitions.Materials.CreateLoader();
+        DataAssetLoader<MaterialDefinition> loader = (DataAssetLoader<MaterialDefinition>)RegistryDefinitions.Materials.CreateLoader();
         loader.LoadFromPaths(null, null, null);
         if (loader.HasErrors)
         {

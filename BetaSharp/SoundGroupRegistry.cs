@@ -23,7 +23,7 @@ public static class SoundGroupRegistry
     {
         if (s_registry.IsInitialized) return;
 
-        DataAssetLoader<SoundGroupDefinition> loader = RegistryDefinitions.SoundGroups.CreateLoader();
+        DataAssetLoader<SoundGroupDefinition> loader = (DataAssetLoader<SoundGroupDefinition>)RegistryDefinitions.SoundGroups.CreateLoader();
         loader.LoadFromPaths(null, null, null);
         if (loader.HasErrors)
         {

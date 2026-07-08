@@ -67,7 +67,7 @@ public static class DefaultRegistries
 
         // Now safe: items are fully loaded, so Item.ByName lookups inside Block's
         // static field initializers (behaviors) will succeed.
-        _ = Block.Stone.id;
+        _ = Block.Stone.Id;
 
         Stats.Stats.InitializeItemStats();
         Stats.Stats.InitializeExtendedItemStats();

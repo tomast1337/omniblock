@@ -54,7 +54,7 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
         bool emits = @event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower();
         bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                          @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
-        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].CanEmitRedstonePower())return;
+        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].CanEmitRedstonePower()) return;
         if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
     }
 

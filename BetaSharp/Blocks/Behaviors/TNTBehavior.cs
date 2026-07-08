@@ -19,7 +19,7 @@ internal sealed class TNTBehavior : IBlockPhysics, IBlockLifecycle, IBlockIntera
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (!@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))return;
+        if (!@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z)) return;
         Ignite(block, @event.World, @event.X, @event.Y, @event.Z);
     }
 

@@ -14,13 +14,14 @@ namespace BetaSharp.Blocks.Behaviors;
 internal sealed class SnowBehavior : IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private const float DropSpread = 0.7F;
+    private static readonly int s_snowballId = Item.ByName("snowball").Id;
 
     public void OnAfterBreak(Block block, OnAfterBreakEvent @event)
     {
         double offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
-        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(Item.ByName("snowball").Id, 1, 0))
+        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(s_snowballId, 1, 0))
         {
             DelayBeforeCanPickup = 10
         };
@@ -29,7 +30,7 @@ internal sealed class SnowBehavior : IBlockPhysics, IBlockTicker, IBlockLifecycl
         @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Item.ByName("snowball").Id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => s_snowballId;
 
     public int GetDroppedItemCount(Block block, int defaultCount) => 0;
 

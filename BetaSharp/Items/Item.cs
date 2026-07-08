@@ -21,7 +21,7 @@ public class Item
         [Block.GrassBlock, Block.Dirt, Block.Sand, Block.Gravel, Block.Snow, Block.SnowBlock, Block.Clay, Block.Farmland];
 
     private static Block[]? s_pickaxeBlocksLazy;
-    internal static Block[] s_pickaxeBlocks => s_pickaxeBlocksLazy ??= [ Block.Cobblestone, Block.DoubleSlab, Block.Slab, Block.Stone, Block.Sandstone, Block.MossyCobblestone, Block.IronOre, Block.IronBlock, Block.CoalOre, Block.GoldBlock, Block.GoldOre, Block.DiamondOre, Block.DiamondBlock, Block.Ice, Block.Netherrack, Block.LapisOre, Block.LapisBlock, Block.RedstoneOre, Block.CobblestoneStairs];
+    internal static Block[] s_pickaxeBlocks => s_pickaxeBlocksLazy ??= [Block.Cobblestone, Block.DoubleSlab, Block.Slab, Block.Stone, Block.Sandstone, Block.MossyCobblestone, Block.IronOre, Block.IronBlock, Block.CoalOre, Block.GoldBlock, Block.GoldOre, Block.DiamondOre, Block.DiamondBlock, Block.Ice, Block.Netherrack, Block.LapisOre, Block.LapisBlock, Block.RedstoneOre, Block.CobblestoneStairs];
 
     private static Block[]? s_axeBlocksLazy;
     internal static Block[] s_axeBlocks => s_axeBlocksLazy ??= [Block.Planks, Block.Bookshelf, Block.Log, Block.Chest, Block.CraftingTable, Block.WoodenStairs, Block.Ladder, Block.Trapdoor, Block.Fence];
@@ -219,6 +219,6 @@ public class Item
             return material.HarvestLevel >= 2;
         }
 
-        return block.material == Material.Stone || block.material == Material.Metal;
+        return block.Material == Material.Stone || block.Material == Material.Metal;
     };
 }

@@ -16,7 +16,7 @@ internal sealed class HoeBehavior : IItemBehavior
     {
         int targetBlockId = world.Reader.GetBlockId(x, y, z);
         int blockAbove = world.Reader.GetBlockId(x, y + 1, z);
-        if ((meta == 0 || blockAbove != 0 || targetBlockId != Block.GrassBlock.id) && targetBlockId != Block.Dirt.id)
+        if ((meta == 0 || blockAbove != 0 || targetBlockId != Block.GrassBlock.Id) && targetBlockId != Block.Dirt.Id)
         {
             return false;
         }
@@ -28,7 +28,7 @@ internal sealed class HoeBehavior : IItemBehavior
             return true;
         }
 
-        world.Writer.SetBlock(x, y, z, block.id);
+        world.Writer.SetBlock(x, y, z, block.Id);
         itemStack.DamageItem(1, player);
         return true;
     }

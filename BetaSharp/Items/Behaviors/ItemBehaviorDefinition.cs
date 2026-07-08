@@ -129,8 +129,8 @@ public sealed class BucketBehaviorDefinition : ItemBehaviorDefinition
 
     public override IItemBehavior Build() => new BucketBehavior(Liquid switch
     {
-        "water" => Block.FlowingWater.id,
-        "lava" => Block.FlowingLava.id,
+        "water" => Block.FlowingWater.Id,
+        "lava" => Block.FlowingLava.Id,
         "milk" => -1,
         _ => 0,
     });
@@ -166,7 +166,7 @@ public sealed class SeedsBehaviorDefinition : ItemBehaviorDefinition
     public override IItemBehavior Build()
     {
         var block = Block.ByName(PlacesBlock!);
-        return new SeedsBehavior(block!.id);
+        return new SeedsBehavior(block!.Id);
     }
 }
 

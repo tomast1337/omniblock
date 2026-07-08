@@ -1,3 +1,4 @@
+using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
