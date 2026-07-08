@@ -47,7 +47,7 @@ public abstract class EntityRenderer
     {
         GLManager.GL.Disable(GLEnum.Lighting);
 
-        int textureId = Block.Fire.TextureId;
+        int textureId = BlockRegistry.Get("fire").TextureId;
         int texX = (textureId & 15) << 4;
         int texY = textureId & 240;
 

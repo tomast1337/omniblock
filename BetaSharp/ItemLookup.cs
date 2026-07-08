@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Items;
 using BetaSharp.Registries;
@@ -136,17 +135,11 @@ internal static class ItemLookup
 
         s_lookupTablesBuilt = true;
 
-        IEnumerable<FieldInfo> blockFields = typeof(Block).GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Where(f => f.FieldType.IsAssignableTo(typeof(Block)));
-        foreach (FieldInfo field in blockFields)
-        {
-            if (field.GetValue(null) is Block block)
-            {
-                s_itemNameToId.TryAdd(field.Name.ToLower(), block.Id);
-                BuildItemLookupAlias(block);
-            }
-        }
-
+        // Standalone items are registered FIRST: a handful of names name both a block and an
+        // unrelated standalone item with the same base name (bed, cake, clay, sign, wheat — the
+        // block's own drop is that item, e.g. the Clay block drops the Clay item). TryAdd below
+        // means whichever loop runs first wins a shared name, and a loot table entry naming one
+        // of these always means the holdable item, never the block itself.
         foreach (ItemDefinition definition in DefaultRegistries.Items)
         {
             ResourceLocation? location = DefaultRegistries.Items.GetKey(definition);
@@ -159,6 +152,25 @@ internal static class ItemLookup
             {
                 BuildItemLookupAlias(item);
             }
+        }
+
+        for (int id = 0; id < Block.Blocks.Length; id++)
+        {
+            if (Block.Blocks[id] is not { } block) continue;
+
+            if (BlockRegistry.TryGetName(id) is { } name)
+            {
+                s_itemNameToId.TryAdd(name, id);
+
+                // Recipes and other data predate the JSON migration's snake_case convention and
+                // reference the old field-name-derived form (e.g. "brownmushroom", not
+                // "brown_mushroom") — collapsing underscores out of the new name reconstructs it
+                // exactly, since the old form was always just the field name lowercased with no
+                // separators. Registered additively so both forms keep resolving.
+                s_itemNameToId.TryAdd(name.Replace("_", ""), id);
+            }
+
+            BuildItemLookupAlias(block);
         }
     }
 

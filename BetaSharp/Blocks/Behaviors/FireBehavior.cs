@@ -7,8 +7,8 @@ namespace BetaSharp.Blocks.Behaviors;
 /// <summary>
 ///     Fire: per-block-id burn/spread chance registry (vanilla Beta 1.7.3 values), age-driven
 ///     extinguishing, and neighbor ignition. The registry is built in <see cref="OnInit" /> rather
-///     than the constructor, since it references other block statics (<c>Block.Fence</c>,
-///     <c>Block.TNT</c>, ...) that may not all be assigned yet at behavior-construction time —
+///     than the constructor, since it references other block statics (<c>BlockRegistry.Get("fence")</c>,
+///     <c>BlockRegistry.Get("tnt")</c>, ...) that may not all be assigned yet at behavior-construction time —
 ///     <see cref="Block.Init" /> runs only after every block's static field is set, regardless of
 ///     declaration order.
 /// </summary>
@@ -20,20 +20,20 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
 
     public void OnInit(Block block)
     {
-        RegisterFlammableBlock(Block.Planks.Id, 5, 20);
-        RegisterFlammableBlock(Block.Fence.Id, 5, 20);
-        RegisterFlammableBlock(Block.WoodenStairs.Id, 5, 20);
-        RegisterFlammableBlock(Block.Log.Id, 5, 5);
-        RegisterFlammableBlock(Block.Leaves.Id, 30, 60);
-        RegisterFlammableBlock(Block.Bookshelf.Id, 30, 20);
-        RegisterFlammableBlock(Block.TNT.Id, 15, 100);
-        RegisterFlammableBlock(Block.Grass.Id, 60, 100);
-        RegisterFlammableBlock(Block.Wool.Id, 30, 60);
+        RegisterFlammableBlock(BlockRegistry.Get("planks").Id, 5, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("fence").Id, 5, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("wooden_stairs").Id, 5, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("log").Id, 5, 5);
+        RegisterFlammableBlock(BlockRegistry.Get("leaves").Id, 30, 60);
+        RegisterFlammableBlock(BlockRegistry.Get("bookshelf").Id, 30, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("tnt").Id, 15, 100);
+        RegisterFlammableBlock(BlockRegistry.Get("grass").Id, 60, 100);
+        RegisterFlammableBlock(BlockRegistry.Get("wool").Id, 30, 60);
     }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Obsidian.Id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("obsidian").Id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
         {
             return;
         }
@@ -70,7 +70,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
             return;
         }
 
-        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Netherrack.Id;
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("netherrack").Id;
         if (!block.CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -249,7 +249,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
         int targetSpreadChance = _spreadChances[level.Reader.GetBlockId(x, y, z)];
         if (random.NextInt(spreadFactor) < targetSpreadChance)
         {
-            bool isTnt = level.Reader.GetBlockId(x, y, z) == Block.TNT.Id;
+            bool isTnt = level.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("tnt").Id;
             if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
             {
                 int newFireAge = currentAge + random.NextInt(5) / 4;
@@ -267,7 +267,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
 
             if (isTnt)
             {
-                Block.TNT.OnMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
+                BlockRegistry.Get("tnt").OnMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
             }
         }
     }

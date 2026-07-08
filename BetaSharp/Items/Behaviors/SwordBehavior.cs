@@ -17,7 +17,7 @@ internal sealed class SwordBehavior : IItemBehavior
     public void Apply(Item item) => item.setMaxDamage(_toolMaterial.MaxUses);
 
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)
-        => block.Id == Block.Cobweb.Id ? 15.0F : 1.5F;
+        => block.Id == BlockRegistry.Get("cobweb").Id ? 15.0F : 1.5F;
 
     public bool PostHit(Item item, ItemStack itemStack, EntityLiving target, EntityPlayer player)
     {
@@ -35,5 +35,5 @@ internal sealed class SwordBehavior : IItemBehavior
 
     public bool IsHandheld(Item item) => true;
 
-    public bool IsSuitableFor(Item item, Block block) => block.Id == Block.Cobweb.Id;
+    public bool IsSuitableFor(Item item, Block block) => block.Id == BlockRegistry.Get("cobweb").Id;
 }

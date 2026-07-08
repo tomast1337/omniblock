@@ -18,13 +18,13 @@ public class Item
 
     private static Block[]? s_spadeBlocksLazy;
     internal static Block[] s_spadeBlocks => s_spadeBlocksLazy ??=
-        [Block.GrassBlock, Block.Dirt, Block.Sand, Block.Gravel, Block.Snow, Block.SnowBlock, Block.Clay, Block.Farmland];
+        [BlockRegistry.Get("grass_block"), BlockRegistry.Get("dirt"), BlockRegistry.Get("sand"), BlockRegistry.Get("gravel"), BlockRegistry.Get("snow"), BlockRegistry.Get("snow_block"), BlockRegistry.Get("clay"), BlockRegistry.Get("farmland")];
 
     private static Block[]? s_pickaxeBlocksLazy;
-    internal static Block[] s_pickaxeBlocks => s_pickaxeBlocksLazy ??= [Block.Cobblestone, Block.DoubleSlab, Block.Slab, Block.Stone, Block.Sandstone, Block.MossyCobblestone, Block.IronOre, Block.IronBlock, Block.CoalOre, Block.GoldBlock, Block.GoldOre, Block.DiamondOre, Block.DiamondBlock, Block.Ice, Block.Netherrack, Block.LapisOre, Block.LapisBlock, Block.RedstoneOre, Block.CobblestoneStairs];
+    internal static Block[] s_pickaxeBlocks => s_pickaxeBlocksLazy ??= [BlockRegistry.Get("cobblestone"), BlockRegistry.Get("double_slab"), BlockRegistry.Get("slab"), BlockRegistry.Get("stone"), BlockRegistry.Get("sandstone"), BlockRegistry.Get("mossy_cobblestone"), BlockRegistry.Get("iron_ore"), BlockRegistry.Get("iron_block"), BlockRegistry.Get("coal_ore"), BlockRegistry.Get("gold_block"), BlockRegistry.Get("gold_ore"), BlockRegistry.Get("diamond_ore"), BlockRegistry.Get("diamond_block"), BlockRegistry.Get("ice"), BlockRegistry.Get("netherrack"), BlockRegistry.Get("lapis_ore"), BlockRegistry.Get("lapis_block"), BlockRegistry.Get("redstone_ore"), BlockRegistry.Get("cobblestone_stairs")];
 
     private static Block[]? s_axeBlocksLazy;
-    internal static Block[] s_axeBlocks => s_axeBlocksLazy ??= [Block.Planks, Block.Bookshelf, Block.Log, Block.Chest, Block.CraftingTable, Block.WoodenStairs, Block.Ladder, Block.Trapdoor, Block.Fence];
+    internal static Block[] s_axeBlocks => s_axeBlocksLazy ??= [BlockRegistry.Get("planks"), BlockRegistry.Get("bookshelf"), BlockRegistry.Get("log"), BlockRegistry.Get("chest"), BlockRegistry.Get("crafting_table"), BlockRegistry.Get("wooden_stairs"), BlockRegistry.Get("ladder"), BlockRegistry.Get("trapdoor"), BlockRegistry.Get("fence")];
 
     /// <summary>
     /// Resolves an item by its registry path (e.g. <c>"apple"</c>, <c>"shovel_iron"</c> —
@@ -189,32 +189,32 @@ public class Item
 
     internal static Func<Block, bool> PickaxeSuitableFor(ToolMaterial material) => block =>
     {
-        if (block == Block.Obsidian)
+        if (block == BlockRegistry.Get("obsidian"))
         {
             return material.HarvestLevel == 3;
         }
 
-        if (block == Block.DiamondBlock || block == Block.DiamondOre)
+        if (block == BlockRegistry.Get("diamond_block") || block == BlockRegistry.Get("diamond_ore"))
         {
             return material.HarvestLevel >= 2;
         }
 
-        if (block == Block.GoldBlock || block == Block.GoldOre)
+        if (block == BlockRegistry.Get("gold_block") || block == BlockRegistry.Get("gold_ore"))
         {
             return material.HarvestLevel >= 2;
         }
 
-        if (block == Block.IronBlock || block == Block.IronOre)
+        if (block == BlockRegistry.Get("iron_block") || block == BlockRegistry.Get("iron_ore"))
         {
             return material.HarvestLevel >= 1;
         }
 
-        if (block == Block.LapisBlock || block == Block.LapisOre)
+        if (block == BlockRegistry.Get("lapis_block") || block == BlockRegistry.Get("lapis_ore"))
         {
             return material.HarvestLevel >= 1;
         }
 
-        if (block == Block.RedstoneOre || block == Block.LitRedstoneOre)
+        if (block == BlockRegistry.Get("redstone_ore") || block == BlockRegistry.Get("lit_redstone_ore"))
         {
             return material.HarvestLevel >= 2;
         }

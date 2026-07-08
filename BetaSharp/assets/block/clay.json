@@ -12,7 +12,7 @@
   "LootTable": {
     "Entries": [
       {
-        "ItemName": "item.clay",
+        "ItemName": "clay",
         "Weight": 1
       }
     ],

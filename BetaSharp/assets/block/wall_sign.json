@@ -24,7 +24,7 @@
   "LootTable": {
     "Entries": [
       {
-        "ItemName": "item.sign",
+        "ItemName": "sign",
         "Weight": 1
       }
     ],

@@ -54,7 +54,7 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
                     continue;
                 }
 
-                @event.World.Writer.SetBlock(x, y, z, Block.Fire.Id);
+                @event.World.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").Id);
                 return;
             }
 

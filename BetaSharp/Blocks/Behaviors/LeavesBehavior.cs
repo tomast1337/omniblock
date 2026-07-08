@@ -40,7 +40,7 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                 for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
                     int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != Block.Leaves.Id)
+                    if (blockId != BlockRegistry.Get("leaves").Id)
                     {
                         continue;
                     }
@@ -58,12 +58,12 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
         if (ctx.World.IsRemote || hand == null || hand.ItemId != s_shearsId) return;
 
         ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
-        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(Block.Leaves.Id, 1, ctx.Meta & 3));
+        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(BlockRegistry.Get("leaves").Id, 1, ctx.Meta & 3));
     }
 
     public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Block.Sapling.Id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => BlockRegistry.Get("sapling").Id;
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -86,11 +86,11 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                     for (int dy = -DecayRadius; dy <= DecayRadius; ++dy)
                     {
                         int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
-                        if (blockId == Block.Log.Id)
+                        if (blockId == BlockRegistry.Get("log").Id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
                         }
-                        else if (blockId == Block.Leaves.Id)
+                        else if (blockId == BlockRegistry.Get("leaves").Id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
                         }

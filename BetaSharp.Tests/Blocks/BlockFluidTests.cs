@@ -10,48 +10,48 @@ public sealed class BlockFluidTests
     public void LavaNeighborUpdate_WithMetaZeroAndAdjacentWater_HardensToObsidian()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Lava.Id, 0);
-        world.ReaderWriter.SetInitial(1, 64, 0, Block.Water.Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lava").Id, 0);
+        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("water").Id, 0);
 
-        Block.Lava.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, Block.Water.Id));
+        BlockRegistry.Get("lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, BlockRegistry.Get("water").Id));
 
-        Assert.Equal(Block.Obsidian.Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(BlockRegistry.Get("obsidian").Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     [Fact]
     public void FlowingLavaNeighborUpdate_WithMetaBetweenOneAndFourAndAdjacentWater_HardensToCobblestone()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.FlowingLava.Id, 3);
-        world.ReaderWriter.SetInitial(1, 64, 0, Block.Water.Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("flowing_lava").Id, 3);
+        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("water").Id, 0);
 
-        Block.FlowingLava.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 3, Block.Water.Id));
+        BlockRegistry.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 3, BlockRegistry.Get("water").Id));
 
-        Assert.Equal(Block.Cobblestone.Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(BlockRegistry.Get("cobblestone").Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     [Fact]
     public void FlowingLavaNeighborUpdate_WithMetaFourAndAdjacentWater_HardensToCobblestone()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.FlowingLava.Id, 4);
-        world.ReaderWriter.SetInitial(1, 64, 0, Block.Water.Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("flowing_lava").Id, 4);
+        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("water").Id, 0);
 
-        Block.FlowingLava.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 4, Block.Water.Id));
+        BlockRegistry.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 4, BlockRegistry.Get("water").Id));
 
-        Assert.Equal(Block.Cobblestone.Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(BlockRegistry.Get("cobblestone").Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     [Fact]
     public void FlowingLavaNeighborUpdate_WithMetaAboveFourAndAdjacentWater_DoesNotHarden()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.FlowingLava.Id, 5);
-        world.ReaderWriter.SetInitial(1, 64, 0, Block.Water.Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("flowing_lava").Id, 5);
+        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("water").Id, 0);
 
-        Block.FlowingLava.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 5, Block.Water.Id));
+        BlockRegistry.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 5, BlockRegistry.Get("water").Id));
 
-        Assert.Equal(Block.FlowingLava.Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(BlockRegistry.Get("flowing_lava").Id, world.Reader.GetBlockId(0, 64, 0));
         Assert.Equal(5, world.Reader.GetBlockMeta(0, 64, 0));
     }
 
@@ -59,14 +59,14 @@ public sealed class BlockFluidTests
     public void LavaNeighborUpdate_WithOnlyWaterBelow_DoesNotHarden()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Lava.Id, 0);
-        world.ReaderWriter.SetInitial(0, 63, 0, Block.Water.Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lava").Id, 0);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("water").Id, 0);
 
-        Block.Lava.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, Block.Water.Id));
+        BlockRegistry.Get("lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, BlockRegistry.Get("water").Id));
 
         // Water below is not adjacent for lava/water hardening; still lava may convert to flowing on neighbor tick.
-        Assert.NotEqual(Block.Obsidian.Id, world.Reader.GetBlockId(0, 64, 0));
-        Assert.NotEqual(Block.Cobblestone.Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.NotEqual(BlockRegistry.Get("obsidian").Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.NotEqual(BlockRegistry.Get("cobblestone").Id, world.Reader.GetBlockId(0, 64, 0));
         Assert.Equal(0, world.Reader.GetBlockMeta(0, 64, 0));
     }
 
@@ -74,12 +74,12 @@ public sealed class BlockFluidTests
     public void LavaNeighborUpdate_WithWaterAbove_HardensToObsidian()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.Lava.Id, 0);
-        world.ReaderWriter.SetInitial(0, 65, 0, Block.Water.Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lava").Id, 0);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("water").Id, 0);
 
-        Block.Lava.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, Block.Water.Id));
+        BlockRegistry.Get("lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 0, BlockRegistry.Get("water").Id));
 
-        Assert.Equal(Block.Obsidian.Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(BlockRegistry.Get("obsidian").Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     [Fact]
@@ -88,10 +88,10 @@ public sealed class BlockFluidTests
         FakeWorldContext world = new();
         RecordingWorldEventListener listener = new();
         world.Broadcaster.AddWorldAccess(listener);
-        world.ReaderWriter.SetInitial(0, 64, 0, Block.FlowingLava.Id, 3);
-        world.ReaderWriter.SetInitial(1, 64, 0, Block.Water.Id, 0);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("flowing_lava").Id, 3);
+        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("water").Id, 0);
 
-        Block.FlowingLava.NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 3, Block.Water.Id));
+        BlockRegistry.Get("flowing_lava").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 3, BlockRegistry.Get("water").Id));
 
         Assert.Contains(listener.WorldEvents, evt => evt.EventId == 1004 && evt.X == 0 && evt.Y == 64 && evt.Z == 0);
         Assert.Equal(8, listener.LargeSmokeParticles);

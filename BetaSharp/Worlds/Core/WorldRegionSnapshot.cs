@@ -131,7 +131,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         if (checkStairs)
         {
             int blockId = GetBlockId(x, y, z);
-            if (blockId == Block.Slab.Id || blockId == Block.Farmland.Id || blockId == Block.WoodenStairs.Id || blockId == Block.CobblestoneStairs.Id)
+            if (blockId == BlockRegistry.Get("slab").Id || blockId == BlockRegistry.Get("farmland").Id || blockId == BlockRegistry.Get("wooden_stairs").Id || blockId == BlockRegistry.Get("cobblestone_stairs").Id)
             {
                 int maxLight = GetLightValueExt(x, y + 1, z, false);
                 maxLight = Math.Max(maxLight, GetLightValueExt(x + 1, y, z, false)); // East

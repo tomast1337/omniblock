@@ -159,7 +159,7 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
 
         foreach (BlockPos pos in updateList)
         {
-            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, Block.RedstoneWire.Id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, BlockRegistry.Get("redstone_wire").Id);
         }
     }
 
@@ -243,19 +243,19 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
 
     private static void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y, z) != Block.RedstoneWire.Id) return;
-        level.Broadcaster.NotifyNeighbors(x, y, z, Block.RedstoneWire.Id);
-        level.Broadcaster.NotifyNeighbors(x - 1, y, z, Block.RedstoneWire.Id);
-        level.Broadcaster.NotifyNeighbors(x + 1, y, z, Block.RedstoneWire.Id);
-        level.Broadcaster.NotifyNeighbors(x, y, z - 1, Block.RedstoneWire.Id);
-        level.Broadcaster.NotifyNeighbors(x, y, z + 1, Block.RedstoneWire.Id);
-        level.Broadcaster.NotifyNeighbors(x, y - 1, z, Block.RedstoneWire.Id);
-        level.Broadcaster.NotifyNeighbors(x, y + 1, z, Block.RedstoneWire.Id);
+        if (level.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("redstone_wire").Id) return;
+        level.Broadcaster.NotifyNeighbors(x, y, z, BlockRegistry.Get("redstone_wire").Id);
+        level.Broadcaster.NotifyNeighbors(x - 1, y, z, BlockRegistry.Get("redstone_wire").Id);
+        level.Broadcaster.NotifyNeighbors(x + 1, y, z, BlockRegistry.Get("redstone_wire").Id);
+        level.Broadcaster.NotifyNeighbors(x, y, z - 1, BlockRegistry.Get("redstone_wire").Id);
+        level.Broadcaster.NotifyNeighbors(x, y, z + 1, BlockRegistry.Get("redstone_wire").Id);
+        level.Broadcaster.NotifyNeighbors(x, y - 1, z, BlockRegistry.Get("redstone_wire").Id);
+        level.Broadcaster.NotifyNeighbors(x, y + 1, z, BlockRegistry.Get("redstone_wire").Id);
     }
 
     private static int GetMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int power)
     {
-        if (reader.GetBlockId(x, y, z) != Block.RedstoneWire.Id) return power;
+        if (reader.GetBlockId(x, y, z) != BlockRegistry.Get("redstone_wire").Id) return power;
         int currentStrength = reader.GetBlockMeta(x, y, z);
         return currentStrength > power ? currentStrength : power;
     }
@@ -265,17 +265,17 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
     {
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId == 0) return false;
-        if (blockId == Block.RedstoneWire.Id) return true;
+        if (blockId == BlockRegistry.Get("redstone_wire").Id) return true;
 
-        if (blockId == Block.StonePressurePlate.Id ||
-            blockId == Block.WoodenPressurePlate.Id ||
-            blockId == Block.Button.Id ||
-            blockId == Block.Lever.Id)
+        if (blockId == BlockRegistry.Get("stone_pressure_plate").Id ||
+            blockId == BlockRegistry.Get("wooden_pressure_plate").Id ||
+            blockId == BlockRegistry.Get("button").Id ||
+            blockId == BlockRegistry.Get("lever").Id)
         {
             return true;
         }
 
-        if (blockId != Block.Repeater.Id && blockId != Block.PoweredRepeater.Id) return Block.Blocks[blockId].CanEmitRedstonePower();
+        if (blockId != BlockRegistry.Get("repeater").Id && blockId != BlockRegistry.Get("powered_repeater").Id) return Block.Blocks[blockId].CanEmitRedstonePower();
         if (direction < 0) return false;
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;

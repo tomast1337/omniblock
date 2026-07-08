@@ -43,5 +43,5 @@ internal sealed class MushroomBehavior : IBlockTicker, IBlockPhysics
     }
 
     private static bool CanPlantOnTop(int id)
-        => id == Block.GrassBlock.Id || id == Block.Dirt.Id || id == Block.Stone.Id || id == Block.Gravel.Id || id == Block.Cobblestone.Id;
+        => id == BlockRegistry.Get("grass_block").Id || id == BlockRegistry.Get("dirt").Id || id == BlockRegistry.Get("stone").Id || id == BlockRegistry.Get("gravel").Id || id == BlockRegistry.Get("cobblestone").Id;
 }

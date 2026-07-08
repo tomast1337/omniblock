@@ -150,17 +150,17 @@ public static class Stats
 
     private static void ReplaceAllSimilarBlocks(StatBase[] statsArray)
     {
-        ReplaceSimilarBlocks(statsArray, Block.Water.Id, Block.FlowingWater.Id);
-        ReplaceSimilarBlocks(statsArray, Block.Lava.Id, Block.Lava.Id);
-        ReplaceSimilarBlocks(statsArray, Block.JackLantern.Id, Block.Pumpkin.Id);
-        ReplaceSimilarBlocks(statsArray, Block.LitFurnace.Id, Block.Furnace.Id);
-        ReplaceSimilarBlocks(statsArray, Block.LitRedstoneOre.Id, Block.RedstoneOre.Id);
-        ReplaceSimilarBlocks(statsArray, Block.PoweredRepeater.Id, Block.Repeater.Id);
-        ReplaceSimilarBlocks(statsArray, Block.LitRedstoneTorch.Id, Block.RedstoneTorch.Id);
-        ReplaceSimilarBlocks(statsArray, Block.RedMushroom.Id, Block.BrownMushroom.Id);
-        ReplaceSimilarBlocks(statsArray, Block.DoubleSlab.Id, Block.Slab.Id);
-        ReplaceSimilarBlocks(statsArray, Block.GrassBlock.Id, Block.Dirt.Id);
-        ReplaceSimilarBlocks(statsArray, Block.Farmland.Id, Block.Dirt.Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("water").Id, BlockRegistry.Get("flowing_water").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lava").Id, BlockRegistry.Get("lava").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("jack_lantern").Id, BlockRegistry.Get("pumpkin").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_furnace").Id, BlockRegistry.Get("furnace").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_ore").Id, BlockRegistry.Get("redstone_ore").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("powered_repeater").Id, BlockRegistry.Get("repeater").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_torch").Id, BlockRegistry.Get("redstone_torch").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("red_mushroom").Id, BlockRegistry.Get("brown_mushroom").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("double_slab").Id, BlockRegistry.Get("slab").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("grass_block").Id, BlockRegistry.Get("dirt").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("farmland").Id, BlockRegistry.Get("dirt").Id);
     }
 
     private static void ReplaceSimilarBlocks(StatBase[] statsArray, int sourceId, int targetId)

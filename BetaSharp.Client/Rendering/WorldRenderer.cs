@@ -231,7 +231,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void LoadRenderers()
     {
-        LeavesBehavior.SetGraphicsLevel(Block.Leaves, true);
+        LeavesBehavior.SetGraphicsLevel(BlockRegistry.Get("leaves"), true);
         _renderDistance = _game.Options.RenderDistance;
 
         ChunkRenderer?.Dispose();
@@ -774,7 +774,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
         int targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
-        Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : Block.Stone;
+        Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : BlockRegistry.Get("stone");
 
         double renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * tickDelta;
         double renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * tickDelta;

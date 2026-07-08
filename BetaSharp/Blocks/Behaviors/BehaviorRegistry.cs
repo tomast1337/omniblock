@@ -23,9 +23,7 @@ internal static class BehaviorRegistry
         ["wall_mount"] = json => new WallMountBehavior(json.TryGetProperty("is_ladder", out var l) && l.GetBoolean()),
 
         // Cross-block references — must only run in the second (cross-reference) pass,
-        // once every BlockDefinition has been registered by name. See wrinkle #1 in the
-        // migration doc: Block.ByName returns Block?, so failures fail loud via ResolveBlock
-        // rather than silently null-dereferencing.
+        // once every BlockDefinition has been registered by name.
         ["stairs"] = json => new StairsBehavior(() => ResolveBlock(json.GetProperty("base").GetString()!)),
         ["plant_survival"] = json => json.TryGetProperty("valid_soil", out var soil)
             ? new PlantSurvivalBehavior(id => id == ResolveBlock(soil.GetString()!).Id)
@@ -88,10 +86,13 @@ internal static class BehaviorRegistry
             ? factory(json)
             : throw new ArgumentException($"Unknown block behavior type '{type}'");
 
-    private static Block ResolveBlock(string name) =>
-        Block.ByName(name) ?? throw new ArgumentException($"Unknown block: '{name}'");
+    // BlockRegistry.Get, not Block.ByName: the latter keys on RegistryName (the legacy
+    // TranslationKey), which several blocks' JSON gives a completely different value from their
+    // unique Name — e.g. Cobblestone's TranslationKey is "stonebrick" (an old Beta-era quirk).
+    // The "base"/"valid_soil"/"melt_replacement" JSON fields always name the unique Name.
+    private static Block ResolveBlock(string name) => BlockRegistry.Get(name);
 
-    // Air (id 0) never has a registered Block instance, so Block.ByName can't resolve it —
+    // Air (id 0) never has a registered Block instance, so BlockRegistry.Get can't resolve it —
     // snow's melt-to-air case needs this sentinel alongside real block-name lookups.
     private static int ResolveBlockOrAir(string name) =>
         name == "air" ? 0 : ResolveBlock(name).Id;

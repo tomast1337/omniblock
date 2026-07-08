@@ -13,17 +13,17 @@ public class Achievements
 
     public readonly static List<Achievement> AllAchievements = [];
     public readonly static Achievement OpenInventory = new Achievement(0, "openInventory", 0, 0, Item.ByName("book"), null).m_66876377().registerAchievement();
-    public readonly static Achievement MineWood = new Achievement(1, "mineWood", 2, 1, Block.Log, OpenInventory).registerAchievement();
-    public readonly static Achievement BuildWorkbench = new Achievement(2, "buildWorkBench", 4, -1, Block.CraftingTable, MineWood).registerAchievement();
+    public readonly static Achievement MineWood = new Achievement(1, "mineWood", 2, 1, BlockRegistry.Get("log"), OpenInventory).registerAchievement();
+    public readonly static Achievement BuildWorkbench = new Achievement(2, "buildWorkBench", 4, -1, BlockRegistry.Get("crafting_table"), MineWood).registerAchievement();
     public readonly static Achievement BuildPickaxe = new Achievement(3, "buildPickaxe", 4, 2, Item.ByName("pickaxe_wood"), BuildWorkbench).registerAchievement();
-    public readonly static Achievement BuildFurnace = new Achievement(4, "buildFurnace", 3, 4, Block.LitFurnace, BuildPickaxe).registerAchievement();
+    public readonly static Achievement BuildFurnace = new Achievement(4, "buildFurnace", 3, 4, BlockRegistry.Get("lit_furnace"), BuildPickaxe).registerAchievement();
     public readonly static Achievement AcquireIron = new Achievement(5, "acquireIron", 1, 4, Item.ByName("ingot_iron"), BuildFurnace).registerAchievement();
     public readonly static Achievement BuildHoe = new Achievement(6, "buildHoe", 2, -3, Item.ByName("hoe_wood"), BuildWorkbench).registerAchievement();
     public readonly static Achievement MakeBread = new Achievement(7, "makeBread", -1, -3, Item.ByName("bread"), BuildHoe).registerAchievement();
     public readonly static Achievement MakeCake = new Achievement(8, "bakeCake", 0, -5, Item.ByName("cake"), BuildHoe).registerAchievement();
     public readonly static Achievement CraftStonePickaxe = new Achievement(9, "buildBetterPickaxe", 6, 2, Item.ByName("pickaxe_stone"), BuildPickaxe).registerAchievement();
     public readonly static Achievement CookFish = new Achievement(10, "cookFish", 2, 6, Item.ByName("fish_cooked"), BuildFurnace).registerAchievement();
-    public readonly static Achievement CraftRail = new Achievement(11, "onARail", 2, 3, Block.Rail, AcquireIron).challenge().registerAchievement();
+    public readonly static Achievement CraftRail = new Achievement(11, "onARail", 2, 3, BlockRegistry.Get("rail"), AcquireIron).challenge().registerAchievement();
     public readonly static Achievement CraftSword = new Achievement(12, "buildSword", 6, -1, Item.ByName("sword_wood"), BuildWorkbench).registerAchievement();
     public readonly static Achievement KillEnemy = new Achievement(13, "killEnemy", 8, -1, Item.ByName("bone"), CraftSword).registerAchievement();
     public readonly static Achievement KillCow = new Achievement(14, "killCow", 7, -3, Item.ByName("leather"), CraftSword).registerAchievement();

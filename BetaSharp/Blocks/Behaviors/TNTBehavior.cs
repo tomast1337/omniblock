@@ -29,7 +29,7 @@ internal sealed class TNTBehavior : IBlockPhysics, IBlockLifecycle, IBlockIntera
 
         if ((@event.Meta & 1) == 0)
         {
-            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(Block.TNT.Id, 1, 0));
+            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(BlockRegistry.Get("tnt").Id, 1, 0));
         }
         else
         {

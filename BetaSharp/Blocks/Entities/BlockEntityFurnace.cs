@@ -229,6 +229,6 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         if (itemStack == null) return 0;
 
         int itemId = itemStack.getItem().Id;
-        return itemId < 256 && Block.Blocks[itemId].Material == Material.Wood ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == Block.Sapling.Id ? 100 : 0;
+        return itemId < 256 && Block.Blocks[itemId].Material == Material.Wood ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == BlockRegistry.Get("sapling").Id ? 100 : 0;
     }
 }

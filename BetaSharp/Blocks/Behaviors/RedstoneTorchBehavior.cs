@@ -71,7 +71,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
         {
             if (!shouldTurnOff) return;
 
-            @event.World.Writer.SetBlock(x, y, z, Block.RedstoneTorch.Id, @event.World.Reader.GetBlockMeta(x, y, z));
+            @event.World.Writer.SetBlock(x, y, z, BlockRegistry.Get("redstone_torch").Id, @event.World.Reader.GetBlockMeta(x, y, z));
 
             if (!IsBurnedOut(@event, true, currentTime)) return;
 
@@ -86,11 +86,11 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
             }
 
             int spatialBias = (x + y + z) % 3;
-            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, Block.RedstoneTorch.Id, 160 + spatialBias);
+            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, BlockRegistry.Get("redstone_torch").Id, 160 + spatialBias);
         }
         else if (!shouldTurnOff && !IsBurnedOut(@event, false, currentTime))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.LitRedstoneTorch.Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("lit_redstone_torch").Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
         }
     }
 
@@ -123,7 +123,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
     }
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-        => side == Side.Up ? Block.RedstoneWire.GetTexture(side, meta) : defaultTexture;
+        => side == Side.Up ? BlockRegistry.Get("redstone_wire").GetTexture(side, meta) : defaultTexture;
 
     public bool CanEmitRedstonePower(Block block) => true;
 
@@ -136,7 +136,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
 
     public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => side == 0 && IsPoweringSide(block, reader, x, y, z, side);
 
-    private static bool IsLit(Block block) => block.Id == Block.LitRedstoneTorch.Id;
+    private static bool IsLit(Block block) => block.Id == BlockRegistry.Get("lit_redstone_torch").Id;
 
     private bool IsBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
     {

@@ -398,7 +398,7 @@ public abstract class World : IWorldContext
                 break;
         }
 
-        if (Reader.GetBlockId(x, y, z) == Block.Fire.Id)
+        if (Reader.GetBlockId(x, y, z) == BlockRegistry.Get("fire").Id)
         {
             Broadcaster.WorldEvent(player, 1004, x, y, z, 0);
             Writer.SetBlock(x, y, z, 0);
@@ -569,16 +569,16 @@ public abstract class World : IWorldContext
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
                     int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
-                    if (Environment.IsRaining && currentBlockId == 0 && Block.Snow.CanPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
-                        blockBelowId != 0 && blockBelowId != Block.Ice.Id &&
+                    if (Environment.IsRaining && currentBlockId == 0 && BlockRegistry.Get("snow").CanPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
+                        blockBelowId != 0 && blockBelowId != BlockRegistry.Get("ice").Id &&
                         Block.Blocks[blockBelowId].Material.BlocksMovement)
                     {
-                        Writer.SetBlock(worldX, worldY, worldZ, Block.Snow.Id);
+                        Writer.SetBlock(worldX, worldY, worldZ, BlockRegistry.Get("snow").Id);
                     }
 
-                    if (blockBelowId == Block.Water.Id && currentChunk.GetBlockMeta(localX, worldY - 1, localZ) == 0)
+                    if (blockBelowId == BlockRegistry.Get("water").Id && currentChunk.GetBlockMeta(localX, worldY - 1, localZ) == 0)
                     {
-                        Writer.SetBlock(worldX, worldY - 1, worldZ, Block.Ice.Id);
+                        Writer.SetBlock(worldX, worldY - 1, worldZ, BlockRegistry.Get("ice").Id);
                     }
                 }
             }

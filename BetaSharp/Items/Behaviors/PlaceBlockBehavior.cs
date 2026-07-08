@@ -6,13 +6,16 @@ namespace BetaSharp.Items.Behaviors;
 
 internal sealed class PlaceBlockBehavior : IItemBehavior
 {
-    private readonly int _blockId;
+    // Deferred: PlaceBlockBehaviorDefinition.Build() runs during ItemFactory.Create(), before
+    // BlockRegistry.Initialize() has loaded any blocks.
+    private readonly Func<Block> _blockFactory;
+    private int _blockId => _blockFactory().Id;
 
-    internal PlaceBlockBehavior(Block block) => _blockId = block.Id;
+    internal PlaceBlockBehavior(Func<Block> block) => _blockFactory = block;
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == Block.Snow.Id)
+        if (world.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("snow").Id)
         {
             meta = 0;
         }

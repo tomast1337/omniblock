@@ -20,7 +20,7 @@ internal class GrassPatchFeature : Feature
         while (true)
         {
             int blockId = level.Reader.GetBlockId(x, y, z);
-            if ((blockId != 0 && blockId != Block.Leaves.Id) || y <= 0)
+            if ((blockId != 0 && blockId != BlockRegistry.Get("leaves").Id) || y <= 0)
             {
                 for (int i = 0; i < 128; ++i)
                 {

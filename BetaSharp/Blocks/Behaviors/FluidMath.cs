@@ -117,14 +117,14 @@ public static class FluidMath
         int meta = reader.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
-            writer.SetBlock(x, y, z, Block.Obsidian.Id);
+            writer.SetBlock(x, y, z, BlockRegistry.Get("obsidian").Id);
             Fizz(broadcaster, x, y, z);
             return;
         }
 
         if (meta > 4) return;
 
-        writer.SetBlock(x, y, z, Block.Cobblestone.Id);
+        writer.SetBlock(x, y, z, BlockRegistry.Get("cobblestone").Id);
         Fizz(broadcaster, x, y, z);
     }
 

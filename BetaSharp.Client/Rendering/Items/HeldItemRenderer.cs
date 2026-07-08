@@ -424,7 +424,7 @@ public class HeldItemRenderer
         for (int layerIndex = 0; layerIndex < 2; ++layerIndex)
         {
             GLManager.GL.PushMatrix();
-            int fireTexture = Block.Fire.TextureId + layerIndex * 16;
+            int fireTexture = BlockRegistry.Get("fire").TextureId + layerIndex * 16;
             int textureU = (fireTexture & 15) << 4;
             int textureV = fireTexture & 240;
             float minU = textureU / 256.0F;

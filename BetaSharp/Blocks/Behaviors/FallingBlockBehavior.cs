@@ -55,7 +55,7 @@ public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
     {
         int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0) return true;
-        if (blockId == Block.Fire.Id) return true;
+        if (blockId == BlockRegistry.Get("fire").Id) return true;
 
         Material material = Block.Blocks[blockId].Material;
         return material == Material.Water || material == Material.Lava;

@@ -10,7 +10,7 @@ internal class ItemLog : ItemBlock
         setHasSubtypes(true);
     }
 
-    public override int getTextureId(int meta) => Block.Log.GetTexture(2.ToSide(), meta);
+    public override int getTextureId(int meta) => BlockRegistry.Get("log").GetTexture(2.ToSide(), meta);
 
     public override int getPlacementMetadata(int meta) => meta;
 }

@@ -39,7 +39,7 @@ public class TntEntityRenderer : EntityRenderer
 
         flashProgress = (1.0F - (tntEntity.Fuse - tickDelta + 1.0F) / 100.0F) * 0.8F;
         loadTexture("/terrain.png");
-        BlockRenderer.RenderBlockOnInventory(Block.TNT, 0, tntEntity.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+        BlockRenderer.RenderBlockOnInventory(BlockRegistry.Get("tnt"), 0, tntEntity.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
         if (tntEntity.Fuse / 5 % 2 == 0)
         {
             GLManager.GL.Disable(GLEnum.Texture2D);
@@ -47,7 +47,7 @@ public class TntEntityRenderer : EntityRenderer
             GLManager.GL.Enable(GLEnum.Blend);
             GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.DstAlpha);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, flashProgress);
-            BlockRenderer.RenderBlockOnInventory(Block.TNT, 0, 1.0F, Tessellator.instance);
+            BlockRenderer.RenderBlockOnInventory(BlockRegistry.Get("tnt"), 0, 1.0F, Tessellator.instance);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.GL.Disable(GLEnum.Blend);
             GLManager.GL.Enable(GLEnum.Lighting);

@@ -17,7 +17,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         GLManager.GL.PushMatrix();
         float modelScale = 2.0F / 3.0F;
         float rotationYaw;
-        if (signBlock == Block.Sign)
+        if (signBlock == BlockRegistry.Get("sign"))
         {
             GLManager.GL.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
             float rotationDegrees = sign.PushedBlockData * 360 / 16.0F;

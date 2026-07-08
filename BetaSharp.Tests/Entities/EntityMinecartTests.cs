@@ -18,7 +18,7 @@ public sealed class EntityMinecartTests
             throw new ArgumentException("Not a rail block id", nameof(railBlockId));
         }
 
-        world.Writer.SetBlock(x, y - 1, z, Block.Stone.Id);
+        world.Writer.SetBlock(x, y - 1, z, BlockRegistry.Get("stone").Id);
         world.Writer.SetBlock(x, y, z, railBlockId, meta);
     }
 
@@ -28,16 +28,16 @@ public sealed class EntityMinecartTests
         switch (slopeMeta)
         {
             case 2:
-                world.Writer.SetBlock(x + 1, railY, z, Block.Stone.Id);
+                world.Writer.SetBlock(x + 1, railY, z, BlockRegistry.Get("stone").Id);
                 break;
             case 3:
-                world.Writer.SetBlock(x - 1, railY, z, Block.Stone.Id);
+                world.Writer.SetBlock(x - 1, railY, z, BlockRegistry.Get("stone").Id);
                 break;
             case 4:
-                world.Writer.SetBlock(x, railY, z - 1, Block.Stone.Id);
+                world.Writer.SetBlock(x, railY, z - 1, BlockRegistry.Get("stone").Id);
                 break;
             case 5:
-                world.Writer.SetBlock(x, railY, z + 1, Block.Stone.Id);
+                world.Writer.SetBlock(x, railY, z + 1, BlockRegistry.Get("stone").Id);
                 break;
         }
     }
@@ -46,8 +46,8 @@ public sealed class EntityMinecartTests
     public void GetTrackPosition_and_GetTrackPositionOffset_on_flat_straight_rails()
     {
         FakeWorldContext world = new();
-        PlaceRailWithFloor(world, 8, 64, 8, Block.Rail.Id, 0);
-        PlaceRailWithFloor(world, 12, 64, 8, Block.Rail.Id, 1);
+        PlaceRailWithFloor(world, 8, 64, 8, BlockRegistry.Get("rail").Id, 0);
+        PlaceRailWithFloor(world, 12, 64, 8, BlockRegistry.Get("rail").Id, 1);
 
         var cart = new EntityMinecart(world, 8.5, 65.0, 8.5, 0);
         Assert.NotNull(cart.GetTrackPosition(8.5, 65.0, 8.5));
@@ -62,10 +62,10 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
-        PlaceRailWithFloor(world, 8, 64, 8, Block.Rail.Id, 0);
-        PlaceRailWithFloor(world, 9, 64, 8, Block.Rail.Id, 0);
-        PlaceRailWithFloor(world, 12, 64, 12, Block.Rail.Id, 1);
-        PlaceRailWithFloor(world, 12, 64, 13, Block.Rail.Id, 1);
+        PlaceRailWithFloor(world, 8, 64, 8, BlockRegistry.Get("rail").Id, 0);
+        PlaceRailWithFloor(world, 9, 64, 8, BlockRegistry.Get("rail").Id, 0);
+        PlaceRailWithFloor(world, 12, 64, 12, BlockRegistry.Get("rail").Id, 1);
+        PlaceRailWithFloor(world, 12, 64, 13, BlockRegistry.Get("rail").Id, 1);
 
         var cart0 = new EntityMinecart(world, 8.5, 65.0, 8.5, 0);
         cart0.VelocityZ = 0.15;
@@ -95,7 +95,7 @@ public sealed class EntityMinecartTests
         FakeWorldContext world = new();
         int x = 16 + slopeMeta;
         int z = 8;
-        PlaceRailWithFloor(world, x, 64, z, Block.Rail.Id, slopeMeta);
+        PlaceRailWithFloor(world, x, 64, z, BlockRegistry.Get("rail").Id, slopeMeta);
         PlaceSlopeSupport(world, x, 64, z, slopeMeta);
 
         var cart = new EntityMinecart(world, x + 0.5, 65.0, z + 0.5, 0);
@@ -113,17 +113,17 @@ public sealed class EntityMinecartTests
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
 
-        PlaceRailWithFloor(world, 8, 64, 8, Block.PoweredRail.Id, 0 | 8);
+        PlaceRailWithFloor(world, 8, 64, 8, BlockRegistry.Get("powered_rail").Id, 0 | 8);
         var boosted = new EntityMinecart(world, 8.5, 65.0, 8.5, 0);
         boosted.VelocityZ = 0.02;
         Assert.True(world.Entities.SpawnEntity(boosted));
 
-        PlaceRailWithFloor(world, 10, 64, 8, Block.PoweredRail.Id, 0);
+        PlaceRailWithFloor(world, 10, 64, 8, BlockRegistry.Get("powered_rail").Id, 0);
         var braking = new EntityMinecart(world, 10.5, 65.0, 8.5, 0);
         braking.VelocityZ = 0.15;
         Assert.True(world.Entities.SpawnEntity(braking));
 
-        PlaceRailWithFloor(world, 12, 64, 8, Block.DetectorRail.Id, 0);
+        PlaceRailWithFloor(world, 12, 64, 8, BlockRegistry.Get("detector_rail").Id, 0);
         var detector = new EntityMinecart(world, 12.5, 65.0, 8.5, 0);
         detector.VelocityZ = 0.1;
         Assert.True(world.Entities.SpawnEntity(detector));
@@ -145,9 +145,9 @@ public sealed class EntityMinecartTests
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
         int x = 20;
         int z = 8;
-        PlaceRailWithFloor(world, x, 64, z, Block.PoweredRail.Id, 0 | 8);
-        world.Writer.SetBlock(x, 64, z - 1, Block.Stone.Id);
-        world.Writer.SetBlock(x, 64, z + 1, Block.Stone.Id);
+        PlaceRailWithFloor(world, x, 64, z, BlockRegistry.Get("powered_rail").Id, 0 | 8);
+        world.Writer.SetBlock(x, 64, z - 1, BlockRegistry.Get("stone").Id);
+        world.Writer.SetBlock(x, 64, z + 1, BlockRegistry.Get("stone").Id);
 
         var cart = new EntityMinecart(world, x + 0.5, 65.0, z + 0.5, 0);
         Assert.True(world.Entities.SpawnEntity(cart));
@@ -162,9 +162,9 @@ public sealed class EntityMinecartTests
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
         int x = 22;
         int z = 8;
-        PlaceRailWithFloor(world, x, 64, z, Block.PoweredRail.Id, 1 | 8);
-        world.Writer.SetBlock(x - 1, 64, z, Block.Stone.Id);
-        world.Writer.SetBlock(x + 1, 64, z, Block.Stone.Id);
+        PlaceRailWithFloor(world, x, 64, z, BlockRegistry.Get("powered_rail").Id, 1 | 8);
+        world.Writer.SetBlock(x - 1, 64, z, BlockRegistry.Get("stone").Id);
+        world.Writer.SetBlock(x + 1, 64, z, BlockRegistry.Get("stone").Id);
 
         var cart = new EntityMinecart(world, x + 0.5, 65.0, z + 0.5, 0);
         Assert.True(world.Entities.SpawnEntity(cart));
@@ -180,7 +180,7 @@ public sealed class EntityMinecartTests
         for (int m = 6; m <= 9; m++)
         {
             int x = 8 + m;
-            PlaceRailWithFloor(world, x, 64, 8, Block.Rail.Id, m);
+            PlaceRailWithFloor(world, x, 64, 8, BlockRegistry.Get("rail").Id, m);
         }
 
         var cart = new EntityMinecart(world, 14.5, 65.0, 8.5, 0);

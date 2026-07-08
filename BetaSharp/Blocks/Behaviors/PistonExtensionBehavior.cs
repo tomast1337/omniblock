@@ -21,7 +21,7 @@ public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IB
         z += PistonConstants.HeadOffsetZ[oppositeFace.ToInt()];
 
         int blockId = @event.World.Reader.GetBlockId(x, y, z);
-        if (blockId != Block.Piston.Id && blockId != Block.StickyPiston.Id) return;
+        if (blockId != BlockRegistry.Get("piston").Id && blockId != BlockRegistry.Get("sticky_piston").Id) return;
 
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!PistonBaseBehavior.IsExtended(meta)) return;
@@ -62,7 +62,7 @@ public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IB
     {
         int facing = GetFacing(@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)).ToInt();
         int blockId = @event.World.Reader.GetBlockId(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]);
-        if (blockId != Block.Piston.Id && blockId != Block.StickyPiston.Id)
+        if (blockId != BlockRegistry.Get("piston").Id && blockId != BlockRegistry.Get("sticky_piston").Id)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }

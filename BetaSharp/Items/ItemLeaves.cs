@@ -13,7 +13,7 @@ internal class ItemLeaves : ItemBlock
 
     public override int getPlacementMetadata(int meta) => meta | 8;
 
-    public override int getTextureId(int meta) => Block.Leaves.GetTexture(0, meta);
+    public override int getTextureId(int meta) => BlockRegistry.Get("leaves").GetTexture(0, meta);
 
     public override int getColorMultiplier(int leafType) => (leafType & 1) == 1 ? FoliageColors.getSpruceColor() : (leafType & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
 }

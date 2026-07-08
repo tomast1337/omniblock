@@ -45,18 +45,18 @@ internal sealed class SignBehavior : IItemBehavior
             ++x;
         }
 
-        if (!Block.Sign.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        if (!BlockRegistry.Get("sign").CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             return false;
         }
 
         if (meta == 1)
         {
-            world.Writer.SetBlock(x, y, z, Block.Sign.Id, MathHelper.Floor((player.Yaw + 180.0F) * 16.0F / 360.0F + 0.5D) & 15);
+            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("sign").Id, MathHelper.Floor((player.Yaw + 180.0F) * 16.0F / 360.0F + 0.5D) & 15);
         }
         else
         {
-            world.Writer.SetBlock(x, y, z, Block.WallSign.Id, meta);
+            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("wall_sign").Id, meta);
         }
 
         itemStack.ConsumeItem(player);

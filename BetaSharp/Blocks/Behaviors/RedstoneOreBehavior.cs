@@ -23,7 +23,7 @@ public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
     {
         if (IsLit(block))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, Block.RedstoneOre.Id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("redstone_ore").Id);
         }
     }
 
@@ -35,14 +35,14 @@ public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
         }
     }
 
-    private static bool IsLit(Block block) => block.Id == Block.LitRedstoneOre.Id;
+    private static bool IsLit(Block block) => block.Id == BlockRegistry.Get("lit_redstone_ore").Id;
 
     private static void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         SpawnParticles(worldRead, broadcaster, x, y, z);
-        if (worldRead.GetBlockId(x, y, z) == Block.RedstoneOre.Id)
+        if (worldRead.GetBlockId(x, y, z) == BlockRegistry.Get("redstone_ore").Id)
         {
-            worldWriter.SetBlock(x, y, z, Block.LitRedstoneOre.Id);
+            worldWriter.SetBlock(x, y, z, BlockRegistry.Get("lit_redstone_ore").Id);
         }
     }
 

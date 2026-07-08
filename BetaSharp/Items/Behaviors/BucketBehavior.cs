@@ -9,14 +9,13 @@ namespace BetaSharp.Items.Behaviors;
 
 internal sealed class BucketBehavior : IItemBehavior
 {
-    private readonly int _isFull;
+    // Deferred: BucketBehaviorDefinition.Build() runs during ItemFactory.Create(), which runs
+    // before BlockRegistry.Initialize() — resolving "flowing_water"/"flowing_lava" eagerly here
+    // would run before blocks exist. Evaluated lazily, well after boot completes.
+    private readonly Func<int> _isFullFactory;
+    private int _isFull => _isFullFactory();
 
-    private static readonly Item s_bucket = Item.ByName("bucket");
-    private static readonly Item s_bucketWater = Item.ByName("bucket_water");
-    private static readonly Item s_bucketLava = Item.ByName("bucket_lava");
-    private static readonly Item s_milk = Item.ByName("milk");
-
-    internal BucketBehavior(int isFull) => _isFull = isFull;
+    internal BucketBehavior(Func<int> isFull) => _isFullFactory = isFull;
 
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
@@ -57,20 +56,20 @@ internal sealed class BucketBehavior : IItemBehavior
                 if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Water && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                 {
                     world.Writer.SetBlock(hitX, hitY, hitZ, 0);
-                    return new ItemStack(s_bucketWater);
+                    return new ItemStack(Item.ByName("bucket_water"));
                 }
 
                 if (world.Reader.GetMaterial(hitX, hitY, hitZ) == Material.Lava && world.Reader.GetBlockMeta(hitX, hitY, hitZ) == 0)
                 {
                     world.Writer.SetBlock(hitX, hitY, hitZ, 0);
-                    return new ItemStack(s_bucketLava);
+                    return new ItemStack(Item.ByName("bucket_lava"));
                 }
             }
             else
             {
                 if (_isFull < 0)
                 {
-                    return new ItemStack(s_bucket);
+                    return new ItemStack(Item.ByName("bucket"));
                 }
 
                 if (hitResult.Side == 0)
@@ -105,7 +104,7 @@ internal sealed class BucketBehavior : IItemBehavior
 
                 if (world.Reader.IsAir(hitX, hitY, hitZ) || !world.Reader.GetMaterial(hitX, hitY, hitZ).IsSolid)
                 {
-                    if (world.Dimension.EvaporatesWater && _isFull == Block.FlowingWater.Id)
+                    if (world.Dimension.EvaporatesWater && _isFull == BlockRegistry.Get("flowing_water").Id)
                     {
                         world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.Random.NextFloat() - world.Random.NextFloat()) * 0.8F);
                         for (int i = 0; i < 8; ++i)
@@ -118,13 +117,13 @@ internal sealed class BucketBehavior : IItemBehavior
                         world.Writer.SetBlock(hitX, hitY, hitZ, _isFull, 0);
                     }
 
-                    return new ItemStack(s_bucket);
+                    return new ItemStack(Item.ByName("bucket"));
                 }
             }
         }
         else if (_isFull == 0 && hitResult.Entity is EntityCow)
         {
-            return new ItemStack(s_milk);
+            return new ItemStack(Item.ByName("milk"));
         }
 
         return itemStack;

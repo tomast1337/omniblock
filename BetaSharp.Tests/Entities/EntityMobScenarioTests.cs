@@ -28,7 +28,7 @@ public sealed class EntityMobScenarioTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        var sand = new EntityFallingSand(world, 8.5, 72.0, 8.5, Block.Sand.Id);
+        var sand = new EntityFallingSand(world, 8.5, 72.0, 8.5, BlockRegistry.Get("sand").Id);
         Assert.True(world.Entities.SpawnEntity(sand));
         EntityTestHarness.AdvanceGameTicks(world, 150);
         Assert.True(sand.Dead || sand.OnGround);

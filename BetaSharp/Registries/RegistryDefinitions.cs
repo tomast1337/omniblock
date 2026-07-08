@@ -1,3 +1,4 @@
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.Recipes;
@@ -15,6 +16,12 @@ internal static class RegistryDefinitions
 
     public static readonly RegistryDefinition<ItemDefinition> Items =
         new(RegistryKeys.Items, "item", loaderFactory: (path, locations) => new ItemDefinitionJsonLoader(path, locations));
+
+    // Not registered via RegistryAccess.AddDynamic — same treatment as Materials/SoundGroups
+    // below, not Items: blocks are even more hot-path-sensitive (renderer/lighting arrays cache
+    // constructed Block instances directly), so this is boot-time-only, no /reload support.
+    public static readonly RegistryDefinition<BlockDefinition> Blocks =
+        new(RegistryKeys.Blocks, "block", loaderFactory: (path, locations) => new BlockDefinitionJsonLoader(path, locations));
 
     public static readonly RegistryDefinition<ToolMaterialDefinition> ToolMaterials =
         new(RegistryKeys.ToolMaterials, "item_material");

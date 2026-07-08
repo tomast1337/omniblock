@@ -12,7 +12,7 @@ internal class ItemCloth : ItemBlock
         setHasSubtypes(true);
     }
 
-    public override int getTextureId(int meta) => Block.Wool.GetTexture(2.ToSide(), ClothVisualBehavior.GetBlockMeta(meta));
+    public override int getTextureId(int meta) => BlockRegistry.Get("wool").GetTexture(2.ToSide(), ClothVisualBehavior.GetBlockMeta(meta));
 
     public override int getPlacementMetadata(int meta) => meta;
 

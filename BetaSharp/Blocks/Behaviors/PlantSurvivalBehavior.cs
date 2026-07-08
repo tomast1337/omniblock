@@ -33,7 +33,7 @@ public sealed class PlantSurvivalBehavior : IBlockTicker, IBlockPhysics
 
     public void OnTick(Block block, OnTickEvent @event) => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
 
-    private static bool DefaultGround(int id) => id == Block.GrassBlock.Id || id == Block.Dirt.Id || id == Block.Farmland.Id;
+    private static bool DefaultGround(int id) => id == BlockRegistry.Get("grass_block").Id || id == BlockRegistry.Get("dirt").Id || id == BlockRegistry.Get("farmland").Id;
 
     public static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {

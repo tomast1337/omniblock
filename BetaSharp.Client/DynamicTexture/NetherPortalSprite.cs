@@ -3,7 +3,7 @@ using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.DynamicTexture;
 
-internal class NetherPortalSprite() : Rendering.Core.Textures.DynamicTexture(Block.NetherPortal.TextureId)
+internal class NetherPortalSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegistry.Get("nether_portal").TextureId)
 {
     private readonly byte[][] _frames = new byte[32][];
     private int _ticks;

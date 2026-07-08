@@ -27,7 +27,7 @@ public class BlockVisualsTests
             expected = BlockTextures.WoolColoredPaletteBase + ((inverted & 8) >> 3) + (inverted & 7) * 16;
         }
 
-        Assert.Equal(expected, Block.Wool.GetTexture(Side.North, meta));
+        Assert.Equal(expected, BlockRegistry.Get("wool").GetTexture(Side.North, meta));
     }
 
     [Fact]
@@ -42,47 +42,47 @@ public class BlockVisualsTests
     [Fact]
     public void Wool_HasSixteenAliases()
     {
-        Assert.Equal(16, Block.Wool.GetBlockAlias.Count);
-        Assert.Contains("whiteWool:0", Block.Wool.GetBlockAlias);
-        Assert.Contains("blackWool:15", Block.Wool.GetBlockAlias);
+        Assert.Equal(16, BlockRegistry.Get("wool").GetBlockAlias.Count);
+        Assert.Contains("whiteWool:0", BlockRegistry.Get("wool").GetBlockAlias);
+        Assert.Contains("blackWool:15", BlockRegistry.Get("wool").GetBlockAlias);
     }
 
     [Fact]
     public void FlattenedBlocks_KeepTheirIdentity()
     {
         // Glass: plain Block composed with GlassVisualBehavior, non-opaque, drops nothing.
-        Assert.IsType<Block>(Block.Glass);
-        Assert.IsType<GlassVisualBehavior>(Block.Glass.Visuals);
-        Assert.False(Block.Glass.IsOpaque());
-        Assert.False(Block.BlocksOpaque[Block.Glass.Id]);
-        Assert.Equal(0, Block.BlockLightOpacity[Block.Glass.Id]);
-        Assert.Equal(0, Block.Glass.GetDroppedItemCount());
+        Assert.IsType<Block>(BlockRegistry.Get("glass"));
+        Assert.IsType<GlassVisualBehavior>(BlockRegistry.Get("glass").Visuals);
+        Assert.False(BlockRegistry.Get("glass").IsOpaque());
+        Assert.False(Block.BlocksOpaque[BlockRegistry.Get("glass").Id]);
+        Assert.Equal(0, Block.BlockLightOpacity[BlockRegistry.Get("glass").Id]);
+        Assert.Equal(0, BlockRegistry.Get("glass").GetDroppedItemCount());
 
         // Wool: plain Block composed with ClothVisualBehavior.
-        Assert.IsType<Block>(Block.Wool);
-        Assert.IsType<ClothVisualBehavior>(Block.Wool.Visuals);
-        Assert.True(Block.Wool.IsOpaque());
+        Assert.IsType<Block>(BlockRegistry.Get("wool"));
+        Assert.IsType<ClothVisualBehavior>(BlockRegistry.Get("wool").Visuals);
+        Assert.True(BlockRegistry.Get("wool").IsOpaque());
 
         // Grass keeps its subclass (tick spreading) but visuals moved to the behavior.
-        Assert.IsType<GrassVisualBehavior>(Block.GrassBlock.Visuals);
+        Assert.IsType<GrassVisualBehavior>(BlockRegistry.Get("grass_block").Visuals);
 
         // Ice/portal kept non-opacity after losing BlockBreakable.
-        Assert.False(Block.Ice.IsOpaque());
-        Assert.False(Block.NetherPortal.IsOpaque());
+        Assert.False(BlockRegistry.Get("ice").IsOpaque());
+        Assert.False(BlockRegistry.Get("nether_portal").IsOpaque());
     }
 
     [Fact]
     public void Grass_TopAndBottomTexturesAreDeclarative()
     {
-        Assert.Equal(BlockTextures.GrassTop, Block.GrassBlock.GetTexture(Side.Up));
-        Assert.Equal(BlockTextures.Dirt, Block.GrassBlock.GetTexture(Side.Down));
-        Assert.Equal(BlockTextures.GrassSide, Block.GrassBlock.GetTexture(Side.North));
+        Assert.Equal(BlockTextures.GrassTop, BlockRegistry.Get("grass_block").GetTexture(Side.Up));
+        Assert.Equal(BlockTextures.Dirt, BlockRegistry.Get("grass_block").GetTexture(Side.Down));
+        Assert.Equal(BlockTextures.GrassSide, BlockRegistry.Get("grass_block").GetTexture(Side.North));
     }
 
     [Fact]
     public void Grass_TopFaceUsesGrassColor()
     {
-        Assert.NotEqual(0xFFFFFF, Block.GrassBlock.GetColorForFace(0, 1));
-        Assert.Equal(0xFFFFFF, Block.GrassBlock.GetColorForFace(0, 0));
+        Assert.NotEqual(0xFFFFFF, BlockRegistry.Get("grass_block").GetColorForFace(0, 1));
+        Assert.Equal(0xFFFFFF, BlockRegistry.Get("grass_block").GetColorForFace(0, 0));
     }
 }

@@ -561,7 +561,7 @@ public class UIRenderer
         GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
 
         Block signBlock = sign.GetBlock();
-        if (signBlock == Block.Sign)
+        if (signBlock == BlockRegistry.Get("sign"))
         {
             float rotation = sign.PushedBlockData * 360 / 16.0F;
             GLManager.GL.Rotate(rotation, 0.0F, 1.0F, 0.0F);

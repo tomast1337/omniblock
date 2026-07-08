@@ -120,7 +120,7 @@ public class PlayerControllerMP : PlayerController
                     {
                         if (_mineSoundTimer++ % 4 == 0)
                         {
-                            Game.SoundManager.PlayStepSound(Block.Bedrock.SoundGroup, x, y, z);
+                            Game.SoundManager.PlayStepSound(BlockRegistry.Get("bedrock").SoundGroup, x, y, z);
                         }
 
                         return;

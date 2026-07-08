@@ -6,17 +6,22 @@ namespace BetaSharp.Items.Behaviors;
 internal sealed class ToolBehavior : IItemBehavior
 {
     private readonly int _damageVsEntity;
-    private readonly Block[] _effectiveBlocks;
+    // Deferred: ToolBehaviorDefinition.Build() runs during ItemFactory.Create(), before
+    // BlockRegistry.Initialize() has loaded any blocks — Item.s_axeBlocks etc. are themselves
+    // lazy, but only forcing their first evaluation this late (mining time, not boot time)
+    // actually keeps them lazy in practice.
+    private readonly Func<Block[]> _effectiveBlocksFactory;
+    private Block[] _effectiveBlocks => _effectiveBlocksFactory();
     private readonly float _efficiencyOnProperMaterial;
     private readonly Func<Block, bool>? _suitableFor;
     private readonly ToolMaterial _toolMaterial;
 
-    internal ToolBehavior(ToolMaterial toolMaterial, int baseDamage, Block[] effectiveBlocks, Func<Block, bool>? suitableFor = null)
+    internal ToolBehavior(ToolMaterial toolMaterial, int baseDamage, Func<Block[]> effectiveBlocks, Func<Block, bool>? suitableFor = null)
     {
         _toolMaterial = toolMaterial;
         _efficiencyOnProperMaterial = toolMaterial.Efficiency;
         _damageVsEntity = baseDamage + toolMaterial.DamageBonus;
-        _effectiveBlocks = effectiveBlocks;
+        _effectiveBlocksFactory = effectiveBlocks;
         _suitableFor = suitableFor;
     }
 

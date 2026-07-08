@@ -55,7 +55,7 @@ public class BlockEntityPiston : BlockEntity
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
         }
 
-        Box? pushCollisionBox = PistonMovingBehavior.GetPushedBlockCollisionShape(Block.MovingPiston, World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
+        Box? pushCollisionBox = PistonMovingBehavior.GetPushedBlockCollisionShape(BlockRegistry.Get("moving_piston"), World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
         if (pushCollisionBox == null) return;
 
         List<Entity> entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);
@@ -77,7 +77,7 @@ public class BlockEntityPiston : BlockEntity
 
     private void FinalizeBlock()
     {
-        if (World.Reader.GetBlockId(X, Y, Z) == Block.MovingPiston.Id)
+        if (World.Reader.GetBlockId(X, Y, Z) == BlockRegistry.Get("moving_piston").Id)
         {
             World.Writer.SetBlock(X, Y, Z, PushedBlockId, PushedBlockData);
             if (!World.IsRemote)
@@ -85,7 +85,7 @@ public class BlockEntityPiston : BlockEntity
                 World.Broadcaster.NotifyNeighbors(X, Y, Z, PushedBlockId);
                 World.Broadcaster.BlockUpdateEvent(X, Y, Z);
 
-                if (PushedBlockId == Block.Piston.Id || PushedBlockId == Block.StickyPiston.Id)
+                if (PushedBlockId == BlockRegistry.Get("piston").Id || PushedBlockId == BlockRegistry.Get("sticky_piston").Id)
                 {
                     World.TickScheduler.ScheduleBlockUpdate(X, Y, Z, PushedBlockId, 1);
                 }

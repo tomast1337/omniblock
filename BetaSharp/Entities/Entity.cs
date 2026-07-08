@@ -592,7 +592,7 @@ public abstract class Entity : IEntity
                     blockY = MathHelper.Floor(Y - (double)0.2F - (double)StandingEyeHeight);
                     blockZ = MathHelper.Floor(Z);
                     blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
-                    if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == Block.Fence.Id)
+                    if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == BlockRegistry.Get("fence").Id)
                     {
                         blockId = World.Reader.GetBlockId(blockX, blockY - 1, blockZ);
                     }
@@ -601,9 +601,9 @@ public abstract class Entity : IEntity
                     {
                         _nextStepSoundDistance = (int)HorizontalSpeed + 1;
                         BlockSoundGroup soundGroup = Block.Blocks[blockId].SoundGroup;
-                        if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == Block.Snow.Id)
+                        if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == BlockRegistry.Get("snow").Id)
                         {
-                            soundGroup = Block.Snow.SoundGroup;
+                            soundGroup = BlockRegistry.Get("snow").SoundGroup;
                             World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
                         }
                         else if (!Block.Blocks[blockId].Material.IsFluid)

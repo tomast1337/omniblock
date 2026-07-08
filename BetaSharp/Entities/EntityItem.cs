@@ -122,7 +122,7 @@ public class EntityItem : Entity
     {
         if (World.IsRemote || !player.GameMode.CanPickup) return;
         if (DelayBeforeCanPickup != 0 || !player.Inventory.AddItemStackToInventory(Stack)) return;
-        if (Stack.ItemId == Block.Log.Id) player.IncrementStat(Achievements.MineWood);
+        if (Stack.ItemId == BlockRegistry.Get("log").Id) player.IncrementStat(Achievements.MineWood);
         if (Stack.ItemId == s_leatherId) player.IncrementStat(Achievements.KillCow);
 
         World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);

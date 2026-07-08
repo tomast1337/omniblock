@@ -33,7 +33,7 @@ internal sealed class DyeBehavior : IItemBehavior
         }
 
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == Block.Sapling.Id)
+        if (blockId == BlockRegistry.Get("sapling").Id)
         {
             if (!world.IsRemote)
             {
@@ -44,7 +44,7 @@ internal sealed class DyeBehavior : IItemBehavior
             return true;
         }
 
-        if (blockId == Block.Wheat.Id)
+        if (blockId == BlockRegistry.Get("wheat").Id)
         {
             if (!world.IsRemote)
             {
@@ -55,7 +55,7 @@ internal sealed class DyeBehavior : IItemBehavior
             return true;
         }
 
-        if (blockId == Block.GrassBlock.Id)
+        if (blockId == BlockRegistry.Get("grass_block").Id)
         {
             if (!world.IsRemote)
             {
@@ -71,7 +71,7 @@ internal sealed class DyeBehavior : IItemBehavior
                         spawnX += Item.itemRand.NextInt(3) - 1;
                         spawnY += (Item.itemRand.NextInt(3) - 1) * Item.itemRand.NextInt(3) / 2;
                         spawnZ += Item.itemRand.NextInt(3) - 1;
-                        if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != Block.GrassBlock.Id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
+                        if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != BlockRegistry.Get("grass_block").Id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
                         {
                             validPosition = false;
                         }
@@ -81,15 +81,15 @@ internal sealed class DyeBehavior : IItemBehavior
                     {
                         if (Item.itemRand.NextInt(10) != 0)
                         {
-                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Grass.Id, 1);
+                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("grass").Id, 1);
                         }
                         else if (Item.itemRand.NextInt(3) != 0)
                         {
-                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Dandelion.Id);
+                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("dandelion").Id);
                         }
                         else
                         {
-                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, Block.Rose.Id);
+                            world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("rose").Id);
                         }
                     }
                 }

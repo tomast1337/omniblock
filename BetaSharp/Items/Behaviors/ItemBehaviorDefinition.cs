@@ -77,9 +77,9 @@ public sealed class ToolBehaviorDefinition : ItemBehaviorDefinition
         var mat = ToolMaterialRegistry.Get(Material);
         return ToolType switch
         {
-            "pickaxe" => new ToolBehavior(mat, 2, Item.s_pickaxeBlocks, Item.PickaxeSuitableFor(mat)),
-            "axe" => new ToolBehavior(mat, 3, Item.s_axeBlocks),
-            _ => new ToolBehavior(mat, 1, Item.s_spadeBlocks, b => b == Block.Snow || b == Block.SnowBlock),
+            "pickaxe" => new ToolBehavior(mat, 2, () => Item.s_pickaxeBlocks, Item.PickaxeSuitableFor(mat)),
+            "axe" => new ToolBehavior(mat, 3, () => Item.s_axeBlocks),
+            _ => new ToolBehavior(mat, 1, () => Item.s_spadeBlocks, b => b == BlockRegistry.Get("snow") || b == BlockRegistry.Get("snow_block")),
         };
     }
 }
@@ -127,10 +127,10 @@ public sealed class BucketBehaviorDefinition : ItemBehaviorDefinition
 {
     public string Liquid { get; init; } = "empty"; // "empty", "water", "lava", "milk"
 
-    public override IItemBehavior Build() => new BucketBehavior(Liquid switch
+    public override IItemBehavior Build() => new BucketBehavior(() => Liquid switch
     {
-        "water" => Block.FlowingWater.Id,
-        "lava" => Block.FlowingLava.Id,
+        "water" => BlockRegistry.Get("flowing_water").Id,
+        "lava" => BlockRegistry.Get("flowing_lava").Id,
         "milk" => -1,
         _ => 0,
     });
@@ -163,21 +163,13 @@ public sealed class DoorBehaviorDefinition : ItemBehaviorDefinition
 public sealed class SeedsBehaviorDefinition : ItemBehaviorDefinition
 {
     public string? PlacesBlock { get; init; }
-    public override IItemBehavior Build()
-    {
-        var block = Block.ByName(PlacesBlock!);
-        return new SeedsBehavior(block!.Id);
-    }
+    public override IItemBehavior Build() => new SeedsBehavior(() => BlockRegistry.Get(PlacesBlock!).Id);
 }
 
 public sealed class PlaceBlockBehaviorDefinition : ItemBehaviorDefinition
 {
     public string? PlacesBlock { get; init; }
-    public override IItemBehavior Build()
-    {
-        var block = Block.ByName(PlacesBlock!);
-        return new PlaceBlockBehavior(block!);
-    }
+    public override IItemBehavior Build() => new PlaceBlockBehavior(() => BlockRegistry.Get(PlacesBlock!));
 }
 
 public sealed class ThrowableBehaviorDefinition : ItemBehaviorDefinition

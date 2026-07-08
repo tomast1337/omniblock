@@ -325,7 +325,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         if (!world.Reader.IsPosLoaded(x, y, z)) return true;
 
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == Block.Door.Id || blockId == Block.IronDoor.Id || blockId == Block.Sign.Id || blockId == Block.Ladder.Id || blockId == Block.SugarCane.Id) return true;
+        if (blockId == BlockRegistry.Get("door").Id || blockId == BlockRegistry.Get("iron_door").Id || blockId == BlockRegistry.Get("sign").Id || blockId == BlockRegistry.Get("ladder").Id || blockId == BlockRegistry.Get("sugar_cane").Id) return true;
 
         if (blockId == 0) return false;
 

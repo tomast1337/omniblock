@@ -1,12 +1,27 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Blocks;
 
-/// <summary>A record (not a plain class) so tests can clone one onto a scratch ProtocolId via <c>with</c>.</summary>
-public sealed record BlockDefinition
+/// <summary>
+///     A record (not a plain class) so tests can clone one onto a scratch ProtocolId via
+///     <c>with</c>. Implements <see cref="IDataAsset" /> directly rather than extending
+///     <see cref="DataAsset" /> — records can only inherit from another record, not a plain
+///     class (CS8864). <c>Name</c>/<c>Namespace</c> are <c>[JsonIgnore]</c>d and set by
+///     <see cref="BlockDefinitionJsonLoader" /> from the JSON filename, never read from the file
+///     itself.
+/// </summary>
+public sealed record BlockDefinition : IDataAsset
 {
+    [JsonIgnore]
+    public string Name { get; set; } = "";
+
+    [JsonIgnore]
+    public Namespace Namespace { get; set; } = Namespace.BetaSharp;
+
     public required int ProtocolId { get; init; }
-    public required string Name { get; init; }
     public string? TranslationKey { get; init; }
 
     public string Material { get; init; } = "stone";

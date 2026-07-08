@@ -18,7 +18,7 @@ internal class ItemBlock : Item
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == Block.Snow.Id)
+        if (world.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("snow").Id)
         {
             meta = 0;
         }

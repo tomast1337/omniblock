@@ -50,7 +50,7 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
         {
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) != Block.Obsidian.Id)
+        if (@event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) != BlockRegistry.Get("obsidian").Id)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
@@ -61,7 +61,7 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
             {
             }
 
-            if (blocksAbove == 3 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == Block.Obsidian.Id)
+            if (blocksAbove == 3 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == BlockRegistry.Get("obsidian").Id)
             {
                 bool hasXNeighbors = @event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == block.Id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == block.Id;
                 bool hasZNeighbors = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == block.Id || @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == block.Id;
@@ -69,8 +69,8 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
                 {
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
-                else if ((@event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != Block.Obsidian.Id || @event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != block.Id) &&
-                         (@event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != Block.Obsidian.Id || @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != block.Id))
+                else if ((@event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != BlockRegistry.Get("obsidian").Id || @event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != block.Id) &&
+                         (@event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != BlockRegistry.Get("obsidian").Id || @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != block.Id))
                 {
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
@@ -136,12 +136,12 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
     {
         sbyte extendsInZ = 0;
         sbyte extendsInX = 0;
-        if (reader.GetBlockId(x - 1, y, z) == Block.Obsidian.Id || reader.GetBlockId(x + 1, y, z) == Block.Obsidian.Id)
+        if (reader.GetBlockId(x - 1, y, z) == BlockRegistry.Get("obsidian").Id || reader.GetBlockId(x + 1, y, z) == BlockRegistry.Get("obsidian").Id)
         {
             extendsInZ = 1;
         }
 
-        if (reader.GetBlockId(x, y, z - 1) == Block.Obsidian.Id || reader.GetBlockId(x, y, z + 1) == Block.Obsidian.Id)
+        if (reader.GetBlockId(x, y, z - 1) == BlockRegistry.Get("obsidian").Id || reader.GetBlockId(x, y, z + 1) == BlockRegistry.Get("obsidian").Id)
         {
             extendsInX = 1;
         }
@@ -172,12 +172,12 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
                 int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
                 if (isFrame)
                 {
-                    if (blockId != Block.Obsidian.Id)
+                    if (blockId != BlockRegistry.Get("obsidian").Id)
                     {
                         return false;
                     }
                 }
-                else if (blockId != 0 && blockId != Block.Fire.Id)
+                else if (blockId != 0 && blockId != BlockRegistry.Get("fire").Id)
                 {
                     return false;
                 }
@@ -188,7 +188,7 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
         {
             for (verticalOffset = 0; verticalOffset < 3; ++verticalOffset)
             {
-                writer.SetBlockInternal(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, Block.NetherPortal.Id);
+                writer.SetBlockInternal(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, BlockRegistry.Get("nether_portal").Id);
             }
         }
 

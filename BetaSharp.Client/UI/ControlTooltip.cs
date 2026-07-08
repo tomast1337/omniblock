@@ -43,17 +43,17 @@ public static class ControlTooltip
             int blockZ = hit.BlockZ;
             int blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
 
-            if (blockId == Block.Chest.Id || blockId == Block.Furnace.Id || blockId == Block.LitFurnace.Id || blockId == Block.CraftingTable.Id || blockId == Block.Dispenser.Id)
+            if (blockId == BlockRegistry.Get("chest").Id || blockId == BlockRegistry.Get("furnace").Id || blockId == BlockRegistry.Get("lit_furnace").Id || blockId == BlockRegistry.Get("crafting_table").Id || blockId == BlockRegistry.Get("dispenser").Id)
                 useAction = "Interact";
-            else if (blockId == Block.Door.Id || blockId == Block.IronDoor.Id || blockId == Block.Trapdoor.Id)
+            else if (blockId == BlockRegistry.Get("door").Id || blockId == BlockRegistry.Get("iron_door").Id || blockId == BlockRegistry.Get("trapdoor").Id)
                 useAction = "Open/Close";
-            else if (blockId == Block.Lever.Id || blockId == Block.Button.Id || blockId == Block.Repeater.Id || blockId == Block.PoweredRepeater.Id)
+            else if (blockId == BlockRegistry.Get("lever").Id || blockId == BlockRegistry.Get("button").Id || blockId == BlockRegistry.Get("repeater").Id || blockId == BlockRegistry.Get("powered_repeater").Id)
                 useAction = "Use";
-            else if (blockId == Block.Bed.Id)
+            else if (blockId == BlockRegistry.Get("bed").Id)
                 useAction = "Sleep";
-            else if (blockId == Block.Cake.Id)
+            else if (blockId == BlockRegistry.Get("cake").Id)
                 useAction = "Eat";
-            else if (blockId == Block.Jukebox.Id)
+            else if (blockId == BlockRegistry.Get("jukebox").Id)
                 useAction = "Use";
             else if (IsItemUsable(held))
             {

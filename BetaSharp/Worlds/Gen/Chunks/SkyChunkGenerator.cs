@@ -33,27 +33,27 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     private double[] _temperatures;
     private readonly BiomeSource _biomeSource;
 
-    private readonly LakeFeature _featureWaterLake = new(Block.Water.Id);
-    private readonly LakeFeature _featureLavaLake = new(Block.Lava.Id);
+    private readonly LakeFeature _featureWaterLake = new(BlockRegistry.Get("water").Id);
+    private readonly LakeFeature _featureLavaLake = new(BlockRegistry.Get("lava").Id);
     private readonly DungeonFeature _featureDungeon = new();
     private readonly ClayOreFeature _featureClay = new(32);
-    private readonly OreFeature _featureDirt = new(Block.Dirt.Id, 32);
-    private readonly OreFeature _featureGravel = new(Block.Gravel.Id, 32);
-    private readonly OreFeature _featureCoal = new(Block.CoalOre.Id, 16);
-    private readonly OreFeature _featureIron = new(Block.IronOre.Id, 8);
-    private readonly OreFeature _featureGold = new(Block.GoldOre.Id, 8);
-    private readonly OreFeature _featureRedstone = new(Block.RedstoneOre.Id, 7);
-    private readonly OreFeature _featureDiamond = new(Block.DiamondOre.Id, 7);
-    private readonly OreFeature _featureLapis = new(Block.LapisOre.Id, 6);
-    private readonly PlantPatchFeature _featureDandelion = new(Block.Dandelion.Id);
-    private readonly PlantPatchFeature _featureRose = new(Block.Rose.Id);
-    private readonly PlantPatchFeature _featureBrownMushroom = new(Block.BrownMushroom.Id);
-    private readonly PlantPatchFeature _featureRedMushroom = new(Block.RedMushroom.Id);
+    private readonly OreFeature _featureDirt = new(BlockRegistry.Get("dirt").Id, 32);
+    private readonly OreFeature _featureGravel = new(BlockRegistry.Get("gravel").Id, 32);
+    private readonly OreFeature _featureCoal = new(BlockRegistry.Get("coal_ore").Id, 16);
+    private readonly OreFeature _featureIron = new(BlockRegistry.Get("iron_ore").Id, 8);
+    private readonly OreFeature _featureGold = new(BlockRegistry.Get("gold_ore").Id, 8);
+    private readonly OreFeature _featureRedstone = new(BlockRegistry.Get("redstone_ore").Id, 7);
+    private readonly OreFeature _featureDiamond = new(BlockRegistry.Get("diamond_ore").Id, 7);
+    private readonly OreFeature _featureLapis = new(BlockRegistry.Get("lapis_ore").Id, 6);
+    private readonly PlantPatchFeature _featureDandelion = new(BlockRegistry.Get("dandelion").Id);
+    private readonly PlantPatchFeature _featureRose = new(BlockRegistry.Get("rose").Id);
+    private readonly PlantPatchFeature _featureBrownMushroom = new(BlockRegistry.Get("brown_mushroom").Id);
+    private readonly PlantPatchFeature _featureRedMushroom = new(BlockRegistry.Get("red_mushroom").Id);
     private readonly SugarCanePatchFeature _featureSugarcane = new();
     private readonly PumpkinPatchFeature _featurePumpkin = new();
     private readonly CactusPatchFeature _featureCactus = new();
-    private readonly SpringFeature _featureWaterSpring = new(Block.FlowingWater.Id);
-    private readonly SpringFeature _featureLavaSpring = new(Block.FlowingLava.Id);
+    private readonly SpringFeature _featureWaterSpring = new(BlockRegistry.Get("flowing_water").Id);
+    private readonly SpringFeature _featureLavaSpring = new(BlockRegistry.Get("flowing_lava").Id);
 
     public IChunkSource CreateParallelInstance() => new SkyChunkGenerator(_world, _seed, new BiomeSource(_world));
 
@@ -119,7 +119,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                                 int blockType = 0;
                                 if (terrainDensity > 0.0D)
                                 {
-                                    blockType = Block.Stone.Id;
+                                    blockType = BlockRegistry.Get("stone").Id;
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
@@ -164,14 +164,14 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                     {
                         currentDepth = -1;
                     }
-                    else if (currentBlock == Block.Stone.Id)
+                    else if (currentBlock == BlockRegistry.Get("stone").Id)
                     {
                         if (currentDepth == -1)
                         {
                             if (surfaceDepth <= 0)
                             {
                                 topBlock = 0;
-                                soilBlock = (byte)Block.Stone.Id;
+                                soilBlock = (byte)BlockRegistry.Get("stone").Id;
                             }
 
                             currentDepth = surfaceDepth;
@@ -188,10 +188,10 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
                         {
                             --currentDepth;
                             blocks[blockIndex] = soilBlock;
-                            if (currentDepth == 0 && soilBlock == Block.Sand.Id)
+                            if (currentDepth == 0 && soilBlock == BlockRegistry.Get("sand").Id)
                             {
                                 currentDepth = _random.NextInt(4);
-                                soilBlock = (byte)Block.Sandstone.Id;
+                                soilBlock = (byte)BlockRegistry.Get("sandstone").Id;
                             }
                         }
                     }
@@ -546,7 +546,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
                 if (temperatureSample < 0.5D && topBlockY > 0 && topBlockY < 128 && _world.Reader.IsAir(x, topBlockY, z) && _world.Reader.GetMaterial(x, topBlockY - 1, z).BlocksMovement && _world.Reader.GetMaterial(x, topBlockY - 1, z) != Material.Ice)
                 {
-                    _world.Writer.SetBlock(x, topBlockY, z, Block.Snow.Id);
+                    _world.Writer.SetBlock(x, topBlockY, z, BlockRegistry.Get("snow").Id);
                 }
             }
         }

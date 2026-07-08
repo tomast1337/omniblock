@@ -1,3 +1,4 @@
+using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
@@ -17,6 +18,7 @@ public static class RegistryKeys
     public static readonly RegistryKey<EntityType> EntityTypes = new("betasharp:entity_type");
     public static readonly RegistryKey<Biome> Biomes = new("betasharp:biome");
     public static readonly RegistryKey<BlockEntityType> BlockEntityTypes = new("betasharp:block_entity_type");
+    public static readonly RegistryKey<BlockDefinition> Blocks = new("betasharp:block");
     public static readonly RegistryKey<IGameRule> GameRules = new("betasharp:game_rule");
     public static readonly RegistryKey<GameMode> GameModes = new("betasharp:game_mode");
     public static readonly RegistryKey<RecipeDefinition> Recipes = new("betasharp:recipe");

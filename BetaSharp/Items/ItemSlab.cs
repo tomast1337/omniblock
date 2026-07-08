@@ -11,7 +11,7 @@ internal class ItemSlab : ItemBlock
         setHasSubtypes(true);
     }
 
-    public override int getTextureId(int meta) => Block.Slab.GetTexture(2.ToSide(), meta);
+    public override int getTextureId(int meta) => BlockRegistry.Get("slab").GetTexture(2.ToSide(), meta);
 
     public override int getPlacementMetadata(int meta) => meta;
 

@@ -41,11 +41,11 @@ internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == Block.Farmland.Id;
+        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("farmland").Id;
 
     public bool CanGrow(Block block, OnTickEvent ctx)
         => (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z))
-           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == Block.Farmland.Id;
+           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == BlockRegistry.Get("farmland").Id;
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
         => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
@@ -90,7 +90,7 @@ internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
             {
                 int blockBelow = read.GetBlockId(dx, y - 1, dz);
                 float cellMoisture = 0.0F;
-                if (blockBelow == Block.Farmland.Id)
+                if (blockBelow == BlockRegistry.Get("farmland").Id)
                 {
                     cellMoisture = 1.0F;
                     if (read.GetBlockMeta(dx, y - 1, dz) > 0)

@@ -48,10 +48,10 @@ internal sealed class BedBehavior : IItemBehavior
             return false;
         }
 
-        world.Writer.SetBlock(x, y, z, Block.Bed.Id, dir);
-        world.Writer.SetBlock(x + offsetX, y, z + offsetZ, Block.Bed.Id, dir + 8);
-        world.Broadcaster.NotifyNeighbors(x, y, z, Block.Bed.Id);
-        world.Broadcaster.NotifyNeighbors(x + offsetX, y, z + offsetZ, Block.Bed.Id);
+        world.Writer.SetBlock(x, y, z, BlockRegistry.Get("bed").Id, dir);
+        world.Writer.SetBlock(x + offsetX, y, z + offsetZ, BlockRegistry.Get("bed").Id, dir + 8);
+        world.Broadcaster.NotifyNeighbors(x, y, z, BlockRegistry.Get("bed").Id);
+        world.Broadcaster.NotifyNeighbors(x + offsetX, y, z + offsetZ, BlockRegistry.Get("bed").Id);
         itemStack.ConsumeItem(player);
         return true;
     }

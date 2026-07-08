@@ -11,7 +11,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Piston base (normal or sticky, per <paramref name="sticky" />): tracks extend/retract via
 ///     redstone quasi-connectivity, drives the block-action animation packet, and on retract either
 ///     pulls the adjacent block along (sticky) or just clears the head. The multi-block push/pull
-///     dance temporarily writes <see cref="Block.MovingPiston" /> placeholders backed by
+///     dance temporarily writes <see cref="BlockRegistry.Get("moving_piston")" /> placeholders backed by
 ///     <see cref="BlockEntityPiston" /> for the client-visible slide animation.
 /// </summary>
 public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifecycle, IBlockTicker, IBlockVisuals
@@ -57,7 +57,7 @@ public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifec
                     extendingPiston.Finish();
                 }
 
-                @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, Block.MovingPiston.Id, facing);
+                @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, BlockRegistry.Get("moving_piston").Id, facing);
                 @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, PistonMovingBehavior.CreatePistonBlockEntity(block.Id, facing, facing, false, true));
 
                 if (sticky)
@@ -70,7 +70,7 @@ public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifec
                     int targetMeta = @event.World.Reader.GetBlockMeta(targetX, targetY, targetZ);
                     bool stickySpit = false;
 
-                    if (targetId == Block.MovingPiston.Id)
+                    if (targetId == BlockRegistry.Get("moving_piston").Id)
                     {
                         BlockEntity? movingTarget = @event.World.Entities.GetBlockEntity<BlockEntityPiston>(targetX, targetY, targetZ);
                         if (movingTarget is BlockEntityPiston movingPistonTarget && movingPistonTarget.Facing == facing && movingPistonTarget.IsExtending)
@@ -94,12 +94,12 @@ public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifec
                         @event.World.Writer.SetBlock(headX, headY, headZ, 0);
                     }
                     else if (targetId > 0 && CanMoveBlock(targetId, @event.World, targetX, targetY, targetZ, false) &&
-                             (Block.Blocks[targetId].GetPistonBehavior() == PistonBehavior.Normal || targetId == Block.Piston.Id || targetId == Block.StickyPiston.Id))
+                             (Block.Blocks[targetId].GetPistonBehavior() == PistonBehavior.Normal || targetId == BlockRegistry.Get("piston").Id || targetId == BlockRegistry.Get("sticky_piston").Id))
                     {
                         @event.World.Writer.SetBlock(headX, headY, headZ, 0);
                         @event.World.Writer.SetBlock(targetX, targetY, targetZ, 0);
 
-                        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(headX, headY, headZ, Block.MovingPiston.Id, targetMeta);
+                        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(headX, headY, headZ, BlockRegistry.Get("moving_piston").Id, targetMeta);
                         @event.World.Entities.SetBlockEntity(headX, headY, headZ, PistonMovingBehavior.CreatePistonBlockEntity(targetId, targetMeta, facing, false, false));
                     }
                     else
@@ -254,9 +254,9 @@ public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifec
 
     private static bool CanMoveBlock(int id, IWorldContext ctx, int x, int y, int z, bool allowBreaking)
     {
-        if (id == Block.Obsidian.Id) return false;
+        if (id == BlockRegistry.Get("obsidian").Id) return false;
 
-        if (id != Block.Piston.Id && id != Block.StickyPiston.Id)
+        if (id != BlockRegistry.Get("piston").Id && id != BlockRegistry.Get("sticky_piston").Id)
         {
             if (Math.Abs(Block.Blocks[id].GetHardness() - (-1.0F)) < 0.001F) return false;
             if (Block.Blocks[id].GetPistonBehavior() == PistonBehavior.Unpushable) return false;
@@ -351,12 +351,12 @@ public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifec
 
                 if (prevBlockId == block.Id && prevX == x && prevY == y && prevZ == z)
                 {
-                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, Block.MovingPiston.Id, dir | (sticky ? 8 : 0));
-                    ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, PistonMovingBehavior.CreatePistonBlockEntity(Block.PistonHead.Id, dir | (sticky ? 8 : 0), dir, true, false));
+                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, BlockRegistry.Get("moving_piston").Id, dir | (sticky ? 8 : 0));
+                    ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, PistonMovingBehavior.CreatePistonBlockEntity(BlockRegistry.Get("piston_head").Id, dir | (sticky ? 8 : 0), dir, true, false));
                 }
                 else
                 {
-                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, Block.MovingPiston.Id, prevMeta);
+                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, BlockRegistry.Get("moving_piston").Id, prevMeta);
                     ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, PistonMovingBehavior.CreatePistonBlockEntity(prevBlockId, prevMeta, dir, true, false));
                 }
 

@@ -30,8 +30,8 @@ public static class DefaultRegistries
 
     public static void Initialize()
     {
-        // Must load before anything touches Block — its static fields consume
-        // materials and sound groups during type initialization.
+        // Must load before BlockRegistry.Initialize() — blocks resolve their Material and
+        // SoundGroup by name during construction.
         MaterialRegistry.Initialize();
         SoundGroupRegistry.Initialize();
 
@@ -65,9 +65,10 @@ public static class DefaultRegistries
             ItemFactory.ResolveCrossReferences(definition);
         }
 
-        // Now safe: items are fully loaded, so Item.ByName lookups inside Block's
-        // static field initializers (behaviors) will succeed.
-        _ = Block.Stone.Id;
+        // Now safe: items are fully loaded, so loot-table/behavior lookups by item name inside
+        // BlockRegistry.Initialize() will succeed. BlockRegistry, in turn, must run before Stats
+        // below — Achievements references specific blocks by name.
+        BlockRegistry.Initialize();
 
         Stats.Stats.InitializeItemStats();
         Stats.Stats.InitializeExtendedItemStats();

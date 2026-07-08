@@ -143,7 +143,7 @@ public sealed class MapBehavior : IItemBehavior
                 {
                     sampleX = worldX + worldZ * 231871;
                     sampleX = sampleX * sampleX * 31287121 + sampleX * 11;
-                    blockHistogram[((sampleX >> 20) & 1) == 0 ? Block.Dirt.Id : Block.Stone.Id] += 10;
+                    blockHistogram[((sampleX >> 20) & 1) == 0 ? BlockRegistry.Get("dirt").Id : BlockRegistry.Get("stone").Id] += 10;
                     avgHeight = 100.0D;
                 }
                 else

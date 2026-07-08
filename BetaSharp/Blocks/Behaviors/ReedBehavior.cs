@@ -58,10 +58,10 @@ internal sealed class ReedBehavior : IBlockTicker, IBlockPhysics
         if (blockBelowId == selfId) return true;
 
         // Valid block below.
-        if (blockBelowId != Block.GrassBlock.Id &&
-            blockBelowId != Block.Dirt.Id &&
-            blockBelowId != Block.Sand.Id &&
-            blockBelowId != Block.Gravel.Id) return false;
+        if (blockBelowId != BlockRegistry.Get("grass_block").Id &&
+            blockBelowId != BlockRegistry.Get("dirt").Id &&
+            blockBelowId != BlockRegistry.Get("sand").Id &&
+            blockBelowId != BlockRegistry.Get("gravel").Id) return false;
 
         // Water adjacent.
         return reader.GetMaterial(x - 1, y - 1, z) == Material.Water ||

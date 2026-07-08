@@ -309,7 +309,7 @@ public class ParticleManager
         float r = 0.6f, g = 0.6f, b = 0.6f;
         float baseScale = RandomBaseScale() / 2.0f;
 
-        if (!(block == Block.GrassBlock && texIndex != 0))
+        if (!(block == BlockRegistry.Get("grass_block") && texIndex != 0))
         {
             int color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= (color >> 16 & 255) / 255.0f;
@@ -337,7 +337,7 @@ public class ParticleManager
         float r = 0.6f, g = 0.6f, b = 0.6f;
         float baseScale = RandomBaseScale() * sizeScale / 2.0f;
 
-        if (!(block == Block.GrassBlock && texIndex != 0))
+        if (!(block == BlockRegistry.Get("grass_block") && texIndex != 0))
         {
             int color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= (color >> 16 & 255) / 255.0f;
@@ -356,7 +356,7 @@ public class ParticleManager
 
         int texIndex = item.getTextureId(0);
         float baseScale = RandomBaseScale() / 2.0f;
-        float gravity = Block.SnowBlock.ParticleFallSpeedModifier;
+        float gravity = BlockRegistry.Get("snow_block").ParticleFallSpeedModifier;
 
         _layers[2].Add(ParticleType.Slime, x, y, z, bvx, bvy, bvz,
             1.0f, 1.0f, 1.0f, baseScale, gravity, texIndex,

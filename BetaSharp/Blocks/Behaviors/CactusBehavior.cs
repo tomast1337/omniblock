@@ -71,6 +71,6 @@ internal sealed class CactusBehavior : IBlockTicker, IBlockPhysics, IBlockIntera
         if (world.GetMaterial(x, y, z + 1).IsSolid) return false;
 
         int blockBelowId = world.GetBlockId(x, y - 1, z);
-        return blockBelowId == Block.Cactus.Id || blockBelowId == Block.Sand.Id;
+        return blockBelowId == BlockRegistry.Get("cactus").Id || blockBelowId == BlockRegistry.Get("sand").Id;
     }
 }
