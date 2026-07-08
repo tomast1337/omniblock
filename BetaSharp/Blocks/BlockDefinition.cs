@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Blocks;

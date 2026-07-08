@@ -1,3 +1,5 @@
+using System;
+
 namespace BetaSharp.Blocks;
 
 public sealed record LootEntryDefinition(string ItemName, int Weight = 1);
@@ -10,19 +12,10 @@ public sealed record LootTableDefinition(LootEntryDefinition[] Entries, int MinC
 ///     regardless of static-initializer declaration order (the same forward-reference concern
 ///     <c>MeltBehavior</c>/<c>StairsBehavior</c> handle the same way).
 /// </summary>
-public readonly struct LootEntry
+public readonly struct LootEntry(Func<int> itemId, int weight = 1)
 {
-    private readonly Func<int> _itemId;
-
-    public int Weight { get; }
-
-    public LootEntry(Func<int> itemId, int weight = 1)
-    {
-        _itemId = itemId;
-        Weight = weight;
-    }
-
-    public int ItemId => _itemId();
+    public int Weight { get; } = weight;
+    public int ItemId => itemId();
 }
 
 /// <summary>
@@ -51,10 +44,7 @@ public sealed class LootTable
         foreach (LootEntry entry in _entries)
         {
             cumulative += entry.Weight;
-            if (roll < cumulative)
-            {
-                return entry.ItemId;
-            }
+            if (roll < cumulative) return entry.ItemId;
         }
 
         return _entries[^1].ItemId;

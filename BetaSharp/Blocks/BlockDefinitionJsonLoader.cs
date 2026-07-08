@@ -12,20 +12,14 @@ namespace BetaSharp.Blocks;
 ///     explicit numeric id (<see cref="BlockDefinition.ProtocolId" />), and
 ///     <see cref="DataAssetLoader{T}" />'s <c>GetId()</c> always returns -1.
 /// </summary>
-internal sealed class BlockDefinitionJsonLoader : DataAssetLoader, IReadableRegistry<BlockDefinition>
+internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locations) : DataAssetLoader(locations), IReadableRegistry<BlockDefinition>
 {
     private const string DefaultsFileName = "_defaults.json";
     private static readonly JsonSerializerOptions s_options = new();
 
-    private readonly string _path;
     private readonly Dictionary<ResourceLocation, BlockDefinition> _byLocation = [];
     private readonly Dictionary<int, BlockDefinition> _byId = [];
     private JsonElement? _defaults;
-
-    public BlockDefinitionJsonLoader(string path, LoadLocations locations) : base(locations)
-    {
-        _path = path;
-    }
 
     private protected override void Clear()
     {
@@ -34,15 +28,15 @@ internal sealed class BlockDefinitionJsonLoader : DataAssetLoader, IReadableRegi
         _defaults = null;
     }
 
-    private protected override void OnLoadAssets(string path, bool namespaced, LoadLocations location)
+    private protected override void OnLoadAssets(string assetPath, bool namespaced, LoadLocations location)
     {
-        if (namespaced) LoadAssetsFromFolders(path, location);
-        else LoadAssets(Namespace.BetaSharp, path, location);
+        if (namespaced) LoadAssetsFromFolders(assetPath, location);
+        else LoadAssets(Namespace.BetaSharp, assetPath, location);
     }
 
-    private void LoadAssetsFromFolders(string path, LoadLocations location)
+    private void LoadAssetsFromFolders(string assetPath, LoadLocations location)
     {
-        foreach (string dir in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
+        foreach (string dir in Directory.GetDirectories(assetPath, "*", SearchOption.TopDirectoryOnly))
         {
             string dirName = Path.GetFileName(dir);
             LoadAssets(Namespace.Get(dirName), dir, location);
@@ -51,7 +45,7 @@ internal sealed class BlockDefinitionJsonLoader : DataAssetLoader, IReadableRegi
 
     private void LoadAssets(Namespace @namespace, string basePath, LoadLocations location)
     {
-        string dir = Path.Join(basePath, _path);
+        string dir = Path.Join(basePath, path);
         if (!Directory.Exists(dir))
         {
             Directory.CreateDirectory(dir);
@@ -122,7 +116,7 @@ internal sealed class BlockDefinitionJsonLoader : DataAssetLoader, IReadableRegi
     {
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
 
-        var clone = new BlockDefinitionJsonLoader(_path, Locations);
+        var clone = new BlockDefinitionJsonLoader(path, Locations);
         foreach (KeyValuePair<ResourceLocation, BlockDefinition> pair in _byLocation)
         {
             clone._byLocation[pair.Key] = pair.Value;
@@ -136,7 +130,7 @@ internal sealed class BlockDefinitionJsonLoader : DataAssetLoader, IReadableRegi
         return clone;
     }
 
-    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, _path);
+    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, path);
 
     public Holder<BlockDefinition>? Get(ResourceLocation key) =>
         _byLocation.TryGetValue(key, out BlockDefinition? value) ? new Holder<BlockDefinition>(value) : null;

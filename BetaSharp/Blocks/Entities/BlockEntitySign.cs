@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks.Entities;
 public class BlockEntitySign : BlockEntity
 {
     private bool _editable = true;
-    public override BlockEntityType Type => Sign;
+    protected override BlockEntityType Type => Sign;
     public string[] Texts { get; set; } = ["", "", "", ""];
     public int CurrentRow { get; set; } = -1;
 
@@ -20,7 +20,7 @@ public class BlockEntitySign : BlockEntity
         nbt.SetString("Text4", Texts[3]);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         _editable = false;
         base.ReadNbt(nbt);
@@ -35,7 +35,7 @@ public class BlockEntitySign : BlockEntity
         }
     }
 
-    public override Packet CreateUpdatePacket()
+    public override Packet? CreateUpdatePacket()
     {
         string[] lines = new string[4];
 

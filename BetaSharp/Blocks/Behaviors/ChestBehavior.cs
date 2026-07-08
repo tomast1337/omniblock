@@ -26,24 +26,26 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == chestId && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z + 1))
             return true;
 
+        // The preceding GetBlockId == chestId check guarantees a BlockEntityChest exists at that
+        // neighbor position — chest blocks always carry a tile entity via TileEntityLifecycleBehavior.
         if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == chestId)
         {
-            chestInventory = new InventoryLargeChest("Large chest", @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X - 1, @event.Y, @event.Z), chestInventory);
+            chestInventory = new InventoryLargeChest("Large chest", @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X - 1, @event.Y, @event.Z)!, chestInventory!);
         }
 
         if (@event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == chestId)
         {
-            chestInventory = new InventoryLargeChest("Large chest", chestInventory, @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X + 1, @event.Y, @event.Z));
+            chestInventory = new InventoryLargeChest("Large chest", chestInventory!, @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X + 1, @event.Y, @event.Z)!);
         }
 
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == chestId)
         {
-            chestInventory = new InventoryLargeChest("Large chest", @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z - 1), chestInventory);
+            chestInventory = new InventoryLargeChest("Large chest", @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z - 1)!, chestInventory!);
         }
 
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == chestId)
         {
-            chestInventory = new InventoryLargeChest("Large chest", chestInventory, @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z + 1));
+            chestInventory = new InventoryLargeChest("Large chest", chestInventory!, @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X, @event.Y, @event.Z + 1)!);
         }
 
         if (@event.World.IsRemote)
@@ -51,7 +53,7 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
             return true;
         }
 
-        @event.Player.openChestScreen(chestInventory);
+        @event.Player.openChestScreen(chestInventory!);
         return true;
     }
 

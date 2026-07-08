@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks.Entities;
 internal class BlockEntityChest : BlockEntity, IInventory
 {
     private ItemStack?[] _inventory = new ItemStack[36];
-    public override BlockEntityType Type => Chest;
+    protected override BlockEntityType Type => Chest;
 
     public int Size => 27;
 
@@ -58,7 +58,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
 
     public bool CanPlayerUse(EntityPlayer player) => World.Entities.GetBlockEntity<BlockEntityChest>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
@@ -24,7 +25,7 @@ public class BlockEntityPiston : BlockEntity
         IsSource = source;
     }
 
-    public override BlockEntityType Type => Piston;
+    protected override BlockEntityType Type => Piston;
     public int PushedBlockId { get; private set; }
     public new int PushedBlockData { get; private set; }
     public bool IsExtending { get; private set; }
@@ -58,11 +59,13 @@ public class BlockEntityPiston : BlockEntity
         Box? pushCollisionBox = PistonMovingBehavior.GetPushedBlockCollisionShape(BlockRegistry.Get("moving_piston"), World.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
         if (pushCollisionBox == null) return;
 
-        List<Entity> entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);
+        var entitiesToPush = World.Entities.GetEntities(null!, pushCollisionBox.Value);
         if (entitiesToPush.Count <= 0) return;
 
         List<Entity> pushedEntities = [];
-        pushedEntities.AddRange(entitiesToPush);
+        pushedEntities.AddRange(entitiesToPush); // Cannot resolve method:
+                                                 //     AddRange(List<Entity>)
+                                                 // Candidates are:
         foreach (Entity entity in pushedEntities)
         {
             entity.Move(
@@ -129,7 +132,7 @@ public class BlockEntityPiston : BlockEntity
         }
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
         PushedBlockId = nbt.GetInteger("blockId");

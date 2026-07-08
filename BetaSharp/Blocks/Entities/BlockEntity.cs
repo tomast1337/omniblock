@@ -23,8 +23,10 @@ public abstract class BlockEntity : IEntity
     public static readonly BlockEntityType MobSpawner = Register(() => new BlockEntityMobSpawner(), "MobSpawner");
     public static readonly BlockEntityType Note = Register(() => new BlockEntityNote(), "Music");
     public static readonly BlockEntityType Piston = Register(() => new BlockEntityPiston(), "Piston");
-    protected bool Removed;
-    public IWorldContext World;
+
+    private bool _removed;
+
+    public IWorldContext World = null!;
 
     public int X;
     public int Y;
@@ -34,7 +36,7 @@ public abstract class BlockEntity : IEntity
     {
     }
 
-    public abstract BlockEntityType Type { get; }
+    protected abstract BlockEntityType Type { get; }
 
     public int PushedBlockData => World.Reader.GetBlockMeta(X, Y, Z);
 
@@ -45,7 +47,7 @@ public abstract class BlockEntity : IEntity
         return type;
     }
 
-    public virtual void ReadNbt(NBTTagCompound nbt)
+    protected virtual void ReadNbt(NBTTagCompound nbt)
     {
         X = nbt.GetInteger("x");
         Y = nbt.GetInteger("y");
@@ -79,7 +81,7 @@ public abstract class BlockEntity : IEntity
         string id = nbt.GetString("id");
         if (string.IsNullOrEmpty(id)) return null;
 
-        BlockEntityType? type = s_registry.Get(ResourceLocation.Parse(id.ToLower()));
+        BlockEntityType? type = s_registry.Get(ResourceLocation.Parse(id.ToLower()))?.Value;
         if (type == null)
         {
             s_logger.LogInformation($"{id} is missing a mapping!");
@@ -101,11 +103,7 @@ public abstract class BlockEntity : IEntity
 
     public void MarkDirty()
     {
-        if (World == null || World.IsRemote)
-        {
-            return;
-        }
-
+        if (World.IsRemote) return;
         World.Broadcaster.UpdateBlockEntity(X, Y, Z, this);
     }
 
@@ -119,28 +117,16 @@ public abstract class BlockEntity : IEntity
 
     public Block GetBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
 
-    public virtual Packet CreateUpdatePacket() => null;
+    public virtual Packet? CreateUpdatePacket() => null;
 
     public bool IsRemoved()
     {
-        if (Removed)
-        {
-            return true;
-        }
-
-        if (World != null)
-        {
-            int id = World.Reader.GetBlockId(X, Y, Z);
-            if (id == 0 || !Block.BlocksWithEntity[id])
-            {
-                return true;
-            }
-        }
-
-        return false;
+        if (_removed) return true;
+        int id = World.Reader.GetBlockId(X, Y, Z);
+        return id == 0 || !Block.BlocksWithEntity[id];
     }
 
-    public void MarkRemoved() => Removed = true;
+    public void MarkRemoved() => _removed = true;
 
-    public void CancelRemoval() => Removed = false;
+    public void CancelRemoval() => _removed = false;
 }

@@ -29,7 +29,7 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
             Side.South when evt.World.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z - 1) => 3,
             Side.West when evt.World.Reader.ShouldSuffocate(evt.X + 1, evt.Y, evt.Z) => 2,
             Side.East when evt.World.Reader.ShouldSuffocate(evt.X - 1, evt.Y, evt.Z) => 1,
-            Side.Up or Side.Down => GetPlacementSide(evt.World.Reader, evt.X, evt.Y, evt.Z)
+            _ => GetPlacementSide(evt.World.Reader, evt.X, evt.Y, evt.Z)
         };
 
         evt.World.Writer.SetBlockMeta(evt.X, evt.Y, evt.Z, facing + pressedBit);

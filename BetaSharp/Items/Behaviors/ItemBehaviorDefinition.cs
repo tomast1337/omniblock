@@ -157,7 +157,7 @@ public sealed class DoorBehaviorDefinition : ItemBehaviorDefinition
     public string DoorMaterial { get; init; } = "wood"; // "wood" or "iron"
 
     public override IItemBehavior Build() => new DoorBehavior(
-        DoorMaterial == "iron" ? Material.Metal : Material.Wood);
+        DoorMaterial == "iron" ? Material.Metal : MaterialRegistry.Get("wood"));
 }
 
 public sealed class SeedsBehaviorDefinition : ItemBehaviorDefinition

@@ -14,33 +14,18 @@ namespace BetaSharp.Blocks.Materials;
 public sealed class Material
 {
     public static Material Air => MaterialRegistry.Get("air");
-    public static Material SolidOrganic => MaterialRegistry.Get("solid_organic");
-    public static Material Soil => MaterialRegistry.Get("soil");
     public static Material Wood => MaterialRegistry.Get("wood");
     public static Material Stone => MaterialRegistry.Get("stone");
     public static Material Metal => MaterialRegistry.Get("metal");
     public static Material Water => MaterialRegistry.Get("water");
     public static Material Lava => MaterialRegistry.Get("lava");
-    public static Material Leaves => MaterialRegistry.Get("leaves");
     public static Material Plant => MaterialRegistry.Get("plant");
-    public static Material Sponge => MaterialRegistry.Get("sponge");
-    public static Material Wool => MaterialRegistry.Get("wool");
     public static Material Fire => MaterialRegistry.Get("fire");
     public static Material Sand => MaterialRegistry.Get("sand");
-    public static Material PistonBreakable => MaterialRegistry.Get("piston_breakable");
     public static Material Glass => MaterialRegistry.Get("glass");
-    public static Material Tnt => MaterialRegistry.Get("tnt");
-    public static Material Foliage => MaterialRegistry.Get("foliage");
     public static Material Ice => MaterialRegistry.Get("ice");
     public static Material SnowLayer => MaterialRegistry.Get("snow_layer");
     public static Material SnowBlock => MaterialRegistry.Get("snow_block");
-    public static Material Cactus => MaterialRegistry.Get("cactus");
-    public static Material Clay => MaterialRegistry.Get("clay");
-    public static Material Pumpkin => MaterialRegistry.Get("pumpkin");
-    public static Material NetherPortal => MaterialRegistry.Get("nether_portal");
-    public static Material Cake => MaterialRegistry.Get("cake");
-    public static Material Cobweb => MaterialRegistry.Get("cobweb");
-    public static Material Piston => MaterialRegistry.Get("piston");
 
     public required MapColor MapColor { get; init; }
     public bool IsFluid { get; init; }

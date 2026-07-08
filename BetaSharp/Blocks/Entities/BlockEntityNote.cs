@@ -8,7 +8,7 @@ internal class BlockEntityNote : BlockEntity
 {
     public sbyte note;
     public bool powered = false;
-    public override BlockEntityType Type => Note;
+    protected override BlockEntityType Type => Note;
 
     public override void WriteNbt(NBTTagCompound nbt)
     {
@@ -16,19 +16,12 @@ internal class BlockEntityNote : BlockEntity
         nbt.SetByte("note", note);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
         note = nbt.GetByte("note");
-        if (note < 0)
-        {
-            note = 0;
-        }
-
-        if (note > 24)
-        {
-            note = 24;
-        }
+        if (note < 0) note = 0;
+        if (note > 24) note = 24;
     }
 
     public void CycleNote()

@@ -1,7 +1,6 @@
 using BetaSharp.Items;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
-using ItemLookup = BetaSharp.ItemLookup;
 
 namespace BetaSharp.Blocks;
 
@@ -55,7 +54,7 @@ public static class BlockRegistry
         Block.BlocksAllowVision[0] = true;
     }
 
-    internal static void LoadAndBuild(IEnumerable<BlockDefinition> definitions)
+    private static void LoadAndBuild(IEnumerable<BlockDefinition> definitions)
     {
         List<BlockDefinition> defs = definitions.ToList();
 
@@ -80,7 +79,7 @@ public static class BlockRegistry
         // Block exists and is reachable by Block.ByName.
         foreach (BlockDefinition def in defs)
         {
-            BlockFactory.AttachBehaviors(Block.Blocks[def.ProtocolId]!, def);
+            BlockFactory.AttachBehaviors(Block.Blocks[def.ProtocolId], def);
         }
     }
 
@@ -116,7 +115,7 @@ public static class BlockRegistry
             // simpler than the old code's skip-if-Item.ITEMS-already-set quirk, and provably
             // identical in practice: none of the seven special-cased blocks above override
             // IBlockLifecycle.OnInit (only FireBehavior does, and Fire isn't one of them).
-            Block.Blocks[id]!.Init();
+            Block.Blocks[id].Init();
         }
     }
 }

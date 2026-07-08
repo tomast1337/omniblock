@@ -3,9 +3,6 @@ using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 
-// ItemLookup lives in the root BetaSharp namespace; BetaSharp.Blocks does not see it implicitly.
-using ItemLookup = BetaSharp.ItemLookup;
-
 namespace BetaSharp.Blocks;
 
 internal static class BlockFactory

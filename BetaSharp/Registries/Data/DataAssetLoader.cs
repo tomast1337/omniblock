@@ -78,7 +78,7 @@ public abstract class DataAssetLoader
         }
     }
 
-    private protected abstract void OnLoadAssets(string path, bool namespaced, LoadLocations location);
+    private protected abstract void OnLoadAssets(string assetPath, bool namespaced, LoadLocations location);
     private protected abstract void Clear();
     internal abstract DataAssetLoader? CloneForWorldDatapacks(string worldDatapackPath);
 }

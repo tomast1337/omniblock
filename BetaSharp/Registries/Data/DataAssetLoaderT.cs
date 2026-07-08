@@ -43,10 +43,10 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
         return clone;
     }
 
-    private protected override void OnLoadAssets(string path, bool namespaced, LoadLocations location)
+    private protected override void OnLoadAssets(string assetPath, bool namespaced, LoadLocations location)
     {
-        if (namespaced) LoadAssetsFromFolders(path, location);
-        else LoadAssets(Namespace.BetaSharp, path, location);
+        if (namespaced) LoadAssetsFromFolders(assetPath, location);
+        else LoadAssets(Namespace.BetaSharp, assetPath, location);
     }
 
     private void LoadAssetsFromFolders(string path, LoadLocations location)

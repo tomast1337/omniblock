@@ -16,7 +16,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
     private static readonly int s_bucketLavaId = Item.ByName("bucket_lava").Id;
 
     private ItemStack?[] _inventory = new ItemStack[3];
-    public override BlockEntityType Type => Furnace;
+    protected override BlockEntityType Type => Furnace;
     public int BurnTime { get; set; }
     public int CookTime { get; set; }
     public int FuelTime { get; set; }
@@ -65,7 +65,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
     public bool CanPlayerUse(EntityPlayer player) => World.Entities.GetBlockEntity<BlockEntityFurnace>(X, Y, Z) == this && player.GetSquaredDistance(X + 0.5D, Y + 0.5D, Z + 0.5D) <= 64.0D;
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");
@@ -192,11 +192,11 @@ public class BlockEntityFurnace : BlockEntity, IInventory
     {
         if (!CanAcceptRecipeOutput()) return;
 
-        ItemStack? inv0 = _inventory[0];
+        ItemStack? item1 = _inventory[0];
 
-        if (inv0 is null) return;
+        if (item1 is null) return;
 
-        ItemStack? outputStack = RecipesSmelting.Craft(inv0.getItem().Id);
+        ItemStack? outputStack = RecipesSmelting.Craft(item1.getItem().Id);
 
         if (outputStack == null) return;
 
@@ -206,19 +206,19 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         }
         else
         {
-            ItemStack? inv2 = _inventory[2];
-            if (inv2 != null && inv2.ItemId == outputStack.ItemId)
+            ItemStack? item2 = _inventory[2];
+            if (item2 != null && item2.ItemId == outputStack.ItemId)
             {
-                inv2.Count++;
+                item2.Count++;
             }
         }
 
-        inv0 = _inventory[0];
+        item1 = _inventory[0];
 
-        if (inv0 is null) return;
+        if (item1 is null) return;
 
-        inv0.Count--;
-        if (inv0.Count <= 0)
+        item1.Count--;
+        if (item1.Count <= 0)
         {
             _inventory[0] = null;
         }
@@ -227,8 +227,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
     private static int GetFuelTime(ItemStack? itemStack)
     {
         if (itemStack == null) return 0;
-
         int itemId = itemStack.getItem().Id;
-        return itemId < 256 && Block.Blocks[itemId].Material == Material.Wood ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == BlockRegistry.Get("sapling").Id ? 100 : 0;
+        return itemId < 256 && Block.Blocks[itemId].Material == MaterialRegistry.Get("wood") ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == BlockRegistry.Get("sapling").Id ? 100 : 0;
     }
 }

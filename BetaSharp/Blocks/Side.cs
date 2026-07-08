@@ -12,18 +12,22 @@ public enum Side : byte
 
 public static class SideExtensions
 {
-    public static bool IsValidSide(this Side v) => (byte)v <= 5;
     public static Side ToSide(this int v) => ((Side)v).IsValidSide() ? (Side)v : throw new ArgumentException("Invalid side");
-    public static int ToInt(this Side s) => (int)s;
-
-    public static Side OppositeFace(this Side side) => side switch
+    extension(Side s)
     {
-        Side.Down => Side.Up,
-        Side.Up => Side.Down,
-        Side.North => Side.South,
-        Side.South => Side.North,
-        Side.West => Side.East,
-        Side.East => Side.West,
-        _ => throw new ArgumentOutOfRangeException(nameof(side), side, null)
-    };
+        public int ToInt() => (int)s;
+
+        public Side OppositeFace() => s switch
+        {
+            Side.Down => Side.Up,
+            Side.Up => Side.Down,
+            Side.North => Side.South,
+            Side.South => Side.North,
+            Side.West => Side.East,
+            Side.East => Side.West,
+            _ => throw new ArgumentOutOfRangeException(nameof(s), s, null)
+        };
+
+        public bool IsValidSide() => (byte)s <= 5;
+    }
 }

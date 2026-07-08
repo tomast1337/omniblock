@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
@@ -71,11 +73,6 @@ public class Block
     }
 
     protected internal Block(int id, int textureId, Material material) : this(id, material) => TextureId = textureId;
-
-    public Block(float particleFallSpeedModifier)
-    {
-        this.ParticleFallSpeedModifier = particleFallSpeedModifier;
-    }
 
     public static BlockSoundGroup SoundPowderFootstep => SoundGroupRegistry.Get("powder");
     public static BlockSoundGroup SoundWoodFootstep => SoundGroupRegistry.Get("wood");

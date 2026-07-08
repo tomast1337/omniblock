@@ -10,7 +10,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
 {
     private readonly JavaRandom _random = new();
     private ItemStack?[] _itemStacks = new ItemStack[9];
-    public override BlockEntityType Type => Dispenser;
+    protected override BlockEntityType Type => Dispenser;
 
     public int Size => 9;
 
@@ -70,7 +70,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
         return selectedSlot >= 0 ? RemoveStack(selectedSlot, 1) : null;
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
         NBTTagList itemList = nbt.GetTagList("Items");

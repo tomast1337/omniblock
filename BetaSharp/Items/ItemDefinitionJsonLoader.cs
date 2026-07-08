@@ -27,10 +27,10 @@ internal sealed class ItemDefinitionJsonLoader : DataAssetLoader, IReadableRegis
         _defaults = null;
     }
 
-    private protected override void OnLoadAssets(string path, bool namespaced, LoadLocations location)
+    private protected override void OnLoadAssets(string assetPath, bool namespaced, LoadLocations location)
     {
-        if (namespaced) LoadAssetsFromFolders(path, location);
-        else LoadAssets(Namespace.BetaSharp, path, location);
+        if (namespaced) LoadAssetsFromFolders(assetPath, location);
+        else LoadAssets(Namespace.BetaSharp, assetPath, location);
     }
 
     private void LoadAssetsFromFolders(string path, LoadLocations location)

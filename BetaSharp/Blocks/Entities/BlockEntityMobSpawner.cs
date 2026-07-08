@@ -1,3 +1,4 @@
+using System;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
@@ -12,7 +13,7 @@ public class BlockEntityMobSpawner : BlockEntity
     private string _spawnedEntityId = "Pig";
 
     public BlockEntityMobSpawner() => SpawnDelay = 20;
-    public override BlockEntityType Type => MobSpawner;
+    protected override BlockEntityType Type => MobSpawner;
     public int SpawnDelay { get; set; } = -1;
     public double Rotation { get; set; }
     public double LastRotation { get; set; }
@@ -21,16 +22,16 @@ public class BlockEntityMobSpawner : BlockEntity
 
     public void SetSpawnedEntityId(string spawnedEntityId) => _spawnedEntityId = spawnedEntityId;
 
-    public bool IsPlayerInRange() => World.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
+    private bool IsPlayerInRange() => World.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
 
     public override void Tick(EntityManager entities)
     {
         LastRotation = Rotation;
         if (!IsPlayerInRange()) return;
 
-        double particleX = X + World.Random.NextFloat();
-        double particleY = Y + World.Random.NextFloat();
-        double particleZ = Z + World.Random.NextFloat();
+        double particleX = X + Random.Shared.NextSingle();
+        double particleY = Y + Random.Shared.NextSingle();
+        double particleZ = Z + Random.Shared.NextSingle();
         World.Broadcaster.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
         World.Broadcaster.AddParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
 
@@ -57,10 +58,7 @@ public class BlockEntityMobSpawner : BlockEntity
             for (int spawnAttempt = 0; spawnAttempt < max; ++spawnAttempt)
             {
                 EntityLiving? entityLiving = (EntityLiving?)EntityRegistry.Create(_spawnedEntityId, World);
-                if (entityLiving == null)
-                {
-                    return;
-                }
+                if (entityLiving == null) return;
 
                 int count = World.Entities
                     .CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1)
@@ -71,8 +69,6 @@ public class BlockEntityMobSpawner : BlockEntity
                     ResetDelay();
                     return;
                 }
-
-                if (entityLiving == null) continue;
 
                 double posX = X + (World.Random.NextDouble() - World.Random.NextDouble()) * 4.0D;
                 double posY = Y + World.Random.NextInt(3) - 1;
@@ -105,7 +101,7 @@ public class BlockEntityMobSpawner : BlockEntity
         _logger.LogInformation("Spawn Delay: " + SpawnDelay);
     }
 
-    public override void ReadNbt(NBTTagCompound nbt)
+    protected override void ReadNbt(NBTTagCompound nbt)
     {
         base.ReadNbt(nbt);
         _spawnedEntityId = nbt.GetString("EntityId");

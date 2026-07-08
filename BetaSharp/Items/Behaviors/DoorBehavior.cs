@@ -21,7 +21,7 @@ internal sealed class DoorBehavior : IItemBehavior
 
         y++;
 
-        int blockId = _doorMaterial == Material.Wood ? BlockRegistry.Get("door").Id : BlockRegistry.Get("iron_door").Id;
+        int blockId = _doorMaterial == MaterialRegistry.Get("wood") ? BlockRegistry.Get("door").Id : BlockRegistry.Get("iron_door").Id;
         if (!Block.Blocks[blockId].CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             return false;
@@ -75,5 +75,5 @@ internal sealed class DoorBehavior : IItemBehavior
     }
 
     public IReadOnlyList<string> GetItemAliases(Item item)
-        => _doorMaterial == Material.Wood ? ["door", "woodDoor"] : [];
+        => _doorMaterial == MaterialRegistry.Get("wood") ? ["door", "woodDoor"] : [];
 }
