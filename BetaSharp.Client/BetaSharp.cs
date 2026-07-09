@@ -1020,7 +1020,7 @@ public partial class BetaSharp :
                     IsControllerMode = false;
                     Mouse.setCursorVisible(true);
 
-                    bool zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.scanCode);
+                    bool zoomHeld = CurrentScreen == null && InGameHasFocus && Keyboard.isKeyDown(Options.KeyBindZoom.ScanCode);
                     if (zoomHeld)
                     {
                         int mouseWheelDirection = mouseWheelDelta > 0 ? 1 : -1;
@@ -1136,19 +1136,19 @@ public partial class BetaSharp :
                     if (Keyboard.getEventKey() == Keyboard.KEY_F8) Options.SmoothCamera = !Options.SmoothCamera;
                     if (Keyboard.getEventKey() == Keyboard.KEY_F7) ShowChunkBorders = !ShowChunkBorders;
 
-                    if (Keyboard.getEventKey() == Options.KeyBindInventory.scanCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindInventory.ScanCode)
                     {
                         Navigate(new InventoryScreen(UIContext, Player, PlayerController, () => CurrentScreen));
                     }
 
-                    if (Keyboard.getEventKey() == Options.KeyBindDrop.scanCode) Player.DropSelectedItem();
+                    if (Keyboard.getEventKey() == Options.KeyBindDrop.ScanCode) Player.DropSelectedItem();
 
-                    if (Keyboard.getEventKey() == Options.KeyBindChat.scanCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindChat.ScanCode)
                     {
                         Navigate(new ChatScreen(UIContext, HUD.Chat, Player));
                     }
 
-                    if (Keyboard.getEventKey() == Options.KeyBindCommand.scanCode)
+                    if (Keyboard.getEventKey() == Options.KeyBindCommand.ScanCode)
                     {
                         Navigate(new ChatScreen(UIContext, HUD.Chat, Player, "/"));
                     }
@@ -1162,7 +1162,7 @@ public partial class BetaSharp :
                     }
                 }
 
-                if (Keyboard.getEventKey() == Options.KeyBindToggleFog.scanCode)
+                if (Keyboard.getEventKey() == Options.KeyBindToggleFog.ScanCode)
                 {
                     Options.RenderDistanceOption.Value = Math.Clamp(
                         Options.RenderDistanceOption.Value + (!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) ? 1.0f / 28.0f : -1.0f / 28.0f),
@@ -1454,7 +1454,7 @@ public partial class BetaSharp :
 
     public void StartInternalServer(string worldDir, WorldSettings worldSettings)
     {
-        InternalServer = new InternalServer(Path.Combine(BetaSharpDir, "saves"), worldDir, worldSettings, Options.renderDistance, Options.Difficulty);
+        InternalServer = new InternalServer(Path.Combine(BetaSharpDir, "saves"), worldDir, worldSettings, Options.RenderDistance, Options.Difficulty);
         InternalServer.RegistryAccess = RegistryAccess;
         InternalServer.RunThreaded("Internal Server");
     }

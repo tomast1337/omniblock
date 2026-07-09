@@ -11,7 +11,7 @@ public class GameOptions
 {
     private readonly ILogger<GameOptions> _logger = Log.Instance.For<GameOptions>();
 
-    private static readonly string[] DifficultyLabels =
+    private static readonly string[] s_difficultyLabels =
     [
         "options.difficulty.peaceful",
         "options.difficulty.easy",
@@ -19,7 +19,7 @@ public class GameOptions
         "options.difficulty.hard",
     ];
 
-    private static readonly string[] GuiScaleLabels =
+    private static readonly string[] s_guiScaleLabels =
     [
         "options.guiScale.auto",
         "options.guiScale.small",
@@ -27,15 +27,15 @@ public class GameOptions
         "options.guiScale.large",
     ];
 
-    private static readonly string[] CloudsQualityLabels =
+    private static readonly string[] s_cloudsQualityLabels =
     [
         "options.cloudsQuality.legacy",
         "options.cloudsQuality.off",
         "options.cloudsQuality.shader",
     ];
 
-    private static readonly string[] AnisoLabels = ["options.off", "2x", "4x", "8x", "16x"];
-    private static readonly string[] MSAALabels = ["options.off", "2x", "4x", "8x"];
+    private static readonly string[] s_anisoLabels = ["options.off", "2x", "4x", "8x", "16x"];
+    private static readonly string[] s_msaaLabels = ["options.off", "2x", "4x", "8x"];
 
     public static float MaxAnisotropy = 1.0f;
 
@@ -113,7 +113,7 @@ public class GameOptions
         set => InvertMouseOption.Value = value;
     }
 
-    public int renderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
+    public int RenderDistance => 4 + (int)(RenderDistanceOption.Value * 28.0f);
     public int CloudsQuality => CloudsQualityOption.Value;
     public bool SoftClouds => SoftCloudsOption.Value;
     public bool ViewBobbing => ViewBobbingOption.Value;
@@ -122,7 +122,7 @@ public class GameOptions
     public int GuiScale => GuiScaleOption.Value;
     public int AnisotropicLevel => AnisotropicOption.Value;
     public int MSAALevel => MsaaOption.Value;
-    public int INITIAL_MSAA;
+    private readonly int _initialMsaa;
     public float ChatScale => ChatScaleOption.Value;
     public float ChatWidth => ChatWidthOption.Value;
     public bool ShowCoordinates => ShowCoordinatesOption.Value;
@@ -135,20 +135,20 @@ public class GameOptions
 
 
     public string Skin = "Default";
-    public KeyBinding KeyBindForward = new("key.forward", Keys.W);
-    public KeyBinding KeyBindLeft = new("key.left", Keys.A);
-    public KeyBinding KeyBindBack = new("key.back", Keys.S);
-    public KeyBinding KeyBindRight = new("key.right", Keys.D);
-    public KeyBinding KeyBindJump = new("key.jump", Keys.Space);
-    public KeyBinding KeyBindInventory = new("key.inventory", Keys.E);
-    public KeyBinding KeyBindDrop = new("key.drop", Keys.Q);
-    public KeyBinding KeyBindChat = new("key.chat", Keys.T);
-    public KeyBinding KeyBindCommand = new("key.command", Keys.Slash);
-    public KeyBinding KeyBindToggleFog = new("key.fog", Keys.F);
-    public KeyBinding KeyBindSneak = new("key.sneak", Keys.ShiftLeft);
-    public KeyBinding KeyBindZoom = new("key.zoom", Keys.Unknown);
-    public KeyBinding[] KeyBindings;
-    public ControllerBinding[] ControllerBindings;
+    public KeyBinding KeyBindForward { get; } = new("key.forward", Keyboard.KEY_W);
+    public KeyBinding KeyBindLeft { get; } = new("key.left", Keyboard.KEY_A);
+    public KeyBinding KeyBindBack { get; } = new("key.back", Keyboard.KEY_S);
+    public KeyBinding KeyBindRight { get; } = new("key.right", Keyboard.KEY_D);
+    public KeyBinding KeyBindJump { get; } = new("key.jump", Keyboard.KEY_SPACE);
+    public KeyBinding KeyBindInventory { get; } = new("key.inventory", Keyboard.KEY_E);
+    public KeyBinding KeyBindDrop { get; } = new("key.drop", Keyboard.KEY_Q);
+    public KeyBinding KeyBindChat { get; } = new("key.chat", Keyboard.KEY_T);
+    public KeyBinding KeyBindCommand { get; } = new("key.command", Keyboard.KEY_SLASH);
+    public KeyBinding KeyBindToggleFog { get; } = new("key.fog", Keyboard.KEY_F);
+    public KeyBinding KeyBindSneak { get; } = new("key.sneak", Keyboard.KEY_LSHIFT);
+    public KeyBinding KeyBindZoom { get; } = new("key.zoom", Keyboard.KEY_NONE);
+    private readonly KeyBinding[] _keyBindings;
+    public ControllerBinding[] ControllerBindings { get; }
 
     // for keybindings screen
     public struct KeyBindingGroup(string title, KeyBinding[] bindings)
@@ -170,7 +170,6 @@ public class GameOptions
     public bool SmoothCamera = false;
     public bool DebugCamera = false;
     public float AmountScrolled = 1.0F;
-    public float field_22271_G = 1.0F;
     public float ZoomScale = 2.0F;
     public float Brightness = 0.5F;
 
@@ -189,7 +188,7 @@ public class GameOptions
 
         InitializeOptions();
 
-        KeyBindings =
+        _keyBindings =
         [
             KeyBindForward,
             KeyBindLeft,
@@ -241,7 +240,7 @@ public class GameOptions
         ];
 
         LoadOptions();
-        INITIAL_MSAA = MSAALevel;
+        _initialMsaa = MSAALevel;
 
         if(Translations.Instance.Languages.ContainsKey(LanguageOption!.Value))
         {
@@ -347,7 +346,7 @@ public class GameOptions
             {
                 if (_game?.InternalServer != null)
                 {
-                    _game.InternalServer.SetViewDistance(renderDistance);
+                    _game.InternalServer.SetViewDistance(RenderDistance);
                 }
             }
         };
@@ -361,13 +360,13 @@ public class GameOptions
             Steps = 64,
             Formatter = (f) => $"{(int)(f * 64 + 32f)}"
         };
-        CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", CloudsQualityLabels, 2);
+        CloudsQualityOption = new CycleOption("options.cloudsQuality.text", "cloudsQuality", s_cloudsQualityLabels, 2);
         SoftCloudsOption = new BoolOption("options.softClouds.text", "softClouds", true);
-        DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", DifficultyLabels, 2);
-        GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", GuiScaleLabels);
-        AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", AnisoLabels)
+        DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", s_difficultyLabels, 2);
+        GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", s_guiScaleLabels);
+        AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", s_anisoLabels)
         {
-            Formatter = (v) => v == 0 ? Translations.Get("options.off") : AnisoLabels[v],
+            Formatter = (v) => v == 0 ? Translations.Get("options.off") : s_anisoLabels[v],
             OnChanged = v =>
             {
                 int anisoValue = v == 0 ? 0 : (int)Math.Pow(2, v);
@@ -379,12 +378,12 @@ public class GameOptions
                 ReloadTextures();
             }
         };
-        MsaaOption = new CycleOption("options.msaa", "msaaLevel", MSAALabels)
+        MsaaOption = new CycleOption("options.msaa", "msaaLevel", s_msaaLabels)
         {
             Formatter = (v) =>
             {
-                string result = v == 0 ? Translations.Get("options.off") : MSAALabels[v];
-                if (v != INITIAL_MSAA) result += " (Reload required)";
+                string result = v == 0 ? Translations.Get("options.off") : s_msaaLabels[v];
+                if (v != _initialMsaa) result += " (Reload required)";
                 return result;
             }
         };
@@ -435,17 +434,17 @@ public class GameOptions
 
     public string GetKeyBindingDescription(KeyBinding binding)
     {
-        return Translations.Get(binding.keyDescription);
+        return Translations.Get(binding.KeyDescription);
     }
 
     public string GetOptionDisplayString(KeyBinding binding)
     {
-        return Keyboard.getKeyName(binding.scanCode);
+        return Keyboard.getKeyName(binding.ScanCode);
     }
 
     public void SetKeyBinding(KeyBinding binding, int keyCode)
     {
-        binding.scanCode = keyCode;
+        binding.ScanCode = keyCode;
         SaveOptions();
     }
 
@@ -456,9 +455,8 @@ public class GameOptions
         {
             if (!File.Exists(_optionsPath)) throw new FileNotFoundException($"Options file not found at {_optionsPath}");
             using StreamReader reader = new StreamReader(_optionsPath);
-            string? line;
 
-            while ((line = reader.ReadLine()) != null)
+            while (reader.ReadLine() is { } line)
             {
                 try
                 {
@@ -526,11 +524,11 @@ public class GameOptions
                 else if (key.StartsWith("key_"))
                 {
                     string bindName = key[4..];
-                    for (int i = 0; i < KeyBindings.Length; ++i)
+                    for (int i = 0; i < _keyBindings.Length; ++i)
                     {
-                        if (KeyBindings[i].keyDescription == bindName)
+                        if (_keyBindings[i].KeyDescription == bindName)
                         {
-                            KeyBindings[i].scanCode = int.Parse(value);
+                            _keyBindings[i].ScanCode = int.Parse(value);
                             break;
                         }
                     }
@@ -559,9 +557,12 @@ public class GameOptions
             writer.WriteLine($"lastServer:{LastServer}");
             writer.WriteLine($"cameraMode:{(int)CameraMode}");
 
-            foreach (KeyBinding bind in KeyBindings)
+            foreach (KeyBinding bind in _keyBindings)
             {
-                writer.WriteLine($"key_{bind.keyDescription}:{bind.scanCode}");
+                // Don't save default key bindings to avoid cluttering the options file
+                // and to allow for future changes to default key bindings without overwriting user preferences.
+                if (bind.IsDefault) continue;
+                writer.WriteLine($"key_{bind.KeyDescription}:{bind.ScanCode}");
             }
 
             if (ControllerBindings != null)

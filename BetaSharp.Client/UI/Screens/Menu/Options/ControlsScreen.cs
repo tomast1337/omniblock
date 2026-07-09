@@ -2,12 +2,14 @@ using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Button = BetaSharp.Client.UI.Controls.Core.Button;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class ControlsScreen : BaseOptionsScreen
 {
-    private KeyBinding? _selectedKey = null;
+    private (KeyBinding key, Button button)? _selectedKey = null;
+
     protected override int MaxWidth { get; } = 300;
 
     public ControlsScreen(UIContext context, UIScreen? parent)
@@ -43,29 +45,47 @@ public class ControlsScreen : BaseOptionsScreen
         {
             list.AddChild(CreateSectionHeader(group.Title, first));
 
-            for (int i = 0; i < group.Bindings.Length; i++)
+            foreach (var bind in group.Bindings)
             {
-                KeyBinding bind = group.Bindings[i];
-
-                int index = i;
-                Panel row = new();
-                row.Style.FlexDirection = FlexDirection.Row;
-                row.Style.AlignItems = Align.Center;
-                row.Style.Width = TwoButtonSize;
+                Panel row = new()
+                {
+                    Style =
+                    {
+                        FlexDirection = FlexDirection.Row,
+                        AlignItems = Align.Center,
+                        Width = TwoButtonSize
+                    }
+                };
                 row.Style.SetMargin(2);
 
-                Label label = new() { Text = Options.GetKeyBindingDescription(bind) };
-                label.Style.FlexGrow = 1;
+                Label label = new()
+                {
+                    Text = Options.GetKeyBindingDescription(bind),
+                    Style =
+                    {
+                        FlexGrow = 1
+                    }
+                };
                 row.AddChild(label);
 
-                string btnText = ReferenceEquals(_selectedKey, bind) ? "> ??? <" : Options.GetOptionDisplayString(bind);
                 Button btn = CreateButton();
-                btn.Text = btnText;
+                btn.Text = Options.GetOptionDisplayString(bind);
                 btn.Style.Width = 80;
+                var bind1 = bind;
                 btn.OnClick += (e) =>
                 {
-                    _selectedKey = bind;
-                    Refresh();
+                    Button button = (e.Target as Button)!;
+                    // If seek key is down, reset.
+                    if (Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
+                    {
+                        bind1.ScanCode = bind1.DefaultLogicalKey;
+                        button.Text = Options.GetOptionDisplayString(bind1);
+                    }
+                    else
+                    {
+                        _selectedKey = (bind1, button);
+                        button.Text = "> ??? <";
+                    }
                 };
                 row.AddChild(btn);
 
@@ -74,24 +94,22 @@ public class ControlsScreen : BaseOptionsScreen
 
             first = false;
         }
-        
+
 
         return list;
     }
 
-    private void Refresh()
-    {
-        Root.Children.Clear();
-        Init();
-    }
-
     public override void KeyTyped(int key, char character)
     {
-        if (_selectedKey is not null)
+        if (_selectedKey.HasValue)
         {
-            Options.SetKeyBinding(_selectedKey, key);
+            // If escape is pressed, set the key to none.
+            int keyToSet = key;
+            if (key == Keyboard.KEY_ESCAPE) keyToSet = Keyboard.KEY_NONE;
+
+            Options.SetKeyBinding(_selectedKey.Value.key, keyToSet);
+            _selectedKey.Value.button.Text = Options.GetOptionDisplayString(_selectedKey.Value.key);
             _selectedKey = null;
-            Refresh();
         }
         else
         {

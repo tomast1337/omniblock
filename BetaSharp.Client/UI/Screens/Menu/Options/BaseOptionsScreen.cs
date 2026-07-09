@@ -187,7 +187,7 @@ public abstract class BaseOptionsScreen(
             };
             slider.OnMouseDown += (e) =>
             {
-                if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.scanCode))
+                if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
                 {
                     option.Reset();
                     slider.Value = floatOpt.Value;
@@ -208,7 +208,7 @@ public abstract class BaseOptionsScreen(
             };
             slider.OnMouseDown += (e) =>
             {
-                if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.scanCode))
+                if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
                 {
                     option.Reset();
                     slider.Value = rangeOpt.NormalizedValue;
@@ -223,7 +223,7 @@ public abstract class BaseOptionsScreen(
             btn.Text = option.GetDisplayString();
             btn.OnMouseDown += (e) =>
             {
-                if (Keyboard.isKeyDown(Options.KeyBindSneak.scanCode))
+                if (Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
                 {
                     option.Reset();
                 }
