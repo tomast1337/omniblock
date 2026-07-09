@@ -21,7 +21,7 @@ public class BlockCommand : Command.Command
             .Then(Literal("get")
                 .Executes(BlockGet)
                 .Then(ArgumentPos("position").Executes(c => BlockGet(c, c.GetArgument<Vec3D>("position"))))
-            ).Then(Literal("set").Then(ArgumentBlockStack("block")
+            ).Then(Literal("set").Then(ArgumentBlock("block")
                 .Executes(c => BlockSet(c, c.GetArgument<(int id, int meta)>("block")))
                 .Then(ArgumentPos("position").Executes(c => BlockSet(c, c.GetArgument<(int id, int meta)>("block"), c.GetArgument<Vec3D>("position"))))));
 

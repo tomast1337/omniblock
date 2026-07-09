@@ -7,11 +7,22 @@ namespace BetaSharp.Server.Command;
 
 public abstract partial class Command
 {
-    private class ArgItem : IArgumentType<string>
+    private class ArgItemStack : IArgumentType<ItemStack>
     {
-        public string Parse(IStringReader reader) => ParseStatic(reader);
+        private static readonly DynamicCommandExceptionType s_itemNotFound = new(expected => new LiteralMessage($"Item \"{expected}\" not found."));
 
-        public static string ParseStatic(IStringReader reader)
+        public ItemStack Parse(IStringReader reader)
+        {
+            string name = ParseString(reader);
+            if (ItemLookup.TryGetItem(name, out ItemStack? result))
+            {
+                return result;
+            }
+
+            throw s_itemNotFound.Create(name);
+        }
+
+        public static string ParseString(IStringReader reader)
         {
             int cursor = reader.Cursor;
             while (reader.CanRead() && IsAllowedInUnquotedString(reader.Peek()))
@@ -22,22 +33,6 @@ public abstract partial class Command
         private static bool IsAllowedInUnquotedString(char c)
         {
             return c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_' || c == '-' || c == ':';
-        }
-    }
-
-    private class ArgItemStack : IArgumentType<ItemStack>
-    {
-        private static readonly DynamicCommandExceptionType s_itemNotFound = new(expected => new LiteralMessage($"Item \"{expected}\" not found."));
-
-        public ItemStack Parse(IStringReader reader)
-        {
-            string name = ArgItem.ParseStatic(reader);
-            if (ItemLookup.TryGetItem(name, out ItemStack? result))
-            {
-                return result;
-            }
-
-            throw s_itemNotFound.Create(name);
         }
     }
 }

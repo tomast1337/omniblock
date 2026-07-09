@@ -8,32 +8,14 @@ namespace BetaSharp.Server.Command;
 
 public abstract partial class Command
 {
-    private class ArgBlock : IArgumentType<string>
-    {
-        public string Parse(IStringReader reader) => ParseStatic(reader);
-
-        public static string ParseStatic(IStringReader reader)
-        {
-            int cursor = reader.Cursor;
-            while (reader.CanRead() && IsAllowedInUnquotedString(reader.Peek()))
-                reader.Skip();
-            return reader.String.AsSpan(cursor, reader.Cursor - cursor).ToString();
-        }
-
-        private static bool IsAllowedInUnquotedString(char c)
-        {
-            return c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c == '_' || c == '-' || c == ':';
-        }
-    }
-
-    private class ArgBlockStack : IArgumentType<(int id, int meta)>
+    private class ArgBlock : IArgumentType<(int id, int meta)>
     {
         private const string AirBlockAlias = "air";
         private static readonly DynamicCommandExceptionType s_blockNotFound = new(expected => new LiteralMessage($"Block \"{expected}\" not found."));
 
         public (int id, int meta) Parse(IStringReader reader)
         {
-            string name = ArgItem.ParseStatic(reader);
+            string name = ArgItemStack.ParseString(reader);
 
             int separator = name.IndexOf(':');
             if (separator < 0)
