@@ -1,4 +1,4 @@
-﻿using BetaSharp.NBT;
+using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
