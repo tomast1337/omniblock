@@ -28,23 +28,26 @@ public abstract partial class Command
 
     private class ArgBlockStack : IArgumentType<(int id, int meta)>
     {
+        private const string AirBlockAlias = "air";
         private static readonly DynamicCommandExceptionType s_blockNotFound = new(expected => new LiteralMessage($"Block \"{expected}\" not found."));
 
         public (int id, int meta) Parse(IStringReader reader)
         {
             string name = ArgItem.ParseStatic(reader);
-            if (name == "air")
-            {
-                return (0, 0);
-            }
 
             int separator = name.IndexOf(':');
             if (separator < 0)
             {
+                // No meta data, resolve id.
                 if (int.TryParse(name, out int id))
                 {
                     if (id == 0 || Block.Blocks.Length > id && Block.Blocks[id] != null) return (id, 0);
                     throw s_blockNotFound.Create(name);
+                }
+
+                if (name == AirBlockAlias)
+                {
+                    return (0, 0);
                 }
             }
             else
@@ -52,19 +55,21 @@ public abstract partial class Command
                 string idPart = name.Substring(0, separator);
                 string metaPart = name.Substring(separator + 1);
 
+                // Resolve id and meta data.
                 if (int.TryParse(idPart, out int id))
                 {
                     if (id != 0 && (Block.Blocks.Length <= id || Block.Blocks[id] == null)) throw s_blockNotFound.Create(name);
+                    return (id, int.Parse(metaPart));
                 }
 
-                if (int.TryParse(metaPart, out int meta))
+                if (idPart == AirBlockAlias)
                 {
-                    return (id, meta);
+                    return (0, int.Parse(metaPart));
                 }
             }
 
 
-            if (ItemLookup.TryGetItem(name, out ItemStack? result) &&  Block.Blocks.Length > result.ItemId && Block.Blocks[result.ItemId] != null)
+            if (ItemLookup.TryGetItem(name, out ItemStack? result) && Block.Blocks.Length > result.ItemId && Block.Blocks[result.ItemId] != null)
             {
                 return (result.ItemId, result.getDamage());
             }
