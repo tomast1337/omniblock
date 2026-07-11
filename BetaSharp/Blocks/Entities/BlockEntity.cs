@@ -1,22 +1,26 @@
+using BetaSharp.Entities;
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets;
 using BetaSharp.Registries;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks.Entities;
 
-public abstract class BlockEntity
+public abstract class BlockEntity : IEntity
 {
     private static readonly IRegistry<BlockEntityType> s_registry = DefaultRegistries.BlockEntityTypes;
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
-    public IWorldContext World;
+    public IWorldContext World { get; set; }
     protected bool Removed;
     public abstract BlockEntityType Type { get; }
 
     public int X;
     public int Y;
     public int Z;
+
+    public Vec3D Position => new(X, Y, Z);
 
     public static readonly BlockEntityType Furnace = Register(() => new BlockEntityFurnace(), "Furnace");
     public static readonly BlockEntityType Chest = Register(() => new BlockEntityChest(), "Chest");
@@ -34,24 +38,28 @@ public abstract class BlockEntity
         return type;
     }
 
-    public virtual void readNbt(NBTTagCompound nbt)
+    public void Read(NBTTagCompound nbt)
     {
         X = nbt.GetInteger("x");
         Y = nbt.GetInteger("y");
         Z = nbt.GetInteger("z");
+        ReadNbt(nbt);
     }
 
-    public virtual void writeNbt(NBTTagCompound nbt)
+    public void Write(NBTTagCompound nbt)
     {
         nbt.SetString("id", Type.Id);
         nbt.SetInteger("x", X);
         nbt.SetInteger("y", Y);
         nbt.SetInteger("z", Z);
+        WriteNbt(nbt);
     }
 
-    public virtual void tick(EntityManager entities)
-    {
-    }
+    public abstract void ReadNbt(NBTTagCompound nbt);
+
+    public abstract void WriteNbt(NBTTagCompound nbt);
+
+    public virtual void Tick() { }
 
     public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
@@ -68,7 +76,7 @@ public abstract class BlockEntity
         try
         {
             BlockEntity blockEntity = type.Create();
-            blockEntity.readNbt(nbt);
+            blockEntity.Read(nbt);
             return blockEntity;
         }
         catch (Exception exception)
@@ -99,6 +107,7 @@ public abstract class BlockEntity
     }
 
     public Block getBlock() => Block.Blocks[World.Reader.GetBlockId(X, Y, Z)];
+    public int GetId() => getBlock().id;
 
     public virtual Packet createUpdatePacket() => null;
 

@@ -11,19 +11,17 @@ public class BlockEntitySign : BlockEntity
     public string[] Texts { get; set; } = ["", "", "", ""];
     public int CurrentRow { get; set; } = -1;
 
-    public override void writeNbt(NBTTagCompound nbt)
+    public override void WriteNbt(NBTTagCompound nbt)
     {
-        base.writeNbt(nbt);
         nbt.SetString("Text1", Texts[0]);
         nbt.SetString("Text2", Texts[1]);
         nbt.SetString("Text3", Texts[2]);
         nbt.SetString("Text4", Texts[3]);
     }
 
-    public override void readNbt(NBTTagCompound nbt)
+    public override void ReadNbt(NBTTagCompound nbt)
     {
         _editable = false;
-        base.readNbt(nbt);
 
         for (int line = 0; line < 4; ++line)
         {

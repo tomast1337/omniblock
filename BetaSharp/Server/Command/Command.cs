@@ -3,6 +3,7 @@ using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
+using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Command;
@@ -11,6 +12,7 @@ public abstract partial class Command
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(Command));
 
+    public virtual string[] Usages { get => [Usage]; }
     public abstract string Usage { get; }
     public abstract string Description { get; }
     public abstract string[] Names { get; }
@@ -46,8 +48,8 @@ public abstract partial class Command
     protected static RequiredArgumentBuilder<CommandSource, int> ArgumentInt(string name) => RequiredArgumentBuilder<CommandSource, int>.RequiredArgument(name, Arguments.Integer());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.Word());
-    protected static RequiredArgumentBuilder<CommandSource, string> ArgumentItem(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, new ArgItem());
     protected static RequiredArgumentBuilder<CommandSource, ItemStack> ArgumentItemStack(string name) => RequiredArgumentBuilder<CommandSource, ItemStack>.RequiredArgument(name, new ArgItemStack());
+    protected static RequiredArgumentBuilder<CommandSource, (int id, int meta)> ArgumentBlock(string name) => RequiredArgumentBuilder<CommandSource, (int id, int meta)>.RequiredArgument(name, new ArgBlock());
 
 
     public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)
@@ -67,5 +69,16 @@ public abstract partial class Command
             Server.playerManager.BroadcastOp("§7(" + logMessage + ")");
             s_logger.LogInformation(logMessage);
         }
+    }
+
+    protected static ServerPlayerEntity? GetSenderPlayer(CommandContext<CommandSource> context)
+    {
+        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
+        if (player == null)
+        {
+            context.Source.Output.SendMessage("Could not find your player.");
+        }
+
+        return player;
     }
 }

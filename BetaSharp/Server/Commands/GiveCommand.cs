@@ -13,12 +13,12 @@ public class GiveCommand : Command.Command
 
     public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
         argBuilder
-            .Then(ArgumentItem("item")
+            .Then(ArgumentItemStack("item")
                 .Executes(GiveItem)
                 .Then(ArgumentInt("count")
                     .Executes(GiveItemCount)))
             .Then(ArgumentPlayer("player")
-                .Then(ArgumentItem("item")
+                .Then(ArgumentItemStack("item")
                     .Executes(GivePlayerItem)
                     .Then(ArgumentInt("count")
                         .Executes(GivePlayerItemCount))));
@@ -26,7 +26,7 @@ public class GiveCommand : Command.Command
     // give <item> -> give 1 of item to self
     private static int GiveItem(CommandContext<CommandSource> context)
     {
-        string item = context.GetArgument<string>("item");
+        ItemStack item = context.GetArgument<ItemStack>("item");
 
         GiveTo(context.Source, item, 1);
         return 1;
@@ -34,7 +34,7 @@ public class GiveCommand : Command.Command
 
     private static int GiveItemCount(CommandContext<CommandSource> context)
     {
-        string item = context.GetArgument<string>("item");
+        ItemStack item = context.GetArgument<ItemStack>("item");
         int count = context.GetArgument<int>("count");
 
         GiveTo(context.Source, item, count);
@@ -44,7 +44,7 @@ public class GiveCommand : Command.Command
 
     private static int GivePlayerItem(CommandContext<CommandSource> context)
     {
-        string item = context.GetArgument<string>("item");
+        ItemStack item = context.GetArgument<ItemStack>("item");
         ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
 
         GiveTo(context.Source, player, item, 1);
@@ -53,7 +53,7 @@ public class GiveCommand : Command.Command
 
     private static int GivePlayerItemCount(CommandContext<CommandSource> context)
     {
-        string item = context.GetArgument<string>("item");
+        ItemStack item = context.GetArgument<ItemStack>("item");
         ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
         int count = context.GetArgument<int>("count");
 
@@ -61,7 +61,7 @@ public class GiveCommand : Command.Command
         return 1;
     }
 
-    private static void GiveTo(CommandSource source, string item, int count)
+    private static void GiveTo(CommandSource source, ItemStack item, int count)
     {
         ServerPlayerEntity? sender = source.Server.playerManager.getPlayer(source.SenderName);
         if (sender == null)
@@ -73,16 +73,10 @@ public class GiveCommand : Command.Command
         GiveTo(source, sender, item, count);
     }
 
-    private static void GiveTo(CommandSource source, ServerPlayerEntity target, string item, int count)
+    private static void GiveTo(CommandSource source, ServerPlayerEntity target, ItemStack item, int count)
     {
-        if (!ItemLookup.TryGetItem(item, out ItemStack? stack, count))
-        {
-            source.Output.SendMessage("Unknown item: " + item);
-            return;
-        }
-
-        target.Inventory.AddItemStackToInventoryOrDrop(stack);
-        string msg = $"Gave {count} [{ItemLookup.ResolveItemName(stack)}] to {target.Name}";
+        target.Inventory.AddItemStackToInventoryOrDrop(item);
+        string msg = $"Gave {count} [{ItemLookup.ResolveItemName(item)}] to {target.Name}";
         source.LogOp($"{target.Name} {msg}");
         source.Output.SendMessage(msg);
     }

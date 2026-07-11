@@ -1,4 +1,6 @@
+using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Inventorys;
 using BetaSharp.Server.Command;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -9,49 +11,39 @@ namespace BetaSharp.Server.Commands;
 
 public class DataCommand : Command.Command
 {
-    public override string Usage => "data get <entity|player|global> [type|id] [first|close]";
+    public override string Usage => "data get <entity|player|global|block> [type|id] [first|close]";
     public override string Description => "Get debug info from target(s)";
     public override string[] Names => ["data"];
 
     public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
         argBuilder
             .Then(Literal("get")
-                .Then(ArgumentEnum<ListKind>("target")
-                    .Executes(c => DataGetCount(c, c.GetArgument<ListKind>("target")))
-                    .Then(ArgumentEnum<Selector>("selector").Executes(c => DataGetBySelector(c, c.GetArgument<ListKind>("target"), c.GetArgument<Selector>("selector"))))
-                    .Then(ArgumentInt("id").Executes(c => DataGetById(c, c.GetArgument<ListKind>("target"), c.GetArgument<int>("id"))))
+                .Then(ArgumentEnum<ListKindEntity>("target")
+                    .Executes(c => DataGetCount(c, c.GetArgument<ListKindEntity>("target")))
+                    .Then(ArgumentEnum<Selector>("selector").Executes(c => DataGetBySelector(c, c.GetArgument<ListKindEntity>("target"), c.GetArgument<Selector>("selector"))))
+                    .Then(ArgumentInt("id").Executes(c => DataGetById(c, c.GetArgument<ListKindEntity>("target"), c.GetArgument<int>("id"))))
                     .Then(ArgumentString("type")
-                        .Executes(c => DataGetByType(c, c.GetArgument<ListKind>("target"), c.GetArgument<string>("type"), null))
-                        .Then(ArgumentEnum<Selector>("selector").Executes(c => DataGetByType(c, c.GetArgument<ListKind>("target"), c.GetArgument<string>("type"), c.GetArgument<Selector>("selector"))))
+                        .Executes(c => DataGetByType(c, c.GetArgument<ListKindEntity>("target"), c.GetArgument<string>("type"), null))
+                        .Then(ArgumentEnum<Selector>("selector").Executes(c => DataGetByType(c, c.GetArgument<ListKindEntity>("target"), c.GetArgument<string>("type"), c.GetArgument<Selector>("selector"))))
                     )
                 )
             );
 
-    private static ServerPlayerEntity? GetSenderPlayer(CommandContext<CommandSource> context)
-    {
-        ServerPlayerEntity? player = context.Source.Server.playerManager.getPlayer(context.Source.SenderName);
-        if (player == null)
-        {
-            context.Source.Output.SendMessage("Could not find your player.");
-        }
-
-        return player;
-    }
-
-    private static IEnumerable<Entity> GetEntityList(CommandContext<CommandSource> context, ListKind kind, ServerPlayerEntity player)
+    private static IEnumerable<IEntity> GetEntityList(CommandContext<CommandSource> context, ListKindEntity kind, ServerPlayerEntity player)
     {
         EntityManager entities = context.Source.Server.getWorld(player.DimensionId).Entities;
         return kind switch
         {
-            ListKind.Player => entities.Players,
-            ListKind.Global => entities.GlobalEntities,
+            ListKindEntity.Player => entities.Players,
+            ListKindEntity.Global => entities.GlobalEntities,
+            ListKindEntity.Block => entities.BlockEntities,
             _ => entities.Entities
         };
     }
 
-    private static string KindName(ListKind kind) => kind.ToString();
+    private static string KindName(ListKindEntity kind) => kind.ToString();
 
-    private static int DataGetCount(CommandContext<CommandSource> context, ListKind kind)
+    private static int DataGetCount(CommandContext<CommandSource> context, ListKindEntity kind)
     {
         ServerPlayerEntity? player = GetSenderPlayer(context);
         if (player == null)
@@ -59,7 +51,7 @@ public class DataCommand : Command.Command
             return 1;
         }
 
-        List<Entity> items = GetEntityList(context, kind, player).ToList();
+        List<IEntity> items = GetEntityList(context, kind, player).ToList();
         string name = KindName(kind);
         if (items.Count != 1)
         {
@@ -70,7 +62,7 @@ public class DataCommand : Command.Command
         return 1;
     }
 
-    private static int DataGetBySelector(CommandContext<CommandSource> context, ListKind kind, Selector? selector)
+    private static int DataGetBySelector(CommandContext<CommandSource> context, ListKindEntity kind, Selector? selector)
     {
         ServerPlayerEntity? player = GetSenderPlayer(context);
         if (player == null)
@@ -82,7 +74,7 @@ public class DataCommand : Command.Command
         return 1;
     }
 
-    private static int DataGetById(CommandContext<CommandSource> context, ListKind kind, int id)
+    private static int DataGetById(CommandContext<CommandSource> context, ListKindEntity kind, int id)
     {
         ServerPlayerEntity? player = GetSenderPlayer(context);
         if (player == null)
@@ -90,7 +82,7 @@ public class DataCommand : Command.Command
             return 1;
         }
 
-        Entity? entity = GetEntityList(context, kind, player).FirstOrDefault(e => e.ID == id);
+        IEntity? entity = GetEntityList(context, kind, player).FirstOrDefault(e => e.GetId() == id);
         if (entity == null)
         {
             context.Source.Output.SendMessage($"{id} not found.");
@@ -101,7 +93,7 @@ public class DataCommand : Command.Command
         return 1;
     }
 
-    private static int DataGetByType(CommandContext<CommandSource> context, ListKind kind, string typeName, Selector? selector)
+    private static int DataGetByType(CommandContext<CommandSource> context, ListKindEntity kind, string typeName, Selector? selector)
     {
         ServerPlayerEntity? player = GetSenderPlayer(context);
         if (player == null)
@@ -109,7 +101,7 @@ public class DataCommand : Command.Command
             return 1;
         }
 
-        IEnumerable<Entity> items = GetEntityList(context, kind, player);
+        IEnumerable<IEntity> items = GetEntityList(context, kind, player);
         string displayName;
 
         if (EntityRegistry.TryGetTypeFromName(typeName, out Type? type))
@@ -127,11 +119,11 @@ public class DataCommand : Command.Command
         return 1;
     }
 
-    private static void LogEntitySub(Selector? selector, IEnumerable<Entity> items, ServerPlayerEntity player, ICommandOutput output, string displayName, bool listHits = false)
+    private static void LogEntitySub(Selector? selector, IEnumerable<IEntity> items, ServerPlayerEntity player, ICommandOutput output, string displayName, bool listHits = false)
     {
         if (selector == Selector.First)
         {
-            Entity? item = items.FirstOrDefault();
+            IEntity? item = items.FirstOrDefault();
             if (item == null)
             {
                 output.SendMessage($"Found 0 instances of {displayName}");
@@ -142,14 +134,14 @@ public class DataCommand : Command.Command
         }
         else if (selector == Selector.Close)
         {
-            Entity? closest = null;
+            IEntity? closest = null;
             double distance = double.MaxValue;
             double distanceFast = double.MaxValue;
 
-            foreach (Entity entity in items)
+            foreach (IEntity entity in items)
             {
                 // Tiered distance check for faster comparison
-                double d = Math.Abs(entity.X - player.X) + Math.Abs(entity.Z - player.Z);
+                double d = Math.Abs(entity.Position.x - player.X) + Math.Abs(entity.Position.z - player.Z);
                 if (d * d * 1.15 > distanceFast)
                 {
                     continue;
@@ -169,7 +161,7 @@ public class DataCommand : Command.Command
                     continue;
                 }
 
-                if (entity.ID == player.ID)
+                if (entity is EntityPlayer p && p.ID == player.ID)
                 {
                     continue; // don't get self
                 }
@@ -189,12 +181,12 @@ public class DataCommand : Command.Command
         }
         else
         {
-            List<Entity> list = items.ToList();
+            List<IEntity> list = items.ToList();
             int count = list.Count;
 
             if (listHits && count > 0)
             {
-                output.SendMessage(string.Join(", ", list.Select(e => e.ID)));
+                output.SendMessage(string.Join(", ", list.Select(e => e.GetId())));
             }
 
             output.SendMessage($"Found {count} {(count == 1 ? $"instance of {displayName}" : $"instances of {displayName}")}");
@@ -210,6 +202,22 @@ public class DataCommand : Command.Command
         else
         {
             s += "s";
+        }
+    }
+
+    private static void LogEntity(IEntity e, ICommandOutput output)
+    {
+        if (e is Entity entity)
+        {
+            LogEntity(entity, output);
+        }
+        else if (e is BlockEntity blockEntity)
+        {
+            LogEntity(blockEntity, output);
+        }
+        else
+        {
+            output.SendMessage("Unknown entity type: " + e.GetType().Name);
         }
     }
 
@@ -235,23 +243,56 @@ public class DataCommand : Command.Command
 
         if (e.Passenger != null)
         {
-            output.SendMessage("Passenger: " + e.Passenger.ID);
+            output.SendMessage("passenger: " + e.Passenger.ID);
         }
 
         if (e.Vehicle != null)
         {
-            output.SendMessage("Vehicle: " + e.Vehicle.ID);
+            output.SendMessage("vehicle: " + e.Vehicle.ID);
         }
     }
 
-    private enum ListKind
+    private static void LogEntity(BlockEntity e, ICommandOutput output)
+    {
+        output.SendMessage("type: " + e.GetType().Name);
+        output.SendMessage("name: " + e.getBlock().getBlockName());
+        output.SendMessage($"pos: {e.X} {e.Y} {e.Z}");
+        output.SendMessage("removed: " + e.isRemoved());
+
+        if (e is IInventory inventory)
+        {
+            output.SendMessage("size: " + inventory.Size);
+        }
+
+        if (e is BlockEntitySign sign)
+        {
+            output.SendMessage("text: " + string.Join(" | ", sign.Texts));
+        }
+        else if (e is BlockEntityMobSpawner spawner)
+        {
+            output.SendMessage("entitySpawned: " + spawner.GetSpawnedEntityId());
+            output.SendMessage("spawnDelay: " + spawner.SpawnDelay);
+        }
+        else if (e is BlockEntityNote note)
+        {
+            output.SendMessage("note: " + note.note);
+        }
+        else if (e is BlockEntityRecordPlayer recordPlayer)
+        {
+            output.SendMessage("record: " + recordPlayer.recordId);
+        }
+    }
+
+    private enum ListKindEntity
     {
         Entity = 0,
         E = 0,
         Player = 1,
         P = 1,
         Global = 2,
-        G = 2
+        G = 2,
+        Block = 3,
+        B = 3,
     }
 
     private enum Selector
