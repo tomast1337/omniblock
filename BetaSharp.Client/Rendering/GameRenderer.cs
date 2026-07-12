@@ -135,7 +135,7 @@ public class GameRenderer
 
     private void RenderWorld(float tickDelta)
     {
-        _viewDistance = _client.Options.renderDistance * 16.0f;
+        _viewDistance = _client.Options.RenderDistance * 16.0f;
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
 
@@ -233,7 +233,7 @@ public class GameRenderer
             float yawDelta = _client.MouseHelper.DeltaX * lookScale;
             float pitchDelta = _client.MouseHelper.DeltaY * lookScale;
 
-            bool zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode);
+            bool zoomHeldForSensitivity = _client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.ScanCode);
             if (zoomHeldForSensitivity)
             {
                 float zoomProgress = 1.0F / Math.Clamp(_client.Options.ZoomScale, 1.25F, 20.0F);
@@ -259,7 +259,7 @@ public class GameRenderer
             _client.Player.ChangeLookDirection(yawDelta, pitchDelta * invertMultiplier);
         }
 
-        bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.scanCode)) || ControllerManager.IsZoomHeld();
+        bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.ScanCode)) || ControllerManager.IsZoomHeld();
         CameraController.SetZoomState(zoomHeld, _client.Options.ZoomScale);
 
         if (!_client.SkipRenderWorld)
@@ -396,7 +396,7 @@ public class GameRenderer
         GLManager.GL.Enable(GLEnum.CullFace);
         RenderWorld(tickDelta);
         Frustum.Instance();
-        if (_client.Options.renderDistance >= 8)
+        if (_client.Options.RenderDistance >= 8)
         {
             ApplyFog(-1);
             worldRenderer.RenderSky(tickDelta);
@@ -860,7 +860,7 @@ public class GameRenderer
     {
         World world = _client.World;
         EntityLiving camera = _client.Camera;
-        float fogBlend = 4.0F / _client.Options.renderDistance;
+        float fogBlend = 4.0F / _client.Options.RenderDistance;
         fogBlend = Math.Clamp(fogBlend, 0.25f, 1.0f);
         fogBlend = 1.0F - (float)Math.Pow(fogBlend, 0.25D);
         Vector3D<double> skyColor = world.Environment.GetSkyColor(_client.Camera, tickDelta);

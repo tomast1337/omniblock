@@ -8,6 +8,6 @@ public class StatStringFormatKeyInv(BetaSharp game) : AchievementStatFormatter
 
     public string formatString(string key)
     {
-        return Translations.GetFormat(key, Keyboard.getKeyName(_game.Options.KeyBindings[7].scanCode));
+        return Translations.GetFormat(key, Keyboard.getKeyName(_game.Options.KeyBindInventory.ScanCode));
     }
 }

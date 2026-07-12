@@ -156,7 +156,7 @@ public abstract class ContainerScreen(
 
     public override void KeyTyped(int key, char character)
     {
-        if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.scanCode)
+        if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.ScanCode)
         {
             player.closeHandledScreen();
         }

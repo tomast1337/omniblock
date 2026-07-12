@@ -1,17 +1,17 @@
-using Silk.NET.GLFW;
-
 namespace BetaSharp.Client.Input;
 
 public class KeyBinding
 {
-    public string keyDescription;
-    public int scanCode;
-    public Keys defaultLogicalKey;
+    public string KeyDescription { get; }
+    public int ScanCode { get; set; }
+    public int DefaultLogicalKey { get; }
 
-    public KeyBinding(string desc, Keys logicalDefault)
+    public KeyBinding(string desc, int logicalDefault)
     {
-        keyDescription = desc;
-        defaultLogicalKey = logicalDefault;
-        scanCode = Keyboard.KEY_NONE;
+        KeyDescription = desc;
+        ScanCode = DefaultLogicalKey = logicalDefault;
     }
+
+    public bool IsBound => ScanCode != Keyboard.KEY_NONE;
+    public bool IsDefault => ScanCode == DefaultLogicalKey;
 }
