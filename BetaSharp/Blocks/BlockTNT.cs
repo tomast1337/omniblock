@@ -6,6 +6,8 @@ namespace BetaSharp.Blocks;
 
 internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.Tnt)
 {
+    private static readonly int s_flintAndSteelId = Item.ByName("flint_and_steel").Id;
+
     public override int GetTexture(Side side) => side switch
     {
         Side.Down => BlockTextures.TntBottom,
@@ -58,7 +60,7 @@ internal class BlockTNT(int id, int textureId) : Block(id, textureId, Material.T
 
     public override void onBlockBreakStart(OnBlockBreakStartEvent ctx)
     {
-        if (ctx.Player.GetHand() != null && ctx.Player.GetHand().ItemId == Item.FlintAndSteel.id)
+        if (ctx.Player.GetHand() != null && ctx.Player.GetHand().ItemId == s_flintAndSteelId)
         {
             ctx.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(ctx.X, ctx.Y, ctx.Z, 1);
         }

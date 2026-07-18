@@ -5,7 +5,7 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:String"
+        "#": "betasharp:string"
     },
     "result": {
         "id": "betasharp:Wool"

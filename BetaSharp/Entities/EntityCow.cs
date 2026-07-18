@@ -5,6 +5,9 @@ namespace BetaSharp.Entities;
 
 public class EntityCow : EntityAnimal
 {
+    private static readonly Item s_bucket = Item.ByName("bucket");
+    private static readonly Item s_milk = Item.ByName("milk");
+    private static readonly Item s_leather = Item.ByName("leather");
     public EntityCow(IWorldContext world) : base(world)
     {
         Texture = "/mob/cow.png";
@@ -21,13 +24,13 @@ public class EntityCow : EntityAnimal
 
     protected override float SoundVolume => 0.4F;
 
-    protected override int DropItemId => Item.Leather.id;
+    protected override int DropItem => s_leather.Id;
 
     public override bool Interact(EntityPlayer player)
     {
         ItemStack? heldBucket = player.Inventory.ItemInHand;
-        if (heldBucket == null || heldBucket.ItemId != Item.Bucket.id) return false;
-        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(Item.MilkBucket));
+        if (heldBucket == null || heldBucket.ItemId != s_bucket.Id) return false;
+        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(s_milk));
         return true;
     }
 }

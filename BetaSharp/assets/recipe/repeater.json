@@ -6,10 +6,10 @@
     ],
     "key": {
         "#": "betasharp:LitRedstoneTorch",
-        "X": "betasharp:Redstone",
+        "X": "betasharp:redstone",
         "I": "betasharp:Stone"
     },
     "result": {
-        "id": "betasharp:Repeater"
+        "id": "betasharp:redstone_repeater"
     }
 }

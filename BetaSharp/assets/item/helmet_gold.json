@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 314,
+    "TranslationKey": "helmetGold",
+    "TextureId": 4,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "gold",
+        "Slot": 0
+    }
+}

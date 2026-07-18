@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 271,
+    "TranslationKey": "hatchetWood",
+    "TextureId": 112,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "axe",
+        "Material": "wood"
+    }
+}

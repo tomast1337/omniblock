@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 256,
+    "TranslationKey": "shovelIron",
+    "TextureId": 82,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "shovel",
+        "Material": "iron"
+    }
+}

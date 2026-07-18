@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 286,
+    "TranslationKey": "hatchetGold",
+    "TextureId": 116,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "axe",
+        "Material": "gold"
+    }
+}

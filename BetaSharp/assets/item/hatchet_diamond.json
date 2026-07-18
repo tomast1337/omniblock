@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 279,
+    "TranslationKey": "hatchetDiamond",
+    "TextureId": 115,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "axe",
+        "Material": "diamond"
+    }
+}

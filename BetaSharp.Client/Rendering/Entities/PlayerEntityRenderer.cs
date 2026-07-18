@@ -7,6 +7,7 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -30,9 +31,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         if (armorStack != null)
         {
             Item armorItem = armorStack.getItem();
-            if (armorItem is ItemArmor armor)
+            if (armorItem.GetBehavior<ArmorBehavior>() is { } armor)
             {
-                loadTexture("/armor/" + s_armorFilenamePrefix[armor.renderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
+                loadTexture("/armor/" + s_armorFilenamePrefix[armor.RenderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
                 ModelBiped armorModel = renderPass == 2 ? _modelBipedMain : _armorChestplate;
                 armorModel.BipedHead.Visible = renderPass == 0;
                 armorModel.BipedHeadwear.Visible = renderPass == 0;
@@ -127,7 +128,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     protected void RenderSpecials(EntityPlayer playerEntity, float tickDelta)
     {
         ItemStack helmetStack = playerEntity.Inventory.ArmorItemBySlot(3);
-        if (helmetStack != null && helmetStack.getItem().id < 256)
+        if (helmetStack != null && helmetStack.getItem().Id < 256)
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.BipedHead.Transform(1.0F / 16.0F);
@@ -215,7 +216,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             GLManager.GL.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             if (playerEntity.FishHook != null)
             {
-                heldItem = new ItemStack(Item.Stick);
+                heldItem = new ItemStack(Item.ByName("stick"));
             }
 
             if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[heldItem.ItemId].getRenderType()))

@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 273,
+    "TranslationKey": "shovelStone",
+    "TextureId": 81,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "shovel",
+        "Material": "stone"
+    }
+}

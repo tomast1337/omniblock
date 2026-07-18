@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 310,
+    "TranslationKey": "helmetDiamond",
+    "TextureId": 3,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "diamond",
+        "Slot": 0
+    }
+}

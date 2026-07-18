@@ -7,7 +7,7 @@
         "#": "betasharp:IronBlock"
     },
     "result": {
-        "id": "betasharp:IronIngot",
+        "id": "betasharp:ingot_iron",
         "count": 9
     }
 }

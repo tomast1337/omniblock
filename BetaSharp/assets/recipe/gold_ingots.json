@@ -7,7 +7,7 @@
         "#": "betasharp:GoldBlock"
     },
     "result": {
-        "id": "betasharp:GoldIngot",
+        "id": "betasharp:ingot_gold",
         "count": 9
     }
 }

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using BetaSharp.Blocks;
 using BetaSharp.Items;
+using BetaSharp.Registries;
 
 namespace BetaSharp;
 
@@ -135,17 +136,6 @@ internal static class ItemLookup
 
         s_lookupTablesBuilt = true;
 
-        IEnumerable<FieldInfo> itemFields = typeof(Item).GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Where(f => f.FieldType.IsAssignableTo(typeof(Item)));
-        foreach (FieldInfo field in itemFields)
-        {
-            if (field.GetValue(null) is Item item)
-            {
-                s_itemNameToId.TryAdd(field.Name.ToLower(), item.id);
-                BuildItemLookupAlias(item);
-            }
-        }
-
         IEnumerable<FieldInfo> blockFields = typeof(Block).GetFields(BindingFlags.Static | BindingFlags.Public)
             .Where(f => f.FieldType.IsAssignableTo(typeof(Block)));
         foreach (FieldInfo field in blockFields)
@@ -156,6 +146,20 @@ internal static class ItemLookup
                 BuildItemLookupAlias(block);
             }
         }
+
+        foreach (ItemDefinition definition in DefaultRegistries.Items)
+        {
+            ResourceLocation? location = DefaultRegistries.Items.GetKey(definition);
+            if (location is not null)
+            {
+                s_itemNameToId.TryAdd(location.Path, definition.ProtocolId);
+            }
+
+            if (Item.ITEMS[definition.ProtocolId] is { } item)
+            {
+                BuildItemLookupAlias(item);
+            }
+        }
     }
 
     private static void BuildItemLookupAlias(Item item)
@@ -164,12 +168,12 @@ internal static class ItemLookup
         {
             string s = alias.ToLower();
             int i = s.LastIndexOf(':');
-            if (i == -1) s_itemNameToId.TryAdd(s, item.id);
+            if (i == -1) s_itemNameToId.TryAdd(s, item.Id);
             else
             {
                 int meta = int.Parse(s.Substring(i + 1, s.Length - i - 1));
-                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), item.id);
-                else s_alias.TryAdd(s.Substring(0, i), (item.id, meta));
+                if (meta == 0) s_itemNameToId.TryAdd(s.Substring(0, i), item.Id);
+                else s_alias.TryAdd(s.Substring(0, i), (item.Id, meta));
             }
         }
     }

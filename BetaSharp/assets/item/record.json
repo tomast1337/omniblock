@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 2256,
+  "TextureId": 240,
+  "MaxStackSize": 1,
+  "Behavior": {
+    "type": "record",
+    "RecordName": "13"
+  }
+}

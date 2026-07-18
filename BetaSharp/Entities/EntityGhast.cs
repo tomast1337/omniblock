@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntityGhast : EntityFlying, Monster
 {
+    private static readonly Item s_gunpowder = Item.ByName("gunpowder");
     private const double AttackRange = 64.0D;
     private readonly SyncedProperty<bool> _charging;
     private int _aggroCooldown;
@@ -161,7 +162,7 @@ public class EntityGhast : EntityFlying, Monster
         return true;
     }
 
-    protected override int DropItemId => Item.Gunpowder.id;
+    protected override int DropItem => s_gunpowder.Id;
 
     public override bool CanSpawn() => Random.NextInt(20) == 0 && base.CanSpawn() && World.Difficulty > 0;
 }

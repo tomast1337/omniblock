@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 335,
+  "TextureId": 77,
+  "CraftingReturnItemProtocolId": 325,
+  "MaxStackSize": 1,
+  "Behavior": {
+    "type": "bucket",
+    "Liquid": "milk"
+  }
+}

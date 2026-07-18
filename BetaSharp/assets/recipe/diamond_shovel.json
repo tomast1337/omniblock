@@ -6,10 +6,10 @@
         "#"
     ],
     "key": {
-        "X": "betasharp:Diamond",
-        "#": "betasharp:Stick"
+        "X": "betasharp:diamond",
+        "#": "betasharp:stick"
     },
     "result": {
-        "id": "betasharp:DiamondShovel"
+        "id": "betasharp:shovel_diamond"
     }
 }

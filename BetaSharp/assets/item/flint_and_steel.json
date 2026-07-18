@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 259,
+    "TranslationKey": "flintAndSteel",
+    "TextureId": 5,
+    "MaxStackSize": 1,
+    "MaxDurability": 64,
+    "Behavior": {
+        "type": "flint_and_steel"
+    }
+}

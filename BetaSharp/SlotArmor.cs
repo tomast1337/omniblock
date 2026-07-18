@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
 
@@ -25,8 +26,9 @@ class SlotArmor : Slot
 
     public override bool canInsert(ItemStack stack)
     {
-        return stack.getItem() is ItemArmor
-            ? ((ItemArmor)stack.getItem()).armorType == armorType
-            : stack.getItem().id == Block.Pumpkin.id && armorType == 0;
+        ArmorBehavior? armor = stack.getItem().GetBehavior<ArmorBehavior>();
+        return armor != null
+            ? armor.ArmorType == armorType
+            : stack.getItem().Id == Block.Pumpkin.id && armorType == 0;
     }
 }

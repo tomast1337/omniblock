@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 356,
+  "TranslationKey": "redstoneRepeater",
+  "TextureId": 86,
+  "Behavior": {
+    "type": "place_block",
+    "PlacesBlock": "betasharp:diode"
+  }
+}

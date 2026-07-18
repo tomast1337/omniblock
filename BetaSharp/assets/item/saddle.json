@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 329,
+  "TextureId": 104,
+  "MaxStackSize": 1,
+  "Behavior": {
+    "type": "saddle"
+  }
+}

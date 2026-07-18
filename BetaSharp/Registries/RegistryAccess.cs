@@ -46,8 +46,7 @@ public sealed class RegistryAccess
         public bool IsReloadable => definition.IsReloadable;
         public bool CanSync => definition.CanSync;
         public DataAssetLoader CreateLoader() => definition.CreateLoader();
-        public DataAssetLoader? CloneForWorld(DataAssetLoader loader, string worldDatapackPath)
-            => ((DataAssetLoader<T>)loader).CloneForWorldDatapacks(worldDatapackPath);
+        public DataAssetLoader? CloneForWorld(DataAssetLoader loader, string worldDatapackPath) => loader.CloneForWorldDatapacks(worldDatapackPath);
         public RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess)
         {
             IReadableRegistry<T>? registry = registryAccess.Get(definition.Key);

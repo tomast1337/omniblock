@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 359,
+  "TextureId": 93,
+  "MaxStackSize": 1,
+  "MaxDurability": 238,
+  "Behavior": {
+    "type": "shears"
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 2257,
+    "TranslationKey": "record",
+    "TextureId": 241,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "record",
+        "RecordName": "cat"
+    }
+}

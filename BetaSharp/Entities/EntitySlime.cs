@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySlime : EntityLiving, Monster
 {
+    private static readonly Item s_slimeball = Item.ByName("slimeball");
     private readonly SyncedProperty<byte> _slimeSize;
     private int _slimeJumpDelay;
     public float PrevSquishAmount;
@@ -37,7 +38,7 @@ public class EntitySlime : EntityLiving, Monster
         get
         {
             return _slimeSize.Value;
-           
+
         }
         set
         {
@@ -154,7 +155,7 @@ public class EntitySlime : EntityLiving, Monster
         }
     }
 
-    protected override int DropItemId => SlimeSize == 1 ? Item.Slimeball.id : 0;
+    protected override int DropItem => SlimeSize == 1 ? s_slimeball.Id : 0;
 
     public override bool CanSpawn()
     {

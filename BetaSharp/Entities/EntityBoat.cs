@@ -13,6 +13,7 @@ public sealed class EntityBoat : Entity
     private const double RiderInputAcceleration = 0.18D;
     private const double RiderTurnVelocityBlend = 0.25D;
     private const double YawSmoothing = 0.35D;
+    private static readonly int s_stickId = Item.ByName("stick").Id;
 
     public int BoatCurrentDamage;
     public int BoatRockDirection;
@@ -81,7 +82,7 @@ public sealed class EntityBoat : Entity
 
         for (int i = 0; i < 2; ++i)
         {
-            DropItem(Item.Stick.id, 1, 0.0F);
+            DropItem(s_stickId, 1, 0.0F);
         }
 
         MarkDead();
@@ -253,7 +254,7 @@ public sealed class EntityBoat : Entity
 
                 for (int i = 0; i < 2; ++i)
                 {
-                    DropItem(Item.Stick.id, 1, 0.0F);
+                    DropItem(s_stickId, 1, 0.0F);
                 }
             }
         }

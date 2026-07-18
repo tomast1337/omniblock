@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 354,
+  "MaxStackSize": 1,
+  "TextureId": 29,
+  "Behavior": {
+    "type": "place_block",
+    "PlacesBlock": "betasharp:cake"
+  }
+}

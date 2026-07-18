@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 285,
+    "TranslationKey": "pickaxeGold",
+    "TextureId": 100,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "pickaxe",
+        "Material": "gold"
+    }
+}

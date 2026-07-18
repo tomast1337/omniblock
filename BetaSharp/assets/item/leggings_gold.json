@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 316,
+    "TranslationKey": "leggingsGold",
+    "TextureId": 36,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "gold",
+        "Slot": 2
+    }
+}

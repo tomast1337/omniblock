@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 333,
+  "TextureId": 136,
+  "MaxStackSize": 1,
+  "Behavior": {
+    "type": "boat"
+  }
+}

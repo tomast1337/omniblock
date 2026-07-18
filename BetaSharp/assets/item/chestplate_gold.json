@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 315,
+    "TranslationKey": "chestplateGold",
+    "TextureId": 20,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "gold",
+        "Slot": 1
+    }
+}

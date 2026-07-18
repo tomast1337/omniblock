@@ -61,7 +61,7 @@ public class RegistryKeyTests
         var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
         var def = new RegistryDefinition<GameMode>(key, "gamemode");
 
-        DataAssetLoader<GameMode> loader = def.CreateLoader();
+        DataAssetLoader<GameMode> loader = (DataAssetLoader<GameMode>)def.CreateLoader();
 
         // Loader should load from all data locations (Assets | GameDatapack | WorldDatapack)
         Assert.NotNull(loader);
@@ -73,7 +73,7 @@ public class RegistryKeyTests
         var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
         var def = new RegistryDefinition<GameMode>(key, "gamemode", LoadLocations.Assets);
 
-        DataAssetLoader<GameMode> loader = def.CreateLoader();
+        DataAssetLoader<GameMode> loader = (DataAssetLoader<GameMode>)def.CreateLoader();
 
         Assert.NotNull(loader);
     }

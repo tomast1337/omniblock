@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 322,
+  "TranslationKey": "appleGold",
+  "TextureId": 11,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 42,
+    "IsMeat": false,
+    "ReturnItem": null
+  },
+  "MaxStackSize": 1
+}

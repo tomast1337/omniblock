@@ -7,6 +7,7 @@ namespace BetaSharp.Entities;
 
 public class EntitySquid : EntityWaterMob
 {
+    private static readonly Item s_dyePowder = Item.ByName("dye_powder");
     private float _animationSpeed;
     public float PrevTentaclePhase;
     public float PrevTentacleSpread;
@@ -45,7 +46,7 @@ public class EntitySquid : EntityWaterMob
 
     protected override float SoundVolume => 0.4F;
 
-    protected override int DropItemId => 0;
+    protected override int DropItem => 0;
 
     protected override void DropFewItems()
     {
@@ -53,7 +54,7 @@ public class EntitySquid : EntityWaterMob
 
         for (int _ = 0; _ < dropCount; ++_)
         {
-            DropItem(new ItemStack(Item.Dye, 1, 0), 0.0F);
+            DropItem(new ItemStack(s_dyePowder, 1, 0), 0.0F);
         }
     }
 

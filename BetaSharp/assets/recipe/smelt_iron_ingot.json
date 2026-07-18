@@ -2,6 +2,6 @@
     "type": "smelting",
     "input": "betasharp:IronOre",
     "result": {
-        "id": "betasharp:IronIngot"
+        "id": "betasharp:ingot_iron"
     }
 }

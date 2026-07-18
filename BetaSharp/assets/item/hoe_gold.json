@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 294,
+    "TranslationKey": "hoeGold",
+    "TextureId": 132,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "hoe",
+        "Material": "gold"
+    }
+}

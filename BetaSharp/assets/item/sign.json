@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 323,
+  "TextureId": 42,
+  "MaxStackSize": 1,
+  "Behavior": {
+    "type": "sign"
+  }
+}

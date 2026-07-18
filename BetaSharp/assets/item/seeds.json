@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 295,
+  "TextureId": 9,
+  "Behavior": {
+    "type": "seeds",
+    "PlacesBlock": "betasharp:crops"
+  }
+}

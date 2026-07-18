@@ -6,10 +6,10 @@
         " # "
     ],
     "key": {
-        "#": "betasharp:GoldIngot",
-        "X": "betasharp:Redstone"
+        "#": "betasharp:ingot_gold",
+        "X": "betasharp:redstone"
     },
     "result": {
-        "id": "betasharp:Clock"
+        "id": "betasharp:clock"
     }
 }

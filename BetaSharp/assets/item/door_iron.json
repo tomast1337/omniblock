@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 330,
+    "TranslationKey": "doorIron",
+    "TextureId": 44,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "door",
+        "DoorMaterial": "iron"
+    }
+}

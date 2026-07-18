@@ -1,43 +1,19 @@
 namespace BetaSharp;
 
-internal class ToolMaterial
+public sealed record ToolMaterial(string Name, int MaxUses, float Efficiency, int DamageBonus, int HarvestLevel);
+
+public static class ToolMaterialRegistry
 {
-    public static readonly ToolMaterial WOOD = new(0, 59, 2.0F, 0);
-    public static readonly ToolMaterial STONE = new(1, 131, 4.0F, 1);
-    public static readonly ToolMaterial IRON = new(2, 250, 6.0F, 2);
-    public static readonly ToolMaterial EMERALD = new(3, 1561, 8.0F, 3);
-    public static readonly ToolMaterial GOLD = new(0, 32, 12.0F, 0);
+    private static readonly Dictionary<string, ToolMaterial> s_materials = [];
 
-    private readonly int harvestLevel;
-    private readonly int maxUses;
-    private readonly float efficiencyOnProperMaterial;
-    private readonly int damageVsEntity;
-
-    private ToolMaterial(int harvestLevel, int maxUses, float efficiencyOnProperMaterial, int damageVsEntity)
+    internal static void LoadFrom(IEnumerable<ToolMaterialDefinition> definitions)
     {
-        this.harvestLevel = harvestLevel;
-        this.maxUses = maxUses;
-        this.efficiencyOnProperMaterial = efficiencyOnProperMaterial;
-        this.damageVsEntity = damageVsEntity;
+        s_materials.Clear();
+        foreach (ToolMaterialDefinition def in definitions)
+        {
+            s_materials[def.Name] = new ToolMaterial(def.Name, def.MaxUses, def.Efficiency, def.DamageBonus, def.HarvestLevel);
+        }
     }
 
-    public int getMaxUses()
-    {
-        return maxUses;
-    }
-
-    public float getEfficiencyOnProperMaterial()
-    {
-        return efficiencyOnProperMaterial;
-    }
-
-    public int getDamageVsEntity()
-    {
-        return damageVsEntity;
-    }
-
-    public int getHarvestLevel()
-    {
-        return harvestLevel;
-    }
+    public static ToolMaterial Get(string name) => s_materials[name];
 }

@@ -5,8 +5,8 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:Stick",
-        "X": "betasharp:Redstone"
+        "#": "betasharp:stick",
+        "X": "betasharp:redstone"
     },
     "result": {
         "id": "betasharp:LitRedstoneTorch"

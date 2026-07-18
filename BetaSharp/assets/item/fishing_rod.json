@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 346,
+    "TranslationKey": "fishingRod",
+    "TextureId": 69,
+    "MaxStackSize": 1,
+    "MaxDurability": 64,
+    "Behavior": {
+        "type": "fishing_rod"
+    }
+}

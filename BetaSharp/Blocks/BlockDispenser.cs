@@ -12,6 +12,9 @@ internal class BlockDispenser : BlockWithEntity
     private const float LaunchSpread = 0.05F;
 
     private static readonly ThreadLocal<JavaRandom> s_random = new(() => new JavaRandom());
+    private static readonly int s_arrowId = Item.ByName("arrow").Id;
+    private static readonly int s_eggId = Item.ByName("egg").Id;
+    private static readonly int s_snowballId = Item.ByName("snowball").Id;
 
     public BlockDispenser(int id) : base(id, Material.Stone) => TextureId = BlockTextures.FurnaceSide;
 
@@ -124,7 +127,7 @@ internal class BlockDispenser : BlockWithEntity
             return;
         }
 
-        if (itemStack.ItemId == Item.ARROW.id)
+        if (itemStack.ItemId == s_arrowId)
         {
             EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
             arrow.SetArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -132,14 +135,14 @@ internal class BlockDispenser : BlockWithEntity
             @event.World.Entities.SpawnEntity(arrow);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.ItemId == Item.Egg.id)
+        else if (itemStack.ItemId == s_eggId)
         {
             EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
             egg.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(egg);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.ItemId == Item.Snowball.id)
+        else if (itemStack.ItemId == s_snowballId)
         {
             EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
             snowball.SetHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);

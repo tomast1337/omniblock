@@ -10,13 +10,14 @@ public sealed class EntityEgg : Entity
 {
     private const float TrailOffset = 0.25F;
     private const float Speed = 0.4F;
+    private static readonly Item s_arrow = Item.ByName("arrow");
     private readonly EntityLiving? _thrower;
     private bool _inGround;
     private int _inTile;
     private int _shake;
     private int _ticksInAir;
     private int _ticksInGround;
-    private BlockPos _tile = new (-1,-1,-1);
+    private BlockPos _tile = new(-1, -1, -1);
 
     public EntityEgg(IWorldContext world) : base(world) => SetBoundingBoxSpacing(0.25F, 0.25F);
 
@@ -270,7 +271,7 @@ public sealed class EntityEgg : Entity
 
     public override void OnPlayerInteraction(EntityPlayer player)
     {
-        if (!_inGround || !Equals(_thrower, player) || _shake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ARROW, 1))) return;
+        if (!_inGround || !Equals(_thrower, player) || _shake > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(s_arrow, 1))) return;
 
         World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
         player.sendPickup(this, 1);

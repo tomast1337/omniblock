@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 300,
+    "TranslationKey": "leggingsLeather",
+    "TextureId": 32,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "leather",
+        "Slot": 2
+    }
+}

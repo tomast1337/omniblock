@@ -1,6 +1,7 @@
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.Recipes;
 using BetaSharp.Screens.Slots;
 
@@ -100,9 +101,9 @@ public class PlayerScreenHandler : ScreenHandler
             }
             else if (slotNumber >= 9 && slotNumber < 45)
             {
-                if (slotStack.getItem() is ItemArmor armor)
+                if (slotStack.getItem().GetBehavior<ArmorBehavior>() is { } armor)
                 {
-                    int targetSlot = 5 + armor.armorType;
+                    int targetSlot = 5 + armor.ArmorType;
                     int countBefore = slotStack.Count;
                     insertItem(slotStack, targetSlot, targetSlot + 1, false);
                     if (slotStack.Count == countBefore)

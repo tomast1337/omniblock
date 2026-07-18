@@ -9,6 +9,7 @@ public class BlockRedstoneRepeater : Block
 {
     public static readonly float[] RenderOffset = [-0.0625f, 1.0f / 16.0f, 0.1875f, 0.3125f];
     private static readonly int[] s_delay = [1, 2, 3, 4];
+    private static readonly int s_redstoneRepeaterId = Item.ByName("redstone_repeater").Id;
     private readonly bool _lit;
 
     public BlockRedstoneRepeater(int id, bool lit) : base(id, 6, Material.PistonBreakable)
@@ -172,7 +173,7 @@ public class BlockRedstoneRepeater : Block
 
     public override bool isOpaque() => false;
 
-    public override int getDroppedItemId(int blockMeta) => Item.Repeater.id;
+    public override int getDroppedItemId(int blockMeta) => s_redstoneRepeaterId;
 
     public override void randomDisplayTick(OnTickEvent ctx)
     {

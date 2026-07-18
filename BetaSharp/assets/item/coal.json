@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 263,
+  "TextureId": 7,
+  "HasSubtypes": true,
+  "Behavior": {
+    "type": "coal"
+  }
+}

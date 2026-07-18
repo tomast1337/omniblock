@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 258,
+    "TranslationKey": "hatchetIron",
+    "TextureId": 114,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "axe",
+        "Material": "iron"
+    }
+}

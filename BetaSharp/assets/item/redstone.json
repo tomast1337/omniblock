@@ -1,0 +1,7 @@
+{
+  "ProtocolId": 331,
+  "TextureId": 56,
+  "Behavior": {
+    "type": "redstone"
+  }
+}

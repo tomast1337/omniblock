@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 261,
+  "TextureId": 21,
+  "MaxStackSize": 1,
+  "Behavior": {
+    "type": "bow"
+  }
+}

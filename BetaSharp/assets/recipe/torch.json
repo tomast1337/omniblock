@@ -5,8 +5,8 @@
         "#"
     ],
     "key": {
-        "X": "betasharp:Coal",
-        "#": "betasharp:Stick"
+        "X": "betasharp:coal",
+        "#": "betasharp:stick"
     },
     "result": {
         "id": "betasharp:Torch",

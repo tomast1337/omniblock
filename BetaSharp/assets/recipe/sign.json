@@ -7,9 +7,9 @@
     ],
     "key": {
         "#": "betasharp:Planks",
-        "X": "betasharp:Stick"
+        "X": "betasharp:stick"
     },
     "result": {
-        "id": "betasharp:Sign"
+        "id": "betasharp:sign"
     }
 }

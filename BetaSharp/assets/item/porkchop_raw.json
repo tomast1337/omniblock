@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 319,
+  "TranslationKey": "porkchopRaw",
+  "TextureId": 87,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 3,
+    "IsMeat": true,
+    "ReturnItem": null
+  },
+  "MaxStackSize": 1
+}

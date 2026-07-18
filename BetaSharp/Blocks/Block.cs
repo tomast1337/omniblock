@@ -199,7 +199,6 @@ public class Block
         }
 
         BlocksAllowVision[0] = true;
-        Stats.Stats.InitializeItemStats();
     }
 
     protected Block(int id, Material material)
@@ -535,6 +534,35 @@ public class Block
     public string translateBlockName() => Translations.Get($"{getBlockName()}.name");
 
     public string getBlockName() => _blockName;
+
+    /// <summary>
+    /// Block name without the "tile." prefix, suitable for registry / ResourceLocation lookup
+    /// (e.g. "stone", "reeds", "cake").
+    /// </summary>
+    public string RegistryName => _blockName.StartsWith("tile.") ? _blockName[5..] : _blockName;
+
+    private static Dictionary<string, int>? s_registryNameToId;
+
+    /// <summary>
+    /// Looks up a block by its namespaced name (e.g. "betasharp:reeds" or "reeds").
+    /// Returns null when the namespace is not <see cref="Namespace.BetaSharp"/> or the name is unknown.
+    /// </summary>
+    public static Block? ByName(string raw)
+    {
+        var location = ResourceLocation.Parse(raw);
+        if (location.Namespace != Namespace.BetaSharp) return null;
+
+        if (s_registryNameToId is null)
+        {
+            s_registryNameToId = [];
+            foreach (Block? b in Blocks)
+            {
+                if (b is not null) s_registryNameToId.TryAdd(b.RegistryName, b.id);
+            }
+        }
+
+        return s_registryNameToId.TryGetValue(location.Path, out int id) ? Blocks[id] : null;
+    }
 
     public virtual IReadOnlyList<string> GetBlockAlias => [];
 

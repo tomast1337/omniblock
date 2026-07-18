@@ -8,6 +8,7 @@ namespace BetaSharp.Blocks;
 
 internal class BlockSign : BlockWithEntity
 {
+    private static readonly int s_signId = Item.ByName("sign").Id;
     private readonly Type _blockEntityType;
     private readonly bool _standing;
 
@@ -77,7 +78,7 @@ internal class BlockSign : BlockWithEntity
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => Item.Sign.id;
+    public override int getDroppedItemId(int blockMeta) => s_signId;
 
     public override void neighborUpdate(OnTickEvent @event)
     {

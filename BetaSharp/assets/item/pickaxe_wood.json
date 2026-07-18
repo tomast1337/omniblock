@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 270,
+    "TranslationKey": "pickaxeWood",
+    "TextureId": 96,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "pickaxe",
+        "Material": "wood"
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 269,
+    "TranslationKey": "shovelWood",
+    "TextureId": 80,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "tool",
+        "ToolType": "shovel",
+        "Material": "wood"
+    }
+}

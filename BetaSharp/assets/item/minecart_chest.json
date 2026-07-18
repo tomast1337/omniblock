@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 342,
+    "TranslationKey": "minecartChest",
+    "TextureId": 151,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "minecart",
+        "CartType": 1
+    }
+}

@@ -2,6 +2,6 @@
     "type": "smelting",
     "input": "betasharp:DiamondOre",
     "result": {
-        "id": "betasharp:Diamond"
+        "id": "betasharp:diamond"
     }
 }

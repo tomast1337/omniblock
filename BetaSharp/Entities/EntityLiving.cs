@@ -452,7 +452,7 @@ public abstract class EntityLiving : Entity
 
     protected virtual void DropFewItems()
     {
-        int dropItemId = DropItemId;
+        int dropItemId = DropItem;
         if (dropItemId <= 0)
         {
             return;
@@ -466,7 +466,7 @@ public abstract class EntityLiving : Entity
         }
     }
 
-    protected virtual int DropItemId => 0;
+    protected virtual int DropItem => 0;
 
     protected override void OnLanding(float fallDistance)
     {

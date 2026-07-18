@@ -8,9 +8,9 @@
     "key": {
         "X": "betasharp:BrownMushroom",
         "Y": "betasharp:RedMushroom",
-        "#": "betasharp:Bowl"
+        "#": "betasharp:bowl"
     },
     "result": {
-        "id": "betasharp:MushroomStew"
+        "id": "betasharp:mushroom_stew"
     }
 }

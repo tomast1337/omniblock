@@ -7,6 +7,7 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Maps;
 
@@ -173,7 +174,7 @@ public class HeldItemRenderer
         }
 
         float baseScale;
-        if (itemToRender != null && itemToRender.ItemId == Item.Map.id)
+        if (itemToRender != null && itemToRender.ItemId == Item.ByName("map").Id)
         {
             GLManager.GL.PushMatrix();
             baseScale = 0.8F;
@@ -239,7 +240,7 @@ public class HeldItemRenderer
             tessellator.addVertexWithUV(128 + mapBorder, 0 - mapBorder, 0.0D, 1.0D, 0.0D);
             tessellator.addVertexWithUV(0 - mapBorder, 0 - mapBorder, 0.0D, 0.0D, 0.0D);
             tessellator.draw();
-            MapState mapState = ItemMap.getMapState(itemToRender.getDamage(), _game.World);
+            MapState mapState = MapBehavior.GetMapState(itemToRender.getDamage(), _game.World);
             mapRenderer.render(_game.Player, _game.TextureManager, mapState);
             GLManager.GL.PopMatrix();
         }

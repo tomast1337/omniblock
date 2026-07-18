@@ -5,6 +5,8 @@ namespace BetaSharp.Entities;
 
 public class EntityChicken : EntityAnimal
 {
+    private static readonly Item s_egg = Item.ByName("egg");
+    private static readonly Item s_feather = Item.ByName("feather");
     private float _flapSpeed = 1.0F;
     private int _timeUntilNextEgg;
     public float DestPos;
@@ -64,7 +66,7 @@ public class EntityChicken : EntityAnimal
         }
 
         World.Broadcaster.PlaySoundAtEntity(this, "mob.chickenplop", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-        DropItem(Item.Egg.id, 1);
+        DropItem(s_egg.Id, 1);
         _timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
 
@@ -78,5 +80,5 @@ public class EntityChicken : EntityAnimal
 
     protected override string? DeathSound => "mob.chickenhurt";
 
-    protected override int DropItemId => Item.Feather.id;
+    protected override int DropItem => s_feather.Id;
 }

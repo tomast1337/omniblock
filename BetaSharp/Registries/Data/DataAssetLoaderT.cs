@@ -26,7 +26,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     /// Creates a copy of this loader with all currently-loaded assets, then applies
     /// <paramref name="worldDatapackPath"/> on top. The original loader is unaffected.
     /// </summary>
-    internal DataAssetLoader<T>? CloneForWorldDatapacks(string worldDatapackPath)
+    internal override DataAssetLoader<T>? CloneForWorldDatapacks(string worldDatapackPath)
     {
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
         var clone = new DataAssetLoader<T>(_path, Locations, _allowUnhandled);
@@ -153,7 +153,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             JsonElement defaultElement = JsonSerializer.SerializeToElement(target.Value);
 
             // Merge the JSON with the default, preferring values from json
-            JsonElement merged = MergeJson(defaultElement, json);
+            JsonElement merged = JsonMerge.Merge(defaultElement, json, s_jsonOptions);
 
             T? asset = merged.Deserialize<T>(s_jsonOptions);
             if (asset == null)
@@ -236,40 +236,6 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
             HasErrors = true;
             FirstErrorMessage ??= $"Unexpected error in {Path.GetFileName(path)}";
         }
-    }
-
-    private static JsonElement MergeJson(JsonElement defaultObj, JsonElement overrideObj)
-    {
-        if (overrideObj.ValueKind != JsonValueKind.Object || defaultObj.ValueKind != JsonValueKind.Object)
-        {
-            return overrideObj;
-        }
-
-        var merged = new Dictionary<string, JsonElement>();
-
-        // Add all properties from default
-        foreach (JsonProperty property in defaultObj.EnumerateObject())
-        {
-            merged[property.Name] = property.Value;
-        }
-
-        // Override with properties from the override object
-        foreach (JsonProperty property in overrideObj.EnumerateObject())
-        {
-            if (merged.TryGetValue(property.Name, out JsonElement defaultValue) &&
-                property.Value.ValueKind == JsonValueKind.Object &&
-                defaultValue.ValueKind == JsonValueKind.Object)
-            {
-                // Recursively merge nested objects
-                merged[property.Name] = MergeJson(defaultValue, property.Value);
-            }
-            else
-            {
-                merged[property.Name] = property.Value;
-            }
-        }
-
-        return JsonSerializer.SerializeToElement(merged, s_jsonOptions);
     }
 
     /// <summary>

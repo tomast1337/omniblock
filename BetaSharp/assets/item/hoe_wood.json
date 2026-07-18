@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 290,
+    "TranslationKey": "hoeWood",
+    "TextureId": 128,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "hoe",
+        "Material": "wood"
+    }
+}

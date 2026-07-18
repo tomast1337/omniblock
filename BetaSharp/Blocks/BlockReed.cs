@@ -8,6 +8,7 @@ namespace BetaSharp.Blocks;
 internal class BlockReed : Block
 {
     private const float HalfWidth = 6.0F / 16.0F;
+    private static readonly int s_sugarCanesId = Item.ByName("sugar_canes").Id;
 
     public BlockReed(int id, int textureId) : base(id, Material.Plant)
     {
@@ -74,7 +75,7 @@ internal class BlockReed : Block
 
     public override Box? getCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z) => null;
 
-    public override int getDroppedItemId(int blockMeta) => Item.SugarCane.id;
+    public override int getDroppedItemId(int blockMeta) => s_sugarCanesId;
 
     public override bool isOpaque() => false;
 

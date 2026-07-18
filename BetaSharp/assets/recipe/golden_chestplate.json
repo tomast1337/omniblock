@@ -6,9 +6,9 @@
         "XXX"
     ],
     "key": {
-        "X": "betasharp:GoldIngot"
+        "X": "betasharp:ingot_gold"
     },
     "result": {
-        "id": "betasharp:GoldenChestplate"
+        "id": "betasharp:chestplate_gold"
     }
 }

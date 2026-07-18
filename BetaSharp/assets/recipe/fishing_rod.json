@@ -6,10 +6,10 @@
         "# X"
     ],
     "key": {
-        "#": "betasharp:Stick",
-        "X": "betasharp:String"
+        "#": "betasharp:stick",
+        "X": "betasharp:string"
     },
     "result": {
-        "id": "betasharp:FishingRod"
+        "id": "betasharp:fishing_rod"
     }
 }

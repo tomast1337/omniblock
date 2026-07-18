@@ -12,6 +12,8 @@ internal class BlockDoor : Block
     private const float HalfWidth = 0.5F;
     private const float Height = 1.0F;
     private const float Thickness = 3.0F / 16.0F;
+    private static readonly int s_doorIronId = Item.ByName("door_iron").Id;
+    private static readonly int s_doorWoodId = Item.ByName("door_wood").Id;
 
     public BlockDoor(int id, Material material) : base(id, material)
     {
@@ -209,7 +211,7 @@ internal class BlockDoor : Block
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => (blockMeta & 8) != 0 ? 0 : material == Material.Metal ? Item.IronDoor.id : Item.WoodenDoor.id;
+    public override int getDroppedItemId(int blockMeta) => (blockMeta & 8) != 0 ? 0 : material == Material.Metal ? s_doorIronId : s_doorWoodId;
 
     public override HitResult raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {

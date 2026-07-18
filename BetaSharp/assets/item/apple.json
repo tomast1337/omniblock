@@ -1,0 +1,11 @@
+{
+  "ProtocolId": 260,
+  "TextureId": 10,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 4,
+    "IsMeat": false,
+    "ReturnItem": null
+  },
+  "MaxStackSize": 1
+}

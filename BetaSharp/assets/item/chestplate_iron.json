@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 307,
+    "TranslationKey": "chestplateIron",
+    "TextureId": 18,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "iron",
+        "Slot": 1
+    }
+}

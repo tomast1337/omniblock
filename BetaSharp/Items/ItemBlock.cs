@@ -8,7 +8,7 @@ namespace BetaSharp.Items;
 
 internal class ItemBlock : Item
 {
-    private int blockID;
+    private readonly int blockID;
 
     public ItemBlock(int id) : base(id)
     {
@@ -99,13 +99,7 @@ internal class ItemBlock : Item
         return false;
     }
 
-    public override string getItemNameIS(ItemStack itemStack)
-    {
-        return Block.Blocks[blockID].getBlockName();
-    }
+    public override string getItemNameIS(ItemStack itemStack) => Block.Blocks[blockID].getBlockName();
 
-    public override string getItemName()
-    {
-        return Block.Blocks[blockID].getBlockName();
-    }
+    public override string getItemName() => Block.Blocks[blockID].getBlockName();
 }

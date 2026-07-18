@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 301,
+    "TranslationKey": "bootsLeather",
+    "TextureId": 48,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "leather",
+        "Slot": 3
+    }
+}

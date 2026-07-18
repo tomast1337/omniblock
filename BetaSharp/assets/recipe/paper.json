@@ -4,10 +4,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:SugarCane"
+        "#": "betasharp:sugar_canes"
     },
     "result": {
-        "id": "betasharp:Paper",
+        "id": "betasharp:paper",
         "count": 3
     }
 }

@@ -1,0 +1,11 @@
+{
+    "ProtocolId": 317,
+    "TranslationKey": "bootsGold",
+    "TextureId": 52,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "armor",
+        "Material": "gold",
+        "Slot": 3
+    }
+}

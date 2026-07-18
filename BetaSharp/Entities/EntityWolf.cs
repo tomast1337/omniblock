@@ -1,4 +1,5 @@
 using BetaSharp.Items;
+using BetaSharp.Items.Behaviors;
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.PathFinding;
@@ -10,6 +11,8 @@ namespace BetaSharp.Entities;
 
 public class EntityWolf : EntityAnimal
 {
+    private static readonly Item s_boneId = Item.ByName("bone");
+    private static readonly int s_porkchopRawHealAmount = Item.ByName("porkchop_raw").GetBehavior<FoodBehavior>()!.HealAmount;
     private readonly SyncedProperty<byte> _wolfFlags;
     private readonly SyncedProperty<int> _wolfHealth;
     private readonly SyncedProperty<string?> _wolfOwner;
@@ -44,7 +47,7 @@ public class EntityWolf : EntityAnimal
 
     protected override float SoundVolume => 0.4F;
 
-    protected override int DropItemId => -1;
+    protected override int DropItem => -1;
 
     public override float EyeHeight => Height * 0.8F;
 
@@ -167,8 +170,8 @@ public class EntityWolf : EntityAnimal
                 {
                     _looksWithInterest = IsWolfTamed switch
                     {
-                        false when heldItem.ItemId == Item.Bone.id => true,
-                        true when Item.ITEMS[heldItem.ItemId] is ItemFood => ((ItemFood)Item.ITEMS[heldItem.ItemId]!).getIsWolfsFavoriteMeat(),
+                        false when heldItem.ItemId == s_boneId.Id => true,
+                        true when Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() is { } food => food.IsMeat,
                         _ => _looksWithInterest
                     };
                 }
@@ -382,7 +385,7 @@ public class EntityWolf : EntityAnimal
         ItemStack? heldItem = player.Inventory.ItemInHand;
         if (!IsWolfTamed)
         {
-            if (heldItem == null || heldItem.ItemId != Item.Bone.id || IsWolfAngry) return false;
+            if (heldItem == null || heldItem.ItemId != s_boneId.Id || IsWolfAngry) return false;
 
             heldItem.ConsumeItem(player);
             if (heldItem.Count <= 0)
@@ -410,18 +413,18 @@ public class EntityWolf : EntityAnimal
         }
         else
         {
-            if (heldItem != null && Item.ITEMS[heldItem.ItemId] is ItemFood)
+            FoodBehavior? heldFood = heldItem != null ? Item.ITEMS[heldItem.ItemId]?.GetBehavior<FoodBehavior>() : null;
+            if (heldFood != null)
             {
-                ItemFood? food = (ItemFood?)Item.ITEMS[heldItem.ItemId];
-                if (food != null && food.getIsWolfsFavoriteMeat() && _wolfHealth.Value < 20)
+                if (heldFood.IsMeat && _wolfHealth.Value < 20)
                 {
-                    heldItem.ConsumeItem(player);
+                    heldItem!.ConsumeItem(player);
                     if (heldItem.Count <= 0)
                     {
                         player.Inventory.SetStack(player.Inventory.SelectedSlot, null);
                     }
 
-                    Heal(((ItemFood)Item.RawPorkchop).getHealAmount());
+                    Heal(s_porkchopRawHealAmount);
                     return true;
                 }
             }

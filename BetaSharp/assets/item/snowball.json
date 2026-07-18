@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 332,
+  "TextureId": 14,
+  "MaxStackSize": 16,
+  "Behavior": {
+    "type": "throwable",
+    "ProjectileType": "snowball"
+  }
+}

@@ -6,10 +6,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Paper",
-        "X": "betasharp:Compass"
+        "#": "betasharp:paper",
+        "X": "betasharp:compass"
     },
     "result": {
-        "id": "betasharp:Map"
+        "id": "betasharp:map"
     }
 }

@@ -7,7 +7,7 @@
     ],
     "key": {
         "#": "betasharp:Planks",
-        "X": "betasharp:Book"
+        "X": "betasharp:book"
     },
     "result": {
         "id": "betasharp:Bookshelf"

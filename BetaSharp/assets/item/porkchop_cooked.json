@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 320,
+  "TranslationKey": "porkchopCooked",
+  "TextureId": 88,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 8,
+    "IsMeat": true,
+    "ReturnItem": null
+  },
+  "MaxStackSize": 1
+}

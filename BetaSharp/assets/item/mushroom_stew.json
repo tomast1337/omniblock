@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 282,
+  "TranslationKey": "mushroomStew",
+  "TextureId": 72,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 10,
+    "IsMeat": false,
+    "ReturnItem": "betasharp:bowl"
+  },
+  "MaxStackSize": 1
+}

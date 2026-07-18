@@ -9,6 +9,7 @@ namespace BetaSharp.Entities;
 
 public class EntityItem : Entity
 {
+    private static readonly int s_leatherId = Item.ByName("leather").Id;
     public readonly float BobPhase = System.Random.Shared.NextSingle() * (float)Math.PI * 2.0f;
     private int _health = 5;
     private int _itemAge;
@@ -122,7 +123,7 @@ public class EntityItem : Entity
         if (World.IsRemote || !player.GameMode.CanPickup) return;
         if (DelayBeforeCanPickup != 0 || !player.Inventory.AddItemStackToInventory(Stack)) return;
         if (Stack.ItemId == Block.Log.id) player.IncrementStat(Achievements.MineWood);
-        if (Stack.ItemId == Item.Leather.id) player.IncrementStat(Achievements.KillCow);
+        if (Stack.ItemId == s_leatherId) player.IncrementStat(Achievements.KillCow);
 
         World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);
         player.sendPickup(this, Stack.Count);

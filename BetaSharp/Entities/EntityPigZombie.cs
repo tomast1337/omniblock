@@ -6,7 +6,8 @@ namespace BetaSharp.Entities;
 
 internal class EntityPigZombie : EntityZombie
 {
-    private static readonly ItemStack s_defaultHeldItem = new(Item.GoldenSword, 1);
+    private static readonly Item s_porkchopCooked = Item.ByName("porkchop_cooked");
+    private static readonly ItemStack s_defaultHeldItem = new(Item.ByName("sword_gold"), 1);
     private int _angerLevel;
     private int _randomSoundDelay;
 
@@ -85,5 +86,5 @@ internal class EntityPigZombie : EntityZombie
         _randomSoundDelay = Random.NextInt(40);
     }
 
-    protected override int DropItemId => Item.CookedPorkchop.id;
+    protected override int DropItem => s_porkchopCooked.Id;
 }

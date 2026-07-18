@@ -1,0 +1,10 @@
+{
+    "ProtocolId": 267,
+    "TranslationKey": "swordIron",
+    "TextureId": 66,
+    "MaxStackSize": 1,
+    "Behavior": {
+        "type": "sword",
+        "Material": "iron"
+    }
+}

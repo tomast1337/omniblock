@@ -6,10 +6,10 @@
         " #"
     ],
     "key": {
-        "X": "betasharp:GoldIngot",
-        "#": "betasharp:Stick"
+        "X": "betasharp:ingot_gold",
+        "#": "betasharp:stick"
     },
     "result": {
-        "id": "betasharp:GoldenAxe"
+        "id": "betasharp:hatchet_gold"
     }
 }

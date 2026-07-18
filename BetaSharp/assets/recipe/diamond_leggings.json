@@ -6,9 +6,9 @@
         "X X"
     ],
     "key": {
-        "X": "betasharp:Diamond"
+        "X": "betasharp:diamond"
     },
     "result": {
-        "id": "betasharp:DiamondLeggings"
+        "id": "betasharp:leggings_diamond"
     }
 }

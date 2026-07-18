@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 349,
+  "TranslationKey": "fishRaw",
+  "TextureId": 89,
+  "Behavior": {
+    "type": "food",
+    "HealAmount": 2,
+    "IsMeat": false,
+    "ReturnItem": null
+  },
+  "MaxStackSize": 1
+}

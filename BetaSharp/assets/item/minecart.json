@@ -1,0 +1,9 @@
+{
+  "ProtocolId": 328,
+  "TextureId": 135,
+  "MaxStackSize": 1,
+  "Behavior": {
+    "type": "minecart",
+    "CartType": 0
+  }
+}

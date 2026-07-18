@@ -9,6 +9,8 @@ internal class BlockCrops : BlockPlant
 {
     private const float DropSpread = 0.7F;
     private const float HalfWidth = 0.5F;
+    private static readonly Item s_seeds = Item.ByName("seeds");
+    private static readonly int s_wheatId = Item.ByName("wheat").Id;
 
     public BlockCrops(int i, int j) : base(i, j)
     {
@@ -107,7 +109,7 @@ internal class BlockCrops : BlockPlant
             float offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
             float offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
             float offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
-            EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(Item.Seeds))
+            EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(s_seeds))
             {
                 DelayBeforeCanPickup = 10
             };
@@ -115,7 +117,7 @@ internal class BlockCrops : BlockPlant
         }
     }
 
-    public override int getDroppedItemId(int blockMeta) => blockMeta == 7 ? Item.Wheat.id : -1;
+    public override int getDroppedItemId(int blockMeta) => blockMeta == 7 ? s_wheatId : -1;
 
     public override int getDroppedItemCount() => 1;
 }
