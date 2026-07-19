@@ -169,6 +169,11 @@ public class ScrollView : UIElement
 
         renderer.PushTranslate(ContentContainer.ComputedX, ContentContainer.ComputedY);
 
+        if (ContentContainer.Style.BackgroundColor is { } bg)
+        {
+            renderer.DrawRect(0, 0, ContentContainer.ComputedWidth, ContentContainer.ComputedHeight, bg);
+        }
+
         float visibleTop = ScrollY;
         float visibleBottom = ScrollY + ComputedHeight;
 

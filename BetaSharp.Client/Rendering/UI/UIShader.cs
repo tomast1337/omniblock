@@ -37,8 +37,9 @@ public sealed class UIShader : IDisposable
 
     private void Rebuild()
     {
+        Shader newShader = Build();
         _shader.Dispose();
-        _shader = Build();
+        _shader = newShader;
     }
 
     public void Dispose()

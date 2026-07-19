@@ -70,24 +70,6 @@ public class ZippedTexturePack : TexturePack
         CloseTexturePackFile();
     }
 
-    public override void BindThumbnailTexture(TextureManager textureManager)
-    {
-        if (_texturePackThumbnail != null && _texturePackName == null)
-        {
-            _texturePackName = textureManager.Load(_texturePackThumbnail);
-        }
-
-        if (_texturePackThumbnail != null && _texturePackName != null)
-        {
-            textureManager.BindTexture(_texturePackName);
-        }
-        else
-        {
-            textureManager.BindTexture(textureManager.GetTextureId("/gui/unknown_pack.png"));
-        }
-
-    }
-
     public override TextureHandle GetThumbnailTexture(TextureManager textureManager)
     {
         if (_texturePackThumbnail != null && _texturePackName == null)

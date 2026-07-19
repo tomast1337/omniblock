@@ -425,7 +425,7 @@ public class UIRenderer : IDisposable
             int barColor = (255 - damageColor) << 16 | damageColor << 8;
             int bgColor = (255 - damageColor) / 4 << 16 | 16128;
 
-            _batch.AddColoredQuad(bx + 2, by + 13, 13, 1, (uint)Color.FromRgb(0));
+            _batch.AddColoredQuad(bx + 2, by + 13, 13, 2, (uint)Color.FromRgb(0));
             _batch.AddColoredQuad(bx + 2, by + 13, 12, 1, (uint)Color.FromRgb((uint)bgColor));
             _batch.AddColoredQuad(bx + 2, by + 13, barWidth, 1, (uint)Color.FromRgb((uint)barColor));
         }

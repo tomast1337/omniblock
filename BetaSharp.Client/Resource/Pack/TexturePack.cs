@@ -25,10 +25,6 @@ public abstract class TexturePack
     {
     }
 
-    public virtual void BindThumbnailTexture(TextureManager textureManager)
-    {
-    }
-
     public virtual TextureHandle GetThumbnailTexture(TextureManager textureManager)
     {
         return textureManager.GetTextureId("/gui/unknown_pack.png");
