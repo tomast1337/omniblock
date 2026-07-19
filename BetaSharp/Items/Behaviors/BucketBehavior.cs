@@ -33,7 +33,8 @@ internal sealed class BucketBehavior : IItemBehavior
         float sinPitch = MathHelper.Sin(-pitch * ((float)Math.PI / 180.0F));
         float dirX = sinYaw * cosPitch;
         float dirZ = cosYaw * cosPitch;
-        Vec3D rayEnd = rayStart + new Vec3D(dirX * 5.0D, sinPitch * 5.0D, dirZ * 5.0D);
+        float reach = player.GameMode.BlockReach;
+        Vec3D rayEnd = rayStart + new Vec3D(dirX * reach, sinPitch * reach, dirZ * reach);
         HitResult hitResult = world.Reader.Raycast(rayStart, rayEnd, _isFull == 0);
 
         if (hitResult.Type == HitResultType.MISS)

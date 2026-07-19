@@ -23,7 +23,8 @@ internal sealed class BoatBehavior : IItemBehavior
         float sinPitch = MathHelper.Sin(-pitch * ((float)Math.PI / 180.0F));
         float dirX = sinYaw * cosPitch;
         float dirZ = cosYaw * cosPitch;
-        Vec3D rayEnd = rayStart + new Vec3D(dirX * 5.0D, sinPitch * 5.0D, dirZ * 5.0D);
+        float reach = player.GameMode.BlockReach;
+        Vec3D rayEnd = rayStart + new Vec3D(dirX * reach, sinPitch * reach, dirZ * reach);
         HitResult hitResult = world.Reader.Raycast(rayStart, rayEnd, true);
 
         if (hitResult.Type == HitResultType.MISS)

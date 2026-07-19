@@ -46,7 +46,8 @@ public class PlayerController
 
     public virtual void SetPartialTime(float tickDelta) { }
 
-    public virtual float GetBlockReachDistance() => 5.0F;
+    public virtual float GetBlockReachDistance() => Game.Player.GameMode.BlockReach;
+    public virtual float GetEntityReachDistance() => Game.Player.GameMode.EntityReach;
 
     public virtual bool SendUseItem(EntityPlayer player, World world, ItemStack stack)
     {

@@ -219,7 +219,7 @@ public sealed class PacketSerializationTests
             CanBeTargeted = false,
             CanReceiveDamage = false,
             NeedsAir = false,
-            BrakeSpeed = 0f
+            BreakSpeed = 0f
         };
         var registry = new StubRegistry<GameMode>(RegistryKeys.GameModes, [creative]);
 
@@ -232,7 +232,7 @@ public sealed class PacketSerializationTests
         Assert.Contains("\"CanBeTargeted\":false", json);
         Assert.Contains("\"CanReceiveDamage\":false", json);
         Assert.Contains("\"NeedsAir\":false", json);
-        Assert.Contains("\"BrakeSpeed\":0", json);
+        Assert.Contains("\"BreakSpeed\":0", json);
     }
 
     [Fact]
@@ -356,15 +356,15 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void Get_returns_correct_entry_by_name()
     {
-        var survival = new GameMode { Name = "survival" };                     // BrakeSpeed = 1f
-        var creative = new GameMode { Name = "creative", BrakeSpeed = 0.5f }; // distinct value
+        var survival = new GameMode { Name = "survival" };                    // BreakSpeed = 1f
+        var creative = new GameMode { Name = "creative", BreakSpeed = 0.5f }; // distinct value
 
         var access = new ClientRegistryAccess();
         access.Accumulate(BuildPacket(survival, creative));
 
         GameMode? found = access.Get(s_gameModeKey, "creative")?.Value;
         Assert.NotNull(found);
-        Assert.Equal(0.5f, found.BrakeSpeed);
+        Assert.Equal(0.5f, found.BreakSpeed);
     }
 
     [Fact]
@@ -389,22 +389,22 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void Re_accumulate_invalidates_cache_and_reflects_new_data()
     {
-        var initial = new GameMode { Name = "survival", BrakeSpeed = 1f };
+        var initial = new GameMode { Name = "survival", BreakSpeed = 1f };
         var access = new ClientRegistryAccess();
         access.Accumulate(BuildPacket(initial));
 
         // Force the cache to populate.
         GameMode? first = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(first);
-        Assert.Equal(1f, first.BrakeSpeed);
+        Assert.Equal(1f, first.BreakSpeed);
 
         // Re-accumulate with changed data.
-        var updated = new GameMode { Name = "survival", BrakeSpeed = 0.5f };
+        var updated = new GameMode { Name = "survival", BreakSpeed = 0.5f };
         access.Accumulate(BuildPacket(updated));
 
         GameMode? second = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(second);
-        Assert.Equal(0.5f, second.BrakeSpeed);
+        Assert.Equal(0.5f, second.BreakSpeed);
     }
 
     [Fact]
@@ -422,7 +422,7 @@ public sealed class ClientRegistryAccessTests
             CanBeTargeted = false,
             CanReceiveDamage = false,
             NeedsAir = false,
-            BrakeSpeed = 0f
+            BreakSpeed = 0f
         };
 
         var access = new ClientRegistryAccess();
@@ -436,7 +436,7 @@ public sealed class ClientRegistryAccessTests
         Assert.False(result.CanBeTargeted);
         Assert.False(result.CanReceiveDamage);
         Assert.False(result.NeedsAir);
-        Assert.Equal(0f, result.BrakeSpeed);
+        Assert.Equal(0f, result.BreakSpeed);
     }
 
     [Fact]

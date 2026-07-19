@@ -4,7 +4,9 @@ namespace BetaSharp;
 
 public class GameMode : DataAsset
 {
-    public float BrakeSpeed { get; set; } = 1f;
+    public float BlockReach { get; set; } = 4f;
+    public float BreakSpeed { get; set; } = 1f;
+    public float EntityReach { get; set; } = 3f;
     public bool BlockDrops { get; set; } = true;
     public bool CanBeTargeted { get; set; } = true;
     public bool CanBreak { get; set; } = true;

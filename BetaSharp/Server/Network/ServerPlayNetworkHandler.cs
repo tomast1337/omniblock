@@ -289,15 +289,17 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 return;
             }
 
-            if (packet.Action == 0 || packet.Action == 2)
+            if (packet.Action == (int)PlayerActionC2SPacket.Actions.BlockClick || packet.Action == (int)PlayerActionC2SPacket.Actions.BlockBroken)
             {
-                if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) > 36.0)
+                if (player.GameMode.BlockReach <= 0) return;
+                float reach = player.GameMode.BlockReach + 1f;
+                if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) > reach * reach)
                 {
                     return;
                 }
             }
 
-            if (packet.Action == 0)
+            if (packet.Action == (int)PlayerActionC2SPacket.Actions.BlockClick)
             {
                 if (!CanBypassSpawnProtection(x, z, world))
                 {
@@ -308,7 +310,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     player.InteractionManager.onBlockBreakingAction(x, y, z, packet.Direction);
                 }
             }
-            else if (packet.Action == 2)
+            else if (packet.Action == (int)PlayerActionC2SPacket.Actions.BlockBroken)
             {
                 player.InteractionManager.continueMining(x, y, z);
                 if (world.Reader.GetBlockId(x, y, z) != 0)
@@ -546,8 +548,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {
         ServerWorld playerWorld = server.getWorld(player.DimensionId);
-        Entity targetEntity = playerWorld.getEntity(packet.EntityId);
-        if (targetEntity != null && player.CanSee(targetEntity) && player.GetSquaredDistance(targetEntity) < 36.0)
+        Entity? targetEntity = playerWorld.getEntity(packet.EntityId);
+        float reach = player.GameMode.EntityReach + 1f;
+        if (targetEntity != null && player.CanSee(targetEntity) && player.GetSquaredDistance(targetEntity) < reach * reach)
         {
             if (packet.IsLeftClick == 0)
             {

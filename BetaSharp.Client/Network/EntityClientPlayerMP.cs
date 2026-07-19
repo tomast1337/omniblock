@@ -133,7 +133,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             IncreaseStat(Stats.Stats.DropStat, 1);
         }
-        sendQueue.AddToSendQueue(PlayerActionC2SPacket.Get(4, 0, 0, 0, 0));
+        sendQueue.AddToSendQueue(PlayerActionC2SPacket.Get(PlayerActionC2SPacket.Actions.DropSelectedItem, 0, 0, 0, 0));
     }
 
     private void sendInventoryChanged()

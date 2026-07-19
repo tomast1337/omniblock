@@ -26,7 +26,7 @@ public class GameRenderer
     public readonly HeldItemRenderer ItemRenderer;
     public readonly CameraController CameraController;
     private int _ticks;
-    private Entity _targetedEntity;
+    private Entity? _targetedEntity;
     private readonly MouseFilter _mouseFilterXAxis = new();
     private readonly MouseFilter _mouseFilterYAxis = new();
 
@@ -82,12 +82,14 @@ public class GameRenderer
 
         if (_client.ObjectMouseOver.Type != HitResultType.MISS)
         {
-            reachDistance = _client.ObjectMouseOver.Pos.distanceTo(cameraPosition);
+            reachDistance = Math.Min(
+                    _client.ObjectMouseOver.Pos.distanceTo(cameraPosition),
+                    _client.PlayerController.GetEntityReachDistance()
+                );
         }
-
-        if (reachDistance > 3.0D)
+        else
         {
-            reachDistance = 3.0D;
+            reachDistance = _client.PlayerController.GetEntityReachDistance();
         }
 
         Vec3D lookVec = _client.Camera.GetLook(tickDelta);
@@ -97,7 +99,7 @@ public class GameRenderer
         float searchMargin = 1.0F;
         List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).Expand(searchMargin, searchMargin, searchMargin));
 
-        double closestDistance = 0.0D;
+        double closestDistance = double.MaxValue;
         foreach (var ent in entities)
         {
             if (ent.HasCollision)
@@ -108,16 +110,14 @@ public class GameRenderer
 
                 if (box.Contains(cameraPosition))
                 {
-                    if (0.0D < closestDistance || closestDistance == 0.0D)
-                    {
-                        _targetedEntity = ent;
-                        closestDistance = 0.0D;
-                    }
+                    _targetedEntity = ent;
+                    closestDistance = 0.0D;
+                    break;
                 }
-                else if (hit.Type != HitResultType.MISS)
+                if (hit.Type != HitResultType.MISS)
                 {
                     double hitDistance = cameraPosition.distanceTo(hit.Pos);
-                    if (hitDistance < closestDistance || closestDistance == 0.0D)
+                    if (hitDistance < closestDistance)
                     {
                         _targetedEntity = ent;
                         closestDistance = hitDistance;
