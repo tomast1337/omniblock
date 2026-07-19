@@ -38,29 +38,40 @@ internal struct Quad
         _vertexPositions = reversed;
     }
 
-    public readonly void draw(Tessellator tessellator, float scale)
+    /// <summary>
+    /// Writes this face as 2 local-space (unscaled) triangles (6 verts, matching the
+    /// A,B,C / C,D,A winding <see cref="Tessellator"/>'s quad-to-triangle conversion uses)
+    /// into <paramref name="dest"/>.
+    /// </summary>
+    public readonly void GetTriangles(Span<ModelVertexLocal> dest)
     {
         Vector3D<double> edge1 = _vertexPositions[1].vector3D - _vertexPositions[0].vector3D;
         Vector3D<double> edge2 = _vertexPositions[1].vector3D - _vertexPositions[2].vector3D;
-        Vector3D<double> normal = Vector3D.Normalize(Vector3D.Cross(edge2, edge1));
+        Vector3D<double> faceNormal = Vector3D.Normalize(Vector3D.Cross(edge2, edge1));
+        Vector3D<float> normal = _invertNormal
+            ? new Vector3D<float>(-(float)faceNormal.X, -(float)faceNormal.Y, -(float)faceNormal.Z)
+            : new Vector3D<float>((float)faceNormal.X, (float)faceNormal.Y, (float)faceNormal.Z);
 
-        tessellator.startDrawingQuads();
-
-        if (_invertNormal)
+        ReadOnlySpan<int> order = [0, 1, 2, 2, 3, 0];
+        for (int i = 0; i < 6; ++i)
         {
-            tessellator.setNormal(-(float)normal.X, -(float)normal.Y, -(float)normal.Z);
+            PositionTextureVertex vertex = _vertexPositions[order[i]];
+            dest[i] = new ModelVertexLocal
+            {
+                Position = new Vector3D<float>((float)vertex.vector3D.X, (float)vertex.vector3D.Y, (float)vertex.vector3D.Z),
+                U = vertex.texturePositionX,
+                V = vertex.texturePositionY,
+                Normal = normal
+            };
         }
-        else
-        {
-            tessellator.setNormal((float)normal.X, (float)normal.Y, (float)normal.Z);
-        }
-
-        for (int i = 0; i < 4; ++i)
-        {
-            PositionTextureVertex vertex = _vertexPositions[i];
-            tessellator.addVertexWithUV(((float)vertex.vector3D.X * scale), ((float)vertex.vector3D.Y * scale), ((float)vertex.vector3D.Z * scale), vertex.texturePositionX, vertex.texturePositionY);
-        }
-
-        tessellator.draw();
     }
+}
+
+/// <summary>Local-space (unscaled, unlit) vertex baked once per <see cref="ModelPart"/> face, transformed and lit at submit time.</summary>
+internal struct ModelVertexLocal
+{
+    public Vector3D<float> Position;
+    public float U;
+    public float V;
+    public Vector3D<float> Normal;
 }

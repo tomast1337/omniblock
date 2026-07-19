@@ -64,6 +64,7 @@ public unsafe class EmulatedGL : LegacyGL
     private LightingState _lightingState = new();
     private FogState _fogState = new();
     private DirtyState _dirtyState = new();
+    private Vector4D<float> _currentColorTint = Vector4D<float>.One;
 
     private readonly uint _immediateVao;
 
@@ -316,6 +317,7 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void Color3(float red, float green, float blue)
     {
+        _currentColorTint = new Vector4D<float>(red, green, blue, 1.0f);
         if (_displayLists.IsCompiling) { _displayLists.RecordColor(red, green, blue, 1.0f); return; }
         SilkGL.VertexAttrib4(1, red, green, blue, 1.0f);
     }
@@ -323,12 +325,14 @@ public unsafe class EmulatedGL : LegacyGL
     public override void Color3(byte red, byte green, byte blue)
     {
         float r = red / 255.0f, g = green / 255.0f, b = blue / 255.0f;
+        _currentColorTint = new Vector4D<float>(r, g, b, 1.0f);
         if (_displayLists.IsCompiling) { _displayLists.RecordColor(r, g, b, 1.0f); return; }
         SilkGL.VertexAttrib4(1, r, g, b, 1.0f);
     }
 
     public override void Color4(float red, float green, float blue, float alpha)
     {
+        _currentColorTint = new Vector4D<float>(red, green, blue, alpha);
         if (_displayLists.IsCompiling) { _displayLists.RecordColor(red, green, blue, alpha); return; }
         SilkGL.VertexAttrib4(1, red, green, blue, alpha);
     }
@@ -595,4 +599,39 @@ public unsafe class EmulatedGL : LegacyGL
         // TODO: ADD A BETTER WAY TO DO LINE WIDTH
         SilkGL.LineWidth(1.0f); // > 1.0 IS DEPRECATED
     }
+
+    public Vector4D<float> GetCurrentColorTint() => _currentColorTint;
+    public float GetCurrentAlphaThreshold() => _alphaTestEnabled ? _alphaThreshold : -1.0f;
+
+    public EntityFogSnapshot GetFogState() => new(
+        _fogState.FogEnabled,
+        _fogState.FogMode,
+        _fogState.FogStart,
+        _fogState.FogEnd,
+        _fogState.FogDensity,
+        new Vector4D<float>(_fogState.FogColorR, _fogState.FogColorG, _fogState.FogColorB, _fogState.FogColorA));
+
+    public EntityLightingSnapshot GetLightingState() => new(
+        _lightingState.LightingEnabled,
+        new Vector3D<float>(_lightingState.Light0DirX, _lightingState.Light0DirY, _lightingState.Light0DirZ),
+        new Vector3D<float>(_lightingState.Light0DiffR, _lightingState.Light0DiffG, _lightingState.Light0DiffB),
+        new Vector3D<float>(_lightingState.Light1DirX, _lightingState.Light1DirY, _lightingState.Light1DirZ),
+        new Vector3D<float>(_lightingState.Light1DiffR, _lightingState.Light1DiffG, _lightingState.Light1DiffB),
+        new Vector3D<float>(_lightingState.AmbientR, _lightingState.AmbientG, _lightingState.AmbientB));
 }
+
+public readonly record struct EntityLightingSnapshot(
+    bool Enabled,
+    Vector3D<float> Light0Dir,
+    Vector3D<float> Light0Diffuse,
+    Vector3D<float> Light1Dir,
+    Vector3D<float> Light1Diffuse,
+    Vector3D<float> Ambient);
+
+public readonly record struct EntityFogSnapshot(
+    bool Enabled,
+    int Mode,
+    float Start,
+    float End,
+    float Density,
+    Vector4D<float> Color);

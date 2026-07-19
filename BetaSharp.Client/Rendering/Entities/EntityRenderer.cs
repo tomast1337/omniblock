@@ -22,7 +22,11 @@ public abstract class EntityRenderer
     protected void loadTexture(string path)
     {
         TextureManager? textureManager = Dispatcher.TextureManager;
-        textureManager?.BindTexture(textureManager.GetTextureId(path));
+        if (textureManager == null) return;
+
+        TextureHandle handle = textureManager.GetTextureId(path);
+        textureManager.BindTexture(handle);
+        EntityBatchRenderer.Instance.SetTexture((uint)handle.Id);
     }
 
     protected bool LoadDownloadableImageTexture(string? url, string fallbackPath)
@@ -33,6 +37,7 @@ public abstract class EntityRenderer
             if (skinHandle != null)
             {
                 skinHandle.Bind();
+                EntityBatchRenderer.Instance.SetTexture((uint)skinHandle.Id);
                 return true;
             }
         }

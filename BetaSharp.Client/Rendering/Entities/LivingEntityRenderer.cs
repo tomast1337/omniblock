@@ -73,6 +73,7 @@ public class LivingEntityRenderer : EntityRenderer
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
                     renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                    EntityBatchRenderer.Instance.Flush();
                     GLManager.GL.Disable(GLEnum.Blend);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                 }
@@ -83,6 +84,7 @@ public class LivingEntityRenderer : EntityRenderer
             int colorMultiplier = getColorMultiplier(entity, brightness, tickDelta);
             if ((colorMultiplier >> 24 & 255) > 0 || entity.HurtTime > 0 || entity.DeathTime > 0)
             {
+                EntityBatchRenderer.Instance.SetNoTexture();
                 GLManager.GL.Disable(GLEnum.Texture2D);
                 GLManager.GL.Disable(GLEnum.AlphaTest);
                 GLManager.GL.Enable(GLEnum.Blend);
@@ -122,6 +124,7 @@ public class LivingEntityRenderer : EntityRenderer
                     }
                 }
 
+                EntityBatchRenderer.Instance.Flush();
                 GLManager.GL.DepthFunc(GLEnum.Lequal);
                 GLManager.GL.Disable(GLEnum.Blend);
                 GLManager.GL.Enable(GLEnum.AlphaTest);
