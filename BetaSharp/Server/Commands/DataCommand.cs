@@ -255,9 +255,9 @@ public class DataCommand : Command.Command
     private static void LogEntity(BlockEntity e, ICommandOutput output)
     {
         output.SendMessage("type: " + e.GetType().Name);
-        output.SendMessage("name: " + e.getBlock().getBlockName());
+        output.SendMessage("name: " + e.GetBlock().GetBlockName());
         output.SendMessage($"pos: {e.X} {e.Y} {e.Z}");
-        output.SendMessage("removed: " + e.isRemoved());
+        output.SendMessage("removed: " + e.IsRemoved());
 
         if (e is IInventory inventory)
         {
@@ -279,7 +279,7 @@ public class DataCommand : Command.Command
         }
         else if (e is BlockEntityRecordPlayer recordPlayer)
         {
-            output.SendMessage("record: " + recordPlayer.recordId);
+            output.SendMessage("record: " + recordPlayer.RecordId);
         }
     }
 
