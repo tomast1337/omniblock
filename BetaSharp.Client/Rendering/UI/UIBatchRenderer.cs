@@ -20,6 +20,10 @@ public sealed class UIBatchRenderer : IDisposable
     private int _vertexCount;
     private uint _currentTextureId;
     private bool _useTexture;
+    private readonly Dictionary<uint, int> _glTexToLogicalId = new();
+
+    private static readonly Dictionary<string, int> s_pathToLogicalId = new();
+    private static bool s_propertiesLoaded;
 
     public unsafe UIBatchRenderer(GameOptions gameOptions)
     {
@@ -66,6 +70,46 @@ public sealed class UIBatchRenderer : IDisposable
         Flush();
         _currentTextureId = texId;
         _useTexture = true;
+    }
+
+    public void RegisterTexture(uint glTexId, int logicalId)
+    {
+        _glTexToLogicalId[glTexId] = logicalId;
+    }
+
+    public void RegisterTextureByPath(string assetPath, uint glTexId)
+    {
+        EnsurePropertiesLoaded();
+        if (s_pathToLogicalId.TryGetValue(assetPath, out int logicalId))
+            _glTexToLogicalId[glTexId] = logicalId;
+    }
+
+    private static void EnsurePropertiesLoaded()
+    {
+        if (s_propertiesLoaded) return;
+        s_propertiesLoaded = true;
+
+        try
+        {
+            string text = AssetManager.Instance.getAsset("shaders/ui_textures.properties").GetTextContent();
+            foreach (string line in text.Split('\n'))
+            {
+                string trimmed = line.Trim();
+                if (trimmed.Length == 0 || trimmed[0] == '#') continue;
+
+                int eq = trimmed.IndexOf('=');
+                if (eq < 0) continue;
+
+                string path = trimmed[..eq].Trim();
+                if (int.TryParse(trimmed[(eq + 1)..].Trim(), out int id))
+                    s_pathToLogicalId[path] = id;
+            }
+        }
+        catch
+        {
+            // Properties file missing or unparseable — all textures map to ID 0 (passthrough).
+            // Shader operates identically to pre-texture-ID behavior.
+        }
     }
 
     private void SetNoTexture()
@@ -139,6 +183,9 @@ public sealed class UIBatchRenderer : IDisposable
 
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetUseTexture(_useTexture);
+
+        int logicalTexId = _useTexture && _glTexToLogicalId.TryGetValue(_currentTextureId, out int id) ? id : 0;
+        _shader.SetTextureId(logicalTexId);
 
         if (_useTexture && _currentTextureId != 0)
         {

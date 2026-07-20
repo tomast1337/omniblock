@@ -50,6 +50,23 @@ public class UIRenderer : IDisposable
         TextureManager = textureManager;
         TextRenderer = textRenderer;
         _batch = new UIBatchRenderer(gameOptions);
+
+        _batch.RegisterTextureByPath("terrain.png", (uint)_terrainTexture.Id);
+        _batch.RegisterTextureByPath("gui/items.png", (uint)_itemsTexture.Id);
+
+        uint fontTexId = textRenderer.FontTextureId;
+        if (fontTexId != 0)
+            _batch.RegisterTextureByPath("font/default.png", fontTexId);
+
+        RegisterCommonTexture("gui/gui.png");
+        RegisterCommonTexture("gui/icons.png");
+        RegisterCommonTexture("gui/background.png");
+    }
+
+    private void RegisterCommonTexture(string assetPath)
+    {
+        TextureHandle handle = TextureManager.GetTextureId("/" + assetPath);
+        _batch.RegisterTextureByPath(assetPath, (uint)handle.Id);
     }
 
     public void Begin()

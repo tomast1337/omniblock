@@ -38,6 +38,7 @@ public class TextRenderer : IDisposable
     private readonly int _rowHeight;
 
     private TextureHandle? fontTextureName { get; }
+    internal uint FontTextureId => fontTextureName != null ? (uint)fontTextureName.Id : 0;
 
     private readonly TextureManager _textureManager;
 

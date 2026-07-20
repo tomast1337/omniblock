@@ -20,6 +20,7 @@ public sealed class UIShader : IDisposable
 
     public void SetProjection(Matrix4X4<float> proj) => _shader.SetUniformMatrix4("u_Projection", proj);
     public void SetUseTexture(bool use) => _shader.SetUniform1("u_UseTexture", use ? 1 : 0);
+    public void SetTextureId(int id) => _shader.SetUniform1("u_TextureId", id);
 
     private Shader Build()
     {

@@ -294,6 +294,7 @@ public class AssetManager
         defineEmbeddedAsset("shaders/sky.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/ui.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/ui.frag", AssetType.Text);
+        defineEmbeddedAsset("shaders/ui_textures.properties", AssetType.Text);
         defineAsset("lang/lang.json", AssetType.Text);
     }
 
