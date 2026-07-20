@@ -61,6 +61,11 @@ public class UIRenderer : IDisposable
         RegisterCommonTexture("gui/gui.png");
         RegisterCommonTexture("gui/icons.png");
         RegisterCommonTexture("gui/background.png");
+        RegisterCommonTexture("gui/inventory.png");
+        RegisterCommonTexture("gui/container.png");
+        RegisterCommonTexture("gui/crafting.png");
+        RegisterCommonTexture("gui/trap.png");
+        RegisterCommonTexture("gui/furnace.png");
     }
 
     private void RegisterCommonTexture(string assetPath)
