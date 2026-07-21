@@ -19,14 +19,11 @@ using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
 namespace BetaSharp.Client.UI.Rendering;
 
-public class UIRenderer : IDisposable
+public class UIRenderer
 {
-    public TextureManager TextureManager { get; }
-    public TextRenderer TextRenderer { get; }
+    public TextureManager TextureManager => _context.TextureManager;
+    public TextRenderer TextRenderer => _context.TextRenderer;
     private readonly ItemRenderer _itemRenderer = new();
-    private readonly UIBatchRenderer _batch;
-
-    public bool IsDisposed { get; private set; }
 
     private float _translateX = 0;
     private float _translateY = 0;
@@ -36,43 +33,18 @@ public class UIRenderer : IDisposable
     private bool _scissorEnabled;
     private (int X, int Y, int W, int H) _scissorRect;
     private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
-    private readonly GameOptions _gameOptions;
-    private readonly Func<Vector2D<int>> _getDisplaySize;
-    private readonly TextureHandle _terrainTexture;
-    private readonly TextureHandle _itemsTexture;
+    private GameOptions _gameOptions => _context.Options;
+    private Func<Vector2D<int>> _getDisplaySize => _context.DisplaySize;
+    private TextureHandle _terrainTexture => _context.TerrainTexture;
+    private TextureHandle _itemsTexture => _context.ItemsTexture;
+    private UIBatchRenderer _batch => _context.UiBatchRenderer;
+    private readonly UIContext _context;
 
-    public UIRenderer(TextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize, TextureHandle terrainTexture, TextureHandle itemsTexture)
+    public UIRenderer(UIContext context)
     {
-        _gameOptions = gameOptions;
-        _getDisplaySize = getDisplaySize;
-        _terrainTexture = terrainTexture;
-        _itemsTexture = itemsTexture;
-        TextureManager = textureManager;
-        TextRenderer = textRenderer;
-        _batch = new UIBatchRenderer(gameOptions);
-
-        _batch.RegisterTextureByPath("terrain.png", (uint)_terrainTexture.Id);
-        _batch.RegisterTextureByPath("gui/items.png", (uint)_itemsTexture.Id);
-
-        uint fontTexId = textRenderer.FontTextureId;
-        if (fontTexId != 0)
-            _batch.RegisterTextureByPath("font/default.png", fontTexId);
-
-        RegisterCommonTexture("gui/gui.png");
-        RegisterCommonTexture("gui/icons.png");
-        RegisterCommonTexture("gui/background.png");
-        RegisterCommonTexture("gui/inventory.png");
-        RegisterCommonTexture("gui/container.png");
-        RegisterCommonTexture("gui/crafting.png");
-        RegisterCommonTexture("gui/trap.png");
-        RegisterCommonTexture("gui/furnace.png");
+        _context = context;
     }
 
-    private void RegisterCommonTexture(string assetPath)
-    {
-        TextureHandle handle = TextureManager.GetTextureId("/" + assetPath);
-        _batch.RegisterTextureByPath(assetPath, (uint)handle.Id);
-    }
 
     public void Begin()
     {
@@ -104,11 +76,6 @@ public class UIRenderer : IDisposable
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public void Dispose()
-    {
-        _batch.Dispose();
-        IsDisposed = true;
-    }
 
     public void PushColor(Color color)
     {

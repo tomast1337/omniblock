@@ -112,7 +112,7 @@ public abstract class UIScreen
         Root = new UIElement();
         Root.Style.Width = null;
         Root.Style.Height = null;
-        Renderer = new UIRenderer(context.TextRenderer, context.TextureManager, context.Options, context.DisplaySize, context.TerrainTexture, context.ItemsTexture);
+        Renderer = new UIRenderer(Context);
 
         CreateButton = () => new(context.PlayClickSound);
         CreateImageButton = () => new(context.PlayClickSound);
@@ -121,8 +121,6 @@ public abstract class UIScreen
 
     public void Initialize()
     {
-        if (Renderer.IsDisposed)
-            Renderer = new UIRenderer(Context.TextRenderer, Context.TextureManager, Context.Options, Context.DisplaySize, Context.TerrainTexture, Context.ItemsTexture);
 
         Keyboard.enableRepeatEvents(true);
         if (!_isInitialized)
