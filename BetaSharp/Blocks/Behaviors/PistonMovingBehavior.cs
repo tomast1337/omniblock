@@ -13,7 +13,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
 {
     public bool OnUse(Block block, OnUseEvent @event)
     {
-        if (@event.World.IsRemote || @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z) != null)
+        if (@event.World.IsRemote || @event.World.Entities.PeekBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z) != null)
         {
             return false;
         }
@@ -24,7 +24,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
 
     public void OnBreak(Block block, OnBreakEvent @event)
     {
-        BlockEntity? entity = @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z);
+        BlockEntity? entity = @event.World.Entities.PeekBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z);
         if (entity is BlockEntityPiston piston)
         {
             piston.Finish();

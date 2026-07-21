@@ -477,6 +477,13 @@ public class Chunk
         return entity;
     }
 
+    /// <summary>Looks up an already-stored block entity without lazily manufacturing one via <see cref="Block.GetBlockEntity" />.</summary>
+    public virtual BlockEntity? PeekBlockEntity(int localX, int y, int localZ)
+    {
+        BlockPos pos = new(localX, y, localZ);
+        return BlockEntities.TryGetValue(pos, out BlockEntity? entity) && entity != null && !entity.IsRemoved() ? entity : null;
+    }
+
     public virtual void AddBlockEntity(BlockEntity blockEntity)
     {
         int localX = blockEntity.X - X * 16;

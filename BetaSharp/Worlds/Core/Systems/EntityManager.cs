@@ -897,6 +897,14 @@ public class EntityManager
         return entity as T;
     }
 
+    public T? PeekBlockEntity<T>(int x, int y, int z) where T : BlockEntity
+    {
+        Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+        BlockEntity? entity = chunk.PeekBlockEntity(x & 15, y, z & 15)
+                            ?? BlockEntities.FirstOrDefault(e => e.X == x && e.Y == y && e.Z == z);
+        return entity as T;
+    }
+
     public void SetBlockEntity(int x, int y, int z, BlockEntity? blockEntity)
     {
         if (blockEntity == null || blockEntity.IsRemoved())

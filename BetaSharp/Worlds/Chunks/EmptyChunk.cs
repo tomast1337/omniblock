@@ -46,6 +46,7 @@ public class EmptyChunk : Chunk
     public override bool IsAboveMaxHeight(int x, int y, int z) => false;
 
     public override BlockEntity? GetBlockEntity(int x, int y, int z) => null;
+    public override BlockEntity? PeekBlockEntity(int x, int y, int z) => null;
     public override void AddBlockEntity(BlockEntity blockEntity) { }
     public override void SetBlockEntity(int x, int y, int z, BlockEntity blockEntity) { }
     public override void RemoveBlockEntityAt(int x, int y, int z) { }
