@@ -10,6 +10,6 @@
     "down": 208,
     "up": 176
   },
-  "TopVariance": 3,
-  "BottomVariance": 3
+  "TopVariance": "Rotate270",
+  "BottomVariance": "Rotate270"
 }

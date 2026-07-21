@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 
@@ -15,7 +16,10 @@ namespace BetaSharp.Blocks;
 internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locations) : DataAssetLoader(locations), IReadableRegistry<BlockDefinition>
 {
     private const string DefaultsFileName = "_defaults.json";
-    private static readonly JsonSerializerOptions s_options = new();
+    private static readonly JsonSerializerOptions s_options = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private readonly Dictionary<ResourceLocation, BlockDefinition> _byLocation = [];
     private readonly Dictionary<int, BlockDefinition> _byId = [];

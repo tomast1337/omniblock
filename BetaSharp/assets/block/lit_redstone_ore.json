@@ -9,9 +9,9 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TextureId": 51,
-  "TopVariance": 2,
-  "BottomVariance": 2,
-  "SideVariance": 2,
+  "TopVariance": "Rotate180",
+  "BottomVariance": "Rotate180",
+  "SideVariance": "Rotate180",
   "TickRate": 30,
   "LootTable": {
     "Entries": [

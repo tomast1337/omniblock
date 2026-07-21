@@ -7,9 +7,9 @@
   "Resistance": 0.5,
   "Luminance": 1,
   "TextureId": 105,
-  "TopVariance": 15,
-  "BottomVariance": 15,
-  "SideVariance": 12,
+  "TopVariance": "All",
+  "BottomVariance": "All",
+  "SideVariance": "FlipBoth",
   "LootTable": {
     "Entries": [
       {

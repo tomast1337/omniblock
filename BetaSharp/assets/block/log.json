@@ -7,9 +7,9 @@
   "Resistance": 3.3333333,
   "IgnoreMetaUpdates": true,
   "TextureId": 20,
-  "TopVariance": 15,
-  "BottomVariance": 15,
-  "SideVariance": 2,
+  "TopVariance": "All",
+  "BottomVariance": "All",
+  "SideVariance": "Rotate180",
   "PreservesMetaOnDrop": true,
   "Behaviors": {
     "Visuals": {

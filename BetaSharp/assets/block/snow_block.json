@@ -8,9 +8,9 @@
   "Resistance": 0.33333334,
   "TickRandomly": true,
   "TextureId": 66,
-  "TopVariance": 15,
-  "BottomVariance": 15,
-  "SideVariance": 12,
+  "TopVariance": "All",
+  "BottomVariance": "All",
+  "SideVariance": "FlipBoth",
   "LootTable": {
     "Entries": [
       {

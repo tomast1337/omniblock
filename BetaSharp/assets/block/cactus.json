@@ -8,9 +8,9 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "TextureId": 70,
-  "TopVariance": 15,
-  "BottomVariance": 15,
-  "SideVariance": 2,
+  "TopVariance": "All",
+  "BottomVariance": "All",
+  "SideVariance": "Rotate180",
   "RenderType": "Cactus",
   "NotFullCube": true,
   "BoundingBox": {

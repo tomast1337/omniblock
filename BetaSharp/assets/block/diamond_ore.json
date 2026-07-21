@@ -6,9 +6,9 @@
   "Hardness": 3,
   "Resistance": 5,
   "TextureId": 50,
-  "TopVariance": 2,
-  "BottomVariance": 2,
-  "SideVariance": 2,
+  "TopVariance": "Rotate180",
+  "BottomVariance": "Rotate180",
+  "SideVariance": "Rotate180",
   "LootTable": {
     "Entries": [
       {

@@ -10,6 +10,6 @@
     "down": 4,
     "up": 4
   },
-  "SideVariance": 4,
+  "SideVariance": "FlipU",
   "DropCount": 0
 }

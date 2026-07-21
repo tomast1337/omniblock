@@ -8,7 +8,7 @@
   "Resistance": 1.3333334,
   "IgnoreMetaUpdates": true,
   "TextureId": 64,
-  "SideVariance": 12,
+  "SideVariance": "FlipBoth",
   "PreservesMetaOnDrop": true,
   "BlockAlias": [
     "blackWool:15",

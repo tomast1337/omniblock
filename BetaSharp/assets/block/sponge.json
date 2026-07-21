@@ -6,9 +6,9 @@
   "Hardness": 0.6,
   "Resistance": 1,
   "TextureId": 48,
-  "TopVariance": 15,
-  "BottomVariance": 15,
-  "SideVariance": 12,
+  "TopVariance": "All",
+  "BottomVariance": "All",
+  "SideVariance": "FlipBoth",
   "Behaviors": {
     "Lifecycle": {
       "Type": "sponge_lifecycle"

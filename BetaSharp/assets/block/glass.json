@@ -7,9 +7,9 @@
   "Resistance": 0.5,
   "NonOpaque": true,
   "TextureId": 49,
-  "TopVariance": 2,
-  "BottomVariance": 2,
-  "SideVariance": 2,
+  "TopVariance": "Rotate180",
+  "BottomVariance": "Rotate180",
+  "SideVariance": "Rotate180",
   "DropCount": 0,
   "Behaviors": {
     "Visuals": {

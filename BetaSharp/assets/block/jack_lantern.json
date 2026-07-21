@@ -10,8 +10,8 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TextureId": 102,
-  "TopVariance": 15,
-  "BottomVariance": 15,
+  "TopVariance": "All",
+  "BottomVariance": "All",
   "Behaviors": {
     "Physics": {
       "Type": "pumpkin",

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 
@@ -8,7 +9,10 @@ namespace BetaSharp.Items;
 internal sealed class ItemDefinitionJsonLoader : DataAssetLoader, IReadableRegistry<ItemDefinition>
 {
     private const string DefaultsFileName = "_defaults.json";
-    private static readonly JsonSerializerOptions s_options = new();
+    private static readonly JsonSerializerOptions s_options = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private readonly string _path;
     private readonly Dictionary<ResourceLocation, ItemDefinition> _byLocation = [];

@@ -6,9 +6,9 @@
   "Hardness": 0.5,
   "Resistance": 0.8333333,
   "TextureId": 18,
-  "TopVariance": 3,
-  "BottomVariance": 3,
-  "SideVariance": 3,
+  "TopVariance": "Rotate270",
+  "BottomVariance": "Rotate270",
+  "SideVariance": "Rotate270",
   "TickRate": 3,
   "Behaviors": {
     "Ticker": {

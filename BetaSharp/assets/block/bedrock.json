@@ -6,7 +6,7 @@
   "Resistance": 6000000,
   "TrackStatistics": false,
   "TextureId": 17,
-  "TopVariance": 15,
-  "BottomVariance": 15,
-  "SideVariance": 15
+  "TopVariance": "All",
+  "BottomVariance": "All",
+  "SideVariance": "All"
 }
