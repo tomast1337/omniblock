@@ -8,6 +8,9 @@ out vec4 FragColor;
 
 const int darkMode = 0; // [0 1]
 
+const int TEXTURE_ID_INVENTORIES = 100;
+const int TEXTURE_ID_BUTTONS_SLIDERS = 3;
+
 void main() {
     if (u_UseTexture != 0)
         FragColor = v_Color * texture(u_Texture, v_TexCoord);
@@ -16,11 +19,9 @@ void main() {
 
    if (darkMode == 1)
    {
-       // inventories
-       if (u_TextureId == 100)
-           FragColor.rgb = FragColor.rgb / 2.0 - 0.1;
-       // ui buttons and sliders
-       else if (u_TextureId == 3)
-           FragColor.rgb = FragColor.rgb / 1.5 - 0.1;
+       if (u_TextureId == TEXTURE_ID_INVENTORIES)
+           FragColor.rgb = max(FragColor.rgb / 2.0 - 0.1, 0.0);
+       else if (u_TextureId == TEXTURE_ID_BUTTONS_SLIDERS)
+           FragColor.rgb = max(FragColor.rgb / 1.5 - 0.1, 0.0);
    }
 }

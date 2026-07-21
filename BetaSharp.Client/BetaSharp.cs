@@ -536,6 +536,7 @@ public partial class BetaSharp :
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
             WorldRenderer?.Dispose();
+            UiBatchRenderer.Dispose();
             SkinManager.Dispose();
             TextureManager.Dispose();
             SoundManager.Dispose();
