@@ -5,8 +5,5 @@
   "SoundGroup": "stone",
   "Hardness": 3,
   "Resistance": 5,
-  "TextureId": 33,
-  "TopVariance": "Rotate180",
-  "BottomVariance": "Rotate180",
-  "SideVariance": "Rotate180"
+  "TextureId": 33
 }

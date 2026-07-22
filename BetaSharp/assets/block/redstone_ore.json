@@ -7,9 +7,6 @@
   "Resistance": 5,
   "IgnoreMetaUpdates": true,
   "TextureId": 51,
-  "TopVariance": "Rotate180",
-  "BottomVariance": "Rotate180",
-  "SideVariance": "FlipBoth",
   "TickRate": 30,
   "LootTable": {
     "Entries": [

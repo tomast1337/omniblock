@@ -6,7 +6,6 @@
   "Hardness": 0.5,
   "Resistance": 0.8333333,
   "TextureId": 2,
-  "TopVariance": "All",
-  "BottomVariance": "All",
-  "SideVariance": "All"
+  "TopVariance": "Rotations",
+  "BottomVariance": "Rotations"
 }

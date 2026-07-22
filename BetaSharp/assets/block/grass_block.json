@@ -13,7 +13,7 @@
     "up": 0
   },
   "TopVariance": "Rotate270",
-  "BottomVariance": "All",
+  "BottomVariance": "Rotations",
   "LootTable": {
     "Entries": [
       {
