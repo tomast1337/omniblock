@@ -191,7 +191,6 @@
         "invertMouse": "Invert Mouse",
         "alternateBlocks": "Alternate Blocks",
         "chunkFade": "Chunk Fade",
-        "environmentAnim": "Environment Anim",
         "sensitivity": {
             "text": "Sensitivity",
             "controllerText": "Controller Sensitivity",
@@ -272,6 +271,13 @@
         "controllerBindings": "Controller Bindings",
         "shader": {
             "text": "Shader Options",
+            "chunkVert": {
+                "text": "World",
+                "WavyLeavesStrength": "Wavy Leaves Strength",
+                "WavyLeavesSpeed": "Wavy Leaves Speed",
+                "WavyPlantStrength": "Wavy Plant Strength",
+                "WavyPlantSpeed": "Wavy Plant Speed"
+            },
             "cloud": {
                 "text": "Clouds",
                 "minParallax": "Min Parallax",

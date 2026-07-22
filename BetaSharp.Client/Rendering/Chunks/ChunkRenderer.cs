@@ -1,3 +1,4 @@
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Chunks.Occlusion;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
@@ -69,7 +70,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
-    private readonly Shader _chunkShader;
+    private Shader _chunkShader;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
     private int _currentIndex;
@@ -85,7 +86,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private int _frameIndex = 0;
-    private readonly Func<bool> _alternateBlocks;
+    private readonly GameOptions _options;
 
     public bool UseOcclusionCulling { get; set; } = true;
 
@@ -95,15 +96,49 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public int ChunksRendered { get; private set; }
     public int TranslucentMeshes { get; private set; }
 
-    public ChunkRenderer(World world, Func<bool> alternateBlocks)
+    private int _textureSamplerLoc;
+    private int _fogModeLoc;
+    private int _fogDensityLoc;
+    private int _fogStartLoc;
+    private int _fogEndLoc;
+    private int _fogColorLoc;
+    private int _timeLoc;
+    private int _chunkFadeEnabledLoc;
+    private int _projectionMatrixLoc;
+
+    public ChunkRenderer(World world, GameOptions options)
     {
+        _options = options;
         _meshGenerator = new();
         _world = world;
-        _alternateBlocks = alternateBlocks;
 
-        _chunkShader = new(AssetManager.Instance.getAsset("shaders/chunk.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/chunk.frag").GetTextContent());
+        BuildChunkShader();
+        _options.ShaderOptions.GetOrCreate("chunkVert").Changed += BuildChunkShader;
+        _options.ShaderOptions.GetOrCreate("chunkFrag").Changed += BuildChunkShader;
 
         GLManager.GL.UseProgram(0);
+    }
+
+    private void BuildChunkShader()
+    {
+        _chunkShader?.Dispose();
+
+        string vert = AssetManager.Instance.getAsset("shaders/chunk.vert").GetTextContent();
+        string frag = AssetManager.Instance.getAsset("shaders/chunk.frag").GetTextContent();
+        ShaderOptionSet vertOpts = _options.ShaderOptions.GetOrCreate("chunkVert");
+        ShaderOptionSet fragOpts = _options.ShaderOptions.GetOrCreate("chunkFrag");
+        vertOpts.Parse(vert);
+        fragOpts.Parse(frag);
+        _chunkShader = new Shader(vertOpts.Inject(vert), fragOpts.Inject(frag));
+        _textureSamplerLoc = _chunkShader.GetUniformLocation("textureSampler");
+        _fogModeLoc = _chunkShader.GetUniformLocation("fogMode");
+        _fogDensityLoc = _chunkShader.GetUniformLocation("fogDensity");
+        _fogStartLoc = _chunkShader.GetUniformLocation("fogStart");
+        _fogEndLoc = _chunkShader.GetUniformLocation("fogEnd");
+        _fogColorLoc = _chunkShader.GetUniformLocation("fogColor");
+        _timeLoc = _chunkShader.GetUniformLocation("time");
+        _chunkFadeEnabledLoc = _chunkShader.GetUniformLocation("chunkFadeEnabled");
+        _projectionMatrixLoc = _chunkShader.GetUniformLocation("projectionMatrix");
     }
 
     public void Render(ChunkRenderParams renderParams)
@@ -112,17 +147,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _lastViewPos = renderParams.ViewPos;
 
         _chunkShader.Bind();
-        _chunkShader.SetUniform1("textureSampler", 0);
-        _chunkShader.SetUniform1("fogMode", _fogMode);
-        _chunkShader.SetUniform1("fogDensity", _fogDensity);
-        _chunkShader.SetUniform1("fogStart", _fogStart);
-        _chunkShader.SetUniform1("fogEnd", _fogEnd);
-        _chunkShader.SetUniform4("fogColor", _fogColor);
+        GLManager.GL.Uniform1(_textureSamplerLoc, 0);
+        GLManager.GL.Uniform1(_fogModeLoc, _fogMode);
+        GLManager.GL.Uniform1(_fogDensityLoc, _fogDensity);
+        GLManager.GL.Uniform1(_fogStartLoc, _fogStart);
+        GLManager.GL.Uniform1(_fogEndLoc, _fogEnd);
+        GLManager.GL.Uniform4(_fogColorLoc, _fogColor.X, _fogColor.Y, _fogColor.Z, _fogColor.W);
 
         int wrappedTicks = (int)(renderParams.Ticks % 24000);
-        _chunkShader.SetUniform1("time", (wrappedTicks + renderParams.PartialTicks) / 20.0f);
-        _chunkShader.SetUniform1("envAnim", renderParams.EnvironmentAnimation ? 1 : 0);
-        _chunkShader.SetUniform1("chunkFadeEnabled", renderParams.ChunkFade ? 1 : 0);
+        GLManager.GL.Uniform1(_timeLoc, (wrappedTicks + renderParams.PartialTicks) / 20.0f);
+        GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
 
         var modelView = new Matrix4X4<float>();
         var projection = new Matrix4X4<float>();
@@ -140,7 +174,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _modelView = modelView;
         _projection = projection;
 
-        _chunkShader.SetUniformMatrix4("projectionMatrix", projection);
+        unsafe
+        {
+            GLManager.GL.UniformMatrix4(_projectionMatrixLoc, 1, false, (float*)&projection);
+        }
 
         _visibleRenderers.Clear();
         _frameIndex++;
@@ -331,7 +368,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     long? snapshot = version.SnapshotIfNeeded();
                     if (snapshot.HasValue)
                     {
-                        _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _alternateBlocks());
+                        _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled);
                     }
                     continue;
                 }
@@ -452,7 +489,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (bestIndex != -1)
         {
             ChunkToMeshInfo closest = _dirtyChunks[bestIndex];
-            _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _alternateBlocks());
+            _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _options.AlternateBlocksEnabled);
             _dirtyChunks.RemoveAt(bestIndex);
         }
     }
@@ -475,7 +512,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         if (bestIndex != -1)
         {
             ChunkToMeshInfo update = _lightingUpdates[bestIndex];
-            _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _alternateBlocks());
+            _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _options.AlternateBlocksEnabled);
             _lightingUpdates.RemoveAt(bestIndex);
         }
     }
@@ -699,6 +736,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             state.Renderer.Dispose();
         }
 
+        _options.ShaderOptions.GetOrCreate("chunkVert").Changed -= BuildChunkShader;
+        _options.ShaderOptions.GetOrCreate("chunkFrag").Changed -= BuildChunkShader;
         _chunkShader.Dispose();
 
         _renderers.Clear();

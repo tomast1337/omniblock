@@ -1,5 +1,4 @@
 using BetaSharp.Client.Options;
-using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
@@ -22,7 +21,6 @@ public class VideoSettingsScreen(UIContext context, UIScreen? parent) : BaseOpti
 
         new(Translations.Get("options.video.display"), [
             Options.ViewBobbingOption,
-            Options.EnvironmentAnimationOption,
             Options.ChunkFadeOption,
             Options.AlternateBlocksOption
         ])

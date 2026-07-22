@@ -55,7 +55,6 @@ public class GameOptions
     public BoolOption ViewBobbingOption { get; private set; }
     public BoolOption VSyncOption { get; private set; }
     public BoolOption MipmapsOption { get; private set; }
-    public BoolOption EnvironmentAnimationOption { get; private set; }
     public BoolOption ChunkFadeOption { get; private set; }
     public BoolOption AlternateBlocksOption { get; private set; }
     public BoolOption MenuMusicOption { get; private set; }
@@ -127,7 +126,6 @@ public class GameOptions
     public float ChatWidth => ChatWidthOption.Value;
     public bool ShowCoordinates => ShowCoordinatesOption.Value;
     public bool UseMipmaps => MipmapsOption.Value;
-    public bool EnvironmentAnimation => EnvironmentAnimationOption.Value;
     public bool ChunkFade => ChunkFadeOption.Value;
     public bool UICursors => UICursorsOption.Value;
     public bool AlternateBlocksEnabled => AlternateBlocksOption.Value;
@@ -330,7 +328,6 @@ public class GameOptions
             }
         };
 
-        EnvironmentAnimationOption = new BoolOption("options.environmentAnim", "envAnimation", true);
         ChunkFadeOption = new BoolOption("options.chunkFade", "chunkFade", true);
         AlternateBlocksOption = new BoolOption("options.alternateBlocks", "alternateBlocks", true)
         {
@@ -413,7 +410,6 @@ public class GameOptions
         yield return ViewBobbingOption;
         yield return VSyncOption;
         yield return MipmapsOption;
-        yield return EnvironmentAnimationOption;
         yield return ChunkFadeOption;
         yield return AlternateBlocksOption;
         yield return MenuMusicOption;
