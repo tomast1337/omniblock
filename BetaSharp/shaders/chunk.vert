@@ -52,7 +52,7 @@ vec2 localUV(uvec2 inuv)
     return vec2(inuv & 0xFu) / 16.0;
 }
 
-const vec2 WindDir = vec2(0.8, 0.6); // unit vector, 0.8^2 + 0.6^2 = 1.0
+const vec2 WindDir = vec2(-0.8, 0.6); // unit vector, 0.8^2 + 0.6^2 = 1.0
 
 vec2 calcWave(in vec3 pos)
 {
