@@ -19,6 +19,8 @@ const float WavyLeavesSpeed = 1.0; // [0.1 - 2.0]
 const float WavyPlantStrength = 1.0; // [0.0 - 4.0]
 const float WavyPlantSpeed = 1.0; // [0.1 - 2.0]
 
+const float WavyPlantMode = 0; // [0 1]
+
 const float Wavy = WavyLeavesStrength + WavyPlantStrength;
 
 const float POSITION_SCALE_INV = 64.0 / 32767.0;
@@ -49,7 +51,7 @@ int atlasIndexFromUV(vec2 uv)
 
 vec2 localUV(uvec2 inuv)
 {
-    return vec2(inuv & 0xFu) / 16.0;
+    return vec2(inuv & 0xFu) / 14.0;
 }
 
 const vec2 WindDir = vec2(-0.8, 0.6); // unit vector, 0.8^2 + 0.6^2 = 1.0
@@ -70,11 +72,37 @@ vec2 calcWave(in vec3 pos)
     return WindDir * sway * gust * 0.02;
 }
 
+vec2 calcDynamicWind(in vec3 pos)
+{
+    const float f1 = 0.02;
+    const float f2 = 0.05;
+
+    float t = time * WavyPlantSpeed;
+
+    float angleOffset = sin(pos.x * f1 - t * 0.5) * cos(pos.z * f1 + t * 0.3)
+                      + sin(pos.x * f2 + t * 1.2) * cos(pos.z * f2 - t * 0.8);
+
+    const float baseAngle = atan(WindDir.y, WindDir.x);
+    float finalAngle = baseAngle + angleOffset * 1.5;
+
+    vec2 dynamicDir = vec2(cos(finalAngle), sin(finalAngle));
+    float gust = 0.6 + 0.4 * sin(pos.x * 0.015 - t + pos.z * 0.01);
+
+    return dynamicDir * gust;
+}
+
 vec3 calcMovePlants(in vec3 pos)
 {
-    vec2 move1 = calcWave(pos);
-    float move1y = -length(move1);
-    return 5.0 * WavyPlantStrength * vec3(move1.x, move1y, move1.y);
+    if (WavyPlantMode == 0) {
+        vec2 move1 = calcWave(pos);
+        float move1y = length(move1);
+        move1y *= move1y * 10;
+        return 5 * WavyPlantStrength * vec3(move1.x, -move1y, move1.y);
+    } else {
+        vec2 move1 = calcDynamicWind(pos);
+        float move1y = -length(move1) * 0.5;
+        return 0.1 * WavyPlantStrength * vec3(move1.x, move1y, move1.y);
+    }
 }
 
 vec3 calcWaveLeaves(in vec3 pos)

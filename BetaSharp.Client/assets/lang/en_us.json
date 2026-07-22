@@ -276,7 +276,8 @@
                 "WavyLeavesStrength": "Wavy Leaves Strength",
                 "WavyLeavesSpeed": "Wavy Leaves Speed",
                 "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed"
+                "WavyPlantSpeed": "Wavy Plant Speed",
+                "WavyPlantMode": "Wavy Plant Mode"
             },
             "cloud": {
                 "text": "Clouds",
