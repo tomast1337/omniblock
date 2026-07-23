@@ -23,7 +23,7 @@ using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering;
 
-public class WorldRenderer : IWorldEventListener
+public class WorldRenderer : IWorldEventListener, IDisposable
 {
     private const int CloudsRenderDistance = 128;
 
@@ -221,6 +221,13 @@ public class WorldRenderer : IWorldEventListener
         double viewY = view.LastTickY + (view.Y - view.LastTickY) * partialTicks;
         double viewZ = view.LastTickZ + (view.Z - view.LastTickZ) * partialTicks;
         ChunkRenderer.Tick(new(viewX, viewY, viewZ));
+    }
+
+    public void Dispose()
+    {
+        _game.Options.ShaderOptions.GetOrCreate("cloud").Changed -= BuildCloudShader;
+        _cloudShader?.Dispose();
+        ChunkRenderer?.Dispose();
     }
 
     public void LoadRenderers()

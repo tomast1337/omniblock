@@ -16,6 +16,7 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
+using BetaSharp.Client.Rendering.UI;
 using BetaSharp.Client.Resource;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.Sound;
@@ -86,7 +87,7 @@ public partial class BetaSharp :
 
     #region World & Player Data
 
-    public World World { get; private set; }
+    public World? World { get; private set; }
     World? IWorldHost.World => World;
     void IWorldHost.ChangeWorld(World? world) => ChangeWorld(world);
 
@@ -128,6 +129,7 @@ public partial class BetaSharp :
     public TextureManager TextureManager { get; private set; }
     public SkinManager SkinManager { get; private set; }
     public TextRenderer TextRenderer { get; private set; }
+    public UIBatchRenderer UiBatchRenderer { get; private set; }
     public TexturePacks TexturePackList { get; private set; }
     public ParticleManager ParticleManager { get; private set; }
 
@@ -301,10 +303,18 @@ public partial class BetaSharp :
         TextureManager = new TextureManager(this, TexturePackList, Options);
         TextRenderer = new TextRenderer(Options, TextureManager);
 
+        TextureHandle terrainTexture = TextureManager.GetTextureId("/terrain.png");
+        TextureHandle itemsTexture = TextureManager.GetTextureId("/gui/items.png");
+
+        BuildBatchRenderer(terrainTexture.Id, itemsTexture.Id);
+
         UIContext = new UIContext(
             Options,
             TextRenderer,
+            UiBatchRenderer,
             TextureManager,
+            terrainTexture,
+            itemsTexture,
             playClickSound: () => SoundManager.PlaySoundFX("random.click", 1.0f, 1.0f),
             displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
             inputDisplaySize: () =>
@@ -339,6 +349,33 @@ public partial class BetaSharp :
         {
             return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
         };*/
+    }
+
+    private void BuildBatchRenderer(int terrainTextureId, int itemsTextureId)
+    {
+        UiBatchRenderer = new UIBatchRenderer(Options);
+
+        UiBatchRenderer.RegisterTextureByPath("terrain.png", (uint)terrainTextureId);
+        UiBatchRenderer.RegisterTextureByPath("gui/items.png", (uint)itemsTextureId);
+
+        uint fontTexId = TextRenderer.FontTextureId;
+        if (fontTexId != 0)
+            UiBatchRenderer.RegisterTextureByPath("font/default.png", fontTexId);
+
+        RegisterCommonTexture("gui/gui.png");
+        RegisterCommonTexture("gui/icons.png");
+        RegisterCommonTexture("gui/background.png");
+        RegisterCommonTexture("gui/inventory.png");
+        RegisterCommonTexture("gui/container.png");
+        RegisterCommonTexture("gui/crafting.png");
+        RegisterCommonTexture("gui/trap.png");
+        RegisterCommonTexture("gui/furnace.png");
+    }
+
+    private void RegisterCommonTexture(string assetPath)
+    {
+        TextureHandle handle = TextureManager.GetTextureId("/" + assetPath);
+        UiBatchRenderer.RegisterTextureByPath(assetPath, (uint)handle.Id);
     }
 
     private unsafe void SetupOpenGLAndInput()
@@ -498,6 +535,8 @@ public partial class BetaSharp :
 
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
+            WorldRenderer?.Dispose();
+            UiBatchRenderer.Dispose();
             SkinManager.Dispose();
             TextureManager.Dispose();
             SoundManager.Dispose();
@@ -1520,7 +1559,8 @@ public partial class BetaSharp :
         Mouse.Flush();
         Keyboard.Flush();
         Controller.ClearEvents();
-        CurrentScreen?.Uninit();
+        UIScreen? oldScreen = CurrentScreen;
+        oldScreen?.Uninit();
 
         if (newScreen is MainMenuScreen)
         {

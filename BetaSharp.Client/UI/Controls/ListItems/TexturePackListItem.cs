@@ -1,4 +1,5 @@
 using BetaSharp.Client.Guis;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
@@ -11,8 +12,8 @@ public class TexturePackListItem(TexturePack value) : ListItem<TexturePack>(valu
     {
         base.Render(renderer);
 
-        Value.BindThumbnailTexture(renderer.TextureManager);
-        renderer.DrawBoundTexture(4, 4, 24, 24);
+        TextureHandle thumbnail = Value.GetThumbnailTexture(renderer.TextureManager);
+        renderer.DrawTexture(thumbnail, 4, 4, 24, 24);
 
         string? fileName = Value.TexturePackFileName;
         if (string.IsNullOrEmpty(fileName))

@@ -8,6 +8,7 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
+using BetaSharp.Client.Rendering.UI;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using Silk.NET.Maths;
@@ -18,16 +19,32 @@ using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
 namespace BetaSharp.Client.UI.Rendering;
 
-public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager, GameOptions gameOptions, Func<Vector2D<int>> getDisplaySize)
+public class UIRenderer
 {
-    public TextureManager TextureManager { get; } = textureManager;
-    public TextRenderer TextRenderer { get; } = textRenderer;
+    public TextureManager TextureManager => _context.TextureManager;
+    public TextRenderer TextRenderer => _context.TextRenderer;
     private readonly ItemRenderer _itemRenderer = new();
-    private readonly GameOptions _gameOptions = gameOptions;
 
     private float _translateX = 0;
     private float _translateY = 0;
+    private uint _currentTint = 0xFFFFFFFF;
     private readonly Stack<Vector2D<float>> _translationStack = new();
+
+    private bool _scissorEnabled;
+    private (int X, int Y, int W, int H) _scissorRect;
+    private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
+    private GameOptions _gameOptions => _context.Options;
+    private Func<Vector2D<int>> _getDisplaySize => _context.DisplaySize;
+    private TextureHandle _terrainTexture => _context.TerrainTexture;
+    private TextureHandle _itemsTexture => _context.ItemsTexture;
+    private UIBatchRenderer _batch => _context.UiBatchRenderer;
+    private readonly UIContext _context;
+
+    public UIRenderer(UIContext context)
+    {
+        _context = context;
+    }
+
 
     public void Begin()
     {
@@ -41,44 +58,71 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         _translateX = 0;
         _translateY = 0;
+        _currentTint = 0xFFFFFFFF;
         _translationStack.Clear();
+        _scissorEnabled = false;
+        _scissorStack.Clear();
+
+        Vector2D<int> displaySize = _getDisplaySize();
+        ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
+        Matrix4X4<float> proj = Matrix4X4.CreateOrthographicOffCenter(0f, res.ScaledWidth, res.ScaledHeight, 0f, -1f, 1f);
+        _batch.Begin(proj);
     }
 
     public void End()
     {
+        _batch.End();
         GLManager.GL.PopMatrix();
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
+
     public void PushColor(Color color)
     {
+        uint newTint = (uint)color;
+        if (_currentTint != newTint)
+        {
+            _batch.Flush();
+            _currentTint = newTint;
+        }
         GLManager.GL.Color4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
     }
 
     public void PopColor()
     {
+        _batch.Flush();
+        _currentTint = 0xFFFFFFFF;
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public void SetDepthMask(bool flag) => GLManager.GL.DepthMask(flag);
+    public void SetDepthMask(bool flag)
+    {
+        _batch.Flush();
+        GLManager.GL.DepthMask(flag);
+    }
+
     public void SetAlphaTest(bool flag)
     {
+        _batch.Flush();
         if (flag) GLManager.GL.Enable(GLEnum.AlphaTest);
         else GLManager.GL.Disable(GLEnum.AlphaTest);
     }
 
     public void PushBlend(GLEnum s, GLEnum d)
     {
+        _batch.Flush();
         GLManager.GL.BlendFunc(s, d);
     }
 
     public void PopBlend()
     {
+        _batch.Flush();
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
     }
 
     public void ClearDepth()
     {
+        _batch.Flush();
         GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
     }
 
@@ -103,14 +147,15 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
             _translateY = 0;
         }
 
-        // Stability
         if (MathF.Abs(_translateX) < 0.0001f) _translateX = 0;
         if (MathF.Abs(_translateY) < 0.0001f) _translateY = 0;
     }
 
     public void EnableClipping(int x, int y, int width, int height)
     {
-        Vector2D<int> displaySize = getDisplaySize();
+        _batch.Flush();
+
+        Vector2D<int> displaySize = _getDisplaySize();
         ScaledResolution res = new(_gameOptions, displaySize.X, displaySize.Y);
 
         float left = x + _translateX;
@@ -118,7 +163,6 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         float right = left + width;
         float bottom = top + height;
 
-        // UI coordinates are in scaled-resolution space; scissor rectangles must use framebuffer pixels.
         int framebufferWidth = Display.getFramebufferWidth();
         int framebufferHeight = Display.getFramebufferHeight();
         float scaleX = framebufferWidth / (float)res.ScaledWidth;
@@ -139,117 +183,107 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         int physicalWidth = clampedRight - clampedLeft;
         int physicalHeight = clampedBottom - clampedTop;
 
+        if (_scissorEnabled)
+        {
+            int parentRight = _scissorRect.X + _scissorRect.W;
+            int parentTop = _scissorRect.Y + _scissorRect.H;
+            physicalX = Math.Max(physicalX, _scissorRect.X);
+            physicalY = Math.Max(physicalY, _scissorRect.Y);
+            physicalWidth = Math.Max(0, Math.Min(physicalX + physicalWidth, parentRight) - physicalX);
+            physicalHeight = Math.Max(0, Math.Min(physicalY + physicalHeight, parentTop) - physicalY);
+        }
+
+        _scissorStack.Push((_scissorEnabled, _scissorRect.X, _scissorRect.Y, _scissorRect.W, _scissorRect.H));
+        _scissorEnabled = true;
+        _scissorRect = (physicalX, physicalY, physicalWidth, physicalHeight);
         GLManager.GL.Enable(GLEnum.ScissorTest);
-        GLManager.GL.Scissor(physicalX, physicalY, (uint)Math.Max(0, physicalWidth), (uint)Math.Max(0, physicalHeight));
+        GLManager.GL.Scissor(physicalX, physicalY, (uint)physicalWidth, (uint)physicalHeight);
     }
 
     public void DisableClipping()
     {
+        _batch.Flush();
+        if (_scissorStack.TryPop(out var prev))
+        {
+            _scissorEnabled = prev.Enabled;
+            _scissorRect = (prev.X, prev.Y, prev.W, prev.H);
+            if (prev.Enabled)
+            {
+                GLManager.GL.Enable(GLEnum.ScissorTest);
+                GLManager.GL.Scissor(prev.X, prev.Y, (uint)Math.Max(0, prev.W), (uint)Math.Max(0, prev.H));
+                return;
+            }
+        }
+        else
+        {
+            _scissorEnabled = false;
+        }
         GLManager.GL.Disable(GLEnum.ScissorTest);
     }
 
     public void DrawRect(float x, float y, float width, float height, Color color)
     {
-        int ix1 = (int)MathF.Floor(x + _translateX);
-        int iy1 = (int)MathF.Floor(y + _translateY);
-        int ix2 = (int)MathF.Floor(x + _translateX + width);
-        int iy2 = (int)MathF.Floor(y + _translateY + height);
-        DrawRectRaw(ix1, iy1, ix2, iy2, color);
+        float x1 = MathF.Floor(x + _translateX);
+        float y1 = MathF.Floor(y + _translateY);
+        float x2 = MathF.Floor(x + _translateX + width);
+        float y2 = MathF.Floor(y + _translateY + height);
+        _batch.AddColoredQuad(x1, y1, x2 - x1, y2 - y1, (uint)color);
     }
 
     public void DrawGradientRect(float x, float y, float width, float height, Color topColor, Color bottomColor)
     {
-        int ix1 = (int)MathF.Floor(x + _translateX);
-        int iy1 = (int)MathF.Floor(y + _translateY);
-        int ix2 = (int)MathF.Floor(x + _translateX + width);
-        int iy2 = (int)MathF.Floor(y + _translateY + height);
-        DrawGradientRectRaw(ix1, iy1, ix2, iy2, topColor, bottomColor);
+        float x1 = MathF.Floor(x + _translateX);
+        float y1 = MathF.Floor(y + _translateY);
+        float x2 = MathF.Floor(x + _translateX + width);
+        float y2 = MathF.Floor(y + _translateY + height);
+        _batch.AddGradientQuad(x1, y1, x2 - x1, y2 - y1, (uint)topColor, (uint)bottomColor);
     }
 
     public void DrawText(string text, float x, float y, Color color, float scale = 1.0f, bool shadow = true)
     {
-        if (scale == 1.0f)
-        {
-            if (shadow)
-            {
-                TextRenderer.DrawStringWithShadow(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
-            }
-            else
-            {
-                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
-            }
-            return;
-        }
-
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
-        GLManager.GL.Scale(scale, scale, 1);
+        float ix = MathF.Floor(x + _translateX);
+        float iy = MathF.Floor(y + _translateY);
         if (shadow)
-        {
-            TextRenderer.DrawStringWithShadow(text, 0, 0, color);
-        }
+            TextRenderer.DrawStringWithShadow(text, ix, iy, color, batch: _batch, scale: scale);
         else
-        {
-            TextRenderer.DrawString(text, 0, 0, color);
-        }
-        GLManager.GL.PopMatrix();
+            TextRenderer.DrawString(text, ix, iy, color, batch: _batch, scale: scale);
     }
 
     public void DrawTextWrapped(string text, float x, float y, float maxWidth, Color color)
     {
-        TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color);
+        TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color, batch: _batch);
     }
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
     {
-        if (rotation == 0 && scale == 1.0f)
+        float pivotX = MathF.Floor(x + _translateX);
+        float pivotY = MathF.Floor(y + _translateY);
+
+        if (rotation == 0)
         {
             if (shadow)
-            {
-                DrawCenteredStringRaw(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color);
-            }
+                TextRenderer.DrawStringWithShadow(text, pivotX, pivotY, color, HorizontalAlignment.Center, _batch, scale);
             else
-            {
-                TextRenderer.DrawString(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), color, HorizontalAlignment.Center);
-            }
+                TextRenderer.DrawString(text, pivotX, pivotY, color, HorizontalAlignment.Center, _batch, scale);
             return;
         }
 
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(MathF.Floor(x + _translateX), MathF.Floor(y + _translateY), 0);
-        if (rotation != 0) GLManager.GL.Rotate(rotation, 0, 0, 1);
-        if (scale != 1.0f) GLManager.GL.Scale(scale, scale, 1);
+        float rad = rotation * MathF.PI / 180f;
+        float cos = MathF.Cos(rad);
+        float sin = MathF.Sin(rad);
 
         if (shadow)
-        {
-            DrawCenteredStringRaw(text, 0, 0, color);
-        }
+            TextRenderer.DrawStringWithShadow(text, 0f, 0f, color, HorizontalAlignment.Center, _batch, scale, cos, sin, pivotX, pivotY);
         else
-        {
-            TextRenderer.DrawString(text, 0, 0, color, HorizontalAlignment.Center);
-        }
-
-        GLManager.GL.PopMatrix();
+            TextRenderer.DrawString(text, 0f, 0f, color, HorizontalAlignment.Center, _batch, scale, cos, sin, pivotX, pivotY);
     }
 
     public void DrawTexture(TextureHandle texture, float x, float y, float width, float height)
     {
-        TextureManager.BindTexture(texture);
-        DrawBoundTexture(x, y, width, height);
-    }
-
-    public void DrawBoundTexture(float x, float y, float width, float height)
-    {
-        Tessellator tess = Tessellator.instance;
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
-
-        tess.startDrawingQuads();
-        tess.addVertexWithUV(finalX, finalY + height, 0.0D, 0.0D, 1.0D);
-        tess.addVertexWithUV(finalX + width, finalY + height, 0.0D, 1.0D, 1.0D);
-        tess.addVertexWithUV(finalX + width, finalY, 0.0D, 1.0D, 0.0D);
-        tess.addVertexWithUV(finalX, finalY, 0.0D, 0.0D, 0.0D);
-        tess.draw();
+        _batch.SetTexture((uint)texture.Id);
+        _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, 0f, 0f, 1f, 1f, _currentTint);
     }
 
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height)
@@ -264,45 +298,58 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight, float z)
     {
-        TextureManager.BindTexture(texture);
-        float f = 0.00390625F;
-        Tessellator tess = Tessellator.instance;
+        const float f = 0.00390625F; // 1/256
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
-
-        tess.startDrawingQuads();
-        tess.addVertexWithUV(finalX + 0, finalY + height, z, (double)((u + 0) * f), (double)((v + uvHeight) * f));
-        tess.addVertexWithUV(finalX + width, finalY + height, z, (double)((u + uvWidth) * f), (double)((v + uvHeight) * f));
-        tess.addVertexWithUV(finalX + width, finalY + 0, z, (double)((u + uvWidth) * f), (double)((v + 0) * f));
-        tess.addVertexWithUV(finalX + 0, finalY + 0, z, (double)((u + 0) * f), (double)((v + 0) * f));
-        tess.draw();
+        _batch.SetTexture((uint)texture.Id);
+        _batch.AddQuad(finalX, finalY, finalX + width, finalY + height,
+            u * f, v * f, (u + uvWidth) * f, (v + uvHeight) * f,
+            _currentTint);
     }
 
     public void DrawRepeatingTexture(TextureHandle texture, float x, float y, float width, float height, float textureScale, float scrollOffsetY = 0f)
     {
-        TextureManager.BindTexture(texture);
-        Tessellator tess = Tessellator.instance;
-
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
 
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        float u0 = finalX / textureScale;
+        float v0 = (finalY + scrollOffsetY) / textureScale;
+        float u1 = (finalX + width) / textureScale;
+        float v1 = (finalY + height + scrollOffsetY) / textureScale;
 
-        tess.startDrawingQuads();
-        tess.setColorOpaque_I(0x404040);
-        tess.addVertexWithUV(finalX, finalY + height, 0.0, finalX / textureScale, (finalY + height + scrollOffsetY) / textureScale);
-        tess.addVertexWithUV(finalX + width, finalY + height, 0.0, (finalX + width) / textureScale, (finalY + height + scrollOffsetY) / textureScale);
-        tess.addVertexWithUV(finalX + width, finalY, 0.0, (finalX + width) / textureScale, (finalY + scrollOffsetY) / textureScale);
-        tess.addVertexWithUV(finalX, finalY, 0.0, finalX / textureScale, (finalY + scrollOffsetY) / textureScale);
-        tess.draw();
+        _batch.SetTexture((uint)texture.Id);
+        _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, u0, v0, u1, v1, (uint)Color.FromRgb(0x404040));
     }
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
-        itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+        bool isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[itemId].getRenderType());
+
+        if (isBlock3D)
+        {
+            _batch.Flush();
+            GLManager.GL.Enable(GLEnum.RescaleNormal);
+            Lighting.turnOnGui();
+            itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+            Lighting.turnOff();
+            GLManager.GL.Disable(GLEnum.RescaleNormal);
+            return;
+        }
+
+        if (textureId < 0) return;
+
+        TextureHandle texHandle = itemId < 256 ? _terrainTexture : _itemsTexture;
+
+        int colorMultiplier = Item.ITEMS[itemId]!.getColorMultiplier(itemMeta);
+        float finalX = MathF.Floor(x + _translateX);
+        float finalY = MathF.Floor(y + _translateY);
+        float u0 = (textureId % 16 * 16) / 256f;
+        float v0 = (textureId / 16 * 16) / 256f;
+        _batch.SetTexture((uint)texHandle.Id);
+        _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, (uint)Color.FromRgb((uint)colorMultiplier));
     }
 
-    public void DrawItem(ItemStack stack, float x, float y)
+    public void DrawItem(ItemStack? stack, float x, float y)
     {
         if (stack == null) return;
 
@@ -310,6 +357,7 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
 
         if (isBlock)
         {
+            _batch.Flush();
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(0, 0, 32.0f);
 
@@ -328,23 +376,54 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         }
         else
         {
-            GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.GL.Disable(GLEnum.DepthTest);
-            _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+            int iconIndex = stack.getTextureId();
+            if (iconIndex < 0) return;
+
+            TextureHandle texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
+
+            int colorMultiplier = Item.ITEMS[stack.ItemId]!.getColorMultiplier(stack.getDamage());
+            uint rgba = (uint)Color.FromRgb((uint)colorMultiplier);
+
+            float finalX = MathF.Floor(x + _translateX);
+            float finalY = MathF.Floor(y + _translateY);
+            float u0 = (iconIndex % 16 * 16) / 256f;
+            float v0 = (iconIndex / 16 * 16) / 256f;
+            _batch.SetTexture((uint)texHandle.Id);
+            _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, rgba);
         }
     }
 
-    public void DrawItemOverlay(ItemStack stack, float x, float y)
+    public void DrawItemOverlay(ItemStack? stack, float x, float y)
     {
         if (stack == null) return;
 
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.DepthTest);
-        _itemRenderer.renderItemOverlayIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
+        int bx = (int)(x + _translateX);
+        int by = (int)(y + _translateY);
+
+        if (stack.Count > 1)
+        {
+            string stackText = stack.Count.ToString();
+            int textX = bx + 17 - TextRenderer.GetStringWidth(stackText);
+            TextRenderer.DrawStringWithShadow(stackText, textX, by + 9, Color.White, batch: _batch);
+        }
+
+        if (stack.isDamaged())
+        {
+            int barWidth = (int)Math.Round(13.0 - stack.getDamage2() * 13.0 / stack.getMaxDamage());
+            int damageColor = (int)Math.Round(255.0 - stack.getDamage2() * 255.0 / stack.getMaxDamage());
+            int barColor = (255 - damageColor) << 16 | damageColor << 8;
+            int bgColor = (255 - damageColor) / 4 << 16 | 16128;
+
+            _batch.AddColoredQuad(bx + 2, by + 13, 13, 2, (uint)Color.FromRgb(0));
+            _batch.AddColoredQuad(bx + 2, by + 13, 12, 1, (uint)Color.FromRgb((uint)bgColor));
+            _batch.AddColoredQuad(bx + 2, by + 13, barWidth, 1, (uint)Color.FromRgb((uint)barColor));
+        }
     }
 
     public void DrawEntity(Entity entity, float x, float y, float scale, float mouseX, float mouseY)
     {
+        _batch.Flush();
+
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.ColorMaterial);
         GLManager.GL.Enable(GLEnum.DepthTest);
@@ -394,49 +473,22 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
 
-    private static void DrawRectRaw(int x1, int y1, int x2, int y2, Color color)
+    public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, long scrollStartMs, int rightPadding = 2)
     {
-        if (x1 < x2) (x1, x2) = (x2, x1);
-        if (y1 < y2) (y1, y2) = (y2, y1);
+        int availableWidth = containerWidth - (int)x - rightPadding;
+        int textWidth = TextRenderer.GetStringWidth(text);
 
-        Tessellator tess = Tessellator.instance;
-
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-
-        tess.startDrawingQuads();
-        tess.setColorRGBA(color);
-        tess.addVertex(x1, y2, 0.0D);
-        tess.addVertex(x2, y2, 0.0D);
-        tess.addVertex(x2, y1, 0.0D);
-        tess.addVertex(x1, y1, 0.0D);
-        tess.draw();
-
-        GLManager.GL.Enable(GLEnum.Texture2D);
-    }
-
-    private static void DrawGradientRectRaw(int right, int bottom, int left, int top, Color topColor, Color bottomColor)
-    {
-        GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.Disable(GLEnum.AlphaTest);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        GLManager.GL.ShadeModel(GLEnum.Smooth);
-
-        Tessellator tess = Tessellator.instance;
-        tess.startDrawingQuads();
-        tess.setColorRGBA(topColor);
-        tess.addVertex(left, bottom, 0.0D);
-        tess.addVertex(right, bottom, 0.0D);
-        tess.setColorRGBA(bottomColor);
-        tess.addVertex(right, top, 0.0D);
-        tess.addVertex(left, top, 0.0D);
-        tess.draw();
-
-        GLManager.GL.ShadeModel(GLEnum.Flat);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        if (availableWidth > 0 && textWidth > availableWidth)
+        {
+            float scrollOffset = scrollStartMs > 0 ? ComputeTextScrollOffset(textWidth - availableWidth, scrollStartMs) : 0f;
+            EnableClipping((int)x, 0, availableWidth, containerHeight);
+            DrawText(text, x - scrollOffset, y, color);
+            DisableClipping();
+        }
+        else
+        {
+            DrawText(text, x, y, color);
+        }
     }
 
     public void DrawScrollingCenteredText(string text, int containerWidth, int containerHeight, float textY, Color color, int padding = 2)
@@ -457,36 +509,49 @@ public class UIRenderer(TextRenderer textRenderer, TextureManager textureManager
         }
     }
 
-    private static float ComputeTextScrollOffset(int overflow)
+    private static float ComputeTextScrollOffset(int overflow) =>
+        ComputeTextScrollOffset(overflow, 0L);
+
+    private static float ComputeTextScrollOffset(int overflow, long startMs)
     {
-        const float scrollSpeed = 15f;
-        const float pauseSeconds = 2.0f;
+        const float scrollSpeed = 30f;
+        const float pauseSeconds = 1.0f;
         float scrollDuration = overflow / scrollSpeed;
         float period = (pauseSeconds + scrollDuration) * 2f;
 
+        long elapsedMs = startMs > 0 ? Environment.TickCount64 - startMs : Environment.TickCount64;
         long periodMs = Math.Max(1L, (long)(period * 1000));
-        float t = (float)(Environment.TickCount64 % periodMs) / 1000f;
+        float t = (float)(elapsedMs % periodMs) / 1000f;
+
+        static float Smoothstep(float x) => x * x * (3f - 2f * x);
 
         float offset;
         if (t < pauseSeconds)
+        {
             offset = 0f;
+        }
         else if (t < pauseSeconds + scrollDuration)
-            offset = (t - pauseSeconds) * scrollSpeed;
+        {
+            float p = (t - pauseSeconds) / scrollDuration;
+            offset = Smoothstep(p) * overflow;
+        }
         else if (t < pauseSeconds * 2f + scrollDuration)
+        {
             offset = overflow;
+        }
         else
-            offset = overflow - (t - pauseSeconds * 2f - scrollDuration) * scrollSpeed;
+        {
+            float p = (t - pauseSeconds * 2f - scrollDuration) / scrollDuration;
+            offset = (1f - Smoothstep(p)) * overflow;
+        }
 
         return Math.Clamp(offset, 0f, overflow);
     }
 
-    private void DrawCenteredStringRaw(string text, int x, int y, Color color)
-    {
-        TextRenderer.DrawStringWithShadow(text, x - TextRenderer.GetStringWidth(text) / 2, y, color);
-    }
-
     public void DrawSign(BlockEntitySign sign, float x, float y, float scale)
     {
+        _batch.Flush();
+
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.DepthTest);
         GLManager.GL.PushMatrix();

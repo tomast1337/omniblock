@@ -2,6 +2,7 @@ using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.UI;
 using BetaSharp.Client.UI.Screens;
 using Silk.NET.Maths;
 
@@ -10,7 +11,10 @@ namespace BetaSharp.Client.UI;
 public sealed class UIContext(
     GameOptions options,
     TextRenderer textRenderer,
+    UIBatchRenderer batchRenderer,
     TextureManager textureManager,
+    TextureHandle terrainTexture,
+    TextureHandle itemsTexture,
     Action playClickSound,
     Func<Vector2D<int>> displaySize,
     Func<Vector2D<int>> inputDisplaySize,
@@ -25,7 +29,10 @@ public sealed class UIContext(
 
     public GameOptions Options => options;
     public TextRenderer TextRenderer => textRenderer;
+    public UIBatchRenderer UiBatchRenderer => batchRenderer;
     public TextureManager TextureManager => textureManager;
+    public TextureHandle TerrainTexture => terrainTexture;
+    public TextureHandle ItemsTexture => itemsTexture;
     public Action PlayClickSound => playClickSound;
     public VirtualCursor VirtualCursor => virtualCursor;
     public Timer Timer => timer;

@@ -288,6 +288,10 @@
                 "smoothBottom": "Smooth Bottom",
                 "smoothBottomTopDown": "Smooth Bottom Top Down"
             },
+            "ui": {
+                "text": "UI",
+                "darkMode": "Dark Mode"
+            },
             "preset": {
                 "text": "Preset",
                 "disabled": "Disabled",

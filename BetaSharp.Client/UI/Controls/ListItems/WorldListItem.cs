@@ -5,10 +5,19 @@ using BetaSharp.Worlds.Storage;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
-public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
+public class WorldListItem : ListItem<WorldSaveInfo>
 {
+    private long _hoverStartMs;
+    private bool _wasHovered;
+
+    public WorldListItem(WorldSaveInfo value) : base(value) { }
+
     public override void Render(UIRenderer renderer)
     {
+        if (IsHovered && !_wasHovered)
+            _hoverStartMs = Environment.TickCount64;
+        _wasHovered = IsHovered;
+
         base.Render(renderer);
 
         string displayName = Value.DisplayName;
@@ -29,6 +38,6 @@ public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
             secondary = Translations.Get("world.unsupportedFormat") + " " + secondary;
         }
 
-        renderer.DrawText(secondary, 5, 17, Color.GrayA0);
+        renderer.DrawScrollingText(secondary, 5, 17, (int)ComputedWidth, (int)ComputedHeight, Color.GrayA0, IsHovered ? _hoverStartMs : 0L);
     }
 }

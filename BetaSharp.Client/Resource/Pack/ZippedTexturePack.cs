@@ -70,22 +70,14 @@ public class ZippedTexturePack : TexturePack
         CloseTexturePackFile();
     }
 
-    public override void BindThumbnailTexture(TextureManager textureManager)
+    public override TextureHandle GetThumbnailTexture(TextureManager textureManager)
     {
         if (_texturePackThumbnail != null && _texturePackName == null)
         {
             _texturePackName = textureManager.Load(_texturePackThumbnail);
         }
 
-        if (_texturePackThumbnail != null && _texturePackName != null)
-        {
-            textureManager.BindTexture(_texturePackName);
-        }
-        else
-        {
-            textureManager.BindTexture(textureManager.GetTextureId("/gui/unknown_pack.png"));
-        }
-
+        return _texturePackName ?? textureManager.GetTextureId("/gui/unknown_pack.png");
     }
 
     public override void func_6482_a()

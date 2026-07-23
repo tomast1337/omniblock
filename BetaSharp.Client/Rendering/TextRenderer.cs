@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.UI;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using SixLabors.Fonts;
@@ -12,7 +13,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace BetaSharp.Client.Rendering;
 
-public class TextRenderer
+public class TextRenderer : IDisposable
 {
     private readonly ILogger<TextRenderer> _logger = Log.Instance.For<TextRenderer>();
 
@@ -37,6 +38,7 @@ public class TextRenderer
     private readonly int _rowHeight;
 
     private TextureHandle? fontTextureName { get; }
+    internal uint FontTextureId => fontTextureName != null ? (uint)fontTextureName.Id : 0;
 
     private readonly TextureManager _textureManager;
 
@@ -205,6 +207,12 @@ public class TextRenderer
     {
         ApplyFontForLanguage();
     }
+
+    public void Dispose()
+    {
+        Translations.LanguageChanged -= ReloadForLanguage;
+    }
+
     private static void ClearAtlasRegion(Image<Rgba32> image, int x, int y, int w, int h)
     {
         image.Mutate(ctx => ctx.Fill(SixLabors.ImageSharp.Color.Transparent, new Rectangle(x, y, w, h)));
@@ -351,36 +359,84 @@ public class TextRenderer
         }
     }
 
-    public void DrawStringWithShadow(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
+    public void DrawStringWithShadow(ReadOnlySpan<char> text, float x, float y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
-        RenderString(text, x + 1, y + 1, color, true, align);
-        DrawString(text, x, y, color, align);
+        RenderString(text, x + 1, y + 1, color, true, align, batch, scale, cos, sin, pivotX, pivotY);
+        DrawString(text, x, y, color, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void DrawString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
+    public void DrawString(ReadOnlySpan<char> text, float x, float y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
-        RenderString(text, x, y, color, false, align);
+        RenderString(text, x, y, color, false, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void RenderString(ReadOnlySpan<char> text, int x, int y, Guis.Color color, bool darken, HorizontalAlignment align)
+    public void RenderString(ReadOnlySpan<char> text, float x, float y, Guis.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         if (text.IsEmpty) return;
 
         if (darken)
             color = color.Darken();
 
+        float currentX = x;
+        float currentY = y;
+
+        int width = GetStringWidth(text);
+        if (align == HorizontalAlignment.Center) currentX -= width * scale / 2f;
+        else if (align == HorizontalAlignment.Right) currentX -= width * scale;
+
+        if (batch != null)
+        {
+            batch.SetTexture((uint)fontTextureName!.Id);
+            uint currentRgba = (uint)color;
+            bool isRotated = sin != 0f;
+
+            for (int i = 0; i < text.Length; ++i)
+            {
+                for (; text.Length > i + 1 && text[i] == ColorCodeChar; i += 2)
+                {
+                    if (TryHexToDec(text[i + 1], out int colorCode))
+                        currentRgba = (uint)Guis.Color.FromColorCode(colorCode, (byte)color.A, darken);
+                }
+
+                if (i < text.Length)
+                {
+                    GlyphInfo glyph = GetOrCreateGlyph(text[i]);
+                    if (glyph.Width > 0 && glyph.Height > 0)
+                    {
+                        float w = glyph.Width * DisplayScale * scale;
+                        float h = glyph.Height * DisplayScale * scale;
+
+                        if (!isRotated)
+                        {
+                            batch.AddQuad(currentX, currentY, currentX + w, currentY + h, glyph.U0, glyph.V0, glyph.U1, glyph.V1, currentRgba);
+                        }
+                        else
+                        {
+                            float lx0 = currentX, ly0 = currentY;
+                            float lx1 = currentX, ly1 = currentY + h;
+                            float lx2 = currentX + w, ly2 = currentY + h;
+                            float lx3 = currentX + w, ly3 = currentY;
+                            batch.AddQuadCorners(
+                                pivotX + lx0 * cos - ly0 * sin, pivotY + lx0 * sin + ly0 * cos,
+                                pivotX + lx1 * cos - ly1 * sin, pivotY + lx1 * sin + ly1 * cos,
+                                pivotX + lx2 * cos - ly2 * sin, pivotY + lx2 * sin + ly2 * cos,
+                                pivotX + lx3 * cos - ly3 * sin, pivotY + lx3 * sin + ly3 * cos,
+                                glyph.U0, glyph.V0, glyph.U1, glyph.V1, currentRgba);
+                        }
+                    }
+
+                    float advance = glyph.AdvanceWidth * DisplayScale * scale;
+                    currentX = isRotated ? currentX + advance : MathF.Floor(currentX + advance);
+                }
+            }
+            return;
+        }
+
         fontTextureName?.Bind();
 
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
         tessellator.setColorRGBA(color);
-
-        float currentX = x;
-        float currentY = y;
-
-        int width = GetStringWidth(text);
-        if (align == HorizontalAlignment.Center) currentX -= width / 2;
-        else if (align == HorizontalAlignment.Right) currentX -= width;
 
         for (int i = 0; i < text.Length; ++i)
         {
@@ -485,7 +541,7 @@ public class TextRenderer
         return text.Length;
     }
 
-    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, bool draw, ref int outHeight, HorizontalAlignment align)
+    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, bool draw, ref int outHeight, HorizontalAlignment align, UIBatchRenderer? batch = null)
     {
         if (text.IsEmpty) return;
 
@@ -518,7 +574,7 @@ public class TextRenderer
                 if (subline.Length > 0 || fitLength > 0)
                 {
                     if (draw && subline.Length > 0)
-                        DrawString(subline, x, currentY, color, align);
+                        DrawString(subline, x, currentY, color, align, batch);
                     currentY += lineHeight;
                     totalHeight += lineHeight;
                 }
@@ -533,10 +589,10 @@ public class TextRenderer
         outHeight = totalHeight;
     }
 
-    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left)
+    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
     {
         int dummyHeight = 0;
-        ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight, align);
+        ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight, align, batch);
     }
 
     public int GetStringHeight(ReadOnlySpan<char> text, int maxWidth)

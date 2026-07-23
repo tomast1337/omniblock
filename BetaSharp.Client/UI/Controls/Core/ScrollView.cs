@@ -168,7 +168,25 @@ public class ScrollView : UIElement
         renderer.EnableClipping(0, 0, (int)ComputedWidth, (int)ComputedHeight);
 
         renderer.PushTranslate(ContentContainer.ComputedX, ContentContainer.ComputedY);
-        ContentContainer.Render(renderer);
+
+        if (ContentContainer.Style.BackgroundColor is { } bg)
+        {
+            renderer.DrawRect(0, 0, ContentContainer.ComputedWidth, ContentContainer.ComputedHeight, bg);
+        }
+
+        float visibleTop = ScrollY;
+        float visibleBottom = ScrollY + ComputedHeight;
+
+        foreach (UIElement child in ContentContainer.Children)
+        {
+            if (child.ComputedY + child.ComputedHeight < visibleTop || child.ComputedY > visibleBottom)
+                continue;
+
+            renderer.PushTranslate(child.ComputedX, child.ComputedY);
+            child.Render(renderer);
+            renderer.PopTranslate();
+        }
+
         renderer.PopTranslate();
 
         renderer.DisableClipping();
