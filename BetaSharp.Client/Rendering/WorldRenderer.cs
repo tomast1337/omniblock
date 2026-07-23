@@ -72,7 +72,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         int skyPlaneRadius = 256 / skyPlaneStep + 2;
         float skyPlaneY = 16.0F;
 
-        ChunkRenderer = new(gameInstance.World, () => _game.Options.AlternateBlocksEnabled);
+        ChunkRenderer = new(gameInstance.World, _game.Options);
 
         int planeX;
         int planeZ;
@@ -236,7 +236,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _renderDistance = _game.Options.RenderDistance;
 
         ChunkRenderer?.Dispose();
-        ChunkRenderer = new(_world, () => _game.Options.AlternateBlocksEnabled);
+        ChunkRenderer = new(_world, _game.Options);
         ChunkMeshVersion.ClearPool();
 
         _renderEntitiesStartupCounter = 2;
@@ -349,7 +349,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             Ticks = _world.GetTime(),
             PartialTicks = (float)partialTicks,
             DeltaTime = _game.Timer.DeltaTime,
-            EnvironmentAnimation = _game.Options.EnvironmentAnimation,
             ChunkFade = _game.Options.ChunkFade,
             RenderOccluded = false
         };

@@ -1,4 +1,3 @@
-using BetaSharp.Util.Maths;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Chunks;
@@ -11,7 +10,6 @@ public struct ChunkRenderParams
     public long Ticks;
     public float PartialTicks;
     public float DeltaTime;
-    public bool EnvironmentAnimation;
     public bool ChunkFade;
     public bool RenderOccluded;
 }

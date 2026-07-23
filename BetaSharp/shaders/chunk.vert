@@ -13,7 +13,15 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec2 chunkPos;
 uniform float time;
-uniform bool envAnim;
+
+const float WavyLeavesStrength = 1.0; // [0.0 - 4.0]
+const float WavyLeavesSpeed = 1.0; // [0.1 - 2.0]
+const float WavyPlantStrength = 1.0; // [0.0 - 4.0]
+const float WavyPlantSpeed = 1.0; // [0.1 - 2.0]
+
+const float WavyPlantMode = 0; // [0 1]
+
+const float Wavy = WavyLeavesStrength + WavyPlantStrength;
 
 const float POSITION_SCALE_INV = 64.0 / 32767.0;
 
@@ -41,27 +49,66 @@ int atlasIndexFromUV(vec2 uv)
     return tile.x + tile.y * 16;
 }
 
-const float WAVY_STRENGTH = 1.0;
+vec2 localUV(uvec2 inuv)
+{
+    return vec2(inuv & 0xFu) / 14.0;
+}
+
+const vec2 WindDir = vec2(-0.8, 0.6); // unit vector, 0.8^2 + 0.6^2 = 1.0
 
 vec2 calcWave(in vec3 pos)
 {
-    float pi2wt = 2.0 * 3.14159265 * time;
-    float magnitude = abs(sin(dot(vec4(time, pos), vec4(1.0, 0.005, 0.005, 0.005))) * 0.5 + 0.72) * 0.013;
-    vec2 ret = (sin(pi2wt * vec2(0.0063, 0.0015) * 4.0 - pos.xz + pos.y * 0.05) + 0.1) * magnitude;
-    return ret;
+    float t = 0.2 * WavyPlantSpeed * time;
+
+    // Traveling phase along the wind direction so distant plants peak later than near ones.
+    float phase = dot(pos.xz, WindDir) * 0.15 - t * 7.5;
+
+    // Slow-moving gust envelope, also traveling with the wind, for bursts of stronger sway.
+    float gust = 0.6 + 0.4 * sin(dot(pos.xz, WindDir) * 0.015 - t);
+
+    // Primary sway plus a faster, smaller ripple for organic irregularity.
+    float sway = sin(phase) + sin(phase * 2.3 + pos.y * 0.5) * 0.3;
+
+    return WindDir * sway * gust * 0.02;
+}
+
+vec2 calcDynamicWind(in vec3 pos)
+{
+    const float f1 = 0.02;
+    const float f2 = 0.05;
+
+    float t = time * WavyPlantSpeed;
+
+    float angleOffset = sin(pos.x * f1 - t * 0.5) * cos(pos.z * f1 + t * 0.3)
+                      + sin(pos.x * f2 + t * 1.2) * cos(pos.z * f2 - t * 0.8);
+
+    const float baseAngle = atan(WindDir.y, WindDir.x);
+    float finalAngle = baseAngle + angleOffset * 1.5;
+
+    vec2 dynamicDir = vec2(cos(finalAngle), sin(finalAngle));
+    float gust = 0.6 + 0.4 * sin(pos.x * 0.015 - t + pos.z * 0.01);
+
+    return dynamicDir * gust;
 }
 
 vec3 calcMovePlants(in vec3 pos)
 {
-    vec2 move1 = calcWave(pos);
-    float move1y = -length(move1);
-    return vec3(move1.x, move1y, move1.y) * 5.0 * WAVY_STRENGTH;
+    if (WavyPlantMode == 0) {
+        vec2 move1 = calcWave(pos);
+        float move1y = length(move1);
+        move1y *= move1y * 10;
+        return 5 * WavyPlantStrength * vec3(move1.x, -move1y, move1.y);
+    } else {
+        vec2 move1 = calcDynamicWind(pos);
+        float move1y = -length(move1) * 0.5;
+        return 0.1 * WavyPlantStrength * vec3(move1.x, move1y, move1.y);
+    }
 }
 
 vec3 calcWaveLeaves(in vec3 pos)
 {
-    float pi2wt = 2.0 * 3.14159265 * time;
-    float magnitude = abs(sin(dot(vec4(time, pos), vec4(1.0, 0.005, 0.005, 0.005))) * 0.5 + 0.72) * 0.013;
+    float pi2wt = 2.0 * 3.14159265 * WavyLeavesSpeed * time;
+    float magnitude = abs(sin(dot(vec4(WavyLeavesSpeed * time, pos), vec4(1.0, 0.005, 0.005, 0.005))) * 0.5 + 0.72) * 0.013;
     vec3 ret = sin(pi2wt * vec3(0.0063, 0.0224, 0.0015) * 1.5 - pos) * magnitude;
     return ret;
 }
@@ -69,7 +116,7 @@ vec3 calcWaveLeaves(in vec3 pos)
 vec3 calcMoveLeaves(in vec3 pos)
 {
     vec3 move1 = calcWaveLeaves(pos) * vec3(1.0, 0.2, 1.0);
-    return move1 * 5.0 * WAVY_STRENGTH;
+    return 5.0 * WavyLeavesStrength * move1;
 }
 
 bool isLeaf(int idx)
@@ -80,18 +127,6 @@ bool isLeaf(int idx)
 bool isPlant(int idx)
 {
     return idx == 12 || idx == 13 || idx == 39 || idx == 55 || idx == 56;
-}
-
-void applyWaving(inout vec3 worldPos, in vec3 position, in int textureIndex, in float waviness)
-{
-    if (isLeaf(textureIndex))
-    {
-        worldPos += calcMoveLeaves(worldPos) * waviness;
-    }
-    else if (isPlant(textureIndex))
-    {
-        worldPos += calcMovePlants(worldPos) * max(waviness, 0.5);
-    }
 }
 
 void main()
@@ -108,12 +143,21 @@ void main()
 
     uv += bias;
 
-    if (envAnim)
+    if (Wavy > 0)
     {
         int textureIndex = atlasIndexFromUV(uv);
+
         vec3 worldPos = position + vec3(chunkPos.x, 0.0, chunkPos.y);
 
-        applyWaving(worldPos, position, textureIndex, 1.0);
+        if (WavyLeavesStrength > 0.0 && isLeaf(textureIndex))
+        {
+            worldPos += calcMoveLeaves(worldPos);
+        }
+        else if (WavyPlantStrength > 0.0 && isPlant(textureIndex))
+        {
+            vec2 luv = localUV(inUV);
+            worldPos += calcMovePlants(worldPos) * (1.0 - luv.y);
+        }
 
         position = worldPos - vec3(chunkPos.x, 0.0, chunkPos.y);
     }
