@@ -65,6 +65,52 @@
     <MSBuild Projects="$(MSBuildProjectFile)" Targets="_CopyServerOutput" Properties="ServerCopyDestination=$(PublishDir)Server\"/>
   </Target>
 
+  <!--
+    The bundled Client/Server assets are copied verbatim from their build output, which
+    ships the pretty-printed source JSON. This shrinks the deployed copies by rewriting
+    each one in-place as compact JSON after it lands in the publish folder.
+  -->
+  <UsingTask TaskName="MinifyJsonFiles" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <AssetsDir ParameterType="System.String" Required="true"/>
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Text"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+foreach (var file in Directory.EnumerateFiles(AssetsDir, "*.json", SearchOption.AllDirectories))
+{
+    var text = File.ReadAllText(file);
+    var sb = new StringBuilder(text.Length);
+    var inString = false;
+    var escaped = false;
+    foreach (var c in text)
+    {
+        if (inString)
+        {
+            sb.Append(c);
+            if (escaped) { escaped = false; }
+            else if (c == '\\') { escaped = true; }
+            else if (c == '"') { inString = false; }
+            continue;
+        }
+        if (c == '"') { inString = true; sb.Append(c); continue; }
+        if (char.IsWhiteSpace(c)) { continue; }
+        sb.Append(c);
+    }
+    File.WriteAllText(file, sb.ToString());
+}
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="MinifyDeployedJsonAssets" AfterTargets="CopyClientOutputPublish;CopyServerOutputPublish">
+    <MinifyJsonFiles AssetsDir="$(PublishDir)Client/assets" Condition="Exists('$(PublishDir)Client/assets')"/>
+    <MinifyJsonFiles AssetsDir="$(PublishDir)Server/assets" Condition="Exists('$(PublishDir)Server/assets')"/>
+  </Target>
+
   <ItemGroup>
     <AvaloniaResource Include="logo.png"/>
     <AvaloniaResource Include="logo.ico"/>
