@@ -26,7 +26,7 @@ internal static class BehaviorRegistry
         // once every BlockDefinition has been registered by name.
         ["stairs"] = json => new StairsBehavior(() => ResolveBlock(json.GetProperty("base").GetString()!)),
         ["plant_survival"] = json => json.TryGetProperty("valid_soil", out var soil)
-            ? new PlantSurvivalBehavior(id => id == ResolveBlock(soil.GetString()!).Id)
+            ? new PlantSurvivalBehavior(id => id == ResolveBlock(soil.GetString()!).id)
             : new PlantSurvivalBehavior(),
         ["melt"] = json => new MeltBehavior(
             () => ResolveBlockOrAir(json.GetProperty("melt_replacement").GetString()!),
@@ -95,5 +95,5 @@ internal static class BehaviorRegistry
     // Air (id 0) never has a registered Block instance, so BlockRegistry.Get can't resolve it —
     // snow's melt-to-air case needs this sentinel alongside real block-name lookups.
     private static int ResolveBlockOrAir(string name) =>
-        name == "air" ? 0 : ResolveBlock(name).Id;
+        name == "air" ? 0 : ResolveBlock(name).id;
 }

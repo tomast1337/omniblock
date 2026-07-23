@@ -74,11 +74,11 @@ public abstract class BlockEntity : IEntity
 
     void IEntity.Write(NBTTagCompound nbt) => WriteNbt(nbt);
 
-    void IEntity.Tick() => Tick(World.Entities);
+    void IEntity.Tick() => Tick(World!.Entities);
 
-    int IEntity.GetId() => GetBlock().Id;
+    int IEntity.GetId() => GetBlock().id;
 
-    IWorldContext IEntity.World => World;
+    IWorldContext IEntity.World => World!;
 
     public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
@@ -111,7 +111,7 @@ public abstract class BlockEntity : IEntity
         world.Broadcaster.UpdateBlockEntity(X, Y, Z, this);
     }
 
-    public double DistanceFrom(double x, double y, double z)
+    public double distanceFrom(double x, double y, double z)
     {
         double dx = X + 0.5D - x;
         double dy = Y + 0.5D - y;

@@ -20,20 +20,20 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
 
     public void OnInit(Block block)
     {
-        RegisterFlammableBlock(BlockRegistry.Get("planks").Id, 5, 20);
-        RegisterFlammableBlock(BlockRegistry.Get("fence").Id, 5, 20);
-        RegisterFlammableBlock(BlockRegistry.Get("wooden_stairs").Id, 5, 20);
-        RegisterFlammableBlock(BlockRegistry.Get("log").Id, 5, 5);
-        RegisterFlammableBlock(BlockRegistry.Get("leaves").Id, 30, 60);
-        RegisterFlammableBlock(BlockRegistry.Get("bookshelf").Id, 30, 20);
-        RegisterFlammableBlock(BlockRegistry.Get("tnt").Id, 15, 100);
-        RegisterFlammableBlock(BlockRegistry.Get("grass").Id, 60, 100);
-        RegisterFlammableBlock(BlockRegistry.Get("wool").Id, 30, 60);
+        RegisterFlammableBlock(BlockRegistry.Get("planks").id, 5, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("fence").id, 5, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("wooden_stairs").id, 5, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("log").id, 5, 5);
+        RegisterFlammableBlock(BlockRegistry.Get("leaves").id, 30, 60);
+        RegisterFlammableBlock(BlockRegistry.Get("bookshelf").id, 30, 20);
+        RegisterFlammableBlock(BlockRegistry.Get("tnt").id, 15, 100);
+        RegisterFlammableBlock(BlockRegistry.Get("grass").id, 60, 100);
+        RegisterFlammableBlock(BlockRegistry.Get("wool").id, 30, 60);
     }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("obsidian").Id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("obsidian").id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
         {
             return;
         }
@@ -44,7 +44,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
         }
         else
         {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
         }
     }
 
@@ -70,7 +70,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
             return;
         }
 
-        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("netherrack").Id;
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("netherrack").id;
         if (!block.CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -90,7 +90,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
                 @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, fireAge + @event.World.Random.NextInt(3) / 2);
             }
 
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
             if (!isOnNetherrack && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
                 if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) || fireAge > 3)
@@ -143,7 +143,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
                                             spreadChance = 15;
                                         }
 
-                                        @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.Id, spreadChance);
+                                        @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.id, spreadChance);
                                     }
                                 }
                             }
@@ -249,7 +249,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
         int targetSpreadChance = _spreadChances[level.Reader.GetBlockId(x, y, z)];
         if (random.NextInt(spreadFactor) < targetSpreadChance)
         {
-            bool isTnt = level.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("tnt").Id;
+            bool isTnt = level.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("tnt").id;
             if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
             {
                 int newFireAge = currentAge + random.NextInt(5) / 4;
@@ -258,7 +258,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
                     newFireAge = 15;
                 }
 
-                level.Writer.SetBlock(x, y, z, block.Id, newFireAge);
+                level.Writer.SetBlock(x, y, z, block.id, newFireAge);
             }
             else
             {

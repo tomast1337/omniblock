@@ -41,8 +41,8 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
     {
         int plateState = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (plateState <= 0) return;
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
@@ -107,7 +107,7 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
             ctx.Writer.SetBlockMeta(x, y, z, shouldBePressed ? 1 : 0);
             if (!ctx.IsRemote)
             {
-                ctx.Broadcaster.NotifyNeighborsFloor(x, y, z, block.Id);
+                ctx.Broadcaster.NotifyNeighborsFloor(x, y, z, block.id);
                 ctx.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
             }
             else
@@ -118,7 +118,7 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
 
         if (shouldBePressed)
         {
-            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
+            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.id, block.TickRate);
         }
     }
 }

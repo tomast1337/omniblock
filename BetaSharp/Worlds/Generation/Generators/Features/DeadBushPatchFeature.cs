@@ -15,7 +15,7 @@ internal class DeadBushPatchFeature : Feature
         while (true)
         {
             int blockId = level.Reader.GetBlockId(x, y, z);
-            if ((blockId != 0 && blockId != BlockRegistry.Get("leaves").Id) || y <= 0)
+            if ((blockId != 0 && blockId != BlockRegistry.Get("leaves").id) || y <= 0)
             {
                 for (int i = 0; i < 4; ++i)
                 {

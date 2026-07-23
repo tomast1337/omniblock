@@ -305,7 +305,7 @@ public class ParticleManager
         ApplyBaseVelocity(x, y, z, out double bvx, out double bvy, out double bvz, vx, vy, vz);
 
         int texIndex = block.GetTexture(hitFace.ToSide(), meta);
-        float gravity = block.ParticleFallSpeedModifier;
+        float gravity = block.particleFallSpeedModifier;
         float r = 0.6f, g = 0.6f, b = 0.6f;
         float baseScale = RandomBaseScale() / 2.0f;
 
@@ -333,7 +333,7 @@ public class ParticleManager
         bvz *= velScale;
 
         int texIndex = block.GetTexture(hitFace.ToSide(), meta);
-        float gravity = block.ParticleFallSpeedModifier;
+        float gravity = block.particleFallSpeedModifier;
         float r = 0.6f, g = 0.6f, b = 0.6f;
         float baseScale = RandomBaseScale() * sizeScale / 2.0f;
 
@@ -356,7 +356,7 @@ public class ParticleManager
 
         int texIndex = item.getTextureId(0);
         float baseScale = RandomBaseScale() / 2.0f;
-        float gravity = BlockRegistry.Get("snow_block").ParticleFallSpeedModifier;
+        float gravity = BlockRegistry.Get("snow_block").particleFallSpeedModifier;
 
         _layers[2].Add(ParticleType.Slime, x, y, z, bvx, bvy, bvz,
             1.0f, 1.0f, 1.0f, baseScale, gravity, texIndex,

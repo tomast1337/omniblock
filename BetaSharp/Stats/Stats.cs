@@ -99,7 +99,7 @@ public static class Stats
         {
             if (Block.Blocks[i] != null && Block.Blocks[i].EnableStats)
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Block.Blocks[i].TranslateBlockName());
+                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Block.Blocks[i].translateBlockName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
                 BlocksMinedStats.Add(statsArray[i]);
             }
@@ -150,17 +150,17 @@ public static class Stats
 
     private static void ReplaceAllSimilarBlocks(StatBase[] statsArray)
     {
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("water").Id, BlockRegistry.Get("flowing_water").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lava").Id, BlockRegistry.Get("lava").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("jack_lantern").Id, BlockRegistry.Get("pumpkin").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_furnace").Id, BlockRegistry.Get("furnace").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_ore").Id, BlockRegistry.Get("redstone_ore").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("powered_repeater").Id, BlockRegistry.Get("repeater").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_torch").Id, BlockRegistry.Get("redstone_torch").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("red_mushroom").Id, BlockRegistry.Get("brown_mushroom").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("double_slab").Id, BlockRegistry.Get("slab").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("grass_block").Id, BlockRegistry.Get("dirt").Id);
-        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("farmland").Id, BlockRegistry.Get("dirt").Id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("water").id, BlockRegistry.Get("flowing_water").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lava").id, BlockRegistry.Get("lava").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("jack_lantern").id, BlockRegistry.Get("pumpkin").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_furnace").id, BlockRegistry.Get("furnace").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_ore").id, BlockRegistry.Get("redstone_ore").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("powered_repeater").id, BlockRegistry.Get("repeater").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("lit_redstone_torch").id, BlockRegistry.Get("redstone_torch").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("red_mushroom").id, BlockRegistry.Get("brown_mushroom").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("double_slab").id, BlockRegistry.Get("slab").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("grass_block").id, BlockRegistry.Get("dirt").id);
+        ReplaceSimilarBlocks(statsArray, BlockRegistry.Get("farmland").id, BlockRegistry.Get("dirt").id);
     }
 
     private static void ReplaceSimilarBlocks(StatBase[] statsArray, int sourceId, int targetId)

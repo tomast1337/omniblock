@@ -7,7 +7,7 @@ public class ReedRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         int colorMultiplier = block.getColorMultiplier(ctx.BlockReader, pos.x, pos.y, pos.z);
         float r = (colorMultiplier >> 16 & 255) / 255.0F;
         float g = (colorMultiplier >> 8 & 255) / 255.0F;

@@ -28,7 +28,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
     {
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) == 0) _torchPhysics.OnPlaced(block, @event);
         if (!IsLit(block)) return;
-        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.Id);
+        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.id);
     }
 
     public void OnBreak(Block block, OnBreakEvent @event)
@@ -38,7 +38,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
             return;
         }
 
-        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.Id);
+        NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.id);
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => _torchPhysics.CanPlaceAt(block, @event);
@@ -49,7 +49,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         _torchPhysics.NeighborUpdate(block, @event);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
     }
 
     public void OnTick(Block block, OnTickEvent @event)
@@ -71,7 +71,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
         {
             if (!shouldTurnOff) return;
 
-            @event.World.Writer.SetBlock(x, y, z, BlockRegistry.Get("redstone_torch").Id, @event.World.Reader.GetBlockMeta(x, y, z));
+            @event.World.Writer.SetBlock(x, y, z, BlockRegistry.Get("redstone_torch").id, @event.World.Reader.GetBlockMeta(x, y, z));
 
             if (!IsBurnedOut(@event, true, currentTime)) return;
 
@@ -86,11 +86,11 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
             }
 
             int spatialBias = (x + y + z) % 3;
-            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, BlockRegistry.Get("redstone_torch").Id, 160 + spatialBias);
+            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, BlockRegistry.Get("redstone_torch").id, 160 + spatialBias);
         }
         else if (!shouldTurnOff && !IsBurnedOut(@event, false, currentTime))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("lit_redstone_torch").Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("lit_redstone_torch").id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
         }
     }
 
@@ -136,7 +136,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
 
     public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => side == 0 && IsPoweringSide(block, reader, x, y, z, side);
 
-    private static bool IsLit(Block block) => block.Id == BlockRegistry.Get("lit_redstone_torch").Id;
+    private static bool IsLit(Block block) => block.id == BlockRegistry.Get("lit_redstone_torch").id;
 
     private bool IsBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
     {

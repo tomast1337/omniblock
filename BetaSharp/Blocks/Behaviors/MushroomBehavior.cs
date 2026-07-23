@@ -39,9 +39,9 @@ internal sealed class MushroomBehavior : IBlockTicker, IBlockPhysics
             return;
         }
 
-        @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.Id);
+        @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.id);
     }
 
     private static bool CanPlantOnTop(int id)
-        => id == BlockRegistry.Get("grass_block").Id || id == BlockRegistry.Get("dirt").Id || id == BlockRegistry.Get("stone").Id || id == BlockRegistry.Get("gravel").Id || id == BlockRegistry.Get("cobblestone").Id;
+        => id == BlockRegistry.Get("grass_block").id || id == BlockRegistry.Get("dirt").id || id == BlockRegistry.Get("stone").id || id == BlockRegistry.Get("gravel").id || id == BlockRegistry.Get("cobblestone").id;
 }

@@ -26,7 +26,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        int doorId = block.Id;
+        int doorId = block.id;
 
         if ((meta & 8) != 0) // Top half
         {
@@ -106,7 +106,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
         if (_material == Material.Metal) return true;
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
-        int doorId = block.Id;
+        int doorId = block.id;
 
         if ((meta & 8) != 0)
         {
@@ -161,7 +161,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
         if (world.IsRemote) return;
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
-        int doorId = block.Id;
+        int doorId = block.id;
 
         if ((meta & 8) != 0)
         {

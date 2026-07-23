@@ -28,7 +28,7 @@ public class EntityLightningBolt : EntityWeatherEffect
         int strikeZ = MathHelper.Floor(z);
         if (world.Reader.GetBlockId(strikeX, strikeY, strikeZ) == 0 && BlockRegistry.Get("fire").CanPlaceAt(new CanPlaceAtContext(world, 0, strikeX, strikeY, strikeZ)))
         {
-            world.Writer.SetBlock(strikeX, strikeY, strikeZ, BlockRegistry.Get("fire").Id);
+            world.Writer.SetBlock(strikeX, strikeY, strikeZ, BlockRegistry.Get("fire").id);
         }
 
         for (strikeX = 0; strikeX < 4; ++strikeX)
@@ -38,7 +38,7 @@ public class EntityLightningBolt : EntityWeatherEffect
             int fireZ = MathHelper.Floor(z) + Random.NextInt(3) - 1;
             if (world.Reader.GetBlockId(strikeY, strikeZ, fireZ) == 0 && BlockRegistry.Get("fire").CanPlaceAt(new CanPlaceAtContext(world, 0, strikeY, strikeZ, fireZ)))
             {
-                world.Writer.SetBlock(strikeY, strikeZ, fireZ, BlockRegistry.Get("fire").Id);
+                world.Writer.SetBlock(strikeY, strikeZ, fireZ, BlockRegistry.Get("fire").id);
             }
         }
     }
@@ -73,7 +73,7 @@ public class EntityLightningBolt : EntityWeatherEffect
                     int floorZ = MathHelper.Floor(Z);
                     if (World.Reader.GetBlockId(floorX, floorY, floorZ) == 0 && BlockRegistry.Get("fire").CanPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)))
                     {
-                        World.Writer.SetBlock(floorX, floorY, floorZ, BlockRegistry.Get("fire").Id);
+                        World.Writer.SetBlock(floorX, floorY, floorZ, BlockRegistry.Get("fire").id);
                     }
                 }
             }

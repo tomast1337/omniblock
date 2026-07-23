@@ -23,7 +23,7 @@ public sealed class LogBehavior : IBlockVisuals, IBlockLifecycle
                 for (int offsetZ = -SearchRadius; offsetZ <= SearchRadius; ++offsetZ)
                 {
                     int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (neighborBlockId != BlockRegistry.Get("leaves").Id) continue;
+                    if (neighborBlockId != BlockRegistry.Get("leaves").id) continue;
 
                     int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                     if ((leavesMeta & 8) == 0)

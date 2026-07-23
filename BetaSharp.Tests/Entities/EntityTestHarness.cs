@@ -20,7 +20,7 @@ public static class EntityTestHarness
     /// <summary>Fills a horizontal rectangle at <paramref name="floorY"/> with stone so entities have solid ground.</summary>
     public static void PlaceStoneFloor(FakeWorldContext world, int minX, int maxX, int minZ, int maxZ, int floorY)
     {
-        int stoneId = BlockRegistry.Get("stone").Id;
+        int stoneId = BlockRegistry.Get("stone").id;
         for (int x = minX; x <= maxX; x++)
         {
             for (int z = minZ; z <= maxZ; z++)
@@ -56,7 +56,7 @@ public static class EntityTestHarness
     /// <summary>Places flat rails along Z at <paramref name="railY"/> (inclusive X range).</summary>
     public static void PlaceRailRunX(FakeWorldContext world, int x0, int x1, int railY, int z)
     {
-        int railId = BlockRegistry.Get("rail").Id;
+        int railId = BlockRegistry.Get("rail").id;
         int step = x0 <= x1 ? 1 : -1;
         for (int x = x0; x != x1 + step; x += step)
         {
@@ -67,7 +67,7 @@ public static class EntityTestHarness
     /// <summary>Fills an inclusive Y column with stationary water (for squid / fluid tests).</summary>
     public static void FillWaterColumn(FakeWorldContext world, int x, int z, int yMin, int yMax)
     {
-        int waterId = BlockRegistry.Get("water").Id;
+        int waterId = BlockRegistry.Get("water").id;
         for (int y = yMin; y <= yMax; y++)
         {
             world.Writer.SetBlock(x, y, z, waterId);
@@ -77,7 +77,7 @@ public static class EntityTestHarness
     /// <summary>Builds a short stone wall segment used as a painting backing (single-column Kebab-sized).</summary>
     public static void PlaceStoneWallStrip(FakeWorldContext world, int x, int z, int yMin, int yMax)
     {
-        int stoneId = BlockRegistry.Get("stone").Id;
+        int stoneId = BlockRegistry.Get("stone").id;
         for (int y = yMin; y <= yMax; y++)
         {
             world.Writer.SetBlock(x, y, z, stoneId);
@@ -104,7 +104,7 @@ public static class EntityTestHarness
 
         if (type == EntityRegistry.FallingSand)
         {
-            return new EntityFallingSand(world, 8.5, 70.0, 8.5, BlockRegistry.Get("sand").Id);
+            return new EntityFallingSand(world, 8.5, 70.0, 8.5, BlockRegistry.Get("sand").id);
         }
 
         if (type == EntityRegistry.Minecart)

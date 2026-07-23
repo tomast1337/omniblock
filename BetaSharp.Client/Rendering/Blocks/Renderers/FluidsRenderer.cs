@@ -16,14 +16,14 @@ public class FluidsRenderer : IBlockRenderer
         float tintB = (colorMultiplier & 255) / 255.0F;
 
         // Determine which faces are actually visible to the player
-        bool isTopVisible = block.IsSideVisible(ctx.BlockReader, pos.x, pos.y + 1, pos.z, Side.Up);
-        bool isBottomVisible = block.IsSideVisible(ctx.BlockReader, pos.x, pos.y - 1, pos.z, 0);
+        bool isTopVisible = block.isSideVisible(ctx.BlockReader, pos.x, pos.y + 1, pos.z, Side.Up);
+        bool isBottomVisible = block.isSideVisible(ctx.BlockReader, pos.x, pos.y - 1, pos.z, 0);
         bool[] sideVisible =
         [
-            block.IsSideVisible(ctx.BlockReader, pos.x, pos.y, pos.z - 1, Side.North),
-            block.IsSideVisible(ctx.BlockReader, pos.x, pos.y, pos.z + 1, Side.South),
-            block.IsSideVisible(ctx.BlockReader, pos.x - 1, pos.y, pos.z, Side.West),
-            block.IsSideVisible(ctx.BlockReader, pos.x + 1, pos.y, pos.z, Side.East)
+            block.isSideVisible(ctx.BlockReader, pos.x, pos.y, pos.z - 1, Side.North),
+            block.isSideVisible(ctx.BlockReader, pos.x, pos.y, pos.z + 1, Side.South),
+            block.isSideVisible(ctx.BlockReader, pos.x - 1, pos.y, pos.z, Side.West),
+            block.isSideVisible(ctx.BlockReader, pos.x + 1, pos.y, pos.z, Side.East)
         ];
 
         // Fast exit if completely surrounded
@@ -41,7 +41,7 @@ public class FluidsRenderer : IBlockRenderer
         const float lightZ = 0.8F; // North/South
         const float lightX = 0.6F; // East/West
 
-        Material material = block.Material;
+        Material material = block.material;
         int meta = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
 
         // Calculate the height of the fluid at each of the 4 corners of this block
@@ -84,7 +84,7 @@ public class FluidsRenderer : IBlockRenderer
             float sinAngle = MathHelper.Sin(flowAngle) * 8.0F / 256.0F;
             float cosAngle = MathHelper.Cos(flowAngle) * 8.0F / 256.0F;
 
-            float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+            float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
             ctx.Tess.setColorOpaque_F(lightTop * luminance * tintR, lightTop * luminance * tintG,
                 lightTop * luminance * tintB);
 
@@ -102,7 +102,7 @@ public class FluidsRenderer : IBlockRenderer
         // BOTTOM FACE
         if (ctx.RenderAllFaces || isBottomVisible)
         {
-            float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y - 1, pos.z);
+            float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y - 1, pos.z);
             ctx.Tess.setColorOpaque_F(lightBottom * luminance, lightBottom * luminance, lightBottom * luminance);
 
             // Fluids don't use AO, so pass dummy colors
@@ -181,7 +181,7 @@ public class FluidsRenderer : IBlockRenderer
                 float minV2 = (texV + (1.0F - h2) * 16.0F) / 256.0F; // UV height match for corner 2
                 float maxV = (texV + 16 - 0.01f) / 256.0f;
 
-                float luminance = block.GetLuminance(ctx.Lighting, adjX, pos.y, adjZ);
+                float luminance = block.getLuminance(ctx.Lighting, adjX, pos.y, adjZ);
                 float shadow = (side < 2) ? lightZ : lightX;
                 luminance *= shadow;
 

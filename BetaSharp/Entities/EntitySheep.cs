@@ -64,11 +64,11 @@ public class EntitySheep : EntityAnimal
     {
         if (!IsSheared)
         {
-            DropItem(new ItemStack(BlockRegistry.Get("wool").Id, 1, FleeceColor), 0.0F);
+            DropItem(new ItemStack(BlockRegistry.Get("wool").id, 1, FleeceColor), 0.0F);
         }
     }
 
-    protected override int DropItem => BlockRegistry.Get("wool").Id;
+    protected override int DropItem => BlockRegistry.Get("wool").id;
 
     public override bool Interact(EntityPlayer player)
     {
@@ -82,7 +82,7 @@ public class EntitySheep : EntityAnimal
 
             for (int i = 0; i < woolCount; ++i)
             {
-                EntityItem woolItem = DropItem(new ItemStack(BlockRegistry.Get("wool").Id, 1, FleeceColor), 1.0F);
+                EntityItem woolItem = DropItem(new ItemStack(BlockRegistry.Get("wool").id, 1, FleeceColor), 1.0F);
                 woolItem.VelocityY += Random.NextFloat() * 0.05F;
                 woolItem.VelocityX += (Random.NextFloat() - Random.NextFloat()) * 0.1F;
                 woolItem.VelocityZ += (Random.NextFloat() - Random.NextFloat()) * 0.1F;

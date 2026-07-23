@@ -186,12 +186,12 @@ public class ClientNetworkHandler : NetHandler
 
         if (packet.EntityType == 70)
         {
-            entity = new EntityFallingSand(_worldClient, x, y, z, BlockRegistry.Get("sand").Id);
+            entity = new EntityFallingSand(_worldClient, x, y, z, BlockRegistry.Get("sand").id);
         }
 
         if (packet.EntityType == 71)
         {
-            entity = new EntityFallingSand(_worldClient, x, y, z, BlockRegistry.Get("gravel").Id);
+            entity = new EntityFallingSand(_worldClient, x, y, z, BlockRegistry.Get("gravel").id);
         }
 
         if (entity != null)

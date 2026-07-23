@@ -232,7 +232,7 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     public Material GetMaterial(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id == 0 ? Material.Air : Block.Blocks[id].Material;
+        return id == 0 ? Material.Air : Block.Blocks[id].material;
     }
 
     public bool IsOpaque(int x, int y, int z)

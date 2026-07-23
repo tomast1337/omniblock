@@ -22,7 +22,7 @@ public class MinecartTrackRenderer : IBlockRenderer
             metadata &= 7;
         }
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         int texU = (textureId & 15) << 4;

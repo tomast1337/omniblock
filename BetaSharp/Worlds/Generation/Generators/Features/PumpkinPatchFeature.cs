@@ -14,10 +14,10 @@ internal class PumpkinPatchFeature : Feature
             int genY = y + rand.NextInt(4) - rand.NextInt(4);
             int genZ = z + rand.NextInt(8) - rand.NextInt(8);
             if (level.Reader.IsAir(genX, genY, genZ) &&
-                level.Reader.GetBlockId(genX, genY - 1, genZ) == BlockRegistry.Get("grass_block").Id &&
+                level.Reader.GetBlockId(genX, genY - 1, genZ) == BlockRegistry.Get("grass_block").id &&
                 BlockRegistry.Get("pumpkin").CanPlaceAt(new CanPlaceAtContext(level, 0, genX, genY, genZ)))
             {
-                level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, BlockRegistry.Get("pumpkin").Id, rand.NextInt(4), false);
+                level.Writer.SetBlockWithoutNotifyingNeighbors(genX, genY, genZ, BlockRegistry.Get("pumpkin").id, rand.NextInt(4), false);
             }
         }
 

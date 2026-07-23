@@ -143,7 +143,7 @@ public sealed class MapBehavior : IItemBehavior
                 {
                     sampleX = worldX + worldZ * 231871;
                     sampleX = sampleX * sampleX * 31287121 + sampleX * 11;
-                    blockHistogram[((sampleX >> 20) & 1) == 0 ? BlockRegistry.Get("dirt").Id : BlockRegistry.Get("stone").Id] += 10;
+                    blockHistogram[((sampleX >> 20) & 1) == 0 ? BlockRegistry.Get("dirt").id : BlockRegistry.Get("stone").id] += 10;
                     avgHeight = 100.0D;
                 }
                 else
@@ -192,7 +192,7 @@ public sealed class MapBehavior : IItemBehavior
                 colorIndex = 0;
                 if (sampleZ > 0)
                 {
-                    MapColor mapColor = Block.Blocks[sampleZ].Material.MapColor;
+                    MapColor mapColor = Block.Blocks[sampleZ].material.MapColor;
                     if (mapColor == MapColor.Water)
                     {
                         shadeFactor = fluidDepth * 0.1D + ((pixelX + pixelZ) & 1) * 0.2D;
@@ -253,7 +253,7 @@ public sealed class MapBehavior : IItemBehavior
             {
                 foundSurface = false;
             }
-            else if (scanY > 0 && blockId > 0 && Block.Blocks[blockId].Material.MapColor == MapColor.Air)
+            else if (scanY > 0 && blockId > 0 && Block.Blocks[blockId].material.MapColor == MapColor.Air)
             {
                 foundSurface = false;
             }
@@ -266,7 +266,7 @@ public sealed class MapBehavior : IItemBehavior
 
             if (foundSurface)
             {
-                if (blockId == 0 || !Block.Blocks[blockId].Material.IsFluid)
+                if (blockId == 0 || !Block.Blocks[blockId].material.IsFluid)
                 {
                     exitLoop = true;
                 }
@@ -277,7 +277,7 @@ public sealed class MapBehavior : IItemBehavior
                     {
                         int fluidBlockId = chunk.GetBlockId(chunkX + dx, depthCheckY--, chunkZ + dz);
                         ++fluidDepth;
-                        if (depthCheckY <= 0 || fluidBlockId == 0 || !Block.Blocks[fluidBlockId].Material.IsFluid)
+                        if (depthCheckY <= 0 || fluidBlockId == 0 || !Block.Blocks[fluidBlockId].material.IsFluid)
                         {
                             exitLoop = true;
                             break;

@@ -631,7 +631,7 @@ public class GameRenderer
                     float zOffset = _random.NextFloat();
                     if (blockBelowId > 0)
                     {
-                        if (Block.Blocks[blockBelowId].Material == Material.Lava)
+                        if (Block.Blocks[blockBelowId].material == Material.Lava)
                         {
                             _client.ParticleManager.AddSmoke(sampleX + xOffset, topSolidY + 0.1F - Block.Blocks[blockBelowId].BoundingBox.MinY, sampleZ + zOffset, 0.0, 0.0, 0.0);
                         }

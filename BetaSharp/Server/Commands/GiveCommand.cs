@@ -75,6 +75,7 @@ public class GiveCommand : Command.Command
 
     private static void GiveTo(CommandSource source, ServerPlayerEntity target, ItemStack item, int count)
     {
+        item.Count = count;
         target.Inventory.AddItemStackToInventoryOrDrop(item);
         string msg = $"Gave {count} [{ItemLookup.ResolveItemName(item)}] to {target.Name}";
         source.LogOp($"{target.Name} {msg}");

@@ -25,7 +25,7 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        if (reader.GetBlockId(x - 1, y, z) != block.Id && reader.GetBlockId(x + 1, y, z) != block.Id)
+        if (reader.GetBlockId(x - 1, y, z) != block.id && reader.GetBlockId(x + 1, y, z) != block.id)
         {
             block.SetBoundingBox(0.5F - Thickness, 0.0F, 0.5F - HalfExtent, 0.5F + Thickness, 1.0F, 0.5F + HalfExtent);
         }
@@ -39,38 +39,38 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
     {
         sbyte offsetX = 0;
         sbyte offsetZ = 1;
-        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == block.Id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == block.Id)
+        if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == block.id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == block.id)
         {
             offsetX = 1;
             offsetZ = 0;
         }
 
         int portalBottomY;
-        for (portalBottomY = @event.Y; @event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) == block.Id; --portalBottomY)
+        for (portalBottomY = @event.Y; @event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) == block.id; --portalBottomY)
         {
         }
 
-        if (@event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) != BlockRegistry.Get("obsidian").Id)
+        if (@event.World.Reader.GetBlockId(@event.X, portalBottomY - 1, @event.Z) != BlockRegistry.Get("obsidian").id)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
             int blocksAbove;
-            for (blocksAbove = 1; blocksAbove < 4 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == block.Id; ++blocksAbove)
+            for (blocksAbove = 1; blocksAbove < 4 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == block.id; ++blocksAbove)
             {
             }
 
-            if (blocksAbove == 3 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == BlockRegistry.Get("obsidian").Id)
+            if (blocksAbove == 3 && @event.World.Reader.GetBlockId(@event.X, portalBottomY + blocksAbove, @event.Z) == BlockRegistry.Get("obsidian").id)
             {
-                bool hasXNeighbors = @event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == block.Id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == block.Id;
-                bool hasZNeighbors = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == block.Id || @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == block.Id;
+                bool hasXNeighbors = @event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == block.id || @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) == block.id;
+                bool hasZNeighbors = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z - 1) == block.id || @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == block.id;
                 if (hasXNeighbors && hasZNeighbors)
                 {
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
-                else if ((@event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != BlockRegistry.Get("obsidian").Id || @event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != block.Id) &&
-                         (@event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != BlockRegistry.Get("obsidian").Id || @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != block.Id))
+                else if ((@event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != BlockRegistry.Get("obsidian").id || @event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != block.id) &&
+                         (@event.World.Reader.GetBlockId(@event.X - offsetX, @event.Y, @event.Z - offsetZ) != BlockRegistry.Get("obsidian").id || @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y, @event.Z + offsetZ) != block.id))
                 {
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 }
@@ -98,7 +98,7 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
             double velocityX = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
             double velocityY = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
             double velocityZ = (Random.Shared.NextSingle() - 0.5D) * 0.5D;
-            if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) != block.Id && @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) != block.Id)
+            if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) != block.id && @event.World.Reader.GetBlockId(@event.X + 1, @event.Y, @event.Z) != block.id)
             {
                 particleX = @event.X + 0.5D + 0.25D * direction;
                 velocityX = Random.Shared.NextSingle() * 2.0F * direction;
@@ -115,15 +115,15 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
     {
-        if (reader.GetBlockId(x, y, z) == block.Id)
+        if (reader.GetBlockId(x, y, z) == block.id)
         {
             return false;
         }
 
-        bool edgeWest = reader.GetBlockId(x - 1, y, z) == block.Id && reader.GetBlockId(x - 2, y, z) != block.Id;
-        bool edgeEast = reader.GetBlockId(x + 1, y, z) == block.Id && reader.GetBlockId(x + 2, y, z) != block.Id;
-        bool edgeNorth = reader.GetBlockId(x, y, z - 1) == block.Id && reader.GetBlockId(x, y, z - 2) != block.Id;
-        bool edgeSouth = reader.GetBlockId(x, y, z + 1) == block.Id && reader.GetBlockId(x, y, z + 2) != block.Id;
+        bool edgeWest = reader.GetBlockId(x - 1, y, z) == block.id && reader.GetBlockId(x - 2, y, z) != block.id;
+        bool edgeEast = reader.GetBlockId(x + 1, y, z) == block.id && reader.GetBlockId(x + 2, y, z) != block.id;
+        bool edgeNorth = reader.GetBlockId(x, y, z - 1) == block.id && reader.GetBlockId(x, y, z - 2) != block.id;
+        bool edgeSouth = reader.GetBlockId(x, y, z + 1) == block.id && reader.GetBlockId(x, y, z + 2) != block.id;
         bool extendsInX = edgeWest || edgeEast;
         bool extendsInZ = edgeNorth || edgeSouth;
         return (extendsInX && side == Side.West) ||
@@ -136,12 +136,12 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
     {
         sbyte extendsInZ = 0;
         sbyte extendsInX = 0;
-        if (reader.GetBlockId(x - 1, y, z) == BlockRegistry.Get("obsidian").Id || reader.GetBlockId(x + 1, y, z) == BlockRegistry.Get("obsidian").Id)
+        if (reader.GetBlockId(x - 1, y, z) == BlockRegistry.Get("obsidian").id || reader.GetBlockId(x + 1, y, z) == BlockRegistry.Get("obsidian").id)
         {
             extendsInZ = 1;
         }
 
-        if (reader.GetBlockId(x, y, z - 1) == BlockRegistry.Get("obsidian").Id || reader.GetBlockId(x, y, z + 1) == BlockRegistry.Get("obsidian").Id)
+        if (reader.GetBlockId(x, y, z - 1) == BlockRegistry.Get("obsidian").id || reader.GetBlockId(x, y, z + 1) == BlockRegistry.Get("obsidian").id)
         {
             extendsInX = 1;
         }
@@ -172,12 +172,12 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
                 int blockId = reader.GetBlockId(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset);
                 if (isFrame)
                 {
-                    if (blockId != BlockRegistry.Get("obsidian").Id)
+                    if (blockId != BlockRegistry.Get("obsidian").id)
                     {
                         return false;
                     }
                 }
-                else if (blockId != 0 && blockId != BlockRegistry.Get("fire").Id)
+                else if (blockId != 0 && blockId != BlockRegistry.Get("fire").id)
                 {
                     return false;
                 }
@@ -188,7 +188,7 @@ internal sealed class PortalBehavior : IBlockPhysics, IBlockVisuals, IBlockInter
         {
             for (verticalOffset = 0; verticalOffset < 3; ++verticalOffset)
             {
-                writer.SetBlockInternal(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, BlockRegistry.Get("nether_portal").Id);
+                writer.SetBlockInternal(x + extendsInZ * horizontalOffset, y + verticalOffset, z + extendsInX * horizontalOffset, BlockRegistry.Get("nether_portal").id);
             }
         }
 

@@ -37,7 +37,7 @@ public abstract class EntityFlying(IWorldContext world) : EntityLiving(world)
                 int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
                 }
             }
 
@@ -50,7 +50,7 @@ public abstract class EntityFlying(IWorldContext world) : EntityLiving(world)
                 int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
                 }
             }
 

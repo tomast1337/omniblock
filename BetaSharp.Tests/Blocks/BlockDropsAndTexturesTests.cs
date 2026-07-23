@@ -6,13 +6,13 @@ namespace BetaSharp.Tests.Blocks;
 public sealed class BlockDropsAndTexturesTests
 {
     [Fact]
-    public void Stone_DropsCobblestone() => Assert.Equal(BlockRegistry.Get("cobblestone").Id, BlockRegistry.Get("stone").GetDroppedItemId(0));
+    public void Stone_DropsCobblestone() => Assert.Equal(BlockRegistry.Get("cobblestone").id, BlockRegistry.Get("stone").GetDroppedItemId(0));
 
     [Fact]
-    public void GoldOre_DropsItself() => Assert.Equal(BlockRegistry.Get("gold_ore").Id, BlockRegistry.Get("gold_ore").GetDroppedItemId(0));
+    public void GoldOre_DropsItself() => Assert.Equal(BlockRegistry.Get("gold_ore").id, BlockRegistry.Get("gold_ore").GetDroppedItemId(0));
 
     [Fact]
-    public void IronOre_DropsItself() => Assert.Equal(BlockRegistry.Get("iron_ore").Id, BlockRegistry.Get("iron_ore").GetDroppedItemId(0));
+    public void IronOre_DropsItself() => Assert.Equal(BlockRegistry.Get("iron_ore").id, BlockRegistry.Get("iron_ore").GetDroppedItemId(0));
 
     [Fact]
     public void CoalOre_DropsCoalItem() => Assert.Equal(Item.ByName("coal").Id, BlockRegistry.Get("coal_ore").GetDroppedItemId(0));
@@ -57,8 +57,8 @@ public sealed class BlockDropsAndTexturesTests
         for (int i = 0; i < 200; i++)
         {
             int itemId = BlockRegistry.Get("gravel").GetDroppedItemId(0);
-            Assert.True(itemId == BlockRegistry.Get("gravel").Id || itemId == Item.ByName("flint").Id);
-            sawGravel |= itemId == BlockRegistry.Get("gravel").Id;
+            Assert.True(itemId == BlockRegistry.Get("gravel").id || itemId == Item.ByName("flint").Id);
+            sawGravel |= itemId == BlockRegistry.Get("gravel").id;
             sawFlint |= itemId == Item.ByName("flint").Id;
         }
 
@@ -72,7 +72,7 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Obsidian_DropsItself()
     {
-        Assert.Equal(BlockRegistry.Get("obsidian").Id, BlockRegistry.Get("obsidian").GetDroppedItemId(0));
+        Assert.Equal(BlockRegistry.Get("obsidian").id, BlockRegistry.Get("obsidian").GetDroppedItemId(0));
         Assert.Equal(1, BlockRegistry.Get("obsidian").GetDroppedItemCount());
     }
 

@@ -59,7 +59,7 @@ public class BlockCommand : Command.Command
         }
         else
         {
-            context.Source.Output.SendMessage($"Block at {p.X} {p.Y} {p.Z} -> {id}:{meta} ({Block.Blocks[id].TranslateBlockName()})");
+            context.Source.Output.SendMessage($"Block at {p.X} {p.Y} {p.Z} -> {id}:{meta} ({Block.Blocks[id].translateBlockName()})");
         }
 
         if (blockEntity != null)

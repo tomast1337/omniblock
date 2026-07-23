@@ -71,7 +71,7 @@ public class BlockEntityRenderer
 
     public void RenderTileEntity(BlockEntity blockEntity, float tickDelta)
     {
-        if (blockEntity.DistanceFrom(PlayerX, PlayerY, PlayerZ) < 4096.0D)
+        if (blockEntity.distanceFrom(PlayerX, PlayerY, PlayerZ) < 4096.0D)
         {
             float brightness = World.GetLuminance(blockEntity.X, blockEntity.Y, blockEntity.Z);
             GLManager.GL.Color3(brightness, brightness, brightness);

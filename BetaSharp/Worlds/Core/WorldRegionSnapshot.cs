@@ -71,7 +71,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public bool ShouldSuffocate(int x, int y, int z)
     {
         Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.Material.BlocksMovement && block.IsFullCube();
+        return block != null && block.material.BlocksMovement && block.IsFullCube();
     }
 
     public bool IsOpaque(int x, int y, int z)
@@ -95,7 +95,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public Material GetMaterial(int x, int y, int z)
     {
         int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : Block.Blocks[blockId].Material;
+        return blockId == 0 ? Material.Air : Block.Blocks[blockId].material;
     }
 
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
@@ -131,7 +131,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         if (checkStairs)
         {
             int blockId = GetBlockId(x, y, z);
-            if (blockId == BlockRegistry.Get("slab").Id || blockId == BlockRegistry.Get("farmland").Id || blockId == BlockRegistry.Get("wooden_stairs").Id || blockId == BlockRegistry.Get("cobblestone_stairs").Id)
+            if (blockId == BlockRegistry.Get("slab").id || blockId == BlockRegistry.Get("farmland").id || blockId == BlockRegistry.Get("wooden_stairs").id || blockId == BlockRegistry.Get("cobblestone_stairs").id)
             {
                 int maxLight = GetLightValueExt(x, y + 1, z, false);
                 maxLight = Math.Max(maxLight, GetLightValueExt(x + 1, y, z, false)); // East

@@ -12,38 +12,38 @@ internal class NetherLavaSpringFeature : Feature
 
     public override bool Generate(IWorldContext level, JavaRandom rand, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y + 1, z) != BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x, y + 1, z) != BlockRegistry.Get("netherrack").id)
         {
             return false;
         }
 
-        if (level.Reader.GetBlockId(x, y, z) != 0 && level.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x, y, z) != 0 && level.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("netherrack").id)
         {
             return false;
         }
 
         int netherrackNeighbors = 0;
-        if (level.Reader.GetBlockId(x - 1, y, z) == BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x - 1, y, z) == BlockRegistry.Get("netherrack").id)
         {
             ++netherrackNeighbors;
         }
 
-        if (level.Reader.GetBlockId(x + 1, y, z) == BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x + 1, y, z) == BlockRegistry.Get("netherrack").id)
         {
             ++netherrackNeighbors;
         }
 
-        if (level.Reader.GetBlockId(x, y, z - 1) == BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x, y, z - 1) == BlockRegistry.Get("netherrack").id)
         {
             ++netherrackNeighbors;
         }
 
-        if (level.Reader.GetBlockId(x, y, z + 1) == BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x, y, z + 1) == BlockRegistry.Get("netherrack").id)
         {
             ++netherrackNeighbors;
         }
 
-        if (level.Reader.GetBlockId(x, y - 1, z) == BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x, y - 1, z) == BlockRegistry.Get("netherrack").id)
         {
             ++netherrackNeighbors;
         }

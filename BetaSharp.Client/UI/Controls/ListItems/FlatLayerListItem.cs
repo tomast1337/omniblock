@@ -16,7 +16,7 @@ public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(la
         base.Render(renderer);
 
         Block block = Block.Blocks[Value.FillBlock];
-        string blockName = block?.TranslateBlockName() ?? Translations.Get("newWorld.customize.unknown");
+        string blockName = block?.translateBlockName() ?? Translations.Get("newWorld.customize.unknown");
 
         renderer.DrawRect(4, 4, 18, 18, Color.BackgroundBlackAlpha);
 

@@ -39,7 +39,7 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
             x += s_bedOffsets[direction][0];
             z += s_bedOffsets[direction][1];
 
-            if (@event.World.Reader.GetBlockId(x, y, z) != block.Id) return true;
+            if (@event.World.Reader.GetBlockId(x, y, z) != block.id) return true;
 
             meta = @event.World.Reader.GetBlockMeta(x, y, z);
         }
@@ -55,7 +55,7 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
             x += s_bedOffsets[direction][0];
             z += s_bedOffsets[direction][1];
 
-            if (@event.World.Reader.GetBlockId(x, y, z) == block.Id)
+            if (@event.World.Reader.GetBlockId(x, y, z) == block.id)
             {
                 @event.World.Writer.SetBlock(x, y, z, 0);
                 posX = (posX + x + 0.5D) / 2.0D;
@@ -123,12 +123,12 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
 
         if (IsHeadOfBed(blockMeta))
         {
-            if (@event.World.Reader.GetBlockId(@event.X - s_bedOffsets[direction][0], @event.Y, @event.Z - s_bedOffsets[direction][1]) != block.Id)
+            if (@event.World.Reader.GetBlockId(@event.X - s_bedOffsets[direction][0], @event.Y, @event.Z - s_bedOffsets[direction][1]) != block.id)
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
         }
-        else if (@event.World.Reader.GetBlockId(@event.X + s_bedOffsets[direction][0], @event.Y, @event.Z + s_bedOffsets[direction][1]) != block.Id)
+        else if (@event.World.Reader.GetBlockId(@event.X + s_bedOffsets[direction][0], @event.Y, @event.Z + s_bedOffsets[direction][1]) != block.id)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             if (!@event.World.IsRemote)

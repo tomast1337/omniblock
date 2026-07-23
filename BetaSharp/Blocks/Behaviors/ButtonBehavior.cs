@@ -40,24 +40,24 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) <= 0) return;
 
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.id);
         int facing = meta & 7;
         switch (facing)
         {
             case 1:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X - 1, @event.Y, @event.Z, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X - 1, @event.Y, @event.Z, block.id);
                 break;
             case 2:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X + 1, @event.Y, @event.Z, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X + 1, @event.Y, @event.Z, block.id);
                 break;
             case 3:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z - 1, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z - 1, block.id);
                 break;
             case 4:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z + 1, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z + 1, block.id);
                 break;
             default:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
                 break;
         }
     }
@@ -119,24 +119,24 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) == 0) return;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta & 7);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.id);
         int facing = meta & 7;
         switch (facing)
         {
             case 1:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X - 1, @event.Y, @event.Z, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X - 1, @event.Y, @event.Z, block.id);
                 break;
             case 2:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X + 1, @event.Y, @event.Z, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X + 1, @event.Y, @event.Z, block.id);
                 break;
             case 3:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z - 1, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z - 1, block.id);
                 break;
             case 4:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z + 1, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z + 1, block.id);
                 break;
             default:
-                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
+                @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
                 break;
         }
 
@@ -195,27 +195,27 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
         level.Writer.SetBlockMeta(x, y, z, facing + pressToggle);
         level.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         level.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, 0.6F);
-        level.Broadcaster.NotifyNeighbors(x, y, z, block.Id);
+        level.Broadcaster.NotifyNeighbors(x, y, z, block.id);
         switch (facing)
         {
             case 1:
-                level.Broadcaster.NotifyNeighbors(x - 1, y, z, block.Id);
+                level.Broadcaster.NotifyNeighbors(x - 1, y, z, block.id);
                 break;
             case 2:
-                level.Broadcaster.NotifyNeighbors(x + 1, y, z, block.Id);
+                level.Broadcaster.NotifyNeighbors(x + 1, y, z, block.id);
                 break;
             case 3:
-                level.Broadcaster.NotifyNeighbors(x, y, z - 1, block.Id);
+                level.Broadcaster.NotifyNeighbors(x, y, z - 1, block.id);
                 break;
             case 4:
-                level.Broadcaster.NotifyNeighbors(x, y, z + 1, block.Id);
+                level.Broadcaster.NotifyNeighbors(x, y, z + 1, block.id);
                 break;
             default:
-                level.Broadcaster.NotifyNeighbors(x, y - 1, z, block.Id);
+                level.Broadcaster.NotifyNeighbors(x, y - 1, z, block.id);
                 break;
         }
 
-        level.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
+        level.TickScheduler.ScheduleBlockUpdate(x, y, z, block.id, block.TickRate);
         return true;
     }
 }

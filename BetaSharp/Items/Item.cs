@@ -219,6 +219,6 @@ public class Item
             return material.HarvestLevel >= 2;
         }
 
-        return block.Material == Material.Stone || block.Material == Material.Metal;
+        return block.material == Material.Stone || block.material == Material.Metal;
     };
 }

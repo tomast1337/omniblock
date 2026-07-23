@@ -9,13 +9,13 @@ internal sealed class PlaceBlockBehavior : IItemBehavior
     // Deferred: PlaceBlockBehaviorDefinition.Build() runs during ItemFactory.Create(), before
     // BlockRegistry.Initialize() has loaded any blocks.
     private readonly Func<Block> _blockFactory;
-    private int _blockId => _blockFactory().Id;
+    private int _blockId => _blockFactory().id;
 
     internal PlaceBlockBehavior(Func<Block> block) => _blockFactory = block;
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("snow").Id)
+        if (world.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("snow").id)
         {
             meta = 0;
         }

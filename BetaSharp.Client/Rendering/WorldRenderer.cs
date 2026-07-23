@@ -812,7 +812,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             int blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             if (blockId > 0)
             {
-                Block.Blocks[blockId].UpdateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
+                Block.Blocks[blockId].updateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
                 double renderX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
                 double renderY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
                 double renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;

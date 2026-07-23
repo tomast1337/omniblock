@@ -88,7 +88,7 @@ public class MaterialRegistryTests
     {
         Assert.Same(MaterialRegistry.Get("water"), Material.Water);
         Assert.Same(MaterialRegistry.Get("water"), MaterialRegistry.Get("water"));
-        Assert.Same(MaterialRegistry.Get("stone"), BlockRegistry.Get("stone").Material);
+        Assert.Same(MaterialRegistry.Get("stone"), BlockRegistry.Get("stone").material);
     }
 
     [Fact]

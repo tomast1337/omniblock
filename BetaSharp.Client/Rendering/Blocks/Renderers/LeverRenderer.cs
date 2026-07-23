@@ -141,7 +141,7 @@ public class LeverRenderer : IBlockRenderer
         float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
         float b = (colorMultiplier & 255) * 0.0039215686F;
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.getLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
 
         handleCtx.Tess.setColorOpaque_F(r * luminance, g * luminance, b * luminance);
 

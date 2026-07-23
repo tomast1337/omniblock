@@ -72,7 +72,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
         Block pushed = Block.Blocks[piston.PushedBlockId];
         if (pushed == block) return;
 
-        pushed.UpdateBoundingBox(reader, entities, x, y, z);
+        pushed.updateBoundingBox(reader, entities, x, y, z);
         float progress = piston.GetProgress(0.0F);
         if (piston.IsExtending)
         {
@@ -88,7 +88,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
 
     public static Box? GetPushedBlockCollisionShape(Block block, IBlockReader world, EntityManager entities, int x, int y, int z, int blockId, float sizeMultiplier, int facing)
     {
-        if (blockId == 0 || blockId == block.Id) return null;
+        if (blockId == 0 || blockId == block.id) return null;
 
         Box? shape = Block.Blocks[blockId].GetCollisionShape(world, entities, x, y, z);
         if (shape == null) return null;

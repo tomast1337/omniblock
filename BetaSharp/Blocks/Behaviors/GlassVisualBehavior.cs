@@ -10,5 +10,5 @@ namespace BetaSharp.Blocks.Behaviors;
 public sealed class GlassVisualBehavior(bool hideAdjacentFaces) : IBlockVisuals
 {
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => (hideAdjacentFaces || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
+        => (hideAdjacentFaces || reader.GetBlockId(x, y, z) != block.id) && defaultVisibility;
 }

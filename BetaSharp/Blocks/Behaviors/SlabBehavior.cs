@@ -32,9 +32,9 @@ internal sealed class SlabBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisua
         int slabMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int blockBelowMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
         if (slabMeta != blockBelowMeta) return;
-        if (blockBelowId != BlockRegistry.Get("slab").Id) return;
+        if (blockBelowId != BlockRegistry.Get("slab").id) return;
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        @event.World.Writer.SetBlock(@event.X, @event.Y - 1, @event.Z, BlockRegistry.Get("double_slab").Id, slabMeta);
+        @event.World.Writer.SetBlock(@event.X, @event.Y - 1, @event.Z, BlockRegistry.Get("double_slab").id, slabMeta);
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
@@ -78,5 +78,5 @@ internal sealed class SlabBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisua
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) =>
         side == Side.Up
-        || (defaultVisibility && (side == Side.Down || reader.GetBlockId(x, y, z) != block.Id));
+        || (defaultVisibility && (side == Side.Down || reader.GetBlockId(x, y, z) != block.id));
 }

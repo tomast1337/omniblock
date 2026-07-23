@@ -13,7 +13,7 @@ public sealed class GrassTickerBehavior : IBlockTicker
         {
             if (Random.Shared.Next(4) != 0) return;
 
-            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, BlockRegistry.Get("dirt").Id);
+            ctx.World.Writer.SetBlock(ctx.X, ctx.Y, ctx.Z, BlockRegistry.Get("dirt").id);
         }
         else if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) >= 9)
         {
@@ -21,9 +21,9 @@ public sealed class GrassTickerBehavior : IBlockTicker
             int spreadY = ctx.Y + Random.Shared.Next(5) - 3;
             int spreadZ = ctx.Z + Random.Shared.Next(3) - 1;
             int blockAboveId = ctx.World.Reader.GetBlockId(spreadX, spreadY + 1, spreadZ);
-            if (ctx.World.Reader.GetBlockId(spreadX, spreadY, spreadZ) == BlockRegistry.Get("dirt").Id && ctx.World.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && Block.BlockLightOpacity[blockAboveId] <= 2)
+            if (ctx.World.Reader.GetBlockId(spreadX, spreadY, spreadZ) == BlockRegistry.Get("dirt").id && ctx.World.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= 4 && Block.BlockLightOpacity[blockAboveId] <= 2)
             {
-                ctx.World.Writer.SetBlock(spreadX, spreadY, spreadZ, BlockRegistry.Get("grass_block").Id);
+                ctx.World.Writer.SetBlock(spreadX, spreadY, spreadZ, BlockRegistry.Get("grass_block").id);
             }
         }
     }

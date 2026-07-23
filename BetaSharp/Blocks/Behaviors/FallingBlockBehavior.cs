@@ -19,9 +19,9 @@ public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
         set => s_fallInstantly.Value = value;
     }
 
-    public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+    public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
 
-    public void NeighborUpdate(Block block, OnTickEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+    public void NeighborUpdate(Block block, OnTickEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
 
     public void OnTick(Block block, OnTickEvent @event) => ProcessFall(block, @event);
 
@@ -32,7 +32,7 @@ public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
 
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - CheckRadius, y - CheckRadius, z - CheckRadius, x + CheckRadius, y + CheckRadius, z + CheckRadius))
         {
-            EntityFallingSand fallingSand = new(@event.World, x + 0.5F, y + 0.5F, z + 0.5F, block.Id);
+            EntityFallingSand fallingSand = new(@event.World, x + 0.5F, y + 0.5F, z + 0.5F, block.id);
             @event.World.Entities.SpawnEntity(fallingSand);
         }
         else
@@ -46,7 +46,7 @@ public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
 
             if (y > 0)
             {
-                @event.World.Writer.SetBlock(x, y, z, block.Id);
+                @event.World.Writer.SetBlock(x, y, z, block.id);
             }
         }
     }
@@ -55,9 +55,9 @@ public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
     {
         int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0) return true;
-        if (blockId == BlockRegistry.Get("fire").Id) return true;
+        if (blockId == BlockRegistry.Get("fire").id) return true;
 
-        Material material = Block.Blocks[blockId].Material;
+        Material material = Block.Blocks[blockId].material;
         return material == Material.Water || material == Material.Lava;
     }
 }

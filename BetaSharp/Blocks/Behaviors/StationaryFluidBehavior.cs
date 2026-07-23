@@ -17,12 +17,12 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
 
     public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => allowLiquids && meta == 0;
 
-    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.Material);
+    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.material);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != block.Id)
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != block.id)
         {
             return;
         }
@@ -36,7 +36,7 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
     {
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
 
-        if (block.Material != Material.Lava) return;
+        if (block.material != Material.Lava) return;
 
         int attempts = @event.World.Random.NextInt(3);
 
@@ -54,11 +54,11 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
                     continue;
                 }
 
-                @event.World.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").Id);
+                @event.World.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").id);
                 return;
             }
 
-            if (Block.Blocks[neighborBlockId].Material.BlocksMovement)
+            if (Block.Blocks[neighborBlockId].material.BlocksMovement)
             {
                 return;
             }
@@ -75,8 +75,8 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
     private static void ConvertToFlowing(Block block, OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, block.Id - 1, meta, false);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id - 1, block.TickRate);
+        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, block.id - 1, meta, false);
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id - 1, block.TickRate);
     }
 
     private static bool IsFlammable(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y, z).IsBurnable;

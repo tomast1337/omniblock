@@ -43,17 +43,17 @@ public static class ControlTooltip
             int blockZ = hit.BlockZ;
             int blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
 
-            if (blockId == BlockRegistry.Get("chest").Id || blockId == BlockRegistry.Get("furnace").Id || blockId == BlockRegistry.Get("lit_furnace").Id || blockId == BlockRegistry.Get("crafting_table").Id || blockId == BlockRegistry.Get("dispenser").Id)
+            if (blockId == BlockRegistry.Get("chest").id || blockId == BlockRegistry.Get("furnace").id || blockId == BlockRegistry.Get("lit_furnace").id || blockId == BlockRegistry.Get("crafting_table").id || blockId == BlockRegistry.Get("dispenser").id)
                 useAction = "Interact";
-            else if (blockId == BlockRegistry.Get("door").Id || blockId == BlockRegistry.Get("iron_door").Id || blockId == BlockRegistry.Get("trapdoor").Id)
+            else if (blockId == BlockRegistry.Get("door").id || blockId == BlockRegistry.Get("iron_door").id || blockId == BlockRegistry.Get("trapdoor").id)
                 useAction = "Open/Close";
-            else if (blockId == BlockRegistry.Get("lever").Id || blockId == BlockRegistry.Get("button").Id || blockId == BlockRegistry.Get("repeater").Id || blockId == BlockRegistry.Get("powered_repeater").Id)
+            else if (blockId == BlockRegistry.Get("lever").id || blockId == BlockRegistry.Get("button").id || blockId == BlockRegistry.Get("repeater").id || blockId == BlockRegistry.Get("powered_repeater").id)
                 useAction = "Use";
-            else if (blockId == BlockRegistry.Get("bed").Id)
+            else if (blockId == BlockRegistry.Get("bed").id)
                 useAction = "Sleep";
-            else if (blockId == BlockRegistry.Get("cake").Id)
+            else if (blockId == BlockRegistry.Get("cake").id)
                 useAction = "Eat";
-            else if (blockId == BlockRegistry.Get("jukebox").Id)
+            else if (blockId == BlockRegistry.Get("jukebox").id)
                 useAction = "Use";
             else if (IsItemUsable(held))
             {

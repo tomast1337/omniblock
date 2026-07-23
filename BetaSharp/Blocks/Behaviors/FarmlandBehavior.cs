@@ -15,7 +15,7 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
     {
         if (Random.Shared.Next(4) == 0)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("dirt").Id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("dirt").id);
         }
     }
 
@@ -25,7 +25,7 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
     {
         if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("dirt").Id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("dirt").id);
         }
     }
 
@@ -45,7 +45,7 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
             }
             else if (!HasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("dirt").Id);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("dirt").id);
             }
         }
         else
@@ -67,7 +67,7 @@ internal sealed class FarmlandBehavior : IBlockTicker, IBlockPhysics, IBlockInte
         {
             for (int dy = z - 0; dy <= z + 0; ++dy)
             {
-                if (world.GetBlockId(dx, y + 1, dy) == BlockRegistry.Get("wheat").Id) return true;
+                if (world.GetBlockId(dx, y + 1, dy) == BlockRegistry.Get("wheat").id) return true;
             }
         }
 

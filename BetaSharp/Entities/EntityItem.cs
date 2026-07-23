@@ -71,7 +71,7 @@ public class EntityItem : Entity
             int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
             if (groundBlockId > 0)
             {
-                friction = Block.Blocks[groundBlockId].Slipperiness * 0.98F;
+                friction = Block.Blocks[groundBlockId].slipperiness * 0.98F;
             }
         }
 
@@ -122,7 +122,7 @@ public class EntityItem : Entity
     {
         if (World.IsRemote || !player.GameMode.CanPickup) return;
         if (DelayBeforeCanPickup != 0 || !player.Inventory.AddItemStackToInventory(Stack)) return;
-        if (Stack.ItemId == BlockRegistry.Get("log").Id) player.IncrementStat(Achievements.MineWood);
+        if (Stack.ItemId == BlockRegistry.Get("log").id) player.IncrementStat(Achievements.MineWood);
         if (Stack.ItemId == s_leatherId) player.IncrementStat(Achievements.KillCow);
 
         World.Broadcaster.PlaySoundAtEntity(this, "random.pop", 0.2F, ((Random.NextFloat() - Random.NextFloat()) * 0.7F + 1.0F) * 2.0F);

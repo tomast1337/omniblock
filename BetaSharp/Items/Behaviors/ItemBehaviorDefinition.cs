@@ -129,8 +129,8 @@ public sealed class BucketBehaviorDefinition : ItemBehaviorDefinition
 
     public override IItemBehavior Build() => new BucketBehavior(() => Liquid switch
     {
-        "water" => BlockRegistry.Get("flowing_water").Id,
-        "lava" => BlockRegistry.Get("flowing_lava").Id,
+        "water" => BlockRegistry.Get("flowing_water").id,
+        "lava" => BlockRegistry.Get("flowing_lava").id,
         "milk" => -1,
         _ => 0,
     });
@@ -163,7 +163,7 @@ public sealed class DoorBehaviorDefinition : ItemBehaviorDefinition
 public sealed class SeedsBehaviorDefinition : ItemBehaviorDefinition
 {
     public string? PlacesBlock { get; init; }
-    public override IItemBehavior Build() => new SeedsBehavior(() => BlockRegistry.Get(PlacesBlock!).Id);
+    public override IItemBehavior Build() => new SeedsBehavior(() => BlockRegistry.Get(PlacesBlock!).id);
 }
 
 public sealed class PlaceBlockBehaviorDefinition : ItemBehaviorDefinition

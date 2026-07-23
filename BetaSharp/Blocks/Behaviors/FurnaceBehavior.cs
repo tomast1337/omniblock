@@ -148,7 +148,7 @@ internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBl
         int meta = world.Reader.GetBlockMeta(x, y, z);
         BlockEntity? furnace = world.Entities.GetBlockEntity<BlockEntity>(x, y, z);
         InventoryUtility.IgnoreBlockRemoval.Value = true;
-        world.Writer.SetBlock(x, y, z, lit ? BlockRegistry.Get("lit_furnace").Id : BlockRegistry.Get("furnace").Id);
+        world.Writer.SetBlock(x, y, z, lit ? BlockRegistry.Get("lit_furnace").id : BlockRegistry.Get("furnace").id);
         InventoryUtility.IgnoreBlockRemoval.Value = false;
         world.Writer.SetBlockMeta(x, y, z, meta);
         furnace?.CancelRemoval();

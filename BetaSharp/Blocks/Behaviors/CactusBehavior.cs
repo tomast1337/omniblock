@@ -37,7 +37,7 @@ internal sealed class CactusBehavior : IBlockTicker, IBlockPhysics, IBlockIntera
         if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
 
         int heightBelow = 1;
-        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.Id)
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.id)
         {
             heightBelow++;
         }
@@ -47,7 +47,7 @@ internal sealed class CactusBehavior : IBlockTicker, IBlockPhysics, IBlockIntera
         int growthStage = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (growthStage == 15)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.Id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.id);
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 0);
         }
         else
@@ -71,6 +71,6 @@ internal sealed class CactusBehavior : IBlockTicker, IBlockPhysics, IBlockIntera
         if (world.GetMaterial(x, y, z + 1).IsSolid) return false;
 
         int blockBelowId = world.GetBlockId(x, y - 1, z);
-        return blockBelowId == BlockRegistry.Get("cactus").Id || blockBelowId == BlockRegistry.Get("sand").Id;
+        return blockBelowId == BlockRegistry.Get("cactus").id || blockBelowId == BlockRegistry.Get("sand").id;
     }
 }

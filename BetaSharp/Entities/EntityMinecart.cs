@@ -201,11 +201,11 @@ public class EntityMinecart : Entity, IInventory
                 }
             }
 
-            DropItem(BlockRegistry.Get("chest").Id, 1, 0.0F);
+            DropItem(BlockRegistry.Get("chest").id, 1, 0.0F);
         }
         else if (type == 2)
         {
-            DropItem(BlockRegistry.Get("furnace").Id, 1, 0.0F);
+            DropItem(BlockRegistry.Get("furnace").id, 1, 0.0F);
         }
 
         return true;
@@ -332,7 +332,7 @@ public class EntityMinecart : Entity, IInventory
             bool poweredRailActive = false;
             bool poweredRailBraking = false;
 
-            if (railBlockId == BlockRegistry.Get("powered_rail").Id)
+            if (railBlockId == BlockRegistry.Get("powered_rail").id)
             {
                 poweredRailActive = (railMeta & 8) != 0;
                 poweredRailBraking = !poweredRailActive;

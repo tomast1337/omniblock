@@ -27,7 +27,7 @@ internal sealed class SnowBehavior : IBlockPhysics, IBlockTicker, IBlockLifecycl
         };
         @event.World.Entities.SpawnEntity(entityItem);
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
+        @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
     }
 
     public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => s_snowballId;

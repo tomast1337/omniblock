@@ -21,16 +21,14 @@ public class Block
     public static readonly bool[] BlocksIgnoreMetaUpdate = new bool[256];
 
 
-    public readonly int Id;
-    public readonly Material Material;
+    public readonly int id;
+    public readonly Material material;
     private string[]? _blockAlias;
     private Func<BlockEntity>? _blockEntityFactory;
-    private string _blockName = "";
     private int _droppedItemMetaValue;
     private bool _dropsWithBlockMeta;
     private int?[]? _faceTextureIds;
     private bool _isFullCube = true;
-    private bool _isOpaque = true;
     private LootTable? _lootTable;
     private int _maxDroppedCount = 1;
     private int _minDroppedCount = 1;
@@ -40,10 +38,10 @@ public class Block
     private int _tickRate = 10;
     public Box BoundingBox;
     public float Hardness;
-    public float ParticleFallSpeedModifier;
-    public float Resistance;
+    public float particleFallSpeedModifier;
+    public float resistance;
     protected bool ShouldTrackStatistics;
-    public float Slipperiness;
+    public float slipperiness;
     public BlockSoundGroup SoundGroup;
     public int TextureId;
 
@@ -51,16 +49,16 @@ public class Block
     {
         ShouldTrackStatistics = true;
         SoundGroup = SoundPowderFootstep;
-        ParticleFallSpeedModifier = 1.0F;
-        Slipperiness = 0.6F;
+        particleFallSpeedModifier = 1.0F;
+        slipperiness = 0.6F;
         if (Blocks[id] != null)
         {
             throw new ArgumentException($"Slot {id} is already occupied by {Blocks[id]} when adding {this}", nameof(id));
         }
 
-        this.Material = material;
+        this.material = material;
         Blocks[id] = this;
-        this.Id = id;
+        this.id = id;
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         BlocksOpaque[id] = IsOpaque;
         BlockLightOpacity[id] = IsOpaque ? 255 : 0;
@@ -89,15 +87,15 @@ public class Block
 
     public IRedstoneComponent? Redstone { get; internal set; }
 
-    public virtual IReadOnlyList<string> GetBlockAlias => _blockAlias ?? [];
+    public IReadOnlyList<string> GetBlockAlias => _blockAlias ?? [];
 
     protected internal Block IgnoreMetaUpdates()
     {
-        BlocksIgnoreMetaUpdate[Id] = true;
+        BlocksIgnoreMetaUpdate[id] = true;
         return this;
     }
 
-    protected internal virtual void Init() => Lifecycle?.OnInit(this);
+    protected internal void Init() => Lifecycle?.OnInit(this);
 
     protected internal void setSoundGroup(BlockSoundGroup soundGroup)
     {
@@ -106,17 +104,17 @@ public class Block
 
     protected internal void setOpacity(int opacity)
     {
-        BlockLightOpacity[Id] = opacity;
+        BlockLightOpacity[id] = opacity;
     }
 
     protected internal void SetLuminance(float fractionalValue)
     {
-        BlocksLightLuminance[Id] = (int)(15.0F * fractionalValue);
+        BlocksLightLuminance[id] = (int)(15.0F * fractionalValue);
     }
 
     protected internal void SetResistance(float resistance)
     {
-        Resistance = resistance * 3.0F;
+        this.resistance = resistance * 3.0F;
     }
 
     protected internal void SetFaceTexture(Side side, int textureId)
@@ -151,9 +149,9 @@ public class Block
         return this;
     }
 
-    public virtual bool IsFullCube() => _isFullCube;
+    public bool IsFullCube() => _isFullCube;
 
-    public virtual BlockRendererType RenderType { get => _renderType; protected internal set => _renderType = value; }
+    public BlockRendererType RenderType { get => _renderType; protected internal set => _renderType = value; }
 
     protected internal Block SetNotFullCube()
     {
@@ -179,13 +177,13 @@ public class Block
     protected internal Block SetHardness(float hardness)
     {
         Hardness = hardness;
-        if (Resistance < hardness * 5.0F) Resistance = hardness * 5.0F;
+        if (resistance < hardness * 5.0F) resistance = hardness * 5.0F;
         return this;
     }
 
     protected internal void SetTickRandomly(bool tickRandomly)
     {
-        BlocksRandomTick[Id] = tickRandomly;
+        BlocksRandomTick[id] = tickRandomly;
     }
 
     public void SetBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
@@ -193,23 +191,23 @@ public class Block
         BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    public virtual float GetLuminance(ILightProvider? lighting, int x, int y, int z)
+    public float getLuminance(ILightProvider? lighting, int x, int y, int z)
     {
         float baseLuminance;
         if (lighting != null)
         {
-            baseLuminance = lighting.GetNaturalBrightness(x, y, z, BlocksLightLuminance[Id]);
+            baseLuminance = lighting.GetNaturalBrightness(x, y, z, BlocksLightLuminance[id]);
         }
         else
         {
-            int baseLum = BlocksLightLuminance[Id];
+            int baseLum = BlocksLightLuminance[id];
             baseLuminance = baseLum > 0 ? baseLum / 15.0f : 1.0f;
         }
 
         return Visuals?.GetLuminance(this, lighting!, x, y, z, baseLuminance) ?? baseLuminance;
     }
 
-    public virtual bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
+    public bool isSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         double minX = BoundingBox.MinX;
         double minY = BoundingBox.MinY;
@@ -233,31 +231,31 @@ public class Block
         return Visuals?.IsSideVisible(this, iBlockReader, x, y, z, side, baseVisibility) ?? baseVisibility;
     }
 
-    public virtual int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
+    public int GetTextureId(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         int baseTexture = GetTexture(side, iBlockReader.GetBlockMeta(x, y, z));
         return Visuals?.GetTextureId(this, iBlockReader, x, y, z, side, baseTexture) ?? baseTexture;
     }
 
-    public virtual int GetTexture(Side side, int meta)
+    public int GetTexture(Side side, int meta)
     {
         int baseTexture = GetTexture(side);
         return Visuals?.GetTexture(this, side, meta, baseTexture) ?? baseTexture;
     }
 
-    public virtual int GetTexture(Side side)
+    public int GetTexture(Side side)
     {
         int baseTexture = _faceTextureIds?[(int)side] ?? TextureId;
         return Visuals?.GetTexture(this, side, baseTexture) ?? baseTexture;
     }
 
-    public virtual Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public Box GetBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
-        UpdateBoundingBox(world, entities, x, y, z);
+        updateBoundingBox(world, entities, x, y, z);
         return BoundingBox.Offset(x, y, z);
     }
 
-    public virtual void AddIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
+    public void AddIntersectingBoundingBox(IBlockReader world, EntityManager entities, int x, int y, int z, Box box, List<Box> boxes)
     {
         if (Physics != null)
         {
@@ -276,64 +274,64 @@ public class Block
         }
     }
 
-    public virtual Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
+    public Box? GetCollisionShape(IBlockReader world, EntityManager entities, int x, int y, int z)
     {
-        UpdateBoundingBox(world, entities, x, y, z);
+        updateBoundingBox(world, entities, x, y, z);
         Box? defaultShape = HasCollisionBox ? BoundingBox.Offset(x, y, z) : null;
         return Physics == null ? defaultShape : Physics.GetCollisionShape(this, world, entities, x, y, z, defaultShape);
     }
 
-    public virtual bool IsOpaque
+    public bool IsOpaque
     {
-        get => Visuals?.IsOpaque(this, _isOpaque) ?? _isOpaque;
+        get => Visuals?.IsOpaque(this, field) ?? field;
         protected internal set
         {
             // The constructor seeds these two static caches from the default before Visuals
             // exists, so any later override must refresh them too, not just the backing field.
-            _isOpaque = value;
-            BlocksOpaque[Id] = value;
-            BlockLightOpacity[Id] = value ? 255 : 0;
+            field = value;
+            BlocksOpaque[id] = value;
+            BlockLightOpacity[id] = value ? 255 : 0;
         }
-    }
+    } = true;
 
-    public virtual bool HasCollision(int meta, bool allowLiquids) => Physics?.HasCollision(this, meta, allowLiquids, HasCollision()) ?? HasCollision();
+    public bool HasCollision(int meta, bool allowLiquids) => Physics?.HasCollision(this, meta, allowLiquids, HasCollision()) ?? HasCollision();
 
-    public virtual bool HasCollision() => Physics == null || Physics.HasCollision(this, true);
+    public bool HasCollision() => Physics == null || Physics.HasCollision(this, true);
 
     public void SetTicker(IBlockTicker ticker)
     {
         Ticker = ticker;
     }
 
-    public virtual void OnTick(OnTickEvent e) => Ticker?.OnTick(this, e);
+    public void OnTick(OnTickEvent e) => Ticker?.OnTick(this, e);
 
-    public virtual void RandomDisplayTick(OnTickEvent e) => Ticker?.RandomDisplayTick(this, e);
+    public void RandomDisplayTick(OnTickEvent e) => Ticker?.RandomDisplayTick(this, e);
 
-    public virtual void onMetadataChange(OnMetadataChangeEvent ctx) => Lifecycle?.OnMetadataChange(this, ctx);
+    public void onMetadataChange(OnMetadataChangeEvent ctx) => Lifecycle?.OnMetadataChange(this, ctx);
 
-    public virtual void NeighborUpdate(OnTickEvent e) => Physics?.NeighborUpdate(this, e);
+    public void NeighborUpdate(OnTickEvent e) => Physics?.NeighborUpdate(this, e);
 
-    public virtual int TickRate { get => _tickRate; protected internal set => _tickRate = value; }
+    public int TickRate { get => _tickRate; protected internal set => _tickRate = value; }
 
-    public virtual void OnPlaced(OnPlacedEvent e) => Lifecycle?.OnPlaced(this, e);
+    public void OnPlaced(OnPlacedEvent e) => Lifecycle?.OnPlaced(this, e);
 
-    public virtual void OnBreak(OnBreakEvent e) => Lifecycle?.OnBreak(this, e);
+    public void OnBreak(OnBreakEvent e) => Lifecycle?.OnBreak(this, e);
 
-    public virtual int GetDroppedItemCount()
+    public int GetDroppedItemCount()
     {
         int defaultCount = _minDroppedCount == _maxDroppedCount ? _minDroppedCount : _minDroppedCount + Random.Shared.Next(_maxDroppedCount - _minDroppedCount + 1);
         return Lifecycle?.GetDroppedItemCount(this, defaultCount) ?? defaultCount;
     }
 
-    public virtual int GetDroppedItemId(int blockMeta)
+    public int GetDroppedItemId(int blockMeta)
     {
-        int defaultId = _lootTable?.Roll(Random.Shared) ?? Id;
+        int defaultId = _lootTable?.Roll(Random.Shared) ?? id;
         return Lifecycle?.GetDroppedItemId(this, blockMeta, defaultId) ?? defaultId;
     }
 
     public float GetHardness(EntityPlayer player) => Hardness < 0.0F ? 0.0F : !player.CanHarvest(this) ? 1.0F / Hardness / 100.0F : player.GetBlockBreakingSpeed(this) / Hardness / 30.0F;
 
-    public virtual void DropStacks(OnDropEvent ctx)
+    public void DropStacks(OnDropEvent ctx)
     {
         if (!ctx.World.IsRemote && ctx.World.Rules.GetBool(DefaultRules.DoTileDrops))
         {
@@ -364,17 +362,17 @@ public class Block
         world.SpawnItemDrop(x + offsetX, y + offsetY, z + offsetZ, itemStack);
     }
 
-    protected virtual int GetDroppedItemMeta(int blockMeta)
+    protected int GetDroppedItemMeta(int blockMeta)
     {
         int defaultMeta = _dropsWithBlockMeta ? blockMeta : _droppedItemMetaValue;
         return Lifecycle?.GetDroppedItemMeta(this, blockMeta, defaultMeta) ?? defaultMeta;
     }
 
-    public virtual float GetBlastResistance(Entity entity) => Resistance / 5.0F;
+    public float GetBlastResistance(Entity entity) => resistance / 5.0F;
 
-    public virtual HitResult Raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
+    public HitResult Raycast(IBlockReader world, EntityManager entities, int x, int y, int z, Vec3D startPos, Vec3D endPos)
     {
-        UpdateBoundingBox(world, entities, x, y, z);
+        updateBoundingBox(world, entities, x, y, z);
         Vec3D pos = new(x, y, z);
         HitResult res = BoundingBox.Raycast(startPos - pos, endPos - pos);
         if (res.Type == HitResultType.MISS)
@@ -389,19 +387,19 @@ public class Block
         return res;
     }
 
-    public virtual void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event) => Lifecycle?.OnDestroyedByExplosion(this, @event);
+    public void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event) => Lifecycle?.OnDestroyedByExplosion(this, @event);
 
-    public virtual int RenderLayer { get => _renderLayer; protected internal set => _renderLayer = value; }
+    public int RenderLayer { get => _renderLayer; protected internal set => _renderLayer = value; }
 
     protected internal void SetSlipperiness(float slipperiness)
     {
-        Slipperiness = slipperiness;
+        this.slipperiness = slipperiness;
     }
 
-    public virtual bool CanPlaceAt(CanPlaceAtContext evt)
+    public bool CanPlaceAt(CanPlaceAtContext evt)
     {
         int blockId = evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z);
-        bool baseResult = blockId == 0 || Blocks[blockId].Material.IsReplaceable;
+        bool baseResult = blockId == 0 || Blocks[blockId].material.IsReplaceable;
         return Physics == null ? baseResult : baseResult && Physics.CanPlaceAt(this, evt);
     }
 
@@ -430,66 +428,68 @@ public class Block
         Redstone = redstone;
     }
 
-    public virtual bool onUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
+    public bool onUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
 
-    public virtual void onSteppedOn(OnEntityStepEvent @event) => Interactable?.OnSteppedOn(this, @event);
+    public void onSteppedOn(OnEntityStepEvent @event) => Interactable?.OnSteppedOn(this, @event);
 
-    public virtual void onBlockBreakStart(OnBlockBreakStartEvent @event) => Interactable?.OnBlockBreakStart(this, @event);
+    public void onBlockBreakStart(OnBlockBreakStartEvent @event) => Interactable?.OnBlockBreakStart(this, @event);
 
-    public virtual Vec3D ApplyVelocity(OnApplyVelocityEvent @event) => Physics?.ApplyVelocity(this, @event, Vec3D.Zero) ?? Vec3D.Zero;
+    public Vec3D ApplyVelocity(OnApplyVelocityEvent @event) => Physics?.ApplyVelocity(this, @event, Vec3D.Zero) ?? Vec3D.Zero;
 
-    public void UpdateBoundingBox(IBlockReader blockReader, int x, int y, int z) => UpdateBoundingBox(blockReader, null, x, y, z);
+    public void updateBoundingBox(IBlockReader blockReader, int x, int y, int z) => updateBoundingBox(blockReader, null, x, y, z);
 
-    public virtual void UpdateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Physics?.UpdateBoundingBox(this, blockReader, entities, x, y, z);
+    public void updateBoundingBox(IBlockReader blockReader, EntityManager? entities, int x, int y, int z) => Physics?.UpdateBoundingBox(this, blockReader, entities, x, y, z);
 
-    public virtual int getColor(int meta) => Visuals?.GetColor(this, meta, 0xFFFFFF) ?? 0xFFFFFF;
+    public int getColor(int meta) => Visuals?.GetColor(this, meta, 0xFFFFFF) ?? 0xFFFFFF;
 
-    public virtual int getColorForFace(int meta, int face)
+    public int getColorForFace(int meta, int face)
     {
         int baseColor = getColor(meta);
         return Visuals?.GetColorForFace(this, meta, face, baseColor) ?? baseColor;
     }
 
-    public virtual int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z) => Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, 0xFFFFFF) ?? 0xFFFFFF;
+    public int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z) => Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, 0xFFFFFF) ?? 0xFFFFFF;
 
-    public virtual int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
+    public int getColorMultiplier(IBlockReader iBlockReader, int x, int y, int z, int knownMeta)
     {
         int baseColor = getColorMultiplier(iBlockReader, x, y, z);
         return Visuals?.GetColorMultiplier(this, iBlockReader, x, y, z, knownMeta, baseColor) ?? baseColor;
     }
 
-    public virtual bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => Redstone != null && Redstone.IsPoweringSide(this, iBlockReader, x, y, z, side);
+    public bool isPoweringSide(IBlockReader iBlockReader, int x, int y, int z, int side) => Redstone != null && Redstone.IsPoweringSide(this, iBlockReader, x, y, z, side);
 
-    public virtual bool canEmitRedstonePower() => Redstone != null && Redstone.CanEmitRedstonePower(this);
+    public bool canEmitRedstonePower() => Redstone != null && Redstone.CanEmitRedstonePower(this);
 
-    public virtual bool isFlammable(IBlockReader iBlockReader, int x, int y, int z) => Physics != null && Physics.IsFlammable(this, iBlockReader, x, y, z, false);
+    public bool isFlammable(IBlockReader iBlockReader, int x, int y, int z) => Physics != null && Physics.IsFlammable(this, iBlockReader, x, y, z, false);
 
-    public virtual void onEntityCollision(OnEntityCollisionEvent @event) => Interactable?.OnEntityCollision(this, @event);
+    public void onEntityCollision(OnEntityCollisionEvent @event) => Interactable?.OnEntityCollision(this, @event);
 
-    public virtual bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => Redstone != null && Redstone.IsStrongPoweringSide(this, world, x, y, z, side);
+    public bool isStrongPoweringSide(IBlockReader world, int x, int y, int z, int side) => Redstone != null && Redstone.IsStrongPoweringSide(this, world, x, y, z, side);
 
-    public virtual void setupRenderBoundingBox() => Physics?.SetupRenderBoundingBox(this);
+    public void setupRenderBoundingBox() => Physics?.SetupRenderBoundingBox(this);
 
-    public virtual void onAfterBreak(OnAfterBreakEvent ctx)
+    public void onAfterBreak(OnAfterBreakEvent ctx)
     {
-        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[Id], 1);
+        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[id], 1);
         DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.Meta));
         Lifecycle?.OnAfterBreak(this, ctx);
     }
 
-    public virtual bool canGrow(OnTickEvent ctx) => Physics == null || Physics.CanGrow(this, ctx);
+    public bool canGrow(OnTickEvent ctx) => Physics == null || Physics.CanGrow(this, ctx);
 
-    public string BlockName { get => _blockName; set => _blockName = $"tile.{value}"; }
+    public string BlockName
+    {
+        get;
+        set => field = $"tile.{value}";
+    } = "";
 
-    public string TranslateBlockName() => Translations.Get($"{BlockName}.name");
+    public string translateBlockName() => Translations.Get($"{BlockName}.name");
 
-    private static Dictionary<string, int>? s_registryNameToId;
-
-    public virtual void onBlockAction(OnBlockActionEvent ctx) => Lifecycle?.OnBlockAction(this, ctx);
+    public void onBlockAction(OnBlockActionEvent ctx) => Lifecycle?.OnBlockAction(this, ctx);
 
     public bool EnableStats { get => ShouldTrackStatistics; protected internal set => ShouldTrackStatistics = value; }
 
-    public virtual PistonBehavior PistonBehavior => _pistonBehaviorOverride ?? Material.PistonBehavior;
+    public PistonBehavior PistonBehavior => _pistonBehaviorOverride ?? material.PistonBehavior;
 
     /// <summary>Overrides the material-derived piston behavior (e.g. plates are destroyed when pushed).</summary>
     protected internal void SetPistonBehavior(PistonBehavior behavior)
@@ -503,9 +503,9 @@ public class Block
     /// </summary>
     protected internal void SetHasTileEntity(Func<BlockEntity> factory)
     {
-        BlocksWithEntity[Id] = true;
+        BlocksWithEntity[id] = true;
         _blockEntityFactory = factory;
     }
 
-    public virtual BlockEntity? GetBlockEntity() => _blockEntityFactory?.Invoke();
+    public BlockEntity? GetBlockEntity() => _blockEntityFactory?.Invoke();
 }

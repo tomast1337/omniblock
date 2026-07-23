@@ -113,7 +113,7 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
     }
 
     private static bool CanPlaceOnGround(IBlockReader world, int x, int y, int z)
-        => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == BlockRegistry.Get("fence").Id;
+        => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == BlockRegistry.Get("fence").id;
 
     private static void OnLadderPlaced(OnPlacedEvent ctx)
     {

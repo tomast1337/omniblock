@@ -102,8 +102,8 @@ public static class FluidMath
 
     public static void CheckBlockCollisions(Block block, IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
-        if (reader.GetBlockId(x, y, z) != block.Id) return;
-        if (block.Material != Material.Lava) return;
+        if (reader.GetBlockId(x, y, z) != block.id) return;
+        if (block.material != Material.Lava) return;
 
         bool hasWaterAdjacent =
             reader.GetMaterial(x, y, z - 1) == Material.Water ||
@@ -117,14 +117,14 @@ public static class FluidMath
         int meta = reader.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
-            writer.SetBlock(x, y, z, BlockRegistry.Get("obsidian").Id);
+            writer.SetBlock(x, y, z, BlockRegistry.Get("obsidian").id);
             Fizz(broadcaster, x, y, z);
             return;
         }
 
         if (meta > 4) return;
 
-        writer.SetBlock(x, y, z, BlockRegistry.Get("cobblestone").Id);
+        writer.SetBlock(x, y, z, BlockRegistry.Get("cobblestone").id);
         Fizz(broadcaster, x, y, z);
     }
 
@@ -133,7 +133,7 @@ public static class FluidMath
     public static bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
     {
         Material mat = reader.GetMaterial(x, y, z);
-        return mat != block.Material && mat != Material.Ice && (side == Side.Up || defaultVisibility);
+        return mat != block.material && mat != Material.Ice && (side == Side.Up || defaultVisibility);
     }
 
     public static float GetLuminance(ILightProvider lighting, int x, int y, int z)
@@ -161,7 +161,7 @@ public static class FluidMath
 
     public static void RandomDisplayTick(Block block, OnTickEvent @event)
     {
-        if (block.Material == Material.Water && Random.Shared.Next(64) == 0)
+        if (block.material == Material.Water && Random.Shared.Next(64) == 0)
         {
             int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta is > 0 and < 8)
@@ -177,7 +177,7 @@ public static class FluidMath
             }
         }
 
-        if (block.Material != Material.Lava ||
+        if (block.material != Material.Lava ||
             @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z) != Material.Air ||
             @event.World.Reader.IsOpaque(@event.X, @event.Y + 1, @event.Z) || Random.Shared.Next(100) != 0)
         {

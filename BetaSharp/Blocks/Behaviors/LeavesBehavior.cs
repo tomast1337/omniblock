@@ -40,7 +40,7 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                 for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
                     int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != BlockRegistry.Get("leaves").Id)
+                    if (blockId != BlockRegistry.Get("leaves").id)
                     {
                         continue;
                     }
@@ -57,13 +57,13 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
         ItemStack? hand = ctx.Player.GetHand();
         if (ctx.World.IsRemote || hand == null || hand.ItemId != s_shearsId) return;
 
-        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
-        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(BlockRegistry.Get("leaves").Id, 1, ctx.Meta & 3));
+        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
+        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(BlockRegistry.Get("leaves").id, 1, ctx.Meta & 3));
     }
 
     public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => BlockRegistry.Get("sapling").Id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => BlockRegistry.Get("sapling").id;
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -86,11 +86,11 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                     for (int dy = -DecayRadius; dy <= DecayRadius; ++dy)
                     {
                         int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
-                        if (blockId == BlockRegistry.Get("log").Id)
+                        if (blockId == BlockRegistry.Get("log").id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
                         }
-                        else if (blockId == BlockRegistry.Get("leaves").Id)
+                        else if (blockId == BlockRegistry.Get("leaves").id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
                         }
@@ -180,7 +180,7 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
     public int GetTexture(Block block, Side side, int meta, int defaultTexture) => (meta & 3) == 1 ? defaultTexture + 80 : defaultTexture;
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
+        => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.id) && defaultVisibility;
 
     public bool IsOpaque(Block block, bool defaultOpaque) => !_graphicsLevel;
 

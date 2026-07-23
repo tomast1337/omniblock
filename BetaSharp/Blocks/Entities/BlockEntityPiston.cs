@@ -80,7 +80,7 @@ public class BlockEntityPiston : BlockEntity
 
     private void FinalizeBlock()
     {
-        if (World!.Reader.GetBlockId(X, Y, Z) == BlockRegistry.Get("moving_piston").Id)
+        if (World!.Reader.GetBlockId(X, Y, Z) == BlockRegistry.Get("moving_piston").id)
         {
             World!.Writer.SetBlock(X, Y, Z, PushedBlockId, PushedBlockData);
             if (!World!.IsRemote)
@@ -88,7 +88,7 @@ public class BlockEntityPiston : BlockEntity
                 World!.Broadcaster.NotifyNeighbors(X, Y, Z, PushedBlockId);
                 World!.Broadcaster.BlockUpdateEvent(X, Y, Z);
 
-                if (PushedBlockId == BlockRegistry.Get("piston").Id || PushedBlockId == BlockRegistry.Get("sticky_piston").Id)
+                if (PushedBlockId == BlockRegistry.Get("piston").id || PushedBlockId == BlockRegistry.Get("sticky_piston").id)
                 {
                     World!.TickScheduler.ScheduleBlockUpdate(X, Y, Z, PushedBlockId, 1);
                 }
