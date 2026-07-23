@@ -57,7 +57,7 @@ public class PlayerControllerMP : PlayerController
     {
         if (!_isHittingBlock || x != _targetBlockPos.X || y != _targetBlockPos.Y || z != _targetBlockPos.Z)
         {
-            _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(0, x, y, z, direction));
+            _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(PlayerActionC2SPacket.Actions.BlockClick, x, y, z, direction));
             int blockId = Game.World.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
@@ -66,9 +66,12 @@ public class PlayerControllerMP : PlayerController
 
             if (!Game.Player.GameMode.CanBreak) return;
 
-            if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.Player) >= Game.Player.GameMode.BrakeSpeed)
+            if (blockId > 0 && Block.Blocks[blockId].getHardness(Game.Player) >= Game.Player.GameMode.BreakSpeed)
             {
-                SendBlockRemoved(x, y, z, direction);
+                if (SendBlockRemoved(x, y, z, direction))
+                {
+                    Game.WorldRenderer.WorldEventBreak(blockId, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
+                }
             }
             else
             {
@@ -131,7 +134,7 @@ public class PlayerControllerMP : PlayerController
                     if (_curBlockDamageMp >= 1.0F)
                     {
                         _isHittingBlock = false;
-                        _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(2, x, y, z, direction));
+                        _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(PlayerActionC2SPacket.Actions.BlockBroken, x, y, z, direction));
                         if (SendBlockRemoved(x, y, z, direction))
                         {
                             Game.WorldRenderer.WorldEventBreak(blockId, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
@@ -163,8 +166,6 @@ public class PlayerControllerMP : PlayerController
             Game.WorldRenderer.DamagePartialTime = partialDamage;
         }
     }
-
-    public override float GetBlockReachDistance() => 4.0F;
 
     public override void UpdateController()
     {

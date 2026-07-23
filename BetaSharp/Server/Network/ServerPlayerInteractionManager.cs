@@ -49,7 +49,7 @@ public class ServerPlayerInteractionManager
             {
                 Block block = Block.Blocks[blockId];
                 float breakProgress = block.getHardness(player) * (miningTicks + 1);
-                if (breakProgress >= player.GameMode.BrakeSpeed)
+                if (breakProgress >= player.GameMode.BreakSpeed)
                 {
                     mining = false;
                     miningProgress = -1;
@@ -78,7 +78,7 @@ public class ServerPlayerInteractionManager
         }
 
         if (!player.GameMode.CanBreak) return;
-        if (blockId > 0 && Block.Blocks[blockId].getHardness(player) >= player.GameMode.BrakeSpeed)
+        if (blockId > 0 && Block.Blocks[blockId].getHardness(player) >= player.GameMode.BreakSpeed)
         {
             tryBreakBlock(x, y, z);
             miningProgress = -1;
@@ -102,7 +102,7 @@ public class ServerPlayerInteractionManager
             {
                 Block block = Block.Blocks[blockId];
                 float breakProgress = block.getHardness(player) * (ticksSinceFailedStart + 1) + miningProgress;
-                if (breakProgress >= player.GameMode.BrakeSpeed)
+                if (breakProgress >= player.GameMode.BreakSpeed)
                 {
                     tryBreakBlock(x, y, z);
                     miningProgress = -1;
@@ -119,19 +119,6 @@ public class ServerPlayerInteractionManager
                 }
             }
         }
-    }
-
-    public bool finishMining(int x, int y, int z)
-    {
-        Block block = Block.Blocks[world.Reader.GetBlockId(x, y, z)];
-        int blockMeta = world.Reader.GetBlockMeta(x, y, z);
-        bool success = world.Writer.SetBlock(x, y, z, 0);
-        if (block != null && success)
-        {
-            block.onMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
-        }
-
-        return success;
     }
 
     public void UpdateMiningTool()
@@ -156,16 +143,22 @@ public class ServerPlayerInteractionManager
 
         int blockId = world.Reader.GetBlockId(x, y, z);
         int blockMeta = world.Reader.GetBlockMeta(x, y, z);
-        world.Broadcaster.WorldEvent(player, 2001, x, y, z, blockId + world.Reader.GetBlockMeta(x, y, z) * 256);
-        bool success = finishMining(x, y, z);
+        world.Broadcaster.WorldEvent(player, 2001, x, y, z, blockId + blockMeta * 256);
 
-        if (success && player.GameMode.BlockDrops && player.CanHarvest(Block.Blocks[blockId]))
+        Block? block = Block.Blocks[blockId];
+        bool success = world.Writer.SetBlock(x, y, z, 0);
+        if (block != null && success)
         {
-            Block.Blocks[blockId].onAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
-            ((ServerPlayerEntity)player).NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            block.onMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
+
+            if (player.GameMode.BlockDrops && player.CanHarvest(block))
+            {
+                block.onAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
+                ((ServerPlayerEntity)player).NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            }
         }
 
-        ItemStack itemStack = player.GetHand();
+        ItemStack? itemStack = player.GetHand();
         if (itemStack != null)
         {
             itemStack.postMine(blockId, x, y, z, player);

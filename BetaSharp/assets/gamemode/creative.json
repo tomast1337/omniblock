@@ -1,5 +1,7 @@
 {
-    "BrakeSpeed": 0,
+    "BlockReach": 6,
+    "BreakSpeed": 0,
+    "EntityReach": 4,
     "BlockDrops": false,
     "CanBeTargeted": false,
     "CanBreak": true,

@@ -8,6 +8,8 @@ public class PlayerActionC2SPacket() : Packet(PacketId.PlayerActionC2S)
     public int Y { get; private set; }
     public int Z { get; private set; }
 
+    public static PlayerActionC2SPacket Get(Actions action, int x, int y, int z, int direction) =>
+        Get((int)action, x, y, z, direction);
     public static PlayerActionC2SPacket Get(int action, int x, int y, int z, int direction)
     {
         PlayerActionC2SPacket p = Get<PlayerActionC2SPacket>(PacketId.PlayerActionC2S);
@@ -40,4 +42,11 @@ public class PlayerActionC2SPacket() : Packet(PacketId.PlayerActionC2S)
     public override void Apply(NetHandler handler) => handler.handlePlayerAction(this);
 
     public override int Size() => 11;
+
+    public enum Actions
+    {
+        BlockClick = 0,
+        BlockBroken = 2,
+        DropSelectedItem = 4,
+    }
 }
