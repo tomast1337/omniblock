@@ -34,7 +34,7 @@ public sealed class BlockInteractionTests
         world.ReaderWriter.SetInitial(0, 64, -1, BlockRegistry.Get("tnt").Id);
 
         // Act 1
-        BlockRegistry.Get("lever").OnUse(new OnUseEvent(world, null!, 0, 64, 2));
+        BlockRegistry.Get("lever").onUse(new OnUseEvent(world, null!, 0, 64, 2));
         simulation.EnqueueInstantUpdate(0, 64, 1, BlockRegistry.Get("lever").Id);
         simulation.EnqueueInstantUpdate(0, 64, 0, BlockRegistry.Get("redstone_wire").Id);
         simulation.ProcessInstantQueue();
@@ -100,7 +100,7 @@ public sealed class BlockInteractionTests
         world.Entities.SetBlockEntity(2, 64, 0, note);
 
         // Act 1
-        BlockRegistry.Get("button").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        BlockRegistry.Get("button").onUse(new OnUseEvent(world, null!, 0, 64, 0));
         simulation.EnqueueInstantUpdate(1, 64, 0, BlockRegistry.Get("button").Id);
         simulation.EnqueueInstantUpdate(2, 64, 0, BlockRegistry.Get("redstone_wire").Id);
         simulation.ProcessInstantQueue();

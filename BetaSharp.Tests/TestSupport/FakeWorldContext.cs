@@ -143,7 +143,7 @@ public sealed class TestWorldEventBroadcaster(IWorldContext ctx, World world) : 
         int blockId = ctx.Reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
-            Block.Blocks[blockId].OnBlockAction(new OnBlockActionEvent(ctx, soundType, pitch, x, y, z));
+            Block.Blocks[blockId].onBlockAction(new OnBlockActionEvent(ctx, soundType, pitch, x, y, z));
         }
     }
 }

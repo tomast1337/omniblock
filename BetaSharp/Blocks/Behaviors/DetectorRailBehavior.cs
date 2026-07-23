@@ -67,7 +67,7 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
 
         if (hasMinecart)
         {
-            context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.GetTickRate());
+            context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
         }
     }
 }

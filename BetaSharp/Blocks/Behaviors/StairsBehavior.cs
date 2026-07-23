@@ -48,8 +48,6 @@ internal sealed class StairsBehavior : IBlockPhysics, IBlockLifecycle, IBlockVis
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
     }
 
-    // ── IBlockPhysics ─────────────────────────────────────────────
-
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
         => block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 

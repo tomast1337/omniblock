@@ -48,7 +48,7 @@ internal sealed class TNTBehavior : IBlockPhysics, IBlockLifecycle, IBlockIntera
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].canEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
             return;
 
         Ignite(block, @event.World, @event.X, @event.Y, @event.Z);

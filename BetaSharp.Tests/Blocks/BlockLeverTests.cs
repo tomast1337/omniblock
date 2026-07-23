@@ -11,10 +11,10 @@ public sealed class BlockLeverTests
         world.ReaderWriter.SetInitial(-1, 64, 0, BlockRegistry.Get("stone").Id); // support for facing=1
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").Id, 1);
 
-        bool firstUse = BlockRegistry.Get("lever").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        bool firstUse = BlockRegistry.Get("lever").onUse(new OnUseEvent(world, null!, 0, 64, 0));
         int poweredMeta = world.Reader.GetBlockMeta(0, 64, 0);
 
-        bool secondUse = BlockRegistry.Get("lever").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        bool secondUse = BlockRegistry.Get("lever").onUse(new OnUseEvent(world, null!, 0, 64, 0));
         int unpoweredMeta = world.Reader.GetBlockMeta(0, 64, 0);
 
         Assert.True(firstUse);
@@ -30,8 +30,8 @@ public sealed class BlockLeverTests
         world.ReaderWriter.SetInitial(-1, 64, 0, BlockRegistry.Get("stone").Id);
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").Id, 9); // facing=1, powered
 
-        bool strongPowerOnAttachedSide = BlockRegistry.Get("lever").IsStrongPoweringSide(world.Reader, 0, 64, 0, 5);
-        bool strongPowerOnOtherSide = BlockRegistry.Get("lever").IsStrongPoweringSide(world.Reader, 0, 64, 0, 4);
+        bool strongPowerOnAttachedSide = BlockRegistry.Get("lever").isStrongPoweringSide(world.Reader, 0, 64, 0, 5);
+        bool strongPowerOnOtherSide = BlockRegistry.Get("lever").isStrongPoweringSide(world.Reader, 0, 64, 0, 4);
 
         Assert.True(strongPowerOnAttachedSide);
         Assert.False(strongPowerOnOtherSide);

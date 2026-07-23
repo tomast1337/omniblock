@@ -86,7 +86,7 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
         {
             Block block = Block.Blocks[id];
             string t = block.TranslateBlockName();
-            name = !string.IsNullOrWhiteSpace(t) ? t : block.GetBlockName();
+            name = !string.IsNullOrWhiteSpace(t) ? t : block.BlockName;
         }
 
         string sideName = side.ToString();

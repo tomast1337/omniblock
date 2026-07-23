@@ -311,7 +311,7 @@ public class ParticleManager
 
         if (!(block == BlockRegistry.Get("grass_block") && texIndex != 0))
         {
-            int color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
+            int color = block.getColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= (color >> 16 & 255) / 255.0f;
             g *= (color >> 8 & 255) / 255.0f;
             b *= (color & 255) / 255.0f;
@@ -339,7 +339,7 @@ public class ParticleManager
 
         if (!(block == BlockRegistry.Get("grass_block") && texIndex != 0))
         {
-            int color = block.GetColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
+            int color = block.getColorMultiplier(worldObj.Reader, blockX, blockY, blockZ, meta);
             r *= (color >> 16 & 255) / 255.0f;
             g *= (color >> 8 & 255) / 255.0f;
             b *= (color & 255) / 255.0f;

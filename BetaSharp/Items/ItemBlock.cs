@@ -99,7 +99,7 @@ internal class ItemBlock : Item
         return false;
     }
 
-    public override string getItemNameIS(ItemStack itemStack) => Block.Blocks[blockID].GetBlockName();
+    public override string getItemNameIS(ItemStack itemStack) => Block.Blocks[blockID].BlockName;
 
-    public override string getItemName() => Block.Blocks[blockID].GetBlockName();
+    public override string getItemName() => Block.Blocks[blockID].BlockName;
 }

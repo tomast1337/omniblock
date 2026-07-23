@@ -121,7 +121,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
-            Block.Blocks[blockId].OnBlockAction(new OnBlockActionEvent(worldContext, soundType, pitch, x, y, z));
+            Block.Blocks[blockId].onBlockAction(new OnBlockActionEvent(worldContext, soundType, pitch, x, y, z));
         }
 
         for (int i = 0; i < eventListeners.Count; ++i)

@@ -77,7 +77,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public bool IsOpaque(int x, int y, int z)
     {
         Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.IsOpaque();
+        return block != null && block.IsOpaque;
     }
 
     public int GetBlockMeta(int x, int y, int z)

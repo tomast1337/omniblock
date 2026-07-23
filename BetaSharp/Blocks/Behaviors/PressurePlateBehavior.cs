@@ -118,7 +118,7 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
 
         if (shouldBePressed)
         {
-            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.GetTickRate());
+            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
         }
     }
 }

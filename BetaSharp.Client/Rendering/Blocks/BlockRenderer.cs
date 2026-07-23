@@ -31,7 +31,7 @@ public class BlockRenderer
 
     public static bool RenderBlockByRenderType(IBlockReader world, ILightProvider lighting, Block block, BlockPos pos, Tessellator tess, int overrideTexture = -1, bool renderAllFaces = false, bool doVariance = false)
     {
-        BlockRendererType type = block.GetRenderType();
+        BlockRendererType type = block.RenderType;
 
         block.UpdateBoundingBox(world, pos.x, pos.y, pos.z);
 
@@ -100,7 +100,7 @@ public class BlockRenderer
 
     public static void RenderBlockOnInventory(Block block, int metadata, float brightness, Tessellator tess)
     {
-        BlockRendererType renderType = block.GetRenderType();
+        BlockRendererType renderType = block.RenderType;
         var uiCtx = new BlockRenderContext(
             blockReader: NullBlockReader.Instance,
             tess: tess,
@@ -119,7 +119,7 @@ public class BlockRenderer
 
             void SetFaceColor(int face)
             {
-                int c = block.GetColorForFace(metadata, face);
+                int c = block.getColorForFace(metadata, face);
                 GLManager.GL.Color4(
                     (c >> 16 & 255) / 255.0F * brightness,
                     (c >> 8 & 255) / 255.0F * brightness,
@@ -127,7 +127,7 @@ public class BlockRenderer
                     1.0F);
             }
 
-            block.SetupRenderBoundingBox();
+            block.setupRenderBoundingBox();
             GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
 
             tess.startDrawingQuads();
@@ -175,7 +175,7 @@ public class BlockRenderer
         }
         else
         {
-            int color = block.GetColor(metadata);
+            int color = block.getColor(metadata);
             GLManager.GL.Color4(
                 (color >> 16 & 255) / 255.0F * brightness,
                 (color >> 8 & 255) / 255.0F * brightness,

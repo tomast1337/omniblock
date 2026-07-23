@@ -15,7 +15,7 @@ public sealed class BlockNoteTests
         BlockEntityNote noteEntity = new();
         world.Entities.SetBlockEntity(0, 64, 0, noteEntity);
 
-        bool handled = BlockRegistry.Get("noteblock").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        bool handled = BlockRegistry.Get("noteblock").onUse(new OnUseEvent(world, null!, 0, 64, 0));
 
         Assert.True(handled);
         Assert.Equal(1, noteEntity.note);

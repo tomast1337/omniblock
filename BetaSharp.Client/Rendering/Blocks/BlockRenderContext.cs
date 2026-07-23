@@ -494,7 +494,7 @@ public ref struct BlockRenderContext
         bool hasRendered = false;
         Box bounds = OverrideBounds ?? block.BoundingBox;
 
-        int colorMultiplier = block.GetColorMultiplier(BlockReader, pos.x, pos.y, pos.z);
+        int colorMultiplier = block.getColorMultiplier(BlockReader, pos.x, pos.y, pos.z);
         float r = (colorMultiplier >> 16 & 255) * 0.0039215686F;
         float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
         float b = (colorMultiplier & 255) * 0.0039215686F;

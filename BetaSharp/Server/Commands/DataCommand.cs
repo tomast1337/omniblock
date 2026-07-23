@@ -255,7 +255,7 @@ public class DataCommand : Command.Command
     private static void LogEntity(BlockEntity e, ICommandOutput output)
     {
         output.SendMessage("type: " + e.GetType().Name);
-        output.SendMessage("name: " + e.GetBlock().GetBlockName());
+        output.SendMessage("name: " + e.GetBlock().BlockName);
         output.SendMessage($"pos: {e.X} {e.Y} {e.Z}");
         output.SendMessage("removed: " + e.IsRemoved());
 

@@ -73,8 +73,6 @@ public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IB
         }
     }
 
-    // ── IBlockVisuals ─────────────────────────────────────────────
-
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {
         Side facing = GetFacing(meta);

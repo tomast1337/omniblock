@@ -87,7 +87,7 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
             @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
         }
         else if (block.Id > 0 &&
-                 Block.Blocks[block.Id].CanEmitRedstonePower() &&
+                 Block.Blocks[block.Id].canEmitRedstonePower() &&
                  !_isPoweredTrack &&
                  new TrackLogic(@event.World, new Vec3i(@event.X, @event.Y, @event.Z)).GetAdjacentTracks() == 3)
         {
@@ -186,8 +186,6 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 
     /// <summary>True for powered/detector rail: straight+ramp shapes only, no corners.</summary>
     public static bool IsAlwaysStraight(Block block) => block.Physics is RailBehavior { _isPoweredTrack: true };
-
-    // ── Track shape solver ────────────────────────────────────────
 
     /// <summary>
     ///     Computes the metadata (0-9) representing which two neighbors a rail piece connects to,

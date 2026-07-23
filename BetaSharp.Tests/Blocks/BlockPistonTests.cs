@@ -46,7 +46,7 @@ public sealed class BlockPistonTests
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("piston").Id, 13); // facing +X, extended
         world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("piston_head").Id, 5);
 
-        BlockRegistry.Get("piston").OnBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
+        BlockRegistry.Get("piston").onBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
 
         Assert.Equal(BlockRegistry.Get("moving_piston").Id, world.Reader.GetBlockId(0, 64, 0));
         Assert.NotNull(world.Entities.GetBlockEntity<BlockEntityPiston>(0, 64, 0));
@@ -71,7 +71,7 @@ public sealed class BlockPistonTests
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("moving_piston").Id);
 
-        bool handled = BlockRegistry.Get("moving_piston").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        bool handled = BlockRegistry.Get("moving_piston").onUse(new OnUseEvent(world, null!, 0, 64, 0));
 
         Assert.True(handled);
         Assert.Equal(0, world.Reader.GetBlockId(0, 64, 0));
@@ -85,7 +85,7 @@ public sealed class BlockPistonTests
         world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("piston_head").Id, 5);
         world.ReaderWriter.SetInitial(2, 64, 0, BlockRegistry.Get("stone").Id);
 
-        BlockRegistry.Get("sticky_piston").OnBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
+        BlockRegistry.Get("sticky_piston").onBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
 
         Assert.Equal(BlockRegistry.Get("moving_piston").Id, world.Reader.GetBlockId(0, 64, 0)); // retracting base
         Assert.Equal(0, world.Reader.GetBlockId(2, 64, 0)); // source cleared
@@ -107,7 +107,7 @@ public sealed class BlockPistonTests
         world.ReaderWriter.SetInitial(2, 64, 0, BlockRegistry.Get("moving_piston").Id);
         world.Entities.SetBlockEntity(2, 64, 0, PistonMovingBehavior.CreatePistonBlockEntity(BlockRegistry.Get("stone").Id, 0, 5, true, false));
 
-        BlockRegistry.Get("sticky_piston").OnBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
+        BlockRegistry.Get("sticky_piston").onBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
 
         Assert.Equal(BlockRegistry.Get("stone").Id, world.Reader.GetBlockId(2, 64, 0)); // extension finalized to static block
         Assert.Equal(0, world.Reader.GetBlockId(1, 64, 0)); // sticky spit clears head space
@@ -168,7 +168,7 @@ public sealed class BlockPistonTests
         world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("piston_head").Id, 5);
         world.ReaderWriter.SetInitial(2, 64, 0, BlockRegistry.Get("door").Id); // piston behavior 1 => not pullable
 
-        BlockRegistry.Get("sticky_piston").OnBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
+        BlockRegistry.Get("sticky_piston").onBlockAction(new OnBlockActionEvent(world, 1, 5, 0, 64, 0));
 
         Assert.Equal(BlockRegistry.Get("moving_piston").Id, world.Reader.GetBlockId(0, 64, 0)); // base retract animation
         Assert.Equal(0, world.Reader.GetBlockId(1, 64, 0)); // head removed

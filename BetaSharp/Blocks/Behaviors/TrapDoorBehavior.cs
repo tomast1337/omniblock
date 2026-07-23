@@ -116,8 +116,6 @@ internal sealed class TrapDoorBehavior : IBlockPhysics, IBlockInteractable, IBlo
         }
     }
 
-    // ── Redstone ──────────────────────────────────────────────────
-
     private static void SetOpen(OnTickEvent ctx, bool open)
     {
         if (ctx.World.IsRemote) return;

@@ -54,16 +54,14 @@ internal sealed class ReedBehavior : IBlockTicker, IBlockPhysics
     {
         int blockBelowId = reader.GetBlockId(x, y - 1, z);
 
-        // Can always place on self.
         if (blockBelowId == selfId) return true;
 
-        // Valid block below.
         if (blockBelowId != BlockRegistry.Get("grass_block").Id &&
             blockBelowId != BlockRegistry.Get("dirt").Id &&
             blockBelowId != BlockRegistry.Get("sand").Id &&
             blockBelowId != BlockRegistry.Get("gravel").Id) return false;
 
-        // Water adjacent.
+        // Soil alone isn't enough — reeds also need water in one of the four adjacent tiles.
         return reader.GetMaterial(x - 1, y - 1, z) == Material.Water ||
                reader.GetMaterial(x + 1, y - 1, z) == Material.Water ||
                reader.GetMaterial(x, y - 1, z - 1) == Material.Water ||

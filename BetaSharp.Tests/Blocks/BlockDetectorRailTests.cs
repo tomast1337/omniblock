@@ -31,7 +31,7 @@ public sealed class BlockDetectorRailTests
         EntityMinecart cart = new(world, 8.5D, 64.0D, 8.5D, 0);
         world.Entities.SpawnEntity(cart);
 
-        BlockRegistry.Get("detector_rail").OnEntityCollision(new OnEntityCollisionEvent(world, cart, 8, 64, 8));
+        BlockRegistry.Get("detector_rail").onEntityCollision(new OnEntityCollisionEvent(world, cart, 8, 64, 8));
 
         Assert.NotEqual(0, world.Reader.GetBlockMeta(8, 64, 8) & 8);
         Assert.Contains(world.TickSchedulerSpy.ScheduledTicks, t =>

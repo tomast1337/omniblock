@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     items) on tick or neighbor change when it can no longer grow — the block below was
 ///     removed or the light is gone. Assign to both the Ticker and Physics slots.
 ///     <para>
-///         The break check goes through the virtual <see cref="Block.CanGrow" />, so subclasses with
+///         The break check goes through the virtual <see cref="Block.canGrow" />, so subclasses with
 ///         custom growth rules (mushrooms' darkness requirement) keep them.
 ///     </para>
 /// </summary>
@@ -37,7 +37,7 @@ public sealed class PlantSurvivalBehavior : IBlockTicker, IBlockPhysics
 
     public static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {
-        if (block.CanGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z)))) return;
+        if (block.canGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z)))) return;
 
         block.DropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));
         level.Writer.SetBlock(x, y, z, 0);

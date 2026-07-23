@@ -34,7 +34,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
-            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower())
+            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower())
             {
                 int bottomMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
                 NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y - 1, @event.Z, bottomMeta, @event.BlockId));
@@ -67,7 +67,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
                     block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
                 }
             }
-            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower())
+            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower())
             {
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                                  @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
@@ -108,7 +108,6 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
         int meta = world.Reader.GetBlockMeta(x, y, z);
         int doorId = block.Id;
 
-        // If this is the top half, find the bottom half.
         if ((meta & 8) != 0)
         {
             if (world.Reader.GetBlockId(x, y - 1, z) == doorId)
@@ -122,7 +121,6 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
             }
         }
 
-        // Toggle the top half too if it exists.
         if (world.Reader.GetBlockId(x, y + 1, z) == doorId)
         {
             if (world.IsRemote)

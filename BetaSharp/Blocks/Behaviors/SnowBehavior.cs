@@ -52,7 +52,7 @@ internal sealed class SnowBehavior : IBlockPhysics, IBlockTicker, IBlockLifecycl
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
     {
         int blockBelowId = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z);
-        return blockBelowId != 0 && Block.Blocks[blockBelowId].IsOpaque() && @event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z).BlocksMovement;
+        return blockBelowId != 0 && Block.Blocks[blockBelowId].IsOpaque && @event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z).BlocksMovement;
     }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)

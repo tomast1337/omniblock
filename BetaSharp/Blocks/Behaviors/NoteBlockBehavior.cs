@@ -58,7 +58,7 @@ public sealed class NoteBlockBehavior : IBlockInteractable, IBlockLifecycle, IBl
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (!(@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower()))
+        if (!(@event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower()))
         {
             return;
         }

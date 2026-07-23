@@ -130,7 +130,7 @@ internal class ChunkMeshGenerator : IDisposable
                         if (id <= 0) continue;
 
                         Block b = Block.Blocks[id];
-                        int blockPass = b.GetRenderLayer();
+                        int blockPass = b.RenderLayer;
 
                         if (blockPass != pass)
                         {

@@ -40,8 +40,6 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
         NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
     }
 
-    // ---- IBlockPhysics ----
-
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
@@ -275,7 +273,7 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
             return true;
         }
 
-        if (blockId != BlockRegistry.Get("repeater").Id && blockId != BlockRegistry.Get("powered_repeater").Id) return Block.Blocks[blockId].CanEmitRedstonePower();
+        if (blockId != BlockRegistry.Get("repeater").Id && blockId != BlockRegistry.Get("powered_repeater").Id) return Block.Blocks[blockId].canEmitRedstonePower();
         if (direction < 0) return false;
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;

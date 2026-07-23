@@ -17,12 +17,12 @@ internal static class BlockFactory
         block.SetHardness(def.Hardness).SetResistance(def.Resistance);
         // Must run before the explicit Opacity override below, so an explicit value
         // (rare, but distinct from "just non-opaque") still wins if both are set.
-        if (def.NonOpaque) block.SetNonOpaque();
+        if (def.NonOpaque) block.IsOpaque = false;
         if (def.Luminance > 0) block.SetLuminance(def.Luminance);
         if (def.Opacity >= 0) block.setOpacity(def.Opacity);
         if (def.TickRandomly) block.SetTickRandomly(true);
         if (def.IgnoreMetaUpdates) block.IgnoreMetaUpdates();
-        if (!def.TrackStatistics) block.DisableStats();
+        if (!def.TrackStatistics) block.EnableStats = false;
         if (def.SoundGroup is { } sg) block.setSoundGroup(SoundGroupRegistry.Get(sg));
         if (def.FaceTextures is { } faces)
         {
@@ -33,12 +33,12 @@ internal static class BlockFactory
         }
 
         block.SetVariance(def.TopVariance, def.BottomVariance, def.SideVariance);
-        block.SetRenderType(Enum.Parse<BlockRendererType>(def.RenderType, true));
-        block.SetRenderLayer(def.RenderLayer);
-        block.SetTickRate(def.TickRate);
+        block.RenderType = Enum.Parse<BlockRendererType>(def.RenderType, true);
+        block.RenderLayer = def.RenderLayer;
+        block.TickRate = def.TickRate;
         block.SetSlipperiness(def.Slipperiness);
         if (def.NotFullCube) block.SetNotFullCube();
-        if (def.NoCollision) block.SetNoCollision();
+        if (def.NoCollision) block.HasCollisionBox = false;
         if (def.BoundingBox is { } box)
         {
             block.SetBoundingBox(box.MinX, box.MinY, box.MinZ, box.MaxX, box.MaxY, box.MaxZ);
@@ -53,7 +53,7 @@ internal static class BlockFactory
         if (def.PreservesMetaOnDrop) block.preserveMetaOnDrop();
         if (def.BlockAlias is { Length: > 0 } aliases) block.SetBlockAlias(aliases);
 
-        block.SetBlockName(def.TranslationKey ?? def.Name);
+        block.BlockName = def.TranslationKey ?? def.Name;
 
         return block;
     }
@@ -77,22 +77,22 @@ internal static class BlockFactory
             switch (slot)
             {
                 case "Ticker":
-                    block.SetTicker((IBlockTicker)behavior);
+                    block.Ticker = (IBlockTicker)behavior;
                     break;
                 case "Physics":
-                    block.SetPhysics((IBlockPhysics)behavior);
+                    block.Physics = (IBlockPhysics)behavior;
                     break;
                 case "Lifecycle":
-                    block.SetLifecycle((IBlockLifecycle)behavior);
+                    block.Lifecycle = (IBlockLifecycle)behavior;
                     break;
                 case "Visuals":
-                    block.SetVisuals((IBlockVisuals)behavior);
+                    block.Visuals = (IBlockVisuals)behavior;
                     break;
                 case "Interactable":
-                    block.SetInteractable((IBlockInteractable)behavior);
+                    block.Interactable = (IBlockInteractable)behavior;
                     break;
                 case "Redstone":
-                    block.SetRedstone((IRedstoneComponent)behavior);
+                    block.Redstone = (IRedstoneComponent)behavior;
                     break;
                 default:
                     throw new ArgumentException($"Unknown behavior slot '{slot}'.");

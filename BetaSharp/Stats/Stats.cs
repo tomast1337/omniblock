@@ -97,7 +97,7 @@ public static class Stats
 
         for (int i = 0; i < 256; ++i)
         {
-            if (Block.Blocks[i] != null && Block.Blocks[i].GetEnableStats())
+            if (Block.Blocks[i] != null && Block.Blocks[i].EnableStats)
             {
                 string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Block.Blocks[i].TranslateBlockName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();

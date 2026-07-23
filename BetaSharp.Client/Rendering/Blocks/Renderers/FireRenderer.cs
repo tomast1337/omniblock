@@ -23,7 +23,7 @@ public class FireRenderer : IBlockRenderer
         float fireHeight = 1.4F;
 
         // If not on a solid/flammable floor, render climbing flames on walls
-        if (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y - 1, pos.z) && !BlockRegistry.Get("fire").IsFlammable(ctx.BlockReader, pos.x, pos.y - 1, pos.z))
+        if (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y - 1, pos.z) && !BlockRegistry.Get("fire").isFlammable(ctx.BlockReader, pos.x, pos.y - 1, pos.z))
         {
             float sideInset = 0.2F;
             float yOffset = 1.0F / 16.0F;
@@ -41,7 +41,7 @@ public class FireRenderer : IBlockRenderer
             }
 
             // Climbing West Wall
-            if (BlockRegistry.Get("fire").IsFlammable(ctx.BlockReader, pos.x - 1, pos.y, pos.z))
+            if (BlockRegistry.Get("fire").isFlammable(ctx.BlockReader, pos.x - 1, pos.y, pos.z))
             {
                 ctx.Tess.addVertexWithUV(pos.x + sideInset, pos.y + fireHeight + yOffset, pos.z + 1, maxU, minV);
                 ctx.Tess.addVertexWithUV(pos.x, pos.y + yOffset, pos.z + 1, maxU, maxV);
@@ -55,7 +55,7 @@ public class FireRenderer : IBlockRenderer
             }
 
             // Climbing East Wall
-            if (BlockRegistry.Get("fire").IsFlammable(ctx.BlockReader, pos.x + 1, pos.y, pos.z))
+            if (BlockRegistry.Get("fire").isFlammable(ctx.BlockReader, pos.x + 1, pos.y, pos.z))
             {
                 ctx.Tess.addVertexWithUV(pos.x + 1 - sideInset, pos.y + fireHeight + yOffset, pos.z, minU, minV);
                 ctx.Tess.addVertexWithUV(pos.x + 1, pos.y + yOffset, pos.z, minU, maxV);
@@ -69,7 +69,7 @@ public class FireRenderer : IBlockRenderer
             }
 
             // Climbing North Wall
-            if (BlockRegistry.Get("fire").IsFlammable(ctx.BlockReader, pos.x, pos.y, pos.z - 1))
+            if (BlockRegistry.Get("fire").isFlammable(ctx.BlockReader, pos.x, pos.y, pos.z - 1))
             {
                 ctx.Tess.addVertexWithUV(pos.x, pos.y + fireHeight + yOffset, pos.z + sideInset, maxU, minV);
                 ctx.Tess.addVertexWithUV(pos.x, pos.y + yOffset, pos.z, maxU, maxV);
@@ -83,7 +83,7 @@ public class FireRenderer : IBlockRenderer
             }
 
             // Climbing South Wall
-            if (BlockRegistry.Get("fire").IsFlammable(ctx.BlockReader, pos.x, pos.y, pos.z + 1))
+            if (BlockRegistry.Get("fire").isFlammable(ctx.BlockReader, pos.x, pos.y, pos.z + 1))
             {
                 ctx.Tess.addVertexWithUV(pos.x + 1, pos.y + fireHeight + yOffset, pos.z + 1 - sideInset, minU, minV);
                 ctx.Tess.addVertexWithUV(pos.x + 1, pos.y + yOffset, pos.z + 1, minU, maxV);
@@ -97,7 +97,7 @@ public class FireRenderer : IBlockRenderer
             }
 
             // Climbing Ceilings
-            if (BlockRegistry.Get("fire").IsFlammable(ctx.BlockReader, pos.x, pos.y + 1, pos.z))
+            if (BlockRegistry.Get("fire").isFlammable(ctx.BlockReader, pos.x, pos.y + 1, pos.z))
             {
                 float xMax = pos.x + 1, xMin = pos.x;
                 float zMax = pos.z + 1, zMin = pos.z;

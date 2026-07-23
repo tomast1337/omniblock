@@ -24,7 +24,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         int placedId = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z);
         if (placedId == block.Id && !@event.World.IsRemote)
         {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
         }
     }
 
@@ -37,7 +37,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == block.Id)
         {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
         }
     }
 
@@ -113,7 +113,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
             }
             else
             {
-                ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, block.Id, block.GetTickRate());
+                ctx.World.TickScheduler.ScheduleBlockUpdate(ctx.X, ctx.Y, ctx.Z, block.Id, block.TickRate);
             }
         }
         else

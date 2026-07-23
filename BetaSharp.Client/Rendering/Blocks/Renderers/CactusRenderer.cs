@@ -17,7 +17,7 @@ public class CactusRenderer : IBlockRenderer
         };
 
         // 1. Calculate the specific biome/tint color for this cactus
-        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.x, pos.y, pos.z);
+        int colorMultiplier = block.getColorMultiplier(ctx.BlockReader, pos.x, pos.y, pos.z);
         float red = (colorMultiplier >> 16 & 255) / 255.0F;
         float green = (colorMultiplier >> 8 & 255) / 255.0F;
         float blue = (colorMultiplier & 255) / 255.0F;

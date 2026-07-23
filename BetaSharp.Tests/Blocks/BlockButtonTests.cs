@@ -11,7 +11,7 @@ public sealed class BlockButtonTests
         world.ReaderWriter.SetInitial(-1, 64, 0, BlockRegistry.Get("stone").Id); // support for facing=1
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("button").Id, 1);
 
-        bool handled = BlockRegistry.Get("button").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        bool handled = BlockRegistry.Get("button").onUse(new OnUseEvent(world, null!, 0, 64, 0));
 
         Assert.True(handled);
         Assert.Equal(9, world.Reader.GetBlockMeta(0, 64, 0)); // pressed bit set

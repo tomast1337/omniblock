@@ -138,8 +138,6 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
         }
     }
 
-    // ── IBlockVisuals ─────────────────────────────────────────────
-
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {
         int direction = GetDirection(meta);

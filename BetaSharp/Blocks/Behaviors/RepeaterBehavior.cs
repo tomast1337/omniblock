@@ -62,7 +62,7 @@ public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockP
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (!block.CanGrow(@event))
+        if (!block.canGrow(@event))
         {
             block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.Meta));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);

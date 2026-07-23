@@ -323,7 +323,7 @@ public class UIRenderer
 
     public void DrawItemIntoGui(ItemRenderer itemRenderer, int itemId, int itemMeta, int textureId, float x, float y)
     {
-        bool isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[itemId].GetRenderType());
+        bool isBlock3D = itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[itemId].RenderType);
 
         if (isBlock3D)
         {
@@ -353,7 +353,7 @@ public class UIRenderer
     {
         if (stack == null) return;
 
-        bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].GetRenderType());
+        bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].RenderType);
 
         if (isBlock)
         {

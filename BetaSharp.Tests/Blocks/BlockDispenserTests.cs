@@ -246,7 +246,7 @@ public sealed class BlockDispenserTests
     [Fact]
     public void GetTickRate_IsFour()
     {
-        Assert.Equal(4, BlockRegistry.Get("dispenser").GetTickRate());
+        Assert.Equal(4, BlockRegistry.Get("dispenser").TickRate);
     }
 
     [Fact]
@@ -375,7 +375,7 @@ public sealed class BlockDispenserTests
         AttachDispenser(world, 70, 64, 70);
         CapturingDispenserPlayer player = new(world);
 
-        bool result = BlockRegistry.Get("dispenser").OnUse(new OnUseEvent(world, player, 70, 64, 70));
+        bool result = BlockRegistry.Get("dispenser").onUse(new OnUseEvent(world, player, 70, 64, 70));
 
         Assert.True(result);
         Assert.Null(player.LastOpened);
@@ -390,7 +390,7 @@ public sealed class BlockDispenserTests
         BlockEntityDispenser be = world.Entities.GetBlockEntity<BlockEntityDispenser>(71, 64, 71)!;
         CapturingDispenserPlayer player = new(world);
 
-        bool result = BlockRegistry.Get("dispenser").OnUse(new OnUseEvent(world, player, 71, 64, 71));
+        bool result = BlockRegistry.Get("dispenser").onUse(new OnUseEvent(world, player, 71, 64, 71));
 
         Assert.True(result);
         Assert.Same(be, player.LastOpened);
@@ -403,7 +403,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(72, 64, 72, BlockRegistry.Get("dispenser").Id, 3);
         CapturingDispenserPlayer player = new(world);
 
-        bool result = BlockRegistry.Get("dispenser").OnUse(new OnUseEvent(world, player, 72, 64, 72));
+        bool result = BlockRegistry.Get("dispenser").onUse(new OnUseEvent(world, player, 72, 64, 72));
 
         Assert.True(result);
         BlockEntityDispenser? be = world.Entities.GetBlockEntity<BlockEntityDispenser>(72, 64, 72);

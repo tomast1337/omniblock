@@ -633,7 +633,7 @@ public abstract class Entity : IEntity
                             int collisionBlockId = World.Reader.GetBlockId(collisionX, collisionY, collisionZ);
                             if (collisionBlockId > 0)
                             {
-                                Block.Blocks[collisionBlockId].OnEntityCollision(new OnEntityCollisionEvent(World, this, collisionX, collisionY, collisionZ));
+                                Block.Blocks[collisionBlockId].onEntityCollision(new OnEntityCollisionEvent(World, this, collisionX, collisionY, collisionZ));
                             }
                         }
                     }

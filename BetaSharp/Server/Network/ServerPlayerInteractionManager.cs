@@ -74,7 +74,7 @@ public class ServerPlayerInteractionManager
         int blockId = world.Reader.GetBlockId(x, y, z);
         if (blockId > 0 && player.GameMode.CanInteract)
         {
-            Block.Blocks[blockId].OnBlockBreakStart(new OnBlockBreakStartEvent(world, player, x, y, z));
+            Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(world, player, x, y, z));
         }
 
         if (!player.GameMode.CanBreak) return;
@@ -128,7 +128,7 @@ public class ServerPlayerInteractionManager
         bool success = world.Writer.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
-            block.OnMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
+            block.onMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
         }
 
         return success;
@@ -163,11 +163,11 @@ public class ServerPlayerInteractionManager
         bool success = world.Writer.SetBlock(x, y, z, 0);
         if (block != null && success)
         {
-            block.OnMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
+            block.onMetadataChange(new OnMetadataChangeEvent(world, x, y, z, blockMeta));
 
             if (player.GameMode.BlockDrops && player.CanHarvest(block))
             {
-                block.OnAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
+                block.onAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
                 ((ServerPlayerEntity)player).NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
             }
         }
@@ -214,7 +214,7 @@ public class ServerPlayerInteractionManager
         {
             if (!player.GameMode.CanInteract) return false;
             int blockId = world.Reader.GetBlockId(x, y, z);
-            if (blockId > 0 && Block.Blocks[blockId].OnUse(new OnUseEvent(world, player, x, y, z)))
+            if (blockId > 0 && Block.Blocks[blockId].onUse(new OnUseEvent(world, player, x, y, z)))
             {
                 miningProgress = -1;
                 return true;

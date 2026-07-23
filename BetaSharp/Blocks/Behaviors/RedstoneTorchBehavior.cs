@@ -49,7 +49,7 @@ public sealed class RedstoneTorchBehavior : IRedstoneComponent, IBlockTicker, IB
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         _torchPhysics.NeighborUpdate(block, @event);
-        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.GetTickRate());
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 
     public void OnTick(Block block, OnTickEvent @event)

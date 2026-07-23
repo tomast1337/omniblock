@@ -31,7 +31,7 @@ public sealed class BlockTorchTests
     [Fact]
     public void IsOpaque_IsFalse()
     {
-        Assert.False(BlockRegistry.Get("torch").IsOpaque());
+        Assert.False(BlockRegistry.Get("torch").IsOpaque);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class BlockTorchTests
     [Fact]
     public void GetRenderType_IsTorch()
     {
-        Assert.Equal(BlockRendererType.Torch, BlockRegistry.Get("torch").GetRenderType());
+        Assert.Equal(BlockRendererType.Torch, BlockRegistry.Get("torch").RenderType);
     }
 
     [Theory]

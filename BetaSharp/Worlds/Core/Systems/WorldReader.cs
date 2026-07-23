@@ -54,7 +54,7 @@ public class WorldReader : IBlockReader
     public bool IsOpaque(int x, int y, int z)
     {
         Block? block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.IsOpaque();
+        return block != null && block.IsOpaque;
     }
 
     public bool ShouldSuffocate(int x, int y, int z)

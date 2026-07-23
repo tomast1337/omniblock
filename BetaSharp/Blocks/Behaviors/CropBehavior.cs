@@ -121,7 +121,7 @@ internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
 
     private static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {
-        if (block.CanGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
+        if (block.canGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
             return;
 
         block.DropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));

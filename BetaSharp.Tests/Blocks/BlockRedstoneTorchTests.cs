@@ -33,8 +33,8 @@ public sealed class BlockRedstoneTorchTests
     [Fact]
     public void CanEmitRedstonePower_IsTrue()
     {
-        Assert.True(BlockRegistry.Get("redstone_torch").CanEmitRedstonePower());
-        Assert.True(BlockRegistry.Get("lit_redstone_torch").CanEmitRedstonePower());
+        Assert.True(BlockRegistry.Get("redstone_torch").canEmitRedstonePower());
+        Assert.True(BlockRegistry.Get("lit_redstone_torch").canEmitRedstonePower());
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class BlockRedstoneTorchTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("redstone_torch").Id, 5);
-        Assert.False(BlockRegistry.Get("redstone_torch").IsPoweringSide(world.Reader, 0, 64, 0, 0));
+        Assert.False(BlockRegistry.Get("redstone_torch").isPoweringSide(world.Reader, 0, 64, 0, 0));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class BlockRedstoneTorchTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lit_redstone_torch").Id, 5);
-        Assert.False(BlockRegistry.Get("lit_redstone_torch").IsPoweringSide(world.Reader, 0, 64, 0, 1));
+        Assert.False(BlockRegistry.Get("lit_redstone_torch").isPoweringSide(world.Reader, 0, 64, 0, 1));
     }
 
     [Fact]
@@ -58,8 +58,8 @@ public sealed class BlockRedstoneTorchTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lit_redstone_torch").Id, 5);
-        Assert.True(BlockRegistry.Get("lit_redstone_torch").IsStrongPoweringSide(world.Reader, 0, 64, 0, 0));
-        Assert.False(BlockRegistry.Get("lit_redstone_torch").IsStrongPoweringSide(world.Reader, 0, 64, 0, 2));
+        Assert.True(BlockRegistry.Get("lit_redstone_torch").isStrongPoweringSide(world.Reader, 0, 64, 0, 0));
+        Assert.False(BlockRegistry.Get("lit_redstone_torch").isStrongPoweringSide(world.Reader, 0, 64, 0, 2));
     }
 
     [Fact]

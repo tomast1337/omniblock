@@ -215,7 +215,7 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
                 break;
         }
 
-        level.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.GetTickRate());
+        level.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
         return true;
     }
 }
