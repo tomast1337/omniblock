@@ -26,7 +26,10 @@
       "Type": "crop",
       "required_soil": "farmland",
       "mature_crop_item": "wheat",
-      "seeds": "seeds"
+      "seeds": "seeds",
+      "drop_spread": 0.7,
+      "seed_scatter_chance_bound": 15,
+      "growth_chance_denominator": 100
     }
   ]
 }

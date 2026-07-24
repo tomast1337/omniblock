@@ -14,7 +14,7 @@ public sealed class BlockFarmlandTests
     public void GetDroppedItemId_CustomDirt_ReturnsConfiguredBlocksDrop()
     {
         Block customRevertTarget = BlockRegistry.Get("sand");
-        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"));
+        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"), 4, 5, 4);
 
         Assert.Equal(customRevertTarget.GetDroppedItemId(0), behavior.GetDroppedItemId(BlockRegistry.Get("farmland"), 0, 0));
     }
@@ -29,7 +29,7 @@ public sealed class BlockFarmlandTests
         world.ReaderWriter.SetInitial(0, 64, 0, farmlandBlock.id);
         world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("stone").id);
 
-        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"));
+        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"), 4, 5, 4);
         behavior.NeighborUpdate(farmlandBlock, new OnTickEvent(world, 0, 64, 0, 0, farmlandBlock.id));
 
         Assert.Equal(customRevertTarget.id, world.Reader.GetBlockId(0, 64, 0));
@@ -48,6 +48,16 @@ public sealed class BlockFarmlandTests
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
         using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"not_a_real_block","crop":"wheat"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
+    }
+
+    // Numeric tuning params (trample_chance_one_in, tick_chance_one_in, water_check_radius) are
+    // also required, no default: an omitted value must throw immediately at
+    // BehaviorRegistry.Build.
+    [Fact]
+    public void BehaviorRegistry_Build_MissingTrampleChanceOneIn_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"dirt","crop":"wheat"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 }

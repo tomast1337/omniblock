@@ -17,8 +17,14 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         generically (not obsidian/netherrack/tnt) so a non-vanilla fire variant reads
 ///         naturally.
 ///     </para>
+///     <para>
+///         Max age (<paramref name="maxAge" />, metadata cap before it can no longer intensify)
+///         and crackle-sound chance (<paramref name="crackleSoundChanceOneIn" />, 1-in-N per
+///         random display tick) are also required, JSON-declared constructor params — no built-in
+///         vanilla fallback.
+///     </para>
 /// </summary>
-internal sealed class FireBehavior(Block portalBase, Block portalFill, Block eternalFuel, Block explosive) : IBlockTicker, IBlockPhysics, IBlockLifecycle
+internal sealed class FireBehavior(Block portalBase, Block portalFill, Block eternalFuel, Block explosive, int maxAge, int crackleSoundChanceOneIn) : IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -64,7 +70,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
              !@event.World.Environment.IsRainingAt(@event.X, @event.Y, @event.Z + 1)))
         {
             int fireAge = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-            if (fireAge < 15)
+            if (fireAge < maxAge)
             {
                 @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, fireAge + @event.World.Random.NextInt(3) / 2);
             }
@@ -81,7 +87,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
 
                         break;
                     }
-                case false when !IsFlammableId(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && fireAge == 15 && @event.World.Random.NextInt(4) == 0:
+                case false when !IsFlammableId(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && fireAge == maxAge && @event.World.Random.NextInt(4) == 0:
                     @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                     break;
                 default:
@@ -123,9 +129,9 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                                     }
 
                                     int spreadChance = fireAge + @event.World.Random.NextInt(5) / 4;
-                                    if (spreadChance > 15)
+                                    if (spreadChance > maxAge)
                                     {
-                                        spreadChance = 15;
+                                        spreadChance = maxAge;
                                     }
 
                                     @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.id, spreadChance);
@@ -145,7 +151,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
 
     public void RandomDisplayTick(Block block, OnTickEvent @event)
     {
-        if (@event.World.Random.NextInt(24) == 0)
+        if (@event.World.Random.NextInt(crackleSoundChanceOneIn) == 0)
             @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F, "fire.fire", 1.0F + Random.Shared.NextSingle(), Random.Shared.NextSingle() * 0.7F + 0.3F);
 
         int particleIndex;
@@ -229,9 +235,9 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
         if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
         {
             int newFireAge = currentAge + random.NextInt(5) / 4;
-            if (newFireAge > 15)
+            if (newFireAge > maxAge)
             {
-                newFireAge = 15;
+                newFireAge = maxAge;
             }
 
             level.Writer.SetBlock(x, y, z, block.id, newFireAge);

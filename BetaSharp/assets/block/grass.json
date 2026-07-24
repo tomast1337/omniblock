@@ -23,12 +23,14 @@
   "Behaviors": [
     {
       "Slots": ["Ticker", "Physics"],
-      "Type": "plant_survival"
+      "Type": "plant_survival",
+      "valid_ground": ["grass_block", "dirt", "farmland"]
     },
     {
       "Slots": ["Visuals", "Lifecycle"],
       "Type": "tall_grass",
-      "seeds": "seeds"
+      "seeds": "seeds",
+      "seed_drop_chance_one_in": 8
     }
   ]
 }

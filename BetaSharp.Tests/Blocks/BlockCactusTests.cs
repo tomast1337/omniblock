@@ -18,7 +18,7 @@ public sealed class BlockCactusTests
         Block customSoil = BlockRegistry.Get("gravel");
         world.ReaderWriter.SetInitial(0, 63, 0, customSoil.id);
 
-        CactusBehavior behavior = new(customStem, customSoil);
+        CactusBehavior behavior = new(customStem, customSoil, 3);
 
         Assert.True(behavior.CanPlaceAt(customStem, new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
@@ -31,7 +31,7 @@ public sealed class BlockCactusTests
         Block customSoil = BlockRegistry.Get("gravel");
         world.ReaderWriter.SetInitial(0, 63, 0, customStem.id);
 
-        CactusBehavior behavior = new(customStem, customSoil);
+        CactusBehavior behavior = new(customStem, customSoil, 3);
 
         Assert.True(behavior.CanPlaceAt(customStem, new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
@@ -44,7 +44,7 @@ public sealed class BlockCactusTests
         Block customSoil = BlockRegistry.Get("gravel");
         world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("sand").id);
 
-        CactusBehavior behavior = new(customStem, customSoil);
+        CactusBehavior behavior = new(customStem, customSoil, 3);
 
         Assert.False(behavior.CanPlaceAt(customStem, new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
@@ -74,6 +74,15 @@ public sealed class BlockCactusTests
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
         using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"cactus","soil":"not_a_real_block"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
+    }
+
+    // max_height is also a required, JSON-declared constructor param — no built-in vanilla
+    // fallback. An omitted value must throw immediately at BehaviorRegistry.Build.
+    [Fact]
+    public void BehaviorRegistry_Build_MissingMaxHeight_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"cactus","soil":"sand"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 }

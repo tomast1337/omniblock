@@ -26,7 +26,8 @@
       "Slots": ["Ticker", "Physics", "Interactable", "Visuals"],
       "Type": "cactus",
       "stem": "cactus",
-      "soil": "sand"
+      "soil": "sand",
+      "max_height": 3
     }
   ]
 }

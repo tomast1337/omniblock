@@ -21,7 +21,9 @@
       "portal_base": "obsidian",
       "portal_fill": "nether_portal",
       "eternal_fuel": "netherrack",
-      "explosive": "tnt"
+      "explosive": "tnt",
+      "max_age": 15,
+      "crackle_sound_chance_one_in": 24
     }
   ]
 }

@@ -15,16 +15,18 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         param (see <c>BehaviorRegistry</c>'s <c>"snow"</c> entry) — no built-in vanilla
 ///         fallback; an omitted or unknown name throws immediately at startup.
 ///     </para>
+///     <para>
+///         Drop spread (<paramref name="dropSpread" />) is also a required, JSON-declared
+///         constructor param — no built-in vanilla fallback.
+///     </para>
 /// </summary>
-internal sealed class SnowBehavior(Item dropItem) : IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
+internal sealed class SnowBehavior(Item dropItem, float dropSpread) : IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
-    private const float DropSpread = 0.7F;
-
     public void OnAfterBreak(Block block, OnAfterBreakEvent @event)
     {
-        double offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
-        double offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
-        double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
+        double offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        double offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        double offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
         EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(dropItem.Id, 1, 0))
         {
             DelayBeforeCanPickup = 10

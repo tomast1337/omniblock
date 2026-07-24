@@ -25,7 +25,8 @@
   "Behaviors": [
     {
       "Slots": ["Interactable", "Lifecycle"],
-      "Type": "jukebox"
+      "Type": "jukebox",
+      "drop_spread": 0.7
     }
   ]
 }

@@ -25,7 +25,8 @@
     },
     {
       "Slots": ["Physics"],
-      "Type": "plant_survival"
+      "Type": "plant_survival",
+      "valid_ground": ["grass_block", "dirt", "farmland"]
     }
   ]
 }

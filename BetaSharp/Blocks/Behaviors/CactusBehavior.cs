@@ -16,8 +16,12 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         differently-named custom variant (e.g. a non-cactus "stem" plant growing on a
 ///         non-sand "soil") reads naturally.
 ///     </para>
+///     <para>
+///         Max stack height (<paramref name="maxHeight" />) is also a required, JSON-declared
+///         constructor param — no built-in vanilla fallback.
+///     </para>
 /// </summary>
-internal sealed class CactusBehavior(Block stem, Block soil) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockVisuals
+internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockVisuals
 {
     private const float EdgeInset = 1.0F / 16.0F;
 
@@ -50,7 +54,7 @@ internal sealed class CactusBehavior(Block stem, Block soil) : IBlockTicker, IBl
             heightBelow++;
         }
 
-        if (heightBelow >= 3) return;
+        if (heightBelow >= maxHeight) return;
 
         int growthStage = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (growthStage == 15)

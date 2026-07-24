@@ -21,7 +21,7 @@ public sealed class BlockCropTests
         Item seeds = Item.ByName("seeds");
 
         world.ReaderWriter.SetInitial(0, 63, 0, customSoil.id);
-        CropBehavior behavior = new(customSoil, wheat, seeds);
+        CropBehavior behavior = new(customSoil, wheat, seeds, 0.7F, 15, 100);
 
         Assert.True(behavior.CanPlaceAt(BlockRegistry.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
 
@@ -33,7 +33,7 @@ public sealed class BlockCropTests
     public void GetDroppedItemId_CustomWheat_ReturnsConfiguredItemOnlyWhenMature()
     {
         Item apple = Item.ByName("apple");
-        CropBehavior behavior = new(BlockRegistry.Get("farmland"), apple, Item.ByName("seeds"));
+        CropBehavior behavior = new(BlockRegistry.Get("farmland"), apple, Item.ByName("seeds"), 0.7F, 15, 100);
 
         Assert.Equal(apple.Id, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 7, 0));
         Assert.Equal(-1, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 3, 0));
@@ -53,6 +53,16 @@ public sealed class BlockCropTests
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
         using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"not_a_real_block","mature_crop_item":"wheat","seeds":"seeds"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
+    }
+
+    // Numeric tuning params (drop_spread, seed_scatter_chance_bound, growth_chance_denominator)
+    // are also required, no default: an omitted value must throw immediately at
+    // BehaviorRegistry.Build.
+    [Fact]
+    public void BehaviorRegistry_Build_MissingDropSpread_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"farmland","mature_crop_item":"wheat","seeds":"seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 }

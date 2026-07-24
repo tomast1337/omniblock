@@ -10,10 +10,13 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Jukebox: right-click ejects the current record (insertion happens from <c>ItemRecord</c>),
 ///     metadata 1 marks "record loaded", and breaking ejects before the tile entity is removed.
 ///     Assign to the Interactable and Lifecycle slots.
+///     <para>
+///         Ejected-record drop spread (<paramref name="dropSpread" />) is a required,
+///         JSON-declared constructor param — no built-in vanilla fallback.
+///     </para>
 /// </summary>
-public sealed class JukeboxBehavior : IBlockInteractable, IBlockLifecycle
+public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlockLifecycle
 {
-    private const float DropSpread = 0.7F;
     private static readonly ILogger<JukeboxBehavior> s_logger = Log.Instance.For<JukeboxBehavior>();
 
     public bool OnUse(Block block, OnUseEvent @event)
@@ -57,7 +60,7 @@ public sealed class JukeboxBehavior : IBlockInteractable, IBlockLifecycle
         world.Writer.SetBlockMeta(x, y, z, 1);
     }
 
-    private static void TryEjectRecord(IWorldContext level, int x, int y, int z)
+    private void TryEjectRecord(IWorldContext level, int x, int y, int z)
     {
         if (level.IsRemote) return;
 
@@ -71,9 +74,9 @@ public sealed class JukeboxBehavior : IBlockInteractable, IBlockLifecycle
         jukebox.MarkDirty();
         level.Writer.SetBlockMeta(x, y, z, 0);
 
-        double offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
-        double offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.2D + 0.6D;
-        double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
+        double offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        double offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.2D + 0.6D;
+        double offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
         EntityItem entityItem = new(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0))
         {
             DelayBeforeCanPickup = 10

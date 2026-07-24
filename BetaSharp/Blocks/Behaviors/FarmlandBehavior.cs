@@ -15,12 +15,18 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         omitted or unknown name throws immediately at startup. Named generically (not "dirt")
 ///         so a non-vanilla soil variant reads naturally.
 ///     </para>
+///     <para>
+///         Trample chance (<paramref name="trampleChanceOneIn" />, 1-in-N per step), tick chance
+///         (<paramref name="tickChanceOneIn" />, 1-in-N per tick that moisture logic runs at all),
+///         and nearby-water search radius (<paramref name="waterCheckRadius" />) are also
+///         required, JSON-declared constructor params — no built-in vanilla fallback.
+///     </para>
 /// </summary>
-internal sealed class FarmlandBehavior(Block revertBlock, Block crop) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
+internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampleChanceOneIn, int tickChanceOneIn, int waterCheckRadius) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
     public void OnSteppedOn(Block block, OnEntityStepEvent @event)
     {
-        if (Random.Shared.Next(4) == 0)
+        if (Random.Shared.Next(trampleChanceOneIn) == 0)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.id);
         }
@@ -41,7 +47,7 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop) : IBlockTi
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        if (Random.Shared.Next(5) != 0) return;
+        if (Random.Shared.Next(tickChanceOneIn) != 0) return;
 
         if (!IsWaterNearby(@event.World.Reader, @event.X, @event.Y, @event.Z) && !@event.World.Environment.IsRaining)
         {
@@ -81,13 +87,13 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop) : IBlockTi
         return false;
     }
 
-    private static bool IsWaterNearby(IBlockReader reader, int x, int y, int z)
+    private bool IsWaterNearby(IBlockReader reader, int x, int y, int z)
     {
-        for (int checkX = x - 4; checkX <= x + 4; ++checkX)
+        for (int checkX = x - waterCheckRadius; checkX <= x + waterCheckRadius; ++checkX)
         {
             for (int checkY = y; checkY <= y + 1; ++checkY)
             {
-                for (int checkZ = z - 4; checkZ <= z + 4; ++checkZ)
+                for (int checkZ = z - waterCheckRadius; checkZ <= z + waterCheckRadius; ++checkZ)
                 {
                     if (reader.GetMaterial(checkX, checkY, checkZ) == Material.Water)
                     {

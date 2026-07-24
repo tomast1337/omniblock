@@ -18,11 +18,17 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         startup. Named generically (not "farmland"/"wheat") so a non-vanilla crop variant reads
 ///         naturally.
 ///     </para>
+///     <para>
+///         Drop spread (<paramref name="dropSpread" />), bonus-seed chance bound
+///         (<paramref name="seedScatterChanceBound" />, rolled against the block's meta at drop
+///         time — higher meta means a better chance per attempt), and growth-chance denominator
+///         (<paramref name="growthChanceDenominator" />, 1-in-N per available-moisture-unit per
+///         tick) are also required, JSON-declared constructor params — no built-in vanilla
+///         fallback.
+///     </para>
 /// </summary>
-internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds, float dropSpread, int seedScatterChanceBound, int growthChanceDenominator) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
-    private const float DropSpread = 0.7F;
-
     public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? matureCropItem.Id : -1;
 
     public void OnDropStacks(Block block, OnDropEvent @event)
@@ -32,12 +38,12 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
 
         for (int attempt = 0; attempt < 3; ++attempt)
         {
-            if (Random.Shared.Next(15) > @event.Meta)
+            if (Random.Shared.Next(seedScatterChanceBound) > @event.Meta)
                 continue;
 
-            float offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
-            float offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
-            float offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
+            float offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
+            float offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
+            float offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
             EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(seeds))
             {
                 DelayBeforeCanPickup = 10
@@ -66,7 +72,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
         if (meta >= 7) return;
 
         float moisture = GetAvailableMoisture(block, @event.World.Reader, @event.X, @event.Y, @event.Z);
-        if (Random.Shared.Next(100) / moisture != 0) return;
+        if (Random.Shared.Next(growthChanceDenominator) / moisture != 0) return;
 
         ++meta;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);

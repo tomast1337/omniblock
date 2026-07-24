@@ -24,7 +24,8 @@
     {
       "Slots": ["Physics", "Ticker", "Lifecycle", "Visuals"],
       "Type": "snow",
-      "drop_item": "snowball"
+      "drop_item": "snowball",
+      "drop_spread": 0.7
     }
   ]
 }

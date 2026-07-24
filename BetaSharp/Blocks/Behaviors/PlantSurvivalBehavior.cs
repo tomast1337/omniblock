@@ -10,34 +10,35 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         The break check goes through the virtual <see cref="Block.canGrow" />, so subclasses with
 ///         custom growth rules (mushrooms' darkness requirement) keep them.
 ///     </para>
+///     <para>
+///         Valid growth substrate set (<paramref name="validGround" />) is a required,
+///         JSON-declared constructor param (see <c>BehaviorRegistry</c>'s <c>"plant_survival"</c>
+///         entry) — no built-in vanilla fallback; an omitted or unknown name throws immediately at
+///         startup.
+///     </para>
 /// </summary>
-public sealed class PlantSurvivalBehavior : IBlockTicker, IBlockPhysics
+public sealed class PlantSurvivalBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
 {
-    private static readonly Block s_grassBlock = BlockRegistry.Get("grass_block");
-    private static readonly Block s_dirt = BlockRegistry.Get("dirt");
-    private static readonly Block s_farmland = BlockRegistry.Get("farmland");
-
-    private readonly Func<int, bool> _isValidGround;
-
-    /// <param name="isValidGround">
-    ///     Predicate over the block id below; defaults to grass/dirt/farmland. Evaluated at game
-    ///     time, so it may reference block statics regardless of declaration order.
-    /// </param>
-    public PlantSurvivalBehavior(Func<int, bool>? isValidGround = null)
-        => _isValidGround = isValidGround ?? DefaultGround;
-
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => _isValidGround(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
+        => IsValidGround(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
 
     public bool CanGrow(Block block, OnTickEvent ctx)
         => (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z))
-           && _isValidGround(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
+           && IsValidGround(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
 
     public void NeighborUpdate(Block block, OnTickEvent @event) => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
 
     public void OnTick(Block block, OnTickEvent @event) => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
 
-    private static bool DefaultGround(int id) => id == s_grassBlock.id || id == s_dirt.id || id == s_farmland.id;
+    private bool IsValidGround(int id)
+    {
+        foreach (Block ground in validGround)
+        {
+            if (id == ground.id) return true;
+        }
+
+        return false;
+    }
 
     public static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {

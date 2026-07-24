@@ -10,7 +10,8 @@
   "Behaviors": [
     {
       "Slots": ["Physics", "Interactable"],
-      "Type": "soul_sand"
+      "Type": "soul_sand",
+      "speed_factor": 0.4
     }
   ]
 }
