@@ -171,12 +171,12 @@ public class FramebufferManager
 
     public void Resize(int width, int height)
     {
-        if (width <= 0 || height <= 0) return;
-        if (_mainFbo.Width == width && _mainFbo.Height == height) return;
-
-        _mainFbo.Resize(width, height);
-        DestroyCloudFbos();
-        CreateCloudFbos(width, height);
+        if (width > 0 && height > 0)
+        {
+            _mainFbo.Resize(width, height);
+            DestroyCloudFbos();
+            CreateCloudFbos(width, height);
+        }
     }
 
     private void CreateCloudFbos(int w, int h)
