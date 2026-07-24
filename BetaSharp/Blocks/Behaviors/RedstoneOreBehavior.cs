@@ -9,6 +9,9 @@ namespace BetaSharp.Blocks.Behaviors;
 /// </summary>
 public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
 {
+    private static readonly Block s_redstoneOre = BlockRegistry.Get("redstone_ore");
+    private static readonly Block s_litRedstoneOre = BlockRegistry.Get("lit_redstone_ore");
+
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
     public void OnSteppedOn(Block block, OnEntityStepEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
@@ -23,7 +26,7 @@ public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
     {
         if (IsLit(block))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("redstone_ore").id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, s_redstoneOre.id);
         }
     }
 
@@ -35,14 +38,14 @@ public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
         }
     }
 
-    private static bool IsLit(Block block) => block.id == BlockRegistry.Get("lit_redstone_ore").id;
+    private static bool IsLit(Block block) => block.id == s_litRedstoneOre.id;
 
     private static void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         SpawnParticles(worldRead, broadcaster, x, y, z);
-        if (worldRead.GetBlockId(x, y, z) == BlockRegistry.Get("redstone_ore").id)
+        if (worldRead.GetBlockId(x, y, z) == s_redstoneOre.id)
         {
-            worldWriter.SetBlock(x, y, z, BlockRegistry.Get("lit_redstone_ore").id);
+            worldWriter.SetBlock(x, y, z, s_litRedstoneOre.id);
         }
     }
 

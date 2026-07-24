@@ -23,6 +23,19 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
 
     private readonly ThreadLocal<int[]?> _decayRegion = new(() => null);
     private bool _graphicsLevel;
+    private int _logId;
+    private int _leavesId;
+    private int _saplingId;
+
+    // Resolved once here rather than via BlockRegistry.Get(string) on every call — the OnTick decay
+    // flood-fill alone can call these up to (2*DecayRadius+1)^3 times per tick. OnInit runs once all
+    // blocks are constructed, so this is safe regardless of JSON declaration order.
+    public void OnInit(Block block)
+    {
+        _logId = BlockRegistry.Get("log").id;
+        _leavesId = BlockRegistry.Get("leaves").id;
+        _saplingId = BlockRegistry.Get("sapling").id;
+    }
 
     public void OnBreak(Block block, OnBreakEvent @event)
     {
@@ -40,7 +53,7 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                 for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
                     int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != BlockRegistry.Get("leaves").id)
+                    if (blockId != _leavesId)
                     {
                         continue;
                     }
@@ -58,12 +71,12 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
         if (ctx.World.IsRemote || hand == null || hand.ItemId != s_shearsId) return;
 
         ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
-        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(BlockRegistry.Get("leaves").id, 1, ctx.Meta & 3));
+        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(_leavesId, 1, ctx.Meta & 3));
     }
 
     public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => BlockRegistry.Get("sapling").id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => _saplingId;
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -86,11 +99,11 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                     for (int dy = -DecayRadius; dy <= DecayRadius; ++dy)
                     {
                         int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
-                        if (blockId == BlockRegistry.Get("log").id)
+                        if (blockId == _logId)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
                         }
-                        else if (blockId == BlockRegistry.Get("leaves").id)
+                        else if (blockId == _leavesId)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
                         }

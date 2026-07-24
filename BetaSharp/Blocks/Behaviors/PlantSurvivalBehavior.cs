@@ -13,6 +13,10 @@ namespace BetaSharp.Blocks.Behaviors;
 /// </summary>
 public sealed class PlantSurvivalBehavior : IBlockTicker, IBlockPhysics
 {
+    private static readonly Block s_grassBlock = BlockRegistry.Get("grass_block");
+    private static readonly Block s_dirt = BlockRegistry.Get("dirt");
+    private static readonly Block s_farmland = BlockRegistry.Get("farmland");
+
     private readonly Func<int, bool> _isValidGround;
 
     /// <param name="isValidGround">
@@ -33,7 +37,7 @@ public sealed class PlantSurvivalBehavior : IBlockTicker, IBlockPhysics
 
     public void OnTick(Block block, OnTickEvent @event) => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
 
-    private static bool DefaultGround(int id) => id == BlockRegistry.Get("grass_block").id || id == BlockRegistry.Get("dirt").id || id == BlockRegistry.Get("farmland").id;
+    private static bool DefaultGround(int id) => id == s_grassBlock.id || id == s_dirt.id || id == s_farmland.id;
 
     public static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {

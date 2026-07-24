@@ -14,6 +14,12 @@ namespace BetaSharp.Blocks.Behaviors;
 /// </summary>
 public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
+    private static readonly Block s_door = BlockRegistry.Get("door");
+    private static readonly Block s_ironDoor = BlockRegistry.Get("iron_door");
+    private static readonly Block s_sign = BlockRegistry.Get("sign");
+    private static readonly Block s_ladder = BlockRegistry.Get("ladder");
+    private static readonly Block s_sugarCane = BlockRegistry.Get("sugar_cane");
+
     private readonly ThreadLocal<int> _adjacentSources = new(() => 0);
     private readonly ThreadLocal<int[]> _distanceToGap = new(() => new int[4]);
     private readonly ThreadLocal<bool[]> _spread = new(() => new bool[4]);
@@ -325,7 +331,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         if (!world.Reader.IsPosLoaded(x, y, z)) return true;
 
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == BlockRegistry.Get("door").id || blockId == BlockRegistry.Get("iron_door").id || blockId == BlockRegistry.Get("sign").id || blockId == BlockRegistry.Get("ladder").id || blockId == BlockRegistry.Get("sugar_cane").id) return true;
+        if (blockId == s_door.id || blockId == s_ironDoor.id || blockId == s_sign.id || blockId == s_ladder.id || blockId == s_sugarCane.id) return true;
 
         if (blockId == 0) return false;
 

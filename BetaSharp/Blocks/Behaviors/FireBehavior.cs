@@ -11,9 +11,20 @@ namespace BetaSharp.Blocks.Behaviors;
 /// </summary>
 internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
+    private Block _obsidian;
+    private Block _netherrack;
+    private Block _tntBlock = null!;
+
+    public void OnInit(Block block)
+    {
+        _obsidian = BlockRegistry.Get("obsidian");
+        _netherrack = BlockRegistry.Get("netherrack");
+        _tntBlock = BlockRegistry.Get("tnt");
+    }
+
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("obsidian").id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == _obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
             return;
 
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
@@ -40,7 +51,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     {
         if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick)) return;
 
-        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("netherrack").id;
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == _netherrack.id;
         if (!block.CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -216,7 +227,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     {
         int targetSpreadChance = SpreadChanceAt(level.Reader, x, y, z);
         if (random.NextInt(spreadFactor) >= targetSpreadChance) return;
-        bool isTnt = level.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("tnt").id;
+        bool isTnt = level.Reader.GetBlockId(x, y, z) == _tntBlock.id;
         if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
         {
             int newFireAge = currentAge + random.NextInt(5) / 4;
@@ -234,7 +245,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
 
         if (isTnt)
         {
-            BlockRegistry.Get("tnt").onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
+            _tntBlock.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
         }
     }
 

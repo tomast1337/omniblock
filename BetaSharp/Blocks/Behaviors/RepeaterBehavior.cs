@@ -13,6 +13,11 @@ public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockP
     public static readonly float[] RenderOffset = [-0.0625f, 1.0f / 16.0f, 0.1875f, 0.3125f];
     private static readonly int[] s_delay = [1, 2, 3, 4];
 
+    // Resolved once here rather than via BlockRegistry.Get(string) on every OnTick/IsLit/IsPowered call.
+    private static readonly Block s_repeater = BlockRegistry.Get("repeater");
+    private static readonly Block s_poweredRepeater = BlockRegistry.Get("powered_repeater");
+    private static readonly Block s_redstoneWire = BlockRegistry.Get("redstone_wire");
+
     public bool OnUse(Block block, OnUseEvent ctx)
     {
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
@@ -87,16 +92,16 @@ public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockP
         switch (IsLit(block))
         {
             case true when !powered:
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("repeater").id, meta);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, s_repeater.id, meta);
                 break;
             case false:
                 {
-                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, BlockRegistry.Get("powered_repeater").id, meta);
+                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, s_poweredRepeater.id, meta);
 
                     if (!powered)
                     {
                         int delaySetting = (meta & 12) >> 2;
-                        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, BlockRegistry.Get("powered_repeater").id, s_delay[delaySetting] * 2);
+                        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, s_poweredRepeater.id, s_delay[delaySetting] * 2);
                     }
 
                     break;
@@ -176,7 +181,7 @@ public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockP
 
     public bool CanEmitRedstonePower(Block block) => true;
 
-    private static bool IsLit(Block block) => block.id == BlockRegistry.Get("powered_repeater").id;
+    private static bool IsLit(Block block) => block.id == s_poweredRepeater.id;
 
     private static int TextureFor(Block block, Side side) => side switch
     {
@@ -190,10 +195,10 @@ public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockP
         int facing = meta & 3;
         return facing switch
         {
-            0 => redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == BlockRegistry.Get("redstone_wire").id && world.GetBlockMeta(x, y, z + 1) > 0),
-            1 => redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || (world.GetBlockId(x - 1, y, z) == BlockRegistry.Get("redstone_wire").id && world.GetBlockMeta(x - 1, y, z) > 0),
-            2 => redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || (world.GetBlockId(x, y, z - 1) == BlockRegistry.Get("redstone_wire").id && world.GetBlockMeta(x, y, z - 1) > 0),
-            3 => redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || (world.GetBlockId(x + 1, y, z) == BlockRegistry.Get("redstone_wire").id && world.GetBlockMeta(x + 1, y, z) > 0),
+            0 => redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == s_redstoneWire.id && world.GetBlockMeta(x, y, z + 1) > 0),
+            1 => redstoneEngine.IsPoweringSide(x - 1, y, z, 4) || (world.GetBlockId(x - 1, y, z) == s_redstoneWire.id && world.GetBlockMeta(x - 1, y, z) > 0),
+            2 => redstoneEngine.IsPoweringSide(x, y, z - 1, 2) || (world.GetBlockId(x, y, z - 1) == s_redstoneWire.id && world.GetBlockMeta(x, y, z - 1) > 0),
+            3 => redstoneEngine.IsPoweringSide(x + 1, y, z, 5) || (world.GetBlockId(x + 1, y, z) == s_redstoneWire.id && world.GetBlockMeta(x + 1, y, z) > 0),
             _ => false
         };
     }

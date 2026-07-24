@@ -111,10 +111,11 @@ public static class BlockRegistry
                 ? factory(id)
                 : new ItemBlock(id - 256);
 
-            // Every block gets Init() called once, all definitions guaranteed constructed —
+            // Every block gets Init() called once, all definitions guaranteed constructed,
             // simpler than the old code's skip-if-Item.ITEMS-already-set quirk, and provably
             // identical in practice: none of the seven special-cased blocks above override
-            // IBlockLifecycle.OnInit (no block does).
+            // IBlockLifecycle.OnInit (only FireBehavior and LeavesBehavior do, and neither is
+            // one of them).
             Block.Blocks[id].Init();
         }
     }
