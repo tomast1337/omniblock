@@ -33,7 +33,8 @@
   "Behaviors": [
     {
       "Slots": ["Ticker", "Physics"],
-      "Type": "reed"
+      "Type": "reed",
+      "valid_ground": ["grass_block", "dirt", "sand", "gravel"]
     }
   ]
 }

@@ -8,8 +8,16 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     requiring clear horizontal neighbors and sand/self below, plus 1-damage collision with
 ///     entities. The render bounding box is full-height (declarative, set on the static); the
 ///     collision box is one pixel shorter on every side via <see cref="GetCollisionShape" />.
+///     <para>
+///         Valid planting substrate (<paramref name="soil" />) and self (<paramref name="stem" />)
+///         are both required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
+///         <c>"cactus"</c> entry) — no built-in vanilla fallback; an omitted or unknown name throws
+///         immediately at startup. Named generically, not after the vanilla block, so a
+///         differently-named custom variant (e.g. a non-cactus "stem" plant growing on a
+///         non-sand "soil") reads naturally.
+///     </para>
 /// </summary>
-internal sealed class CactusBehavior : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockVisuals
+internal sealed class CactusBehavior(Block stem, Block soil) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockVisuals
 {
     private const float EdgeInset = 1.0F / 16.0F;
 
@@ -63,7 +71,7 @@ internal sealed class CactusBehavior : IBlockTicker, IBlockPhysics, IBlockIntera
         _ => BlockTextures.CactusSide
     };
 
-    private static bool CanGrowAt(IBlockReader world, int x, int y, int z)
+    private bool CanGrowAt(IBlockReader world, int x, int y, int z)
     {
         if (world.GetMaterial(x - 1, y, z).IsSolid) return false;
         if (world.GetMaterial(x + 1, y, z).IsSolid) return false;
@@ -71,6 +79,6 @@ internal sealed class CactusBehavior : IBlockTicker, IBlockPhysics, IBlockIntera
         if (world.GetMaterial(x, y, z + 1).IsSolid) return false;
 
         int blockBelowId = world.GetBlockId(x, y - 1, z);
-        return blockBelowId == BlockRegistry.Get("cactus").id || blockBelowId == BlockRegistry.Get("sand").id;
+        return blockBelowId == stem.id || blockBelowId == soil.id;
     }
 }

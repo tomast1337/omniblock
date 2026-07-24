@@ -24,7 +24,9 @@
   "Behaviors": [
     {
       "Slots": ["Ticker", "Physics", "Interactable", "Visuals"],
-      "Type": "cactus"
+      "Type": "cactus",
+      "stem": "cactus",
+      "soil": "sand"
     }
   ]
 }

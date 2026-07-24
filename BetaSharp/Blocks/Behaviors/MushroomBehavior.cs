@@ -7,8 +7,13 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     <see cref="PlantSurvivalBehavior" />) since its <see cref="CanGrow" /> requires a light check
 ///     beyond plain ground validity, and — with no subclass left to shadow it — the capability hook
 ///     is now the single source of truth for both placement and the neighbor-update break check.
+///     <para>
+///         Valid growth substrate set is a required, JSON-declared constructor param (see
+///         <c>BehaviorRegistry</c>'s <c>"mushroom"</c> entry) — no built-in vanilla fallback; an
+///         omitted or unknown name throws immediately at startup.
+///     </para>
 /// </summary>
-internal sealed class MushroomBehavior : IBlockTicker, IBlockPhysics
+internal sealed class MushroomBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
 {
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
         => CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
@@ -42,6 +47,13 @@ internal sealed class MushroomBehavior : IBlockTicker, IBlockPhysics
         @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.id);
     }
 
-    private static bool CanPlantOnTop(int id)
-        => id == BlockRegistry.Get("grass_block").id || id == BlockRegistry.Get("dirt").id || id == BlockRegistry.Get("stone").id || id == BlockRegistry.Get("gravel").id || id == BlockRegistry.Get("cobblestone").id;
+    private bool CanPlantOnTop(int id)
+    {
+        foreach (Block ground in validGround)
+        {
+            if (id == ground.id) return true;
+        }
+
+        return false;
+    }
 }

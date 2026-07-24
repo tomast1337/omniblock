@@ -42,7 +42,7 @@ internal static class BehaviorRegistry
         // Stateless, parameterless behaviors
         ["bed"] = _ => new BedBehavior(),
         ["button"] = _ => new ButtonBehavior(),
-        ["cactus"] = _ => new CactusBehavior(),
+        ["cactus"] = json => new CactusBehavior(ResolveBlock(json.GetProperty("stem").GetString()!), ResolveBlock(json.GetProperty("soil").GetString()!)),
         ["cake"] = _ => new CakeBehavior(),
         ["chest"] = _ => new ChestBehavior(),
         ["cloth_visual"] = _ => new ClothVisualBehavior(),
@@ -66,14 +66,14 @@ internal static class BehaviorRegistry
         ["lever"] = _ => new LeverBehavior(),
         ["locked_chest"] = _ => new LockedChestBehavior(),
         ["log"] = json => new LogBehavior(ResolveBlock(json.GetProperty("leaves").GetString()!)),
-        ["mushroom"] = _ => new MushroomBehavior(),
+        ["mushroom"] = json => new MushroomBehavior(ResolveBlockArray(json.GetProperty("valid_ground"))),
         ["noteblock"] = _ => new NoteBlockBehavior(),
         ["piston_extension"] = _ => new PistonExtensionBehavior(),
         ["piston_moving"] = _ => new PistonMovingBehavior(),
         ["portal"] = _ => new PortalBehavior(),
         ["redstone_ore"] = _ => new RedstoneOreBehavior(),
         ["redstone_wire"] = _ => new RedstoneWireBehavior(),
-        ["reed"] = _ => new ReedBehavior(),
+        ["reed"] = json => new ReedBehavior(ResolveBlockArray(json.GetProperty("valid_ground"))),
         ["repeater"] = _ => new RepeaterBehavior(),
         ["sapling"] = _ => new SaplingBehavior(),
         ["snow"] = _ => new SnowBehavior(),
@@ -104,4 +104,16 @@ internal static class BehaviorRegistry
         name == "air" ? 0 : ResolveBlock(name).id;
 
     private static Item ResolveItem(string name) => Item.ByName(name);
+
+    private static Block[] ResolveBlockArray(JsonElement array)
+    {
+        Block[] blocks = new Block[array.GetArrayLength()];
+        int i = 0;
+        foreach (JsonElement element in array.EnumerateArray())
+        {
+            blocks[i++] = ResolveBlock(element.GetString()!);
+        }
+
+        return blocks;
+    }
 }

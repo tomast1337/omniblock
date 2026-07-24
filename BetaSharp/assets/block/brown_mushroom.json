@@ -22,7 +22,8 @@
   "Behaviors": [
     {
       "Slots": ["Ticker", "Physics"],
-      "Type": "mushroom"
+      "Type": "mushroom",
+      "valid_ground": ["grass_block", "dirt", "stone", "gravel", "cobblestone"]
     }
   ]
 }

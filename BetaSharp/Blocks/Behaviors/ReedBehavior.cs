@@ -10,8 +10,13 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     routed through the full <c>canPlaceAt</c> dispatch — that dispatch ANDs with the base
 ///     replaceability check, which is false for the reed's own (non-replaceable) material and would
 ///     make the break-recheck always fail.
+///     <para>
+///         Valid ground substrate set is a required, JSON-declared constructor param (see
+///         <c>BehaviorRegistry</c>'s <c>"reed"</c> entry) — no built-in vanilla fallback; an
+///         omitted or unknown name throws immediately at startup.
+///     </para>
 /// </summary>
-internal sealed class ReedBehavior : IBlockTicker, IBlockPhysics
+internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
 {
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
         => CanSurviveAt(@event.World.Reader, block.id, @event.X, @event.Y, @event.Z);
@@ -50,16 +55,23 @@ internal sealed class ReedBehavior : IBlockTicker, IBlockPhysics
         }
     }
 
-    private static bool CanSurviveAt(IBlockReader reader, int selfId, int x, int y, int z)
+    private bool CanSurviveAt(IBlockReader reader, int selfId, int x, int y, int z)
     {
         int blockBelowId = reader.GetBlockId(x, y - 1, z);
 
         if (blockBelowId == selfId) return true;
 
-        if (blockBelowId != BlockRegistry.Get("grass_block").id &&
-            blockBelowId != BlockRegistry.Get("dirt").id &&
-            blockBelowId != BlockRegistry.Get("sand").id &&
-            blockBelowId != BlockRegistry.Get("gravel").id) return false;
+        bool onValidGround = false;
+        foreach (Block ground in validGround)
+        {
+            if (blockBelowId == ground.id)
+            {
+                onValidGround = true;
+                break;
+            }
+        }
+
+        if (!onValidGround) return false;
 
         // Soil alone isn't enough — reeds also need water in one of the four adjacent tiles.
         return reader.GetMaterial(x - 1, y - 1, z) == Material.Water ||
