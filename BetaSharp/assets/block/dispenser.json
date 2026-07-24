@@ -11,7 +11,10 @@
   "Behaviors": [
     {
       "Slots": ["Interactable", "Lifecycle", "Physics", "Ticker", "Visuals"],
-      "Type": "dispenser"
+      "Type": "dispenser",
+      "arrow": "arrow",
+      "egg": "egg",
+      "snowball": "snowball"
     }
   ]
 }

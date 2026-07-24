@@ -6,12 +6,13 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Behaviors;
 
-internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
+/// <summary>
+///     Which items get projectile-spawn behavior (vs. a plain item toss) are required,
+///     JSON-declared constructor params (see <c>BehaviorRegistry</c>'s <c>"dispenser"</c> entry)
+///     — no built-in vanilla fallback; an omitted or unknown name throws immediately at startup.
+/// </summary>
+internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {
-    private static readonly int s_arrowId = Item.ByName("arrow").Id;
-    private static readonly int s_eggId = Item.ByName("egg").Id;
-    private static readonly int s_snowballId = Item.ByName("snowball").Id;
-
     public bool OnUse(Block block, OnUseEvent @event)
     {
         if (@event.World.IsRemote) return true;
@@ -102,7 +103,7 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
-    private static void Dispense(OnTickEvent @event)
+    private void Dispense(OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int dirX = 0;
@@ -138,7 +139,7 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
             return;
         }
 
-        if (itemStack.ItemId == s_arrowId)
+        if (itemStack.ItemId == arrow.Id)
         {
             EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
             arrow.SetArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
@@ -146,14 +147,14 @@ internal sealed class DispenserBehavior : IBlockInteractable, IBlockLifecycle, I
             @event.World.Entities.SpawnEntity(arrow);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.ItemId == s_eggId)
+        else if (itemStack.ItemId == egg.Id)
         {
             EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
             egg.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
             @event.World.Entities.SpawnEntity(egg);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
-        else if (itemStack.ItemId == s_snowballId)
+        else if (itemStack.ItemId == snowball.Id)
         {
             EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
             snowball.SetHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);

@@ -27,7 +27,8 @@
     },
     {
       "Slots": ["Visuals", "Lifecycle"],
-      "Type": "tall_grass"
+      "Type": "tall_grass",
+      "seeds": "seeds"
     }
   ]
 }

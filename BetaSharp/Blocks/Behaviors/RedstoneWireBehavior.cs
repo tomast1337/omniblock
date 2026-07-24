@@ -1,4 +1,3 @@
-using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -9,14 +8,23 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     (breaks without solid ground), and the powered-dust particles. One shared instance assigned
 ///     to the Redstone, Physics, Ticker, Lifecycle, and Visuals slots.
 ///     <para>
-///         <see cref="WiresProvidePower" /> is thread-local: propagation temporarily blinds the engine
+///         The wires-provide-power flag is thread-local: propagation temporarily blinds the engine
 ///         to wires while measuring indirect power, exactly like the original static flag.
 ///     </para>
+///     <para>
+///         Self (<paramref name="wire" />), the non-wire conductor set, and the repeater pair are
+///         all required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
+///         <c>"redstone_wire"</c> entry) — no built-in vanilla fallback; an omitted or unknown name
+///         throws immediately at startup. <see cref="IsPowerProviderOrWire" /> is called
+///         externally by the client wire renderer (<c>RedstoneWireRenderer</c>) with no behavior
+///         instance in scope there, so it resolves back to this instance via
+///         <c>wire.Redstone</c> rather than a static, hardcoded set
+///         — there is exactly one redstone wire type in vanilla, so that lookup is stable.
+///     </para>
 /// </summary>
-public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
+public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block repeater, Block poweredRepeater) : IRedstoneComponent, IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private static readonly ThreadLocal<bool> s_wiresProvidePower = new(() => true);
-    private static readonly int s_redstoneId = Item.ByName("redstone").Id;
 
     private readonly HashSet<BlockPos> _blocksNeedingUpdate = [];
 
@@ -157,7 +165,7 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
 
         foreach (BlockPos pos in updateList)
         {
-            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, BlockRegistry.Get("redstone_wire").id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, wire.id);
         }
     }
 
@@ -239,41 +247,42 @@ public sealed class RedstoneWireBehavior : IRedstoneComponent, IBlockPhysics, IB
         _blocksNeedingUpdate.Add(new BlockPos(x, y, z + 1));
     }
 
-    private static void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
+    private void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("redstone_wire").id) return;
-        level.Broadcaster.NotifyNeighbors(x, y, z, BlockRegistry.Get("redstone_wire").id);
-        level.Broadcaster.NotifyNeighbors(x - 1, y, z, BlockRegistry.Get("redstone_wire").id);
-        level.Broadcaster.NotifyNeighbors(x + 1, y, z, BlockRegistry.Get("redstone_wire").id);
-        level.Broadcaster.NotifyNeighbors(x, y, z - 1, BlockRegistry.Get("redstone_wire").id);
-        level.Broadcaster.NotifyNeighbors(x, y, z + 1, BlockRegistry.Get("redstone_wire").id);
-        level.Broadcaster.NotifyNeighbors(x, y - 1, z, BlockRegistry.Get("redstone_wire").id);
-        level.Broadcaster.NotifyNeighbors(x, y + 1, z, BlockRegistry.Get("redstone_wire").id);
+        if (level.Reader.GetBlockId(x, y, z) != wire.id) return;
+        level.Broadcaster.NotifyNeighbors(x, y, z, wire.id);
+        level.Broadcaster.NotifyNeighbors(x - 1, y, z, wire.id);
+        level.Broadcaster.NotifyNeighbors(x + 1, y, z, wire.id);
+        level.Broadcaster.NotifyNeighbors(x, y, z - 1, wire.id);
+        level.Broadcaster.NotifyNeighbors(x, y, z + 1, wire.id);
+        level.Broadcaster.NotifyNeighbors(x, y - 1, z, wire.id);
+        level.Broadcaster.NotifyNeighbors(x, y + 1, z, wire.id);
     }
 
-    private static int GetMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int power)
+    private int GetMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int power)
     {
-        if (reader.GetBlockId(x, y, z) != BlockRegistry.Get("redstone_wire").id) return power;
+        if (reader.GetBlockId(x, y, z) != wire.id) return power;
         int currentStrength = reader.GetBlockMeta(x, y, z);
         return currentStrength > power ? currentStrength : power;
     }
 
-    /// <summary>Connectivity test shared with the client wire renderer.</summary>
-    public static bool IsPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int direction)
+    /// <summary>
+    ///     Connectivity test shared with the client wire renderer, which resolves this instance
+    ///     via <c>BlockRegistry.Get("redstone_wire").Redstone</c> rather than calling a static
+    ///     method — see the class doc comment.
+    /// </summary>
+    public bool IsPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int direction)
     {
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId == 0) return false;
-        if (blockId == BlockRegistry.Get("redstone_wire").id) return true;
+        if (blockId == wire.id) return true;
 
-        if (blockId == BlockRegistry.Get("stone_pressure_plate").id ||
-            blockId == BlockRegistry.Get("wooden_pressure_plate").id ||
-            blockId == BlockRegistry.Get("button").id ||
-            blockId == BlockRegistry.Get("lever").id)
+        foreach (Block conductor in conductors)
         {
-            return true;
+            if (blockId == conductor.id) return true;
         }
 
-        if (blockId != BlockRegistry.Get("repeater").id && blockId != BlockRegistry.Get("powered_repeater").id) return Block.Blocks[blockId].canEmitRedstonePower();
+        if (blockId != repeater.id && blockId != poweredRepeater.id) return Block.Blocks[blockId].canEmitRedstonePower();
         if (direction < 0) return false;
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;

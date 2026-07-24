@@ -9,16 +9,17 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     1.7.3 values) live on <see cref="Block.BurnChance" />/<see cref="Block.SpreadChance" />,
 ///     set per-block from JSON, rather than a lookup table owned by this behavior.
 ///     <para>
-///         Portal-trigger block, eternal-burn base, and auto-ignite block are all required,
-///         JSON-declared constructor params (see <c>BehaviorRegistry</c>'s <c>"fire"</c> entry) —
-///         no built-in vanilla fallback; an omitted or unknown name throws immediately at startup.
+///         Portal-trigger block, portal-fill block, eternal-burn base, and auto-ignite block are
+///         all required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
+///         <c>"fire"</c> entry) — no built-in vanilla fallback; an omitted or unknown name throws
+///         immediately at startup.
 ///     </para>
 /// </summary>
-internal sealed class FireBehavior(Block obsidian, Block netherrack, Block tntBlock) : IBlockTicker, IBlockPhysics, IBlockLifecycle
+internal sealed class FireBehavior(Block obsidian, Block netherPortal, Block netherrack, Block tntBlock) : IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z, obsidian, block, netherPortal))
             return;
 
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))

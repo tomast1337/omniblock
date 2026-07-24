@@ -23,7 +23,8 @@
   "Behaviors": [
     {
       "Slots": ["Physics", "Ticker", "Lifecycle", "Visuals"],
-      "Type": "snow"
+      "Type": "snow",
+      "snowball": "snowball"
     }
   ]
 }

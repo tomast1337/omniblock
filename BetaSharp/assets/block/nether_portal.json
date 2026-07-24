@@ -14,7 +14,8 @@
   "Behaviors": [
     {
       "Slots": ["Physics", "Visuals", "Interactable", "Ticker"],
-      "Type": "portal"
+      "Type": "portal",
+      "obsidian": "obsidian"
     }
   ]
 }
