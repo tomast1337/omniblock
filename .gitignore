@@ -374,6 +374,7 @@ FodyWeavers.xsd
 imgui.ini
 
 # Saves and Server Configuration
+**/map.txt
 *.mcr
 *.dat
 *.dat_old
