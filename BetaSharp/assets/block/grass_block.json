@@ -33,7 +33,10 @@
     {
       "Slots": ["Ticker"],
       "Type": "grass_ticker",
-      "soil": "dirt"
+      "soil": "dirt",
+      "die_light_threshold": 4,
+      "die_chance_one_in": 4,
+      "spread_light_threshold": 9
     }
   ]
 }

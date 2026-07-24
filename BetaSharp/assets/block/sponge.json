@@ -12,7 +12,8 @@
   "Behaviors": [
     {
       "Slots": ["Lifecycle"],
-      "Type": "sponge_lifecycle"
+      "Type": "sponge_lifecycle",
+      "absorb_radius": 2
     }
   ]
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
 
@@ -36,10 +37,19 @@ public sealed class BlockLogTests
         world.ReaderWriter.SetInitial(1, 64, 0, customLeaves.id);
         world.ReaderWriter.SetInitial(2, 64, 0, vanillaLeaves.id);
 
-        LogBehavior behavior = new(canopy: customLeaves);
+        LogBehavior behavior = new(canopy: customLeaves, searchRadius: 4);
         behavior.OnBreak(logBlock, new OnBreakEvent(world, null, 0, 64, 0));
 
         Assert.Equal(8, world.Reader.GetBlockMeta(1, 64, 0) & 8);
         Assert.Equal(0, world.Reader.GetBlockMeta(2, 64, 0) & 8);
+    }
+
+    // search_radius is a required, JSON-declared constructor param — no built-in vanilla
+    // fallback. An omitted value must throw immediately at BehaviorRegistry.Build (server boot).
+    [Fact]
+    public void BehaviorRegistry_Build_MissingSearchRadius_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"log","canopy":"leaves"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("log", json.RootElement));
     }
 }

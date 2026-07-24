@@ -11,24 +11,27 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         eagerly, not lazily: every <see cref="Block" /> already exists by the time any behavior
 ///         factory runs.
 ///     </para>
+///     <para>
+///         Leaf-decay search radius (<paramref name="searchRadius" />) is a required, JSON-declared
+///         constructor param (see <c>BehaviorRegistry</c>'s <c>"log"</c> entry) — no built-in
+///         vanilla fallback.
+///     </para>
 /// </summary>
-public sealed class LogBehavior(Block canopy) : IBlockVisuals, IBlockLifecycle
+public sealed class LogBehavior(Block canopy, int searchRadius) : IBlockVisuals, IBlockLifecycle
 {
-    private const sbyte SearchRadius = 4;
-    private const int RegionExtent = SearchRadius + 1;
-
     public void OnBreak(Block block, OnBreakEvent @event)
     {
-        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - RegionExtent, @event.Y - RegionExtent, @event.Z - RegionExtent, @event.X + RegionExtent, @event.Y + RegionExtent, @event.Z + RegionExtent))
+        int regionExtent = searchRadius + 1;
+        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - regionExtent, @event.Y - regionExtent, @event.Z - regionExtent, @event.X + regionExtent, @event.Y + regionExtent, @event.Z + regionExtent))
         {
             return;
         }
 
-        for (int offsetX = -SearchRadius; offsetX <= SearchRadius; ++offsetX)
+        for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
         {
-            for (int offsetY = -SearchRadius; offsetY <= SearchRadius; ++offsetY)
+            for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
             {
-                for (int offsetZ = -SearchRadius; offsetZ <= SearchRadius; ++offsetZ)
+                for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
                     int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                     if (neighborBlockId != canopy.id) continue;

@@ -22,7 +22,7 @@ public sealed class BlockMushroomTests
         Block customGround = BlockRegistry.Get("sand");
         world.ReaderWriter.SetInitial(0, 63, 0, customGround.id);
 
-        MushroomBehavior behavior = new([customGround]);
+        MushroomBehavior behavior = new([customGround], 100, 13);
 
         Assert.True(behavior.CanGrow(mushroom, Tick(world, 0, 64, 0)));
     }
@@ -35,7 +35,7 @@ public sealed class BlockMushroomTests
         Block customGround = BlockRegistry.Get("sand");
         world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("dirt").id);
 
-        MushroomBehavior behavior = new([customGround]);
+        MushroomBehavior behavior = new([customGround], 100, 13);
 
         Assert.False(behavior.CanGrow(mushroom, Tick(world, 0, 64, 0)));
     }
@@ -53,6 +53,15 @@ public sealed class BlockMushroomTests
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
         using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["dirt","not_a_real_block"]}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("mushroom", json.RootElement));
+    }
+
+    // Numeric tuning params (spread_chance_one_in, max_brightness) are also required, no
+    // default: an omitted value must throw immediately at BehaviorRegistry.Build.
+    [Fact]
+    public void BehaviorRegistry_Build_MissingSpreadChanceOneIn_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["dirt"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("mushroom", json.RootElement));
     }
 }

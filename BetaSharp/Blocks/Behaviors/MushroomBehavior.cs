@@ -12,15 +12,20 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         <c>BehaviorRegistry</c>'s <c>"mushroom"</c> entry) — no built-in vanilla fallback; an
 ///         omitted or unknown name throws immediately at startup.
 ///     </para>
+///     <para>
+///         Spread chance (<paramref name="spreadChanceOneIn" />, 1-in-N per tick) and maximum
+///         brightness it can survive at (<paramref name="maxBrightness" />) are also required,
+///         JSON-declared constructor params — no built-in vanilla fallback.
+///     </para>
 /// </summary>
-internal sealed class MushroomBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
+internal sealed class MushroomBehavior(Block[] validGround, int spreadChanceOneIn, int maxBrightness) : IBlockTicker, IBlockPhysics
 {
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
         => CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
 
     public bool CanGrow(Block block, OnTickEvent ctx)
         => ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight
-                      && ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < 13
+                      && ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < maxBrightness
                       && CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
@@ -32,7 +37,7 @@ internal sealed class MushroomBehavior(Block[] validGround) : IBlockTicker, IBlo
     }
     public void OnTick(Block block, OnTickEvent @event)
     {
-        if (Random.Shared.Next(100) != 0) return;
+        if (Random.Shared.Next(spreadChanceOneIn) != 0) return;
 
         int tryX = @event.X + Random.Shared.Next(3) - 1;
         int tryY = @event.Y + Random.Shared.Next(2) - Random.Shared.Next(2);

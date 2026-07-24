@@ -1,20 +1,23 @@
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-///     Sponge removal notifies every block in a 2-block radius so absorbed water can flow back.
+///     Sponge removal notifies every block in a radius so absorbed water can flow back.
 ///     (The Beta 1.7.3 on-place absorption loop was an empty no-op and is intentionally not ported.)
+///     <para>
+///         Absorb radius (<paramref name="absorbRadius" />) is a required, JSON-declared constructor
+///         param (see <c>BehaviorRegistry</c>'s <c>"sponge_lifecycle"</c> entry) — no built-in
+///         vanilla fallback.
+///     </para>
 /// </summary>
-public sealed class SpongeLifecycleBehavior : IBlockLifecycle
+public sealed class SpongeLifecycleBehavior(int absorbRadius) : IBlockLifecycle
 {
-    private const sbyte AbsorbRadius = 2;
-
     public void OnBreak(Block block, OnBreakEvent @event)
     {
-        for (int checkX = @event.X - AbsorbRadius; checkX <= @event.X + AbsorbRadius; ++checkX)
+        for (int checkX = @event.X - absorbRadius; checkX <= @event.X + absorbRadius; ++checkX)
         {
-            for (int checkY = @event.Y - AbsorbRadius; checkY <= @event.Y + AbsorbRadius; ++checkY)
+            for (int checkY = @event.Y - absorbRadius; checkY <= @event.Y + absorbRadius; ++checkY)
             {
-                for (int checkZ = @event.Z - AbsorbRadius; checkZ <= @event.Z + AbsorbRadius; ++checkZ)
+                for (int checkZ = @event.Z - absorbRadius; checkZ <= @event.Z + absorbRadius; ++checkZ)
                 {
                     @event.World.Broadcaster.NotifyNeighbors(checkX, checkY, checkZ, @event.World.Reader.GetBlockId(checkX, checkY, checkZ));
                 }

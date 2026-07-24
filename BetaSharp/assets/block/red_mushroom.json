@@ -22,7 +22,9 @@
     {
       "Slots": ["Ticker", "Physics"],
       "Type": "mushroom",
-      "valid_ground": ["grass_block", "dirt", "stone", "gravel", "cobblestone"]
+      "valid_ground": ["grass_block", "dirt", "stone", "gravel", "cobblestone"],
+      "spread_chance_one_in": 100,
+      "max_brightness": 13
     }
   ]
 }

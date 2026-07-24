@@ -14,7 +14,8 @@
     {
       "Slots": ["Visuals", "Lifecycle"],
       "Type": "log",
-      "canopy": "leaves"
+      "canopy": "leaves",
+      "search_radius": 4
     }
   ]
 }

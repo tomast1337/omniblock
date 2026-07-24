@@ -19,7 +19,7 @@ public sealed class BlockFallingBlockTests
         Block customPassable = BlockRegistry.Get("torch");
         world.ReaderWriter.SetInitial(0, 63, 0, customPassable.id);
 
-        FallingBlockBehavior behavior = new([customPassable]);
+        FallingBlockBehavior behavior = new([customPassable], 32);
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -31,7 +31,7 @@ public sealed class BlockFallingBlockTests
         Block customPassable = BlockRegistry.Get("torch");
         world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("fire").id);
 
-        FallingBlockBehavior behavior = new([customPassable]);
+        FallingBlockBehavior behavior = new([customPassable], 32);
 
         Assert.False(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -40,7 +40,7 @@ public sealed class BlockFallingBlockTests
     public void CanFallThrough_Air_AlwaysReturnsTrue()
     {
         FakeWorldContext world = new();
-        FallingBlockBehavior behavior = new([]);
+        FallingBlockBehavior behavior = new([], 32);
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -50,7 +50,7 @@ public sealed class BlockFallingBlockTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("water").id);
-        FallingBlockBehavior behavior = new([]);
+        FallingBlockBehavior behavior = new([], 32);
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -68,6 +68,15 @@ public sealed class BlockFallingBlockTests
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
         using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["not_a_real_block"]}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
+    }
+
+    // Numeric tuning params (region_load_check_radius) are also required, no default: an omitted
+    // value must throw immediately at BehaviorRegistry.Build, i.e. server boot.
+    [Fact]
+    public void BehaviorRegistry_Build_MissingRegionLoadCheckRadius_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["fire"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
     }
 }

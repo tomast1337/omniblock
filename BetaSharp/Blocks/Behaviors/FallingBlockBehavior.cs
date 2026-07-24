@@ -16,10 +16,13 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         it resolves back to this instance via <c>Block.Blocks[id].Physics</c> rather than
 ///         taking a static, hardcoded set.
 ///     </para>
+///     <para>
+///         Region-loaded check radius (<paramref name="regionLoadCheckRadius" />) is a required,
+///         JSON-declared constructor param — no built-in vanilla fallback.
+///     </para>
 /// </summary>
-public class FallingBlockBehavior(Block[] passable) : IBlockTicker, IBlockLifecycle, IBlockPhysics
+public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) : IBlockTicker, IBlockLifecycle, IBlockPhysics
 {
-    private const sbyte CheckRadius = 32;
     private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
 
     public static bool FallInstantly
@@ -39,7 +42,7 @@ public class FallingBlockBehavior(Block[] passable) : IBlockTicker, IBlockLifecy
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         if (y <= 0 || !CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId))) return;
 
-        if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - CheckRadius, y - CheckRadius, z - CheckRadius, x + CheckRadius, y + CheckRadius, z + CheckRadius))
+        if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - regionLoadCheckRadius, y - regionLoadCheckRadius, z - regionLoadCheckRadius, x + regionLoadCheckRadius, y + regionLoadCheckRadius, z + regionLoadCheckRadius))
         {
             EntityFallingSand fallingSand = new(@event.World, x + 0.5F, y + 0.5F, z + 0.5F, block.id);
             @event.World.Entities.SpawnEntity(fallingSand);
