@@ -11,7 +11,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         factory runs.
 ///     </para>
 /// </summary>
-public sealed class LogBehavior(int leavesBlockId) : IBlockVisuals, IBlockLifecycle
+public sealed class LogBehavior(Block leaves) : IBlockVisuals, IBlockLifecycle
 {
     private const sbyte SearchRadius = 4;
     private const int RegionExtent = SearchRadius + 1;
@@ -30,7 +30,7 @@ public sealed class LogBehavior(int leavesBlockId) : IBlockVisuals, IBlockLifecy
                 for (int offsetZ = -SearchRadius; offsetZ <= SearchRadius; ++offsetZ)
                 {
                     int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (neighborBlockId != leavesBlockId) continue;
+                    if (neighborBlockId != leaves.id) continue;
 
                     int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                     if ((leavesMeta & 8) == 0)

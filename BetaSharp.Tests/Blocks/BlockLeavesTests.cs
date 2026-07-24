@@ -41,13 +41,13 @@ public sealed class BlockLeavesTests
         FakeWorldContext world = new();
         Block leavesBlock = BlockRegistry.Get("leaves");
         Block customTrunk = BlockRegistry.Get("stone");
-        int saplingId = BlockRegistry.Get("sapling").id;
-        int shearsId = Item.ByName("shears").Id;
+        Block sapling = BlockRegistry.Get("sapling");
+        Item shears = Item.ByName("shears");
 
         world.ReaderWriter.SetInitial(0, 63, 0, customTrunk.id);
         world.ReaderWriter.SetInitial(0, 64, 0, leavesBlock.id, 8);
 
-        LeavesBehavior behavior = new(customTrunk, saplingId, shearsId);
+        LeavesBehavior behavior = new(customTrunk, sapling, shears);
         behavior.OnTick(leavesBlock, Tick(world));
 
         Assert.Equal(0, world.Reader.GetBlockMeta(0, 64, 0) & 8);
@@ -57,11 +57,11 @@ public sealed class BlockLeavesTests
     public void GetDroppedItemId_CustomSapling_ReturnsConfiguredItem()
     {
         Block log = BlockRegistry.Get("log");
-        int sandId = BlockRegistry.Get("sand").id;
-        int shearsId = Item.ByName("shears").Id;
+        Block sand = BlockRegistry.Get("sand");
+        Item shears = Item.ByName("shears");
 
-        LeavesBehavior behavior = new(log, sandId, shearsId);
-        Assert.Equal(sandId, behavior.GetDroppedItemId(BlockRegistry.Get("leaves"), 0, 0));
+        LeavesBehavior behavior = new(log, sand, shears);
+        Assert.Equal(sand.id, behavior.GetDroppedItemId(BlockRegistry.Get("leaves"), 0, 0));
     }
 
     // No built-in default and no null fallback: an omitted or unknown "trunk"/"sapling"/

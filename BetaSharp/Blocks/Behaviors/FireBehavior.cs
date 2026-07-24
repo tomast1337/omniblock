@@ -8,16 +8,17 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Fire: age-driven extinguishing and neighbor ignition. Burn/spread chances (vanilla Beta
 ///     1.7.3 values) live on <see cref="Block.BurnChance" />/<see cref="Block.SpreadChance" />,
 ///     set per-block from JSON, rather than a lookup table owned by this behavior.
+///     <para>
+///         Portal-trigger block, eternal-burn base, and auto-ignite block are all required,
+///         JSON-declared constructor params (see <c>BehaviorRegistry</c>'s <c>"fire"</c> entry) —
+///         no built-in vanilla fallback; an omitted or unknown name throws immediately at startup.
+///     </para>
 /// </summary>
-internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycle
+internal sealed class FireBehavior(Block obsidian, Block netherrack, Block tntBlock) : IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
-    private static readonly Block s_obsidian = BlockRegistry.Get("obsidian");
-    private static readonly Block s_netherrack = BlockRegistry.Get("netherrack");
-    private static readonly Block s_tntBlock = BlockRegistry.Get("tnt");
-
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == s_obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z))
             return;
 
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
@@ -44,7 +45,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     {
         if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick)) return;
 
-        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == s_netherrack.id;
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == netherrack.id;
         if (!block.CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -220,7 +221,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     {
         int targetSpreadChance = SpreadChanceAt(level.Reader, x, y, z);
         if (random.NextInt(spreadFactor) >= targetSpreadChance) return;
-        bool isTnt = level.Reader.GetBlockId(x, y, z) == s_tntBlock.id;
+        bool isTnt = level.Reader.GetBlockId(x, y, z) == tntBlock.id;
         if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
         {
             int newFireAge = currentAge + random.NextInt(5) / 4;
@@ -238,7 +239,7 @@ internal sealed class FireBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
 
         if (isTnt)
         {
-            s_tntBlock.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
+            tntBlock.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
         }
     }
 

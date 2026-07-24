@@ -22,7 +22,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         leaves block is always its own same-species reference.
 ///     </para>
 /// </summary>
-public sealed class LeavesBehavior(Block trunk, int saplingItemId, int harvestToolItemId) : IBlockTicker, IBlockLifecycle, IBlockVisuals
+public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestToolItem) : IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private const sbyte DecayRadius = 4;
     private const sbyte RegionSize = 32;
@@ -64,7 +64,7 @@ public sealed class LeavesBehavior(Block trunk, int saplingItemId, int harvestTo
     public void OnAfterBreak(Block block, OnAfterBreakEvent ctx)
     {
         ItemStack? hand = ctx.Player.GetHand();
-        if (ctx.World.IsRemote || hand == null || hand.ItemId != harvestToolItemId) return;
+        if (ctx.World.IsRemote || hand == null || hand.ItemId != harvestToolItem.Id) return;
 
         ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
         Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(block.id, 1, ctx.Meta & 3));
@@ -72,7 +72,7 @@ public sealed class LeavesBehavior(Block trunk, int saplingItemId, int harvestTo
 
     public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItemId;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItem.id;
 
     public void OnTick(Block block, OnTickEvent @event)
     {

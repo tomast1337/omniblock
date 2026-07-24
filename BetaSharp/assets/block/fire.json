@@ -16,13 +16,22 @@
   "DropCount": 0,
   "Behaviors": {
     "Ticker": {
-      "Type": "fire"
+      "Type": "fire",
+      "obsidian": "obsidian",
+      "netherrack": "netherrack",
+      "tnt": "tnt"
     },
     "Physics": {
-      "Type": "fire"
+      "Type": "fire",
+      "obsidian": "obsidian",
+      "netherrack": "netherrack",
+      "tnt": "tnt"
     },
     "Lifecycle": {
-      "Type": "fire"
+      "Type": "fire",
+      "obsidian": "obsidian",
+      "netherrack": "netherrack",
+      "tnt": "tnt"
     }
   }
 }
