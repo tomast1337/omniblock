@@ -37,18 +37,6 @@ public sealed class LootTable
         }
     }
 
-    public bool TryGetSingleItemId(out int itemId)
-    {
-        if (_entries.Length == 1)
-        {
-            itemId = _entries[0].ItemId;
-            return true;
-        }
-
-        itemId = 0;
-        return false;
-    }
-
     public int Roll(Random random)
     {
         int roll = random.Next(_totalWeight);

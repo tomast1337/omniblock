@@ -1317,15 +1317,19 @@ public partial class BetaSharp :
         if (ObjectMouseOver.Type != HitResultType.MISS)
         {
             int blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
+            int blockMeta = World.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
             Block hitBlock = Block.Blocks[blockId];
-            int backupId = 0;
 
-            if (hitBlock == BlockRegistry.Get("bedrock")) backupId = BlockRegistry.Get("stone").id;
-            else if (hitBlock == BlockRegistry.Get("leaves")) backupId = BlockRegistry.Get("sapling").id;
-            else if (hitBlock == BlockRegistry.Get("grass_block") && hitBlock.TryGetSingleLootItemId(out int dirtId)) backupId = dirtId;
-            else if (hitBlock == BlockRegistry.Get("double_slab") && hitBlock.TryGetSingleLootItemId(out int slabId)) backupId = slabId;
+            (int backupId, int backupMeta, int primaryMeta) = true switch
+            {
+                _ when hitBlock == BlockRegistry.Get("bedrock") => (BlockRegistry.Get("stone").id, -1, blockMeta),
+                _ when hitBlock == BlockRegistry.Get("leaves") => (BlockRegistry.Get("sapling").id, blockMeta & 3, blockMeta & 3),
+                _ when hitBlock == BlockRegistry.Get("grass_block") => (BlockRegistry.Get("dirt").id, -1, blockMeta),
+                _ when hitBlock == BlockRegistry.Get("double_slab") => (BlockRegistry.Get("slab").id, blockMeta, blockMeta),
+                _ => (0, -1, blockMeta)
+            };
 
-            Player.Inventory.SetCurrentItem(blockId, backupId);
+            Player.Inventory.SetCurrentItem(blockId, backupId, primaryMeta, backupMeta);
         }
     }
 

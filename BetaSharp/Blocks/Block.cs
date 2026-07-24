@@ -158,18 +158,6 @@ public class Block
         _maxDroppedCount = count;
     }
 
-    /// <summary>Item id this block always drops, if its loot table has exactly one possible entry.</summary>
-    public bool TryGetSingleLootItemId(out int itemId)
-    {
-        if (_lootTable != null)
-        {
-            return _lootTable.TryGetSingleItemId(out itemId);
-        }
-
-        itemId = 0;
-        return false;
-    }
-
     protected internal void preserveMetaOnDrop() => _dropsWithBlockMeta = true;
 
     protected internal void SetBlockAlias(params string[] aliases) => _blockAlias = aliases;

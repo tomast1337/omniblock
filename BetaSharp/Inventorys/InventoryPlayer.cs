@@ -19,12 +19,12 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
     public ItemStack? ItemInHand =>
         SelectedSlot < HotbarSize && SelectedSlot >= 0 ? Main[SelectedSlot] : null;
 
-    private int FindSlotByItemId(int itemId)
+    private int FindSlotByItemId(int itemId, int meta = -1)
     {
         for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
             ItemStack? stack = Main[slotIndex];
-            if (stack != null && stack.ItemId == itemId)
+            if (stack != null && stack.ItemId == itemId && (meta < 0 || stack.getDamage() == meta))
             {
                 return slotIndex;
             }
@@ -77,14 +77,14 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         return -1;
     }
 
-    public void SetCurrentItem(int itemId, int backupId = 0)
+    public void SetCurrentItem(int itemId, int backupId = 0, int meta = -1, int backupMeta = -1)
     {
-        int slotIndex = FindSlotByItemId(itemId);
+        int slotIndex = FindSlotByItemId(itemId, meta);
         if (slotIndex < 0)
         {
             if (Player.GameMode.FiniteResources)
             {
-                if (backupId > 0) SetCurrentItem(backupId);
+                if (backupId > 0) SetCurrentItem(backupId, meta: backupMeta);
                 return;
             }
 
@@ -95,7 +95,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
                 if (h >= 0) SelectedSlot = h;
             }
 
-            Player.SendChatMessage("/give " + itemId);
+            Player.SendChatMessage(meta > 0 ? $"/give {itemId}:{meta}" : "/give " + itemId);
         }
         else if (slotIndex < HotbarSize)
         {
