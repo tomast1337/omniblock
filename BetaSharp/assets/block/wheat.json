@@ -24,9 +24,9 @@
     {
       "Slots": ["Ticker", "Physics", "Lifecycle", "Visuals"],
       "Type": "crop",
-      "required_soil": "farmland",
-      "mature_crop_item": "wheat",
-      "seeds": "seeds",
+      "required_soil": "betasharp:farmland",
+      "mature_crop_item": "betasharp:wheat",
+      "seeds": "betasharp:seeds",
       "drop_spread": 0.7,
       "seed_scatter_chance_bound": 15,
       "growth_chance_denominator": 100

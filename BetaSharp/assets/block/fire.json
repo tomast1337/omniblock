@@ -18,10 +18,10 @@
     {
       "Slots": ["Ticker", "Physics", "Lifecycle"],
       "Type": "fire",
-      "portal_base": "obsidian",
-      "portal_fill": "nether_portal",
-      "eternal_fuel": "netherrack",
-      "explosive": "tnt",
+      "portal_base": "betasharp:obsidian",
+      "portal_fill": "betasharp:nether_portal",
+      "eternal_fuel": "betasharp:netherrack",
+      "explosive": "betasharp:tnt",
       "max_age": 15,
       "crackle_sound_chance_one_in": 24
     }

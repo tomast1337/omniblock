@@ -43,7 +43,7 @@ public sealed class BlockLogTests
     [Fact]
     public void BehaviorRegistry_Build_MissingSearchRadius_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"log","canopy":"leaves"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"log","canopy":"betasharp:leaves"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("log", json.RootElement));
     }
 }

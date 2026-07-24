@@ -82,9 +82,9 @@ public sealed class BlockBatch7Tests
     }
 
     [Theory]
-    [InlineData("dispenser", """{"Type":"dispenser","egg":"egg","snowball":"snowball"}""")]
+    [InlineData("dispenser", """{"Type":"dispenser","egg":"betasharp:egg","snowball":"betasharp:snowball"}""")]
     [InlineData("portal", """{"Type":"portal"}""")]
-    [InlineData("redstone_wire", """{"Type":"redstone_wire","conductors":["button"],"repeater":"repeater","powered_repeater":"powered_repeater"}""")]
+    [InlineData("redstone_wire", """{"Type":"redstone_wire","conductors":["betasharp:button"],"repeater":"betasharp:repeater","powered_repeater":"betasharp:powered_repeater"}""")]
     [InlineData("tall_grass", """{"Type":"tall_grass"}""")]
     [InlineData("snow", """{"Type":"snow"}""")]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws(string type, string json)
@@ -96,7 +96,7 @@ public sealed class BlockBatch7Tests
     // Unknown BLOCK name: CanonicalRegistry.Get throws KeyNotFoundException.
     [Theory]
     [InlineData("portal", """{"Type":"portal","portal_base":"not_a_real_block"}""")]
-    [InlineData("redstone_wire", """{"Type":"redstone_wire","wire":"redstone_wire","conductors":["button"],"repeater":"not_a_real_block","powered_repeater":"powered_repeater"}""")]
+    [InlineData("redstone_wire", """{"Type":"redstone_wire","wire":"betasharp:redstone_wire","conductors":["betasharp:button"],"repeater":"not_a_real_block","powered_repeater":"betasharp:powered_repeater"}""")]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws(string type, string json)
     {
         using JsonDocument doc = JsonDocument.Parse(json);
@@ -106,7 +106,7 @@ public sealed class BlockBatch7Tests
     // Unknown ITEM name: Item.ByName throws ArgumentException (its own registry lookup, not
     // CanonicalRegistry.Get's).
     [Theory]
-    [InlineData("dispenser", """{"Type":"dispenser","arrow":"arrow","egg":"egg","snowball":"not_a_real_item"}""")]
+    [InlineData("dispenser", """{"Type":"dispenser","arrow":"betasharp:arrow","egg":"betasharp:egg","snowball":"not_a_real_item"}""")]
     [InlineData("tall_grass", """{"Type":"tall_grass","seeds":"not_a_real_item"}""")]
     [InlineData("snow", """{"Type":"snow","drop_item":"not_a_real_item"}""")]
     public void BehaviorRegistry_Build_UnknownItemName_Throws(string type, string json)

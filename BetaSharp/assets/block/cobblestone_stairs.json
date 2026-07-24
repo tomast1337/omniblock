@@ -14,7 +14,7 @@
     {
       "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "stairs",
-      "base": "cobblestone"
+      "base": "betasharp:cobblestone"
     }
   ]
 }

@@ -34,7 +34,7 @@
     {
       "Slots": ["Ticker", "Physics"],
       "Type": "reed",
-      "valid_ground": ["grass_block", "dirt", "sand", "gravel"]
+      "valid_ground": ["betasharp:grass_block", "betasharp:dirt", "betasharp:sand", "betasharp:gravel"]
     }
   ]
 }

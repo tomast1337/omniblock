@@ -80,12 +80,14 @@ internal static class BehaviorRegistry
         s_factories.TryGetValue(type, out BehaviorFactory? factory)
             ? factory(json)
             : throw new ArgumentException($"Unknown block behavior type '{type}'");
-    
-    private static Block ResolveBlock(string name) => BlockRegistry.Get(name);
 
-    private static int ResolveBlockOrAir(string name) => name == "air" ? 0 : ResolveBlock(name).id;
+    private static string ResolveName(string namespaced) => ResourceLocation.Parse(namespaced).Path;
 
-    private static Item ResolveItem(string name) => Item.ByName(name);
+    private static Block ResolveBlock(string name) => BlockRegistry.Get(ResolveName(name));
+
+    private static int ResolveBlockOrAir(string name) => ResolveName(name) == "air" ? 0 : ResolveBlock(name).id;
+
+    private static Item ResolveItem(string name) => Item.ByName(ResolveName(name));
 
     private static Block[] ResolveBlockArray(JsonElement array)
     {

@@ -40,14 +40,14 @@ public sealed class BlockFireTests
     [Fact]
     public void BehaviorRegistry_Build_MissingField_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","eternal_fuel":"netherrack","explosive":"tnt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","eternal_fuel":"betasharp:netherrack","explosive":"betasharp:tnt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("fire", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","portal_base":"not_a_real_block","portal_fill":"nether_portal","eternal_fuel":"netherrack","explosive":"tnt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","portal_base":"not_a_real_block","portal_fill":"betasharp:nether_portal","eternal_fuel":"betasharp:netherrack","explosive":"betasharp:tnt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("fire", json.RootElement));
     }
 }

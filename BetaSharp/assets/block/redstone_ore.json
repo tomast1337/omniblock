@@ -23,8 +23,8 @@
     {
       "Slots": ["Ticker", "Interactable"],
       "Type": "redstone_ore",
-      "unlit_ore": "redstone_ore",
-      "lit_ore": "lit_redstone_ore"
+      "unlit_ore": "betasharp:redstone_ore",
+      "lit_ore": "betasharp:lit_redstone_ore"
     }
   ]
 }

@@ -22,9 +22,9 @@
     {
       "Slots": ["Physics", "Visuals", "Lifecycle", "Ticker"],
       "Type": "flowing_fluid",
-      "passable": ["door", "iron_door", "sign", "ladder", "sugar_cane"],
-      "source_solidified": "obsidian",
-      "flow_solidified": "cobblestone"
+      "passable": ["betasharp:door", "betasharp:iron_door", "betasharp:sign", "betasharp:ladder", "betasharp:sugar_cane"],
+      "source_solidified": "betasharp:obsidian",
+      "flow_solidified": "betasharp:cobblestone"
     }
   ]
 }

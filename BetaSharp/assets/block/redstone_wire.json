@@ -34,10 +34,10 @@
     {
       "Slots": ["Redstone", "Physics", "Ticker", "Lifecycle", "Visuals"],
       "Type": "redstone_wire",
-      "wire": "redstone_wire",
-      "conductors": ["stone_pressure_plate", "wooden_pressure_plate", "button", "lever"],
-      "repeater": "repeater",
-      "powered_repeater": "powered_repeater"
+      "wire": "betasharp:redstone_wire",
+      "conductors": ["betasharp:stone_pressure_plate", "betasharp:wooden_pressure_plate", "betasharp:button", "betasharp:lever"],
+      "repeater": "betasharp:repeater",
+      "powered_repeater": "betasharp:powered_repeater"
     }
   ]
 }

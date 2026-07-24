@@ -11,7 +11,7 @@
     {
       "Slots": ["Physics", "Lifecycle", "Interactable", "Visuals"],
       "Type": "tnt",
-      "igniter": "flint_and_steel"
+      "igniter": "betasharp:flint_and_steel"
     }
   ]
 }

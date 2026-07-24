@@ -14,7 +14,7 @@
     {
       "Slots": ["Ticker", "Lifecycle", "Physics"],
       "Type": "falling_block",
-      "passable": ["fire"],
+      "passable": ["betasharp:fire"],
       "region_load_check_radius": 32
     }
   ]

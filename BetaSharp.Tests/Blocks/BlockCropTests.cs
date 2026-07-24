@@ -38,21 +38,21 @@ public sealed class BlockCropTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","mature_crop_item":"wheat","seeds":"seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","mature_crop_item":"betasharp:wheat","seeds":"betasharp:seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"not_a_real_block","mature_crop_item":"wheat","seeds":"seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"not_a_real_block","mature_crop_item":"betasharp:wheat","seeds":"betasharp:seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingDropSpread_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"farmland","mature_crop_item":"wheat","seeds":"seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"betasharp:farmland","mature_crop_item":"betasharp:wheat","seeds":"betasharp:seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 }

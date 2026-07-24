@@ -68,7 +68,7 @@ public sealed class BlockFallingBlockTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRegionLoadCheckRadius_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["fire"]}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["betasharp:fire"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
     }
 }

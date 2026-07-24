@@ -66,14 +66,14 @@ public sealed class BlockLeavesTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","sapling":"sapling","harvest_tool":"shears"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","sapling":"betasharp:sapling","harvest_tool":"betasharp:shears"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","trunk":"not_a_real_block","sapling":"sapling","harvest_tool":"shears"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","trunk":"not_a_real_block","sapling":"betasharp:sapling","harvest_tool":"betasharp:shears"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
     }
 }

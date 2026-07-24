@@ -56,14 +56,14 @@ public sealed class BlockRedstoneOreTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"redstone_ore"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"betasharp:redstone_ore"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("redstone_ore", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"not_a_real_block","lit_ore":"lit_redstone_ore"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"not_a_real_block","lit_ore":"betasharp:lit_redstone_ore"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("redstone_ore", json.RootElement));
     }
 }

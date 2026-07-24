@@ -60,21 +60,21 @@ public sealed class BlockCactusTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","soil":"sand"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","soil":"betasharp:sand"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"cactus","soil":"not_a_real_block"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"betasharp:cactus","soil":"not_a_real_block"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingMaxHeight_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"cactus","soil":"sand"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"betasharp:cactus","soil":"betasharp:sand"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 }

@@ -1323,7 +1323,7 @@ public partial class BetaSharp :
             if (hitBlock == BlockRegistry.Get("bedrock")) backupId = BlockRegistry.Get("stone").id;
             else if (hitBlock == BlockRegistry.Get("leaves")) backupId = BlockRegistry.Get("sapling").id;
             else if (hitBlock == BlockRegistry.Get("grass_block") && hitBlock.TryGetSingleLootItemId(out int dirtId)) backupId = dirtId;
-            else if (hitBlock == BlockRegistry.Get("double_slab") && hitBlock.TryGetSingleLootItemId(out int slabId)) blockId = slabId;
+            else if (hitBlock == BlockRegistry.Get("double_slab") && hitBlock.TryGetSingleLootItemId(out int slabId)) backupId = slabId;
 
             Player.Inventory.SetCurrentItem(blockId, backupId);
         }

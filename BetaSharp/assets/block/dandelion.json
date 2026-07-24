@@ -22,7 +22,7 @@
     {
       "Slots": ["Ticker", "Physics"],
       "Type": "plant_survival",
-      "valid_ground": ["grass_block", "dirt", "farmland"]
+      "valid_ground": ["betasharp:grass_block", "betasharp:dirt", "betasharp:farmland"]
     }
   ]
 }

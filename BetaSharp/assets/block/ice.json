@@ -24,9 +24,9 @@
     {
       "Slots": ["Ticker", "Lifecycle"],
       "Type": "melt",
-      "melt_replacement": "water",
+      "melt_replacement": "betasharp:water",
       "subtract_opacity": true,
-      "broken_replacement": "flowing_water"
+      "broken_replacement": "betasharp:flowing_water"
     }
   ]
 }

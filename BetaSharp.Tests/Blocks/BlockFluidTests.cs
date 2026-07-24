@@ -11,28 +11,28 @@ public sealed class BlockFluidTests
     [Fact]
     public void BehaviorRegistry_Build_StationaryFluid_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","source_solidified":"obsidian","flow_solidified":"cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","source_solidified":"betasharp:obsidian","flow_solidified":"betasharp:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_StationaryFluid_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","ignition_target":"fire","source_solidified":"not_a_real_block","flow_solidified":"cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","ignition_target":"betasharp:fire","source_solidified":"not_a_real_block","flow_solidified":"betasharp:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_FlowingFluid_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","source_solidified":"obsidian","flow_solidified":"cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","source_solidified":"betasharp:obsidian","flow_solidified":"betasharp:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_FlowingFluid_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","passable":["not_a_real_block"],"source_solidified":"obsidian","flow_solidified":"cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","passable":["not_a_real_block"],"source_solidified":"betasharp:obsidian","flow_solidified":"betasharp:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
     }
 

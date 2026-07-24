@@ -25,8 +25,8 @@
     {
       "Slots": ["Ticker", "Physics", "Interactable", "Visuals"],
       "Type": "cactus",
-      "stem": "cactus",
-      "soil": "sand",
+      "stem": "betasharp:cactus",
+      "soil": "betasharp:sand",
       "max_height": 3
     }
   ]

@@ -57,7 +57,7 @@ public sealed class BlockReedTests
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"reed","valid_ground":["dirt","not_a_real_block"]}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"reed","valid_ground":["betasharp:dirt","not_a_real_block"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("reed", json.RootElement));
     }
 }

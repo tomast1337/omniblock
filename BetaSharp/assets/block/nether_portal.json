@@ -15,7 +15,7 @@
     {
       "Slots": ["Physics", "Visuals", "Interactable", "Ticker"],
       "Type": "portal",
-      "portal_base": "obsidian"
+      "portal_base": "betasharp:obsidian"
     }
   ]
 }

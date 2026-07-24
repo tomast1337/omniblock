@@ -17,7 +17,7 @@
     {
       "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "stairs",
-      "base": "planks"
+      "base": "betasharp:planks"
     }
   ]
 }

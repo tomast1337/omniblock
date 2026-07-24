@@ -44,14 +44,14 @@ public sealed class BlockMushroomTests
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["dirt","not_a_real_block"]}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["betasharp:dirt","not_a_real_block"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("mushroom", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingSpreadChanceOneIn_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["dirt"]}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["betasharp:dirt"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("mushroom", json.RootElement));
     }
 }

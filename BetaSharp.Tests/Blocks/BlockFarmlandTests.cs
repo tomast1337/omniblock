@@ -34,21 +34,21 @@ public sealed class BlockFarmlandTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"dirt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"betasharp:dirt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"not_a_real_block","crop":"wheat"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"not_a_real_block","crop":"betasharp:wheat"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingTrampleChanceOneIn_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"dirt","crop":"wheat"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"betasharp:dirt","crop":"betasharp:wheat"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 }

@@ -277,7 +277,6 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
         return blockBurnChance > currentChance ? blockBurnChance : currentChance;
     }
 
-    // Block.Blocks[0] (air) is always null, so these guard against that rather than indexing directly.
     private static int BurnChanceAt(IBlockReader world, int x, int y, int z) => Block.Blocks[world.GetBlockId(x, y, z)]?.BurnChance ?? 0;
 
     private static int SpreadChanceAt(IBlockReader world, int x, int y, int z) => Block.Blocks[world.GetBlockId(x, y, z)]?.SpreadChance ?? 0;

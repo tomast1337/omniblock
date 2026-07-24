@@ -18,9 +18,9 @@
     {
       "Slots": ["Ticker", "Lifecycle", "Visuals"],
       "Type": "leaves",
-      "trunk": "log",
-      "sapling": "sapling",
-      "harvest_tool": "shears"
+      "trunk": "betasharp:log",
+      "sapling": "betasharp:sapling",
+      "harvest_tool": "betasharp:shears"
     }
   ]
 }

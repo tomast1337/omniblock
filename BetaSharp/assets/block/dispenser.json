@@ -12,9 +12,9 @@
     {
       "Slots": ["Interactable", "Lifecycle", "Physics", "Ticker", "Visuals"],
       "Type": "dispenser",
-      "arrow": "arrow",
-      "egg": "egg",
-      "snowball": "snowball"
+      "arrow": "betasharp:arrow",
+      "egg": "betasharp:egg",
+      "snowball": "betasharp:snowball"
     }
   ]
 }

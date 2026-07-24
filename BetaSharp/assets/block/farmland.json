@@ -22,8 +22,8 @@
     {
       "Slots": ["Ticker", "Physics", "Interactable", "Lifecycle", "Visuals"],
       "Type": "farmland",
-      "revert_block": "dirt",
-      "crop": "wheat",
+      "revert_block": "betasharp:dirt",
+      "crop": "betasharp:wheat",
       "trample_chance_one_in": 4,
       "tick_chance_one_in": 5,
       "water_check_radius": 4

@@ -21,9 +21,9 @@
     {
       "Slots": ["Physics", "Visuals", "Lifecycle", "Ticker"],
       "Type": "stationary_fluid",
-      "ignition_target": "fire",
-      "source_solidified": "obsidian",
-      "flow_solidified": "cobblestone"
+      "ignition_target": "betasharp:fire",
+      "source_solidified": "betasharp:obsidian",
+      "flow_solidified": "betasharp:cobblestone"
     }
   ]
 }
