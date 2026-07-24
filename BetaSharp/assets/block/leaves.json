@@ -9,6 +9,8 @@
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
   "TextureId": 52,
+  "BurnChance": 30,
+  "SpreadChance": 60,
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "Rotate180",

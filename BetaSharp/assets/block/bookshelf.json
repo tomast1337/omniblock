@@ -11,5 +11,7 @@
     "up": 4
   },
   "SideVariance": "FlipU",
-  "DropCount": 0
+  "DropCount": 0,
+  "BurnChance": 30,
+  "SpreadChance": 20
 }

@@ -7,5 +7,7 @@
   "Hardness": 2,
   "Resistance": 5,
   "IgnoreMetaUpdates": true,
-  "TextureId": 4
+  "TextureId": 4,
+  "BurnChance": 5,
+  "SpreadChance": 20
 }

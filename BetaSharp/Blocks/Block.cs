@@ -33,9 +33,6 @@ public class Block
     private int _maxDroppedCount = 1;
     private int _minDroppedCount = 1;
     private PistonBehavior? _pistonBehaviorOverride;
-    private int _renderLayer;
-    private BlockRendererType _renderType = BlockRendererType.Standard;
-    private int _tickRate = 10;
     public Box BoundingBox;
     public float Hardness;
     public float particleFallSpeedModifier;
@@ -89,33 +86,66 @@ public class Block
 
     public IReadOnlyList<string> GetBlockAlias => _blockAlias ?? [];
 
-    protected internal Block IgnoreMetaUpdates()
+    public BlockRendererType RenderType { get; protected internal set; } = BlockRendererType.Standard;
+
+    /// <summary>
+    ///     Whether <see cref="GetCollisionShape" /> offers the bounding box as a default collision
+    ///     shape. Distinct from <see cref="HasCollision()" />/<see cref="HasCollision(int, bool)" />,
+    ///     which query <see cref="Physics" /> instead and default to <c>true</c> regardless of this
+    ///     flag — set false for entities to pass through (plants, portals, ...).
+    /// </summary>
+    public bool HasCollisionBox { get; protected internal set; } = true;
+
+    // 0 = not flammable. Read by FireBehavior instead of a hardcoded per-block-id lookup.
+    public byte BurnChance { get; protected internal set; }
+    public byte SpreadChance { get; protected internal set; }
+
+    public bool IsOpaque
+    {
+        get => Visuals?.IsOpaque(this, field) ?? field;
+        protected internal set
+        {
+            // The constructor seeds these two static caches from the default before Visuals
+            // exists, so any later override must refresh them too, not just the backing field.
+            field = value;
+            BlocksOpaque[id] = value;
+            BlockLightOpacity[id] = value ? 255 : 0;
+        }
+    } = true;
+
+    public int TickRate { get; protected internal set; } = 10;
+
+    public int RenderLayer { get; protected internal set; }
+
+    public string BlockName
+    {
+        get;
+        set => field = $"tile.{value}";
+    } = "";
+
+    public bool EnableStats
+    {
+        get => ShouldTrackStatistics;
+        protected internal set => ShouldTrackStatistics = value;
+    }
+
+    public PistonBehavior PistonBehavior => _pistonBehaviorOverride ?? material.PistonBehavior;
+    public bool IsFullCube() => _isFullCube;
+
+    protected internal void IgnoreMetaUpdates()
     {
         BlocksIgnoreMetaUpdate[id] = true;
-        return this;
     }
 
     protected internal void Init() => Lifecycle?.OnInit(this);
 
-    protected internal void setSoundGroup(BlockSoundGroup soundGroup)
-    {
-        SoundGroup = soundGroup;
-    }
+    protected internal void setSoundGroup(BlockSoundGroup soundGroup) => SoundGroup = soundGroup;
 
-    protected internal void setOpacity(int opacity)
-    {
-        BlockLightOpacity[id] = opacity;
-    }
+    protected internal void setOpacity(int opacity) => BlockLightOpacity[id] = opacity;
 
-    protected internal void SetLuminance(float fractionalValue)
-    {
-        BlocksLightLuminance[id] = (int)(15.0F * fractionalValue);
-    }
+    protected internal void SetLuminance(float fractionalValue) => BlocksLightLuminance[id] = (int)(15.0F * fractionalValue);
 
-    protected internal void SetResistance(float resistance)
-    {
-        this.resistance = resistance * 3.0F;
-    }
+    protected internal void SetResistance(float resistance) => this.resistance = resistance * 3.0F;
 
     protected internal void SetFaceTexture(Side side, int textureId)
     {
@@ -137,35 +167,13 @@ public class Block
         _maxDroppedCount = count;
     }
 
-    protected internal Block preserveMetaOnDrop()
-    {
-        _dropsWithBlockMeta = true;
-        return this;
-    }
+    protected internal void preserveMetaOnDrop() => _dropsWithBlockMeta = true;
 
-    protected internal Block SetBlockAlias(params string[] aliases)
-    {
-        _blockAlias = aliases;
-        return this;
-    }
+    protected internal void SetBlockAlias(params string[] aliases) => _blockAlias = aliases;
 
-    public bool IsFullCube() => _isFullCube;
 
-    public BlockRendererType RenderType { get => _renderType; protected internal set => _renderType = value; }
+    protected internal void SetNotFullCube() => _isFullCube = false;
 
-    protected internal Block SetNotFullCube()
-    {
-        _isFullCube = false;
-        return this;
-    }
-
-    /// <summary>
-    ///     Whether <see cref="GetCollisionShape" /> offers the bounding box as a default collision
-    ///     shape. Distinct from <see cref="HasCollision()" />/<see cref="HasCollision(int, bool)" />,
-    ///     which query <see cref="Physics" /> instead and default to <c>true</c> regardless of this
-    ///     flag — set false for entities to pass through (plants, portals, ...).
-    /// </summary>
-    public bool HasCollisionBox { get; protected internal set; } = true;
 
     public void SetVariance(TextureVariance top, TextureVariance bottom, TextureVariance sides)
     {
@@ -174,22 +182,18 @@ public class Block
         SideVariance = sides;
     }
 
-    protected internal Block SetHardness(float hardness)
+    protected internal void SetHardness(float hardness)
     {
         Hardness = hardness;
-        if (resistance < hardness * 5.0F) resistance = hardness * 5.0F;
-        return this;
+        if (resistance < hardness * 5.0F)
+        {
+            resistance = hardness * 5.0F;
+        }
     }
 
-    protected internal void SetTickRandomly(bool tickRandomly)
-    {
-        BlocksRandomTick[id] = tickRandomly;
-    }
+    protected internal void SetTickRandomly(bool tickRandomly) => BlocksRandomTick[id] = tickRandomly;
 
-    public void SetBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
-    {
-        BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
-    }
+    public void SetBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) => BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
 
     public float getLuminance(ILightProvider? lighting, int x, int y, int z)
     {
@@ -261,10 +265,7 @@ public class Block
         {
             int countBefore = boxes.Count;
             Physics.AddCollisionBoxes(this, world, x, y, z, box, boxes);
-            if (boxes.Count > countBefore)
-            {
-                return;
-            }
+            if (boxes.Count > countBefore) return;
         }
 
         Box? collisionBox = GetCollisionShape(world, entities, x, y, z);
@@ -281,27 +282,9 @@ public class Block
         return Physics == null ? defaultShape : Physics.GetCollisionShape(this, world, entities, x, y, z, defaultShape);
     }
 
-    public bool IsOpaque
-    {
-        get => Visuals?.IsOpaque(this, field) ?? field;
-        protected internal set
-        {
-            // The constructor seeds these two static caches from the default before Visuals
-            // exists, so any later override must refresh them too, not just the backing field.
-            field = value;
-            BlocksOpaque[id] = value;
-            BlockLightOpacity[id] = value ? 255 : 0;
-        }
-    } = true;
-
     public bool HasCollision(int meta, bool allowLiquids) => Physics?.HasCollision(this, meta, allowLiquids, HasCollision()) ?? HasCollision();
 
     public bool HasCollision() => Physics == null || Physics.HasCollision(this, true);
-
-    public void SetTicker(IBlockTicker ticker)
-    {
-        Ticker = ticker;
-    }
 
     public void OnTick(OnTickEvent e) => Ticker?.OnTick(this, e);
 
@@ -310,8 +293,6 @@ public class Block
     public void onMetadataChange(OnMetadataChangeEvent ctx) => Lifecycle?.OnMetadataChange(this, ctx);
 
     public void NeighborUpdate(OnTickEvent e) => Physics?.NeighborUpdate(this, e);
-
-    public int TickRate { get => _tickRate; protected internal set => _tickRate = value; }
 
     public void OnPlaced(OnPlacedEvent e) => Lifecycle?.OnPlaced(this, e);
 
@@ -355,6 +336,7 @@ public class Block
     public static void DropStack(IWorldContext world, int x, int y, int z, ItemStack itemStack)
     {
         if (world.IsRemote || !world.Rules.GetBool(DefaultRules.DoTileDrops)) return;
+
         const float spreadFactor = 0.7F;
         double offsetX = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
         double offsetY = Random.Shared.NextSingle() * spreadFactor + (1.0F - spreadFactor) * 0.5D;
@@ -389,43 +371,13 @@ public class Block
 
     public void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event) => Lifecycle?.OnDestroyedByExplosion(this, @event);
 
-    public int RenderLayer { get => _renderLayer; protected internal set => _renderLayer = value; }
-
-    protected internal void SetSlipperiness(float slipperiness)
-    {
-        this.slipperiness = slipperiness;
-    }
+    protected internal void SetSlipperiness(float slipperiness) => this.slipperiness = slipperiness;
 
     public bool CanPlaceAt(CanPlaceAtContext evt)
     {
         int blockId = evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z);
         bool baseResult = blockId == 0 || Blocks[blockId].material.IsReplaceable;
         return Physics == null ? baseResult : baseResult && Physics.CanPlaceAt(this, evt);
-    }
-
-    public void SetInteractable(IBlockInteractable interactable)
-    {
-        Interactable = interactable;
-    }
-
-    public void SetVisuals(IBlockVisuals visuals)
-    {
-        Visuals = visuals;
-    }
-
-    public void SetLifecycle(IBlockLifecycle lifecycle)
-    {
-        Lifecycle = lifecycle;
-    }
-
-    public void SetPhysics(IBlockPhysics physics)
-    {
-        Physics = physics;
-    }
-
-    public void SetRedstone(IRedstoneComponent redstone)
-    {
-        Redstone = redstone;
     }
 
     public bool onUse(OnUseEvent ctx) => Interactable?.OnUse(this, ctx) ?? false;
@@ -477,25 +429,12 @@ public class Block
 
     public bool canGrow(OnTickEvent ctx) => Physics == null || Physics.CanGrow(this, ctx);
 
-    public string BlockName
-    {
-        get;
-        set => field = $"tile.{value}";
-    } = "";
-
     public string translateBlockName() => Translations.Get($"{BlockName}.name");
 
     public void onBlockAction(OnBlockActionEvent ctx) => Lifecycle?.OnBlockAction(this, ctx);
 
-    public bool EnableStats { get => ShouldTrackStatistics; protected internal set => ShouldTrackStatistics = value; }
-
-    public PistonBehavior PistonBehavior => _pistonBehaviorOverride ?? material.PistonBehavior;
-
     /// <summary>Overrides the material-derived piston behavior (e.g. plates are destroyed when pushed).</summary>
-    protected internal void SetPistonBehavior(PistonBehavior behavior)
-    {
-        _pistonBehaviorOverride = behavior;
-    }
+    protected internal void SetPistonBehavior(PistonBehavior behavior) => _pistonBehaviorOverride = behavior;
 
     /// <summary>
     ///     Declares that this block carries a tile entity, created by <paramref name="factory" />.

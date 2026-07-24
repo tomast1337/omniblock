@@ -14,7 +14,8 @@ internal static class BlockFactory
 
         // def.Hardness == -1 already reproduces SetUnbreakable() exactly (it's sugar for
         // SetHardness(-1)) — no separate call needed.
-        block.SetHardness(def.Hardness).SetResistance(def.Resistance);
+        block.SetHardness(def.Hardness);
+        block.SetResistance(def.Resistance);
         // Must run before the explicit Opacity override below, so an explicit value
         // (rare, but distinct from "just non-opaque") still wins if both are set.
         if (def.NonOpaque) block.IsOpaque = false;
@@ -33,6 +34,8 @@ internal static class BlockFactory
         }
 
         block.SetVariance(def.TopVariance, def.BottomVariance, def.SideVariance);
+        block.BurnChance = def.BurnChance;
+        block.SpreadChance = def.SpreadChance;
         block.RenderType = Enum.Parse<BlockRendererType>(def.RenderType, true);
         block.RenderLayer = def.RenderLayer;
         block.TickRate = def.TickRate;

@@ -8,6 +8,8 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TextureId": 4,
+  "BurnChance": 5,
+  "SpreadChance": 20,
   "RenderType": "Fence",
   "NotFullCube": true,
   "Behaviors": {

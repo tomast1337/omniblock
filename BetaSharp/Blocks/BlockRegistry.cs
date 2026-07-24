@@ -114,7 +114,7 @@ public static class BlockRegistry
             // Every block gets Init() called once, all definitions guaranteed constructed —
             // simpler than the old code's skip-if-Item.ITEMS-already-set quirk, and provably
             // identical in practice: none of the seven special-cased blocks above override
-            // IBlockLifecycle.OnInit (only FireBehavior does, and Fire isn't one of them).
+            // IBlockLifecycle.OnInit (no block does).
             Block.Blocks[id].Init();
         }
     }

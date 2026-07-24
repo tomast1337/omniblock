@@ -5,6 +5,8 @@
   "SoundGroup": "grass",
   "TextureId": 8,
   "DropCount": 0,
+  "BurnChance": 15,
+  "SpreadChance": 100,
   "Behaviors": {
     "Physics": {
       "Type": "tnt"

@@ -8,6 +8,8 @@
   "Resistance": 1.3333334,
   "IgnoreMetaUpdates": true,
   "TextureId": 64,
+  "BurnChance": 30,
+  "SpreadChance": 60,
   "SideVariance": "FlipBoth",
   "PreservesMetaOnDrop": true,
   "BlockAlias": [

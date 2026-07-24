@@ -28,5 +28,7 @@
   "BlockAlias": null,
   "LootTable": null,
   "TileEntity": null,
+  "BurnChance": 0,
+  "SpreadChance": 0,
   "Behaviors": {}
 }

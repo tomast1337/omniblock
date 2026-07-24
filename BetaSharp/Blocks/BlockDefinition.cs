@@ -59,6 +59,10 @@ public sealed record BlockDefinition : IDataAsset
     public LootTableDefinition? LootTable { get; init; }
     public string? TileEntity { get; init; }
 
+    // 0 = not flammable. Never above 100 (see FireBehavior), so byte is sufficient.
+    public byte BurnChance { get; init; }
+    public byte SpreadChance { get; init; }
+
     /// <summary>
     ///     Keyed by capability SLOT ("Ticker", "Physics", "Lifecycle", "Visuals", "Interactable",
     ///     "Redstone"), not by behavior type — a class can implement several of those interfaces
