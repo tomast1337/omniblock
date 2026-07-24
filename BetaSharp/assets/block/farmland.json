@@ -20,19 +20,29 @@
   },
   "Behaviors": {
     "Ticker": {
-      "Type": "farmland"
+      "Type": "farmland",
+      "dirt": "dirt",
+      "crop": "wheat"
     },
     "Physics": {
-      "Type": "farmland"
+      "Type": "farmland",
+      "dirt": "dirt",
+      "crop": "wheat"
     },
     "Interactable": {
-      "Type": "farmland"
+      "Type": "farmland",
+      "dirt": "dirt",
+      "crop": "wheat"
     },
     "Lifecycle": {
-      "Type": "farmland"
+      "Type": "farmland",
+      "dirt": "dirt",
+      "crop": "wheat"
     },
     "Visuals": {
-      "Type": "farmland"
+      "Type": "farmland",
+      "dirt": "dirt",
+      "crop": "wheat"
     }
   }
 }

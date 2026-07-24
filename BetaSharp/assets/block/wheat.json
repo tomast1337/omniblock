@@ -22,16 +22,28 @@
   },
   "Behaviors": {
     "Ticker": {
-      "Type": "crop"
+      "Type": "crop",
+      "farmland": "farmland",
+      "wheat": "wheat",
+      "seeds": "seeds"
     },
     "Physics": {
-      "Type": "crop"
+      "Type": "crop",
+      "farmland": "farmland",
+      "wheat": "wheat",
+      "seeds": "seeds"
     },
     "Lifecycle": {
-      "Type": "crop"
+      "Type": "crop",
+      "farmland": "farmland",
+      "wheat": "wheat",
+      "seeds": "seeds"
     },
     "Visuals": {
-      "Type": "crop"
+      "Type": "crop",
+      "farmland": "farmland",
+      "wheat": "wheat",
+      "seeds": "seeds"
     }
   }
 }

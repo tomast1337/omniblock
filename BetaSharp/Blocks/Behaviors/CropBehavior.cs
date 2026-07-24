@@ -10,14 +10,17 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     and bonus seed scatter on harvest. Self-contained (does not compose with
 ///     <see cref="PlantSurvivalBehavior" />) because its growth/survival predicate is farmland-specific
 ///     and its own <see cref="CanGrow" /> hook must be reachable from <see cref="NeighborUpdate" />.
+///     <para>
+///         Required soil, mature-drop item, and seed item are all required, JSON-declared constructor
+///         params (see <c>BehaviorRegistry</c>'s <c>"crop"</c> entry) — no built-in vanilla fallback;
+///         an omitted or unknown name throws immediately at startup.
+///     </para>
 /// </summary>
-internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class CropBehavior(Block farmland, Item wheat, Item seeds) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     private const float DropSpread = 0.7F;
-    private static readonly int s_wheatId = Item.ByName("wheat").Id;
-    private static readonly Item s_seeds = Item.ByName("seeds");
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? s_wheatId : -1;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? wheat.Id : -1;
 
     public void OnDropStacks(Block block, OnDropEvent @event)
     {
@@ -32,7 +35,7 @@ internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
             float offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
             float offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
             float offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5F;
-            EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(s_seeds))
+            EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(seeds))
             {
                 DelayBeforeCanPickup = 10
             };
@@ -41,11 +44,11 @@ internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == BlockRegistry.Get("farmland").id;
+        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == farmland.id;
 
     public bool CanGrow(Block block, OnTickEvent ctx)
         => (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z))
-           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == BlockRegistry.Get("farmland").id;
+           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == farmland.id;
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
         => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
@@ -69,7 +72,7 @@ internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
         => defaultTexture + (meta < 0 ? 7 : meta);
 
-    private static float GetAvailableMoisture(Block block, IBlockReader read, int x, int y, int z)
+    private float GetAvailableMoisture(Block block, IBlockReader read, int x, int y, int z)
     {
         float totalMoisture = 1.0F;
         int blockNorth = read.GetBlockId(x, y, z - 1);
@@ -90,7 +93,7 @@ internal sealed class CropBehavior : IBlockTicker, IBlockPhysics, IBlockLifecycl
             {
                 int blockBelow = read.GetBlockId(dx, y - 1, dz);
                 float cellMoisture = 0.0F;
-                if (blockBelow == BlockRegistry.Get("farmland").id)
+                if (blockBelow == farmland.id)
                 {
                     cellMoisture = 1.0F;
                     if (read.GetBlockMeta(dx, y - 1, dz) > 0)

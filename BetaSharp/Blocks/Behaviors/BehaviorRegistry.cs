@@ -46,11 +46,16 @@ internal static class BehaviorRegistry
         ["cake"] = _ => new CakeBehavior(),
         ["chest"] = _ => new ChestBehavior(),
         ["cloth_visual"] = _ => new ClothVisualBehavior(),
-        ["crop"] = _ => new CropBehavior(),
+        ["crop"] = json => new CropBehavior(
+            ResolveBlock(json.GetProperty("farmland").GetString()!),
+            ResolveItem(json.GetProperty("wheat").GetString()!),
+            ResolveItem(json.GetProperty("seeds").GetString()!)),
         ["detector_rail"] = _ => new DetectorRailBehavior(),
         ["dispenser"] = _ => new DispenserBehavior(),
         ["falling_block"] = _ => new FallingBlockBehavior(),
-        ["farmland"] = _ => new FarmlandBehavior(),
+        ["farmland"] = json => new FarmlandBehavior(
+            ResolveBlock(json.GetProperty("dirt").GetString()!),
+            ResolveBlock(json.GetProperty("crop").GetString()!)),
         ["fence"] = _ => new FenceBehavior(),
         ["fire"] = json => new FireBehavior(ResolveBlock(json.GetProperty("obsidian").GetString()!), ResolveBlock(json.GetProperty("netherrack").GetString()!), ResolveBlock(json.GetProperty("tnt").GetString()!)),
         ["flowing_fluid"] = _ => new FlowingFluidBehavior(),
