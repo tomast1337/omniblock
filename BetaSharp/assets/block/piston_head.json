@@ -12,15 +12,10 @@
   "RenderType": "PistonExtension",
   "NotFullCube": true,
   "DropCount": 0,
-  "Behaviors": {
-    "Physics": {
-      "Type": "piston_extension"
-    },
-    "Lifecycle": {
-      "Type": "piston_extension"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "piston_extension"
     }
-  }
+  ]
 }

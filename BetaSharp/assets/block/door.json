@@ -24,22 +24,11 @@
     "MaxCount": 1,
     "Meta": 0
   },
-  "Behaviors": {
-    "Physics": {
-      "Type": "door",
-      "material": "wood"
-    },
-    "Interactable": {
-      "Type": "door",
-      "material": "wood"
-    },
-    "Lifecycle": {
-      "Type": "door",
-      "material": "wood"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Interactable", "Lifecycle", "Visuals"],
       "Type": "door",
       "material": "wood"
     }
-  }
+  ]
 }

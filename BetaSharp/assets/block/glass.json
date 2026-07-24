@@ -11,10 +11,11 @@
   "BottomVariance": "Rotate180",
   "SideVariance": "Rotate180",
   "DropCount": 0,
-  "Behaviors": {
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Visuals"],
       "Type": "glass_visual",
       "hide_adjacent_faces": false
     }
-  }
+  ]
 }

@@ -21,18 +21,10 @@
     "MaxY": 1,
     "MaxZ": 0.9375
   },
-  "Behaviors": {
-    "Ticker": {
-      "Type": "cactus"
-    },
-    "Physics": {
-      "Type": "cactus"
-    },
-    "Interactable": {
-      "Type": "cactus"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics", "Interactable", "Visuals"],
       "Type": "cactus"
     }
-  }
+  ]
 }

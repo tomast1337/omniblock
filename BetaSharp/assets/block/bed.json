@@ -20,18 +20,10 @@
     "MaxZ": 1
   },
   "PistonBehavior": "Destroy",
-  "Behaviors": {
-    "Interactable": {
-      "Type": "bed"
-    },
-    "Physics": {
-      "Type": "bed"
-    },
-    "Lifecycle": {
-      "Type": "bed"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Interactable", "Physics", "Lifecycle", "Visuals"],
       "Type": "bed"
     }
-  }
+  ]
 }

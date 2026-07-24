@@ -19,14 +19,11 @@
     "MaxZ": 0.9
   },
   "DropCount": 0,
-  "Behaviors": {
-    "Ticker": {
-      "Type": "plant_survival",
-      "valid_soil": "sand"
-    },
-    "Physics": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics"],
       "Type": "plant_survival",
       "valid_soil": "sand"
     }
-  }
+  ]
 }

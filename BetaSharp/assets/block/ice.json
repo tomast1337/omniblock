@@ -15,22 +15,18 @@
   "RenderLayer": 1,
   "Slipperiness": 0.98,
   "DropCount": 0,
-  "Behaviors": {
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Visuals"],
       "Type": "glass_visual",
       "hide_adjacent_faces": false
     },
-    "Ticker": {
-      "Type": "melt",
-      "melt_replacement": "water",
-      "subtract_opacity": true,
-      "broken_replacement": "flowing_water"
-    },
-    "Lifecycle": {
+    {
+      "Slots": ["Ticker", "Lifecycle"],
       "Type": "melt",
       "melt_replacement": "water",
       "subtract_opacity": true,
       "broken_replacement": "flowing_water"
     }
-  }
+  ]
 }

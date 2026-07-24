@@ -11,18 +11,10 @@
   "RenderType": "Lever",
   "NotFullCube": true,
   "NoCollision": true,
-  "Behaviors": {
-    "Redstone": {
-      "Type": "lever"
-    },
-    "Physics": {
-      "Type": "lever"
-    },
-    "Interactable": {
-      "Type": "lever"
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Redstone", "Physics", "Interactable", "Lifecycle"],
       "Type": "lever"
     }
-  }
+  ]
 }

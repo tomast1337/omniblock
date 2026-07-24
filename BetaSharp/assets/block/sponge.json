@@ -9,9 +9,10 @@
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",
-  "Behaviors": {
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Lifecycle"],
       "Type": "sponge_lifecycle"
     }
-  }
+  ]
 }

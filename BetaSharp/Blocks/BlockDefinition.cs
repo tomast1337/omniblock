@@ -64,14 +64,16 @@ public sealed record BlockDefinition : IDataAsset
     public byte SpreadChance { get; init; }
 
     /// <summary>
-    ///     Keyed by capability SLOT ("Ticker", "Physics", "Lifecycle", "Visuals", "Interactable",
-    ///     "Redstone"), not by behavior type — a class can implement several of those interfaces
-    ///     (e.g. <c>PlantSurvivalBehavior</c> implements both Ticker and Physics) while a given
-    ///     block only wants it wired into some of its slots. Each value's JSON carries its own
-    ///     "Type" property (the <c>BehaviorRegistry</c> key) alongside its params, e.g.
-    ///     <c>{"Ticker": {"Type": "sapling"}, "Physics": {"Type": "plant_survival"}}</c>.
+    ///     One entry per behavior INSTANCE, not per slot — a class can implement several
+    ///     capability interfaces at once (e.g. <c>PlantSurvivalBehavior</c> implements both
+    ///     Ticker and Physics), and a block wanting that one instance wired into several of its
+    ///     capability slots ("Ticker", "Physics", "Lifecycle", "Visuals", "Interactable",
+    ///     "Redstone") lists them all in that entry's "Slots" array rather than repeating the
+    ///     params once per slot. Each entry's JSON carries "Slots" and "Type" (the
+    ///     <c>BehaviorRegistry</c> key) alongside its own params, e.g.
+    ///     <c>[{"Slots": ["Ticker"], "Type": "sapling"}, {"Slots": ["Physics"], "Type": "plant_survival"}]</c>.
     /// </summary>
-    public Dictionary<string, JsonElement> Behaviors { get; init; } = [];
+    public List<JsonElement> Behaviors { get; init; } = [];
 }
 
 public sealed record BoundingBoxDefinition(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ);

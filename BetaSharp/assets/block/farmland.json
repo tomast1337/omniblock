@@ -18,31 +18,12 @@
     "MaxY": 0.9375,
     "MaxZ": 1
   },
-  "Behaviors": {
-    "Ticker": {
-      "Type": "farmland",
-      "dirt": "dirt",
-      "crop": "wheat"
-    },
-    "Physics": {
-      "Type": "farmland",
-      "dirt": "dirt",
-      "crop": "wheat"
-    },
-    "Interactable": {
-      "Type": "farmland",
-      "dirt": "dirt",
-      "crop": "wheat"
-    },
-    "Lifecycle": {
-      "Type": "farmland",
-      "dirt": "dirt",
-      "crop": "wheat"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics", "Interactable", "Lifecycle", "Visuals"],
       "Type": "farmland",
       "dirt": "dirt",
       "crop": "wheat"
     }
-  }
+  ]
 }

@@ -10,9 +10,10 @@
   "TextureId": 65,
   "DropCount": 0,
   "TileEntity": "mob_spawner",
-  "Behaviors": {
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Lifecycle"],
       "Type": "tile_entity_lifecycle"
     }
-  }
+  ]
 }

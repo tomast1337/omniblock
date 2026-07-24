@@ -10,14 +10,11 @@
   "TextureId": 83,
   "RenderType": "Ladder",
   "NotFullCube": true,
-  "Behaviors": {
-    "Physics": {
-      "Type": "wall_mount",
-      "is_ladder": true
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle"],
       "Type": "wall_mount",
       "is_ladder": true
     }
-  }
+  ]
 }

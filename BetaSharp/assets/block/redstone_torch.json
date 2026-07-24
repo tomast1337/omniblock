@@ -23,21 +23,10 @@
     "MaxCount": 1,
     "Meta": 0
   },
-  "Behaviors": {
-    "Physics": {
-      "Type": "redstone_torch"
-    },
-    "Lifecycle": {
-      "Type": "redstone_torch"
-    },
-    "Redstone": {
-      "Type": "redstone_torch"
-    },
-    "Ticker": {
-      "Type": "redstone_torch"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Redstone", "Ticker", "Visuals"],
       "Type": "redstone_torch"
     }
-  }
+  ]
 }

@@ -14,24 +14,13 @@
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "Rotate180",
-  "Behaviors": {
-    "Ticker": {
-      "Type": "leaves",
-      "trunk": "log",
-      "sapling": "sapling",
-      "harvest_tool": "shears"
-    },
-    "Lifecycle": {
-      "Type": "leaves",
-      "trunk": "log",
-      "sapling": "sapling",
-      "harvest_tool": "shears"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Lifecycle", "Visuals"],
       "Type": "leaves",
       "trunk": "log",
       "sapling": "sapling",
       "harvest_tool": "shears"
     }
-  }
+  ]
 }

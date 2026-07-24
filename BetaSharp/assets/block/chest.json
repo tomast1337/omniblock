@@ -8,18 +8,10 @@
   "IgnoreMetaUpdates": true,
   "TextureId": 26,
   "TileEntity": "chest",
-  "Behaviors": {
-    "Interactable": {
-      "Type": "chest"
-    },
-    "Lifecycle": {
-      "Type": "chest"
-    },
-    "Physics": {
-      "Type": "chest"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Interactable", "Lifecycle", "Physics", "Visuals"],
       "Type": "chest"
     }
-  }
+  ]
 }

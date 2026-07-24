@@ -30,21 +30,10 @@
     "MaxCount": 1,
     "Meta": 0
   },
-  "Behaviors": {
-    "Redstone": {
-      "Type": "redstone_wire"
-    },
-    "Physics": {
-      "Type": "redstone_wire"
-    },
-    "Ticker": {
-      "Type": "redstone_wire"
-    },
-    "Lifecycle": {
-      "Type": "redstone_wire"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Redstone", "Physics", "Ticker", "Lifecycle", "Visuals"],
       "Type": "redstone_wire"
     }
-  }
+  ]
 }

@@ -8,18 +8,11 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TextureId": 102,
-  "Behaviors": {
-    "Physics": {
-      "Type": "pumpkin",
-      "lit": false
-    },
-    "Lifecycle": {
-      "Type": "pumpkin",
-      "lit": false
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "pumpkin",
       "lit": false
     }
-  }
+  ]
 }

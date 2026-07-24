@@ -21,12 +21,10 @@
     "MaxCount": 5,
     "Meta": 0
   },
-  "Behaviors": {
-    "Ticker": {
-      "Type": "redstone_ore"
-    },
-    "Interactable": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Interactable"],
       "Type": "redstone_ore"
     }
-  }
+  ]
 }

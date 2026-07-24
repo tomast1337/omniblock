@@ -20,18 +20,14 @@
     "MaxY": 0.8,
     "MaxZ": 0.9
   },
-  "Behaviors": {
-    "Ticker": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics"],
       "Type": "plant_survival"
     },
-    "Physics": {
-      "Type": "plant_survival"
-    },
-    "Visuals": {
-      "Type": "tall_grass"
-    },
-    "Lifecycle": {
+    {
+      "Slots": ["Visuals", "Lifecycle"],
       "Type": "tall_grass"
     }
-  }
+  ]
 }

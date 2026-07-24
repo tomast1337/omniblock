@@ -10,18 +10,11 @@
   "TrackStatistics": false,
   "TextureId": 84,
   "NotFullCube": true,
-  "Behaviors": {
-    "Physics": {
-      "Type": "trap_door",
-      "material": "wood"
-    },
-    "Interactable": {
-      "Type": "trap_door",
-      "material": "wood"
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Interactable", "Lifecycle"],
       "Type": "trap_door",
       "material": "wood"
     }
-  }
+  ]
 }

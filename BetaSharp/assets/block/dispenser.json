@@ -8,21 +8,10 @@
   "TextureId": 45,
   "TickRate": 4,
   "TileEntity": "dispenser",
-  "Behaviors": {
-    "Interactable": {
-      "Type": "dispenser"
-    },
-    "Lifecycle": {
-      "Type": "dispenser"
-    },
-    "Physics": {
-      "Type": "dispenser"
-    },
-    "Ticker": {
-      "Type": "dispenser"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Interactable", "Lifecycle", "Physics", "Ticker", "Visuals"],
       "Type": "dispenser"
     }
-  }
+  ]
 }

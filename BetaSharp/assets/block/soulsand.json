@@ -7,12 +7,10 @@
   "Hardness": 0.5,
   "Resistance": 0.8333333,
   "TextureId": 104,
-  "Behaviors": {
-    "Physics": {
-      "Type": "soul_sand"
-    },
-    "Interactable": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Interactable"],
       "Type": "soul_sand"
     }
-  }
+  ]
 }

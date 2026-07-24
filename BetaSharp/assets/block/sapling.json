@@ -18,18 +18,14 @@
     "MaxY": 0.8,
     "MaxZ": 0.9
   },
-  "Behaviors": {
-    "Ticker": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Visuals", "Lifecycle"],
       "Type": "sapling"
     },
-    "Physics": {
+    {
+      "Slots": ["Physics"],
       "Type": "plant_survival"
-    },
-    "Visuals": {
-      "Type": "sapling"
-    },
-    "Lifecycle": {
-      "Type": "sapling"
     }
-  }
+  ]
 }

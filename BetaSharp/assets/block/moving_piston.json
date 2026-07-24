@@ -9,15 +9,10 @@
   "RenderType": "Entity",
   "NotFullCube": true,
   "TileEntity": "piston",
-  "Behaviors": {
-    "Physics": {
-      "Type": "piston_moving"
-    },
-    "Lifecycle": {
-      "Type": "piston_moving"
-    },
-    "Interactable": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Interactable"],
       "Type": "piston_moving"
     }
-  }
+  ]
 }

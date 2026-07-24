@@ -22,26 +22,11 @@
     "MaxZ": 0.9375
   },
   "PistonBehavior": "Destroy",
-  "Behaviors": {
-    "Redstone": {
-      "Type": "pressure_plate",
-      "activation_rule": "EVERYTHING"
-    },
-    "Physics": {
-      "Type": "pressure_plate",
-      "activation_rule": "EVERYTHING"
-    },
-    "Ticker": {
-      "Type": "pressure_plate",
-      "activation_rule": "EVERYTHING"
-    },
-    "Interactable": {
-      "Type": "pressure_plate",
-      "activation_rule": "EVERYTHING"
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Redstone", "Physics", "Ticker", "Interactable", "Lifecycle"],
       "Type": "pressure_plate",
       "activation_rule": "EVERYTHING"
     }
-  }
+  ]
 }

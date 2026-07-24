@@ -12,21 +12,10 @@
   "TickRate": 20,
   "NotFullCube": true,
   "NoCollision": true,
-  "Behaviors": {
-    "Redstone": {
-      "Type": "button"
-    },
-    "Physics": {
-      "Type": "button"
-    },
-    "Ticker": {
-      "Type": "button"
-    },
-    "Interactable": {
-      "Type": "button"
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Redstone", "Physics", "Ticker", "Interactable", "Lifecycle"],
       "Type": "button"
     }
-  }
+  ]
 }

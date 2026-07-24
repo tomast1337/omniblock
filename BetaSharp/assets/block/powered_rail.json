@@ -13,18 +13,11 @@
   "NotFullCube": true,
   "NoCollision": true,
   "PistonBehavior": "Normal",
-  "Behaviors": {
-    "Physics": {
-      "Type": "rail",
-      "powered": true
-    },
-    "Lifecycle": {
-      "Type": "rail",
-      "powered": true
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "rail",
       "powered": true
     }
-  }
+  ]
 }

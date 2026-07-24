@@ -18,18 +18,10 @@
   "NotFullCube": true,
   "NoCollision": true,
   "DropCount": 0,
-  "Behaviors": {
-    "Physics": {
-      "Type": "flowing_fluid"
-    },
-    "Visuals": {
-      "Type": "flowing_fluid"
-    },
-    "Lifecycle": {
-      "Type": "flowing_fluid"
-    },
-    "Ticker": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Visuals", "Lifecycle", "Ticker"],
       "Type": "flowing_fluid"
     }
-  }
+  ]
 }

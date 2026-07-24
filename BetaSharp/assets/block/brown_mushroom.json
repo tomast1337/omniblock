@@ -19,12 +19,10 @@
     "MaxY": 0.4,
     "MaxZ": 0.7
   },
-  "Behaviors": {
-    "Ticker": {
-      "Type": "mushroom"
-    },
-    "Physics": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics"],
       "Type": "mushroom"
     }
-  }
+  ]
 }

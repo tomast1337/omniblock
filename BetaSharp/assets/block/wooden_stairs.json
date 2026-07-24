@@ -13,18 +13,11 @@
   "SpreadChance": 20,
   "RenderType": "Stairs",
   "NotFullCube": true,
-  "Behaviors": {
-    "Physics": {
-      "Type": "stairs",
-      "base": "planks"
-    },
-    "Lifecycle": {
-      "Type": "stairs",
-      "base": "planks"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "stairs",
       "base": "planks"
     }
-  }
+  ]
 }

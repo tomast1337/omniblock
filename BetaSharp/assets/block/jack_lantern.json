@@ -12,18 +12,11 @@
   "TextureId": 102,
   "TopVariance": "All",
   "BottomVariance": "All",
-  "Behaviors": {
-    "Physics": {
-      "Type": "pumpkin",
-      "lit": true
-    },
-    "Lifecycle": {
-      "Type": "pumpkin",
-      "lit": true
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "pumpkin",
       "lit": true
     }
-  }
+  ]
 }

@@ -20,18 +20,10 @@
     "MaxY": 0.125,
     "MaxZ": 1
   },
-  "Behaviors": {
-    "Physics": {
-      "Type": "snow"
-    },
-    "Ticker": {
-      "Type": "snow"
-    },
-    "Lifecycle": {
-      "Type": "snow"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Ticker", "Lifecycle", "Visuals"],
       "Type": "snow"
     }
-  }
+  ]
 }

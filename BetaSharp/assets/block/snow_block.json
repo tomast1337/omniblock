@@ -22,10 +22,11 @@
     "MaxCount": 4,
     "Meta": 0
   },
-  "Behaviors": {
-    "Ticker": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker"],
       "Type": "melt",
       "melt_replacement": "air"
     }
-  }
+  ]
 }

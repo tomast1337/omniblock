@@ -10,14 +10,11 @@
   "BurnChance": 5,
   "SpreadChance": 5,
   "PreservesMetaOnDrop": true,
-  "Behaviors": {
-    "Visuals": {
-      "Type": "log",
-      "leaves": "leaves"
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Visuals", "Lifecycle"],
       "Type": "log",
       "leaves": "leaves"
     }
-  }
+  ]
 }

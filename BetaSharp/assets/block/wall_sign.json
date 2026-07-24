@@ -33,13 +33,15 @@
     "Meta": 0
   },
   "TileEntity": "sign",
-  "Behaviors": {
-    "Physics": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics"],
       "Type": "sign",
       "standing": false
     },
-    "Lifecycle": {
+    {
+      "Slots": ["Lifecycle"],
       "Type": "tile_entity_lifecycle"
     }
-  }
+  ]
 }

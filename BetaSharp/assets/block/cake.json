@@ -12,15 +12,10 @@
   "TextureId": 121,
   "NotFullCube": true,
   "DropCount": 0,
-  "Behaviors": {
-    "Physics": {
-      "Type": "cake"
-    },
-    "Visuals": {
-      "Type": "cake"
-    },
-    "Interactable": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Visuals", "Interactable"],
       "Type": "cake"
     }
-  }
+  ]
 }

@@ -22,12 +22,10 @@
     "Meta": 0
   },
   "TileEntity": "record_player",
-  "Behaviors": {
-    "Interactable": {
-      "Type": "jukebox"
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Interactable", "Lifecycle"],
       "Type": "jukebox"
     }
-  }
+  ]
 }

@@ -11,18 +11,11 @@
   "RenderType": "Torch",
   "NotFullCube": true,
   "NoCollision": true,
-  "Behaviors": {
-    "Physics": {
-      "Type": "wall_mount",
-      "is_ladder": false
-    },
-    "Lifecycle": {
-      "Type": "wall_mount",
-      "is_ladder": false
-    },
-    "Ticker": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Ticker"],
       "Type": "wall_mount",
       "is_ladder": false
     }
-  }
+  ]
 }

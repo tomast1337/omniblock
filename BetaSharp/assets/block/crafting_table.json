@@ -13,9 +13,10 @@
     "north": 60,
     "west": 60
   },
-  "Behaviors": {
-    "Interactable": {
+  "Behaviors": [
+    {
+      "Slots": ["Interactable"],
       "Type": "workbench_interact"
     }
-  }
+  ]
 }

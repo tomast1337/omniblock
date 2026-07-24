@@ -63,42 +63,48 @@ internal static class BlockFactory
 
     public static void AttachBehaviors(Block block, BlockDefinition def)
     {
-        // Behaviors is keyed by SLOT ("Ticker", "Physics", ...), not by behavior type — a class
-        // implementing several capability interfaces (e.g. PlantSurvivalBehavior implements both
-        // IBlockTicker and IBlockPhysics) is common, and a given block may only want it wired into
-        // SOME of those slots (Ladder uses WallMountBehavior for Physics+Lifecycle only, never
-        // Ticker). Building one instance per named slot and wiring it directly — rather than
-        // probing one shared instance against every interface it happens to implement — is what
-        // actually reproduces the original fluent chains; probing over-attaches whenever a second
-        // behavior in the same block implements an interface the first one also implements.
-        foreach ((string slot, JsonElement json) in def.Behaviors)
+        // Behaviors is a list of INSTANCES, not a dict keyed by slot — a class implementing
+        // several capability interfaces at once (e.g. PlantSurvivalBehavior implements both
+        // IBlockTicker and IBlockPhysics) is common, and a block wanting that one instance wired
+        // into several of its slots lists them all in that entry's "Slots" array. Building
+        // exactly one instance per array entry and wiring it into every listed slot — rather
+        // than probing one shared instance against every interface it happens to implement — is
+        // what actually reproduces the original fluent chains; probing over-attaches whenever a
+        // second entry in the same block implements an interface the first one also implements.
+        foreach (JsonElement entry in def.Behaviors)
         {
-            string type = json.GetProperty("Type").GetString()
-                ?? throw new ArgumentException($"Behavior slot '{slot}' is missing its 'Type' property.");
-            object behavior = BehaviorRegistry.Build(type, json);
+            string type = entry.GetProperty("Type").GetString()
+                ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
+            object behavior = BehaviorRegistry.Build(type, entry);
 
-            switch (slot)
+            foreach (JsonElement slotJson in entry.GetProperty("Slots").EnumerateArray())
             {
-                case "Ticker":
-                    block.Ticker = (IBlockTicker)behavior;
-                    break;
-                case "Physics":
-                    block.Physics = (IBlockPhysics)behavior;
-                    break;
-                case "Lifecycle":
-                    block.Lifecycle = (IBlockLifecycle)behavior;
-                    break;
-                case "Visuals":
-                    block.Visuals = (IBlockVisuals)behavior;
-                    break;
-                case "Interactable":
-                    block.Interactable = (IBlockInteractable)behavior;
-                    break;
-                case "Redstone":
-                    block.Redstone = (IRedstoneComponent)behavior;
-                    break;
-                default:
-                    throw new ArgumentException($"Unknown behavior slot '{slot}'.");
+                string slot = slotJson.GetString()
+                    ?? throw new ArgumentException($"Behavior entry of type '{type}' has a null entry in 'Slots'.");
+
+                switch (slot)
+                {
+                    case "Ticker":
+                        block.Ticker = (IBlockTicker)behavior;
+                        break;
+                    case "Physics":
+                        block.Physics = (IBlockPhysics)behavior;
+                        break;
+                    case "Lifecycle":
+                        block.Lifecycle = (IBlockLifecycle)behavior;
+                        break;
+                    case "Visuals":
+                        block.Visuals = (IBlockVisuals)behavior;
+                        break;
+                    case "Interactable":
+                        block.Interactable = (IBlockInteractable)behavior;
+                        break;
+                    case "Redstone":
+                        block.Redstone = (IRedstoneComponent)behavior;
+                        break;
+                    default:
+                        throw new ArgumentException($"Unknown behavior slot '{slot}'.");
+                }
             }
         }
 

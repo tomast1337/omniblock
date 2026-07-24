@@ -7,18 +7,10 @@
   "DropCount": 0,
   "BurnChance": 15,
   "SpreadChance": 100,
-  "Behaviors": {
-    "Physics": {
-      "Type": "tnt"
-    },
-    "Lifecycle": {
-      "Type": "tnt"
-    },
-    "Interactable": {
-      "Type": "tnt"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Interactable", "Visuals"],
       "Type": "tnt"
     }
-  }
+  ]
 }

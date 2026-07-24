@@ -7,26 +7,11 @@
   "IgnoreMetaUpdates": true,
   "TextureId": 45,
   "TileEntity": "furnace",
-  "Behaviors": {
-    "Interactable": {
-      "Type": "furnace",
-      "lit": false
-    },
-    "Lifecycle": {
-      "Type": "furnace",
-      "lit": false
-    },
-    "Physics": {
-      "Type": "furnace",
-      "lit": false
-    },
-    "Ticker": {
-      "Type": "furnace",
-      "lit": false
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Interactable", "Lifecycle", "Physics", "Ticker", "Visuals"],
       "Type": "furnace",
       "lit": false
     }
-  }
+  ]
 }

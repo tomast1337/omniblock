@@ -29,18 +29,11 @@
     "MaxCount": 1,
     "Meta": 0
   },
-  "Behaviors": {
-    "Physics": {
-      "Type": "slab",
-      "is_double": false
-    },
-    "Lifecycle": {
-      "Type": "slab",
-      "is_double": false
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "slab",
       "is_double": false
     }
-  }
+  ]
 }

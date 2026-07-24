@@ -25,13 +25,15 @@
     "MaxCount": 1,
     "Meta": 0
   },
-  "Behaviors": {
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Visuals"],
       "Type": "grass_visual"
     },
-    "Ticker": {
+    {
+      "Slots": ["Ticker"],
       "Type": "grass_ticker",
       "soil": "dirt"
     }
-  }
+  ]
 }

@@ -5,12 +5,10 @@
   "Material": "wood",
   "SoundGroup": "powder",
   "TextureId": 26,
-  "Behaviors": {
-    "Ticker": {
-      "Type": "locked_chest"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Visuals"],
       "Type": "locked_chest"
     }
-  }
+  ]
 }

@@ -30,12 +30,10 @@
     "MaxCount": 1,
     "Meta": 0
   },
-  "Behaviors": {
-    "Ticker": {
-      "Type": "reed"
-    },
-    "Physics": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics"],
       "Type": "reed"
     }
-  }
+  ]
 }

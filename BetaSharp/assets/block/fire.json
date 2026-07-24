@@ -14,24 +14,13 @@
   "NotFullCube": true,
   "NoCollision": true,
   "DropCount": 0,
-  "Behaviors": {
-    "Ticker": {
-      "Type": "fire",
-      "obsidian": "obsidian",
-      "netherrack": "netherrack",
-      "tnt": "tnt"
-    },
-    "Physics": {
-      "Type": "fire",
-      "obsidian": "obsidian",
-      "netherrack": "netherrack",
-      "tnt": "tnt"
-    },
-    "Lifecycle": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics", "Lifecycle"],
       "Type": "fire",
       "obsidian": "obsidian",
       "netherrack": "netherrack",
       "tnt": "tnt"
     }
-  }
+  ]
 }

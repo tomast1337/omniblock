@@ -10,18 +10,11 @@
   "TextureId": 16,
   "RenderType": "Stairs",
   "NotFullCube": true,
-  "Behaviors": {
-    "Physics": {
-      "Type": "stairs",
-      "base": "cobblestone"
-    },
-    "Lifecycle": {
-      "Type": "stairs",
-      "base": "cobblestone"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "stairs",
       "base": "cobblestone"
     }
-  }
+  ]
 }

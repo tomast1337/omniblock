@@ -20,26 +20,11 @@
     "Meta": 0
   },
   "TileEntity": "furnace",
-  "Behaviors": {
-    "Interactable": {
-      "Type": "furnace",
-      "lit": true
-    },
-    "Lifecycle": {
-      "Type": "furnace",
-      "lit": true
-    },
-    "Physics": {
-      "Type": "furnace",
-      "lit": true
-    },
-    "Ticker": {
-      "Type": "furnace",
-      "lit": true
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Interactable", "Lifecycle", "Physics", "Ticker", "Visuals"],
       "Type": "furnace",
       "lit": true
     }
-  }
+  ]
 }

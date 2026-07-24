@@ -11,22 +11,11 @@
   "TextureId": 106,
   "RenderType": "PistonBase",
   "NotFullCube": true,
-  "Behaviors": {
-    "Physics": {
-      "Type": "piston_base",
-      "sticky": true
-    },
-    "Lifecycle": {
-      "Type": "piston_base",
-      "sticky": true
-    },
-    "Ticker": {
-      "Type": "piston_base",
-      "sticky": true
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Lifecycle", "Ticker", "Visuals"],
       "Type": "piston_base",
       "sticky": true
     }
-  }
+  ]
 }

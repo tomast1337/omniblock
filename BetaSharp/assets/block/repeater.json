@@ -29,24 +29,10 @@
     "MaxCount": 1,
     "Meta": 0
   },
-  "Behaviors": {
-    "Redstone": {
-      "Type": "repeater"
-    },
-    "Ticker": {
-      "Type": "repeater"
-    },
-    "Physics": {
-      "Type": "repeater"
-    },
-    "Interactable": {
-      "Type": "repeater"
-    },
-    "Lifecycle": {
-      "Type": "repeater"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Redstone", "Ticker", "Physics", "Interactable", "Lifecycle", "Visuals"],
       "Type": "repeater"
     }
-  }
+  ]
 }

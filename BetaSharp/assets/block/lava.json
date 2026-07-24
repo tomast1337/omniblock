@@ -17,18 +17,10 @@
   "NotFullCube": true,
   "NoCollision": true,
   "DropCount": 0,
-  "Behaviors": {
-    "Physics": {
-      "Type": "stationary_fluid"
-    },
-    "Visuals": {
-      "Type": "stationary_fluid"
-    },
-    "Lifecycle": {
-      "Type": "stationary_fluid"
-    },
-    "Ticker": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics", "Visuals", "Lifecycle", "Ticker"],
       "Type": "stationary_fluid"
     }
-  }
+  ]
 }

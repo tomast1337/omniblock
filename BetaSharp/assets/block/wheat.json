@@ -20,30 +20,13 @@
     "MaxY": 0.25,
     "MaxZ": 1
   },
-  "Behaviors": {
-    "Ticker": {
-      "Type": "crop",
-      "farmland": "farmland",
-      "wheat": "wheat",
-      "seeds": "seeds"
-    },
-    "Physics": {
-      "Type": "crop",
-      "farmland": "farmland",
-      "wheat": "wheat",
-      "seeds": "seeds"
-    },
-    "Lifecycle": {
-      "Type": "crop",
-      "farmland": "farmland",
-      "wheat": "wheat",
-      "seeds": "seeds"
-    },
-    "Visuals": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics", "Lifecycle", "Visuals"],
       "Type": "crop",
       "farmland": "farmland",
       "wheat": "wheat",
       "seeds": "seeds"
     }
-  }
+  ]
 }

@@ -18,12 +18,10 @@
     "MaxY": 0.6,
     "MaxZ": 0.7
   },
-  "Behaviors": {
-    "Ticker": {
-      "Type": "plant_survival"
-    },
-    "Physics": {
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Physics"],
       "Type": "plant_survival"
     }
-  }
+  ]
 }

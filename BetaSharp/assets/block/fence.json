@@ -12,9 +12,10 @@
   "SpreadChance": 20,
   "RenderType": "Fence",
   "NotFullCube": true,
-  "Behaviors": {
-    "Physics": {
+  "Behaviors": [
+    {
+      "Slots": ["Physics"],
       "Type": "fence"
     }
-  }
+  ]
 }
