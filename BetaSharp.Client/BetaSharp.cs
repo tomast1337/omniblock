@@ -1317,12 +1317,13 @@ public partial class BetaSharp :
         if (ObjectMouseOver.Type != HitResultType.MISS)
         {
             int blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
+            Block hitBlock = Block.Blocks[blockId];
             int backupId = 0;
 
-            if (blockId == BlockRegistry.Get("grass_block").id) backupId = BlockRegistry.Get("dirt").id;
-            else if (blockId == BlockRegistry.Get("bedrock").id) backupId = BlockRegistry.Get("stone").id;
-            else if (blockId == BlockRegistry.Get("leaves").id) backupId = BlockRegistry.Get("sapling").id;
-            else if (blockId == BlockRegistry.Get("double_slab").id) blockId = BlockRegistry.Get("slab").id;
+            if (hitBlock == BlockRegistry.Get("bedrock")) backupId = BlockRegistry.Get("stone").id;
+            else if (hitBlock == BlockRegistry.Get("leaves")) backupId = BlockRegistry.Get("sapling").id;
+            else if (hitBlock == BlockRegistry.Get("grass_block") && hitBlock.TryGetSingleLootItemId(out int dirtId)) backupId = dirtId;
+            else if (hitBlock == BlockRegistry.Get("double_slab") && hitBlock.TryGetSingleLootItemId(out int slabId)) blockId = slabId;
 
             Player.Inventory.SetCurrentItem(blockId, backupId);
         }
