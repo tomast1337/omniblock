@@ -7,13 +7,21 @@ namespace BetaSharp.Blocks.Behaviors;
 /// <summary>
 ///     Source water/lava: reverts to its flowing counterpart (<c>block.id - 1</c>) whenever a
 ///     neighbor changes (the "check every tick" quasi-flow-restart vanilla does via neighbor
-///     notification), and lava sources randomly ignite nearby flammable terrain. A single shared
-///     instance serves both water and lava.
+///     notification), and lava sources randomly ignite nearby flammable terrain.
+///     <para>
+///         Ignition target block and the two lava/water-contact solidification products are all
+///         required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
+///         <c>"stationary_fluid"</c> entry) — no built-in vanilla fallback; an omitted or unknown
+///         name throws immediately at startup. Every JSON using this type declares the full set
+///         regardless of its own material (e.g. water.json's copy is never read, since the
+///         solidification/ignition logic below is gated on <c>Material.Lava</c>), matching the
+///         convention used everywhere else in this migration.
+///     </para>
 /// </summary>
-public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
+public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSolidified, Block flowSolidified) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
-        => FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        => FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
 
     public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => allowLiquids && meta == 0;
 
@@ -21,7 +29,7 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != block.id)
         {
             return;
@@ -54,7 +62,7 @@ public sealed class StationaryFluidBehavior : IBlockPhysics, IBlockVisuals, IBlo
                     continue;
                 }
 
-                @event.World.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").id);
+                @event.World.Writer.SetBlock(x, y, z, ignitionTarget.id);
                 return;
             }
 

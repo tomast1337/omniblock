@@ -9,24 +9,26 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Flowing (non-source) water/lava: spreads outward from the shortest path to a gap, drops to
 ///     source state when fed from 2+ adjacent sources (water) or falling from a source above, and
 ///     reverts to its stationary/source counterpart (<c>block.id + 1</c>, the vanilla water/lava
-///     id-pairing convention) once its level stabilizes. A single shared instance serves both water
-///     and lava — all per-tick state is thread-local and reset at the top of every call.
+///     id-pairing convention) once its level stabilizes. All per-tick state is thread-local and
+///     reset at the top of every call.
+///     <para>
+///         Pass-through obstacle set and the two lava/water-contact solidification products are
+///         all required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
+///         <c>"flowing_fluid"</c> entry) — no built-in vanilla fallback; an omitted or unknown name
+///         throws immediately at startup. Every JSON using this type declares the full set
+///         regardless of its own material, matching the convention used everywhere else in this
+///         migration.
+///     </para>
 /// </summary>
-public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
+public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidified, Block flowSolidified) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
-    private static readonly Block s_door = BlockRegistry.Get("door");
-    private static readonly Block s_ironDoor = BlockRegistry.Get("iron_door");
-    private static readonly Block s_sign = BlockRegistry.Get("sign");
-    private static readonly Block s_ladder = BlockRegistry.Get("ladder");
-    private static readonly Block s_sugarCane = BlockRegistry.Get("sugar_cane");
-
     private readonly ThreadLocal<int> _adjacentSources = new(() => 0);
     private readonly ThreadLocal<int[]> _distanceToGap = new(() => new int[4]);
     private readonly ThreadLocal<bool[]> _spread = new(() => new bool[4]);
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
         int placedId = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z);
         if (placedId == block.id && !@event.World.IsRemote)
         {
@@ -40,7 +42,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
+        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == block.id)
         {
             @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
@@ -187,7 +189,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         world.Writer.SetBlockWithoutNotifyingNeighbors(x, y, z, block.id + 1, meta, false);
     }
 
-    private static void SpreadTo(Block block, IWorldContext world, int x, int y, int z, int depth)
+    private void SpreadTo(Block block, IWorldContext world, int x, int y, int z, int depth)
     {
         if (!CanSpreadTo(world, x, y, z, block.material)) return;
 
@@ -207,7 +209,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         world.Writer.SetBlock(x, y, z, block.id, depth);
     }
 
-    private static int GetDistanceToGap(IWorldContext world, int x, int y, int z, int distance, int fromDirection, Material material)
+    private int GetDistanceToGap(IWorldContext world, int x, int y, int z, int distance, int fromDirection, Material material)
     {
         int minDistance = 1000;
 
@@ -324,14 +326,17 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         return spread;
     }
 
-    private static bool IsLiquidBreaking(IWorldContext world, int x, int y, int z)
+    private bool IsLiquidBreaking(IWorldContext world, int x, int y, int z)
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 
         if (!world.Reader.IsPosLoaded(x, y, z)) return true;
 
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == s_door.id || blockId == s_ironDoor.id || blockId == s_sign.id || blockId == s_ladder.id || blockId == s_sugarCane.id) return true;
+        foreach (Block obstacle in passable)
+        {
+            if (blockId == obstacle.id) return true;
+        }
 
         if (blockId == 0) return false;
 
@@ -357,7 +362,7 @@ public sealed class FlowingFluidBehavior : IBlockPhysics, IBlockVisuals, IBlockL
         return depth >= 0 && liquidState >= depth ? depth : liquidState;
     }
 
-    private static bool CanSpreadTo(IWorldContext world, int x, int y, int z, Material material)
+    private bool CanSpreadTo(IWorldContext world, int x, int y, int z, Material material)
     {
         if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000 || y < 0 || y >= ChuckFormat.WorldHeight) return false;
 

@@ -100,7 +100,14 @@ public static class FluidMath
         return Normalize(flowVector);
     }
 
-    public static void CheckBlockCollisions(Block block, IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    /// <summary>
+    ///     Lava meeting water solidifies: to <paramref name="sourceSolidified" /> (vanilla obsidian)
+    ///     at meta 0 (source), or <paramref name="flowSolidified" /> (vanilla cobblestone) at low
+    ///     flowing meta. Both are the caller's own configured params (see
+    ///     <see cref="StationaryFluidBehavior" />/<see cref="FlowingFluidBehavior" />) — this class
+    ///     has no behavior-level state of its own, it's shared geometry/rules only.
+    /// </summary>
+    public static void CheckBlockCollisions(Block block, IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z, Block sourceSolidified, Block flowSolidified)
     {
         if (reader.GetBlockId(x, y, z) != block.id) return;
         if (block.material != Material.Lava) return;
@@ -117,14 +124,14 @@ public static class FluidMath
         int meta = reader.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
-            writer.SetBlock(x, y, z, BlockRegistry.Get("obsidian").id);
+            writer.SetBlock(x, y, z, sourceSolidified.id);
             Fizz(broadcaster, x, y, z);
             return;
         }
 
         if (meta > 4) return;
 
-        writer.SetBlock(x, y, z, BlockRegistry.Get("cobblestone").id);
+        writer.SetBlock(x, y, z, flowSolidified.id);
         Fizz(broadcaster, x, y, z);
     }
 

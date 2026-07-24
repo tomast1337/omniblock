@@ -19,7 +19,10 @@
   "Behaviors": [
     {
       "Slots": ["Physics", "Visuals", "Lifecycle", "Ticker"],
-      "Type": "flowing_fluid"
+      "Type": "flowing_fluid",
+      "passable": ["door", "iron_door", "sign", "ladder", "sugar_cane"],
+      "source_solidified": "obsidian",
+      "flow_solidified": "cobblestone"
     }
   ]
 }

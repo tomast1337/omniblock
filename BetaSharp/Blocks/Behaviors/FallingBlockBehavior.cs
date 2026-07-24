@@ -7,8 +7,17 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Gravity-affected blocks (sand, gravel): schedules a fall check when placed or when a
 ///     neighbor changes, and falls on tick. Spans three capabilities — assign the same instance
 ///     to the Ticker, Lifecycle, and Physics slots.
+///     <para>
+///         Non-solid obstacles it falls through (vanilla: just fire) are a required, JSON-declared
+///         constructor param (see <c>BehaviorRegistry</c>'s <c>"falling_block"</c> entry) — no
+///         built-in vanilla fallback; an omitted or unknown name throws immediately at startup.
+///         <see cref="CanFallThrough" /> is called externally by <c>EntityFallingSand</c> (the
+///         falling block only knows its own block id at that point, not a behavior instance), so
+///         it resolves back to this instance via <c>Block.Blocks[id].Physics</c> rather than
+///         taking a static, hardcoded set.
+///     </para>
 /// </summary>
-public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
+public class FallingBlockBehavior(Block[] passable) : IBlockTicker, IBlockLifecycle, IBlockPhysics
 {
     private const sbyte CheckRadius = 32;
     private static readonly ThreadLocal<bool> s_fallInstantly = new(() => false);
@@ -25,7 +34,7 @@ public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
 
     public void OnTick(Block block, OnTickEvent @event) => ProcessFall(block, @event);
 
-    private static void ProcessFall(Block block, OnTickEvent @event)
+    private void ProcessFall(Block block, OnTickEvent @event)
     {
         (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
         if (y <= 0 || !CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId))) return;
@@ -51,11 +60,15 @@ public class FallingBlockBehavior : IBlockTicker, IBlockLifecycle, IBlockPhysics
         }
     }
 
-    public static bool CanFallThrough(OnTickEvent ctx)
+    public bool CanFallThrough(OnTickEvent ctx)
     {
         int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0) return true;
-        if (blockId == BlockRegistry.Get("fire").id) return true;
+
+        foreach (Block obstacle in passable)
+        {
+            if (blockId == obstacle.id) return true;
+        }
 
         Material material = Block.Blocks[blockId].material;
         return material == Material.Water || material == Material.Lava;

@@ -13,7 +13,8 @@
   "Behaviors": [
     {
       "Slots": ["Ticker", "Lifecycle", "Physics"],
-      "Type": "falling_block"
+      "Type": "falling_block",
+      "passable": ["fire"]
     }
   ]
 }

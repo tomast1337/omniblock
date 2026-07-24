@@ -67,7 +67,9 @@ public sealed class EntityFallingSand : Entity
             VelocityZ *= 0.7F;
             VelocityY *= -0.5D;
             MarkDead();
-            if ((!Block.Blocks[BlockId].CanPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)) || FallingBlockBehavior.CanFallThrough(new OnTickEvent(World, floorX, floorY - 1, floorZ, 0, BlockId)) ||
+            bool canFallThrough = Block.Blocks[BlockId].Physics is FallingBlockBehavior fallingBlockPhysics
+                && fallingBlockPhysics.CanFallThrough(new OnTickEvent(World, floorX, floorY - 1, floorZ, 0, BlockId));
+            if ((!Block.Blocks[BlockId].CanPlaceAt(new CanPlaceAtContext(World, 0, floorX, floorY, floorZ)) || canFallThrough ||
                  !World.Writer.SetBlock(floorX, floorY, floorZ, BlockId)) && !World.IsRemote)
             {
                 DropItem(BlockId, 1);

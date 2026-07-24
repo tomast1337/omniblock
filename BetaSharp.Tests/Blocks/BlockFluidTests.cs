@@ -1,4 +1,6 @@
+using System.Text.Json;
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 
@@ -6,6 +8,40 @@ namespace BetaSharp.Tests.Blocks;
 
 public sealed class BlockFluidTests
 {
+    // Ignition target / solidification products (stationary_fluid) and pass-through obstacle
+    // set / solidification products (flowing_fluid) are all required constructor params
+    // (JSON-configurable per variant, no built-in vanilla fallback). An omitted or unknown name
+    // must throw immediately at BehaviorRegistry.Build time (server boot). The tests above
+    // already exercise the real vanilla-configured obsidian/cobblestone path end-to-end via
+    // BlockRegistry, proving the parameterization didn't change behavior.
+    [Fact]
+    public void BehaviorRegistry_Build_StationaryFluid_MissingRequiredProperty_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","source_solidified":"obsidian","flow_solidified":"cobblestone"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
+    }
+
+    [Fact]
+    public void BehaviorRegistry_Build_StationaryFluid_UnknownBlockName_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","ignition_target":"fire","source_solidified":"not_a_real_block","flow_solidified":"cobblestone"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
+    }
+
+    [Fact]
+    public void BehaviorRegistry_Build_FlowingFluid_MissingRequiredProperty_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","source_solidified":"obsidian","flow_solidified":"cobblestone"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
+    }
+
+    [Fact]
+    public void BehaviorRegistry_Build_FlowingFluid_UnknownBlockName_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","passable":["not_a_real_block"],"source_solidified":"obsidian","flow_solidified":"cobblestone"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
+    }
+
     [Fact]
     public void LavaNeighborUpdate_WithMetaZeroAndAdjacentWater_HardensToObsidian()
     {
