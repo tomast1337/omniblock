@@ -5,24 +5,30 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-///     Leaves: distance-to-log decay (breadth-first flood fill capped at radius 4, re-derived from
+///     Leaves: distance-to-trunk decay (breadth-first flood fill capped at radius 4, re-derived from
 ///     scratch every check since no per-block decay-distance cache persists across ticks), sapling
-///     drop chance, shears harvesting, and the fancy/fast graphics opacity toggle. The toggle is
-///     process-wide (there is only one leaves block in Beta 1.7.3), so <see cref="SetGraphicsLevel" />
-///     mutates shared state on this singleton rather than per-<see cref="Block" /> instance state.
+///     drop chance, harvest-tool silk-touch drop, and the fancy/fast graphics opacity toggle. The
+///     toggle is process-wide (there is only one leaves block in Beta 1.7.3), so
+///     <see cref="SetGraphicsLevel" /> mutates shared state on this singleton rather than
+///     per-<see cref="Block" /> instance state.
+///     <para>
+///         Trunk block, sapling drop, and harvest tool are all required, JSON-declared per variant
+///         (see <c>BehaviorRegistry</c>'s <c>"leaves"</c> entry) — no built-in vanilla fallback; an
+///         omitted or unknown name throws immediately at startup rather than silently defaulting.
+///         Resolved eagerly, not lazily: every <see cref="Block" /> already exists by the time any
+///         behavior factory runs (pass 2 of <c>BlockRegistry.LoadAndBuild</c> starts only after
+///         pass 1 finishes constructing all of them). "Same-species leaves" checks compare against
+///         the owning <see cref="Block" /> passed into each call, not a separate cached id — a
+///         leaves block is always its own same-species reference.
+///     </para>
 /// </summary>
-public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisuals
+public sealed class LeavesBehavior(Block trunk, int saplingItemId, int harvestToolItemId) : IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private const sbyte DecayRadius = 4;
     private const sbyte RegionSize = 32;
     private const int LoadCheckExtent = DecayRadius + 1;
     private const int PlaneSize = RegionSize * RegionSize;
     private const int CenterOffset = RegionSize / 2;
-
-    private static readonly Item s_shears = Item.ByName("shears");
-    private static readonly Block s_log = BlockRegistry.Get("log");
-    private static readonly Block s_leaves = BlockRegistry.Get("leaves");
-    private static readonly Block s_sapling = BlockRegistry.Get("sapling");
 
     private readonly ThreadLocal<int[]?> _decayRegion = new(() => null);
     private bool _graphicsLevel;
@@ -43,7 +49,7 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                 for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
                     int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != s_leaves.id)
+                    if (blockId != block.id)
                     {
                         continue;
                     }
@@ -58,15 +64,15 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
     public void OnAfterBreak(Block block, OnAfterBreakEvent ctx)
     {
         ItemStack? hand = ctx.Player.GetHand();
-        if (ctx.World.IsRemote || hand == null || hand.ItemId != s_shears.Id) return;
+        if (ctx.World.IsRemote || hand == null || hand.ItemId != harvestToolItemId) return;
 
         ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
-        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(s_leaves.id, 1, ctx.Meta & 3));
+        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(block.id, 1, ctx.Meta & 3));
     }
 
     public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => s_sapling.id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItemId;
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -76,6 +82,7 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
         _decayRegion.Value ??= new int[RegionSize * RegionSize * RegionSize];
 
         int[] decayRegion = _decayRegion.Value;
+        int trunkId = trunk.id;
 
         int distanceToLog;
         if (@event.World.ChunkHost.IsRegionLoaded(@event.X - LoadCheckExtent, @event.Y - LoadCheckExtent, @event.Z - LoadCheckExtent, @event.X + LoadCheckExtent, @event.Y + LoadCheckExtent, @event.Z + LoadCheckExtent))
@@ -89,11 +96,11 @@ public sealed class LeavesBehavior : IBlockTicker, IBlockLifecycle, IBlockVisual
                     for (int dy = -DecayRadius; dy <= DecayRadius; ++dy)
                     {
                         int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
-                        if (blockId == s_log.id)
+                        if (blockId == trunkId)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
                         }
-                        else if (blockId == s_leaves.id)
+                        else if (blockId == block.id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
                         }

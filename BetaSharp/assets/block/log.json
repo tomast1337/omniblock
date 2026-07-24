@@ -12,10 +12,12 @@
   "PreservesMetaOnDrop": true,
   "Behaviors": {
     "Visuals": {
-      "Type": "log"
+      "Type": "log",
+      "leaves": "leaves"
     },
     "Lifecycle": {
-      "Type": "log"
+      "Type": "log",
+      "leaves": "leaves"
     }
   }
 }

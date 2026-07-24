@@ -1,5 +1,6 @@
 using System.Text.Json;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Items;
 
 namespace BetaSharp.Blocks.Behaviors;
 
@@ -56,10 +57,13 @@ internal static class BehaviorRegistry
         ["grass_ticker"] = _ => new GrassTickerBehavior(),
         ["grass_visual"] = _ => new GrassVisualBehavior(),
         ["jukebox"] = _ => new JukeboxBehavior(),
-        ["leaves"] = _ => new LeavesBehavior(),
+        ["leaves"] = json => new LeavesBehavior(
+            ResolveBlock(json.GetProperty("trunk").GetString()!),
+            ResolveBlock(json.GetProperty("sapling").GetString()!).id,
+            ResolveItem(json.GetProperty("harvest_tool").GetString()!).Id),
         ["lever"] = _ => new LeverBehavior(),
         ["locked_chest"] = _ => new LockedChestBehavior(),
-        ["log"] = _ => new LogBehavior(),
+        ["log"] = json => new LogBehavior(ResolveBlock(json.GetProperty("leaves").GetString()!).id),
         ["mushroom"] = _ => new MushroomBehavior(),
         ["noteblock"] = _ => new NoteBlockBehavior(),
         ["piston_extension"] = _ => new PistonExtensionBehavior(),
@@ -96,4 +100,6 @@ internal static class BehaviorRegistry
     // snow's melt-to-air case needs this sentinel alongside real block-name lookups.
     private static int ResolveBlockOrAir(string name) =>
         name == "air" ? 0 : ResolveBlock(name).id;
+
+    private static Item ResolveItem(string name) => Item.ByName(name);
 }

@@ -1,4 +1,7 @@
+using System.Text.Json;
 using BetaSharp.Blocks;
+using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Items;
 
 namespace BetaSharp.Tests.Blocks;
 
@@ -27,4 +30,54 @@ public sealed class BlockLeavesTests
     [Fact]
     public void GetDroppedItemId_IsSapling()
         => Assert.Equal(BlockRegistry.Get("sapling").id, BlockRegistry.Get("leaves").GetDroppedItemId(0));
+
+    // Trunk/sapling/harvest-tool are required constructor params (JSON-configurable per
+    // variant, no built-in vanilla fallback). Construct a differently configured instance
+    // directly (bypassing BlockRegistry) to prove the override actually takes effect rather
+    // than silently defaulting.
+    [Fact]
+    public void OnTick_CustomTrunk_DecaysAgainstConfiguredTrunkNotVanillaLog()
+    {
+        FakeWorldContext world = new();
+        Block leavesBlock = BlockRegistry.Get("leaves");
+        Block customTrunk = BlockRegistry.Get("stone");
+        int saplingId = BlockRegistry.Get("sapling").id;
+        int shearsId = Item.ByName("shears").Id;
+
+        world.ReaderWriter.SetInitial(0, 63, 0, customTrunk.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, leavesBlock.id, 8);
+
+        LeavesBehavior behavior = new(customTrunk, saplingId, shearsId);
+        behavior.OnTick(leavesBlock, Tick(world));
+
+        Assert.Equal(0, world.Reader.GetBlockMeta(0, 64, 0) & 8);
+    }
+
+    [Fact]
+    public void GetDroppedItemId_CustomSapling_ReturnsConfiguredItem()
+    {
+        Block log = BlockRegistry.Get("log");
+        int sandId = BlockRegistry.Get("sand").id;
+        int shearsId = Item.ByName("shears").Id;
+
+        LeavesBehavior behavior = new(log, sandId, shearsId);
+        Assert.Equal(sandId, behavior.GetDroppedItemId(BlockRegistry.Get("leaves"), 0, 0));
+    }
+
+    // No built-in default and no null fallback: an omitted or unknown "trunk"/"sapling"/
+    // "harvest_tool" in JSON must throw immediately (at BehaviorRegistry.Build, i.e. server
+    // boot), not silently fall back to a vanilla value.
+    [Fact]
+    public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","sapling":"sapling","harvest_tool":"shears"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
+    }
+
+    [Fact]
+    public void BehaviorRegistry_Build_UnknownBlockName_Throws()
+    {
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","trunk":"not_a_real_block","sapling":"sapling","harvest_tool":"shears"}""");
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
+    }
 }
