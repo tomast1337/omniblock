@@ -35,19 +35,19 @@ public sealed class BlockFarmlandTests
         Assert.Equal(customRevertTarget.id, world.Reader.GetBlockId(0, 64, 0));
     }
 
-    // No built-in default and no null fallback: an omitted or unknown "dirt"/"crop" in JSON
-    // must throw immediately (at BehaviorRegistry.Build, i.e. server boot).
+    // No built-in default and no null fallback: an omitted or unknown "revert_block"/"crop" in
+    // JSON must throw immediately (at BehaviorRegistry.Build, i.e. server boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","dirt":"dirt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"dirt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","dirt":"not_a_real_block","crop":"wheat"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"not_a_real_block","crop":"wheat"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 }

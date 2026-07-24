@@ -95,7 +95,7 @@ public sealed class BlockBatch7Tests
 
     // Unknown BLOCK name: CanonicalRegistry.Get throws KeyNotFoundException.
     [Theory]
-    [InlineData("portal", """{"Type":"portal","obsidian":"not_a_real_block"}""")]
+    [InlineData("portal", """{"Type":"portal","portal_base":"not_a_real_block"}""")]
     [InlineData("redstone_wire", """{"Type":"redstone_wire","wire":"redstone_wire","conductors":["button"],"repeater":"not_a_real_block","powered_repeater":"powered_repeater"}""")]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws(string type, string json)
     {
@@ -108,7 +108,7 @@ public sealed class BlockBatch7Tests
     [Theory]
     [InlineData("dispenser", """{"Type":"dispenser","arrow":"arrow","egg":"egg","snowball":"not_a_real_item"}""")]
     [InlineData("tall_grass", """{"Type":"tall_grass","seeds":"not_a_real_item"}""")]
-    [InlineData("snow", """{"Type":"snow","snowball":"not_a_real_item"}""")]
+    [InlineData("snow", """{"Type":"snow","drop_item":"not_a_real_item"}""")]
     public void BehaviorRegistry_Build_UnknownItemName_Throws(string type, string json)
     {
         using JsonDocument doc = JsonDocument.Parse(json);

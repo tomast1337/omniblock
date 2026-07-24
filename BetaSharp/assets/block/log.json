@@ -14,7 +14,7 @@
     {
       "Slots": ["Visuals", "Lifecycle"],
       "Type": "log",
-      "leaves": "leaves"
+      "canopy": "leaves"
     }
   ]
 }

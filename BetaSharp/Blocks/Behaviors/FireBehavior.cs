@@ -9,17 +9,20 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     1.7.3 values) live on <see cref="Block.BurnChance" />/<see cref="Block.SpreadChance" />,
 ///     set per-block from JSON, rather than a lookup table owned by this behavior.
 ///     <para>
-///         Portal-trigger block, portal-fill block, eternal-burn base, and auto-ignite block are
-///         all required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
-///         <c>"fire"</c> entry) — no built-in vanilla fallback; an omitted or unknown name throws
-///         immediately at startup.
+///         Portal-trigger block (<paramref name="portalBase" />), portal-fill block
+///         (<paramref name="portalFill" />), eternal-burn base (<paramref name="eternalFuel" />),
+///         and auto-ignite block (<paramref name="explosive" />) are all required, JSON-declared
+///         constructor params (see <c>BehaviorRegistry</c>'s <c>"fire"</c> entry) — no built-in
+///         vanilla fallback; an omitted or unknown name throws immediately at startup. Named
+///         generically (not obsidian/netherrack/tnt) so a non-vanilla fire variant reads
+///         naturally.
 ///     </para>
 /// </summary>
-internal sealed class FireBehavior(Block obsidian, Block netherPortal, Block netherrack, Block tntBlock) : IBlockTicker, IBlockPhysics, IBlockLifecycle
+internal sealed class FireBehavior(Block portalBase, Block portalFill, Block eternalFuel, Block explosive) : IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == obsidian.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z, obsidian, block, netherPortal))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == portalBase.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z, portalBase, block, portalFill))
             return;
 
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
@@ -46,7 +49,7 @@ internal sealed class FireBehavior(Block obsidian, Block netherPortal, Block net
     {
         if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick)) return;
 
-        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == netherrack.id;
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == eternalFuel.id;
         if (!block.CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -222,7 +225,7 @@ internal sealed class FireBehavior(Block obsidian, Block netherPortal, Block net
     {
         int targetSpreadChance = SpreadChanceAt(level.Reader, x, y, z);
         if (random.NextInt(spreadFactor) >= targetSpreadChance) return;
-        bool isTnt = level.Reader.GetBlockId(x, y, z) == tntBlock.id;
+        bool isTnt = level.Reader.GetBlockId(x, y, z) == explosive.id;
         if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
         {
             int newFireAge = currentAge + random.NextInt(5) / 4;
@@ -240,7 +243,7 @@ internal sealed class FireBehavior(Block obsidian, Block netherPortal, Block net
 
         if (isTnt)
         {
-            tntBlock.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
+            explosive.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
         }
     }
 

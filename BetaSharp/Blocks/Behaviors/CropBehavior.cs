@@ -11,16 +11,19 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     <see cref="PlantSurvivalBehavior" />) because its growth/survival predicate is farmland-specific
 ///     and its own <see cref="CanGrow" /> hook must be reachable from <see cref="NeighborUpdate" />.
 ///     <para>
-///         Required soil, mature-drop item, and seed item are all required, JSON-declared constructor
-///         params (see <c>BehaviorRegistry</c>'s <c>"crop"</c> entry) — no built-in vanilla fallback;
-///         an omitted or unknown name throws immediately at startup.
+///         Required soil (<paramref name="requiredSoil" />), mature-drop item
+///         (<paramref name="matureCropItem" />), and seed item (<paramref name="seeds" />) are all
+///         required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s <c>"crop"</c>
+///         entry) — no built-in vanilla fallback; an omitted or unknown name throws immediately at
+///         startup. Named generically (not "farmland"/"wheat") so a non-vanilla crop variant reads
+///         naturally.
 ///     </para>
 /// </summary>
-internal sealed class CropBehavior(Block farmland, Item wheat, Item seeds) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     private const float DropSpread = 0.7F;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? wheat.Id : -1;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? matureCropItem.Id : -1;
 
     public void OnDropStacks(Block block, OnDropEvent @event)
     {
@@ -44,11 +47,11 @@ internal sealed class CropBehavior(Block farmland, Item wheat, Item seeds) : IBl
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == farmland.id;
+        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == requiredSoil.id;
 
     public bool CanGrow(Block block, OnTickEvent ctx)
         => (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z))
-           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == farmland.id;
+           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == requiredSoil.id;
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
         => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
@@ -93,7 +96,7 @@ internal sealed class CropBehavior(Block farmland, Item wheat, Item seeds) : IBl
             {
                 int blockBelow = read.GetBlockId(dx, y - 1, dz);
                 float cellMoisture = 0.0F;
-                if (blockBelow == farmland.id)
+                if (blockBelow == requiredSoil.id)
                 {
                     cellMoisture = 1.0F;
                     if (read.GetBlockMeta(dx, y - 1, dz) > 0)

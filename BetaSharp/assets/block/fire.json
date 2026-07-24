@@ -18,10 +18,10 @@
     {
       "Slots": ["Ticker", "Physics", "Lifecycle"],
       "Type": "fire",
-      "obsidian": "obsidian",
-      "nether_portal": "nether_portal",
-      "netherrack": "netherrack",
-      "tnt": "tnt"
+      "portal_base": "obsidian",
+      "portal_fill": "nether_portal",
+      "eternal_fuel": "netherrack",
+      "explosive": "tnt"
     }
   ]
 }

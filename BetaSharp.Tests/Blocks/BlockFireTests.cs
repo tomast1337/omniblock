@@ -9,11 +9,11 @@ public sealed class BlockFireTests
     private static OnTickEvent Tick(FakeWorldContext world, int x = 0, int y = 64, int z = 0) => new(world, x, y, z, world.Reader.GetBlockMeta(x, y, z), world.Reader.GetBlockId(x, y, z));
 
     // Regression: FireBehavior is wired into the Ticker, Physics, and Lifecycle slots
-    // independently, and AttachBehaviors builds a separate instance per slot. Obsidian/
-    // netherrack/tnt are required constructor params resolved once per slot from that
-    // slot's own JSON blob (fire.json declares them identically on all three) — not
-    // instance fields set via OnInit (which only ever runs on the Lifecycle-slot
-    // instance), which is what originally NRE'd on the Ticker-slot instance.
+    // independently, and AttachBehaviors builds a separate instance per slot. portal_base/
+    // portal_fill/eternal_fuel/explosive are required constructor params resolved once per
+    // slot from that slot's own JSON blob (fire.json declares them identically on all
+    // three) — not instance fields set via OnInit (which only ever runs on the
+    // Lifecycle-slot instance), which is what originally NRE'd on the Ticker-slot instance.
     [Fact]
     public void OnTick_DoesNotThrow()
     {
@@ -34,19 +34,20 @@ public sealed class BlockFireTests
         BlockRegistry.Get("fire").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 0, 64, 0));
     }
 
-    // Obsidian/netherrack/tnt have no built-in vanilla fallback — an omitted or unknown
-    // name must throw immediately at BehaviorRegistry.Build time (server boot).
+    // portal_base/portal_fill/eternal_fuel/explosive have no built-in vanilla fallback — an
+    // omitted or unknown name must throw immediately at BehaviorRegistry.Build time (server
+    // boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingField_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","netherrack":"netherrack","tnt":"tnt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","eternal_fuel":"netherrack","explosive":"tnt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("fire", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","obsidian":"not_a_real_block","netherrack":"netherrack","tnt":"tnt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"fire","portal_base":"not_a_real_block","portal_fill":"nether_portal","eternal_fuel":"netherrack","explosive":"tnt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("fire", json.RootElement));
     }
 }

@@ -22,7 +22,7 @@
     {
       "Slots": ["Ticker", "Physics", "Interactable", "Lifecycle", "Visuals"],
       "Type": "farmland",
-      "dirt": "dirt",
+      "revert_block": "dirt",
       "crop": "wheat"
     }
   ]

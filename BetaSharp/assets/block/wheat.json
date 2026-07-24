@@ -24,8 +24,8 @@
     {
       "Slots": ["Ticker", "Physics", "Lifecycle", "Visuals"],
       "Type": "crop",
-      "farmland": "farmland",
-      "wheat": "wheat",
+      "required_soil": "farmland",
+      "mature_crop_item": "wheat",
       "seeds": "seeds"
     }
   ]

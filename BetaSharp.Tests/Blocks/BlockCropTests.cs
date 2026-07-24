@@ -39,19 +39,20 @@ public sealed class BlockCropTests
         Assert.Equal(-1, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 3, 0));
     }
 
-    // No built-in default and no null fallback: an omitted or unknown "farmland"/"wheat"/
-    // "seeds" in JSON must throw immediately (at BehaviorRegistry.Build, i.e. server boot).
+    // No built-in default and no null fallback: an omitted or unknown "required_soil"/
+    // "mature_crop_item"/"seeds" in JSON must throw immediately (at BehaviorRegistry.Build, i.e.
+    // server boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","wheat":"wheat","seeds":"seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","mature_crop_item":"wheat","seeds":"seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","farmland":"not_a_real_block","wheat":"wheat","seeds":"seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"not_a_real_block","mature_crop_item":"wheat","seeds":"seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 }

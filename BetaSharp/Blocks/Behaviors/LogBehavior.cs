@@ -4,14 +4,15 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Log rendering and leaf decay: bark texture varies by species metadata, and breaking a log
 ///     marks all leaves within a 4-block radius for decay. Assign to the Visuals and Lifecycle slots.
 ///     <para>
-///         Which block counts as "attached leaves" is required, JSON-declared per variant (see
+///         Which block counts as "attached canopy" is required, JSON-declared per variant (see
 ///         <c>BehaviorRegistry</c>'s <c>"log"</c> entry) — no built-in vanilla fallback; an omitted
-///         or unknown name throws immediately at startup rather than silently defaulting. Resolved
+///         or unknown name throws immediately at startup rather than silently defaulting. Named
+///         generically (not "leaves") so a non-tree trunk variant reads naturally. Resolved
 ///         eagerly, not lazily: every <see cref="Block" /> already exists by the time any behavior
 ///         factory runs.
 ///     </para>
 /// </summary>
-public sealed class LogBehavior(Block leaves) : IBlockVisuals, IBlockLifecycle
+public sealed class LogBehavior(Block canopy) : IBlockVisuals, IBlockLifecycle
 {
     private const sbyte SearchRadius = 4;
     private const int RegionExtent = SearchRadius + 1;
@@ -30,7 +31,7 @@ public sealed class LogBehavior(Block leaves) : IBlockVisuals, IBlockLifecycle
                 for (int offsetZ = -SearchRadius; offsetZ <= SearchRadius; ++offsetZ)
                 {
                     int neighborBlockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (neighborBlockId != leaves.id) continue;
+                    if (neighborBlockId != canopy.id) continue;
 
                     int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
                     if ((leavesMeta & 8) == 0)

@@ -11,12 +11,12 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     support collapse and light-melt both go through the standard (zero-count) drop path, which
 ///     vanilla-accurately drops nothing.
 ///     <para>
-///         Drop item is a required, JSON-declared constructor param (see <c>BehaviorRegistry</c>'s
-///         <c>"snow"</c> entry) — no built-in vanilla fallback; an omitted or unknown name throws
-///         immediately at startup.
+///         Drop item (<paramref name="dropItem" />) is a required, JSON-declared constructor
+///         param (see <c>BehaviorRegistry</c>'s <c>"snow"</c> entry) — no built-in vanilla
+///         fallback; an omitted or unknown name throws immediately at startup.
 ///     </para>
 /// </summary>
-internal sealed class SnowBehavior(Item snowball) : IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
+internal sealed class SnowBehavior(Item dropItem) : IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private const float DropSpread = 0.7F;
 
@@ -25,7 +25,7 @@ internal sealed class SnowBehavior(Item snowball) : IBlockPhysics, IBlockTicker,
         double offsetX = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetY = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
         double offsetZ = Random.Shared.NextSingle() * DropSpread + (1.0F - DropSpread) * 0.5D;
-        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(snowball.Id, 1, 0))
+        EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(dropItem.Id, 1, 0))
         {
             DelayBeforeCanPickup = 10
         };
@@ -34,7 +34,7 @@ internal sealed class SnowBehavior(Item snowball) : IBlockPhysics, IBlockTicker,
         @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => snowball.Id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => dropItem.Id;
 
     public int GetDroppedItemCount(Block block, int defaultCount) => 0;
 
