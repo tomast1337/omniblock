@@ -61,17 +61,17 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         if (ImGui.CollapsingHeader("Connection statistics", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.Text($"Connection Type: {(isInternal ? "Internal Server" : "Remote Server")}");
+            ImGuiTextSafe.Text($"Connection Type: {(isInternal ? "Internal Server" : "Remote Server")}");
             if (!isInternal)
             {
                 ImGuiTextSafe.Text($"Address: {serverAddress}");
             }
             ImGui.Spacing();
-            ImGui.Text($"Total Upload:   {FormatMemory(currentUpload)}");
-            ImGui.Text($"Total Download: {FormatMemory(currentDownload)}");
+            ImGuiTextSafe.Text($"Total Upload:   {FormatMemory(currentUpload)}");
+            ImGuiTextSafe.Text($"Total Download: {FormatMemory(currentDownload)}");
             ImGui.Spacing();
-            ImGui.Text($"Upload Packets:   {uploadPackets}");
-            ImGui.Text($"Download Packets: {downloadPackets}");
+            ImGuiTextSafe.Text($"Upload Packets:   {uploadPackets}");
+            ImGuiTextSafe.Text($"Download Packets: {downloadPackets}");
         }
 
         if (ImGui.CollapsingHeader("Graphs", ImGuiTreeNodeFlags.DefaultOpen))

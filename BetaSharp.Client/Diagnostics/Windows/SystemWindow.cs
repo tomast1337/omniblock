@@ -27,7 +27,7 @@ internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
         if (ImGui.CollapsingHeader("CPU", ImGuiTreeNodeFlags.DefaultOpen))
         {
             ImGuiTextSafe.Text($"Name:  {s.CpuName}");
-            ImGui.Text($"Cores: {s.CpuCoreCount}");
+            ImGuiTextSafe.Text($"Cores: {s.CpuCoreCount}");
         }
     }
 }

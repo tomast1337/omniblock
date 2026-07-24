@@ -12,7 +12,7 @@ internal sealed class RenderInfoWindow : DebugWindow
     {
         if (MetricRegistry.IsStale(RenderMetrics.ChunksTotal))
         {
-            ImGui.TextDisabled("No world loaded.");
+            ImGuiTextSafe.TextDisabled("No world loaded.");
             return;
         }
 
@@ -34,28 +34,28 @@ internal sealed class RenderInfoWindow : DebugWindow
 
     private static void DrawChunkSection()
     {
-        ImGui.Text($"Total:    {MetricRegistry.Get(RenderMetrics.ChunksTotal)}");
-        ImGui.Text($"Frustum:  {MetricRegistry.Get(RenderMetrics.ChunksFrustum)}");
-        ImGui.Text($"Occluded: {MetricRegistry.Get(RenderMetrics.ChunksOccluded)}");
-        ImGui.Text($"Rendered: {MetricRegistry.Get(RenderMetrics.ChunksRendered)}");
+        ImGuiTextSafe.Text($"Total:    {MetricRegistry.Get(RenderMetrics.ChunksTotal)}");
+        ImGuiTextSafe.Text($"Frustum:  {MetricRegistry.Get(RenderMetrics.ChunksFrustum)}");
+        ImGuiTextSafe.Text($"Occluded: {MetricRegistry.Get(RenderMetrics.ChunksOccluded)}");
+        ImGuiTextSafe.Text($"Rendered: {MetricRegistry.Get(RenderMetrics.ChunksRendered)}");
 
         ImGui.Spacing();
-        ImGui.Text($"VBO Allocated:      {MetricRegistry.Get(RenderMetrics.VboAllocatedMb):F2} MB");
-        ImGui.Text($"Mesh Version Alloc: {MetricRegistry.Get(RenderMetrics.MeshVersionAllocated)}");
-        ImGui.Text($"Mesh Version Free:  {MetricRegistry.Get(RenderMetrics.MeshVersionReleased)}");
+        ImGuiTextSafe.Text($"VBO Allocated:      {MetricRegistry.Get(RenderMetrics.VboAllocatedMb):F2} MB");
+        ImGuiTextSafe.Text($"Mesh Version Alloc: {MetricRegistry.Get(RenderMetrics.MeshVersionAllocated)}");
+        ImGuiTextSafe.Text($"Mesh Version Free:  {MetricRegistry.Get(RenderMetrics.MeshVersionReleased)}");
     }
 
     private static void DrawEntitiesSection()
     {
-        ImGui.Text($"Rendered:  {MetricRegistry.Get(RenderMetrics.EntitiesRendered)}");
-        ImGui.Text($"Hidden:    {MetricRegistry.Get(RenderMetrics.EntitiesHidden)}");
-        ImGui.Text($"Total:     {MetricRegistry.Get(RenderMetrics.EntitiesTotal)}");
-        ImGui.Text($"Particles: {MetricRegistry.Get(RenderMetrics.ParticlesActive)}");
+        ImGuiTextSafe.Text($"Rendered:  {MetricRegistry.Get(RenderMetrics.EntitiesRendered)}");
+        ImGuiTextSafe.Text($"Hidden:    {MetricRegistry.Get(RenderMetrics.EntitiesHidden)}");
+        ImGuiTextSafe.Text($"Total:     {MetricRegistry.Get(RenderMetrics.EntitiesTotal)}");
+        ImGuiTextSafe.Text($"Particles: {MetricRegistry.Get(RenderMetrics.ParticlesActive)}");
     }
 
     private static void DrawTextureSection()
     {
-        ImGui.Text($"Binds:   {MetricRegistry.Get(RenderMetrics.TextureBindsLastFrame)} (Avg: {MetricRegistry.Get(RenderMetrics.TextureAvgBinds):F1}/f)");
-        ImGui.Text($"Active:  {MetricRegistry.Get(RenderMetrics.TextureActive)}");
+        ImGuiTextSafe.Text($"Binds:   {MetricRegistry.Get(RenderMetrics.TextureBindsLastFrame)} (Avg: {MetricRegistry.Get(RenderMetrics.TextureAvgBinds):F1}/f)");
+        ImGuiTextSafe.Text($"Active:  {MetricRegistry.Get(RenderMetrics.TextureActive)}");
     }
 }

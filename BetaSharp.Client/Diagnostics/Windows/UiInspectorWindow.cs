@@ -32,7 +32,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
         if (screen == null)
         {
-            ImGui.TextDisabled("none");
+            ImGuiTextSafe.TextDisabled("none");
         }
         else
         {
@@ -56,7 +56,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         }
         else
         {
-            ImGui.TextDisabled("no HUD");
+            ImGuiTextSafe.TextDisabled("no HUD");
         }
 
         if (_selectedElement != null)
@@ -125,7 +125,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         {
             bool propsOpen = ImGui.TreeNodeEx("##p", ImGuiTreeNodeFlags.SpanAvailWidth);
             ImGui.SameLine();
-            ImGui.TextDisabled("Properties");
+            ImGuiTextSafe.TextDisabled("Properties");
 
             if (propsOpen)
             {

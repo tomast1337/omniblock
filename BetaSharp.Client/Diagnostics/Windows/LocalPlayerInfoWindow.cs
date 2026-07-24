@@ -1,5 +1,4 @@
 using BetaSharp.Blocks;
-using BetaSharp.Client.Diagnostics;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using Hexa.NET.ImGui;
@@ -17,7 +16,7 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
     {
         if (ctx.Player == null || ctx.World == null)
         {
-            ImGui.TextDisabled("No player in world.");
+            ImGuiTextSafe.TextDisabled("No player in world.");
             return;
         }
 
@@ -55,19 +54,19 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
         string biome = ctx.World.Dimension.BiomeSource.GetBiome(bx, bz).Name;
         int light = ctx.World.Lighting.GetLightLevel(bx, by, bz);
 
-        ImGui.Text($"XYZ:    {x:F3} / {y:F5} / {z:F3}");
-        ImGui.Text($"Block:  {bx} {by} {bz}");
-        ImGui.Text($"Facing: {cardinal} {vertical} (towards {towards})");
-        ImGui.Text($"Yaw / Pitch: {yaw:F1} / {pitch:F1}");
+        ImGuiTextSafe.Text($"XYZ:    {x:F3} / {y:F5} / {z:F3}");
+        ImGuiTextSafe.Text($"Block:  {bx} {by} {bz}");
+        ImGuiTextSafe.Text($"Facing: {cardinal} {vertical} (towards {towards})");
+        ImGuiTextSafe.Text($"Yaw / Pitch: {yaw:F1} / {pitch:F1}");
         ImGuiTextSafe.Text($"Biome:  {biome}");
-        ImGui.Text($"Light:  {light}");
+        ImGuiTextSafe.Text($"Light:  {light}");
     }
 
     private void DrawTargetedBlockSection()
     {
         if (ctx.ObjectMouseOver.Type != HitResultType.TILE)
         {
-            ImGui.TextDisabled("Nothing targeted.");
+            ImGuiTextSafe.TextDisabled("Nothing targeted.");
             return;
         }
 
@@ -96,8 +95,8 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
         int faceLight = ctx.World.Lighting.GetLightLevel(ax, ay, az);
 
         ImGuiTextSafe.Text($"{name} ({id}:{meta})");
-        ImGui.Text($"XYZ:  {bx} / {by} / {bz}");
-        ImGui.Text($"Face: {sideName} (light {faceLight})");
+        ImGuiTextSafe.Text($"XYZ:  {bx} / {by} / {bz}");
+        ImGuiTextSafe.Text($"Face: {sideName} (light {faceLight})");
     }
 
     private static void GetAdjacentBlockForFaceLight(int bx, int by, int bz, Side side, out int ax, out int ay, out int az)

@@ -16,22 +16,22 @@ internal sealed class ServerInfoWindow : DebugWindow
 
         if (stale)
         {
-            ImGui.TextDisabled("Remote server — internal data unavailable.");
+            ImGuiTextSafe.TextDisabled("Remote server — internal data unavailable.");
             ImGui.Separator();
-            ImGui.TextDisabled("TPS:      N/A");
-            ImGui.TextDisabled("MSPT:     N/A");
-            ImGui.TextDisabled("Entities: N/A");
-            ImGui.TextDisabled("Players:  N/A");
+            ImGuiTextSafe.TextDisabled("TPS:      N/A");
+            ImGuiTextSafe.TextDisabled("MSPT:     N/A");
+            ImGuiTextSafe.TextDisabled("Entities: N/A");
+            ImGuiTextSafe.TextDisabled("Players:  N/A");
         }
         else
         {
             float mspt = MetricRegistry.Get(ServerMetrics.Mspt);
             _msptGraph.Push(mspt);
 
-            ImGui.Text($"TPS:      {MetricRegistry.Get(ServerMetrics.Tps):F1}");
-            ImGui.Text($"MSPT:     {mspt:F2} ms");
-            ImGui.Text($"Entities: {MetricRegistry.Get(ServerMetrics.EntityCount)}");
-            ImGui.Text($"Players:  {MetricRegistry.Get(ServerMetrics.PlayerCount)}");
+            ImGuiTextSafe.Text($"TPS:      {MetricRegistry.Get(ServerMetrics.Tps):F1}");
+            ImGuiTextSafe.Text($"MSPT:     {mspt:F2} ms");
+            ImGuiTextSafe.Text($"Entities: {MetricRegistry.Get(ServerMetrics.EntityCount)}");
+            ImGuiTextSafe.Text($"Players:  {MetricRegistry.Get(ServerMetrics.PlayerCount)}");
 
             ImGui.Spacing();
             _msptGraph.Draw(40f, 50.0f);

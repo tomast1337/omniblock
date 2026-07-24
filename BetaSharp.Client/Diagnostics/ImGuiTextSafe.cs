@@ -25,4 +25,11 @@ internal static class ImGuiTextSafe
         Vector4 disabledColor = ImGui.GetStyle().Colors[(int)ImGuiCol.TextDisabled];
         TextColored(disabledColor, text);
     }
+
+    public static void TextWrapped(string text)
+    {
+        ImGui.PushTextWrapPos(0.0f);
+        ImGui.TextUnformatted(text);
+        ImGui.PopTextWrapPos();
+    }
 }
