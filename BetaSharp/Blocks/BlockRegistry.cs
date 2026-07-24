@@ -114,8 +114,10 @@ public static class BlockRegistry
             // Every block gets Init() called once, all definitions guaranteed constructed,
             // simpler than the old code's skip-if-Item.ITEMS-already-set quirk, and provably
             // identical in practice: none of the seven special-cased blocks above override
-            // IBlockLifecycle.OnInit (only FireBehavior and LeavesBehavior do, and neither is
-            // one of them).
+            // IBlockLifecycle.OnInit (no block does — AttachBehaviors builds a separate
+            // instance per slot, so instance state set via OnInit wouldn't reliably reach
+            // the Ticker/Physics/etc-slot instances anyway; behaviors needing resolved
+            // cross-block ids use static readonly fields instead).
             Block.Blocks[id].Init();
         }
     }

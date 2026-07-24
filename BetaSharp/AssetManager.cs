@@ -115,7 +115,7 @@ public class AssetManager
 
     private void loadLanguages()
     {
-        string langPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "lang");
+        string langPath = Path.Combine("assets", "lang");
 
         try
         {
