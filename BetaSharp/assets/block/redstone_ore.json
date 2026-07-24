@@ -22,7 +22,9 @@
   "Behaviors": [
     {
       "Slots": ["Ticker", "Interactable"],
-      "Type": "redstone_ore"
+      "Type": "redstone_ore",
+      "unlit_ore": "redstone_ore",
+      "lit_ore": "lit_redstone_ore"
     }
   ]
 }

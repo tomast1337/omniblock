@@ -6,12 +6,14 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Redstone ore: touching it (walk, punch, click) lights it up and sparks; the lit block
 ///     reverts on its next tick. One instance is shared by both ore blocks — lit state is derived
 ///     from the block id. Assign to the Ticker and Interactable slots.
+///     <para>
+///         Unlit and lit block are both required, JSON-declared constructor params (see
+///         <c>BehaviorRegistry</c>'s <c>"redstone_ore"</c> entry) — no built-in vanilla fallback;
+///         an omitted or unknown name throws immediately at startup.
+///     </para>
 /// </summary>
-public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
+public sealed class RedstoneOreBehavior(Block unlitOre, Block litOre) : IBlockInteractable, IBlockTicker
 {
-    private static readonly Block s_redstoneOre = BlockRegistry.Get("redstone_ore");
-    private static readonly Block s_litRedstoneOre = BlockRegistry.Get("lit_redstone_ore");
-
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
 
     public void OnSteppedOn(Block block, OnEntityStepEvent @event) => Light(@event.World.Writer, @event.World.Reader, @event.World.Broadcaster, @event.X, @event.Y, @event.Z);
@@ -26,7 +28,7 @@ public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
     {
         if (IsLit(block))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, s_redstoneOre.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, unlitOre.id);
         }
     }
 
@@ -38,14 +40,14 @@ public sealed class RedstoneOreBehavior : IBlockInteractable, IBlockTicker
         }
     }
 
-    private static bool IsLit(Block block) => block.id == s_litRedstoneOre.id;
+    private bool IsLit(Block block) => block.id == litOre.id;
 
-    private static void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
+    private void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         SpawnParticles(worldRead, broadcaster, x, y, z);
-        if (worldRead.GetBlockId(x, y, z) == s_redstoneOre.id)
+        if (worldRead.GetBlockId(x, y, z) == unlitOre.id)
         {
-            worldWriter.SetBlock(x, y, z, s_litRedstoneOre.id);
+            worldWriter.SetBlock(x, y, z, litOre.id);
         }
     }
 

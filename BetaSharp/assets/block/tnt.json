@@ -10,7 +10,8 @@
   "Behaviors": [
     {
       "Slots": ["Physics", "Lifecycle", "Interactable", "Visuals"],
-      "Type": "tnt"
+      "Type": "tnt",
+      "igniter": "flint_and_steel"
     }
   ]
 }

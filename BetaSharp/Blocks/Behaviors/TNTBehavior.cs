@@ -4,14 +4,20 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Behaviors;
 
-/// <summary>TNT: ignites from redstone power (on place or neighbor update) or a flint-and-steel break-start.</summary>
-internal sealed class TNTBehavior : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
+/// <summary>
+///     TNT: ignites from redstone power (on place or neighbor update) or an igniter-tool
+///     break-start.
+///     <para>
+///         Igniter tool item is a required, JSON-declared constructor param (see
+///         <c>BehaviorRegistry</c>'s <c>"tnt"</c> entry) — no built-in vanilla fallback; an
+///         omitted or unknown name throws immediately at startup.
+///     </para>
+/// </summary>
+internal sealed class TNTBehavior(Item igniter) : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
 {
-    private static readonly int s_flintAndSteelId = Item.ByName("flint_and_steel").Id;
-
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
     {
-        if (@event.Player.GetHand() != null && @event.Player.GetHand()!.ItemId == s_flintAndSteelId)
+        if (@event.Player.GetHand() != null && @event.Player.GetHand()!.ItemId == igniter.Id)
         {
             @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, 1);
         }
@@ -29,7 +35,7 @@ internal sealed class TNTBehavior : IBlockPhysics, IBlockLifecycle, IBlockIntera
 
         if ((@event.Meta & 1) == 0)
         {
-            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(BlockRegistry.Get("tnt").id, 1, 0));
+            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(block.id, 1, 0));
         }
         else
         {
