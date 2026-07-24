@@ -1,3 +1,4 @@
+using BetaSharp.Client.Diagnostics;
 using BetaSharp.Diagnostics;
 using Hexa.NET.ImGui;
 
@@ -35,7 +36,7 @@ internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
         if (ImGui.CollapsingHeader("World", ImGuiTreeNodeFlags.DefaultOpen))
         {
             string chunkInfo = ctx.World?.GetDebugInfo() ?? "No world loaded.";
-            ImGui.Text(chunkInfo);
+            ImGuiTextSafe.Text(chunkInfo);
         }
     }
 

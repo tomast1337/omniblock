@@ -85,7 +85,7 @@ internal sealed class TranslationsWindow : DebugWindow
 
         if (!string.IsNullOrWhiteSpace(_search))
         {
-            ImGui.TextDisabled($"Filtering results for: '{_search}'");
+            ImGuiTextSafe.TextDisabled($"Filtering results for: '{_search}'");
         }
 
         ImGui.Separator();
@@ -122,7 +122,7 @@ internal sealed class TranslationsWindow : DebugWindow
                         {
                             if (_language.Translations.ContainsKey(translation.Key)) continue;
 
-                            ImGui.TextColored(new System.Numerics.Vector4(0.8f, 0.4f, 0.4f, 1f), $"{translation.Key}: {translation.Value}");
+                            ImGuiTextSafe.TextColored(new System.Numerics.Vector4(0.8f, 0.4f, 0.4f, 1f), $"{translation.Key}: {translation.Value}");
 
                             anyMissing = true;
                         }
@@ -146,9 +146,9 @@ internal sealed class TranslationsWindow : DebugWindow
                         noTranslations = false;
                     }
 
-                    ImGui.Text($"{translation.Key}:");
+                    ImGuiTextSafe.Text($"{translation.Key}:");
                     ImGui.SameLine();
-                    ImGui.TextColored(new System.Numerics.Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value);
+                    ImGuiTextSafe.TextColored(new System.Numerics.Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value ?? string.Empty);
                 }
 
                 if (noTranslations)

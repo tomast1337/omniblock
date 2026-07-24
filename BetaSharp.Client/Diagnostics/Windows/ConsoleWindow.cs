@@ -61,10 +61,10 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
             Vector4 color = s_levelColors.TryGetValue(entry.Level, out Vector4 c) ? c : Vector4.One;
             string tag = s_levelTags.TryGetValue(entry.Level, out string? t) ? t : "???";
 
-            ImGui.TextColored(color, $"[{entry.Timestamp:HH:mm:ss}] [{tag}] {entry.Category}: {entry.Message}");
+            ImGuiTextSafe.TextColored(color, $"[{entry.Timestamp:HH:mm:ss}] [{tag}] {entry.Category}: {entry.Message}");
 
             if (entry.Exception is not null)
-                ImGui.TextColored(new Vector4(1f, 0.4f, 0.4f, 1f), entry.Exception.ToString());
+                ImGuiTextSafe.TextColored(new Vector4(1f, 0.4f, 0.4f, 1f), entry.Exception.ToString());
         }
 
         if (_autoScroll && _scrollToBottom)

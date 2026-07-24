@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Client.Diagnostics;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using Hexa.NET.ImGui;
@@ -58,7 +59,7 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
         ImGui.Text($"Block:  {bx} {by} {bz}");
         ImGui.Text($"Facing: {cardinal} {vertical} (towards {towards})");
         ImGui.Text($"Yaw / Pitch: {yaw:F1} / {pitch:F1}");
-        ImGui.Text($"Biome:  {biome}");
+        ImGuiTextSafe.Text($"Biome:  {biome}");
         ImGui.Text($"Light:  {light}");
     }
 
@@ -94,7 +95,7 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
         GetAdjacentBlockForFaceLight(bx, by, bz, side, out int ax, out int ay, out int az);
         int faceLight = ctx.World.Lighting.GetLightLevel(ax, ay, az);
 
-        ImGui.Text($"{name} ({id}:{meta})");
+        ImGuiTextSafe.Text($"{name} ({id}:{meta})");
         ImGui.Text($"XYZ:  {bx} / {by} / {bz}");
         ImGui.Text($"Face: {sideName} (light {faceLight})");
     }

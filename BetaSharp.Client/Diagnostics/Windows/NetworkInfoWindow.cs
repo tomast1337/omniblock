@@ -64,7 +64,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
             ImGui.Text($"Connection Type: {(isInternal ? "Internal Server" : "Remote Server")}");
             if (!isInternal)
             {
-                ImGui.Text($"Address: {serverAddress}");
+                ImGuiTextSafe.Text($"Address: {serverAddress}");
             }
             ImGui.Spacing();
             ImGui.Text($"Total Upload:   {FormatMemory(currentUpload)}");

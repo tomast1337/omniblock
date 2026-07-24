@@ -707,10 +707,15 @@ public partial class BetaSharp :
                         if (vpSize.X > 0 && vpSize.Y > 0)
                         {
                             int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
-                            if (_lastViewportSize != vpSize)
+                            // Compare truncated integer size, not the raw float: ImGui's layout output
+                            // jitters by sub-pixel amounts frame to frame even when visually static, and
+                            // comparing floats here caused FramebufferManager.Resize (which tears down and
+                            // rebuilds the cloud FBOs unconditionally) to fire on nearly every frame while
+                            // the F3 debug viewport was open.
+                            if ((int)_lastViewportSize.X != vpW || (int)_lastViewportSize.Y != vpH)
                             {
                                 FramebufferManager.Resize(vpW, vpH);
-                                _lastViewportSize = vpSize;
+                                _lastViewportSize = new Vector2(vpW, vpH);
                             }
                             DisplayWidth = vpW;
                             DisplayHeight = vpH;

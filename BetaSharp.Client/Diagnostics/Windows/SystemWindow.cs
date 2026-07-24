@@ -11,22 +11,22 @@ internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
     {
         DebugSystemSnapshot s = ctx.DebugSystemSnapshot;
 
-        ImGui.Text("Build: " + BetaSharp.Version);
-        ImGui.Text($"OS:     {s.OsDescription}");
-        ImGui.Text($"Runtime:{s.DotNetRuntime}");
+        ImGuiTextSafe.Text("Build: " + BetaSharp.Version);
+        ImGuiTextSafe.Text($"OS:     {s.OsDescription}");
+        ImGuiTextSafe.Text($"Runtime:{s.DotNetRuntime}");
 
         if (ImGui.CollapsingHeader("GPU", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.Text($"Name:       {s.GpuName}");
-            ImGui.Text($"VRAM:       {s.GpuVram}");
-            ImGui.Text($"OpenGL:     {s.OpenGlVersion}");
-            ImGui.Text($"GLSL:       {s.GlslVersion}");
-            ImGui.Text($"Driver:     {s.DriverVersion}");
+            ImGuiTextSafe.Text($"Name:       {s.GpuName}");
+            ImGuiTextSafe.Text($"VRAM:       {s.GpuVram}");
+            ImGuiTextSafe.Text($"OpenGL:     {s.OpenGlVersion}");
+            ImGuiTextSafe.Text($"GLSL:       {s.GlslVersion}");
+            ImGuiTextSafe.Text($"Driver:     {s.DriverVersion}");
         }
 
         if (ImGui.CollapsingHeader("CPU", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.Text($"Name:  {s.CpuName}");
+            ImGuiTextSafe.Text($"Name:  {s.CpuName}");
             ImGui.Text($"Cores: {s.CpuCoreCount}");
         }
     }

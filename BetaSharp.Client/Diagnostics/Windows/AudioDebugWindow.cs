@@ -50,7 +50,7 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
 
         string status = sm.IsStreamingPlaying ? "Playing" : "Idle";
         ImGui.Text($"Status:       {status}");
-        ImGui.Text($"Track:        {sm.CurrentStreamingName ?? "none"}");
+        ImGuiTextSafe.Text($"Track:        {sm.CurrentStreamingName ?? "none"}");
     }
 
     private static void DrawMusicSection(SoundManager sm)
@@ -59,15 +59,15 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
         string musicStatus = sm.IsMusicPlaying ? "Playing" : "Idle";
 
         ImGui.Text($"Status:   {musicStatus}");
-        ImGui.Text($"Track:    {sm.CurrentMusicName ?? "none"}");
-        ImGui.Text($"Category: {activeCategory}");
+        ImGuiTextSafe.Text($"Track:    {sm.CurrentMusicName ?? "none"}");
+        ImGuiTextSafe.Text($"Category: {activeCategory}");
 
         ImGui.Spacing();
 
         foreach ((ResourceLocation name, MusicCategory cat) in sm.MusicCategories)
         {
             ImGui.Separator();
-            ImGui.Text($"[{name}]");
+            ImGuiTextSafe.Text($"[{name}]");
             ImGui.Text($"  Tracks:      {cat.Pool.LoadedSoundCount}");
             ImGui.Text($"  Delay range: {cat.MinDelayTicks} – {cat.MaxDelayTicks} ticks");
             ImGui.Text($"  Next in:     {cat.TicksBeforeNext} ticks");

@@ -36,7 +36,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         }
         else
         {
-            ImGui.TextColored(new Vector4(0.4f, 0.8f, 1f, 1f), screen.GetType().Name);
+            ImGuiTextSafe.TextColored(new Vector4(0.4f, 0.8f, 1f, 1f), screen.GetType().Name);
             ImGui.Spacing();
 
             ImGui.PushID("screen");
@@ -109,7 +109,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         }
 
         ImGui.SameLine();
-        ImGui.Text(BuildLabel(element));
+        ImGuiTextSafe.Text(BuildLabel(element));
 
         if (ImGui.IsItemHovered())
         {
@@ -233,7 +233,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
     {
         foreach (string prop in el.GetInspectorProperties())
         {
-            ImGui.Text(prop);
+            ImGuiTextSafe.Text(prop);
         }
     }
 
