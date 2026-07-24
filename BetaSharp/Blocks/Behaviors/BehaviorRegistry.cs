@@ -54,7 +54,7 @@ internal static class BehaviorRegistry
         ["fence"] = _ => new FenceBehavior(),
         ["fire"] = _ => new FireBehavior(),
         ["flowing_fluid"] = _ => new FlowingFluidBehavior(),
-        ["grass_ticker"] = _ => new GrassTickerBehavior(),
+        ["grass_ticker"] = json => new GrassTickerBehavior(ResolveBlock(json.GetProperty("soil").GetString()!).id),
         ["grass_visual"] = _ => new GrassVisualBehavior(),
         ["jukebox"] = _ => new JukeboxBehavior(),
         ["leaves"] = json => new LeavesBehavior(

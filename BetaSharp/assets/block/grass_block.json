@@ -30,7 +30,8 @@
       "Type": "grass_visual"
     },
     "Ticker": {
-      "Type": "grass_ticker"
+      "Type": "grass_ticker",
+      "soil": "dirt"
     }
   }
 }
