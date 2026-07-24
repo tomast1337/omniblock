@@ -8,9 +8,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     TNT: ignites from redstone power (on place or neighbor update) or an igniter-tool
 ///     break-start.
 ///     <para>
-///         Igniter tool item is a required, JSON-declared constructor param (see
-///         <c>BehaviorRegistry</c>'s <c>"tnt"</c> entry) — no built-in vanilla fallback; an
-///         omitted or unknown name throws immediately at startup.
+///         Igniter tool item is a required, (see <c>BehaviorRegistry</c>'s <c>"tnt"</c> entry).
 ///     </para>
 /// </summary>
 internal sealed class TNTBehavior(Item igniter) : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals

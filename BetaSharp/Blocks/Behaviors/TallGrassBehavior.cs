@@ -7,15 +7,13 @@ namespace BetaSharp.Blocks.Behaviors;
 /// <summary>
 ///     Tall grass / fern: meta-driven texture and biome-tinted color (meta 0 = dead bush palette,
 ///     untinted white). Survival is a plain <see cref="PlantSurvivalBehavior" /> on the Physics/Ticker
-///     slots — no extra per-tick logic beyond that.
+///     slots.
 ///     <para>
-///         Rare-drop item is a required, JSON-declared constructor param (see
-///         <c>BehaviorRegistry</c>'s <c>"tall_grass"</c> entry) — no built-in vanilla fallback; an
-///         omitted or unknown name throws immediately at startup.
+///         Rare-drop item is a required, (see <c>BehaviorRegistry</c>'s <c>"tall_grass"</c> entry).
 ///     </para>
 ///     <para>
 ///         Seed drop chance (<paramref name="seedDropChanceOneIn" />, 1-in-N per break) is also a
-///         required, JSON-declared constructor param — no built-in vanilla fallback.
+///         required.
 ///     </para>
 /// </summary>
 internal sealed class TallGrassBehavior(Item seeds, int seedDropChanceOneIn) : IBlockVisuals, IBlockLifecycle

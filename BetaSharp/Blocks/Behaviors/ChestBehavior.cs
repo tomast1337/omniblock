@@ -26,8 +26,7 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
         if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z + 1) == chestId && @event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z + 1))
             return true;
 
-        // The preceding GetBlockId == chestId check guarantees a BlockEntityChest exists at that
-        // neighbor position — chest blocks always carry a tile entity via TileEntityLifecycleBehavior.
+        // The preceding GetBlockId == chestId check guarantees a BlockEntityChest exists at that neighbor position, chest blocks always carry a tile entity via TileEntityLifecycleBehavior.
         if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == chestId)
         {
             chestInventory = new InventoryLargeChest("Large chest", @event.World.Entities.GetBlockEntity<BlockEntityChest>(@event.X - 1, @event.Y, @event.Z)!, chestInventory!);

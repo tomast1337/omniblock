@@ -4,7 +4,7 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Light-driven melting (ice, snow): when block light exceeds the threshold on a random tick,
-///     drops the block's items and replaces it. Assign to the Ticker slot — and the Lifecycle slot
+///     drops the block's items and replaces it. Assign to the Ticker slot, and the Lifecycle slot
 ///     too when <paramref name="brokenReplacement" /> is set (ice turning to water when mined).
 /// </summary>
 /// <param name="meltReplacement">

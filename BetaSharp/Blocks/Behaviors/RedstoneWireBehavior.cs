@@ -13,13 +13,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     </para>
 ///     <para>
 ///         Self (<paramref name="wire" />), the non-wire conductor set, and the repeater pair are
-///         all required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
-///         <c>"redstone_wire"</c> entry) — no built-in vanilla fallback; an omitted or unknown name
-///         throws immediately at startup. <see cref="IsPowerProviderOrWire" /> is called
-///         externally by the client wire renderer (<c>RedstoneWireRenderer</c>) with no behavior
-///         instance in scope there, so it resolves back to this instance via
-///         <c>wire.Redstone</c> rather than a static, hardcoded set
-///         — there is exactly one redstone wire type in vanilla, so that lookup is stable.
+///         all required, (see <c>BehaviorRegistry</c>'s <c>"redstone_wire"</c> entry).
 ///     </para>
 /// </summary>
 public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block repeater, Block poweredRepeater) : IRedstoneComponent, IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
@@ -55,8 +49,6 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
         if (@event.World.IsRemote) return;
 
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        // Direct ground check — not block.canPlaceAt, which also tests replaceability of the
-        // wire's own (occupied) position and would always fail here.
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z))
         {
             block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
@@ -139,10 +131,6 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
 
     public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => s_wiresProvidePower.Value && IsPoweringSide(block, reader, x, y, z, side);
 
-    /// <summary>
-    ///     Notifies the wires laterally adjacent to (x, y, z), stepping up over solid neighbors
-    ///     and down past non-solid ones — identical on place and on break.
-    /// </summary>
     private void NotifySurroundingWires(IWorldContext level, int x, int y, int z)
     {
         NotifyWireNeighborsOfNeighborChange(level, x - 1, y, z);
@@ -266,11 +254,6 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
         return currentStrength > power ? currentStrength : power;
     }
 
-    /// <summary>
-    ///     Connectivity test shared with the client wire renderer, which resolves this instance
-    ///     via <c>BlockRegistry.Get("redstone_wire").Redstone</c> rather than calling a static
-    ///     method — see the class doc comment.
-    /// </summary>
     public bool IsPowerProviderOrWire(IBlockReader reader, int x, int y, int z, int direction)
     {
         int blockId = reader.GetBlockId(x, y, z);

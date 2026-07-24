@@ -176,8 +176,6 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
 
     private static bool BreakIfCannotPlaceAt(Block block, OnTickEvent @event)
     {
-        // Direct support check — the composed Block.canPlaceAt also tests replaceability of the
-        // button's own occupied position and would always fail here.
         if (IsValidPlacementSide(@event.World.Reader, @event.X, @event.Y, @event.Z)) return true;
 
         block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));

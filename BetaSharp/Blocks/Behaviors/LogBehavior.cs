@@ -4,17 +4,10 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Log rendering and leaf decay: bark texture varies by species metadata, and breaking a log
 ///     marks all leaves within a 4-block radius for decay. Assign to the Visuals and Lifecycle slots.
 ///     <para>
-///         Which block counts as "attached canopy" is required, JSON-declared per variant (see
-///         <c>BehaviorRegistry</c>'s <c>"log"</c> entry) — no built-in vanilla fallback; an omitted
-///         or unknown name throws immediately at startup rather than silently defaulting. Named
-///         generically (not "leaves") so a non-tree trunk variant reads naturally. Resolved
-///         eagerly, not lazily: every <see cref="Block" /> already exists by the time any behavior
-///         factory runs.
+///         Which block counts as "attached canopy" is required, (see <c>BehaviorRegistry</c>'s <c>"log"</c> entry).
 ///     </para>
 ///     <para>
-///         Leaf-decay search radius (<paramref name="searchRadius" />) is a required, JSON-declared
-///         constructor param (see <c>BehaviorRegistry</c>'s <c>"log"</c> entry) — no built-in
-///         vanilla fallback.
+///         Leaf-decay search radius (<paramref name="searchRadius" />) is a required.
 ///     </para>
 /// </summary>
 public sealed class LogBehavior(Block canopy, int searchRadius) : IBlockVisuals, IBlockLifecycle

@@ -11,8 +11,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     metadata 1 marks "record loaded", and breaking ejects before the tile entity is removed.
 ///     Assign to the Interactable and Lifecycle slots.
 ///     <para>
-///         Ejected-record drop spread (<paramref name="dropSpread" />) is a required,
-///         JSON-declared constructor param — no built-in vanilla fallback.
+///         Ejected-record drop spread (<paramref name="dropSpread" />) is a required.
 ///     </para>
 /// </summary>
 public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlockLifecycle

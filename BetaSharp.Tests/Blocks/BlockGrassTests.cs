@@ -6,13 +6,6 @@ namespace BetaSharp.Tests.Blocks;
 
 public sealed class BlockGrassTests
 {
-    // "Dead" state (dirt) is a required, JSON-declared constructor param — no built-in
-    // vanilla fallback. An omitted or unknown name must throw immediately at
-    // BehaviorRegistry.Build time (server boot), not silently default or defer to a later
-    // tick. OnTick itself is light-level-gated through the real LightingEngine (not easily
-    // deterministic against FakeWorldContext without a full sky-light simulation), so
-    // coverage here is scoped to the config-injection contract, same as the crash tests
-    // added for LeavesBehavior/LogBehavior.
     [Fact]
     public void BehaviorRegistry_Build_MissingDirt_Throws()
     {

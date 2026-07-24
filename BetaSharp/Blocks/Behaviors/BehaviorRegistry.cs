@@ -10,7 +10,7 @@ internal static class BehaviorRegistry
 
     private static readonly Dictionary<string, BehaviorFactory> s_factories = new()
     {
-        // Parameterized behaviors extract their state from JSON
+        // Parameterized behaviors extract their state from JSON data
         ["door"] = json => new DoorBehavior(MaterialRegistry.Get(json.GetProperty("material").GetString() ?? "wood")),
         ["trap_door"] = json => new TrapDoorBehavior(MaterialRegistry.Get(json.GetProperty("material").GetString() ?? "wood")),
         ["furnace"] = json => new FurnaceBehavior(json.TryGetProperty("lit", out var lit) && lit.GetBoolean()),

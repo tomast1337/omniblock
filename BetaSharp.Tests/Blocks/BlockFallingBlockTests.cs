@@ -8,10 +8,6 @@ public sealed class BlockFallingBlockTests
 {
     private static OnTickEvent Tick(FakeWorldContext world, int x = 0, int y = 64, int z = 0) => new(world, x, y, z, world.Reader.GetBlockMeta(x, y, z), world.Reader.GetBlockId(x, y, z));
 
-    // Passable obstacle set is a required constructor param (JSON-configurable per variant, no
-    // built-in vanilla fallback). CanFallThrough used to be a static method called externally by
-    // EntityFallingSand — now an instance method resolved via Block.Blocks[id].Physics, so a
-    // differently configured instance's override actually takes effect.
     [Fact]
     public void CanFallThrough_ConfiguredObstacle_ReturnsTrue()
     {
@@ -55,8 +51,6 @@ public sealed class BlockFallingBlockTests
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
 
-    // No built-in default and no null fallback: an omitted or unknown "passable" in JSON must
-    // throw immediately (at BehaviorRegistry.Build, i.e. server boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
@@ -71,8 +65,6 @@ public sealed class BlockFallingBlockTests
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
     }
 
-    // Numeric tuning params (region_load_check_radius) are also required, no default: an omitted
-    // value must throw immediately at BehaviorRegistry.Build, i.e. server boot.
     [Fact]
     public void BehaviorRegistry_Build_MissingRegionLoadCheckRadius_Throws()
     {

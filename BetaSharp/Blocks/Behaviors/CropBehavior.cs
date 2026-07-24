@@ -13,18 +13,15 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     <para>
 ///         Required soil (<paramref name="requiredSoil" />), mature-drop item
 ///         (<paramref name="matureCropItem" />), and seed item (<paramref name="seeds" />) are all
-///         required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s <c>"crop"</c>
-///         entry) — no built-in vanilla fallback; an omitted or unknown name throws immediately at
-///         startup. Named generically (not "farmland"/"wheat") so a non-vanilla crop variant reads
-///         naturally.
+///         required, (see <c>BehaviorRegistry</c>'s <c>"crop"</c>
+///         entry).
 ///     </para>
 ///     <para>
 ///         Drop spread (<paramref name="dropSpread" />), bonus-seed chance bound
 ///         (<paramref name="seedScatterChanceBound" />, rolled against the block's meta at drop
-///         time — higher meta means a better chance per attempt), and growth-chance denominator
+///         time, higher meta means a better chance per attempt), and growth-chance denominator
 ///         (<paramref name="growthChanceDenominator" />, 1-in-N per available-moisture-unit per
-///         tick) are also required, JSON-declared constructor params — no built-in vanilla
-///         fallback.
+///         tick) are also required.
 ///     </para>
 /// </summary>
 internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds, float dropSpread, int seedScatterChanceBound, int growthChanceDenominator) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals

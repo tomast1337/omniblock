@@ -3,17 +3,14 @@ namespace BetaSharp.Blocks.Behaviors;
 /// <summary>
 ///     Grass spread and death: dies in low light when covered, spreads to adjacent dirt in high light.
 ///     <para>
-///         "Dead" state (dirt) is a required, JSON-declared constructor param — see
-///         <c>BehaviorRegistry</c>'s <c>"grass_ticker"</c> entry — no built-in vanilla fallback; an
-///         omitted or unknown name throws immediately at startup. The spread target is always the
-///         owning <see cref="Block" /> passed into each call (<c>block.id</c>), not a separate
-///         cached self-reference — a grass block always spreads into more of itself.
+///         "Dead" state (dirt) is a required, see <c>BehaviorRegistry</c>'s <c>"grass_ticker"</c> entry.
+///         The spread target is always the owning <see cref="Block" /> passed into each call (<c>block.id</c>), not a separate
+///         cached self-reference, a grass block always spreads into more of itself.
 ///     </para>
 ///     <para>
 ///         Die-back light threshold (<paramref name="dieLightThreshold" />), die chance
 ///         (<paramref name="dieChanceOneIn" />, 1-in-N per tick once below threshold), and spread
-///         light threshold (<paramref name="spreadLightThreshold" />) are also required,
-///         JSON-declared constructor params — no built-in vanilla fallback.
+///         light threshold (<paramref name="spreadLightThreshold" />) are also required.
 ///     </para>
 /// </summary>
 public sealed class GrassTickerBehavior(Block soil, int dieLightThreshold, int dieChanceOneIn, int spreadLightThreshold) : IBlockTicker

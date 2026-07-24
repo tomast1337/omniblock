@@ -4,17 +4,14 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Plant survival: restricts placement to valid ground, and breaks the block (dropping its
-///     items) on tick or neighbor change when it can no longer grow — the block below was
+///     items) on tick or neighbor change when it can no longer grow, the block below was
 ///     removed or the light is gone. Assign to both the Ticker and Physics slots.
 ///     <para>
 ///         The break check goes through the virtual <see cref="Block.canGrow" />, so subclasses with
 ///         custom growth rules (mushrooms' darkness requirement) keep them.
 ///     </para>
 ///     <para>
-///         Valid growth substrate set (<paramref name="validGround" />) is a required,
-///         JSON-declared constructor param (see <c>BehaviorRegistry</c>'s <c>"plant_survival"</c>
-///         entry) — no built-in vanilla fallback; an omitted or unknown name throws immediately at
-///         startup.
+///         Valid growth substrate set (<paramref name="validGround" />).
 ///     </para>
 /// </summary>
 public sealed class PlantSurvivalBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics

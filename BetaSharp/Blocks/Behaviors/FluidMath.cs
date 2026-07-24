@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Fluid geometry shared by both the flowing and stationary variants of water/lava. Every
-///     function is parameterized by <see cref="Material" /> rather than a block instance — the
+///     function is parameterized by <see cref="Material" /> rather than a block instance, the
 ///     original per-instance <c>getFlow</c> never actually depended on anything but the material, so
 ///     there's no need for separate behavior instances per fluid type here. Consumed cross-assembly
 ///     by the client's fluid/particle renderers and by <c>Entity</c>'s swim-height check.
@@ -104,8 +104,7 @@ public static class FluidMath
     ///     Lava meeting water solidifies: to <paramref name="sourceSolidified" /> (vanilla obsidian)
     ///     at meta 0 (source), or <paramref name="flowSolidified" /> (vanilla cobblestone) at low
     ///     flowing meta. Both are the caller's own configured params (see
-    ///     <see cref="StationaryFluidBehavior" />/<see cref="FlowingFluidBehavior" />) — this class
-    ///     has no behavior-level state of its own, it's shared geometry/rules only.
+    ///     <see cref="StationaryFluidBehavior" />/<see cref="FlowingFluidBehavior" />).
     /// </summary>
     public static void CheckBlockCollisions(Block block, IBlockReader reader, IBlockWriter writer, WorldEventBroadcaster broadcaster, int x, int y, int z, Block sourceSolidified, Block flowSolidified)
     {

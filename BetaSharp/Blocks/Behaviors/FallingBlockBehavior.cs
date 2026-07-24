@@ -5,20 +5,17 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Gravity-affected blocks (sand, gravel): schedules a fall check when placed or when a
-///     neighbor changes, and falls on tick. Spans three capabilities — assign the same instance
-///     to the Ticker, Lifecycle, and Physics slots.
+///     neighbor changes, and falls on tick. Spans three capabilities.
 ///     <para>
-///         Non-solid obstacles it falls through (vanilla: just fire) are a required, JSON-declared
-///         constructor param (see <c>BehaviorRegistry</c>'s <c>"falling_block"</c> entry) — no
-///         built-in vanilla fallback; an omitted or unknown name throws immediately at startup.
+///         Non-solid obstacles it falls through (vanilla: just fire) are a required,
+///         (see <c>BehaviorRegistry</c>'s <c>"falling_block"</c> entry).
 ///         <see cref="CanFallThrough" /> is called externally by <c>EntityFallingSand</c> (the
 ///         falling block only knows its own block id at that point, not a behavior instance), so
 ///         it resolves back to this instance via <c>Block.Blocks[id].Physics</c> rather than
 ///         taking a static, hardcoded set.
 ///     </para>
 ///     <para>
-///         Region-loaded check radius (<paramref name="regionLoadCheckRadius" />) is a required,
-///         JSON-declared constructor param — no built-in vanilla fallback.
+///         Region-loaded check radius (<paramref name="regionLoadCheckRadius" />) is a required.
 ///     </para>
 /// </summary>
 public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) : IBlockTicker, IBlockLifecycle, IBlockPhysics

@@ -13,11 +13,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     reset at the top of every call.
 ///     <para>
 ///         Pass-through obstacle set and the two lava/water-contact solidification products are
-///         all required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
-///         <c>"flowing_fluid"</c> entry) — no built-in vanilla fallback; an omitted or unknown name
-///         throws immediately at startup. Every JSON using this type declares the full set
-///         regardless of its own material, matching the convention used everywhere else in this
-///         migration.
+///         all required, (see <c>BehaviorRegistry</c>'s <c>"flowing_fluid"</c> entry).
 ///     </para>
 /// </summary>
 public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidified, Block flowSolidified) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker

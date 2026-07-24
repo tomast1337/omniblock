@@ -6,10 +6,6 @@ namespace BetaSharp.Tests.Blocks;
 
 public sealed class BlockReedTests
 {
-    // Valid ground substrate set is a required constructor param (JSON-configurable per
-    // variant, no built-in vanilla fallback). Construct a differently configured instance
-    // directly (bypassing BlockRegistry) to prove the override actually takes effect rather
-    // than silently defaulting.
     [Fact]
     public void CanPlaceAt_ConfiguredGroundNextToWater_ReturnsTrue()
     {
@@ -51,8 +47,6 @@ public sealed class BlockReedTests
         Assert.False(behavior.CanPlaceAt(reeds, new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
 
-    // No built-in default and no null fallback: an omitted or unknown "valid_ground" in JSON
-    // must throw immediately (at BehaviorRegistry.Build, i.e. server boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {

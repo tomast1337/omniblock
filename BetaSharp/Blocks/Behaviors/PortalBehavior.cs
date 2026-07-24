@@ -7,14 +7,10 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Nether portal: frame validation/creation, the thin rotating collision plane, edge-only face
 ///     visibility, and the ambient particle/sound tick. <see cref="Create" /> is public and static
 ///     since it's called externally (fire ignition next to the frame material) with no subclass
-///     left to hold it — the caller (<see cref="FireBehavior" />) passes its own configured
-///     frame/portal blocks through rather than <see cref="Create" /> resolving them itself, so
-///     there's no hidden dependency on a specific JSON-declared instance existing.
+///     left to hold it, the caller (<see cref="FireBehavior" />) passes its own configured
+///     frame/portal blocks through rather than <see cref="Create" /> resolving them itself.
 ///     <para>
-///         Frame material (<paramref name="portalBase" />) is a required, JSON-declared
-///         constructor param (see <c>BehaviorRegistry</c>'s <c>"portal"</c> entry) — no built-in
-///         vanilla fallback; an omitted or unknown name throws immediately at startup. Named
-///         generically (not "obsidian") so a non-vanilla portal frame variant reads naturally.
+///         Frame material (<paramref name="portalBase" />) is a required, (see <c>BehaviorRegistry</c>'s <c>"portal"</c> entry).
 ///     </para>
 /// </summary>
 internal sealed class PortalBehavior(Block portalBase) : IBlockPhysics, IBlockVisuals, IBlockInteractable, IBlockTicker
@@ -141,12 +137,6 @@ internal sealed class PortalBehavior(Block portalBase) : IBlockPhysics, IBlockVi
                (extendsInZ && side == Side.South);
     }
 
-    /// <summary>
-    ///     Called externally by <see cref="FireBehavior" /> when fire ignites next to the frame
-    ///     material — takes its frame/passable/result blocks as params rather than resolving them
-    ///     itself, so it stays a pure function of its caller's own configured blocks instead of
-    ///     hardcoding a dependency on a specific JSON-declared instance.
-    /// </summary>
     public static bool Create(IBlockReader reader, IBlockWriter writer, int x, int y, int z, Block portalBase, Block ignitionSource, Block portalFill)
     {
         sbyte extendsInZ = 0;

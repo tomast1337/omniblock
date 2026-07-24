@@ -10,8 +10,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     growth-stage bit and tree-generation tick on top. Species is meta bits 0-1; bit 3 is the
 ///     "ready to grow" flag.
 ///     <para>
-///         <see cref="Generate" /> is called externally by <c>ItemDye</c> for bone meal — kept static and
-///         public since there's no subclass left to hold it.
+///         <see cref="Generate" /> is called externally by <c>ItemDye</c> for bone meal.
 ///     </para>
 /// </summary>
 internal sealed class SaplingBehavior : IBlockTicker, IBlockVisuals, IBlockLifecycle

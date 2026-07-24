@@ -88,15 +88,8 @@ public class Block
 
     public BlockRendererType RenderType { get; protected internal set; } = BlockRendererType.Standard;
 
-    /// <summary>
-    ///     Whether <see cref="GetCollisionShape" /> offers the bounding box as a default collision
-    ///     shape. Distinct from <see cref="HasCollision()" />/<see cref="HasCollision(int, bool)" />,
-    ///     which query <see cref="Physics" /> instead and default to <c>true</c> regardless of this
-    ///     flag — set false for entities to pass through (plants, portals, ...).
-    /// </summary>
     public bool HasCollisionBox { get; protected internal set; } = true;
 
-    // 0 = not flammable. Read by FireBehavior instead of a hardcoded per-block-id lookup.
     public byte BurnChance { get; protected internal set; }
     public byte SpreadChance { get; protected internal set; }
 
@@ -105,8 +98,6 @@ public class Block
         get => Visuals?.IsOpaque(this, field) ?? field;
         protected internal set
         {
-            // The constructor seeds these two static caches from the default before Visuals
-            // exists, so any later override must refresh them too, not just the backing field.
             field = value;
             BlocksOpaque[id] = value;
             BlockLightOpacity[id] = value ? 255 : 0;
@@ -445,13 +436,8 @@ public class Block
 
     public void onBlockAction(OnBlockActionEvent ctx) => Lifecycle?.OnBlockAction(this, ctx);
 
-    /// <summary>Overrides the material-derived piston behavior (e.g. plates are destroyed when pushed).</summary>
     protected internal void SetPistonBehavior(PistonBehavior behavior) => _pistonBehaviorOverride = behavior;
 
-    /// <summary>
-    ///     Declares that this block carries a tile entity, created by <paramref name="factory" />.
-    ///     The factory is deferred, so it may safely reference types regardless of declaration order.
-    /// </summary>
     protected internal void SetHasTileEntity(Func<BlockEntity> factory)
     {
         BlocksWithEntity[id] = true;

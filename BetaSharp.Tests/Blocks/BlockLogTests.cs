@@ -21,10 +21,6 @@ public sealed class BlockLogTests
         Assert.Equal(8, world.Reader.GetBlockMeta(1, 64, 0) & 8);
     }
 
-    // Which block counts as "attached leaves" is a required constructor param
-    // (JSON-configurable per variant, no built-in vanilla fallback). Construct a differently
-    // configured instance directly (bypassing BlockRegistry) to prove the override actually
-    // takes effect rather than silently defaulting.
     [Fact]
     public void OnBreak_CustomLeavesId_MarksConfiguredNeighborNotVanillaLeaves()
     {
@@ -44,8 +40,6 @@ public sealed class BlockLogTests
         Assert.Equal(0, world.Reader.GetBlockMeta(2, 64, 0) & 8);
     }
 
-    // search_radius is a required, JSON-declared constructor param — no built-in vanilla
-    // fallback. An omitted value must throw immediately at BehaviorRegistry.Build (server boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingSearchRadius_Throws()
     {

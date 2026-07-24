@@ -8,8 +8,7 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Which items get projectile-spawn behavior (vs. a plain item toss) are required,
-///     JSON-declared constructor params (see <c>BehaviorRegistry</c>'s <c>"dispenser"</c> entry)
-///     — no built-in vanilla fallback; an omitted or unknown name throws immediately at startup.
+///     (see <c>BehaviorRegistry</c>'s <c>"dispenser"</c> entry).
 /// </summary>
 internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {

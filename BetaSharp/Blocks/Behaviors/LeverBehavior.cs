@@ -182,8 +182,6 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
 
     private static bool BreakIfCannotPlaceAt(Block block, OnTickEvent ctx)
     {
-        // Direct support check — the composed Block.canPlaceAt also tests replaceability of the
-        // lever's own occupied position and would always fail here.
         if (HasSupport(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z)) return true;
 
         block.DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z)));

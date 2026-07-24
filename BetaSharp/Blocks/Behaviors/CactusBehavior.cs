@@ -10,15 +10,10 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     collision box is one pixel shorter on every side via <see cref="GetCollisionShape" />.
 ///     <para>
 ///         Valid planting substrate (<paramref name="soil" />) and self (<paramref name="stem" />)
-///         are both required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
-///         <c>"cactus"</c> entry) — no built-in vanilla fallback; an omitted or unknown name throws
-///         immediately at startup. Named generically, not after the vanilla block, so a
-///         differently-named custom variant (e.g. a non-cactus "stem" plant growing on a
-///         non-sand "soil") reads naturally.
+///         are both required.
 ///     </para>
 ///     <para>
-///         Max stack height (<paramref name="maxHeight" />) is also a required, JSON-declared
-///         constructor param — no built-in vanilla fallback.
+///         Max stack height (<paramref name="maxHeight" />) is also a required
 ///     </para>
 /// </summary>
 internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockVisuals

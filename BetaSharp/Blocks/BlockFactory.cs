@@ -12,12 +12,9 @@ internal static class BlockFactory
         Material material = MaterialRegistry.Get(def.Material);
         Block block = new(def.ProtocolId, def.TextureId, material);
 
-        // def.Hardness == -1 already reproduces SetUnbreakable() exactly (it's sugar for
-        // SetHardness(-1)) — no separate call needed.
         block.SetHardness(def.Hardness);
         block.SetResistance(def.Resistance);
-        // Must run before the explicit Opacity override below, so an explicit value
-        // (rare, but distinct from "just non-opaque") still wins if both are set.
+
         if (def.NonOpaque) block.IsOpaque = false;
         if (def.Luminance > 0) block.SetLuminance(def.Luminance);
         if (def.Opacity >= 0) block.setOpacity(def.Opacity);
@@ -63,14 +60,6 @@ internal static class BlockFactory
 
     public static void AttachBehaviors(Block block, BlockDefinition def)
     {
-        // Behaviors is a list of INSTANCES, not a dict keyed by slot — a class implementing
-        // several capability interfaces at once (e.g. PlantSurvivalBehavior implements both
-        // IBlockTicker and IBlockPhysics) is common, and a block wanting that one instance wired
-        // into several of its slots lists them all in that entry's "Slots" array. Building
-        // exactly one instance per array entry and wiring it into every listed slot — rather
-        // than probing one shared instance against every interface it happens to implement — is
-        // what actually reproduces the original fluent chains; probing over-attaches whenever a
-        // second entry in the same block implements an interface the first one also implements.
         foreach (JsonElement entry in def.Behaviors)
         {
             string type = entry.GetProperty("Type").GetString()
@@ -110,12 +99,6 @@ internal static class BlockFactory
 
         if (def.LootTable is { } loot)
         {
-            // Loot entries commonly name another BLOCK (Stone drops "cobblestone", GrassBlock
-            // drops "dirt") as well as standalone items — Item.ByName only covers the JSON item
-            // registry (256+), not block-derived item ids (0-255). ItemLookup is the one table
-            // that already resolves both, so both directions of this round-trip (the dumper's
-            // reverse lookup and this forward one) go through it rather than a second,
-            // block-unaware mechanism.
             LootEntry[] entries = loot.Entries
                 .Select(e => new LootEntry(() => ResolveItemOrBlockId(e.ItemName), e.Weight))
                 .ToArray();

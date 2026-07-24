@@ -31,10 +31,6 @@ public sealed class BlockLeavesTests
     public void GetDroppedItemId_IsSapling()
         => Assert.Equal(BlockRegistry.Get("sapling").id, BlockRegistry.Get("leaves").GetDroppedItemId(0));
 
-    // Trunk/sapling/harvest-tool are required constructor params (JSON-configurable per
-    // variant, no built-in vanilla fallback). Construct a differently configured instance
-    // directly (bypassing BlockRegistry) to prove the override actually takes effect rather
-    // than silently defaulting.
     [Fact]
     public void OnTick_CustomTrunk_DecaysAgainstConfiguredTrunkNotVanillaLog()
     {

@@ -11,17 +11,12 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     <para>
 ///         Portal-trigger block (<paramref name="portalBase" />), portal-fill block
 ///         (<paramref name="portalFill" />), eternal-burn base (<paramref name="eternalFuel" />),
-///         and auto-ignite block (<paramref name="explosive" />) are all required, JSON-declared
-///         constructor params (see <c>BehaviorRegistry</c>'s <c>"fire"</c> entry) — no built-in
-///         vanilla fallback; an omitted or unknown name throws immediately at startup. Named
-///         generically (not obsidian/netherrack/tnt) so a non-vanilla fire variant reads
-///         naturally.
+///         and auto-ignite block (<paramref name="explosive" />) are all required, (see <c>BehaviorRegistry</c>'s <c>"fire"</c> entry).
 ///     </para>
 ///     <para>
 ///         Max age (<paramref name="maxAge" />, metadata cap before it can no longer intensify)
 ///         and crackle-sound chance (<paramref name="crackleSoundChanceOneIn" />, 1-in-N per
-///         random display tick) are also required, JSON-declared constructor params — no built-in
-///         vanilla fallback.
+///         random display tick) are also required.
 ///     </para>
 /// </summary>
 internal sealed class FireBehavior(Block portalBase, Block portalFill, Block eternalFuel, Block explosive, int maxAge, int crackleSoundChanceOneIn) : IBlockTicker, IBlockPhysics, IBlockLifecycle

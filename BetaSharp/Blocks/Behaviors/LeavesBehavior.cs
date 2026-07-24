@@ -12,14 +12,11 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     <see cref="SetGraphicsLevel" /> mutates shared state on this singleton rather than
 ///     per-<see cref="Block" /> instance state.
 ///     <para>
-///         Trunk block, sapling drop, and harvest tool are all required, JSON-declared per variant
-///         (see <c>BehaviorRegistry</c>'s <c>"leaves"</c> entry) — no built-in vanilla fallback; an
-///         omitted or unknown name throws immediately at startup rather than silently defaulting.
+///         Trunk block, sapling drop, and harvest tool are all required, (see <c>BehaviorRegistry</c>'s <c>"leaves"</c> entry).
 ///         Resolved eagerly, not lazily: every <see cref="Block" /> already exists by the time any
 ///         behavior factory runs (pass 2 of <c>BlockRegistry.LoadAndBuild</c> starts only after
 ///         pass 1 finishes constructing all of them). "Same-species leaves" checks compare against
-///         the owning <see cref="Block" /> passed into each call, not a separate cached id — a
-///         leaves block is always its own same-species reference.
+///         the owning <see cref="Block" /> passed into each call, not a separate cached id.
 ///     </para>
 /// </summary>
 public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestToolItem) : IBlockTicker, IBlockLifecycle, IBlockVisuals

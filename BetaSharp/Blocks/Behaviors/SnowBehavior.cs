@@ -7,17 +7,14 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Snow layer: metadata 0-7 is height (2/16 per layer), requires an opaque/movement-blocking
-///     surface below, melts in full block-light, and drops a snowball only when tool-mined —
+///     surface below, melts in full block-light, and drops a snowball only when tool-mined,
 ///     support collapse and light-melt both go through the standard (zero-count) drop path, which
 ///     vanilla-accurately drops nothing.
 ///     <para>
-///         Drop item (<paramref name="dropItem" />) is a required, JSON-declared constructor
-///         param (see <c>BehaviorRegistry</c>'s <c>"snow"</c> entry) — no built-in vanilla
-///         fallback; an omitted or unknown name throws immediately at startup.
+///         Drop item (<paramref name="dropItem" />) is a required, (see <c>BehaviorRegistry</c>'s <c>"snow"</c> entry).
 ///     </para>
 ///     <para>
-///         Drop spread (<paramref name="dropSpread" />) is also a required, JSON-declared
-///         constructor param — no built-in vanilla fallback.
+///         Drop spread (<paramref name="dropSpread" />) is also a required.
 ///     </para>
 /// </summary>
 internal sealed class SnowBehavior(Item dropItem, float dropSpread) : IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals

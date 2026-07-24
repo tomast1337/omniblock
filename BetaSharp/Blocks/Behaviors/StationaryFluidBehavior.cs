@@ -10,12 +10,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     notification), and lava sources randomly ignite nearby flammable terrain.
 ///     <para>
 ///         Ignition target block and the two lava/water-contact solidification products are all
-///         required, JSON-declared constructor params (see <c>BehaviorRegistry</c>'s
-///         <c>"stationary_fluid"</c> entry) — no built-in vanilla fallback; an omitted or unknown
-///         name throws immediately at startup. Every JSON using this type declares the full set
-///         regardless of its own material (e.g. water.json's copy is never read, since the
-///         solidification/ignition logic below is gated on <c>Material.Lava</c>), matching the
-///         convention used everywhere else in this migration.
+///         required, (see <c>BehaviorRegistry</c>'s <c>"stationary_fluid"</c> entry).
 ///     </para>
 /// </summary>
 public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSolidified, Block flowSolidified) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker

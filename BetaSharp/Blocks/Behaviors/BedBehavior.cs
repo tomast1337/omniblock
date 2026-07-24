@@ -9,8 +9,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Bed: a two-block structure (head + foot half, linked by meta direction) with sleep
 ///     interaction, explosion-on-no-spawn, and half-dependent drops (only the foot half drops the
 ///     item). The meta helpers and <see cref="FindWakeUpPosition" /> are public statics consumed
-///     externally by <c>EntityPlayer</c>, <c>NaturalSpawner</c>, and the client's bed renderer — kept
-///     here since there's no subclass left to hold them.
+///     externally by <c>EntityPlayer</c>, <c>NaturalSpawner</c>, and the client's bed renderer.
 /// </summary>
 public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {

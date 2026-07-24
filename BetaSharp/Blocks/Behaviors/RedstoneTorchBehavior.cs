@@ -4,12 +4,12 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Redstone torch power emission, burnout tracking, and lit/unlit toggling. One instance is
-///     shared by both torch blocks — lit state is derived from the block id, and the burnout
+///     shared by both torch blocks, lit state is derived from the block id, and the burnout
 ///     history must span both blocks since a toggling torch alternates between them.
 ///     <para>
 ///         Wall-mount placement/facing/support-break is delegated to the shared <see cref="WallMountBehavior" />
-///         torch instance (composition, not inheritance, now that <c>BlockTorch</c> is flattened) —
-///         this class layers redstone-specific neighbor notification and burnout scheduling on top.
+///         torch instance (composition, not inheritance, now that <c>BlockTorch</c> is flattened).
+///         This class layers redstone-specific neighbor notification and burnout scheduling on top.
 ///         Assign to the Redstone, Ticker, Visuals, Physics, and Lifecycle slots.
 ///     </para>
 /// </summary>

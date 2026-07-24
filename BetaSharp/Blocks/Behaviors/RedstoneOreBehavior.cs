@@ -4,12 +4,9 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Redstone ore: touching it (walk, punch, click) lights it up and sparks; the lit block
-///     reverts on its next tick. One instance is shared by both ore blocks — lit state is derived
-///     from the block id. Assign to the Ticker and Interactable slots.
+///     reverts on its next tick. One instance is shared by both ore blocks.
 ///     <para>
-///         Unlit and lit block are both required, JSON-declared constructor params (see
-///         <c>BehaviorRegistry</c>'s <c>"redstone_ore"</c> entry) — no built-in vanilla fallback;
-///         an omitted or unknown name throws immediately at startup.
+///         Unlit and lit block are both required,(see <c>BehaviorRegistry</c>'s <c>"redstone_ore"</c> entry).
 ///     </para>
 /// </summary>
 public sealed class RedstoneOreBehavior(Block unlitOre, Block litOre) : IBlockInteractable, IBlockTicker

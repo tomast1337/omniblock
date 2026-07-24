@@ -3,19 +3,13 @@ using BetaSharp.Worlds.Chunks;
 namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
-///     Mushroom: darkness-gated survival/spread. Self-contained (not composed with
-///     <see cref="PlantSurvivalBehavior" />) since its <see cref="CanGrow" /> requires a light check
-///     beyond plain ground validity, and — with no subclass left to shadow it — the capability hook
-///     is now the single source of truth for both placement and the neighbor-update break check.
+///     Mushroom: darkness-gated survival/spread.
 ///     <para>
-///         Valid growth substrate set is a required, JSON-declared constructor param (see
-///         <c>BehaviorRegistry</c>'s <c>"mushroom"</c> entry) — no built-in vanilla fallback; an
-///         omitted or unknown name throws immediately at startup.
+///         Valid growth substrate set is a required, (see <c>BehaviorRegistry</c>'s <c>"mushroom"</c> entry).
 ///     </para>
 ///     <para>
 ///         Spread chance (<paramref name="spreadChanceOneIn" />, 1-in-N per tick) and maximum
-///         brightness it can survive at (<paramref name="maxBrightness" />) are also required,
-///         JSON-declared constructor params — no built-in vanilla fallback.
+///         brightness it can survive at (<paramref name="maxBrightness" />).
 ///     </para>
 /// </summary>
 internal sealed class MushroomBehavior(Block[] validGround, int spreadChanceOneIn, int maxBrightness) : IBlockTicker, IBlockPhysics

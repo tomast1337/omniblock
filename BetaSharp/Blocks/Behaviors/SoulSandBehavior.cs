@@ -6,8 +6,7 @@ namespace BetaSharp.Blocks.Behaviors;
 /// <summary>
 ///     Soul sand: sits 2/16 short of a full block, and drags entities standing on it.
 ///     <para>
-///         Drag speed factor (<paramref name="speedFactor" />) is a required, JSON-declared
-///         constructor param — no built-in vanilla fallback.
+///         Drag speed factor (<paramref name="speedFactor" />) is a required.
 ///     </para>
 /// </summary>
 internal sealed class SoulSandBehavior(double speedFactor) : IBlockPhysics, IBlockInteractable

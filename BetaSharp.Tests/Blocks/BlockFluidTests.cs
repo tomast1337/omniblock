@@ -8,12 +8,6 @@ namespace BetaSharp.Tests.Blocks;
 
 public sealed class BlockFluidTests
 {
-    // Ignition target / solidification products (stationary_fluid) and pass-through obstacle
-    // set / solidification products (flowing_fluid) are all required constructor params
-    // (JSON-configurable per variant, no built-in vanilla fallback). An omitted or unknown name
-    // must throw immediately at BehaviorRegistry.Build time (server boot). The tests above
-    // already exercise the real vanilla-configured obsidian/cobblestone path end-to-end via
-    // BlockRegistry, proving the parameterization didn't change behavior.
     [Fact]
     public void BehaviorRegistry_Build_StationaryFluid_MissingRequiredProperty_Throws()
     {

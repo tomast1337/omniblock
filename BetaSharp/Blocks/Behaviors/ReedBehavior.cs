@@ -7,13 +7,11 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Sugar cane: vertical growth up to 3 tall (metadata 0-15 counts ticks toward the next
 ///     segment), requiring valid ground adjacent to water. The ground+water check is a private
 ///     helper reused directly by <see cref="CanGrow" />/<see cref="NeighborUpdate" /> rather than
-///     routed through the full <c>canPlaceAt</c> dispatch — that dispatch ANDs with the base
+///     routed through the full <c>canPlaceAt</c> dispatch, that dispatch ANDs with the base
 ///     replaceability check, which is false for the reed's own (non-replaceable) material and would
 ///     make the break-recheck always fail.
 ///     <para>
-///         Valid ground substrate set is a required, JSON-declared constructor param (see
-///         <c>BehaviorRegistry</c>'s <c>"reed"</c> entry) — no built-in vanilla fallback; an
-///         omitted or unknown name throws immediately at startup.
+///         Valid ground substrate set is a required, (see <c>BehaviorRegistry</c>'s <c>"reed"</c> entry).
 ///     </para>
 /// </summary>
 internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
@@ -73,7 +71,6 @@ internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPh
 
         if (!onValidGround) return false;
 
-        // Soil alone isn't enough — reeds also need water in one of the four adjacent tiles.
         return reader.GetMaterial(x - 1, y - 1, z) == Material.Water ||
                reader.GetMaterial(x + 1, y - 1, z) == Material.Water ||
                reader.GetMaterial(x, y - 1, z - 1) == Material.Water ||

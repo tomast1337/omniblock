@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks;
 ///     biome-driven color multipliers, and adjacent-face culling.
 ///     <para>
 ///         Every hook receives the base logic's result as a trailing <c>default*</c> parameter and
-///         returns the primitive directly — no <see cref="Nullable{T}" /> on the hot path.
+///         returns the primitive directly, no <see cref="Nullable{T}" /> on the hot path.
 ///     </para>
 /// </summary>
 public interface IBlockVisuals

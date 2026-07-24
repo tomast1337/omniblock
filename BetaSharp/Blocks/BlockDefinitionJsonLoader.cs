@@ -6,13 +6,6 @@ using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Blocks;
 
-/// <summary>
-///     Loads <c>assets/block/*.json</c> into <see cref="BlockDefinition" />s. Mirrors
-///     <c>BetaSharp.Items.ItemDefinitionJsonLoader</c> — a dedicated loader is needed (not the
-///     shared <see cref="DataAssetLoader{T}" />) because blocks, like items, need a stable
-///     explicit numeric id (<see cref="BlockDefinition.ProtocolId" />), and
-///     <see cref="DataAssetLoader{T}" />'s <c>GetId()</c> always returns -1.
-/// </summary>
 internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locations) : DataAssetLoader(locations), IReadableRegistry<BlockDefinition>
 {
     private const string DefaultsFileName = "_defaults.json";

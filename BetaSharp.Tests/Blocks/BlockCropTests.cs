@@ -7,10 +7,6 @@ namespace BetaSharp.Tests.Blocks;
 
 public sealed class BlockCropTests
 {
-    // Required soil, mature-drop item, and seed item are required constructor params
-    // (JSON-configurable per variant, no built-in vanilla fallback). Construct a differently
-    // configured instance directly (bypassing BlockRegistry) to prove the override actually
-    // takes effect rather than silently defaulting.
     [Fact]
     public void CanPlaceAt_CustomFarmland_MatchesConfiguredBlockNotVanillaFarmland()
     {
@@ -39,9 +35,6 @@ public sealed class BlockCropTests
         Assert.Equal(-1, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 3, 0));
     }
 
-    // No built-in default and no null fallback: an omitted or unknown "required_soil"/
-    // "mature_crop_item"/"seeds" in JSON must throw immediately (at BehaviorRegistry.Build, i.e.
-    // server boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
@@ -56,9 +49,6 @@ public sealed class BlockCropTests
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 
-    // Numeric tuning params (drop_spread, seed_scatter_chance_bound, growth_chance_denominator)
-    // are also required, no default: an omitted value must throw immediately at
-    // BehaviorRegistry.Build.
     [Fact]
     public void BehaviorRegistry_Build_MissingDropSpread_Throws()
     {

@@ -6,10 +6,6 @@ namespace BetaSharp.Tests.Blocks;
 
 public sealed class BlockCactusTests
 {
-    // Valid substrate (soil) and self (stem) are required constructor params
-    // (JSON-configurable per variant, no built-in vanilla fallback). Construct a differently
-    // configured instance directly (bypassing BlockRegistry) to prove the override actually
-    // takes effect rather than silently defaulting.
     [Fact]
     public void CanPlaceAt_OnConfiguredSubstrate_ReturnsTrue()
     {
@@ -61,8 +57,6 @@ public sealed class BlockCactusTests
         Assert.False(cactus.CanPlaceAt(new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
 
-    // No built-in default and no null fallback: an omitted or unknown "stem"/"soil" in JSON
-    // must throw immediately (at BehaviorRegistry.Build, i.e. server boot).
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
@@ -77,8 +71,6 @@ public sealed class BlockCactusTests
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 
-    // max_height is also a required, JSON-declared constructor param — no built-in vanilla
-    // fallback. An omitted value must throw immediately at BehaviorRegistry.Build.
     [Fact]
     public void BehaviorRegistry_Build_MissingMaxHeight_Throws()
     {

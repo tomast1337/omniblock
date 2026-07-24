@@ -8,9 +8,6 @@ public sealed class BlockRedstoneOreTests
 {
     private static OnTickEvent Tick(FakeWorldContext world, int x = 0, int y = 64, int z = 0) => new(world, x, y, z, world.Reader.GetBlockMeta(x, y, z), world.Reader.GetBlockId(x, y, z));
 
-    // Unlit/lit ore are required constructor params (JSON-configurable per variant, no built-in
-    // vanilla fallback). Construct a differently configured instance directly (bypassing
-    // BlockRegistry) to prove the override actually takes effect rather than silently defaulting.
     [Fact]
     public void OnTick_ConfiguredLitOre_RevertsToConfiguredUnlitOre()
     {

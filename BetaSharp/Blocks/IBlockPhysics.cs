@@ -23,7 +23,7 @@ public interface IBlockPhysics
 
     /// <summary>
     ///     Additional placement restriction. Combined with (never replaces) the base
-    ///     replaceability check — returning true keeps the base verdict.
+    ///     replaceability check, returning true keeps the base verdict.
     /// </summary>
     bool CanPlaceAt(Block block, CanPlaceAtContext @event) => true;
 

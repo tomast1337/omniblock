@@ -10,16 +10,14 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     slightly-recessed render bounding box.
 ///     <para>
 ///         The block it reverts to (<paramref name="revertBlock" />) and the crop that keeps it
-///         wet (<paramref name="crop" />) are both required, JSON-declared constructor params (see
-///         <c>BehaviorRegistry</c>'s <c>"farmland"</c> entry) — no built-in vanilla fallback; an
-///         omitted or unknown name throws immediately at startup. Named generically (not "dirt")
-///         so a non-vanilla soil variant reads naturally.
+///         wet (<paramref name="crop" />) are both required (see <c>BehaviorRegistry</c>'s 
+///         <c>"farmland"</c> entry. so a non-vanilla soil variant reads naturally.
 ///     </para>
 ///     <para>
 ///         Trample chance (<paramref name="trampleChanceOneIn" />, 1-in-N per step), tick chance
 ///         (<paramref name="tickChanceOneIn" />, 1-in-N per tick that moisture logic runs at all),
 ///         and nearby-water search radius (<paramref name="waterCheckRadius" />) are also
-///         required, JSON-declared constructor params — no built-in vanilla fallback.
+///         required.
 ///     </para>
 /// </summary>
 internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampleChanceOneIn, int tickChanceOneIn, int waterCheckRadius) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals

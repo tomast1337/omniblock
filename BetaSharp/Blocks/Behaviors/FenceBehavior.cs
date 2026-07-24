@@ -5,7 +5,7 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Fence: rests on solid ground or another fence post, and always collides as a single raised
-///     box (1.5 blocks tall) regardless of which sides visually connect — the connection-dependent
+///     box (1.5 blocks tall) regardless of which sides visually connect, the connection-dependent
 ///     bar rendering lives entirely client-side in <c>FenceRenderer</c>.
 /// </summary>
 internal sealed class FenceBehavior : IBlockPhysics

@@ -5,7 +5,7 @@ namespace BetaSharp.Blocks.Behaviors;
 
 /// <summary>
 ///     Redstone repeater: emits delayed, directional power out of its facing side. One instance is
-///     shared by the unlit and powered blocks — lit state is derived from the block id, and the
+///     shared by the unlit and powered blocks, lit state is derived from the block id, and the
 ///     delay state machine swaps between the two ids. Assign to all six slots.
 /// </summary>
 public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals

@@ -4,9 +4,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Sponge removal notifies every block in a radius so absorbed water can flow back.
 ///     (The Beta 1.7.3 on-place absorption loop was an empty no-op and is intentionally not ported.)
 ///     <para>
-///         Absorb radius (<paramref name="absorbRadius" />) is a required, JSON-declared constructor
-///         param (see <c>BehaviorRegistry</c>'s <c>"sponge_lifecycle"</c> entry) — no built-in
-///         vanilla fallback.
+///         Absorb radius (<paramref name="absorbRadius" />) is a required, param (see <c>BehaviorRegistry</c>'s <c>"sponge_lifecycle"</c> entry).
 ///     </para>
 /// </summary>
 public sealed class SpongeLifecycleBehavior(int absorbRadius) : IBlockLifecycle
