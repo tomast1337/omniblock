@@ -123,26 +123,12 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
 
         if (world.Reader.GetBlockId(x, y + 1, z) == doorId)
         {
-            if (world.IsRemote)
-            {
-                world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
-            }
-            else
-            {
-                world.Writer.SetBlockMetaWithoutNotifyingNeighbors(x, y + 1, z, (meta ^ 4) + 8);
-            }
+            world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
         }
 
-        if (world.IsRemote)
-        {
-            world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
-        }
-        else
-        {
-            world.Writer.SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta ^ 4);
-        }
+        world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
 
-        world.Broadcaster.SetBlocksDirty(x, y - 1, z, x, y, z);
+        world.Broadcaster.SetBlocksDirty(x, y - 1, z, x, y + 1, z);
         world.Broadcaster.WorldEvent(player, 1003, x, y, z, 0);
         return true;
     }
@@ -184,7 +170,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
         }
 
         world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
-        world.Broadcaster.SetBlocksDirty(x, y - 1, z, x, y, z);
+        world.Broadcaster.SetBlocksDirty(x, y - 1, z, x, y + 1, z);
         world.Broadcaster.WorldEvent(1003, x, y, z, 0);
     }
 

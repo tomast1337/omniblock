@@ -313,9 +313,24 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
 
     public void SetBlockMeta(int x, int y, int z, int meta)
     {
+        int blockId = WriteMetaCell(x, y, z, meta);
+
+        if (Block.BlocksIgnoreMetaUpdate[blockId & 255])
+        {
+            OnBlockChanged?.Invoke(x, y, z, blockId);
+        }
+        else
+        {
+            OnNeighborsShouldUpdate?.Invoke(x, y, z, blockId);
+        }
+    }
+
+    private int WriteMetaCell(int x, int y, int z, int meta)
+    {
         int blockId = GetBlockId(x, y, z);
         _cells[(x, y, z)] = (blockId, meta);
         SetMetaCalls.Add((x, y, z, meta));
+        return blockId;
     }
 
     public bool SetBlockWithoutCallingOnPlaced(int x, int y, int z, int blockId, int meta) => SetBlock(x, y, z, blockId, meta, true);
@@ -326,7 +341,7 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
 
     public bool SetBlockMetaWithoutNotifyingNeighbors(int x, int y, int z, int meta)
     {
-        SetBlockMeta(x, y, z, meta);
+        WriteMetaCell(x, y, z, meta);
         return true;
     }
 
