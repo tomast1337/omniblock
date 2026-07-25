@@ -91,4 +91,45 @@ public sealed class BlockDropsAndTexturesTests
         Assert.Equal(BlockTextures.OakPlanks, BlockRegistry.Get("bookshelf").GetTexture(Side.Down));
         Assert.Equal(BlockTextures.Bookshelf, BlockRegistry.Get("bookshelf").GetTexture(Side.North));
     }
+
+    // TryGetPrimaryLootItemId backs the middle-click "pick block" fallback: when the raw block
+    // isn't obtainable/available, fall back to whatever its loot table most likely drops.
+    [Fact]
+    public void Stone_PrimaryLootItem_IsCobblestoneWithNoMetaConstraint()
+    {
+        Assert.True(BlockRegistry.Get("stone").TryGetPrimaryLootItemId(0, out int itemId, out int meta));
+        Assert.Equal(BlockRegistry.Get("cobblestone").id, itemId);
+        Assert.Equal(-1, meta);
+    }
+
+    [Fact]
+    public void Gravel_PrimaryLootItem_IsGravelNotFlint()
+    {
+        Assert.True(BlockRegistry.Get("gravel").TryGetPrimaryLootItemId(0, out int itemId, out _));
+        Assert.Equal(BlockRegistry.Get("gravel").id, itemId);
+    }
+
+    [Fact]
+    public void DoubleSlab_PrimaryLootItem_PreservesBlockMetaOnSlabItem()
+    {
+        Assert.True(BlockRegistry.Get("double_slab").TryGetPrimaryLootItemId(3, out int itemId, out int meta));
+        Assert.Equal(BlockRegistry.Get("slab").id, itemId);
+        Assert.Equal(3, meta);
+    }
+
+    [Fact]
+    public void GrassBlock_PrimaryLootItem_IsDirtWithNoMetaConstraint()
+    {
+        Assert.True(BlockRegistry.Get("grass_block").TryGetPrimaryLootItemId(0, out int itemId, out int meta));
+        Assert.Equal(BlockRegistry.Get("dirt").id, itemId);
+        Assert.Equal(-1, meta);
+    }
+
+    [Fact]
+    public void Bedrock_HasNoLootTable_TryGetPrimaryLootItemIdReturnsFalse()
+    {
+        Assert.False(BlockRegistry.Get("bedrock").TryGetPrimaryLootItemId(0, out int itemId, out int meta));
+        Assert.Equal(0, itemId);
+        Assert.Equal(-1, meta);
+    }
 }

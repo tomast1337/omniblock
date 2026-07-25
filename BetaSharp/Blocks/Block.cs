@@ -160,6 +160,20 @@ public class Block
 
     protected internal void preserveMetaOnDrop() => _dropsWithBlockMeta = true;
 
+    public bool TryGetPrimaryLootItemId(int blockMeta, out int itemId, out int itemMeta)
+    {
+        if (_lootTable != null)
+        {
+            itemId = _lootTable.GetPrimaryItemId();
+            itemMeta = _dropsWithBlockMeta ? blockMeta : -1;
+            return true;
+        }
+
+        itemId = 0;
+        itemMeta = -1;
+        return false;
+    }
+
     protected internal void SetBlockAlias(params string[] aliases) => _blockAlias = aliases;
 
 

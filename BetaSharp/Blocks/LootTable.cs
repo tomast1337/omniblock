@@ -31,7 +31,8 @@ public sealed class LootTable
     public LootTable(params LootEntry[] entries)
     {
         _entries = entries;
-        foreach (LootEntry entry in entries)
+        Array.Sort(_entries, static (a, b) => b.Weight.CompareTo(a.Weight));
+        foreach (LootEntry entry in _entries)
         {
             _totalWeight += entry.Weight;
         }
@@ -49,4 +50,6 @@ public sealed class LootTable
 
         return _entries[^1].ItemId;
     }
+
+    public int GetPrimaryItemId() => _entries[0].ItemId;
 }

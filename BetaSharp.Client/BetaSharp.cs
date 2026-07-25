@@ -1324,8 +1324,7 @@ public partial class BetaSharp :
             {
                 _ when hitBlock == BlockRegistry.Get("bedrock") => (BlockRegistry.Get("stone").id, -1, blockMeta),
                 _ when hitBlock == BlockRegistry.Get("leaves") => (BlockRegistry.Get("sapling").id, blockMeta & 3, blockMeta & 3),
-                _ when hitBlock == BlockRegistry.Get("grass_block") => (BlockRegistry.Get("dirt").id, -1, blockMeta),
-                _ when hitBlock == BlockRegistry.Get("double_slab") => (BlockRegistry.Get("slab").id, blockMeta, blockMeta),
+                _ when hitBlock.TryGetPrimaryLootItemId(blockMeta, out int lootItemId, out int lootMeta) => (lootItemId, lootMeta, blockMeta),
                 _ => (0, -1, blockMeta)
             };
 

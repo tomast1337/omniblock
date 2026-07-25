@@ -55,4 +55,18 @@ public sealed class LootTableTests
         table.Roll(Random.Shared);
         Assert.Equal(1, callCount);
     }
+
+    [Fact]
+    public void GetPrimaryItemId_SingleEntry_ReturnsThatItem()
+    {
+        LootTable table = new(new LootEntry(() => 42));
+        Assert.Equal(42, table.GetPrimaryItemId());
+    }
+
+    [Fact]
+    public void GetPrimaryItemId_WeightedEntries_ReturnsHighestWeight()
+    {
+        LootTable table = new(new LootEntry(() => 1, weight: 9), new LootEntry(() => 2, weight: 1));
+        Assert.Equal(1, table.GetPrimaryItemId());
+    }
 }
