@@ -68,9 +68,9 @@ public class Block
     public static BlockSoundGroup SoundPowderFootstep => SoundGroupRegistry.Get("powder");
     public static BlockSoundGroup SoundStoneFootstep => SoundGroupRegistry.Get("stone");
 
-    public TextureVariance TopVariance { get; private set; } = TextureVariance.None;
-    public TextureVariance BottomVariance { get; private set; } = TextureVariance.None;
-    public TextureVariance SideVariance { get; private set; } = TextureVariance.None;
+    public TextureVariance TopVariance { get; protected internal set; } = TextureVariance.None;
+    public TextureVariance BottomVariance { get; protected internal set; } = TextureVariance.None;
+    public TextureVariance SideVariance { get; protected internal set; } = TextureVariance.None;
 
     public IBlockTicker? Ticker { get; internal set; }
 
@@ -123,18 +123,47 @@ public class Block
     public PistonBehavior PistonBehavior => _pistonBehaviorOverride ?? material.PistonBehavior;
     public bool IsFullCube() => _isFullCube;
 
-    protected internal void IgnoreMetaUpdates()
+    public bool IgnoreMetaUpdates
     {
-        BlocksIgnoreMetaUpdate[id] = true;
+        get => BlocksIgnoreMetaUpdate[id];
+        protected internal set => BlocksIgnoreMetaUpdate[id] = value;
+    }
+
+    public bool TickRandomly
+    {
+        get => BlocksRandomTick[id];
+        protected internal set => BlocksRandomTick[id] = value;
+    }
+
+    public int Opacity
+    {
+        get => BlockLightOpacity[id];
+        protected internal set => BlockLightOpacity[id] = value;
+    }
+
+    public float Luminance
+    {
+        get => BlocksLightLuminance[id] / 15.0F;
+        protected internal set => BlocksLightLuminance[id] = (int)(15.0F * value);
+    }
+
+    public bool PreservesMetaOnDrop
+    {
+        get => _dropsWithBlockMeta;
+        protected internal set => _dropsWithBlockMeta = value;
+    }
+
+    public int DropCount
+    {
+        get => _minDroppedCount;
+        protected internal set
+        {
+            _minDroppedCount = value;
+            _maxDroppedCount = value;
+        }
     }
 
     protected internal void Init() => Lifecycle?.OnInit(this);
-
-    protected internal void setSoundGroup(BlockSoundGroup soundGroup) => SoundGroup = soundGroup;
-
-    protected internal void setOpacity(int opacity) => BlockLightOpacity[id] = opacity;
-
-    protected internal void SetLuminance(float fractionalValue) => BlocksLightLuminance[id] = (int)(15.0F * fractionalValue);
 
     protected internal void SetResistance(float resistance) => this.resistance = resistance * 3.0F;
 
@@ -152,14 +181,6 @@ public class Block
         _droppedItemMetaValue = meta;
     }
 
-    protected internal void SetDropCount(int count)
-    {
-        _minDroppedCount = count;
-        _maxDroppedCount = count;
-    }
-
-    protected internal void preserveMetaOnDrop() => _dropsWithBlockMeta = true;
-
     public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(int blockMeta)
     {
         int defaultBackupId = _lootTable?.GetPrimaryItemId() ?? 0;
@@ -172,14 +193,6 @@ public class Block
 
     protected internal void SetNotFullCube() => _isFullCube = false;
 
-
-    public void SetVariance(TextureVariance top, TextureVariance bottom, TextureVariance sides)
-    {
-        TopVariance = top;
-        BottomVariance = bottom;
-        SideVariance = sides;
-    }
-
     protected internal void SetHardness(float hardness)
     {
         Hardness = hardness;
@@ -188,8 +201,6 @@ public class Block
             resistance = hardness * 5.0F;
         }
     }
-
-    protected internal void SetTickRandomly(bool tickRandomly) => BlocksRandomTick[id] = tickRandomly;
 
     public void SetBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) => BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
 

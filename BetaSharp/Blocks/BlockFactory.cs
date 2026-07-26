@@ -15,13 +15,13 @@ internal static class BlockFactory
         block.SetHardness(def.Hardness);
         block.SetResistance(def.Resistance);
 
-        if (def.NonOpaque) block.IsOpaque = false;
-        if (def.Luminance > 0) block.SetLuminance(def.Luminance);
-        if (def.Opacity >= 0) block.setOpacity(def.Opacity);
-        if (def.TickRandomly) block.SetTickRandomly(true);
-        if (def.IgnoreMetaUpdates) block.IgnoreMetaUpdates();
-        if (!def.TrackStatistics) block.EnableStats = false;
-        if (def.SoundGroup is { } sg) block.setSoundGroup(SoundGroupRegistry.Get(sg));
+        block.IsOpaque = !def.NonOpaque;
+        block.Luminance = def.Luminance;
+        if (def.Opacity >= 0) block.Opacity = def.Opacity;
+        block.TickRandomly = def.TickRandomly;
+        block.IgnoreMetaUpdates = def.IgnoreMetaUpdates;
+        block.EnableStats = def.TrackStatistics;
+        if (def.SoundGroup is { } sg) block.SoundGroup = SoundGroupRegistry.Get(sg);
         if (def.FaceTextures is { } faces)
         {
             foreach ((string sideName, int textureId) in faces)
@@ -30,7 +30,9 @@ internal static class BlockFactory
             }
         }
 
-        block.SetVariance(def.TopVariance, def.BottomVariance, def.SideVariance);
+        block.TopVariance = def.TopVariance;
+        block.BottomVariance = def.BottomVariance;
+        block.SideVariance = def.SideVariance;
         block.BurnChance = def.BurnChance;
         block.SpreadChance = def.SpreadChance;
         block.RenderType = Enum.Parse<BlockRendererType>(def.RenderType, true);
@@ -49,8 +51,8 @@ internal static class BlockFactory
             block.SetPistonBehavior(Enum.Parse<PistonBehavior>(pistonBehavior, true));
         }
 
-        if (def.DropCount is { } dropCount) block.SetDropCount(dropCount);
-        if (def.PreservesMetaOnDrop) block.preserveMetaOnDrop();
+        if (def.DropCount is { } dropCount) block.DropCount = dropCount;
+        block.PreservesMetaOnDrop = def.PreservesMetaOnDrop;
         if (def.BlockAlias is { Length: > 0 } aliases) block.SetBlockAlias(aliases);
 
         block.BlockName = def.TranslationKey ?? def.Name;
