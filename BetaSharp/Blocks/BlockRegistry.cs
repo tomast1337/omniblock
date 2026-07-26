@@ -69,6 +69,7 @@ public static class BlockRegistry
             ["log"] = id => new ItemLog(id - 256).setItemName("log"),
             ["slab"] = id => new ItemSlab(id - 256).setItemName("stoneSlab"),
             ["sapling"] = id => new ItemSapling(id - 256).setItemName("sapling"),
+            ["grass"] = id => new ItemGrass(id - 256).setItemName("grass"),
             ["leaves"] = id => new ItemLeaves(id - 256).setItemName("leaves"),
             ["piston"] = id => new ItemPiston(id - 256),
             ["sticky_piston"] = id => new ItemPiston(id - 256),
