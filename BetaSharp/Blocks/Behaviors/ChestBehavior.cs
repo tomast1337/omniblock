@@ -90,7 +90,7 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
     public int GetTexture(Block block, Side side, int defaultTexture) =>
         side switch
         {
-            Side.Up or Side.Down => BlockTextures.ChestSingleSide,
+            Side.Up or Side.Down => BlockTextures.ChestTopBottom,
             Side.South => BlockTextures.ChestSingleFront,
             _ => BlockTextures.ChestSingleSide
         };
