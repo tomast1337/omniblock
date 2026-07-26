@@ -160,18 +160,11 @@ public class Block
 
     protected internal void preserveMetaOnDrop() => _dropsWithBlockMeta = true;
 
-    public bool TryGetPrimaryLootItemId(int blockMeta, out int itemId, out int itemMeta)
+    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(int blockMeta)
     {
-        if (_lootTable != null)
-        {
-            itemId = _lootTable.GetPrimaryItemId();
-            itemMeta = _dropsWithBlockMeta ? blockMeta : -1;
-            return true;
-        }
-
-        itemId = 0;
-        itemMeta = -1;
-        return false;
+        int defaultBackupId = _lootTable?.GetPrimaryItemId() ?? 0;
+        int defaultBackupMeta = _dropsWithBlockMeta ? blockMeta : -1;
+        return Lifecycle?.GetPickBlockItem(this, blockMeta, defaultBackupId, defaultBackupMeta) ?? (blockMeta, defaultBackupId, defaultBackupMeta);
     }
 
     protected internal void SetBlockAlias(params string[] aliases) => _blockAlias = aliases;

@@ -92,44 +92,54 @@ public sealed class BlockDropsAndTexturesTests
         Assert.Equal(BlockTextures.Bookshelf, BlockRegistry.Get("bookshelf").GetTexture(Side.North));
     }
 
-    // TryGetPrimaryLootItemId backs the middle-click "pick block" fallback: when the raw block
-    // isn't obtainable/available, fall back to whatever its loot table most likely drops.
     [Fact]
-    public void Stone_PrimaryLootItem_IsCobblestoneWithNoMetaConstraint()
+    public void Stone_PickBlockItem_BackupIsCobblestoneWithNoMetaConstraint()
     {
-        Assert.True(BlockRegistry.Get("stone").TryGetPrimaryLootItemId(0, out int itemId, out int meta));
-        Assert.Equal(BlockRegistry.Get("cobblestone").id, itemId);
-        Assert.Equal(-1, meta);
+        (int primaryMeta, int backupId, int backupMeta) = BlockRegistry.Get("stone").GetPickBlockItem(0);
+        Assert.Equal(0, primaryMeta);
+        Assert.Equal(BlockRegistry.Get("cobblestone").id, backupId);
+        Assert.Equal(-1, backupMeta);
     }
 
     [Fact]
-    public void Gravel_PrimaryLootItem_IsGravelNotFlint()
+    public void Gravel_PickBlockItem_BackupIsGravelNotFlint()
     {
-        Assert.True(BlockRegistry.Get("gravel").TryGetPrimaryLootItemId(0, out int itemId, out _));
-        Assert.Equal(BlockRegistry.Get("gravel").id, itemId);
+        (_, int backupId, _) = BlockRegistry.Get("gravel").GetPickBlockItem(0);
+        Assert.Equal(BlockRegistry.Get("gravel").id, backupId);
     }
 
     [Fact]
-    public void DoubleSlab_PrimaryLootItem_PreservesBlockMetaOnSlabItem()
+    public void DoubleSlab_PickBlockItem_BackupPreservesBlockMetaOnSlabItem()
     {
-        Assert.True(BlockRegistry.Get("double_slab").TryGetPrimaryLootItemId(3, out int itemId, out int meta));
-        Assert.Equal(BlockRegistry.Get("slab").id, itemId);
-        Assert.Equal(3, meta);
+        (_, int backupId, int backupMeta) = BlockRegistry.Get("double_slab").GetPickBlockItem(3);
+        Assert.Equal(BlockRegistry.Get("slab").id, backupId);
+        Assert.Equal(3, backupMeta);
     }
 
     [Fact]
-    public void GrassBlock_PrimaryLootItem_IsDirtWithNoMetaConstraint()
+    public void GrassBlock_PickBlockItem_BackupIsDirtWithNoMetaConstraint()
     {
-        Assert.True(BlockRegistry.Get("grass_block").TryGetPrimaryLootItemId(0, out int itemId, out int meta));
-        Assert.Equal(BlockRegistry.Get("dirt").id, itemId);
-        Assert.Equal(-1, meta);
+        (_, int backupId, int backupMeta) = BlockRegistry.Get("grass_block").GetPickBlockItem(0);
+        Assert.Equal(BlockRegistry.Get("dirt").id, backupId);
+        Assert.Equal(-1, backupMeta);
     }
 
     [Fact]
-    public void Bedrock_HasNoLootTable_TryGetPrimaryLootItemIdReturnsFalse()
+    public void Bedrock_HasNoLootTable_PickBlockItemHasNoBackup()
     {
-        Assert.False(BlockRegistry.Get("bedrock").TryGetPrimaryLootItemId(0, out int itemId, out int meta));
-        Assert.Equal(0, itemId);
-        Assert.Equal(-1, meta);
+        (int primaryMeta, int backupId, int backupMeta) = BlockRegistry.Get("bedrock").GetPickBlockItem(0);
+        Assert.Equal(0, primaryMeta);
+        Assert.Equal(0, backupId);
+        Assert.Equal(-1, backupMeta);
+    }
+
+    [Fact]
+    public void Leaves_PickBlockItem_MasksDecayBitsAndBacksUpToSapling()
+    {
+        const int oakWithDecayAndPersistentBits = 0b1101; // oak (bits 0-1 = 01) + check-decay (4) + persistent (8)
+        (int primaryMeta, int backupId, int backupMeta) = BlockRegistry.Get("leaves").GetPickBlockItem(oakWithDecayAndPersistentBits);
+        Assert.Equal(1, primaryMeta);
+        Assert.Equal(BlockRegistry.Get("sapling").id, backupId);
+        Assert.Equal(1, backupMeta);
     }
 }

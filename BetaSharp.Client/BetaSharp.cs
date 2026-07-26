@@ -1312,11 +1312,6 @@ public partial class BetaSharp :
         }
     }
 
-    private static readonly Block s_bedrockBlock = BlockRegistry.Get("bedrock");
-    private static readonly Block s_stoneBlock = BlockRegistry.Get("stone");
-    private static readonly Block s_leavesBlock = BlockRegistry.Get("leaves");
-    private static readonly Block s_saplingBlock = BlockRegistry.Get("sapling");
-
     public void ClickMiddleMouseButton()
     {
         if (ObjectMouseOver.Type != HitResultType.MISS)
@@ -1325,13 +1320,7 @@ public partial class BetaSharp :
             int blockMeta = World.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
             Block hitBlock = Block.Blocks[blockId];
 
-            (int backupId, int backupMeta, int primaryMeta) = true switch
-            {
-                _ when hitBlock == s_bedrockBlock => (s_stoneBlock.id, -1, blockMeta),
-                _ when hitBlock == s_leavesBlock => (s_saplingBlock.id, blockMeta & 3, blockMeta & 3),
-                _ when hitBlock.TryGetPrimaryLootItemId(blockMeta, out int lootItemId, out int lootMeta) => (lootItemId, lootMeta, blockMeta),
-                _ => (0, -1, blockMeta)
-            };
+            (int primaryMeta, int backupId, int backupMeta) = hitBlock.GetPickBlockItem(blockMeta);
 
             Player.Inventory.SetCurrentItem(blockId, backupId, primaryMeta, backupMeta);
         }

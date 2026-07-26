@@ -71,6 +71,8 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
 
     public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItem.id;
 
+    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta) => (blockMeta & 3, saplingItem.id, blockMeta & 3);
+
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (@event.World.IsRemote) return;
