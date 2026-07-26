@@ -163,13 +163,13 @@ public sealed class DoorBehaviorDefinition : ItemBehaviorDefinition
 public sealed class SeedsBehaviorDefinition : ItemBehaviorDefinition
 {
     public string? PlacesBlock { get; init; }
-    public override IItemBehavior Build() => new SeedsBehavior(() => BlockRegistry.Get(PlacesBlock!).id);
+    public override IItemBehavior Build() => new SeedsBehavior(() => BlockRegistry.Get(ResourceLocation.Parse(PlacesBlock!).Path).id);
 }
 
 public sealed class PlaceBlockBehaviorDefinition : ItemBehaviorDefinition
 {
     public string? PlacesBlock { get; init; }
-    public override IItemBehavior Build() => new PlaceBlockBehavior(() => BlockRegistry.Get(PlacesBlock!));
+    public override IItemBehavior Build() => new PlaceBlockBehavior(() => BlockRegistry.Get(ResourceLocation.Parse(PlacesBlock!).Path));
 }
 
 public sealed class ThrowableBehaviorDefinition : ItemBehaviorDefinition

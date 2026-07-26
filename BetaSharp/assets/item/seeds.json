@@ -3,6 +3,6 @@
   "TextureId": 9,
   "Behavior": {
     "type": "seeds",
-    "PlacesBlock": "betasharp:crops"
+    "PlacesBlock": "betasharp:wheat"
   }
 }
