@@ -17,7 +17,7 @@ public class EntityCreeper : EntityMonster
     private int _lastActiveTime;
     private int _timeSinceIgnited;
 
-    public EntityCreeper(IWorldContext world) : base(world, MobDefinitions.Creeper)
+    public EntityCreeper(IWorldContext world) : base(world, EntityRegistry.Creeper.RequireDefinition())
     {
         _creeperState = DataSynchronizer.MakeProperty<byte>(16, 255); // -1
         Powered = DataSynchronizer.MakeProperty(17, false);

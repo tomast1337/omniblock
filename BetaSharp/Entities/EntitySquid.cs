@@ -24,7 +24,7 @@ public class EntitySquid : EntityWaterMob
     public float TentacleSpread;
     public float TiltAngle;
 
-    public EntitySquid(IWorldContext world) : base(world, MobDefinitions.Squid)
+    public EntitySquid(IWorldContext world) : base(world, EntityRegistry.Squid.RequireDefinition())
     {
         _animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
         Loot = new LootTableBehavior(LootTable.Single(s_dyePowder, 1, 3));

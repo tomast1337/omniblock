@@ -18,7 +18,7 @@ public class EntitySlime : EntityLiving, Monster
     public float PrevSquishAmount;
     public float SquishAmount;
 
-    public EntitySlime(IWorldContext world) : base(world, MobDefinitions.Slime)
+    public EntitySlime(IWorldContext world) : base(world, EntityRegistry.Slime.RequireDefinition())
     {
         _slimeSize = DataSynchronizer.MakeProperty<byte>(16, 1);
         int size = 1 << Random.NextInt(3);

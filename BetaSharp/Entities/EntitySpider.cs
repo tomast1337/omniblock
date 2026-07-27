@@ -10,7 +10,7 @@ public class EntitySpider : EntityMonster
     private static readonly Item s_string = Item.ByName("string");
     private const double ViewDistance = 16.0D;
 
-    public EntitySpider(IWorldContext world) : base(world, MobDefinitions.Spider)
+    public EntitySpider(IWorldContext world) : base(world, EntityRegistry.Spider.RequireDefinition())
     {
         Attack = new JumpAttackBehavior(2.0F, 6.0F, 10, new MeleeAttackBehavior());
         Targeting = new DarknessOnlyTargetBehavior(ViewDistance);

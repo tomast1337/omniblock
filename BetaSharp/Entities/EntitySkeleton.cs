@@ -12,7 +12,7 @@ public class EntitySkeleton : EntityMonster
     private static readonly Item s_arrow = Item.ByName("arrow");
     private static readonly Item s_bone = Item.ByName("bone");
 
-    public EntitySkeleton(IWorldContext world) : base(world, MobDefinitions.Skeleton)
+    public EntitySkeleton(IWorldContext world) : base(world, EntityRegistry.Skeleton.RequireDefinition())
     {
         Attack = new RangedAttackBehavior();
 

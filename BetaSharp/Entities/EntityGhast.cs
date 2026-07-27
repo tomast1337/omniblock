@@ -21,7 +21,7 @@ public class EntityGhast : EntityFlying, Monster
     public int AttackCounter;
     public int PrevAttackCounter;
 
-    public EntityGhast(IWorldContext world) : base(world, MobDefinitions.Ghast)
+    public EntityGhast(IWorldContext world) : base(world, EntityRegistry.Ghast.RequireDefinition())
     {
         _charging = DataSynchronizer.MakeProperty(16, false);
         Loot = new LootTableBehavior(LootTable.Single(s_gunpowder, 0, 2));

@@ -33,7 +33,7 @@ public abstract class EntityLiving : Entity
     ///     This mob's configuration. Properties below read from it, so a mob only overrides the ones
     ///     that are genuinely dynamic (a wolf's mood-dependent bark, its taming-dependent despawn).
     /// </summary>
-    protected EntityDefinition Definition { get; }
+    protected internal EntityDefinition Definition { get; }
 
     protected static int MaxHealth => 20;
     public float BodyYaw { get; set; }

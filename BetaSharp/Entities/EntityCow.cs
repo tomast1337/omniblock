@@ -10,7 +10,7 @@ public class EntityCow : EntityAnimal
     private static readonly Item s_bucket = Item.ByName("bucket");
     private static readonly Item s_milk = Item.ByName("milk");
     private static readonly Item s_leather = Item.ByName("leather");
-    public EntityCow(IWorldContext world) : base(world, MobDefinitions.Cow)
+    public EntityCow(IWorldContext world) : base(world, EntityRegistry.Cow.RequireDefinition())
     {
         Loot = new LootTableBehavior(LootTable.Single(s_leather, 0, 2));
     }

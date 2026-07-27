@@ -9,7 +9,7 @@ namespace BetaSharp.Entities;
 public class EntityZombie : EntityMonster
 {
     private static readonly Item s_feather = Item.ByName("feather");
-    public EntityZombie(IWorldContext world) : this(world, MobDefinitions.Zombie)
+    public EntityZombie(IWorldContext world) : this(world, EntityRegistry.Zombie.RequireDefinition())
     {
     }
 

@@ -15,20 +15,20 @@ public static class EntityRegistry
     public static readonly EntityType Snowball = Register(world => new EntitySnowball(world), "Snowball", 11);
     public static readonly EntityType Item = Register(world => new EntityItem(world), "Item", 1);
     public static readonly EntityType Painting = Register(world => new EntityPainting(world), "Painting", 9);
-    public static readonly EntityType Creeper = Register(world => new EntityCreeper(world), "Creeper", 50);
-    public static readonly EntityType Skeleton = Register(world => new EntitySkeleton(world), "Skeleton", 51);
-    public static readonly EntityType Spider = Register(world => new EntitySpider(world), "Spider", 52);
-    public static readonly EntityType Giant = Register(world => new EntityGiantZombie(world), "Giant", 53);
-    public static readonly EntityType Zombie = Register(world => new EntityZombie(world), "Zombie", 54);
-    public static readonly EntityType Slime = Register(world => new EntitySlime(world), "Slime", 55);
-    public static readonly EntityType Ghast = Register(world => new EntityGhast(world), "Ghast", 56);
-    public static readonly EntityType PigZombie = Register(world => new EntityPigZombie(world), "PigZombie", 57);
-    public static readonly EntityType Pig = Register(world => new EntityPig(world), "Pig", 90);
-    public static readonly EntityType Sheep = Register(world => new EntitySheep(world), "Sheep", 91);
-    public static readonly EntityType Cow = Register(world => new EntityCow(world), "Cow", 92);
-    public static readonly EntityType Chicken = Register(world => new EntityChicken(world), "Chicken", 93);
-    public static readonly EntityType Squid = Register(world => new EntitySquid(world), "Squid", 94);
-    public static readonly EntityType Wolf = Register(world => new EntityWolf(world), "Wolf", 95);
+    public static readonly EntityType Creeper = Register(world => new EntityCreeper(world), "Creeper", 50, MobDefinitions.Creeper);
+    public static readonly EntityType Skeleton = Register(world => new EntitySkeleton(world), "Skeleton", 51, MobDefinitions.Skeleton);
+    public static readonly EntityType Spider = Register(world => new EntitySpider(world), "Spider", 52, MobDefinitions.Spider);
+    public static readonly EntityType Giant = Register(world => new EntityGiantZombie(world), "Giant", 53, MobDefinitions.Giant);
+    public static readonly EntityType Zombie = Register(world => new EntityZombie(world), "Zombie", 54, MobDefinitions.Zombie);
+    public static readonly EntityType Slime = Register(world => new EntitySlime(world), "Slime", 55, MobDefinitions.Slime);
+    public static readonly EntityType Ghast = Register(world => new EntityGhast(world), "Ghast", 56, MobDefinitions.Ghast);
+    public static readonly EntityType PigZombie = Register(world => new EntityPigZombie(world), "PigZombie", 57, MobDefinitions.PigZombie);
+    public static readonly EntityType Pig = Register(world => new EntityPig(world), "Pig", 90, MobDefinitions.Pig);
+    public static readonly EntityType Sheep = Register(world => new EntitySheep(world), "Sheep", 91, MobDefinitions.Sheep);
+    public static readonly EntityType Cow = Register(world => new EntityCow(world), "Cow", 92, MobDefinitions.Cow);
+    public static readonly EntityType Chicken = Register(world => new EntityChicken(world), "Chicken", 93, MobDefinitions.Chicken);
+    public static readonly EntityType Squid = Register(world => new EntitySquid(world), "Squid", 94, MobDefinitions.Squid);
+    public static readonly EntityType Wolf = Register(world => new EntityWolf(world), "Wolf", 95, MobDefinitions.Wolf);
     public static readonly EntityType PrimedTnt = Register(world => new EntityTntPrimed(world), "PrimedTnt", 20);
     public static readonly EntityType FallingSand = Register(world => new EntityFallingSand(world), "FallingSand", 21);
     public static readonly EntityType Minecart = Register(world => new EntityMinecart(world), "Minecart", 40);
@@ -44,9 +44,19 @@ public static class EntityRegistry
     {
     }
 
-    private static EntityType Register<T>(Func<IWorldContext, T> factory, string id, int rawId) where T : Entity
+    private static EntityType Register<T>(Func<IWorldContext, T> factory, string id, int rawId, EntityDefinition? definition = null) where T : Entity
     {
-        EntityType type = new(w => factory(w), typeof(T), id);
+        // Spawn packets transmit this as a signed byte, so an out-of-range id would be silently
+        // truncated into a different entity on the wire. Fail at registration instead.
+        if (rawId is < sbyte.MinValue or > sbyte.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(rawId),
+                rawId,
+                $"Protocol id for entity '{id}' must fit in a signed byte ({sbyte.MinValue}..{sbyte.MaxValue}).");
+        }
+
+        EntityType type = new(w => factory(w), typeof(T), id, definition);
         s_registry.Register(rawId, ResourceLocation.Parse(id.ToLower()), type);
         return type;
     }

@@ -13,7 +13,7 @@ internal class EntityPigZombie : EntityZombie
     private int _angerLevel;
     private int _randomSoundDelay;
 
-    public EntityPigZombie(IWorldContext world) : base(world, MobDefinitions.PigZombie)
+    public EntityPigZombie(IWorldContext world) : base(world, EntityRegistry.PigZombie.RequireDefinition())
     {
         Loot = new LootTableBehavior(LootTable.Single(s_porkchopCooked, 0, 2));
     }

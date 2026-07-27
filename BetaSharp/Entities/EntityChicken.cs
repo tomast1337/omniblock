@@ -17,7 +17,7 @@ public class EntityChicken : EntityAnimal
     public float PrevDestPos;
     public float PrevFlapProgress;
 
-    public EntityChicken(IWorldContext world) : base(world, MobDefinitions.Chicken)
+    public EntityChicken(IWorldContext world) : base(world, EntityRegistry.Chicken.RequireDefinition())
     {
         _timeUntilNextEgg = Random.NextInt(6000) + 6000;
         Loot = new LootTableBehavior(LootTable.Single(s_feather, 0, 2));

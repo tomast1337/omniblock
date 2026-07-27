@@ -13,7 +13,7 @@ public class EntityPig : EntityAnimal
     private static readonly Item s_porkchopRaw = Item.ByName("porkchop_raw");
     public readonly SyncedProperty<bool> Saddled;
 
-    public EntityPig(IWorldContext world) : base(world, MobDefinitions.Pig)
+    public EntityPig(IWorldContext world) : base(world, EntityRegistry.Pig.RequireDefinition())
     {
         Saddled = DataSynchronizer.MakeProperty(16, false);
 
