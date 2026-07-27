@@ -7,22 +7,18 @@ namespace BetaSharp.Entities;
 
 public class EntityCreeper : EntityMonster
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("creeper");
-
     private readonly SyncedProperty<byte> _creeperState;
     public readonly SyncedProperty<bool> Powered;
     private int _lastActiveTime;
     private int _timeSinceIgnited;
 
-    public EntityCreeper(IWorldContext world) : base(world, s_type.RequireDefinition())
+    public EntityCreeper(IWorldContext world) : base(world, EntityRegistry.ByName("creeper").RequireDefinition())
     {
         _creeperState = DataSynchronizer.MakeProperty<byte>(16, 255); // -1
         Powered = DataSynchronizer.MakeProperty(17, false);
 
         // The disc pool is gated on the killer, so it only pays out when a skeleton lands the shot.
     }
-
-    public override EntityType Type => s_type;
 
     protected override void WriteNbt(NBTTagCompound nbt)
     {

@@ -5,8 +5,6 @@ namespace BetaSharp.Entities;
 
 public class EntityChicken : EntityAnimal
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("chicken");
-
     private static readonly Item s_egg = Item.ByName("egg");
     private float _flapSpeed = 1.0F;
     private int _timeUntilNextEgg;
@@ -16,14 +14,10 @@ public class EntityChicken : EntityAnimal
     public float PrevDestPos;
     public float PrevFlapProgress;
 
-    public EntityChicken(IWorldContext world) : base(world, s_type.RequireDefinition())
+    public EntityChicken(IWorldContext world) : base(world, EntityRegistry.ByName("chicken").RequireDefinition())
     {
         _timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
-
-    public override EntityType Type => s_type;
-
-    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
     protected override void TickMovement()
     {

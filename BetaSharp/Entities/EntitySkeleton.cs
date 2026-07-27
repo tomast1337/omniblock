@@ -6,17 +6,13 @@ namespace BetaSharp.Entities;
 
 public class EntitySkeleton : EntityMonster
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("skeleton");
-
     private static readonly ItemStack s_defaultHeldItem = new(Item.ByName("bow"), 1);
 
-    public EntitySkeleton(IWorldContext world) : base(world, s_type.RequireDefinition())
+    public EntitySkeleton(IWorldContext world) : base(world, EntityRegistry.ByName("skeleton").RequireDefinition())
     {
 
         // Two pools, so arrows and bones roll independently and both can drop.
     }
-    public override EntityType Type => s_type;
-
     public override ItemStack HeldItem => s_defaultHeldItem;
 
     protected override void TickMovement()

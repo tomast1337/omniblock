@@ -11,8 +11,6 @@ namespace BetaSharp.Entities;
 
 public class EntityWolf : EntityAnimal
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("wolf");
-
     private static readonly Item s_boneId = Item.ByName("bone");
     private static readonly int s_porkchopRawHealAmount = Item.ByName("porkchop_raw").GetBehavior<FoodBehavior>()!.HealAmount;
     private readonly SyncedProperty<byte> _wolfFlags;
@@ -26,14 +24,12 @@ public class EntityWolf : EntityAnimal
     private float _prevTimeWolfIsShaking;
     private float _timeWolfIsShaking;
 
-    public EntityWolf(IWorldContext world) : base(world, s_type.RequireDefinition())
+    public EntityWolf(IWorldContext world) : base(world, EntityRegistry.ByName("wolf").RequireDefinition())
     {
         _wolfFlags = DataSynchronizer.MakeProperty<byte>(16, 0);
         _wolfOwner = DataSynchronizer.MakeProperty<string?>(17, "");
         _wolfHealth = DataSynchronizer.MakeProperty(18, Health);
     }
-
-    public override EntityType Type => s_type;
 
     protected override bool CanDespawn => !IsWolfTamed;
 
@@ -87,8 +83,6 @@ public class EntityWolf : EntityAnimal
                 _wolfFlags.Value &= unchecked((byte)~4);
         }
     }
-
-    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
     protected override bool BypassesSteppingEffects() => false;
 

@@ -7,8 +7,6 @@ namespace BetaSharp.Entities;
 
 public class EntityGhast : EntityFlying, Monster
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("ghast");
-
     private const double AttackRange = 64.0D;
     private readonly SyncedProperty<bool> _charging;
     private int _aggroCooldown;
@@ -20,14 +18,10 @@ public class EntityGhast : EntityFlying, Monster
     public int AttackCounter;
     public int PrevAttackCounter;
 
-    public EntityGhast(IWorldContext world) : base(world, s_type.RequireDefinition())
+    public EntityGhast(IWorldContext world) : base(world, EntityRegistry.ByName("ghast").RequireDefinition())
     {
         _charging = DataSynchronizer.MakeProperty(16, false);
     }
-
-    public override EntityType Type => s_type;
-
-    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
     public override void Tick()
     {

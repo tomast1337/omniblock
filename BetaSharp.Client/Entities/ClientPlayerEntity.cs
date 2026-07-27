@@ -17,8 +17,6 @@ namespace BetaSharp.Client.Entities;
 
 public class ClientPlayerEntity : EntityPlayer
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("player");
-
     private bool _isFlying;
     private byte _lastJump;
     protected BetaSharp Game;
@@ -30,8 +28,6 @@ public class ClientPlayerEntity : EntityPlayer
         DimensionId = dimensionId;
         Name = session.username;
     }
-
-    public override EntityType Type => s_type;
 
     protected override float AirSpeed => GameMode.DisallowFlying || !_isFlying ? 0.02f : AirFlySpeedMult * 0.02f;
 

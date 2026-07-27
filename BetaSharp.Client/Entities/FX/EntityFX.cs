@@ -8,8 +8,6 @@ namespace BetaSharp.Client.Entities.FX;
 
 public class EntityFX : Entity
 {
-    public override EntityType? Type => null;
-
     protected int particleTextureIndex;
     protected float particleTextureJitterX;
     protected float particleTextureJitterY;

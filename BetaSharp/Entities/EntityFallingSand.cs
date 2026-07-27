@@ -8,8 +8,6 @@ namespace BetaSharp.Entities;
 
 public sealed class EntityFallingSand : Entity
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("fallingsand");
-
     private int _fallTime;
     public int BlockId;
 
@@ -31,8 +29,6 @@ public sealed class EntityFallingSand : Entity
         PrevY = y;
         PrevZ = z;
     }
-
-    public override EntityType Type => s_type;
 
     public override bool HasCollision => !Dead;
 

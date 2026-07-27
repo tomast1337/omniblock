@@ -28,7 +28,12 @@ public abstract class Entity : IEntity
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
     }
 
-    public abstract EntityType? Type { get; }
+    /// <summary>
+    ///     Resolved from the registry by runtime class, so an entity does not restate the type it was
+    ///     registered as. Walks base classes so client-side player subclasses resolve to the
+    ///     registered <c>player</c> type.
+    /// </summary>
+    public virtual EntityType? Type => EntityRegistry.ByRuntimeType(GetType());
     public int ID { get; set; } = s_nextEntityId++;
     public int GetId() => ID;
 

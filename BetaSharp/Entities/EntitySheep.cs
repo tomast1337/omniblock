@@ -9,8 +9,6 @@ namespace BetaSharp.Entities;
 
 public class EntitySheep : EntityAnimal
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("sheep");
-
     private static readonly Item s_shears = Item.ByName("shears");
     public static readonly float[][] FleeceColorTable =
     [
@@ -20,14 +18,12 @@ public class EntitySheep : EntityAnimal
 
     private readonly SyncedProperty<byte> _sheepData;
 
-    public EntitySheep(IWorldContext world) : base(world, s_type.RequireDefinition())
+    public EntitySheep(IWorldContext world) : base(world, EntityRegistry.ByName("sheep").RequireDefinition())
     {
         _sheepData = DataSynchronizer.MakeProperty<byte>(16, 0);
 
         // One wool stamped with the live fleece colour, and nothing once the sheep has been sheared.
     }
-
-    public override EntityType Type => s_type;
 
     public int FleeceColor
     {
@@ -51,8 +47,6 @@ public class EntitySheep : EntityAnimal
             }
         }
     }
-
-    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
     public override void PostSpawn() => FleeceColor = GetRandomFleeceColor(World.Random);
 

@@ -6,17 +6,13 @@ namespace BetaSharp.Entities;
 
 public class EntityZombie : EntityMonster
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("zombie");
-
-    public EntityZombie(IWorldContext world) : this(world, s_type.RequireDefinition())
+    public EntityZombie(IWorldContext world) : this(world, EntityRegistry.ByName("zombie").RequireDefinition())
     {
     }
 
     protected EntityZombie(IWorldContext world, EntityDefinition definition) : base(world, definition)
     {
     }
-
-    public override EntityType Type => s_type;
 
     protected override void TickMovement()
     {

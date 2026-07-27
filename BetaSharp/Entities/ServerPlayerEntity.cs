@@ -24,8 +24,6 @@ namespace BetaSharp.Entities;
 
 public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("player");
-
     private const int MaxChunkPackets = 16;
     private static readonly ILogger s_logger = Log.Instance.For<ServerPlayerEntity>();
     private readonly ItemStack?[] _equipment = [null, null, null, null, null];
@@ -77,7 +75,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         StandingEyeHeight = 0.0F;
     }
 
-    public override EntityType Type => s_type;
     public Dictionary<ChunkPos, long> ChunksTerrainSentToClient { get; } = [];
 
     public ServerPlayNetworkHandler? NetworkHandler { get; set; }

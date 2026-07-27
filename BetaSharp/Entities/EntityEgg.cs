@@ -8,8 +8,6 @@ namespace BetaSharp.Entities;
 
 public sealed class EntityEgg : Entity
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("egg");
-
     private const float TrailOffset = 0.25F;
     private const float Speed = 0.4F;
     private static readonly Item s_arrow = Item.ByName("arrow");
@@ -46,8 +44,6 @@ public sealed class EntityEgg : Entity
         SetPosition(x, y, z);
         StandingEyeHeight = 0.0F;
     }
-
-    public override EntityType Type => s_type;
 
 
     protected override bool ShouldRender(double distanceSquared)

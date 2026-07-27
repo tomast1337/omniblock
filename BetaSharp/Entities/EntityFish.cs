@@ -9,8 +9,6 @@ namespace BetaSharp.Entities;
 
 public class EntityFish : Entity
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("fishhook");
-
     private const double PullStrength = 0.1D;
     private static readonly Item s_fishingRod = Item.ByName("fishing_rod");
     private static readonly Item s_fishRaw = Item.ByName("fish_raw");
@@ -75,10 +73,6 @@ public class EntityFish : Entity
         VelocityY = -MathHelper.Sin(Pitch / 180.0F * (float)Math.PI) * speed;
         SetHeading(VelocityX, VelocityY, VelocityZ, 1.5F, 1.0F);
     }
-
-    public override EntityType Type => s_type;
-
-    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
 
     protected override bool ShouldRender(double distanceSquared)

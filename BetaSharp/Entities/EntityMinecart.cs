@@ -11,8 +11,6 @@ namespace BetaSharp.Entities;
 
 public class EntityMinecart : Entity, IInventory
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("minecart");
-
     private static readonly Item s_minecart = Item.ByName("minecart");
     private static readonly Item s_coal = Item.ByName("coal");
     const double maxSpeed = 0.4D;
@@ -84,8 +82,6 @@ public class EntityMinecart : Entity, IInventory
         this.type = type;
     }
 
-    public override EntityType Type => s_type;
-
     protected override double PassengerRidingHeight => Height * 0.0D - 0.3D;
 
     public override bool IsPushable => true;
@@ -139,8 +135,6 @@ public class EntityMinecart : Entity, IInventory
     }
 
     public bool CanPlayerUse(EntityPlayer player) => !Dead && player.GetSquaredDistance(this) <= 64.0D;
-
-    protected sealed override void SetBoundingBoxSpacing(float width, float height) => base.SetBoundingBoxSpacing(width, height);
 
     protected override bool BypassesSteppingEffects() => false;
 

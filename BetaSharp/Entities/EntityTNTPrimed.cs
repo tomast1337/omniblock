@@ -7,8 +7,6 @@ namespace BetaSharp.Entities;
 
 public sealed class EntityTntPrimed : Entity
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("primedtnt");
-
     public int Fuse;
 
     public EntityTntPrimed(IWorldContext world) : base(world)
@@ -31,8 +29,6 @@ public sealed class EntityTntPrimed : Entity
         PrevY = y;
         PrevZ = z;
     }
-
-    public override EntityType Type => s_type;
 
     public override bool HasCollision => !Dead;
 

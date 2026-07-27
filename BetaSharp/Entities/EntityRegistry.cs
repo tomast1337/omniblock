@@ -75,6 +75,7 @@ public static class EntityRegistry
 
         EntityType type = new(w => factory(w), typeof(T), id, definition);
         s_registry.Register(rawId, ResourceLocation.Parse(id.ToLower()), type);
+        s_byRuntimeType[typeof(T)] = type;
         return type;
     }
 
@@ -87,6 +88,23 @@ public static class EntityRegistry
     ///         hot <c>ByName</c> lookups.
     ///     </para>
     /// </summary>
+    private static readonly Dictionary<Type, EntityType> s_byRuntimeType = [];
+
+    /// <summary>
+    ///     Resolves the type an entity class was registered as, walking base classes so subclasses
+    ///     that are not registered in their own right (the client's player entities) still resolve.
+    ///     Backs <see cref="Entity.Type" />, replacing a per-class override on every entity.
+    /// </summary>
+    public static EntityType? ByRuntimeType(Type runtimeType)
+    {
+        for (Type? candidate = runtimeType; candidate != null; candidate = candidate.BaseType)
+        {
+            if (s_byRuntimeType.TryGetValue(candidate, out EntityType? type)) return type;
+        }
+
+        return null;
+    }
+
     public static EntityType ByName(string name) =>
         s_registry.Get(ResourceLocation.Parse(name.ToLowerInvariant()))
         ?? throw new ArgumentException($"Unknown entity type: '{name}'", nameof(name));

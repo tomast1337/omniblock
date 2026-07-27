@@ -7,8 +7,6 @@ namespace BetaSharp.Entities;
 
 public sealed class EntityFireball : Entity
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("fireball");
-
     private int _blockId;
     private BlockPos _tile = new(-1, -1, -1);
     private int _inAirTime;
@@ -49,8 +47,6 @@ public sealed class EntityFireball : Entity
         PowerY = accelerationY / directionLength * 0.1D;
         PowerZ = accelerationZ / directionLength * 0.1D;
     }
-
-    public override EntityType Type => s_type;
 
     public override float TargetingMargin => 1.0F;
 

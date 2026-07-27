@@ -5,21 +5,15 @@ namespace BetaSharp.Entities;
 
 public class EntitySpider : EntityMonster
 {
-    private static readonly EntityType s_type = EntityRegistry.ByName("spider");
-
     private const double ViewDistance = 16.0D;
 
-    public EntitySpider(IWorldContext world) : base(world, s_type.RequireDefinition())
+    public EntitySpider(IWorldContext world) : base(world, EntityRegistry.ByName("spider").RequireDefinition())
     {
     }
-
-    public override EntityType Type => s_type;
 
     protected override double PassengerRidingHeight => Height * 0.75D - 0.5D;
 
     protected override bool IsOnLadder => HorizontalCollision;
-
-    protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
     public override void PostSpawn()
     {
