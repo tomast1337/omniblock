@@ -1,7 +1,4 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
-using BetaSharp.Loot.Conditions;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -12,7 +9,6 @@ namespace BetaSharp.Entities;
 
 public class EntitySlime : EntityLiving, Monster
 {
-    private static readonly Item s_slimeball = Item.ByName("slimeball");
     private readonly SyncedProperty<byte> _slimeSize;
     private int _slimeJumpDelay;
     public float PrevSquishAmount;
@@ -27,9 +23,6 @@ public class EntitySlime : EntityLiving, Monster
         SlimeSize = size;
 
         // Only the smallest slime drops; larger ones split via SlimeSplitBehavior instead.
-        Loot = new LootTableBehavior(new LootTable(
-            new LootPool([LootEntry.Of(s_slimeball)], 0, 2, new EntityStateCondition(() => SlimeSize == 1))));
-        Lifecycle = new SlimeSplitBehavior();
     }
 
     public override EntityType Type => EntityRegistry.Slime;

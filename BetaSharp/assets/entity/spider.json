@@ -1,5 +1,6 @@
 {
   "ProtocolId": 52,
+  "SpawnCategory": "monster",
   "Health": 20,
   "MovementSpeed": 0.8,
   "Width": 1.4,
@@ -7,5 +8,39 @@
   "Texture": "/mob/spider.png",
   "LivingSound": "mob.spider",
   "HurtSound": "mob.spider",
-  "DeathSound": "mob.spiderdeath"
+  "DeathSound": "mob.spiderdeath",
+  "Behaviors": [
+    {
+      "Slots": [
+        "Attack"
+      ],
+      "Type": "jump",
+      "fallback": {
+        "Type": "melee"
+      }
+    },
+    {
+      "Slots": [
+        "Targeting"
+      ],
+      "Type": "darkness_only"
+    },
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:string"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        }
+      ]
+    }
+  ]
 }

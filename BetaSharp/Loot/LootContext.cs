@@ -15,5 +15,5 @@ namespace BetaSharp.Loot;
 /// <param name="Random">RNG for count and weight rolls.</param>
 public readonly record struct LootContext(Entity? Self, Entity? Killer, int BlockMeta, Random Random)
 {
-    public static LootContext ForMob(Entity self, Entity? killer) => new(self, killer, 0, System.Random.Shared);
+    public static LootContext ForMob(Entity self, Entity? killer) => new(self, killer, 0, Random.Shared);
 }

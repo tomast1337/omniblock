@@ -58,7 +58,7 @@ internal static class NaturalSpawner
         foreach (var creatureKind in CreatureKind.Values)
         {
             if (((!creatureKind.Peaceful && spawnHostile) || (creatureKind.Peaceful && spawnPeaceful)) &&
-                world.Entities.CountEntitiesOfType(creatureKind.EntityType) <=
+                world.Entities.CountEntitiesInCategory(creatureKind.Category) <=
                 creatureKind.MobCap * ChunksForSpawning.Count / 256)
             {
                 foreach (var chunk in ChunksForSpawning)

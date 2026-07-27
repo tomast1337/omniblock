@@ -1,4 +1,3 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -8,8 +7,6 @@ public abstract class EntityMonster : EntityCreature, Monster
 {
     protected EntityMonster(IWorldContext world, EntityDefinition? definition = null) : base(world, definition)
     {
-        Attack = new MeleeAttackBehavior();
-        Targeting = new AlwaysHuntTargetBehavior();
     }
 
     protected override void TickMovement()

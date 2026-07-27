@@ -1,10 +1,52 @@
 {
   "ProtocolId": 90,
+  "SpawnCategory": "creature",
   "Width": 0.9,
   "Height": 0.9,
   "Texture": "/mob/pig.png",
   "LivingSound": "mob.pig",
   "HurtSound": "mob.pig",
   "DeathSound": "mob.pigdeath",
-  "TalkInterval": 120
+  "TalkInterval": 120,
+  "Behaviors": [
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:porkchop_cooked"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2,
+          "Condition": {
+            "type": "on_fire"
+          }
+        },
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:porkchop_raw"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2,
+          "Condition": {
+            "type": "on_fire",
+            "expected": false
+          }
+        }
+      ]
+    },
+    {
+      "Slots": [
+        "Lifecycle"
+      ],
+      "Type": "pig_lightning"
+    }
+  ]
 }

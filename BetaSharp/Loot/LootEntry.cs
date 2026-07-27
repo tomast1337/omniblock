@@ -17,6 +17,4 @@ public readonly struct LootEntry(Func<LootContext, ItemStack> resolve, int weigh
     /// <summary>Convenience for the common "always this item, one per roll" entry.</summary>
     public static LootEntry Of(Item item, int weight = 1) => new(_ => new ItemStack(item, 1), weight);
 
-    /// <summary>Convenience for an entry naming a block-derived item id.</summary>
-    public static LootEntry OfId(Func<int> itemId, int weight = 1) => new(_ => new ItemStack(itemId(), 1, 0), weight);
 }

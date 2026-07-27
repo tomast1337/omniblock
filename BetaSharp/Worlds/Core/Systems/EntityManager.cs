@@ -735,6 +735,24 @@ public class EntityManager
         return results;
     }
 
+    /// <summary>
+    ///     Counts living entities declaring the given <see cref="EntityDefinition.SpawnCategory" />,
+    ///     the data-driven replacement for counting by class hierarchy against a mob cap.
+    /// </summary>
+    public int CountEntitiesInCategory(string category)
+    {
+        int res = 0;
+        foreach (Entity entity in Entities)
+        {
+            if (entity is EntityLiving living && living.Definition.SpawnCategory == category)
+            {
+                res++;
+            }
+        }
+
+        return res;
+    }
+
     public int CountEntitiesOfType(Type type)
     {
         int res = 0;

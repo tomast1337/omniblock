@@ -1,20 +1,14 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
 public class EntitySpider : EntityMonster
 {
-    private static readonly Item s_string = Item.ByName("string");
     private const double ViewDistance = 16.0D;
 
     public EntitySpider(IWorldContext world) : base(world, EntityRegistry.Spider.RequireDefinition())
     {
-        Attack = new JumpAttackBehavior(2.0F, 6.0F, 10, new MeleeAttackBehavior());
-        Targeting = new DarknessOnlyTargetBehavior(ViewDistance);
-        Loot = new LootTableBehavior(LootTable.Single(s_string, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Spider;

@@ -1,7 +1,37 @@
 {
   "ProtocolId": 55,
+  "SpawnCategory": "monster",
   "Texture": "/mob/slime.png",
   "HurtSound": "mob.slime",
   "DeathSound": "mob.slime",
-  "SoundVolume": 0.6
+  "SoundVolume": 0.6,
+  "Behaviors": [
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:slimeball"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2,
+          "Condition": {
+            "type": "slime_size",
+            "size": 1
+          }
+        }
+      ]
+    },
+    {
+      "Slots": [
+        "Lifecycle"
+      ],
+      "Type": "slime_split"
+    }
+  ]
 }

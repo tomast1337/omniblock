@@ -98,7 +98,7 @@ public sealed class LootTableTests
     {
         LootTable table = new(
             new LootPool([LootEntry.Of(s_arrow)], 1, 1),
-            new LootPool([LootEntry.Of(s_bone)], 1, 1, new EntityStateCondition(() => false)));
+            new LootPool([LootEntry.Of(s_bone)], 1, 1, new NeverCondition()));
 
         ItemStack stack = Assert.Single(table.Roll(Context()));
         Assert.Equal(s_arrow.Id, stack.ItemId);
@@ -136,6 +136,12 @@ public sealed class LootTableTests
 
         ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 7, System.Random.Shared)));
         Assert.Equal(7, stack.getDamage());
+    }
+
+    /// <summary>Local stand-in for a gate that never opens; production conditions are all named types.</summary>
+    private sealed class NeverCondition : ILootCondition
+    {
+        public bool Test(in LootContext context) => false;
     }
 
     private sealed class BurningPig(BetaSharp.Worlds.Core.Systems.IWorldContext world) : EntityPig(world)

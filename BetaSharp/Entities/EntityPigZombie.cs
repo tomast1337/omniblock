@@ -1,6 +1,4 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
 using BetaSharp.NBT;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -8,14 +6,12 @@ namespace BetaSharp.Entities;
 
 internal class EntityPigZombie : EntityZombie
 {
-    private static readonly Item s_porkchopCooked = Item.ByName("porkchop_cooked");
     private static readonly ItemStack s_defaultHeldItem = new(Item.ByName("sword_gold"), 1);
     private int _angerLevel;
     private int _randomSoundDelay;
 
     public EntityPigZombie(IWorldContext world) : base(world, EntityRegistry.PigZombie.RequireDefinition())
     {
-        Loot = new LootTableBehavior(LootTable.Single(s_porkchopCooked, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.PigZombie;

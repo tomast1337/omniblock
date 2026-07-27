@@ -27,6 +27,8 @@ public abstract class EntityLiving : Entity
         Texture = definition.Texture;
         IsImmuneToFire = definition.FireImmune;
         SetBoundingBoxSpacing(definition.Width, definition.Height);
+
+        EntityFactory.AttachBehaviors(this, definition);
     }
 
     /// <summary>

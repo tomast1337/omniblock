@@ -1,16 +1,9 @@
 using BetaSharp.Blocks;
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot.Conditions;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
-// BetaSharp.Blocks declares its own legacy LootTable/LootEntry, so the shared loot types are
-// aliased rather than wildcard-imported here. The ambiguity goes away once blocks migrate too.
-using LootEntry = BetaSharp.Loot.LootEntry;
-using LootPool = BetaSharp.Loot.LootPool;
-using LootTable = BetaSharp.Loot.LootTable;
 
 namespace BetaSharp.Entities;
 
@@ -30,12 +23,6 @@ public class EntitySheep : EntityAnimal
         _sheepData = DataSynchronizer.MakeProperty<byte>(16, 0);
 
         // One wool stamped with the live fleece colour, and nothing once the sheep has been sheared.
-        Loot = new LootTableBehavior(new LootTable(
-            new LootPool(
-                [new LootEntry(_ => new ItemStack(BlockRegistry.Get("wool").id, 1, FleeceColor))],
-                MinCount: 1,
-                MaxCount: 1,
-                Condition: new EntityStateCondition(() => !IsSheared))));
     }
 
     public override EntityType Type => EntityRegistry.Sheep;

@@ -1,5 +1,6 @@
 {
   "ProtocolId": 95,
+  "SpawnCategory": "creature",
   "Health": 8,
   "MovementSpeed": 1.1,
   "Width": 0.8,

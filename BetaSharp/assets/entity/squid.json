@@ -1,10 +1,30 @@
 {
   "ProtocolId": 94,
+  "SpawnCategory": "water_creature",
   "Width": 0.95,
   "Height": 0.95,
   "Texture": "/mob/squid.png",
   "HurtSound": null,
   "DeathSound": null,
   "SoundVolume": 0.4,
-  "TalkInterval": 120
+  "TalkInterval": 120,
+  "Behaviors": [
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:dye_powder"
+            }
+          ],
+          "MinCount": 1,
+          "MaxCount": 3
+        }
+      ]
+    }
+  ]
 }

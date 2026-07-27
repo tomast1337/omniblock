@@ -1,5 +1,6 @@
 {
   "ProtocolId": 56,
+  "SpawnCategory": "monster",
   "Width": 4,
   "Height": 4,
   "Texture": "/mob/ghast.png",
@@ -8,5 +9,24 @@
   "DeathSound": "mob.ghast.death",
   "SoundVolume": 10,
   "FireImmune": true,
-  "MaxSpawnedInChunk": 1
+  "MaxSpawnedInChunk": 1,
+  "Behaviors": [
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:gunpowder"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        }
+      ]
+    }
+  ]
 }

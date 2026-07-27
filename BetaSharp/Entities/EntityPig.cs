@@ -1,6 +1,4 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Worlds.Core.Systems;
@@ -9,8 +7,6 @@ namespace BetaSharp.Entities;
 
 public class EntityPig : EntityAnimal
 {
-    private static readonly Item s_porkchopCooked = Item.ByName("porkchop_cooked");
-    private static readonly Item s_porkchopRaw = Item.ByName("porkchop_raw");
     public readonly SyncedProperty<bool> Saddled;
 
     public EntityPig(IWorldContext world) : base(world, EntityRegistry.Pig.RequireDefinition())
@@ -18,9 +14,6 @@ public class EntityPig : EntityAnimal
         Saddled = DataSynchronizer.MakeProperty(16, false);
 
         // One pool; the entry itself picks raw or cooked from the pig's burning state.
-        Loot = new LootTableBehavior(new LootTable(
-            new LootPool([new LootEntry(_ => new ItemStack(IsOnFire ? s_porkchopCooked : s_porkchopRaw, 1))], 0, 2)));
-        Lifecycle = new PigLightningBehavior();
     }
 
     public override EntityType Type => EntityRegistry.Pig;

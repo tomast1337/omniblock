@@ -1,6 +1,4 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
@@ -8,7 +6,6 @@ namespace BetaSharp.Entities;
 public class EntityChicken : EntityAnimal
 {
     private static readonly Item s_egg = Item.ByName("egg");
-    private static readonly Item s_feather = Item.ByName("feather");
     private float _flapSpeed = 1.0F;
     private int _timeUntilNextEgg;
     public float DestPos;
@@ -20,7 +17,6 @@ public class EntityChicken : EntityAnimal
     public EntityChicken(IWorldContext world) : base(world, EntityRegistry.Chicken.RequireDefinition())
     {
         _timeUntilNextEgg = Random.NextInt(6000) + 6000;
-        Loot = new LootTableBehavior(LootTable.Single(s_feather, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Chicken;

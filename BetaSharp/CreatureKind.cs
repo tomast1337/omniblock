@@ -5,11 +5,20 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp;
 
-public sealed record CreatureKind(Type EntityType, int MobCap, Material SpawnMaterial, bool Peaceful)
+/// <summary>
+///     A natural-spawn budget. <paramref name="Category" /> matches
+///     <see cref="EntityDefinition.SpawnCategory" />, so which mobs belong to a kind is declared in
+///     <c>assets/entity/*.json</c> rather than inferred from the class hierarchy.
+/// </summary>
+public sealed record CreatureKind(string Category, int MobCap, Material SpawnMaterial, bool Peaceful)
 {
-    public static readonly CreatureKind Monster = new CreatureKind(typeof(Monster), 70, Material.Air, false);
-    public static readonly CreatureKind Creature = new CreatureKind(typeof(EntityAnimal), 15, Material.Air, true);
-    public static readonly CreatureKind WaterCreature = new CreatureKind(typeof(EntityWaterMob), 5, Material.Water, true);
+    public const string MonsterCategory = "monster";
+    public const string CreatureCategory = "creature";
+    public const string WaterCreatureCategory = "water_creature";
+
+    public static readonly CreatureKind Monster = new CreatureKind(MonsterCategory, 70, Material.Air, false);
+    public static readonly CreatureKind Creature = new CreatureKind(CreatureCategory, 15, Material.Air, true);
+    public static readonly CreatureKind WaterCreature = new CreatureKind(WaterCreatureCategory, 5, Material.Water, true);
 
     public static readonly CreatureKind[] Values = [Monster, Creature, WaterCreature];
 

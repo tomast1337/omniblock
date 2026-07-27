@@ -1,7 +1,52 @@
 {
   "ProtocolId": 50,
+  "SpawnCategory": "monster",
   "Health": 20,
   "Texture": "/mob/creeper.png",
   "HurtSound": "mob.creeper",
-  "DeathSound": "mob.creeperdeath"
+  "DeathSound": "mob.creeperdeath",
+  "Behaviors": [
+    {
+      "Slots": [
+        "Attack"
+      ],
+      "Type": "melee"
+    },
+    {
+      "Slots": [
+        "Targeting"
+      ],
+      "Type": "always_hunt"
+    },
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:gunpowder"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        },
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:record",
+              "RandomVariants": 2
+            }
+          ],
+          "MinCount": 1,
+          "MaxCount": 1,
+          "Condition": {
+            "type": "killed_by_skeleton"
+          }
+        }
+      ]
+    }
+  ]
 }

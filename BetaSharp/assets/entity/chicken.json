@@ -1,5 +1,6 @@
 {
   "ProtocolId": 93,
+  "SpawnCategory": "creature",
   "Health": 4,
   "Width": 0.3,
   "Height": 0.4,
@@ -7,5 +8,24 @@
   "LivingSound": "mob.chicken",
   "HurtSound": "mob.chickenhurt",
   "DeathSound": "mob.chickenhurt",
-  "TalkInterval": 120
+  "TalkInterval": 120,
+  "Behaviors": [
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:feather"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        }
+      ]
+    }
+  ]
 }

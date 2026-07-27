@@ -1,7 +1,5 @@
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -9,7 +7,6 @@ namespace BetaSharp.Entities;
 
 public class EntitySquid : EntityWaterMob
 {
-    private static readonly Item s_dyePowder = Item.ByName("dye_powder");
     private float _animationSpeed;
     public float PrevTentaclePhase;
     public float PrevTentacleSpread;
@@ -27,7 +24,6 @@ public class EntitySquid : EntityWaterMob
     public EntitySquid(IWorldContext world) : base(world, EntityRegistry.Squid.RequireDefinition())
     {
         _animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
-        Loot = new LootTableBehavior(LootTable.Single(s_dyePowder, 1, 3));
     }
 
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset)

@@ -1,10 +1,42 @@
 {
   "ProtocolId": 54,
+  "SpawnCategory": "monster",
   "Health": 20,
   "MovementSpeed": 0.5,
   "AttackStrength": 5,
   "Texture": "/mob/zombie.png",
   "LivingSound": "mob.zombie",
   "HurtSound": "mob.zombiehurt",
-  "DeathSound": "mob.zombiedeath"
+  "DeathSound": "mob.zombiedeath",
+  "Behaviors": [
+    {
+      "Slots": [
+        "Attack"
+      ],
+      "Type": "melee"
+    },
+    {
+      "Slots": [
+        "Targeting"
+      ],
+      "Type": "always_hunt"
+    },
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:feather"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        }
+      ]
+    }
+  ]
 }

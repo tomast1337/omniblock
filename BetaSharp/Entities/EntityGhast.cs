@@ -1,6 +1,4 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -9,7 +7,6 @@ namespace BetaSharp.Entities;
 
 public class EntityGhast : EntityFlying, Monster
 {
-    private static readonly Item s_gunpowder = Item.ByName("gunpowder");
     private const double AttackRange = 64.0D;
     private readonly SyncedProperty<bool> _charging;
     private int _aggroCooldown;
@@ -24,7 +21,6 @@ public class EntityGhast : EntityFlying, Monster
     public EntityGhast(IWorldContext world) : base(world, EntityRegistry.Ghast.RequireDefinition())
     {
         _charging = DataSynchronizer.MakeProperty(16, false);
-        Loot = new LootTableBehavior(LootTable.Single(s_gunpowder, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Ghast;

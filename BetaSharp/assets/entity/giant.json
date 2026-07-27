@@ -1,7 +1,22 @@
 {
   "ProtocolId": 53,
+  "SpawnCategory": "monster",
   "Health": 200,
   "MovementSpeed": 0.5,
   "AttackStrength": 50,
-  "Texture": "/mob/zombie.png"
+  "Texture": "/mob/zombie.png",
+  "Behaviors": [
+    {
+      "Slots": [
+        "Attack"
+      ],
+      "Type": "melee"
+    },
+    {
+      "Slots": [
+        "Targeting"
+      ],
+      "Type": "always_hunt"
+    }
+  ]
 }

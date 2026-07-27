@@ -1,8 +1,49 @@
 {
   "ProtocolId": 51,
+  "SpawnCategory": "monster",
   "Health": 20,
   "Texture": "/mob/skeleton.png",
   "LivingSound": "mob.skeleton",
   "HurtSound": "mob.skeletonhurt",
-  "DeathSound": "mob.skeletonhurt"
+  "DeathSound": "mob.skeletonhurt",
+  "Behaviors": [
+    {
+      "Slots": [
+        "Attack"
+      ],
+      "Type": "ranged"
+    },
+    {
+      "Slots": [
+        "Targeting"
+      ],
+      "Type": "always_hunt"
+    },
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:arrow"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        },
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:bone"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        }
+      ]
+    }
+  ]
 }

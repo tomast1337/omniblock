@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
@@ -30,6 +31,13 @@ public sealed record EntityDefinition : IDataAsset
     /// </summary>
     public int ProtocolId { get; init; } = -1;
 
+    /// <summary>
+    ///     Which natural-spawn budget this mob counts against and spawns from:
+    ///     <c>"monster"</c>, <c>"creature"</c>, <c>"water_creature"</c>, or empty for mobs that never
+    ///     spawn naturally. Replaces the class-hierarchy sniffing <see cref="CreatureKind" /> used to do.
+    /// </summary>
+    public string SpawnCategory { get; init; } = "";
+
     public int Health { get; init; } = 10;
     public float MovementSpeed { get; init; } = 0.7F;
 
@@ -52,4 +60,12 @@ public sealed record EntityDefinition : IDataAsset
     public bool FireImmune { get; init; }
     public int MaxSpawnedInChunk { get; init; } = 4;
     public bool CanDespawn { get; init; } = true;
+
+    /// <summary>
+    ///     One entry per behavior <em>instance</em>, not per slot — same shape as
+    ///     <c>BlockDefinition.Behaviors</c>. Each entry carries a <c>"Slots"</c> array
+    ///     (<c>"Attack"</c>, <c>"Targeting"</c>, <c>"Loot"</c>, <c>"Lifecycle"</c>) and its own
+    ///     <c>"Type"</c>, the <see cref="Behaviors.EntityBehaviorRegistry" /> key.
+    /// </summary>
+    public List<JsonElement> Behaviors { get; init; } = [];
 }

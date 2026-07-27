@@ -1,7 +1,4 @@
-using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Loot;
-using BetaSharp.Loot.Conditions;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Worlds.Core.Systems;
@@ -10,8 +7,6 @@ namespace BetaSharp.Entities;
 
 public class EntityCreeper : EntityMonster
 {
-    private static readonly Item s_record = Item.ByName("record");
-    private static readonly Item s_gunpowder = Item.ByName("gunpowder");
     private readonly SyncedProperty<byte> _creeperState;
     public readonly SyncedProperty<bool> Powered;
     private int _lastActiveTime;
@@ -23,13 +18,6 @@ public class EntityCreeper : EntityMonster
         Powered = DataSynchronizer.MakeProperty(17, false);
 
         // The disc pool is gated on the killer, so it only pays out when a skeleton lands the shot.
-        Loot = new LootTableBehavior(new LootTable(
-            new LootPool([LootEntry.Of(s_gunpowder)], 0, 2),
-            new LootPool(
-                [new LootEntry(context => new ItemStack(s_record.Id + context.Random.Next(2), 1, 0))],
-                MinCount: 1,
-                MaxCount: 1,
-                Condition: new KilledByCondition<EntitySkeleton>())));
     }
 
     public override EntityType Type => EntityRegistry.Creeper;

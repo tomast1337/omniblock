@@ -1,5 +1,6 @@
 {
   "ProtocolId": 57,
+  "SpawnCategory": "monster",
   "Health": 20,
   "MovementSpeed": 0.5,
   "AttackStrength": 5,
@@ -7,5 +8,36 @@
   "LivingSound": "mob.zombiepig.zpig",
   "HurtSound": "mob.zombiepig.zpighurt",
   "DeathSound": "mob.zombiepig.zpigdeath",
-  "FireImmune": true
+  "FireImmune": true,
+  "Behaviors": [
+    {
+      "Slots": [
+        "Attack"
+      ],
+      "Type": "melee"
+    },
+    {
+      "Slots": [
+        "Targeting"
+      ],
+      "Type": "always_hunt"
+    },
+    {
+      "Slots": [
+        "Loot"
+      ],
+      "Type": "loot_table",
+      "Pools": [
+        {
+          "Entries": [
+            {
+              "Item": "betasharp:porkchop_cooked"
+            }
+          ],
+          "MinCount": 0,
+          "MaxCount": 2
+        }
+      ]
+    }
+  ]
 }
