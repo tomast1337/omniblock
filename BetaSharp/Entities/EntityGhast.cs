@@ -21,26 +21,13 @@ public class EntityGhast : EntityFlying, Monster
     public int AttackCounter;
     public int PrevAttackCounter;
 
-    public EntityGhast(IWorldContext world) : base(world)
+    public EntityGhast(IWorldContext world) : base(world, MobDefinitions.Ghast)
     {
-        Texture = "/mob/ghast.png";
-        SetBoundingBoxSpacing(4.0F, 4.0F);
-        IsImmuneToFire = true;
         _charging = DataSynchronizer.MakeProperty(16, false);
         Loot = new LootTableBehavior(LootTable.Single(s_gunpowder, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Ghast;
-
-    protected override string? LivingSound => "mob.ghast.moan";
-
-    protected override string? HurtSound => "mob.ghast.scream";
-
-    protected override string? DeathSound => "mob.ghast.death";
-
-    protected override float SoundVolume => 10.0F;
-
-    public override int MaxSpawnedInChunk => 1;
 
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 

@@ -12,9 +12,8 @@ public class EntitySkeleton : EntityMonster
     private static readonly Item s_arrow = Item.ByName("arrow");
     private static readonly Item s_bone = Item.ByName("bone");
 
-    public EntitySkeleton(IWorldContext world) : base(world)
+    public EntitySkeleton(IWorldContext world) : base(world, MobDefinitions.Skeleton)
     {
-        Texture = "/mob/skeleton.png";
         Attack = new RangedAttackBehavior();
 
         // Two pools, so arrows and bones roll independently and both can drop.
@@ -23,12 +22,6 @@ public class EntitySkeleton : EntityMonster
             new LootPool([LootEntry.Of(s_bone)], 0, 2)));
     }
     public override EntityType Type => EntityRegistry.Skeleton;
-
-    protected override string? LivingSound => "mob.skeleton";
-
-    protected override string? HurtSound => "mob.skeletonhurt";
-
-    protected override string? DeathSound => "mob.skeletonhurt";
 
     public override ItemStack HeldItem => s_defaultHeldItem;
 

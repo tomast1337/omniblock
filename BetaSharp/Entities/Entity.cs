@@ -100,7 +100,7 @@ public abstract class Entity : IEntity
     public int Hearts { get; protected set; }
     public int Air { get; protected set; } = 300;
     public string? CloakUrl { get; set; }
-    protected bool IsImmuneToFire { get; init; }
+    protected internal bool IsImmuneToFire { get; set; }
     public DataSynchronizer DataSynchronizer { get; } = new();
     public float MinBrightness { get; set; }
     public bool IsPersistent { get; set; }

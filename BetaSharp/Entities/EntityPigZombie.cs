@@ -13,22 +13,12 @@ internal class EntityPigZombie : EntityZombie
     private int _angerLevel;
     private int _randomSoundDelay;
 
-    public EntityPigZombie(IWorldContext world) : base(world)
+    public EntityPigZombie(IWorldContext world) : base(world, MobDefinitions.PigZombie)
     {
-        Texture = "/mob/pigzombie.png";
-        MovementSpeed = 0.5F;
-        AttackStrength = 5;
-        IsImmuneToFire = true;
         Loot = new LootTableBehavior(LootTable.Single(s_porkchopCooked, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.PigZombie;
-
-    protected override string? LivingSound => "mob.zombiepig.zpig";
-
-    protected override string? HurtSound => "mob.zombiepig.zpighurt";
-
-    protected override string? DeathSound => "mob.zombiepig.zpigdeath";
 
     public override ItemStack HeldItem => s_defaultHeldItem;
 

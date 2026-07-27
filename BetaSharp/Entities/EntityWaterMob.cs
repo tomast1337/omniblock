@@ -2,7 +2,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityWaterMob(IWorldContext world) : EntityCreature(world), SpawnableEntity
+public abstract class EntityWaterMob(IWorldContext world, EntityDefinition? definition = null) : EntityCreature(world, definition), SpawnableEntity
 {
     protected override bool canBreatheUnderwater() => true;
 

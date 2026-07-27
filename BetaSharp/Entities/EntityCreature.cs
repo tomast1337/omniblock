@@ -4,15 +4,15 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityCreature(IWorldContext world) : EntityLiving(world)
+public abstract class EntityCreature(IWorldContext world, EntityDefinition? definition = null) : EntityLiving(world, definition)
 {
     private const float Range = 16.0F;
     private PathEntity? _pathToEntity;
     protected internal bool HasAttacked;
     public Entity? Target { get; set; }
 
-    /// <summary>Base melee damage, raised by individual mobs in their own constructors.</summary>
-    protected internal int AttackStrength { get; set; } = 2;
+    /// <summary>Base melee damage. Pure configuration — no mob mutates it after construction.</summary>
+    protected internal int AttackStrength => Definition.AttackStrength;
 
     /// <summary>Composed attack execution. <c>null</c> means the mob never damages its target.</summary>
     public IEntityAttackBehavior? Attack { get; protected internal set; }

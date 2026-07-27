@@ -10,22 +10,12 @@ public class EntityCow : EntityAnimal
     private static readonly Item s_bucket = Item.ByName("bucket");
     private static readonly Item s_milk = Item.ByName("milk");
     private static readonly Item s_leather = Item.ByName("leather");
-    public EntityCow(IWorldContext world) : base(world)
+    public EntityCow(IWorldContext world) : base(world, MobDefinitions.Cow)
     {
-        Texture = "/mob/cow.png";
-        SetBoundingBoxSpacing(0.9F, 1.3F);
         Loot = new LootTableBehavior(LootTable.Single(s_leather, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Cow;
-
-    protected override string? LivingSound => "mob.cow";
-
-    protected override string? HurtSound => "mob.cowhurt";
-
-    protected override string? DeathSound => "mob.cowhurt";
-
-    protected override float SoundVolume => 0.4F;
 
     public override bool Interact(EntityPlayer player)
     {

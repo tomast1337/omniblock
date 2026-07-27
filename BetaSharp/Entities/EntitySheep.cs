@@ -25,10 +25,8 @@ public class EntitySheep : EntityAnimal
 
     private readonly SyncedProperty<byte> _sheepData;
 
-    public EntitySheep(IWorldContext world) : base(world)
+    public EntitySheep(IWorldContext world) : base(world, MobDefinitions.Sheep)
     {
-        Texture = "/mob/sheep.png";
-        SetBoundingBoxSpacing(0.9F, 1.3F);
         _sheepData = DataSynchronizer.MakeProperty<byte>(16, 0);
 
         // One wool stamped with the live fleece colour, and nothing once the sheep has been sheared.
@@ -41,12 +39,6 @@ public class EntitySheep : EntityAnimal
     }
 
     public override EntityType Type => EntityRegistry.Sheep;
-
-    protected override string? LivingSound => "mob.sheep";
-
-    protected override string? HurtSound => "mob.sheep";
-
-    protected override string? DeathSound => "mob.sheep";
 
     public int FleeceColor
     {

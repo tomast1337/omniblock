@@ -13,10 +13,8 @@ public class EntityPig : EntityAnimal
     private static readonly Item s_porkchopRaw = Item.ByName("porkchop_raw");
     public readonly SyncedProperty<bool> Saddled;
 
-    public EntityPig(IWorldContext world) : base(world)
+    public EntityPig(IWorldContext world) : base(world, MobDefinitions.Pig)
     {
-        Texture = "/mob/pig.png";
-        SetBoundingBoxSpacing(0.9F, 0.9F);
         Saddled = DataSynchronizer.MakeProperty(16, false);
 
         // One pool; the entry itself picks raw or cooked from the pig's burning state.
@@ -26,12 +24,6 @@ public class EntityPig : EntityAnimal
     }
 
     public override EntityType Type => EntityRegistry.Pig;
-
-    protected override string? LivingSound => "mob.pig";
-
-    protected override string? HurtSound => "mob.pig";
-
-    protected override string? DeathSound => "mob.pigdeath";
 
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 

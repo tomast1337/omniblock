@@ -9,11 +9,12 @@ namespace BetaSharp.Entities;
 public class EntityZombie : EntityMonster
 {
     private static readonly Item s_feather = Item.ByName("feather");
-    public EntityZombie(IWorldContext world) : base(world)
+    public EntityZombie(IWorldContext world) : this(world, MobDefinitions.Zombie)
     {
-        Texture = "/mob/zombie.png";
-        MovementSpeed = 0.5F;
-        AttackStrength = 5;
+    }
+
+    protected EntityZombie(IWorldContext world, EntityDefinition definition) : base(world, definition)
+    {
         Loot = new LootTableBehavior(LootTable.Single(s_feather, 0, 2));
     }
 
@@ -33,9 +34,4 @@ public class EntityZombie : EntityMonster
         base.TickMovement();
     }
 
-    protected override string? LivingSound => "mob.zombie";
-
-    protected override string? HurtSound => "mob.zombiehurt";
-
-    protected override string? DeathSound => "mob.zombiedeath";
 }

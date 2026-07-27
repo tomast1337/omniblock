@@ -24,10 +24,8 @@ public class EntitySquid : EntityWaterMob
     public float TentacleSpread;
     public float TiltAngle;
 
-    public EntitySquid(IWorldContext world) : base(world)
+    public EntitySquid(IWorldContext world) : base(world, MobDefinitions.Squid)
     {
-        Texture = "/mob/squid.png";
-        SetBoundingBoxSpacing(0.95F, 0.95F);
         _animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
         Loot = new LootTableBehavior(LootTable.Single(s_dyePowder, 1, 3));
     }
@@ -40,14 +38,6 @@ public class EntitySquid : EntityWaterMob
     public override EntityType Type => EntityRegistry.Squid;
 
     protected override bool IsInWater => World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, -0.6F, 0.0D), Material.Water, this);
-
-    protected override string? LivingSound => null;
-
-    protected override string? HurtSound => null;
-
-    protected override string? DeathSound => null;
-
-    protected override float SoundVolume => 0.4F;
 
     public override bool Interact(EntityPlayer player) => false;
 

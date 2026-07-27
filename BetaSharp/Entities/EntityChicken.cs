@@ -17,11 +17,8 @@ public class EntityChicken : EntityAnimal
     public float PrevDestPos;
     public float PrevFlapProgress;
 
-    public EntityChicken(IWorldContext world) : base(world)
+    public EntityChicken(IWorldContext world) : base(world, MobDefinitions.Chicken)
     {
-        Texture = "/mob/chicken.png";
-        SetBoundingBoxSpacing(0.3F, 0.4F);
-        Health = 4;
         _timeUntilNextEgg = Random.NextInt(6000) + 6000;
         Loot = new LootTableBehavior(LootTable.Single(s_feather, 0, 2));
     }
@@ -77,9 +74,4 @@ public class EntityChicken : EntityAnimal
     {
     }
 
-    protected override string? LivingSound => "mob.chicken";
-
-    protected override string? HurtSound => "mob.chickenhurt";
-
-    protected override string? DeathSound => "mob.chickenhurt";
 }

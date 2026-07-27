@@ -18,9 +18,8 @@ public class EntitySlime : EntityLiving, Monster
     public float PrevSquishAmount;
     public float SquishAmount;
 
-    public EntitySlime(IWorldContext world) : base(world)
+    public EntitySlime(IWorldContext world) : base(world, MobDefinitions.Slime)
     {
-        Texture = "/mob/slime.png";
         _slimeSize = DataSynchronizer.MakeProperty<byte>(16, 1);
         int size = 1 << Random.NextInt(3);
         StandingEyeHeight = 0.0F;
@@ -34,12 +33,6 @@ public class EntitySlime : EntityLiving, Monster
     }
 
     public override EntityType Type => EntityRegistry.Slime;
-
-    protected override string? HurtSound => "mob.slime";
-
-    protected override string? DeathSound => "mob.slime";
-
-    protected override float SoundVolume => 0.6F;
 
     public int SlimeSize
     {

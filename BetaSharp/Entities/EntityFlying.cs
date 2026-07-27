@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityFlying(IWorldContext world) : EntityLiving(world)
+public abstract class EntityFlying(IWorldContext world, EntityDefinition? definition = null) : EntityLiving(world, definition)
 {
     protected override void OnLanding(float fallDistance)
     {

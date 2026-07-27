@@ -10,11 +10,8 @@ public class EntitySpider : EntityMonster
     private static readonly Item s_string = Item.ByName("string");
     private const double ViewDistance = 16.0D;
 
-    public EntitySpider(IWorldContext world) : base(world)
+    public EntitySpider(IWorldContext world) : base(world, MobDefinitions.Spider)
     {
-        Texture = "/mob/spider.png";
-        SetBoundingBoxSpacing(1.4F, 0.9F);
-        MovementSpeed = 0.8F;
         Attack = new JumpAttackBehavior(2.0F, 6.0F, 10, new MeleeAttackBehavior());
         Targeting = new DarknessOnlyTargetBehavior(ViewDistance);
         Loot = new LootTableBehavior(LootTable.Single(s_string, 0, 2));
@@ -23,12 +20,6 @@ public class EntitySpider : EntityMonster
     public override EntityType Type => EntityRegistry.Spider;
 
     protected override double PassengerRidingHeight => Height * 0.75D - 0.5D;
-
-    protected override string? LivingSound => "mob.spider";
-
-    protected override string? HurtSound => "mob.spider";
-
-    protected override string? DeathSound => "mob.spiderdeath";
 
     protected override bool IsOnLadder => HorizontalCollision;
 

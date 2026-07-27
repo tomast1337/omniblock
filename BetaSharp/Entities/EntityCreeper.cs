@@ -17,9 +17,8 @@ public class EntityCreeper : EntityMonster
     private int _lastActiveTime;
     private int _timeSinceIgnited;
 
-    public EntityCreeper(IWorldContext world) : base(world)
+    public EntityCreeper(IWorldContext world) : base(world, MobDefinitions.Creeper)
     {
-        Texture = "/mob/creeper.png";
         _creeperState = DataSynchronizer.MakeProperty<byte>(16, 255); // -1
         Powered = DataSynchronizer.MakeProperty(17, false);
 
@@ -96,10 +95,6 @@ public class EntityCreeper : EntityMonster
             _timeSinceIgnited = 0;
         }
     }
-
-    protected override string? HurtSound => "mob.creeper";
-
-    protected override string? DeathSound => "mob.creeperdeath";
 
     protected override void attackEntity(Entity entity, float distance)
     {

@@ -24,12 +24,8 @@ public class EntityWolf : EntityAnimal
     private float _prevTimeWolfIsShaking;
     private float _timeWolfIsShaking;
 
-    public EntityWolf(IWorldContext world) : base(world)
+    public EntityWolf(IWorldContext world) : base(world, MobDefinitions.Wolf)
     {
-        Texture = "/mob/wolf.png";
-        SetBoundingBoxSpacing(0.8F, 0.8F);
-        MovementSpeed = 1.1F;
-        Health = 8;
         _wolfFlags = DataSynchronizer.MakeProperty<byte>(16, 0);
         _wolfOwner = DataSynchronizer.MakeProperty<string?>(17, "");
         _wolfHealth = DataSynchronizer.MakeProperty(18, Health);
@@ -41,17 +37,9 @@ public class EntityWolf : EntityAnimal
 
     protected override string LivingSound => IsWolfAngry ? "mob.wolf.growl" : Random.NextInt(3) == 0 ? IsWolfTamed && _wolfHealth.Value < 10 ? "mob.wolf.whine" : "mob.wolf.panting" : "mob.wolf.bark";
 
-    protected override string? HurtSound => "mob.wolf.hurt";
-
-    protected override string? DeathSound => "mob.wolf.death";
-
-    protected override float SoundVolume => 0.4F;
-
     public override float EyeHeight => Height * 0.8F;
 
     protected override bool IsMovementCeased => IsWolfSitting || _isShaking;
-
-    public override int MaxSpawnedInChunk => 8;
 
     public string? WolfOwner
     {

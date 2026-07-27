@@ -12,13 +12,28 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityLiving : Entity
 {
-    protected EntityLiving(IWorldContext world) : base(world)
+    protected EntityLiving(IWorldContext world, EntityDefinition? definition = null) : base(world)
     {
+        Definition = definition ?? EntityDefinition.Default;
         PreventEntitySpawning = true;
         SetPosition(X, Y, Z);
         Yaw = System.Random.Shared.NextSingle() * (float)Math.PI * 2.0f;
         StepHeight = 0.5F;
+
+        if (definition is null) return;
+
+        Health = definition.Health;
+        MovementSpeed = definition.MovementSpeed;
+        Texture = definition.Texture;
+        IsImmuneToFire = definition.FireImmune;
+        SetBoundingBoxSpacing(definition.Width, definition.Height);
     }
+
+    /// <summary>
+    ///     This mob's configuration. Properties below read from it, so a mob only overrides the ones
+    ///     that are genuinely dynamic (a wolf's mood-dependent bark, its taming-dependent despawn).
+    /// </summary>
+    protected EntityDefinition Definition { get; }
 
     protected static int MaxHealth => 20;
     public float BodyYaw { get; set; }
@@ -81,13 +96,13 @@ public abstract class EntityLiving : Entity
 
     public override float EyeHeight => Height * 0.85F;
 
-    protected virtual float SoundVolume => 1.0F;
+    protected virtual float SoundVolume => Definition.SoundVolume;
 
-    protected virtual string? LivingSound => null;
+    protected virtual string? LivingSound => Definition.LivingSound;
 
-    protected virtual string? HurtSound => "random.hurt";
+    protected virtual string? HurtSound => Definition.HurtSound;
 
-    protected virtual string? DeathSound => "random.hurt";
+    protected virtual string? DeathSound => Definition.DeathSound;
 
     protected virtual bool IsOnLadder
     {
@@ -108,13 +123,13 @@ public abstract class EntityLiving : Entity
 
     public virtual ItemStack? HeldItem => null;
 
-    protected virtual int TalkInterval => 80;
+    protected virtual int TalkInterval => Definition.TalkInterval;
 
     protected virtual float AirSpeed => 0.02f;
 
-    protected virtual bool CanDespawn => true;
+    protected virtual bool CanDespawn => Definition.CanDespawn;
 
-    public virtual int MaxSpawnedInChunk => 4;
+    public virtual int MaxSpawnedInChunk => Definition.MaxSpawnedInChunk;
 
     public virtual void PostSpawn()
     {

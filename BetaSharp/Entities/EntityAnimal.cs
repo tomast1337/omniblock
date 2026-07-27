@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityAnimal(IWorldContext world) : EntityCreature(world), SpawnableEntity
+public abstract class EntityAnimal(IWorldContext world, EntityDefinition? definition = null) : EntityCreature(world, definition), SpawnableEntity
 {
     protected override float GetBlockPathWeight(int x, int y, int z) => World.Reader.GetBlockId(x, y - 1, z) == BlockRegistry.Get("grass_block").id ? 10.0F : World.Lighting.GetLuminance(x, y, z) - 0.5F;
 
@@ -15,6 +15,4 @@ public abstract class EntityAnimal(IWorldContext world) : EntityCreature(world),
         int z = MathHelper.Floor(Z);
         return World.Reader.GetBlockId(x, y - 1, z) == BlockRegistry.Get("grass_block").id && World.Reader.GetBrightness(x, y, z) > 8 && base.CanSpawn();
     }
-
-    protected override int TalkInterval => 120;
 }

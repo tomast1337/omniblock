@@ -6,9 +6,8 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityMonster : EntityCreature, Monster
 {
-    protected EntityMonster(IWorldContext world) : base(world)
+    protected EntityMonster(IWorldContext world, EntityDefinition? definition = null) : base(world, definition)
     {
-        Health = 20;
         Attack = new MeleeAttackBehavior();
         Targeting = new AlwaysHuntTargetBehavior();
     }
