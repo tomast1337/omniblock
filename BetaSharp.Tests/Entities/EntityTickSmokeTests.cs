@@ -1,4 +1,3 @@
-using System.Reflection;
 using BetaSharp.Entities;
 
 namespace BetaSharp.Tests.Entities;
@@ -9,19 +8,12 @@ public sealed class EntityTickSmokeTests
 {
     public static IEnumerable<object[]> RegistryEntityTypesExceptPlayer()
     {
-        foreach (FieldInfo fi in typeof(EntityRegistry).GetFields(BindingFlags.Public | BindingFlags.Static))
+        // Enumerates the registry itself now that EntityRegistry exposes no per-type static fields.
+        foreach (ResourceLocation key in BetaSharp.Registries.DefaultRegistries.EntityTypes.Keys)
         {
-            if (fi.FieldType != typeof(EntityType))
-            {
-                continue;
-            }
+            if (key.Path == "player") continue;
 
-            if (fi.Name == nameof(EntityRegistry.Player))
-            {
-                continue;
-            }
-
-            yield return [fi.Name, (EntityType)fi.GetValue(null)!];
+            yield return [key.Path, BetaSharp.Registries.DefaultRegistries.EntityTypes.Get(key)!];
         }
     }
 

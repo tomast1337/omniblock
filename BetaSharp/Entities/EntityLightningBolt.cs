@@ -7,6 +7,8 @@ namespace BetaSharp.Entities;
 
 public class EntityLightningBolt : EntityWeatherEffect
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("lightningbolt");
+
     private int _flashCount;
 
     private int _flashTimer;
@@ -43,7 +45,7 @@ public class EntityLightningBolt : EntityWeatherEffect
         }
     }
 
-    public override EntityType Type => EntityRegistry.LightningBolt;
+    public override EntityType Type => s_type;
 
     public override void Tick()
     {

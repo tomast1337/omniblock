@@ -87,37 +87,37 @@ public static class EntityTestHarness
     /// <summary>Creates an entity suitable for NBT save/load (registry items with invalid default state get a safe stack).</summary>
     public static Entity CreateForNbtRoundTrip(EntityType type, FakeWorldContext world)
     {
-        if (type == EntityRegistry.Item)
+        if (type == EntityRegistry.ByName("item"))
         {
             return new EntityItem(world, 8.5, 65.0, 8.5, new ItemStack(Item.ByName("stick"), 1));
         }
 
-        if (type == EntityRegistry.PrimedTnt)
+        if (type == EntityRegistry.ByName("primedtnt"))
         {
             return new EntityTntPrimed(world, 8.5, 66.0, 8.5);
         }
 
-        if (type == EntityRegistry.Painting)
+        if (type == EntityRegistry.ByName("painting"))
         {
             return new EntityPainting(world, 8, 65, 8, 2, "Kebab");
         }
 
-        if (type == EntityRegistry.FallingSand)
+        if (type == EntityRegistry.ByName("fallingsand"))
         {
             return new EntityFallingSand(world, 8.5, 70.0, 8.5, BlockRegistry.Get("sand").id);
         }
 
-        if (type == EntityRegistry.Minecart)
+        if (type == EntityRegistry.ByName("minecart"))
         {
             return new EntityMinecart(world, 8.5, 65.0, 8.5, 0);
         }
 
-        if (type == EntityRegistry.Boat)
+        if (type == EntityRegistry.ByName("boat"))
         {
             return new EntityBoat(world, 8.5, 65.0, 8.5);
         }
 
-        if (type == EntityRegistry.FishHook)
+        if (type == EntityRegistry.ByName("fishhook"))
         {
             return new EntityFish(world, 8.5, 65.0, 8.5);
         }

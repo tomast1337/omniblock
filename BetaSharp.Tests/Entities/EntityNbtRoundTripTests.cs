@@ -1,4 +1,3 @@
-using System.Reflection;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
 
@@ -12,19 +11,12 @@ public sealed class EntityNbtRoundTripTests
 {
     public static IEnumerable<object[]> RegistryEntityTypesExceptPlayer()
     {
-        foreach (FieldInfo fi in typeof(EntityRegistry).GetFields(BindingFlags.Public | BindingFlags.Static))
+        // Enumerates the registry itself now that EntityRegistry exposes no per-type static fields.
+        foreach (ResourceLocation key in BetaSharp.Registries.DefaultRegistries.EntityTypes.Keys)
         {
-            if (fi.FieldType != typeof(EntityType))
-            {
-                continue;
-            }
+            if (key.Path == "player") continue;
 
-            if (fi.Name == nameof(EntityRegistry.Player))
-            {
-                continue;
-            }
-
-            yield return [(EntityType)fi.GetValue(null)!];
+            yield return [BetaSharp.Registries.DefaultRegistries.EntityTypes.Get(key)!];
         }
     }
 

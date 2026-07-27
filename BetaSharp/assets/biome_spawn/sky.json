@@ -1,0 +1,10 @@
+{
+  "Monsters": [],
+  "Creatures": [
+    {
+      "Entity": "betasharp:chicken",
+      "Weight": 10
+    }
+  ],
+  "WaterCreatures": []
+}

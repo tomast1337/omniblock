@@ -7,16 +7,18 @@ namespace BetaSharp.Entities;
 
 public class EntityPig : EntityAnimal
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("pig");
+
     public readonly SyncedProperty<bool> Saddled;
 
-    public EntityPig(IWorldContext world) : base(world, EntityRegistry.Pig.RequireDefinition())
+    public EntityPig(IWorldContext world) : base(world, s_type.RequireDefinition())
     {
         Saddled = DataSynchronizer.MakeProperty(16, false);
 
         // One pool; the entry itself picks raw or cooked from the pig's burning state.
     }
 
-    public override EntityType Type => EntityRegistry.Pig;
+    public override EntityType Type => s_type;
 
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 

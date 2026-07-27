@@ -4,6 +4,7 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Recipes;
 using BetaSharp.Registries.Data;
+using BetaSharp.Worlds.Generation.Biomes;
 
 namespace BetaSharp.Registries;
 
@@ -17,6 +18,9 @@ internal static class RegistryDefinitions
 
     public static readonly RegistryDefinition<ItemDefinition> Items =
         new(RegistryKeys.Items, "item", loaderFactory: (path, locations) => new ItemDefinitionJsonLoader(path, locations));
+
+    public static readonly RegistryDefinition<BiomeSpawnDefinition> BiomeSpawns =
+        new(RegistryKeys.BiomeSpawns, "biome_spawn");
 
     // Boot-time-only for the same reason as Blocks below: EntityType instances are registered once
     // and captured by every spawned mob, so a /reload cannot retroactively re-point them.

@@ -16,18 +16,18 @@ public sealed class EntityRegistryDefinitionTests
     /// <summary>Shared with <see cref="EntityJsonDumperTests"/>, which dumps exactly these.</summary>
     internal static readonly EntityType[] MobTypes =
     [
-        EntityRegistry.Creeper, EntityRegistry.Skeleton, EntityRegistry.Spider, EntityRegistry.Giant,
-        EntityRegistry.Zombie, EntityRegistry.Slime, EntityRegistry.Ghast, EntityRegistry.PigZombie,
-        EntityRegistry.Pig, EntityRegistry.Sheep, EntityRegistry.Cow, EntityRegistry.Chicken,
-        EntityRegistry.Squid, EntityRegistry.Wolf
+        EntityRegistry.ByName("creeper"), EntityRegistry.ByName("skeleton"), EntityRegistry.ByName("spider"), EntityRegistry.ByName("giant"),
+        EntityRegistry.ByName("zombie"), EntityRegistry.ByName("slime"), EntityRegistry.ByName("ghast"), EntityRegistry.ByName("pigzombie"),
+        EntityRegistry.ByName("pig"), EntityRegistry.ByName("sheep"), EntityRegistry.ByName("cow"), EntityRegistry.ByName("chicken"),
+        EntityRegistry.ByName("squid"), EntityRegistry.ByName("wolf")
     ];
 
     private static readonly EntityType[] s_nonMobTypes =
     [
-        EntityRegistry.Arrow, EntityRegistry.Snowball, EntityRegistry.Item, EntityRegistry.Painting,
-        EntityRegistry.PrimedTnt, EntityRegistry.FallingSand, EntityRegistry.Minecart, EntityRegistry.Boat,
-        EntityRegistry.Egg, EntityRegistry.Fireball, EntityRegistry.FishHook, EntityRegistry.LightningBolt,
-        EntityRegistry.Player
+        EntityRegistry.ByName("arrow"), EntityRegistry.ByName("snowball"), EntityRegistry.ByName("item"), EntityRegistry.ByName("painting"),
+        EntityRegistry.ByName("primedtnt"), EntityRegistry.ByName("fallingsand"), EntityRegistry.ByName("minecart"), EntityRegistry.ByName("boat"),
+        EntityRegistry.ByName("egg"), EntityRegistry.ByName("fireball"), EntityRegistry.ByName("fishhook"), EntityRegistry.ByName("lightningbolt"),
+        EntityRegistry.ByName("player")
     ];
 
     [Fact]
@@ -41,7 +41,7 @@ public sealed class EntityRegistryDefinitionTests
     {
         Assert.All(s_nonMobTypes, type => Assert.Null(type.Definition));
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => EntityRegistry.Arrow.RequireDefinition());
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => EntityRegistry.ByName("arrow").RequireDefinition());
         Assert.Contains("Arrow", error.Message);
     }
 
@@ -52,10 +52,10 @@ public sealed class EntityRegistryDefinitionTests
 
         // Reference equality, not value equality: this is what proves the mob reads through the
         // registry, so replacing the registered definition in Phase 4 actually reaches it.
-        Assert.Same(EntityRegistry.Zombie.Definition, new EntityZombie(world).Definition);
-        Assert.Same(EntityRegistry.Wolf.Definition, new EntityWolf(world).Definition);
-        Assert.Same(EntityRegistry.Ghast.Definition, new EntityGhast(world).Definition);
-        Assert.Same(EntityRegistry.PigZombie.Definition, new EntityPigZombie(world).Definition);
+        Assert.Same(EntityRegistry.ByName("zombie").Definition, new EntityZombie(world).Definition);
+        Assert.Same(EntityRegistry.ByName("wolf").Definition, new EntityWolf(world).Definition);
+        Assert.Same(EntityRegistry.ByName("ghast").Definition, new EntityGhast(world).Definition);
+        Assert.Same(EntityRegistry.ByName("pigzombie").Definition, new EntityPigZombie(world).Definition);
     }
 
     /// <summary>
@@ -78,6 +78,55 @@ public sealed class EntityRegistryDefinitionTests
         }
     }
 
+    /// <summary>
+    /// Equivalence proof for moving spawn category out of the class hierarchy and into JSON:
+    /// every mob's declared <see cref="EntityDefinition.SpawnCategory"/> must match the
+    /// <c>Monster</c> / <see cref="EntityAnimal"/> / <see cref="EntityWaterMob"/> test that
+    /// <c>CreatureKind</c> used to perform. Keeping the old predicate here is what makes this a
+    /// comparison rather than a restatement.
+    /// </summary>
+    [Fact]
+    public void Spawn_category_matches_the_type_hierarchy_it_replaced()
+    {
+        FakeWorldContext world = new();
+
+        foreach (EntityType type in MobTypes)
+        {
+            Entity entity = type.Create(world);
+            string expected = entity switch
+            {
+                Monster => CreatureKind.MonsterCategory,
+                EntityAnimal => CreatureKind.CreatureCategory,
+                EntityWaterMob => CreatureKind.WaterCreatureCategory,
+                _ => ""
+            };
+
+            Assert.Equal(expected, type.RequireDefinition().SpawnCategory);
+        }
+    }
+
+    [Fact]
+    public void Category_counting_matches_counting_by_type()
+    {
+        FakeWorldContext world = new();
+        foreach (EntityType type in MobTypes)
+        {
+            Entity entity = type.Create(world);
+            entity.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
+            Assert.True(world.Entities.SpawnEntity(entity));
+        }
+
+        Assert.Equal(
+            world.Entities.CountEntitiesOfType(typeof(Monster)),
+            world.Entities.CountEntitiesInCategory(CreatureKind.MonsterCategory));
+        Assert.Equal(
+            world.Entities.CountEntitiesOfType(typeof(EntityAnimal)),
+            world.Entities.CountEntitiesInCategory(CreatureKind.CreatureCategory));
+        Assert.Equal(
+            world.Entities.CountEntitiesOfType(typeof(EntityWaterMob)),
+            world.Entities.CountEntitiesInCategory(CreatureKind.WaterCreatureCategory));
+    }
+
     [Fact]
     public void Every_registered_protocol_id_fits_in_a_signed_byte()
     {
@@ -97,20 +146,20 @@ public sealed class EntityRegistryDefinitionTests
         IRegistry<EntityType> registry = DefaultRegistries.EntityTypes;
         Dictionary<EntityType, int> expected = new()
         {
-            [EntityRegistry.Creeper] = 50,
-            [EntityRegistry.Skeleton] = 51,
-            [EntityRegistry.Spider] = 52,
-            [EntityRegistry.Giant] = 53,
-            [EntityRegistry.Zombie] = 54,
-            [EntityRegistry.Slime] = 55,
-            [EntityRegistry.Ghast] = 56,
-            [EntityRegistry.PigZombie] = 57,
-            [EntityRegistry.Pig] = 90,
-            [EntityRegistry.Sheep] = 91,
-            [EntityRegistry.Cow] = 92,
-            [EntityRegistry.Chicken] = 93,
-            [EntityRegistry.Squid] = 94,
-            [EntityRegistry.Wolf] = 95
+            [EntityRegistry.ByName("creeper")] = 50,
+            [EntityRegistry.ByName("skeleton")] = 51,
+            [EntityRegistry.ByName("spider")] = 52,
+            [EntityRegistry.ByName("giant")] = 53,
+            [EntityRegistry.ByName("zombie")] = 54,
+            [EntityRegistry.ByName("slime")] = 55,
+            [EntityRegistry.ByName("ghast")] = 56,
+            [EntityRegistry.ByName("pigzombie")] = 57,
+            [EntityRegistry.ByName("pig")] = 90,
+            [EntityRegistry.ByName("sheep")] = 91,
+            [EntityRegistry.ByName("cow")] = 92,
+            [EntityRegistry.ByName("chicken")] = 93,
+            [EntityRegistry.ByName("squid")] = 94,
+            [EntityRegistry.ByName("wolf")] = 95
         };
 
         foreach ((EntityType type, int rawId) in expected)

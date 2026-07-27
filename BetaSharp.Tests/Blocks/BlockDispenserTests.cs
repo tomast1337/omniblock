@@ -16,7 +16,7 @@ public sealed class BlockDispenserTests
         {
         }
 
-        public override EntityType Type => EntityRegistry.Player;
+        public override EntityType Type => EntityRegistry.ByName("player");
 
         public override void Spawn()
         {

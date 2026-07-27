@@ -8,6 +8,8 @@ namespace BetaSharp.Entities;
 
 public sealed class EntitySnowball : Entity
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("snowball");
+
     private const float Gravity = 0.03F;
     private static readonly Item s_arrow = Item.ByName("arrow");
     private readonly EntityLiving? _thrower;
@@ -45,7 +47,7 @@ public sealed class EntitySnowball : Entity
         StandingEyeHeight = 0.0F;
     }
 
-    public override EntityType Type => EntityRegistry.Snowball;
+    public override EntityType Type => s_type;
 
 
     protected override bool ShouldRender(double distanceSquared)

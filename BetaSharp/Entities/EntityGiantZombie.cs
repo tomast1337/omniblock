@@ -4,7 +4,9 @@ namespace BetaSharp.Entities;
 
 public class EntityGiantZombie : EntityMonster
 {
-    public EntityGiantZombie(IWorldContext world) : base(world, EntityRegistry.Giant.RequireDefinition())
+    private static readonly EntityType s_type = EntityRegistry.ByName("giant");
+
+    public EntityGiantZombie(IWorldContext world) : base(world, s_type.RequireDefinition())
     {
         // Scaled rather than authored: the resulting 3.6000001 x 10.799999 box is an artifact of
         // this multiplication, so keeping it in code preserves the exact float values.
@@ -12,7 +14,7 @@ public class EntityGiantZombie : EntityMonster
         SetBoundingBoxSpacing(Width * 6.0F, Height * 6.0F);
     }
 
-    public override EntityType Type => EntityRegistry.Giant;
+    public override EntityType Type => s_type;
 
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 

@@ -1,0 +1,52 @@
+{
+  "Monsters": [
+    {
+      "Entity": "betasharp:spider",
+      "Weight": 10
+    },
+    {
+      "Entity": "betasharp:zombie",
+      "Weight": 10
+    },
+    {
+      "Entity": "betasharp:skeleton",
+      "Weight": 10
+    },
+    {
+      "Entity": "betasharp:creeper",
+      "Weight": 10
+    },
+    {
+      "Entity": "betasharp:slime",
+      "Weight": 10
+    }
+  ],
+  "Creatures": [
+    {
+      "Entity": "betasharp:sheep",
+      "Weight": 12
+    },
+    {
+      "Entity": "betasharp:pig",
+      "Weight": 10
+    },
+    {
+      "Entity": "betasharp:chicken",
+      "Weight": 10
+    },
+    {
+      "Entity": "betasharp:cow",
+      "Weight": 8
+    },
+    {
+      "Entity": "betasharp:wolf",
+      "Weight": 2
+    }
+  ],
+  "WaterCreatures": [
+    {
+      "Entity": "betasharp:squid",
+      "Weight": 10
+    }
+  ]
+}

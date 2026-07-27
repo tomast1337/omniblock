@@ -7,6 +7,10 @@ public sealed class WeightedRandomSelector<T>
 
     public bool Empty => _items.Count == 0;
 
+    /// <summary>Items with their individual (non-cumulative) weights, in insertion order.</summary>
+    internal IEnumerable<(T Item, int Weight)> Entries =>
+        _items.Select((item, i) => (item, _cumulativeWeight[i + 1] - _cumulativeWeight[i]));
+
     public void Add(T item, int weight)
     {
         if (weight <= 0) throw new ArgumentOutOfRangeException(nameof(weight), "Weight must be positive.");

@@ -7,6 +7,8 @@ namespace BetaSharp.Entities;
 
 public class EntitySquid : EntityWaterMob
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("squid");
+
     private float _animationSpeed;
     public float PrevTentaclePhase;
     public float PrevTentacleSpread;
@@ -21,7 +23,7 @@ public class EntitySquid : EntityWaterMob
     public float TentacleSpread;
     public float TiltAngle;
 
-    public EntitySquid(IWorldContext world) : base(world, EntityRegistry.Squid.RequireDefinition())
+    public EntitySquid(IWorldContext world) : base(world, s_type.RequireDefinition())
     {
         _animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
     }
@@ -31,7 +33,7 @@ public class EntitySquid : EntityWaterMob
         base.SetBoundingBoxSpacing(widthOffset, heightOffset);
     }
 
-    public override EntityType Type => EntityRegistry.Squid;
+    public override EntityType Type => s_type;
 
     protected override bool IsInWater => World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, -0.6F, 0.0D), Material.Water, this);
 

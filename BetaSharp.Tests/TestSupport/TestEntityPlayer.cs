@@ -10,7 +10,7 @@ public sealed class TestEntityPlayer : EntityPlayer
     {
     }
 
-    public override EntityType Type => EntityRegistry.Player;
+    public override EntityType Type => EntityRegistry.ByName("player");
 
     public override void Spawn()
     {

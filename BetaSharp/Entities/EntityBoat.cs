@@ -9,6 +9,8 @@ namespace BetaSharp.Entities;
 
 public sealed class EntityBoat : Entity
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("boat");
+
     private const double MaxHorizontalSpeed = 0.4D;
     private const double RiderInputAcceleration = 0.18D;
     private const double RiderTurnVelocityBlend = 0.25D;
@@ -50,7 +52,7 @@ public sealed class EntityBoat : Entity
         PrevZ = z;
     }
 
-    public override EntityType Type => EntityRegistry.Boat;
+    public override EntityType Type => s_type;
 
     protected override double PassengerRidingHeight => Height * 0.0D - 0.3D;
 

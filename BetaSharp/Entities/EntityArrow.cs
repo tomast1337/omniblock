@@ -9,6 +9,8 @@ namespace BetaSharp.Entities;
 
 public class EntityArrow : Entity
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("arrow");
+
     private const float BubbleOffset = 0.25F;
     private static readonly Item s_arrow = Item.ByName("arrow");
     private int _inData;
@@ -47,7 +49,7 @@ public class EntityArrow : Entity
         SetArrowHeading(VelocityX, VelocityY, VelocityZ, 1.5F, 1.0F);
     }
 
-    public override EntityType Type => EntityRegistry.Arrow;
+    public override EntityType Type => s_type;
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
     public void SetArrowHeading(double x, double y, double z, float speed, float spread)

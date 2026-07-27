@@ -79,6 +79,16 @@ public static class DefaultRegistries
 
         EntityTypes.Bootstrap(typeof(EntityRegistry));
         Biomes.Bootstrap(typeof(Biome));
+
+        // After both registries above: every spawn entry names an entity type that must already exist.
+        var biomeSpawnLoader = new DataAssetLoader<BiomeSpawnDefinition>(RegistryDefinitions.BiomeSpawns.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+        biomeSpawnLoader.LoadFromPaths(null, null, null);
+        if (biomeSpawnLoader.HasErrors)
+        {
+            throw new AssetLoadException(biomeSpawnLoader.FirstErrorMessage ?? "Failed to load biome spawn definitions.");
+        }
+
+        Biome.LoadSpawnLists(biomeSpawnLoader);
         BlockEntityTypes.Bootstrap(typeof(BlockEntity));
 
         MetricRegistry.Bootstrap(typeof(ServerMetrics));

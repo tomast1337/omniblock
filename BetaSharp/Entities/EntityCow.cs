@@ -5,13 +5,15 @@ namespace BetaSharp.Entities;
 
 public class EntityCow : EntityAnimal
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("cow");
+
     private static readonly Item s_bucket = Item.ByName("bucket");
     private static readonly Item s_milk = Item.ByName("milk");
-    public EntityCow(IWorldContext world) : base(world, EntityRegistry.Cow.RequireDefinition())
+    public EntityCow(IWorldContext world) : base(world, s_type.RequireDefinition())
     {
     }
 
-    public override EntityType Type => EntityRegistry.Cow;
+    public override EntityType Type => s_type;
 
     public override bool Interact(EntityPlayer player)
     {

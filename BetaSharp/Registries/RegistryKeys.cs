@@ -17,6 +17,7 @@ public static class RegistryKeys
 {
     public static readonly RegistryKey<EntityType> EntityTypes = new("betasharp:entity_type");
     public static readonly RegistryKey<Biome> Biomes = new("betasharp:biome");
+    public static readonly RegistryKey<BiomeSpawnDefinition> BiomeSpawns = new("betasharp:biome_spawn");
     public static readonly RegistryKey<BlockEntityType> BlockEntityTypes = new("betasharp:block_entity_type");
     public static readonly RegistryKey<BlockDefinition> Blocks = new("betasharp:block");
     public static readonly RegistryKey<IGameRule> GameRules = new("betasharp:game_rule");

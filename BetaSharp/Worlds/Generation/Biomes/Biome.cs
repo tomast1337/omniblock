@@ -40,18 +40,42 @@ public class Biome
 
     protected Biome()
     {
-        MonsterList.Add(new SpawnListEntry(w => new EntitySpider(w)), 10);
-        MonsterList.Add(new SpawnListEntry(w => new EntityZombie(w)), 10);
-        MonsterList.Add(new SpawnListEntry(w => new EntitySkeleton(w)), 10);
-        MonsterList.Add(new SpawnListEntry(w => new EntityCreeper(w)), 10);
-        MonsterList.Add(new SpawnListEntry(w => new EntitySlime(w)), 10);
+    }
 
-        CreatureList.Add(new SpawnListEntry(w => new EntitySheep(w)), 12);
-        CreatureList.Add(new SpawnListEntry(w => new EntityPig(w)), 10);
-        CreatureList.Add(new SpawnListEntry(w => new EntityChicken(w)), 10);
-        CreatureList.Add(new SpawnListEntry(w => new EntityCow(w)), 8);
+    /// <summary>
+    ///     Fills every registered biome's spawn lists from <c>assets/biome_spawn/*.json</c>. Runs
+    ///     after both the biome and entity registries are populated, since each entry names an
+    ///     entity type that must already exist.
+    /// </summary>
+    internal static void LoadSpawnLists(IEnumerable<BiomeSpawnDefinition> definitions)
+    {
+        Dictionary<string, BiomeSpawnDefinition> byName = definitions.ToDictionary(d => d.Name);
 
-        WaterCreatureList.Add(new SpawnListEntry(w => new EntitySquid(w)), 10);
+        foreach (ResourceLocation key in s_registry.Keys)
+        {
+            Biome biome = s_registry.Get(key)!;
+            biome.MonsterList.Clear();
+            biome.CreatureList.Clear();
+            biome.WaterCreatureList.Clear();
+
+            if (!byName.TryGetValue(key.Path, out BiomeSpawnDefinition? definition)) continue;
+
+            Fill(biome.MonsterList, definition.Monsters);
+            Fill(biome.CreatureList, definition.Creatures);
+            Fill(biome.WaterCreatureList, definition.WaterCreatures);
+        }
+    }
+
+    private static void Fill(WeightedRandomSelector<SpawnListEntry> list, BiomeSpawnEntry[] entries)
+    {
+        foreach (BiomeSpawnEntry entry in entries)
+        {
+            string path = ResourceLocation.Parse(entry.Entity).Path;
+            EntityType type = DefaultRegistries.EntityTypes.Get(ResourceLocation.Parse(path))
+                ?? throw new ArgumentException($"Biome spawn list references unknown entity '{entry.Entity}'.");
+
+            list.Add(new SpawnListEntry(w => (EntityLiving)type.Create(w)), entry.Weight);
+        }
     }
 
     private static Biome Register(int id, string name, Biome biome)

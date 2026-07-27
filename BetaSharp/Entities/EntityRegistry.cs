@@ -11,39 +11,44 @@ public static class EntityRegistry
     private static readonly ILogger s_logger = Log.Instance.For(nameof(EntityRegistry));
     private static readonly IRegistry<EntityType> s_registry = DefaultRegistries.EntityTypes;
 
-    public static readonly EntityType Arrow = Register(world => new EntityArrow(world), "Arrow", 10);
-    public static readonly EntityType Snowball = Register(world => new EntitySnowball(world), "Snowball", 11);
-    public static readonly EntityType Item = Register(world => new EntityItem(world), "Item", 1);
-    public static readonly EntityType Painting = Register(world => new EntityPainting(world), "Painting", 9);
-    // Mobs take their protocol id from assets/entity/*.json rather than a literal here — the id is
-    // part of the definition, so declaring it twice would let the two drift.
-    public static readonly EntityType Creeper = RegisterMob(world => new EntityCreeper(world), "Creeper");
-    public static readonly EntityType Skeleton = RegisterMob(world => new EntitySkeleton(world), "Skeleton");
-    public static readonly EntityType Spider = RegisterMob(world => new EntitySpider(world), "Spider");
-    public static readonly EntityType Giant = RegisterMob(world => new EntityGiantZombie(world), "Giant");
-    public static readonly EntityType Zombie = RegisterMob(world => new EntityZombie(world), "Zombie");
-    public static readonly EntityType Slime = RegisterMob(world => new EntitySlime(world), "Slime");
-    public static readonly EntityType Ghast = RegisterMob(world => new EntityGhast(world), "Ghast");
-    public static readonly EntityType PigZombie = RegisterMob(world => new EntityPigZombie(world), "PigZombie");
-    public static readonly EntityType Pig = RegisterMob(world => new EntityPig(world), "Pig");
-    public static readonly EntityType Sheep = RegisterMob(world => new EntitySheep(world), "Sheep");
-    public static readonly EntityType Cow = RegisterMob(world => new EntityCow(world), "Cow");
-    public static readonly EntityType Chicken = RegisterMob(world => new EntityChicken(world), "Chicken");
-    public static readonly EntityType Squid = RegisterMob(world => new EntitySquid(world), "Squid");
-    public static readonly EntityType Wolf = RegisterMob(world => new EntityWolf(world), "Wolf");
-    public static readonly EntityType PrimedTnt = Register(world => new EntityTntPrimed(world), "PrimedTnt", 20);
-    public static readonly EntityType FallingSand = Register(world => new EntityFallingSand(world), "FallingSand", 21);
-    public static readonly EntityType Minecart = Register(world => new EntityMinecart(world), "Minecart", 40);
-    public static readonly EntityType Boat = Register(world => new EntityBoat(world), "Boat", 41);
-
-    public static readonly EntityType Egg = Register(world => new EntityEgg(world), "Egg", 62);
-    public static readonly EntityType Fireball = Register(world => new EntityFireball(world), "Fireball", 63);
-    public static readonly EntityType FishHook = Register(world => new EntityFish(world), "FishHook", 64);
-    public static readonly EntityType LightningBolt = Register(world => new EntityLightningBolt(world), "LightningBolt", 65);
-    public static readonly EntityType Player = Register<ServerPlayerEntity>(_ => throw new NotSupportedException("Players must be created via ServerPlayerEntity constructor"), "Player", 100);
-
+    /// <summary>
+    ///     Registration runs from the static constructor, triggered by
+    ///     <c>DefaultRegistries.EntityTypes.Bootstrap(typeof(EntityRegistry))</c>. There are no
+    ///     per-type static accessors: callers resolve types through <see cref="ByName" />.
+    ///     <para>
+    ///         Mobs take their protocol id from <c>assets/entity/*.json</c> rather than a literal
+    ///         here — the id is part of the definition, so declaring it twice would let them drift.
+    ///     </para>
+    /// </summary>
     static EntityRegistry()
     {
+        Register(world => new EntityArrow(world), "Arrow", 10);
+        Register(world => new EntitySnowball(world), "Snowball", 11);
+        Register(world => new EntityItem(world), "Item", 1);
+        Register(world => new EntityPainting(world), "Painting", 9);
+        RegisterMob(world => new EntityCreeper(world), "Creeper");
+        RegisterMob(world => new EntitySkeleton(world), "Skeleton");
+        RegisterMob(world => new EntitySpider(world), "Spider");
+        RegisterMob(world => new EntityGiantZombie(world), "Giant");
+        RegisterMob(world => new EntityZombie(world), "Zombie");
+        RegisterMob(world => new EntitySlime(world), "Slime");
+        RegisterMob(world => new EntityGhast(world), "Ghast");
+        RegisterMob(world => new EntityPigZombie(world), "PigZombie");
+        RegisterMob(world => new EntityPig(world), "Pig");
+        RegisterMob(world => new EntitySheep(world), "Sheep");
+        RegisterMob(world => new EntityCow(world), "Cow");
+        RegisterMob(world => new EntityChicken(world), "Chicken");
+        RegisterMob(world => new EntitySquid(world), "Squid");
+        RegisterMob(world => new EntityWolf(world), "Wolf");
+        Register(world => new EntityTntPrimed(world), "PrimedTnt", 20);
+        Register(world => new EntityFallingSand(world), "FallingSand", 21);
+        Register(world => new EntityMinecart(world), "Minecart", 40);
+        Register(world => new EntityBoat(world), "Boat", 41);
+        Register(world => new EntityEgg(world), "Egg", 62);
+        Register(world => new EntityFireball(world), "Fireball", 63);
+        Register(world => new EntityFish(world), "FishHook", 64);
+        Register(world => new EntityLightningBolt(world), "LightningBolt", 65);
+        Register<ServerPlayerEntity>(_ => throw new NotSupportedException("Players must be created via ServerPlayerEntity constructor"), "Player", 100);
     }
 
     /// <summary>
@@ -72,6 +77,19 @@ public static class EntityRegistry
         s_registry.Register(rawId, ResourceLocation.Parse(id.ToLower()), type);
         return type;
     }
+
+    /// <summary>
+    ///     Resolves a registered type by its registry path (e.g. <c>"zombie"</c>). Replaces the
+    ///     per-type static accessors this class used to expose, mirroring <c>Item.ByName</c>.
+    ///     <para>
+    ///         Callers on a hot path should cache the result in a <c>static readonly</c> field
+    ///         rather than resolving per call — the same treatment the item migration gave its own
+    ///         hot <c>ByName</c> lookups.
+    ///     </para>
+    /// </summary>
+    public static EntityType ByName(string name) =>
+        s_registry.Get(ResourceLocation.Parse(name.ToLowerInvariant()))
+        ?? throw new ArgumentException($"Unknown entity type: '{name}'", nameof(name));
 
     public static Entity? Create(string id, IWorldContext world) => TryCreate(id, world, out Entity? entity) ? entity : null;
 
@@ -132,7 +150,7 @@ public static class EntityRegistry
     public static Entity? GetEntityFromNbt(NBTTagCompound nbt, IWorldContext world)
     {
         string id = nbt.GetString("id");
-        if (TryCreate(id, world, out Entity? entity, Player))
+        if (TryCreate(id, world, out Entity? entity, ByName("player")))
         {
             entity!.Read(nbt);
         }

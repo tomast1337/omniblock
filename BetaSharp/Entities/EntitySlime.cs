@@ -9,12 +9,14 @@ namespace BetaSharp.Entities;
 
 public class EntitySlime : EntityLiving, Monster
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("slime");
+
     private readonly SyncedProperty<byte> _slimeSize;
     private int _slimeJumpDelay;
     public float PrevSquishAmount;
     public float SquishAmount;
 
-    public EntitySlime(IWorldContext world) : base(world, EntityRegistry.Slime.RequireDefinition())
+    public EntitySlime(IWorldContext world) : base(world, s_type.RequireDefinition())
     {
         _slimeSize = DataSynchronizer.MakeProperty<byte>(16, 1);
         int size = 1 << Random.NextInt(3);
@@ -25,7 +27,7 @@ public class EntitySlime : EntityLiving, Monster
         // Only the smallest slime drops; larger ones split via SlimeSplitBehavior instead.
     }
 
-    public override EntityType Type => EntityRegistry.Slime;
+    public override EntityType Type => s_type;
 
     public int SlimeSize
     {

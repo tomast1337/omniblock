@@ -1,0 +1,14 @@
+{
+  "Monsters": [
+    {
+      "Entity": "betasharp:ghast",
+      "Weight": 10
+    },
+    {
+      "Entity": "betasharp:pigzombie",
+      "Weight": 10
+    }
+  ],
+  "Creatures": [],
+  "WaterCreatures": []
+}

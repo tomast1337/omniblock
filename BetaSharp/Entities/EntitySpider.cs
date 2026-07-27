@@ -5,13 +5,15 @@ namespace BetaSharp.Entities;
 
 public class EntitySpider : EntityMonster
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("spider");
+
     private const double ViewDistance = 16.0D;
 
-    public EntitySpider(IWorldContext world) : base(world, EntityRegistry.Spider.RequireDefinition())
+    public EntitySpider(IWorldContext world) : base(world, s_type.RequireDefinition())
     {
     }
 
-    public override EntityType Type => EntityRegistry.Spider;
+    public override EntityType Type => s_type;
 
     protected override double PassengerRidingHeight => Height * 0.75D - 0.5D;
 

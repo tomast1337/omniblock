@@ -6,15 +6,17 @@ namespace BetaSharp.Entities;
 
 internal class EntityPigZombie : EntityZombie
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("pigzombie");
+
     private static readonly ItemStack s_defaultHeldItem = new(Item.ByName("sword_gold"), 1);
     private int _angerLevel;
     private int _randomSoundDelay;
 
-    public EntityPigZombie(IWorldContext world) : base(world, EntityRegistry.PigZombie.RequireDefinition())
+    public EntityPigZombie(IWorldContext world) : base(world, s_type.RequireDefinition())
     {
     }
 
-    public override EntityType Type => EntityRegistry.PigZombie;
+    public override EntityType Type => s_type;
 
     public override ItemStack HeldItem => s_defaultHeldItem;
 

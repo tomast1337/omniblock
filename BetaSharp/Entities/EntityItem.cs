@@ -9,6 +9,8 @@ namespace BetaSharp.Entities;
 
 public class EntityItem : Entity
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("item");
+
     private static readonly int s_leatherId = Item.ByName("leather").Id;
     public readonly float BobPhase = System.Random.Shared.NextSingle() * (float)Math.PI * 2.0f;
     private int _health = 5;
@@ -35,7 +37,7 @@ public class EntityItem : Entity
         StandingEyeHeight = Height / 2.0F;
     }
 
-    public override EntityType Type => EntityRegistry.Item;
+    public override EntityType Type => s_type;
 
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 

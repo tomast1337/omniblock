@@ -7,7 +7,9 @@ namespace BetaSharp.Client.Network;
 
 public class OtherPlayerEntity : EntityPlayer
 {
-    public override EntityType Type => EntityRegistry.Player;
+    private static readonly EntityType s_type = EntityRegistry.ByName("player");
+
+    public override EntityType Type => s_type;
     private int lerpSteps;
     private double lerpX;
     private double lerpY;

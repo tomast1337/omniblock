@@ -8,6 +8,8 @@ namespace BetaSharp.Entities;
 
 public sealed class EntityPainting : Entity
 {
+    private static readonly EntityType s_type = EntityRegistry.ByName("painting");
+
     private static readonly Item s_painting = Item.ByName("painting");
     private const float WallOffset = 9.0F / 16.0F;
     private int _tickCounter;
@@ -62,7 +64,7 @@ public sealed class EntityPainting : Entity
         SetFacing(direction);
     }
 
-    public override EntityType Type => EntityRegistry.Painting;
+    public override EntityType Type => s_type;
 
     public override bool HasCollision => true;
 
