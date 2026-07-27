@@ -47,8 +47,6 @@ public class EntityWolf : EntityAnimal
 
     protected override float SoundVolume => 0.4F;
 
-    protected override int DropItem => -1;
-
     public override float EyeHeight => Height * 0.8F;
 
     protected override bool IsMovementCeased => IsWolfSitting || _isShaking;

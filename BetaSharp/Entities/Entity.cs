@@ -94,7 +94,7 @@ public abstract class Entity : IEntity
     public JavaRandom Random { get; } = new();
     public int Age { get; private set; }
     protected int FireImmunityTicks { get; init; } = 1;
-    protected int FireTicks { get; set; }
+    protected internal int FireTicks { get; set; }
     public static int MaxAir => 300;
     protected bool InWater { get; private set; }
     public int Hearts { get; protected set; }
@@ -1028,11 +1028,11 @@ public abstract class Entity : IEntity
 
     public virtual float GetShadowRadius() => Height / 2.0F;
 
-    protected void DropItem(int id, int count) => DropItem(id, count, 0.0F);
+    protected internal void DropItem(int id, int count) => DropItem(id, count, 0.0F);
 
-    protected EntityItem DropItem(int id, int count, float y) => DropItem(new ItemStack(id, count, 0), y);
+    protected internal EntityItem DropItem(int id, int count, float y) => DropItem(new ItemStack(id, count, 0), y);
 
-    protected EntityItem DropItem(ItemStack stack, float y)
+    protected internal EntityItem DropItem(ItemStack stack, float y)
     {
         EntityItem item = new(World, X, Y + y, Z, stack)
         {

@@ -1,4 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
@@ -21,6 +23,7 @@ public class EntityChicken : EntityAnimal
         SetBoundingBoxSpacing(0.3F, 0.4F);
         Health = 4;
         _timeUntilNextEgg = Random.NextInt(6000) + 6000;
+        Loot = new LootTableBehavior(LootTable.Single(s_feather, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Chicken;
@@ -79,6 +82,4 @@ public class EntityChicken : EntityAnimal
     protected override string? HurtSound => "mob.chickenhurt";
 
     protected override string? DeathSound => "mob.chickenhurt";
-
-    protected override int DropItem => s_feather.Id;
 }

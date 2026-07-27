@@ -1,4 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Worlds.Core.Systems;
@@ -16,6 +18,11 @@ public class EntityPig : EntityAnimal
         Texture = "/mob/pig.png";
         SetBoundingBoxSpacing(0.9F, 0.9F);
         Saddled = DataSynchronizer.MakeProperty(16, false);
+
+        // One pool; the entry itself picks raw or cooked from the pig's burning state.
+        Loot = new LootTableBehavior(new LootTable(
+            new LootPool([new LootEntry(_ => new ItemStack(IsOnFire ? s_porkchopCooked : s_porkchopRaw, 1))], 0, 2)));
+        Lifecycle = new PigLightningBehavior();
     }
 
     public override EntityType Type => EntityRegistry.Pig;
@@ -46,18 +53,6 @@ public class EntityPig : EntityAnimal
 
         player.SetVehicle(this);
         return true;
-    }
-
-    protected override int DropItem => FireTicks > 0 ? s_porkchopCooked.Id : s_porkchopRaw.Id;
-
-    public override void OnStruckByLightning(EntityLightningBolt bolt)
-    {
-        if (World.IsRemote) return;
-
-        EntityPigZombie pigZombie = new(World);
-        pigZombie.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, Pitch);
-        World.SpawnEntity(pigZombie);
-        MarkDead();
     }
 
     protected override void OnLanding(float fallDistance)

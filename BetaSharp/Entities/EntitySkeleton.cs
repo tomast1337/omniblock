@@ -1,4 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -10,7 +12,16 @@ public class EntitySkeleton : EntityMonster
     private static readonly Item s_arrow = Item.ByName("arrow");
     private static readonly Item s_bone = Item.ByName("bone");
 
-    public EntitySkeleton(IWorldContext world) : base(world) => Texture = "/mob/skeleton.png";
+    public EntitySkeleton(IWorldContext world) : base(world)
+    {
+        Texture = "/mob/skeleton.png";
+        Attack = new RangedAttackBehavior();
+
+        // Two pools, so arrows and bones roll independently and both can drop.
+        Loot = new LootTableBehavior(new LootTable(
+            new LootPool([LootEntry.Of(s_arrow)], 0, 2),
+            new LootPool([LootEntry.Of(s_bone)], 0, 2)));
+    }
     public override EntityType Type => EntityRegistry.Skeleton;
 
     protected override string? LivingSound => "mob.skeleton";
@@ -35,44 +46,4 @@ public class EntitySkeleton : EntityMonster
         base.TickMovement();
     }
 
-    protected override void attackEntity(Entity entity, float distance)
-    {
-        if (!(distance < 10.0F)) return;
-
-        double dx = entity.X - X;
-        double dy = entity.Z - Z;
-        if (AttackTime == 0)
-        {
-            EntityArrow arrow = new(World, this);
-            double targetHeightOffset = entity.Y + entity.EyeHeight - 0.2F - arrow.Y;
-            float distanceFactor = MathHelper.Sqrt(dx * dx + dy * dy) * 0.2F;
-            World.Broadcaster.PlaySoundAtEntity(this, "random.bow", 1.0F, 1.0F / (Random.NextFloat() * 0.4F + 0.8F));
-            World.SpawnEntity(arrow);
-            arrow.SetArrowHeading(dx, targetHeightOffset + distanceFactor, dy, 0.6F, 12.0F);
-            AttackTime = 30;
-        }
-
-        Yaw = (float)(Math.Atan2(dy, dx) * 180.0D / (float)Math.PI) - 90.0F;
-        HasAttacked = true;
-    }
-
-    protected override int DropItem => s_arrow.Id;
-
-    protected override void DropFewItems()
-    {
-        int amount = Random.NextInt(3);
-
-        int i;
-        for (i = 0; i < amount; ++i)
-        {
-            DropItem(s_arrow.Id, 1);
-        }
-
-        amount = Random.NextInt(3);
-
-        for (i = 0; i < amount; ++i)
-        {
-            DropItem(s_bone.Id, 1);
-        }
-    }
 }

@@ -8,8 +8,20 @@ public abstract class EntityCreature(IWorldContext world) : EntityLiving(world)
 {
     private const float Range = 16.0F;
     private PathEntity? _pathToEntity;
-    protected bool HasAttacked;
+    protected internal bool HasAttacked;
     public Entity? Target { get; set; }
+
+    /// <summary>Base melee damage, raised by individual mobs in their own constructors.</summary>
+    protected internal int AttackStrength { get; set; } = 2;
+
+    /// <summary>Composed attack execution. <c>null</c> means the mob never damages its target.</summary>
+    public IEntityAttackBehavior? Attack { get; protected internal set; }
+
+    /// <summary>
+    ///     Composed target acquisition. <c>null</c> means the mob never hunts. Named <c>Targeting</c>
+    ///     rather than <c>Target</c> because <see cref="Target" /> already holds the current target.
+    /// </summary>
+    public IEntityTargetBehavior? Targeting { get; protected internal set; }
 
     protected virtual bool IsMovementCeased => false;
 
@@ -172,9 +184,7 @@ public abstract class EntityCreature(IWorldContext world) : EntityLiving(world)
         }
     }
 
-    protected virtual void attackEntity(Entity entity, float distance)
-    {
-    }
+    protected virtual void attackEntity(Entity entity, float distance) => Attack?.AttackEntity(this, entity, distance);
 
     protected virtual void attackBlockedEntity(Entity entity, float distance)
     {
@@ -182,7 +192,7 @@ public abstract class EntityCreature(IWorldContext world) : EntityLiving(world)
 
     protected virtual float GetBlockPathWeight(int x, int y, int z) => 0.0F;
 
-    protected virtual Entity? FindPlayerToAttack() => null;
+    protected virtual Entity? FindPlayerToAttack() => Targeting?.FindPlayerToAttack(this);
 
     public override bool CanSpawn()
     {

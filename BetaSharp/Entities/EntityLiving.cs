@@ -43,7 +43,13 @@ public abstract class EntityLiving : Entity
     public int MaxHurtTime { get; private set; }
     public float AttackedAtYaw { get; private set; }
     public int DeathTime { get; protected set; }
-    protected int AttackTime { get; set; }
+    protected internal int AttackTime { get; set; }
+
+    /// <summary>Composed death-drop behavior. <c>null</c> means the mob drops nothing.</summary>
+    public IEntityLootBehavior? Loot { get; protected internal set; }
+
+    /// <summary>Composed single-shot event reactions (death split, lightning conversion).</summary>
+    public IEntityLifecycle? Lifecycle { get; protected internal set; }
     public float CameraPitch { get; private set; }
     public float Tilt { get; protected set; }
     public float LastWalkAnimationSpeed { get; protected set; }
@@ -444,29 +450,26 @@ public abstract class EntityLiving : Entity
 
         if (!World.IsRemote)
         {
-            DropFewItems();
+            DropLoot(entity);
         }
 
         World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.Death);
     }
 
-    protected virtual void DropFewItems()
+    protected virtual void DropLoot(Entity? killer) => Loot?.DropLoot(this, killer);
+
+    public override void MarkDead()
     {
-        int dropItemId = DropItem;
-        if (dropItemId <= 0)
-        {
-            return;
-        }
-
-        int dropCount = Random.NextInt(3);
-
-        for (int dropIndex = 0; dropIndex < dropCount; ++dropIndex)
-        {
-            DropItem(dropItemId, 1);
-        }
+        Lifecycle?.OnMarkDead(this);
+        base.MarkDead();
     }
 
-    protected virtual int DropItem => 0;
+    public override void OnStruckByLightning(EntityLightningBolt bolt)
+    {
+        if (Lifecycle?.OnStruckByLightning(this, bolt) == true) return;
+
+        base.OnStruckByLightning(bolt);
+    }
 
     protected override void OnLanding(float fallDistance)
     {

@@ -1,4 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
@@ -12,6 +14,7 @@ public class EntityCow : EntityAnimal
     {
         Texture = "/mob/cow.png";
         SetBoundingBoxSpacing(0.9F, 1.3F);
+        Loot = new LootTableBehavior(LootTable.Single(s_leather, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Cow;
@@ -23,8 +26,6 @@ public class EntityCow : EntityAnimal
     protected override string? DeathSound => "mob.cowhurt";
 
     protected override float SoundVolume => 0.4F;
-
-    protected override int DropItem => s_leather.Id;
 
     public override bool Interact(EntityPlayer player)
     {

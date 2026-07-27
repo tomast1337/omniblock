@@ -78,7 +78,11 @@ public sealed class FakeWorldContext : IWorldContext
     public void SetDifficulty(int difficulty) => throw new NotSupportedException();
     public long GetTime() => SimulatedWorldTime;
     public int GetSpawnBlockId(int x, int z) => 0;
-    public bool SpawnEntity(Entity entity) => true;
+    /// <summary>
+    /// Delegates to the real <see cref="EntityManager"/> so entities spawned from inside game logic
+    /// (mob loot drops, slime splitting, pig-to-pigman conversion) are observable by tests.
+    /// </summary>
+    public bool SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
     public bool SpawnItemDrop(double x, double y, double z, ItemStack itemStack) => true;
     public bool CanInteract(EntityPlayer player, int x, int y, int z) => true;
     public Explosion CreateExplosion(Entity? source, double x, double y, double z, float power) =>

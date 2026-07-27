@@ -1,4 +1,7 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
+using BetaSharp.Loot.Conditions;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Worlds.Core.Systems;
@@ -19,6 +22,15 @@ public class EntityCreeper : EntityMonster
         Texture = "/mob/creeper.png";
         _creeperState = DataSynchronizer.MakeProperty<byte>(16, 255); // -1
         Powered = DataSynchronizer.MakeProperty(17, false);
+
+        // The disc pool is gated on the killer, so it only pays out when a skeleton lands the shot.
+        Loot = new LootTableBehavior(new LootTable(
+            new LootPool([LootEntry.Of(s_gunpowder)], 0, 2),
+            new LootPool(
+                [new LootEntry(context => new ItemStack(s_record.Id + context.Random.Next(2), 1, 0))],
+                MinCount: 1,
+                MaxCount: 1,
+                Condition: new KilledByCondition<EntitySkeleton>())));
     }
 
     public override EntityType Type => EntityRegistry.Creeper;
@@ -89,15 +101,6 @@ public class EntityCreeper : EntityMonster
 
     protected override string? DeathSound => "mob.creeperdeath";
 
-    protected override void OnKilledBy(Entity? entity)
-    {
-        base.OnKilledBy(entity);
-        if (entity is EntitySkeleton)
-        {
-            DropItem(s_record.Id + Random.NextInt(2), 1);
-        }
-    }
-
     protected override void attackEntity(Entity entity, float distance)
     {
         if (World.IsRemote) return;
@@ -132,8 +135,6 @@ public class EntityCreeper : EntityMonster
     }
 
     public float GetCreeperFlashTime(float partialTick) => (_lastActiveTime + (_timeSinceIgnited - _lastActiveTime) * partialTick) / 28.0F;
-
-    protected override int DropItem => s_gunpowder.Id;
 
     public override void OnStruckByLightning(EntityLightningBolt bolt)
     {

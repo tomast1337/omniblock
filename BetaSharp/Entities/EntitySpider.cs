@@ -1,5 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
-using BetaSharp.Util.Maths;
+using BetaSharp.Loot;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
@@ -14,6 +15,9 @@ public class EntitySpider : EntityMonster
         Texture = "/mob/spider.png";
         SetBoundingBoxSpacing(1.4F, 0.9F);
         MovementSpeed = 0.8F;
+        Attack = new JumpAttackBehavior(2.0F, 6.0F, 10, new MeleeAttackBehavior());
+        Targeting = new DarknessOnlyTargetBehavior(ViewDistance);
+        Loot = new LootTableBehavior(LootTable.Single(s_string, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Spider;
@@ -25,8 +29,6 @@ public class EntitySpider : EntityMonster
     protected override string? HurtSound => "mob.spider";
 
     protected override string? DeathSound => "mob.spiderdeath";
-
-    protected override int DropItem => s_string.Id;
 
     protected override bool IsOnLadder => HorizontalCollision;
 
@@ -44,36 +46,19 @@ public class EntitySpider : EntityMonster
 
     protected override bool BypassesSteppingEffects() => false;
 
-    protected override Entity? FindPlayerToAttack()
-    {
-        float brightness = GetBrightnessAtEyes(1.0F);
-        return !(brightness < 0.5F) ? null : World.Entities.GetClosestPlayerTarget(X, Y, Z, ViewDistance);
-    }
-
+    /// <summary>
+    ///     Spiders lose interest when caught in daylight; otherwise the composed jump/melee behavior
+    ///     runs unchanged.
+    /// </summary>
     protected override void attackEntity(Entity entity, float distance)
     {
         float brightness = GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F && Random.NextInt(100) == 0)
         {
             Target = null;
+            return;
         }
-        else
-        {
-            if (distance is > 2.0F and < 6.0F && Random.NextInt(10) == 0)
-            {
-                if (!OnGround) return;
 
-                double dx = entity.X - X;
-                double dz = entity.Z - Z;
-                float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
-                VelocityX = dx / horizontalDistance * 0.5D * 0.8F + VelocityX * 0.2F;
-                VelocityZ = dz / horizontalDistance * 0.5D * 0.8F + VelocityZ * 0.2F;
-                VelocityY = 0.4F;
-            }
-            else
-            {
-                base.attackEntity(entity, distance);
-            }
-        }
+        base.attackEntity(entity, distance);
     }
 }

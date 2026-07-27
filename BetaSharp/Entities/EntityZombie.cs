@@ -1,4 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -6,12 +8,13 @@ namespace BetaSharp.Entities;
 
 public class EntityZombie : EntityMonster
 {
-    private static readonly int s_feather = Item.ByName("feather").Id;
+    private static readonly Item s_feather = Item.ByName("feather");
     public EntityZombie(IWorldContext world) : base(world)
     {
         Texture = "/mob/zombie.png";
         MovementSpeed = 0.5F;
         AttackStrength = 5;
+        Loot = new LootTableBehavior(LootTable.Single(s_feather, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Zombie;
@@ -35,6 +38,4 @@ public class EntityZombie : EntityMonster
     protected override string? HurtSound => "mob.zombiehurt";
 
     protected override string? DeathSound => "mob.zombiedeath";
-
-    protected override int DropItem => s_feather;
 }

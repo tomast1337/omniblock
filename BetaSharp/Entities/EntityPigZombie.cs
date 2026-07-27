@@ -1,4 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.NBT;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -17,6 +19,7 @@ internal class EntityPigZombie : EntityZombie
         MovementSpeed = 0.5F;
         AttackStrength = 5;
         IsImmuneToFire = true;
+        Loot = new LootTableBehavior(LootTable.Single(s_porkchopCooked, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.PigZombie;
@@ -85,6 +88,4 @@ internal class EntityPigZombie : EntityZombie
         _angerLevel = 400 + Random.NextInt(400);
         _randomSoundDelay = Random.NextInt(40);
     }
-
-    protected override int DropItem => s_porkchopCooked.Id;
 }

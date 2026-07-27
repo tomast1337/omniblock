@@ -1,5 +1,7 @@
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -27,6 +29,7 @@ public class EntitySquid : EntityWaterMob
         Texture = "/mob/squid.png";
         SetBoundingBoxSpacing(0.95F, 0.95F);
         _animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
+        Loot = new LootTableBehavior(LootTable.Single(s_dyePowder, 1, 3));
     }
 
     protected sealed override void SetBoundingBoxSpacing(float widthOffset, float heightOffset)
@@ -45,18 +48,6 @@ public class EntitySquid : EntityWaterMob
     protected override string? DeathSound => null;
 
     protected override float SoundVolume => 0.4F;
-
-    protected override int DropItem => 0;
-
-    protected override void DropFewItems()
-    {
-        int dropCount = Random.NextInt(3) + 1;
-
-        for (int _ = 0; _ < dropCount; ++_)
-        {
-            DropItem(new ItemStack(s_dyePowder, 1, 0), 0.0F);
-        }
-    }
 
     public override bool Interact(EntityPlayer player) => false;
 

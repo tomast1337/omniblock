@@ -1,4 +1,6 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -25,6 +27,7 @@ public class EntityGhast : EntityFlying, Monster
         SetBoundingBoxSpacing(4.0F, 4.0F);
         IsImmuneToFire = true;
         _charging = DataSynchronizer.MakeProperty(16, false);
+        Loot = new LootTableBehavior(LootTable.Single(s_gunpowder, 0, 2));
     }
 
     public override EntityType Type => EntityRegistry.Ghast;
@@ -161,8 +164,6 @@ public class EntityGhast : EntityFlying, Monster
 
         return true;
     }
-
-    protected override int DropItem => s_gunpowder.Id;
 
     public override bool CanSpawn() => Random.NextInt(20) == 0 && base.CanSpawn() && World.Difficulty > 0;
 }

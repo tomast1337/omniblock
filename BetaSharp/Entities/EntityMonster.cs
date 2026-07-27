@@ -1,3 +1,4 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -5,9 +6,12 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityMonster : EntityCreature, Monster
 {
-    protected int AttackStrength = 2;
-
-    protected EntityMonster(IWorldContext world) : base(world) => Health = 20;
+    protected EntityMonster(IWorldContext world) : base(world)
+    {
+        Health = 20;
+        Attack = new MeleeAttackBehavior();
+        Targeting = new AlwaysHuntTargetBehavior();
+    }
 
     protected override void TickMovement()
     {
@@ -29,12 +33,6 @@ public abstract class EntityMonster : EntityCreature, Monster
         }
     }
 
-    protected override Entity? FindPlayerToAttack()
-    {
-        EntityPlayer? player = World.Entities.GetClosestPlayerTarget(X, Y, Z, 16.0D);
-        return player != null && CanSee(player) ? player : null;
-    }
-
     public override bool Damage(Entity? entity, int amount)
     {
         if (!base.Damage(entity, amount)) return false;
@@ -42,17 +40,6 @@ public abstract class EntityMonster : EntityCreature, Monster
         if (Equals(entity, this)) return true;
         if (entity is EntityPlayer { GameMode.CanBeTargeted: true }) Target = entity;
         return true;
-    }
-
-    protected override void attackEntity(Entity entity, float distance)
-    {
-        if (AttackTime > 0 || !(distance < 2.0F) || !(entity.BoundingBox.MaxY > BoundingBox.MinY) || !(entity.BoundingBox.MinY < BoundingBox.MaxY))
-        {
-            return;
-        }
-
-        AttackTime = 20;
-        entity.Damage(this, AttackStrength);
     }
 
     protected override float GetBlockPathWeight(int x, int y, int z) => 0.5F - World.Lighting.GetLuminance(x, y, z);

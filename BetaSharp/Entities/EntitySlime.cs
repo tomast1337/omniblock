@@ -1,4 +1,7 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Loot;
+using BetaSharp.Loot.Conditions;
 using BetaSharp.NBT;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -23,6 +26,11 @@ public class EntitySlime : EntityLiving, Monster
         StandingEyeHeight = 0.0F;
         _slimeJumpDelay = Random.NextInt(20) + 10;
         SlimeSize = size;
+
+        // Only the smallest slime drops; larger ones split via SlimeSplitBehavior instead.
+        Loot = new LootTableBehavior(new LootTable(
+            new LootPool([LootEntry.Of(s_slimeball)], 0, 2, new EntityStateCondition(() => SlimeSize == 1))));
+        Lifecycle = new SlimeSplitBehavior();
     }
 
     public override EntityType Type => EntityRegistry.Slime;
@@ -127,25 +135,6 @@ public class EntitySlime : EntityLiving, Monster
         }
     }
 
-    public override void MarkDead()
-    {
-        int size = SlimeSize;
-        if (!World.IsRemote && size > 1 && Health == 0)
-        {
-            for (int i = 0; i < 4; ++i)
-            {
-                float offsetX = (i % 2 - 0.5F) * size / 4.0F;
-                float offsetY = (i * 0.5f - 0.5F) * size / 4.0F;
-                EntitySlime slime = new(World);
-                slime.SlimeSize = size / 2;
-                slime.SetPositionAndAnglesKeepPrevAngles(X + offsetX, Y + 0.5D, Z + offsetY, Random.NextFloat() * 360.0F, 0.0F);
-                World.SpawnEntity(slime);
-            }
-        }
-
-        base.MarkDead();
-    }
-
     public override void OnPlayerInteraction(EntityPlayer player)
     {
         int size = SlimeSize;
@@ -154,8 +143,6 @@ public class EntitySlime : EntityLiving, Monster
             World.Broadcaster.PlaySoundAtEntity(this, "mob.slimeattack", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
         }
     }
-
-    protected override int DropItem => SlimeSize == 1 ? s_slimeball.Id : 0;
 
     public override bool CanSpawn()
     {
