@@ -1,0 +1,7 @@
+{
+  "ProtocolId": 55,
+  "Texture": "/mob/slime.png",
+  "HurtSound": "mob.slime",
+  "DeathSound": "mob.slime",
+  "SoundVolume": 0.6
+}

@@ -1,0 +1,7 @@
+{
+  "ProtocolId": 53,
+  "Health": 200,
+  "MovementSpeed": 0.5,
+  "AttackStrength": 50,
+  "Texture": "/mob/zombie.png"
+}

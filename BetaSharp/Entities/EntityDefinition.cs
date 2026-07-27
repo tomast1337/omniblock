@@ -1,3 +1,7 @@
+using System.Text.Json.Serialization;
+using BetaSharp.Registries;
+using BetaSharp.Registries.Data;
+
 namespace BetaSharp.Entities;
 
 /// <summary>
@@ -5,16 +9,26 @@ namespace BetaSharp.Entities;
 ///     A mob's class still owns its AI, state machines, and NBT — see
 ///     docs/mob-data-driven-migration.md for where that line sits and why.
 ///     <para>
-///         Phase 2 keeps this a plain record with no protocol id, registry name, or spawn category.
-///         Protocol ids already live on <see cref="EntityRegistry" />, and spawn category is derived
-///         from the class hierarchy by <see cref="CreatureKind" /> rather than declared per mob;
-///         both are Phase 3 concerns.
+///         Spawn category is still absent: it is derived from the class hierarchy by
+///         <see cref="CreatureKind" /> rather than declared per mob, so a field here would compete
+///         with that mechanism rather than describe it.
 ///     </para>
 /// </summary>
-public sealed record EntityDefinition
+public sealed record EntityDefinition : IDataAsset
 {
     /// <summary>Applied to any <see cref="EntityLiving" /> constructed without one (e.g. players).</summary>
     public static readonly EntityDefinition Default = new();
+
+    /// <summary>Set by the loader from the JSON filename.</summary>
+    [JsonIgnore] public string Name { get; set; } = "";
+
+    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.BetaSharp;
+
+    /// <summary>
+    ///     Wire protocol id. Spawn packets transmit it as a signed byte, so the loader rejects
+    ///     anything outside 1..127; <c>-1</c> means "not declared" and fails validation.
+    /// </summary>
+    public int ProtocolId { get; init; } = -1;
 
     public int Health { get; init; } = 10;
     public float MovementSpeed { get; init; } = 0.7F;

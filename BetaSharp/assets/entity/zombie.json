@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 54,
+  "Health": 20,
+  "MovementSpeed": 0.5,
+  "AttackStrength": 5,
+  "Texture": "/mob/zombie.png",
+  "LivingSound": "mob.zombie",
+  "HurtSound": "mob.zombiehurt",
+  "DeathSound": "mob.zombiedeath"
+}

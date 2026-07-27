@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Recipes;
 using BetaSharp.Registries.Data;
@@ -16,6 +17,11 @@ internal static class RegistryDefinitions
 
     public static readonly RegistryDefinition<ItemDefinition> Items =
         new(RegistryKeys.Items, "item", loaderFactory: (path, locations) => new ItemDefinitionJsonLoader(path, locations));
+
+    // Boot-time-only for the same reason as Blocks below: EntityType instances are registered once
+    // and captured by every spawned mob, so a /reload cannot retroactively re-point them.
+    public static readonly RegistryDefinition<EntityDefinition> Entities =
+        new(RegistryKeys.Entities, "entity", loaderFactory: (path, locations) => new EntityDefinitionJsonLoader(path, locations));
 
     // Not registered via RegistryAccess.AddDynamic — same treatment as Materials/SoundGroups
     // below, not Items: blocks are even more hot-path-sensitive (renderer/lighting arrays cache

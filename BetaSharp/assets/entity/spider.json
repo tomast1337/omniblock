@@ -1,0 +1,11 @@
+{
+  "ProtocolId": 52,
+  "Health": 20,
+  "MovementSpeed": 0.8,
+  "Width": 1.4,
+  "Height": 0.9,
+  "Texture": "/mob/spider.png",
+  "LivingSound": "mob.spider",
+  "HurtSound": "mob.spider",
+  "DeathSound": "mob.spiderdeath"
+}

@@ -1,0 +1,11 @@
+{
+  "ProtocolId": 93,
+  "Health": 4,
+  "Width": 0.3,
+  "Height": 0.4,
+  "Texture": "/mob/chicken.png",
+  "LivingSound": "mob.chicken",
+  "HurtSound": "mob.chickenhurt",
+  "DeathSound": "mob.chickenhurt",
+  "TalkInterval": 120
+}

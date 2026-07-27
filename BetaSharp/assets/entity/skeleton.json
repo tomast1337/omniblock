@@ -1,0 +1,8 @@
+{
+  "ProtocolId": 51,
+  "Health": 20,
+  "Texture": "/mob/skeleton.png",
+  "LivingSound": "mob.skeleton",
+  "HurtSound": "mob.skeletonhurt",
+  "DeathSound": "mob.skeletonhurt"
+}

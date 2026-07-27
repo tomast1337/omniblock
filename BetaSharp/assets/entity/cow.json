@@ -1,0 +1,11 @@
+{
+  "ProtocolId": 92,
+  "Width": 0.9,
+  "Height": 1.3,
+  "Texture": "/mob/cow.png",
+  "LivingSound": "mob.cow",
+  "HurtSound": "mob.cowhurt",
+  "DeathSound": "mob.cowhurt",
+  "SoundVolume": 0.4,
+  "TalkInterval": 120
+}

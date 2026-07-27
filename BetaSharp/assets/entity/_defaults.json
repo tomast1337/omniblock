@@ -1,0 +1,16 @@
+{
+  "Health": 10,
+  "MovementSpeed": 0.7,
+  "AttackStrength": 2,
+  "Width": 0.6,
+  "Height": 1.8,
+  "Texture": "/mob/char.png",
+  "LivingSound": null,
+  "HurtSound": "random.hurt",
+  "DeathSound": "random.hurt",
+  "SoundVolume": 1,
+  "TalkInterval": 80,
+  "FireImmune": false,
+  "MaxSpawnedInChunk": 4,
+  "CanDespawn": true
+}

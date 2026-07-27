@@ -1,0 +1,7 @@
+{
+  "ProtocolId": 50,
+  "Health": 20,
+  "Texture": "/mob/creeper.png",
+  "HurtSound": "mob.creeper",
+  "DeathSound": "mob.creeperdeath"
+}

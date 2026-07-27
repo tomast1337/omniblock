@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 90,
+  "Width": 0.9,
+  "Height": 0.9,
+  "Texture": "/mob/pig.png",
+  "LivingSound": "mob.pig",
+  "HurtSound": "mob.pig",
+  "DeathSound": "mob.pigdeath",
+  "TalkInterval": 120
+}

@@ -1,0 +1,13 @@
+{
+  "ProtocolId": 95,
+  "Health": 8,
+  "MovementSpeed": 1.1,
+  "Width": 0.8,
+  "Height": 0.8,
+  "Texture": "/mob/wolf.png",
+  "HurtSound": "mob.wolf.hurt",
+  "DeathSound": "mob.wolf.death",
+  "SoundVolume": 0.4,
+  "TalkInterval": 120,
+  "MaxSpawnedInChunk": 8
+}

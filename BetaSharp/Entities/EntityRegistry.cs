@@ -15,20 +15,22 @@ public static class EntityRegistry
     public static readonly EntityType Snowball = Register(world => new EntitySnowball(world), "Snowball", 11);
     public static readonly EntityType Item = Register(world => new EntityItem(world), "Item", 1);
     public static readonly EntityType Painting = Register(world => new EntityPainting(world), "Painting", 9);
-    public static readonly EntityType Creeper = Register(world => new EntityCreeper(world), "Creeper", 50, MobDefinitions.Creeper);
-    public static readonly EntityType Skeleton = Register(world => new EntitySkeleton(world), "Skeleton", 51, MobDefinitions.Skeleton);
-    public static readonly EntityType Spider = Register(world => new EntitySpider(world), "Spider", 52, MobDefinitions.Spider);
-    public static readonly EntityType Giant = Register(world => new EntityGiantZombie(world), "Giant", 53, MobDefinitions.Giant);
-    public static readonly EntityType Zombie = Register(world => new EntityZombie(world), "Zombie", 54, MobDefinitions.Zombie);
-    public static readonly EntityType Slime = Register(world => new EntitySlime(world), "Slime", 55, MobDefinitions.Slime);
-    public static readonly EntityType Ghast = Register(world => new EntityGhast(world), "Ghast", 56, MobDefinitions.Ghast);
-    public static readonly EntityType PigZombie = Register(world => new EntityPigZombie(world), "PigZombie", 57, MobDefinitions.PigZombie);
-    public static readonly EntityType Pig = Register(world => new EntityPig(world), "Pig", 90, MobDefinitions.Pig);
-    public static readonly EntityType Sheep = Register(world => new EntitySheep(world), "Sheep", 91, MobDefinitions.Sheep);
-    public static readonly EntityType Cow = Register(world => new EntityCow(world), "Cow", 92, MobDefinitions.Cow);
-    public static readonly EntityType Chicken = Register(world => new EntityChicken(world), "Chicken", 93, MobDefinitions.Chicken);
-    public static readonly EntityType Squid = Register(world => new EntitySquid(world), "Squid", 94, MobDefinitions.Squid);
-    public static readonly EntityType Wolf = Register(world => new EntityWolf(world), "Wolf", 95, MobDefinitions.Wolf);
+    // Mobs take their protocol id from assets/entity/*.json rather than a literal here — the id is
+    // part of the definition, so declaring it twice would let the two drift.
+    public static readonly EntityType Creeper = RegisterMob(world => new EntityCreeper(world), "Creeper");
+    public static readonly EntityType Skeleton = RegisterMob(world => new EntitySkeleton(world), "Skeleton");
+    public static readonly EntityType Spider = RegisterMob(world => new EntitySpider(world), "Spider");
+    public static readonly EntityType Giant = RegisterMob(world => new EntityGiantZombie(world), "Giant");
+    public static readonly EntityType Zombie = RegisterMob(world => new EntityZombie(world), "Zombie");
+    public static readonly EntityType Slime = RegisterMob(world => new EntitySlime(world), "Slime");
+    public static readonly EntityType Ghast = RegisterMob(world => new EntityGhast(world), "Ghast");
+    public static readonly EntityType PigZombie = RegisterMob(world => new EntityPigZombie(world), "PigZombie");
+    public static readonly EntityType Pig = RegisterMob(world => new EntityPig(world), "Pig");
+    public static readonly EntityType Sheep = RegisterMob(world => new EntitySheep(world), "Sheep");
+    public static readonly EntityType Cow = RegisterMob(world => new EntityCow(world), "Cow");
+    public static readonly EntityType Chicken = RegisterMob(world => new EntityChicken(world), "Chicken");
+    public static readonly EntityType Squid = RegisterMob(world => new EntitySquid(world), "Squid");
+    public static readonly EntityType Wolf = RegisterMob(world => new EntityWolf(world), "Wolf");
     public static readonly EntityType PrimedTnt = Register(world => new EntityTntPrimed(world), "PrimedTnt", 20);
     public static readonly EntityType FallingSand = Register(world => new EntityFallingSand(world), "FallingSand", 21);
     public static readonly EntityType Minecart = Register(world => new EntityMinecart(world), "Minecart", 40);
@@ -42,6 +44,16 @@ public static class EntityRegistry
 
     static EntityRegistry()
     {
+    }
+
+    /// <summary>
+    ///     Registers a mob, taking both its configuration and its protocol id from the JSON
+    ///     definition of the same (lowercased) name.
+    /// </summary>
+    private static EntityType RegisterMob<T>(Func<IWorldContext, T> factory, string id) where T : Entity
+    {
+        EntityDefinition definition = EntityDefinitionRegistry.Get(id.ToLowerInvariant());
+        return Register(factory, id, definition.ProtocolId, definition);
     }
 
     private static EntityType Register<T>(Func<IWorldContext, T> factory, string id, int rawId, EntityDefinition? definition = null) where T : Entity

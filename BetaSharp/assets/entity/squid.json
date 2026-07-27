@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 94,
+  "Width": 0.95,
+  "Height": 0.95,
+  "Texture": "/mob/squid.png",
+  "HurtSound": null,
+  "DeathSound": null,
+  "SoundVolume": 0.4,
+  "TalkInterval": 120
+}

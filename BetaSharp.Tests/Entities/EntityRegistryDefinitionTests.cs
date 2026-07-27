@@ -13,7 +13,8 @@ namespace BetaSharp.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityRegistryDefinitionTests
 {
-    private static readonly EntityType[] s_mobTypes =
+    /// <summary>Shared with <see cref="EntityJsonDumperTests"/>, which dumps exactly these.</summary>
+    internal static readonly EntityType[] MobTypes =
     [
         EntityRegistry.Creeper, EntityRegistry.Skeleton, EntityRegistry.Spider, EntityRegistry.Giant,
         EntityRegistry.Zombie, EntityRegistry.Slime, EntityRegistry.Ghast, EntityRegistry.PigZombie,
@@ -32,7 +33,7 @@ public sealed class EntityRegistryDefinitionTests
     [Fact]
     public void Every_mob_type_carries_a_definition()
     {
-        Assert.All(s_mobTypes, type => Assert.NotNull(type.Definition));
+        Assert.All(MobTypes, type => Assert.NotNull(type.Definition));
     }
 
     [Fact]
@@ -57,12 +58,32 @@ public sealed class EntityRegistryDefinitionTests
         Assert.Same(EntityRegistry.PigZombie.Definition, new EntityPigZombie(world).Definition);
     }
 
+    /// <summary>
+    /// The migration doc's "Biome spawn lists reference entities too" gotcha, made executable.
+    /// <c>Biome</c>'s spawn lists and <c>NaturalSpawner.Monsters</c> construct mobs through raw
+    /// <c>w =&gt; new EntityXxx(w)</c> lambdas that never touch <see cref="EntityRegistry"/>, so they
+    /// would not surface a broken definition lookup as a compile error. This exercises that same
+    /// direct-construction path for every mob and asserts it resolves the registered definition.
+    /// </summary>
+    [Fact]
+    public void Direct_construction_resolves_definitions_for_every_mob()
+    {
+        FakeWorldContext world = new();
+
+        foreach (EntityType type in MobTypes)
+        {
+            Entity entity = type.Create(world);
+            EntityLiving mob = Assert.IsAssignableFrom<EntityLiving>(entity);
+            Assert.Same(type.Definition, mob.Definition);
+        }
+    }
+
     [Fact]
     public void Every_registered_protocol_id_fits_in_a_signed_byte()
     {
         IRegistry<EntityType> registry = DefaultRegistries.EntityTypes;
 
-        foreach (EntityType type in s_mobTypes.Concat(s_nonMobTypes))
+        foreach (EntityType type in MobTypes.Concat(s_nonMobTypes))
         {
             int rawId = registry.GetId(type);
             Assert.InRange(rawId, sbyte.MinValue, sbyte.MaxValue);

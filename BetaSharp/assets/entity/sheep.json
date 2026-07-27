@@ -1,0 +1,10 @@
+{
+  "ProtocolId": 91,
+  "Width": 0.9,
+  "Height": 1.3,
+  "Texture": "/mob/sheep.png",
+  "LivingSound": "mob.sheep",
+  "HurtSound": "mob.sheep",
+  "DeathSound": "mob.sheep",
+  "TalkInterval": 120
+}

@@ -1,0 +1,12 @@
+{
+  "ProtocolId": 56,
+  "Width": 4,
+  "Height": 4,
+  "Texture": "/mob/ghast.png",
+  "LivingSound": "mob.ghast.moan",
+  "HurtSound": "mob.ghast.scream",
+  "DeathSound": "mob.ghast.death",
+  "SoundVolume": 10,
+  "FireImmune": true,
+  "MaxSpawnedInChunk": 1
+}

@@ -1,0 +1,11 @@
+{
+  "ProtocolId": 57,
+  "Health": 20,
+  "MovementSpeed": 0.5,
+  "AttackStrength": 5,
+  "Texture": "/mob/pigzombie.png",
+  "LivingSound": "mob.zombiepig.zpig",
+  "HurtSound": "mob.zombiepig.zpighurt",
+  "DeathSound": "mob.zombiepig.zpigdeath",
+  "FireImmune": true
+}

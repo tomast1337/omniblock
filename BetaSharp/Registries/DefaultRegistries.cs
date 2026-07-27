@@ -73,6 +73,10 @@ public static class DefaultRegistries
         Stats.Stats.InitializeItemStats();
         Stats.Stats.InitializeExtendedItemStats();
 
+        // Must precede the Bootstrap below: EntityRegistry's static fields resolve each mob's
+        // EntityDefinition from here as they run, and touching the class is what triggers them.
+        EntityDefinitionRegistry.Initialize();
+
         EntityTypes.Bootstrap(typeof(EntityRegistry));
         Biomes.Bootstrap(typeof(Biome));
         BlockEntityTypes.Bootstrap(typeof(BlockEntity));
