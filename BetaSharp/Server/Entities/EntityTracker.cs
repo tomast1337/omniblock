@@ -76,14 +76,10 @@ public class EntityTracker
             startTracking(entity, 160, 3, mob.Definition.TracksVelocity);
         }
         // Non-living entities whose tracking parameters are declared rather than matched by class —
-        // primed TNT is the first.
+        // primed TNT and falling sand so far.
         else if (entity.Type?.Definition is { TrackingRange: > 0 } declared)
         {
             startTracking(entity, declared.TrackingRange, declared.TrackingFrequency, declared.TracksVelocity);
-        }
-        else if (entity is EntityFallingSand)
-        {
-            startTracking(entity, 160, 20, true);
         }
         else if (entity is EntityPainting)
         {

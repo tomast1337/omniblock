@@ -1,5 +1,6 @@
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 
 namespace BetaSharp.Blocks.Behaviors;
 
@@ -9,9 +10,9 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     <para>
 ///         Non-solid obstacles it falls through (vanilla: just fire) are a required,
 ///         (see <c>BehaviorRegistry</c>'s <c>"falling_block"</c> entry).
-///         <see cref="CanFallThrough" /> is called externally by <c>EntityFallingSand</c> (the
-///         falling block only knows its own block id at that point, not a behavior instance), so
-///         it resolves back to this instance via <c>Block.Blocks[id].Physics</c> rather than
+///         <see cref="CanFallThrough" /> is called externally by <c>SettleAsBlockBehavior</c> (the
+///         falling entity only knows its carried block id at that point, not a behavior instance),
+///         so it resolves back to this instance via <c>Block.Blocks[id].Physics</c> rather than
 ///         taking a static, hardcoded set.
 ///     </para>
 ///     <para>
@@ -41,7 +42,9 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
 
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - regionLoadCheckRadius, y - regionLoadCheckRadius, z - regionLoadCheckRadius, x + regionLoadCheckRadius, y + regionLoadCheckRadius, z + regionLoadCheckRadius))
         {
-            EntityFallingSand fallingSand = new(@event.World, x + 0.5F, y + 0.5F, z + 0.5F, block.id);
+            Entity fallingSand = EntityRegistry.ByName("fallingsand").Create(@event.World);
+            fallingSand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(fallingSand, block.id);
+            fallingSand.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
             @event.World.Entities.SpawnEntity(fallingSand);
         }
         else

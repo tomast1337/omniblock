@@ -1,6 +1,7 @@
 using System.Linq;
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -106,7 +107,10 @@ public static class EntityTestHarness
 
         if (type == EntityRegistry.ByName("fallingsand"))
         {
-            return new EntityFallingSand(world, 8.5, 70.0, 8.5, BlockRegistry.Get("sand").id);
+            Entity sand = type.Create(world);
+            sand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(sand, BlockRegistry.Get("sand").id);
+            sand.SetPositionAndAngles(8.5, 70.0, 8.5, 0.0F, 0.0F);
+            return sand;
         }
 
         if (type == EntityRegistry.ByName("minecart"))

@@ -1,0 +1,26 @@
+{
+  "ProtocolId": 21,
+  "TrackingRange": 160,
+  "TrackingFrequency": 20,
+  "TracksVelocity": true,
+  "PreventEntitySpawning": true,
+  "Collidable": true,
+  "Width": 0.98,
+  "Height": 0.98,
+  "EyeHeightScale": 0.5,
+  "MakesStepSounds": false,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Persistence"],
+      "Type": "settle_as_block",
+      "wire_ids": [
+        { "Block": "sand", "Id": 70 },
+        { "Block": "gravel", "Id": 71 }
+      ]
+    }
+  ],
+  "Renderer": {
+    "Type": "falling_block",
+    "Shadow": 0.5
+  }
+}

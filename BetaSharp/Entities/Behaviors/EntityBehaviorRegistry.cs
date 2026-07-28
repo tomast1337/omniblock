@@ -58,6 +58,9 @@ internal static class EntityBehaviorRegistry
         // Ticker + Lifecycle + Persistence, all moving one fuse
         ["primed_explosive"] = (in EntityBehaviorContext c) => new PrimedExplosiveBehavior(c),
 
+        // Ticker + Persistence, all carrying one block
+        ["settle_as_block"] = (in EntityBehaviorContext c) => new SettleAsBlockBehavior(c),
+
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),

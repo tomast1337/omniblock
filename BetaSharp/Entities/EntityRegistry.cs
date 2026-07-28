@@ -43,10 +43,10 @@ public static class EntityRegistry
         RegisterDefined((world, type) => new EntityAnimal(world, type), "Chicken");
         RegisterDefined((world, type) => new EntityLiving(world, type), "Squid");
         RegisterDefined((world, type) => new EntityAnimal(world, type), "Wolf");
-        // No class of its own either: primed TNT is an EntityObject configured by primedtnt.json,
-        // the first non-living entity on the same footing as the mobs.
+        // No class of their own either: primed TNT and falling sand are EntityObjects configured by
+        // their JSON — the non-living entities on the same footing as the mobs.
         RegisterDefined((world, type) => new EntityObject(world, type), "PrimedTnt");
-        Register((world, _) => new EntityFallingSand(world), "FallingSand", 21);
+        RegisterDefined((world, type) => new EntityObject(world, type), "FallingSand");
         Register((world, _) => new EntityMinecart(world), "Minecart", 40);
         Register((world, _) => new EntityBoat(world), "Boat", 41);
         Register((world, _) => new EntityEgg(world), "Egg", 62);

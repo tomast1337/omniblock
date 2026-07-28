@@ -36,6 +36,7 @@ internal static class EntityRendererRegistry
             Model(json),
             EntityModelRegistry.Create(json.GetProperty("OverlayModel").GetString()!),
             Shadow(json)),
+        ["falling_block"] = (in JsonElement json) => new FallingBlockEntityRenderer(Shadow(json)),
         ["primed_block"] = (in JsonElement json) => new PrimedBlockEntityRenderer(
             BlockRegistry.Get(json.GetProperty("Block").GetString()!),
             Shadow(json)),

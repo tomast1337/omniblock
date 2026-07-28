@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 
 namespace BetaSharp.Tests.Entities;
 
@@ -28,7 +29,9 @@ public sealed class EntityMobScenarioTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        var sand = new EntityFallingSand(world, 8.5, 72.0, 8.5, BlockRegistry.Get("sand").id);
+        Entity sand = EntityRegistry.ByName("fallingsand").Create(world);
+        sand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(sand, BlockRegistry.Get("sand").id);
+        sand.SetPositionAndAngles(8.5, 72.0, 8.5, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
         EntityTestHarness.AdvanceGameTicks(world, 150);
         Assert.True(sand.Dead || sand.OnGround);

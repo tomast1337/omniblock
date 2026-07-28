@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -346,25 +347,18 @@ internal class EntityTrackerEntry
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 62);
             }
+            // A falling block's object-spawn id depends on which block it carries, so it comes from
+            // the behavior rather than the definition's single SpawnObjectId.
+            else if (currentTrackedEntity.Behaviors.Find<SettleAsBlockBehavior>() is { } settle)
+            {
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, settle.SpawnObjectId(currentTrackedEntity));
+            }
             else if (currentTrackedEntity.Type?.Definition is { SpawnObjectId: > 0 } declared)
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, declared.SpawnObjectId);
             }
             else
             {
-                if (currentTrackedEntity is EntityFallingSand fallingSandEntity)
-                {
-                    if (fallingSandEntity.BlockId == BlockRegistry.Get("sand").id)
-                    {
-                        return EntitySpawnS2CPacket.Get(currentTrackedEntity, 70);
-                    }
-
-                    if (fallingSandEntity.BlockId == BlockRegistry.Get("gravel").id)
-                    {
-                        return EntitySpawnS2CPacket.Get(currentTrackedEntity, 71);
-                    }
-                }
-
                 if (currentTrackedEntity is EntityPainting painting)
                 {
                     return PaintingEntitySpawnS2CPacket.Get(painting);

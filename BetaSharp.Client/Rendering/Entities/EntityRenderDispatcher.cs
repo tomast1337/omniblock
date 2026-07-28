@@ -44,7 +44,6 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityEgg), new ProjectileEntityRenderer(Item.ByName("egg").getTextureId(0)));
         RegisterRenderer(typeof(EntityFireball), new FireballEntityRenderer());
         RegisterRenderer(typeof(EntityItem), new ItemRenderer());
-        RegisterRenderer(typeof(EntityFallingSand), new FallingBlockEntityRenderer());
         RegisterRenderer(typeof(EntityMinecart), new MinecartEntityRenderer());
         RegisterRenderer(typeof(EntityBoat), new BoatEntityRenderer());
         RegisterRenderer(typeof(EntityFish), new FishingBobberEntityRenderer());

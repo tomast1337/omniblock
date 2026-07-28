@@ -10,7 +10,9 @@ using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.Worlds;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
+using BetaSharp.Registries;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.Network;
@@ -187,14 +189,20 @@ public class ClientNetworkHandler : NetHandler
             entity.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
         }
 
-        if (packet.EntityType == 70)
+        // Falling blocks share one entity type across several object ids, one per block — the
+        // behavior's declared wire ids say which block this spawn carries.
+        if (entity == null)
         {
-            entity = new EntityFallingSand(_worldClient, x, y, z, BlockRegistry.Get("sand").id);
-        }
+            foreach (EntityType candidate in DefaultRegistries.EntityTypes)
+            {
+                if (candidate.Behaviors.Find<SettleAsBlockBehavior>() is not { } settle) continue;
+                if (settle.BlockForSpawnObjectId(packet.EntityType) is not { } carriedBlockId) continue;
 
-        if (packet.EntityType == 71)
-        {
-            entity = new EntityFallingSand(_worldClient, x, y, z, BlockRegistry.Get("gravel").id);
+                entity = candidate.Create(_worldClient);
+                settle.SetBlock(entity, carriedBlockId);
+                entity.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
+                break;
+            }
         }
 
         if (entity != null)
