@@ -61,7 +61,7 @@ public sealed class MobConfigurationTests
         "skeleton" => (EntityMonster)EntityRegistry.ByName("skeleton").Create(world),
         "creeper" => (EntityMonster)EntityRegistry.ByName("creeper").Create(world),
         "spider" => (EntityMonster)EntityRegistry.ByName("spider").Create(world),
-        "ghast" => new EntityGhast(world),
+        "ghast" => (EntityLiving)EntityRegistry.ByName("ghast").Create(world),
         "pig" => (EntityAnimal)EntityRegistry.ByName("pig").Create(world),
         "cow" => (EntityAnimal)EntityRegistry.ByName("cow").Create(world),
         "sheep" => (EntityAnimal)EntityRegistry.ByName("sheep").Create(world),

@@ -24,9 +24,10 @@ public sealed class EntityHierarchySmokeTests
         Assert.IsAssignableFrom<EntityWaterMob>(squid);
         Assert.IsAssignableFrom<EntityCreature>(squid);
 
-        var ghast = new EntityGhast(_world);
-        Assert.IsAssignableFrom<EntityFlying>(ghast);
-        Assert.IsAssignableFrom<EntityLiving>(ghast);
+        // The ghast has no class and no flying base: it is a bare EntityLiving whose flight,
+        // wandering and fireballs all come from its behavior slots.
+        var ghast = (EntityLiving)EntityRegistry.ByName("ghast").Create(_world);
+        Assert.Equal(typeof(EntityLiving), ghast.GetType());
 
         Assert.IsAssignableFrom<Entity>(new EntityArrow(_world));
         Assert.IsAssignableFrom<Entity>(new EntitySnowball(_world));

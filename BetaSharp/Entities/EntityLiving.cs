@@ -11,9 +11,14 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityLiving : Entity
+/// <summary>
+///     A mob. Concrete rather than abstract because a mob with no pathfinding and no melee is
+///     nothing but this plus its behaviors — the ghast hovers, aims and fires entirely from its
+///     Ticker and Physics slots, and needs no class of its own to do it.
+/// </summary>
+public class EntityLiving : Entity
 {
-    protected EntityLiving(IWorldContext world, EntityType? type = null) : base(world, type)
+    public EntityLiving(IWorldContext world, EntityType? type = null) : base(world, type)
     {
         // Read through Type rather than the parameter: an entity constructed directly still resolves
         // its type by class in the base constructor, and should get that type's configuration.
@@ -60,7 +65,7 @@ public abstract class EntityLiving : Entity
     private float TotalWalkDistance { get; set; }
     protected float LastTotalWalkDistance { get; set; }
     protected bool CanLookAround { get; set; } = true;
-    protected string Texture { get; set; } = "/mob/char.png";
+    protected internal string Texture { get; set; } = "/mob/char.png";
     protected float RotationOffset { get; set; } = 0.0F;
     protected string? ModelName { get; set; } = null;
     protected float ModelScale { get; set; } = 1.0F;
@@ -84,9 +89,9 @@ public abstract class EntityLiving : Entity
     public IEntityLifecycle? Lifecycle => Behaviors.Lifecycle;
     public float CameraPitch { get; private set; }
     public float Tilt { get; protected set; }
-    public float LastWalkAnimationSpeed { get; protected set; }
-    public float WalkAnimationSpeed { get; protected set; }
-    public float AnimationPhase { get; protected set; }
+    public float LastWalkAnimationSpeed { get; protected internal set; }
+    public float WalkAnimationSpeed { get; protected internal set; }
+    public float AnimationPhase { get; protected internal set; }
     private int NewPosRotationIncrements { get; set; }
     private double NewPosX { get; set; }
     private double NewPosY { get; set; }
@@ -544,6 +549,8 @@ public abstract class EntityLiving : Entity
 
     protected virtual void Travel(float strafe, float forward)
     {
+        if (Physics?.Travel(this, strafe, forward) == true) return;
+
         double previousY;
         if (IsInWater)
         {
@@ -809,7 +816,12 @@ public abstract class EntityLiving : Entity
 
     protected virtual void Jump() => VelocityY = 0.42F;
 
-    protected void func_27021_X()
+    /// <summary>
+    ///     Despawns the mob once no player is near enough to keep it, and ages out one that has been
+    ///     idle too long. Reachable from behaviors because a ticker that replaces the AI still has to
+    ///     run it.
+    /// </summary>
+    protected internal void TickDespawn()
     {
         EntityPlayer? player = World.Entities.GetClosestPlayer(X, Y, Z, -1.0D);
         if (!CanDespawn || player == null)
@@ -843,9 +855,12 @@ public abstract class EntityLiving : Entity
 
     protected virtual void TickLiving()
     {
-        Ticker?.OnTickLiving(this);
+        // A ticker that answers true is the mob's whole AI, so none of the idle logic below runs —
+        // the ghast neither ages nor glances around, exactly as when it overrode this method.
+        if (Ticker?.OnTickLiving(this) == true) return;
+
         ++EntityAge;
-        func_27021_X();
+        TickDespawn();
         SidewaysSpeed = 0.0F;
         ForwardSpeed = 0.0F;
         const float lookRange = 8.0F;
@@ -930,7 +945,15 @@ public abstract class EntityLiving : Entity
     {
     }
 
-    public virtual bool CanSpawn() => World.Entities.CanSpawnEntity(BoundingBox) && World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0 && !World.Reader.IsMaterialInBox(BoundingBox, m => m.IsFluid);
+    /// <summary>
+    ///     Whether the mob may spawn where it stands. The Physics slot replaces the rule outright
+    ///     when it declares one — a zombie pigman ignores darkness, a ghast spawns one time in
+    ///     twenty — and the consult lives here so no subclass has to remember to make it.
+    /// </summary>
+    public bool CanSpawn() => Physics?.CanSpawn(this) ?? CanSpawnHere();
+
+    /// <summary>The type's own placement rule: the body fits, nothing is in the way, no fluid.</summary>
+    protected virtual bool CanSpawnHere() => World.Entities.CanSpawnEntity(BoundingBox) && World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0 && !World.Reader.IsMaterialInBox(BoundingBox, m => m.IsFluid);
 
     protected override void TickInVoid() => Damage(null, 4);
 

@@ -7,7 +7,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public class EntitySlime : EntityLiving, Monster
+public class EntitySlime : EntityLiving
 {
     private readonly SyncedProperty<byte> _slimeSize;
     private int _slimeJumpDelay;
@@ -84,7 +84,7 @@ public class EntitySlime : EntityLiving, Monster
 
     protected override void TickLiving()
     {
-        func_27021_X();
+        TickDespawn();
         EntityPlayer? player = World.Entities.GetClosestPlayerTarget(X, Y, Z, 16.0D);
         if (player != null)
         {
@@ -120,7 +120,7 @@ public class EntitySlime : EntityLiving, Monster
     }
 
 
-    public override bool CanSpawn()
+    protected override bool CanSpawnHere()
     {
         Chunk chunk = World.ChunkHost.GetChunkFromPos(MathHelper.Floor(X), MathHelper.Floor(Z));
         return (SlimeSize == 1 || World.Difficulty > 0) && Random.NextInt(10) == 0 && chunk.GetSlimeRandom(987234911L).NextInt(10) == 0 && Y < 16.0D;

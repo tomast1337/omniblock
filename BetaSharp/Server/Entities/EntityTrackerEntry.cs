@@ -316,9 +316,9 @@ internal class EntityTrackerEntry
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 1);
             }
-            else if (currentTrackedEntity is SpawnableEntity)
+            else if (currentTrackedEntity is EntityLiving living and not EntityPlayer)
             {
-                return LivingEntitySpawnS2CPacket.Get((EntityLiving)currentTrackedEntity);
+                return LivingEntitySpawnS2CPacket.Get(living);
             }
             else if (currentTrackedEntity is EntityFish)
             {

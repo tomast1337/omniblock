@@ -32,7 +32,7 @@ public static class EntityRegistry
         RegisterMob((world, type) => new EntityMonster(world, type), "Giant");
         RegisterMob((world, type) => new EntityMonster(world, type), "Zombie");
         RegisterMob((world, _) => new EntitySlime(world), "Slime");
-        RegisterMob((world, _) => new EntityGhast(world), "Ghast");
+        RegisterMob((world, type) => new EntityLiving(world, type), "Ghast");
         RegisterMob((world, type) => new EntityMonster(world, type), "PigZombie");
         RegisterMob((world, type) => new EntityAnimal(world, type), "Pig");
         RegisterMob((world, type) => new EntityAnimal(world, type), "Sheep");

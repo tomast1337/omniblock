@@ -28,6 +28,7 @@ internal static class EntityRendererRegistry
             Shadow(json),
             json.GetProperty("OverlayTexture").GetString()!,
             json.TryGetProperty("DeathRotation", out JsonElement d) ? d.GetSingle() : 90.0F),
+        ["charging"] = (in JsonElement json) => new ChargingEntityRenderer(Model(json), Shadow(json)),
         ["scaled"] = (in JsonElement json) => new ScaledEntityRenderer(
             Model(json), Shadow(json), json.GetProperty("Scale").GetSingle()),
         ["undead"] = (in JsonElement json) => new UndeadEntityRenderer((ModelBiped)Model(json), Shadow(json)),

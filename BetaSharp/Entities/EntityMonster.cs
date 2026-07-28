@@ -3,7 +3,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public class EntityMonster : EntityCreature, Monster
+public class EntityMonster : EntityCreature
 {
     public EntityMonster(IWorldContext world, EntityType? type = null) : base(world, type)
     {
@@ -42,27 +42,25 @@ public class EntityMonster : EntityCreature, Monster
         Physics?.GetBlockPathWeight(this, x, y, z) ?? 0.5F - World.Lighting.GetLuminance(x, y, z);
 
     /// <summary>
-    ///     Darkness rule, unless the mob's Physics slot replaces it. The slot is consulted here
-    ///     rather than in the base because this is the rule being replaced — a mob that spawns in
-    ///     the light has to skip this check, not run it and then add to it.
+    ///     The darkness rule. A mob whose Physics slot declares its own placement never reaches
+    ///     here — <see cref="EntityLiving.CanSpawn" /> replaces this outright rather than adding to
+    ///     it, which is what lets a zombie pigman spawn in the lit Nether.
     /// </summary>
-    public override bool CanSpawn()
+    protected override bool CanSpawnHere()
     {
-        if (Physics?.CanSpawn(this) is { } declared) return declared;
-
         int x = MathHelper.Floor(X);
         int y = MathHelper.Floor(BoundingBox.MinY);
         int z = MathHelper.Floor(Z);
         if (World.Lighting.GetBrightness(LightType.Sky, x, y, z) > Random.NextInt(32)) return false;
 
         int lightLevel = World.Lighting.GetLightLevel(x, y, z);
-        if (!World.Environment.IsThundering()) return lightLevel <= Random.NextInt(8) && base.CanSpawn();
+        if (!World.Environment.IsThundering()) return lightLevel <= Random.NextInt(8) && base.CanSpawnHere();
 
         int ambientDarkness = World.Environment.AmbientDarkness;
         World.Environment.AmbientDarkness = 10;
         lightLevel = World.Lighting.GetLightLevel(x, y, z);
         World.Environment.AmbientDarkness = ambientDarkness;
 
-        return lightLevel <= Random.NextInt(8) && base.CanSpawn();
+        return lightLevel <= Random.NextInt(8) && base.CanSpawnHere();
     }
 }

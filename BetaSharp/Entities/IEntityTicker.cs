@@ -18,8 +18,14 @@ public interface IEntityTicker
     /// <summary>Runs from <c>EntityLiving.TickMovement</c>, before the shared movement logic.</summary>
     void OnTickMovement(EntityLiving self) { }
 
-    /// <summary>Runs from <c>EntityLiving.TickLiving</c> — the AI tick.</summary>
-    void OnTickLiving(EntityLiving self) { }
+    /// <summary>
+    ///     Runs from <c>EntityLiving.TickLiving</c> — the AI tick. Returning <c>true</c> means the
+    ///     behavior <em>is</em> the mob's AI and the default idle logic — ageing, the despawn check,
+    ///     glancing at nearby players — is skipped, matching a mob that overrode <c>TickLiving</c>
+    ///     without calling base. A ticker that replaces the AI owns whatever it still wants from the
+    ///     default, <see cref="EntityLiving.TickDespawn" /> included.
+    /// </summary>
+    bool OnTickLiving(EntityLiving self) => false;
 
     /// <summary>
     ///     Runs at the end of <c>EntityLiving.Tick</c>, after movement and AI have resolved — where

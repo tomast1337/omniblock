@@ -11,7 +11,59 @@
   "SoundVolume": 10,
   "FireImmune": true,
   "MaxSpawnedInChunk": 1,
+  "SyncedProperties": [
+    {
+      "Name": "charging",
+      "Id": 16,
+      "Kind": "Bool"
+    }
+  ],
   "Behaviors": [
+    {
+      "Slots": [
+        "Physics"
+      ],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "flying_movement"
+        },
+        {
+          "Type": "spawn_ignoring_light",
+          "chance_one_in": 20
+        }
+      ]
+    },
+    {
+      "Slots": [
+        "Ticker"
+      ],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "despawn_on_peaceful"
+        },
+        {
+          "Type": "flying_wander",
+          "range": 16.0,
+          "max_distance": 60.0,
+          "acceleration": 0.1,
+          "recheck_ticks": 5
+        },
+        {
+          "Type": "fireball_attack",
+          "search_range": 100.0,
+          "attack_range": 64.0,
+          "aggro_ticks": 20,
+          "charge_ticks": 20,
+          "reload_ticks": 40,
+          "spawn_offset": 4.0,
+          "charge_sound": "mob.ghast.charge",
+          "fire_sound": "mob.ghast.fireball",
+          "charging_texture": "/mob/ghast_fire.png"
+        }
+      ]
+    },
     {
       "Slots": [
         "Loot"
@@ -29,5 +81,10 @@
         }
       ]
     }
-  ]
+  ],
+  "Renderer": {
+    "Type": "charging",
+    "Model": "ghast",
+    "Shadow": 0.5
+  }
 }

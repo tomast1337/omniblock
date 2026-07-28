@@ -196,9 +196,9 @@ public abstract class Entity : IEntity
 
     protected bool IsWet => InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
 
-    protected virtual bool IsInWater => InWater;
+    protected internal virtual bool IsInWater => InWater;
 
-    protected bool IsTouchingLava => World.Reader.IsMaterialInBox(BoundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
+    protected internal bool IsTouchingLava => World.Reader.IsMaterialInBox(BoundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
 
     public virtual bool IsAlive => !Dead;
 
@@ -784,7 +784,7 @@ public abstract class Entity : IEntity
         return false;
     }
 
-    protected void MoveNonSolid(float strafe, float forward, float speed)
+    protected internal void MoveNonSolid(float strafe, float forward, float speed)
     {
         float inputLength = MathHelper.Sqrt(strafe * strafe + forward * forward);
         if (!(inputLength >= 0.01F))

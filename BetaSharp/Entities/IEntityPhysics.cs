@@ -21,6 +21,13 @@ public interface IEntityPhysics
     void AfterTickMovement(EntityLiving self) { }
 
     /// <summary>
+    ///     Replaces the movement body — how velocity is accelerated, applied and damped — returning
+    ///     <c>true</c> when it handled the tick. Flight is what needs it: no gravity, no ladder
+    ///     clamp, and drag on all three axes rather than two.
+    /// </summary>
+    bool Travel(EntityLiving self, float strafe, float forward) => false;
+
+    /// <summary>
     ///     Replaces the type's natural-spawn check, or <c>null</c> to keep it. Consulted before a
     ///     monster applies its darkness rule, which is what lets a zombie pigman spawn in the lit
     ///     Nether. Spawn validity is placement — bounding box, fluid, the block below — so it lives

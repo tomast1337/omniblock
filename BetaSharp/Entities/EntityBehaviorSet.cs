@@ -27,4 +27,26 @@ public sealed class EntityBehaviorSet
     public IEntityPersistence? Persistence { get; internal set; }
     public IEntityInteractable? Interactable { get; internal set; }
     public IEntityPhysics? Physics { get; internal set; }
+
+    /// <summary>
+    ///     Finds a behavior of a given kind in any slot, descending into composites and decorators.
+    ///     Renderers use it to read the state a behavior keeps — a ghast's charge counter, a
+    ///     chicken's wing angle — without knowing which slot the definition put it in.
+    /// </summary>
+    public T? Find<T>() where T : class
+    {
+        foreach (object? slot in new object?[] { Ticker, Attack, Targeting, Loot, Lifecycle, Persistence, Interactable, Physics })
+        {
+            if (FindIn(slot) is { } found) return found;
+        }
+
+        return null;
+
+        static T? FindIn(object? behavior) => behavior switch
+        {
+            T match => match,
+            IEntityBehaviorGroup group => group.Children.Select(FindIn).FirstOrDefault(found => found is not null),
+            _ => null
+        };
+    }
 }

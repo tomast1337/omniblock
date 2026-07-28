@@ -71,7 +71,9 @@ public class EntityTracker
         {
             startTracking(entity, 160, 3, true);
         }
-        else if (entity is SpawnableEntity)
+        // Every mob but the player, which was matched above. This was a marker interface each mob
+        // class had to remember to implement; being an EntityLiving is the same fact, already true.
+        else if (entity is EntityLiving and not EntityPlayer)
         {
             startTracking(entity, 160, 3);
         }

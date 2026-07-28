@@ -38,7 +38,6 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityWolf), new WolfEntityRenderer(new ModelWolf(), 0.5F));
         RegisterRenderer(typeof(EntitySlime), new SlimeEntityRenderer(new ModelSlime(), new ModelSlimeCube(), 0.25F));
         RegisterRenderer(typeof(EntityPlayer), new PlayerEntityRenderer());
-        RegisterRenderer(typeof(EntityGhast), new GhastEntityRenderer());
         RegisterRenderer(typeof(EntitySquid), new SquidEntityRenderer(new ModelSquid(), 0.7F));
         RegisterRenderer(typeof(EntityLiving), new LivingEntityRenderer(new ModelBiped(), 0.5F));
         RegisterRenderer(typeof(Entity), new BoxEntityRenderer());

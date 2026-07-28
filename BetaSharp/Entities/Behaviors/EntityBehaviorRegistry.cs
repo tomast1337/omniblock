@@ -57,7 +57,17 @@ internal static class EntityBehaviorRegistry
         ["light_seeking_path"] = (in EntityBehaviorContext c) => new LightSeekingPathBehavior(),
         ["wall_climb"] = (in EntityBehaviorContext c) => new WallClimbBehavior(),
         ["spawn_ignoring_light"] = (in EntityBehaviorContext c) => new SpawnIgnoringLightBehavior(
-            !c.Json.TryGetProperty("requires_difficulty", out JsonElement d) || d.GetBoolean()),
+            !c.Json.TryGetProperty("requires_difficulty", out JsonElement d) || d.GetBoolean(),
+            c.Int("chance_one_in", 1)),
+        ["flying_movement"] = (in EntityBehaviorContext c) => new FlyingMovementBehavior(),
+
+        // Ticker
+        ["despawn_on_peaceful"] = (in EntityBehaviorContext c) => new DespawnOnPeacefulBehavior(),
+        ["flying_wander"] = (in EntityBehaviorContext c) => new FlyingWanderBehavior(c),
+        ["fireball_attack"] = (in EntityBehaviorContext c) => new FireballAttackBehavior(c),
+
+        // Any slot: several behaviors sharing one
+        ["all"] = (in EntityBehaviorContext c) => new CompositeBehavior(c),
 
         // Ticker + Targeting + Lifecycle + Persistence, all reading one anger timer
         ["anger"] = (in EntityBehaviorContext c) => new AngerBehavior(c),

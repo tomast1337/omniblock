@@ -192,10 +192,10 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
 
     protected virtual Entity? FindPlayerToAttack() => Targeting?.FindPlayerToAttack(this);
 
-    public override bool CanSpawn()
+    protected override bool CanSpawnHere()
     {
         BlockPos tile = new BlockPos(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY), MathHelper.Floor(Z));
-        return base.CanSpawn() && GetBlockPathWeight(tile.x, tile.y, tile.z) >= 0.0F;
+        return base.CanSpawnHere() && GetBlockPathWeight(tile.x, tile.y, tile.z) >= 0.0F;
     }
 
     internal void setPathToEntity(PathEntity? pathToEntity) => _pathToEntity = pathToEntity;

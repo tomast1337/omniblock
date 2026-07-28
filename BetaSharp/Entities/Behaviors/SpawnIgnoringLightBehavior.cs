@@ -3,12 +3,15 @@ namespace BetaSharp.Entities.Behaviors;
 /// <summary>
 ///     Spawns wherever the body fits, ignoring the darkness rule monsters normally obey — a zombie
 ///     pigman, which the Nether produces in full light. Optionally gated on the world not being
-///     peaceful.
+///     peaceful, and on a die roll for something that should stay rare wherever it is allowed.
 /// </summary>
-public sealed class SpawnIgnoringLightBehavior(bool requiresDifficulty) : IEntityPhysics
+public sealed class SpawnIgnoringLightBehavior(bool requiresDifficulty, int chanceOneIn) : IEntityPhysics
 {
     public bool? CanSpawn(EntityLiving self) =>
-        (!requiresDifficulty || self.World.Difficulty > 0)
+        // Rolled first, and only when it can fail, so a mob without a chance gate draws no random
+        // number at all and its spawn attempts stay on the sequence they were on before.
+        (chanceOneIn <= 1 || self.Random.NextInt(chanceOneIn) == 0)
+        && (!requiresDifficulty || self.World.Difficulty > 0)
         && self.World.Entities.CanSpawnEntity(self.BoundingBox)
         && self.World.Entities.GetEntityCollisionsScratch(self, self.BoundingBox).Count == 0
         && !self.World.Reader.IsMaterialInBox(self.BoundingBox, m => m.IsFluid);

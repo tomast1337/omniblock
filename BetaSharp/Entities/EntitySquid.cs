@@ -26,7 +26,7 @@ public class EntitySquid : EntityWaterMob
         _animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
     }
 
-    protected override bool IsInWater => World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, -0.6F, 0.0D), Material.Water, this);
+    protected internal override bool IsInWater => World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, -0.6F, 0.0D), Material.Water, this);
 
     public override bool Interact(EntityPlayer player) => false;
 
@@ -110,6 +110,6 @@ public class EntitySquid : EntityWaterMob
             _randomMotionVecZ = MathHelper.Sin(randomAngle) * 0.2F;
         }
 
-        func_27021_X();
+        TickDespawn();
     }
 }
