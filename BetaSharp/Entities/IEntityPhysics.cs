@@ -106,4 +106,10 @@ public interface IEntityPhysics
     ///     ticks rather than snapping.
     /// </summary>
     bool OnPositionSync(Entity self, double x, double y, double z, float yaw, float pitch, int steps) => false;
+
+    /// <summary>
+    ///     Replaces where a passenger is carried, returning <c>true</c> when handled. A boat seats
+    ///     its rider offset along its own facing rather than straight above its middle.
+    /// </summary>
+    bool OnUpdatePassengerPosition(Entity self) => false;
 }

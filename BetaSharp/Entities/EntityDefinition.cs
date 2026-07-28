@@ -149,6 +149,22 @@ public sealed record EntityDefinition : IDataAsset
     public bool IgnoreFrustumCheck { get; init; }
 
     /// <summary>
+    ///     Fraction of this entity's height a passenger sits at, before
+    ///     <see cref="PassengerRideOffset" /> is added. Three-quarters up for anything you sit on
+    ///     the back of; zero for a vehicle you sit down inside.
+    /// </summary>
+    public double PassengerRideHeightScale { get; init; } = 0.75D;
+
+    /// <summary>Whether other entities can shove this one — true for a boat bumped by another.</summary>
+    public bool Pushable { get; init; }
+
+    /// <summary>
+    ///     Whether this entity's box is something others physically collide with rather than pass
+    ///     through. A boat is a hull you stand in, not a marker you walk over.
+    /// </summary>
+    public bool SolidCollisionShape { get; init; }
+
+    /// <summary>
     ///     Wire id in the object-spawn packet (<c>50</c> for primed TNT), a second protocol id space
     ///     from <see cref="ProtocolId" />: non-living entities spawn on the client through
     ///     <c>EntitySpawnS2CPacket</c> rather than the living-entity packet. <c>0</c> means this

@@ -315,11 +315,7 @@ internal class EntityTrackerEntry
                 }
             }
 
-            if (currentTrackedEntity is EntityBoat)
-            {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 1);
-            }
-            else if (currentTrackedEntity is EntityLiving living and not EntityPlayer)
+            if (currentTrackedEntity is EntityLiving living and not EntityPlayer)
             {
                 return LivingEntitySpawnS2CPacket.Get(living);
             }

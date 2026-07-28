@@ -202,6 +202,23 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         return false;
     }
 
+    public bool OnUpdatePassengerPosition(Entity self)
+    {
+        foreach (IEntityPhysics physics in _physics)
+        {
+            if (physics.OnUpdatePassengerPosition(self)) return true;
+        }
+
+        return false;
+    }
+
+    public bool OnAnimateHurt(Entity self)
+    {
+        bool handled = false;
+        foreach (IEntityLifecycle lifecycle in _lifecycles) handled |= lifecycle.OnAnimateHurt(self);
+        return handled;
+    }
+
     public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);

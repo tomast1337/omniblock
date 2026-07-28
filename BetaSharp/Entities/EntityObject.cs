@@ -28,6 +28,26 @@ public class EntityObject : Entity
 
     public override float TargetingMargin => Definition.TargetingMargin;
 
+    public override bool IsPushable => Definition.Pushable;
+
+    protected override double PassengerRidingHeight => Height * Definition.PassengerRideHeightScale + Definition.PassengerRideOffset;
+
+    /// <summary>A solid one is a hull others collide with; the rest are markers walked through.</summary>
+    public override Box? GetBoundingBox() => Definition.SolidCollisionShape ? BoundingBox : null;
+
+    public override Box? GetCollisionAgainstShape(Entity entity) =>
+        Definition.SolidCollisionShape ? entity.BoundingBox : null;
+
+    public override void UpdatePassengerPosition()
+    {
+        if (Physics?.OnUpdatePassengerPosition(this) != true) base.UpdatePassengerPosition();
+    }
+
+    public override void AnimateHurt()
+    {
+        if (Behaviors.Lifecycle?.OnAnimateHurt(this) != true) base.AnimateHurt();
+    }
+
     /// <summary>
     ///     A behavior may take the synced position for itself — a bobber eases towards it. Failing
     ///     that, an arrow declares it stays put: it must not climb out of whatever it is stuck in.

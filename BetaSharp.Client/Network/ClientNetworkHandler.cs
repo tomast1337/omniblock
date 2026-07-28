@@ -156,11 +156,6 @@ public class ClientNetworkHandler : NetHandler
             packet.EntityData = 0;
         }
 
-        if (packet.EntityType == 1)
-        {
-            entity = new EntityBoat(_worldClient, x, y, z);
-        }
-
         // Entities that declare their object-spawn id resolve through the registry rather than a
         // per-id branch; the branches above are the ones whose constructors still need arguments.
         if (entity == null && EntityRegistry.BySpawnObjectId(packet.EntityType) is { } declaredType)

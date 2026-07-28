@@ -1,0 +1,31 @@
+{
+  "ProtocolId": 41,
+  "SpawnObjectId": 1,
+  "TrackingRange": 160,
+  "TrackingFrequency": 5,
+  "TracksVelocity": true,
+  "Width": 1.5,
+  "Height": 0.6,
+  "EyeHeightScale": 0.5,
+  "MakesStepSounds": false,
+  "PreventEntitySpawning": true,
+  "Collidable": true,
+  "Pushable": true,
+  "SolidCollisionShape": true,
+  "PassengerRideHeightScale": 0.0,
+  "PassengerRideOffset": -0.3,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Lifecycle", "Persistence", "Interactable", "Physics"],
+      "Type": "boat",
+      "break_damage": 40,
+      "wreckage": [
+        { "Item": "betasharp:planks", "Count": 3 },
+        { "Item": "betasharp:stick", "Count": 2 }
+      ]
+    }
+  ],
+  "Renderer": {
+    "Type": "boat"
+  }
+}

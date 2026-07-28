@@ -44,7 +44,7 @@ internal sealed class BoatBehavior : IItemBehavior
                     --hitY;
                 }
 
-                world.SpawnEntity(new EntityBoat(world, hitX + 0.5F, hitY + 1.0F, hitZ + 0.5F));
+                world.SpawnEntity(Entities.Behaviors.BoatBehavior.Launch(world, hitX + 0.5F, hitY + 1.0F, hitZ + 0.5F));
             }
 
             itemStack.ConsumeItem(player);

@@ -881,7 +881,7 @@ public abstract class EntityPlayer : EntityLiving
 
                 break;
 
-            case EntityBoat:
+            case { } vehicle when vehicle.Behaviors.Find<BoatBehavior>() is not null:
                 IncreaseStat(Stats.Stats.DistanceByBoatStat, distanceScaled);
                 break;
 

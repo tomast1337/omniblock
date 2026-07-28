@@ -65,4 +65,10 @@ public interface IEntityLifecycle
     ///     consult this, their damage pipeline has its own hooks.
     /// </summary>
     bool? Damage(Entity self, Entity? attacker, int amount) => null;
+
+    /// <summary>
+    ///     Plays the client-side reaction to a hit the server announced, returning <c>true</c> when
+    ///     handled. A boat rocks — the same wobble the real hit produces, replayed for the viewer.
+    /// </summary>
+    bool OnAnimateHurt(Entity self) => false;
 }

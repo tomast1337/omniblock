@@ -125,11 +125,6 @@ public static class EntityTestHarness
             return new EntityMinecart(world, 8.5, 65.0, 8.5, 0);
         }
 
-        if (type == EntityRegistry.ByName("boat"))
-        {
-            return new EntityBoat(world, 8.5, 65.0, 8.5);
-        }
-
         Entity entity = type.Create(world);
         entity.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         return entity;
