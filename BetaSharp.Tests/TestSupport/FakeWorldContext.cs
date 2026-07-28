@@ -32,6 +32,7 @@ public sealed class FakeWorldContext : IWorldContext
         _chunkSource = new FakeChunkSource(this);
         ChunkHost = new ChunkHost(_chunkSource);
         Entities = new EntityManager(this);
+        ReaderWriter.Entities = Entities;
         Dimension = new OverworldDimension();
         Dimension.SetWorld(this);
         Lighting = new LightingEngine(this);
@@ -75,6 +76,17 @@ public sealed class FakeWorldContext : IWorldContext
     /// <summary>Returned by <see cref="GetTime"/> for tests that need advancing world time (e.g. torch burnout history pruning).</summary>
     public long SimulatedWorldTime { get; set; }
 
+    /// <summary>
+    ///     Lights the world. The default is pitch dark, which is what mob AI tests have always
+    ///     assumed, so daylight is opt-in: raising this is how a test reaches the branches that only
+    ///     run in the light (a spider losing interest, a monster refusing to spawn).
+    /// </summary>
+    public void SetLightLevel(int skyLight, int blockLight = 0)
+    {
+        _chunkSource.SetLightLevel(skyLight, blockLight);
+        ReaderWriter.Brightness = skyLight;
+    }
+
     public void SetDifficulty(int difficulty) => throw new NotSupportedException();
     public long GetTime() => SimulatedWorldTime;
     public int GetSpawnBlockId(int x, int z) => 0;
@@ -101,6 +113,28 @@ public sealed class FakeChunkSource(IWorldContext world) : IChunkSource
 {
     private readonly Dictionary<(int X, int Z), Chunk> _chunks = [];
 
+    /// <summary>Light level stamped into every chunk, including ones created after it is set.</summary>
+    public int SkyLight { get; private set; }
+    public int BlockLight { get; private set; }
+
+    public void SetLightLevel(int skyLight, int blockLight)
+    {
+        SkyLight = skyLight;
+        BlockLight = blockLight;
+
+        foreach (Chunk chunk in _chunks.Values) Fill(chunk);
+    }
+
+    /// <summary>
+    ///     Writes the level into both nibbles of every byte at once. A chunk holds 32768 cells per
+    ///     light array, so filling them one <c>SetNibble</c> at a time would dominate test time.
+    /// </summary>
+    private void Fill(Chunk chunk)
+    {
+        Array.Fill(chunk.SkyLight.Bytes, (byte)(SkyLight * 0x11));
+        Array.Fill(chunk.BlockLight.Bytes, (byte)(BlockLight * 0x11));
+    }
+
     public bool IsChunkLoaded(int x, int z) => true;
 
     public Chunk GetChunk(int x, int z)
@@ -117,6 +151,7 @@ public sealed class FakeChunkSource(IWorldContext world) : IChunkSource
             SkyLight = new ChunkNibbleArray(16 * 16 * 128),
             BlockLight = new ChunkNibbleArray(16 * 16 * 128)
         };
+        Fill(chunk);
         _chunks[(x, z)] = chunk;
         return chunk;
     }
@@ -253,7 +288,13 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
 
     public BiomeSource GetBiomeSource() => throw new NotSupportedException();
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
-    public int GetBrightness(int x, int y, int z) => 0;
+    /// <summary>
+    ///     Sky brightness reported for every position. Defaults to pitch dark; raise it through
+    ///     <see cref="FakeWorldContext.SetLightLevel"/> so the grid and the chunk light arrays agree.
+    /// </summary>
+    public int Brightness { get; set; }
+
+    public int GetBrightness(int x, int y, int z) => Brightness;
     public bool IsTopY(int x, int y, int z) => false;
     public int GetTopY(int x, int z) => 0;
     public int GetTopSolidBlockY(int x, int z) => 0;
@@ -264,7 +305,19 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     }
 
     public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox) => 0F;
-    public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) => new(HitResultType.MISS);
+
+    /// <summary>
+    ///     Set by <see cref="FakeWorldContext"/> once its entity manager exists, so raycasts can
+    ///     reach block shapes that consult entities.
+    /// </summary>
+    public EntityManager? Entities { get; set; }
+
+    /// <summary>
+    ///     Runs the production traversal over this grid rather than reporting a blanket miss, so
+    ///     line-of-sight checks (<c>CanSee</c>, mob targeting) see real walls.
+    /// </summary>
+    public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) =>
+        BlockRaycaster.Cast(this, Entities!, start, end, includeFluids, ignoreNonSolid);
     public bool IsPosLoaded(int x, int y, int z) => true;
 
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate)

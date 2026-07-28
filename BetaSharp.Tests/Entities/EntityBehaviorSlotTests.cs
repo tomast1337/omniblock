@@ -83,8 +83,8 @@ public sealed class EntityBehaviorSlotTests
         EntityMonster spider = Spawn(world, (EntityMonster)EntityRegistry.ByName("spider").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 9.5, 65.0, 8.5);
 
-        // The fake world is unlit, so the brightness gate opens. Its daylight rejection branch needs
-        // a lit world and is not reachable through FakeWorldContext's lighting.
+        // Unlit, so the brightness gate opens. The daylight rejection branch is covered by
+        // EntityDaylightTests, which raises the light level.
         Assert.Same(player, spider.Targeting!.FindPlayerToAttack(spider));
     }
 
@@ -95,8 +95,9 @@ public sealed class EntityBehaviorSlotTests
         EntityMonster zombie = Spawn(world, (EntityMonster)EntityRegistry.ByName("zombie").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 11.5, 65.0, 8.5);
 
-        // FakeWorldContext's raycast always reports MISS, so the line-of-sight rejection branch that
-        // separates this behavior from DarknessOnlyTargetBehavior is not reachable here.
+        // Nothing between them, so the sightline is clear. The rejection branch and the light-based
+        // difference between the two behaviors are covered by EntityLineOfSightTests and
+        // EntityDaylightTests.
         Assert.Same(player, zombie.Targeting!.FindPlayerToAttack(zombie));
     }
 
