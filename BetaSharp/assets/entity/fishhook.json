@@ -1,0 +1,26 @@
+{
+  "ProtocolId": 64,
+  "SpawnObjectId": 90,
+  "TrackingRange": 64,
+  "TrackingFrequency": 5,
+  "TracksVelocity": true,
+  "IgnoreFrustumCheck": true,
+  "Width": 0.25,
+  "Height": 0.25,
+  "EyeHeightScale": 0.0,
+  "RenderDistanceWeight": 4.0,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Persistence", "Physics"],
+      "Type": "fishing_bobber",
+      "held_item": "betasharp:fishing_rod",
+      "catches": "betasharp:fish_raw",
+      "bite_delay": 500,
+      "bite_delay_raining": 300,
+      "max_angler_distance": 32.0
+    }
+  ],
+  "Renderer": {
+    "Type": "fishing_bobber"
+  }
+}

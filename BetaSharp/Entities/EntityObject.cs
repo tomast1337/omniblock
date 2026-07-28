@@ -17,6 +17,7 @@ public class EntityObject : Entity
         Definition = type.RequireDefinition();
         PreventEntitySpawning = Definition.PreventEntitySpawning;
         RenderDistanceWeight = Definition.RenderDistanceWeight;
+        IgnoreFrustumCheck = Definition.IgnoreFrustumCheck;
         SetBoundingBoxSpacing(Definition.Width, Definition.Height);
         StandingEyeHeight = Height * Definition.EyeHeightScale;
     }
@@ -27,9 +28,14 @@ public class EntityObject : Entity
 
     public override float TargetingMargin => Definition.TargetingMargin;
 
-    /// <summary>An arrow declares it stays put: it must not climb out of whatever it is stuck in.</summary>
+    /// <summary>
+    ///     A behavior may take the synced position for itself — a bobber eases towards it. Failing
+    ///     that, an arrow declares it stays put: it must not climb out of whatever it is stuck in.
+    /// </summary>
     public override void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int steps)
     {
+        if (Physics?.OnPositionSync(this, x, y, z, yaw, pitch, steps) == true) return;
+
         if (Definition.PositionSyncAvoidsEntities)
         {
             base.SetPositionAndAnglesAvoidEntities(x, y, z, yaw, pitch, steps);

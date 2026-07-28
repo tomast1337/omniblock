@@ -33,10 +33,6 @@ public class EntityTracker
                 }
             }
         }
-        else if (entity is EntityFish)
-        {
-            startTracking(entity, 64, 5, true);
-        }
         else if (entity is EntityMinecart)
         {
             startTracking(entity, 160, 5, true);

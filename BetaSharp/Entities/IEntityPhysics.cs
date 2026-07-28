@@ -99,4 +99,11 @@ public interface IEntityPhysics
     ///     <see cref="OnMove" /> — an entity that refuses to be moved refuses to be pushed too.
     /// </summary>
     bool OnAddVelocity(Entity self, double dx, double dy, double dz) => false;
+
+    /// <summary>
+    ///     Replaces what a synced position from the server does, returning <c>true</c> when handled.
+    ///     A fishing bobber records it as a target and eases towards it over the given number of
+    ///     ticks rather than snapping.
+    /// </summary>
+    bool OnPositionSync(Entity self, double x, double y, double z, float yaw, float pitch, int steps) => false;
 }

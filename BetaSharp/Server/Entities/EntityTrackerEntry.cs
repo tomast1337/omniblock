@@ -323,10 +323,6 @@ internal class EntityTrackerEntry
             {
                 return LivingEntitySpawnS2CPacket.Get(living);
             }
-            else if (currentTrackedEntity is EntityFish)
-            {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 90);
-            }
             // An arrow's spawn packet names whoever loosed it, so the client can credit the hit;
             // an unowned one (a dispenser's) names itself.
             else if (currentTrackedEntity.Behaviors.Find<ArrowBehavior>() is { } flight)

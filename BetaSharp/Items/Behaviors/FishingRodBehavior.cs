@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
@@ -10,9 +11,9 @@ internal sealed class FishingRodBehavior : IItemBehavior
 
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
-        if (player.FishHook != null)
+        if (player.FishHook is { } bobber)
         {
-            int durabilityLoss = player.FishHook.catchFish();
+            int durabilityLoss = bobber.Behaviors.Find<FishingBobberBehavior>()!.Reel(bobber);
             itemStack.DamageItem(durabilityLoss, player);
             player.SwingHand();
         }
@@ -21,7 +22,7 @@ internal sealed class FishingRodBehavior : IItemBehavior
             world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 0.5F, 0.4F / (Item.itemRand.NextFloat() * 0.4F + 0.8F));
             if (!world.IsRemote)
             {
-                world.SpawnEntity(new EntityFish(world, player));
+                world.SpawnEntity(FishingBobberBehavior.Cast(world, player));
             }
 
             player.SwingHand();

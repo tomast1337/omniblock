@@ -51,7 +51,7 @@ public static class EntityRegistry
         Register((world, _) => new EntityBoat(world), "Boat", 41);
         RegisterDefined((world, type) => new EntityObject(world, type), "Egg");
         RegisterDefined((world, type) => new EntityObject(world, type), "Fireball");
-        Register((world, _) => new EntityFish(world), "FishHook", 64);
+        RegisterDefined((world, type) => new EntityObject(world, type), "FishHook");
         RegisterDefined((world, type) => new EntityObject(world, type), "LightningBolt");
         Register<ServerPlayerEntity>((_, _) => throw new NotSupportedException("Players must be created via ServerPlayerEntity constructor"), "Player", 100);
     }

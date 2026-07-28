@@ -31,7 +31,9 @@ public abstract class EntityPlayer : EntityLiving
     public float ChangeDimensionCooldown;
     public ScreenHandler? CurrentScreenHandler;
     public int DimensionId;
-    public EntityFish? FishHook = null;
+    /// <summary>The bobber this player has in the water, or null. At most one, which is how the
+    /// rod decides between casting and reeling.</summary>
+    public Entity? FishHook = null;
     protected bool HandSwinging;
     protected int HandSwingTicks;
     protected bool InTeleportationState;

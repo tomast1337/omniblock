@@ -244,7 +244,7 @@ public abstract class Entity : IEntity
         Height = height;
     }
 
-    protected void SetRotation(float yaw, float pitch)
+    protected internal void SetRotation(float yaw, float pitch)
     {
         Yaw = yaw % 360.0F;
         Pitch = pitch % 360.0F;

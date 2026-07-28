@@ -130,11 +130,6 @@ public static class EntityTestHarness
             return new EntityBoat(world, 8.5, 65.0, 8.5);
         }
 
-        if (type == EntityRegistry.ByName("fishhook"))
-        {
-            return new EntityFish(world, 8.5, 65.0, 8.5);
-        }
-
         Entity entity = type.Create(world);
         entity.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         return entity;

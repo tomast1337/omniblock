@@ -148,11 +148,6 @@ public class ClientNetworkHandler : NetHandler
             entity = new EntityMinecart(_worldClient, x, y, z, 2);
         }
 
-        if (packet.EntityType == 90)
-        {
-            entity = new EntityFish(_worldClient, x, y, z);
-        }
-
         if (packet.EntityType == 63)
         {
             entity = EntityRegistry.ByName("fireball").Create(_worldClient);

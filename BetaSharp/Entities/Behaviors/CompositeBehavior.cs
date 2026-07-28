@@ -192,6 +192,16 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         return false;
     }
 
+    public bool OnPositionSync(Entity self, double x, double y, double z, float yaw, float pitch, int steps)
+    {
+        foreach (IEntityPhysics physics in _physics)
+        {
+            if (physics.OnPositionSync(self, x, y, z, yaw, pitch, steps)) return true;
+        }
+
+        return false;
+    }
+
     public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);
