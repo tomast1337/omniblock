@@ -70,7 +70,8 @@
       "Slots": [
         "Lifecycle"
       ],
-      "Type": "pig_lightning"
+      "Type": "lightning_conversion",
+      "becomes": "pigzombie"
     },
     {
       "Slots": [

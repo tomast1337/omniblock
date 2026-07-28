@@ -55,7 +55,7 @@ public sealed class EntityRegistryDefinitionTests
         Assert.Same(EntityRegistry.ByName("zombie").Definition, ((EntityMonster)EntityRegistry.ByName("zombie").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("wolf").Definition, new EntityWolf(world).Definition);
         Assert.Same(EntityRegistry.ByName("ghast").Definition, new EntityGhast(world).Definition);
-        Assert.Same(EntityRegistry.ByName("pigzombie").Definition, new EntityPigZombie(world).Definition);
+        Assert.Same(EntityRegistry.ByName("pigzombie").Definition, ((EntityMonster)EntityRegistry.ByName("pigzombie").Create(world)).Definition);
     }
 
     /// <summary>

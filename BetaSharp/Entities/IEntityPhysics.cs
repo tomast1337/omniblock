@@ -19,4 +19,18 @@ public interface IEntityPhysics
     ///     ground state — where a mob that overrode <c>TickMovement</c> put its own code.
     /// </summary>
     void AfterTickMovement(EntityLiving self) { }
+
+    /// <summary>
+    ///     Replaces the type's natural-spawn check, or <c>null</c> to keep it. Consulted before a
+    ///     monster applies its darkness rule, which is what lets a zombie pigman spawn in the lit
+    ///     Nether. Spawn validity is placement — bounding box, fluid, the block below — so it lives
+    ///     here rather than with the lifecycle events.
+    /// </summary>
+    bool? CanSpawn(EntityLiving self) => null;
+
+    /// <summary>
+    ///     Replaces how attractive a block is to path towards, or <c>null</c> to keep the type's own
+    ///     rule. A giant inverts the usual monster preference and seeks out the light.
+    /// </summary>
+    float? GetBlockPathWeight(EntityLiving self, int x, int y, int z) => null;
 }

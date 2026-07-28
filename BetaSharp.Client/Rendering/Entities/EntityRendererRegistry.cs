@@ -22,6 +22,8 @@ internal static class EntityRendererRegistry
     {
         ["living"] = (in JsonElement json) => new LivingEntityRenderer(Model(json), Shadow(json)),
         ["flapping"] = (in JsonElement json) => new FlappingEntityRenderer(Model(json), Shadow(json)),
+        ["scaled"] = (in JsonElement json) => new ScaledEntityRenderer(
+            Model(json), Shadow(json), json.GetProperty("Scale").GetSingle()),
         ["undead"] = (in JsonElement json) => new UndeadEntityRenderer((ModelBiped)Model(json), Shadow(json)),
         ["creeper"] = (in JsonElement json) => new FuseEntityRenderer(
             Model(json),

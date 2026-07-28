@@ -12,6 +12,12 @@ public interface IEntityLifecycle
     void OnMarkDead(EntityLiving self) { }
 
     /// <summary>
+    ///     Called before damage is applied, with whatever dealt it (<c>null</c> for the environment).
+    ///     A zombie pigman uses this to anger its whole neighbourhood at the attacker.
+    /// </summary>
+    void OnDamaged(EntityLiving self, Entity? attacker, int amount) { }
+
+    /// <summary>
     ///     Called once after a natural spawn places the mob, for state that is rolled per individual
     ///     rather than declared — a sheep's fleece colour, a spider's rider.
     /// </summary>

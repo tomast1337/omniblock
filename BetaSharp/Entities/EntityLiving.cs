@@ -32,6 +32,14 @@ public abstract class EntityLiving : Entity
         IsImmuneToFire = definition.FireImmune;
         SetBoundingBoxSpacing(definition.Width, definition.Height);
 
+        // Applied on top of the unscaled box, reproducing the exact float result the giant's
+        // constructor used to produce by multiplying its own Width and Height.
+        if (definition.Scale != 1.0F)
+        {
+            StandingEyeHeight *= definition.Scale;
+            SetBoundingBoxSpacing(Width * definition.Scale, Height * definition.Scale);
+        }
+
         if (definition.HeldItem is { } held)
         {
             HeldItem = new ItemStack(Item.ByName(ResourceLocation.Parse(held).Path), 1);
@@ -92,7 +100,7 @@ public abstract class EntityLiving : Entity
     private float RotationSpeed { get; set; }
     protected bool Jumping { get; set; }
     private static float DefaultPitch => 0.0F;
-    protected float MovementSpeed { get; set; } = 0.7F;
+    protected internal float MovementSpeed { get; set; } = 0.7F;
     protected int LookTimer { get; set; }
 
     public override Vec3D? LookVector => GetLook(1.0F);
@@ -105,7 +113,7 @@ public abstract class EntityLiving : Entity
 
     public override float EyeHeight => Height * 0.85F;
 
-    protected virtual float SoundVolume => Definition.SoundVolume;
+    protected internal virtual float SoundVolume => Definition.SoundVolume;
 
     protected virtual string? LivingSound => Definition.LivingSound;
 
@@ -378,6 +386,8 @@ public abstract class EntityLiving : Entity
     public override bool Damage(Entity? entity, int amount)
     {
         if (World.IsRemote) return false;
+
+        Behaviors.Lifecycle?.OnDamaged(this, entity, amount);
 
         EntityAge = 0;
         if (Health <= 0) return false;

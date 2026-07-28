@@ -241,7 +241,7 @@ public sealed class EntityBehaviorSlotTests
         pig.OnStruckByLightning(new EntityLightningBolt(world, pig.X, pig.Y, pig.Z));
 
         Assert.True(pig.Dead);
-        Assert.Single(world.Entities.Entities, e => e.GetType().Name == "EntityPigZombie");
+        Assert.Single(world.Entities.Entities, e => EntityRegistry.GetId(e) == "pigzombie");
         // The default fire/damage response is suppressed, so the pig never burns on the way out.
         Assert.False(pig.IsOnFire);
     }

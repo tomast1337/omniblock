@@ -49,6 +49,12 @@ internal static class EntityBehaviorRegistry
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),
+        ["light_seeking_path"] = (in EntityBehaviorContext c) => new LightSeekingPathBehavior(),
+        ["spawn_ignoring_light"] = (in EntityBehaviorContext c) => new SpawnIgnoringLightBehavior(
+            !c.Json.TryGetProperty("requires_difficulty", out JsonElement d) || d.GetBoolean()),
+
+        // Ticker + Targeting + Lifecycle + Persistence, all reading one anger timer
+        ["anger"] = (in EntityBehaviorContext c) => new AngerBehavior(c),
         ["rider_fall_stat"] = (in EntityBehaviorContext c) => new RiderFallStatBehavior(
             Achievement(c.Json.GetProperty("achievement").GetString()!),
             c.Float("minimum_distance", 5.0F)),
@@ -59,7 +65,7 @@ internal static class EntityBehaviorRegistry
 
         // Lifecycle
         ["slime_split"] = (in EntityBehaviorContext c) => new SlimeSplitBehavior(c.Int("child_count", 4)),
-        ["pig_lightning"] = (in EntityBehaviorContext c) => new PigLightningBehavior()
+        ["lightning_conversion"] = (in EntityBehaviorContext c) => new LightningConversionBehavior(c.Json.GetProperty("becomes").GetString()!)
     };
 
     /// <summary>

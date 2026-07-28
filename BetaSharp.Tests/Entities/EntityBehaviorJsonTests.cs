@@ -150,7 +150,7 @@ public sealed class EntityBehaviorJsonTests
 
         Assert.IsType<RangedAttackBehavior>(EntityRegistry.ByName("skeleton").Behaviors.Attack);
         Assert.IsType<SlimeSplitBehavior>(new EntitySlime(world).Lifecycle);
-        Assert.IsType<PigLightningBehavior>(EntityRegistry.ByName("pig").Behaviors.Lifecycle);
+        Assert.IsType<LightningConversionBehavior>(EntityRegistry.ByName("pig").Behaviors.Lifecycle);
 
         // Animals declare no Attack/Targeting, and a wolf declares no Loot at all.
         EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);

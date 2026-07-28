@@ -38,10 +38,18 @@ public class EntityMonster : EntityCreature, Monster
         return true;
     }
 
-    protected override float GetBlockPathWeight(int x, int y, int z) => 0.5F - World.Lighting.GetLuminance(x, y, z);
+    protected override float GetBlockPathWeight(int x, int y, int z) =>
+        Physics?.GetBlockPathWeight(this, x, y, z) ?? 0.5F - World.Lighting.GetLuminance(x, y, z);
 
+    /// <summary>
+    ///     Darkness rule, unless the mob's Physics slot replaces it. The slot is consulted here
+    ///     rather than in the base because this is the rule being replaced — a mob that spawns in
+    ///     the light has to skip this check, not run it and then add to it.
+    /// </summary>
     public override bool CanSpawn()
     {
+        if (Physics?.CanSpawn(this) is { } declared) return declared;
+
         int x = MathHelper.Floor(X);
         int y = MathHelper.Floor(BoundingBox.MinY);
         int z = MathHelper.Floor(Z);

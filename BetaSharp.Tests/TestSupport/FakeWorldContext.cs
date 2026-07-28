@@ -60,7 +60,7 @@ public sealed class FakeWorldContext : IWorldContext
     public bool IsRemote { get; set; }
     public RuleSet Rules { get; }
     public PersistentStateManager StateManager => throw new NotSupportedException();
-    public int Difficulty => 1;
+    public int Difficulty { get; set; } = 1;
 
     /// <summary>Minimal spawn for code paths that need <see cref="EntityPlayer"/> (e.g. dispenser <c>onUse</c> tests).</summary>
     public WorldProperties Properties { get; } = new WorldProperties(0L, "test")

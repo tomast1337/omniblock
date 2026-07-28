@@ -56,8 +56,8 @@ public sealed class MobConfigurationTests
     private static EntityLiving CreateMob(string name, IWorldContext world) => name switch
     {
         "zombie" => (EntityMonster)EntityRegistry.ByName("zombie").Create(world),
-        "giant" => new EntityGiantZombie(world),
-        "pig_zombie" => new EntityPigZombie(world),
+        "giant" => (EntityMonster)EntityRegistry.ByName("giant").Create(world),
+        "pig_zombie" => (EntityMonster)EntityRegistry.ByName("pigzombie").Create(world),
         "skeleton" => (EntityMonster)EntityRegistry.ByName("skeleton").Create(world),
         "creeper" => (EntityMonster)EntityRegistry.ByName("creeper").Create(world),
         "spider" => new EntitySpider(world),

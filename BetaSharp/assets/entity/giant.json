@@ -8,6 +8,12 @@
   "Behaviors": [
     {
       "Slots": [
+        "Physics"
+      ],
+      "Type": "light_seeking_path"
+    },
+    {
+      "Slots": [
         "Attack"
       ],
       "Type": "melee"
@@ -18,5 +24,12 @@
       ],
       "Type": "always_hunt"
     }
-  ]
+  ],
+  "Scale": 6.0,
+  "Renderer": {
+    "Type": "scaled",
+    "Model": "zombie",
+    "Shadow": 0.5,
+    "Scale": 6.0
+  }
 }
