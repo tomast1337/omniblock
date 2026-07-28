@@ -112,11 +112,11 @@ public sealed class EntityGhastTests
 
         Assert.True(ghast.Synced<bool>("charging")!.Value);
         Assert.Equal("/mob/ghast_fire.png", ghast.GetTexture());
-        Assert.Empty(world.Entities.Entities.OfType<EntityFireball>());
+        Assert.DoesNotContain(world.Entities.Entities, e => e.Behaviors.Find<FireballBehavior>() is not null);
 
         for (int tick = 11; tick < 20; tick++) attack.OnTickLiving(ghast);
 
-        Assert.Single(world.Entities.Entities.OfType<EntityFireball>());
+        Assert.Single(world.Entities.Entities, e => e.Behaviors.Find<FireballBehavior>() is not null);
 
         // Firing drops the mob into its reload, so it reads as not charging again.
         attack.OnTickEnd(ghast);
@@ -139,7 +139,7 @@ public sealed class EntityGhastTests
         FireballAttackBehavior attack = ghast.Behaviors.Find<FireballAttackBehavior>()!;
         for (int tick = 0; tick < 40; tick++) attack.OnTickLiving(ghast);
 
-        Assert.Empty(world.Entities.Entities.OfType<EntityFireball>());
+        Assert.DoesNotContain(world.Entities.Entities, e => e.Behaviors.Find<FireballBehavior>() is not null);
         Assert.False(ghast.Synced<bool>("charging")!.Value);
     }
 

@@ -43,10 +43,6 @@ public class EntityTracker
             // modern versions actually update every tick.
             startTracking(entity, 64, 2, true);
         }
-        else if (entity is EntityFireball)
-        {
-            startTracking(entity, 64, 10, false);
-        }
         else if (entity is EntityMinecart)
         {
             startTracking(entity, 160, 5, true);

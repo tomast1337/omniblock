@@ -123,6 +123,12 @@ public sealed record EntityDefinition : IDataAsset
     public double RenderDistanceWeight { get; init; } = 1.0;
 
     /// <summary>
+    ///     Extra reach a player's swing gets when aiming at this entity. A fireball is punchable at
+    ///     a full block's margin — that slack is what makes deflecting one back feasible.
+    /// </summary>
+    public float TargetingMargin { get; init; } = 0.1F;
+
+    /// <summary>
     ///     Wire id in the object-spawn packet (<c>50</c> for primed TNT), a second protocol id space
     ///     from <see cref="ProtocolId" />: non-living entities spawn on the client through
     ///     <c>EntitySpawnS2CPacket</c> rather than the living-entity packet. <c>0</c> means this

@@ -30,14 +30,15 @@ public sealed class EntityRegistryDefinitionTests
     private static readonly EntityType[] s_definedObjectTypes =
     [
         EntityRegistry.ByName("primedtnt"), EntityRegistry.ByName("fallingsand"), EntityRegistry.ByName("lightningbolt"),
-        EntityRegistry.ByName("item"), EntityRegistry.ByName("snowball"), EntityRegistry.ByName("egg")
+        EntityRegistry.ByName("item"), EntityRegistry.ByName("snowball"), EntityRegistry.ByName("egg"),
+        EntityRegistry.ByName("fireball")
     ];
 
     private static readonly EntityType[] s_nonMobTypes =
     [
         EntityRegistry.ByName("arrow"), EntityRegistry.ByName("painting"),
         EntityRegistry.ByName("minecart"), EntityRegistry.ByName("boat"),
-        EntityRegistry.ByName("fireball"), EntityRegistry.ByName("fishhook"),
+        EntityRegistry.ByName("fishhook"),
         EntityRegistry.ByName("player")
     ];
 

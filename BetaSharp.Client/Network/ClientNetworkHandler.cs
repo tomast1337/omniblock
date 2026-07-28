@@ -160,7 +160,9 @@ public class ClientNetworkHandler : NetHandler
 
         if (packet.EntityType == 63)
         {
-            entity = new EntityFireball(_worldClient, x, y, z, packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);
+            entity = EntityRegistry.ByName("fireball").Create(_worldClient);
+            entity.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
+            entity.Behaviors.Find<FireballBehavior>()!.SetDirection(entity, packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);
             packet.EntityData = 0;
         }
 

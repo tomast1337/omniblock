@@ -41,7 +41,8 @@ internal static class EntityRendererRegistry
         ["lightning"] = (in JsonElement json) => new LightningEntityRenderer(),
         ["item"] = (in JsonElement json) => new Items.ItemRenderer(),
         ["projectile"] = (in JsonElement json) => new ProjectileEntityRenderer(
-            Item.ByName(json.GetProperty("Item").GetString()!).getTextureId(0)),
+            Item.ByName(json.GetProperty("Item").GetString()!).getTextureId(0),
+            json.TryGetProperty("Scale", out JsonElement scale) ? scale.GetSingle() : 0.5F),
         ["primed_block"] = (in JsonElement json) => new PrimedBlockEntityRenderer(
             BlockRegistry.Get(json.GetProperty("Block").GetString()!),
             Shadow(json)),

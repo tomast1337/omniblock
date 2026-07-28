@@ -8,10 +8,12 @@ public class ProjectileEntityRenderer : EntityRenderer
 {
 
     private readonly int itemIconIndex;
+    private readonly float scale;
 
-    public ProjectileEntityRenderer(int itemIconIndex)
+    public ProjectileEntityRenderer(int itemIconIndex, float scale = 0.5F)
     {
         this.itemIconIndex = itemIconIndex;
+        this.scale = scale;
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
@@ -19,7 +21,7 @@ public class ProjectileEntityRenderer : EntityRenderer
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate((float)x, (float)y, (float)z);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
-        GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
+        GLManager.GL.Scale(scale, scale, scale);
         loadTexture("/gui/items.png");
         Tessellator tessellator = Tessellator.instance;
         float minU = (itemIconIndex % 16 * 16 + 0) / 256.0F;

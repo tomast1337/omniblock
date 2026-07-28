@@ -330,12 +330,14 @@ internal class EntityTrackerEntry
                 EntityLiving arrowOwner = arrow.Owner;
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, arrowOwner != null ? arrowOwner.ID : currentTrackedEntity.ID);
             }
-            else if (currentTrackedEntity is EntityFireball fireball)
+            // A fireball's spawn packet carries its shooter's id and rides its power vector in the
+            // velocity fields, so it comes from the behavior rather than the generic declared branch.
+            else if (currentTrackedEntity.Behaviors.Find<FireballBehavior>() is { } flight)
             {
-                var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.Owner.ID);
-                packet.VelocityX = (int)(fireball.PowerX * 8000.0);
-                packet.VelocityY = (int)(fireball.PowerY * 8000.0);
-                packet.VelocityZ = (int)(fireball.PowerZ * 8000.0);
+                var packet = EntitySpawnS2CPacket.Get(currentTrackedEntity, 63, flight.Owner(currentTrackedEntity)!.ID);
+                packet.VelocityX = (int)(flight.PowerX(currentTrackedEntity) * 8000.0);
+                packet.VelocityY = (int)(flight.PowerY(currentTrackedEntity) * 8000.0);
+                packet.VelocityZ = (int)(flight.PowerZ(currentTrackedEntity) * 8000.0);
 
                 return packet;
             }

@@ -25,6 +25,8 @@ public class EntityObject : Entity
 
     public override bool HasCollision => Definition.Collidable && !Dead;
 
+    public override float TargetingMargin => Definition.TargetingMargin;
+
     /// <summary>Non-living damage is composed: a dropped item spends hit points, TNT ignores the hit.</summary>
     public override bool Damage(Entity? entity, int amount) =>
         Behaviors.Lifecycle?.Damage(this, entity, amount) ?? base.Damage(entity, amount);

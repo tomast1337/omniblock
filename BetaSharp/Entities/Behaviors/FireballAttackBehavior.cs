@@ -133,7 +133,7 @@ public sealed class FireballAttackBehavior : IEntityTicker
 
     private void Fire(EntityLiving self, double dx, double dy, double dz)
     {
-        EntityFireball fireball = new(self.World, self, dx, dy, dz);
+        Entity fireball = FireballBehavior.Shoot(self.World, self, dx, dy, dz);
         Vec3D look = self.GetLook(1.0F);
         fireball.X = self.X + look.x * _spawnOffset;
         fireball.Y = self.Y + self.Height / 2.0F + 0.5D;

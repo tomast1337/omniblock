@@ -1,0 +1,24 @@
+{
+  "ProtocolId": 63,
+  "SpawnObjectId": 63,
+  "TrackingRange": 64,
+  "TrackingFrequency": 10,
+  "Width": 1.0,
+  "Height": 1.0,
+  "EyeHeightScale": 0.0,
+  "RenderDistanceWeight": 4.0,
+  "Collidable": true,
+  "TargetingMargin": 1.0,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Lifecycle", "Persistence"],
+      "Type": "fireball",
+      "explosion_power": 1.0
+    }
+  ],
+  "Renderer": {
+    "Type": "projectile",
+    "Item": "snowball",
+    "Scale": 2.0
+  }
+}
