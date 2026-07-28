@@ -14,18 +14,23 @@ namespace BetaSharp.Tests.Entities;
 public sealed class BiomeSpawnListTests
 {
     private static readonly (string Mob, int Weight)[] s_baseMonsters =
-        [("EntitySpider", 10), ("EntityZombie", 10), ("EntitySkeleton", 10), ("EntityCreeper", 10), ("EntitySlime", 10)];
+        [("spider", 10), ("zombie", 10), ("skeleton", 10), ("creeper", 10), ("slime", 10)];
 
     private static readonly (string Mob, int Weight)[] s_baseCreatures =
-        [("EntitySheep", 12), ("EntityPig", 10), ("EntityChicken", 10), ("EntityCow", 8)];
+        [("sheep", 12), ("pig", 10), ("chicken", 10), ("cow", 8)];
 
-    private static readonly (string Mob, int Weight)[] s_baseWater = [("EntitySquid", 10)];
+    private static readonly (string Mob, int Weight)[] s_baseWater = [("squid", 10)];
 
+    /// <summary>
+    ///     Identifies each spawned mob by its registry id rather than its C# class. The class stopped
+    ///     being an identity once several registered types began sharing one — a cow and a sheep are
+    ///     both an <c>EntityAnimal</c> — and the id is what the biome JSON names in the first place.
+    /// </summary>
     private static (string Mob, int Weight)[] Actual(Biome biome, CreatureKind kind)
     {
         FakeWorldContext world = new();
         return biome.GetSpawnableList(kind).Entries
-            .Select(e => (e.Item.Factory(world).GetType().Name, e.Weight))
+            .Select(e => (EntityRegistry.GetId(e.Item.Factory(world))!, e.Weight))
             .ToArray();
     }
 
@@ -60,19 +65,19 @@ public sealed class BiomeSpawnListTests
     [InlineData("taiga")]
     public void Wolf_biomes_add_a_wolf_to_the_shared_creature_list(string biomeName)
     {
-        AssertLists(Get(biomeName), s_baseMonsters, [.. s_baseCreatures, ("EntityWolf", 2)], s_baseWater);
+        AssertLists(Get(biomeName), s_baseMonsters, [.. s_baseCreatures, ("wolf", 2)], s_baseWater);
     }
 
     [Fact]
     public void Sky_spawns_only_chickens()
     {
-        AssertLists(Get("sky"), [], [("EntityChicken", 10)], []);
+        AssertLists(Get("sky"), [], [("chicken", 10)], []);
     }
 
     [Fact]
     public void Hell_spawns_only_ghasts_and_zombie_pigmen()
     {
-        AssertLists(Get("hell"), [("EntityGhast", 10), ("EntityPigZombie", 10)], [], []);
+        AssertLists(Get("hell"), [("ghast", 10), ("pigzombie", 10)], [], []);
     }
 
     [Fact]

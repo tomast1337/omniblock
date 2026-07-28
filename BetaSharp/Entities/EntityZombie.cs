@@ -6,11 +6,11 @@ namespace BetaSharp.Entities;
 
 public class EntityZombie : EntityMonster
 {
-    public EntityZombie(IWorldContext world) : this(world, EntityRegistry.ByName("zombie").RequireDefinition())
+    public EntityZombie(IWorldContext world) : this(world, EntityRegistry.ByName("zombie"))
     {
     }
 
-    protected EntityZombie(IWorldContext world, EntityDefinition definition) : base(world, definition)
+    protected EntityZombie(IWorldContext world, EntityType type) : base(world, type)
     {
     }
 

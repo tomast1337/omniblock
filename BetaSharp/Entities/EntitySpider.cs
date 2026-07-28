@@ -7,7 +7,7 @@ public class EntitySpider : EntityMonster
 {
     private const double ViewDistance = 16.0D;
 
-    public EntitySpider(IWorldContext world) : base(world, EntityRegistry.ByName("spider").RequireDefinition())
+    public EntitySpider(IWorldContext world) : base(world, EntityRegistry.ByName("spider"))
     {
     }
 

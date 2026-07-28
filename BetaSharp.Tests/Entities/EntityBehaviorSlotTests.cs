@@ -68,7 +68,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
 
-        foreach (EntityCreature animal in new EntityCreature[] { new EntityPig(world), new EntityCow(world), new EntitySheep(world), new EntityChicken(world) })
+        foreach (EntityCreature animal in new EntityCreature[] { new EntityPig(world), (EntityAnimal)EntityRegistry.ByName("cow").Create(world), new EntitySheep(world), new EntityChicken(world) })
         {
             Assert.Null(animal.Attack);
             Assert.Null(animal.Targeting);
@@ -103,7 +103,7 @@ public sealed class EntityBehaviorSlotTests
     public void Simple_loot_drops_only_its_own_item()
     {
         FakeWorldContext world = new();
-        EntityCow cow = Spawn(world, new EntityCow(world), 8.5, 65.0, 8.5);
+        EntityAnimal cow = Spawn(world, (EntityAnimal)EntityRegistry.ByName("cow").Create(world), 8.5, 65.0, 8.5);
 
         List<int> dropped = CollectDrops(world, cow, killer: null, rolls: 100);
 

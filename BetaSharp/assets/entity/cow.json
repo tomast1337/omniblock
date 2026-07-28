@@ -9,6 +9,11 @@
   "DeathSound": "mob.cowhurt",
   "SoundVolume": 0.4,
   "TalkInterval": 120,
+  "Renderer": {
+    "Type": "living",
+    "Model": "cow",
+    "Shadow": 0.7
+  },
   "Behaviors": [
     {
       "Slots": [

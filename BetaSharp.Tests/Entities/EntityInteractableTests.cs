@@ -27,7 +27,7 @@ public sealed class EntityInteractableTests
     public void Milking_a_cow_swaps_the_bucket_for_milk()
     {
         FakeWorldContext world = new();
-        EntityCow cow = new(world);
+        EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);
         TestEntityPlayer player = Player(world, Item.ByName("bucket"));
 
         Assert.True(cow.Interact(player));
@@ -38,7 +38,7 @@ public sealed class EntityInteractableTests
     public void Milking_needs_the_right_item_in_hand()
     {
         FakeWorldContext world = new();
-        EntityCow cow = new(world);
+        EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);
 
         Assert.False(cow.Interact(Player(world)));
         Assert.False(cow.Interact(Player(world, Item.ByName("stick"))));

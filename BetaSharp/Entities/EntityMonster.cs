@@ -5,7 +5,7 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityMonster : EntityCreature, Monster
 {
-    protected EntityMonster(IWorldContext world, EntityDefinition? definition = null) : base(world, definition)
+    protected EntityMonster(IWorldContext world, EntityType? type = null) : base(world, type)
     {
     }
 

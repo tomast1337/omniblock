@@ -126,10 +126,6 @@ internal sealed class BucketBehavior : IItemBehavior
                 }
             }
         }
-        else if (_isFull == 0 && hitResult.Entity is EntityCow)
-        {
-            return new ItemStack(s_milk);
-        }
 
         return itemStack;
     }

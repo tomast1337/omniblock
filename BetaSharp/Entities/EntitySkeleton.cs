@@ -8,7 +8,7 @@ public class EntitySkeleton : EntityMonster
 {
     private static readonly ItemStack s_defaultHeldItem = new(Item.ByName("bow"), 1);
 
-    public EntitySkeleton(IWorldContext world) : base(world, EntityRegistry.ByName("skeleton").RequireDefinition())
+    public EntitySkeleton(IWorldContext world) : base(world, EntityRegistry.ByName("skeleton"))
     {
 
         // Two pools, so arrows and bones roll independently and both can drop.

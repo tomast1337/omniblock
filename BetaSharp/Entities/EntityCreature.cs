@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityCreature(IWorldContext world, EntityDefinition? definition = null) : EntityLiving(world, definition)
+public abstract class EntityCreature(IWorldContext world, EntityType? type = null) : EntityLiving(world, type)
 {
     private const float Range = 16.0F;
     private PathEntity? _pathToEntity;

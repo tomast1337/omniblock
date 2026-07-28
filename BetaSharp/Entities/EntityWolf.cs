@@ -24,7 +24,7 @@ public class EntityWolf : EntityAnimal
     private float _prevTimeWolfIsShaking;
     private float _timeWolfIsShaking;
 
-    public EntityWolf(IWorldContext world) : base(world, EntityRegistry.ByName("wolf").RequireDefinition())
+    public EntityWolf(IWorldContext world) : base(world, EntityRegistry.ByName("wolf"))
     {
         _wolfFlags = DataSynchronizer.MakeProperty<byte>(16, 0);
         _wolfOwner = DataSynchronizer.MakeProperty<string?>(17, "");

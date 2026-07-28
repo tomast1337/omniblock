@@ -12,7 +12,7 @@ public class EntityChicken : EntityAnimal
     public float PrevDestPos;
     public float PrevFlapProgress;
 
-    public EntityChicken(IWorldContext world) : base(world, EntityRegistry.ByName("chicken").RequireDefinition())
+    public EntityChicken(IWorldContext world) : base(world, EntityRegistry.ByName("chicken"))
     {
     }
 

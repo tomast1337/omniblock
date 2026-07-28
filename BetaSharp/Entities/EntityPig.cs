@@ -8,7 +8,7 @@ namespace BetaSharp.Entities;
 
 public class EntityPig : EntityAnimal
 {
-    public EntityPig(IWorldContext world) : base(world, EntityRegistry.ByName("pig").RequireDefinition())
+    public EntityPig(IWorldContext world) : base(world, EntityRegistry.ByName("pig"))
     {
         Saddled = DataSynchronizer.Get<bool>(SyncedPropertyFactory.Resolve<bool>(Definition, "saddled").Id);
     }

@@ -6,6 +6,7 @@ using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Registries;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 
@@ -14,6 +15,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class EntityRenderDispatcher
 {
     private readonly Dictionary<Type, EntityRenderer> _entityRenderMap = [];
+    private readonly Dictionary<EntityType, EntityRenderer> _declaredRenderMap = [];
     public static readonly EntityRenderDispatcher Instance = new();
     private TextRenderer _fontRenderer;
     public static double OffsetX { get; set; }
@@ -36,7 +38,6 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntitySpider), new SpiderEntityRenderer());
         RegisterRenderer(typeof(EntityPig), new PigEntityRenderer(new ModelPig(), new ModelPig(0.5F), 0.7F));
         RegisterRenderer(typeof(EntitySheep), new SheepEntityRenderer(new ModelSheep(), new ModelSheepFur(), 0.7F));
-        RegisterRenderer(typeof(EntityCow), new CowEntityRenderer(new ModelCow(), 0.7F));
         RegisterRenderer(typeof(EntityWolf), new WolfEntityRenderer(new ModelWolf(), 0.5F));
         RegisterRenderer(typeof(EntityChicken), new ChickenEntityRenderer(new ModelChicken(), 0.3F));
         RegisterRenderer(typeof(EntityCreeper), new CreeperEntityRenderer());
@@ -62,9 +63,26 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityFish), new FishingBobberEntityRenderer());
         RegisterRenderer(typeof(EntityLightningBolt), new LightningEntityRenderer());
 
-        foreach (EntityRenderer render in _entityRenderMap.Values)
+        RegisterDeclaredRenderers();
+
+        foreach (EntityRenderer render in _entityRenderMap.Values.Concat(_declaredRenderMap.Values))
         {
             render.Dispatcher = this;
+        }
+    }
+
+    /// <summary>
+    ///     Builds a renderer for every registered type whose definition declares one. These take
+    ///     precedence over the by-class table, which is what lets several types share a class: a cow
+    ///     and a sheep are both an <c>EntityAnimal</c>, so the class can no longer choose the model.
+    /// </summary>
+    private void RegisterDeclaredRenderers()
+    {
+        foreach (EntityType type in DefaultRegistries.EntityTypes)
+        {
+            if (type.Definition?.Renderer is not { } json) continue;
+
+            _declaredRenderMap[type] = EntityRendererRegistry.Create(json);
         }
     }
 
@@ -86,6 +104,11 @@ public class EntityRenderDispatcher
 
     public EntityRenderer GetEntityRenderObject(Entity entity)
     {
+        if (entity.Type is { } type && _declaredRenderMap.TryGetValue(type, out EntityRenderer? declared))
+        {
+            return declared;
+        }
+
         return GetEntityClassRenderObject(entity.GetType());
     }
 

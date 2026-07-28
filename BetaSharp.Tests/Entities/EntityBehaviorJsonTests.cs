@@ -152,7 +152,7 @@ public sealed class EntityBehaviorJsonTests
         Assert.IsType<PigLightningBehavior>(new EntityPig(world).Lifecycle);
 
         // Animals declare no Attack/Targeting, and a wolf declares no Loot at all.
-        EntityCow cow = new(world);
+        EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);
         Assert.Null(cow.Attack);
         Assert.Null(cow.Targeting);
         Assert.Null(new EntityWolf(world).Loot);

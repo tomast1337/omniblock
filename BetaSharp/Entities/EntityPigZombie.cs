@@ -10,7 +10,7 @@ internal class EntityPigZombie : EntityZombie
     private int _angerLevel;
     private int _randomSoundDelay;
 
-    public EntityPigZombie(IWorldContext world) : base(world, EntityRegistry.ByName("pigzombie").RequireDefinition())
+    public EntityPigZombie(IWorldContext world) : base(world, EntityRegistry.ByName("pigzombie"))
     {
     }
 

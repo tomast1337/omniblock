@@ -69,6 +69,17 @@ public sealed record EntityDefinition : IDataAsset
     public State.SyncedPropertyDefinition[] SyncedProperties { get; init; } = [];
 
     /// <summary>
+    ///     How the client draws this entity: a <c>"Type"</c> naming a renderer factory plus whatever
+    ///     that factory reads (<c>"Model"</c>, <c>"Shadow"</c>). Kept as raw JSON for the same reason
+    ///     <see cref="Behaviors" /> is — the shape belongs to the factory, not to this record.
+    ///     <para>
+    ///         Absent means the client falls back to its by-class renderer table, so an entity is not
+    ///         obliged to describe its rendering here to keep working.
+    ///     </para>
+    /// </summary>
+    public JsonElement? Renderer { get; init; }
+
+    /// <summary>
     ///     One entry per behavior <em>instance</em>, not per slot — same shape as
     ///     <c>BlockDefinition.Behaviors</c>. Each entry carries a <c>"Slots"</c> array
     ///     (<c>"Attack"</c>, <c>"Targeting"</c>, <c>"Loot"</c>, <c>"Lifecycle"</c>) and its own

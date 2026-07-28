@@ -21,7 +21,7 @@ public class EntitySquid : EntityWaterMob
     public float TentacleSpread;
     public float TiltAngle;
 
-    public EntitySquid(IWorldContext world) : base(world, EntityRegistry.ByName("squid").RequireDefinition())
+    public EntitySquid(IWorldContext world) : base(world, EntityRegistry.ByName("squid"))
     {
         _animationSpeed = 1.0F / (Random.NextFloat() + 1.0F) * 0.2F;
     }

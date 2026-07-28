@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityAnimal(IWorldContext world, EntityDefinition? definition = null) : EntityCreature(world, definition), SpawnableEntity
+public class EntityAnimal(IWorldContext world, EntityType? type = null) : EntityCreature(world, type), SpawnableEntity
 {
     protected override float GetBlockPathWeight(int x, int y, int z) => World.Reader.GetBlockId(x, y - 1, z) == BlockRegistry.Get("grass_block").id ? 10.0F : World.Lighting.GetLuminance(x, y, z) - 0.5F;
 

@@ -63,7 +63,7 @@ public sealed class MobConfigurationTests
         "spider" => new EntitySpider(world),
         "ghast" => new EntityGhast(world),
         "pig" => new EntityPig(world),
-        "cow" => new EntityCow(world),
+        "cow" => (EntityAnimal)EntityRegistry.ByName("cow").Create(world),
         "sheep" => new EntitySheep(world),
         "chicken" => new EntityChicken(world),
         "squid" => new EntitySquid(world),

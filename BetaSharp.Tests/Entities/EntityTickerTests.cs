@@ -90,7 +90,7 @@ public sealed class EntityTickerTests
     public void Entities_without_a_ticker_have_a_null_slot()
     {
         FakeWorldContext world = new();
-        Assert.Null(new EntityCow(world).Behaviors.Ticker);
+        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Ticker);
         Assert.Null(EntityRegistry.ByName("arrow").Behaviors.Ticker);
     }
 }

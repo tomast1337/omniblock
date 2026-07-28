@@ -18,7 +18,7 @@ public class EntityGhast : EntityFlying, Monster
     public int AttackCounter;
     public int PrevAttackCounter;
 
-    public EntityGhast(IWorldContext world) : base(world, EntityRegistry.ByName("ghast").RequireDefinition())
+    public EntityGhast(IWorldContext world) : base(world, EntityRegistry.ByName("ghast"))
     {
         _charging = DataSynchronizer.MakeProperty(16, false);
     }

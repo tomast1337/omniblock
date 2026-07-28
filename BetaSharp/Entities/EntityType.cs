@@ -2,7 +2,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public class EntityType(Func<IWorldContext, Entity> factory, Type baseType, string id, EntityDefinition? definition = null)
+public class EntityType(Func<IWorldContext, EntityType, Entity> factory, Type baseType, string id, EntityDefinition? definition = null)
 {
     public Type BaseType { get; } = baseType;
     public string Id { get; } = id;
@@ -21,7 +21,12 @@ public class EntityType(Func<IWorldContext, Entity> factory, Type baseType, stri
     public EntityBehaviorSet Behaviors { get; } =
         definition is null ? EntityBehaviorSet.Empty : EntityFactory.BuildBehaviors(definition, baseType);
 
-    public Entity Create(IWorldContext world) => factory(world);
+    /// <summary>
+    ///     Hands the type to the entity it creates, so identity travels with the instance instead of
+    ///     being recovered from its C# class. This is what lets several registered types share one
+    ///     class — the step that makes a mob subclass optional rather than mandatory.
+    /// </summary>
+    public Entity Create(IWorldContext world) => factory(world, this);
 
     /// <summary>Definition accessor for mob constructors, which cannot proceed without one.</summary>
     public EntityDefinition RequireDefinition() =>

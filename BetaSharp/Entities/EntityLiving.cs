@@ -13,8 +13,11 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityLiving : Entity
 {
-    protected EntityLiving(IWorldContext world, EntityDefinition? definition = null) : base(world)
+    protected EntityLiving(IWorldContext world, EntityType? type = null) : base(world, type)
     {
+        // Read through Type rather than the parameter: an entity constructed directly still resolves
+        // its type by class in the base constructor, and should get that type's configuration.
+        EntityDefinition? definition = Type?.Definition;
         Definition = definition ?? EntityDefinition.Default;
         PreventEntitySpawning = true;
         SetPosition(X, Y, Z);

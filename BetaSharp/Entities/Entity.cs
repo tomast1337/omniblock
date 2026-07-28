@@ -16,21 +16,24 @@ public abstract class Entity : IEntity
 {
     private static int s_nextEntityId;
     private readonly SyncedProperty<byte> _flags;
+    private readonly EntityType? _type;
     private bool _firstTick = true;
     private int _nextStepSoundDistance = 1;
     private double _vehiclePitchDelta;
     private double _vehicleYawDelta;
     public Box BoundingBox = new(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
 
-    protected Entity(IWorldContext world)
+    protected Entity(IWorldContext world, EntityType? type = null)
     {
         World = world;
         SetPosition(0.0D, 0.0D, 0.0D);
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
 
-        // Resolved directly rather than through the virtual Type property, which a subclass could
-        // override before its own fields are initialised.
-        EntityType? type = EntityRegistry.ByRuntimeType(GetType());
+        // Prefer the type handed down by the registry factory: two registered types may share one
+        // class, so the class alone no longer identifies the entity. The lookup is the fallback for
+        // entities still constructed directly (tests, EntityEgg hatching a chicken).
+        type ??= EntityRegistry.ByRuntimeType(GetType());
+        _type = type;
         EntityBehaviorSet behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;
         Behaviors = behaviors;
         State = behaviors.StateLayout.Create();
@@ -62,11 +65,11 @@ public abstract class Entity : IEntity
     protected internal IEntityTicker? Ticker => Behaviors.Ticker;
 
     /// <summary>
-    ///     Resolved from the registry by runtime class, so an entity does not restate the type it was
-    ///     registered as. Walks base classes so client-side player subclasses resolve to the
-    ///     registered <c>player</c> type.
+    ///     The registered type this entity was created as, carried from construction. Falls back to a
+    ///     lookup by runtime class for entities built outside the registry, which walks base classes
+    ///     so client-side player subclasses still resolve to the registered <c>player</c> type.
     /// </summary>
-    public virtual EntityType? Type => EntityRegistry.ByRuntimeType(GetType());
+    public virtual EntityType? Type => _type;
     public int ID { get; set; } = s_nextEntityId++;
     public int GetId() => ID;
 

@@ -18,7 +18,7 @@ public class EntitySheep : EntityAnimal
 
     private readonly SyncedProperty<byte> _sheepData;
 
-    public EntitySheep(IWorldContext world) : base(world, EntityRegistry.ByName("sheep").RequireDefinition())
+    public EntitySheep(IWorldContext world) : base(world, EntityRegistry.ByName("sheep"))
     {
         _sheepData = DataSynchronizer.MakeProperty<byte>(16, 0);
 
