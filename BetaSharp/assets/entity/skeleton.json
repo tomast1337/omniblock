@@ -14,44 +14,28 @@
   },
   "Behaviors": [
     {
-      "Slots": [
-        "Ticker"
-      ],
+      "Slots": ["Ticker"],
       "Type": "burn_in_daylight"
     },
     {
-      "Slots": [
-        "Attack"
-      ],
+      "Slots": ["Attack"],
       "Type": "ranged"
     },
     {
-      "Slots": [
-        "Targeting"
-      ],
+      "Slots": ["Targeting"],
       "Type": "always_hunt"
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [
-            {
-              "Item": "betasharp:arrow"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:arrow"}],
           "MinCount": 0,
           "MaxCount": 2
         },
         {
-          "Entries": [
-            {
-              "Item": "betasharp:bone"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:bone"}],
           "MinCount": 0,
           "MaxCount": 2
         }

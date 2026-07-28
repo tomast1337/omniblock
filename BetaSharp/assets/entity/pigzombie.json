@@ -12,12 +12,7 @@
   "HeldItem": "betasharp:sword_gold",
   "Behaviors": [
     {
-      "Slots": [
-        "Ticker",
-        "Targeting",
-        "Lifecycle",
-        "Persistence"
-      ],
+      "Slots": ["Ticker","Targeting","Lifecycle","Persistence"],
       "Type": "anger",
       "min_anger": 400,
       "anger_range": 400,
@@ -31,22 +26,16 @@
       }
     },
     {
-      "Slots": [
-        "Physics"
-      ],
+      "Slots": ["Physics"],
       "Type": "spawn_ignoring_light",
       "requires_difficulty": true
     },
     {
-      "Slots": [
-        "Attack"
-      ],
+      "Slots": ["Attack"],
       "Type": "melee"
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {

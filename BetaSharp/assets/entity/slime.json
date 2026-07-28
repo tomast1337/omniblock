@@ -17,20 +17,12 @@
   ],
   "Behaviors": [
     {
-      "Slots": [
-        "Ticker",
-        "Lifecycle",
-        "Persistence"
-      ],
+      "Slots": ["Ticker","Lifecycle","Persistence"],
       "Type": "all",
       "behaviors": [
         {
           "Type": "sized_body",
-          "sizes": [
-            1,
-            2,
-            4
-          ],
+          "sizes": [1,2,4],
           "width_per_size": 0.6,
           "nbt_key": "Size",
           "nbt_offset": -1
@@ -55,9 +47,7 @@
       ]
     },
     {
-      "Slots": [
-        "Physics"
-      ],
+      "Slots": ["Physics"],
       "Type": "slime_chunk_spawn",
       "chunk_seed": 987234911,
       "chance_one_in": 10,
@@ -66,26 +56,18 @@
       "difficulty_free_size": 1
     },
     {
-      "Slots": [
-        "Interactable"
-      ],
+      "Slots": ["Interactable"],
       "Type": "contact_damage",
       "reach_per_size": 0.6,
       "minimum_size": 2,
       "sound": "mob.slimeattack"
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [
-            {
-              "Item": "betasharp:slimeball"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:slimeball"}],
           "MinCount": 0,
           "MaxCount": 2,
           "Condition": {

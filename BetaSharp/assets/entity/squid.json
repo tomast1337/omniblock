@@ -12,10 +12,7 @@
   "TracksVelocity": true,
   "Behaviors": [
     {
-      "Slots": [
-        "Physics",
-        "Ticker"
-      ],
+      "Slots": ["Physics","Ticker"],
       "Type": "all",
       "behaviors": [
         {
@@ -30,9 +27,7 @@
       ]
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {

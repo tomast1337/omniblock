@@ -24,11 +24,7 @@
   },
   "Behaviors": [
     {
-      "Slots": [
-        "Interactable",
-        "Persistence",
-        "Lifecycle"
-      ],
+      "Slots": ["Interactable","Persistence","Lifecycle"],
       "Type": "wool",
       "property": "wool",
       "tool": "betasharp:shears",
@@ -36,9 +32,7 @@
       "drop_range": 3
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {

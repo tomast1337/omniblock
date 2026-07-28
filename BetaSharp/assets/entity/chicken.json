@@ -16,32 +16,22 @@
   },
   "Behaviors": [
     {
-      "Slots": [
-        "Physics"
-      ],
+      "Slots": ["Physics"],
       "Type": "flap_descent",
       "descent_damping": 0.6
     },
     {
-      "Slots": [
-        "Ticker"
-      ],
+      "Slots": ["Ticker"],
       "Type": "lay_eggs",
       "min_delay": 6000,
       "delay_range": 6000
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [
-            {
-              "Item": "betasharp:feather"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:feather"}],
           "MinCount": 0,
           "MaxCount": 2
         }

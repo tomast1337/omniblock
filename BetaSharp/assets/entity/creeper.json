@@ -30,11 +30,7 @@
   },
   "Behaviors": [
     {
-      "Slots": [
-        "Attack",
-        "Ticker",
-        "Lifecycle"
-      ],
+      "Slots": ["Attack","Ticker","Lifecycle"],
       "Type": "fuse",
       "fuse_ticks": 30,
       "trigger_range": 3.0,
@@ -44,33 +40,20 @@
       "fuse_sound": "random.fuse"
     },
     {
-      "Slots": [
-        "Targeting"
-      ],
+      "Slots": ["Targeting"],
       "Type": "always_hunt"
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [
-            {
-              "Item": "betasharp:gunpowder"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:gunpowder"}],
           "MinCount": 0,
           "MaxCount": 2
         },
         {
-          "Entries": [
-            {
-              "Item": "betasharp:record",
-              "RandomVariants": 2
-            }
-          ],
+          "Entries": [{"Item": "betasharp:record","RandomVariants": 2}],
           "MinCount": 1,
           "MaxCount": 1,
           "Condition": {

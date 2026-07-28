@@ -7,21 +7,15 @@
   "Texture": "/mob/zombie.png",
   "Behaviors": [
     {
-      "Slots": [
-        "Physics"
-      ],
+      "Slots": ["Physics"],
       "Type": "light_seeking_path"
     },
     {
-      "Slots": [
-        "Attack"
-      ],
+      "Slots": ["Attack"],
       "Type": "melee"
     },
     {
-      "Slots": [
-        "Targeting"
-      ],
+      "Slots": ["Targeting"],
       "Type": "always_hunt"
     }
   ],

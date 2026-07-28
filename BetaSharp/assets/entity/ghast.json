@@ -20,9 +20,7 @@
   ],
   "Behaviors": [
     {
-      "Slots": [
-        "Physics"
-      ],
+      "Slots": ["Physics"],
       "Type": "all",
       "behaviors": [
         {
@@ -35,9 +33,7 @@
       ]
     },
     {
-      "Slots": [
-        "Ticker"
-      ],
+      "Slots": ["Ticker"],
       "Type": "all",
       "behaviors": [
         {
@@ -65,17 +61,11 @@
       ]
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [
-            {
-              "Item": "betasharp:gunpowder"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:gunpowder"}],
           "MinCount": 0,
           "MaxCount": 2
         }

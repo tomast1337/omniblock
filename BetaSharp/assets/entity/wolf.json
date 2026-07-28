@@ -34,14 +34,7 @@
   ],
   "Behaviors": [
     {
-      "Slots": [
-        "Interactable",
-        "Persistence",
-        "Targeting",
-        "Ticker",
-        "Lifecycle",
-        "Physics"
-      ],
+      "Slots": ["Interactable","Persistence","Targeting","Ticker","Lifecycle","Physics"],
       "Type": "all",
       "behaviors": [
         {
@@ -85,9 +78,7 @@
       ]
     },
     {
-      "Slots": [
-        "Attack"
-      ],
+      "Slots": ["Attack"],
       "Type": "jump",
       "min_range": 2.0,
       "max_range": 6.0,

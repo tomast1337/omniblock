@@ -26,25 +26,17 @@
   },
   "Behaviors": [
     {
-      "Slots": [
-        "Physics"
-      ],
+      "Slots": ["Physics"],
       "Type": "rider_fall_stat",
       "achievement": "flyPig",
       "minimum_distance": 5.0
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [
-            {
-              "Item": "betasharp:porkchop_cooked"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:porkchop_cooked"}],
           "MinCount": 0,
           "MaxCount": 2,
           "Condition": {
@@ -52,11 +44,7 @@
           }
         },
         {
-          "Entries": [
-            {
-              "Item": "betasharp:porkchop_raw"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:porkchop_raw"}],
           "MinCount": 0,
           "MaxCount": 2,
           "Condition": {
@@ -67,16 +55,12 @@
       ]
     },
     {
-      "Slots": [
-        "Lifecycle"
-      ],
+      "Slots": ["Lifecycle"],
       "Type": "lightning_conversion",
       "becomes": "pigzombie"
     },
     {
-      "Slots": [
-        "Interactable"
-      ],
+      "Slots": ["Interactable"],
       "Type": "ride_if_saddled",
       "saddled_property": "saddled"
     }

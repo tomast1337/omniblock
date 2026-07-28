@@ -15,35 +15,23 @@
   },
   "Behaviors": [
     {
-      "Slots": [
-        "Ticker"
-      ],
+      "Slots": ["Ticker"],
       "Type": "burn_in_daylight"
     },
     {
-      "Slots": [
-        "Attack"
-      ],
+      "Slots": ["Attack"],
       "Type": "melee"
     },
     {
-      "Slots": [
-        "Targeting"
-      ],
+      "Slots": ["Targeting"],
       "Type": "always_hunt"
     },
     {
-      "Slots": [
-        "Loot"
-      ],
+      "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [
-            {
-              "Item": "betasharp:feather"
-            }
-          ],
+          "Entries": [{"Item": "betasharp:feather"}],
           "MinCount": 0,
           "MaxCount": 2
         }
