@@ -20,7 +20,19 @@ internal static class EntityRendererRegistry
 
     private static readonly Dictionary<string, RendererFactory> s_factories = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["living"] = (in JsonElement json) => new LivingEntityRenderer(Model(json), Shadow(json))
+        ["living"] = (in JsonElement json) => new LivingEntityRenderer(Model(json), Shadow(json)),
+        ["flapping"] = (in JsonElement json) => new FlappingEntityRenderer(Model(json), Shadow(json)),
+        ["fleece"] = (in JsonElement json) => new FleeceEntityRenderer(
+            Model(json),
+            EntityModelRegistry.Create(json.GetProperty("OverlayModel").GetString()!),
+            Shadow(json),
+            json.GetProperty("OverlayTexture").GetString()!),
+        ["overlay"] = (in JsonElement json) => new OverlayEntityRenderer(
+            Model(json),
+            EntityModelRegistry.Create(json.GetProperty("OverlayModel").GetString()!),
+            Shadow(json),
+            json.GetProperty("OverlayProperty").GetString()!,
+            json.GetProperty("OverlayTexture").GetString()!)
     };
 
     public static EntityRenderer Create(JsonElement json)

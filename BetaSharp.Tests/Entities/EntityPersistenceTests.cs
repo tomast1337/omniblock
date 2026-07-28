@@ -44,14 +44,15 @@ public sealed class EntityPersistenceTests
     public void Pig_saddle_survives_a_save_load_round_trip()
     {
         FakeWorldContext world = new();
-        EntityPig pig = new(world) { Saddled = { Value = true } };
+        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         Assert.True(pig.SaveSelfNbt(nbt));
 
-        EntityPig loaded = Assert.IsType<EntityPig>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
-        Assert.True(loaded.Saddled.Value);
+        EntityAnimal loaded = Assert.IsType<EntityAnimal>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        Assert.True(loaded.Synced<bool>("saddled")!.Value);
     }
 
     [Fact]
@@ -61,7 +62,8 @@ public sealed class EntityPersistenceTests
         // WriteNbt overrides used, or existing worlds silently lose state.
         FakeWorldContext world = new();
         EntityCreeper creeper = new(world) { Powered = { Value = true } };
-        EntityPig pig = new(world) { Saddled = { Value = true } };
+        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        pig.Synced<bool>("saddled")!.Value = true;
 
         NBTTagCompound creeperNbt = new();
         NBTTagCompound pigNbt = new();

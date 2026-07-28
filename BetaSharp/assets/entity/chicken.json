@@ -9,7 +9,19 @@
   "HurtSound": "mob.chickenhurt",
   "DeathSound": "mob.chickenhurt",
   "TalkInterval": 120,
+  "Renderer": {
+    "Type": "flapping",
+    "Model": "chicken",
+    "Shadow": 0.3
+  },
   "Behaviors": [
+    {
+      "Slots": [
+        "Physics"
+      ],
+      "Type": "flap_descent",
+      "descent_damping": 0.6
+    },
     {
       "Slots": [
         "Ticker"

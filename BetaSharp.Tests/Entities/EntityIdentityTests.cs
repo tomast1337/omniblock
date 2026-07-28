@@ -91,6 +91,6 @@ public sealed class EntityIdentityTests
     [Fact]
     public void A_class_that_still_backs_one_type_resolves_by_class()
     {
-        Assert.Same(EntityRegistry.ByName("pig"), EntityRegistry.ByRuntimeType(typeof(EntityPig)));
+        Assert.Same(EntityRegistry.ByName("wolf"), EntityRegistry.ByRuntimeType(typeof(EntityWolf)));
     }
 }

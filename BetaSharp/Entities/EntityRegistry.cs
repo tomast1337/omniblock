@@ -34,13 +34,13 @@ public static class EntityRegistry
         RegisterMob((world, _) => new EntitySlime(world), "Slime");
         RegisterMob((world, _) => new EntityGhast(world), "Ghast");
         RegisterMob((world, _) => new EntityPigZombie(world), "PigZombie");
-        RegisterMob((world, _) => new EntityPig(world), "Pig");
-        RegisterMob((world, _) => new EntitySheep(world), "Sheep");
+        RegisterMob((world, type) => new EntityAnimal(world, type), "Pig");
+        RegisterMob((world, type) => new EntityAnimal(world, type), "Sheep");
 
         // No class of its own: a cow is an EntityAnimal configured by cow.json. Every behavior it
         // once overrode now sits in a capability slot, so the subclass had nothing left to hold.
         RegisterMob((world, type) => new EntityAnimal(world, type), "Cow");
-        RegisterMob((world, _) => new EntityChicken(world), "Chicken");
+        RegisterMob((world, type) => new EntityAnimal(world, type), "Chicken");
         RegisterMob((world, _) => new EntitySquid(world), "Squid");
         RegisterMob((world, _) => new EntityWolf(world), "Wolf");
         Register((world, _) => new EntityTntPrimed(world), "PrimedTnt", 20);

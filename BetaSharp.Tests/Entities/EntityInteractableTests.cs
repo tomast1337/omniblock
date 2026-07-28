@@ -48,7 +48,7 @@ public sealed class EntityInteractableTests
     public void An_unsaddled_pig_cannot_be_ridden()
     {
         FakeWorldContext world = new();
-        EntityPig pig = new(world);
+        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
         TestEntityPlayer player = Player(world);
 
         Assert.False(pig.Interact(player));
@@ -59,7 +59,8 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_carries_the_player()
     {
         FakeWorldContext world = new();
-        EntityPig pig = new(world) { Saddled = { Value = true } };
+        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         TestEntityPlayer player = Player(world);
 
@@ -71,7 +72,8 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_refuses_a_second_rider()
     {
         FakeWorldContext world = new();
-        EntityPig pig = new(world) { Saddled = { Value = true } };
+        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         Assert.True(pig.Interact(Player(world)));

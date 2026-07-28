@@ -16,7 +16,7 @@ public sealed class EntityHierarchySmokeTests
         Assert.IsAssignableFrom<EntityMonster>(zombie);
         Assert.IsAssignableFrom<EntityLiving>(zombie);
 
-        var pig = new EntityPig(_world);
+        var pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(_world);
         Assert.IsAssignableFrom<EntityAnimal>(pig);
         Assert.IsAssignableFrom<EntityCreature>(pig);
 

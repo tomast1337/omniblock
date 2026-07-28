@@ -37,10 +37,18 @@ internal static class EntityBehaviorRegistry
             Items.Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("required").GetString()!).Path),
             Items.Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("result").GetString()!).Path)),
         ["ride_if_saddled"] = (in EntityBehaviorContext c) => new RideIfSaddledBehavior(c),
+        ["wool"] = (in EntityBehaviorContext c) => new WoolBehavior(c),
         ["contact_damage"] = (in EntityBehaviorContext c) => new ContactDamageBehavior(
             c.Double("reach_per_size", 0.6D),
             c.Int("minimum_size", 2),
             c.Json.TryGetProperty("sound", out JsonElement s) ? s.GetString() ?? "" : ""),
+
+        // Physics
+        ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
+        ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),
+        ["rider_fall_stat"] = (in EntityBehaviorContext c) => new RiderFallStatBehavior(
+            Achievement(c.Json.GetProperty("achievement").GetString()!),
+            c.Float("minimum_distance", 5.0F)),
 
         // Ticker
         ["burn_in_daylight"] = (in EntityBehaviorContext c) => new BurnInDaylightBehavior(c.Int("fire_ticks", 300)),
@@ -50,6 +58,14 @@ internal static class EntityBehaviorRegistry
         ["slime_split"] = (in EntityBehaviorContext c) => new SlimeSplitBehavior(c.Int("child_count", 4)),
         ["pig_lightning"] = (in EntityBehaviorContext c) => new PigLightningBehavior()
     };
+
+    /// <summary>
+    ///     Resolves an achievement by its short key (<c>"flyPig"</c>). Achievements have no registry
+    ///     of their own, so this matches on the translation key they are all built from.
+    /// </summary>
+    private static Achievement Achievement(string key) =>
+        Achievements.AllAchievements.Find(a => a.TranslationKey == "achievement." + key)
+        ?? throw new ArgumentException($"Unknown achievement '{key}'.", nameof(key));
 
     public static object Build(in EntityBehaviorContext context)
     {

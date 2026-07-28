@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
@@ -103,12 +104,13 @@ internal sealed class DyeBehavior : IItemBehavior
 
     public void UseOnEntity(Item item, ItemStack itemStack, EntityLiving target, EntityPlayer player)
     {
-        if (target is EntitySheep sheep)
+        // Dyeable because it has a fleece, not because it is a sheep.
+        if (target.Behaviors.Interactable is WoolBehavior wool)
         {
             int woolColor = ClothVisualBehavior.GetBlockMeta(itemStack.getDamage());
-            if (!sheep.IsSheared && sheep.FleeceColor != woolColor)
+            if (!wool.IsShearedOn(target) && wool.ColorOf(target) != woolColor)
             {
-                sheep.FleeceColor = woolColor;
+                wool.SetColorOn(target, woolColor);
                 itemStack.ConsumeItem(player);
             }
         }

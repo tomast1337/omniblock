@@ -20,7 +20,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
         TestZombie zombie = Spawn(world, new TestZombie(world), 8.5, 65.0, 8.5);
-        EntityPig pig = Spawn(world, new EntityPig(world), 9.5, 65.0, 8.5);
+        EntityAnimal pig = Spawn(world, (EntityAnimal)EntityRegistry.ByName("pig").Create(world), 9.5, 65.0, 8.5);
         int healthBefore = pig.Health;
 
         zombie.ForceAttack(pig, 1.0f);
@@ -34,7 +34,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
         TestZombie zombie = Spawn(world, new TestZombie(world), 8.5, 65.0, 8.5);
-        EntityPig pig = Spawn(world, new EntityPig(world), 20.0, 65.0, 8.5);
+        EntityAnimal pig = Spawn(world, (EntityAnimal)EntityRegistry.ByName("pig").Create(world), 20.0, 65.0, 8.5);
         int healthBefore = pig.Health;
 
         zombie.ForceAttack(pig, 11.0f);
@@ -68,7 +68,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
 
-        foreach (EntityCreature animal in new EntityCreature[] { new EntityPig(world), (EntityAnimal)EntityRegistry.ByName("cow").Create(world), new EntitySheep(world), new EntityChicken(world) })
+        foreach (EntityCreature animal in new EntityCreature[] { (EntityAnimal)EntityRegistry.ByName("pig").Create(world), (EntityAnimal)EntityRegistry.ByName("cow").Create(world), (EntityAnimal)EntityRegistry.ByName("sheep").Create(world), (EntityAnimal)EntityRegistry.ByName("chicken").Create(world) })
         {
             Assert.Null(animal.Attack);
             Assert.Null(animal.Targeting);
@@ -144,8 +144,8 @@ public sealed class EntityBehaviorSlotTests
     public void Sheep_loot_drops_one_wool_stamped_with_its_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntitySheep sheep = Spawn(world, new EntitySheep(world), 8.5, 65.0, 8.5);
-        sheep.FleeceColor = 4;
+        EntityAnimal sheep = Spawn(world, (EntityAnimal)EntityRegistry.ByName("sheep").Create(world), 8.5, 65.0, 8.5);
+        ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 4);
 
         List<EntityItem> drops = CollectDropStacks(world, sheep, killer: null, rolls: 1);
 
@@ -236,7 +236,7 @@ public sealed class EntityBehaviorSlotTests
     public void Pig_lightning_converts_the_pig_into_a_zombie_pigman()
     {
         FakeWorldContext world = new();
-        EntityPig pig = Spawn(world, new EntityPig(world), 8.5, 65.0, 8.5);
+        EntityAnimal pig = Spawn(world, (EntityAnimal)EntityRegistry.ByName("pig").Create(world), 8.5, 65.0, 8.5);
 
         pig.OnStruckByLightning(new EntityLightningBolt(world, pig.X, pig.Y, pig.Z));
 
@@ -291,7 +291,7 @@ public sealed class EntityBehaviorSlotTests
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);
     }
 
-    private sealed class TestPig(IWorldContext world) : EntityPig(world)
+    private sealed class TestPig(IWorldContext world) : EntityAnimal(world, EntityRegistry.ByName("pig"))
     {
         public void Ignite() => FireTicks = 100;
     }

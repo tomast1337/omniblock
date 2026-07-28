@@ -42,7 +42,7 @@ public sealed class EntityBehaviorJsonTests
         // The nested melee is what a spider falls back to outside its lunge band.
         FakeWorldContext world = new();
         EntitySpider spider = new(world);
-        EntityPig target = new(world);
+        EntityAnimal target = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         target.SetPositionAndAngles(9.0, 65.0, 8.5, 0f, 0f);
         int before = target.Health;
@@ -123,7 +123,8 @@ public sealed class EntityBehaviorJsonTests
     public void Sheep_wool_takes_its_meta_from_the_live_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntitySheep sheep = new(world) { FleeceColor = 11 };
+        EntityAnimal sheep = (EntityAnimal)EntityRegistry.ByName("sheep").Create(world);
+        ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 11);
 
         LootTable table = LootJson.ParseTable(Json("""
         { "Pools": [ { "Entries": [{"Item":"betasharp:wool","MetaFrom":"FleeceColor"}], "MinCount": 1, "MaxCount": 1 } ] }
@@ -149,7 +150,7 @@ public sealed class EntityBehaviorJsonTests
 
         Assert.IsType<RangedAttackBehavior>(new EntitySkeleton(world).Attack);
         Assert.IsType<SlimeSplitBehavior>(new EntitySlime(world).Lifecycle);
-        Assert.IsType<PigLightningBehavior>(new EntityPig(world).Lifecycle);
+        Assert.IsType<PigLightningBehavior>(EntityRegistry.ByName("pig").Behaviors.Lifecycle);
 
         // Animals declare no Attack/Targeting, and a wolf declares no Loot at all.
         EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);

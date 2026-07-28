@@ -135,9 +135,7 @@ public abstract class EntityLiving : Entity
 
     public virtual int MaxSpawnedInChunk => Definition.MaxSpawnedInChunk;
 
-    public virtual void PostSpawn()
-    {
-    }
+    public virtual void PostSpawn() => Behaviors.Lifecycle?.OnPostSpawn(this);
 
 
     public bool CanSee(Entity entity) => World.Reader.Raycast(new Vec3D(X, Y + EyeHeight, Z), new Vec3D(entity.X, entity.Y + entity.EyeHeight, entity.Z)).Type == HitResultType.MISS;
@@ -281,6 +279,11 @@ public abstract class EntityLiving : Entity
     {
         base.Tick();
         TickMovement();
+
+        // After the movement tick, not inside it: TickMovement has early returns, and a mob that
+        // overrode it ran its own code after calling base regardless of which path base took.
+        Physics?.AfterTickMovement(this);
+
         double dx = X - PrevX;
         double dz = Z - PrevZ;
         float horizontalDistance = MathHelper.Sqrt(dx * dx + dz * dz);
@@ -492,6 +495,8 @@ public abstract class EntityLiving : Entity
 
     protected override void OnLanding(float fallDistance)
     {
+        if (Physics?.OnLanding(this, fallDistance) == true) return;
+
         base.OnLanding(fallDistance);
         int fallDamage = (int)Math.Ceiling(fallDistance - 3.0F);
         if (fallDamage <= 0)

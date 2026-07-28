@@ -26,4 +26,5 @@ public sealed class EntityBehaviorSet
     public IEntityLifecycle? Lifecycle { get; internal set; }
     public IEntityPersistence? Persistence { get; internal set; }
     public IEntityInteractable? Interactable { get; internal set; }
+    public IEntityPhysics? Physics { get; internal set; }
 }

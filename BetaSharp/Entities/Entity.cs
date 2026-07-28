@@ -46,14 +46,35 @@ public abstract class Entity : IEntity
     /// <summary>JSON-declared synced properties for this entity's type.</summary>
     protected internal SyncedPropertyDefinition[] SyncedDeclarations { get; }
 
+    /// <summary>
+    ///     Reads a declared synced property by name, or <c>null</c> if this entity's type declares
+    ///     none by that name. Lets callers ask what an entity <em>has</em> rather than what class it
+    ///     is: saddling works on anything declaring <c>saddled</c>, not specifically on a pig.
+    /// </summary>
+    public SyncedProperty<T>? Synced<T>(string name)
+    {
+        foreach (SyncedPropertyDefinition declaration in SyncedDeclarations)
+        {
+            if (declaration.Name == name) return DataSynchronizer.Get<T>(declaration.Id);
+        }
+
+        return null;
+    }
+
     /// <summary>Composed NBT persistence, for state a declared property cannot express on its own.</summary>
     protected internal IEntityPersistence? Persistence => Behaviors.Persistence;
 
     /// <summary>Composed player interaction, or <c>null</c> for entities that ignore the player.</summary>
     protected internal IEntityInteractable? Interactable => Behaviors.Interactable;
 
-    /// <summary>Shared capability slots for this entity's type.</summary>
-    protected internal EntityBehaviorSet Behaviors { get; }
+    /// <summary>Composed movement and collision response, or <c>null</c> for the default physics.</summary>
+    protected internal IEntityPhysics? Physics => Behaviors.Physics;
+
+    /// <summary>
+    ///     Shared capability slots for this entity's type. Public because the client reads them:
+    ///     a renderer now asks the entity what it is composed of rather than what class it is.
+    /// </summary>
+    public EntityBehaviorSet Behaviors { get; }
 
     /// <summary>
     ///     Per-entity storage for the slots this type's behaviors declared. Behaviors are shared, so

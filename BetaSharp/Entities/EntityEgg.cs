@@ -189,7 +189,7 @@ public sealed class EntityEgg : Entity
 
                 for (int i = 0; i < chickenCount; ++i)
                 {
-                    EntityChicken chicken = new(World);
+                    Entity chicken = EntityRegistry.ByName("chicken").Create(World);
                     chicken.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
                     World.SpawnEntity(chicken);
                 }

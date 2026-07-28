@@ -63,6 +63,9 @@ internal static class EntityFactory
             case "Interactable":
                 set.Interactable = Cast<IEntityInteractable>(behavior, definition, slot);
                 break;
+            case "Physics":
+                set.Physics = Cast<IEntityPhysics>(behavior, definition, slot);
+                break;
             case "Persistence":
                 set.Persistence = Cast<IEntityPersistence>(behavior, definition, slot);
                 break;

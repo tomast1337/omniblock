@@ -6,9 +6,10 @@ internal sealed class SaddleBehavior : IItemBehavior
 {
     public void UseOnEntity(Item item, ItemStack itemStack, EntityLiving target, EntityPlayer player)
     {
-        if (target is EntityPig pig && !pig.Saddled.Value)
+        // Anything declaring a "saddled" property can be saddled, rather than the pig specifically.
+        if (target.Synced<bool>("saddled") is { Value: false } saddled)
         {
-            pig.Saddled.Value = true;
+            saddled.Value = true;
             itemStack.ConsumeItem(player);
         }
     }

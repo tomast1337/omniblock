@@ -1,3 +1,4 @@
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.NBT;
@@ -128,7 +129,11 @@ public class EntityWolf : EntityAnimal
         }
         else if (Target == null && !HasPath && !IsWolfTamed && World.Random.NextInt(100) == 0)
         {
-            List<EntitySheep> nearbySheep = World.Entities.CollectEntitiesOfType<EntitySheep>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
+            // Prey is anything wearing a fleece, since a sheep no longer has a class to collect by.
+            List<EntityLiving> nearbySheep = World.Entities
+                .CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D))
+                .FindAll(e => e.Behaviors.Interactable is WoolBehavior);
+
             if (nearbySheep.Count > 0)
             {
                 Target = nearbySheep[World.Random.NextInt(nearbySheep.Count)];

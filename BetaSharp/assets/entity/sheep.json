@@ -8,7 +8,33 @@
   "HurtSound": "mob.sheep",
   "DeathSound": "mob.sheep",
   "TalkInterval": 120,
+  "SyncedProperties": [
+    {
+      "Name": "wool",
+      "Id": 16,
+      "Kind": "Byte"
+    }
+  ],
+  "Renderer": {
+    "Type": "fleece",
+    "Model": "sheep",
+    "Shadow": 0.7,
+    "OverlayModel": "sheep_fur",
+    "OverlayTexture": "/mob/sheep_fur.png"
+  },
   "Behaviors": [
+    {
+      "Slots": [
+        "Interactable",
+        "Persistence",
+        "Lifecycle"
+      ],
+      "Type": "wool",
+      "property": "wool",
+      "tool": "betasharp:shears",
+      "min_drop": 2,
+      "drop_range": 3
+    },
     {
       "Slots": [
         "Loot"

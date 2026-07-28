@@ -12,6 +12,12 @@ public interface IEntityLifecycle
     void OnMarkDead(EntityLiving self) { }
 
     /// <summary>
+    ///     Called once after a natural spawn places the mob, for state that is rolled per individual
+    ///     rather than declared — a sheep's fleece colour, a spider's rider.
+    /// </summary>
+    void OnPostSpawn(EntityLiving self) { }
+
+    /// <summary>
     ///     Called when lightning strikes the mob. Returning <c>true</c> means the behavior fully
     ///     handled the strike and the default fire/damage response is skipped.
     /// </summary>

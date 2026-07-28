@@ -877,7 +877,8 @@ public abstract class EntityPlayer : EntityLiving
                 IncreaseStat(Stats.Stats.DistanceByBoatStat, distanceScaled);
                 break;
 
-            case EntityPig:
+            // Matched by registry id: a pig has no class of its own to switch on.
+            case { } vehicle when EntityRegistry.GetId(vehicle) == "pig":
                 IncreaseStat(Stats.Stats.DistanceByPigStat, distanceScaled);
                 break;
         }

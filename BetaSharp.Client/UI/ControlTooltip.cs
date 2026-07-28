@@ -64,7 +64,7 @@ public static class ControlTooltip
         {
             if (hit.Entity is EntityMinecart || hit.Entity is EntityBoat)
                 useAction = "Enter";
-            else if (hit.Entity is EntityPig pig && pig.Saddled.Value)
+            else if (hit.Entity?.Synced<bool>("saddled") is { Value: true })
                 useAction = "Ride";
             else if (IsItemUsable(held))
             {

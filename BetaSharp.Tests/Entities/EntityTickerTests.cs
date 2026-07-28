@@ -31,8 +31,8 @@ public sealed class EntityTickerTests
     public void Shared_tickers_keep_per_entity_state_separate()
     {
         FakeWorldContext world = new();
-        EntityChicken first = new(world);
-        EntityChicken second = new(world);
+        EntityAnimal first = (EntityAnimal)EntityRegistry.ByName("chicken").Create(world);
+        EntityAnimal second = (EntityAnimal)EntityRegistry.ByName("chicken").Create(world);
 
         LayEggsBehavior ticker = Assert.IsType<LayEggsBehavior>(EntityRegistry.ByName("chicken").Behaviors.Ticker);
 
@@ -69,7 +69,7 @@ public sealed class EntityTickerTests
     public void Chicken_lays_an_egg_when_its_countdown_expires()
     {
         FakeWorldContext world = new();
-        EntityChicken chicken = new(world);
+        EntityAnimal chicken = (EntityAnimal)EntityRegistry.ByName("chicken").Create(world);
         chicken.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(chicken));
 

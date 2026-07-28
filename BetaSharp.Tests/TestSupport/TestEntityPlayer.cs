@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Stats;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Tests.TestSupport;
@@ -11,6 +12,14 @@ public sealed class TestEntityPlayer : EntityPlayer
     }
 
     public override EntityType Type => EntityRegistry.ByName("player");
+
+    /// <summary>Stats awarded to this player. The base implementation is a no-op, so tests record them here.</summary>
+    private readonly Dictionary<StatBase, int> _stats = [];
+
+    public override void IncreaseStat(StatBase stat, int amount) =>
+        _stats[stat] = _stats.GetValueOrDefault(stat) + amount;
+
+    public bool HasStat(StatBase stat) => _stats.ContainsKey(stat);
 
     public override void Spawn()
     {

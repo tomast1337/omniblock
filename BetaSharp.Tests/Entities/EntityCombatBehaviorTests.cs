@@ -17,7 +17,7 @@ public sealed class EntityCombatBehaviorTests
         skeleton.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(skeleton));
 
-        var pig = new EntityPig(world);
+        var pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
         pig.SetPositionAndAngles(10.0, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 
@@ -37,7 +37,7 @@ public sealed class EntityCombatBehaviorTests
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(spider));
 
-        var pig = new EntityPig(world);
+        var pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
         pig.SetPositionAndAngles(11.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 

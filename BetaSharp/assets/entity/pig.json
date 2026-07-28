@@ -16,7 +16,23 @@
   "HurtSound": "mob.pig",
   "DeathSound": "mob.pigdeath",
   "TalkInterval": 120,
+  "Renderer": {
+    "Type": "overlay",
+    "Model": "pig",
+    "Shadow": 0.7,
+    "OverlayModel": "pig_saddle",
+    "OverlayProperty": "saddled",
+    "OverlayTexture": "/mob/saddle.png"
+  },
   "Behaviors": [
+    {
+      "Slots": [
+        "Physics"
+      ],
+      "Type": "rider_fall_stat",
+      "achievement": "flyPig",
+      "minimum_distance": 5.0
+    },
     {
       "Slots": [
         "Loot"

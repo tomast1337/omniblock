@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 
 namespace BetaSharp.Loot;
 
@@ -19,7 +20,9 @@ internal static class LootMetaSourceExtensions
 {
     public static int Resolve(this LootMetaSource source, in LootContext context, int literal) => source switch
     {
-        LootMetaSource.FleeceColor => context.Self is EntitySheep sheep ? sheep.FleeceColor : literal,
+        LootMetaSource.FleeceColor => context.Self?.Behaviors.Interactable is WoolBehavior wool
+            ? wool.ColorOf(context.Self)
+            : literal,
         _ => literal
     };
 }

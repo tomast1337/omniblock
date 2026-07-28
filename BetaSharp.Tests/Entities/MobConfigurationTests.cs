@@ -62,10 +62,10 @@ public sealed class MobConfigurationTests
         "creeper" => new EntityCreeper(world),
         "spider" => new EntitySpider(world),
         "ghast" => new EntityGhast(world),
-        "pig" => new EntityPig(world),
+        "pig" => (EntityAnimal)EntityRegistry.ByName("pig").Create(world),
         "cow" => (EntityAnimal)EntityRegistry.ByName("cow").Create(world),
-        "sheep" => new EntitySheep(world),
-        "chicken" => new EntityChicken(world),
+        "sheep" => (EntityAnimal)EntityRegistry.ByName("sheep").Create(world),
+        "chicken" => (EntityAnimal)EntityRegistry.ByName("chicken").Create(world),
         "squid" => new EntitySquid(world),
         _ => throw new ArgumentOutOfRangeException(nameof(name), name, "Unknown mob.")
     };
