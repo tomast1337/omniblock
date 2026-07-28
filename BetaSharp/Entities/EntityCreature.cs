@@ -15,13 +15,13 @@ public abstract class EntityCreature(IWorldContext world, EntityDefinition? defi
     protected internal int AttackStrength => Definition.AttackStrength;
 
     /// <summary>Composed attack execution. <c>null</c> means the mob never damages its target.</summary>
-    public IEntityAttackBehavior? Attack { get; protected internal set; }
+    public IEntityAttackBehavior? Attack => Behaviors.Attack;
 
     /// <summary>
     ///     Composed target acquisition. <c>null</c> means the mob never hunts. Named <c>Targeting</c>
     ///     rather than <c>Target</c> because <see cref="Target" /> already holds the current target.
     /// </summary>
-    public IEntityTargetBehavior? Targeting { get; protected internal set; }
+    public IEntityTargetBehavior? Targeting => Behaviors.Targeting;
 
     protected virtual bool IsMovementCeased => false;
 

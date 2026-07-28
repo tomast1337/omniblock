@@ -11,6 +11,12 @@
   "Behaviors": [
     {
       "Slots": [
+        "Ticker"
+      ],
+      "Type": "burn_in_daylight"
+    },
+    {
+      "Slots": [
         "Attack"
       ],
       "Type": "melee"

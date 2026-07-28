@@ -12,6 +12,14 @@
   "Behaviors": [
     {
       "Slots": [
+        "Ticker"
+      ],
+      "Type": "lay_eggs",
+      "min_delay": 6000,
+      "delay_range": 6000
+    },
+    {
+      "Slots": [
         "Loot"
       ],
       "Type": "loot_table",

@@ -14,6 +14,13 @@ public class EntityType(Func<IWorldContext, Entity> factory, Type baseType, stri
     /// </summary>
     public EntityDefinition? Definition { get; } = definition;
 
+    /// <summary>
+    ///     Capability slots and state layout for this type, built once from <see cref="Definition" />
+    ///     at registration and shared by every instance.
+    /// </summary>
+    public EntityBehaviorSet Behaviors { get; } =
+        definition is null ? EntityBehaviorSet.Empty : EntityFactory.BuildBehaviors(definition, baseType);
+
     public Entity Create(IWorldContext world) => factory(world);
 
     /// <summary>Definition accessor for mob constructors, which cannot proceed without one.</summary>

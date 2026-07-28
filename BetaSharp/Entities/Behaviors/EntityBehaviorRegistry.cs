@@ -5,51 +5,49 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     Maps a JSON <c>"Type"</c> key to a behavior instance, mirroring
-///     <c>Blocks/Behaviors/BehaviorRegistry.cs</c>.
+///     <c>Blocks/Behaviors/BehaviorRegistry.cs</c>. Factories run once per
+///     <see cref="EntityType" /> at load, never per spawn.
 /// </summary>
 internal static class EntityBehaviorRegistry
 {
-    public delegate object BehaviorFactory(JsonElement json);
+    public delegate object BehaviorFactory(in EntityBehaviorContext context);
 
     private static readonly Dictionary<string, BehaviorFactory> s_factories = new()
     {
         // Attack
-        ["melee"] = json => new MeleeAttackBehavior(Float(json, "range", 2.0F)),
-        ["ranged"] = json => new RangedAttackBehavior(Float(json, "range", 10.0F), Int(json, "cooldown_ticks", 30)),
-        ["jump"] = json => new JumpAttackBehavior(
-            Float(json, "min_range", 2.0F),
-            Float(json, "max_range", 6.0F),
-            Int(json, "chance_one_in", 10),
-            json.TryGetProperty("fallback", out JsonElement fallback) ? (IEntityAttackBehavior)Build(fallback) : null),
+        ["melee"] = (in EntityBehaviorContext c) => new MeleeAttackBehavior(c.Float("range", 2.0F)),
+        ["ranged"] = (in EntityBehaviorContext c) => new RangedAttackBehavior(c.Float("range", 10.0F), c.Int("cooldown_ticks", 30)),
+        ["jump"] = (in EntityBehaviorContext c) => new JumpAttackBehavior(
+            c.Float("min_range", 2.0F),
+            c.Float("max_range", 6.0F),
+            c.Int("chance_one_in", 10),
+            c.Json.TryGetProperty("fallback", out JsonElement fallback)
+                ? (IEntityAttackBehavior)Build(c with { Json = fallback })
+                : null),
 
         // Targeting
-        ["always_hunt"] = json => new AlwaysHuntTargetBehavior(Double(json, "radius", 16.0D)),
-        ["darkness_only"] = json => new DarknessOnlyTargetBehavior(Double(json, "radius", 16.0D)),
+        ["always_hunt"] = (in EntityBehaviorContext c) => new AlwaysHuntTargetBehavior(c.Double("radius", 16.0D)),
+        ["darkness_only"] = (in EntityBehaviorContext c) => new DarknessOnlyTargetBehavior(c.Double("radius", 16.0D)),
 
         // Loot
-        ["loot_table"] = json => new LootTableBehavior(LootJson.ParseTable(json)),
+        ["loot_table"] = (in EntityBehaviorContext c) => new LootTableBehavior(LootJson.ParseTable(c.Json)),
+
+        // Ticker
+        ["burn_in_daylight"] = (in EntityBehaviorContext c) => new BurnInDaylightBehavior(c.Int("fire_ticks", 300)),
+        ["lay_eggs"] = (in EntityBehaviorContext c) => new LayEggsBehavior(c),
 
         // Lifecycle
-        ["slime_split"] = json => new SlimeSplitBehavior(Int(json, "child_count", 4)),
-        ["pig_lightning"] = _ => new PigLightningBehavior()
+        ["slime_split"] = (in EntityBehaviorContext c) => new SlimeSplitBehavior(c.Int("child_count", 4)),
+        ["pig_lightning"] = (in EntityBehaviorContext c) => new PigLightningBehavior()
     };
 
-    public static object Build(JsonElement json)
+    public static object Build(in EntityBehaviorContext context)
     {
-        string type = json.GetProperty("Type").GetString()
+        string type = context.Json.GetProperty("Type").GetString()
             ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
 
         return s_factories.TryGetValue(type, out BehaviorFactory? factory)
-            ? factory(json)
+            ? factory(context)
             : throw new ArgumentException($"Unknown entity behavior type '{type}'.");
     }
-
-    private static float Float(JsonElement json, string name, float fallback) =>
-        json.TryGetProperty(name, out JsonElement value) ? value.GetSingle() : fallback;
-
-    private static double Double(JsonElement json, string name, double fallback) =>
-        json.TryGetProperty(name, out JsonElement value) ? value.GetDouble() : fallback;
-
-    private static int Int(JsonElement json, string name, int fallback) =>
-        json.TryGetProperty(name, out JsonElement value) ? value.GetInt32() : fallback;
 }

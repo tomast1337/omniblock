@@ -1,6 +1,7 @@
 using System.Text.Json;
 using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
+using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.Loot;
 using BetaSharp.Loot.Conditions;
@@ -17,18 +18,25 @@ public sealed class EntityBehaviorJsonTests
 {
     private static JsonElement Json(string json) => JsonSerializer.Deserialize<JsonElement>(json);
 
+    /// <summary>Behaviors are now built with a load-time context, once per entity type.</summary>
+    private static object Build(string json, EntityDefinition? definition = null) =>
+        EntityBehaviorRegistry.Build(new EntityBehaviorContext(
+            Json(json),
+            definition ?? new EntityDefinition { ProtocolId = 1, Name = "test" },
+            new EntityStateLayout()));
+
     [Fact]
     public void Registry_builds_each_attack_type_with_its_parameters()
     {
-        Assert.IsType<MeleeAttackBehavior>(EntityBehaviorRegistry.Build(Json("""{"Type":"melee"}""")));
-        Assert.IsType<RangedAttackBehavior>(EntityBehaviorRegistry.Build(Json("""{"Type":"ranged","range":12,"cooldown_ticks":15}""")));
-        Assert.IsType<JumpAttackBehavior>(EntityBehaviorRegistry.Build(Json("""{"Type":"jump","min_range":2,"max_range":6,"chance_one_in":10}""")));
+        Assert.IsType<MeleeAttackBehavior>(Build("""{"Type":"melee"}"""));
+        Assert.IsType<RangedAttackBehavior>(Build("""{"Type":"ranged","range":12,"cooldown_ticks":15}"""));
+        Assert.IsType<JumpAttackBehavior>(Build("""{"Type":"jump","min_range":2,"max_range":6,"chance_one_in":10}"""));
     }
 
     [Fact]
     public void Jump_attack_can_nest_a_fallback_behavior()
     {
-        object built = EntityBehaviorRegistry.Build(Json("""{"Type":"jump","fallback":{"Type":"melee"}}"""));
+        object built = Build("""{"Type":"jump","fallback":{"Type":"melee"}}""");
         JumpAttackBehavior jump = Assert.IsType<JumpAttackBehavior>(built);
 
         // The nested melee is what a spider falls back to outside its lunge band.
@@ -47,7 +55,7 @@ public sealed class EntityBehaviorJsonTests
     public void Unknown_behavior_type_fails_loudly()
     {
         ArgumentException error = Assert.Throws<ArgumentException>(
-            () => EntityBehaviorRegistry.Build(Json("""{"Type":"teleport"}""")));
+            () => Build("""{"Type":"teleport"}"""));
         Assert.Contains("teleport", error.Message);
     }
 
@@ -160,9 +168,9 @@ public sealed class EntityBehaviorJsonTests
             Behaviors = [Json("""{"Slots":["Attack"],"Type":"melee"}""")]
         };
 
-        FakeWorldContext world = new();
+        // Validated at load from the registered base type, not per spawn.
         ArgumentException error = Assert.Throws<ArgumentException>(
-            () => EntityFactory.AttachBehaviors(new EntitySlime(world), definition));
+            () => EntityFactory.BuildBehaviors(definition, typeof(EntitySlime)));
         Assert.Contains("EntityCreature", error.Message);
     }
 }

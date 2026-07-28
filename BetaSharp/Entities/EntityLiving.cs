@@ -30,8 +30,6 @@ public abstract class EntityLiving : Entity
         Texture = definition.Texture;
         IsImmuneToFire = definition.FireImmune;
         SetBoundingBoxSpacing(definition.Width, definition.Height);
-
-        EntityFactory.AttachBehaviors(this, definition);
     }
 
     /// <summary>
@@ -66,10 +64,10 @@ public abstract class EntityLiving : Entity
     protected internal int AttackTime { get; set; }
 
     /// <summary>Composed death-drop behavior. <c>null</c> means the mob drops nothing.</summary>
-    public IEntityLootBehavior? Loot { get; protected internal set; }
+    public IEntityLootBehavior? Loot => Behaviors.Loot;
 
     /// <summary>Composed single-shot event reactions (death split, lightning conversion).</summary>
-    public IEntityLifecycle? Lifecycle { get; protected internal set; }
+    public IEntityLifecycle? Lifecycle => Behaviors.Lifecycle;
     public float CameraPitch { get; private set; }
     public float Tilt { get; protected set; }
     public float LastWalkAnimationSpeed { get; protected set; }
@@ -653,6 +651,8 @@ public abstract class EntityLiving : Entity
 
     protected virtual void TickMovement()
     {
+        Ticker?.OnTickMovement(this);
+
         if (World.IsRemote && this is not EntityPlayer)
         {
             int minChunkX = MathHelper.Floor(BoundingBox.MinX) >> 4;
@@ -810,6 +810,7 @@ public abstract class EntityLiving : Entity
 
     protected virtual void TickLiving()
     {
+        Ticker?.OnTickLiving(this);
         ++EntityAge;
         func_27021_X();
         SidewaysSpeed = 0.0F;

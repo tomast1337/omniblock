@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util;
@@ -26,7 +27,25 @@ public abstract class Entity : IEntity
         World = world;
         SetPosition(0.0D, 0.0D, 0.0D);
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
+
+        // Resolved directly rather than through the virtual Type property, which a subclass could
+        // override before its own fields are initialised.
+        EntityBehaviorSet behaviors = EntityRegistry.ByRuntimeType(GetType())?.Behaviors ?? EntityBehaviorSet.Empty;
+        Behaviors = behaviors;
+        State = behaviors.StateLayout.Create();
     }
+
+    /// <summary>Shared capability slots for this entity's type.</summary>
+    protected internal EntityBehaviorSet Behaviors { get; }
+
+    /// <summary>
+    ///     Per-entity storage for the slots this type's behaviors declared. Behaviors are shared, so
+    ///     everything mutable lives here.
+    /// </summary>
+    public EntityState State { get; }
+
+    /// <summary>Composed per-tick behavior, or <c>null</c> for entities that declare none.</summary>
+    protected internal IEntityTicker? Ticker => Behaviors.Ticker;
 
     /// <summary>
     ///     Resolved from the registry by runtime class, so an entity does not restate the type it was
@@ -224,7 +243,11 @@ public abstract class Entity : IEntity
         PrevYaw += Yaw - oldYaw;
     }
 
-    public virtual void Tick() => BaseTick();
+    public virtual void Tick()
+    {
+        Ticker?.OnTick(this);
+        BaseTick();
+    }
 
     public virtual void BaseTick()
     {

@@ -5,9 +5,7 @@ namespace BetaSharp.Entities;
 
 public class EntityChicken : EntityAnimal
 {
-    private static readonly Item s_egg = Item.ByName("egg");
     private float _flapSpeed = 1.0F;
-    private int _timeUntilNextEgg;
     public float DestPos;
     public float FlapProgress;
     public bool Jockey = false;
@@ -16,7 +14,6 @@ public class EntityChicken : EntityAnimal
 
     public EntityChicken(IWorldContext world) : base(world, EntityRegistry.ByName("chicken").RequireDefinition())
     {
-        _timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
 
     protected override void TickMovement()
@@ -52,14 +49,6 @@ public class EntityChicken : EntityAnimal
         }
 
         FlapProgress += _flapSpeed * 2.0F;
-        if (World.IsRemote || --_timeUntilNextEgg > 0)
-        {
-            return;
-        }
-
-        World.Broadcaster.PlaySoundAtEntity(this, "mob.chickenplop", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-        DropItem(s_egg.Id, 1);
-        _timeUntilNextEgg = Random.NextInt(6000) + 6000;
     }
 
     protected override void OnLanding(float fallDistance)
