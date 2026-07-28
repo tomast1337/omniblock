@@ -49,6 +49,13 @@ public sealed record EntityDefinition : IDataAsset
 
     public string Texture { get; init; } = "/mob/char.png";
 
+    /// <summary>
+    ///     Item this mob is drawn holding (<c>"betasharp:bow"</c>), or <c>null</c> for empty-handed.
+    ///     Fixed per type — no vanilla mob changes what it carries — so it is configuration rather
+    ///     than a capability slot.
+    /// </summary>
+    public string? HeldItem { get; init; }
+
     public string? LivingSound { get; init; }
     public string? HurtSound { get; init; } = "random.hurt";
     public string? DeathSound { get; init; } = "random.hurt";

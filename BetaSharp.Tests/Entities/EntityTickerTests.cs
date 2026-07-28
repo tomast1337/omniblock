@@ -18,8 +18,8 @@ public sealed class EntityTickerTests
 
         // The whole point of moving construction to load: two zombies share one behavior instance,
         // so spawning no longer re-parses JSON or allocates a fresh behavior graph.
-        EntityZombie first = new(world);
-        EntityZombie second = new(world);
+        EntityMonster first = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
+        EntityMonster second = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
 
         Assert.NotNull(first.Attack);
         Assert.Same(first.Attack, second.Attack);
@@ -57,7 +57,7 @@ public sealed class EntityTickerTests
     {
         FakeWorldContext world = new();
         BurnInDaylightBehavior ticker = new();
-        EntityZombie zombie = new(world);
+        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
         zombie.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         // FakeWorldContext reports darkness, so the brightness gate keeps the mob unlit.

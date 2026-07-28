@@ -9,6 +9,7 @@
   "HurtSound": "mob.zombiepig.zpighurt",
   "DeathSound": "mob.zombiepig.zpigdeath",
   "FireImmune": true,
+  "HeldItem": "betasharp:sword_gold",
   "Behaviors": [
     {
       "Slots": [

@@ -4,17 +4,14 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-internal class EntityPigZombie : EntityZombie
+internal class EntityPigZombie : EntityMonster
 {
-    private static readonly ItemStack s_defaultHeldItem = new(Item.ByName("sword_gold"), 1);
     private int _angerLevel;
     private int _randomSoundDelay;
 
     public EntityPigZombie(IWorldContext world) : base(world, EntityRegistry.ByName("pigzombie"))
     {
     }
-
-    public override ItemStack HeldItem => s_defaultHeldItem;
 
     public override void Tick()
     {

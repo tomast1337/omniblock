@@ -47,7 +47,7 @@ public sealed class EntityBehaviorSlotTests
     public void Monster_composes_melee_and_always_hunt_slots()
     {
         FakeWorldContext world = new();
-        EntityZombie zombie = new(world);
+        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
 
         Assert.IsType<MeleeAttackBehavior>(zombie.Attack);
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
@@ -91,7 +91,7 @@ public sealed class EntityBehaviorSlotTests
     public void Always_hunt_targeting_acquires_a_player_in_range()
     {
         FakeWorldContext world = new();
-        EntityZombie zombie = Spawn(world, new EntityZombie(world), 8.5, 65.0, 8.5);
+        EntityMonster zombie = Spawn(world, (EntityMonster)EntityRegistry.ByName("zombie").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 11.5, 65.0, 8.5);
 
         // FakeWorldContext's raycast always reports MISS, so the line-of-sight rejection branch that
@@ -115,7 +115,7 @@ public sealed class EntityBehaviorSlotTests
     public void Skeleton_loot_drops_both_arrows_and_bones()
     {
         FakeWorldContext world = new();
-        EntitySkeleton skeleton = Spawn(world, new EntitySkeleton(world), 8.5, 65.0, 8.5);
+        EntityMonster skeleton = Spawn(world, (EntityMonster)EntityRegistry.ByName("skeleton").Create(world), 8.5, 65.0, 8.5);
 
         List<int> dropped = CollectDrops(world, skeleton, killer: null, rolls: 100);
 
@@ -129,7 +129,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
         EntityMonster creeper = Spawn(world, (EntityMonster)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
-        EntitySkeleton skeleton = Spawn(world, new EntitySkeleton(world), 12.5, 65.0, 12.5);
+        EntityMonster skeleton = Spawn(world, (EntityMonster)EntityRegistry.ByName("skeleton").Create(world), 12.5, 65.0, 12.5);
         int recordId = Item.ByName("record").Id;
 
         List<int> withoutSkeleton = CollectDrops(world, creeper, killer: null, rolls: 60);
@@ -287,7 +287,7 @@ public sealed class EntityBehaviorSlotTests
         return world.Entities.Entities.OfType<EntityItem>().Where(item => !before.Contains(item)).ToList();
     }
 
-    private sealed class TestZombie(IWorldContext world) : EntityZombie(world)
+    private sealed class TestZombie(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("zombie"))
     {
         public int ExposedAttackTime => AttackTime;
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);

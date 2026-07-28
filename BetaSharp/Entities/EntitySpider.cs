@@ -19,7 +19,7 @@ public class EntitySpider : EntityMonster
     {
         if (World.Random.NextInt(100) != 0) return;
 
-        EntitySkeleton skeleton = new(World);
+        Entity skeleton = EntityRegistry.ByName("skeleton").Create(World);
         skeleton.SetPositionAndAnglesKeepPrevAngles(X, Y, Z, Yaw, 0.0F);
         World.SpawnEntity(skeleton);
         skeleton.SetVehicle(this);

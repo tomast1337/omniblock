@@ -11,7 +11,7 @@ public sealed class EntityHierarchySmokeTests
     [Fact]
     public void Mobs_and_projectiles_follow_expected_bases()
     {
-        var zombie = new EntityZombie(_world);
+        var zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(_world);
         Assert.IsAssignableFrom<EntityCreature>(zombie);
         Assert.IsAssignableFrom<EntityMonster>(zombie);
         Assert.IsAssignableFrom<EntityLiving>(zombie);

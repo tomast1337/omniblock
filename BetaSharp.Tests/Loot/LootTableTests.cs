@@ -108,11 +108,11 @@ public sealed class LootTableTests
     public void Killed_by_condition_gates_on_the_killer_type()
     {
         FakeWorldContext world = new();
-        LootTable table = new(new LootPool([LootEntry.Of(s_bone)], 1, 1, new KilledByCondition<EntitySkeleton>()));
+        LootTable table = new(new LootPool([LootEntry.Of(s_bone)], 1, 1, new KilledByCondition("skeleton")));
 
         Assert.Empty(table.Roll(Context(killer: null)));
         Assert.Empty(table.Roll(Context(killer: (EntityAnimal)EntityRegistry.ByName("pig").Create(world))));
-        Assert.Single(table.Roll(Context(killer: new EntitySkeleton(world))));
+        Assert.Single(table.Roll(Context(killer: (EntityMonster)EntityRegistry.ByName("skeleton").Create(world))));
     }
 
     [Fact]

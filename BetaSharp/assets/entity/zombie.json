@@ -8,6 +8,11 @@
   "LivingSound": "mob.zombie",
   "HurtSound": "mob.zombiehurt",
   "DeathSound": "mob.zombiedeath",
+  "Renderer": {
+    "Type": "undead",
+    "Model": "zombie",
+    "Shadow": 0.5
+  },
   "Behaviors": [
     {
       "Slots": [

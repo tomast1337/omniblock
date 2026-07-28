@@ -68,7 +68,7 @@ public sealed class EntityBehaviorJsonTests
     }
 
     [Theory]
-    [InlineData("""{"type":"killed_by_skeleton"}""", typeof(KilledByCondition<EntitySkeleton>))]
+    [InlineData("""{"type":"killed_by","entity":"skeleton"}""", typeof(KilledByCondition))]
     [InlineData("""{"type":"on_fire"}""", typeof(OnFireCondition))]
     [InlineData("""{"type":"sheep_not_sheared"}""", typeof(SheepNotShearedCondition))]
     [InlineData("""{"type":"slime_size","size":1}""", typeof(SlimeSizeCondition))]
@@ -139,7 +139,7 @@ public sealed class EntityBehaviorJsonTests
     {
         FakeWorldContext world = new();
 
-        EntityZombie zombie = new(world);
+        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
         Assert.IsType<MeleeAttackBehavior>(zombie.Attack);
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
         Assert.IsType<LootTableBehavior>(zombie.Loot);
@@ -148,7 +148,7 @@ public sealed class EntityBehaviorJsonTests
         Assert.IsType<JumpAttackBehavior>(spider.Attack);
         Assert.IsType<DarknessOnlyTargetBehavior>(spider.Targeting);
 
-        Assert.IsType<RangedAttackBehavior>(new EntitySkeleton(world).Attack);
+        Assert.IsType<RangedAttackBehavior>(EntityRegistry.ByName("skeleton").Behaviors.Attack);
         Assert.IsType<SlimeSplitBehavior>(new EntitySlime(world).Lifecycle);
         Assert.IsType<PigLightningBehavior>(EntityRegistry.ByName("pig").Behaviors.Lifecycle);
 

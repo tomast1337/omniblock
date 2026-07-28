@@ -52,7 +52,7 @@ public sealed class EntityRegistryDefinitionTests
 
         // Reference equality, not value equality: this is what proves the mob reads through the
         // registry, so replacing the registered definition in Phase 4 actually reaches it.
-        Assert.Same(EntityRegistry.ByName("zombie").Definition, new EntityZombie(world).Definition);
+        Assert.Same(EntityRegistry.ByName("zombie").Definition, ((EntityMonster)EntityRegistry.ByName("zombie").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("wolf").Definition, new EntityWolf(world).Definition);
         Assert.Same(EntityRegistry.ByName("ghast").Definition, new EntityGhast(world).Definition);
         Assert.Same(EntityRegistry.ByName("pigzombie").Definition, new EntityPigZombie(world).Definition);
@@ -176,8 +176,9 @@ public sealed class EntityRegistryDefinitionTests
         Assert.True(EntityRegistry.TryCreate("zombie", world, out Entity byName));
         Assert.True(EntityRegistry.TryCreate(54, world, out Entity byRawId));
 
-        Assert.IsType<EntityZombie>(byName);
-        Assert.IsType<EntityZombie>(byRawId);
+        // Both routes land on the same registered type, though neither has a class of its own.
+        Assert.Same(EntityRegistry.ByName("zombie"), byName.Type);
+        Assert.Same(EntityRegistry.ByName("zombie"), byRawId.Type);
         Assert.Equal(54, EntityRegistry.GetRawId(byName));
         Assert.Equal("zombie", EntityRegistry.GetId(byRawId));
     }

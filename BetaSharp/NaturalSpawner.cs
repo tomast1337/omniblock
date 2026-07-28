@@ -20,8 +20,8 @@ internal static class NaturalSpawner
     private static readonly Func<IWorldContext, EntityLiving>[] Monsters =
     [
         w => new EntitySpider(w),
-        w => new EntityZombie(w),
-        w => new EntitySkeleton(w),
+        w => (EntityLiving)EntityRegistry.ByName("zombie").Create(w),
+        w => (EntityLiving)EntityRegistry.ByName("skeleton").Create(w),
     ];
 
     private static BlockPos GetRandomSpawningPointInChunk(IWorldContext world, PathFinder pathFinder, int centerX, int centerZ)

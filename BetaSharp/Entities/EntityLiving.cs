@@ -31,6 +31,11 @@ public abstract class EntityLiving : Entity
         Texture = definition.Texture;
         IsImmuneToFire = definition.FireImmune;
         SetBoundingBoxSpacing(definition.Width, definition.Height);
+
+        if (definition.HeldItem is { } held)
+        {
+            HeldItem = new ItemStack(Item.ByName(ResourceLocation.Parse(held).Path), 1);
+        }
     }
 
     /// <summary>
@@ -125,7 +130,11 @@ public abstract class EntityLiving : Entity
 
     public virtual bool IsSleeping => false;
 
-    public virtual ItemStack? HeldItem => null;
+    /// <summary>
+    ///     Declared in the mob's JSON and resolved once at construction, since the item registry
+    ///     lookup is not worth repeating on every render frame.
+    /// </summary>
+    public virtual ItemStack? HeldItem { get; }
 
     protected virtual int TalkInterval => Definition.TalkInterval;
 

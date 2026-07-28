@@ -117,7 +117,7 @@ public sealed class EntityCombatBehaviorTests
         Assert.True(loadedWolf.IsWolfSitting);
     }
 
-    private sealed class TestSkeleton(IWorldContext world) : EntitySkeleton(world)
+    private sealed class TestSkeleton(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("skeleton"))
     {
         public int ExposedAttackTime => AttackTime;
         public bool ExposedHasAttacked => HasAttacked;

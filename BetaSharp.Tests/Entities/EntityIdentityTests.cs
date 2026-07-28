@@ -1,6 +1,7 @@
 using System.Text.Json;
 using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
+using BetaSharp.Items;
 using BetaSharp.NBT;
 
 namespace BetaSharp.Tests.Entities;
@@ -92,5 +93,42 @@ public sealed class EntityIdentityTests
     public void A_class_that_still_backs_one_type_resolves_by_class()
     {
         Assert.Same(EntityRegistry.ByName("wolf"), EntityRegistry.ByRuntimeType(typeof(EntityWolf)));
+    }
+
+    [Theory]
+    [InlineData("zombie")]
+    [InlineData("skeleton")]
+    [InlineData("creeper")]
+    public void Every_plain_monster_is_json_rather_than_a_class(string name)
+    {
+        FakeWorldContext world = new();
+
+        Assert.Equal(typeof(EntityMonster), EntityRegistry.ByName(name).Create(world).GetType());
+        Assert.NotNull(EntityRegistry.ByName(name).Definition!.Renderer);
+    }
+
+    /// <summary>
+    ///     Three registered types now share <c>EntityMonster</c>, so the class identifies none of
+    ///     them and the by-class index must refuse to answer.
+    /// </summary>
+    [Fact]
+    public void EntityMonster_no_longer_identifies_a_single_type()
+    {
+        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityMonster)));
+    }
+
+    /// <summary>Held items are declared configuration now, not a per-class property override.</summary>
+    [Fact]
+    public void A_mob_carries_the_item_its_definition_names()
+    {
+        FakeWorldContext world = new();
+
+        EntityLiving skeleton = (EntityLiving)EntityRegistry.ByName("skeleton").Create(world);
+        EntityLiving zombie = (EntityLiving)EntityRegistry.ByName("zombie").Create(world);
+        EntityLiving pigZombie = (EntityLiving)EntityRegistry.ByName("pigzombie").Create(world);
+
+        Assert.Equal(Item.ByName("bow").Id, skeleton.HeldItem!.ItemId);
+        Assert.Equal(Item.ByName("sword_gold").Id, pigZombie.HeldItem!.ItemId);
+        Assert.Null(zombie.HeldItem);
     }
 }

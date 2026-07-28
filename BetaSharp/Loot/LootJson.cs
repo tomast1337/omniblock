@@ -12,7 +12,7 @@ internal static class LootJson
 {
     private static readonly Dictionary<string, Func<JsonElement, ILootCondition>> s_conditions = new()
     {
-        ["killed_by_skeleton"] = _ => new KilledByCondition<Entities.EntitySkeleton>(),
+        ["killed_by"] = json => new KilledByCondition(json.GetProperty("entity").GetString()!),
         ["on_fire"] = json => new OnFireCondition(!json.TryGetProperty("expected", out JsonElement e) || e.GetBoolean()),
         ["sheep_not_sheared"] = _ => new SheepNotShearedCondition(),
         ["slime_size"] = json => new SlimeSizeCondition(json.GetProperty("size").GetInt32())

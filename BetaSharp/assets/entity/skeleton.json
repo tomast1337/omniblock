@@ -6,6 +6,12 @@
   "LivingSound": "mob.skeleton",
   "HurtSound": "mob.skeletonhurt",
   "DeathSound": "mob.skeletonhurt",
+  "HeldItem": "betasharp:bow",
+  "Renderer": {
+    "Type": "undead",
+    "Model": "skeleton",
+    "Shadow": 0.5
+  },
   "Behaviors": [
     {
       "Slots": [
