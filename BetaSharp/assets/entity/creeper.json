@@ -1,6 +1,20 @@
 {
   "ProtocolId": 50,
   "SpawnCategory": "monster",
+  "SyncedProperties": [
+    {
+      "Name": "state",
+      "Id": 16,
+      "Kind": "Byte",
+      "Default": 255
+    },
+    {
+      "Name": "powered",
+      "Id": 17,
+      "Kind": "Bool",
+      "Nbt": "powered"
+    }
+  ],
   "Health": 20,
   "Texture": "/mob/creeper.png",
   "HurtSound": "mob.creeper",

@@ -30,10 +30,21 @@ public abstract class Entity : IEntity
 
         // Resolved directly rather than through the virtual Type property, which a subclass could
         // override before its own fields are initialised.
-        EntityBehaviorSet behaviors = EntityRegistry.ByRuntimeType(GetType())?.Behaviors ?? EntityBehaviorSet.Empty;
+        EntityType? type = EntityRegistry.ByRuntimeType(GetType());
+        EntityBehaviorSet behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;
         Behaviors = behaviors;
         State = behaviors.StateLayout.Create();
+
+        // Declared here rather than on EntityLiving so every entity kind can carry synced state.
+        SyncedDeclarations = type?.Definition?.SyncedProperties ?? [];
+        SyncedPropertyFactory.Declare(DataSynchronizer, SyncedDeclarations, type?.Id ?? GetType().Name);
     }
+
+    /// <summary>JSON-declared synced properties for this entity's type.</summary>
+    protected internal SyncedPropertyDefinition[] SyncedDeclarations { get; }
+
+    /// <summary>Composed NBT persistence, for state a declared property cannot express on its own.</summary>
+    protected internal IEntityPersistence? Persistence => Behaviors.Persistence;
 
     /// <summary>Shared capability slots for this entity's type.</summary>
     protected internal EntityBehaviorSet Behaviors { get; }
@@ -981,6 +992,9 @@ public abstract class Entity : IEntity
         nbt.SetShort("Fire", (short)FireTicks);
         nbt.SetShort("Air", (short)Air);
         nbt.SetBoolean("OnGround", OnGround);
+
+        SyncedPropertyFactory.Write(DataSynchronizer, SyncedDeclarations, nbt);
+        Persistence?.OnWriteNbt(this, nbt);
         WriteNbt(nbt);
     }
 
@@ -1023,6 +1037,9 @@ public abstract class Entity : IEntity
 
         SetPosition(X, Y, Z);
         SetRotation(Yaw, Pitch);
+
+        SyncedPropertyFactory.Read(DataSynchronizer, SyncedDeclarations, nbt);
+        Persistence?.OnReadNbt(this, nbt);
         ReadNbt(nbt);
     }
 

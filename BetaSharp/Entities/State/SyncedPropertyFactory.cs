@@ -1,3 +1,4 @@
+using BetaSharp.NBT;
 using BetaSharp.Util;
 
 namespace BetaSharp.Entities.State;
@@ -46,6 +47,46 @@ public static class SyncedPropertyFactory
                     break;
                 default:
                     throw new ArgumentException($"Unsupported synced property kind '{definition.Kind}' on '{owner}'.");
+            }
+        }
+    }
+
+    /// <summary>Saves every declared property that names an NBT key.</summary>
+    public static void Write(DataSynchronizer synchronizer, IReadOnlyList<SyncedPropertyDefinition> definitions, NBTTagCompound nbt)
+    {
+        foreach (SyncedPropertyDefinition definition in definitions)
+        {
+            if (definition.Nbt is not { } key) continue;
+
+            switch (definition.Kind)
+            {
+                case SyncedValueKind.Bool: nbt.SetBoolean(key, synchronizer.Get<bool>(definition.Id).Value); break;
+                case SyncedValueKind.Byte: nbt.SetByte(key, (sbyte)synchronizer.Get<byte>(definition.Id).Value); break;
+                case SyncedValueKind.Short: nbt.SetShort(key, synchronizer.Get<short>(definition.Id).Value); break;
+                case SyncedValueKind.Int: nbt.SetInteger(key, synchronizer.Get<int>(definition.Id).Value); break;
+                case SyncedValueKind.Float: nbt.SetFloat(key, synchronizer.Get<float>(definition.Id).Value); break;
+                case SyncedValueKind.String: nbt.SetString(key, synchronizer.Get<string?>(definition.Id).Value ?? ""); break;
+                default: throw new ArgumentException($"Cannot persist synced property kind '{definition.Kind}'.");
+            }
+        }
+    }
+
+    /// <summary>Restores every declared property that names an NBT key.</summary>
+    public static void Read(DataSynchronizer synchronizer, IReadOnlyList<SyncedPropertyDefinition> definitions, NBTTagCompound nbt)
+    {
+        foreach (SyncedPropertyDefinition definition in definitions)
+        {
+            if (definition.Nbt is not { } key) continue;
+
+            switch (definition.Kind)
+            {
+                case SyncedValueKind.Bool: synchronizer.Get<bool>(definition.Id).Value = nbt.GetBoolean(key); break;
+                case SyncedValueKind.Byte: synchronizer.Get<byte>(definition.Id).Value = (byte)nbt.GetByte(key); break;
+                case SyncedValueKind.Short: synchronizer.Get<short>(definition.Id).Value = nbt.GetShort(key); break;
+                case SyncedValueKind.Int: synchronizer.Get<int>(definition.Id).Value = nbt.GetInteger(key); break;
+                case SyncedValueKind.Float: synchronizer.Get<float>(definition.Id).Value = nbt.GetFloat(key); break;
+                case SyncedValueKind.String: synchronizer.Get<string?>(definition.Id).Value = nbt.GetString(key); break;
+                default: throw new ArgumentException($"Cannot restore synced property kind '{definition.Kind}'.");
             }
         }
     }

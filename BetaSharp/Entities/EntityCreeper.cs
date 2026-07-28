@@ -1,3 +1,4 @@
+using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util;
@@ -8,32 +9,19 @@ namespace BetaSharp.Entities;
 public class EntityCreeper : EntityMonster
 {
     private readonly SyncedProperty<byte> _creeperState;
-    public readonly SyncedProperty<bool> Powered;
     private int _lastActiveTime;
     private int _timeSinceIgnited;
 
     public EntityCreeper(IWorldContext world) : base(world, EntityRegistry.ByName("creeper").RequireDefinition())
     {
-        _creeperState = DataSynchronizer.MakeProperty<byte>(16, 255); // -1
-        Powered = DataSynchronizer.MakeProperty(17, false);
-
-        // The disc pool is gated on the killer, so it only pays out when a skeleton lands the shot.
+        _creeperState = DataSynchronizer.Get<byte>(SyncedPropertyFactory.Resolve<byte>(Definition, "state").Id);
+        Powered = DataSynchronizer.Get<bool>(SyncedPropertyFactory.Resolve<bool>(Definition, "powered").Id);
     }
 
-    protected override void WriteNbt(NBTTagCompound nbt)
-    {
-        base.WriteNbt(nbt);
-        if (Powered.Value)
-        {
-            nbt.SetBoolean("powered", true);
-        }
-    }
+    /// <summary>Declared in creeper.json, including its NBT key — no persistence override needed.</summary>
+    public SyncedProperty<bool> Powered { get; }
 
-    protected override void ReadNbt(NBTTagCompound nbt)
-    {
-        base.ReadNbt(nbt);
-        Powered.Value = nbt.GetBoolean("powered");
-    }
+
 
     protected override void attackBlockedEntity(Entity entity, float distance)
     {

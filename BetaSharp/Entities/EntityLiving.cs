@@ -23,8 +23,6 @@ public abstract class EntityLiving : Entity
 
         if (definition is null) return;
 
-        SyncedPropertyFactory.Declare(DataSynchronizer, definition.SyncedProperties, definition.Name);
-
         Health = definition.Health;
         MovementSpeed = definition.MovementSpeed;
         Texture = definition.Texture;

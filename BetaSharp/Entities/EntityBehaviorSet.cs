@@ -24,4 +24,5 @@ public sealed class EntityBehaviorSet
     public IEntityTargetBehavior? Targeting { get; internal set; }
     public IEntityLootBehavior? Loot { get; internal set; }
     public IEntityLifecycle? Lifecycle { get; internal set; }
+    public IEntityPersistence? Persistence { get; internal set; }
 }

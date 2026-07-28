@@ -1,6 +1,14 @@
 {
   "ProtocolId": 90,
   "SpawnCategory": "creature",
+  "SyncedProperties": [
+    {
+      "Name": "saddled",
+      "Id": 16,
+      "Kind": "Bool",
+      "Nbt": "Saddle"
+    }
+  ],
   "Width": 0.9,
   "Height": 0.9,
   "Texture": "/mob/pig.png",
