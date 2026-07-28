@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -37,17 +38,23 @@ internal sealed class TNTBehavior(Item igniter) : IBlockPhysics, IBlockLifecycle
         }
         else
         {
-            EntityTntPrimed entityTntPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
-            @event.World.Entities.SpawnEntity(entityTntPrimed);
+            SpawnPrimed(@event.World, @event.X, @event.Y, @event.Z);
             @event.World.Broadcaster.PlaySoundAtPos(@event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F, "random.fuse", 1.0F, 1.0F);
         }
     }
 
     public void OnDestroyedByExplosion(Block block, OnDestroyedByExplosionEvent @event)
     {
-        EntityTntPrimed entityTntPrimed = new(@event.World, @event.X + 0.5F, @event.Y + 0.5F, @event.Z + 0.5F);
-        entityTntPrimed.Fuse = @event.World.Random.NextInt(entityTntPrimed.Fuse / 4) + entityTntPrimed.Fuse / 8;
-        @event.World.Entities.SpawnEntity(entityTntPrimed);
+        Entity primed = SpawnPrimed(@event.World, @event.X, @event.Y, @event.Z);
+        primed.Behaviors.Find<PrimedExplosiveBehavior>()!.ShortenFuse(primed);
+    }
+
+    private static Entity SpawnPrimed(IWorldContext world, int x, int y, int z)
+    {
+        Entity primed = EntityRegistry.ByName("primedtnt").Create(world);
+        primed.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
+        world.Entities.SpawnEntity(primed);
+        return primed;
     }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)

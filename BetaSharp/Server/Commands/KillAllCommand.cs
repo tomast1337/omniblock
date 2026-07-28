@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
@@ -43,7 +44,7 @@ public class KillAllCommand : Command.Command
                     (byte)TypeFilter.Hostile => entity is EntityMonster,
                     (byte)TypeFilter.Friendly => entity is EntityAnimal,
                     (byte)TypeFilter.Item => entity is EntityItem,
-                    (byte)TypeFilter.Tnt => entity is EntityTntPrimed,
+                    (byte)TypeFilter.Tnt => entity.Behaviors.Find<PrimedExplosiveBehavior>() is not null,
                     _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
                 };
 

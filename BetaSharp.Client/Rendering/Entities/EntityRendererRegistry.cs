@@ -1,6 +1,7 @@
 using System.Text.Json;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
+using BlockRegistry = BetaSharp.Blocks.BlockRegistry;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -34,6 +35,9 @@ internal static class EntityRendererRegistry
         ["squishy"] = (in JsonElement json) => new SquishyEntityRenderer(
             Model(json),
             EntityModelRegistry.Create(json.GetProperty("OverlayModel").GetString()!),
+            Shadow(json)),
+        ["primed_block"] = (in JsonElement json) => new PrimedBlockEntityRenderer(
+            BlockRegistry.Get(json.GetProperty("Block").GetString()!),
             Shadow(json)),
         ["scaled"] = (in JsonElement json) => new ScaledEntityRenderer(
             Model(json), Shadow(json), json.GetProperty("Scale").GetSingle()),

@@ -52,9 +52,9 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
 
     private static int Size(Entity self) => self.Synced<byte>("size")?.Value ?? 1;
 
-    private int RollDelay(EntityLiving self) => self.Random.NextInt(_delaySpread) + _delayMinimum;
+    private int RollDelay(Entity self) => self.Random.NextInt(_delaySpread) + _delayMinimum;
 
-    public void OnCreated(EntityLiving self) => self.State[_jumpDelay] = RollDelay(self);
+    public void OnCreated(Entity self) => self.State[_jumpDelay] = RollDelay(self);
 
     /// <summary>Snapshots the squash and the footing the landing test compares against.</summary>
     public void OnTick(Entity self)

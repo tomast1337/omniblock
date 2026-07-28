@@ -346,9 +346,9 @@ internal class EntityTrackerEntry
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 62);
             }
-            else if (currentTrackedEntity is EntityTntPrimed)
+            else if (currentTrackedEntity.Type?.Definition is { SpawnObjectId: > 0 } declared)
             {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 50);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, declared.SpawnObjectId);
             }
             else
             {

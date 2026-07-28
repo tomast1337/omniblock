@@ -15,6 +15,14 @@ public interface IEntityTicker
     /// <summary>Runs from <see cref="Entity.Tick" />, before the base tick.</summary>
     void OnTick(Entity self) { }
 
+    /// <summary>
+    ///     Runs from <see cref="Entity.Tick" /> first of all. Returning <c>true</c> means the
+    ///     behavior <em>is</em> the entity's whole tick and the base tick — ageing, water, fire, the
+    ///     void check — is skipped, matching an entity that overrode <c>Tick</c> without calling
+    ///     base. Primed TNT works this way: its tick is nothing but ballistics and a fuse.
+    /// </summary>
+    bool OnTickEntity(Entity self) => false;
+
     /// <summary>Runs from <c>EntityLiving.TickMovement</c>, before the shared movement logic.</summary>
     void OnTickMovement(EntityLiving self) { }
 

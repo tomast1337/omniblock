@@ -1,0 +1,27 @@
+{
+  "ProtocolId": 20,
+  "SpawnObjectId": 50,
+  "TrackingRange": 160,
+  "TrackingFrequency": 10,
+  "TracksVelocity": true,
+  "PreventEntitySpawning": true,
+  "Collidable": true,
+  "Width": 0.98,
+  "Height": 0.98,
+  "EyeHeightScale": 0.5,
+  "MakesStepSounds": false,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker","Lifecycle","Persistence"],
+      "Type": "primed_explosive",
+      "fuse_ticks": 80,
+      "power": 4.0,
+      "particle": "smoke"
+    }
+  ],
+  "Renderer": {
+    "Type": "primed_block",
+    "Block": "tnt",
+    "Shadow": 0.5
+  }
+}

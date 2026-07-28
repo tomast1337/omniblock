@@ -94,7 +94,9 @@ public static class EntityTestHarness
 
         if (type == EntityRegistry.ByName("primedtnt"))
         {
-            return new EntityTntPrimed(world, 8.5, 66.0, 8.5);
+            Entity primed = type.Create(world);
+            primed.SetPositionAndAngles(8.5, 66.0, 8.5, 0.0F, 0.0F);
+            return primed;
         }
 
         if (type == EntityRegistry.ByName("painting"))

@@ -26,24 +26,26 @@ public static class EntityRegistry
         Register((world, _) => new EntitySnowball(world), "Snowball", 11);
         Register((world, _) => new EntityItem(world), "Item", 1);
         Register((world, _) => new EntityPainting(world), "Painting", 9);
-        RegisterMob((world, type) => new EntityMonster(world, type), "Creeper");
-        RegisterMob((world, type) => new EntityMonster(world, type), "Skeleton");
-        RegisterMob((world, type) => new EntityMonster(world, type), "Spider");
-        RegisterMob((world, type) => new EntityMonster(world, type), "Giant");
-        RegisterMob((world, type) => new EntityMonster(world, type), "Zombie");
-        RegisterMob((world, type) => new EntityLiving(world, type), "Slime");
-        RegisterMob((world, type) => new EntityLiving(world, type), "Ghast");
-        RegisterMob((world, type) => new EntityMonster(world, type), "PigZombie");
-        RegisterMob((world, type) => new EntityAnimal(world, type), "Pig");
-        RegisterMob((world, type) => new EntityAnimal(world, type), "Sheep");
+        RegisterDefined((world, type) => new EntityMonster(world, type), "Creeper");
+        RegisterDefined((world, type) => new EntityMonster(world, type), "Skeleton");
+        RegisterDefined((world, type) => new EntityMonster(world, type), "Spider");
+        RegisterDefined((world, type) => new EntityMonster(world, type), "Giant");
+        RegisterDefined((world, type) => new EntityMonster(world, type), "Zombie");
+        RegisterDefined((world, type) => new EntityLiving(world, type), "Slime");
+        RegisterDefined((world, type) => new EntityLiving(world, type), "Ghast");
+        RegisterDefined((world, type) => new EntityMonster(world, type), "PigZombie");
+        RegisterDefined((world, type) => new EntityAnimal(world, type), "Pig");
+        RegisterDefined((world, type) => new EntityAnimal(world, type), "Sheep");
 
         // No class of its own: a cow is an EntityAnimal configured by cow.json. Every behavior it
         // once overrode now sits in a capability slot, so the subclass had nothing left to hold.
-        RegisterMob((world, type) => new EntityAnimal(world, type), "Cow");
-        RegisterMob((world, type) => new EntityAnimal(world, type), "Chicken");
-        RegisterMob((world, type) => new EntityLiving(world, type), "Squid");
-        RegisterMob((world, type) => new EntityAnimal(world, type), "Wolf");
-        Register((world, _) => new EntityTntPrimed(world), "PrimedTnt", 20);
+        RegisterDefined((world, type) => new EntityAnimal(world, type), "Cow");
+        RegisterDefined((world, type) => new EntityAnimal(world, type), "Chicken");
+        RegisterDefined((world, type) => new EntityLiving(world, type), "Squid");
+        RegisterDefined((world, type) => new EntityAnimal(world, type), "Wolf");
+        // No class of its own either: primed TNT is an EntityObject configured by primedtnt.json,
+        // the first non-living entity on the same footing as the mobs.
+        RegisterDefined((world, type) => new EntityObject(world, type), "PrimedTnt");
         Register((world, _) => new EntityFallingSand(world), "FallingSand", 21);
         Register((world, _) => new EntityMinecart(world), "Minecart", 40);
         Register((world, _) => new EntityBoat(world), "Boat", 41);
@@ -55,10 +57,10 @@ public static class EntityRegistry
     }
 
     /// <summary>
-    ///     Registers a mob, taking both its configuration and its protocol id from the JSON
-    ///     definition of the same (lowercased) name.
+    ///     Registers an entity that is fully described by data — mob or not — taking both its
+    ///     configuration and its protocol id from the JSON definition of the same (lowercased) name.
     /// </summary>
-    private static EntityType RegisterMob<T>(Func<IWorldContext, EntityType, T> factory, string id) where T : Entity
+    private static EntityType RegisterDefined<T>(Func<IWorldContext, EntityType, T> factory, string id) where T : Entity
     {
         EntityDefinition definition = EntityDefinitionRegistry.Get(id.ToLowerInvariant());
         return Register(factory, id, definition.ProtocolId, definition);
@@ -123,6 +125,21 @@ public static class EntityRegistry
     public static EntityType ByName(string name) =>
         s_registry.Get(ResourceLocation.Parse(name.ToLowerInvariant()))
         ?? throw new ArgumentException($"Unknown entity type: '{name}'", nameof(name));
+
+    /// <summary>
+    ///     Resolves a type by the object-spawn wire id its definition declares, or <c>null</c> if no
+    ///     registered type claims it. This is how the client turns an object-spawn packet back into
+    ///     an entity without a per-id branch.
+    /// </summary>
+    public static EntityType? BySpawnObjectId(int spawnObjectId)
+    {
+        foreach (EntityType type in s_registry)
+        {
+            if (type.Definition?.SpawnObjectId == spawnObjectId) return type;
+        }
+
+        return null;
+    }
 
     public static Entity? Create(string id, IWorldContext world) => TryCreate(id, world, out Entity? entity) ? entity : null;
 

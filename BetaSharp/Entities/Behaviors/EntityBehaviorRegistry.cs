@@ -55,6 +55,9 @@ internal static class EntityBehaviorRegistry
         // Attack + Ticker + Lifecycle, all moving one countdown
         ["fuse"] = (in EntityBehaviorContext c) => new FuseBehavior(c),
 
+        // Ticker + Lifecycle + Persistence, all moving one fuse
+        ["primed_explosive"] = (in EntityBehaviorContext c) => new PrimedExplosiveBehavior(c),
+
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),

@@ -287,6 +287,8 @@ public abstract class Entity : IEntity
 
     public virtual void Tick()
     {
+        if (Ticker?.OnTickEntity(this) == true) return;
+
         Ticker?.OnTick(this);
         BaseTick();
     }

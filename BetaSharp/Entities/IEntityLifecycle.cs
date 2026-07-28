@@ -9,13 +9,13 @@ namespace BetaSharp.Entities;
 public interface IEntityLifecycle
 {
     /// <summary>
-    ///     Called by <see cref="EntityType.Create" /> once the mob is constructed, for per-individual
-    ///     state that must exist before anything reads it — a slime's size, which decides its body.
-    ///     Unlike <see cref="OnPostSpawn" /> this runs for every mob however it came to exist, so a
-    ///     slime split off another or loaded from disk is sized too (and then overwritten, exactly as
-    ///     the constructor's own roll used to be).
+    ///     Called by <see cref="EntityType.Create" /> once the entity is constructed, for
+    ///     per-individual state that must exist before anything reads it — a slime's size, which
+    ///     decides its body, or a TNT's lit fuse. Unlike <see cref="OnPostSpawn" /> this runs for
+    ///     every entity however it came to exist, so a slime split off another or loaded from disk is
+    ///     sized too (and then overwritten, exactly as the constructor's own roll used to be).
     /// </summary>
-    void OnCreated(EntityLiving self) { }
+    void OnCreated(Entity self) { }
 
     /// <summary>Called before the mob is flagged dead, whether killed, despawned, or removed.</summary>
     void OnMarkDead(EntityLiving self) { }

@@ -22,10 +22,20 @@ public sealed class EntityRegistryDefinitionTests
         EntityRegistry.ByName("squid"), EntityRegistry.ByName("wolf")
     ];
 
+    /// <summary>
+    /// Non-living entities that are nevertheless fully described by a JSON definition — the non-mob
+    /// half of the migration. They carry a definition but no spawn category, and are excluded from
+    /// the mob-only assertions (living base class, spawn budgets).
+    /// </summary>
+    private static readonly EntityType[] s_definedObjectTypes =
+    [
+        EntityRegistry.ByName("primedtnt")
+    ];
+
     private static readonly EntityType[] s_nonMobTypes =
     [
         EntityRegistry.ByName("arrow"), EntityRegistry.ByName("snowball"), EntityRegistry.ByName("item"), EntityRegistry.ByName("painting"),
-        EntityRegistry.ByName("primedtnt"), EntityRegistry.ByName("fallingsand"), EntityRegistry.ByName("minecart"), EntityRegistry.ByName("boat"),
+        EntityRegistry.ByName("fallingsand"), EntityRegistry.ByName("minecart"), EntityRegistry.ByName("boat"),
         EntityRegistry.ByName("egg"), EntityRegistry.ByName("fireball"), EntityRegistry.ByName("fishhook"), EntityRegistry.ByName("lightningbolt"),
         EntityRegistry.ByName("player")
     ];
@@ -34,6 +44,20 @@ public sealed class EntityRegistryDefinitionTests
     public void Every_mob_type_carries_a_definition()
     {
         Assert.All(MobTypes, type => Assert.NotNull(type.Definition));
+    }
+
+    /// <summary>
+    /// Defined objects are the same deal without a living body: configuration and behaviors from
+    /// JSON, no spawn category (nothing spawns them naturally), and no mob class.
+    /// </summary>
+    [Fact]
+    public void Defined_object_types_carry_a_definition_but_no_spawn_category()
+    {
+        Assert.All(s_definedObjectTypes, type =>
+        {
+            Assert.NotNull(type.Definition);
+            Assert.Equal("", type.RequireDefinition().SpawnCategory);
+        });
     }
 
     [Fact]
@@ -136,7 +160,7 @@ public sealed class EntityRegistryDefinitionTests
     {
         IRegistry<EntityType> registry = DefaultRegistries.EntityTypes;
 
-        foreach (EntityType type in MobTypes.Concat(s_nonMobTypes))
+        foreach (EntityType type in MobTypes.Concat(s_definedObjectTypes).Concat(s_nonMobTypes))
         {
             int rawId = registry.GetId(type);
             Assert.InRange(rawId, sbyte.MinValue, sbyte.MaxValue);

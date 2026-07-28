@@ -147,7 +147,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool? IsInWater(Entity self) => First(_physics, p => p.IsInWater(self));
 
-    public void OnCreated(EntityLiving self)
+    public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);
     }

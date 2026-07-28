@@ -50,7 +50,10 @@ public sealed class SizedBodyBehavior : IEntityLifecycle, IEntityPersistence
         self.SetPosition(self.X, self.Y, self.Z);
     }
 
-    public void OnCreated(EntityLiving self) => SetSize(self, _choices[self.Random.NextInt(_choices.Length)]);
+    public void OnCreated(Entity self)
+    {
+        if (self is EntityLiving mob) SetSize(mob, _choices[self.Random.NextInt(_choices.Length)]);
+    }
 
     public void OnWriteNbt(Entity self, NBTTagCompound nbt) => nbt.SetInteger(_nbtKey, Size(self) + _nbtOffset);
 

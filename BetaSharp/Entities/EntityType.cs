@@ -32,7 +32,7 @@ public class EntityType(Func<IWorldContext, EntityType, Entity> factory, Type ba
 
         // After the constructor rather than inside it, so a behavior rolling per-individual state —
         // a slime's size, which resizes the body it is given — sees a finished entity.
-        if (entity is EntityLiving living) Behaviors.Lifecycle?.OnCreated(living);
+        Behaviors.Lifecycle?.OnCreated(entity);
 
         return entity;
     }

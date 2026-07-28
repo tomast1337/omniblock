@@ -110,6 +110,30 @@ public sealed record EntityDefinition : IDataAsset
     public int MaxSpawnedInChunk { get; init; } = 4;
     public bool CanDespawn { get; init; } = true;
 
+    /// <summary>Whether other entities are blocked from spawning inside this one's box.</summary>
+    public bool PreventEntitySpawning { get; init; }
+
+    /// <summary>Whether other entities collide with this one's box while it is alive.</summary>
+    public bool Collidable { get; init; }
+
+    /// <summary>
+    ///     Wire id in the object-spawn packet (<c>50</c> for primed TNT), a second protocol id space
+    ///     from <see cref="ProtocolId" />: non-living entities spawn on the client through
+    ///     <c>EntitySpawnS2CPacket</c> rather than the living-entity packet. <c>0</c> means this
+    ///     entity is not spawned that way.
+    /// </summary>
+    public int SpawnObjectId { get; init; }
+
+    /// <summary>
+    ///     How far away players are sent this entity, in blocks. <c>0</c> means the server tracker
+    ///     falls back to its by-kind defaults; declared for entities whose old tracking parameters
+    ///     lived in a class check.
+    /// </summary>
+    public int TrackingRange { get; init; }
+
+    /// <summary>Ticks between tracker position updates, read only when <see cref="TrackingRange" /> is set.</summary>
+    public int TrackingFrequency { get; init; } = 3;
+
     /// <summary>
     ///     Network-synchronised per-entity state, declared here rather than in behavior code so the
     ///     wire ids are visible data. See <see cref="State.SyncedPropertyDefinition" /> — these ids
