@@ -158,20 +158,10 @@ public class ClientNetworkHandler : NetHandler
             entity = new EntityArrow(_worldClient, x, y, z);
         }
 
-        if (packet.EntityType == 61)
-        {
-            entity = new EntitySnowball(_worldClient, x, y, z);
-        }
-
         if (packet.EntityType == 63)
         {
             entity = new EntityFireball(_worldClient, x, y, z, packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);
             packet.EntityData = 0;
-        }
-
-        if (packet.EntityType == 62)
-        {
-            entity = new EntityEgg(_worldClient, x, y, z);
         }
 
         if (packet.EntityType == 1)

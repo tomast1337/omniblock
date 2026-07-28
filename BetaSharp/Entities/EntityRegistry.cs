@@ -23,7 +23,7 @@ public static class EntityRegistry
     static EntityRegistry()
     {
         Register((world, _) => new EntityArrow(world), "Arrow", 10);
-        Register((world, _) => new EntitySnowball(world), "Snowball", 11);
+        RegisterDefined((world, type) => new EntityObject(world, type), "Snowball");
         RegisterDefined((world, type) => new EntityObject(world, type), "Item");
         Register((world, _) => new EntityPainting(world), "Painting", 9);
         RegisterDefined((world, type) => new EntityMonster(world, type), "Creeper");
@@ -49,7 +49,7 @@ public static class EntityRegistry
         RegisterDefined((world, type) => new EntityObject(world, type), "FallingSand");
         Register((world, _) => new EntityMinecart(world), "Minecart", 40);
         Register((world, _) => new EntityBoat(world), "Boat", 41);
-        Register((world, _) => new EntityEgg(world), "Egg", 62);
+        RegisterDefined((world, type) => new EntityObject(world, type), "Egg");
         Register((world, _) => new EntityFireball(world), "Fireball", 63);
         Register((world, _) => new EntityFish(world), "FishHook", 64);
         RegisterDefined((world, type) => new EntityObject(world, type), "LightningBolt");

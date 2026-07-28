@@ -1,0 +1,28 @@
+{
+  "ProtocolId": 62,
+  "SpawnObjectId": 62,
+  "TrackingRange": 64,
+  "TrackingFrequency": 10,
+  "TracksVelocity": true,
+  "Width": 0.25,
+  "Height": 0.25,
+  "EyeHeightScale": 0.0,
+  "RenderDistanceWeight": 4.0,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Persistence", "Interactable", "Physics"],
+      "Type": "thrown_projectile",
+      "impact_particle": "snowballpoof",
+      "hatch": {
+        "Entity": "chicken",
+        "Chance": 8,
+        "BonusChance": 32,
+        "BonusCount": 4
+      }
+    }
+  ],
+  "Renderer": {
+    "Type": "projectile",
+    "Item": "egg"
+  }
+}

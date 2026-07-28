@@ -330,10 +330,6 @@ internal class EntityTrackerEntry
                 EntityLiving arrowOwner = arrow.Owner;
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, arrowOwner != null ? arrowOwner.ID : currentTrackedEntity.ID);
             }
-            else if (currentTrackedEntity is EntitySnowball)
-            {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 61);
-            }
             else if (currentTrackedEntity is EntityFireball fireball)
             {
                 var packet = EntitySpawnS2CPacket.Get(fireball, 63, fireball.Owner.ID);
@@ -342,10 +338,6 @@ internal class EntityTrackerEntry
                 packet.VelocityZ = (int)(fireball.PowerZ * 8000.0);
 
                 return packet;
-            }
-            else if (currentTrackedEntity is EntityEgg)
-            {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 62);
             }
             // A falling block's object-spawn id depends on which block it carries, so it comes from
             // the behavior rather than the definition's single SpawnObjectId.

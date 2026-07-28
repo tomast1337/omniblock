@@ -1,0 +1,22 @@
+{
+  "ProtocolId": 11,
+  "SpawnObjectId": 61,
+  "TrackingRange": 64,
+  "TrackingFrequency": 10,
+  "TracksVelocity": true,
+  "Width": 0.25,
+  "Height": 0.25,
+  "EyeHeightScale": 0.0,
+  "RenderDistanceWeight": 4.0,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Persistence", "Interactable", "Physics"],
+      "Type": "thrown_projectile",
+      "impact_particle": "snowballpoof"
+    }
+  ],
+  "Renderer": {
+    "Type": "projectile",
+    "Item": "snowball"
+  }
+}

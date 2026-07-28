@@ -31,7 +31,8 @@ public sealed class EntityHierarchySmokeTests
         Assert.Equal(typeof(EntityLiving), ghast.GetType());
 
         Assert.IsAssignableFrom<Entity>(new EntityArrow(_world));
-        Assert.IsAssignableFrom<Entity>(new EntitySnowball(_world));
+        // Thrown projectiles have no class: snowball and egg are EntityObjects sharing one behavior.
+        Assert.Equal(typeof(EntityObject), EntityRegistry.ByName("snowball").Create(_world).GetType());
         Assert.False(zombie.Dead);
         Assert.False(pig.Dead);
         Assert.False(squid.Dead);

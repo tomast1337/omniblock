@@ -32,7 +32,7 @@ public abstract class Entity : IEntity
 
         // Prefer the type handed down by the registry factory: two registered types may share one
         // class, so the class alone no longer identifies the entity. The lookup is the fallback for
-        // entities still constructed directly (tests, EntityEgg hatching a chicken).
+        // entities still constructed directly (tests, remaining classful entities).
         type ??= EntityRegistry.ByRuntimeType(GetType());
         _type = type;
         EntityBehaviorSet behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;

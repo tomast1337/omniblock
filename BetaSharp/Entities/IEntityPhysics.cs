@@ -80,4 +80,11 @@ public interface IEntityPhysics
     ///     its full box and is carried by the current while it looks.
     /// </summary>
     bool? CheckWaterCollisions(Entity self) => null;
+
+    /// <summary>
+    ///     Runs when the server pushes a velocity to the client's copy, returning <c>true</c> when
+    ///     it handled the update. A thrown projectile derives its facing from the velocity the
+    ///     first time one arrives, since the object-spawn packet carries no angles.
+    /// </summary>
+    bool OnVelocityFromServer(Entity self, double vx, double vy, double vz) => false;
 }

@@ -2,6 +2,7 @@ using System.Text.Json;
 using BetaSharp.Client.Rendering.Entities.Models;
 using BetaSharp.Entities;
 using BlockRegistry = BetaSharp.Blocks.BlockRegistry;
+using Item = BetaSharp.Items.Item;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -39,6 +40,8 @@ internal static class EntityRendererRegistry
         ["falling_block"] = (in JsonElement json) => new FallingBlockEntityRenderer(Shadow(json)),
         ["lightning"] = (in JsonElement json) => new LightningEntityRenderer(),
         ["item"] = (in JsonElement json) => new Items.ItemRenderer(),
+        ["projectile"] = (in JsonElement json) => new ProjectileEntityRenderer(
+            Item.ByName(json.GetProperty("Item").GetString()!).getTextureId(0)),
         ["primed_block"] = (in JsonElement json) => new PrimedBlockEntityRenderer(
             BlockRegistry.Get(json.GetProperty("Block").GetString()!),
             Shadow(json)),

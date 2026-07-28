@@ -149,17 +149,11 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : I
         }
         else if (itemStack.ItemId == egg.Id)
         {
-            EntityEgg egg = new(@event.World, spawnX, spawnY, spawnZ);
-            egg.setHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
-            @event.World.Entities.SpawnEntity(egg);
-            @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
+            DispenseProjectile(@event, "egg", spawnX, spawnY, spawnZ, dirX, dirZ);
         }
         else if (itemStack.ItemId == snowball.Id)
         {
-            EntitySnowball snowball = new(@event.World, spawnX, spawnY, spawnZ);
-            snowball.SetHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
-            @event.World.Entities.SpawnEntity(snowball);
-            @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
+            DispenseProjectile(@event, "snowball", spawnX, spawnY, spawnZ, dirX, dirZ);
         }
         else
         {
@@ -178,5 +172,14 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : I
         }
 
         @event.World.Broadcaster.WorldEvent(2000, @event.X, @event.Y, @event.Z, dirX + 1 + (dirZ + 1) * 3);
+    }
+
+    private static void DispenseProjectile(OnTickEvent @event, string typeName, double spawnX, double spawnY, double spawnZ, int dirX, int dirZ)
+    {
+        Entity projectile = EntityRegistry.ByName(typeName).Create(@event.World);
+        projectile.SetPositionAndAngles(spawnX, spawnY, spawnZ, 0.0F, 0.0F);
+        projectile.Behaviors.Find<ThrownProjectileBehavior>()!.SetHeading(projectile, dirX, 0.1D, dirZ, 1.1F, 6.0F);
+        @event.World.Entities.SpawnEntity(projectile);
+        @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
     }
 }

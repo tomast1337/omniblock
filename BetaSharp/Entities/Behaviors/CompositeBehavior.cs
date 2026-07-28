@@ -162,6 +162,16 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool? CheckWaterCollisions(Entity self) => First(_physics, p => p.CheckWaterCollisions(self));
 
+    public bool OnVelocityFromServer(Entity self, double vx, double vy, double vz)
+    {
+        foreach (IEntityPhysics physics in _physics)
+        {
+            if (physics.OnVelocityFromServer(self, vx, vy, vz)) return true;
+        }
+
+        return false;
+    }
+
     public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);

@@ -16,6 +16,7 @@ public class EntityObject : Entity
     {
         Definition = type.RequireDefinition();
         PreventEntitySpawning = Definition.PreventEntitySpawning;
+        RenderDistanceWeight = Definition.RenderDistanceWeight;
         SetBoundingBoxSpacing(Definition.Width, Definition.Height);
         StandingEyeHeight = Height * Definition.EyeHeightScale;
     }
@@ -39,6 +40,11 @@ public class EntityObject : Entity
     public override float GetShadowRadius() => 0.0F;
 
     public override bool ShouldRender(Vec3D vec) => Physics?.ShouldRender(this) ?? base.ShouldRender(vec);
+
+    public override void SetVelocityClient(double vx, double vy, double vz)
+    {
+        if (Physics?.OnVelocityFromServer(this, vx, vy, vz) != true) base.SetVelocityClient(vx, vy, vz);
+    }
 
     protected override void ReadNbt(NBTTagCompound nbt) { }
 

@@ -66,6 +66,7 @@ internal static class EntityBehaviorRegistry
 
         // Ticker + Lifecycle + Persistence + Interactable + Physics, all reading one stack
         ["dropped_item"] = (in EntityBehaviorContext c) => new DroppedItemBehavior(c),
+        ["thrown_projectile"] = (in EntityBehaviorContext c) => new ThrownProjectileBehavior(c),
 
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),

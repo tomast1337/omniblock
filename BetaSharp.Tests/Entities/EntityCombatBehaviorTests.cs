@@ -93,12 +93,14 @@ public sealed class EntityCombatBehaviorTests
         Assert.NotEqual(0f, arrow.Yaw);
         Assert.NotEqual(0f, arrow.Pitch);
 
-        var egg = new EntityEgg(world, 8.5, 65.0, 8.5);
+        Entity egg = EntityRegistry.ByName("egg").Create(world);
+        egg.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         egg.SetVelocityClient(0.2, 0.1, -0.3);
         Assert.NotEqual(0f, egg.Yaw);
         Assert.NotEqual(0f, egg.Pitch);
 
-        var snowball = new EntitySnowball(world, 8.5, 65.0, 8.5);
+        Entity snowball = EntityRegistry.ByName("snowball").Create(world);
+        snowball.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         snowball.SetVelocityClient(0.2, 0.1, -0.3);
         Assert.NotEqual(0f, snowball.Yaw);
         Assert.NotEqual(0f, snowball.Pitch);

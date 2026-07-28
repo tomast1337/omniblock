@@ -47,14 +47,6 @@ public class EntityTracker
         {
             startTracking(entity, 64, 10, false);
         }
-        else if (entity is EntitySnowball)
-        {
-            startTracking(entity, 64, 10, true);
-        }
-        else if (entity is EntityEgg)
-        {
-            startTracking(entity, 64, 10, true);
-        }
         else if (entity is EntityMinecart)
         {
             startTracking(entity, 160, 5, true);

@@ -117,6 +117,12 @@ public sealed record EntityDefinition : IDataAsset
     public bool Collidable { get; init; }
 
     /// <summary>
+    ///     Multiplier on the distance past which the client stops drawing this entity. A thrown
+    ///     projectile's box is tiny, so it quadruples the default range to stay visible in flight.
+    /// </summary>
+    public double RenderDistanceWeight { get; init; } = 1.0;
+
+    /// <summary>
     ///     Wire id in the object-spawn packet (<c>50</c> for primed TNT), a second protocol id space
     ///     from <see cref="ProtocolId" />: non-living entities spawn on the client through
     ///     <c>EntitySpawnS2CPacket</c> rather than the living-entity packet. <c>0</c> means this

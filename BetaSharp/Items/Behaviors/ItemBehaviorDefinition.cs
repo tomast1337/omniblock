@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Registries;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -174,17 +175,11 @@ public sealed class PlaceBlockBehaviorDefinition : ItemBehaviorDefinition
 
 public sealed class ThrowableBehaviorDefinition : ItemBehaviorDefinition
 {
-    public string ProjectileType { get; init; } = "snowball"; // "snowball" or "egg"
+    /// <summary>Entity registry name of what gets thrown, e.g. "snowball" or "egg".</summary>
+    public string ProjectileType { get; init; } = "snowball";
 
-    public override IItemBehavior Build()
-    {
-        Func<IWorldContext, EntityPlayer, Entity> factory = ProjectileType switch
-        {
-            "egg" => (w, p) => new EntityEgg(w, p),
-            _ => (w, p) => new EntitySnowball(w, p),
-        };
-        return new ThrowableBehavior(factory);
-    }
+    public override IItemBehavior Build() =>
+        new ThrowableBehavior((w, p) => ThrownProjectileBehavior.Throw(w, ProjectileType, p));
 }
 
 public sealed class DyeBehaviorDefinition : ItemBehaviorDefinition
