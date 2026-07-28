@@ -495,7 +495,7 @@ public abstract class EntityPlayer : EntityLiving
     {
         switch (entity)
         {
-            case EntityCreeper or EntityGhast:
+            case { Definition.WolfPackIgnores: true }:
             case EntityWolf { IsWolfTamed: true } wolf when Name != null && Name.Equals(wolf.WolfOwner):
             case EntityPlayer p when (!isPvpEnabled() || !p.GameMode.CanBeTargeted):
                 return;

@@ -128,7 +128,7 @@ public sealed class EntityBehaviorSlotTests
     public void Creeper_loot_drops_record_only_when_killed_by_skeleton()
     {
         FakeWorldContext world = new();
-        EntityCreeper creeper = Spawn(world, new EntityCreeper(world), 8.5, 65.0, 8.5);
+        EntityMonster creeper = Spawn(world, (EntityMonster)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
         EntitySkeleton skeleton = Spawn(world, new EntitySkeleton(world), 12.5, 65.0, 12.5);
         int recordId = Item.ByName("record").Id;
 
@@ -247,16 +247,18 @@ public sealed class EntityBehaviorSlotTests
     }
 
     [Fact]
-    public void Creeper_keeps_its_own_lightning_override_and_has_no_lifecycle_slot()
+    public void Creeper_is_supercharged_through_its_lifecycle_slot()
     {
         FakeWorldContext world = new();
-        EntityCreeper creeper = Spawn(world, new EntityCreeper(world), 8.5, 65.0, 8.5);
+        EntityMonster creeper = Spawn(world, (EntityMonster)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
 
-        Assert.Null(creeper.Lifecycle);
+        // The fuse behavior fills Lifecycle too, so the strike no longer needs a class to catch it.
+        Assert.IsType<FuseBehavior>(creeper.Behaviors.Lifecycle);
+        Assert.False(creeper.Synced<bool>("powered")!.Value);
 
         creeper.OnStruckByLightning(new EntityLightningBolt(world, creeper.X, creeper.Y, creeper.Z));
 
-        Assert.True(creeper.Powered.Value);
+        Assert.True(creeper.Synced<bool>("powered")!.Value);
     }
 
     private static T Spawn<T>(FakeWorldContext world, T entity, double x, double y, double z) where T : Entity

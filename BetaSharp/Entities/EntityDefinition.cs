@@ -58,6 +58,12 @@ public sealed record EntityDefinition : IDataAsset
     public int TalkInterval { get; init; } = 80;
 
     public bool FireImmune { get; init; }
+
+    /// <summary>
+    ///     Whether a player's wolves refuse to be set on this mob — true for creepers and ghasts,
+    ///     which a wolf pack would only make worse. Declared rather than sniffed from the class.
+    /// </summary>
+    public bool WolfPackIgnores { get; init; }
     public int MaxSpawnedInChunk { get; init; } = 4;
     public bool CanDespawn { get; init; } = true;
 

@@ -347,6 +347,8 @@ public abstract class EntityLiving : Entity
         while (Pitch - PrevPitch >= 180.0F) PrevPitch += 360.0F;
 
         TotalWalkDistance += walkSpeed;
+
+        Ticker?.OnTickEnd(this);
     }
 
     protected override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);

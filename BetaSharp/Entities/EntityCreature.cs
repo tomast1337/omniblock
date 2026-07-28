@@ -186,9 +186,7 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
 
     protected virtual void attackEntity(Entity entity, float distance) => Attack?.AttackEntity(this, entity, distance);
 
-    protected virtual void attackBlockedEntity(Entity entity, float distance)
-    {
-    }
+    protected virtual void attackBlockedEntity(Entity entity, float distance) => Attack?.AttackBlockedEntity(this, entity, distance);
 
     protected virtual float GetBlockPathWeight(int x, int y, int z) => 0.0F;
 

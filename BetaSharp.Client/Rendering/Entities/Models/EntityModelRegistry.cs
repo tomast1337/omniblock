@@ -16,6 +16,7 @@ internal static class EntityModelRegistry
         ["chicken"] = () => new ModelChicken(),
         ["cow"] = () => new ModelCow(),
         ["creeper"] = () => new ModelCreeper(),
+        ["creeper_charged"] = () => new ModelCreeper(2.0F),
         ["ghast"] = () => new ModelGhast(),
         ["pig"] = () => new ModelPig(),
         ["pig_saddle"] = () => new ModelPig(0.5F),

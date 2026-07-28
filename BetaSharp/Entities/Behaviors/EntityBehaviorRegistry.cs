@@ -43,6 +43,9 @@ internal static class EntityBehaviorRegistry
             c.Int("minimum_size", 2),
             c.Json.TryGetProperty("sound", out JsonElement s) ? s.GetString() ?? "" : ""),
 
+        // Attack + Ticker + Lifecycle, all moving one countdown
+        ["fuse"] = (in EntityBehaviorContext c) => new FuseBehavior(c),
+
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),

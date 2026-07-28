@@ -16,28 +16,29 @@ public sealed class EntityPersistenceTests
     public void Creeper_powered_survives_a_save_load_round_trip()
     {
         FakeWorldContext world = new();
-        EntityCreeper creeper = new(world) { Powered = { Value = true } };
+        EntityMonster creeper = (EntityMonster)EntityRegistry.ByName("creeper").Create(world);
+        creeper.Synced<bool>("powered")!.Value = true;
         creeper.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         Assert.True(creeper.SaveSelfNbt(nbt));
 
-        EntityCreeper loaded = Assert.IsType<EntityCreeper>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
-        Assert.True(loaded.Powered.Value);
+        EntityMonster loaded = Assert.IsType<EntityMonster>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        Assert.True(loaded.Synced<bool>("powered")!.Value);
     }
 
     [Fact]
     public void Creeper_that_was_never_struck_loads_unpowered()
     {
         FakeWorldContext world = new();
-        EntityCreeper creeper = new(world);
+        EntityMonster creeper = (EntityMonster)EntityRegistry.ByName("creeper").Create(world);
         creeper.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         NBTTagCompound nbt = new();
         Assert.True(creeper.SaveSelfNbt(nbt));
 
-        EntityCreeper loaded = Assert.IsType<EntityCreeper>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
-        Assert.False(loaded.Powered.Value);
+        EntityMonster loaded = Assert.IsType<EntityMonster>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        Assert.False(loaded.Synced<bool>("powered")!.Value);
     }
 
     [Fact]
@@ -61,7 +62,8 @@ public sealed class EntityPersistenceTests
         // The save format is a compatibility surface: these keys must match what the hand-written
         // WriteNbt overrides used, or existing worlds silently lose state.
         FakeWorldContext world = new();
-        EntityCreeper creeper = new(world) { Powered = { Value = true } };
+        EntityMonster creeper = (EntityMonster)EntityRegistry.ByName("creeper").Create(world);
+        creeper.Synced<bool>("powered")!.Value = true;
         EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
 

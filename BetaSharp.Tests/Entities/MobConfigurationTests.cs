@@ -59,7 +59,7 @@ public sealed class MobConfigurationTests
         "giant" => new EntityGiantZombie(world),
         "pig_zombie" => new EntityPigZombie(world),
         "skeleton" => new EntitySkeleton(world),
-        "creeper" => new EntityCreeper(world),
+        "creeper" => (EntityMonster)EntityRegistry.ByName("creeper").Create(world),
         "spider" => new EntitySpider(world),
         "ghast" => new EntityGhast(world),
         "pig" => (EntityAnimal)EntityRegistry.ByName("pig").Create(world),

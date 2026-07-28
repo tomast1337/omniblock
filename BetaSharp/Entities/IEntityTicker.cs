@@ -20,4 +20,10 @@ public interface IEntityTicker
 
     /// <summary>Runs from <c>EntityLiving.TickLiving</c> — the AI tick.</summary>
     void OnTickLiving(EntityLiving self) { }
+
+    /// <summary>
+    ///     Runs at the end of <c>EntityLiving.Tick</c>, after movement and AI have resolved — where
+    ///     a mob that overrode <c>Tick</c> put the work it did after calling base.
+    /// </summary>
+    void OnTickEnd(EntityLiving self) { }
 }

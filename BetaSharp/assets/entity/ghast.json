@@ -1,6 +1,7 @@
 {
   "ProtocolId": 56,
   "SpawnCategory": "monster",
+  "WolfPackIgnores": true,
   "Width": 4,
   "Height": 4,
   "Texture": "/mob/ghast.png",

@@ -19,12 +19,29 @@
   "Texture": "/mob/creeper.png",
   "HurtSound": "mob.creeper",
   "DeathSound": "mob.creeperdeath",
+  "WolfPackIgnores": true,
+  "Renderer": {
+    "Type": "creeper",
+    "Model": "creeper",
+    "Shadow": 0.5,
+    "OverlayModel": "creeper_charged",
+    "OverlayTexture": "/armor/power.png",
+    "OverlayProperty": "powered"
+  },
   "Behaviors": [
     {
       "Slots": [
-        "Attack"
+        "Attack",
+        "Ticker",
+        "Lifecycle"
       ],
-      "Type": "melee"
+      "Type": "fuse",
+      "fuse_ticks": 30,
+      "trigger_range": 3.0,
+      "armed_range": 7.0,
+      "power": 3.0,
+      "powered_power": 6.0,
+      "fuse_sound": "random.fuse"
     },
     {
       "Slots": [

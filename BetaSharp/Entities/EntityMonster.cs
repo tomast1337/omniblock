@@ -3,9 +3,9 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityMonster : EntityCreature, Monster
+public class EntityMonster : EntityCreature, Monster
 {
-    protected EntityMonster(IWorldContext world, EntityType? type = null) : base(world, type)
+    public EntityMonster(IWorldContext world, EntityType? type = null) : base(world, type)
     {
     }
 
