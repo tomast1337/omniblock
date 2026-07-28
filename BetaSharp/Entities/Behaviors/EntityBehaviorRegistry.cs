@@ -32,6 +32,16 @@ internal static class EntityBehaviorRegistry
         // Loot
         ["loot_table"] = (in EntityBehaviorContext c) => new LootTableBehavior(LootJson.ParseTable(c.Json)),
 
+        // Interactable
+        ["swap_held_item"] = (in EntityBehaviorContext c) => new SwapHeldItemBehavior(
+            Items.Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("required").GetString()!).Path),
+            Items.Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("result").GetString()!).Path)),
+        ["ride_if_saddled"] = (in EntityBehaviorContext c) => new RideIfSaddledBehavior(c),
+        ["contact_damage"] = (in EntityBehaviorContext c) => new ContactDamageBehavior(
+            c.Double("reach_per_size", 0.6D),
+            c.Int("minimum_size", 2),
+            c.Json.TryGetProperty("sound", out JsonElement s) ? s.GetString() ?? "" : ""),
+
         // Ticker
         ["burn_in_daylight"] = (in EntityBehaviorContext c) => new BurnInDaylightBehavior(c.Int("fire_ticks", 300)),
         ["lay_eggs"] = (in EntityBehaviorContext c) => new LayEggsBehavior(c),

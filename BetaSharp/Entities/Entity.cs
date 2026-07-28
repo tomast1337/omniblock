@@ -46,6 +46,9 @@ public abstract class Entity : IEntity
     /// <summary>Composed NBT persistence, for state a declared property cannot express on its own.</summary>
     protected internal IEntityPersistence? Persistence => Behaviors.Persistence;
 
+    /// <summary>Composed player interaction, or <c>null</c> for entities that ignore the player.</summary>
+    protected internal IEntityInteractable? Interactable => Behaviors.Interactable;
+
     /// <summary>Shared capability slots for this entity's type.</summary>
     protected internal EntityBehaviorSet Behaviors { get; }
 
@@ -860,9 +863,7 @@ public abstract class Entity : IEntity
 
     public float GetDistance(Entity entity) => (float)GetDistance(entity.X, entity.Y, entity.Z);
 
-    public virtual void OnPlayerInteraction(EntityPlayer player)
-    {
-    }
+    public virtual void OnPlayerInteraction(EntityPlayer player) => Interactable?.OnPlayerCollision(this, player);
 
     public virtual void OnCollision(Entity entity)
     {
@@ -1106,7 +1107,7 @@ public abstract class Entity : IEntity
         return false;
     }
 
-    public virtual bool Interact(EntityPlayer player) => false;
+    public virtual bool Interact(EntityPlayer player) => Interactable?.OnInteract(this, player) ?? false;
 
     public virtual Box? GetCollisionAgainstShape(Entity entity) => null;
 

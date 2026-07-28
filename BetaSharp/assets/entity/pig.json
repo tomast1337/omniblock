@@ -55,6 +55,13 @@
         "Lifecycle"
       ],
       "Type": "pig_lightning"
+    },
+    {
+      "Slots": [
+        "Interactable"
+      ],
+      "Type": "ride_if_saddled",
+      "saddled_property": "saddled"
     }
   ]
 }

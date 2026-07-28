@@ -18,13 +18,6 @@ public class EntityPig : EntityAnimal
 
 
 
-    public override bool Interact(EntityPlayer player)
-    {
-        if (!Saddled.Value || World.IsRemote || (Passenger != null && !Equals(Passenger, player))) return false;
-
-        player.SetVehicle(this);
-        return true;
-    }
 
     protected override void OnLanding(float fallDistance)
     {

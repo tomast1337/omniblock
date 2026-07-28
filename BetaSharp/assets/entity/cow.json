@@ -26,6 +26,14 @@
           "MaxCount": 2
         }
       ]
+    },
+    {
+      "Slots": [
+        "Interactable"
+      ],
+      "Type": "swap_held_item",
+      "required": "betasharp:bucket",
+      "result": "betasharp:milk"
     }
   ]
 }

@@ -32,6 +32,15 @@
         "Lifecycle"
       ],
       "Type": "slime_split"
+    },
+    {
+      "Slots": [
+        "Interactable"
+      ],
+      "Type": "contact_damage",
+      "reach_per_size": 0.6,
+      "minimum_size": 2,
+      "sound": "mob.slimeattack"
     }
   ]
 }

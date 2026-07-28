@@ -119,14 +119,6 @@ public class EntitySlime : EntityLiving, Monster
         }
     }
 
-    public override void OnPlayerInteraction(EntityPlayer player)
-    {
-        int size = SlimeSize;
-        if (size > 1 && CanSee(player) && GetDistance(player) < 0.6D * size && player.Damage(this, size))
-        {
-            World.Broadcaster.PlaySoundAtEntity(this, "mob.slimeattack", 1.0F, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);
-        }
-    }
 
     public override bool CanSpawn()
     {
