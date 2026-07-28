@@ -1,5 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
@@ -76,10 +77,7 @@ public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlo
         double offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
         double offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.2D + 0.6D;
         double offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        EntityItem entityItem = new(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0))
-        {
-            DelayBeforeCanPickup = 10
-        };
+        Entity entityItem = DroppedItemBehavior.Create(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0), pickupDelay: 10);
         level.SpawnEntity(entityItem);
     }
 }

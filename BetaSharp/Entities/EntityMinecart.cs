@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -181,7 +182,7 @@ public class EntityMinecart : Entity, IInventory
 
                     itemStack.Count -= dropCount;
 
-                    EntityItem droppedItem = new(
+                    Entity droppedItem = DroppedItemBehavior.Create(
                         World,
                         X + offsetX,
                         Y + offsetY,
@@ -236,7 +237,7 @@ public class EntityMinecart : Entity, IInventory
 
                 itemStack.Count -= dropCount;
 
-                EntityItem droppedItem = new(
+                Entity droppedItem = DroppedItemBehavior.Create(
                     World,
                     X + offsetX,
                     Y + offsetY,

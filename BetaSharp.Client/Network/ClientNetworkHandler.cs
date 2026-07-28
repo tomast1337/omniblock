@@ -117,15 +117,13 @@ public class ClientNetworkHandler : NetHandler
         double x = packet.X / 32.0D;
         double y = packet.Y / 32.0D;
         double z = packet.Z / 32.0D;
-        EntityItem entityItem = new(_worldClient, x, y, z, new ItemStack(packet.ItemRawId, packet.ItemCount, packet.ItemDamage))
-        {
-            VelocityX = packet.VelocityX / 128.0D,
-            VelocityY = packet.VelocityY / 128.0D,
-            VelocityZ = packet.VelocityZ / 128.0D,
-            TrackedPosX = packet.X,
-            TrackedPosY = packet.Y,
-            TrackedPosZ = packet.Z
-        };
+        Entity entityItem = DroppedItemBehavior.Create(_worldClient, x, y, z, new ItemStack(packet.ItemRawId, packet.ItemCount, packet.ItemDamage));
+        entityItem.VelocityX = packet.VelocityX / 128.0D;
+        entityItem.VelocityY = packet.VelocityY / 128.0D;
+        entityItem.VelocityZ = packet.VelocityZ / 128.0D;
+        entityItem.TrackedPosX = packet.X;
+        entityItem.TrackedPosY = packet.Y;
+        entityItem.TrackedPosZ = packet.Z;
         _worldClient.ForceEntity(packet.EntityId, entityItem);
     }
 

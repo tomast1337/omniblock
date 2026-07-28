@@ -1,5 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
@@ -62,12 +63,10 @@ public static class InventoryUtility
                 }
 
                 stack.Count -= amount;
-                EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()))
-                {
-                    VelocityX = (float)random.NextGaussian() * DropSpread,
-                    VelocityY = (float)random.NextGaussian() * DropSpread + 0.2F,
-                    VelocityZ = (float)random.NextGaussian() * DropSpread
-                };
+                Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()));
+                entityItem.VelocityX = (float)random.NextGaussian() * DropSpread;
+                entityItem.VelocityY = (float)random.NextGaussian() * DropSpread + 0.2F;
+                entityItem.VelocityZ = (float)random.NextGaussian() * DropSpread;
 
                 @event.World.Entities.SpawnEntity(entityItem);
             }

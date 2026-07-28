@@ -1,4 +1,6 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
+using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
@@ -16,13 +18,14 @@ public class ItemEntitySpawnS2CPacket() : Packet(PacketId.ItemEntitySpawnS2C), I
     public int Z { get; private set; }
     public int EntityId { get; private set; }
 
-    public static ItemEntitySpawnS2CPacket Get(EntityItem item)
+    public static ItemEntitySpawnS2CPacket Get(Entity item)
     {
+        ItemStack stack = item.Behaviors.Find<DroppedItemBehavior>()!.Stack(item)!;
         ItemEntitySpawnS2CPacket p = Get<ItemEntitySpawnS2CPacket>(PacketId.ItemEntitySpawnS2C);
         p.EntityId = item.ID;
-        p.ItemRawId = item.Stack.ItemId;
-        p.ItemCount = item.Stack.Count;
-        p.ItemDamage = item.Stack.getDamage();
+        p.ItemRawId = stack.ItemId;
+        p.ItemCount = stack.Count;
+        p.ItemDamage = stack.getDamage();
         p.X = MathHelper.Floor(item.X * 32.0D);
         p.Y = MathHelper.Floor(item.Y * 32.0D);
         p.Z = MathHelper.Floor(item.Z * 32.0D);

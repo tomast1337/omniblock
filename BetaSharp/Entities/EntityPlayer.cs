@@ -351,10 +351,7 @@ public abstract class EntityPlayer : EntityLiving
         if (!GameMode.CanDrop) return false;
         if (stack == null) return true;
 
-        EntityItem itemEntity = new(World, X, Y - 0.3F + EyeHeight, Z, stack)
-        {
-            DelayBeforeCanPickup = 40
-        };
+        Entity itemEntity = DroppedItemBehavior.Create(World, X, Y - 0.3F + EyeHeight, Z, stack, pickupDelay: 40);
         if (throwRandomly)
         {
             float randomSpeed = Random.NextFloat() * 0.5F;
@@ -386,7 +383,7 @@ public abstract class EntityPlayer : EntityLiving
         return true;
     }
 
-    protected virtual void SpawnItem(EntityItem itemEntity) => World.SpawnEntity(itemEntity);
+    protected virtual void SpawnItem(Entity itemEntity) => World.SpawnEntity(itemEntity);
 
     public float GetBlockBreakingSpeed(Block block)
     {

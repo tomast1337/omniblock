@@ -38,6 +38,7 @@ internal static class EntityRendererRegistry
             Shadow(json)),
         ["falling_block"] = (in JsonElement json) => new FallingBlockEntityRenderer(Shadow(json)),
         ["lightning"] = (in JsonElement json) => new LightningEntityRenderer(),
+        ["item"] = (in JsonElement json) => new Items.ItemRenderer(),
         ["primed_block"] = (in JsonElement json) => new PrimedBlockEntityRenderer(
             BlockRegistry.Get(json.GetProperty("Block").GetString()!),
             Shadow(json)),

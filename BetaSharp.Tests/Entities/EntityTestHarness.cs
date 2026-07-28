@@ -85,12 +85,19 @@ public static class EntityTestHarness
         }
     }
 
+    /// <summary>Whether this entity is a dropped item — the capability check that replaced `is EntityItem`.</summary>
+    public static bool IsDroppedItem(Entity entity) => entity.Behaviors.Find<DroppedItemBehavior>() is not null;
+
+    /// <summary>The stack a dropped item carries, or null for anything that is not one.</summary>
+    public static ItemStack? DroppedStack(Entity entity) =>
+        entity.Behaviors.Find<DroppedItemBehavior>() is { } dropped ? dropped.Stack(entity) : null;
+
     /// <summary>Creates an entity suitable for NBT save/load (registry items with invalid default state get a safe stack).</summary>
     public static Entity CreateForNbtRoundTrip(EntityType type, FakeWorldContext world)
     {
         if (type == EntityRegistry.ByName("item"))
         {
-            return new EntityItem(world, 8.5, 65.0, 8.5, new ItemStack(Item.ByName("stick"), 1));
+            return DroppedItemBehavior.Create(world, 8.5, 65.0, 8.5, new ItemStack(Item.ByName("stick"), 1));
         }
 
         if (type == EntityRegistry.ByName("primedtnt"))

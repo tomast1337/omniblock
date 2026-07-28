@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
@@ -246,6 +247,6 @@ public sealed class EntityPainting : Entity
     {
         if (Dead || World.IsRemote) return;
         MarkDead();
-        World.SpawnEntity(new EntityItem(World, X, Y, Z, new ItemStack(s_painting)));
+        World.SpawnEntity(DroppedItemBehavior.Create(World, X, Y, Z, new ItemStack(s_painting)));
     }
 }

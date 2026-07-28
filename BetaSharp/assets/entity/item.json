@@ -1,0 +1,25 @@
+{
+  "ProtocolId": 1,
+  "TrackingRange": 64,
+  "TrackingFrequency": 20,
+  "TracksVelocity": true,
+  "Width": 0.25,
+  "Height": 0.25,
+  "EyeHeightScale": 0.5,
+  "MakesStepSounds": false,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Lifecycle", "Persistence", "Interactable", "Physics"],
+      "Type": "dropped_item",
+      "despawn_age": 6000,
+      "health": 5,
+      "pickup_achievements": [
+        { "Item": "betasharp:log", "Achievement": "mineWood" },
+        { "Item": "betasharp:leather", "Achievement": "killCow" }
+      ]
+    }
+  ],
+  "Renderer": {
+    "Type": "item"
+  }
+}

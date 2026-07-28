@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Hit;
@@ -388,7 +389,7 @@ public class EntityFish : Entity
         }
         else if (_ticksCatchable > 0)
         {
-            EntityItem fishItem = new(World, X, Y, Z, new ItemStack(s_fishRaw));
+            Entity fishItem = DroppedItemBehavior.Create(World, X, Y, Z, new ItemStack(s_fishRaw));
             if (Angler != null)
             {
                 double deltaX = Angler.X - X;

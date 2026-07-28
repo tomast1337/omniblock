@@ -149,11 +149,11 @@ public sealed class EntityBehaviorSlotTests
         EntityAnimal sheep = Spawn(world, (EntityAnimal)EntityRegistry.ByName("sheep").Create(world), 8.5, 65.0, 8.5);
         ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 4);
 
-        List<EntityItem> drops = CollectDropStacks(world, sheep, killer: null, rolls: 1);
+        List<ItemStack> drops = CollectDropStacks(world, sheep, killer: null, rolls: 1);
 
-        EntityItem wool = Assert.Single(drops);
-        Assert.Equal(BlockRegistry.Get("wool").id, wool.Stack.ItemId);
-        Assert.Equal(4, wool.Stack.getDamage());
+        ItemStack wool = Assert.Single(drops);
+        Assert.Equal(BlockRegistry.Get("wool").id, wool.ItemId);
+        Assert.Equal(4, wool.getDamage());
     }
 
     [Fact]
@@ -283,18 +283,20 @@ public sealed class EntityBehaviorSlotTests
     /// Repeating the roll avoids depending on a lucky RNG seed for behaviors whose count is 0-2.
     /// </summary>
     private static List<int> CollectDrops(FakeWorldContext world, EntityLiving mob, Entity? killer, int rolls) =>
-        CollectDropStacks(world, mob, killer, rolls).Select(item => item.Stack.ItemId).ToList();
+        CollectDropStacks(world, mob, killer, rolls).Select(stack => stack.ItemId).ToList();
 
-    private static List<EntityItem> CollectDropStacks(FakeWorldContext world, EntityLiving mob, Entity? killer, int rolls)
+    private static List<ItemStack> CollectDropStacks(FakeWorldContext world, EntityLiving mob, Entity? killer, int rolls)
     {
-        HashSet<EntityItem> before = world.Entities.Entities.OfType<EntityItem>().ToHashSet();
+        HashSet<Entity> before = [.. world.Entities.Entities.Where(EntityTestHarness.IsDroppedItem)];
 
         for (int roll = 0; roll < rolls; roll++)
         {
             mob.Loot!.DropLoot(mob, killer);
         }
 
-        return world.Entities.Entities.OfType<EntityItem>().Where(item => !before.Contains(item)).ToList();
+        return [.. world.Entities.Entities
+            .Where(entity => EntityTestHarness.IsDroppedItem(entity) && !before.Contains(entity))
+            .Select(entity => EntityTestHarness.DroppedStack(entity)!)];
     }
 
     private sealed class TestZombie(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("zombie"))

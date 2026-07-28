@@ -73,4 +73,11 @@ public interface IEntityPhysics
     ///     bolt is drawn only while a flash is on, wherever the camera is.
     /// </summary>
     bool? ShouldRender(Entity self) => null;
+
+    /// <summary>
+    ///     Replaces the per-tick water test, or <c>null</c> to keep the default. Like
+    ///     <see cref="IsInWater" /> the test and the push are one operation — a dropped item probes
+    ///     its full box and is carried by the current while it looks.
+    /// </summary>
+    bool? CheckWaterCollisions(Entity self) => null;
 }

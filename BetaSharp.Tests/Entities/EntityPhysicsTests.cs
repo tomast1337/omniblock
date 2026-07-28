@@ -107,12 +107,12 @@ public sealed class EntityPhysicsTests
 
         Assert.True(wool.IsShearedOn(sheep));
         Assert.Equal(11, wool.ColorOf(sheep));
-        Assert.Contains(world.Entities.Entities, e => e is EntityItem);
+        Assert.Contains(world.Entities.Entities, EntityTestHarness.IsDroppedItem);
 
         // Already sheared: a second attempt drops nothing more.
-        int before = world.Entities.Entities.Count(e => e is EntityItem);
+        int before = world.Entities.Entities.Count(EntityTestHarness.IsDroppedItem);
         sheep.Interact(player);
-        Assert.Equal(before, world.Entities.Entities.Count(e => e is EntityItem));
+        Assert.Equal(before, world.Entities.Entities.Count(EntityTestHarness.IsDroppedItem));
     }
 
     [Fact]

@@ -78,7 +78,7 @@ public sealed class EntityFallingSandTests
         }
 
         Assert.True(sand.Dead);
-        Assert.Contains(world.Entities.Entities, entity => entity is EntityItem);
+        Assert.Contains(world.Entities.Entities, EntityTestHarness.IsDroppedItem);
     }
 
     [Fact]

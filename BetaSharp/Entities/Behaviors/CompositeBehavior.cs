@@ -160,6 +160,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool? ShouldRender(Entity self) => First(_physics, p => p.ShouldRender(self));
 
+    public bool? CheckWaterCollisions(Entity self) => First(_physics, p => p.CheckWaterCollisions(self));
+
     public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);
@@ -203,6 +205,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnPostSpawn(self);
     }
+
+    public bool? Damage(Entity self, Entity? attacker, int amount) => First(_lifecycles, l => l.Damage(self, attacker, amount));
 
     /// <summary>A strike is one event: the first child that handles it has handled it.</summary>
     public bool OnStruckByLightning(EntityLiving self, Entity bolt)

@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.PathFinding;
@@ -159,10 +160,7 @@ public abstract class World : IWorldContext
 
     public bool SpawnItemDrop(double x, double y, double z, ItemStack itemStack)
     {
-        EntityItem droppedItem = new(this, x, y, z, itemStack)
-        {
-            DelayBeforeCanPickup = 10
-        };
+        Entity droppedItem = DroppedItemBehavior.Create(this, x, y, z, itemStack, pickupDelay: 10);
         return Entities.SpawnEntity(droppedItem);
     }
 

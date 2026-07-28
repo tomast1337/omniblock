@@ -80,7 +80,7 @@ public sealed class EntityTickerTests
         for (int tick = 0; tick < 12100; tick++)
         {
             ticker.OnTickMovement(chicken);
-            if (world.Entities.Entities.OfType<EntityItem>().Any(i => i.Stack.ItemId == eggId)) return;
+            if (world.Entities.Entities.Any(e => EntityTestHarness.DroppedStack(e)?.ItemId == eggId)) return;
         }
 
         Assert.Fail("Chicken never laid an egg within two full countdown windows.");

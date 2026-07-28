@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -372,12 +373,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         if (!item.Dead)
         {
             EntityTracker et = _server.getEntityTracker(DimensionId);
-            switch (item)
+            if (item is EntityArrow || item.Behaviors.Find<DroppedItemBehavior>() is not null)
             {
-                case EntityItem:
-                case EntityArrow:
-                    et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.ID, ID));
-                    break;
+                et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.ID, ID));
             }
         }
 

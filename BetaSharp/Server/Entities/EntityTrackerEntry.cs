@@ -281,12 +281,12 @@ internal class EntityTrackerEntry
 
     private Packet createAddEntityPacket()
     {
-        if (currentTrackedEntity is EntityItem item)
+        if (currentTrackedEntity.Behaviors.Find<DroppedItemBehavior>() is not null)
         {
-            var spawnPacket = ItemEntitySpawnS2CPacket.Get(item);
-            item.X = spawnPacket.X / 32.0;
-            item.Y = spawnPacket.Y / 32.0;
-            item.Z = spawnPacket.Z / 32.0;
+            var spawnPacket = ItemEntitySpawnS2CPacket.Get(currentTrackedEntity);
+            currentTrackedEntity.X = spawnPacket.X / 32.0;
+            currentTrackedEntity.Y = spawnPacket.Y / 32.0;
+            currentTrackedEntity.Z = spawnPacket.Z / 32.0;
             return spawnPacket;
         }
         else if (currentTrackedEntity is ServerPlayerEntity p)

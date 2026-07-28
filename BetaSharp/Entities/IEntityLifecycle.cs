@@ -57,4 +57,12 @@ public interface IEntityLifecycle
     ///     handled the strike and the default fire/damage response is skipped.
     /// </summary>
     bool OnStruckByLightning(EntityLiving self, Entity bolt) => false;
+
+    /// <summary>
+    ///     Replaces how a <em>non-living</em> entity takes damage, or <c>null</c> for the default
+    ///     response. The return value is the <c>Damage</c> answer — whether the hit registered. A
+    ///     dropped item has five hit points against fire and explosions; living entities never
+    ///     consult this, their damage pipeline has its own hooks.
+    /// </summary>
+    bool? Damage(Entity self, Entity? attacker, int amount) => null;
 }

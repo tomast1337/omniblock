@@ -24,7 +24,7 @@ public static class EntityRegistry
     {
         Register((world, _) => new EntityArrow(world), "Arrow", 10);
         Register((world, _) => new EntitySnowball(world), "Snowball", 11);
-        Register((world, _) => new EntityItem(world), "Item", 1);
+        RegisterDefined((world, type) => new EntityObject(world, type), "Item");
         Register((world, _) => new EntityPainting(world), "Painting", 9);
         RegisterDefined((world, type) => new EntityMonster(world, type), "Creeper");
         RegisterDefined((world, type) => new EntityMonster(world, type), "Skeleton");

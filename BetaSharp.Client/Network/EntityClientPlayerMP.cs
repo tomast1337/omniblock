@@ -140,7 +140,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     {
     }
 
-    protected override void SpawnItem(EntityItem ent)
+    protected override void SpawnItem(Entity ent)
     {
     }
 

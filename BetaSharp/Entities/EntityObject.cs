@@ -24,6 +24,15 @@ public class EntityObject : Entity
 
     public override bool HasCollision => Definition.Collidable && !Dead;
 
+    /// <summary>Non-living damage is composed: a dropped item spends hit points, TNT ignores the hit.</summary>
+    public override bool Damage(Entity? entity, int amount) =>
+        Behaviors.Lifecycle?.Damage(this, entity, amount) ?? base.Damage(entity, amount);
+
+    protected override void Damage(int amt)
+    {
+        if (Behaviors.Lifecycle?.Damage(this, null, amt) is null) base.Damage(amt);
+    }
+
     protected override bool BypassesSteppingEffects() => Definition.MakesStepSounds;
 
     /// <summary>Zero for every non-living entity — the vertical shadow offset is a mob thing.</summary>

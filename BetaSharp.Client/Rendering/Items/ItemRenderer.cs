@@ -6,6 +6,7 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 
@@ -22,25 +23,29 @@ public class ItemRenderer : EntityRenderer
         ShadowStrength = 12.0F / 16.0F;
     }
 
-    public void doRenderItem(EntityItem entityItem, double x, double y, double z, float yaw, float tickDelta)
+    public void doRenderItem(Entity entityItem, double x, double y, double z, float yaw, float tickDelta)
     {
         random.SetSeed(187L);
-        ItemStack stack = entityItem.Stack;
+        DroppedItemBehavior? dropped = entityItem.Behaviors.Find<DroppedItemBehavior>();
+        if (dropped?.Stack(entityItem) is not { } stack) return;
+
+        float bobPhase = dropped.BobPhase(entityItem);
+        int itemAge = dropped.ItemAge(entityItem);
         GLManager.GL.PushMatrix();
-        float bobOffset = MathHelper.Sin((entityItem.Age + tickDelta) / 10.0F + entityItem.BobPhase) * 0.1F + 0.1F;
-        float spinAngle = ((entityItem.Age + tickDelta) / 20.0F + entityItem.BobPhase) * (180.0F / (float)Math.PI);
+        float bobOffset = MathHelper.Sin((itemAge + tickDelta) / 10.0F + bobPhase) * 0.1F + 0.1F;
+        float spinAngle = ((itemAge + tickDelta) / 20.0F + bobPhase) * (180.0F / (float)Math.PI);
         byte renderCount = 1;
-        if (entityItem.Stack.Count > 1)
+        if (stack.Count > 1)
         {
             renderCount = 2;
         }
 
-        if (entityItem.Stack.Count > 5)
+        if (stack.Count > 5)
         {
             renderCount = 3;
         }
 
-        if (entityItem.Stack.Count > 20)
+        if (stack.Count > 20)
         {
             renderCount = 4;
         }
@@ -259,6 +264,6 @@ public class ItemRenderer : EntityRenderer
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        doRenderItem((EntityItem)target, x, y, z, yaw, tickDelta);
+        doRenderItem(target, x, y, z, yaw, tickDelta);
     }
 }

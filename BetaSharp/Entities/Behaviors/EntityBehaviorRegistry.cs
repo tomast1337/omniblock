@@ -64,6 +64,9 @@ internal static class EntityBehaviorRegistry
         // Ticker + Lifecycle + Physics, all reading one flash countdown
         ["lightning_strike"] = (in EntityBehaviorContext c) => new LightningStrikeBehavior(c),
 
+        // Ticker + Lifecycle + Persistence + Interactable + Physics, all reading one stack
+        ["dropped_item"] = (in EntityBehaviorContext c) => new DroppedItemBehavior(c),
+
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),
@@ -128,7 +131,7 @@ internal static class EntityBehaviorRegistry
     ///     Resolves an achievement by its short key (<c>"flyPig"</c>). Achievements have no registry
     ///     of their own, so this matches on the translation key they are all built from.
     /// </summary>
-    private static Achievement Achievement(string key) =>
+    internal static Achievement Achievement(string key) =>
         Achievements.AllAchievements.Find(a => a.TranslationKey == "achievement." + key)
         ?? throw new ArgumentException($"Unknown achievement '{key}'.", nameof(key));
 

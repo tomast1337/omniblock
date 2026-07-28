@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Rules;
 using BetaSharp.Worlds.Core.Systems;
@@ -41,10 +42,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
             float offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
             float offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
             float offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
-            EntityItem entityItem = new(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(seeds))
-            {
-                DelayBeforeCanPickup = 10
-            };
+            Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(seeds), pickupDelay: 10);
             @event.World.Entities.SpawnEntity(entityItem);
         }
     }

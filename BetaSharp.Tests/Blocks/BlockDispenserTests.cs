@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
+using BetaSharp.Tests.Entities;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Tests.Blocks;
@@ -234,7 +235,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 6, 64, 6));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityItem ei && ei.Stack.ItemId == Item.ByName("stick").Id);
+        Assert.Contains(world.Entities.Entities, e => EntityTestHarness.DroppedStack(e)?.ItemId == Item.ByName("stick").Id);
     }
 
     [Fact]
@@ -422,6 +423,6 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnBreak(new OnBreakEvent(world, null, x, y, z));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityItem);
+        Assert.Contains(world.Entities.Entities, EntityTestHarness.IsDroppedItem);
     }
 }

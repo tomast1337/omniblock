@@ -43,7 +43,7 @@ public class KillAllCommand : Command.Command
                     (byte)TypeFilter.Mob => entity is EntityLiving,
                     (byte)TypeFilter.Hostile => entity is EntityMonster,
                     (byte)TypeFilter.Friendly => entity is EntityAnimal,
-                    (byte)TypeFilter.Item => entity is EntityItem,
+                    (byte)TypeFilter.Item => entity.Behaviors.Find<DroppedItemBehavior>() is not null,
                     (byte)TypeFilter.Tnt => entity.Behaviors.Find<PrimedExplosiveBehavior>() is not null,
                     _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false
                 };

@@ -55,10 +55,6 @@ public class EntityTracker
         {
             startTracking(entity, 64, 10, true);
         }
-        else if (entity is EntityItem)
-        {
-            startTracking(entity, 64, 20, true);
-        }
         else if (entity is EntityMinecart)
         {
             startTracking(entity, 160, 5, true);

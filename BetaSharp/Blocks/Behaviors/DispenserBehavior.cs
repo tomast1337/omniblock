@@ -1,5 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -162,7 +163,7 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : I
         }
         else
         {
-            EntityItem item = new(@event.World, spawnX, spawnY - 0.3D, spawnZ, itemStack);
+            Entity item = DroppedItemBehavior.Create(@event.World, spawnX, spawnY - 0.3D, spawnZ, itemStack);
             double randomVelocity = Random.Shared.NextDouble() * 0.1D + 0.2D;
             item.VelocityX = dirX * randomVelocity;
             item.VelocityY = 0.2F;

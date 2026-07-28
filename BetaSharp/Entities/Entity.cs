@@ -8,6 +8,7 @@ using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
+using DroppedItemBehavior = BetaSharp.Entities.Behaviors.DroppedItemBehavior;
 using Math = System.Math;
 
 namespace BetaSharp.Entities;
@@ -771,7 +772,9 @@ public abstract class Entity : IEntity
 
     protected virtual void OnLanding(float fallDistance) => Passenger?.OnLanding(fallDistance);
 
-    public virtual bool CheckWaterCollisions() => World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, -0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
+    public virtual bool CheckWaterCollisions() =>
+        Physics?.CheckWaterCollisions(this)
+        ?? World.Reader.UpdateMovementInFluid(BoundingBox.Expand(0.0D, -0.4F, 0.0D).Contract(0.001D, 0.001D, 0.001D), Material.Water, this);
 
     public bool IsInFluid(Material mat)
     {
@@ -1112,14 +1115,11 @@ public abstract class Entity : IEntity
 
     protected internal void DropItem(int id, int count) => DropItem(id, count, 0.0F);
 
-    protected internal EntityItem DropItem(int id, int count, float y) => DropItem(new ItemStack(id, count, 0), y);
+    protected internal Entity DropItem(int id, int count, float y) => DropItem(new ItemStack(id, count, 0), y);
 
-    protected internal EntityItem DropItem(ItemStack stack, float y)
+    protected internal Entity DropItem(ItemStack stack, float y)
     {
-        EntityItem item = new(World, X, Y + y, Z, stack)
-        {
-            DelayBeforeCanPickup = 10
-        };
+        Entity item = DroppedItemBehavior.Create(World, X, Y + y, Z, stack, pickupDelay: 10);
         World.SpawnEntity(item);
         return item;
     }
@@ -1298,7 +1298,7 @@ public abstract class Entity : IEntity
     {
     }
 
-    protected virtual bool PushOutOfBlocks(double x, double y, double z)
+    protected internal virtual bool PushOutOfBlocks(double x, double y, double z)
     {
         // Only players should attempt "push out of blocks".
         if (this is not EntityPlayer) return false;
