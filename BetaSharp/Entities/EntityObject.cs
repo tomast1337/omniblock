@@ -61,6 +61,16 @@ public class EntityObject : Entity
         if (Physics?.OnVelocityFromServer(this, vx, vy, vz) != true) base.SetVelocityClient(vx, vy, vz);
     }
 
+    public override void Move(double dx, double dy, double dz)
+    {
+        if (Physics?.OnMove(this, dx, dy, dz) != true) base.Move(dx, dy, dz);
+    }
+
+    public override void AddVelocity(double dx, double dy, double dz)
+    {
+        if (Physics?.OnAddVelocity(this, dx, dy, dz) != true) base.AddVelocity(dx, dy, dz);
+    }
+
     protected override void ReadNbt(NBTTagCompound nbt) { }
 
     protected override void WriteNbt(NBTTagCompound nbt) { }

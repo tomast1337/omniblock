@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
@@ -28,8 +29,8 @@ internal sealed class PaintingBehavior : IItemBehavior
             direction = 3;
         }
 
-        EntityPainting painting = new(world, x, y, z, direction);
-        if (!painting.CanHangOnWall())
+        Entity painting = HangingArtBehavior.HangAt(world, x, y, z, direction);
+        if (!painting.Behaviors.Find<HangingArtBehavior>()!.CanHang(painting))
         {
             return true;
         }

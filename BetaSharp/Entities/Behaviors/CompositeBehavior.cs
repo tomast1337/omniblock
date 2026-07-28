@@ -172,6 +172,26 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         return false;
     }
 
+    public bool OnMove(Entity self, double dx, double dy, double dz)
+    {
+        foreach (IEntityPhysics physics in _physics)
+        {
+            if (physics.OnMove(self, dx, dy, dz)) return true;
+        }
+
+        return false;
+    }
+
+    public bool OnAddVelocity(Entity self, double dx, double dy, double dz)
+    {
+        foreach (IEntityPhysics physics in _physics)
+        {
+            if (physics.OnAddVelocity(self, dx, dy, dz)) return true;
+        }
+
+        return false;
+    }
+
     public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);

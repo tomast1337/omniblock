@@ -1,0 +1,20 @@
+{
+  "ProtocolId": 9,
+  "TrackingRange": 160,
+  "TrackingFrequency": 2147483647,
+  "Collidable": true,
+  "Width": 0.5,
+  "Height": 0.5,
+  "EyeHeightScale": 0.0,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Lifecycle", "Persistence", "Physics"],
+      "Type": "hanging_art",
+      "check_interval": 100,
+      "drops": "betasharp:painting"
+    }
+  ],
+  "Renderer": {
+    "Type": "painting"
+  }
+}

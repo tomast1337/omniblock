@@ -91,6 +91,6 @@ public sealed class EntityTickerTests
     {
         FakeWorldContext world = new();
         Assert.Null(EntityRegistry.ByName("cow").Behaviors.Ticker);
-        Assert.Null(EntityRegistry.ByName("painting").Behaviors.Ticker);
+        Assert.Null(EntityRegistry.ByName("boat").Behaviors.Ticker);
     }
 }

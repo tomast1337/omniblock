@@ -355,16 +355,14 @@ internal class EntityTrackerEntry
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, declared.SpawnObjectId);
             }
+            // A painting spawns by name and anchor rather than by position, so it has its own packet.
+            else if (currentTrackedEntity.Behaviors.Find<HangingArtBehavior>() is not null)
+            {
+                return PaintingEntitySpawnS2CPacket.Get(currentTrackedEntity);
+            }
             else
             {
-                if (currentTrackedEntity is EntityPainting painting)
-                {
-                    return PaintingEntitySpawnS2CPacket.Get(painting);
-                }
-                else
-                {
-                    throw new ArgumentException("Don't know how to add " + currentTrackedEntity.GetType() + "!");
-                }
+                throw new ArgumentException("Don't know how to add " + currentTrackedEntity.GetType() + "!");
             }
         }
     }

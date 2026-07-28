@@ -87,4 +87,16 @@ public interface IEntityPhysics
     ///     first time one arrives, since the object-spawn packet carries no angles.
     /// </summary>
     bool OnVelocityFromServer(Entity self, double vx, double vy, double vz) => false;
+
+    /// <summary>
+    ///     Replaces the movement step, returning <c>true</c> when it handled the move. A painting
+    ///     does not travel: any displacement at all is what knocks it off its wall.
+    /// </summary>
+    bool OnMove(Entity self, double dx, double dy, double dz) => false;
+
+    /// <summary>
+    ///     Replaces a shove, returning <c>true</c> when it handled it. Sibling of
+    ///     <see cref="OnMove" /> — an entity that refuses to be moved refuses to be pushed too.
+    /// </summary>
+    bool OnAddVelocity(Entity self, double dx, double dy, double dz) => false;
 }

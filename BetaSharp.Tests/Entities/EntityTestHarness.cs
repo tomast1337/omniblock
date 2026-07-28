@@ -109,7 +109,7 @@ public static class EntityTestHarness
 
         if (type == EntityRegistry.ByName("painting"))
         {
-            return new EntityPainting(world, 8, 65, 8, 2, "Kebab");
+            return HangingArtBehavior.HangAt(world, 8, 65, 8, 2, "Kebab");
         }
 
         if (type == EntityRegistry.ByName("fallingsand"))

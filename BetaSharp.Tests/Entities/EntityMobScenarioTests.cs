@@ -55,12 +55,14 @@ public sealed class EntityMobScenarioTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        EntityTestHarness.PlaceStoneWallStrip(world, 8, 7, 64, 68);
+        // The anchor block is the backing: the canvas hangs proud of it, so the wall is at z=8.
+        EntityTestHarness.PlaceStoneWallStrip(world, 8, 8, 64, 68);
 
-        var painting = new EntityPainting(world, 8, 65, 8, 2, "Kebab");
+        Entity painting = HangingArtBehavior.HangAt(world, 8, 65, 8, 2, "Kebab");
         Assert.True(world.Entities.SpawnEntity(painting));
         EntityTestHarness.AdvanceGameTicks(world, 120);
-        Assert.True(painting.Dead || world.Entities.Entities.Contains(painting));
+        Assert.False(painting.Dead);
+        Assert.Contains(painting, world.Entities.Entities);
     }
 
     [Fact]

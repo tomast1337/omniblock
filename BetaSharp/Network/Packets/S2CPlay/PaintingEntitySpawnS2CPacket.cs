@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 
 namespace BetaSharp.Network.Packets.S2CPlay;
 
@@ -11,15 +12,16 @@ public class PaintingEntitySpawnS2CPacket() : Packet(PacketId.PaintingEntitySpaw
     public int YPosition { get; private set; }
     public int ZPosition { get; private set; }
 
-    public static PaintingEntitySpawnS2CPacket Get(EntityPainting paint)
+    public static PaintingEntitySpawnS2CPacket Get(Entity paint)
     {
+        HangingArtBehavior hanging = paint.Behaviors.Find<HangingArtBehavior>()!;
         PaintingEntitySpawnS2CPacket p = Get<PaintingEntitySpawnS2CPacket>(PacketId.PaintingEntitySpawnS2C);
         p.EntityId = paint.ID;
-        p.XPosition = paint.XPosition;
-        p.YPosition = paint.YPosition;
-        p.ZPosition = paint.ZPosition;
-        p.Direction = paint.Direction;
-        p.Title = paint.Art.Title;
+        p.XPosition = hanging.TileX(paint);
+        p.YPosition = hanging.TileY(paint);
+        p.ZPosition = hanging.TileZ(paint);
+        p.Direction = hanging.Direction(paint);
+        p.Title = hanging.Art(paint)!.Title;
         return p;
     }
 

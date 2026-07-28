@@ -239,7 +239,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onPaintingEntitySpawn(PaintingEntitySpawnS2CPacket packet)
     {
-        EntityPainting ent = new(_worldClient, packet.XPosition, packet.YPosition, packet.ZPosition, packet.Direction, packet.Title);
+        Entity ent = HangingArtBehavior.HangAt(_worldClient, packet.XPosition, packet.YPosition, packet.ZPosition, packet.Direction, packet.Title);
         _worldClient.ForceEntity(packet.EntityId, ent);
     }
 

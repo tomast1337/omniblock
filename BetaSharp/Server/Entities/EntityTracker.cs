@@ -59,10 +59,6 @@ public class EntityTracker
         {
             startTracking(entity, declared.TrackingRange, declared.TrackingFrequency, declared.TracksVelocity);
         }
-        else if (entity is EntityPainting)
-        {
-            startTracking(entity, 160, int.MaxValue, false);
-        }
     }
 
     public void startTracking(Entity entity, int trackedDistance, int tracingFrequency, bool alwaysUpdateVelocity = false)
