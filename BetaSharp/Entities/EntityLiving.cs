@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -21,6 +22,8 @@ public abstract class EntityLiving : Entity
         StepHeight = 0.5F;
 
         if (definition is null) return;
+
+        SyncedPropertyFactory.Declare(DataSynchronizer, definition.SyncedProperties, definition.Name);
 
         Health = definition.Health;
         MovementSpeed = definition.MovementSpeed;

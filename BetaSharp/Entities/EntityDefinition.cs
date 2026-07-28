@@ -62,6 +62,13 @@ public sealed record EntityDefinition : IDataAsset
     public bool CanDespawn { get; init; } = true;
 
     /// <summary>
+    ///     Network-synchronised per-entity state, declared here rather than in behavior code so the
+    ///     wire ids are visible data. See <see cref="State.SyncedPropertyDefinition" /> — these ids
+    ///     are protocol facts shared with the client.
+    /// </summary>
+    public State.SyncedPropertyDefinition[] SyncedProperties { get; init; } = [];
+
+    /// <summary>
     ///     One entry per behavior <em>instance</em>, not per slot — same shape as
     ///     <c>BlockDefinition.Behaviors</c>. Each entry carries a <c>"Slots"</c> array
     ///     (<c>"Attack"</c>, <c>"Targeting"</c>, <c>"Loot"</c>, <c>"Lifecycle"</c>) and its own

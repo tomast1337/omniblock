@@ -45,6 +45,18 @@ public sealed class DataSynchronizer
         return prop;
     }
 
+    /// <summary>
+    ///     Resolves a property declared by <see cref="MakeProperty{T}" />. Behaviors are shared per
+    ///     entity type, so they hold the id and look the instance up here rather than holding the
+    ///     property itself.
+    /// </summary>
+    public SyncedProperty<T> Get<T>(int dataValueId) =>
+        _syncedProperties.TryGetValue(dataValueId, out ISyncedProperty? prop) && prop is SyncedProperty<T> typed
+            ? typed
+            : throw new ArgumentException($"No synced property of type {typeof(T).Name} declared with id {dataValueId}.", nameof(dataValueId));
+
+    public bool Has(int dataValueId) => _syncedProperties.ContainsKey(dataValueId);
+
     private static void SerializeProperty(Stream stream, ISyncedProperty obj)
     {
         byte header = (byte)((int)(obj.DataType) << 5 | obj.DataValueId & 31);
