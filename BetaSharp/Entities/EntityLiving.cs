@@ -108,6 +108,9 @@ public class EntityLiving : Entity
     protected internal float MovementSpeed { get; set; } = 0.7F;
     protected int LookTimer { get; set; }
 
+    /// <summary>Keeps the mob watching whatever it is looking at for another few ticks.</summary>
+    protected internal void HoldGaze(int ticks) => LookTimer = ticks;
+
     public override Vec3D? LookVector => GetLook(1.0F);
 
     public override bool IsAlive => !Dead && Health > 0;
@@ -116,11 +119,11 @@ public class EntityLiving : Entity
 
     public override bool IsPushable => !Dead;
 
-    public override float EyeHeight => Height * 0.85F;
+    public override float EyeHeight => Height * Definition.EyeHeightScale;
 
     protected internal virtual float SoundVolume => Definition.SoundVolume;
 
-    protected virtual string? LivingSound => Definition.LivingSound;
+    protected virtual string? LivingSound => Ticker?.LivingSound(this) ?? Definition.LivingSound;
 
     protected virtual string? HurtSound => Definition.HurtSound;
 
@@ -143,9 +146,9 @@ public class EntityLiving : Entity
 
     protected override bool BypassesSteppingEffects() => Definition.MakesStepSounds;
 
-    protected bool HasCurrentTarget => CurrentTarget != null;
+    protected internal bool HasCurrentTarget => CurrentTarget != null;
 
-    protected Entity? CurrentTarget { get; private set; }
+    protected internal Entity? CurrentTarget { get; private set; }
 
     public virtual bool IsSleeping => false;
 
@@ -159,7 +162,7 @@ public class EntityLiving : Entity
 
     protected virtual float AirSpeed => 0.02f;
 
-    protected virtual bool CanDespawn => Definition.CanDespawn;
+    protected virtual bool CanDespawn => Persistence?.CanDespawn(this) ?? Definition.CanDespawn;
 
     public virtual int MaxSpawnedInChunk => Definition.MaxSpawnedInChunk;
 
@@ -399,6 +402,7 @@ public class EntityLiving : Entity
         if (World.IsRemote) return false;
 
         Behaviors.Lifecycle?.OnDamaged(this, entity, amount);
+        if (Behaviors.Lifecycle is { } lifecycle) amount = lifecycle.ModifyDamage(this, entity, amount);
 
         EntityAge = 0;
         if (Health <= 0) return false;
@@ -466,6 +470,7 @@ public class EntityLiving : Entity
             }
         }
 
+        Behaviors.Lifecycle?.OnDamageApplied(this, entity, amount);
         return true;
     }
 
@@ -777,6 +782,10 @@ public class EntityLiving : Entity
         else if (!InterpolateOnly)
         {
             TickLiving();
+
+            // After the AI, not inside it: a creature's TickLiving is its pathfinding, and a mob
+            // that overrode it called base first and did its own work here.
+            Ticker?.AfterTickLiving(this);
         }
 
         bool isInWater = InWater;
@@ -905,7 +914,7 @@ public class EntityLiving : Entity
         }
     }
 
-    protected virtual int getMaxFallDistance() => 40;
+    protected virtual int getMaxFallDistance() => Physics?.MaxFallDistance(this) ?? 40;
 
     protected internal void faceEntity(Entity entity, float yawSpeed, float pitchSpeed)
     {
@@ -1041,6 +1050,8 @@ public class EntityLiving : Entity
                 OnKilledBy(null);
                 break;
             default:
+                if (Behaviors.Lifecycle?.OnEntityStatus(this, statusId) == true) break;
+
                 base.ProcessServerEntityStatus(statusId);
                 break;
         }

@@ -48,6 +48,19 @@ public interface IEntityPhysics
     bool? IsClimbing(EntityLiving self) => null;
 
     /// <summary>
+    ///     Answers <c>true</c> when the mob should stay put this tick, or <c>null</c> to leave the
+    ///     decision alone. A sitting wolf and a wolf shaking itself dry both stop where they are.
+    /// </summary>
+    bool? IsMovementCeased(EntityLiving self) => null;
+
+    /// <summary>
+    ///     Replaces the mob's fall-distance allowance, or <c>null</c> to keep it. Beta reads this
+    ///     value in one place only, as the pitch speed a mob turns its head at, so in practice it is
+    ///     how attentively a mob watches a passer-by — a sitting wolf, less.
+    /// </summary>
+    int? MaxFallDistance(EntityLiving self) => null;
+
+    /// <summary>
     ///     Replaces the test for whether the entity is in water, or <c>null</c> to keep the plain
     ///     flag. A squid tests a box reaching below itself and is carried by the current while it
     ///     looks — the answer and the push are the same operation, which is why this is a hook and

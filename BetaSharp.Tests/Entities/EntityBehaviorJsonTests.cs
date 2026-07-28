@@ -157,7 +157,7 @@ public sealed class EntityBehaviorJsonTests
         EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);
         Assert.Null(cow.Attack);
         Assert.Null(cow.Targeting);
-        Assert.Null(new EntityWolf(world).Loot);
+        Assert.Null(EntityRegistry.ByName("wolf").Behaviors.Loot);
     }
 
     [Fact]

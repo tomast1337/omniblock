@@ -8,8 +8,13 @@ namespace BetaSharp.Entities.Behaviors;
 ///     <paramref name="fallback" /> — the nested-composite shape blocks use for
 ///     <c>RedstoneTorchBehavior(new WallMountBehavior(...))</c>.
 /// </summary>
-public sealed class JumpAttackBehavior(float minRange, float maxRange, int chanceOneIn, IEntityAttackBehavior? fallback = null) : IEntityAttackBehavior
+public sealed class JumpAttackBehavior(float minRange, float maxRange, int chanceOneIn, IEntityAttackBehavior? fallback = null) : IEntityAttackBehavior, IEntityBehaviorGroup
 {
+    /// <summary>What runs on the ticks the lunge does not, exposed so the nesting is inspectable.</summary>
+    public IEntityAttackBehavior? Fallback => fallback;
+
+    public IEnumerable<object> Children => fallback is null ? [] : [fallback];
+
     public void AttackEntity(EntityCreature self, Entity target, float distance)
     {
         if (distance > minRange && distance < maxRange && self.Random.NextInt(chanceOneIn) == 0)

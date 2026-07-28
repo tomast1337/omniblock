@@ -47,6 +47,9 @@ public sealed record EntityDefinition : IDataAsset
     public float Width { get; init; } = 0.6F;
     public float Height { get; init; } = 1.8F;
 
+    /// <summary>Eye height as a fraction of the mob's own height; a wolf's sits lower than most.</summary>
+    public float EyeHeightScale { get; init; } = 0.85F;
+
     /// <summary>
     ///     Uniform size multiplier applied to the bounding box and eye height. Kept as a multiplier
     ///     rather than authored dimensions because the giant's real box is <c>3.6000001</c> by

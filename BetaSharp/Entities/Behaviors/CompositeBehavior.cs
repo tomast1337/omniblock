@@ -14,13 +14,15 @@ namespace BetaSharp.Entities.Behaviors;
 ///         gives it; where it does work, every child does its share.
 ///     </para>
 /// </summary>
-public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLifecycle, IEntityPersistence, IEntityBehaviorGroup
+public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLifecycle, IEntityPersistence, IEntityInteractable, IEntityTargetBehavior, IEntityBehaviorGroup
 {
     private readonly object[] _children;
     private readonly IEntityTicker[] _tickers;
     private readonly IEntityPhysics[] _physics;
     private readonly IEntityLifecycle[] _lifecycles;
     private readonly IEntityPersistence[] _persistence;
+    private readonly IEntityInteractable[] _interactables;
+    private readonly IEntityTargetBehavior[] _targeting;
 
     public CompositeBehavior(in EntityBehaviorContext context)
     {
@@ -35,6 +37,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         _physics = [.. children.OfType<IEntityPhysics>()];
         _lifecycles = [.. children.OfType<IEntityLifecycle>()];
         _persistence = [.. children.OfType<IEntityPersistence>()];
+        _interactables = [.. children.OfType<IEntityInteractable>()];
+        _targeting = [.. children.OfType<IEntityTargetBehavior>()];
     }
 
     public IEnumerable<object> Children => _children;
@@ -60,9 +64,52 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         return replacesAi;
     }
 
+    public void AfterTickLiving(EntityLiving self)
+    {
+        foreach (IEntityTicker ticker in _tickers) ticker.AfterTickLiving(self);
+    }
+
     public void OnTickEnd(EntityLiving self)
     {
         foreach (IEntityTicker ticker in _tickers) ticker.OnTickEnd(self);
+    }
+
+    /// <summary>A mob has one voice: the first child with something to say says it.</summary>
+    public string? LivingSound(EntityLiving self)
+    {
+        foreach (IEntityTicker ticker in _tickers)
+        {
+            if (ticker.LivingSound(self) is { } sound) return sound;
+        }
+
+        return null;
+    }
+
+    /// <summary>A right-click is consumed once: the first child to handle it ends the interaction.</summary>
+    public bool OnInteract(Entity self, EntityPlayer player)
+    {
+        foreach (IEntityInteractable interactable in _interactables)
+        {
+            if (interactable.OnInteract(self, player)) return true;
+        }
+
+        return false;
+    }
+
+    public void OnPlayerCollision(Entity self, EntityPlayer player)
+    {
+        foreach (IEntityInteractable interactable in _interactables) interactable.OnPlayerCollision(self, player);
+    }
+
+    /// <summary>A mob hunts one thing: the first child that names a target names it.</summary>
+    public Entity? FindPlayerToAttack(EntityCreature self)
+    {
+        foreach (IEntityTargetBehavior targeting in _targeting)
+        {
+            if (targeting.FindPlayerToAttack(self) is { } target) return target;
+        }
+
+        return null;
     }
 
     public void AfterTickMovement(EntityLiving self)
@@ -94,6 +141,10 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool? IsClimbing(EntityLiving self) => First(_physics, p => p.IsClimbing(self));
 
+    public bool? IsMovementCeased(EntityLiving self) => First(_physics, p => p.IsMovementCeased(self));
+
+    public int? MaxFallDistance(EntityLiving self) => First(_physics, p => p.MaxFallDistance(self));
+
     public bool? IsInWater(Entity self) => First(_physics, p => p.IsInWater(self));
 
     public void OnCreated(EntityLiving self)
@@ -109,6 +160,30 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     public void OnDamaged(EntityLiving self, Entity? attacker, int amount)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnDamaged(self, attacker, amount);
+    }
+
+    /// <summary>Each child adjusts what the one before it left, so resistances compound.</summary>
+    public int ModifyDamage(EntityLiving self, Entity? attacker, int amount)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles) amount = lifecycle.ModifyDamage(self, attacker, amount);
+
+        return amount;
+    }
+
+    public void OnDamageApplied(EntityLiving self, Entity? attacker, int amount)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnDamageApplied(self, attacker, amount);
+    }
+
+    /// <summary>A status byte means one thing: the first child that recognises it consumes it.</summary>
+    public bool OnEntityStatus(EntityLiving self, sbyte status)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        {
+            if (lifecycle.OnEntityStatus(self, status)) return true;
+        }
+
+        return false;
     }
 
     public void OnPostSpawn(EntityLiving self)
@@ -137,10 +212,12 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         foreach (IEntityPersistence persistence in _persistence) persistence.OnReadNbt(self, nbt);
     }
 
+    public bool? CanDespawn(EntityLiving self) => First(_persistence, p => p.CanDespawn(self));
+
     /// <summary>The first child with an opinion answers; the rest are not consulted.</summary>
-    private static T? First<T>(IEntityPhysics[] children, Func<IEntityPhysics, T?> ask) where T : struct
+    private static TAnswer? First<TChild, TAnswer>(TChild[] children, Func<TChild, TAnswer?> ask) where TAnswer : struct
     {
-        foreach (IEntityPhysics child in children)
+        foreach (TChild child in children)
         {
             if (ask(child) is { } answer) return answer;
         }

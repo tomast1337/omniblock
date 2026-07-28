@@ -14,7 +14,7 @@ namespace BetaSharp.Tests.Entities;
 /// <para>
 /// Deliberately excluded, because they are genuinely dynamic rather than configuration:
 /// the slime (stats derive from a randomly chosen size),
-/// <see cref="EntityWolf"/>'s living sound (a random roll over four clips), and the ghast's
+/// the wolf's living sound (a random roll over four clips), and the ghast's
 /// texture (swapped per tick while charging).
 /// </para>
 /// </summary>
@@ -86,7 +86,7 @@ public sealed class MobConfigurationTests
     public void Wolf_configuration_matches_except_its_randomised_living_sound()
     {
         FakeWorldContext world = new();
-        EntityWolf wolf = new(world);
+        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(world);
         MobConfig actual = Describe(wolf);
 
         Assert.Equal(

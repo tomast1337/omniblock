@@ -14,4 +14,11 @@ public interface IEntityPersistence
 {
     void OnWriteNbt(Entity self, NBTTagCompound nbt) { }
     void OnReadNbt(Entity self, NBTTagCompound nbt) { }
+
+    /// <summary>
+    ///     Replaces the type's declared despawn rule, or <c>null</c> to keep it. Whether a mob is
+    ///     kept is persistence in the plainest sense: a tamed wolf is somebody's, so the world holds
+    ///     on to it.
+    /// </summary>
+    bool? CanDespawn(EntityLiving self) => null;
 }

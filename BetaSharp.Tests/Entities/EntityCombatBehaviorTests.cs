@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Util.Maths;
@@ -51,7 +52,7 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_damage_from_player_sets_angry_and_target()
     {
         FakeWorldContext world = new();
-        var wolf = new EntityWolf(world);
+        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
 
@@ -60,8 +61,13 @@ public sealed class EntityCombatBehaviorTests
         Assert.True(world.Entities.SpawnEntity(player));
 
         Assert.True(wolf.Damage(player, 1));
-        Assert.True(wolf.IsWolfAngry);
+
+        TameableBehavior tame = wolf.Behaviors.Find<TameableBehavior>()!;
+        Assert.True(tame.IsAngry(wolf));
         Assert.Same(player, wolf.Target);
+
+        // The texture follows the mood, and is republished at the end of the tick that set it.
+        wolf.Tick();
         Assert.Contains("angry", wolf.GetTexture(), StringComparison.OrdinalIgnoreCase);
     }
 
@@ -69,12 +75,12 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_server_status_shaking_branch_executes_without_throwing()
     {
         FakeWorldContext world = new();
-        var wolf = new EntityWolf(world);
+        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(world);
 
         wolf.ProcessServerEntityStatus(8);
         wolf.Tick();
 
-        Assert.True(wolf.getShadingWhileShaking(0.5f) >= 0f);
+        Assert.True(wolf.Behaviors.Find<ShakeOffWaterBehavior>()!.Shading(wolf, 0.5f) >= 0f);
     }
 
     [Fact]
@@ -102,19 +108,21 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_nbt_roundtrip_preserves_owner_and_sitting_state()
     {
         FakeWorldContext worldA = new();
-        var wolf = new EntityWolf(worldA);
-        wolf.WolfOwner = "owner";
-        wolf.IsWolfSitting = true;
+        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(worldA);
+        TameableBehavior tame = wolf.Behaviors.Find<TameableBehavior>()!;
+        wolf.Synced<string?>("owner")!.Value = "owner";
+        tame.SetSitting(wolf, true);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
         var nbt = new NBTTagCompound();
         Assert.True(wolf.SaveSelfNbt(nbt));
 
         FakeWorldContext worldB = new();
-        Entity? loaded = EntityRegistry.GetEntityFromNbt(nbt, worldB);
-        var loadedWolf = Assert.IsType<EntityWolf>(loaded);
-        Assert.Equal("owner", loadedWolf.WolfOwner);
-        Assert.True(loadedWolf.IsWolfSitting);
+        EntityLiving loaded = Assert.IsAssignableFrom<EntityLiving>(EntityRegistry.GetEntityFromNbt(nbt, worldB));
+        Assert.Equal("wolf", EntityRegistry.GetId(loaded));
+        Assert.Equal("owner", tame.Owner(loaded));
+        Assert.True(tame.IsSitting(loaded));
+        Assert.True(tame.IsTamed(loaded));
     }
 
     private sealed class TestSkeleton(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("skeleton"))

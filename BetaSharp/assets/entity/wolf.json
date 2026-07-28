@@ -5,10 +5,104 @@
   "MovementSpeed": 1.1,
   "Width": 0.8,
   "Height": 0.8,
+  "EyeHeightScale": 0.8,
+  "MakesStepSounds": false,
   "Texture": "/mob/wolf.png",
   "HurtSound": "mob.wolf.hurt",
   "DeathSound": "mob.wolf.death",
   "SoundVolume": 0.4,
   "TalkInterval": 120,
-  "MaxSpawnedInChunk": 8
+  "MaxSpawnedInChunk": 8,
+  "SyncedProperties": [
+    {
+      "Name": "flags",
+      "Id": 16,
+      "Kind": "Byte"
+    },
+    {
+      "Name": "owner",
+      "Id": 17,
+      "Kind": "String",
+      "DefaultString": ""
+    },
+    {
+      "Name": "shown_health",
+      "Id": 18,
+      "Kind": "Int",
+      "Default": 8
+    }
+  ],
+  "Behaviors": [
+    {
+      "Slots": [
+        "Interactable",
+        "Persistence",
+        "Targeting",
+        "Ticker",
+        "Lifecycle",
+        "Physics"
+      ],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "tameable",
+          "taming_item": "betasharp:bone",
+          "taming_chance_one_in": 3,
+          "tamed_health": 20,
+          "feed_heal_like": "betasharp:porkchop_raw",
+          "tamed_texture": "/mob/wolf_tame.png",
+          "angry_texture": "/mob/wolf_angry.png",
+          "angry_sound": "mob.wolf.growl",
+          "whine_sound": "mob.wolf.whine",
+          "content_sound": "mob.wolf.panting",
+          "idle_sound": "mob.wolf.bark",
+          "whine_below_health": 10,
+          "sitting_watchfulness": 20,
+          "pack_radius": 16.0
+        },
+        {
+          "Type": "follow_owner",
+          "follow_range": 5.0,
+          "leash_range": 16.0,
+          "teleport_range": 12.0,
+          "prey_radius": 16.0,
+          "prey_chance_one_in": 100
+        },
+        {
+          "Type": "head_tilt",
+          "wanted_while_wild": "betasharp:bone",
+          "tilt_speed": 0.4,
+          "hold_gaze_ticks": 10
+        },
+        {
+          "Type": "shake_off_water",
+          "sound": "mob.wolf.shake",
+          "particle": "splash",
+          "speed": 0.05,
+          "duration": 2.0,
+          "spray_start": 0.4
+        }
+      ]
+    },
+    {
+      "Slots": [
+        "Attack"
+      ],
+      "Type": "jump",
+      "min_range": 2.0,
+      "max_range": 6.0,
+      "chance_one_in": 10,
+      "fallback": {
+        "Type": "bite",
+        "range": 1.5,
+        "damage": 2,
+        "tamed_damage": 4
+      }
+    }
+  ],
+  "Renderer": {
+    "Type": "tamed",
+    "Model": "wolf",
+    "Shadow": 0.5
+  }
 }

@@ -92,7 +92,8 @@ public sealed class EntityIdentityTests
     [Fact]
     public void A_class_that_still_backs_one_type_resolves_by_class()
     {
-        Assert.Same(EntityRegistry.ByName("wolf"), EntityRegistry.ByRuntimeType(typeof(EntityWolf)));
+        // Wolf, cow, sheep, pig and chicken all share EntityAnimal now, so the class no longer identifies any of them.
+        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityAnimal)));
     }
 
     [Theory]

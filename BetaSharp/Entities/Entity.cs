@@ -194,7 +194,7 @@ public abstract class Entity : IEntity
 
     public virtual ItemStack?[] Equipment => null;
 
-    protected bool IsWet => InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
+    protected internal bool IsWet => InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
 
     /// <summary>
     ///     Whether the entity counts as in water. Readers that must not disturb the entity ask

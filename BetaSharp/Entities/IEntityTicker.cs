@@ -28,8 +28,22 @@ public interface IEntityTicker
     bool OnTickLiving(EntityLiving self) => false;
 
     /// <summary>
+    ///     Runs immediately after the AI tick — where a mob that overrode <c>TickLiving</c> and
+    ///     <em>did</em> call base put the rest of its work. <see cref="OnTickLiving" /> cannot serve
+    ///     for that: it runs first, and for a creature the pathfinding AI has not happened yet.
+    /// </summary>
+    void AfterTickLiving(EntityLiving self) { }
+
+    /// <summary>
     ///     Runs at the end of <c>EntityLiving.Tick</c>, after movement and AI have resolved — where
     ///     a mob that overrode <c>Tick</c> put the work it did after calling base.
     /// </summary>
     void OnTickEnd(EntityLiving self) { }
+
+    /// <summary>
+    ///     The idle sound to make this tick, or <c>null</c> to use the one the definition declares.
+    ///     A hook rather than a field because the choice can be stateful: a wolf growls when angry
+    ///     and whines when hurt.
+    /// </summary>
+    string? LivingSound(EntityLiving self) => null;
 }

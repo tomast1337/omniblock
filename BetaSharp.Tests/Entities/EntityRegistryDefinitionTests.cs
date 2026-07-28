@@ -53,7 +53,7 @@ public sealed class EntityRegistryDefinitionTests
         // Reference equality, not value equality: this is what proves the mob reads through the
         // registry, so replacing the registered definition in Phase 4 actually reaches it.
         Assert.Same(EntityRegistry.ByName("zombie").Definition, ((EntityMonster)EntityRegistry.ByName("zombie").Create(world)).Definition);
-        Assert.Same(EntityRegistry.ByName("wolf").Definition, new EntityWolf(world).Definition);
+        Assert.Same(EntityRegistry.ByName("wolf").Definition, ((EntityLiving)EntityRegistry.ByName("wolf").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("ghast").Definition, ((EntityLiving)EntityRegistry.ByName("ghast").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("pigzombie").Definition, ((EntityMonster)EntityRegistry.ByName("pigzombie").Create(world)).Definition);
     }

@@ -1,5 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities.Models;
@@ -35,9 +36,13 @@ public sealed class ModelWolf : BbModelEntityModel
 
     public override void SetLivingAnimations(EntityLiving entity, float limbSwing, float limbSwingAmount, float partialTick)
     {
-        EntityWolf wolf = (EntityWolf)entity;
+        // Posed from the mob's behaviors rather than its class: it no longer has one.
+        TameableBehavior? tame = entity.Behaviors.Find<TameableBehavior>();
+        ShakeOffWaterBehavior? shake = entity.Behaviors.Find<ShakeOffWaterBehavior>();
+        HeadTiltBehavior? tilt = entity.Behaviors.Find<HeadTiltBehavior>();
+        bool sitting = tame?.IsSitting(entity) == true;
 
-        if (wolf.IsWolfAngry)
+        if (tame?.IsAngry(entity) == true)
         {
             _wolfTail.RotateAngleY = 0.0f;
         }
@@ -46,7 +51,7 @@ public sealed class ModelWolf : BbModelEntityModel
             _wolfTail.RotateAngleY = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
         }
 
-        if (wolf.IsWolfSitting)
+        if (sitting)
         {
             _wolfMane.SetRotationPoint(-1.0f, 16.0f, -3.0f);
             _wolfMane.RotateAngleX = MathF.PI * 0.4f;
@@ -80,21 +85,24 @@ public sealed class ModelWolf : BbModelEntityModel
             _wolfLeg4.RotateAngleX = MathHelper.Cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
         }
 
-        float shakeAngle = wolf.getInterestedAngle(partialTick) + wolf.getShakeAngle(partialTick, 0.0f);
+        float shakeAngle = (tilt?.TiltAngle(entity, partialTick) ?? 0.0f) + ShakeAngle(shake, entity, partialTick, 0.0f);
         _wolfHeadMain.RotateAngleZ = shakeAngle;
         _wolfRightEar.RotateAngleZ = shakeAngle;
         _wolfLeftEar.RotateAngleZ = shakeAngle;
         _wolfSnout.RotateAngleZ = shakeAngle;
-        _wolfMane.RotateAngleZ = wolf.getShakeAngle(partialTick, -0.08f);
-        _wolfBody.RotateAngleZ = wolf.getShakeAngle(partialTick, -0.16f);
-        _wolfTail.RotateAngleZ = wolf.getShakeAngle(partialTick, -0.2f);
+        _wolfMane.RotateAngleZ = ShakeAngle(shake, entity, partialTick, -0.08f);
+        _wolfBody.RotateAngleZ = ShakeAngle(shake, entity, partialTick, -0.16f);
+        _wolfTail.RotateAngleZ = ShakeAngle(shake, entity, partialTick, -0.2f);
 
-        if (wolf.getWolfShaking())
+        if (shake?.IsShaking(entity) == true)
         {
-            float shakeBrightness = wolf.GetBrightnessAtEyes(partialTick) * wolf.getShadingWhileShaking(partialTick);
+            float shakeBrightness = entity.GetBrightnessAtEyes(partialTick) * shake.Shading(entity, partialTick);
             GLManager.GL.Color3(shakeBrightness, shakeBrightness, shakeBrightness);
         }
     }
+
+    private static float ShakeAngle(ShakeOffWaterBehavior? shake, EntityLiving entity, float partialTick, float offset) =>
+        shake?.ShakeAngle(entity, partialTick, offset) ?? 0.0f;
 
     public override void SetRotationAngles(float limbSwing, float limbSwingAmount, float tailPitch, float netHeadYaw, float headPitch, float scale)
     {

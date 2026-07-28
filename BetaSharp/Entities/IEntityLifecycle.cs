@@ -27,6 +27,26 @@ public interface IEntityLifecycle
     void OnDamaged(EntityLiving self, Entity? attacker, int amount) { }
 
     /// <summary>
+    ///     Adjusts incoming damage before any of it lands — resistance to everything but a player's
+    ///     own hand, which is what makes a wolf hard for other mobs to kill.
+    /// </summary>
+    int ModifyDamage(EntityLiving self, Entity? attacker, int amount) => amount;
+
+    /// <summary>
+    ///     Called only once damage has actually landed, unlike <see cref="OnDamaged" />, which runs
+    ///     whether or not the hit gets through the hurt-resistance window. Retaliation belongs here:
+    ///     a wolf pack turns on an attacker that drew blood, not one that swung too soon.
+    /// </summary>
+    void OnDamageApplied(EntityLiving self, Entity? attacker, int amount) { }
+
+    /// <summary>
+    ///     Handles a server-sent entity status byte on the client — the particle bursts and one-shot
+    ///     animations that have no state of their own. Returning <c>true</c> means it was handled and
+    ///     the default statuses are not consulted.
+    /// </summary>
+    bool OnEntityStatus(EntityLiving self, sbyte status) => false;
+
+    /// <summary>
     ///     Called once after a natural spawn places the mob, for state that is rolled per individual
     ///     rather than declared — a sheep's fleece colour, a spider's rider.
     /// </summary>

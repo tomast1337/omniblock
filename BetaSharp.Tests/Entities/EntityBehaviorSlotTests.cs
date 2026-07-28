@@ -203,8 +203,7 @@ public sealed class EntityBehaviorSlotTests
     [Fact]
     public void Wolf_has_no_loot_behavior()
     {
-        FakeWorldContext world = new();
-        Assert.Null(new EntityWolf(world).Loot);
+        Assert.Null(EntityRegistry.ByName("wolf").Behaviors.Loot);
     }
 
     [Fact]

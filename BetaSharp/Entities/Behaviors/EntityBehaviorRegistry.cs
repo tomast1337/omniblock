@@ -16,6 +16,10 @@ internal static class EntityBehaviorRegistry
     {
         // Attack
         ["melee"] = (in EntityBehaviorContext c) => new MeleeAttackBehavior(c.Float("range", 2.0F)),
+        ["bite"] = (in EntityBehaviorContext c) => new BiteAttackBehavior(
+            c.Float("range", 1.5F),
+            c.Int("damage", 2),
+            c.Int("tamed_damage", 4)),
         ["ranged"] = (in EntityBehaviorContext c) => new RangedAttackBehavior(c.Float("range", 10.0F), c.Int("cooldown_ticks", 30)),
         ["jump"] = (in EntityBehaviorContext c) => new JumpAttackBehavior(
             c.Float("min_range", 2.0F),
@@ -74,6 +78,13 @@ internal static class EntityBehaviorRegistry
 
         // Ticker + Lifecycle, all moving one hop
         ["hopping"] = (in EntityBehaviorContext c) => new HoppingBehavior(c),
+
+        // Interactable + Persistence + Targeting + Ticker + Lifecycle + Physics, all reading one
+        // packed flags byte
+        ["tameable"] = (in EntityBehaviorContext c) => new TameableBehavior(c),
+        ["follow_owner"] = (in EntityBehaviorContext c) => new FollowOwnerBehavior(c),
+        ["head_tilt"] = (in EntityBehaviorContext c) => new HeadTiltBehavior(c),
+        ["shake_off_water"] = (in EntityBehaviorContext c) => new ShakeOffWaterBehavior(c),
 
         // Physics + Ticker, all moving one swim cycle
         ["jet_swim"] = (in EntityBehaviorContext c) => new JetSwimBehavior(c),

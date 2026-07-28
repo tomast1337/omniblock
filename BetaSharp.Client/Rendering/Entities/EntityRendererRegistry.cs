@@ -30,6 +30,7 @@ internal static class EntityRendererRegistry
             json.TryGetProperty("DeathRotation", out JsonElement d) ? d.GetSingle() : 90.0F),
         ["charging"] = (in JsonElement json) => new ChargingEntityRenderer(Model(json), Shadow(json)),
         ["swimming"] = (in JsonElement json) => new SwimmingEntityRenderer(Model(json), Shadow(json)),
+        ["tamed"] = (in JsonElement json) => new TamedEntityRenderer(Model(json), Shadow(json)),
         ["squishy"] = (in JsonElement json) => new SquishyEntityRenderer(
             Model(json),
             EntityModelRegistry.Create(json.GetProperty("OverlayModel").GetString()!),

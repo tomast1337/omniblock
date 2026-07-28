@@ -23,9 +23,9 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
     /// </summary>
     public IEntityTargetBehavior? Targeting => Behaviors.Targeting;
 
-    protected virtual bool IsMovementCeased => false;
+    protected virtual bool IsMovementCeased => Physics?.IsMovementCeased(this) ?? false;
 
-    protected bool HasPath => _pathToEntity != null;
+    protected internal bool HasPath => _pathToEntity != null;
 
     protected override void TickLiving()
     {

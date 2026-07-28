@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
@@ -491,26 +492,34 @@ public abstract class EntityPlayer : EntityLiving
         return base.Damage(damageSource, amount);
     }
 
+    /// <summary>
+    ///     Sets this player's pets on whatever they just fought with. Written against the tameable
+    ///     behavior rather than a wolf class, so it commands anything the player has actually tamed.
+    /// </summary>
     private void CommandWolvesToAttack(EntityLiving entity, bool sitting)
     {
         switch (entity)
         {
             case { Definition.WolfPackIgnores: true }:
-            case EntityWolf { IsWolfTamed: true } wolf when Name != null && Name.Equals(wolf.WolfOwner):
             case EntityPlayer p when (!isPvpEnabled() || !p.GameMode.CanBeTargeted):
                 return;
         }
 
-        List<EntityWolf> wolves = World.Entities.CollectEntitiesOfType<EntityWolf>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
+        // A player's own pet is never a target, however the scuffle started.
+        if (entity.Behaviors.Find<TameableBehavior>() is { } own && own.IsTamed(entity) && own.IsOwnedBy(entity, this)) return;
 
-        foreach (EntityWolf wolf in wolves)
+        List<EntityCreature> nearby = World.Entities.CollectEntitiesOfType<EntityCreature>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
+
+        foreach (EntityCreature pet in nearby)
         {
-            if (!wolf.IsWolfTamed) continue;
-            if (wolf.Target != null) continue;
-            if (Name != null && !Name.Equals(wolf.WolfOwner)) continue;
-            if (sitting && wolf.IsWolfSitting) continue;
-            wolf.IsWolfSitting = false;
-            wolf.Target = entity;
+            if (pet.Behaviors.Find<TameableBehavior>() is not { } tame) continue;
+            if (!tame.IsTamed(pet)) continue;
+            if (pet.Target != null) continue;
+            if (Name != null && !tame.IsOwnedBy(pet, this)) continue;
+            if (sitting && tame.IsSitting(pet)) continue;
+
+            tame.SetSitting(pet, false);
+            pet.Target = entity;
         }
     }
 
