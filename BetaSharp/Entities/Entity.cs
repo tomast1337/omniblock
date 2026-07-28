@@ -1287,7 +1287,7 @@ public abstract class Entity : IEntity
         _flags.Value = newValue;
     }
 
-    public virtual void OnStruckByLightning(EntityLightningBolt bolt)
+    public virtual void OnStruckByLightning(Entity bolt)
     {
         Damage(5);
         ++FireTicks;

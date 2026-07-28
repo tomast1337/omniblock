@@ -61,6 +61,9 @@ internal static class EntityBehaviorRegistry
         // Ticker + Persistence, all carrying one block
         ["settle_as_block"] = (in EntityBehaviorContext c) => new SettleAsBlockBehavior(c),
 
+        // Ticker + Lifecycle + Physics, all reading one flash countdown
+        ["lightning_strike"] = (in EntityBehaviorContext c) => new LightningStrikeBehavior(c),
+
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),

@@ -125,7 +125,7 @@ public sealed class FuseBehavior : IEntityAttackBehavior, IEntityTicker, IEntity
     ///     Lightning supercharges the creeper. Returns <c>false</c> so the default strike response
     ///     still runs, matching the override this replaced.
     /// </summary>
-    public bool OnStruckByLightning(EntityLiving self, EntityLightningBolt bolt)
+    public bool OnStruckByLightning(EntityLiving self, Entity bolt)
     {
         self.DataSynchronizer.Get<bool>(_powered.Id).Value = true;
         return false;

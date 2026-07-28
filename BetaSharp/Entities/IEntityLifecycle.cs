@@ -56,5 +56,5 @@ public interface IEntityLifecycle
     ///     Called when lightning strikes the mob. Returning <c>true</c> means the behavior fully
     ///     handled the strike and the default fire/damage response is skipped.
     /// </summary>
-    bool OnStruckByLightning(EntityLiving self, EntityLightningBolt bolt) => false;
+    bool OnStruckByLightning(EntityLiving self, Entity bolt) => false;
 }

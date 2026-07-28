@@ -548,7 +548,9 @@ public abstract class World : IWorldContext
 
                 if (Environment.IsRainingAt(worldX, worldY, worldZ))
                 {
-                    Entities.SpawnGlobalEntity(new EntityLightningBolt(this, worldX, worldY, worldZ));
+                    Entity bolt = EntityRegistry.ByName("lightningbolt").Create(this);
+                    bolt.SetPositionAndAnglesKeepPrevAngles(worldX, worldY, worldZ, 0.0F, 0.0F);
+                    Entities.SpawnGlobalEntity(bolt);
                     Environment.LightningTicksLeft = 2;
                 }
             }

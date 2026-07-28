@@ -52,7 +52,7 @@ public static class EntityRegistry
         Register((world, _) => new EntityEgg(world), "Egg", 62);
         Register((world, _) => new EntityFireball(world), "Fireball", 63);
         Register((world, _) => new EntityFish(world), "FishHook", 64);
-        Register((world, _) => new EntityLightningBolt(world), "LightningBolt", 65);
+        RegisterDefined((world, type) => new EntityObject(world, type), "LightningBolt");
         Register<ServerPlayerEntity>((_, _) => throw new NotSupportedException("Players must be created via ServerPlayerEntity constructor"), "Player", 100);
     }
 
@@ -136,6 +136,17 @@ public static class EntityRegistry
         foreach (EntityType type in s_registry)
         {
             if (type.Definition?.SpawnObjectId == spawnObjectId) return type;
+        }
+
+        return null;
+    }
+
+    /// <summary>Same resolution for the global-entity spawn packet's own id space.</summary>
+    public static EntityType? ByGlobalSpawnId(int globalSpawnId)
+    {
+        foreach (EntityType type in s_registry)
+        {
+            if (type.Definition?.GlobalSpawnId == globalSpawnId) return type;
         }
 
         return null;

@@ -8,14 +8,16 @@ namespace BetaSharp.Entities.State;
 public sealed class EntityState
 {
     private readonly int[] _ints;
+    private readonly long[] _longs;
     private readonly float[] _floats;
     private readonly double[] _doubles;
     private readonly bool[] _bools;
     private readonly object?[] _refs;
 
-    internal EntityState(int ints, int floats, int doubles, int bools, int refs)
+    internal EntityState(int ints, int longs, int floats, int doubles, int bools, int refs)
     {
         _ints = ints == 0 ? [] : new int[ints];
+        _longs = longs == 0 ? [] : new long[longs];
         _floats = floats == 0 ? [] : new float[floats];
         _doubles = doubles == 0 ? [] : new double[doubles];
         _bools = bools == 0 ? [] : new bool[bools];
@@ -26,6 +28,12 @@ public sealed class EntityState
     {
         get => _ints[handle.Index];
         set => _ints[handle.Index] = value;
+    }
+
+    public long this[StateHandle<long> handle]
+    {
+        get => _longs[handle.Index];
+        set => _longs[handle.Index] = value;
     }
 
     public float this[StateHandle<float> handle]

@@ -48,6 +48,17 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         foreach (IEntityTicker ticker in _tickers) ticker.OnTick(self);
     }
 
+    /// <summary>
+    ///     Every child ticks, and the base tick is skipped if any of them owns the whole tick — the
+    ///     same rule <see cref="OnTickLiving" /> applies to the AI.
+    /// </summary>
+    public bool OnTickEntity(Entity self)
+    {
+        bool replacesTick = false;
+        foreach (IEntityTicker ticker in _tickers) replacesTick |= ticker.OnTickEntity(self);
+        return replacesTick;
+    }
+
     public void OnTickMovement(EntityLiving self)
     {
         foreach (IEntityTicker ticker in _tickers) ticker.OnTickMovement(self);
@@ -147,6 +158,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
 
     public bool? IsInWater(Entity self) => First(_physics, p => p.IsInWater(self));
 
+    public bool? ShouldRender(Entity self) => First(_physics, p => p.ShouldRender(self));
+
     public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);
@@ -192,7 +205,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
     }
 
     /// <summary>A strike is one event: the first child that handles it has handled it.</summary>
-    public bool OnStruckByLightning(EntityLiving self, EntityLightningBolt bolt)
+    public bool OnStruckByLightning(EntityLiving self, Entity bolt)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles)
         {

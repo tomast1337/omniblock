@@ -1,4 +1,5 @@
 using BetaSharp.NBT;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
@@ -27,6 +28,8 @@ public class EntityObject : Entity
 
     /// <summary>Zero for every non-living entity — the vertical shadow offset is a mob thing.</summary>
     public override float GetShadowRadius() => 0.0F;
+
+    public override bool ShouldRender(Vec3D vec) => Physics?.ShouldRender(this) ?? base.ShouldRender(vec);
 
     protected override void ReadNbt(NBTTagCompound nbt) { }
 

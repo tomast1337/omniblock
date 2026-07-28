@@ -8,6 +8,7 @@ namespace BetaSharp.Entities.State;
 public sealed class EntityStateLayout
 {
     private int _ints;
+    private int _longs;
     private int _floats;
     private int _doubles;
     private int _bools;
@@ -23,6 +24,8 @@ public sealed class EntityStateLayout
         if (initial != 0) _intDefaults.Add((_ints, initial));
         return new StateHandle<int>(_ints++);
     }
+
+    public StateHandle<long> DeclareLong() => new(_longs++);
 
     public StateHandle<float> DeclareFloat(float initial = 0.0F)
     {
@@ -47,7 +50,7 @@ public sealed class EntityStateLayout
 
     public EntityState Create()
     {
-        EntityState state = new(_ints, _floats, _doubles, _bools, _refs);
+        EntityState state = new(_ints, _longs, _floats, _doubles, _bools, _refs);
 
         foreach ((int index, int value) in _intDefaults) state.SetIntRaw(index, value);
         foreach ((int index, float value) in _floatDefaults) state.SetFloatRaw(index, value);

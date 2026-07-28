@@ -10,6 +10,13 @@ namespace BetaSharp.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityFuseTests
 {
+    private static Entity Bolt(FakeWorldContext world, double x, double y, double z)
+    {
+        Entity bolt = EntityRegistry.ByName("lightningbolt").Create(world);
+        bolt.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
+        return bolt;
+    }
+
     private static (EntityMonster Creeper, FuseBehavior Fuse) Creeper(FakeWorldContext world)
     {
         EntityMonster creeper = (EntityMonster)EntityRegistry.ByName("creeper").Create(world);
@@ -120,7 +127,7 @@ public sealed class EntityFuseTests
         (EntityMonster creeper, FuseBehavior fuse) = Creeper(world);
 
         // False, so the default strike response (fire, damage) still runs afterwards.
-        Assert.False(fuse.OnStruckByLightning(creeper, new EntityLightningBolt(world, creeper.X, creeper.Y, creeper.Z)));
+        Assert.False(fuse.OnStruckByLightning(creeper, Bolt(world, creeper.X, creeper.Y, creeper.Z)));
         Assert.True(creeper.Synced<bool>("powered")!.Value);
     }
 

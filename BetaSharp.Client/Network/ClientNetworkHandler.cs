@@ -236,10 +236,11 @@ public class ClientNetworkHandler : NetHandler
         double x = packet.X / 32.0D;
         double y = packet.Y / 32.0D;
         double z = packet.Z / 32.0D;
-        EntityLightningBolt? ent = null;
-        if (packet.Type == 1)
+        Entity? ent = null;
+        if (EntityRegistry.ByGlobalSpawnId(packet.Type) is { } globalType)
         {
-            ent = new EntityLightningBolt(_worldClient, x, y, z);
+            ent = globalType.Create(_worldClient);
+            ent.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
         }
 
         if (ent != null)

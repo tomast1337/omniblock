@@ -523,7 +523,7 @@ public class EntityLiving : Entity
         base.MarkDead();
     }
 
-    public override void OnStruckByLightning(EntityLightningBolt bolt)
+    public override void OnStruckByLightning(Entity bolt)
     {
         if (Lifecycle?.OnStruckByLightning(this, bolt) == true) return;
 

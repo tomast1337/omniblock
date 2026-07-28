@@ -1,6 +1,7 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -8,7 +9,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class LightningEntityRenderer : EntityRenderer
 {
 
-    public void render(EntityLightningBolt lightningBolt, double x, double y, double z, float yaw, float tickDelta)
+    public void render(long renderSeed, double x, double y, double z)
     {
         Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Disable(GLEnum.Texture2D);
@@ -19,7 +20,7 @@ public class LightningEntityRenderer : EntityRenderer
         double[] zOffsets = new double[8];
         double offsetX = 0.0D;
         double offsetZ = 0.0D;
-        JavaRandom random = new(lightningBolt.RenderSeed);
+        JavaRandom random = new(renderSeed);
 
         for (int segmentIndex = 7; segmentIndex >= 0; --segmentIndex)
         {
@@ -31,7 +32,7 @@ public class LightningEntityRenderer : EntityRenderer
 
         for (int layerIndex = 0; layerIndex < 4; ++layerIndex)
         {
-            JavaRandom branchRandom = new(lightningBolt.RenderSeed);
+            JavaRandom branchRandom = new(renderSeed);
 
             for (int branchDepth = 0; branchDepth < 3; ++branchDepth)
             {
@@ -122,6 +123,7 @@ public class LightningEntityRenderer : EntityRenderer
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        render((EntityLightningBolt)target, x, y, z, yaw, tickDelta);
+        long renderSeed = target.Behaviors.Find<LightningStrikeBehavior>()?.RenderSeed(target) ?? 0L;
+        render(renderSeed, x, y, z);
     }
 }

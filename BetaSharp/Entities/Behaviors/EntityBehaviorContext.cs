@@ -15,6 +15,7 @@ namespace BetaSharp.Entities.Behaviors;
 public readonly record struct EntityBehaviorContext(JsonElement Json, EntityDefinition Definition, EntityStateLayout Layout)
 {
     public StateHandle<int> DeclareInt(int initial = 0) => Layout.DeclareInt(initial);
+    public StateHandle<long> DeclareLong() => Layout.DeclareLong();
     public StateHandle<float> DeclareFloat(float initial = 0.0F) => Layout.DeclareFloat(initial);
     public StateHandle<double> DeclareDouble(double initial = 0.0D) => Layout.DeclareDouble(initial);
     public StateHandle<bool> DeclareBool(bool initial = false) => Layout.DeclareBool(initial);

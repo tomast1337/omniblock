@@ -135,6 +135,13 @@ public sealed record EntityDefinition : IDataAsset
     public int TrackingFrequency { get; init; } = 3;
 
     /// <summary>
+    ///     Wire id in the global-entity spawn packet (<c>1</c> for a lightning bolt) — a third
+    ///     protocol id space, for effects broadcast to everyone rather than tracked per player.
+    ///     <c>0</c> means this entity is not spawned globally.
+    /// </summary>
+    public int GlobalSpawnId { get; init; }
+
+    /// <summary>
     ///     Network-synchronised per-entity state, declared here rather than in behavior code so the
     ///     wire ids are visible data. See <see cref="State.SyncedPropertyDefinition" /> — these ids
     ///     are protocol facts shared with the client.

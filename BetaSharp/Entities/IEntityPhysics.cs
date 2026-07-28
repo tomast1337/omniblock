@@ -67,4 +67,10 @@ public interface IEntityPhysics
     ///     not a field.
     /// </summary>
     bool? IsInWater(Entity self) => null;
+
+    /// <summary>
+    ///     Replaces the visibility test, or <c>null</c> for the default distance check. A lightning
+    ///     bolt is drawn only while a flash is on, wherever the camera is.
+    /// </summary>
+    bool? ShouldRender(Entity self) => null;
 }

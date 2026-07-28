@@ -241,7 +241,7 @@ public sealed class EntityBehaviorSlotTests
         FakeWorldContext world = new();
         EntityAnimal pig = Spawn(world, (EntityAnimal)EntityRegistry.ByName("pig").Create(world), 8.5, 65.0, 8.5);
 
-        pig.OnStruckByLightning(new EntityLightningBolt(world, pig.X, pig.Y, pig.Z));
+        pig.OnStruckByLightning(Bolt(world, pig.X, pig.Y, pig.Z));
 
         Assert.True(pig.Dead);
         Assert.Single(world.Entities.Entities, e => EntityRegistry.GetId(e) == "pigzombie");
@@ -259,9 +259,16 @@ public sealed class EntityBehaviorSlotTests
         Assert.IsType<FuseBehavior>(creeper.Behaviors.Lifecycle);
         Assert.False(creeper.Synced<bool>("powered")!.Value);
 
-        creeper.OnStruckByLightning(new EntityLightningBolt(world, creeper.X, creeper.Y, creeper.Z));
+        creeper.OnStruckByLightning(Bolt(world, creeper.X, creeper.Y, creeper.Z));
 
         Assert.True(creeper.Synced<bool>("powered")!.Value);
+    }
+
+    private static Entity Bolt(FakeWorldContext world, double x, double y, double z)
+    {
+        Entity bolt = EntityRegistry.ByName("lightningbolt").Create(world);
+        bolt.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
+        return bolt;
     }
 
     private static T Spawn<T>(FakeWorldContext world, T entity, double x, double y, double z) where T : Entity

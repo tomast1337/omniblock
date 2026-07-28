@@ -47,7 +47,6 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityMinecart), new MinecartEntityRenderer());
         RegisterRenderer(typeof(EntityBoat), new BoatEntityRenderer());
         RegisterRenderer(typeof(EntityFish), new FishingBobberEntityRenderer());
-        RegisterRenderer(typeof(EntityLightningBolt), new LightningEntityRenderer());
 
         RegisterDeclaredRenderers();
 

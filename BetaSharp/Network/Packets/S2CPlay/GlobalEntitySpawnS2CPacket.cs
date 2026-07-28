@@ -18,9 +18,9 @@ public class GlobalEntitySpawnS2CPacket() : Packet(PacketId.GlobalEntitySpawnS2C
         p.X = MathHelper.Floor(ent.X * 32.0D);
         p.Y = MathHelper.Floor(ent.Y * 32.0D);
         p.Z = MathHelper.Floor(ent.Z * 32.0D);
-        if (ent is EntityLightningBolt)
+        if (ent.Type?.Definition is { GlobalSpawnId: > 0 } definition)
         {
-            p.Type = 1;
+            p.Type = (byte)definition.GlobalSpawnId;
         }
 
         return p;

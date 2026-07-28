@@ -6,7 +6,7 @@ namespace BetaSharp.Entities.Behaviors;
 /// </summary>
 public sealed class LightningConversionBehavior(string becomes) : IEntityLifecycle
 {
-    public bool OnStruckByLightning(EntityLiving self, EntityLightningBolt bolt)
+    public bool OnStruckByLightning(EntityLiving self, Entity bolt)
     {
         if (self.World.IsRemote) return true;
 

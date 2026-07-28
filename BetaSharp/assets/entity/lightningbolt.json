@@ -1,0 +1,19 @@
+{
+  "ProtocolId": 65,
+  "GlobalSpawnId": 1,
+  "EyeHeightScale": 0.0,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Lifecycle", "Physics"],
+      "Type": "lightning_strike",
+      "thunder_sound": "ambient.weather.thunder",
+      "explode_sound": "random.explode",
+      "minimum_fire_difficulty": 2,
+      "extra_fires": 4,
+      "strike_radius": 3.0
+    }
+  ],
+  "Renderer": {
+    "Type": "lightning"
+  }
+}
