@@ -40,6 +40,7 @@ internal static class EntityRendererRegistry
         ["falling_block"] = (in JsonElement json) => new FallingBlockEntityRenderer(Shadow(json)),
         ["lightning"] = (in JsonElement json) => new LightningEntityRenderer(),
         ["item"] = (in JsonElement json) => new Items.ItemRenderer(),
+        ["arrow"] = (in JsonElement json) => new ArrowEntityRenderer(),
         ["projectile"] = (in JsonElement json) => new ProjectileEntityRenderer(
             Item.ByName(json.GetProperty("Item").GetString()!).getTextureId(0),
             json.TryGetProperty("Scale", out JsonElement scale) ? scale.GetSingle() : 0.5F),

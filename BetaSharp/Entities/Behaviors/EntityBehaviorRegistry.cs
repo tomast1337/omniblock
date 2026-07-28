@@ -68,6 +68,7 @@ internal static class EntityBehaviorRegistry
         ["dropped_item"] = (in EntityBehaviorContext c) => new DroppedItemBehavior(c),
         ["thrown_projectile"] = (in EntityBehaviorContext c) => new ThrownProjectileBehavior(c),
         ["fireball"] = (in EntityBehaviorContext c) => new FireballBehavior(c),
+        ["arrow"] = (in EntityBehaviorContext c) => new ArrowBehavior(c),
 
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),

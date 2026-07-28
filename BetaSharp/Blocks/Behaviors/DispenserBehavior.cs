@@ -141,10 +141,12 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : I
 
         if (itemStack.ItemId == arrow.Id)
         {
-            EntityArrow arrow = new(@event.World, spawnX, spawnY, spawnZ);
-            arrow.SetArrowHeading(dirX, 0.1F, dirZ, 1.1F, 6.0F);
-            arrow.DoesArrowBelongToPlayer = true;
-            @event.World.Entities.SpawnEntity(arrow);
+            Entity shot = EntityRegistry.ByName("arrow").Create(@event.World);
+            shot.SetPositionAndAngles(spawnX, spawnY, spawnZ, 0.0F, 0.0F);
+            ArrowBehavior flight = shot.Behaviors.Find<ArrowBehavior>()!;
+            flight.SetHeading(shot, dirX, 0.1D, dirZ, 1.1F, 6.0F);
+            flight.SetBelongsToPlayer(shot, true);
+            @event.World.Entities.SpawnEntity(shot);
             @event.World.Broadcaster.WorldEvent(1002, @event.X, @event.Y, @event.Z, 0);
         }
         else if (itemStack.ItemId == egg.Id)

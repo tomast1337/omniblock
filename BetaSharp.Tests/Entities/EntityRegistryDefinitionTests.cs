@@ -31,12 +31,12 @@ public sealed class EntityRegistryDefinitionTests
     [
         EntityRegistry.ByName("primedtnt"), EntityRegistry.ByName("fallingsand"), EntityRegistry.ByName("lightningbolt"),
         EntityRegistry.ByName("item"), EntityRegistry.ByName("snowball"), EntityRegistry.ByName("egg"),
-        EntityRegistry.ByName("fireball")
+        EntityRegistry.ByName("fireball"), EntityRegistry.ByName("arrow")
     ];
 
     private static readonly EntityType[] s_nonMobTypes =
     [
-        EntityRegistry.ByName("arrow"), EntityRegistry.ByName("painting"),
+        EntityRegistry.ByName("painting"),
         EntityRegistry.ByName("minecart"), EntityRegistry.ByName("boat"),
         EntityRegistry.ByName("fishhook"),
         EntityRegistry.ByName("player")
@@ -67,8 +67,8 @@ public sealed class EntityRegistryDefinitionTests
     {
         Assert.All(s_nonMobTypes, type => Assert.Null(type.Definition));
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => EntityRegistry.ByName("arrow").RequireDefinition());
-        Assert.Contains("Arrow", error.Message);
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => EntityRegistry.ByName("boat").RequireDefinition());
+        Assert.Contains("Boat", error.Message);
     }
 
     [Fact]

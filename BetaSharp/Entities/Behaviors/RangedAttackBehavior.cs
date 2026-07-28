@@ -5,9 +5,8 @@ namespace BetaSharp.Entities.Behaviors;
 /// <summary>
 ///     Fires an arrow at the target while it is within <paramref name="range" />, then faces it.
 ///     <para>
-///         The projectile is hardcoded to <see cref="EntityArrow" />: it is the only mob-fired
-///         projectile with this launch shape, and there is no shared projectile abstraction to
-///         parameterize against yet. Phase 4 should make it data-driven once one exists.
+///         The projectile is hardcoded to the arrow: it is the only mob-fired projectile with this
+///         launch shape, and there is no shared projectile abstraction to parameterize against yet.
 ///     </para>
 /// </summary>
 public sealed class RangedAttackBehavior(float range = 10.0F, int cooldownTicks = 30) : IEntityAttackBehavior
@@ -20,12 +19,12 @@ public sealed class RangedAttackBehavior(float range = 10.0F, int cooldownTicks 
         double dy = target.Z - self.Z;
         if (self.AttackTime == 0)
         {
-            EntityArrow arrow = new(self.World, self);
+            Entity arrow = ArrowBehavior.Shoot(self.World, self);
             double targetHeightOffset = target.Y + target.EyeHeight - 0.2F - arrow.Y;
             float distanceFactor = MathHelper.Sqrt(dx * dx + dy * dy) * 0.2F;
             self.World.Broadcaster.PlaySoundAtEntity(self, "random.bow", 1.0F, 1.0F / (self.Random.NextFloat() * 0.4F + 0.8F));
             self.World.SpawnEntity(arrow);
-            arrow.SetArrowHeading(dx, targetHeightOffset + distanceFactor, dy, 0.6F, 12.0F);
+            arrow.Behaviors.Find<ArrowBehavior>()!.SetHeading(arrow, dx, targetHeightOffset + distanceFactor, dy, 0.6F, 12.0F);
             self.AttackTime = cooldownTicks;
         }
 

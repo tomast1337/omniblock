@@ -88,7 +88,8 @@ public sealed class EntityCombatBehaviorTests
     {
         FakeWorldContext world = new();
 
-        var arrow = new EntityArrow(world, 8.5, 65.0, 8.5);
+        Entity arrow = EntityRegistry.ByName("arrow").Create(world);
+        arrow.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         arrow.SetVelocityClient(0.2, 0.1, -0.3);
         Assert.NotEqual(0f, arrow.Yaw);
         Assert.NotEqual(0f, arrow.Pitch);

@@ -118,7 +118,9 @@ internal class EntityTrackerEntry
             }
             else if (hasMoved || hasRotated)
             {
-                if (currentTrackedEntity is EntityArrow) // Special case for arrows to handle water and bounce physics more accurately
+                // Some entities want their angle on every step rather than only when they visibly
+                // turn — an arrow's flight is all arc and bounce, so it declares as much.
+                if (currentTrackedEntity.Type?.Definition is { AlwaysSyncsRotation: true })
                 {
                     positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
                 }
@@ -325,19 +327,21 @@ internal class EntityTrackerEntry
             {
                 return EntitySpawnS2CPacket.Get(currentTrackedEntity, 90);
             }
-            else if (currentTrackedEntity is EntityArrow arrow)
+            // An arrow's spawn packet names whoever loosed it, so the client can credit the hit;
+            // an unowned one (a dispenser's) names itself.
+            else if (currentTrackedEntity.Behaviors.Find<ArrowBehavior>() is { } flight)
             {
-                EntityLiving arrowOwner = arrow.Owner;
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, arrowOwner != null ? arrowOwner.ID : currentTrackedEntity.ID);
+                EntityLiving? shooter = flight.Owner(currentTrackedEntity);
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, shooter != null ? shooter.ID : currentTrackedEntity.ID);
             }
             // A fireball's spawn packet carries its shooter's id and rides its power vector in the
             // velocity fields, so it comes from the behavior rather than the generic declared branch.
-            else if (currentTrackedEntity.Behaviors.Find<FireballBehavior>() is { } flight)
+            else if (currentTrackedEntity.Behaviors.Find<FireballBehavior>() is { } fireball)
             {
-                var packet = EntitySpawnS2CPacket.Get(currentTrackedEntity, 63, flight.Owner(currentTrackedEntity)!.ID);
-                packet.VelocityX = (int)(flight.PowerX(currentTrackedEntity) * 8000.0);
-                packet.VelocityY = (int)(flight.PowerY(currentTrackedEntity) * 8000.0);
-                packet.VelocityZ = (int)(flight.PowerZ(currentTrackedEntity) * 8000.0);
+                var packet = EntitySpawnS2CPacket.Get(currentTrackedEntity, 63, fireball.Owner(currentTrackedEntity)!.ID);
+                packet.VelocityX = (int)(fireball.PowerX(currentTrackedEntity) * 8000.0);
+                packet.VelocityY = (int)(fireball.PowerY(currentTrackedEntity) * 8000.0);
+                packet.VelocityZ = (int)(fireball.PowerZ(currentTrackedEntity) * 8000.0);
 
                 return packet;
             }

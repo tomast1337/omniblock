@@ -39,7 +39,6 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityLiving), new LivingEntityRenderer(new ModelBiped(), 0.5F));
         RegisterRenderer(typeof(Entity), new BoxEntityRenderer());
         RegisterRenderer(typeof(EntityPainting), new PaintingEntityRenderer());
-        RegisterRenderer(typeof(EntityArrow), new ArrowEntityRenderer());
         RegisterRenderer(typeof(EntityMinecart), new MinecartEntityRenderer());
         RegisterRenderer(typeof(EntityBoat), new BoatEntityRenderer());
         RegisterRenderer(typeof(EntityFish), new FishingBobberEntityRenderer());

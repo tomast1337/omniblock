@@ -144,11 +144,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         if (_joinInvulnerabilityTicks > 0) return false;
         if (_server.pvpEnabled) return base.Damage(damageSource, amount);
 
-        switch (damageSource)
+        if (damageSource is EntityPlayer || ArrowBehavior.OwnerOf(damageSource) is EntityPlayer)
         {
-            case EntityPlayer:
-            case EntityArrow { Owner: EntityPlayer }:
-                return false;
+            return false;
         }
 
         return base.Damage(damageSource, amount);
@@ -373,7 +371,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         if (!item.Dead)
         {
             EntityTracker et = _server.getEntityTracker(DimensionId);
-            if (item is EntityArrow || item.Behaviors.Find<DroppedItemBehavior>() is not null)
+            if (ArrowBehavior.IsArrow(item) || item.Behaviors.Find<DroppedItemBehavior>() is not null)
             {
                 et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.ID, ID));
             }

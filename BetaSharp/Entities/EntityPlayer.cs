@@ -462,7 +462,7 @@ public abstract class EntityPlayer : EntityLiving
             WakeUp(true, true, false);
         }
 
-        if (damageSource is EntityMonster or EntityArrow)
+        if (damageSource is EntityMonster || ArrowBehavior.IsArrow(damageSource))
         {
             amount = World.Difficulty switch
             {
@@ -475,9 +475,9 @@ public abstract class EntityPlayer : EntityLiving
 
         if (amount == 0) return false;
 
-        if (damageSource is EntityArrow { Owner: not null } arrow)
+        if (ArrowBehavior.OwnerOf(damageSource) is { } shooter)
         {
-            damageSource = arrow.Owner;
+            damageSource = shooter;
         }
 
         if (damageSource is EntityLiving living)

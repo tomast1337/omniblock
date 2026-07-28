@@ -1,6 +1,7 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -8,7 +9,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 public class ArrowEntityRenderer : EntityRenderer
 {
 
-    public void renderArrow(EntityArrow arrowEntity, double x, double y, double z, float yaw, float tickDelta)
+    public void renderArrow(Entity arrowEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         if (arrowEntity.PrevYaw != 0.0F || arrowEntity.PrevPitch != 0.0F)
         {
@@ -29,7 +30,7 @@ public class ArrowEntityRenderer : EntityRenderer
             float sideMaxV = (10 + arrowType * 10) / 32.0F;
             float modelScale = 0.05625F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            float shakeTime = arrowEntity.ArrowShake - tickDelta;
+            float shakeTime = arrowEntity.Behaviors.Find<ArrowBehavior>()!.Shake(arrowEntity) - tickDelta;
             if (shakeTime > 0.0F)
             {
                 float shakeRotation = -MathHelper.Sin(shakeTime * 3.0F) * shakeTime;
@@ -73,6 +74,6 @@ public class ArrowEntityRenderer : EntityRenderer
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
-        renderArrow((EntityArrow)target, x, y, z, yaw, tickDelta);
+        renderArrow(target, x, y, z, yaw, tickDelta);
     }
 }

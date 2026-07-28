@@ -153,11 +153,6 @@ public class ClientNetworkHandler : NetHandler
             entity = new EntityFish(_worldClient, x, y, z);
         }
 
-        if (packet.EntityType == 60)
-        {
-            entity = new EntityArrow(_worldClient, x, y, z);
-        }
-
         if (packet.EntityType == 63)
         {
             entity = EntityRegistry.ByName("fireball").Create(_worldClient);
@@ -206,13 +201,9 @@ public class ClientNetworkHandler : NetHandler
             _worldClient.ForceEntity(packet.EntityId, entity);
             if (packet.EntityData > 0)
             {
-                if (packet.EntityType == 60)
+                if (entity.Behaviors.Find<ArrowBehavior>() is { } flight && GetEntityById(packet.EntityData) is EntityLiving shooter)
                 {
-                    Entity? owner = GetEntityById(packet.EntityData);
-                    if (owner is EntityLiving)
-                    {
-                        ((EntityArrow)entity).Owner = (EntityLiving)owner;
-                    }
+                    flight.SetOwner(entity, shooter);
                 }
 
                 entity.SetVelocityClient(packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);

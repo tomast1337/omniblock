@@ -165,7 +165,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
     ///     enough to be worth taming.
     /// </summary>
     public int ModifyDamage(EntityLiving self, Entity? attacker, int amount) =>
-        attacker is null or EntityPlayer or EntityArrow ? amount : (amount + 1) / 2;
+        attacker is null or EntityPlayer || ArrowBehavior.IsArrow(attacker) ? amount : (amount + 1) / 2;
 
     public void OnDamageApplied(EntityLiving self, Entity? attacker, int amount)
     {
@@ -188,7 +188,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
             self.Target = attacker;
         }
 
-        if (attacker is EntityArrow arrow) attacker = arrow.Owner;
+        if (ArrowBehavior.OwnerOf(attacker) is { } shooter) attacker = shooter;
         if (attacker is not EntityLiving) return;
 
         // Not excluding self: an untargetable attacker leaves this mob without a target of its own,

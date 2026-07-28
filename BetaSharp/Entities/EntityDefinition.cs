@@ -129,6 +129,20 @@ public sealed record EntityDefinition : IDataAsset
     public float TargetingMargin { get; init; } = 0.1F;
 
     /// <summary>
+    ///     Whether a synced position from the server is nudged up out of anything it landed inside.
+    ///     False for an arrow, which must stay exactly where the server buried it rather than
+    ///     climbing out of the entity it is stuck in.
+    /// </summary>
+    public bool PositionSyncAvoidsEntities { get; init; } = true;
+
+    /// <summary>
+    ///     Whether the tracker sends rotation alongside every movement update rather than only when
+    ///     the entity has visibly turned. An arrow's flight is all arc and bounce, so its angle
+    ///     matters on every step.
+    /// </summary>
+    public bool AlwaysSyncsRotation { get; init; }
+
+    /// <summary>
     ///     Wire id in the object-spawn packet (<c>50</c> for primed TNT), a second protocol id space
     ///     from <see cref="ProtocolId" />: non-living entities spawn on the client through
     ///     <c>EntitySpawnS2CPacket</c> rather than the living-entity packet. <c>0</c> means this

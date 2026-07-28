@@ -1,0 +1,22 @@
+{
+  "ProtocolId": 10,
+  "SpawnObjectId": 60,
+  "TrackingRange": 64,
+  "TrackingFrequency": 2,
+  "TracksVelocity": true,
+  "AlwaysSyncsRotation": true,
+  "PositionSyncAvoidsEntities": false,
+  "Width": 0.5,
+  "Height": 0.5,
+  "EyeHeightScale": 0.0,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Persistence", "Interactable", "Physics"],
+      "Type": "arrow",
+      "damage": 4
+    }
+  ],
+  "Renderer": {
+    "Type": "arrow"
+  }
+}

@@ -1,4 +1,5 @@
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
@@ -14,7 +15,7 @@ internal sealed class BowBehavior : IItemBehavior
             world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 1.0F, 1.0F / (Item.itemRand.NextFloat() * 0.4F + 0.8F));
             if (!world.IsRemote)
             {
-                world.SpawnEntity(new EntityArrow(world, player));
+                world.SpawnEntity(ArrowBehavior.Shoot(world, player));
             }
         }
 

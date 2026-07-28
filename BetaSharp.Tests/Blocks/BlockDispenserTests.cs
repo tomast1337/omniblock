@@ -151,7 +151,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 3, 64, 3));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityArrow);
+        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 30, 64, 30));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityArrow);
+        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 31, 64, 31));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityArrow);
+        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public sealed class BlockDispenserTests
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 32, 64, 32));
 
-        Assert.Contains(world.Entities.Entities, e => e is EntityArrow);
+        Assert.Contains(world.Entities.Entities, e => EntityRegistry.GetId(e) == "arrow");
     }
 
     [Fact]

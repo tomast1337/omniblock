@@ -27,6 +27,19 @@ public class EntityObject : Entity
 
     public override float TargetingMargin => Definition.TargetingMargin;
 
+    /// <summary>An arrow declares it stays put: it must not climb out of whatever it is stuck in.</summary>
+    public override void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int steps)
+    {
+        if (Definition.PositionSyncAvoidsEntities)
+        {
+            base.SetPositionAndAnglesAvoidEntities(x, y, z, yaw, pitch, steps);
+            return;
+        }
+
+        SetPosition(x, y, z);
+        SetRotation(yaw, pitch);
+    }
+
     /// <summary>Non-living damage is composed: a dropped item spends hit points, TNT ignores the hit.</summary>
     public override bool Damage(Entity? entity, int amount) =>
         Behaviors.Lifecycle?.Damage(this, entity, amount) ?? base.Damage(entity, amount);
