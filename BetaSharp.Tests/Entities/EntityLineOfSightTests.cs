@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 
@@ -111,7 +112,8 @@ public sealed class EntityLineOfSightTests
     public void Slime_contact_damage_needs_a_clear_line()
     {
         FakeWorldContext world = new();
-        EntitySlime slime = new(world) { SlimeSize = 4 };
+        EntityLiving slime = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
+        slime.Behaviors.Find<SizedBodyBehavior>()!.SetSize(slime, 4);
         slime.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(slime));
 

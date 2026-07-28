@@ -26,7 +26,16 @@ public class EntityType(Func<IWorldContext, EntityType, Entity> factory, Type ba
     ///     being recovered from its C# class. This is what lets several registered types share one
     ///     class — the step that makes a mob subclass optional rather than mandatory.
     /// </summary>
-    public Entity Create(IWorldContext world) => factory(world, this);
+    public Entity Create(IWorldContext world)
+    {
+        Entity entity = factory(world, this);
+
+        // After the constructor rather than inside it, so a behavior rolling per-individual state —
+        // a slime's size, which resizes the body it is given — sees a finished entity.
+        if (entity is EntityLiving living) Behaviors.Lifecycle?.OnCreated(living);
+
+        return entity;
+    }
 
     /// <summary>Definition accessor for mob constructors, which cannot proceed without one.</summary>
     public EntityDefinition RequireDefinition() =>

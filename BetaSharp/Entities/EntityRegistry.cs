@@ -31,7 +31,7 @@ public static class EntityRegistry
         RegisterMob((world, type) => new EntityMonster(world, type), "Spider");
         RegisterMob((world, type) => new EntityMonster(world, type), "Giant");
         RegisterMob((world, type) => new EntityMonster(world, type), "Zombie");
-        RegisterMob((world, _) => new EntitySlime(world), "Slime");
+        RegisterMob((world, type) => new EntityLiving(world, type), "Slime");
         RegisterMob((world, type) => new EntityLiving(world, type), "Ghast");
         RegisterMob((world, type) => new EntityMonster(world, type), "PigZombie");
         RegisterMob((world, type) => new EntityAnimal(world, type), "Pig");
@@ -41,7 +41,7 @@ public static class EntityRegistry
         // once overrode now sits in a capability slot, so the subclass had nothing left to hold.
         RegisterMob((world, type) => new EntityAnimal(world, type), "Cow");
         RegisterMob((world, type) => new EntityAnimal(world, type), "Chicken");
-        RegisterMob((world, _) => new EntitySquid(world), "Squid");
+        RegisterMob((world, type) => new EntityLiving(world, type), "Squid");
         RegisterMob((world, _) => new EntityWolf(world), "Wolf");
         Register((world, _) => new EntityTntPrimed(world), "PrimedTnt", 20);
         Register((world, _) => new EntityFallingSand(world), "FallingSand", 21);

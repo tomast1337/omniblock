@@ -68,7 +68,7 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
         }
 
         int floorY = MathHelper.Floor(BoundingBox.MinY + 0.5D);
-        bool isInWater = base.IsInWater;
+        bool isInWater = InWater;
         bool isTouchingLava = IsTouchingLava;
         Pitch = 0.0F;
         if (_pathToEntity != null && Random.NextInt(100) != 0)

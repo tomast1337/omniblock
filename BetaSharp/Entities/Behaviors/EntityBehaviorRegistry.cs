@@ -60,6 +60,23 @@ internal static class EntityBehaviorRegistry
             !c.Json.TryGetProperty("requires_difficulty", out JsonElement d) || d.GetBoolean(),
             c.Int("chance_one_in", 1)),
         ["flying_movement"] = (in EntityBehaviorContext c) => new FlyingMovementBehavior(),
+        ["spawn_in_fluid"] = (in EntityBehaviorContext c) => new SpawnInFluidBehavior(),
+        ["slime_chunk_spawn"] = (in EntityBehaviorContext c) => new SlimeChunkSpawnBehavior(
+            c.Json.GetProperty("chunk_seed").GetInt64(),
+            c.Int("chance_one_in", 10),
+            c.Int("chunk_chance_one_in", 10),
+            c.Double("max_height", 16.0D),
+            c.Int("difficulty_free_size", 1)),
+
+        // Lifecycle + Persistence: size is the body, so one behavior owns rolling it, applying it and
+        // saving it
+        ["sized_body"] = (in EntityBehaviorContext c) => new SizedBodyBehavior(c),
+
+        // Ticker + Lifecycle, all moving one hop
+        ["hopping"] = (in EntityBehaviorContext c) => new HoppingBehavior(c),
+
+        // Physics + Ticker, all moving one swim cycle
+        ["jet_swim"] = (in EntityBehaviorContext c) => new JetSwimBehavior(c),
 
         // Ticker
         ["despawn_on_peaceful"] = (in EntityBehaviorContext c) => new DespawnOnPeacefulBehavior(),
@@ -80,7 +97,7 @@ internal static class EntityBehaviorRegistry
         ["lay_eggs"] = (in EntityBehaviorContext c) => new LayEggsBehavior(c),
 
         // Lifecycle
-        ["slime_split"] = (in EntityBehaviorContext c) => new SlimeSplitBehavior(c.Int("child_count", 4)),
+        ["split_on_death"] = (in EntityBehaviorContext c) => new SplitOnDeathBehavior(c.Int("child_count", 4)),
         ["spawn_rider"] = (in EntityBehaviorContext c) => new SpawnRiderBehavior(
             c.Json.GetProperty("rider").GetString()!,
             c.Int("chance_one_in", 100)),

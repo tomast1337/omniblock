@@ -1,11 +1,79 @@
 {
   "ProtocolId": 55,
   "SpawnCategory": "monster",
+  "Width": 0.6,
+  "Height": 0.6,
   "Texture": "/mob/slime.png",
   "HurtSound": "mob.slime",
   "DeathSound": "mob.slime",
   "SoundVolume": 0.6,
+  "SyncedProperties": [
+    {
+      "Name": "size",
+      "Id": 16,
+      "Kind": "Byte",
+      "Default": 1
+    }
+  ],
   "Behaviors": [
+    {
+      "Slots": [
+        "Ticker",
+        "Lifecycle",
+        "Persistence"
+      ],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "sized_body",
+          "sizes": [
+            1,
+            2,
+            4
+          ],
+          "width_per_size": 0.6,
+          "nbt_key": "Size",
+          "nbt_offset": -1
+        },
+        {
+          "Type": "hopping",
+          "delay_minimum": 10,
+          "delay_spread": 20,
+          "nearby_delay_divisor": 3,
+          "notice_range": 16.0,
+          "squish_decay": 0.6,
+          "particle": "slime",
+          "particles_per_size": 8,
+          "sound": "mob.slime",
+          "jump_sound_minimum_size": 2,
+          "landing_sound_minimum_size": 3
+        },
+        {
+          "Type": "split_on_death",
+          "child_count": 4
+        }
+      ]
+    },
+    {
+      "Slots": [
+        "Physics"
+      ],
+      "Type": "slime_chunk_spawn",
+      "chunk_seed": 987234911,
+      "chance_one_in": 10,
+      "chunk_chance_one_in": 10,
+      "max_height": 16.0,
+      "difficulty_free_size": 1
+    },
+    {
+      "Slots": [
+        "Interactable"
+      ],
+      "Type": "contact_damage",
+      "reach_per_size": 0.6,
+      "minimum_size": 2,
+      "sound": "mob.slimeattack"
+    },
     {
       "Slots": [
         "Loot"
@@ -21,26 +89,17 @@
           "MinCount": 0,
           "MaxCount": 2,
           "Condition": {
-            "type": "slime_size",
+            "type": "size",
             "size": 1
           }
         }
       ]
-    },
-    {
-      "Slots": [
-        "Lifecycle"
-      ],
-      "Type": "slime_split"
-    },
-    {
-      "Slots": [
-        "Interactable"
-      ],
-      "Type": "contact_damage",
-      "reach_per_size": 0.6,
-      "minimum_size": 2,
-      "sound": "mob.slimeattack"
     }
-  ]
+  ],
+  "Renderer": {
+    "Type": "squishy",
+    "Model": "slime",
+    "OverlayModel": "slime_cube",
+    "Shadow": 0.25
+  }
 }

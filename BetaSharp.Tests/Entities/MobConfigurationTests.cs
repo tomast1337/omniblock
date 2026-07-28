@@ -13,9 +13,9 @@ namespace BetaSharp.Tests.Entities;
 /// the moment a constructor stops hardcoding a stat.
 /// <para>
 /// Deliberately excluded, because they are genuinely dynamic rather than configuration:
-/// <see cref="EntitySlime"/> (stats derive from a randomly chosen size),
-/// <see cref="EntityWolf"/>'s living sound (a random roll over four clips), and
-/// <see cref="EntityGhast"/>'s texture (swapped per tick while charging).
+/// the slime (stats derive from a randomly chosen size),
+/// <see cref="EntityWolf"/>'s living sound (a random roll over four clips), and the ghast's
+/// texture (swapped per tick while charging).
 /// </para>
 /// </summary>
 [Collection("EntityTests")]
@@ -50,7 +50,9 @@ public sealed class MobConfigurationTests
         { "cow", new MobConfig(10, 0.7f, 2, 0.9f, 1.3f, "/mob/cow.png", "mob.cow", "mob.cowhurt", "mob.cowhurt", 0.4f, false, 4, true, 120) },
         { "sheep", new MobConfig(10, 0.7f, 2, 0.9f, 1.3f, "/mob/sheep.png", "mob.sheep", "mob.sheep", "mob.sheep", 1f, false, 4, true, 120) },
         { "chicken", new MobConfig(4, 0.7f, 2, 0.3f, 0.4f, "/mob/chicken.png", "mob.chicken", "mob.chickenhurt", "mob.chickenhurt", 1f, false, 4, true, 120) },
-        { "squid", new MobConfig(10, 0.7f, 2, 0.95f, 0.95f, "/mob/squid.png", null, null, null, 0.4f, false, 4, true, 120) },
+        // AttackStrength is null where it was 2: the squid is no longer an EntityCreature, and the
+        // value was never reachable — it has neither an attack nor targeting to spend it on.
+        { "squid", new MobConfig(10, 0.7f, null, 0.95f, 0.95f, "/mob/squid.png", null, null, null, 0.4f, false, 4, true, 120) },
     };
 
     private static EntityLiving CreateMob(string name, IWorldContext world) => name switch
@@ -66,7 +68,7 @@ public sealed class MobConfigurationTests
         "cow" => (EntityAnimal)EntityRegistry.ByName("cow").Create(world),
         "sheep" => (EntityAnimal)EntityRegistry.ByName("sheep").Create(world),
         "chicken" => (EntityAnimal)EntityRegistry.ByName("chicken").Create(world),
-        "squid" => new EntitySquid(world),
+        "squid" => (EntityLiving)EntityRegistry.ByName("squid").Create(world),
         _ => throw new ArgumentOutOfRangeException(nameof(name), name, "Unknown mob.")
     };
 
@@ -101,8 +103,8 @@ public sealed class MobConfigurationTests
 
         for (int attempt = 0; attempt < 20; attempt++)
         {
-            EntitySlime slime = new(world);
-            int size = slime.SlimeSize;
+            EntityLiving slime = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
+            int size = slime.Synced<byte>("size")!.Value;
 
             Assert.Contains(size, new[] { 1, 2, 4 });
             Assert.Equal(size * size, slime.Health);

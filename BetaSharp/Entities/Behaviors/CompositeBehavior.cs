@@ -1,4 +1,5 @@
 using System.Text.Json;
+using BetaSharp.NBT;
 
 namespace BetaSharp.Entities.Behaviors;
 
@@ -13,11 +14,13 @@ namespace BetaSharp.Entities.Behaviors;
 ///         gives it; where it does work, every child does its share.
 ///     </para>
 /// </summary>
-public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityBehaviorGroup
+public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLifecycle, IEntityPersistence, IEntityBehaviorGroup
 {
     private readonly object[] _children;
     private readonly IEntityTicker[] _tickers;
     private readonly IEntityPhysics[] _physics;
+    private readonly IEntityLifecycle[] _lifecycles;
+    private readonly IEntityPersistence[] _persistence;
 
     public CompositeBehavior(in EntityBehaviorContext context)
     {
@@ -30,6 +33,8 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityBe
         _children = [.. children];
         _tickers = [.. children.OfType<IEntityTicker>()];
         _physics = [.. children.OfType<IEntityPhysics>()];
+        _lifecycles = [.. children.OfType<IEntityLifecycle>()];
+        _persistence = [.. children.OfType<IEntityPersistence>()];
     }
 
     public IEnumerable<object> Children => _children;
@@ -88,6 +93,49 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityBe
     public float? GetBlockPathWeight(EntityLiving self, int x, int y, int z) => First(_physics, p => p.GetBlockPathWeight(self, x, y, z));
 
     public bool? IsClimbing(EntityLiving self) => First(_physics, p => p.IsClimbing(self));
+
+    public bool? IsInWater(Entity self) => First(_physics, p => p.IsInWater(self));
+
+    public void OnCreated(EntityLiving self)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);
+    }
+
+    public void OnMarkDead(EntityLiving self)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnMarkDead(self);
+    }
+
+    public void OnDamaged(EntityLiving self, Entity? attacker, int amount)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnDamaged(self, attacker, amount);
+    }
+
+    public void OnPostSpawn(EntityLiving self)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnPostSpawn(self);
+    }
+
+    /// <summary>A strike is one event: the first child that handles it has handled it.</summary>
+    public bool OnStruckByLightning(EntityLiving self, EntityLightningBolt bolt)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles)
+        {
+            if (lifecycle.OnStruckByLightning(self, bolt)) return true;
+        }
+
+        return false;
+    }
+
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
+    {
+        foreach (IEntityPersistence persistence in _persistence) persistence.OnWriteNbt(self, nbt);
+    }
+
+    public void OnReadNbt(Entity self, NBTTagCompound nbt)
+    {
+        foreach (IEntityPersistence persistence in _persistence) persistence.OnReadNbt(self, nbt);
+    }
 
     /// <summary>The first child with an opinion answers; the rest are not consulted.</summary>
     private static T? First<T>(IEntityPhysics[] children, Func<IEntityPhysics, T?> ask) where T : struct

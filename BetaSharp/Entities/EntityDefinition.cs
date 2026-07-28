@@ -87,6 +87,19 @@ public sealed record EntityDefinition : IDataAsset
     public bool FireImmune { get; init; }
 
     /// <summary>
+    ///     Whether the mob's air supply is untouched by being submerged. True for a squid, which
+    ///     lives there. Configuration rather than a slot: no mob starts or stops being able to.
+    /// </summary>
+    public bool BreathesUnderwater { get; init; }
+
+    /// <summary>
+    ///     Whether the server keeps the client's copy of this mob's velocity up to date. Needed by a
+    ///     mob whose motion is imposed rather than produced by client-side AI — the squid drifts on
+    ///     a velocity the server picks, and would otherwise sit still until its next position update.
+    /// </summary>
+    public bool TracksVelocity { get; init; }
+
+    /// <summary>
     ///     Whether a player's wolves refuse to be set on this mob — true for creepers and ghasts,
     ///     which a wolf pack would only make worse. Declared rather than sniffed from the class.
     /// </summary>

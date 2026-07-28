@@ -82,27 +82,28 @@ public sealed class EntityRegistryDefinitionTests
     /// Equivalence proof for moving spawn category out of the class hierarchy and into JSON: every
     /// mob's declared <see cref="EntityDefinition.SpawnCategory"/> must match the
     /// <see cref="EntityAnimal"/> / <see cref="EntityWaterMob"/> test <c>CreatureKind</c> used to
-    /// perform. The <c>Monster</c> marker interface that named the third case is gone — a monster
-    /// is now whatever is neither of the other two, which is what makes the fallback the assertion
-    /// rather than an escape hatch.
+    /// perform. <see cref="EntityAnimal"/> is the last of the three the hierarchy still names — the
+    /// <c>Monster</c> marker and <c>EntityWaterMob</c> have both been deleted along with the mobs
+    /// that needed them — so it is the last one that can be compared rather than restated. The
+    /// squid is checked by name because nothing but its definition says it lives in water.
     /// </summary>
     [Fact]
-    public void Spawn_category_matches_the_type_hierarchy_it_replaced()
+    public void Spawn_category_matches_what_is_left_of_the_type_hierarchy()
     {
         FakeWorldContext world = new();
+        string[] known = [CreatureKind.MonsterCategory, CreatureKind.CreatureCategory, CreatureKind.WaterCreatureCategory];
 
         foreach (EntityType type in MobTypes)
         {
             Entity entity = type.Create(world);
-            string expected = entity switch
-            {
-                EntityAnimal => CreatureKind.CreatureCategory,
-                EntityWaterMob => CreatureKind.WaterCreatureCategory,
-                _ => CreatureKind.MonsterCategory
-            };
+            string category = type.RequireDefinition().SpawnCategory;
 
-            Assert.Equal(expected, type.RequireDefinition().SpawnCategory);
+            Assert.Contains(category, known);
+            if (entity is EntityAnimal) Assert.Equal(CreatureKind.CreatureCategory, category);
+            else Assert.NotEqual(CreatureKind.CreatureCategory, category);
         }
+
+        Assert.Equal(CreatureKind.WaterCreatureCategory, EntityRegistry.ByName("squid").RequireDefinition().SpawnCategory);
     }
 
     [Fact]
@@ -117,14 +118,17 @@ public sealed class EntityRegistryDefinitionTests
         }
 
         int animals = world.Entities.CountEntitiesOfType(typeof(EntityAnimal));
-        int waterMobs = world.Entities.CountEntitiesOfType(typeof(EntityWaterMob));
-
         Assert.Equal(animals, world.Entities.CountEntitiesInCategory(CreatureKind.CreatureCategory));
-        Assert.Equal(waterMobs, world.Entities.CountEntitiesInCategory(CreatureKind.WaterCreatureCategory));
 
-        // No type left to count monsters by, so they are counted as the remainder — which is
-        // exactly the rule the deleted marker interface encoded.
-        Assert.Equal(MobTypes.Length - animals - waterMobs, world.Entities.CountEntitiesInCategory(CreatureKind.MonsterCategory));
+        // The other two have no class left to count by, so they are counted against what the
+        // definitions declare — which still proves the manager buckets a mob by its own category
+        // rather than by anything it inherits.
+        foreach (string category in new[] { CreatureKind.MonsterCategory, CreatureKind.WaterCreatureCategory })
+        {
+            Assert.Equal(
+                MobTypes.Count(type => type.RequireDefinition().SpawnCategory == category),
+                world.Entities.CountEntitiesInCategory(category));
+        }
     }
 
     [Fact]

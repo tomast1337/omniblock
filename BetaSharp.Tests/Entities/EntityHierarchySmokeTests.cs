@@ -20,9 +20,10 @@ public sealed class EntityHierarchySmokeTests
         Assert.IsAssignableFrom<EntityAnimal>(pig);
         Assert.IsAssignableFrom<EntityCreature>(pig);
 
-        var squid = new EntitySquid(_world);
-        Assert.IsAssignableFrom<EntityWaterMob>(squid);
-        Assert.IsAssignableFrom<EntityCreature>(squid);
+        // Like the ghast: no class, no water-mob base. Its swimming, its spawn rule and its water
+        // test all come from behavior slots.
+        var squid = (EntityLiving)EntityRegistry.ByName("squid").Create(_world);
+        Assert.Equal(typeof(EntityLiving), squid.GetType());
 
         // The ghast has no class and no flying base: it is a bare EntityLiving whose flight,
         // wandering and fireballs all come from its behavior slots.

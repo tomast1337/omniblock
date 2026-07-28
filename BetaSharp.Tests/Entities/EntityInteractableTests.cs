@@ -84,16 +84,17 @@ public sealed class EntityInteractableTests
     public void Only_a_large_slime_hurts_the_player_it_touches()
     {
         FakeWorldContext world = new();
-        EntitySlime slime = new(world);
+        EntityLiving slime = (EntityLiving)EntityRegistry.ByName("slime").Create(world);
         slime.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
+        SizedBodyBehavior body = slime.Behaviors.Find<SizedBodyBehavior>()!;
         TestEntityPlayer player = Player(world);
         int before = player.Health;
 
-        slime.SlimeSize = 1;
+        body.SetSize(slime, 1);
         slime.OnPlayerInteraction(player);
         Assert.Equal(before, player.Health);
 
-        slime.SlimeSize = 4;
+        body.SetSize(slime, 4);
         slime.OnPlayerInteraction(player);
         Assert.True(player.Health < before);
     }

@@ -158,7 +158,7 @@ public abstract class Entity : IEntity
     protected int FireImmunityTicks { get; init; } = 1;
     protected internal int FireTicks { get; set; }
     public static int MaxAir => 300;
-    protected bool InWater { get; private set; }
+    protected internal bool InWater { get; private set; }
     public int Hearts { get; protected set; }
     public int Air { get; protected set; } = 300;
     public string? CloakUrl { get; set; }
@@ -180,7 +180,7 @@ public abstract class Entity : IEntity
 
     public Vec3D Position => new(X, Y, Z);
 
-    public float StandingEyeHeight { get; protected set; }
+    public float StandingEyeHeight { get; protected internal set; }
 
     protected virtual double PassengerRidingHeight => Height * 0.75D;
 
@@ -196,7 +196,11 @@ public abstract class Entity : IEntity
 
     protected bool IsWet => InWater || World.Environment.IsRainingAt(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
 
-    protected internal virtual bool IsInWater => InWater;
+    /// <summary>
+    ///     Whether the entity counts as in water. Readers that must not disturb the entity ask
+    ///     <see cref="InWater" /> directly instead, because the Physics slot's answer can move it.
+    /// </summary>
+    protected internal virtual bool IsInWater => Behaviors.Physics?.IsInWater(this) ?? InWater;
 
     protected internal bool IsTouchingLava => World.Reader.IsMaterialInBox(BoundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
 
@@ -233,7 +237,7 @@ public abstract class Entity : IEntity
 
     public virtual void MarkDead() => Dead = true;
 
-    protected virtual void SetBoundingBoxSpacing(float width, float height)
+    protected internal virtual void SetBoundingBoxSpacing(float width, float height)
     {
         Width = width;
         Height = height;
@@ -1019,8 +1023,11 @@ public abstract class Entity : IEntity
         nbt.SetBoolean("OnGround", OnGround);
 
         SyncedPropertyFactory.Write(DataSynchronizer, SyncedDeclarations, nbt);
-        Persistence?.OnWriteNbt(this, nbt);
+
+        // Last, so composed persistence has the final say over the class's own — the position a
+        // subclass writing after base.WriteNbt used to hold.
         WriteNbt(nbt);
+        Persistence?.OnWriteNbt(this, nbt);
     }
 
     public void Read(NBTTagCompound nbt)
@@ -1064,8 +1071,11 @@ public abstract class Entity : IEntity
         SetRotation(Yaw, Pitch);
 
         SyncedPropertyFactory.Read(DataSynchronizer, SyncedDeclarations, nbt);
-        Persistence?.OnReadNbt(this, nbt);
+
+        // Last for the same reason as writing, and it matters here: restoring a slime's size resets
+        // its health from that size, and must land after the health the class just read back.
         ReadNbt(nbt);
+        Persistence?.OnReadNbt(this, nbt);
     }
 
     private string? GetRegistryEntry() => Type?.Id;

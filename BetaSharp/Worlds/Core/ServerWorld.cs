@@ -50,7 +50,11 @@ public class ServerWorld : World
 
     private bool HandleEntityUpdating(Entity entity)
     {
-        if (!server.spawnAnimals && (entity is EntityAnimal || entity is EntityWaterMob))
+        // Read from the declared spawn category rather than from EntityAnimal / EntityWaterMob: the
+        // squid no longer has a class, and the category is the fact this check was reaching for.
+        if (!server.spawnAnimals
+            && entity is EntityLiving mob
+            && mob.Definition.SpawnCategory is CreatureKind.CreatureCategory or CreatureKind.WaterCreatureCategory)
         {
             entity.MarkDead();
             return false;

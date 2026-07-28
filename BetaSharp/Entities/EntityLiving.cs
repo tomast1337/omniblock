@@ -73,7 +73,7 @@ public class EntityLiving : Entity
     public bool InterpolateOnly { get; set; } = false;
     private float LastSwingAnimationProgress { get; set; }
     protected float SwingAnimationProgress { get; set; }
-    public int Health { get; protected set; } = 10;
+    public int Health { get; protected internal set; } = 10;
     public int LastHealth { get; protected set; }
     private int LivingSoundTime { get; set; }
     public int HurtTime { get; private set; }
@@ -100,10 +100,10 @@ public class EntityLiving : Entity
     private double NewRotationPitch { get; set; }
     protected int DamageForDisplay { get; set; }
     protected int EntityAge { get; set; }
-    protected float SidewaysSpeed { get; set; }
-    protected float ForwardSpeed { get; set; }
+    protected internal float SidewaysSpeed { get; set; }
+    protected internal float ForwardSpeed { get; set; }
     private float RotationSpeed { get; set; }
-    protected bool Jumping { get; set; }
+    protected internal bool Jumping { get; set; }
     private static float DefaultPitch => 0.0F;
     protected internal float MovementSpeed { get; set; } = 0.7F;
     protected int LookTimer { get; set; }
@@ -379,7 +379,7 @@ public class EntityLiving : Entity
         Ticker?.OnTickEnd(this);
     }
 
-    protected override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
+    protected internal override void SetBoundingBoxSpacing(float widthOffset, float heightOffset) => base.SetBoundingBoxSpacing(widthOffset, heightOffset);
 
     public virtual void Heal(int amount)
     {
@@ -687,7 +687,7 @@ public class EntityLiving : Entity
         AttackTime = nbt.GetShort("AttackTime");
     }
 
-    protected virtual bool canBreatheUnderwater() => false;
+    protected virtual bool canBreatheUnderwater() => Definition.BreathesUnderwater;
 
     protected virtual void TickMovement()
     {
@@ -779,7 +779,7 @@ public class EntityLiving : Entity
             TickLiving();
         }
 
-        bool isInWater = base.IsInWater;
+        bool isInWater = InWater;
         bool isTouchingLava = IsTouchingLava;
         if (Jumping)
         {
@@ -897,7 +897,7 @@ public class EntityLiving : Entity
             Pitch = DefaultPitch;
         }
 
-        bool isInWater = base.IsInWater;
+        bool isInWater = InWater;
         bool isTouchingLava = IsTouchingLava;
         if (isInWater || isTouchingLava)
         {
@@ -907,7 +907,7 @@ public class EntityLiving : Entity
 
     protected virtual int getMaxFallDistance() => 40;
 
-    protected void faceEntity(Entity entity, float yawSpeed, float pitchSpeed)
+    protected internal void faceEntity(Entity entity, float yawSpeed, float pitchSpeed)
     {
         double dx = entity.X - X;
         double dz = entity.Z - Z;

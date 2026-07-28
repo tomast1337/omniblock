@@ -15,7 +15,7 @@ internal static class LootJson
         ["killed_by"] = json => new KilledByCondition(json.GetProperty("entity").GetString()!),
         ["on_fire"] = json => new OnFireCondition(!json.TryGetProperty("expected", out JsonElement e) || e.GetBoolean()),
         ["sheep_not_sheared"] = _ => new SheepNotShearedCondition(),
-        ["slime_size"] = json => new SlimeSizeCondition(json.GetProperty("size").GetInt32())
+        ["size"] = json => new SizeCondition(json.GetProperty("size").GetInt32())
     };
 
     public static LootTable ParseTable(JsonElement json)

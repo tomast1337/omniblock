@@ -46,4 +46,12 @@ public interface IEntityPhysics
     ///     check. A spider climbs whatever it is pressed against.
     /// </summary>
     bool? IsClimbing(EntityLiving self) => null;
+
+    /// <summary>
+    ///     Replaces the test for whether the entity is in water, or <c>null</c> to keep the plain
+    ///     flag. A squid tests a box reaching below itself and is carried by the current while it
+    ///     looks — the answer and the push are the same operation, which is why this is a hook and
+    ///     not a field.
+    /// </summary>
+    bool? IsInWater(Entity self) => null;
 }

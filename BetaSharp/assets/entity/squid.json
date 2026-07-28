@@ -8,7 +8,27 @@
   "DeathSound": null,
   "SoundVolume": 0.4,
   "TalkInterval": 120,
+  "BreathesUnderwater": true,
+  "TracksVelocity": true,
   "Behaviors": [
+    {
+      "Slots": [
+        "Physics",
+        "Ticker"
+      ],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "jet_swim",
+          "jet_strength": 0.2,
+          "reroll_chance_one_in": 50,
+          "water_probe_depth": 0.6
+        },
+        {
+          "Type": "spawn_in_fluid"
+        }
+      ]
+    },
     {
       "Slots": [
         "Loot"
@@ -26,5 +46,10 @@
         }
       ]
     }
-  ]
+  ],
+  "Renderer": {
+    "Type": "swimming",
+    "Model": "squid",
+    "Shadow": 0.7
+  }
 }

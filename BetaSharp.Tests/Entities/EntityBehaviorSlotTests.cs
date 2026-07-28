@@ -176,12 +176,13 @@ public sealed class EntityBehaviorSlotTests
     public void Slime_loot_drops_slimeballs_only_at_the_smallest_size()
     {
         FakeWorldContext world = new();
-        EntitySlime slime = Spawn(world, new EntitySlime(world), 8.5, 65.0, 8.5);
+        EntityLiving slime = Spawn(world, (EntityLiving)EntityRegistry.ByName("slime").Create(world), 8.5, 65.0, 8.5);
+        SizedBodyBehavior body = slime.Behaviors.Find<SizedBodyBehavior>()!;
 
-        slime.SlimeSize = 2;
+        body.SetSize(slime, 2);
         Assert.Empty(CollectDrops(world, slime, killer: null, rolls: 60));
 
-        slime.SlimeSize = 1;
+        body.SetSize(slime, 1);
         List<int> drops = CollectDrops(world, slime, killer: null, rolls: 60);
         Assert.NotEmpty(drops);
         Assert.All(drops, id => Assert.Equal(Item.ByName("slimeball").Id, id));
@@ -191,7 +192,7 @@ public sealed class EntityBehaviorSlotTests
     public void Squid_loot_always_drops_at_least_one_ink_sac()
     {
         FakeWorldContext world = new();
-        EntitySquid squid = Spawn(world, new EntitySquid(world), 8.5, 65.0, 8.5);
+        EntityLiving squid = Spawn(world, (EntityLiving)EntityRegistry.ByName("squid").Create(world), 8.5, 65.0, 8.5);
 
         for (int roll = 0; roll < 20; roll++)
         {
@@ -210,28 +211,29 @@ public sealed class EntityBehaviorSlotTests
     public void Slime_split_spawns_half_sized_children_on_death()
     {
         FakeWorldContext world = new();
-        TestSlime slime = Spawn(world, new TestSlime(world), 8.5, 65.0, 8.5);
-        slime.SlimeSize = 4;
-        slime.Kill();
+        EntityLiving slime = Spawn(world, (EntityLiving)EntityRegistry.ByName("slime").Create(world), 8.5, 65.0, 8.5);
+        SizedBodyBehavior body = slime.Behaviors.Find<SizedBodyBehavior>()!;
+        body.SetSize(slime, 4);
+        slime.Health = 0;
 
         slime.MarkDead();
 
-        List<EntitySlime> children = world.Entities.Entities.OfType<EntitySlime>().Where(s => !ReferenceEquals(s, slime)).ToList();
+        List<EntityLiving> children = Slimes(world).Where(s => !ReferenceEquals(s, slime)).ToList();
         Assert.Equal(4, children.Count);
-        Assert.All(children, child => Assert.Equal(2, child.SlimeSize));
+        Assert.All(children, child => Assert.Equal(2, body.Size(child)));
     }
 
     [Fact]
     public void Slime_split_does_not_fire_for_the_smallest_size()
     {
         FakeWorldContext world = new();
-        TestSlime slime = Spawn(world, new TestSlime(world), 8.5, 65.0, 8.5);
-        slime.SlimeSize = 1;
-        slime.Kill();
+        EntityLiving slime = Spawn(world, (EntityLiving)EntityRegistry.ByName("slime").Create(world), 8.5, 65.0, 8.5);
+        slime.Behaviors.Find<SizedBodyBehavior>()!.SetSize(slime, 1);
+        slime.Health = 0;
 
         slime.MarkDead();
 
-        Assert.DoesNotContain(world.Entities.Entities.OfType<EntitySlime>(), s => !ReferenceEquals(s, slime));
+        Assert.DoesNotContain(Slimes(world), s => !ReferenceEquals(s, slime));
     }
 
     [Fact]
@@ -300,8 +302,7 @@ public sealed class EntityBehaviorSlotTests
         public void Ignite() => FireTicks = 100;
     }
 
-    private sealed class TestSlime(IWorldContext world) : EntitySlime(world)
-    {
-        public void Kill() => Health = 0;
-    }
+    /// <summary>Slimes have no class of their own any more, so they are found by registered type.</summary>
+    private static IEnumerable<EntityLiving> Slimes(FakeWorldContext world) =>
+        world.Entities.Entities.OfType<EntityLiving>().Where(e => EntityRegistry.GetId(e) == "slime");
 }

@@ -71,7 +71,7 @@ public sealed class EntityBehaviorJsonTests
     [InlineData("""{"type":"killed_by","entity":"skeleton"}""", typeof(KilledByCondition))]
     [InlineData("""{"type":"on_fire"}""", typeof(OnFireCondition))]
     [InlineData("""{"type":"sheep_not_sheared"}""", typeof(SheepNotShearedCondition))]
-    [InlineData("""{"type":"slime_size","size":1}""", typeof(SlimeSizeCondition))]
+    [InlineData("""{"type":"size","size":1}""", typeof(SizeCondition))]
     public void Every_named_condition_parses(string json, Type expected)
     {
         Assert.IsType(expected, LootJson.ParseCondition(Json(json)));
@@ -150,7 +150,7 @@ public sealed class EntityBehaviorJsonTests
         Assert.IsType<DarknessOnlyTargetBehavior>(spider.Targeting);
 
         Assert.IsType<RangedAttackBehavior>(EntityRegistry.ByName("skeleton").Behaviors.Attack);
-        Assert.IsType<SlimeSplitBehavior>(new EntitySlime(world).Lifecycle);
+        Assert.NotNull(EntityRegistry.ByName("slime").Behaviors.Find<SplitOnDeathBehavior>());
         Assert.IsType<LightningConversionBehavior>(EntityRegistry.ByName("pig").Behaviors.Lifecycle);
 
         // Animals declare no Attack/Targeting, and a wolf declares no Loot at all.
@@ -172,7 +172,7 @@ public sealed class EntityBehaviorJsonTests
 
         // Validated at load from the registered base type, not per spawn.
         ArgumentException error = Assert.Throws<ArgumentException>(
-            () => EntityFactory.BuildBehaviors(definition, typeof(EntitySlime)));
+            () => EntityFactory.BuildBehaviors(definition, typeof(EntityLiving)));
         Assert.Contains("EntityCreature", error.Message);
     }
 }

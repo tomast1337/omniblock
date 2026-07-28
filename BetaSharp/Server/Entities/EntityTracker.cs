@@ -67,15 +67,13 @@ public class EntityTracker
         {
             startTracking(entity, 160, 5, true);
         }
-        else if (entity is EntitySquid)
-        {
-            startTracking(entity, 160, 3, true);
-        }
         // Every mob but the player, which was matched above. This was a marker interface each mob
         // class had to remember to implement; being an EntityLiving is the same fact, already true.
-        else if (entity is EntityLiving and not EntityPlayer)
+        // Whether velocity is sent used to be a class check for the squid, and is now its own
+        // declaration — a mob whose motion the server imposes says so in its definition.
+        else if (entity is EntityLiving mob and not EntityPlayer)
         {
-            startTracking(entity, 160, 3);
+            startTracking(entity, 160, 3, mob.Definition.TracksVelocity);
         }
         else if (entity is EntityTntPrimed)
         {
