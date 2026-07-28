@@ -97,12 +97,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public int TranslucentMeshes { get; private set; }
 
     private int _textureSamplerLoc;
-    private int _fogModeLoc;
-    private int _fogDensityLoc;
-    private int _fogStartLoc;
-    private int _fogEndLoc;
-    private int _fogColorLoc;
-    private int _timeLoc;
     private int _chunkFadeEnabledLoc;
     private int _projectionMatrixLoc;
 
@@ -112,31 +106,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _meshGenerator = new();
         _world = world;
 
-        BuildChunkShader();
-        _options.ShaderOptions.GetOrCreate("chunkVert").Changed += BuildChunkShader;
-        _options.ShaderOptions.GetOrCreate("chunkFrag").Changed += BuildChunkShader;
+        _chunkShader = new Shader(_options.ShaderOptions.GetOrCreate("chunk"), "shaders/chunk.vert", "shaders/chunk.frag");
+        _chunkShader.Changed += BuildChunkShader;
 
         GLManager.GL.UseProgram(0);
     }
 
-    private void BuildChunkShader()
+    private void BuildChunkShader(Shader _)
     {
-        _chunkShader?.Dispose();
-
-        string vert = AssetManager.Instance.getAsset("shaders/chunk.vert").GetTextContent();
-        string frag = AssetManager.Instance.getAsset("shaders/chunk.frag").GetTextContent();
-        ShaderOptionSet vertOpts = _options.ShaderOptions.GetOrCreate("chunkVert");
-        ShaderOptionSet fragOpts = _options.ShaderOptions.GetOrCreate("chunkFrag");
-        vertOpts.Parse(vert);
-        fragOpts.Parse(frag);
-        _chunkShader = new Shader(vertOpts.Inject(vert), fragOpts.Inject(frag));
         _textureSamplerLoc = _chunkShader.GetUniformLocation("textureSampler");
-        _fogModeLoc = _chunkShader.GetUniformLocation("fogMode");
-        _fogDensityLoc = _chunkShader.GetUniformLocation("fogDensity");
-        _fogStartLoc = _chunkShader.GetUniformLocation("fogStart");
-        _fogEndLoc = _chunkShader.GetUniformLocation("fogEnd");
-        _fogColorLoc = _chunkShader.GetUniformLocation("fogColor");
-        _timeLoc = _chunkShader.GetUniformLocation("time");
         _chunkFadeEnabledLoc = _chunkShader.GetUniformLocation("chunkFadeEnabled");
         _projectionMatrixLoc = _chunkShader.GetUniformLocation("projectionMatrix");
     }
@@ -147,15 +125,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _lastViewPos = renderParams.ViewPos;
 
         _chunkShader.Bind();
+        _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         GLManager.GL.Uniform1(_textureSamplerLoc, 0);
-        GLManager.GL.Uniform1(_fogModeLoc, _fogMode);
-        GLManager.GL.Uniform1(_fogDensityLoc, _fogDensity);
-        GLManager.GL.Uniform1(_fogStartLoc, _fogStart);
-        GLManager.GL.Uniform1(_fogEndLoc, _fogEnd);
-        GLManager.GL.Uniform4(_fogColorLoc, _fogColor.X, _fogColor.Y, _fogColor.Z, _fogColor.W);
-
-        int wrappedTicks = (int)(renderParams.Ticks % 24000);
-        GLManager.GL.Uniform1(_timeLoc, (wrappedTicks + renderParams.PartialTicks) / 20.0f);
         GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
 
         var modelView = new Matrix4X4<float>();
@@ -327,7 +298,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public void RenderTransparent(ChunkRenderParams renderParams)
     {
         _chunkShader.Bind();
-        _chunkShader.SetUniform1("textureSampler", 0);
+        _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        GLManager.GL.Uniform1(_textureSamplerLoc, 0);
 
         _chunkShader.SetUniformMatrix4("projectionMatrix", _projection);
 
@@ -736,8 +708,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             state.Renderer.Dispose();
         }
 
-        _options.ShaderOptions.GetOrCreate("chunkVert").Changed -= BuildChunkShader;
-        _options.ShaderOptions.GetOrCreate("chunkFrag").Changed -= BuildChunkShader;
         _chunkShader.Dispose();
 
         _renderers.Clear();

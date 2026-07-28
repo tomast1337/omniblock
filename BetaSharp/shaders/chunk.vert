@@ -12,7 +12,7 @@ out float fogDistance;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec2 chunkPos;
-uniform float time;
+uniform vec3 time;
 
 const float WavyLeavesStrength = 1.0; // [0.0 - 4.0]
 const float WavyLeavesSpeed = 1.0; // [0.1 - 2.0]
@@ -58,7 +58,7 @@ const vec2 WindDir = vec2(-0.8, 0.6); // unit vector, 0.8^2 + 0.6^2 = 1.0
 
 vec2 calcWave(in vec3 pos)
 {
-    float t = 0.2 * WavyPlantSpeed * time;
+    float t = 0.2 * WavyPlantSpeed * time.z;
 
     // Traveling phase along the wind direction so distant plants peak later than near ones.
     float phase = dot(pos.xz, WindDir) * 0.15 - t * 7.5;
@@ -77,7 +77,7 @@ vec2 calcDynamicWind(in vec3 pos)
     const float f1 = 0.02;
     const float f2 = 0.05;
 
-    float t = time * WavyPlantSpeed;
+    float t = time.z * WavyPlantSpeed;
 
     float angleOffset = sin(pos.x * f1 - t * 0.5) * cos(pos.z * f1 + t * 0.3)
                       + sin(pos.x * f2 + t * 1.2) * cos(pos.z * f2 - t * 0.8);
@@ -107,8 +107,8 @@ vec3 calcMovePlants(in vec3 pos)
 
 vec3 calcWaveLeaves(in vec3 pos)
 {
-    float pi2wt = 2.0 * 3.14159265 * WavyLeavesSpeed * time;
-    float magnitude = abs(sin(dot(vec4(WavyLeavesSpeed * time, pos), vec4(1.0, 0.005, 0.005, 0.005))) * 0.5 + 0.72) * 0.013;
+    float pi2wt = 2.0 * 3.14159265 * WavyLeavesSpeed * time.z;
+    float magnitude = abs(sin(dot(vec4(WavyLeavesSpeed * time.z, pos), vec4(1.0, 0.005, 0.005, 0.005))) * 0.5 + 0.72) * 0.013;
     vec3 ret = sin(pi2wt * vec3(0.0063, 0.0224, 0.0015) * 1.5 - pos) * magnitude;
     return ret;
 }

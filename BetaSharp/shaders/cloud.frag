@@ -6,8 +6,7 @@ in vec3 v_LocalPos;
 out vec4 FragColor;
 
 uniform sampler2D u_Texture;
-uniform float u_FogStart;
-uniform float u_FogEnd;
+uniform vec3 fog;
 uniform vec3 u_CloudOffset;
 uniform float u_CloudScale;
 
@@ -43,7 +42,7 @@ void main()
     vec3 normal = v_LocalPos + u_CloudOffset;
 
     float dist = length(normal.xz) * u_CloudScale;
-    float fogFactor = clamp((u_FogEnd - dist) / (u_FogEnd - u_FogStart), 0.0, 1.0);
+    float fogFactor = clamp((fog.y - dist) / (fog.y - fog.x), 0.0, 1.0);
 
     vec4 color = v_Color;
     float len;
