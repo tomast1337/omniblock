@@ -19,7 +19,7 @@ internal static class NaturalSpawner
 
     private static readonly Func<IWorldContext, EntityLiving>[] Monsters =
     [
-        w => new EntitySpider(w),
+        w => (EntityLiving)EntityRegistry.ByName("spider").Create(w),
         w => (EntityLiving)EntityRegistry.ByName("zombie").Create(w),
         w => (EntityLiving)EntityRegistry.ByName("skeleton").Create(w),
     ];

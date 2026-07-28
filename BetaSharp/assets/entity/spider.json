@@ -12,11 +12,30 @@
   "Behaviors": [
     {
       "Slots": [
+        "Physics"
+      ],
+      "Type": "wall_climb"
+    },
+    {
+      "Slots": [
+        "Lifecycle"
+      ],
+      "Type": "spawn_rider",
+      "rider": "skeleton",
+      "chance_one_in": 100
+    },
+    {
+      "Slots": [
         "Attack"
       ],
-      "Type": "jump",
-      "fallback": {
-        "Type": "melee"
+      "Type": "lose_target_in_daylight",
+      "brightness_threshold": 0.5,
+      "chance_one_in": 100,
+      "inner": {
+        "Type": "jump",
+        "fallback": {
+          "Type": "melee"
+        }
       }
     },
     {
@@ -42,5 +61,15 @@
         }
       ]
     }
-  ]
+  ],
+  "PassengerRideOffset": -0.5,
+  "MakesStepSounds": false,
+  "Renderer": {
+    "Type": "glowing_eyes",
+    "Model": "spider",
+    "Shadow": 1.0,
+    "OverlayModel": "spider",
+    "OverlayTexture": "/mob/spider_eyes.png",
+    "DeathRotation": 180.0
+  }
 }

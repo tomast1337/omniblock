@@ -125,7 +125,7 @@ public abstract class Entity : IEntity
     /// <summary>
     ///     If a collision occured in the X or Z directions.
     /// </summary>
-    protected bool HorizontalCollision { get; private set; }
+    protected internal bool HorizontalCollision { get; private set; }
 
     /// <summary>
     ///     If a collision occured in the Y direction.

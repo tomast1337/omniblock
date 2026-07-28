@@ -33,4 +33,10 @@ public interface IEntityPhysics
     ///     rule. A giant inverts the usual monster preference and seeks out the light.
     /// </summary>
     float? GetBlockPathWeight(EntityLiving self, int x, int y, int z) => null;
+
+    /// <summary>
+    ///     Replaces the test for whether the mob is climbing, or <c>null</c> to keep the ladder
+    ///     check. A spider climbs whatever it is pressed against.
+    /// </summary>
+    bool? IsClimbing(EntityLiving self) => null;
 }

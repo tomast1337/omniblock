@@ -41,7 +41,7 @@ public sealed class EntityBehaviorJsonTests
 
         // The nested melee is what a spider falls back to outside its lunge band.
         FakeWorldContext world = new();
-        EntitySpider spider = new(world);
+        EntityMonster spider = (EntityMonster)EntityRegistry.ByName("spider").Create(world);
         EntityAnimal target = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         target.SetPositionAndAngles(9.0, 65.0, 8.5, 0f, 0f);
@@ -144,8 +144,9 @@ public sealed class EntityBehaviorJsonTests
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
         Assert.IsType<LootTableBehavior>(zombie.Loot);
 
-        EntitySpider spider = new(world);
-        Assert.IsType<JumpAttackBehavior>(spider.Attack);
+        EntityMonster spider = (EntityMonster)EntityRegistry.ByName("spider").Create(world);
+        // The jump attack is wrapped: a spider in daylight loses interest before it attacks.
+        Assert.IsType<JumpAttackBehavior>(Assert.IsType<LoseTargetInDaylightBehavior>(spider.Attack).Inner);
         Assert.IsType<DarknessOnlyTargetBehavior>(spider.Targeting);
 
         Assert.IsType<RangedAttackBehavior>(EntityRegistry.ByName("skeleton").Behaviors.Attack);

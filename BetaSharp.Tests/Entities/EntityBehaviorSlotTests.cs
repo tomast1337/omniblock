@@ -57,9 +57,10 @@ public sealed class EntityBehaviorSlotTests
     public void Spider_composes_jump_attack_and_darkness_only_targeting()
     {
         FakeWorldContext world = new();
-        EntitySpider spider = new(world);
+        EntityMonster spider = (EntityMonster)EntityRegistry.ByName("spider").Create(world);
 
-        Assert.IsType<JumpAttackBehavior>(spider.Attack);
+        // The jump attack is wrapped: a spider in daylight loses interest before it attacks.
+        Assert.IsType<JumpAttackBehavior>(Assert.IsType<LoseTargetInDaylightBehavior>(spider.Attack).Inner);
         Assert.IsType<DarknessOnlyTargetBehavior>(spider.Targeting);
     }
 
@@ -79,7 +80,7 @@ public sealed class EntityBehaviorSlotTests
     public void Darkness_only_targeting_acquires_player_while_unlit()
     {
         FakeWorldContext world = new();
-        EntitySpider spider = Spawn(world, new EntitySpider(world), 8.5, 65.0, 8.5);
+        EntityMonster spider = Spawn(world, (EntityMonster)EntityRegistry.ByName("spider").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 9.5, 65.0, 8.5);
 
         // The fake world is unlit, so the brightness gate opens. Its daylight rejection branch needs

@@ -25,6 +25,11 @@ internal static class EntityBehaviorRegistry
                 ? (IEntityAttackBehavior)Build(c with { Json = fallback })
                 : null),
 
+        ["lose_target_in_daylight"] = (in EntityBehaviorContext c) => new LoseTargetInDaylightBehavior(
+            (IEntityAttackBehavior)Build(c with { Json = c.Json.GetProperty("inner") }),
+            c.Float("brightness_threshold", 0.5F),
+            c.Int("chance_one_in", 100)),
+
         // Targeting
         ["always_hunt"] = (in EntityBehaviorContext c) => new AlwaysHuntTargetBehavior(c.Double("radius", 16.0D)),
         ["darkness_only"] = (in EntityBehaviorContext c) => new DarknessOnlyTargetBehavior(c.Double("radius", 16.0D)),
@@ -50,6 +55,7 @@ internal static class EntityBehaviorRegistry
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),
         ["light_seeking_path"] = (in EntityBehaviorContext c) => new LightSeekingPathBehavior(),
+        ["wall_climb"] = (in EntityBehaviorContext c) => new WallClimbBehavior(),
         ["spawn_ignoring_light"] = (in EntityBehaviorContext c) => new SpawnIgnoringLightBehavior(
             !c.Json.TryGetProperty("requires_difficulty", out JsonElement d) || d.GetBoolean()),
 
@@ -65,6 +71,9 @@ internal static class EntityBehaviorRegistry
 
         // Lifecycle
         ["slime_split"] = (in EntityBehaviorContext c) => new SlimeSplitBehavior(c.Int("child_count", 4)),
+        ["spawn_rider"] = (in EntityBehaviorContext c) => new SpawnRiderBehavior(
+            c.Json.GetProperty("rider").GetString()!,
+            c.Int("chance_one_in", 100)),
         ["lightning_conversion"] = (in EntityBehaviorContext c) => new LightningConversionBehavior(c.Json.GetProperty("becomes").GetString()!)
     };
 

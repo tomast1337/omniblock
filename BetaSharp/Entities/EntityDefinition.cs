@@ -55,6 +55,18 @@ public sealed record EntityDefinition : IDataAsset
     /// </summary>
     public float Scale { get; init; } = 1.0F;
 
+    /// <summary>
+    ///     Vertical offset applied to where a passenger sits, on top of the default three-quarter
+    ///     height. A spider carries its skeleton rider lower than its back.
+    /// </summary>
+    public double PassengerRideOffset { get; init; }
+
+    /// <summary>
+    ///     Whether moving accumulates walk distance and plays footstep sounds. False for mobs that
+    ///     move without treading — a spider makes no sound as it walks.
+    /// </summary>
+    public bool MakesStepSounds { get; init; } = true;
+
     public string Texture { get; init; } = "/mob/char.png";
 
     /// <summary>

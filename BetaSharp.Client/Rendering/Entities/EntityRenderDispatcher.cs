@@ -35,7 +35,6 @@ public class EntityRenderDispatcher
 
     private EntityRenderDispatcher()
     {
-        RegisterRenderer(typeof(EntitySpider), new SpiderEntityRenderer());
         RegisterRenderer(typeof(EntityWolf), new WolfEntityRenderer(new ModelWolf(), 0.5F));
         RegisterRenderer(typeof(EntitySlime), new SlimeEntityRenderer(new ModelSlime(), new ModelSlimeCube(), 0.25F));
         RegisterRenderer(typeof(EntityPlayer), new PlayerEntityRenderer());

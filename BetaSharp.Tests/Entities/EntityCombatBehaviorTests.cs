@@ -124,7 +124,7 @@ public sealed class EntityCombatBehaviorTests
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);
     }
 
-    private sealed class TestSpider(IWorldContext world) : EntitySpider(world)
+    private sealed class TestSpider(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("spider"))
     {
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);
     }

@@ -125,12 +125,18 @@ public abstract class EntityLiving : Entity
     {
         get
         {
+            if (Physics?.IsClimbing(this) is { } climbing) return climbing;
+
             int x = MathHelper.Floor(X);
             int y = MathHelper.Floor(BoundingBox.MinY);
             int z = MathHelper.Floor(Z);
             return World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("ladder").id;
         }
     }
+
+    protected override double PassengerRidingHeight => base.PassengerRidingHeight + Definition.PassengerRideOffset;
+
+    protected override bool BypassesSteppingEffects() => Definition.MakesStepSounds;
 
     protected bool HasCurrentTarget => CurrentTarget != null;
 

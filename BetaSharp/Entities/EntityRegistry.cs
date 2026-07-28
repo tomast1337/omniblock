@@ -28,7 +28,7 @@ public static class EntityRegistry
         Register((world, _) => new EntityPainting(world), "Painting", 9);
         RegisterMob((world, type) => new EntityMonster(world, type), "Creeper");
         RegisterMob((world, type) => new EntityMonster(world, type), "Skeleton");
-        RegisterMob((world, _) => new EntitySpider(world), "Spider");
+        RegisterMob((world, type) => new EntityMonster(world, type), "Spider");
         RegisterMob((world, type) => new EntityMonster(world, type), "Giant");
         RegisterMob((world, type) => new EntityMonster(world, type), "Zombie");
         RegisterMob((world, _) => new EntitySlime(world), "Slime");
