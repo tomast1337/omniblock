@@ -1,8 +1,8 @@
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Climbs whatever it is pressed against, rather than needing a ladder — a spider walking up a
-///     wall is just a mob that treats any horizontal collision as something to climb.
+///     Treats any horizontal collision as something to climb, so the mob needs no ladder. Used by
+///     the spider.
 /// </summary>
 public sealed class WallClimbBehavior : IEntityPhysics
 {

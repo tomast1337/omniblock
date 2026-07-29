@@ -2,7 +2,6 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.NBT;
-using BetaSharp.Registries;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -11,9 +10,9 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     A fishing bobber: cast from a rod, it flies, floats, bobs under when something bites, and
-///     hooks whatever it strikes on the way. It is the only projectile tied to the player who threw
-///     it for its whole life — the rod reels it back in with <see cref="Reel" />, and it removes
-///     itself the moment the angler stops holding a rod, dies, or walks too far away.
+///     hooks whatever it strikes on the way. Unlike other projectiles it stays tied to the player who
+///     cast it: the rod reels it back with <see cref="Reel" />, and it removes itself as soon as the
+///     angler stops holding a rod, dies, or walks too far away.
 /// </summary>
 public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, IEntityPhysics
 {
@@ -21,35 +20,35 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     private const double PullStrength = 0.1D;
 
     private readonly StateHandle<EntityPlayer> _angler;
+    private readonly int _biteDelay;
+    private readonly int _biteDelayWhenRaining;
+
+    private readonly Item _catch;
 
     /// <summary>What the bobber hooked, which it then rides until that entity dies.</summary>
     private readonly StateHandle<Entity> _hooked;
 
     private readonly StateHandle<bool> _inGround;
     private readonly StateHandle<int> _inTile;
+    private readonly double _maxAnglerDistanceSquared;
+    private readonly Item _rod;
     private readonly StateHandle<int> _shake;
-    private readonly StateHandle<int> _ticksInAir;
-    private readonly StateHandle<int> _ticksInGround;
-    private readonly StateHandle<int> _ticksCatchable;
-    private readonly StateHandle<int> _tileX;
-    private readonly StateHandle<int> _tileY;
-    private readonly StateHandle<int> _tileZ;
-
-    private readonly StateHandle<int> _syncTicks;
-    private readonly StateHandle<double> _targetX;
-    private readonly StateHandle<double> _targetY;
-    private readonly StateHandle<double> _targetZ;
-    private readonly StateHandle<double> _targetYaw;
-    private readonly StateHandle<double> _targetPitch;
     private readonly StateHandle<double> _syncedVelocityX;
     private readonly StateHandle<double> _syncedVelocityY;
     private readonly StateHandle<double> _syncedVelocityZ;
 
-    private readonly Item _catch;
-    private readonly Item _rod;
-    private readonly int _biteDelay;
-    private readonly int _biteDelayWhenRaining;
-    private readonly double _maxAnglerDistanceSquared;
+    private readonly StateHandle<int> _syncTicks;
+    private readonly StateHandle<double> _targetPitch;
+    private readonly StateHandle<double> _targetX;
+    private readonly StateHandle<double> _targetY;
+    private readonly StateHandle<double> _targetYaw;
+    private readonly StateHandle<double> _targetZ;
+    private readonly StateHandle<int> _ticksCatchable;
+    private readonly StateHandle<int> _ticksInAir;
+    private readonly StateHandle<int> _ticksInGround;
+    private readonly StateHandle<int> _tileX;
+    private readonly StateHandle<int> _tileY;
+    private readonly StateHandle<int> _tileZ;
 
     public FishingBobberBehavior(EntityStateLayout layout, Item rod, Item catches, int biteDelay, int biteDelayWhenRaining, double maxAnglerDistance)
     {
@@ -82,57 +81,27 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         _syncedVelocityZ = layout.DeclareDouble();
     }
 
-    /// <summary>
-    ///     Casts a bobber from the angler's hands and hangs it off them — a player has at most one,
-    ///     which is what the rod checks to decide between casting and reeling.
-    /// </summary>
-    public static Entity Cast(IWorldContext world, EntityPlayer angler)
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
     {
-        Entity bobber = EntityRegistry.ByName("fishhook").Create(world);
-        FishingBobberBehavior hook = bobber.Behaviors.Find<FishingBobberBehavior>()!;
-        bobber.State.SetRef(hook._angler, angler);
-        angler.FishHook = bobber;
-        bobber.SetPositionAndAnglesKeepPrevAngles(angler.X, angler.Y + 1.62D - angler.StandingEyeHeight, angler.Z, angler.Yaw, angler.Pitch);
-        bobber.X -= MathHelper.Cos(bobber.Yaw / 180.0F * (float)Math.PI) * 0.16F;
-        bobber.Y -= 0.1F;
-        bobber.Z -= MathHelper.Sin(bobber.Yaw / 180.0F * (float)Math.PI) * 0.16F;
-        bobber.SetPosition(bobber.X, bobber.Y, bobber.Z);
-        const float speed = 0.4F;
-        bobber.VelocityX = -MathHelper.Sin(bobber.Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(bobber.Pitch / 180.0F * (float)Math.PI) * speed;
-        bobber.VelocityZ = MathHelper.Cos(bobber.Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(bobber.Pitch / 180.0F * (float)Math.PI) * speed;
-        bobber.VelocityY = -MathHelper.Sin(bobber.Pitch / 180.0F * (float)Math.PI) * speed;
-        hook.SetHeading(bobber, bobber.VelocityX, bobber.VelocityY, bobber.VelocityZ, 1.5F, 1.0F);
-        return bobber;
+        nbt.SetShort("xTile", (short)self.State[_tileX]);
+        nbt.SetShort("yTile", (short)self.State[_tileY]);
+        nbt.SetShort("zTile", (short)self.State[_tileZ]);
+        nbt.SetByte("inTile", (sbyte)self.State[_inTile]);
+        nbt.SetByte("shake", (sbyte)self.State[_shake]);
+        nbt.SetByte("inGround", (sbyte)(self.State[_inGround] ? 1 : 0));
     }
 
-    /// <summary>Whose line this is, for the renderer that draws it back to their hands.</summary>
-    public EntityPlayer? Angler(Entity self) => self.State.GetRef(_angler);
-
-    /// <summary>What the bobber struck and is now riding, or null while it is still in flight.</summary>
-    public Entity? Hooked(Entity self) => self.State.GetRef(_hooked);
-
-    private void SetHeading(Entity self, double dirX, double dirY, double dirZ, float speed, float spread)
+    public void OnReadNbt(Entity self, NBTTagCompound nbt)
     {
-        float length = MathHelper.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
-        dirX /= length;
-        dirY /= length;
-        dirZ /= length;
-        dirX += self.Random.NextGaussian() * 0.0075F * spread;
-        dirY += self.Random.NextGaussian() * 0.0075F * spread;
-        dirZ += self.Random.NextGaussian() * 0.0075F * spread;
-        dirX *= speed;
-        dirY *= speed;
-        dirZ *= speed;
-        self.VelocityX = dirX;
-        self.VelocityY = dirY;
-        self.VelocityZ = dirZ;
-        float horizontalLength = MathHelper.Sqrt(dirX * dirX + dirZ * dirZ);
-        self.PrevYaw = self.Yaw = (float)(Math.Atan2(dirX, dirZ) * 180.0D / (float)Math.PI);
-        self.PrevPitch = self.Pitch = (float)(Math.Atan2(dirY, horizontalLength) * 180.0D / (float)Math.PI);
-        self.State[_ticksInGround] = 0;
+        self.State[_tileX] = nbt.GetShort("xTile");
+        self.State[_tileY] = nbt.GetShort("yTile");
+        self.State[_tileZ] = nbt.GetShort("zTile");
+        self.State[_inTile] = nbt.GetByte("inTile") & 255;
+        self.State[_shake] = nbt.GetByte("shake") & 255;
+        self.State[_inGround] = nbt.GetByte("inGround") == 1;
     }
 
-    /// <summary>A synced position becomes a target eased towards over the given ticks, not a snap.</summary>
+    /// <summary>A synced position becomes a target eased towards over the given ticks.</summary>
     public bool OnPositionSync(Entity self, double x, double y, double z, float yaw, float pitch, int steps)
     {
         self.State[_targetX] = x;
@@ -222,10 +191,63 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         }
 
         HookWhateverIsInTheWay(self);
-        if (self.State[_inGround]) return true;
+        if (self.State[_inGround])
+        {
+            return true;
+        }
 
         Drift(self);
         return true;
+    }
+
+    /// <summary>
+    ///     Casts a bobber from the angler's hands and hangs it off them. A player has at most one,
+    ///     which is what the rod checks to decide between casting and reeling.
+    /// </summary>
+    public static Entity Cast(IWorldContext world, EntityPlayer angler)
+    {
+        Entity bobber = EntityRegistry.ByName("fishhook").Create(world);
+        FishingBobberBehavior hook = bobber.Behaviors.Find<FishingBobberBehavior>()!;
+        bobber.State.SetRef(hook._angler, angler);
+        angler.FishHook = bobber;
+        bobber.SetPositionAndAnglesKeepPrevAngles(angler.X, angler.Y + 1.62D - angler.StandingEyeHeight, angler.Z, angler.Yaw, angler.Pitch);
+        bobber.X -= MathHelper.Cos(bobber.Yaw / 180.0F * (float)Math.PI) * 0.16F;
+        bobber.Y -= 0.1F;
+        bobber.Z -= MathHelper.Sin(bobber.Yaw / 180.0F * (float)Math.PI) * 0.16F;
+        bobber.SetPosition(bobber.X, bobber.Y, bobber.Z);
+        const float speed = 0.4F;
+        bobber.VelocityX = -MathHelper.Sin(bobber.Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(bobber.Pitch / 180.0F * (float)Math.PI) * speed;
+        bobber.VelocityZ = MathHelper.Cos(bobber.Yaw / 180.0F * (float)Math.PI) * MathHelper.Cos(bobber.Pitch / 180.0F * (float)Math.PI) * speed;
+        bobber.VelocityY = -MathHelper.Sin(bobber.Pitch / 180.0F * (float)Math.PI) * speed;
+        hook.SetHeading(bobber, bobber.VelocityX, bobber.VelocityY, bobber.VelocityZ, 1.5F, 1.0F);
+        return bobber;
+    }
+
+    /// <summary>Whose line this is, for the renderer that draws it back to their hands.</summary>
+    public EntityPlayer? Angler(Entity self) => self.State.GetRef(_angler);
+
+    /// <summary>What the bobber struck and is now riding, or null while it is still in flight.</summary>
+    public Entity? Hooked(Entity self) => self.State.GetRef(_hooked);
+
+    private void SetHeading(Entity self, double dirX, double dirY, double dirZ, float speed, float spread)
+    {
+        float length = MathHelper.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        dirX /= length;
+        dirY /= length;
+        dirZ /= length;
+        dirX += self.Random.NextGaussian() * 0.0075F * spread;
+        dirY += self.Random.NextGaussian() * 0.0075F * spread;
+        dirZ += self.Random.NextGaussian() * 0.0075F * spread;
+        dirX *= speed;
+        dirY *= speed;
+        dirZ *= speed;
+        self.VelocityX = dirX;
+        self.VelocityY = dirY;
+        self.VelocityZ = dirZ;
+        float horizontalLength = MathHelper.Sqrt(dirX * dirX + dirZ * dirZ);
+        self.PrevYaw = self.Yaw = (float)(Math.Atan2(dirX, dirZ) * 180.0D / (float)Math.PI);
+        self.PrevPitch = self.Pitch = (float)(Math.Atan2(dirY, horizontalLength) * 180.0D / (float)Math.PI);
+        self.State[_ticksInGround] = 0;
     }
 
     private void EaseTowardsSyncedPosition(Entity self)
@@ -236,8 +258,15 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         double interpZ = self.Z + (self.State[_targetZ] - self.Z) / steps;
 
         double yawDelta = self.State[_targetYaw] - self.Yaw;
-        while (yawDelta < -180.0D) yawDelta += 360.0D;
-        while (yawDelta >= 180.0D) yawDelta -= 360.0D;
+        while (yawDelta < -180.0D)
+        {
+            yawDelta += 360.0D;
+        }
+
+        while (yawDelta >= 180.0D)
+        {
+            yawDelta -= 360.0D;
+        }
 
         self.Yaw = (float)(self.Yaw + yawDelta / steps);
         self.Pitch = (float)(self.Pitch + (self.State[_targetPitch] - self.Pitch) / steps);
@@ -269,15 +298,24 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
 
         foreach (Entity entity in entities)
         {
-            if (!entity.HasCollision || (Equals(entity, angler) && self.State[_ticksInAir] < 5)) continue;
+            if (!entity.HasCollision || (Equals(entity, angler) && self.State[_ticksInAir] < 5))
+            {
+                continue;
+            }
 
             const float expandAmount = 0.3F;
             Box expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
             HitResult entityHit = expandedBox.Raycast(rayStart, rayEnd);
-            if (entityHit.Type == HitResultType.MISS) continue;
+            if (entityHit.Type == HitResultType.MISS)
+            {
+                continue;
+            }
 
             double distance = rayStart.distanceTo(entityHit.Pos);
-            if (!(distance < minHitDistance) && minHitDistance != 0.0D) continue;
+            if (!(distance < minHitDistance) && minHitDistance != 0.0D)
+            {
+                continue;
+            }
 
             hitEntity = entity;
             minHitDistance = distance;
@@ -288,11 +326,17 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
             hit = new HitResult(hitEntity);
         }
 
-        if (hit.Type == HitResultType.MISS) return;
+        if (hit.Type == HitResultType.MISS)
+        {
+            return;
+        }
 
         if (hit.Entity != null)
         {
-            if (hit.Entity.Damage(angler, 0)) self.State.SetRef(_hooked, hit.Entity);
+            if (hit.Entity.Damage(angler, 0))
+            {
+                self.State.SetRef(_hooked, hit.Entity);
+            }
         }
         else
         {
@@ -308,10 +352,25 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         self.Yaw = (float)(Math.Atan2(self.VelocityX, self.VelocityZ) * 180.0D / (float)Math.PI);
         self.Pitch = (float)(Math.Atan2(self.VelocityY, horizontalSpeed) * 180.0D / Math.PI);
 
-        while (self.Pitch - self.PrevPitch < -180.0F) self.PrevPitch -= 360.0F;
-        while (self.Pitch - self.PrevPitch >= 180.0F) self.PrevPitch += 360.0F;
-        while (self.Yaw - self.PrevYaw < -180.0F) self.PrevYaw -= 360.0F;
-        while (self.Yaw - self.PrevYaw >= 180.0F) self.PrevYaw += 360.0F;
+        while (self.Pitch - self.PrevPitch < -180.0F)
+        {
+            self.PrevPitch -= 360.0F;
+        }
+
+        while (self.Pitch - self.PrevPitch >= 180.0F)
+        {
+            self.PrevPitch += 360.0F;
+        }
+
+        while (self.Yaw - self.PrevYaw < -180.0F)
+        {
+            self.PrevYaw -= 360.0F;
+        }
+
+        while (self.Yaw - self.PrevYaw >= 180.0F)
+        {
+            self.PrevYaw += 360.0F;
+        }
 
         self.Pitch = self.PrevPitch + (self.Pitch - self.PrevPitch) * 0.2F;
         self.Yaw = self.PrevYaw + (self.Yaw - self.PrevYaw) * 0.2F;
@@ -335,7 +394,10 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
             }
         }
 
-        if (waterSubmersion > 0.0D) TickBite(self);
+        if (waterSubmersion > 0.0D)
+        {
+            TickBite(self);
+        }
 
         if (self.State[_ticksCatchable] > 0)
         {
@@ -356,7 +418,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         self.SetPosition(self.X, self.Y, self.Z);
     }
 
-    /// <summary>Counts down a bite in progress, or rolls for a new one — sooner in the rain.</summary>
+    /// <summary>Counts down a bite in progress, or rolls for a new one, sooner in the rain.</summary>
     private void TickBite(Entity self)
     {
         if (self.State[_ticksCatchable] > 0)
@@ -369,7 +431,10 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
             ? _biteDelayWhenRaining
             : _biteDelay;
 
-        if (self.Random.NextInt(catchDelay) != 0) return;
+        if (self.Random.NextInt(catchDelay) != 0)
+        {
+            return;
+        }
 
         self.State[_ticksCatchable] = self.Random.NextInt(30) + 10;
         self.VelocityY -= 0.2F;
@@ -402,30 +467,42 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
 
         if (self.State.GetRef(_hooked) is { } hooked)
         {
-            if (angler != null) YankTowardsAngler(self, angler, hooked, additive: true);
+            if (angler != null)
+            {
+                YankTowardsAngler(self, angler, hooked, true);
+            }
 
             wear = 3;
         }
         else if (self.State[_ticksCatchable] > 0)
         {
             Entity fish = DroppedItemBehavior.Create(self.World, self.X, self.Y, self.Z, new ItemStack(_catch));
-            if (angler != null) YankTowardsAngler(self, angler, fish, additive: false);
+            if (angler != null)
+            {
+                YankTowardsAngler(self, angler, fish, false);
+            }
 
             self.World.SpawnEntity(fish);
             angler?.IncreaseStat(Stats.Stats.FishCaughtStat, 1);
             wear = 1;
         }
 
-        if (self.State[_inGround]) wear = 2;
+        if (self.State[_inGround])
+        {
+            wear = 2;
+        }
 
         self.MarkDead();
-        if (angler != null) angler.FishHook = null;
+        if (angler != null)
+        {
+            angler.FishHook = null;
+        }
 
         return wear;
     }
 
     /// <summary>
-    ///     The pull: towards the angler, plus a lob proportional to the square root of the distance.
+    ///     Pulls towards the angler, plus a lob proportional to the square root of the distance.
     ///     A hooked entity keeps its own motion and has this added; a fresh fish is given it outright.
     /// </summary>
     private static void YankTowardsAngler(Entity self, EntityPlayer angler, Entity target, bool additive)
@@ -442,25 +519,5 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         target.VelocityX = additive ? target.VelocityX + pullX : pullX;
         target.VelocityY = additive ? target.VelocityY + pullY : pullY;
         target.VelocityZ = additive ? target.VelocityZ + pullZ : pullZ;
-    }
-
-    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
-    {
-        nbt.SetShort("xTile", (short)self.State[_tileX]);
-        nbt.SetShort("yTile", (short)self.State[_tileY]);
-        nbt.SetShort("zTile", (short)self.State[_tileZ]);
-        nbt.SetByte("inTile", (sbyte)self.State[_inTile]);
-        nbt.SetByte("shake", (sbyte)self.State[_shake]);
-        nbt.SetByte("inGround", (sbyte)(self.State[_inGround] ? 1 : 0));
-    }
-
-    public void OnReadNbt(Entity self, NBTTagCompound nbt)
-    {
-        self.State[_tileX] = nbt.GetShort("xTile");
-        self.State[_tileY] = nbt.GetShort("yTile");
-        self.State[_tileZ] = nbt.GetShort("zTile");
-        self.State[_inTile] = nbt.GetByte("inTile") & 255;
-        self.State[_shake] = nbt.GetByte("shake") & 255;
-        self.State[_inGround] = nbt.GetByte("inGround") == 1;
     }
 }

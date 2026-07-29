@@ -52,8 +52,7 @@ public sealed class EntitySlimeTests
     }
 
     /// <summary>
-    ///     The whole point of the migration: three separate consumers read the size off the entity
-    ///     rather than off a class it no longer has.
+    ///     Three separate consumers read the size off the entity, not off a class.
     /// </summary>
     [Fact]
     public void Size_is_readable_as_a_plain_synced_property()

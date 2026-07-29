@@ -5,8 +5,7 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     A chicken's wings: they damp its fall, spare it any landing damage, and drive the flap
-///     animation the renderer reads back. One behavior because it is one trait — take the wings
-///     away and all three go with them.
+///     animation the renderer reads back. All three come from the wings, so they are one behavior.
 ///     <para>
 ///         The four animation counters are per-chicken, so they live in
 ///         <see cref="EntityState" /> behind handles resolved once at load.
@@ -14,12 +13,12 @@ namespace BetaSharp.Entities.Behaviors;
 /// </summary>
 public sealed class FlapDescentBehavior : IEntityPhysics
 {
-    private readonly StateHandle<float> _flapSpeed;
-    private readonly StateHandle<float> _flapProgress;
-    private readonly StateHandle<float> _previousFlapProgress;
-    private readonly StateHandle<float> _wingExtension;
-    private readonly StateHandle<float> _previousWingExtension;
     private readonly double _descentDamping;
+    private readonly StateHandle<float> _flapProgress;
+    private readonly StateHandle<float> _flapSpeed;
+    private readonly StateHandle<float> _previousFlapProgress;
+    private readonly StateHandle<float> _previousWingExtension;
+    private readonly StateHandle<float> _wingExtension;
 
     public FlapDescentBehavior(in EntityBehaviorContext context)
     {
@@ -31,7 +30,7 @@ public sealed class FlapDescentBehavior : IEntityPhysics
         _previousWingExtension = context.DeclareFloat();
     }
 
-    /// <summary>Wings absorb the landing entirely — a chicken never takes fall damage.</summary>
+    /// <summary>Wings absorb the landing: a chicken never takes fall damage.</summary>
     public bool OnLanding(EntityLiving self, float fallDistance) => true;
 
     public void AfterTickMovement(EntityLiving self)
@@ -65,8 +64,8 @@ public sealed class FlapDescentBehavior : IEntityPhysics
     }
 
     /// <summary>
-    ///     Interpolated wing angle for the renderer, which reads it by casting this type out of the
-    ///     Physics slot rather than by knowing what a chicken is.
+    ///     Interpolated wing angle for the renderer, which finds this behavior by capability rather
+    ///     than by knowing what a chicken is.
     /// </summary>
     public float WingRotation(Entity self, float tickDelta)
     {

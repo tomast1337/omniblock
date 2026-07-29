@@ -28,8 +28,7 @@ public enum SyncedValueKind
 /// <param name="Default">Initial value. Numbers are read as doubles and narrowed to <see cref="Kind" />.</param>
 /// <param name="Nbt">
 ///     NBT key to save this property under. When set, the value round-trips automatically and the
-///     entity needs no persistence behavior — which covers every synced property that maps
-///     one-to-one onto a save key.
+///     entity needs no persistence behavior.
 /// </param>
 public sealed record SyncedPropertyDefinition(
     string Name,

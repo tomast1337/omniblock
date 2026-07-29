@@ -1,4 +1,5 @@
 using System.Text.Json;
+using BetaSharp.Items;
 using BetaSharp.Loot;
 
 namespace BetaSharp.Entities.Behaviors;
@@ -15,57 +16,63 @@ internal static class EntityBehaviorRegistry
     private static readonly Dictionary<string, BehaviorFactory> s_factories = new()
     {
         // Attack
-        ["melee"] = (in EntityBehaviorContext c) => new MeleeAttackBehavior(c.Float("range", 2.0F)),
-        ["bite"] = (in EntityBehaviorContext c) => new BiteAttackBehavior(
+        ["melee"] = (in c) => new MeleeAttackBehavior(c.Float("range", 2.0F)),
+        ["bite"] = (in c) => new BiteAttackBehavior(
             c.Float("range", 1.5F),
             c.Int("damage", 2),
             c.Int("tamed_damage", 4)),
-        ["ranged"] = (in EntityBehaviorContext c) => new RangedAttackBehavior(c.Float("range", 10.0F), c.Int("cooldown_ticks", 30)),
-        ["jump"] = (in EntityBehaviorContext c) => new JumpAttackBehavior(
+        ["ranged"] = (in c) => new RangedAttackBehavior(c.Float("range", 10.0F), c.Int("cooldown_ticks", 30)),
+        ["jump"] = (in c) => new JumpAttackBehavior(
             c.Float("min_range", 2.0F),
             c.Float("max_range", 6.0F),
             c.Int("chance_one_in", 10),
             c.Json.TryGetProperty("fallback", out JsonElement fallback)
-                ? (IEntityAttackBehavior)Build(c with { Json = fallback })
+                ? (IEntityAttackBehavior)Build(c with
+                {
+                    Json = fallback
+                })
                 : null),
 
-        ["lose_target_in_daylight"] = (in EntityBehaviorContext c) => new LoseTargetInDaylightBehavior(
-            (IEntityAttackBehavior)Build(c with { Json = c.Json.GetProperty("inner") }),
+        ["lose_target_in_daylight"] = (in c) => new LoseTargetInDaylightBehavior(
+            (IEntityAttackBehavior)Build(c with
+            {
+                Json = c.Json.GetProperty("inner")
+            }),
             c.Float("brightness_threshold", 0.5F),
             c.Int("chance_one_in", 100)),
 
         // Targeting
-        ["always_hunt"] = (in EntityBehaviorContext c) => new AlwaysHuntTargetBehavior(c.Double("radius", 16.0D)),
-        ["darkness_only"] = (in EntityBehaviorContext c) => new DarknessOnlyTargetBehavior(c.Double("radius", 16.0D)),
+        ["always_hunt"] = (in c) => new AlwaysHuntTargetBehavior(c.Double("radius", 16.0D)),
+        ["darkness_only"] = (in c) => new DarknessOnlyTargetBehavior(c.Double("radius", 16.0D)),
 
         // Loot
-        ["loot_table"] = (in EntityBehaviorContext c) => new LootTableBehavior(LootJson.ParseTable(c.Json)),
+        ["loot_table"] = (in c) => new LootTableBehavior(LootJson.ParseTable(c.Json)),
 
         // Interactable
-        ["swap_held_item"] = (in EntityBehaviorContext c) => new SwapHeldItemBehavior(
-            Items.Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("required").GetString()!).Path),
-            Items.Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("result").GetString()!).Path)),
-        ["ride_if_saddled"] = (in EntityBehaviorContext c) => new RideIfSaddledBehavior(c),
-        ["wool"] = (in EntityBehaviorContext c) => new WoolBehavior(c),
-        ["contact_damage"] = (in EntityBehaviorContext c) => new ContactDamageBehavior(
+        ["swap_held_item"] = (in c) => new SwapHeldItemBehavior(
+            Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("required").GetString()!).Path),
+            Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("result").GetString()!).Path)),
+        ["ride_if_saddled"] = (in c) => new RideIfSaddledBehavior(c),
+        ["wool"] = (in c) => new WoolBehavior(c),
+        ["contact_damage"] = (in c) => new ContactDamageBehavior(
             c.Double("reach_per_size", 0.6D),
             c.Int("minimum_size", 2),
             c.Json.TryGetProperty("sound", out JsonElement s) ? s.GetString() ?? "" : ""),
 
         // Attack + Ticker + Lifecycle, all moving one countdown
-        ["fuse"] = (in EntityBehaviorContext c) => new FuseBehavior(c),
+        ["fuse"] = (in c) => new FuseBehavior(c),
 
         // Physics
-        ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
-        ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),
-        ["light_seeking_path"] = (in EntityBehaviorContext c) => new LightSeekingPathBehavior(),
-        ["wall_climb"] = (in EntityBehaviorContext c) => new WallClimbBehavior(),
-        ["spawn_ignoring_light"] = (in EntityBehaviorContext c) => new SpawnIgnoringLightBehavior(
+        ["ignore_fall_damage"] = (in c) => new IgnoreFallDamageBehavior(),
+        ["flap_descent"] = (in c) => new FlapDescentBehavior(c),
+        ["light_seeking_path"] = (in c) => new LightSeekingPathBehavior(),
+        ["wall_climb"] = (in c) => new WallClimbBehavior(),
+        ["spawn_ignoring_light"] = (in c) => new SpawnIgnoringLightBehavior(
             !c.Json.TryGetProperty("requires_difficulty", out JsonElement d) || d.GetBoolean(),
             c.Int("chance_one_in", 1)),
-        ["flying_movement"] = (in EntityBehaviorContext c) => new FlyingMovementBehavior(),
-        ["spawn_in_fluid"] = (in EntityBehaviorContext c) => new SpawnInFluidBehavior(),
-        ["slime_chunk_spawn"] = (in EntityBehaviorContext c) => new SlimeChunkSpawnBehavior(
+        ["flying_movement"] = (in c) => new FlyingMovementBehavior(),
+        ["spawn_in_fluid"] = (in c) => new SpawnInFluidBehavior(),
+        ["slime_chunk_spawn"] = (in c) => new SlimeChunkSpawnBehavior(
             c.Json.GetProperty("chunk_seed").GetInt64(),
             c.Int("chance_one_in", 10),
             c.Int("chunk_chance_one_in", 10),
@@ -74,45 +81,45 @@ internal static class EntityBehaviorRegistry
 
         // Lifecycle + Persistence: size is the body, so one behavior owns rolling it, applying it and
         // saving it
-        ["sized_body"] = (in EntityBehaviorContext c) => new SizedBodyBehavior(c),
+        ["sized_body"] = (in c) => new SizedBodyBehavior(c),
 
         // Ticker + Lifecycle, all moving one hop
-        ["hopping"] = (in EntityBehaviorContext c) => new HoppingBehavior(c),
+        ["hopping"] = (in c) => new HoppingBehavior(c),
 
         // Interactable + Persistence + Targeting + Ticker + Lifecycle + Physics, all reading one
         // packed flags byte
-        ["tameable"] = (in EntityBehaviorContext c) => new TameableBehavior(c),
-        ["follow_owner"] = (in EntityBehaviorContext c) => new FollowOwnerBehavior(c),
-        ["head_tilt"] = (in EntityBehaviorContext c) => new HeadTiltBehavior(c),
-        ["shake_off_water"] = (in EntityBehaviorContext c) => new ShakeOffWaterBehavior(c),
+        ["tameable"] = (in c) => new TameableBehavior(c),
+        ["follow_owner"] = (in c) => new FollowOwnerBehavior(c),
+        ["head_tilt"] = (in c) => new HeadTiltBehavior(c),
+        ["shake_off_water"] = (in c) => new ShakeOffWaterBehavior(c),
 
         // Physics + Ticker, all moving one swim cycle
-        ["jet_swim"] = (in EntityBehaviorContext c) => new JetSwimBehavior(c),
+        ["jet_swim"] = (in c) => new JetSwimBehavior(c),
 
         // Ticker
-        ["despawn_on_peaceful"] = (in EntityBehaviorContext c) => new DespawnOnPeacefulBehavior(),
-        ["flying_wander"] = (in EntityBehaviorContext c) => new FlyingWanderBehavior(c),
-        ["fireball_attack"] = (in EntityBehaviorContext c) => new FireballAttackBehavior(c),
+        ["despawn_on_peaceful"] = (in c) => new DespawnOnPeacefulBehavior(),
+        ["flying_wander"] = (in c) => new FlyingWanderBehavior(c),
+        ["fireball_attack"] = (in c) => new FireballAttackBehavior(c),
 
         // Any slot: several behaviors sharing one
-        ["all"] = (in EntityBehaviorContext c) => new CompositeBehavior(c),
+        ["all"] = (in c) => new CompositeBehavior(c),
 
         // Ticker + Targeting + Lifecycle + Persistence, all reading one anger timer
-        ["anger"] = (in EntityBehaviorContext c) => new AngerBehavior(c),
-        ["rider_fall_stat"] = (in EntityBehaviorContext c) => new RiderFallStatBehavior(
+        ["anger"] = (in c) => new AngerBehavior(c),
+        ["rider_fall_stat"] = (in c) => new RiderFallStatBehavior(
             Achievement(c.Json.GetProperty("achievement").GetString()!),
             c.Float("minimum_distance", 5.0F)),
 
         // Ticker
-        ["burn_in_daylight"] = (in EntityBehaviorContext c) => new BurnInDaylightBehavior(c.Int("fire_ticks", 300)),
-        ["lay_eggs"] = (in EntityBehaviorContext c) => new LayEggsBehavior(c),
+        ["burn_in_daylight"] = (in c) => new BurnInDaylightBehavior(c.Int("fire_ticks", 300)),
+        ["lay_eggs"] = (in c) => new LayEggsBehavior(c),
 
         // Lifecycle
-        ["split_on_death"] = (in EntityBehaviorContext c) => new SplitOnDeathBehavior(c.Int("child_count", 4)),
-        ["spawn_rider"] = (in EntityBehaviorContext c) => new SpawnRiderBehavior(
+        ["split_on_death"] = (in c) => new SplitOnDeathBehavior(c.Int("child_count", 4)),
+        ["spawn_rider"] = (in c) => new SpawnRiderBehavior(
             c.Json.GetProperty("rider").GetString()!,
             c.Int("chance_one_in", 100)),
-        ["lightning_conversion"] = (in EntityBehaviorContext c) => new LightningConversionBehavior(c.Json.GetProperty("becomes").GetString()!)
+        ["lightning_conversion"] = (in c) => new LightningConversionBehavior(c.Json.GetProperty("becomes").GetString()!)
     };
 
     /// <summary>
@@ -126,7 +133,7 @@ internal static class EntityBehaviorRegistry
     public static object Build(in EntityBehaviorContext context)
     {
         string type = context.Json.GetProperty("Type").GetString()
-            ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
+                      ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
 
         return s_factories.TryGetValue(type, out BehaviorFactory? factory)
             ? factory(context)

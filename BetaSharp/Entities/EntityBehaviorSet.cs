@@ -4,12 +4,9 @@ namespace BetaSharp.Entities;
 
 /// <summary>
 ///     Every capability slot for one <see cref="EntityType" />, built once at load and shared by all
-///     instances of that type — the same lifetime blocks give their behaviors.
-///     <para>
-///         This replaces rebuilding behaviors (and re-parsing their JSON) on every spawn.
-///         <see cref="StateLayout" /> is the companion: it sizes the per-entity
-///         <see cref="EntityState" /> these shared behaviors read through.
-///     </para>
+///     instances of that type, the same lifetime blocks give their behaviors.
+///     <see cref="StateLayout" /> is the companion: it sizes the per-entity
+///     <see cref="EntityState" /> these shared behaviors read through.
 /// </summary>
 public sealed class EntityBehaviorSet
 {
@@ -30,14 +27,17 @@ public sealed class EntityBehaviorSet
 
     /// <summary>
     ///     Finds a behavior of a given kind in any slot, descending into composites and decorators.
-    ///     Renderers use it to read the state a behavior keeps — a ghast's charge counter, a
-    ///     chicken's wing angle — without knowing which slot the definition put it in.
+    ///     Renderers use it to read behavior state (a ghast's charge counter, a chicken's wing angle)
+    ///     without knowing which slot the definition put it in.
     /// </summary>
     public T? Find<T>() where T : class
     {
         foreach (object? slot in new object?[] { Ticker, Attack, Targeting, Loot, Lifecycle, Persistence, Interactable, Physics })
         {
-            if (FindIn(slot) is { } found) return found;
+            if (FindIn(slot) is { } found)
+            {
+                return found;
+            }
         }
 
         return null;

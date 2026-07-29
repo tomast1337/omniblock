@@ -1,29 +1,20 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Registries;
+using BetaSharp.Entities.Behaviors;
+using BetaSharp.Entities.State;
 using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Entities;
 
 /// <summary>
-///     The configuration half of a mob: the values that are genuinely data rather than behavior.
-///     A mob's class still owns its AI, state machines, and NBT — see
-///     docs/mob-data-driven-migration.md for where that line sits and why.
-///     <para>
-///         Spawn category is still absent: it is derived from the class hierarchy by
-///         <see cref="CreatureKind" /> rather than declared per mob, so a field here would compete
-///         with that mechanism rather than describe it.
-///     </para>
+///     The data half of an entity: fixed values loaded from <c>assets/entity/*.json</c>. Anything
+///     that varies per individual belongs in <see cref="State.EntityState" />; anything that is
+///     conditional logic belongs in a capability slot (see <see cref="Behaviors" />).
 /// </summary>
 public sealed record EntityDefinition : IDataAsset
 {
     /// <summary>Applied to any <see cref="EntityLiving" /> constructed without one (e.g. players).</summary>
     public static readonly EntityDefinition Default = new();
-
-    /// <summary>Set by the loader from the JSON filename.</summary>
-    [JsonIgnore] public string Name { get; set; } = "";
-
-    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.BetaSharp;
 
     /// <summary>
     ///     Wire protocol id. Spawn packets transmit it as a signed byte, so the loader rejects
@@ -34,7 +25,7 @@ public sealed record EntityDefinition : IDataAsset
     /// <summary>
     ///     Which natural-spawn budget this mob counts against and spawns from:
     ///     <c>"monster"</c>, <c>"creature"</c>, <c>"water_creature"</c>, or empty for mobs that never
-    ///     spawn naturally. Replaces the class-hierarchy sniffing <see cref="CreatureKind" /> used to do.
+    ///     spawn naturally. Parsed into <see cref="CreatureKind" />.
     /// </summary>
     public string SpawnCategory { get; init; } = "";
 
@@ -51,10 +42,9 @@ public sealed record EntityDefinition : IDataAsset
     public float EyeHeightScale { get; init; } = 0.85F;
 
     /// <summary>
-    ///     Uniform size multiplier applied to the bounding box and eye height. Kept as a multiplier
-    ///     rather than authored dimensions because the giant's real box is <c>3.6000001</c> by
-    ///     <c>10.799999</c> — float artifacts of this multiplication that authoring would not
-    ///     reproduce.
+    ///     Uniform size multiplier applied to the bounding box and eye height. A multiplier rather
+    ///     than authored dimensions because the giant's box is <c>3.6000001</c> by <c>10.799999</c>:
+    ///     float artifacts of this multiplication that authored values would not reproduce.
     /// </summary>
     public float Scale { get; init; } = 1.0F;
 
@@ -65,8 +55,8 @@ public sealed record EntityDefinition : IDataAsset
     public double PassengerRideOffset { get; init; }
 
     /// <summary>
-    ///     Whether moving accumulates walk distance and plays footstep sounds. False for mobs that
-    ///     move without treading — a spider makes no sound as it walks.
+    ///     Whether moving accumulates walk distance and plays footstep sounds. False for a spider,
+    ///     which makes no sound as it walks.
     /// </summary>
     public bool MakesStepSounds { get; init; } = true;
 
@@ -74,8 +64,7 @@ public sealed record EntityDefinition : IDataAsset
 
     /// <summary>
     ///     Item this mob is drawn holding (<c>"betasharp:bow"</c>), or <c>null</c> for empty-handed.
-    ///     Fixed per type — no vanilla mob changes what it carries — so it is configuration rather
-    ///     than a capability slot.
+    ///     Fixed per type: no vanilla mob changes what it carries.
     /// </summary>
     public string? HeldItem { get; init; }
 
@@ -90,23 +79,22 @@ public sealed record EntityDefinition : IDataAsset
     public bool FireImmune { get; init; }
 
     /// <summary>
-    ///     Whether the mob's air supply is untouched by being submerged. True for a squid, which
-    ///     lives there. Configuration rather than a slot: no mob starts or stops being able to.
+    ///     Whether the mob's air supply is untouched by being submerged. True for a squid.
     /// </summary>
     public bool BreathesUnderwater { get; init; }
 
     /// <summary>
-    ///     Whether the server keeps the client's copy of this mob's velocity up to date. Needed by a
-    ///     mob whose motion is imposed rather than produced by client-side AI — the squid drifts on
-    ///     a velocity the server picks, and would otherwise sit still until its next position update.
+    ///     Whether the server keeps the client's copy of this mob's velocity up to date. Needed when
+    ///     the motion is imposed by the server rather than produced by client-side AI: a squid drifts
+    ///     on a server-picked velocity, and would otherwise sit still between position updates.
     /// </summary>
     public bool TracksVelocity { get; init; }
 
     /// <summary>
-    ///     Whether a player's wolves refuse to be set on this mob — true for creepers and ghasts,
-    ///     which a wolf pack would only make worse. Declared rather than sniffed from the class.
+    ///     Whether a player's wolves refuse to be set on this mob. True for creepers and ghasts.
     /// </summary>
     public bool WolfPackIgnores { get; init; }
+
     public int MaxSpawnedInChunk { get; init; } = 4;
     public bool CanDespawn { get; init; } = true;
 
@@ -123,28 +111,26 @@ public sealed record EntityDefinition : IDataAsset
     public double RenderDistanceWeight { get; init; } = 1.0;
 
     /// <summary>
-    ///     Extra reach a player's swing gets when aiming at this entity. A fireball is punchable at
-    ///     a full block's margin — that slack is what makes deflecting one back feasible.
+    ///     Extra reach a player's swing gets when aiming at this entity. A fireball uses a full
+    ///     block's margin, which is what makes deflecting one feasible.
     /// </summary>
     public float TargetingMargin { get; init; } = 0.1F;
 
     /// <summary>
     ///     Whether a synced position from the server is nudged up out of anything it landed inside.
-    ///     False for an arrow, which must stay exactly where the server buried it rather than
-    ///     climbing out of the entity it is stuck in.
+    ///     False for an arrow, which must stay exactly where the server buried it.
     /// </summary>
     public bool PositionSyncAvoidsEntities { get; init; } = true;
 
     /// <summary>
-    ///     Whether the tracker sends rotation alongside every movement update rather than only when
-    ///     the entity has visibly turned. An arrow's flight is all arc and bounce, so its angle
-    ///     matters on every step.
+    ///     Whether the tracker sends rotation with every movement update instead of only when the
+    ///     entity has visibly turned. True for an arrow, whose angle changes on every step of its arc.
     /// </summary>
     public bool AlwaysSyncsRotation { get; init; }
 
     /// <summary>
     ///     Whether the client draws this entity without testing it against the view frustum. True
-    ///     for a fishing bobber, whose line has to be drawn even when the float itself is off-screen.
+    ///     for a fishing bobber, whose line is drawn even when the float is off-screen.
     /// </summary>
     public bool IgnoreFrustumCheck { get; init; }
 
@@ -155,27 +141,25 @@ public sealed record EntityDefinition : IDataAsset
     /// </summary>
     public double PassengerRideHeightScale { get; init; } = 0.75D;
 
-    /// <summary>Whether other entities can shove this one — true for a boat bumped by another.</summary>
+    /// <summary>Whether other entities can shove this one. True for a boat.</summary>
     public bool Pushable { get; init; }
 
     /// <summary>
-    ///     Whether this entity's box is something others physically collide with rather than pass
-    ///     through. A boat is a hull you stand in, not a marker you walk over.
+    ///     Whether others physically collide with this entity's box instead of passing through it.
+    ///     True for a boat's hull.
     /// </summary>
     public bool SolidCollisionShape { get; init; }
 
     /// <summary>
-    ///     Wire id in the object-spawn packet (<c>50</c> for primed TNT), a second protocol id space
-    ///     from <see cref="ProtocolId" />: non-living entities spawn on the client through
-    ///     <c>EntitySpawnS2CPacket</c> rather than the living-entity packet. <c>0</c> means this
-    ///     entity is not spawned that way.
+    ///     Wire id in the object-spawn packet (<c>50</c> for primed TNT). A second id space from
+    ///     <see cref="ProtocolId" />: non-living entities spawn on the client through
+    ///     <c>EntitySpawnS2CPacket</c>, not the living-entity packet. <c>0</c> means unused.
     /// </summary>
     public int SpawnObjectId { get; init; }
 
     /// <summary>
     ///     How far away players are sent this entity, in blocks. <c>0</c> means the server tracker
-    ///     falls back to its by-kind defaults; declared for entities whose old tracking parameters
-    ///     lived in a class check.
+    ///     falls back to its by-kind defaults.
     /// </summary>
     public int TrackingRange { get; init; }
 
@@ -183,35 +167,38 @@ public sealed record EntityDefinition : IDataAsset
     public int TrackingFrequency { get; init; } = 3;
 
     /// <summary>
-    ///     Wire id in the global-entity spawn packet (<c>1</c> for a lightning bolt) — a third
-    ///     protocol id space, for effects broadcast to everyone rather than tracked per player.
-    ///     <c>0</c> means this entity is not spawned globally.
+    ///     Wire id in the global-entity spawn packet (<c>1</c> for a lightning bolt). A third id
+    ///     space, for effects broadcast to everyone instead of tracked per player. <c>0</c> means
+    ///     unused.
     /// </summary>
     public int GlobalSpawnId { get; init; }
 
     /// <summary>
-    ///     Network-synchronised per-entity state, declared here rather than in behavior code so the
-    ///     wire ids are visible data. See <see cref="State.SyncedPropertyDefinition" /> — these ids
-    ///     are protocol facts shared with the client.
+    ///     Network-synchronised per-entity state. Declared here so the wire ids stay visible data;
+    ///     they are protocol facts shared with the client. See
+    ///     <see cref="State.SyncedPropertyDefinition" />.
     /// </summary>
-    public State.SyncedPropertyDefinition[] SyncedProperties { get; init; } = [];
+    public SyncedPropertyDefinition[] SyncedProperties { get; init; } = [];
 
     /// <summary>
     ///     How the client draws this entity: a <c>"Type"</c> naming a renderer factory plus whatever
-    ///     that factory reads (<c>"Model"</c>, <c>"Shadow"</c>). Kept as raw JSON for the same reason
-    ///     <see cref="Behaviors" /> is — the shape belongs to the factory, not to this record.
-    ///     <para>
-    ///         Absent means the client falls back to its by-class renderer table, so an entity is not
-    ///         obliged to describe its rendering here to keep working.
-    ///     </para>
+    ///     that factory reads (<c>"Model"</c>, <c>"Shadow"</c>). Raw JSON because the shape belongs to
+    ///     the factory, not to this record. Absent means the client falls back to its by-class
+    ///     renderer table.
     /// </summary>
     public JsonElement? Renderer { get; init; }
 
     /// <summary>
-    ///     One entry per behavior <em>instance</em>, not per slot — same shape as
+    ///     One entry per behavior <em>instance</em>, not per slot, matching
     ///     <c>BlockDefinition.Behaviors</c>. Each entry carries a <c>"Slots"</c> array
-    ///     (<c>"Attack"</c>, <c>"Targeting"</c>, <c>"Loot"</c>, <c>"Lifecycle"</c>) and its own
-    ///     <c>"Type"</c>, the <see cref="Behaviors.EntityBehaviorRegistry" /> key.
+    ///     (<c>"Attack"</c>, <c>"Targeting"</c>, <c>"Loot"</c>, <c>"Lifecycle"</c>) and a
+    ///     <c>"Type"</c> naming the definition class to deserialize into.
     /// </summary>
-    public List<Behaviors.EntityBehaviorDefinition> Behaviors { get; init; } = [];
+    public List<EntityBehaviorDefinition> Behaviors { get; init; } = [];
+
+    /// <summary>Set by the loader from the JSON filename.</summary>
+    [JsonIgnore]
+    public string Name { get; set; } = "";
+
+    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.BetaSharp;
 }

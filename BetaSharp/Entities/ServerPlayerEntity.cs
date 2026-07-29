@@ -88,7 +88,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void onSlotUpdate(ScreenHandler handler, int slot, ItemStack? stack)
     {
-        if (handler.GetSlot(slot) is CraftingResultSlot) return;
+        if (handler.GetSlot(slot) is CraftingResultSlot)
+        {
+            return;
+        }
 
         if (!SkipPacketSlotUpdates)
         {
@@ -130,7 +133,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         for (int i = 0; i < 5; i++)
         {
             ItemStack? itemStack = getEquipment(i);
-            if (itemStack == _equipment[i]) continue;
+            if (itemStack == _equipment[i])
+            {
+                continue;
+            }
 
             _server.getEntityTracker(DimensionId).sendToListeners(this, EntityEquipmentUpdateS2CPacket.Get(ID, i, itemStack));
             _equipment[i] = itemStack;
@@ -141,8 +147,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override bool Damage(Entity? damageSource, int amount)
     {
-        if (_joinInvulnerabilityTicks > 0) return false;
-        if (_server.pvpEnabled) return base.Damage(damageSource, amount);
+        if (_joinInvulnerabilityTicks > 0)
+        {
+            return false;
+        }
+
+        if (_server.pvpEnabled)
+        {
+            return base.Damage(damageSource, amount);
+        }
 
         if (damageSource is EntityPlayer || ArrowBehavior.OwnerOf(damageSource) is EntityPlayer)
         {
@@ -307,7 +320,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         ServerWorld world = _server.getWorld(DimensionId);
         while (CanSendMoreChunkData() && _pendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
         {
-            if (!ActiveChunks.Contains(chunkPos)) continue;
+            if (!ActiveChunks.Contains(chunkPos))
+            {
+                continue;
+            }
 
             SendChunkData(world, chunkPos);
             ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
@@ -366,7 +382,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void sendPickup(Entity item, int count)
     {
-        if (!GameMode.CanPickup) return;
+        if (!GameMode.CanPickup)
+        {
+            return;
+        }
 
         if (!item.Dead)
         {
@@ -383,7 +402,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void SwingHand()
     {
-        if (HandSwinging) return;
+        if (HandSwinging)
+        {
+            return;
+        }
 
         HandSwingTicks = -1;
         HandSwinging = true;
@@ -534,7 +556,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void IncreaseStat(StatBase stat, int amount)
     {
-        if (stat is not { LocalOnly: false }) return;
+        if (stat is not { LocalOnly: false })
+        {
+            return;
+        }
 
         if (stat.IsAchievement())
         {
@@ -552,7 +577,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void onDisconnect()
     {
-        if (Vehicle != null) SetVehicle(Vehicle);
+        if (Vehicle != null)
+        {
+            SetVehicle(Vehicle);
+        }
 
         Passenger?.SetVehicle(this);
 

@@ -17,9 +17,9 @@ namespace BetaSharp.Entities;
 
 public abstract class EntityPlayer : EntityLiving
 {
+    protected const float AirFlySpeedMult = 5f;
     private static readonly Item s_apple = Item.ByName("apple");
     private static readonly Item s_fishingRod = Item.ByName("fishing_rod");
-    protected const float AirFlySpeedMult = 5f;
     public readonly InventoryPlayer Inventory;
     public readonly ScreenHandler PlayerScreenHandler;
     private int _damageSpill;
@@ -27,13 +27,16 @@ public abstract class EntityPlayer : EntityLiving
     private int _sleepTimer;
     private Vec3i? _startMinecartRidingCoordinate;
     public Vec3D CapePos;
-    public Vec3D PrevCapePos;
     public float ChangeDimensionCooldown;
     public ScreenHandler? CurrentScreenHandler;
     public int DimensionId;
-    /// <summary>The bobber this player has in the water, or null. At most one, which is how the
-    /// rod decides between casting and reeling.</summary>
+
+    /// <summary>
+    ///     The bobber this player has in the water, or null. At most one, which is how the
+    ///     rod decides between casting and reeling.
+    /// </summary>
     public Entity? FishHook = null;
+
     protected bool HandSwinging;
     protected int HandSwingTicks;
     protected bool InTeleportationState;
@@ -41,6 +44,7 @@ public abstract class EntityPlayer : EntityLiving
     public string? Name;
     public string? PlayerCloakUrl;
     protected int PortalCooldown = 20;
+    public Vec3D PrevCapePos;
     public float PrevStepBobbingAmount;
     protected int Score;
     protected bool Sleeping;
@@ -85,8 +89,6 @@ public abstract class EntityPlayer : EntityLiving
 
     public override bool CanBeTargeted => IsAlive && GameMode.CanBeTargeted;
 
-    protected override bool canBreatheUnderwater() => !GameMode.NeedsAir;
-
     public float SleepAmount
     {
         get
@@ -99,6 +101,8 @@ public abstract class EntityPlayer : EntityLiving
             return _sleepTimer / 100.0F;
         }
     }
+
+    protected override bool canBreatheUnderwater() => !GameMode.NeedsAir;
 
     protected void TickSleep()
     {
@@ -209,7 +213,10 @@ public abstract class EntityPlayer : EntityLiving
 
     protected void CollideWithPickupEntities()
     {
-        if (Health <= 0) return;
+        if (Health <= 0)
+        {
+            return;
+        }
 
         List<Entity> entities = World.Entities.GetEntities(this, BoundingBox.Expand(1.0D, 0.0D, 1.0D));
 
@@ -228,7 +235,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void UpdateCloak()
     {
-        PlayerCloakUrl = "http://s3.amazonaws.com/MinecraftCloaks/" + Name + ".png";
+        PlayerCloakUrl = $"http://s3.amazonaws.com/MinecraftCloaks/{Name}.png";
         CloakUrl = PlayerCloakUrl;
     }
 
@@ -350,10 +357,17 @@ public abstract class EntityPlayer : EntityLiving
     /// <returns>True when item was removed</returns>
     public bool DropItem(ItemStack? stack, bool throwRandomly = false)
     {
-        if (!GameMode.CanDrop) return false;
-        if (stack == null) return true;
+        if (!GameMode.CanDrop)
+        {
+            return false;
+        }
 
-        Entity itemEntity = DroppedItemBehavior.Create(World, X, Y - 0.3F + EyeHeight, Z, stack, pickupDelay: 40);
+        if (stack == null)
+        {
+            return true;
+        }
+
+        Entity itemEntity = DroppedItemBehavior.Create(World, X, Y - 0.3F + EyeHeight, Z, stack, 40);
         if (throwRandomly)
         {
             float randomSpeed = Random.NextFloat() * 0.5F;
@@ -432,7 +446,11 @@ public abstract class EntityPlayer : EntityLiving
         nbt.SetInteger("Dimension", DimensionId);
         nbt.SetBoolean("Sleeping", Sleeping);
         nbt.SetShort("SleepTimer", (short)_sleepTimer);
-        if (_playerSpawnCoordinate is not var (x, y, z)) return;
+        if (_playerSpawnCoordinate is not var (x, y, z))
+        {
+            return;
+        }
+
         nbt.SetInteger("SpawnX", x);
         nbt.SetInteger("SpawnY", y);
         nbt.SetInteger("SpawnZ", z);
@@ -454,10 +472,16 @@ public abstract class EntityPlayer : EntityLiving
 
     public override bool Damage(Entity? damageSource, int amount)
     {
-        if (!GameMode.CanReceiveDamage) return false;
+        if (!GameMode.CanReceiveDamage)
+        {
+            return false;
+        }
 
         EntityAge = 0;
-        if (Health <= 0) return false;
+        if (Health <= 0)
+        {
+            return false;
+        }
 
         if (IsSleeping && !World.IsRemote)
         {
@@ -475,7 +499,10 @@ public abstract class EntityPlayer : EntityLiving
             };
         }
 
-        if (amount == 0) return false;
+        if (amount == 0)
+        {
+            return false;
+        }
 
         if (ArrowBehavior.OwnerOf(damageSource) is { } shooter)
         {
@@ -493,29 +520,51 @@ public abstract class EntityPlayer : EntityLiving
 
     /// <summary>
     ///     Sets this player's pets on whatever they just fought with. Written against the tameable
-    ///     behavior rather than a wolf class, so it commands anything the player has actually tamed.
+    ///     behavior, so it commands anything the player has tamed, not just wolves.
     /// </summary>
     private void CommandWolvesToAttack(EntityLiving entity, bool sitting)
     {
         switch (entity)
         {
             case { Definition.WolfPackIgnores: true }:
-            case EntityPlayer p when (!isPvpEnabled() || !p.GameMode.CanBeTargeted):
+            case EntityPlayer p when !isPvpEnabled() || !p.GameMode.CanBeTargeted:
                 return;
         }
 
-        // A player's own pet is never a target, however the scuffle started.
-        if (entity.Behaviors.Find<TameableBehavior>() is { } own && own.IsTamed(entity) && own.IsOwnedBy(entity, this)) return;
+        // A player's own pet is never a target.
+        if (entity.Behaviors.Find<TameableBehavior>() is { } own && own.IsTamed(entity) && own.IsOwnedBy(entity, this))
+        {
+            return;
+        }
 
         List<EntityCreature> nearby = World.Entities.CollectEntitiesOfType<EntityCreature>(new Box(X, Y, Z, X + 1.0D, Y + 1.0D, Z + 1.0D).Expand(16.0D, 4.0D, 16.0D));
 
         foreach (EntityCreature pet in nearby)
         {
-            if (pet.Behaviors.Find<TameableBehavior>() is not { } tame) continue;
-            if (!tame.IsTamed(pet)) continue;
-            if (pet.Target != null) continue;
-            if (Name != null && !tame.IsOwnedBy(pet, this)) continue;
-            if (sitting && tame.IsSitting(pet)) continue;
+            if (pet.Behaviors.Find<TameableBehavior>() is not { } tame)
+            {
+                continue;
+            }
+
+            if (!tame.IsTamed(pet))
+            {
+                continue;
+            }
+
+            if (pet.Target != null)
+            {
+                continue;
+            }
+
+            if (Name != null && !tame.IsOwnedBy(pet, this))
+            {
+                continue;
+            }
+
+            if (sitting && tame.IsSitting(pet))
+            {
+                continue;
+            }
 
             tame.SetSitting(pet, false);
             pet.Target = entity;
@@ -546,15 +595,27 @@ public abstract class EntityPlayer : EntityLiving
 
     public void Interact(Entity entity)
     {
-        if (!GameMode.CanInteract) return;
+        if (!GameMode.CanInteract)
+        {
+            return;
+        }
 
-        if (entity.Interact(this)) return;
+        if (entity.Interact(this))
+        {
+            return;
+        }
 
         ItemStack? itemStackInHand = GetHand();
-        if (itemStackInHand == null || entity is not EntityLiving living) return;
+        if (itemStackInHand == null || entity is not EntityLiving living)
+        {
+            return;
+        }
 
         itemStackInHand.useOnEntity(living, this);
-        if (itemStackInHand.Count > 0) return;
+        if (itemStackInHand.Count > 0)
+        {
+            return;
+        }
 
         ItemStack.onRemoved(this);
         ClearStackInHand();
@@ -572,10 +633,16 @@ public abstract class EntityPlayer : EntityLiving
 
     public void Attack(Entity target)
     {
-        if (!GameMode.CanInflictDamage) return;
+        if (!GameMode.CanInflictDamage)
+        {
+            return;
+        }
 
         int damage = Inventory.GetDamageVsEntity(target);
-        if (damage <= 0) return;
+        if (damage <= 0)
+        {
+            return;
+        }
 
         if (VelocityY < 0.0D)
         {
@@ -583,7 +650,10 @@ public abstract class EntityPlayer : EntityLiving
         }
 
         target.Damage(this, damage);
-        if (target is not EntityLiving living) return;
+        if (target is not EntityLiving living)
+        {
+            return;
+        }
 
         ItemStack? itemStackInHand = GetHand();
         if (itemStackInHand != null)
@@ -744,7 +814,10 @@ public abstract class EntityPlayer : EntityLiving
 
     public static Vec3i? FindRespawnPosition(IWorldContext world, Vec3i? spawnPos)
     {
-        if (spawnPos is not var (x, y, z)) return null;
+        if (spawnPos is not var (x, y, z))
+        {
+            return null;
+        }
 
         IChunkSource chunkSource = world.ChunkHost.ChunkSource;
 
@@ -758,7 +831,10 @@ public abstract class EntityPlayer : EntityLiving
 
     public float GetSleepingRotation()
     {
-        if (SleepingPos == null) return 0.0F;
+        if (SleepingPos == null)
+        {
+            return 0.0F;
+        }
 
         int blockMeta = World.Reader.GetBlockMeta(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z);
         int direction = BedBehavior.GetDirection(blockMeta);
@@ -782,8 +858,14 @@ public abstract class EntityPlayer : EntityLiving
 
     public void SetSpawnPos(Vec3i? spawnPos)
     {
-        if (spawnPos is var (x, y, z)) _playerSpawnCoordinate = new Vec3i(x, y, z);
-        else _playerSpawnCoordinate = null;
+        if (spawnPos is var (x, y, z))
+        {
+            _playerSpawnCoordinate = new Vec3i(x, y, z);
+        }
+        else
+        {
+            _playerSpawnCoordinate = null;
+        }
     }
 
     public void IncrementStat(StatBase stat) => IncreaseStat(stat, 1);
@@ -809,7 +891,10 @@ public abstract class EntityPlayer : EntityLiving
 
     private void UpdateMovementStat(double x, double y, double z)
     {
-        if (Vehicle != null) return;
+        if (Vehicle != null)
+        {
+            return;
+        }
 
         int distanceScaled;
         if (IsInFluid(Material.Water))
@@ -855,11 +940,17 @@ public abstract class EntityPlayer : EntityLiving
 
     private void IncreaseRidingMotionStats(double x, double y, double z)
     {
-        if (Vehicle is null) return;
+        if (Vehicle is null)
+        {
+            return;
+        }
 
         int distanceScaled = (int)Math.Round(Math.Sqrt(x * x + y * y + z * z) * 100.0);
 
-        if (distanceScaled <= 0) return;
+        if (distanceScaled <= 0)
+        {
+            return;
+        }
 
         switch (Vehicle)
         {
@@ -885,7 +976,7 @@ public abstract class EntityPlayer : EntityLiving
                 IncreaseStat(Stats.Stats.DistanceByBoatStat, distanceScaled);
                 break;
 
-            // Matched by registry id: a pig has no class of its own to switch on.
+            // Matched by registry id, since a pig has no class of its own to switch on.
             case { } vehicle when EntityRegistry.GetId(vehicle) == "pig":
                 IncreaseStat(Stats.Stats.DistanceByPigStat, distanceScaled);
                 break;

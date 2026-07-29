@@ -4,32 +4,30 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A slime's whole way of moving: it faces the nearest player, hops at it on a timer that
-///     shortens when someone is near, and splats on landing. One behavior across Ticker and
-///     Lifecycle, because the squash the renderer draws, the hop that causes it and the landing that
-///     ends it are one motion.
+///     A slime's whole way of moving: faces the nearest player, hops at it on a timer that shortens
+///     when someone is near, and splats on landing. One behavior across Ticker and Lifecycle, because
+///     the hop, the landing and the squash the renderer draws are one motion.
 ///     <para>
-///         Everything scales with the mob's declared <c>size</c>, read as a synced property rather
-///         than off a class — a bigger slime hops further, lands harder and is heard doing it.
+///         Everything scales with the mob's synced <c>size</c>: a bigger slime hops further, lands
+///         harder and is heard doing it.
 ///     </para>
 /// </summary>
 public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
 {
-    private readonly StateHandle<int> _jumpDelay;
-    private readonly StateHandle<float> _squish;
-    private readonly StateHandle<float> _previousSquish;
-    private readonly StateHandle<bool> _wasOnGround;
-
     private readonly int _delayMinimum;
     private readonly int _delaySpread;
-    private readonly int _nearbyDelayDivisor;
-    private readonly double _noticeRange;
-    private readonly float _squishDecay;
-    private readonly string _particle;
-    private readonly int _particlesPerSize;
-    private readonly string _sound;
+    private readonly StateHandle<int> _jumpDelay;
     private readonly int _jumpSoundMinimumSize;
     private readonly int _landingSoundMinimumSize;
+    private readonly int _nearbyDelayDivisor;
+    private readonly double _noticeRange;
+    private readonly string _particle;
+    private readonly int _particlesPerSize;
+    private readonly StateHandle<float> _previousSquish;
+    private readonly string _sound;
+    private readonly StateHandle<float> _squish;
+    private readonly float _squishDecay;
+    private readonly StateHandle<bool> _wasOnGround;
 
     public HoppingBehavior(in EntityBehaviorContext context)
     {
@@ -50,10 +48,6 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
         _wasOnGround = context.DeclareBool();
     }
 
-    private static int Size(Entity self) => self.Synced<byte>("size")?.Value ?? 1;
-
-    private int RollDelay(Entity self) => self.Random.NextInt(_delaySpread) + _delayMinimum;
-
     public void OnCreated(Entity self) => self.State[_jumpDelay] = RollDelay(self);
 
     /// <summary>Snapshots the squash and the footing the landing test compares against.</summary>
@@ -67,10 +61,41 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
     public void OnTickEnd(EntityLiving self)
     {
         EntityState state = self.State;
-        if (self.OnGround && !state[_wasOnGround]) Splat(self, state);
+        if (self.OnGround && !state[_wasOnGround])
+        {
+            Splat(self, state);
+        }
 
         state[_squish] *= _squishDecay;
     }
+
+    public bool OnTickLiving(EntityLiving self)
+    {
+        self.TickDespawn();
+
+        EntityState state = self.State;
+        EntityPlayer? player = self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, _noticeRange);
+        if (player != null)
+        {
+            self.faceEntity(player, 10.0F, 20.0F);
+        }
+
+        if (self.OnGround && state[_jumpDelay]-- <= 0)
+        {
+            Hop(self, state, player);
+        }
+        else
+        {
+            Settle(self);
+        }
+
+        // Hopping is the mob's whole AI: no pathing, no idle glancing, no ageing.
+        return true;
+    }
+
+    private static int Size(Entity self) => self.Synced<byte>("size")?.Value ?? 1;
+
+    private int RollDelay(Entity self) => self.Random.NextInt(_delaySpread) + _delayMinimum;
 
     private void Splat(EntityLiving self, EntityState state)
     {
@@ -84,34 +109,28 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
             self.World.Broadcaster.AddParticle(_particle, self.X + offsetX, self.BoundingBox.MinY, self.Z + offsetZ, 0.0D, 0.0D, 0.0D);
         }
 
-        if (size >= _landingSoundMinimumSize) PlaySound(self, 1.0F / 0.8F);
+        if (size >= _landingSoundMinimumSize)
+        {
+            PlaySound(self, 1.0F / 0.8F);
+        }
 
         state[_squish] = -0.5F;
-    }
-
-    public bool OnTickLiving(EntityLiving self)
-    {
-        self.TickDespawn();
-
-        EntityState state = self.State;
-        EntityPlayer? player = self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, _noticeRange);
-        if (player != null) self.faceEntity(player, 10.0F, 20.0F);
-
-        if (self.OnGround && state[_jumpDelay]-- <= 0) Hop(self, state, player);
-        else Settle(self);
-
-        // Hopping is the mob's entire AI: no pathing, no idle glancing, no ageing.
-        return true;
     }
 
     private void Hop(EntityLiving self, EntityState state, EntityPlayer? player)
     {
         state[_jumpDelay] = RollDelay(self);
-        if (player != null) state[_jumpDelay] /= _nearbyDelayDivisor;
+        if (player != null)
+        {
+            state[_jumpDelay] /= _nearbyDelayDivisor;
+        }
 
         int size = Size(self);
         self.Jumping = true;
-        if (size >= _jumpSoundMinimumSize) PlaySound(self, 0.8F);
+        if (size >= _jumpSoundMinimumSize)
+        {
+            PlaySound(self, 0.8F);
+        }
 
         state[_squish] = 1.0F;
         self.SidewaysSpeed = 1.0F - self.Random.NextFloat() * 2.0F;
@@ -121,7 +140,10 @@ public sealed class HoppingBehavior : IEntityTicker, IEntityLifecycle
     private static void Settle(EntityLiving self)
     {
         self.Jumping = false;
-        if (self.OnGround) self.SidewaysSpeed = self.ForwardSpeed = 0.0F;
+        if (self.OnGround)
+        {
+            self.SidewaysSpeed = self.ForwardSpeed = 0.0F;
+        }
     }
 
     private void PlaySound(EntityLiving self, float pitchScale) =>

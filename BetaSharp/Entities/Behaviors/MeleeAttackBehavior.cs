@@ -2,8 +2,8 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     Damages the target once every 20 ticks while it is within <paramref name="range" /> and
-///     vertically overlapping. Damage comes from <see cref="EntityCreature.AttackStrength" /> at call
-///     time, not construction time, so a mob raising it in its own constructor still applies.
+///     vertically overlapping. Damage is read from <see cref="EntityCreature.AttackStrength" /> at
+///     call time, so a mob that raises it later still hits harder.
 /// </summary>
 public sealed class MeleeAttackBehavior(float range = 2.0F) : IEntityAttackBehavior
 {

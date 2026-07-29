@@ -1,16 +1,15 @@
-using System.Text.Json;
 using BetaSharp.Entities.Behaviors;
 using BetaSharp.Entities.State;
 
 namespace BetaSharp.Entities;
 
 /// <summary>
-///     Builds an <see cref="EntityType" />'s capability slots from its JSON, mirroring
+///     Builds an <see cref="EntityType" />'s capability slots from its JSON, matching
 ///     <c>BlockFactory.AttachBehaviors</c>: one instance per array entry, assigned to every slot that
-///     entry names, rather than probing a shared instance against every interface.
+///     entry names.
 ///     <para>
 ///         Runs once per type at load. Behaviors are then shared by every instance, so per-entity
-///         mutable state lives in <see cref="EntityState" /> rather than on the behavior.
+///         mutable state lives in <see cref="EntityState" />, never on the behavior.
 ///     </para>
 /// </summary>
 internal static class EntityFactory
@@ -24,8 +23,8 @@ internal static class EntityFactory
 
         foreach (EntityBehaviorDefinition entry in definition.Behaviors)
         {
-            // Naming the entity and the behavior here is the difference between a usable failure and
-            // a bare TypeInitializationException, since this runs inside a static constructor chain.
+            // Runs inside a static constructor chain, so without this the failure surfaces as a bare
+            // TypeInitializationException naming neither the entity nor the behavior.
             object behavior;
             try
             {
@@ -87,7 +86,7 @@ internal static class EntityFactory
 
     /// <summary>
     ///     Attack and targeting are declared on <see cref="EntityCreature" />, so a definition naming
-    ///     them for anything else is a load-time error rather than a null slot discovered at runtime.
+    ///     them for anything else fails at load instead of leaving a null slot to find at runtime.
     /// </summary>
     private static void RequireCreature(EntityDefinition definition, Type entityType, string slot)
     {

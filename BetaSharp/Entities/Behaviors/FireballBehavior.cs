@@ -7,32 +7,31 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A ghast's fireball: no gravity — it rides a constant acceleration vector ("power") picked
-///     when shot, burns as it flies, trails smoke, and explodes on whatever it touches first. A
-///     punch turns it around: the hit re-aims velocity and power along the attacker's look vector,
-///     which is what makes the fireball-return duel possible.
+///     A ghast's fireball. No gravity: it rides a constant acceleration vector ("power") picked when
+///     shot, burns as it flies, trails smoke, and explodes on whatever it touches first. A punch
+///     deflects it, re-aiming velocity and power along the attacker's look vector.
 ///     <para>
-///         Who shot it and its power vector are per-instance state; <see cref="Shoot" /> is the
-///         server-side spawner, <see cref="SetDirection" /> re-derives power on the client from the
-///         spawn packet. Neither survives a save — the beta classes never persisted them.
+///         Who shot it and its power vector are per-instance state. <see cref="Shoot" /> is the
+///         server-side spawner; <see cref="SetDirection" /> re-derives power on the client from the
+///         spawn packet. Neither survives a save, matching Beta.
 ///     </para>
 /// </summary>
 public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityPersistence
 {
-    private readonly StateHandle<EntityLiving> _owner;
-    private readonly StateHandle<bool> _inGround;
     private readonly StateHandle<int> _blockId;
-    private readonly StateHandle<int> _shake;
+
+    private readonly float _explosionPower;
     private readonly StateHandle<int> _inAirTime;
-    private readonly StateHandle<int> _removalTimer;
-    private readonly StateHandle<int> _tileX;
-    private readonly StateHandle<int> _tileY;
-    private readonly StateHandle<int> _tileZ;
+    private readonly StateHandle<bool> _inGround;
+    private readonly StateHandle<EntityLiving> _owner;
     private readonly StateHandle<double> _powerX;
     private readonly StateHandle<double> _powerY;
     private readonly StateHandle<double> _powerZ;
-
-    private readonly float _explosionPower;
+    private readonly StateHandle<int> _removalTimer;
+    private readonly StateHandle<int> _shake;
+    private readonly StateHandle<int> _tileX;
+    private readonly StateHandle<int> _tileY;
+    private readonly StateHandle<int> _tileZ;
 
     public FireballBehavior(EntityStateLayout layout, float explosionPower)
     {
@@ -53,38 +52,52 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     }
 
     /// <summary>
-    ///     The server-side spawner: places the fireball on the shooter and aims its power at the
-    ///     target offset, wobbled by the shooter's aim spread. The caller may reposition it before
-    ///     spawning — the ghast holds it out in front of its face.
+    ///     A punch deflects instead of damaging: velocity and power re-aim along the attacker's look
+    ///     vector, sending the fireball back the way the punch was facing.
     /// </summary>
-    public static Entity Shoot(IWorldContext world, EntityLiving owner, double dx, double dy, double dz)
+    public bool? Damage(Entity self, Entity? attacker, int amount)
     {
-        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
-        FireballBehavior flight = fireball.Behaviors.Find<FireballBehavior>()!;
-        fireball.State.SetRef(flight._owner, owner);
-        fireball.SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y, owner.Z, owner.Yaw, owner.Pitch);
-        fireball.SetPosition(fireball.X, fireball.Y, fireball.Z);
-        fireball.VelocityX = fireball.VelocityY = fireball.VelocityZ = 0.0D;
-        dx += fireball.Random.NextGaussian() * 0.4D;
-        dy += fireball.Random.NextGaussian() * 0.4D;
-        dz += fireball.Random.NextGaussian() * 0.4D;
-        flight.SetDirection(fireball, dx, dy, dz);
-        return fireball;
+        self.VelocityModified = true;
+        if (attacker == null)
+        {
+            return false;
+        }
+
+        Vec3D? lookVector = attacker.LookVector;
+        if (lookVector == null)
+        {
+            return true;
+        }
+
+        self.VelocityX = lookVector.Value.x;
+        self.VelocityY = lookVector.Value.y;
+        self.VelocityZ = lookVector.Value.z;
+
+        self.State[_powerX] = self.VelocityX * 0.1D;
+        self.State[_powerY] = self.VelocityY * 0.1D;
+        self.State[_powerZ] = self.VelocityZ * 0.1D;
+
+        return true;
     }
 
-    public EntityLiving? Owner(Entity self) => self.State.GetRef(_owner);
-
-    public double PowerX(Entity self) => self.State[_powerX];
-    public double PowerY(Entity self) => self.State[_powerY];
-    public double PowerZ(Entity self) => self.State[_powerZ];
-
-    /// <summary>Normalises a direction into the fixed-magnitude power vector the flight rides.</summary>
-    public void SetDirection(Entity self, double dx, double dy, double dz)
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
     {
-        double length = MathHelper.Sqrt(dx * dx + dy * dy + dz * dz);
-        self.State[_powerX] = dx / length * 0.1D;
-        self.State[_powerY] = dy / length * 0.1D;
-        self.State[_powerZ] = dz / length * 0.1D;
+        nbt.SetShort("xTile", (short)self.State[_tileX]);
+        nbt.SetShort("yTile", (short)self.State[_tileY]);
+        nbt.SetShort("zTile", (short)self.State[_tileZ]);
+        nbt.SetByte("inTile", (sbyte)self.State[_blockId]);
+        nbt.SetByte("shake", (sbyte)self.State[_shake]);
+        nbt.SetByte("inGround", (sbyte)(self.State[_inGround] ? 1 : 0));
+    }
+
+    public void OnReadNbt(Entity self, NBTTagCompound nbt)
+    {
+        self.State[_tileX] = nbt.GetShort("xTile");
+        self.State[_tileY] = nbt.GetShort("yTile");
+        self.State[_tileZ] = nbt.GetShort("zTile");
+        self.State[_blockId] = nbt.GetByte("inTile") & 255;
+        self.State[_shake] = nbt.GetByte("shake") & 255;
+        self.State[_inGround] = nbt.GetByte("inGround") == 1;
     }
 
     public bool OnTickEntity(Entity self)
@@ -139,15 +152,24 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         foreach (Entity candidateEntity in candidateEntities)
         {
-            if (!candidateEntity.HasCollision || (Equals(candidateEntity, owner) && self.State[_inAirTime] < 25)) continue;
+            if (!candidateEntity.HasCollision || (Equals(candidateEntity, owner) && self.State[_inAirTime] < 25))
+            {
+                continue;
+            }
 
             const float collisionMargin = 0.3F;
             Box candidateBox = candidateEntity.BoundingBox.Expand(collisionMargin, collisionMargin, collisionMargin);
             HitResult candidateHit = candidateBox.Raycast(startPos, endPos);
-            if (candidateHit.Type == HitResultType.MISS) continue;
+            if (candidateHit.Type == HitResultType.MISS)
+            {
+                continue;
+            }
 
             double hitDistance = startPos.distanceTo(candidateHit.Pos);
-            if (!(hitDistance < nearestHitDistance) && nearestHitDistance != 0.0D) continue;
+            if (!(hitDistance < nearestHitDistance) && nearestHitDistance != 0.0D)
+            {
+                continue;
+            }
 
             hitEntity = candidateEntity;
             nearestHitDistance = hitDistance;
@@ -179,10 +201,25 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         self.Yaw = (float)(Math.Atan2(self.VelocityX, self.VelocityZ) * 180.0D / (float)Math.PI);
 
         self.Pitch = (float)(Math.Atan2(self.VelocityY, horizontalSpeed) * 180.0D / Math.PI);
-        while (self.Pitch - self.PrevPitch < -180.0F) self.PrevPitch -= 360.0F;
-        while (self.Pitch - self.PrevPitch >= 180.0F) self.PrevPitch += 360.0F;
-        while (self.Yaw - self.PrevYaw < -180.0F) self.PrevYaw -= 360.0F;
-        while (self.Yaw - self.PrevYaw >= 180.0F) self.PrevYaw += 360.0F;
+        while (self.Pitch - self.PrevPitch < -180.0F)
+        {
+            self.PrevPitch -= 360.0F;
+        }
+
+        while (self.Pitch - self.PrevPitch >= 180.0F)
+        {
+            self.PrevPitch += 360.0F;
+        }
+
+        while (self.Yaw - self.PrevYaw < -180.0F)
+        {
+            self.PrevYaw -= 360.0F;
+        }
+
+        while (self.Yaw - self.PrevYaw >= 180.0F)
+        {
+            self.PrevYaw += 360.0F;
+        }
 
         self.Pitch = self.PrevPitch + (self.Pitch - self.PrevPitch) * 0.2F;
         self.Yaw = self.PrevYaw + (self.Yaw - self.PrevYaw) * 0.2F;
@@ -209,44 +246,38 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         return true;
     }
 
-    /// <summary>A punch never lands as damage — it deflects: velocity and power re-aim along the
-    /// attacker's look vector, sending the fireball back the way the punch was facing.</summary>
-    public bool? Damage(Entity self, Entity? attacker, int amount)
+    /// <summary>
+    ///     Places the fireball on the shooter and aims its power at the target offset, wobbled by
+    ///     the shooter's aim spread. The caller may reposition it before spawning; the ghast holds it
+    ///     out in front of its face.
+    /// </summary>
+    public static Entity Shoot(IWorldContext world, EntityLiving owner, double dx, double dy, double dz)
     {
-        self.VelocityModified = true;
-        if (attacker == null) return false;
-
-        Vec3D? lookVector = attacker.LookVector;
-        if (lookVector == null) return true;
-
-        self.VelocityX = lookVector.Value.x;
-        self.VelocityY = lookVector.Value.y;
-        self.VelocityZ = lookVector.Value.z;
-
-        self.State[_powerX] = self.VelocityX * 0.1D;
-        self.State[_powerY] = self.VelocityY * 0.1D;
-        self.State[_powerZ] = self.VelocityZ * 0.1D;
-
-        return true;
+        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
+        FireballBehavior flight = fireball.Behaviors.Find<FireballBehavior>()!;
+        fireball.State.SetRef(flight._owner, owner);
+        fireball.SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y, owner.Z, owner.Yaw, owner.Pitch);
+        fireball.SetPosition(fireball.X, fireball.Y, fireball.Z);
+        fireball.VelocityX = fireball.VelocityY = fireball.VelocityZ = 0.0D;
+        dx += fireball.Random.NextGaussian() * 0.4D;
+        dy += fireball.Random.NextGaussian() * 0.4D;
+        dz += fireball.Random.NextGaussian() * 0.4D;
+        flight.SetDirection(fireball, dx, dy, dz);
+        return fireball;
     }
 
-    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
-    {
-        nbt.SetShort("xTile", (short)self.State[_tileX]);
-        nbt.SetShort("yTile", (short)self.State[_tileY]);
-        nbt.SetShort("zTile", (short)self.State[_tileZ]);
-        nbt.SetByte("inTile", (sbyte)self.State[_blockId]);
-        nbt.SetByte("shake", (sbyte)self.State[_shake]);
-        nbt.SetByte("inGround", (sbyte)(self.State[_inGround] ? 1 : 0));
-    }
+    public EntityLiving? Owner(Entity self) => self.State.GetRef(_owner);
 
-    public void OnReadNbt(Entity self, NBTTagCompound nbt)
+    public double PowerX(Entity self) => self.State[_powerX];
+    public double PowerY(Entity self) => self.State[_powerY];
+    public double PowerZ(Entity self) => self.State[_powerZ];
+
+    /// <summary>Normalises a direction into the fixed-magnitude power vector the flight rides.</summary>
+    public void SetDirection(Entity self, double dx, double dy, double dz)
     {
-        self.State[_tileX] = nbt.GetShort("xTile");
-        self.State[_tileY] = nbt.GetShort("yTile");
-        self.State[_tileZ] = nbt.GetShort("zTile");
-        self.State[_blockId] = nbt.GetByte("inTile") & 255;
-        self.State[_shake] = nbt.GetByte("shake") & 255;
-        self.State[_inGround] = nbt.GetByte("inGround") == 1;
+        double length = MathHelper.Sqrt(dx * dx + dy * dy + dz * dz);
+        self.State[_powerX] = dx / length * 0.1D;
+        self.State[_powerY] = dy / length * 0.1D;
+        self.State[_powerZ] = dz / length * 0.1D;
     }
 }

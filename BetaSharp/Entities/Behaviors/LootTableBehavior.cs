@@ -4,8 +4,7 @@ using BetaSharp.Loot;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Drives a mob's death drops from a declarative <see cref="LootTable" />, replacing the
-///     one-class-per-mob loot behaviors that preceded it.
+///     Drives a mob's death drops from a declarative <see cref="LootTable" />.
 /// </summary>
 public sealed class LootTableBehavior(LootTable table) : IEntityLootBehavior
 {

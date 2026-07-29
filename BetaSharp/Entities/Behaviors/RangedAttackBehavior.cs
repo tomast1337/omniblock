@@ -13,7 +13,10 @@ public sealed class RangedAttackBehavior(float range = 10.0F, int cooldownTicks 
 {
     public void AttackEntity(EntityCreature self, Entity target, float distance)
     {
-        if (!(distance < range)) return;
+        if (!(distance < range))
+        {
+            return;
+        }
 
         double dx = target.X - self.X;
         double dy = target.Z - self.Z;

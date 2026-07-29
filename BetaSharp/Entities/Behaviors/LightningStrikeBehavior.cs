@@ -1,31 +1,32 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities.State;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A lightning bolt: it strikes fire into the ground, thunders, flashes a few times and is gone.
-///     One behavior across the Ticker, Lifecycle and Physics slots because every hook reads the same
-///     flash countdown.
+///     A lightning bolt: sets fire to the ground, thunders, flashes a few times and is gone. One
+///     behavior across the Ticker, Lifecycle and Physics slots because all three read the same flash
+///     countdown.
 ///     <para>
-///         The strike itself — fire at and around the impact point — runs on the first tick rather
-///         than at creation, because at creation the bolt has not been positioned yet. Each re-flash
-///         re-rolls the render seed the client draws its jagged path from.
+///         The strike itself (fire at and around the impact point) runs on the first tick, not at
+///         creation, because the bolt has not been positioned yet at creation. Each re-flash re-rolls
+///         the render seed the client draws its jagged path from.
 ///     </para>
 /// </summary>
 public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, IEntityPhysics
 {
-    private readonly StateHandle<int> _flashTimer;
+    private readonly string _explodeSound;
+    private readonly int _extraFires;
     private readonly StateHandle<int> _flashCount;
+    private readonly StateHandle<int> _flashTimer;
+    private readonly int _minimumFireDifficulty;
     private readonly StateHandle<long> _renderSeed;
+    private readonly double _strikeRadius;
     private readonly StateHandle<bool> _struck;
 
     private readonly string _thunderSound;
-    private readonly string _explodeSound;
-    private readonly int _minimumFireDifficulty;
-    private readonly int _extraFires;
-    private readonly double _strikeRadius;
 
     public LightningStrikeBehavior(EntityStateLayout layout, string thunderSound, string explodeSound, int minimumFireDifficulty, int extraFires, double strikeRadius)
     {
@@ -41,14 +42,14 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
         _struck = layout.DeclareBool();
     }
 
-    /// <summary>Seed the client draws this flash's jagged path from; re-rolled per flash.</summary>
-    public long RenderSeed(Entity self) => self.State[_renderSeed];
-
     public void OnCreated(Entity self)
     {
         self.State[_renderSeed] = self.Random.NextLong();
         self.State[_flashCount] = self.Random.NextInt(3) + 1;
     }
+
+    /// <summary>Visible only while a flash is on, wherever the camera is.</summary>
+    public bool? ShouldRender(Entity self) => self.State[_flashTimer] >= 0;
 
     public bool OnTickEntity(Entity self)
     {
@@ -85,7 +86,10 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
             }
         }
 
-        if (self.State[_flashTimer] < 0) return true;
+        if (self.State[_flashTimer] < 0)
+        {
+            return true;
+        }
 
         List<Entity> struck = self.World.Entities.GetEntities(self, new Box(
             self.X - _strikeRadius, self.Y - _strikeRadius, self.Z - _strikeRadius,
@@ -100,11 +104,21 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
         return true;
     }
 
+    /// <summary>Seed the client draws this flash's jagged path from; re-rolled per flash.</summary>
+    public long RenderSeed(Entity self) => self.State[_renderSeed];
+
     /// <summary>The impact: fire at the strike point and a few scattered around it.</summary>
     private void StrikeFire(Entity self)
     {
-        if (self.World.Difficulty < _minimumFireDifficulty) return;
-        if (!self.World.ChunkHost.IsRegionLoaded(MathHelper.Floor(self.X), MathHelper.Floor(self.Y), MathHelper.Floor(self.Z), 10)) return;
+        if (self.World.Difficulty < _minimumFireDifficulty)
+        {
+            return;
+        }
+
+        if (!self.World.ChunkHost.IsRegionLoaded(MathHelper.Floor(self.X), MathHelper.Floor(self.Y), MathHelper.Floor(self.Z), 10))
+        {
+            return;
+        }
 
         TryPlaceFire(self.World, MathHelper.Floor(self.X), MathHelper.Floor(self.Y), MathHelper.Floor(self.Z));
 
@@ -117,14 +131,11 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
         }
     }
 
-    private static void TryPlaceFire(Worlds.Core.Systems.IWorldContext world, int x, int y, int z)
+    private static void TryPlaceFire(IWorldContext world, int x, int y, int z)
     {
         if (world.Reader.GetBlockId(x, y, z) == 0 && BlockRegistry.Get("fire").CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
             world.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").id);
         }
     }
-
-    /// <summary>Visible only while a flash is on, wherever the camera is.</summary>
-    public bool? ShouldRender(Entity self) => self.State[_flashTimer] >= 0;
 }

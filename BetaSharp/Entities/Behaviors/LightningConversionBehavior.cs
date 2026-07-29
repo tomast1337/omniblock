@@ -8,7 +8,10 @@ public sealed class LightningConversionBehavior(string becomes) : IEntityLifecyc
 {
     public bool OnStruckByLightning(EntityLiving self, Entity bolt)
     {
-        if (self.World.IsRemote) return true;
+        if (self.World.IsRemote)
+        {
+            return true;
+        }
 
         Entity replacement = EntityRegistry.ByName(becomes).Create(self.World);
         replacement.SetPositionAndAnglesKeepPrevAngles(self.X, self.Y, self.Z, self.Yaw, self.Pitch);

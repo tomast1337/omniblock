@@ -7,8 +7,8 @@ namespace BetaSharp.Tests.Entities;
 
 /// <summary>
 /// One-shot generator for <c>BetaSharp/assets/entity/*.json</c>, mirroring
-/// <c>ItemJsonDumperTests</c>. Env-var gated and a no-op in normal runs — the migration doc's
-/// lesson #2 is to generate these files from live data rather than transcribe them by hand.
+/// <c>ItemJsonDumperTests</c>. Env-var gated and a no-op in normal runs; exists so the files are
+/// generated from live data rather than transcribed by hand.
 /// Run with <c>DUMP_ENTITY_JSON=1 dotnet test --filter FullyQualifiedName~EntityJsonDumperTests</c>.
 /// </summary>
 [Collection("EntityTests")]

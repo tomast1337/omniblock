@@ -4,20 +4,15 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Movement for a mob that flies: no gravity, drag on all three axes, and nothing to climb. It
-///     also swallows the landing, so a flier that does touch down takes no fall damage.
-///     <para>
-///         This was the whole of the <c>EntityFlying</c> base class. Flight is a property of how a
-///         mob moves, not of what it is, so it is a Physics behavior rather than a place in the
-///         hierarchy.
-///     </para>
+///     Movement for a mob that flies: no gravity, drag on all three axes, and nothing to climb. Also
+///     swallows the landing, so a flier that does touch down takes no fall damage.
 /// </summary>
 public sealed class FlyingMovementBehavior : IEntityPhysics
 {
-    /// <summary>Nothing to grip in the air; a flier never counts as climbing.</summary>
+    /// <summary>A flier never counts as climbing.</summary>
     public bool? IsClimbing(EntityLiving self) => false;
 
-    /// <summary>Landing is handled by doing nothing at all — no damage, no step sound.</summary>
+    /// <summary>Landing is handled by doing nothing: no damage, no step sound.</summary>
     public bool OnLanding(EntityLiving self, float fallDistance) => true;
 
     public bool Travel(EntityLiving self, float strafe, float forward)
@@ -44,8 +39,8 @@ public sealed class FlyingMovementBehavior : IEntityPhysics
             float accelerationFactor = 0.16277136F / (friction * friction * friction);
             self.MoveNonSolid(strafe, forward, self.OnGround ? 0.1F * accelerationFactor : 0.02F);
 
-            // Re-read rather than reuse: the acceleration above may have moved the mob onto a
-            // different block, and the drag applied below is the one under it now.
+            // Re-read instead of reusing: the acceleration above may have moved the mob onto a
+            // different block, and the drag below is the one under it now.
             friction = GroundFriction(self);
             self.Move(self.VelocityX, self.VelocityY, self.VelocityZ);
             self.VelocityX *= friction;
@@ -69,7 +64,10 @@ public sealed class FlyingMovementBehavior : IEntityPhysics
 
     private static float GroundFriction(EntityLiving self)
     {
-        if (!self.OnGround) return 0.91F;
+        if (!self.OnGround)
+        {
+            return 0.91F;
+        }
 
         int groundBlockId = self.World.Reader.GetBlockId(
             MathHelper.Floor(self.X),

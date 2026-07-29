@@ -5,9 +5,9 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Entities;
 
 /// <summary>
-///     The shared body for non-living entities that are nothing but their definition and behaviors —
-///     what <see cref="EntityLiving" /> is to mobs, this is to objects like primed TNT. It applies
-///     the definition's box and flags and owns no state of its own: anything mutable lives in
+///     The shared body for non-living entities that are nothing but their definition and behaviors:
+///     what <see cref="EntityLiving" /> is to mobs, this is to objects like primed TNT. Applies the
+///     definition's box and flags and owns no state of its own; anything mutable lives in
 ///     <see cref="Entity.State" /> and persists through composed <see cref="IEntityPersistence" />.
 /// </summary>
 public class EntityObject : Entity
@@ -32,7 +32,7 @@ public class EntityObject : Entity
 
     protected override double PassengerRidingHeight => Height * Definition.PassengerRideHeightScale + Definition.PassengerRideOffset;
 
-    /// <summary>A solid one is a hull others collide with; the rest are markers walked through.</summary>
+    /// <summary>A solid one is a hull others collide with; the rest are walked through.</summary>
     public override Box? GetBoundingBox() => Definition.SolidCollisionShape ? BoundingBox : null;
 
     public override Box? GetCollisionAgainstShape(Entity entity) =>
@@ -40,17 +40,26 @@ public class EntityObject : Entity
 
     public override void UpdatePassengerPosition()
     {
-        if (Physics?.OnUpdatePassengerPosition(this) != true) base.UpdatePassengerPosition();
+        if (Physics?.OnUpdatePassengerPosition(this) != true)
+        {
+            base.UpdatePassengerPosition();
+        }
     }
 
     public override void AnimateHurt()
     {
-        if (Behaviors.Lifecycle?.OnAnimateHurt(this) != true) base.AnimateHurt();
+        if (Behaviors.Lifecycle?.OnAnimateHurt(this) != true)
+        {
+            base.AnimateHurt();
+        }
     }
 
     public override void OnCollision(Entity entity)
     {
-        if (Physics?.OnCollision(this, entity) != true) base.OnCollision(entity);
+        if (Physics?.OnCollision(this, entity) != true)
+        {
+            base.OnCollision(entity);
+        }
     }
 
     public override void MarkDead()
@@ -60,12 +69,15 @@ public class EntityObject : Entity
     }
 
     /// <summary>
-    ///     A behavior may take the synced position for itself — a bobber eases towards it. Failing
-    ///     that, an arrow declares it stays put: it must not climb out of whatever it is stuck in.
+    ///     A behavior may take the synced position for itself; a bobber eases towards it. Failing
+    ///     that, an arrow declares it stays put, so it never climbs out of what it is stuck in.
     /// </summary>
     public override void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int steps)
     {
-        if (Physics?.OnPositionSync(this, x, y, z, yaw, pitch, steps) == true) return;
+        if (Physics?.OnPositionSync(this, x, y, z, yaw, pitch, steps) == true)
+        {
+            return;
+        }
 
         if (Definition.PositionSyncAvoidsEntities)
         {
@@ -77,38 +89,54 @@ public class EntityObject : Entity
         SetRotation(yaw, pitch);
     }
 
-    /// <summary>Non-living damage is composed: a dropped item spends hit points, TNT ignores the hit.</summary>
+    /// <summary>Composed: a dropped item spends hit points, primed TNT ignores the hit.</summary>
     public override bool Damage(Entity? entity, int amount) =>
         Behaviors.Lifecycle?.Damage(this, entity, amount) ?? base.Damage(entity, amount);
 
     protected override void Damage(int amt)
     {
-        if (Behaviors.Lifecycle?.Damage(this, null, amt) is null) base.Damage(amt);
+        if (Behaviors.Lifecycle?.Damage(this, null, amt) is null)
+        {
+            base.Damage(amt);
+        }
     }
 
     protected override bool BypassesSteppingEffects() => Definition.MakesStepSounds;
 
-    /// <summary>Zero for every non-living entity — the vertical shadow offset is a mob thing.</summary>
+    /// <summary>Zero for every non-living entity; the vertical shadow offset is a mob thing.</summary>
     public override float GetShadowRadius() => 0.0F;
 
     public override bool ShouldRender(Vec3D vec) => Physics?.ShouldRender(this) ?? base.ShouldRender(vec);
 
     public override void SetVelocityClient(double vx, double vy, double vz)
     {
-        if (Physics?.OnVelocityFromServer(this, vx, vy, vz) != true) base.SetVelocityClient(vx, vy, vz);
+        if (Physics?.OnVelocityFromServer(this, vx, vy, vz) != true)
+        {
+            base.SetVelocityClient(vx, vy, vz);
+        }
     }
 
     public override void Move(double dx, double dy, double dz)
     {
-        if (Physics?.OnMove(this, dx, dy, dz) != true) base.Move(dx, dy, dz);
+        if (Physics?.OnMove(this, dx, dy, dz) != true)
+        {
+            base.Move(dx, dy, dz);
+        }
     }
 
     public override void AddVelocity(double dx, double dy, double dz)
     {
-        if (Physics?.OnAddVelocity(this, dx, dy, dz) != true) base.AddVelocity(dx, dy, dz);
+        if (Physics?.OnAddVelocity(this, dx, dy, dz) != true)
+        {
+            base.AddVelocity(dx, dy, dz);
+        }
     }
 
-    protected override void ReadNbt(NBTTagCompound nbt) { }
+    protected override void ReadNbt(NBTTagCompound nbt)
+    {
+    }
 
-    protected override void WriteNbt(NBTTagCompound nbt) { }
+    protected override void WriteNbt(NBTTagCompound nbt)
+    {
+    }
 }

@@ -6,9 +6,8 @@ using BetaSharp.Registries;
 namespace BetaSharp.Tests.Entities;
 
 /// <summary>
-/// Covers Phase 3 of the mob data-driven migration: every mob's configuration is reached through
-/// <see cref="EntityType.Definition"/> rather than a static field, and protocol ids stay inside the
-/// signed byte the spawn packets transmit.
+/// Covers how a mob's configuration is reached: through <see cref="EntityType.Definition"/> rather
+/// than a static field, with protocol ids inside the signed byte the spawn packets transmit.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityRegistryDefinitionTests
@@ -23,9 +22,9 @@ public sealed class EntityRegistryDefinitionTests
     ];
 
     /// <summary>
-    /// Non-living entities that are nevertheless fully described by a JSON definition — the non-mob
-    /// half of the migration. They carry a definition but no spawn category, and are excluded from
-    /// the mob-only assertions (living base class, spawn budgets).
+    /// Non-living entities that are nevertheless fully described by a JSON definition. They carry a
+    /// definition but no spawn category, so they are excluded from the mob-only assertions (living
+    /// base class, spawn budgets).
     /// </summary>
     private static readonly EntityType[] s_definedObjectTypes =
     [
@@ -76,7 +75,7 @@ public sealed class EntityRegistryDefinitionTests
         FakeWorldContext world = new();
 
         // Reference equality, not value equality: this is what proves the mob reads through the
-        // registry, so replacing the registered definition in Phase 4 actually reaches it.
+        // registry, so replacing the registered definition actually reaches it.
         Assert.Same(EntityRegistry.ByName("zombie").Definition, ((EntityMonster)EntityRegistry.ByName("zombie").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("wolf").Definition, ((EntityLiving)EntityRegistry.ByName("wolf").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("ghast").Definition, ((EntityLiving)EntityRegistry.ByName("ghast").Create(world)).Definition);
@@ -84,7 +83,7 @@ public sealed class EntityRegistryDefinitionTests
     }
 
     /// <summary>
-    /// The migration doc's "Biome spawn lists reference entities too" gotcha, made executable.
+    /// Biome spawn lists reference entities too.
     /// <c>Biome</c>'s spawn lists and <c>NaturalSpawner.Monsters</c> construct mobs through raw
     /// <c>w =&gt; new EntityXxx(w)</c> lambdas that never touch <see cref="EntityRegistry"/>, so they
     /// would not surface a broken definition lookup as a compile error. This exercises that same

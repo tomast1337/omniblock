@@ -3,14 +3,17 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Sets the mob alight when it stands in daylight under open sky. Stateless — zombies and
-///     skeletons carried byte-identical copies of this before it became one shared behavior.
+///     Sets the mob alight when it stands in daylight under open sky. Stateless, and shared by
+///     zombies and skeletons.
 /// </summary>
 public sealed class BurnInDaylightBehavior(int fireTicks = 300) : IEntityTicker
 {
     public void OnTickMovement(EntityLiving self)
     {
-        if (!self.World.Environment.CanMonsterSpawn()) return;
+        if (!self.World.Environment.CanMonsterSpawn())
+        {
+            return;
+        }
 
         float brightness = self.GetBrightnessAtEyes(1.0F);
         if (brightness > 0.5F

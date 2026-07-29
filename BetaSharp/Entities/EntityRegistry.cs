@@ -12,12 +12,21 @@ public static class EntityRegistry
     private static readonly IRegistry<EntityType> s_registry = DefaultRegistries.EntityTypes;
 
     /// <summary>
+    ///     Resolves a registered type by its registry path (e.g. <c>"zombie"</c>), matching
+    ///     <c>Item.ByName</c>. Callers on a hot path should cache the result in a
+    ///     <c>static readonly</c> field instead of resolving per call.
+    /// </summary>
+    private static readonly Dictionary<Type, EntityType> s_byRuntimeType = [];
+
+    private static readonly HashSet<Type> s_ambiguousRuntimeTypes = [];
+
+    /// <summary>
     ///     Registration runs from the static constructor, triggered by
     ///     <c>DefaultRegistries.EntityTypes.Bootstrap(typeof(EntityRegistry))</c>. There are no
     ///     per-type static accessors: callers resolve types through <see cref="ByName" />.
     ///     <para>
-    ///         Mobs take their protocol id from <c>assets/entity/*.json</c> rather than a literal
-    ///         here — the id is part of the definition, so declaring it twice would let them drift.
+    ///         Protocol ids come from <c>assets/entity/*.json</c>, not from literals here: the id is
+    ///         part of the definition, and declaring it twice would let the two drift.
     ///     </para>
     /// </summary>
     static EntityRegistry()
@@ -37,14 +46,14 @@ public static class EntityRegistry
         RegisterDefined((world, type) => new EntityAnimal(world, type), "Pig");
         RegisterDefined((world, type) => new EntityAnimal(world, type), "Sheep");
 
-        // No class of its own: a cow is an EntityAnimal configured by cow.json. Every behavior it
-        // once overrode now sits in a capability slot, so the subclass had nothing left to hold.
+        // No class of their own: a cow is an EntityAnimal configured by cow.json, with everything
+        // specific to it in a capability slot.
         RegisterDefined((world, type) => new EntityAnimal(world, type), "Cow");
         RegisterDefined((world, type) => new EntityAnimal(world, type), "Chicken");
         RegisterDefined((world, type) => new EntityLiving(world, type), "Squid");
         RegisterDefined((world, type) => new EntityAnimal(world, type), "Wolf");
-        // No class of their own either: primed TNT and falling sand are EntityObjects configured by
-        // their JSON — the non-living entities on the same footing as the mobs.
+        // Same for the non-living entities: primed TNT and falling sand are EntityObjects
+        // configured by their JSON.
         RegisterDefined((world, type) => new EntityObject(world, type), "PrimedTnt");
         RegisterDefined((world, type) => new EntityObject(world, type), "FallingSand");
         RegisterDefined((world, type) => new EntityObject(world, type), "Minecart");
@@ -57,8 +66,8 @@ public static class EntityRegistry
     }
 
     /// <summary>
-    ///     Registers an entity that is fully described by data — mob or not — taking both its
-    ///     configuration and its protocol id from the JSON definition of the same (lowercased) name.
+    ///     Registers an entity fully described by data, mob or not, taking both its configuration
+    ///     and its protocol id from the JSON definition of the same (lowercased) name.
     /// </summary>
     private static EntityType RegisterDefined<T>(Func<IWorldContext, EntityType, T> factory, string id) where T : Entity
     {
@@ -68,8 +77,8 @@ public static class EntityRegistry
 
     private static EntityType Register<T>(Func<IWorldContext, EntityType, T> factory, string id, int rawId, EntityDefinition? definition = null) where T : Entity
     {
-        // Spawn packets transmit this as a signed byte, so an out-of-range id would be silently
-        // truncated into a different entity on the wire. Fail at registration instead.
+        // Spawn packets transmit this as a signed byte, so an out-of-range id would be truncated
+        // into a different entity on the wire.
         if (rawId is < sbyte.MinValue or > sbyte.MaxValue)
         {
             throw new ArgumentOutOfRangeException(
@@ -81,42 +90,39 @@ public static class EntityRegistry
         EntityType type = new((w, t) => factory(w, t), typeof(T), id, definition);
         s_registry.Register(rawId, ResourceLocation.Parse(id.ToLower()), type);
 
-        // Several types may now share one class (every plain animal is an EntityAnimal). A class that
-        // maps to more than one type identifies nothing, so it is struck from the index rather than
-        // left resolving to whichever registration happened to run first.
-        if (!s_byRuntimeType.TryAdd(typeof(T), type)) s_ambiguousRuntimeTypes.Add(typeof(T));
+        // Several types share one class (every plain animal is an EntityAnimal). A class mapping to
+        // more than one type identifies nothing, so it is struck from the index instead of resolving
+        // to whichever registration ran first.
+        if (!s_byRuntimeType.TryAdd(typeof(T), type))
+        {
+            s_ambiguousRuntimeTypes.Add(typeof(T));
+        }
 
         return type;
     }
 
     /// <summary>
-    ///     Resolves a registered type by its registry path (e.g. <c>"zombie"</c>). Replaces the
-    ///     per-type static accessors this class used to expose, mirroring <c>Item.ByName</c>.
-    ///     <para>
-    ///         Callers on a hot path should cache the result in a <c>static readonly</c> field
-    ///         rather than resolving per call — the same treatment the item migration gave its own
-    ///         hot <c>ByName</c> lookups.
-    ///     </para>
-    /// </summary>
-    private static readonly Dictionary<Type, EntityType> s_byRuntimeType = [];
-    private static readonly HashSet<Type> s_ambiguousRuntimeTypes = [];
-
-    /// <summary>
     ///     Resolves the type an entity class was registered as, walking base classes so subclasses
     ///     that are not registered in their own right (the client's player entities) still resolve.
     ///     <para>
-    ///         This is the fallback for entities constructed outside the registry. Entities the
-    ///         registry created carry their type instead — see <see cref="EntityType.Create" />.
-    ///         Classes shared by several registered types resolve to <c>null</c>, because the class
-    ///         no longer says which one it is.
+    ///         The fallback for entities constructed outside the registry; entities the registry
+    ///         created carry their type instead (see <see cref="EntityType.Create" />). A class shared
+    ///         by several registered types resolves to <c>null</c>, since it names none of them.
     ///     </para>
     /// </summary>
     public static EntityType? ByRuntimeType(Type runtimeType)
     {
         for (Type? candidate = runtimeType; candidate != null; candidate = candidate.BaseType)
         {
-            if (s_ambiguousRuntimeTypes.Contains(candidate)) return null;
-            if (s_byRuntimeType.TryGetValue(candidate, out EntityType? type)) return type;
+            if (s_ambiguousRuntimeTypes.Contains(candidate))
+            {
+                return null;
+            }
+
+            if (s_byRuntimeType.TryGetValue(candidate, out EntityType? type))
+            {
+                return type;
+            }
         }
 
         return null;
@@ -135,7 +141,10 @@ public static class EntityRegistry
     {
         foreach (EntityType type in s_registry)
         {
-            if (type.Definition?.SpawnObjectId == spawnObjectId) return type;
+            if (type.Definition?.SpawnObjectId == spawnObjectId)
+            {
+                return type;
+            }
         }
 
         return null;
@@ -146,7 +155,10 @@ public static class EntityRegistry
     {
         foreach (EntityType type in s_registry)
         {
-            if (type.Definition?.GlobalSpawnId == globalSpawnId) return type;
+            if (type.Definition?.GlobalSpawnId == globalSpawnId)
+            {
+                return type;
+            }
         }
 
         return null;

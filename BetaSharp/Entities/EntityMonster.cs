@@ -31,10 +31,26 @@ public class EntityMonster : EntityCreature
 
     public override bool Damage(Entity? entity, int amount)
     {
-        if (!base.Damage(entity, amount)) return false;
-        if (Equals(Passenger, entity) || Equals(Vehicle, entity)) return true;
-        if (Equals(entity, this)) return true;
-        if (entity is EntityPlayer { GameMode.CanBeTargeted: true }) Target = entity;
+        if (!base.Damage(entity, amount))
+        {
+            return false;
+        }
+
+        if (Equals(Passenger, entity) || Equals(Vehicle, entity))
+        {
+            return true;
+        }
+
+        if (Equals(entity, this))
+        {
+            return true;
+        }
+
+        if (entity is EntityPlayer { GameMode.CanBeTargeted: true })
+        {
+            Target = entity;
+        }
+
         return true;
     }
 
@@ -42,19 +58,25 @@ public class EntityMonster : EntityCreature
         Physics?.GetBlockPathWeight(this, x, y, z) ?? 0.5F - World.Lighting.GetLuminance(x, y, z);
 
     /// <summary>
-    ///     The darkness rule. A mob whose Physics slot declares its own placement never reaches
-    ///     here — <see cref="EntityLiving.CanSpawn" /> replaces this outright rather than adding to
-    ///     it, which is what lets a zombie pigman spawn in the lit Nether.
+    ///     The darkness rule. <see cref="EntityLiving.CanSpawn" /> replaces this outright when the
+    ///     Physics slot declares its own placement, which is how a zombie pigman spawns in the lit
+    ///     Nether.
     /// </summary>
     protected override bool CanSpawnHere()
     {
         int x = MathHelper.Floor(X);
         int y = MathHelper.Floor(BoundingBox.MinY);
         int z = MathHelper.Floor(Z);
-        if (World.Lighting.GetBrightness(LightType.Sky, x, y, z) > Random.NextInt(32)) return false;
+        if (World.Lighting.GetBrightness(LightType.Sky, x, y, z) > Random.NextInt(32))
+        {
+            return false;
+        }
 
         int lightLevel = World.Lighting.GetLightLevel(x, y, z);
-        if (!World.Environment.IsThundering()) return lightLevel <= Random.NextInt(8) && base.CanSpawnHere();
+        if (!World.Environment.IsThundering())
+        {
+            return lightLevel <= Random.NextInt(8) && base.CanSpawnHere();
+        }
 
         int ambientDarkness = World.Environment.AmbientDarkness;
         World.Environment.AmbientDarkness = 10;

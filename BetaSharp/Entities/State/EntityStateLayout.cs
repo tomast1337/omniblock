@@ -7,21 +7,25 @@ namespace BetaSharp.Entities.State;
 /// </summary>
 public sealed class EntityStateLayout
 {
-    private int _ints;
-    private int _longs;
-    private int _floats;
-    private int _doubles;
-    private int _bools;
-    private int _refs;
+    private readonly List<(int Index, bool Value)> _boolDefaults = [];
+    private readonly List<(int Index, double Value)> _doubleDefaults = [];
+    private readonly List<(int Index, float Value)> _floatDefaults = [];
 
     private readonly List<(int Index, int Value)> _intDefaults = [];
-    private readonly List<(int Index, float Value)> _floatDefaults = [];
-    private readonly List<(int Index, double Value)> _doubleDefaults = [];
-    private readonly List<(int Index, bool Value)> _boolDefaults = [];
+    private int _bools;
+    private int _doubles;
+    private int _floats;
+    private int _ints;
+    private int _longs;
+    private int _refs;
 
     public StateHandle<int> DeclareInt(int initial = 0)
     {
-        if (initial != 0) _intDefaults.Add((_ints, initial));
+        if (initial != 0)
+        {
+            _intDefaults.Add((_ints, initial));
+        }
+
         return new StateHandle<int>(_ints++);
     }
 
@@ -29,19 +33,31 @@ public sealed class EntityStateLayout
 
     public StateHandle<float> DeclareFloat(float initial = 0.0F)
     {
-        if (initial != 0.0F) _floatDefaults.Add((_floats, initial));
+        if (initial != 0.0F)
+        {
+            _floatDefaults.Add((_floats, initial));
+        }
+
         return new StateHandle<float>(_floats++);
     }
 
     public StateHandle<double> DeclareDouble(double initial = 0.0D)
     {
-        if (initial != 0.0D) _doubleDefaults.Add((_doubles, initial));
+        if (initial != 0.0D)
+        {
+            _doubleDefaults.Add((_doubles, initial));
+        }
+
         return new StateHandle<double>(_doubles++);
     }
 
     public StateHandle<bool> DeclareBool(bool initial = false)
     {
-        if (initial) _boolDefaults.Add((_bools, initial));
+        if (initial)
+        {
+            _boolDefaults.Add((_bools, initial));
+        }
+
         return new StateHandle<bool>(_bools++);
     }
 
@@ -52,10 +68,25 @@ public sealed class EntityStateLayout
     {
         EntityState state = new(_ints, _longs, _floats, _doubles, _bools, _refs);
 
-        foreach ((int index, int value) in _intDefaults) state.SetIntRaw(index, value);
-        foreach ((int index, float value) in _floatDefaults) state.SetFloatRaw(index, value);
-        foreach ((int index, double value) in _doubleDefaults) state.SetDoubleRaw(index, value);
-        foreach ((int index, bool value) in _boolDefaults) state.SetBoolRaw(index, value);
+        foreach ((int index, int value) in _intDefaults)
+        {
+            state.SetIntRaw(index, value);
+        }
+
+        foreach ((int index, float value) in _floatDefaults)
+        {
+            state.SetFloatRaw(index, value);
+        }
+
+        foreach ((int index, double value) in _doubleDefaults)
+        {
+            state.SetDoubleRaw(index, value);
+        }
+
+        foreach ((int index, bool value) in _boolDefaults)
+        {
+            state.SetBoolRaw(index, value);
+        }
 
         return state;
     }

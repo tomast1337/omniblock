@@ -8,7 +8,7 @@ public interface IEntityTargetBehavior
 {
     /// <summary>
     ///     Returns the entity this mob should start hunting, or <c>null</c> to stay idle. Despite the
-    ///     name this is not restricted to players — <see cref="EntityWolf" /> targets sheep.
+    ///     name this is not restricted to players: a wolf targets sheep.
     /// </summary>
     Entity? FindPlayerToAttack(EntityCreature self) => null;
 }

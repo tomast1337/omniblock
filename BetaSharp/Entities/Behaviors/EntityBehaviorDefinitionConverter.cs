@@ -7,7 +7,7 @@ namespace BetaSharp.Entities.Behaviors;
 ///     Reads a behavior entry's <c>"Type"</c> key and deserializes the rest of the object into the
 ///     matching <see cref="EntityBehaviorDefinition" /> subclass.
 ///     <para>
-///         Hand-written rather than <c>[JsonPolymorphic]</c> for two reasons: the discriminator can
+///         Hand-written instead of <c>[JsonPolymorphic]</c> for two reasons: the discriminator may
 ///         appear anywhere in the object rather than having to come first, and an unknown type name
 ///         produces a message naming it instead of a generic deserialization failure.
 ///     </para>
@@ -21,7 +21,10 @@ internal sealed class EntityBehaviorDefinitionConverter : JsonConverter<EntityBe
     private static readonly JsonSerializerOptions s_options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        Converters = { new JsonStringEnumConverter() }
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        }
     };
 
     public override EntityBehaviorDefinition Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -36,7 +39,7 @@ internal sealed class EntityBehaviorDefinitionConverter : JsonConverter<EntityBe
 
         if (EntityBehaviorDefinitionRegistry.Resolve(typeName) is not { } clrType)
         {
-            // Not converted to a typed definition yet — fall back to the string-keyed factory.
+            // No typed definition for this type, so fall back to the string-keyed factory.
             return new LegacyBehaviorDefinition(typeName, json.Clone())
             {
                 Slots = ReadSlots(json, typeName)
@@ -44,7 +47,7 @@ internal sealed class EntityBehaviorDefinitionConverter : JsonConverter<EntityBe
         }
 
         return (EntityBehaviorDefinition)(json.Deserialize(clrType, s_options)
-            ?? throw new JsonException($"Behavior '{typeName}' deserialized to null."));
+                                          ?? throw new JsonException($"Behavior '{typeName}' deserialized to null."));
     }
 
     private static string[] ReadSlots(JsonElement json, string typeName)
@@ -54,8 +57,11 @@ internal sealed class EntityBehaviorDefinitionConverter : JsonConverter<EntityBe
             throw new JsonException($"Behavior '{typeName}' is missing its 'Slots' array.");
         }
 
-        return [.. slots.EnumerateArray().Select(slot => slot.GetString()
-            ?? throw new JsonException($"Behavior '{typeName}' has a null entry in 'Slots'."))];
+        return
+        [
+            .. slots.EnumerateArray().Select(slot => slot.GetString()
+                                                     ?? throw new JsonException($"Behavior '{typeName}' has a null entry in 'Slots'."))
+        ];
     }
 
     public override void Write(Utf8JsonWriter writer, EntityBehaviorDefinition value, JsonSerializerOptions options) =>

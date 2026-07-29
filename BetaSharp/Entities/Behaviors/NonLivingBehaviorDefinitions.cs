@@ -1,15 +1,13 @@
 using System.Text.Json.Serialization;
 using BetaSharp.Blocks;
 using BetaSharp.Items;
-using BetaSharp.Registries;
-using BetaSharp.Stats;
 
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Typed definitions for the behaviors that replaced the non-living entity classes. Each one
-///     holds its configuration as deserialized properties and resolves names to registry objects in
-///     <c>Build</c>, so the behavior's own constructor takes plain values and cannot fail.
+///     Typed definitions for the non-living entity behaviors. Each holds its configuration as
+///     deserialized properties and resolves names to registry objects in <c>Build</c>, so the
+///     behavior's own constructor takes plain values and cannot fail.
 /// </summary>
 internal static class BehaviorDefinitionHelpers
 {
@@ -81,9 +79,11 @@ public sealed class DroppedItemDefinition : EntityBehaviorDefinition
             context.Layout,
             DespawnAge,
             Health,
-            [.. PickupAchievements.Select(entry => (
-                BehaviorDefinitionHelpers.ItemId(entry.Item),
-                BehaviorDefinitionHelpers.Achievement(entry.Achievement)))]);
+            [
+                .. PickupAchievements.Select(entry => (
+                    BehaviorDefinitionHelpers.ItemId(entry.Item),
+                    BehaviorDefinitionHelpers.Achievement(entry.Achievement)))
+            ]);
 }
 
 /// <summary>The egg's hatch roll: a chance of one hatchling, itself upgradable to several.</summary>

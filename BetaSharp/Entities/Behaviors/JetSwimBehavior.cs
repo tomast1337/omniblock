@@ -5,10 +5,10 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A squid's swimming: it beats its tentacles on a sine cycle, jets along a heading it re-picks
-///     at random, and coasts on the velocity that produces. One behavior across Physics and Ticker,
-///     because the animation phase and the motion are the same thing seen twice — the mob moves
-///     because it is mid-beat, and the renderer draws the beat from the same counters.
+///     A squid's swimming: beats its tentacles on a sine cycle, jets along a heading it re-picks at
+///     random, and coasts on the velocity that produces. One behavior across Physics and Ticker,
+///     because the motion and the animation read the same counters: the mob moves because it is
+///     mid-beat.
 ///     <para>
 ///         Out of water none of it applies: the squid stops steering, falls, and tips onto its side.
 ///     </para>
@@ -16,21 +16,21 @@ namespace BetaSharp.Entities.Behaviors;
 public sealed class JetSwimBehavior : IEntityPhysics, IEntityTicker
 {
     private readonly StateHandle<float> _animationSpeed;
-    private readonly StateHandle<float> _swimPhase;
-    private readonly StateHandle<float> _jetSpeed;
     private readonly StateHandle<float> _beatStrength;
     private readonly StateHandle<float> _headingX;
     private readonly StateHandle<float> _headingY;
     private readonly StateHandle<float> _headingZ;
-    private readonly StateHandle<float> _tentaclePhase;
-    private readonly StateHandle<float> _previousTentaclePhase;
-    private readonly StateHandle<float> _tentacleSpread;
-    private readonly StateHandle<float> _previousTentacleSpread;
-    private readonly StateHandle<float> _tiltAngle;
-    private readonly StateHandle<float> _previousTiltAngle;
+    private readonly StateHandle<float> _jetSpeed;
 
     private readonly float _jetStrength;
+    private readonly StateHandle<float> _previousTentaclePhase;
+    private readonly StateHandle<float> _previousTentacleSpread;
+    private readonly StateHandle<float> _previousTiltAngle;
     private readonly int _rerollChanceOneIn;
+    private readonly StateHandle<float> _swimPhase;
+    private readonly StateHandle<float> _tentaclePhase;
+    private readonly StateHandle<float> _tentacleSpread;
+    private readonly StateHandle<float> _tiltAngle;
     private readonly double _waterProbeDepth;
 
     public JetSwimBehavior(in EntityBehaviorContext context)
@@ -56,36 +56,15 @@ public sealed class JetSwimBehavior : IEntityPhysics, IEntityTicker
 
     /// <summary>
     ///     Probes a box reaching below the mob rather than the mob's own, and is carried by the
-    ///     current as it does — the answer and the push are one call.
+    ///     current in the same call.
     /// </summary>
     public bool? IsInWater(Entity self) =>
         self.World.Reader.UpdateMovementInFluid(self.BoundingBox.Expand(0.0D, -_waterProbeDepth, 0.0D), Material.Water, self);
 
-    /// <summary>Velocity is set outright by the beat, so there is nothing to accelerate or damp.</summary>
+    /// <summary>The beat sets velocity outright, so there is nothing to accelerate or damp.</summary>
     public bool Travel(EntityLiving self, float strafe, float forward)
     {
         self.Move(self.VelocityX, self.VelocityY, self.VelocityZ);
-        return true;
-    }
-
-    /// <summary>Re-aims every so often, and always when stalled or out of water.</summary>
-    public bool OnTickLiving(EntityLiving self)
-    {
-        EntityState state = self.State;
-        bool stalled = state[_headingX] == 0.0F && state[_headingY] == 0.0F && state[_headingZ] == 0.0F;
-
-        // The plain flag, not the probing one: re-aiming must not push the mob about.
-        if (self.Random.NextInt(_rerollChanceOneIn) == 0 || !self.InWater || stalled)
-        {
-            float angle = self.Random.NextFloat() * (float)Math.PI * 2.0F;
-            state[_headingX] = MathHelper.Cos(angle) * _jetStrength;
-            state[_headingY] = -_jetStrength / 2.0F + self.Random.NextFloat() * _jetStrength;
-            state[_headingZ] = MathHelper.Sin(angle) * _jetStrength;
-        }
-
-        self.TickDespawn();
-
-        // This is the mob's whole AI: no pathing, no looking around, no ageing.
         return true;
     }
 
@@ -98,24 +77,60 @@ public sealed class JetSwimBehavior : IEntityPhysics, IEntityTicker
 
         AdvancePhase(self, state);
 
-        if (self.IsInWater) SwimStroke(self, state);
-        else Sink(self, state);
+        if (self.IsInWater)
+        {
+            SwimStroke(self, state);
+        }
+        else
+        {
+            Sink(self, state);
+        }
+    }
+
+    /// <summary>Re-aims every so often, and always when stalled or out of water.</summary>
+    public bool OnTickLiving(EntityLiving self)
+    {
+        EntityState state = self.State;
+        bool stalled = state[_headingX] == 0.0F && state[_headingY] == 0.0F && state[_headingZ] == 0.0F;
+
+        // The plain flag, not the probing one: re-aiming must not push the mob.
+        if (self.Random.NextInt(_rerollChanceOneIn) == 0 || !self.InWater || stalled)
+        {
+            float angle = self.Random.NextFloat() * (float)Math.PI * 2.0F;
+            state[_headingX] = MathHelper.Cos(angle) * _jetStrength;
+            state[_headingY] = -_jetStrength / 2.0F + self.Random.NextFloat() * _jetStrength;
+            state[_headingZ] = MathHelper.Sin(angle) * _jetStrength;
+        }
+
+        self.TickDespawn();
+
+        // The mob's whole AI: no pathing, no looking around, no ageing.
+        return true;
     }
 
     /// <summary>
-    ///     Walks the beat cycle round, re-rolling how fast the next cycles run one time in ten. Seeded
-    ///     on first use rather than at construction, because behaviors are shared across every mob of
-    ///     the type and a state default cannot be random.
+    ///     Walks the beat cycle round, re-rolling how fast the next cycles run one time in ten.
+    ///     Seeded on first use, not at construction: behaviors are shared across every mob of the
+    ///     type, so a state default cannot be random.
     /// </summary>
     private void AdvancePhase(EntityLiving self, EntityState state)
     {
-        if (state[_animationSpeed] == 0.0F) state[_animationSpeed] = RollAnimationSpeed(self);
+        if (state[_animationSpeed] == 0.0F)
+        {
+            state[_animationSpeed] = RollAnimationSpeed(self);
+        }
 
         state[_swimPhase] += state[_animationSpeed];
-        if (state[_swimPhase] <= (float)Math.PI * 2.0F) return;
+        if (state[_swimPhase] <= (float)Math.PI * 2.0F)
+        {
+            return;
+        }
 
         state[_swimPhase] -= (float)Math.PI * 2.0F;
-        if (self.Random.NextInt(10) == 0) state[_animationSpeed] = RollAnimationSpeed(self);
+        if (self.Random.NextInt(10) == 0)
+        {
+            state[_animationSpeed] = RollAnimationSpeed(self);
+        }
     }
 
     private static float RollAnimationSpeed(EntityLiving self) => 1.0F / (self.Random.NextFloat() + 1.0F) * 0.2F;
@@ -162,7 +177,7 @@ public sealed class JetSwimBehavior : IEntityPhysics, IEntityTicker
         state[_tiltAngle] += (-(float)Math.Atan2(phaseProgress, self.VelocityY) * 180.0F / (float)Math.PI - state[_tiltAngle]) * 0.1F;
     }
 
-    /// <summary>Out of water the beat is cosmetic: the mob falls and rolls onto its side.</summary>
+    /// <summary>Out of water the beat is cosmetic; the mob falls and rolls onto its side.</summary>
     private void Sink(EntityLiving self, EntityState state)
     {
         state[_tentacleSpread] = MathHelper.Abs(MathHelper.Sin(state[_swimPhase])) * (float)Math.PI * 0.25F;

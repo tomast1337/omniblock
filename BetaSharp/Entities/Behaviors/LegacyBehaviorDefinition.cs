@@ -3,13 +3,10 @@ using System.Text.Json;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A behavior that has not been given a typed <see cref="EntityBehaviorDefinition" /> yet: it
-///     keeps its raw JSON and hands it to the old string-keyed factory table at build time.
-///     <para>
-///         Scaffolding for the conversion, and the only thing keeping
-///         <c>EntityBehaviorRegistry</c> alive. Both go away once every behavior type appears in
-///         <see cref="EntityBehaviorDefinitionRegistry" />.
-///     </para>
+///     A behavior with no typed <see cref="EntityBehaviorDefinition" /> yet: it keeps its raw JSON
+///     and hands it to the string-keyed <c>EntityBehaviorRegistry</c> at build time. Both this and
+///     that registry go away once every behavior type appears in
+///     <see cref="EntityBehaviorDefinitionRegistry" />.
 /// </summary>
 internal sealed class LegacyBehaviorDefinition(string typeName, JsonElement json) : EntityBehaviorDefinition
 {

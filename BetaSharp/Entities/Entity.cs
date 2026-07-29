@@ -9,7 +9,6 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 using DroppedItemBehavior = BetaSharp.Entities.Behaviors.DroppedItemBehavior;
-using Math = System.Math;
 
 namespace BetaSharp.Entities;
 
@@ -31,36 +30,21 @@ public abstract class Entity : IEntity
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
 
         // Prefer the type handed down by the registry factory: two registered types may share one
-        // class, so the class alone no longer identifies the entity. The lookup is the fallback for
-        // entities still constructed directly (tests, remaining classful entities).
+        // class, so the class alone does not identify the entity. The lookup is the fallback for
+        // entities constructed directly (tests, the client's player subclasses).
         type ??= EntityRegistry.ByRuntimeType(GetType());
         _type = type;
         EntityBehaviorSet behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;
         Behaviors = behaviors;
         State = behaviors.StateLayout.Create();
 
-        // Declared here rather than on EntityLiving so every entity kind can carry synced state.
+        // Declared here, not on EntityLiving, so every entity kind can carry synced state.
         SyncedDeclarations = type?.Definition?.SyncedProperties ?? [];
         SyncedPropertyFactory.Declare(DataSynchronizer, SyncedDeclarations, type?.Id ?? GetType().Name);
     }
 
     /// <summary>JSON-declared synced properties for this entity's type.</summary>
     protected internal SyncedPropertyDefinition[] SyncedDeclarations { get; }
-
-    /// <summary>
-    ///     Reads a declared synced property by name, or <c>null</c> if this entity's type declares
-    ///     none by that name. Lets callers ask what an entity <em>has</em> rather than what class it
-    ///     is: saddling works on anything declaring <c>saddled</c>, not specifically on a pig.
-    /// </summary>
-    public SyncedProperty<T>? Synced<T>(string name)
-    {
-        foreach (SyncedPropertyDefinition declaration in SyncedDeclarations)
-        {
-            if (declaration.Name == name) return DataSynchronizer.Get<T>(declaration.Id);
-        }
-
-        return null;
-    }
 
     /// <summary>Composed NBT persistence, for state a declared property cannot express on its own.</summary>
     protected internal IEntityPersistence? Persistence => Behaviors.Persistence;
@@ -73,7 +57,7 @@ public abstract class Entity : IEntity
 
     /// <summary>
     ///     Shared capability slots for this entity's type. Public because the client reads them:
-    ///     a renderer now asks the entity what it is composed of rather than what class it is.
+    ///     a renderer asks the entity what it is composed of, not what class it is.
     /// </summary>
     public EntityBehaviorSet Behaviors { get; }
 
@@ -92,8 +76,8 @@ public abstract class Entity : IEntity
     ///     so client-side player subclasses still resolve to the registered <c>player</c> type.
     /// </summary>
     public virtual EntityType? Type => _type;
+
     public int ID { get; set; } = s_nextEntityId++;
-    public int GetId() => ID;
 
     /// <summary>
     ///     Multiplayer for rendering, based of the render distance,
@@ -107,7 +91,6 @@ public abstract class Entity : IEntity
 
     public Entity? Passenger { get; set; }
     public Entity? Vehicle { get; set; }
-    public IWorldContext World { get; private set; }
     public double PrevX { get; set; }
     public double PrevY { get; set; }
     public double PrevZ { get; set; }
@@ -179,8 +162,6 @@ public abstract class Entity : IEntity
     /// </summary>
     public bool IgnoreFrustumCheck { get; init; }
 
-    public Vec3D Position => new(X, Y, Z);
-
     public float StandingEyeHeight { get; protected internal set; }
 
     protected virtual double PassengerRidingHeight => Height * 0.75D;
@@ -201,7 +182,7 @@ public abstract class Entity : IEntity
     ///     Whether the entity counts as in water. Readers that must not disturb the entity ask
     ///     <see cref="InWater" /> directly instead, because the Physics slot's answer can move it.
     /// </summary>
-    protected internal virtual bool IsInWater => Behaviors.Physics?.IsInWater(this) ?? InWater;
+    protected internal bool IsInWater => Behaviors.Physics?.IsInWater(this) ?? InWater;
 
     protected internal bool IsTouchingLava => World.Reader.IsMaterialInBox(BoundingBox.Expand(-0.1F, -0.4F, -0.1F), m => m == Material.Lava);
 
@@ -214,6 +195,104 @@ public abstract class Entity : IEntity
     public virtual bool HasCollision => false;
 
     public virtual bool IsPushable => false;
+    public int GetId() => ID;
+    public IWorldContext World { get; private set; }
+
+    public Vec3D Position => new(X, Y, Z);
+
+    public virtual void Tick()
+    {
+        if (Ticker?.OnTickEntity(this) == true)
+        {
+            return;
+        }
+
+        Ticker?.OnTick(this);
+        BaseTick();
+    }
+
+    public void Write(NBTTagCompound nbt)
+    {
+        nbt.SetTag("Pos", newDoubleNbtList(X, Y + CameraOffset, Z));
+        nbt.SetTag("Motion", newDoubleNbtList(VelocityX, VelocityY, VelocityZ));
+        nbt.SetTag("Rotation", newFloatNbtList(Yaw, Pitch));
+        nbt.SetFloat("FallDistance", FallDistance);
+        nbt.SetShort("Fire", (short)FireTicks);
+        nbt.SetShort("Air", (short)Air);
+        nbt.SetBoolean("OnGround", OnGround);
+
+        SyncedPropertyFactory.Write(DataSynchronizer, SyncedDeclarations, nbt);
+
+        // Last, so composed persistence has the final say over what the class itself wrote.
+        WriteNbt(nbt);
+        Persistence?.OnWriteNbt(this, nbt);
+    }
+
+    public void Read(NBTTagCompound nbt)
+    {
+        NBTTagList pos = nbt.GetTagList("Pos");
+        NBTTagList mot = nbt.GetTagList("Motion");
+        NBTTagList rot = nbt.GetTagList("Rotation");
+
+        VelocityX = ((NBTTagDouble)mot.TagAt(0)).Value;
+        VelocityY = ((NBTTagDouble)mot.TagAt(1)).Value;
+        VelocityZ = ((NBTTagDouble)mot.TagAt(2)).Value;
+
+        if (Math.Abs(VelocityX) > 10.0D)
+        {
+            VelocityX = 0.0D;
+        }
+
+        if (Math.Abs(VelocityY) > 10.0D)
+        {
+            VelocityY = 0.0D;
+        }
+
+        if (Math.Abs(VelocityZ) > 10.0D)
+        {
+            VelocityZ = 0.0D;
+        }
+
+        PrevX = LastTickX = X = ((NBTTagDouble)pos.TagAt(0)).Value;
+        PrevY = LastTickY = Y = ((NBTTagDouble)pos.TagAt(1)).Value;
+        PrevZ = LastTickZ = Z = ((NBTTagDouble)pos.TagAt(2)).Value;
+
+        PrevYaw = Yaw = ((NBTTagFloat)rot.TagAt(0)).Value;
+        PrevPitch = Pitch = ((NBTTagFloat)rot.TagAt(1)).Value;
+
+        FallDistance = nbt.GetFloat("FallDistance");
+        FireTicks = nbt.GetShort("Fire");
+        Air = nbt.GetShort("Air");
+        OnGround = nbt.GetBoolean("OnGround");
+
+        SetPosition(X, Y, Z);
+        SetRotation(Yaw, Pitch);
+
+        SyncedPropertyFactory.Read(DataSynchronizer, SyncedDeclarations, nbt);
+
+        // Last for the same reason as writing, and it matters here: restoring a slime's size resets
+        // its health from that size, so it must land after the health the class just read back.
+        ReadNbt(nbt);
+        Persistence?.OnReadNbt(this, nbt);
+    }
+
+    /// <summary>
+    ///     Reads a declared synced property by name, or <c>null</c> if this entity's type declares
+    ///     none by that name. Callers ask what an entity <em>has</em>, not what class it is: saddling
+    ///     works on anything declaring <c>saddled</c>, not specifically on a pig.
+    /// </summary>
+    public SyncedProperty<T>? Synced<T>(string name)
+    {
+        foreach (SyncedPropertyDefinition declaration in SyncedDeclarations)
+        {
+            if (declaration.Name == name)
+            {
+                return DataSynchronizer.Get<T>(declaration.Id);
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>
     ///     Keep moving up until there's no collision.
@@ -228,7 +307,11 @@ public abstract class Entity : IEntity
         while (Y > 0.0D)
         {
             SetPosition(X, Y, Z);
-            if (World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0) break;
+            if (World.Entities.GetEntityCollisionsScratch(this, BoundingBox).Count == 0)
+            {
+                break;
+            }
+
             ++Y;
         }
 
@@ -280,18 +363,18 @@ public abstract class Entity : IEntity
         float oldYaw = Yaw;
         Yaw = (float)(Yaw + yaw * 0.15D);
         Pitch = (float)(Pitch - pitch * 0.15D);
-        if (Pitch < -90.0F) Pitch = -90.0F;
-        if (Pitch > 90.0F) Pitch = 90.0F;
+        if (Pitch < -90.0F)
+        {
+            Pitch = -90.0F;
+        }
+
+        if (Pitch > 90.0F)
+        {
+            Pitch = 90.0F;
+        }
+
         PrevPitch += Pitch - oldPitch;
         PrevYaw += Yaw - oldYaw;
-    }
-
-    public virtual void Tick()
-    {
-        if (Ticker?.OnTickEntity(this) == true) return;
-
-        Ticker?.OnTick(this);
-        BaseTick();
     }
 
     public virtual void BaseTick()
@@ -388,7 +471,11 @@ public abstract class Entity : IEntity
 
     private void SetOnFire()
     {
-        if (IsImmuneToFire) return;
+        if (IsImmuneToFire)
+        {
+            return;
+        }
+
         Damage(null, 4);
         FireTicks = 600;
     }
@@ -421,7 +508,7 @@ public abstract class Entity : IEntity
             {
                 for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; ++chunkZ)
                 {
-                    var chunk = World.ChunkHost.GetChunk(chunkX, chunkZ);
+                    Chunk chunk = World.ChunkHost.GetChunk(chunkX, chunkZ);
                     if (!chunk.Loaded)
                     {
                         VelocityX = VelocityY = VelocityZ = 0.0D;
@@ -435,7 +522,7 @@ public abstract class Entity : IEntity
         {
             BoundingBox.Translate(x, y, z);
             X = (BoundingBox.MinX + BoundingBox.MaxX) / 2.0D;
-            Y = BoundingBox.MinY + (double)StandingEyeHeight - (double)CameraOffset;
+            Y = BoundingBox.MinY + StandingEyeHeight - CameraOffset;
             Z = (BoundingBox.MinZ + BoundingBox.MaxZ) / 2.0D;
         }
         else
@@ -447,7 +534,7 @@ public abstract class Entity : IEntity
             {
                 Slowed = false;
                 x *= 0.25D;
-                y *= (double)0.05F;
+                y *= 0.05F;
                 z *= 0.25D;
                 VelocityX = 0.0D;
                 VelocityY = 0.0D;
@@ -510,7 +597,7 @@ public abstract class Entity : IEntity
                 x = z;
             }
 
-            bool canStepUp = OnGround || originalY != y && originalY < 0.0D;
+            bool canStepUp = OnGround || (originalY != y && originalY < 0.0D);
 
             for (int i = 0; i < entitiesInbound.Count; ++i)
             {
@@ -547,7 +634,7 @@ public abstract class Entity : IEntity
                 originalStepZ = y;
                 double originalZStep = z;
                 x = originalX;
-                y = (double)StepHeight;
+                y = StepHeight;
                 z = originalZ;
                 Box originalBoundingBox = BoundingBox;
                 BoundingBox = bound;
@@ -600,7 +687,7 @@ public abstract class Entity : IEntity
                 }
                 else
                 {
-                    y = (double)(-StepHeight);
+                    y = -StepHeight;
 
                     for (blockId = 0; blockId < entitiesInbound.Count; ++blockId)
                     {
@@ -619,16 +706,16 @@ public abstract class Entity : IEntity
                 }
                 else
                 {
-                    double stepHeightOffset = BoundingBox.MinY - (double)((int)BoundingBox.MinY);
+                    double stepHeightOffset = BoundingBox.MinY - (int)BoundingBox.MinY;
                     if (stepHeightOffset > 0.0D)
                     {
-                        CameraOffset = (float)((double)CameraOffset + stepHeightOffset + 0.01D);
+                        CameraOffset = (float)(CameraOffset + stepHeightOffset + 0.01D);
                     }
                 }
             }
 
             X = (BoundingBox.MinX + BoundingBox.MaxX) / 2.0D;
-            Y = BoundingBox.MinY + (double)StandingEyeHeight - (double)CameraOffset;
+            Y = BoundingBox.MinY + StandingEyeHeight - CameraOffset;
             Z = (BoundingBox.MinZ + BoundingBox.MaxZ) / 2.0D;
             HorizontalCollision = originalX != x || originalZ != z;
             VerticalCollision = originalY != y;
@@ -657,12 +744,12 @@ public abstract class Entity : IEntity
             int blockZ;
             if (BypassesSteppingEffects() && !sneakingOnGround && Vehicle == null)
             {
-                HorizontalSpeed = (float)((double)HorizontalSpeed + (double)MathHelper.Sqrt(originalStepX * originalStepX + originalStepZ * originalStepZ) * 0.6D);
+                HorizontalSpeed = (float)(HorizontalSpeed + MathHelper.Sqrt(originalStepX * originalStepX + originalStepZ * originalStepZ) * 0.6D);
 
                 if (OnGround)
                 {
                     blockX = MathHelper.Floor(X);
-                    blockY = MathHelper.Floor(Y - (double)0.2F - (double)StandingEyeHeight);
+                    blockY = MathHelper.Floor(Y - 0.2F - StandingEyeHeight);
                     blockZ = MathHelper.Floor(Z);
                     blockId = World.Reader.GetBlockId(blockX, blockY, blockZ);
                     if (World.Reader.GetBlockId(blockX, blockY - 1, blockZ) == BlockRegistry.Get("fence").id)
@@ -670,7 +757,7 @@ public abstract class Entity : IEntity
                         blockId = World.Reader.GetBlockId(blockX, blockY - 1, blockZ);
                     }
 
-                    if (HorizontalSpeed > (float)_nextStepSoundDistance && blockId > 0)
+                    if (HorizontalSpeed > _nextStepSoundDistance && blockId > 0)
                     {
                         _nextStepSoundDistance = (int)HorizontalSpeed + 1;
                         BlockSoundGroup soundGroup = Block.Blocks[blockId].SoundGroup;
@@ -736,7 +823,6 @@ public abstract class Entity : IEntity
                 World.Broadcaster.PlaySoundAtEntity(this, "random.fizz", 0.7F, 1.6F + (Random.NextFloat() - Random.NextFloat()) * 0.4F);
                 FireTicks = -FireImmunityTicks;
             }
-
         }
     }
 
@@ -1017,72 +1103,6 @@ public abstract class Entity : IEntity
         return true;
     }
 
-    public void Write(NBTTagCompound nbt)
-    {
-        nbt.SetTag("Pos", newDoubleNbtList(X, Y + CameraOffset, Z));
-        nbt.SetTag("Motion", newDoubleNbtList(VelocityX, VelocityY, VelocityZ));
-        nbt.SetTag("Rotation", newFloatNbtList(Yaw, Pitch));
-        nbt.SetFloat("FallDistance", FallDistance);
-        nbt.SetShort("Fire", (short)FireTicks);
-        nbt.SetShort("Air", (short)Air);
-        nbt.SetBoolean("OnGround", OnGround);
-
-        SyncedPropertyFactory.Write(DataSynchronizer, SyncedDeclarations, nbt);
-
-        // Last, so composed persistence has the final say over the class's own — the position a
-        // subclass writing after base.WriteNbt used to hold.
-        WriteNbt(nbt);
-        Persistence?.OnWriteNbt(this, nbt);
-    }
-
-    public void Read(NBTTagCompound nbt)
-    {
-        NBTTagList pos = nbt.GetTagList("Pos");
-        NBTTagList mot = nbt.GetTagList("Motion");
-        NBTTagList rot = nbt.GetTagList("Rotation");
-
-        VelocityX = ((NBTTagDouble)mot.TagAt(0)).Value;
-        VelocityY = ((NBTTagDouble)mot.TagAt(1)).Value;
-        VelocityZ = ((NBTTagDouble)mot.TagAt(2)).Value;
-
-        if (Math.Abs(VelocityX) > 10.0D)
-        {
-            VelocityX = 0.0D;
-        }
-
-        if (Math.Abs(VelocityY) > 10.0D)
-        {
-            VelocityY = 0.0D;
-        }
-
-        if (Math.Abs(VelocityZ) > 10.0D)
-        {
-            VelocityZ = 0.0D;
-        }
-
-        PrevX = LastTickX = X = ((NBTTagDouble)pos.TagAt(0)).Value;
-        PrevY = LastTickY = Y = ((NBTTagDouble)pos.TagAt(1)).Value;
-        PrevZ = LastTickZ = Z = ((NBTTagDouble)pos.TagAt(2)).Value;
-
-        PrevYaw = Yaw = ((NBTTagFloat)rot.TagAt(0)).Value;
-        PrevPitch = Pitch = ((NBTTagFloat)rot.TagAt(1)).Value;
-
-        FallDistance = nbt.GetFloat("FallDistance");
-        FireTicks = nbt.GetShort("Fire");
-        Air = nbt.GetShort("Air");
-        OnGround = nbt.GetBoolean("OnGround");
-
-        SetPosition(X, Y, Z);
-        SetRotation(Yaw, Pitch);
-
-        SyncedPropertyFactory.Read(DataSynchronizer, SyncedDeclarations, nbt);
-
-        // Last for the same reason as writing, and it matters here: restoring a slime's size resets
-        // its health from that size, and must land after the health the class just read back.
-        ReadNbt(nbt);
-        Persistence?.OnReadNbt(this, nbt);
-    }
-
     private string? GetRegistryEntry() => Type?.Id;
 
     protected abstract void ReadNbt(NBTTagCompound nbt);
@@ -1119,7 +1139,7 @@ public abstract class Entity : IEntity
 
     protected internal Entity DropItem(ItemStack stack, float y)
     {
-        Entity item = DroppedItemBehavior.Create(World, X, Y + y, Z, stack, pickupDelay: 10);
+        Entity item = DroppedItemBehavior.Create(World, X, Y + y, Z, stack, 10);
         World.SpawnEntity(item);
         return item;
     }
@@ -1128,12 +1148,12 @@ public abstract class Entity : IEntity
     {
         for (int i = 0; i < 8; ++i)
         {
-            float offsetX = (((i >> 0) % 2) - 0.5F) * Width * 0.9F;
-            float offsetY = (((i >> 1) % 2) - 0.5F) * 0.1F;
-            float offsetZ = (((i >> 2) % 2) - 0.5F) * Width * 0.9F;
-            int x = MathHelper.Floor(X + (double)offsetX);
-            int y = MathHelper.Floor(Y + (double)EyeHeight + (double)offsetY);
-            int z = MathHelper.Floor(Z + (double)offsetZ);
+            float offsetX = ((i >> 0) % 2 - 0.5F) * Width * 0.9F;
+            float offsetY = ((i >> 1) % 2 - 0.5F) * 0.1F;
+            float offsetZ = ((i >> 2) % 2 - 0.5F) * Width * 0.9F;
+            int x = MathHelper.Floor(X + offsetX);
+            int y = MathHelper.Floor(Y + EyeHeight + offsetY);
+            int z = MathHelper.Floor(Z + offsetZ);
             if (World.Reader.ShouldSuffocate(x, y, z))
             {
                 return true;
@@ -1159,24 +1179,53 @@ public abstract class Entity : IEntity
         VelocityY = 0.0D;
         VelocityZ = 0.0D;
         Tick();
-        if (Vehicle == null) return;
+        if (Vehicle == null)
+        {
+            return;
+        }
 
         Vehicle.UpdatePassengerPosition();
         _vehicleYawDelta += Vehicle.Yaw - Vehicle.PrevYaw;
 
         _vehiclePitchDelta += Vehicle.Pitch - Vehicle.PrevPitch;
 
-        while (_vehicleYawDelta >= 180.0D) _vehicleYawDelta -= 360.0D;
-        while (_vehicleYawDelta < -180.0D) _vehicleYawDelta += 360.0D;
-        while (_vehiclePitchDelta >= 180.0D) _vehiclePitchDelta -= 360.0D;
-        while (_vehiclePitchDelta < -180.0D) _vehiclePitchDelta += 360.0D;
+        while (_vehicleYawDelta >= 180.0D)
+        {
+            _vehicleYawDelta -= 360.0D;
+        }
+
+        while (_vehicleYawDelta < -180.0D)
+        {
+            _vehicleYawDelta += 360.0D;
+        }
+
+        while (_vehiclePitchDelta >= 180.0D)
+        {
+            _vehiclePitchDelta -= 360.0D;
+        }
+
+        while (_vehiclePitchDelta < -180.0D)
+        {
+            _vehiclePitchDelta += 360.0D;
+        }
 
         double yawDelta = _vehicleYawDelta * 0.5D;
         double pitchDelta = _vehiclePitchDelta * 0.5D;
         const double limit = 10.0F;
-        if (yawDelta > limit) yawDelta = limit;
-        if (yawDelta < -limit) yawDelta = -limit;
-        if (pitchDelta < -limit) pitchDelta = -limit;
+        if (yawDelta > limit)
+        {
+            yawDelta = limit;
+        }
+
+        if (yawDelta < -limit)
+        {
+            yawDelta = -limit;
+        }
+
+        if (pitchDelta < -limit)
+        {
+            pitchDelta = -limit;
+        }
 
         _vehicleYawDelta -= yawDelta;
         _vehiclePitchDelta -= pitchDelta;
@@ -1215,10 +1264,7 @@ public abstract class Entity : IEntity
         }
     }
 
-    public void SetPositionAndAnglesAvoidEntities(int newPosRotationIncrements)
-    {
-        SetPositionAndAnglesAvoidEntities(Yaw, Pitch, newPosRotationIncrements);
-    }
+    public void SetPositionAndAnglesAvoidEntities(int newPosRotationIncrements) => SetPositionAndAnglesAvoidEntities(Yaw, Pitch, newPosRotationIncrements);
 
     public void SetPositionAndAnglesAvoidEntities(float yaw, float pitch, int newPosRotationIncrements)
     {
@@ -1228,10 +1274,7 @@ public abstract class Entity : IEntity
         SetPositionAndAnglesAvoidEntities(posX, posY, posZ, yaw, pitch, newPosRotationIncrements);
     }
 
-    public void SetPositionAndAnglesAvoidEntities(double x, double y, double z, int newPosRotationIncrements)
-    {
-        SetPositionAndAnglesAvoidEntities(x, y, z, Yaw, Pitch, newPosRotationIncrements);
-    }
+    public void SetPositionAndAnglesAvoidEntities(double x, double y, double z, int newPosRotationIncrements) => SetPositionAndAnglesAvoidEntities(x, y, z, Yaw, Pitch, newPosRotationIncrements);
 
     public virtual void SetPositionAndAnglesAvoidEntities(double x, double y, double z, float yaw, float pitch, int newPosRotationIncrements)
     {
@@ -1239,7 +1282,10 @@ public abstract class Entity : IEntity
         SetRotation(yaw, pitch);
         const double bound = 1.0D / 32.0D;
         double maxY = World.Entities.GetMaxYEntityCollision(this, BoundingBox.Contract(bound, 0.0D, bound));
-        if (maxY <= 0) return;
+        if (maxY <= 0)
+        {
+            return;
+        }
 
         y += maxY - BoundingBox.MinY;
         SetPosition(y);
@@ -1282,8 +1328,15 @@ public abstract class Entity : IEntity
     {
         byte oldValue = _flags.Value;
         byte newValue;
-        if (value) newValue = (byte)(oldValue | (1 << index));
-        else newValue = (byte)(oldValue & ~(1 << index));
+        if (value)
+        {
+            newValue = (byte)(oldValue | (1 << index));
+        }
+        else
+        {
+            newValue = (byte)(oldValue & ~(1 << index));
+        }
+
         _flags.Value = newValue;
     }
 
@@ -1291,7 +1344,10 @@ public abstract class Entity : IEntity
     {
         Damage(5);
         ++FireTicks;
-        if (FireTicks == 0) FireTicks = 300;
+        if (FireTicks == 0)
+        {
+            FireTicks = 300;
+        }
     }
 
     public virtual void OnKillOther(EntityLiving entityLiving)
@@ -1301,7 +1357,10 @@ public abstract class Entity : IEntity
     protected internal virtual bool PushOutOfBlocks(double x, double y, double z)
     {
         // Only players should attempt "push out of blocks".
-        if (this is not EntityPlayer) return false;
+        if (this is not EntityPlayer)
+        {
+            return false;
+        }
 
         int floorX = MathHelper.Floor(x);
         int floorY = MathHelper.Floor(y);
@@ -1309,7 +1368,10 @@ public abstract class Entity : IEntity
         double fracX = x - floorX;
         double fracY = y - floorY;
         double fracZ = z - floorZ;
-        if (!World.Reader.ShouldSuffocate(floorX, floorY, floorZ)) return false;
+        if (!World.Reader.ShouldSuffocate(floorX, floorY, floorZ))
+        {
+            return false;
+        }
 
         bool canPushWest = !World.Reader.ShouldSuffocate(floorX - 1, floorY, floorZ);
         bool canPushEast = !World.Reader.ShouldSuffocate(floorX + 1, floorY, floorZ);

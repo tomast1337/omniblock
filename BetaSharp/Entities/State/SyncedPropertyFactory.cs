@@ -56,7 +56,10 @@ public static class SyncedPropertyFactory
     {
         foreach (SyncedPropertyDefinition definition in definitions)
         {
-            if (definition.Nbt is not { } key) continue;
+            if (definition.Nbt is not { } key)
+            {
+                continue;
+            }
 
             switch (definition.Kind)
             {
@@ -76,7 +79,10 @@ public static class SyncedPropertyFactory
     {
         foreach (SyncedPropertyDefinition definition in definitions)
         {
-            if (definition.Nbt is not { } key) continue;
+            if (definition.Nbt is not { } key)
+            {
+                continue;
+            }
 
             switch (definition.Kind)
             {
@@ -93,13 +99,16 @@ public static class SyncedPropertyFactory
 
     /// <summary>
     ///     Resolves a declared property to a typed handle. Called once per entity type at load, so
-    ///     behaviors hold the id rather than looking it up by name at runtime.
+    ///     behaviors hold the id instead of looking it up by name at runtime.
     /// </summary>
     public static SyncedHandle<T> Resolve<T>(EntityDefinition definition, string name)
     {
         foreach (SyncedPropertyDefinition property in definition.SyncedProperties)
         {
-            if (property.Name != name) continue;
+            if (property.Name != name)
+            {
+                continue;
+            }
 
             if (!Matches<T>(property.Kind))
             {

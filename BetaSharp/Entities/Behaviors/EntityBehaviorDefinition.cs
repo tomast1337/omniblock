@@ -5,8 +5,8 @@ using BetaSharp.Entities.State;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     One behavior entry in an entity's JSON, deserialized into typed properties rather than read
-///     field-by-field out of a <see cref="JsonElement" />. Mirrors
+///     One behavior entry in an entity's JSON, deserialized into typed properties instead of read
+///     field-by-field out of a <see cref="JsonElement" />. Matches
 ///     <c>Items/Behaviors/ItemBehaviorDefinition.cs</c>: the definition holds the configuration,
 ///     <see cref="Build" /> turns it into the behavior, and the behavior's own constructor takes
 ///     plain values and cannot fail.
@@ -33,7 +33,7 @@ public abstract class EntityBehaviorDefinition
 /// <summary>
 ///     What a behavior needs at construction beyond its own configuration: somewhere to declare
 ///     per-entity state slots, and the owning definition for resolving synced property names.
-///     Deliberately carries no JSON — parsing is finished by the time this is handed out.
+///     Carries no JSON: parsing is finished by the time this is handed out.
 /// </summary>
 /// <param name="Definition">The owning entity's definition, for resolving synced property names.</param>
 /// <param name="Layout">The type's state layout, for declaring unsynced per-entity fields.</param>

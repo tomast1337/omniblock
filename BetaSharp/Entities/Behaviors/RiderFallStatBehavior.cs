@@ -1,9 +1,9 @@
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Credits a riding player with an achievement when the mount survives a long enough drop —
-///     the pig's "when pigs fly". Falls through to the default landing response, so the mount still
-///     takes its own fall damage.
+///     Credits a riding player with an achievement when the mount survives a long enough drop, as
+///     the pig's "when pigs fly" does. Falls through to the default landing response, so the mount
+///     still takes its own fall damage.
 /// </summary>
 public sealed class RiderFallStatBehavior(Achievement achievement, float minimumDistance) : IEntityPhysics
 {

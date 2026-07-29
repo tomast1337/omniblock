@@ -5,21 +5,21 @@ namespace BetaSharp.Entities.Behaviors;
 /// <summary>
 ///     Lunges at the target when it sits in the <paramref name="minRange" />..<paramref name="maxRange" />
 ///     band, on a 1-in-<paramref name="chanceOneIn" /> roll. Any other tick delegates to
-///     <paramref name="fallback" /> — the nested-composite shape blocks use for
-///     <c>RedstoneTorchBehavior(new WallMountBehavior(...))</c>.
+///     <paramref name="fallback" />.
 /// </summary>
 public sealed class JumpAttackBehavior(float minRange, float maxRange, int chanceOneIn, IEntityAttackBehavior? fallback = null) : IEntityAttackBehavior, IEntityBehaviorGroup
 {
     /// <summary>What runs on the ticks the lunge does not, exposed so the nesting is inspectable.</summary>
     public IEntityAttackBehavior? Fallback => fallback;
 
-    public IEnumerable<object> Children => fallback is null ? [] : [fallback];
-
     public void AttackEntity(EntityCreature self, Entity target, float distance)
     {
         if (distance > minRange && distance < maxRange && self.Random.NextInt(chanceOneIn) == 0)
         {
-            if (!self.OnGround) return;
+            if (!self.OnGround)
+            {
+                return;
+            }
 
             double dx = target.X - self.X;
             double dz = target.Z - self.Z;
@@ -32,4 +32,6 @@ public sealed class JumpAttackBehavior(float minRange, float maxRange, int chanc
 
         fallback?.AttackEntity(self, target, distance);
     }
+
+    public IEnumerable<object> Children => fallback is null ? [] : [fallback];
 }

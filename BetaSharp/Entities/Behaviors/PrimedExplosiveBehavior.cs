@@ -8,11 +8,10 @@ namespace BetaSharp.Entities.Behaviors;
 /// <summary>
 ///     A lit block of explosive: created armed with a kick of velocity, it tumbles under gravity,
 ///     counts its fuse down and detonates. One behavior across the Ticker, Lifecycle and Persistence
-///     slots because every hook moves the same fuse.
+///     slots because all three move the same fuse.
 ///     <para>
-///         The tick replaces the base tick entirely (via <see cref="IEntityTicker.OnTickEntity" />)
-///         — a primed block does not age, burn, or die in the void, matching the override this
-///         replaced.
+///         The tick replaces the base tick entirely (via <see cref="IEntityTicker.OnTickEntity" />),
+///         since a primed block does not age, burn, or die in the void.
 ///     </para>
 /// </summary>
 public sealed class PrimedExplosiveBehavior : IEntityTicker, IEntityLifecycle, IEntityPersistence
@@ -20,8 +19,8 @@ public sealed class PrimedExplosiveBehavior : IEntityTicker, IEntityLifecycle, I
     private readonly StateHandle<int> _fuse;
 
     private readonly int _fuseTicks;
-    private readonly float _power;
     private readonly string _particle;
+    private readonly float _power;
 
     public PrimedExplosiveBehavior(EntityStateLayout layout, int fuseTicks, float power, string particle)
     {
@@ -32,29 +31,22 @@ public sealed class PrimedExplosiveBehavior : IEntityTicker, IEntityLifecycle, I
         _fuse = layout.DeclareInt();
     }
 
-    public int FuseTicks(Entity self) => self.State[_fuse];
-
-    public void SetFuse(Entity self, int ticks) => self.State[_fuse] = ticks;
-
-    /// <summary>
-    ///     A block set off by a nearby explosion gets a short, randomised fuse rather than the full
-    ///     one — the chain reaction is fast.
-    /// </summary>
-    public void ShortenFuse(Entity self) =>
-        self.State[_fuse] = self.World.Random.NextInt(_fuseTicks / 4) + _fuseTicks / 8;
-
     /// <summary>
     ///     Armed the moment it exists: full fuse, a small random horizontal kick and a pop upward.
-    ///     The kick's angle expression is kept verbatim from the class it replaced, quirks included.
+    ///     The kick's angle expression is kept verbatim from Beta, quirks included.
     /// </summary>
     public void OnCreated(Entity self)
     {
         self.State[_fuse] = _fuseTicks;
-        float randomAngle = (float)(System.Random.Shared.NextSingle() * Math.PI * 2.0D);
+        float randomAngle = (float)(Random.Shared.NextSingle() * Math.PI * 2.0D);
         self.VelocityX = -MathHelper.Sin(randomAngle * (float)Math.PI / 180.0F) * 0.02F;
         self.VelocityY = 0.2F;
         self.VelocityZ = -MathHelper.Cos(randomAngle * (float)Math.PI / 180.0F) * 0.02F;
     }
+
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt) => nbt.SetByte("Fuse", (sbyte)self.State[_fuse]);
+
+    public void OnReadNbt(Entity self, NBTTagCompound nbt) => self.State[_fuse] = nbt.GetByte("Fuse");
 
     public bool OnTickEntity(Entity self)
     {
@@ -76,7 +68,10 @@ public sealed class PrimedExplosiveBehavior : IEntityTicker, IEntityLifecycle, I
         if (self.State[_fuse]-- <= 0)
         {
             self.MarkDead();
-            if (!self.World.IsRemote) Explode(self);
+            if (!self.World.IsRemote)
+            {
+                Explode(self);
+            }
         }
         else
         {
@@ -86,14 +81,24 @@ public sealed class PrimedExplosiveBehavior : IEntityTicker, IEntityLifecycle, I
         return true;
     }
 
+    public int FuseTicks(Entity self) => self.State[_fuse];
+
+    public void SetFuse(Entity self, int ticks) => self.State[_fuse] = ticks;
+
+    /// <summary>
+    ///     A block set off by a nearby explosion gets a short randomised fuse instead of the full
+    ///     one, so the chain reaction runs fast.
+    /// </summary>
+    public void ShortenFuse(Entity self) =>
+        self.State[_fuse] = self.World.Random.NextInt(_fuseTicks / 4) + _fuseTicks / 8;
+
     private void Explode(Entity self)
     {
-        if (!self.World.Rules.GetBool(DefaultRules.TntExplodes)) return;
+        if (!self.World.Rules.GetBool(DefaultRules.TntExplodes))
+        {
+            return;
+        }
 
         self.World.CreateExplosion(null, self.X, self.Y, self.Z, _power);
     }
-
-    public void OnWriteNbt(Entity self, NBTTagCompound nbt) => nbt.SetByte("Fuse", (sbyte)self.State[_fuse]);
-
-    public void OnReadNbt(Entity self, NBTTagCompound nbt) => self.State[_fuse] = nbt.GetByte("Fuse");
 }

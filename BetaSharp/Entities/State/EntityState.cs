@@ -2,16 +2,16 @@ namespace BetaSharp.Entities.State;
 
 /// <summary>
 ///     Per-entity storage for the slots its shared behaviors declared. Backed by right-sized typed
-///     arrays rather than a string-keyed dictionary, so reads are an array index with no boxing and
-///     no lookup, and a wrong-typed access does not compile.
+///     arrays, not a string-keyed dictionary: reads are an array index with no boxing and no lookup,
+///     and a wrong-typed access does not compile.
 /// </summary>
 public sealed class EntityState
 {
+    private readonly bool[] _bools;
+    private readonly double[] _doubles;
+    private readonly float[] _floats;
     private readonly int[] _ints;
     private readonly long[] _longs;
-    private readonly float[] _floats;
-    private readonly double[] _doubles;
-    private readonly bool[] _bools;
     private readonly object?[] _refs;
 
     internal EntityState(int ints, int longs, int floats, int doubles, int bools, int refs)
@@ -54,7 +54,7 @@ public sealed class EntityState
         set => _bools[handle.Index] = value;
     }
 
-    /// <summary>Reference slots need their own accessor pair — an indexer cannot be generic.</summary>
+    /// <summary>Reference slots need their own accessor pair, since an indexer cannot be generic.</summary>
     public T? GetRef<T>(StateHandle<T> handle) where T : class => (T?)_refs[handle.Index];
 
     public void SetRef<T>(StateHandle<T> handle, T? value) where T : class => _refs[handle.Index] = value;

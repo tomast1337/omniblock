@@ -1,4 +1,3 @@
-using BetaSharp.Diagnostics;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 
@@ -15,6 +14,8 @@ namespace BetaSharp.Entities;
 public static class EntityDefinitionRegistry
 {
     private static EntityDefinitionJsonLoader? s_loader;
+
+    internal static IEnumerable<EntityDefinition> All => s_loader ?? Enumerable.Empty<EntityDefinition>();
 
     internal static void Initialize()
     {
@@ -41,6 +42,4 @@ public static class EntityDefinitionRegistry
         return s_loader.Get(new ResourceLocation(Namespace.BetaSharp, name))?.Value
                ?? throw new ArgumentException($"No entity definition found for '{name}'.", nameof(name));
     }
-
-    internal static IEnumerable<EntityDefinition> All => s_loader ?? Enumerable.Empty<EntityDefinition>();
 }

@@ -5,19 +5,16 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     What a tameable mob does with the tick its pathfinding did not use: a tamed one keeps up with
-///     its owner and sits down when it cannot find them, an untamed one goes looking for prey.
-///     <para>
-///         One behavior rather than two, because the two are the arms of a single choice — a mob is
-///         either somebody's or nobody's, and never does both in a tick.
-///     </para>
+///     its owner and sits down when it cannot find them, an untamed one goes looking for prey. One
+///     behavior, because a mob is either tamed or not and never does both in a tick.
 /// </summary>
 public sealed class FollowOwnerBehavior : IEntityTicker
 {
     private readonly float _followRange;
     private readonly float _leashRange;
-    private readonly float _teleportRange;
-    private readonly double _preyRadius;
     private readonly int _preyChanceOneIn;
+    private readonly double _preyRadius;
+    private readonly float _teleportRange;
 
     public FollowOwnerBehavior(in EntityBehaviorContext context)
     {
@@ -30,11 +27,24 @@ public sealed class FollowOwnerBehavior : IEntityTicker
 
     public void AfterTickLiving(EntityLiving self)
     {
-        if (self is not EntityCreature mob) return;
-        if (mob.Behaviors.Find<TameableBehavior>() is not { } tame) return;
+        if (self is not EntityCreature mob)
+        {
+            return;
+        }
 
-        if (!mob.HasAttacked && !mob.HasPath && tame.IsTamed(mob) && mob.Vehicle == null) KeepUpWithOwner(mob, tame);
-        else if (mob.Target == null && !mob.HasPath && !tame.IsTamed(mob) && mob.World.Random.NextInt(_preyChanceOneIn) == 0) HuntPrey(mob);
+        if (mob.Behaviors.Find<TameableBehavior>() is not { } tame)
+        {
+            return;
+        }
+
+        if (!mob.HasAttacked && !mob.HasPath && tame.IsTamed(mob) && mob.Vehicle == null)
+        {
+            KeepUpWithOwner(mob, tame);
+        }
+        else if (mob.Target == null && !mob.HasPath && !tame.IsTamed(mob) && mob.World.Random.NextInt(_preyChanceOneIn) == 0)
+        {
+            HuntPrey(mob);
+        }
     }
 
     private void KeepUpWithOwner(EntityCreature self, TameableBehavior tame)
@@ -42,18 +52,25 @@ public sealed class FollowOwnerBehavior : IEntityTicker
         EntityPlayer? owner = self.World.Entities.Players.Find(player => player.Name != null && player.Name.Equals(tame.Owner(self), StringComparison.OrdinalIgnoreCase));
         if (owner == null)
         {
-            // Nobody to follow. It waits where it is, unless it would be waiting in water.
-            if (!self.IsInWater) tame.SetSitting(self, true);
+            // Nobody to follow, so it waits where it is, unless that would be in water.
+            if (!self.IsInWater)
+            {
+                tame.SetSitting(self, true);
+            }
+
             return;
         }
 
         float distance = owner.GetDistance(self);
-        if (distance > _followRange) PathOrTeleport(self, owner, distance);
+        if (distance > _followRange)
+        {
+            PathOrTeleport(self, owner, distance);
+        }
     }
 
     /// <summary>
-    ///     Walks to the owner if there is a way, and gives up and appears beside them if there is not
-    ///     and they are far enough that nobody will see it happen.
+    ///     Walks to the owner if there is a way there, and teleports beside them if there is not and
+    ///     they are far enough away not to see it.
     /// </summary>
     private void PathOrTeleport(EntityCreature self, Entity owner, float distance)
     {
@@ -72,11 +89,26 @@ public sealed class FollowOwnerBehavior : IEntityTicker
         {
             for (int dz = 0; dz <= 4; ++dz)
             {
-                // Skip the middle: landing on top of the owner is worse than not arriving.
-                if (dx >= 1 && dz >= 1 && dx <= 3 && dz <= 3) continue;
-                if (!self.World.Reader.ShouldSuffocate(cornerX + dx, floorY - 1, cornerZ + dz)) continue;
-                if (self.World.Reader.ShouldSuffocate(cornerX + dx, floorY, cornerZ + dz)) continue;
-                if (self.World.Reader.ShouldSuffocate(cornerX + dx, floorY + 1, cornerZ + dz)) continue;
+                // Skip the middle, so it never lands on top of the owner.
+                if (dx >= 1 && dz >= 1 && dx <= 3 && dz <= 3)
+                {
+                    continue;
+                }
+
+                if (!self.World.Reader.ShouldSuffocate(cornerX + dx, floorY - 1, cornerZ + dz))
+                {
+                    continue;
+                }
+
+                if (self.World.Reader.ShouldSuffocate(cornerX + dx, floorY, cornerZ + dz))
+                {
+                    continue;
+                }
+
+                if (self.World.Reader.ShouldSuffocate(cornerX + dx, floorY + 1, cornerZ + dz))
+                {
+                    continue;
+                }
 
                 self.SetPositionAndAnglesKeepPrevAngles(cornerX + dx + 0.5F, floorY, cornerZ + dz + 0.5F, self.Yaw, self.Pitch);
                 return;
@@ -85,7 +117,7 @@ public sealed class FollowOwnerBehavior : IEntityTicker
     }
 
     /// <summary>
-    ///     Prey is anything wearing a fleece, since a sheep has no class of its own to collect by.
+    ///     Prey is anything with a fleece, since a sheep has no class of its own to collect by.
     /// </summary>
     private void HuntPrey(EntityCreature self)
     {
@@ -93,6 +125,9 @@ public sealed class FollowOwnerBehavior : IEntityTicker
             .CollectEntitiesOfType<EntityLiving>(new Box(self.X, self.Y, self.Z, self.X + 1.0D, self.Y + 1.0D, self.Z + 1.0D).Expand(_preyRadius, 4.0D, _preyRadius))
             .FindAll(candidate => candidate.Behaviors.Find<WoolBehavior>() != null);
 
-        if (prey.Count > 0) self.Target = prey[self.World.Random.NextInt(prey.Count)];
+        if (prey.Count > 0)
+        {
+            self.Target = prey[self.World.Random.NextInt(prey.Count)];
+        }
     }
 }

@@ -9,9 +9,8 @@ namespace BetaSharp.Entities;
 /// <summary>
 ///     Loads <see cref="EntityDefinition" />s from <c>assets/entity/*.json</c>, merged over
 ///     <c>_defaults.json</c>, plus datapack layers. A dedicated <see cref="DataAssetLoader" />
-///     subclass rather than <c>DataAssetLoader&lt;T&gt;</c> for the same reason items and blocks
-///     need one: entities carry a stable explicit protocol id, and <c>DataAssetLoader&lt;T&gt;</c>
-///     hardcodes <c>GetId() =&gt; -1</c>.
+///     subclass, like items and blocks have: entities carry a stable explicit protocol id, and
+///     <c>DataAssetLoader&lt;T&gt;</c> hardcodes <c>GetId() =&gt; -1</c>.
 /// </summary>
 internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations locations) : DataAssetLoader(locations), IReadableRegistry<EntityDefinition>
 {
@@ -22,16 +21,52 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
     ///     value outside this range would be truncated into a different entity on the wire.
     /// </summary>
     private const int MinProtocolId = 1;
+
     private const int MaxProtocolId = sbyte.MaxValue;
 
     private static readonly JsonSerializerOptions s_options = new()
     {
-        Converters = { new JsonStringEnumConverter() }
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        }
     };
 
-    private readonly Dictionary<ResourceLocation, EntityDefinition> _byLocation = [];
     private readonly Dictionary<int, EntityDefinition> _byId = [];
+
+    private readonly Dictionary<ResourceLocation, EntityDefinition> _byLocation = [];
     private JsonElement? _defaults;
+
+    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, path);
+
+    public Holder<EntityDefinition>? Get(ResourceLocation key) =>
+        _byLocation.TryGetValue(key, out EntityDefinition? value) ? new Holder<EntityDefinition>(value) : null;
+
+    public EntityDefinition? Get(int id) => _byId.TryGetValue(id, out EntityDefinition? value) ? value : null;
+
+    public int GetId(EntityDefinition value) =>
+        _byId.TryGetValue(value.ProtocolId, out EntityDefinition? existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
+
+    public ResourceLocation? GetKey(EntityDefinition value)
+    {
+        foreach (KeyValuePair<ResourceLocation, EntityDefinition> pair in _byLocation)
+        {
+            if (ReferenceEquals(pair.Value, value))
+            {
+                return pair.Key;
+            }
+        }
+
+        return null;
+    }
+
+    public bool ContainsKey(ResourceLocation key) => _byLocation.ContainsKey(key);
+
+    public IEnumerable<ResourceLocation> Keys => _byLocation.Keys;
+
+    public IEnumerator<EntityDefinition> GetEnumerator() => _byLocation.Values.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     private protected override void Clear()
     {
@@ -42,8 +77,14 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
 
     private protected override void OnLoadAssets(string assetPath, bool namespaced, LoadLocations location)
     {
-        if (namespaced) LoadAssetsFromFolders(assetPath, location);
-        else LoadAssets(Namespace.BetaSharp, assetPath, location);
+        if (namespaced)
+        {
+            LoadAssetsFromFolders(assetPath, location);
+        }
+        else
+        {
+            LoadAssets(Namespace.BetaSharp, assetPath, location);
+        }
     }
 
     private void LoadAssetsFromFolders(string assetPath, LoadLocations location)
@@ -80,7 +121,10 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
 
         foreach (string file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
         {
-            if (Path.GetFileName(file) == DefaultsFileName) continue;
+            if (Path.GetFileName(file) == DefaultsFileName)
+            {
+                continue;
+            }
 
             try
             {
@@ -127,7 +171,10 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
 
     internal override EntityDefinitionJsonLoader? CloneForWorldDatapacks(string worldDatapackPath)
     {
-        if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
+        if (!Locations.HasFlag(LoadLocations.WorldDatapack))
+        {
+            return null;
+        }
 
         EntityDefinitionJsonLoader clone = new(path, Locations);
         foreach (KeyValuePair<ResourceLocation, EntityDefinition> pair in _byLocation)
@@ -145,33 +192,5 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
         return clone;
     }
 
-    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, path);
-
-    public Holder<EntityDefinition>? Get(ResourceLocation key) =>
-        _byLocation.TryGetValue(key, out EntityDefinition? value) ? new Holder<EntityDefinition>(value) : null;
-
-    public EntityDefinition? Get(int id) => _byId.TryGetValue(id, out EntityDefinition? value) ? value : null;
-
     public bool ContainsId(int id) => _byId.ContainsKey(id);
-
-    public int GetId(EntityDefinition value) =>
-        _byId.TryGetValue(value.ProtocolId, out EntityDefinition? existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
-
-    public ResourceLocation? GetKey(EntityDefinition value)
-    {
-        foreach (KeyValuePair<ResourceLocation, EntityDefinition> pair in _byLocation)
-        {
-            if (ReferenceEquals(pair.Value, value)) return pair.Key;
-        }
-
-        return null;
-    }
-
-    public bool ContainsKey(ResourceLocation key) => _byLocation.ContainsKey(key);
-
-    public IEnumerable<ResourceLocation> Keys => _byLocation.Keys;
-
-    public IEnumerator<EntityDefinition> GetEnumerator() => _byLocation.Values.GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

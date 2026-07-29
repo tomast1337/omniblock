@@ -2,20 +2,19 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.NBT;
-using BetaSharp.Registries;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A painting hung on a wall: it occupies a box derived from its art rather than its definition,
-///     re-checks its backing every hundred-odd ticks, and falls as an item the moment anything
-///     disturbs it — a hit, a push, or the wall behind it going away.
+///     A painting hung on a wall. Its box comes from its art, not from its definition; it re-checks
+///     its backing every hundred-odd ticks, and drops as an item as soon as anything disturbs it: a
+///     hit, a push, or the wall behind it going away.
 ///     <para>
 ///         Which art it wears and which block it hangs on are per-instance state.
-///         <see cref="HangAt(IWorldContext, int, int, int, int)" /> picks a random art that fits;
-///         the overload naming a title is how a saved or network-received painting comes back.
+///         <see cref="HangAt(IWorldContext, int, int, int, int)" /> picks a random art that fits; the
+///         overload naming a title is how a saved or network-received painting comes back.
 ///     </para>
 /// </summary>
 public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntityPersistence, IEntityPhysics
@@ -24,14 +23,14 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
     private const float WallOffset = 9.0F / 16.0F;
 
     private readonly StateHandle<Painting> _art;
+
+    private readonly int _checkInterval;
     private readonly StateHandle<int> _direction;
+    private readonly Item _drop;
+    private readonly StateHandle<int> _tickCounter;
     private readonly StateHandle<int> _tileX;
     private readonly StateHandle<int> _tileY;
     private readonly StateHandle<int> _tileZ;
-    private readonly StateHandle<int> _tickCounter;
-
-    private readonly int _checkInterval;
-    private readonly Item _drop;
 
     public HangingArtBehavior(EntityStateLayout layout, int checkInterval, Item drop)
     {
@@ -46,10 +45,79 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
         _tickCounter = layout.DeclareInt();
     }
 
+    /// <summary>Any hit knocks it down; the amount never matters.</summary>
+    public bool? Damage(Entity self, Entity? attacker, int amount)
+    {
+        if (self.Dead || self.World.IsRemote)
+        {
+            return true;
+        }
+
+        self.VelocityModified = true;
+        DropAsItem(self);
+
+        return true;
+    }
+
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
+    {
+        nbt.SetByte("Dir", (sbyte)self.State[_direction]);
+        nbt.SetString("Motive", Art(self)?.Title);
+        nbt.SetInteger("TileX", self.State[_tileX]);
+        nbt.SetInteger("TileY", self.State[_tileY]);
+        nbt.SetInteger("TileZ", self.State[_tileZ]);
+    }
+
+    public void OnReadNbt(Entity self, NBTTagCompound nbt)
+    {
+        self.State[_tileX] = nbt.GetInteger("TileX");
+        self.State[_tileY] = nbt.GetInteger("TileY");
+        self.State[_tileZ] = nbt.GetInteger("TileZ");
+        self.State.SetRef(_art, ArtNamed(nbt.GetString("Motive")));
+        SetFacing(self, nbt.GetByte("Dir"));
+    }
+
+    /// <summary>A painting does not move: being pushed knocks it off the wall.</summary>
+    public bool OnMove(Entity self, double dx, double dy, double dz)
+    {
+        if (!self.World.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D)
+        {
+            DropAsItem(self);
+        }
+
+        return true;
+    }
+
+    public bool OnAddVelocity(Entity self, double dx, double dy, double dz)
+    {
+        if (!self.World.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D)
+        {
+            DropAsItem(self);
+        }
+
+        return true;
+    }
+
+    public bool OnTickEntity(Entity self)
+    {
+        if (self.State[_tickCounter]++ != _checkInterval || self.World.IsRemote)
+        {
+            return true;
+        }
+
+        self.State[_tickCounter] = 0;
+        if (!CanHang(self))
+        {
+            DropAsItem(self);
+        }
+
+        return true;
+    }
+
     /// <summary>
-    ///     Hangs a painting wearing whichever art fits the space, chosen at random. The caller
-    ///     checks <see cref="CanHang" /> before spawning it — an art that fits nowhere still
-    ///     produces an entity, just one that cannot be placed.
+    ///     Hangs a painting wearing whichever art fits the space, chosen at random. The caller checks
+    ///     <see cref="CanHang" /> before spawning it: an art that fits nowhere still produces an
+    ///     entity, just one that cannot be placed.
     /// </summary>
     public static Entity HangAt(IWorldContext world, int x, int y, int z, int direction)
     {
@@ -61,7 +129,10 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
         {
             painting.State.SetRef(hanging._art, art);
             hanging.SetFacing(painting, direction);
-            if (hanging.CanHang(painting)) fits.Add(art);
+            if (hanging.CanHang(painting))
+            {
+                fits.Add(art);
+            }
         }
 
         painting.State.SetRef(hanging._art, fits.Count > 0 ? fits[painting.Random.NextInt(fits.Count)] : Painting.Kebab);
@@ -69,7 +140,7 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
         return painting;
     }
 
-    /// <summary>Hangs a painting wearing a named art — how a saved or received one comes back.</summary>
+    /// <summary>Hangs a painting wearing a named art, for a saved or network-received one.</summary>
     public static Entity HangAt(IWorldContext world, int x, int y, int z, int direction, string title)
     {
         Entity painting = Create(world, x, y, z);
@@ -101,15 +172,18 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
     public int TileZ(Entity self) => self.State[_tileZ];
 
     /// <summary>
-    ///     Places the art against its wall and sizes the box to the canvas — the box is the art's,
-    ///     not the definition's, which is why a painting's dimensions never appear in its JSON.
+    ///     Places the art against its wall and sizes the box to the canvas. The box comes from the
+    ///     art, not the definition, so a painting's dimensions never appear in its JSON.
     /// </summary>
     private void SetFacing(Entity self, int facing)
     {
         self.State[_direction] = facing;
         self.PrevYaw = self.Yaw = facing * 90;
 
-        if (Art(self) is not { } art) return;
+        if (Art(self) is not { } art)
+        {
+            return;
+        }
 
         float halfWidth = art.SizeX;
         float halfHeight = art.SizeY;
@@ -174,7 +248,10 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
     /// </summary>
     public bool CanHang(Entity self)
     {
-        if (self.World.Entities.GetEntityCollisionsScratch(self, self.BoundingBox).Count > 0) return false;
+        if (self.World.Entities.GetEntityCollisionsScratch(self, self.BoundingBox).Count > 0)
+        {
+            return false;
+        }
 
         if (Art(self) is { } art)
         {
@@ -206,78 +283,33 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
                         ? self.World.Reader.GetMaterial(self.State[_tileX], startY + dy, startZ + dx)
                         : self.World.Reader.GetMaterial(startX + dx, startY + dy, self.State[_tileZ]);
 
-                    if (!material.IsSolid) return false;
+                    if (!material.IsSolid)
+                    {
+                        return false;
+                    }
                 }
             }
         }
 
         foreach (Entity entity in self.World.Entities.GetEntities(self, self.BoundingBox))
         {
-            if (entity.Behaviors.Find<HangingArtBehavior>() is not null) return false;
+            if (entity.Behaviors.Find<HangingArtBehavior>() is not null)
+            {
+                return false;
+            }
         }
-
-        return true;
-    }
-
-    public bool OnTickEntity(Entity self)
-    {
-        if (self.State[_tickCounter]++ != _checkInterval || self.World.IsRemote) return true;
-
-        self.State[_tickCounter] = 0;
-        if (!CanHang(self)) DropAsItem(self);
-
-        return true;
-    }
-
-    /// <summary>Any hit at all knocks it down — the amount never matters.</summary>
-    public bool? Damage(Entity self, Entity? attacker, int amount)
-    {
-        if (self.Dead || self.World.IsRemote) return true;
-
-        self.VelocityModified = true;
-        DropAsItem(self);
-
-        return true;
-    }
-
-    /// <summary>A painting does not move: being pushed at all is what knocks it off the wall.</summary>
-    public bool OnMove(Entity self, double dx, double dy, double dz)
-    {
-        if (!self.World.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D) DropAsItem(self);
-
-        return true;
-    }
-
-    public bool OnAddVelocity(Entity self, double dx, double dy, double dz)
-    {
-        if (!self.World.IsRemote && dx * dx + dy * dy + dz * dz > 0.0D) DropAsItem(self);
 
         return true;
     }
 
     private void DropAsItem(Entity self)
     {
-        if (self.Dead || self.World.IsRemote) return;
+        if (self.Dead || self.World.IsRemote)
+        {
+            return;
+        }
 
         self.MarkDead();
         self.World.SpawnEntity(DroppedItemBehavior.Create(self.World, self.X, self.Y, self.Z, new ItemStack(_drop)));
-    }
-
-    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
-    {
-        nbt.SetByte("Dir", (sbyte)self.State[_direction]);
-        nbt.SetString("Motive", Art(self)?.Title);
-        nbt.SetInteger("TileX", self.State[_tileX]);
-        nbt.SetInteger("TileY", self.State[_tileY]);
-        nbt.SetInteger("TileZ", self.State[_tileZ]);
-    }
-
-    public void OnReadNbt(Entity self, NBTTagCompound nbt)
-    {
-        self.State[_tileX] = nbt.GetInteger("TileX");
-        self.State[_tileY] = nbt.GetInteger("TileY");
-        self.State[_tileZ] = nbt.GetInteger("TileZ");
-        self.State.SetRef(_art, ArtNamed(nbt.GetString("Motive")));
-        SetFacing(self, nbt.GetByte("Dir"));
     }
 }

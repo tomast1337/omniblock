@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -12,16 +11,15 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Entities;
 
 /// <summary>
-///     A mob. Concrete rather than abstract because a mob with no pathfinding and no melee is
-///     nothing but this plus its behaviors — the ghast hovers, aims and fires entirely from its
-///     Ticker and Physics slots, and needs no class of its own to do it.
+///     A mob. Concrete, not abstract: a mob with no pathfinding and no melee is nothing but this
+///     plus its behaviors. A ghast hovers, aims and fires entirely from its Ticker and Physics slots.
 /// </summary>
 public class EntityLiving : Entity
 {
     public EntityLiving(IWorldContext world, EntityType? type = null) : base(world, type)
     {
-        // Read through Type rather than the parameter: an entity constructed directly still resolves
-        // its type by class in the base constructor, and should get that type's configuration.
+        // Read through Type, not the parameter: an entity constructed directly still resolves its
+        // type by class in the base constructor, and should get that type's configuration.
         EntityDefinition? definition = Type?.Definition;
         Definition = definition ?? EntityDefinition.Default;
         PreventEntitySpawning = true;
@@ -29,7 +27,10 @@ public class EntityLiving : Entity
         Yaw = System.Random.Shared.NextSingle() * (float)Math.PI * 2.0f;
         StepHeight = 0.5F;
 
-        if (definition is null) return;
+        if (definition is null)
+        {
+            return;
+        }
 
         Health = definition.Health;
         MovementSpeed = definition.MovementSpeed;
@@ -37,8 +38,8 @@ public class EntityLiving : Entity
         IsImmuneToFire = definition.FireImmune;
         SetBoundingBoxSpacing(definition.Width, definition.Height);
 
-        // Applied on top of the unscaled box, reproducing the exact float result the giant's
-        // constructor used to produce by multiplying its own Width and Height.
+        // Applied on top of the unscaled box, so the giant's box keeps the float artifacts of
+        // multiplying its own Width and Height.
         if (definition.Scale != 1.0F)
         {
             StandingEyeHeight *= definition.Scale;
@@ -52,8 +53,8 @@ public class EntityLiving : Entity
     }
 
     /// <summary>
-    ///     This mob's configuration. Properties below read from it, so a mob only overrides the ones
-    ///     that are genuinely dynamic (a wolf's mood-dependent bark, its taming-dependent despawn).
+    ///     This mob's configuration. The properties below read from it, so only genuinely dynamic
+    ///     values need a behavior (a wolf's mood-dependent bark, its taming-dependent despawn).
     /// </summary>
     protected internal EntityDefinition Definition { get; }
 
@@ -87,6 +88,7 @@ public class EntityLiving : Entity
 
     /// <summary>Composed single-shot event reactions (death split, lightning conversion).</summary>
     public IEntityLifecycle? Lifecycle => Behaviors.Lifecycle;
+
     public float CameraPitch { get; private set; }
     public float Tilt { get; protected set; }
     public float LastWalkAnimationSpeed { get; protected internal set; }
@@ -107,9 +109,6 @@ public class EntityLiving : Entity
     private static float DefaultPitch => 0.0F;
     protected internal float MovementSpeed { get; set; } = 0.7F;
     protected int LookTimer { get; set; }
-
-    /// <summary>Keeps the mob watching whatever it is looking at for another few ticks.</summary>
-    protected internal void HoldGaze(int ticks) => LookTimer = ticks;
 
     public override Vec3D? LookVector => GetLook(1.0F);
 
@@ -133,7 +132,10 @@ public class EntityLiving : Entity
     {
         get
         {
-            if (Physics?.IsClimbing(this) is { } climbing) return climbing;
+            if (Physics?.IsClimbing(this) is { } climbing)
+            {
+                return climbing;
+            }
 
             int x = MathHelper.Floor(X);
             int y = MathHelper.Floor(BoundingBox.MinY);
@@ -144,18 +146,13 @@ public class EntityLiving : Entity
 
     protected override double PassengerRidingHeight => base.PassengerRidingHeight + Definition.PassengerRideOffset;
 
-    protected override bool BypassesSteppingEffects() => Definition.MakesStepSounds;
-
     protected internal bool HasCurrentTarget => CurrentTarget != null;
 
     protected internal Entity? CurrentTarget { get; private set; }
 
     public virtual bool IsSleeping => false;
 
-    /// <summary>
-    ///     Declared in the mob's JSON and resolved once at construction, since the item registry
-    ///     lookup is not worth repeating on every render frame.
-    /// </summary>
+    /// <summary>Declared in the mob's JSON and resolved once at construction, not per render frame.</summary>
     public virtual ItemStack? HeldItem { get; }
 
     protected virtual int TalkInterval => Definition.TalkInterval;
@@ -165,6 +162,11 @@ public class EntityLiving : Entity
     protected virtual bool CanDespawn => Persistence?.CanDespawn(this) ?? Definition.CanDespawn;
 
     public virtual int MaxSpawnedInChunk => Definition.MaxSpawnedInChunk;
+
+    /// <summary>Keeps the mob watching whatever it is looking at for another few ticks.</summary>
+    protected internal void HoldGaze(int ticks) => LookTimer = ticks;
+
+    protected override bool BypassesSteppingEffects() => Definition.MakesStepSounds;
 
     public virtual void PostSpawn() => Behaviors.Lifecycle?.OnPostSpawn(this);
 
@@ -311,8 +313,8 @@ public class EntityLiving : Entity
         base.Tick();
         TickMovement();
 
-        // After the movement tick, not inside it: TickMovement has early returns, and a mob that
-        // overrode it ran its own code after calling base regardless of which path base took.
+        // After the movement tick, not inside it: TickMovement has early returns, and this must run
+        // whichever path it took.
         Physics?.AfterTickMovement(this);
 
         double dx = X - PrevX;
@@ -342,19 +344,40 @@ public class EntityLiving : Entity
         WalkProgress += (walkAmount - WalkProgress) * 0.3F;
 
         float yawDelta = computedYaw - BodyYaw;
-        while (yawDelta < -180.0F) yawDelta += 360.0F;
-        while (yawDelta >= 180.0F) yawDelta -= 360.0F;
+        while (yawDelta < -180.0F)
+        {
+            yawDelta += 360.0F;
+        }
+
+        while (yawDelta >= 180.0F)
+        {
+            yawDelta -= 360.0F;
+        }
 
         BodyYaw += yawDelta * 0.3F;
 
         float headYawDelta = Yaw - BodyYaw;
-        while (headYawDelta < -180.0F) headYawDelta += 360.0F;
-        while (headYawDelta >= 180.0F) headYawDelta -= 360.0F;
+        while (headYawDelta < -180.0F)
+        {
+            headYawDelta += 360.0F;
+        }
+
+        while (headYawDelta >= 180.0F)
+        {
+            headYawDelta -= 360.0F;
+        }
 
         bool headFacingBackward = headYawDelta < -90.0F || headYawDelta >= 90.0F;
 
-        if (headYawDelta < -75.0F) headYawDelta = -75.0F;
-        if (headYawDelta >= 75.0F) headYawDelta = 75.0F;
+        if (headYawDelta < -75.0F)
+        {
+            headYawDelta = -75.0F;
+        }
+
+        if (headYawDelta >= 75.0F)
+        {
+            headYawDelta = 75.0F;
+        }
 
         BodyYaw = Yaw - headYawDelta;
 
@@ -368,14 +391,35 @@ public class EntityLiving : Entity
             walkSpeed *= -1.0F;
         }
 
-        while (Yaw - PrevYaw < -180.0F) PrevYaw -= 360.0F;
-        while (Yaw - PrevYaw >= 180.0F) PrevYaw += 360.0F;
+        while (Yaw - PrevYaw < -180.0F)
+        {
+            PrevYaw -= 360.0F;
+        }
 
-        while (BodyYaw - LastBodyYaw < -180.0F) LastBodyYaw -= 360.0F;
-        while (BodyYaw - LastBodyYaw >= 180.0F) LastBodyYaw += 360.0F;
+        while (Yaw - PrevYaw >= 180.0F)
+        {
+            PrevYaw += 360.0F;
+        }
 
-        while (Pitch - PrevPitch < -180.0F) PrevPitch -= 360.0F;
-        while (Pitch - PrevPitch >= 180.0F) PrevPitch += 360.0F;
+        while (BodyYaw - LastBodyYaw < -180.0F)
+        {
+            LastBodyYaw -= 360.0F;
+        }
+
+        while (BodyYaw - LastBodyYaw >= 180.0F)
+        {
+            LastBodyYaw += 360.0F;
+        }
+
+        while (Pitch - PrevPitch < -180.0F)
+        {
+            PrevPitch -= 360.0F;
+        }
+
+        while (Pitch - PrevPitch >= 180.0F)
+        {
+            PrevPitch += 360.0F;
+        }
 
         TotalWalkDistance += walkSpeed;
 
@@ -386,7 +430,10 @@ public class EntityLiving : Entity
 
     public virtual void Heal(int amount)
     {
-        if (Health <= 0) return;
+        if (Health <= 0)
+        {
+            return;
+        }
 
         Health += amount;
         if (Health > MaxHealth)
@@ -399,19 +446,31 @@ public class EntityLiving : Entity
 
     public override bool Damage(Entity? entity, int amount)
     {
-        if (World.IsRemote) return false;
+        if (World.IsRemote)
+        {
+            return false;
+        }
 
         Behaviors.Lifecycle?.OnDamaged(this, entity, amount);
-        if (Behaviors.Lifecycle is { } lifecycle) amount = lifecycle.ModifyDamage(this, entity, amount);
+        if (Behaviors.Lifecycle is { } lifecycle)
+        {
+            amount = lifecycle.ModifyDamage(this, entity, amount);
+        }
 
         EntityAge = 0;
-        if (Health <= 0) return false;
+        if (Health <= 0)
+        {
+            return false;
+        }
 
         WalkAnimationSpeed = 1.5F;
         bool playHurtEffects = true;
         if (Hearts > MaxHealth / 2.0F)
         {
-            if (amount <= DamageForDisplay) return false;
+            if (amount <= DamageForDisplay)
+            {
+                return false;
+            }
 
             ApplyDamage(amount - DamageForDisplay);
             DamageForDisplay = amount;
@@ -525,14 +584,20 @@ public class EntityLiving : Entity
 
     public override void OnStruckByLightning(Entity bolt)
     {
-        if (Lifecycle?.OnStruckByLightning(this, bolt) == true) return;
+        if (Lifecycle?.OnStruckByLightning(this, bolt) == true)
+        {
+            return;
+        }
 
         base.OnStruckByLightning(bolt);
     }
 
     protected override void OnLanding(float fallDistance)
     {
-        if (Physics?.OnLanding(this, fallDistance) == true) return;
+        if (Physics?.OnLanding(this, fallDistance) == true)
+        {
+            return;
+        }
 
         base.OnLanding(fallDistance);
         int fallDamage = (int)Math.Ceiling(fallDistance - 3.0F);
@@ -554,7 +619,10 @@ public class EntityLiving : Entity
 
     protected virtual void Travel(float strafe, float forward)
     {
-        if (Physics?.Travel(this, strafe, forward) == true) return;
+        if (Physics?.Travel(this, strafe, forward) == true)
+        {
+            return;
+        }
 
         double previousY;
         if (IsInWater)
@@ -783,8 +851,7 @@ public class EntityLiving : Entity
         {
             TickLiving();
 
-            // After the AI, not inside it: a creature's TickLiving is its pathfinding, and a mob
-            // that overrode it called base first and did its own work here.
+            // After the AI, not inside it: a creature's TickLiving is its pathfinding.
             Ticker?.AfterTickLiving(this);
         }
 
@@ -827,8 +894,7 @@ public class EntityLiving : Entity
 
     /// <summary>
     ///     Despawns the mob once no player is near enough to keep it, and ages out one that has been
-    ///     idle too long. Reachable from behaviors because a ticker that replaces the AI still has to
-    ///     run it.
+    ///     idle too long. Reachable from behaviors, since a ticker replacing the AI still has to run it.
     /// </summary>
     protected internal void TickDespawn()
     {
@@ -864,9 +930,12 @@ public class EntityLiving : Entity
 
     protected virtual void TickLiving()
     {
-        // A ticker that answers true is the mob's whole AI, so none of the idle logic below runs —
-        // the ghast neither ages nor glances around, exactly as when it overrode this method.
-        if (Ticker?.OnTickLiving(this) == true) return;
+        // A ticker answering true is the mob's whole AI, so none of the idle logic below runs: a
+        // ghast neither ages nor glances around.
+        if (Ticker?.OnTickLiving(this) == true)
+        {
+            return;
+        }
 
         ++EntityAge;
         TickDespawn();
@@ -941,11 +1010,25 @@ public class EntityLiving : Entity
     {
         float delta = targetRotation - currentRotation;
 
-        while (delta < -180.0F) delta += 360.0F;
-        while (delta >= 180.0F) delta -= 360.0F;
+        while (delta < -180.0F)
+        {
+            delta += 360.0F;
+        }
 
-        if (delta > maxDelta) delta = maxDelta;
-        if (delta < -maxDelta) delta = -maxDelta;
+        while (delta >= 180.0F)
+        {
+            delta -= 360.0F;
+        }
+
+        if (delta > maxDelta)
+        {
+            delta = maxDelta;
+        }
+
+        if (delta < -maxDelta)
+        {
+            delta = -maxDelta;
+        }
 
         return currentRotation + delta;
     }
@@ -955,9 +1038,8 @@ public class EntityLiving : Entity
     }
 
     /// <summary>
-    ///     Whether the mob may spawn where it stands. The Physics slot replaces the rule outright
-    ///     when it declares one — a zombie pigman ignores darkness, a ghast spawns one time in
-    ///     twenty — and the consult lives here so no subclass has to remember to make it.
+    ///     Whether the mob may spawn where it stands. A Physics slot declaring its own rule replaces
+    ///     this one outright: a zombie pigman ignores darkness, a ghast spawns one time in twenty.
     /// </summary>
     public bool CanSpawn() => Physics?.CanSpawn(this) ?? CanSpawnHere();
 
@@ -1050,7 +1132,10 @@ public class EntityLiving : Entity
                 OnKilledBy(null);
                 break;
             default:
-                if (Behaviors.Lifecycle?.OnEntityStatus(this, statusId) == true) break;
+                if (Behaviors.Lifecycle?.OnEntityStatus(this, statusId) == true)
+                {
+                    break;
+                }
 
                 base.ProcessServerEntityStatus(statusId);
                 break;

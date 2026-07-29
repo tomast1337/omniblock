@@ -1,22 +1,20 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities.State;
-using BetaSharp.Items;
 using BetaSharp.NBT;
-using BetaSharp.Registries;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A boat: it floats on buoyancy sampled in five horizontal slices, is steered by the rider
-///     leaning rather than by any control of its own, rocks when struck, and comes apart into its
-///     planks and sticks when the damage builds up or it runs into a wall at speed.
+///     A boat. Floats on buoyancy sampled in five horizontal slices, is steered by the rider
+///     leaning, rocks when struck, and comes apart into planks and sticks when the damage builds up
+///     or it hits a wall at speed.
 ///     <para>
-///         Server and client tick differently — the server does the physics, the client eases
-///         towards the positions it is sent — so the two halves are separate methods rather than one
-///         body full of <c>IsRemote</c> checks.
+///         Server and client tick differently (the server runs the physics, the client eases towards
+///         the positions it is sent), so the two are separate methods instead of one body full of
+///         <c>IsRemote</c> checks.
 ///     </para>
 /// </summary>
 public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersistence, IEntityInteractable, IEntityPhysics
@@ -26,22 +24,23 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     private const double RiderTurnVelocityBlend = 0.25D;
     private const double YawSmoothing = 0.35D;
 
-    /// <summary>Which way the hull tips when struck, flipped on every hit so knocks alternate.</summary>
-    private readonly StateHandle<int> _rockDirection;
-    private readonly StateHandle<int> _timeSinceHit;
+    private readonly int _breakThreshold;
     private readonly StateHandle<int> _damage;
 
     private readonly StateHandle<int> _lerpSteps;
-    private readonly StateHandle<double> _targetX;
-    private readonly StateHandle<double> _targetY;
-    private readonly StateHandle<double> _targetZ;
-    private readonly StateHandle<double> _targetYaw;
-    private readonly StateHandle<double> _targetPitch;
+
+    /// <summary>Which way the hull tips when struck, flipped on every hit so knocks alternate.</summary>
+    private readonly StateHandle<int> _rockDirection;
+
     private readonly StateHandle<double> _syncedVelocityX;
     private readonly StateHandle<double> _syncedVelocityY;
     private readonly StateHandle<double> _syncedVelocityZ;
-
-    private readonly int _breakThreshold;
+    private readonly StateHandle<double> _targetPitch;
+    private readonly StateHandle<double> _targetX;
+    private readonly StateHandle<double> _targetY;
+    private readonly StateHandle<double> _targetYaw;
+    private readonly StateHandle<double> _targetZ;
+    private readonly StateHandle<int> _timeSinceHit;
     private readonly (int ItemId, int Count)[] _wreckage;
 
     public BoatBehavior(EntityStateLayout layout, int breakDamage, (int ItemId, int Count)[] wreckage)
@@ -64,37 +63,37 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         _syncedVelocityZ = layout.DeclareDouble();
     }
 
-    /// <summary>
-    ///     Places a boat afloat. The <c>y</c> given is the waterline; the hull sits half its height
-    ///     above it, which is why the caller's coordinate is not the entity's.
-    /// </summary>
-    public static Entity Launch(IWorldContext world, double x, double y, double z)
+    /// <summary>Climbing in is the whole interaction. A boat someone else is in refuses.</summary>
+    public bool OnInteract(Entity self, EntityPlayer player)
     {
-        Entity boat = EntityRegistry.ByName("boat").Create(world);
-        boat.SetPosition(x, y + boat.StandingEyeHeight, z);
-        boat.VelocityX = boat.VelocityY = boat.VelocityZ = 0.0D;
-        boat.PrevX = x;
-        boat.PrevY = y;
-        boat.PrevZ = z;
-        return boat;
+        if (self.Passenger is EntityPlayer && !Equals(self.Passenger, player))
+        {
+            return true;
+        }
+
+        if (!self.World.IsRemote)
+        {
+            player.SetVehicle(self);
+        }
+
+        return true;
     }
-
-    /// <summary>How far into its rocking the hull is, for the renderer that tips the model.</summary>
-    public int TimeSinceHit(Entity self) => self.State[_timeSinceHit];
-
-    public int Damage(Entity self) => self.State[_damage];
-
-    public int RockDirection(Entity self) => self.State[_rockDirection];
 
     public bool? Damage(Entity self, Entity? attacker, int amount)
     {
-        if (self.World.IsRemote || self.Dead) return true;
+        if (self.World.IsRemote || self.Dead)
+        {
+            return true;
+        }
 
         Rock(self);
         self.State[_damage] += amount * 10;
         self.VelocityModified = true;
 
-        if (self.State[_damage] <= _breakThreshold) return true;
+        if (self.State[_damage] <= _breakThreshold)
+        {
+            return true;
+        }
 
         self.Passenger?.SetVehicle(self);
         BreakApart(self);
@@ -102,30 +101,24 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         return true;
     }
 
-    /// <summary>The client's replay of a hit it was told about: the same rock, no damage tally.</summary>
+    /// <summary>The client's replay of a hit it was told about: the rock, without the damage tally.</summary>
     public bool OnAnimateHurt(Entity self)
     {
         Rock(self);
 
-        // Verbatim from the beta class: doubling-plus-itself rather than adding the hit's amount,
-        // which the animation packet does not carry. It only feeds the renderer's tip angle.
+        // Verbatim from Beta: doubles-plus-itself instead of adding the hit's amount, which the
+        // animation packet does not carry. Only feeds the renderer's tip angle.
         self.State[_damage] += self.State[_damage] * 10;
         return true;
     }
 
-    private void Rock(Entity self)
+    /// <summary>A boat carries no state across a save beyond its position.</summary>
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
     {
-        self.State[_rockDirection] = -self.State[_rockDirection];
-        self.State[_timeSinceHit] = 10;
     }
 
-    private void BreakApart(Entity self)
+    public void OnReadNbt(Entity self, NBTTagCompound nbt)
     {
-        self.MarkDead();
-        foreach ((int itemId, int count) in _wreckage)
-        {
-            for (int i = 0; i < count; ++i) self.DropItem(itemId, 1, 0.0F);
-        }
     }
 
     /// <summary>A synced position becomes a target eased towards, plus two ticks of slack.</summary>
@@ -154,7 +147,10 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     /// <summary>The rider sits forward of the middle, along whichever way the hull points.</summary>
     public bool OnUpdatePassengerPosition(Entity self)
     {
-        if (self.Passenger is not { } passenger) return true;
+        if (self.Passenger is not { } passenger)
+        {
+            return true;
+        }
 
         double xOffset = Math.Cos(self.Yaw * Math.PI / 180.0D) * 0.4D;
         double zOffset = Math.Sin(self.Yaw * Math.PI / 180.0D) * 0.4D;
@@ -162,25 +158,19 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         return true;
     }
 
-    private static double PassengerRidingHeight(Entity self) =>
-        self.Type?.Definition is { } definition
-            ? self.Height * definition.PassengerRideHeightScale + definition.PassengerRideOffset
-            : 0.0D;
-
-    /// <summary>Climbing in is the whole interaction; a boat someone else is in refuses.</summary>
-    public bool OnInteract(Entity self, EntityPlayer player)
-    {
-        if (self.Passenger is EntityPlayer && !Equals(self.Passenger, player)) return true;
-        if (!self.World.IsRemote) player.SetVehicle(self);
-        return true;
-    }
-
     public bool OnTickEntity(Entity self)
     {
         self.BaseTick();
 
-        if (self.State[_timeSinceHit] > 0) --self.State[_timeSinceHit];
-        if (self.State[_damage] > 0) --self.State[_damage];
+        if (self.State[_timeSinceHit] > 0)
+        {
+            --self.State[_timeSinceHit];
+        }
+
+        if (self.State[_damage] > 0)
+        {
+            --self.State[_damage];
+        }
 
         self.PrevX = self.X;
         self.PrevY = self.Y;
@@ -188,11 +178,62 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
 
         double waterSubmersion = MeasureSubmersion(self);
 
-        if (self.World.IsRemote) TickClient(self);
-        else TickServer(self, waterSubmersion);
+        if (self.World.IsRemote)
+        {
+            TickClient(self);
+        }
+        else
+        {
+            TickServer(self, waterSubmersion);
+        }
 
         return true;
     }
+
+    /// <summary>
+    ///     Places a boat afloat. The <c>y</c> given is the waterline, and the hull sits half its
+    ///     height above it, so the caller's coordinate is not the entity's.
+    /// </summary>
+    public static Entity Launch(IWorldContext world, double x, double y, double z)
+    {
+        Entity boat = EntityRegistry.ByName("boat").Create(world);
+        boat.SetPosition(x, y + boat.StandingEyeHeight, z);
+        boat.VelocityX = boat.VelocityY = boat.VelocityZ = 0.0D;
+        boat.PrevX = x;
+        boat.PrevY = y;
+        boat.PrevZ = z;
+        return boat;
+    }
+
+    /// <summary>How far into its rocking the hull is, for the renderer that tips the model.</summary>
+    public int TimeSinceHit(Entity self) => self.State[_timeSinceHit];
+
+    public int Damage(Entity self) => self.State[_damage];
+
+    public int RockDirection(Entity self) => self.State[_rockDirection];
+
+    private void Rock(Entity self)
+    {
+        self.State[_rockDirection] = -self.State[_rockDirection];
+        self.State[_timeSinceHit] = 10;
+    }
+
+    private void BreakApart(Entity self)
+    {
+        self.MarkDead();
+        foreach ((int itemId, int count) in _wreckage)
+        {
+            for (int i = 0; i < count; ++i)
+            {
+                self.DropItem(itemId, 1, 0.0F);
+            }
+        }
+    }
+
+    private static double PassengerRidingHeight(Entity self) =>
+        self.Type?.Definition is { } definition
+            ? self.Height * definition.PassengerRideHeightScale + definition.PassengerRideOffset
+            : 0.0D;
 
     /// <summary>How much of the hull is under water, sampled in five horizontal slices.</summary>
     private static double MeasureSubmersion(Entity self)
@@ -260,7 +301,10 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         }
         else
         {
-            if (self.VelocityY < 0.0D) self.VelocityY /= 2.0D;
+            if (self.VelocityY < 0.0D)
+            {
+                self.VelocityY /= 2.0D;
+            }
 
             self.VelocityY += 0.007D;
         }
@@ -288,7 +332,10 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         // Running into a wall at speed is fatal: the hull comes apart where it struck.
         if (self.HorizontalCollision && horizontalSpeed > 0.15D)
         {
-            if (!self.World.IsRemote) BreakApart(self);
+            if (!self.World.IsRemote)
+            {
+                BreakApart(self);
+            }
         }
         else
         {
@@ -310,22 +357,34 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
 
         ClearSnowUnderfoot(self);
 
-        if (self.Passenger is { Dead: true }) self.Passenger = null;
+        if (self.Passenger is { Dead: true })
+        {
+            self.Passenger = null;
+        }
     }
 
-    /// <summary>The rider steers by leaning: their own motion is what turns and drives the hull.</summary>
+    /// <summary>The rider steers by leaning: their own motion turns and drives the hull.</summary>
     private static void ApplyRiderInput(Entity self)
     {
-        if (self.Passenger is not { } rider) return;
+        if (self.Passenger is not { } rider)
+        {
+            return;
+        }
 
         self.VelocityX += rider.VelocityX * RiderInputAcceleration;
         self.VelocityZ += rider.VelocityZ * RiderInputAcceleration;
 
         double riderInputSpeedSq = rider.VelocityX * rider.VelocityX + rider.VelocityZ * rider.VelocityZ;
-        if (riderInputSpeedSq <= 1.0E-4D) return;
+        if (riderInputSpeedSq <= 1.0E-4D)
+        {
+            return;
+        }
 
         double speed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
-        if (speed <= 0.01D) return;
+        if (speed <= 0.01D)
+        {
+            return;
+        }
 
         double riderInputSpeed = Math.Sqrt(riderInputSpeedSq);
         double targetVelocityX = rider.VelocityX / riderInputSpeed * speed;
@@ -338,7 +397,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         self.Yaw = (float)(self.Yaw + WrapDegrees(desiredYaw - self.Yaw) * YawSmoothing);
     }
 
-    /// <summary>The hull swings to face the way it actually travelled, easing rather than snapping.</summary>
+    /// <summary>The hull eases round to face the way it actually travelled.</summary>
     private static void PointAlongTravel(Entity self)
     {
         double desiredYaw = self.Yaw;
@@ -354,7 +413,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
         self.SetRotation(self.Yaw, self.Pitch);
     }
 
-    /// <summary>A boat ploughs a channel through snow rather than riding over it.</summary>
+    /// <summary>A boat ploughs a channel through snow instead of riding over it.</summary>
     private static void ClearSnowUnderfoot(Entity self)
     {
         int snowId = BlockRegistry.Get("snow").id;
@@ -401,13 +460,16 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
 
     private static double WrapDegrees(double angle)
     {
-        while (angle >= 180.0D) angle -= 360.0D;
-        while (angle < -180.0D) angle += 360.0D;
+        while (angle >= 180.0D)
+        {
+            angle -= 360.0D;
+        }
+
+        while (angle < -180.0D)
+        {
+            angle += 360.0D;
+        }
+
         return angle;
     }
-
-    /// <summary>A boat carries nothing across a save: where it floats is all there is to it.</summary>
-    public void OnWriteNbt(Entity self, NBTTagCompound nbt) { }
-
-    public void OnReadNbt(Entity self, NBTTagCompound nbt) { }
 }

@@ -5,24 +5,24 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A soaked mob shakes itself dry the moment it finds dry ground to stand on: it stops where it
-///     is, sprays water, and cannot be hurried. Getting wet again at any point restarts the wait.
+///     A soaked mob shakes itself dry as soon as it finds dry ground to stand on: it stops where it
+///     is, sprays water, and cannot be hurried. Getting wet again restarts the wait.
 ///     <para>
-///         Two separate facts, not one: that it <em>needs</em> to shake, and that it is shaking now.
-///         The first survives being in the water; the second only begins on land.
+///         Two separate facts: that the mob <em>needs</em> to shake, which survives being in the
+///         water, and that it is shaking now, which only begins on land.
 ///     </para>
 /// </summary>
 public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEntityLifecycle
 {
+    private readonly float _duration;
     private readonly StateHandle<bool> _needsShake;
-    private readonly StateHandle<bool> _shaking;
-    private readonly StateHandle<float> _shakeTime;
+    private readonly string _particle;
     private readonly StateHandle<float> _previousShakeTime;
+    private readonly StateHandle<float> _shakeTime;
+    private readonly StateHandle<bool> _shaking;
 
     private readonly string _sound;
-    private readonly string _particle;
     private readonly float _speed;
-    private readonly float _duration;
     private readonly float _sprayStart;
 
     public ShakeOffWaterBehavior(in EntityBehaviorContext context)
@@ -39,28 +39,37 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
         _previousShakeTime = context.DeclareFloat();
     }
 
-    public bool IsShaking(Entity self) => self.State[_needsShake];
+    /// <summary>The client is told to start shaking instead of working it out for itself.</summary>
+    public bool OnEntityStatus(EntityLiving self, sbyte status)
+    {
+        if ((EntityStatusS2CPacket.EntityState)status != EntityStatusS2CPacket.EntityState.WolfShaking)
+        {
+            return false;
+        }
 
-    /// <summary>A mob mid-shake plants itself; it will not be moved until it is done.</summary>
+        Begin(self);
+        return true;
+    }
+
+    /// <summary>A mob mid-shake stays put until it is done.</summary>
     public bool? IsMovementCeased(EntityLiving self) => self.State[_shaking] ? true : null;
 
     /// <summary>Starts the shake once the mob is soaked, still, and on the ground.</summary>
     public void AfterTickMovement(EntityLiving self)
     {
         EntityState state = self.State;
-        if (self.InterpolateOnly || !state[_needsShake] || state[_shaking]) return;
-        if (self is EntityCreature { HasPath: true } || !self.OnGround) return;
+        if (self.InterpolateOnly || !state[_needsShake] || state[_shaking])
+        {
+            return;
+        }
+
+        if (self is EntityCreature { HasPath: true } || !self.OnGround)
+        {
+            return;
+        }
 
         Begin(self);
         self.World.Broadcaster.EntityEvent(self, EntityStatusS2CPacket.EntityState.WolfShaking);
-    }
-
-    private void Begin(EntityLiving self)
-    {
-        EntityState state = self.State;
-        state[_shaking] = true;
-        state[_shakeTime] = 0.0F;
-        state[_previousShakeTime] = 0.0F;
     }
 
     public void OnTickEnd(EntityLiving self)
@@ -69,7 +78,7 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
 
         if (self.IsWet)
         {
-            // Soaked again: whatever shake was under way is abandoned and the need is renewed.
+            // Soaked again, so any shake under way is abandoned and the need is renewed.
             state[_needsShake] = true;
             state[_shaking] = false;
             state[_shakeTime] = 0.0F;
@@ -77,7 +86,10 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
             return;
         }
 
-        if (!state[_shaking]) return;
+        if (!state[_shaking])
+        {
+            return;
+        }
 
         if (state[_shakeTime] == 0.0F)
         {
@@ -95,7 +107,20 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
             state[_shakeTime] = 0.0F;
         }
 
-        if (state[_shakeTime] > _sprayStart) Spray(self, state);
+        if (state[_shakeTime] > _sprayStart)
+        {
+            Spray(self, state);
+        }
+    }
+
+    public bool IsShaking(Entity self) => self.State[_needsShake];
+
+    private void Begin(EntityLiving self)
+    {
+        EntityState state = self.State;
+        state[_shaking] = true;
+        state[_shakeTime] = 0.0F;
+        state[_previousShakeTime] = 0.0F;
     }
 
     private void Spray(EntityLiving self, EntityState state)
@@ -111,21 +136,12 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
         }
     }
 
-    /// <summary>The client is told to start shaking rather than working it out for itself.</summary>
-    public bool OnEntityStatus(EntityLiving self, sbyte status)
-    {
-        if ((EntityStatusS2CPacket.EntityState)status != EntityStatusS2CPacket.EntityState.WolfShaking) return false;
-
-        Begin(self);
-        return true;
-    }
-
     /// <summary>How dark the mob is drawn while spraying, which peaks with the shake.</summary>
     public float Shading(Entity self, float tickDelta) => 12.0F / 16.0F + Interpolated(self, tickDelta) / 2.0F * 0.25F;
 
     /// <summary>
     ///     Body-part rotation partway through the shake. The offset staggers the parts so the mob
-    ///     ripples from the head back rather than swinging in one piece.
+    ///     ripples from the head back instead of swinging in one piece.
     /// </summary>
     public float ShakeAngle(Entity self, float tickDelta, float offset)
     {

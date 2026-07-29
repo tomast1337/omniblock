@@ -2,22 +2,32 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     Splits the mob into <paramref name="childCount" /> half-sized copies of itself on death. The
-///     children are created from the dying mob's own registered type, so this knows nothing about
-///     what it is splitting — only that the type declares a <c>size</c> worth halving.
+///     children are created from the dying mob's own registered type, so this needs to know nothing
+///     about what it is splitting beyond that the type declares a <c>size</c> worth halving.
 ///     <para>
-///         Server-side only, and only for a mob above the smallest size that actually died rather
-///         than despawned.
+///         Server-side only, and only for a mob above the smallest size that died rather than
+///         despawned.
 ///     </para>
 /// </summary>
 public sealed class SplitOnDeathBehavior(int childCount = 4) : IEntityLifecycle
 {
     public void OnMarkDead(EntityLiving self)
     {
-        if (self.World.IsRemote || self.Health != 0) return;
-        if (self.Behaviors.Find<SizedBodyBehavior>() is not { } body) return;
+        if (self.World.IsRemote || self.Health != 0)
+        {
+            return;
+        }
+
+        if (self.Behaviors.Find<SizedBodyBehavior>() is not { } body)
+        {
+            return;
+        }
 
         int size = body.Size(self);
-        if (size <= 1) return;
+        if (size <= 1)
+        {
+            return;
+        }
 
         for (int i = 0; i < childCount; ++i)
         {

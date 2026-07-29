@@ -8,8 +8,7 @@ namespace BetaSharp.Tests.Entities;
 /// <summary>
 /// Integration coverage for <see cref="EntityDefinitionJsonLoader"/> against real files in a temp
 /// directory: defaults merging, datapack layering, and loud failure on a protocol id that would not
-/// survive the wire. The item migration never built the equivalent for
-/// <c>ItemDefinitionJsonLoader</c> — flagged in the migration doc as a gap worth not repeating.
+/// survive the wire. <c>ItemDefinitionJsonLoader</c> has no equivalent coverage.
 /// </summary>
 [Collection("RegistryAccess")]
 public sealed class EntityDefinitionLoaderTests : IDisposable

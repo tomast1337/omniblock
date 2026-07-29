@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BetaSharp.Entities.State;
 
 namespace BetaSharp.Entities.Behaviors;
@@ -11,15 +12,26 @@ public sealed class RideIfSaddledBehavior : IEntityInteractable
     private readonly SyncedHandle<bool> _saddled;
 
     public RideIfSaddledBehavior(in EntityBehaviorContext context) =>
-        _saddled = context.Synced<bool>(context.Json.TryGetProperty("saddled_property", out System.Text.Json.JsonElement name)
+        _saddled = context.Synced<bool>(context.Json.TryGetProperty("saddled_property", out JsonElement name)
             ? name.GetString() ?? "saddled"
             : "saddled");
 
     public bool OnInteract(Entity self, EntityPlayer player)
     {
-        if (!self.DataSynchronizer.Get<bool>(_saddled.Id).Value) return false;
-        if (self.World.IsRemote) return false;
-        if (self.Passenger != null && !Equals(self.Passenger, player)) return false;
+        if (!self.DataSynchronizer.Get<bool>(_saddled.Id).Value)
+        {
+            return false;
+        }
+
+        if (self.World.IsRemote)
+        {
+            return false;
+        }
+
+        if (self.Passenger != null && !Equals(self.Passenger, player))
+        {
+            return false;
+        }
 
         player.SetVehicle(self);
         return true;

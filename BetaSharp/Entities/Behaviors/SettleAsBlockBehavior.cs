@@ -8,12 +8,11 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     A block travelling as an entity: it falls under gravity, erases the block it left, and on
-///     landing places itself back into the world — or drops as an item where it cannot sit. Which
+///     landing places itself back into the world, or drops as an item where it cannot sit. Which
 ///     block is falling is per-instance state set by whoever spawned it.
 ///     <para>
-///         The declared wire ids map each block to its own object-spawn id (sand and gravel are
-///         different ids on the wire), which is why the entity does not use the definition's single
-///         <c>SpawnObjectId</c>.
+///         The declared wire ids map each block to its own object-spawn id (sand and gravel differ on
+///         the wire), so the entity does not use the definition's single <c>SpawnObjectId</c>.
 ///     </para>
 /// </summary>
 public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
@@ -32,32 +31,9 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
         _fallTime = layout.DeclareInt();
     }
 
-    public int BlockId(Entity self) => self.State[_blockId];
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt) => nbt.SetByte("Tile", (sbyte)self.State[_blockId]);
 
-    public void SetBlock(Entity self, int blockId) => self.State[_blockId] = blockId;
-
-    /// <summary>The object-spawn id announcing this instance, decided by which block it carries.</summary>
-    public int SpawnObjectId(Entity self)
-    {
-        int blockId = BlockId(self);
-        foreach ((int candidate, int wireId) in _wireIds)
-        {
-            if (candidate == blockId) return wireId;
-        }
-
-        return _wireIds[0].WireId;
-    }
-
-    /// <summary>The block a received object-spawn id stands for, or <c>null</c> if none declared here.</summary>
-    public int? BlockForSpawnObjectId(int spawnObjectId)
-    {
-        foreach ((int blockId, int wireId) in _wireIds)
-        {
-            if (wireId == spawnObjectId) return blockId;
-        }
-
-        return null;
-    }
+    public void OnReadNbt(Entity self, NBTTagCompound nbt) => self.State[_blockId] = nbt.GetByte("Tile") & 255;
 
     public bool OnTickEntity(Entity self)
     {
@@ -92,7 +68,7 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
             self.VelocityY *= -0.5D;
             self.MarkDead();
             bool canFallThrough = Block.Blocks[blockId].Physics is FallingBlockBehavior fallingBlockPhysics
-                && fallingBlockPhysics.CanFallThrough(new OnTickEvent(self.World, floorX, floorY - 1, floorZ, 0, blockId));
+                                  && fallingBlockPhysics.CanFallThrough(new OnTickEvent(self.World, floorX, floorY - 1, floorZ, 0, blockId));
             if ((!Block.Blocks[blockId].CanPlaceAt(new CanPlaceAtContext(self.World, 0, floorX, floorY, floorZ)) || canFallThrough ||
                  !self.World.Writer.SetBlock(floorX, floorY, floorZ, blockId)) && !self.World.IsRemote)
             {
@@ -108,7 +84,36 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
         return true;
     }
 
-    public void OnWriteNbt(Entity self, NBTTagCompound nbt) => nbt.SetByte("Tile", (sbyte)self.State[_blockId]);
+    public int BlockId(Entity self) => self.State[_blockId];
 
-    public void OnReadNbt(Entity self, NBTTagCompound nbt) => self.State[_blockId] = nbt.GetByte("Tile") & 255;
+    public void SetBlock(Entity self, int blockId) => self.State[_blockId] = blockId;
+
+    /// <summary>The object-spawn id announcing this instance, decided by which block it carries.</summary>
+    public int SpawnObjectId(Entity self)
+    {
+        int blockId = BlockId(self);
+        foreach ((int candidate, int wireId) in _wireIds)
+        {
+            if (candidate == blockId)
+            {
+                return wireId;
+            }
+        }
+
+        return _wireIds[0].WireId;
+    }
+
+    /// <summary>The block a received object-spawn id stands for, or <c>null</c> if none declared here.</summary>
+    public int? BlockForSpawnObjectId(int spawnObjectId)
+    {
+        foreach ((int blockId, int wireId) in _wireIds)
+        {
+            if (wireId == spawnObjectId)
+            {
+                return blockId;
+            }
+        }
+
+        return null;
+    }
 }

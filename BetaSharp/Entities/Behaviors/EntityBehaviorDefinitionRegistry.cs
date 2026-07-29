@@ -4,15 +4,14 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     Maps a JSON <c>"Type"</c> key to the <see cref="EntityBehaviorDefinition" /> subclass that
-///     describes it. The successor to <c>EntityBehaviorRegistry</c>'s factory lambdas: this table
-///     names a type, and deserialization fills its properties, rather than each entry reaching into
-///     a <see cref="JsonElement" /> by hand.
+///     describes it. The table names a type and deserialization fills its properties, so no entry
+///     reaches into a <see cref="JsonElement" /> by hand.
 /// </summary>
 internal static class EntityBehaviorDefinitionRegistry
 {
     private static readonly Dictionary<string, Type> s_types = new(StringComparer.Ordinal)
     {
-        // Non-living entities — one per class deleted in the non-mob migration round.
+        // Non-living entities.
         ["primed_explosive"] = typeof(PrimedExplosiveDefinition),
         ["settle_as_block"] = typeof(SettleAsBlockDefinition),
         ["lightning_strike"] = typeof(LightningStrikeDefinition),

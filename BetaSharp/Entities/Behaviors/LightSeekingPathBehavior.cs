@@ -2,7 +2,7 @@ namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
 ///     Inverts the usual monster pathing preference so the mob seeks out lit ground instead of
-///     avoiding it — the giant, which is too big to care about being seen.
+///     avoiding it. Used by the giant.
 /// </summary>
 public sealed class LightSeekingPathBehavior : IEntityPhysics
 {

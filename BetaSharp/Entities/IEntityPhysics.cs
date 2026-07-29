@@ -2,36 +2,37 @@ namespace BetaSharp.Entities;
 
 /// <summary>
 ///     Composable movement and collision response, the entity counterpart of the block
-///     <c>Physics</c> slot. Landing is the first hook: a chicken ignores the fall entirely, a pig
-///     credits the rider who survived it.
+///     <c>Physics</c> slot.
 /// </summary>
 public interface IEntityPhysics
 {
     /// <summary>
     ///     Runs from <c>EntityLiving.OnLanding</c>, before the default response. Returning
-    ///     <c>true</c> means the behavior handled the landing and the default — fall damage, the
-    ///     step sound, and propagation to the passenger — is skipped entirely.
+    ///     <c>true</c> means the behavior handled the landing and the default (fall damage, the step
+    ///     sound, propagation to the passenger) is skipped.
     /// </summary>
     bool OnLanding(EntityLiving self, float fallDistance) => false;
 
     /// <summary>
     ///     Runs after the movement tick has fully resolved, so it sees this tick's position and
-    ///     ground state — where a mob that overrode <c>TickMovement</c> put its own code.
+    ///     ground state.
     /// </summary>
-    void AfterTickMovement(EntityLiving self) { }
+    void AfterTickMovement(EntityLiving self)
+    {
+    }
 
     /// <summary>
-    ///     Replaces the movement body — how velocity is accelerated, applied and damped — returning
-    ///     <c>true</c> when it handled the tick. Flight is what needs it: no gravity, no ladder
-    ///     clamp, and drag on all three axes rather than two.
+    ///     Replaces the movement body (how velocity is accelerated, applied and damped), returning
+    ///     <c>true</c> when it handled the tick. Flight needs it: no gravity, no ladder clamp, and
+    ///     drag on all three axes instead of two.
     /// </summary>
     bool Travel(EntityLiving self, float strafe, float forward) => false;
 
     /// <summary>
     ///     Replaces the type's natural-spawn check, or <c>null</c> to keep it. Consulted before a
-    ///     monster applies its darkness rule, which is what lets a zombie pigman spawn in the lit
-    ///     Nether. Spawn validity is placement — bounding box, fluid, the block below — so it lives
-    ///     here rather than with the lifecycle events.
+    ///     monster applies its darkness rule, which is how a zombie pigman spawns in the lit Nether.
+    ///     Spawn validity is placement (bounding box, fluid, the block below), so it lives here rather
+    ///     than with the lifecycle events.
     /// </summary>
     bool? CanSpawn(EntityLiving self) => null;
 
@@ -56,15 +57,14 @@ public interface IEntityPhysics
     /// <summary>
     ///     Replaces the mob's fall-distance allowance, or <c>null</c> to keep it. Beta reads this
     ///     value in one place only, as the pitch speed a mob turns its head at, so in practice it is
-    ///     how attentively a mob watches a passer-by — a sitting wolf, less.
+    ///     how attentively a mob watches a passer-by.
     /// </summary>
     int? MaxFallDistance(EntityLiving self) => null;
 
     /// <summary>
     ///     Replaces the test for whether the entity is in water, or <c>null</c> to keep the plain
     ///     flag. A squid tests a box reaching below itself and is carried by the current while it
-    ///     looks — the answer and the push are the same operation, which is why this is a hook and
-    ///     not a field.
+    ///     looks: the answer and the push are one operation, hence a hook rather than a field.
     /// </summary>
     bool? IsInWater(Entity self) => null;
 
@@ -75,8 +75,8 @@ public interface IEntityPhysics
     bool? ShouldRender(Entity self) => null;
 
     /// <summary>
-    ///     Replaces the per-tick water test, or <c>null</c> to keep the default. Like
-    ///     <see cref="IsInWater" /> the test and the push are one operation — a dropped item probes
+    ///     Replaces the per-tick water test, or <c>null</c> to keep the default. As with
+    ///     <see cref="IsInWater" />, the test and the push are one operation: a dropped item probes
     ///     its full box and is carried by the current while it looks.
     /// </summary>
     bool? CheckWaterCollisions(Entity self) => null;
@@ -90,32 +90,32 @@ public interface IEntityPhysics
 
     /// <summary>
     ///     Replaces the movement step, returning <c>true</c> when it handled the move. A painting
-    ///     does not travel: any displacement at all is what knocks it off its wall.
+    ///     does not travel: any displacement knocks it off its wall.
     /// </summary>
     bool OnMove(Entity self, double dx, double dy, double dz) => false;
 
     /// <summary>
     ///     Replaces a shove, returning <c>true</c> when it handled it. Sibling of
-    ///     <see cref="OnMove" /> — an entity that refuses to be moved refuses to be pushed too.
+    ///     <see cref="OnMove" />: an entity that refuses to be moved refuses to be pushed too.
     /// </summary>
     bool OnAddVelocity(Entity self, double dx, double dy, double dz) => false;
 
     /// <summary>
     ///     Replaces what a synced position from the server does, returning <c>true</c> when handled.
     ///     A fishing bobber records it as a target and eases towards it over the given number of
-    ///     ticks rather than snapping.
+    ///     ticks instead of snapping.
     /// </summary>
     bool OnPositionSync(Entity self, double x, double y, double z, float yaw, float pitch, int steps) => false;
 
     /// <summary>
     ///     Replaces where a passenger is carried, returning <c>true</c> when handled. A boat seats
-    ///     its rider offset along its own facing rather than straight above its middle.
+    ///     its rider offset along its own facing, not straight above its middle.
     /// </summary>
     bool OnUpdatePassengerPosition(Entity self) => false;
 
     /// <summary>
     ///     Replaces what being bumped into does, returning <c>true</c> when handled. Minecarts trade
-    ///     momentum with each other rather than simply shoving apart.
+    ///     momentum with each other instead of simply shoving apart.
     /// </summary>
     bool OnCollision(Entity self, Entity other) => false;
 }

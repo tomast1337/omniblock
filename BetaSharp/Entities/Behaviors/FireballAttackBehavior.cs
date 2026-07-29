@@ -4,32 +4,32 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Picks the nearest player, turns to face them, and winds up a fireball while they stay in
-///     sight — the ghast's attack. Losing sight unwinds the charge rather than cancelling it, so a
-///     target that ducks behind a wall and back out again is fired on sooner.
+///     The ghast's attack: picks the nearest player, turns to face them, and winds up a fireball
+///     while they stay in sight. Losing sight unwinds the charge instead of cancelling it, so a
+///     target that ducks behind a wall and back out is fired on sooner.
 ///     <para>
-///         The charge counter is per-mob state; whether it has passed the halfway mark is a synced
+///         The charge counter is per-mob state. Whether it has passed the halfway mark is a synced
 ///         property, because the client swaps the mob's texture on it. The renderer reads the raw
 ///         counter back through <see cref="ChargeProgress" /> to scale the model.
 ///     </para>
 /// </summary>
 public sealed class FireballAttackBehavior : IEntityTicker
 {
-    private readonly StateHandle<Entity> _target;
     private readonly StateHandle<int> _aggroCooldown;
+    private readonly int _aggroTicks;
+    private readonly double _attackRange;
     private readonly StateHandle<int> _charge;
-    private readonly StateHandle<int> _previousCharge;
+    private readonly string _chargeSound;
+    private readonly int _chargeTicks;
     private readonly SyncedHandle<bool> _charging;
+    private readonly string _chargingTexture;
+    private readonly string _fireSound;
+    private readonly StateHandle<int> _previousCharge;
+    private readonly int _reloadTicks;
 
     private readonly double _searchRange;
-    private readonly double _attackRange;
-    private readonly int _aggroTicks;
-    private readonly int _chargeTicks;
-    private readonly int _reloadTicks;
     private readonly double _spawnOffset;
-    private readonly string _chargeSound;
-    private readonly string _fireSound;
-    private readonly string _chargingTexture;
+    private readonly StateHandle<Entity> _target;
 
     public FireballAttackBehavior(in EntityBehaviorContext context)
     {
@@ -62,7 +62,7 @@ public sealed class FireballAttackBehavior : IEntityTicker
         }
         else
         {
-            // Nothing worth facing, so the mob looks the way it is drifting.
+            // No target, so the mob looks the way it is drifting.
             self.BodyYaw = self.Yaw = -(float)Math.Atan2(self.VelocityX, self.VelocityZ) * 180.0F / (float)Math.PI;
             Unwind(self);
         }
@@ -72,11 +72,11 @@ public sealed class FireballAttackBehavior : IEntityTicker
             self.DataSynchronizer.Get<bool>(_charging.Id).Value = state[_charge] > _chargeTicks / 2;
         }
 
-        // The wander behavior beside this one is the mob's AI; this only adds to it.
+        // The wander behavior beside this one is the mob's AI; this adds to it.
         return false;
     }
 
-    /// <summary>Swaps in the charging texture, which is all the client learns from the synced flag.</summary>
+    /// <summary>Swaps in the charging texture, the only thing the client does with the synced flag.</summary>
     public void OnTickEnd(EntityLiving self) =>
         self.Texture = self.DataSynchronizer.Get<bool>(_charging.Id).Value ? _chargingTexture : self.Definition.Texture;
 
@@ -95,11 +95,17 @@ public sealed class FireballAttackBehavior : IEntityTicker
             state.SetRef(_target, null);
         }
 
-        if (target != null && state[_aggroCooldown]-- > 0) return target;
+        if (target != null && state[_aggroCooldown]-- > 0)
+        {
+            return target;
+        }
 
         target = self.World.Entities.GetClosestPlayerTarget(self.X, self.Y, self.Z, _searchRange);
         state.SetRef(_target, target);
-        if (target != null) state[_aggroCooldown] = _aggroTicks;
+        if (target != null)
+        {
+            state[_aggroCooldown] = _aggroTicks;
+        }
 
         return target;
     }
@@ -124,7 +130,10 @@ public sealed class FireballAttackBehavior : IEntityTicker
         }
 
         ++state[_charge];
-        if (state[_charge] != _chargeTicks) return;
+        if (state[_charge] != _chargeTicks)
+        {
+            return;
+        }
 
         PlaySound(self, _fireSound);
         Fire(self, dx, dy, dz);
@@ -142,12 +151,15 @@ public sealed class FireballAttackBehavior : IEntityTicker
     }
 
     /// <summary>
-    ///     Winds the charge back down, but never past zero — a mob still serving its reload penalty
-    ///     keeps counting up towards it rather than being pushed further away.
+    ///     Winds the charge back down, but never past zero: a mob still serving its reload penalty
+    ///     keeps counting up towards zero instead of being pushed further below it.
     /// </summary>
     private void Unwind(EntityLiving self)
     {
-        if (self.State[_charge] > 0) --self.State[_charge];
+        if (self.State[_charge] > 0)
+        {
+            --self.State[_charge];
+        }
     }
 
     private static void PlaySound(EntityLiving self, string sound) =>

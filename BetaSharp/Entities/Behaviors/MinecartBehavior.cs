@@ -1,24 +1,21 @@
-using System.Text.Json;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.NBT;
-using BetaSharp.Registries;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     A minecart in all three of its guises — the one you ride, the chest, and the furnace. What
-///     they share is the whole of the interesting part: following a rail, being flung along by
-///     powered track, trading momentum in a pile-up, and coming apart into the pieces that built
-///     them. What differs is a single stored number, which is why they are one entity type rather
-///     than three.
+///     A minecart in all three of its kinds: rideable, chest, and furnace. They share everything
+///     substantial (following a rail, being flung along by powered track, trading momentum in a
+///     pile-up, and breaking into the pieces that built them) and differ only by one stored number,
+///     so they are one entity type rather than three.
 ///     <para>
-///         That number is also the only thing separating their spawn packets, so the wire ids are
-///         declared as data here in the same shape as falling sand's — see <c>wire_ids</c>.
+///         That number also decides which spawn packet id the cart goes out on, so the wire ids are
+///         declared as data here, in the same shape as falling sand's. See <c>wire_ids</c>.
 ///     </para>
 /// </summary>
 public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityPersistence, IEntityInteractable, IEntityPhysics
@@ -26,7 +23,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// <summary>The rideable cart, which a wandering mob can be knocked into.</summary>
     public const int Rideable = 0;
 
-    /// <summary>The chest cart, whose whole interaction is opening it.</summary>
+    /// <summary>The chest cart, whose only interaction is opening it.</summary>
     public const int Chest = 1;
 
     /// <summary>The furnace cart, which burns coal to shove itself along.</summary>
@@ -54,34 +51,35 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         [[0, 0, -1], [1, 0, 0]]
     ];
 
-    private readonly StateHandle<int> _type;
+    private readonly int _breakThreshold;
     private readonly StateHandle<MinecartCargo> _cargo;
-    private readonly StateHandle<int> _fuel;
-    private readonly StateHandle<double> _pushX;
-    private readonly StateHandle<double> _pushZ;
-    private readonly StateHandle<bool> _yawFlipped;
-
-    private readonly StateHandle<int> _rockDirection;
-    private readonly StateHandle<int> _timeSinceHit;
+    private readonly int _coalItemId;
     private readonly StateHandle<int> _damage;
+    private readonly StateHandle<int> _fuel;
+    private readonly int _fuelPerCoal;
 
     private readonly StateHandle<int> _lerpSteps;
-    private readonly StateHandle<double> _targetX;
-    private readonly StateHandle<double> _targetY;
-    private readonly StateHandle<double> _targetZ;
-    private readonly StateHandle<double> _targetYaw;
-    private readonly StateHandle<double> _targetPitch;
+    private readonly StateHandle<double> _pushX;
+    private readonly StateHandle<double> _pushZ;
+
+    private readonly StateHandle<int> _rockDirection;
     private readonly StateHandle<double> _syncedVelocityX;
     private readonly StateHandle<double> _syncedVelocityY;
     private readonly StateHandle<double> _syncedVelocityZ;
+    private readonly StateHandle<double> _targetPitch;
+    private readonly StateHandle<double> _targetX;
+    private readonly StateHandle<double> _targetY;
+    private readonly StateHandle<double> _targetYaw;
+    private readonly StateHandle<double> _targetZ;
+    private readonly StateHandle<int> _timeSinceHit;
 
-    private readonly int _breakThreshold;
-    private readonly int _fuelPerCoal;
-    private readonly int _coalItemId;
+    private readonly StateHandle<int> _type;
 
     /// <summary>Cart type to the object-spawn id it goes out on, and what each drops when broken.</summary>
     private readonly Dictionary<int, int> _wireIds;
+
     private readonly Dictionary<int, int[]> _wreckage;
+    private readonly StateHandle<bool> _yawFlipped;
 
     public MinecartBehavior(
         EntityStateLayout layout,
@@ -119,72 +117,68 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         _syncedVelocityZ = layout.DeclareDouble();
     }
 
-    /// <summary>
-    ///     Places a cart of the given kind on the track. The <c>y</c> given is the rail height; the
-    ///     cart body sits half its own height above it.
-    /// </summary>
-    public static Entity Place(IWorldContext world, double x, double y, double z, int type)
+    /// <summary>Riding, opening, or refuelling, depending on the cart's kind.</summary>
+    public bool OnInteract(Entity self, EntityPlayer player)
     {
-        Entity cart = EntityRegistry.ByName("minecart").Create(world);
-        MinecartBehavior rolling = cart.Behaviors.Find<MinecartBehavior>()!;
-        cart.State[rolling._type] = type;
-        if (type == Chest) cart.State.SetRef(rolling._cargo, new MinecartCargo(cart));
-
-        rolling.SitOnTrack(cart, x, y, z);
-        cart.VelocityX = cart.VelocityY = cart.VelocityZ = 0.0D;
-        cart.PrevX = x;
-        cart.PrevY = y;
-        cart.PrevZ = z;
-        return cart;
-    }
-
-    /// <summary>Whether this entity is a minecart — the check that replaced `is EntityMinecart`.</summary>
-    public static bool IsMinecart(Entity? entity) => entity?.Behaviors.Find<MinecartBehavior>() is not null;
-
-    public int Type(Entity self) => self.State[_type];
-
-    /// <summary>The chest this cart carries, or null for the two kinds that carry nothing.</summary>
-    public MinecartCargo? Cargo(Entity self) => self.State.GetRef(_cargo);
-
-    public int Fuel(Entity self) => self.State[_fuel];
-
-    public int TimeSinceHit(Entity self) => self.State[_timeSinceHit];
-
-    public int Damage(Entity self) => self.State[_damage];
-
-    public int RockDirection(Entity self) => self.State[_rockDirection];
-
-    /// <summary>
-    ///     Which object-spawn id this cart goes out on — three ids share the one entity type, so the
-    ///     tracker asks the behavior rather than reading the definition's single id.
-    /// </summary>
-    public int SpawnObjectId(Entity self) => _wireIds.GetValueOrDefault(Type(self));
-
-    /// <summary>The cart type a given object-spawn id names, or null when it names none of them.</summary>
-    public int? TypeForSpawnObjectId(int id)
-    {
-        foreach ((int type, int wireId) in _wireIds)
+        switch (Type(self))
         {
-            if (wireId == id) return type;
+            case Rideable:
+                if (self.Passenger is EntityPlayer && !Equals(self.Passenger, player))
+                {
+                    return true;
+                }
+
+                if (!self.World.IsRemote)
+                {
+                    player.SetVehicle(self);
+                }
+
+                break;
+
+            case Chest:
+                if (!self.World.IsRemote && Cargo(self) is { } cargo)
+                {
+                    player.openChestScreen(cargo);
+                }
+
+                break;
+
+            case Furnace:
+                if (player.Inventory.ItemInHand is { } heldItem && heldItem.ItemId == _coalItemId)
+                {
+                    if (--heldItem.Count == 0)
+                    {
+                        player.Inventory.SetStack(player.Inventory.SelectedSlot, null);
+                    }
+
+                    self.State[_fuel] += _fuelPerCoal;
+                }
+
+                // The shove points away from whoever stoked it, which is how the cart is aimed.
+                self.State[_pushX] = self.X - player.X;
+                self.State[_pushZ] = self.Z - player.Z;
+                break;
         }
 
-        return null;
+        return true;
     }
-
-    /// <summary>Rail height plus half the body, the convention every position update here uses.</summary>
-    private void SitOnTrack(Entity self, double x, double trackY, double z) =>
-        self.SetPosition(x, trackY + self.StandingEyeHeight, z);
 
     public bool? Damage(Entity self, Entity? attacker, int amount)
     {
-        if (self.World.IsRemote || self.Dead) return true;
+        if (self.World.IsRemote || self.Dead)
+        {
+            return true;
+        }
 
         self.State[_rockDirection] = -self.State[_rockDirection];
         self.State[_timeSinceHit] = 10;
         self.VelocityModified = true;
         self.State[_damage] += amount * 10;
 
-        if (self.State[_damage] <= _breakThreshold) return true;
+        if (self.State[_damage] <= _breakThreshold)
+        {
+            return true;
+        }
 
         self.Passenger?.SetVehicle(self);
 
@@ -203,8 +197,8 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         self.State[_rockDirection] = -self.State[_rockDirection];
         self.State[_timeSinceHit] = 10;
 
-        // Verbatim from the beta class: the animation packet carries no amount, and this value only
-        // feeds the renderer's tip angle.
+        // Verbatim from Beta: the animation packet carries no amount, and this value only feeds the
+        // renderer's tip angle.
         self.State[_damage] += self.State[_damage] * 10;
         return true;
     }
@@ -212,11 +206,17 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// <summary>However a chest cart is removed, its contents end up on the ground.</summary>
     public void OnRemoved(Entity self)
     {
-        if (Cargo(self) is not { } cargo) return;
+        if (Cargo(self) is not { } cargo)
+        {
+            return;
+        }
 
         for (int slotIndex = 0; slotIndex < cargo.SlotCount; ++slotIndex)
         {
-            if (cargo.GetStack(slotIndex) is not { } stack) continue;
+            if (cargo.GetStack(slotIndex) is not { } stack)
+            {
+                continue;
+            }
 
             float offsetX = self.Random.NextFloat() * 0.8F + 0.1F;
             float offsetY = self.Random.NextFloat() * 0.8F + 0.1F;
@@ -243,35 +243,64 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         }
     }
 
-    /// <summary>Riding, opening, or refuelling — which one depends only on the cart's kind.</summary>
-    public bool OnInteract(Entity self, EntityPlayer player)
+    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
     {
-        switch (Type(self))
+        int type = Type(self);
+        nbt.SetInteger("Type", type);
+
+        if (type == Furnace)
         {
-            case Rideable:
-                if (self.Passenger is EntityPlayer && !Equals(self.Passenger, player)) return true;
-                if (!self.World.IsRemote) player.SetVehicle(self);
-                break;
-
-            case Chest:
-                if (!self.World.IsRemote && Cargo(self) is { } cargo) player.openChestScreen(cargo);
-                break;
-
-            case Furnace:
-                if (player.Inventory.ItemInHand is { } heldItem && heldItem.ItemId == _coalItemId)
+            nbt.SetDouble("PushX", self.State[_pushX]);
+            nbt.SetDouble("PushZ", self.State[_pushZ]);
+            nbt.SetShort("Fuel", (short)self.State[_fuel]);
+        }
+        else if (type == Chest && Cargo(self) is { } cargo)
+        {
+            NBTTagList items = new();
+            for (int slotIndex = 0; slotIndex < cargo.SlotCount; ++slotIndex)
+            {
+                if (cargo.GetStack(slotIndex) is not { } stack)
                 {
-                    if (--heldItem.Count == 0) player.Inventory.SetStack(player.Inventory.SelectedSlot, null);
-
-                    self.State[_fuel] += _fuelPerCoal;
+                    continue;
                 }
 
-                // The shove points away from whoever stoked it, which is how a furnace cart is aimed.
-                self.State[_pushX] = self.X - player.X;
-                self.State[_pushZ] = self.Z - player.Z;
-                break;
-        }
+                NBTTagCompound itemTag = new();
+                itemTag.SetByte("Slot", (sbyte)slotIndex);
+                stack.writeToNBT(itemTag);
+                items.SetTag(itemTag);
+            }
 
-        return true;
+            nbt.SetTag("Items", items);
+        }
+    }
+
+    public void OnReadNbt(Entity self, NBTTagCompound nbt)
+    {
+        int type = nbt.GetInteger("Type");
+        self.State[_type] = type;
+
+        if (type == Furnace)
+        {
+            self.State[_pushX] = nbt.GetDouble("PushX");
+            self.State[_pushZ] = nbt.GetDouble("PushZ");
+            self.State[_fuel] = nbt.GetShort("Fuel");
+        }
+        else if (type == Chest)
+        {
+            MinecartCargo cargo = new(self);
+            self.State.SetRef(_cargo, cargo);
+
+            NBTTagList items = nbt.GetTagList("Items");
+            for (int i = 0; i < items.TagCount(); ++i)
+            {
+                NBTTagCompound itemTag = (NBTTagCompound)items.TagAt(i);
+                int slotIndex = itemTag.GetByte("Slot") & 255;
+                if (slotIndex >= 0 && slotIndex < cargo.SlotCount)
+                {
+                    cargo.SetStack(slotIndex, new ItemStack(itemTag));
+                }
+            }
+        }
     }
 
     public bool OnPositionSync(Entity self, double x, double y, double z, float yaw, float pitch, int steps)
@@ -296,10 +325,105 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         return true;
     }
 
+    /// <summary>
+    ///     Being bumped. A loose mob walked into by an empty rideable cart ends up riding it.
+    ///     Otherwise the two share out their momentum, with a furnace cart shoving harder than it is
+    ///     shoved.
+    /// </summary>
+    public bool OnCollision(Entity self, Entity other)
+    {
+        if (self.World.IsRemote || Equals(other, self.Passenger))
+        {
+            return true;
+        }
+
+        if (other is EntityLiving and not EntityPlayer &&
+            Type(self) == Rideable &&
+            self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ > 0.01D &&
+            self.Passenger == null &&
+            other.Vehicle == null)
+        {
+            other.SetVehicle(self);
+        }
+
+        double deltaX = other.X - self.X;
+        double deltaZ = other.Z - self.Z;
+        double distanceSq = deltaX * deltaX + deltaZ * deltaZ;
+        if (distanceSq < 1.0E-4D)
+        {
+            return true;
+        }
+
+        double distance = MathHelper.Sqrt(distanceSq);
+        deltaX /= distance;
+        deltaZ /= distance;
+
+        double forceScale = Math.Min(1.0D / distance, 1.0D);
+        deltaX *= forceScale * 0.1F * 0.5D;
+        deltaZ *= forceScale * 0.1F * 0.5D;
+
+        if (other.Behaviors.Find<MinecartBehavior>() is not { } otherCart)
+        {
+            self.AddVelocity(-deltaX, 0.0D, -deltaZ);
+            other.AddVelocity(deltaX / 4.0D, 0.0D, deltaZ / 4.0D);
+            return true;
+        }
+
+        // Verbatim from Beta, including mixing the other cart's PrevX into what reads as an
+        // alignment test: a glancing pile-up is ignored instead of resolved.
+        double collisionAlignment = (other.X - self.X) * other.VelocityZ + (other.Z - self.Z) * other.PrevX;
+        if (collisionAlignment * collisionAlignment > 5.0D)
+        {
+            return true;
+        }
+
+        double averageVelocityX = other.VelocityX + self.VelocityX;
+        double averageVelocityZ = other.VelocityZ + self.VelocityZ;
+
+        if (otherCart.Type(other) == Furnace && Type(self) != Furnace)
+        {
+            self.VelocityX *= 0.2F;
+            self.VelocityZ *= 0.2F;
+            self.AddVelocity(other.VelocityX - deltaX, 0.0D, other.VelocityZ - deltaZ);
+            other.VelocityX *= 0.7F;
+            other.VelocityZ *= 0.7F;
+        }
+        else if (otherCart.Type(other) != Furnace && Type(self) == Furnace)
+        {
+            other.VelocityX *= 0.2F;
+            other.VelocityZ *= 0.2F;
+            other.AddVelocity(self.VelocityX + deltaX, 0.0D, self.VelocityZ + deltaZ);
+            self.VelocityX *= 0.7F;
+            self.VelocityZ *= 0.7F;
+        }
+        else
+        {
+            averageVelocityX /= 2.0D;
+            averageVelocityZ /= 2.0D;
+
+            self.VelocityX *= 0.2F;
+            self.VelocityZ *= 0.2F;
+            self.AddVelocity(averageVelocityX - deltaX, 0.0D, averageVelocityZ - deltaZ);
+
+            other.VelocityX *= 0.2F;
+            other.VelocityZ *= 0.2F;
+            other.AddVelocity(averageVelocityX + deltaX, 0.0D, averageVelocityZ + deltaZ);
+        }
+
+        return true;
+    }
+
     public bool OnTickEntity(Entity self)
     {
-        if (self.State[_timeSinceHit] > 0) --self.State[_timeSinceHit];
-        if (self.State[_damage] > 0) --self.State[_damage];
+        if (self.State[_timeSinceHit] > 0)
+        {
+            --self.State[_timeSinceHit];
+        }
+
+        if (self.State[_damage] > 0)
+        {
+            --self.State[_damage];
+        }
 
         if (self.World.IsRemote)
         {
@@ -316,7 +440,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         int blockY = MathHelper.Floor(self.Y);
         int blockZ = MathHelper.Floor(self.Z);
 
-        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ)) --blockY;
+        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ))
+        {
+            --blockY;
+        }
 
         bool shouldEmitSmoke = false;
         int railBlockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
@@ -333,12 +460,80 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         PointAlongTravel(self);
         BumpNeighbouringCarts(self);
 
-        if (self.Passenger is { Dead: true }) self.Passenger = null;
+        if (self.Passenger is { Dead: true })
+        {
+            self.Passenger = null;
+        }
 
-        if (shouldEmitSmoke && self.Random.NextInt(4) == 0) BurnFuel(self);
+        if (shouldEmitSmoke && self.Random.NextInt(4) == 0)
+        {
+            BurnFuel(self);
+        }
 
         return true;
     }
+
+    /// <summary>
+    ///     Places a cart of the given kind on the track. The <c>y</c> given is the rail height; the
+    ///     cart body sits half its own height above it.
+    /// </summary>
+    public static Entity Place(IWorldContext world, double x, double y, double z, int type)
+    {
+        Entity cart = EntityRegistry.ByName("minecart").Create(world);
+        MinecartBehavior rolling = cart.Behaviors.Find<MinecartBehavior>()!;
+        cart.State[rolling._type] = type;
+        if (type == Chest)
+        {
+            cart.State.SetRef(rolling._cargo, new MinecartCargo(cart));
+        }
+
+        rolling.SitOnTrack(cart, x, y, z);
+        cart.VelocityX = cart.VelocityY = cart.VelocityZ = 0.0D;
+        cart.PrevX = x;
+        cart.PrevY = y;
+        cart.PrevZ = z;
+        return cart;
+    }
+
+    /// <summary>Whether this entity is a minecart.</summary>
+    public static bool IsMinecart(Entity? entity) => entity?.Behaviors.Find<MinecartBehavior>() is not null;
+
+    public int Type(Entity self) => self.State[_type];
+
+    /// <summary>The chest this cart carries, or null for the two kinds that carry nothing.</summary>
+    public MinecartCargo? Cargo(Entity self) => self.State.GetRef(_cargo);
+
+    public int Fuel(Entity self) => self.State[_fuel];
+
+    public int TimeSinceHit(Entity self) => self.State[_timeSinceHit];
+
+    public int Damage(Entity self) => self.State[_damage];
+
+    public int RockDirection(Entity self) => self.State[_rockDirection];
+
+    /// <summary>
+    ///     Which object-spawn id this cart goes out on. Three ids share one entity type, so the
+    ///     tracker asks the behavior instead of reading the definition's single id.
+    /// </summary>
+    public int SpawnObjectId(Entity self) => _wireIds.GetValueOrDefault(Type(self));
+
+    /// <summary>The cart type a given object-spawn id names, or null when it names none of them.</summary>
+    public int? TypeForSpawnObjectId(int id)
+    {
+        foreach ((int type, int wireId) in _wireIds)
+        {
+            if (wireId == id)
+            {
+                return type;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Rail height plus half the body, the convention every position update here uses.</summary>
+    private void SitOnTrack(Entity self, double x, double trackY, double z) =>
+        self.SetPosition(x, trackY + self.StandingEyeHeight, z);
 
     private void TickClient(Entity self)
     {
@@ -364,10 +559,9 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     }
 
     /// <summary>
-    ///     The whole of rail-following for one tick: the slope pulls, the cart is snapped onto the
-    ///     rail's line and moved along it, the ends are checked for a step up or down, drag is
-    ///     applied, and powered rail either shoves it on or brings it to a stop. Answers whether the
-    ///     furnace should be smoking.
+    ///     Rail-following for one tick: the slope pulls, the cart is snapped onto the rail's line and
+    ///     moved along it, the ends are checked for a step up or down, drag is applied, and powered
+    ///     rail either shoves it on or brings it to a stop. Returns whether the furnace should smoke.
     /// </summary>
     private bool RideRail(Entity self, int blockX, int blockY, int blockZ, int railBlockId)
     {
@@ -385,9 +579,15 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             poweredRailBraking = !poweredRailActive;
         }
 
-        if (RailBehavior.IsAlwaysStraight(Block.Blocks[railBlockId])) railMeta &= 7;
+        if (RailBehavior.IsAlwaysStraight(Block.Blocks[railBlockId]))
+        {
+            railMeta &= 7;
+        }
 
-        if (railMeta is >= 2 and <= 5) trackY = blockY + 1;
+        if (railMeta is >= 2 and <= 5)
+        {
+            trackY = blockY + 1;
+        }
 
         switch (railMeta)
         {
@@ -413,7 +613,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         self.VelocityX = horizontalSpeed * railDirX / railDirLength;
         self.VelocityZ = horizontalSpeed * railDirZ / railDirLength;
 
-        if (poweredRailBraking) Brake(self);
+        if (poweredRailBraking)
+        {
+            Brake(self);
+        }
 
         SnapOntoRailLine(self, blockX, blockZ, railEnds, trackY);
 
@@ -446,7 +649,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         }
         else
         {
-            if (Type(self) == Furnace) shouldEmitSmoke = ApplyFurnacePush(self);
+            if (Type(self) == Furnace)
+            {
+                shouldEmitSmoke = ApplyFurnacePush(self);
+            }
 
             self.VelocityX *= 0.96F;
             self.VelocityY = 0.0D;
@@ -477,9 +683,15 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             self.VelocityZ = horizontalSpeed * (currentBlockZ - blockZ);
         }
 
-        if (Type(self) == Furnace) RealignFurnacePush(self);
+        if (Type(self) == Furnace)
+        {
+            RealignFurnacePush(self);
+        }
 
-        if (poweredRailActive) Boost(self, blockX, blockY, blockZ, railMeta);
+        if (poweredRailActive)
+        {
+            Boost(self, blockX, blockY, blockZ, railMeta);
+        }
 
         return shouldEmitSmoke;
     }
@@ -515,13 +727,25 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         if (railMeta == 1)
         {
-            if (self.World.Reader.ShouldSuffocate(blockX - 1, blockY, blockZ)) self.VelocityX = 0.02D;
-            else if (self.World.Reader.ShouldSuffocate(blockX + 1, blockY, blockZ)) self.VelocityX = -0.02D;
+            if (self.World.Reader.ShouldSuffocate(blockX - 1, blockY, blockZ))
+            {
+                self.VelocityX = 0.02D;
+            }
+            else if (self.World.Reader.ShouldSuffocate(blockX + 1, blockY, blockZ))
+            {
+                self.VelocityX = -0.02D;
+            }
         }
         else if (railMeta == 0)
         {
-            if (self.World.Reader.ShouldSuffocate(blockX, blockY, blockZ - 1)) self.VelocityZ = 0.02D;
-            else if (self.World.Reader.ShouldSuffocate(blockX, blockY, blockZ + 1)) self.VelocityZ = -0.02D;
+            if (self.World.Reader.ShouldSuffocate(blockX, blockY, blockZ - 1))
+            {
+                self.VelocityZ = 0.02D;
+            }
+            else if (self.World.Reader.ShouldSuffocate(blockX, blockY, blockZ + 1))
+            {
+                self.VelocityZ = -0.02D;
+            }
         }
     }
 
@@ -585,8 +809,15 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     private void RealignFurnacePush(Entity self)
     {
         double pushMagnitude = MathHelper.Sqrt(self.State[_pushX] * self.State[_pushX] + self.State[_pushZ] * self.State[_pushZ]);
-        if (pushMagnitude <= 0.01D) return;
-        if (self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ <= 0.001D) return;
+        if (pushMagnitude <= 0.01D)
+        {
+            return;
+        }
+
+        if (self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ <= 0.001D)
+        {
+            return;
+        }
 
         self.State[_pushX] /= pushMagnitude;
         self.State[_pushZ] /= pushMagnitude;
@@ -614,7 +845,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         self.World.Broadcaster.AddParticle("largesmoke", self.X, self.Y + 0.8D, self.Z, 0.0D, 0.0D, 0.0D);
     }
 
-    /// <summary>Off the rails a cart is just a heavy box that skids to a halt.</summary>
+    /// <summary>Off the rails the cart skids to a halt.</summary>
     private static void RollFreely(Entity self)
     {
         self.VelocityX = Math.Clamp(self.VelocityX, -MaxSpeed, MaxSpeed);
@@ -638,8 +869,8 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     }
 
     /// <summary>
-    ///     Faces the way it travelled. A cart that reverses does not spin all the way round: it keeps
-    ///     its facing and remembers that it is running backwards.
+    ///     Faces the way it travelled. A cart that reverses keeps its facing and remembers that it is
+    ///     running backwards, instead of spinning round.
     /// </summary>
     private void PointAlongTravel(Entity self)
     {
@@ -650,7 +881,10 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         if (deltaX * deltaX + deltaZ * deltaZ > 0.001D)
         {
             self.Yaw = (float)(Math.Atan2(deltaZ, deltaX) * 180.0D / Math.PI);
-            if (self.State[_yawFlipped]) self.Yaw += 180.0F;
+            if (self.State[_yawFlipped])
+            {
+                self.Yaw += 180.0F;
+            }
         }
 
         double yawChange = WrapDegrees(self.Yaw - self.PrevYaw);
@@ -667,87 +901,11 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     {
         foreach (Entity other in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(0.2D, 0.0D, 0.2D)))
         {
-            if (!Equals(other, self.Passenger) && other.IsPushable && IsMinecart(other)) other.OnCollision(self);
+            if (!Equals(other, self.Passenger) && other.IsPushable && IsMinecart(other))
+            {
+                other.OnCollision(self);
+            }
         }
-    }
-
-    /// <summary>
-    ///     Being bumped. A loose mob walked into by an empty rideable cart ends up riding it;
-    ///     otherwise the two share out their momentum, with a furnace cart shoving harder than it is
-    ///     shoved.
-    /// </summary>
-    public bool OnCollision(Entity self, Entity other)
-    {
-        if (self.World.IsRemote || Equals(other, self.Passenger)) return true;
-
-        if (other is EntityLiving and not EntityPlayer &&
-            Type(self) == Rideable &&
-            self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ > 0.01D &&
-            self.Passenger == null &&
-            other.Vehicle == null)
-        {
-            other.SetVehicle(self);
-        }
-
-        double deltaX = other.X - self.X;
-        double deltaZ = other.Z - self.Z;
-        double distanceSq = deltaX * deltaX + deltaZ * deltaZ;
-        if (distanceSq < 1.0E-4D) return true;
-
-        double distance = MathHelper.Sqrt(distanceSq);
-        deltaX /= distance;
-        deltaZ /= distance;
-
-        double forceScale = Math.Min(1.0D / distance, 1.0D);
-        deltaX *= forceScale * 0.1F * 0.5D;
-        deltaZ *= forceScale * 0.1F * 0.5D;
-
-        if (other.Behaviors.Find<MinecartBehavior>() is not { } otherCart)
-        {
-            self.AddVelocity(-deltaX, 0.0D, -deltaZ);
-            other.AddVelocity(deltaX / 4.0D, 0.0D, deltaZ / 4.0D);
-            return true;
-        }
-
-        // Verbatim from the beta class, including mixing the other cart's PrevX into what reads as
-        // an alignment test: a glancing pile-up is ignored rather than resolved.
-        double collisionAlignment = (other.X - self.X) * other.VelocityZ + (other.Z - self.Z) * other.PrevX;
-        if (collisionAlignment * collisionAlignment > 5.0D) return true;
-
-        double averageVelocityX = other.VelocityX + self.VelocityX;
-        double averageVelocityZ = other.VelocityZ + self.VelocityZ;
-
-        if (otherCart.Type(other) == Furnace && Type(self) != Furnace)
-        {
-            self.VelocityX *= 0.2F;
-            self.VelocityZ *= 0.2F;
-            self.AddVelocity(other.VelocityX - deltaX, 0.0D, other.VelocityZ - deltaZ);
-            other.VelocityX *= 0.7F;
-            other.VelocityZ *= 0.7F;
-        }
-        else if (otherCart.Type(other) != Furnace && Type(self) == Furnace)
-        {
-            other.VelocityX *= 0.2F;
-            other.VelocityZ *= 0.2F;
-            other.AddVelocity(self.VelocityX + deltaX, 0.0D, self.VelocityZ + deltaZ);
-            self.VelocityX *= 0.7F;
-            self.VelocityZ *= 0.7F;
-        }
-        else
-        {
-            averageVelocityX /= 2.0D;
-            averageVelocityZ /= 2.0D;
-
-            self.VelocityX *= 0.2F;
-            self.VelocityZ *= 0.2F;
-            self.AddVelocity(averageVelocityX - deltaX, 0.0D, averageVelocityZ - deltaZ);
-
-            other.VelocityX *= 0.2F;
-            other.VelocityZ *= 0.2F;
-            other.AddVelocity(averageVelocityX + deltaX, 0.0D, averageVelocityZ + deltaZ);
-        }
-
-        return true;
     }
 
     /// <summary>
@@ -760,13 +918,22 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ)) --blockY;
+        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ))
+        {
+            --blockY;
+        }
 
         int blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!RailBehavior.IsRail(blockId)) return null;
+        if (!RailBehavior.IsRail(blockId))
+        {
+            return null;
+        }
 
         int railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId])) railMeta &= 7;
+        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId]))
+        {
+            railMeta &= 7;
+        }
 
         y = railMeta is >= 2 and <= 5 ? blockY + 1 : blockY;
 
@@ -797,13 +964,22 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ)) --blockY;
+        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ))
+        {
+            --blockY;
+        }
 
         int blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!RailBehavior.IsRail(blockId)) return null;
+        if (!RailBehavior.IsRail(blockId))
+        {
+            return null;
+        }
 
         int railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId])) railMeta &= 7;
+        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId]))
+        {
+            railMeta &= 7;
+        }
 
         y = railMeta is >= 2 and <= 5 ? blockY + 1 : blockY;
 
@@ -837,70 +1013,31 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         y = railStartY + railDirY * positionAlongRail;
         z = railStartZ + railDirZ * positionAlongRail;
 
-        if (railDirY < 0.0D) ++y;
-        if (railDirY > 0.0D) y += 0.5D;
+        if (railDirY < 0.0D)
+        {
+            ++y;
+        }
+
+        if (railDirY > 0.0D)
+        {
+            y += 0.5D;
+        }
 
         return new Vec3D(x, y, z);
     }
 
     private static double WrapDegrees(double angle)
     {
-        while (angle >= 180.0D) angle -= 360.0D;
-        while (angle < -180.0D) angle += 360.0D;
+        while (angle >= 180.0D)
+        {
+            angle -= 360.0D;
+        }
+
+        while (angle < -180.0D)
+        {
+            angle += 360.0D;
+        }
+
         return angle;
-    }
-
-    public void OnWriteNbt(Entity self, NBTTagCompound nbt)
-    {
-        int type = Type(self);
-        nbt.SetInteger("Type", type);
-
-        if (type == Furnace)
-        {
-            nbt.SetDouble("PushX", self.State[_pushX]);
-            nbt.SetDouble("PushZ", self.State[_pushZ]);
-            nbt.SetShort("Fuel", (short)self.State[_fuel]);
-        }
-        else if (type == Chest && Cargo(self) is { } cargo)
-        {
-            NBTTagList items = new();
-            for (int slotIndex = 0; slotIndex < cargo.SlotCount; ++slotIndex)
-            {
-                if (cargo.GetStack(slotIndex) is not { } stack) continue;
-
-                NBTTagCompound itemTag = new();
-                itemTag.SetByte("Slot", (sbyte)slotIndex);
-                stack.writeToNBT(itemTag);
-                items.SetTag(itemTag);
-            }
-
-            nbt.SetTag("Items", items);
-        }
-    }
-
-    public void OnReadNbt(Entity self, NBTTagCompound nbt)
-    {
-        int type = nbt.GetInteger("Type");
-        self.State[_type] = type;
-
-        if (type == Furnace)
-        {
-            self.State[_pushX] = nbt.GetDouble("PushX");
-            self.State[_pushZ] = nbt.GetDouble("PushZ");
-            self.State[_fuel] = nbt.GetShort("Fuel");
-        }
-        else if (type == Chest)
-        {
-            MinecartCargo cargo = new(self);
-            self.State.SetRef(_cargo, cargo);
-
-            NBTTagList items = nbt.GetTagList("Items");
-            for (int i = 0; i < items.TagCount(); ++i)
-            {
-                NBTTagCompound itemTag = (NBTTagCompound)items.TagAt(i);
-                int slotIndex = itemTag.GetByte("Slot") & 255;
-                if (slotIndex >= 0 && slotIndex < cargo.SlotCount) cargo.SetStack(slotIndex, new ItemStack(itemTag));
-            }
-        }
     }
 }

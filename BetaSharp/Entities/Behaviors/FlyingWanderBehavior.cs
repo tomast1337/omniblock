@@ -4,25 +4,24 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Drifts towards a waypoint picked at random, re-picking it once reached or once it has drifted
-///     out of reach, and abandoning it if the way there is blocked. This is the ghast's idle flight:
-///     no path, no ground, just a heading nudged every few ticks.
+///     The ghast's idle flight: drifts towards a waypoint picked at random, re-picking it once
+///     reached or once it has drifted out of reach, and abandoning it if the way there is blocked.
+///     No path, no ground, just a heading nudged every few ticks.
 ///     <para>
-///         It answers <c>true</c> from the AI tick, so the mob does none of the default idle work —
-///         a flier does not age towards despawn or glance at passers-by. The despawn check is the
-///         one piece of the default it still wants, so it runs it itself.
+///         Answers <c>true</c> from the AI tick, so the mob does none of the default idle work: no
+///         ageing towards despawn, no glancing at passers-by. It runs the despawn check itself.
 ///     </para>
 /// </summary>
 public sealed class FlyingWanderBehavior : IEntityTicker
 {
+    private readonly double _acceleration;
+    private readonly StateHandle<int> _courseChangeCooldown;
+    private readonly double _maxDistance;
+    private readonly float _range;
+    private readonly int _recheckTicks;
     private readonly StateHandle<double> _waypointX;
     private readonly StateHandle<double> _waypointY;
     private readonly StateHandle<double> _waypointZ;
-    private readonly StateHandle<int> _courseChangeCooldown;
-    private readonly float _range;
-    private readonly double _maxDistance;
-    private readonly double _acceleration;
-    private readonly int _recheckTicks;
 
     public FlyingWanderBehavior(in EntityBehaviorContext context)
     {
@@ -53,7 +52,10 @@ public sealed class FlyingWanderBehavior : IEntityTicker
             state[_waypointZ] = self.Z + (self.Random.NextFloat() * 2.0F - 1.0F) * _range;
         }
 
-        if (state[_courseChangeCooldown]-- > 0) return true;
+        if (state[_courseChangeCooldown]-- > 0)
+        {
+            return true;
+        }
 
         state[_courseChangeCooldown] += self.Random.NextInt(_recheckTicks) + 2;
         if (IsCourseTraversable(self, distance))
@@ -73,8 +75,8 @@ public sealed class FlyingWanderBehavior : IEntityTicker
     }
 
     /// <summary>
-    ///     Steps the mob's own box along the heading, one box-length per unit of distance, and gives
-    ///     up at the first thing it would run into.
+    ///     Steps the mob's own box along the heading, one box-length at a time, and gives up at the
+    ///     first thing it would run into.
     /// </summary>
     private bool IsCourseTraversable(EntityLiving self, double distance)
     {
@@ -87,7 +89,10 @@ public sealed class FlyingWanderBehavior : IEntityTicker
         for (int step = 1; step < distance; ++step)
         {
             box.Translate(stepX, stepY, stepZ);
-            if (self.World.Entities.GetEntityCollisionsScratch(self, box).Count > 0) return false;
+            if (self.World.Entities.GetEntityCollisionsScratch(self, box).Count > 0)
+            {
+                return false;
+            }
         }
 
         return true;

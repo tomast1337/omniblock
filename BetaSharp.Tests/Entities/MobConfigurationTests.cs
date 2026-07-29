@@ -7,15 +7,13 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Tests.Entities;
 
 /// <summary>
-/// Characterization test pinning every mob's resolved configuration to the values it had before
-/// Phase 2 of the mob data-driven migration moved that configuration into <c>EntityDefinition</c>.
-/// Written against a dump of the real values (not assumed ones) so it catches transcription errors
-/// the moment a constructor stops hardcoding a stat.
+/// Characterization test pinning every mob's resolved configuration to the values Beta 1.7.3 gives
+/// it. Written against a dump of the real values, not assumed ones, so it catches transcription
+/// errors in <c>assets/entity/*.json</c>.
 /// <para>
-/// Deliberately excluded, because they are genuinely dynamic rather than configuration:
-/// the slime (stats derive from a randomly chosen size),
-/// the wolf's living sound (a random roll over four clips), and the ghast's
-/// texture (swapped per tick while charging).
+/// Excluded, because they are genuinely dynamic rather than configuration: the slime (stats derive
+/// from a randomly chosen size), the wolf's living sound (a random roll over four clips), and the
+/// ghast's texture (swapped per tick while charging).
 /// </para>
 /// </summary>
 [Collection("EntityTests")]
@@ -74,7 +72,7 @@ public sealed class MobConfigurationTests
 
     [Theory]
     [MemberData(nameof(ExpectedConfigs))]
-    public void Mob_configuration_matches_pre_migration_values(string name, MobConfig expected)
+    public void Mob_configuration_matches_vanilla_values(string name, MobConfig expected)
     {
         FakeWorldContext world = new();
         EntityLiving mob = CreateMob(name, world);

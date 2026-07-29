@@ -11,7 +11,7 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
     protected internal bool HasAttacked;
     public Entity? Target { get; set; }
 
-    /// <summary>Base melee damage. Pure configuration — no mob mutates it after construction.</summary>
+    /// <summary>Base melee damage. Fixed at construction.</summary>
     protected internal int AttackStrength => Definition.AttackStrength;
 
     /// <summary>Composed attack execution. <c>null</c> means the mob never damages its target.</summary>
@@ -166,13 +166,17 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
 
         for (int _ = 0; _ < 10; ++_)
         {
-            BlockPos tile = new BlockPos(
+            BlockPos tile = new(
                 MathHelper.Floor(X + Random.NextInt(13) - 6.0D),
                 MathHelper.Floor(Y + Random.NextInt(7) - 3.0D),
                 MathHelper.Floor(Z + Random.NextInt(13) - 6.0D)
             );
             float cost = GetBlockPathWeight(tile.x, tile.y, tile.z);
-            if (cost <= bestCost) continue;
+            if (cost <= bestCost)
+            {
+                continue;
+            }
+
             bestCost = cost;
             bestTile = tile;
             foundWanderTarget = true;
@@ -194,7 +198,7 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
 
     protected override bool CanSpawnHere()
     {
-        BlockPos tile = new BlockPos(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY), MathHelper.Floor(Z));
+        BlockPos tile = new(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY), MathHelper.Floor(Z));
         return base.CanSpawnHere() && GetBlockPathWeight(tile.x, tile.y, tile.z) >= 0.0F;
     }
 

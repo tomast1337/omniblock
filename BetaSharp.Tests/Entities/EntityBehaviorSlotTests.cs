@@ -9,8 +9,7 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.Tests.Entities;
 
 /// <summary>
-/// Covers the four composable capability slots introduced in Phase 1 of the mob data-driven
-/// migration (see docs/mob-data-driven-migration.md): Attack, Targeting, Loot and Lifecycle.
+/// Covers four of the composable capability slots: Attack, Targeting, Loot and Lifecycle.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityBehaviorSlotTests

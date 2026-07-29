@@ -9,9 +9,8 @@ using BetaSharp.Loot.Conditions;
 namespace BetaSharp.Tests.Entities;
 
 /// <summary>
-/// Covers the behaviors half of Phase 4: capability slots are declared in
-/// <c>assets/entity/*.json</c> and built through <see cref="EntityBehaviorRegistry"/>, rather than
-/// wired in mob constructors.
+/// Covers behavior loading: capability slots are declared in <c>assets/entity/*.json</c> and built
+/// at registration, not wired in mob constructors.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityBehaviorJsonTests
