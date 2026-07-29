@@ -21,6 +21,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     private readonly uint _vaoId;
     private readonly uint _vboId;
     private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
+    private readonly Dictionary<uint, int> _glTexToLogicalId = [];
 
     private int _vertexCount;
     private uint _currentTextureId;
@@ -42,14 +43,20 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);
         _silkGL.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(MaxVertices * sizeof(EntityVertex)), null, BufferUsageARB.StreamDraw);
 
+        const uint stride = 28;
+
         _silkGL.EnableVertexAttribArray(0);
-        _silkGL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 24, (void*)0);
+        _silkGL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, (void*)0);
 
         _silkGL.EnableVertexAttribArray(1);
-        _silkGL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 24, (void*)12);
+        _silkGL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, stride, (void*)12);
 
         _silkGL.EnableVertexAttribArray(2);
-        _silkGL.VertexAttribPointer(2, 4, VertexAttribPointerType.UnsignedByte, true, 24, (void*)20);
+        _silkGL.VertexAttribPointer(2, 4, VertexAttribPointerType.UnsignedByte, true, stride, (void*)20);
+
+        // Integer attribute: the I-variant keeps the part id an exact uint instead of converting it.
+        _silkGL.EnableVertexAttribArray(3);
+        _silkGL.VertexAttribIPointer(3, 1, VertexAttribIType.UnsignedInt, stride, (void*)24);
 
         _silkGL.BindVertexArray(0);
         _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
@@ -75,6 +82,19 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     {
         Flush();
         _active = false;
+    }
+
+    /// <summary>
+    /// Associates a GL texture with the symbolic id its asset path is mapped to, so a flush can
+    /// tell the shader which entity it is drawing. Unregistered textures resolve to 0.
+    /// </summary>
+    public void RegisterTextureByPath(string assetPath, uint glTexId)
+    {
+        int logicalId = EntityShaderIds.ForTexture(assetPath);
+        if (logicalId != 0)
+        {
+            _glTexToLogicalId[glTexId] = logicalId;
+        }
     }
 
     public void SetTexture(uint texId)
@@ -178,6 +198,8 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         _shader.SetUniformMatrix4("projectionMatrix", projection);
         _shader.SetUniform1("textureSampler", 0);
         _shader.SetUniform1("useTexture", _useTexture ? 1 : 0);
+        _shader.SetUniform1("entityId",
+            _useTexture ? _glTexToLogicalId.GetValueOrDefault(_currentTextureId) : 0);
         _shader.SetUniform1("alphaThreshold", gl.GetCurrentAlphaThreshold());
         _shader.SetUniform1("fogEnabled", fog.Enabled ? 1 : 0);
         _shader.SetUniform1("fogMode", fog.Mode);

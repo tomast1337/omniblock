@@ -83,7 +83,8 @@ public static class BbModelModelBuilder
     {
         ModelPart part = new(geometry.UvU, geometry.UvV)
         {
-            Mirror = geometry.Mirror
+            Mirror = geometry.Mirror,
+            Name = geometry.Name
         };
         part.AddBox(geometry.BoxX, geometry.BoxY, geometry.BoxZ, geometry.SizeX, geometry.SizeY, geometry.SizeZ, geometry.Inflate);
         part.SetRotationPoint(geometry.PivotX, geometry.PivotY, geometry.PivotZ);

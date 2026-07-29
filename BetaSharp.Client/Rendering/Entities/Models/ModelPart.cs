@@ -24,6 +24,24 @@ public class ModelPart
     public bool Visible = true;
     public bool Hidden = false;
 
+    private string? _name;
+    private uint _partId;
+
+    /// <summary>
+    /// The bbmodel bone this part was built from. Setting it resolves the symbolic id the shader
+    /// branches on; parts built by hand rather than loaded from a model leave it null and render
+    /// with id 0.
+    /// </summary>
+    public string? Name
+    {
+        get => _name;
+        set
+        {
+            _name = value;
+            _partId = EntityShaderIds.ForPart(value);
+        }
+    }
+
     public ModelPart(int textureOffsetX, int textureOffsetY)
     {
         TextureOffsetX = textureOffsetX;
@@ -252,7 +270,8 @@ public class ModelPart
                 Z = worldPos.Z,
                 U = local.U,
                 V = local.V,
-                Color = (uint)new Color(r, g, b, a)
+                Color = (uint)new Color(r, g, b, a),
+                PartId = _partId
             };
         }
 

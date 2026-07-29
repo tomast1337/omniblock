@@ -26,6 +26,10 @@ public abstract class EntityRenderer
 
         TextureHandle handle = textureManager.GetTextureId(path);
 
+        // Every entity texture reaches the batch through here, so this is the one place the path
+        // is known alongside the GL id the shader will see.
+        EntityBatchRenderer.Instance.RegisterTextureByPath(path, (uint)handle.Id);
+
         // Drain the batch first: it still holds geometry belonging to the previous texture, and
         // flushing binds that texture. Binding ours before the flush would only get overwritten.
         EntityBatchRenderer.Instance.SetTexture((uint)handle.Id);
