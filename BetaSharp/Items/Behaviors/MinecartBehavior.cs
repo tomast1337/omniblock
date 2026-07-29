@@ -21,7 +21,7 @@ internal sealed class MinecartBehavior : IItemBehavior
 
         if (!world.IsRemote)
         {
-            world.SpawnEntity(new EntityMinecart(world, x + 0.5F, y + 0.5F, z + 0.5F, _minecartType));
+            world.SpawnEntity(Entities.Behaviors.MinecartBehavior.Place(world, x + 0.5F, y + 0.5F, z + 0.5F, _minecartType));
         }
 
         itemStack.ConsumeItem(player);

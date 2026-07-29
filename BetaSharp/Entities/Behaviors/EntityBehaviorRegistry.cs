@@ -72,6 +72,7 @@ internal static class EntityBehaviorRegistry
         ["hanging_art"] = (in EntityBehaviorContext c) => new HangingArtBehavior(c),
         ["fishing_bobber"] = (in EntityBehaviorContext c) => new FishingBobberBehavior(c),
         ["boat"] = (in EntityBehaviorContext c) => new BoatBehavior(c),
+        ["minecart"] = (in EntityBehaviorContext c) => new MinecartBehavior(c),
 
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),

@@ -1,0 +1,33 @@
+{
+  "ProtocolId": 40,
+  "TrackingRange": 160,
+  "TrackingFrequency": 5,
+  "TracksVelocity": true,
+  "Width": 0.98,
+  "Height": 0.7,
+  "EyeHeightScale": 0.5,
+  "MakesStepSounds": false,
+  "PreventEntitySpawning": true,
+  "Collidable": true,
+  "Pushable": true,
+  "SolidCollisionShape": true,
+  "PassengerRideHeightScale": 0.0,
+  "PassengerRideOffset": -0.3,
+  "Behaviors": [
+    {
+      "Slots": ["Ticker", "Lifecycle", "Persistence", "Interactable", "Physics"],
+      "Type": "minecart",
+      "break_damage": 40,
+      "fuel_item": "betasharp:coal",
+      "fuel_per_coal": 1200,
+      "wire_ids": [
+        { "Type": 0, "Id": 10, "Drops": ["betasharp:minecart"] },
+        { "Type": 1, "Id": 11, "Drops": ["betasharp:minecart", "betasharp:chest"] },
+        { "Type": 2, "Id": 12, "Drops": ["betasharp:minecart", "betasharp:furnace"] }
+      ]
+    }
+  ],
+  "Renderer": {
+    "Type": "minecart"
+  }
+}

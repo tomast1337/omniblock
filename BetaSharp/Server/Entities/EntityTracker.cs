@@ -33,10 +33,6 @@ public class EntityTracker
                 }
             }
         }
-        else if (entity is EntityMinecart)
-        {
-            startTracking(entity, 160, 5, true);
-        }
         // Every mob but the player, which was matched above. This was a marker interface each mob
         // class had to remember to implement; being an EntityLiving is the same fact, already true.
         // Whether velocity is sent used to be a class check for the squid, and is now its own

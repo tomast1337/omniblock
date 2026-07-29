@@ -48,6 +48,17 @@ public class EntityObject : Entity
         if (Behaviors.Lifecycle?.OnAnimateHurt(this) != true) base.AnimateHurt();
     }
 
+    public override void OnCollision(Entity entity)
+    {
+        if (Physics?.OnCollision(this, entity) != true) base.OnCollision(entity);
+    }
+
+    public override void MarkDead()
+    {
+        Behaviors.Lifecycle?.OnRemoved(this);
+        base.MarkDead();
+    }
+
     /// <summary>
     ///     A behavior may take the synced position for itself — a bobber eases towards it. Failing
     ///     that, an arrow declares it stays put: it must not climb out of whatever it is stuck in.

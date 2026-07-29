@@ -133,21 +133,6 @@ public class ClientNetworkHandler : NetHandler
         double y = packet.Y / 32.0D;
         double z = packet.Z / 32.0D;
         Entity? entity = null;
-        if (packet.EntityType == 10)
-        {
-            entity = new EntityMinecart(_worldClient, x, y, z, 0);
-        }
-
-        if (packet.EntityType == 11)
-        {
-            entity = new EntityMinecart(_worldClient, x, y, z, 1);
-        }
-
-        if (packet.EntityType == 12)
-        {
-            entity = new EntityMinecart(_worldClient, x, y, z, 2);
-        }
-
         if (packet.EntityType == 63)
         {
             entity = EntityRegistry.ByName("fireball").Create(_worldClient);
@@ -176,6 +161,19 @@ public class ClientNetworkHandler : NetHandler
                 entity = candidate.Create(_worldClient);
                 settle.SetBlock(entity, carriedBlockId);
                 entity.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
+                break;
+            }
+        }
+
+        // Minecarts do the same across their three kinds, and the kind decides how they are drawn.
+        if (entity == null)
+        {
+            foreach (EntityType candidate in DefaultRegistries.EntityTypes)
+            {
+                if (candidate.Behaviors.Find<MinecartBehavior>() is not { } cart) continue;
+                if (cart.TypeForSpawnObjectId(packet.EntityType) is not { } cartType) continue;
+
+                entity = MinecartBehavior.Place(_worldClient, x, y, z, cartType);
                 break;
             }
         }

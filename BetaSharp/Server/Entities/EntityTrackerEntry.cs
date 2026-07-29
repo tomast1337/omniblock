@@ -297,22 +297,11 @@ internal class EntityTrackerEntry
         }
         else
         {
-            if (currentTrackedEntity is EntityMinecart minecartEntity)
+            // Three cart kinds share one entity type, so which object-spawn id a minecart goes out
+            // on comes from the behavior rather than the definition's single id.
+            if (currentTrackedEntity.Behaviors.Find<MinecartBehavior>() is { } cart)
             {
-                if (minecartEntity.type == 0)
-                {
-                    return EntitySpawnS2CPacket.Get(currentTrackedEntity, 10);
-                }
-
-                if (minecartEntity.type == 1)
-                {
-                    return EntitySpawnS2CPacket.Get(currentTrackedEntity, 11);
-                }
-
-                if (minecartEntity.type == 2)
-                {
-                    return EntitySpawnS2CPacket.Get(currentTrackedEntity, 12);
-                }
+                return EntitySpawnS2CPacket.Get(currentTrackedEntity, cart.SpawnObjectId(currentTrackedEntity));
             }
 
             if (currentTrackedEntity is EntityLiving living and not EntityPlayer)

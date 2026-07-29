@@ -863,7 +863,7 @@ public abstract class EntityPlayer : EntityLiving
 
         switch (Vehicle)
         {
-            case EntityMinecart:
+            case { } cart when MinecartBehavior.IsMinecart(cart):
                 IncreaseStat(Stats.Stats.DistanceByMinecartStat, distanceScaled);
 
                 int currentX = MathHelper.Floor(X);

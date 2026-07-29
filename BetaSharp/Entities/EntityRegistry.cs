@@ -47,7 +47,7 @@ public static class EntityRegistry
         // their JSON — the non-living entities on the same footing as the mobs.
         RegisterDefined((world, type) => new EntityObject(world, type), "PrimedTnt");
         RegisterDefined((world, type) => new EntityObject(world, type), "FallingSand");
-        Register((world, _) => new EntityMinecart(world), "Minecart", 40);
+        RegisterDefined((world, type) => new EntityObject(world, type), "Minecart");
         RegisterDefined((world, type) => new EntityObject(world, type), "Boat");
         RegisterDefined((world, type) => new EntityObject(world, type), "Egg");
         RegisterDefined((world, type) => new EntityObject(world, type), "Fireball");

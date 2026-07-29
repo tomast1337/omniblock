@@ -44,6 +44,7 @@ internal static class EntityRendererRegistry
         ["painting"] = (in JsonElement json) => new PaintingEntityRenderer(),
         ["fishing_bobber"] = (in JsonElement json) => new FishingBobberEntityRenderer(),
         ["boat"] = (in JsonElement json) => new BoatEntityRenderer(),
+        ["minecart"] = (in JsonElement json) => new MinecartEntityRenderer(),
         ["projectile"] = (in JsonElement json) => new ProjectileEntityRenderer(
             Item.ByName(json.GetProperty("Item").GetString()!).getTextureId(0),
             json.TryGetProperty("Scale", out JsonElement scale) ? scale.GetSingle() : 0.5F),

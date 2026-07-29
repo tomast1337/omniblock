@@ -17,7 +17,7 @@ public sealed class EntityMobScenarioTests
         EntityTestHarness.PlaceStoneFloor(world, 0, 31, 0, 15, 63);
         EntityTestHarness.PlaceRailRunX(world, 4, 28, 64, 8);
 
-        var cart = new EntityMinecart(world, 6.5, 65.0, 8.5, 0);
+        Entity cart = MinecartBehavior.Place(world, 6.5, 65.0, 8.5, MinecartBehavior.Rideable);
         Assert.True(world.Entities.SpawnEntity(cart));
         EntityTestHarness.AdvanceGameTicks(world, 400);
         Assert.False(cart.Dead);

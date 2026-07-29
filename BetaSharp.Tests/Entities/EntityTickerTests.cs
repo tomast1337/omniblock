@@ -90,7 +90,9 @@ public sealed class EntityTickerTests
     public void Entities_without_a_ticker_have_a_null_slot()
     {
         FakeWorldContext world = new();
+        // Every non-living entity ticks through a behavior now, so the examples left are mobs whose
+        // whole tick is the shared EntityLiving one.
         Assert.Null(EntityRegistry.ByName("cow").Behaviors.Ticker);
-        Assert.Null(EntityRegistry.ByName("minecart").Behaviors.Ticker);
+        Assert.Null(EntityRegistry.ByName("pig").Behaviors.Ticker);
     }
 }

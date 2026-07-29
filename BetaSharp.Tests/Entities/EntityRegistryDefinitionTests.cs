@@ -32,12 +32,13 @@ public sealed class EntityRegistryDefinitionTests
         EntityRegistry.ByName("primedtnt"), EntityRegistry.ByName("fallingsand"), EntityRegistry.ByName("lightningbolt"),
         EntityRegistry.ByName("item"), EntityRegistry.ByName("snowball"), EntityRegistry.ByName("egg"),
         EntityRegistry.ByName("fireball"), EntityRegistry.ByName("arrow"), EntityRegistry.ByName("painting"),
-        EntityRegistry.ByName("fishhook"), EntityRegistry.ByName("boat")
+        EntityRegistry.ByName("fishhook"), EntityRegistry.ByName("boat"), EntityRegistry.ByName("minecart")
     ];
 
+    /// <summary>Only the player is left: every other entity in the game is now described by JSON.</summary>
     private static readonly EntityType[] s_nonMobTypes =
     [
-        EntityRegistry.ByName("minecart"), EntityRegistry.ByName("player")
+        EntityRegistry.ByName("player")
     ];
 
     [Fact]
@@ -65,8 +66,8 @@ public sealed class EntityRegistryDefinitionTests
     {
         Assert.All(s_nonMobTypes, type => Assert.Null(type.Definition));
 
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => EntityRegistry.ByName("minecart").RequireDefinition());
-        Assert.Contains("Minecart", error.Message);
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => EntityRegistry.ByName("player").RequireDefinition());
+        Assert.Contains("Player", error.Message);
     }
 
     [Fact]

@@ -112,4 +112,10 @@ public interface IEntityPhysics
     ///     its rider offset along its own facing rather than straight above its middle.
     /// </summary>
     bool OnUpdatePassengerPosition(Entity self) => false;
+
+    /// <summary>
+    ///     Replaces what being bumped into does, returning <c>true</c> when handled. Minecarts trade
+    ///     momentum with each other rather than simply shoving apart.
+    /// </summary>
+    bool OnCollision(Entity self, Entity other) => false;
 }

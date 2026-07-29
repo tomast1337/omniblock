@@ -71,4 +71,10 @@ public interface IEntityLifecycle
     ///     handled. A boat rocks — the same wobble the real hit produces, replayed for the viewer.
     /// </summary>
     bool OnAnimateHurt(Entity self) => false;
+
+    /// <summary>
+    ///     Runs as a <em>non-living</em> entity is removed, however it was removed. A chest minecart
+    ///     spills its cargo here, so breaking it and destroying it any other way both scatter.
+    /// </summary>
+    void OnRemoved(Entity self) { }
 }

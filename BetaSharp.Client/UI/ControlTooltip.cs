@@ -63,7 +63,7 @@ public static class ControlTooltip
         }
         else if (hit.Type == HitResultType.ENTITY)
         {
-            if (hit.Entity is EntityMinecart || hit.Entity.Behaviors.Find<BoatBehavior>() is not null)
+            if (MinecartBehavior.IsMinecart(hit.Entity) || hit.Entity.Behaviors.Find<BoatBehavior>() is not null)
                 useAction = "Enter";
             else if (hit.Entity?.Synced<bool>("saddled") is { Value: true })
                 useAction = "Ride";

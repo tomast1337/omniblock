@@ -122,7 +122,7 @@ public static class EntityTestHarness
 
         if (type == EntityRegistry.ByName("minecart"))
         {
-            return new EntityMinecart(world, 8.5, 65.0, 8.5, 0);
+            return MinecartBehavior.Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Rideable);
         }
 
         Entity entity = type.Create(world);

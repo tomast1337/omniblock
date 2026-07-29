@@ -1,4 +1,4 @@
-using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -46,8 +46,8 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
         bool isPowered = (meta & 8) != 0;
         bool hasMinecart = false;
 
-        List<EntityMinecart> minecartsOnRail = context.Entities.CollectEntitiesOfType<EntityMinecart>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset));
-        if (minecartsOnRail.Count > 0) hasMinecart = true;
+        Box detectionBox = new(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset);
+        if (context.Entities.GetEntities(null, detectionBox).Any(MinecartBehavior.IsMinecart)) hasMinecart = true;
 
         if (hasMinecart && !isPowered)
         {

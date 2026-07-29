@@ -38,7 +38,6 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityPlayer), new PlayerEntityRenderer());
         RegisterRenderer(typeof(EntityLiving), new LivingEntityRenderer(new ModelBiped(), 0.5F));
         RegisterRenderer(typeof(Entity), new BoxEntityRenderer());
-        RegisterRenderer(typeof(EntityMinecart), new MinecartEntityRenderer());
 
         RegisterDeclaredRenderers();
 

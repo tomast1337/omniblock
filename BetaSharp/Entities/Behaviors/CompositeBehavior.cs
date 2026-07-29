@@ -219,6 +219,21 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         return handled;
     }
 
+    public void OnRemoved(Entity self)
+    {
+        foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnRemoved(self);
+    }
+
+    public bool OnCollision(Entity self, Entity other)
+    {
+        foreach (IEntityPhysics physics in _physics)
+        {
+            if (physics.OnCollision(self, other)) return true;
+        }
+
+        return false;
+    }
+
     public void OnCreated(Entity self)
     {
         foreach (IEntityLifecycle lifecycle in _lifecycles) lifecycle.OnCreated(self);

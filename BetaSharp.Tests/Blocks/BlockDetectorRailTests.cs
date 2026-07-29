@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 
 namespace BetaSharp.Tests.Blocks;
 
@@ -28,7 +29,7 @@ public sealed class BlockDetectorRailTests
         world.ReaderWriter.SetInitial(8, 63, 8, BlockRegistry.Get("stone").id);
         world.ReaderWriter.SetInitial(8, 64, 8, BlockRegistry.Get("detector_rail").id, 0);
 
-        EntityMinecart cart = new(world, 8.5D, 64.0D, 8.5D, 0);
+        Entity cart = MinecartBehavior.Place(world, 8.5D, 64.0D, 8.5D, MinecartBehavior.Rideable);
         world.Entities.SpawnEntity(cart);
 
         BlockRegistry.Get("detector_rail").onEntityCollision(new OnEntityCollisionEvent(world, cart, 8, 64, 8));
