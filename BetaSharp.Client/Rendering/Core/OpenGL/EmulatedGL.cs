@@ -395,6 +395,7 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void Enable(GLEnum cap)
     {
+        OnRasterStateChanging(cap);
         switch (cap)
         {
             case GLEnum.Texture2D: _useTexture = true; _dirtyState.StateDirty = true; return;
@@ -412,6 +413,7 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void Disable(GLEnum cap)
     {
+        OnRasterStateChanging(cap);
         switch (cap)
         {
             case GLEnum.Texture2D: _useTexture = false; _dirtyState.StateDirty = true; return;

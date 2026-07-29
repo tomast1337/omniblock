@@ -23,8 +23,19 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.BindBuffer(target.ToModern(), buffer);
     }
 
+    /// <summary>
+    /// The texture currently bound to <see cref="GLEnum.Texture2D"/> on unit 0, so a renderer that
+    /// binds its own texture out-of-band can put back what the caller had.
+    /// </summary>
+    public uint BoundTexture2D { get; private set; }
+
     public void BindTexture(GLEnum target, uint texture)
     {
+        if (target == GLEnum.Texture2D)
+        {
+            BoundTexture2D = texture;
+        }
+
         SilkGL.BindTexture(target.ToModern(), texture);
     }
 
@@ -33,8 +44,27 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.BindVertexArray(array);
     }
 
+    /// <summary>
+    /// Raised just before a change to state that governs how geometry rasterizes. A renderer that
+    /// queues geometry instead of drawing it immediately subscribes here, so what it is holding
+    /// reaches the framebuffer while the state it was queued under is still the state in force.
+    /// </summary>
+    public event Action? RasterStateChanging;
+
+    protected void OnRasterStateChanging() => RasterStateChanging?.Invoke();
+
+    /// <summary>Fires only for the caps whose toggle changes how queued geometry would rasterize.</summary>
+    protected void OnRasterStateChanging(GLEnum cap)
+    {
+        if (cap is GLEnum.Blend or GLEnum.AlphaTest or GLEnum.DepthTest or GLEnum.Fog)
+        {
+            RasterStateChanging?.Invoke();
+        }
+    }
+
     public void BlendFunc(GLEnum sfactor, GLEnum dfactor)
     {
+        OnRasterStateChanging();
         SilkGL.BlendFunc(sfactor.ToModern(), dfactor.ToModern());
     }
 
@@ -138,21 +168,25 @@ public abstract unsafe class LegacyGL : IGL
 
     public void DepthFunc(GLEnum func)
     {
+        OnRasterStateChanging();
         SilkGL.DepthFunc(func.ToModern());
     }
 
     public void DepthMask(bool flag)
     {
+        OnRasterStateChanging();
         SilkGL.DepthMask(flag);
     }
 
     public virtual void Disable(EnableCap cap)
     {
+        OnRasterStateChanging((GLEnum)cap);
         SilkGL.Disable(cap);
     }
 
     public virtual void Disable(GLEnum cap)
     {
+        OnRasterStateChanging(cap);
         SilkGL.Disable(cap.ToModern());
     }
 

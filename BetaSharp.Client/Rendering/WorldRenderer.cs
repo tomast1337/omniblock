@@ -252,14 +252,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             BlockEntityRenderer.Instance.CacheActiveRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, partialTicks);
             EntityRenderDispatcher.Instance.CacheRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, _game.Options, partialTicks);
 
-            Span<float> projectionData = stackalloc float[16];
-            GLManager.GL.GetFloat(GLEnum.ProjectionMatrix, projectionData);
-            Matrix4X4<float> projection = new(
-                projectionData[0], projectionData[1], projectionData[2], projectionData[3],
-                projectionData[4], projectionData[5], projectionData[6], projectionData[7],
-                projectionData[8], projectionData[9], projectionData[10], projectionData[11],
-                projectionData[12], projectionData[13], projectionData[14], projectionData[15]);
-            EntityBatchRenderer.Instance.Begin(projection);
+            EntityBatchRenderer.Instance.Begin();
             CountEntitiesTotal = 0;
             CountEntitiesRendered = 0;
             CountEntitiesHidden = 0;

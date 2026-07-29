@@ -25,8 +25,11 @@ public abstract class EntityRenderer
         if (textureManager == null) return;
 
         TextureHandle handle = textureManager.GetTextureId(path);
-        textureManager.BindTexture(handle);
+
+        // Drain the batch first: it still holds geometry belonging to the previous texture, and
+        // flushing binds that texture. Binding ours before the flush would only get overwritten.
         EntityBatchRenderer.Instance.SetTexture((uint)handle.Id);
+        textureManager.BindTexture(handle);
     }
 
     protected bool LoadDownloadableImageTexture(string? url, string fallbackPath)
@@ -36,8 +39,8 @@ public abstract class EntityRenderer
             TextureHandle? skinHandle = Dispatcher.SkinManager?.GetTextureHandle(url);
             if (skinHandle != null)
             {
-                skinHandle.Bind();
                 EntityBatchRenderer.Instance.SetTexture((uint)skinHandle.Id);
+                skinHandle.Bind();
                 return true;
             }
         }

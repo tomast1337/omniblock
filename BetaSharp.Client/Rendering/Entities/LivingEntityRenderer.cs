@@ -73,7 +73,6 @@ public class LivingEntityRenderer : EntityRenderer
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
                     renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-                    EntityBatchRenderer.Instance.Flush();
                     GLManager.GL.Disable(GLEnum.Blend);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                 }
@@ -124,7 +123,6 @@ public class LivingEntityRenderer : EntityRenderer
                     }
                 }
 
-                EntityBatchRenderer.Instance.Flush();
                 GLManager.GL.DepthFunc(GLEnum.Lequal);
                 GLManager.GL.Disable(GLEnum.Blend);
                 GLManager.GL.Enable(GLEnum.AlphaTest);
