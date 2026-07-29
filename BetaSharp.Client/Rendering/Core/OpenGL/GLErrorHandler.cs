@@ -24,6 +24,12 @@ internal class GLErrorHandler
             DebugType.DontCare,
             DebugSeverity.DontCare,
             0, (uint*)0, true);
+
+        gl.DebugMessageControl(
+            DebugSource.DontCare,
+            DebugType.DebugTypePerformance,
+            DebugSeverity.DontCare,
+            0, (uint*)0, false);
     }
 
     private void DebugCallback(
