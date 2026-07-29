@@ -1,0 +1,22 @@
+; Hexa.NET.ImGui's Text/TextColored/TextDisabled/TextWrapped bindings forward
+; their string argument to native, variadic vsnprintf as a printf format
+; string. Dynamic content containing a literal '%' (log messages, translation
+; strings, block/biome names, exception text) segfaults. Confirmed as Dear
+; ImGui's own format-string contract, not a binding bug, by upstream
+; (Hexa.NET.ImGui#130, comment 5050373687). Use BetaSharp.Client.Diagnostics.ImGuiTextSafe instead.
+M:Hexa.NET.ImGui.ImGui.Text(System.String);Use ImGuiTextSafe.Text instead of ImGui.Text - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.Text(System.Byte*);Use ImGuiTextSafe.Text instead of ImGui.Text - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.Text(System.Byte@);Use ImGuiTextSafe.Text instead of ImGui.Text - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.Text(System.ReadOnlySpan{System.Byte});Use ImGuiTextSafe.Text instead of ImGui.Text - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextColored(System.Numerics.Vector4,System.String);Use ImGuiTextSafe.TextColored instead of ImGui.TextColored - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextColored(System.Numerics.Vector4,System.Byte*);Use ImGuiTextSafe.TextColored instead of ImGui.TextColored - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextColored(System.Numerics.Vector4,System.Byte@);Use ImGuiTextSafe.TextColored instead of ImGui.TextColored - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextColored(System.Numerics.Vector4,System.ReadOnlySpan{System.Byte});Use ImGuiTextSafe.TextColored instead of ImGui.TextColored - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextDisabled(System.String);Use ImGuiTextSafe.TextDisabled instead of ImGui.TextDisabled - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextDisabled(System.Byte*);Use ImGuiTextSafe.TextDisabled instead of ImGui.TextDisabled - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextDisabled(System.Byte@);Use ImGuiTextSafe.TextDisabled instead of ImGui.TextDisabled - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextDisabled(System.ReadOnlySpan{System.Byte});Use ImGuiTextSafe.TextDisabled instead of ImGui.TextDisabled - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextWrapped(System.String);Use ImGuiTextSafe.TextWrapped instead of ImGui.TextWrapped - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextWrapped(System.Byte*);Use ImGuiTextSafe.TextWrapped instead of ImGui.TextWrapped - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextWrapped(System.Byte@);Use ImGuiTextSafe.TextWrapped instead of ImGui.TextWrapped - see BannedSymbols.txt header.
+M:Hexa.NET.ImGui.ImGui.TextWrapped(System.ReadOnlySpan{System.Byte});Use ImGuiTextSafe.TextWrapped instead of ImGui.TextWrapped - see BannedSymbols.txt header.

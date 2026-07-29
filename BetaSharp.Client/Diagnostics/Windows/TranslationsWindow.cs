@@ -85,7 +85,7 @@ internal sealed class TranslationsWindow : DebugWindow
 
         if (!string.IsNullOrWhiteSpace(_search))
         {
-            ImGui.TextDisabled($"Filtering results for: '{_search}'");
+            ImGuiTextSafe.TextDisabled($"Filtering results for: '{_search}'");
         }
 
         ImGui.Separator();
@@ -95,13 +95,13 @@ internal sealed class TranslationsWindow : DebugWindow
         {
             if (_language != null)
             {
-                ImGui.TextDisabled($"Language: {_language.Name}");
+                ImGuiTextSafe.TextDisabled($"Language: {_language.Name}");
 
                 if (_language.Translations is null) _language.LoadTranslations();
 
                 if (_language.Translations is null)
                 {
-                    ImGui.TextDisabled($"Translations were not loaded, and failed to load!");
+                    ImGuiTextSafe.TextDisabled($"Translations were not loaded, and failed to load!");
 
                     ImGui.EndChild();
                     return;
@@ -111,18 +111,18 @@ internal sealed class TranslationsWindow : DebugWindow
                 {
                     if (Translations.Instance.DefaultLanguage is null)
                     {
-                        ImGui.TextDisabled("Cannot show missing translations - default language is null.");
+                        ImGuiTextSafe.TextDisabled("Cannot show missing translations - default language is null.");
                     }
                     else
                     {
-                        ImGui.TextDisabled("Displaying translations missing in this language:");
+                        ImGuiTextSafe.TextDisabled("Displaying translations missing in this language:");
 
                         bool anyMissing = false;
                         foreach (var translation in Translations.Instance.DefaultLanguage.Translations)
                         {
                             if (_language.Translations.ContainsKey(translation.Key)) continue;
 
-                            ImGui.TextColored(new System.Numerics.Vector4(0.8f, 0.4f, 0.4f, 1f), $"{translation.Key}: {translation.Value}");
+                            ImGuiTextSafe.TextColored(new System.Numerics.Vector4(0.8f, 0.4f, 0.4f, 1f), $"{translation.Key}: {translation.Value}");
 
                             anyMissing = true;
                         }
@@ -146,19 +146,19 @@ internal sealed class TranslationsWindow : DebugWindow
                         noTranslations = false;
                     }
 
-                    ImGui.Text($"{translation.Key}:");
+                    ImGuiTextSafe.Text($"{translation.Key}:");
                     ImGui.SameLine();
-                    ImGui.TextColored(new System.Numerics.Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value);
+                    ImGuiTextSafe.TextColored(new System.Numerics.Vector4(0.4f, 0.8f, 0.4f, 1f), translation.Value ?? string.Empty);
                 }
 
                 if (noTranslations)
                 {
-                    ImGui.TextDisabled("No translation matched your filter.");
+                    ImGuiTextSafe.TextDisabled("No translation matched your filter.");
                 }
             }
             else
             {
-                ImGui.Text("Select a language to see strings.");
+                ImGuiTextSafe.Text("Select a language to see strings.");
             }
 
             ImGui.EndChild();

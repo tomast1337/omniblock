@@ -37,7 +37,7 @@ public sealed class FrameGraph(string label, int capacity = 100)
 
         if (!string.IsNullOrEmpty(label))
         {
-            ImGui.Text(label);
+            ImGuiTextSafe.Text(label);
             ImGui.SameLine();
             ImGui.Checkbox($"Auto##auto_{label}", ref _autoScale);
             if (!_autoScale)

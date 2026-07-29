@@ -16,8 +16,8 @@ internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
             float frameTimeMs = MetricRegistry.Get(ClientMetrics.FrameTimeMs);
             _frameTimeGraph.Push(frameTimeMs);
 
-            ImGui.Text($"FPS:        {MetricRegistry.Get(ClientMetrics.Fps)}");
-            ImGui.Text($"Frame Time: {frameTimeMs:F2} ms");
+            ImGuiTextSafe.Text($"FPS:        {MetricRegistry.Get(ClientMetrics.Fps)}");
+            ImGuiTextSafe.Text($"Frame Time: {frameTimeMs:F2} ms");
             ImGui.Spacing();
             _frameTimeGraph.Draw(40f, 0.33f);
         }
@@ -28,14 +28,14 @@ internal sealed class ClientInfoWindow(DebugWindowContext ctx) : DebugWindow
             long usedMem = Environment.WorkingSet;
             long heapMem = GC.GetTotalMemory(false);
 
-            ImGui.Text($"Used: {FormatMb(usedMem)} / {FormatMb(maxMem)} MB");
-            ImGui.Text($"Heap: {FormatMb(heapMem)} MB");
+            ImGuiTextSafe.Text($"Used: {FormatMb(usedMem)} / {FormatMb(maxMem)} MB");
+            ImGuiTextSafe.Text($"Heap: {FormatMb(heapMem)} MB");
         }
 
         if (ImGui.CollapsingHeader("World", ImGuiTreeNodeFlags.DefaultOpen))
         {
             string chunkInfo = ctx.World?.GetDebugInfo() ?? "No world loaded.";
-            ImGui.Text(chunkInfo);
+            ImGuiTextSafe.Text(chunkInfo);
         }
     }
 

@@ -32,11 +32,11 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 
         if (screen == null)
         {
-            ImGui.TextDisabled("none");
+            ImGuiTextSafe.TextDisabled("none");
         }
         else
         {
-            ImGui.TextColored(new Vector4(0.4f, 0.8f, 1f, 1f), screen.GetType().Name);
+            ImGuiTextSafe.TextColored(new Vector4(0.4f, 0.8f, 1f, 1f), screen.GetType().Name);
             ImGui.Spacing();
 
             ImGui.PushID("screen");
@@ -56,7 +56,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         }
         else
         {
-            ImGui.TextDisabled("no HUD");
+            ImGuiTextSafe.TextDisabled("no HUD");
         }
 
         if (_selectedElement != null)
@@ -109,7 +109,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         }
 
         ImGui.SameLine();
-        ImGui.Text(BuildLabel(element));
+        ImGuiTextSafe.Text(BuildLabel(element));
 
         if (ImGui.IsItemHovered())
         {
@@ -125,7 +125,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
         {
             bool propsOpen = ImGui.TreeNodeEx("##p", ImGuiTreeNodeFlags.SpanAvailWidth);
             ImGui.SameLine();
-            ImGui.TextDisabled("Properties");
+            ImGuiTextSafe.TextDisabled("Properties");
 
             if (propsOpen)
             {
@@ -233,7 +233,7 @@ internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
     {
         foreach (string prop in el.GetInspectorProperties())
         {
-            ImGui.Text(prop);
+            ImGuiTextSafe.Text(prop);
         }
     }
 

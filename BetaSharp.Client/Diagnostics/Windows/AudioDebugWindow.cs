@@ -35,22 +35,22 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
 
     private static void DrawChannelsSection(SoundManager sm)
     {
-        ImGui.Text($"Active: {sm.ActiveChannelCount} / 32");
+        ImGuiTextSafe.Text($"Active: {sm.ActiveChannelCount} / 32");
     }
 
     private static void DrawActionSoundsSection(SoundManager sm)
     {
-        ImGui.Text($"Unique names: {sm.LoadedSoundNameCount}");
-        ImGui.Text($"Files loaded: {sm.LoadedSoundFileCount}");
+        ImGuiTextSafe.Text($"Unique names: {sm.LoadedSoundNameCount}");
+        ImGuiTextSafe.Text($"Files loaded: {sm.LoadedSoundFileCount}");
     }
 
     private static void DrawStreamingSection(SoundManager sm)
     {
-        ImGui.Text($"Files loaded: {sm.LoadedStreamingFileCount}");
+        ImGuiTextSafe.Text($"Files loaded: {sm.LoadedStreamingFileCount}");
 
         string status = sm.IsStreamingPlaying ? "Playing" : "Idle";
-        ImGui.Text($"Status:       {status}");
-        ImGui.Text($"Track:        {sm.CurrentStreamingName ?? "none"}");
+        ImGuiTextSafe.Text($"Status:       {status}");
+        ImGuiTextSafe.Text($"Track:        {sm.CurrentStreamingName ?? "none"}");
     }
 
     private static void DrawMusicSection(SoundManager sm)
@@ -58,19 +58,19 @@ internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
         string activeCategory = sm.ActiveCategory != null ? sm.ActiveCategory.ToString() : "none";
         string musicStatus = sm.IsMusicPlaying ? "Playing" : "Idle";
 
-        ImGui.Text($"Status:   {musicStatus}");
-        ImGui.Text($"Track:    {sm.CurrentMusicName ?? "none"}");
-        ImGui.Text($"Category: {activeCategory}");
+        ImGuiTextSafe.Text($"Status:   {musicStatus}");
+        ImGuiTextSafe.Text($"Track:    {sm.CurrentMusicName ?? "none"}");
+        ImGuiTextSafe.Text($"Category: {activeCategory}");
 
         ImGui.Spacing();
 
         foreach ((ResourceLocation name, MusicCategory cat) in sm.MusicCategories)
         {
             ImGui.Separator();
-            ImGui.Text($"[{name}]");
-            ImGui.Text($"  Tracks:      {cat.Pool.LoadedSoundCount}");
-            ImGui.Text($"  Delay range: {cat.MinDelayTicks} – {cat.MaxDelayTicks} ticks");
-            ImGui.Text($"  Next in:     {cat.TicksBeforeNext} ticks");
+            ImGuiTextSafe.Text($"[{name}]");
+            ImGuiTextSafe.Text($"  Tracks:      {cat.Pool.LoadedSoundCount}");
+            ImGuiTextSafe.Text($"  Delay range: {cat.MinDelayTicks} – {cat.MaxDelayTicks} ticks");
+            ImGuiTextSafe.Text($"  Next in:     {cat.TicksBeforeNext} ticks");
         }
     }
 }
