@@ -44,9 +44,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
     private readonly Shader _skyShader;
-    private readonly int _skyShaderMvLoc;
-    private readonly int _skyShaderProjLoc;
-    private Shader _cloudShader;
+    private int _skyShaderMvLoc;
+    private int _skyShaderProjLoc;
+    private readonly Shader _cloudShader;
     private int _cloudShaderMvLoc;
     private int _cloudShaderProjLoc;
     private int _cloudShaderTexMatLoc;
@@ -57,7 +57,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         _game = gameInstance;
         _textureManager = textureManager;
-        _game.Options.ShaderOptions.GetOrCreate("cloud").Changed += BuildCloudShader;
 
         _starGLCallList = GLAllocation.generateDisplayLists(3);
         GLManager.GL.PushMatrix();
@@ -73,6 +72,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float skyPlaneY = 16.0F;
 
         ChunkRenderer = new(gameInstance.World, _game.Options);
+
+        OnCloudsQualityChanged();
+
+        _cloudShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("cloud"), "shaders/cloud.vert", "shaders/cloud.frag");
+        _cloudShader.Changed += OnBuildCloudShader;
 
         int planeX;
         int planeZ;
@@ -109,13 +113,14 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.draw();
         GLManager.GL.EndList();
 
-        OnCloudsQualityChanged();
+        _skyShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("sky"), "shaders/sky.vert", "shaders/sky.frag");
+        _skyShader.Changed += OnBuildSkyShader;
+    }
 
-        _skyShader = new Shader(AssetManager.Instance.getAsset("shaders/sky.vert").GetTextContent(), AssetManager.Instance.getAsset("shaders/sky.frag").GetTextContent());
+    private void OnBuildSkyShader(Shader _)
+    {
         _skyShaderMvLoc = _skyShader.GetUniformLocation("u_ModelView");
         _skyShaderProjLoc = _skyShader.GetUniformLocation("u_Projection");
-
-        BuildCloudShader();
     }
 
     private void OnCloudsQualityChanged()
@@ -130,14 +135,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _cloudsQuality = _game.Options.CloudsQuality;
     }
 
-    private void BuildCloudShader()
+    private void OnBuildCloudShader(Shader _)
     {
-        _cloudShader?.Dispose();
-        string vert = AssetManager.Instance.getAsset("shaders/cloud.vert").GetTextContent();
-        string frag = AssetManager.Instance.getAsset("shaders/cloud.frag").GetTextContent();
-        ShaderOptionSet opts = _game.Options.ShaderOptions.GetOrCreate("cloud");
-        opts.Parse(frag);
-        _cloudShader = new Shader(vert, opts.Inject(frag));
         _cloudShaderMvLoc = _cloudShader.GetUniformLocation("u_ModelView");
         _cloudShaderProjLoc = _cloudShader.GetUniformLocation("u_Projection");
         _cloudShaderTexMatLoc = _cloudShader.GetUniformLocation("u_TextureMatrix");
@@ -225,7 +224,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void Dispose()
     {
-        _game.Options.ShaderOptions.GetOrCreate("cloud").Changed -= BuildCloudShader;
         _cloudShader?.Dispose();
         ChunkRenderer?.Dispose();
     }
@@ -384,10 +382,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float groundB = _world.Dimension.HasGround ? skyBlue * 0.6F + 0.1F : skyBlue;
 
         _skyShader.Bind();
+        _skyShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         _skyShader.SetUniform1("u_Texture", 0);
         _skyShader.SetUniform1("u_UseTexture", 0);
-        _skyShader.SetUniform1("u_FogStart", ChunkRenderer.FogStart);
-        _skyShader.SetUniform1("u_FogEnd", ChunkRenderer.FogEnd);
         _skyShader.SetUniform3("u_SkyColor", new Vector3D<float>(skyRed, skyGreen, skyBlue));
         _skyShader.SetUniform3("u_GroundColor", new Vector3D<float>(groundR, groundG, groundB));
         GLManager.GL.BeginExternalShader(_skyShaderMvLoc, _skyShaderProjLoc);
@@ -649,13 +646,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ)) + (CloudsRenderDistance / 2);
 
         _cloudShader.Bind();
+        _cloudShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         _cloudShader.SetUniform1("u_Texture", 0);
-        //_cloudShader.SetUniform3("u_FogColor", _fogColor);
-        _cloudShader.SetUniform1("u_FogStart", ChunkRenderer.FogStart);
-        _cloudShader.SetUniform1("u_FogEnd", ChunkRenderer.FogEnd);
         _cloudShader.SetUniform3("u_CloudOffset", new Vector3D<float>(-subCloudOffsetX, cloudY, -subCloudOffsetZ));
         _cloudShader.SetUniform1("u_CloudScale", cloudScale / 2f);
-        _cloudShader.SetUniform1("u_Quality", _game.Options.CloudsQuality - 2);
         GLManager.GL.BeginExternalShader(_cloudShaderMvLoc, _cloudShaderProjLoc, _cloudShaderTexMatLoc);
 
         GLManager.GL.Scale(cloudScale, 1.0F, cloudScale);

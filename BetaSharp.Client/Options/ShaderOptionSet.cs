@@ -41,7 +41,7 @@ public class ShaderOptionSet
 
     public IReadOnlyList<OptionDef> Options { get; private set; } = [];
     public IReadOnlyList<PresetDef> Presets => _presetDefs;
-    public event Action? Changed;
+    public event Action<ShaderOptionSet>? Changed;
 
     public void Parse(string source)
     {
@@ -111,7 +111,7 @@ public class ShaderOptionSet
     {
         if (_indices.TryGetValue(name, out int cur) && cur == index) return;
         _indices[name] = index;
-        Changed?.Invoke();
+        Changed?.Invoke(this);
     }
 
     public float GetFloat(string name, float defaultValue = 0f) =>
@@ -121,7 +121,7 @@ public class ShaderOptionSet
     {
         if (_floatValues.TryGetValue(name, out float cur) && MathF.Abs(cur - value) < 1e-6f) return;
         _floatValues[name] = value;
-        Changed?.Invoke();
+        Changed?.Invoke(this);
     }
 
     public string Inject(string source)

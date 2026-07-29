@@ -8,9 +8,7 @@ out vec4 FragColor;
 
 uniform sampler2D textureSampler;
 uniform vec4 fogColor;
-uniform float fogDensity;
-uniform float fogStart;
-uniform float fogEnd;
+uniform vec3 fog;
 uniform int fogMode;
 
 uniform bool chunkFadeEnabled;
@@ -30,11 +28,11 @@ void main()
 
     if (fogMode == 0)
     {
-        fogFactor = (fogEnd - fogDistance) / (fogEnd - fogStart);
+        fogFactor = (fog.y - fogDistance) / (fog.y - fog.x);
     }
     else
     {
-        fogFactor = exp(-fogDensity * fogDistance);
+        fogFactor = exp(-fog.z * fogDistance);
     }
 
     fogFactor = clamp(fogFactor, 0.0, 1.0);

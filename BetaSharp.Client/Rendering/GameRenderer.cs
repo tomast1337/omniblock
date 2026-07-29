@@ -3,6 +3,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Items;
@@ -20,6 +21,8 @@ namespace BetaSharp.Client.Rendering;
 
 public class GameRenderer
 {
+    public static readonly CommonShaderInfo ShaderInfo = new CommonShaderInfo();
+
     private readonly bool _cloudFog = false;
     private readonly BetaSharp _client;
     private float _viewDistance;
@@ -297,7 +300,7 @@ public class GameRenderer
             {
                 using (Profiler.Begin("RenderWorld"))
                 {
-                    RenderFrame(tickDelta, 0L);
+                    RenderFrame(tickDelta, _client.World.GetTime());
                 }
 
                 using (Profiler.Begin("RenderGameOverlay"))
@@ -378,6 +381,10 @@ public class GameRenderer
         {
             UpdateTargetedEntity(tickDelta);
         }
+
+        ShaderInfo.Time = time;
+        ShaderInfo.DeltaTime = tickDelta;
+        ShaderInfo.DayTime = ((int)(time % 24000) + tickDelta) / 20f;
 
         EntityLiving entity = _client.Camera;
         WorldRenderer worldRenderer = _client.WorldRenderer;
@@ -927,51 +934,50 @@ public class GameRenderer
     {
         EntityLiving camera = _client.Camera;
         GLManager.GL.Fog(GLEnum.FogColor, UpdateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
-        _client.WorldRenderer.ChunkRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
-        _client.WorldRenderer.SetFogColor(_fogColorRed, _fogColorGreen, _fogColorBlue);
+        ShaderInfo.FogColor = new Vector4D<float>(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
         GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         if (_cloudFog)
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
+            ShaderInfo.FogMode = 1;
+            ShaderInfo.FogDensity = 0.1f;
         }
         else if (camera.IsInFluid(Material.Water))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.ChunkRenderer.SetFogDensity(0.1f);
+            ShaderInfo.FogMode = 1;
+            ShaderInfo.FogDensity = 0.1f;
         }
         else if (camera.IsInFluid(Material.Lava))
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
             GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(1);
-            _client.WorldRenderer.ChunkRenderer.SetFogDensity(2.0f);
+            ShaderInfo.FogMode = 1;
+            ShaderInfo.FogDensity = 2f;
         }
         else
         {
             GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
             GLManager.GL.Fog(GLEnum.FogStart, _viewDistance * 0.25F);
             GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance);
-            _client.WorldRenderer.ChunkRenderer.SetFogMode(0);
-            _client.WorldRenderer.ChunkRenderer.SetFogStart(_viewDistance * 0.25f);
-            _client.WorldRenderer.ChunkRenderer.SetFogEnd(_viewDistance);
+            ShaderInfo.FogMode = 0;
+            ShaderInfo.FogStart = _viewDistance * 0.25f;
+            ShaderInfo.FogEnd = _viewDistance;
             if (mode < 0)
             {
                 GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
                 GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance * 0.8F);
-                _client.WorldRenderer.ChunkRenderer.SetFogStart(0.0f);
-                _client.WorldRenderer.ChunkRenderer.SetFogEnd(_viewDistance * 0.8f);
+                ShaderInfo.FogStart = 0;
+                ShaderInfo.FogEnd = _viewDistance * 0.8f;
             }
 
             if (_client.World.Dimension.IsNether)
             {
                 GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                _client.WorldRenderer.ChunkRenderer.SetFogStart(0.0f);
+                ShaderInfo.FogStart = 0;
             }
         }
 

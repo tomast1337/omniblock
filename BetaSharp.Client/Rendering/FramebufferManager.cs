@@ -27,9 +27,8 @@ public class FramebufferManager
         _options = options;
         _mainFbo = new Framebuffer(w, h);
 
-        string quadVert = AssetManager.Instance.getAsset("shaders/quad.vert").GetTextContent();
-        _gammaShader = new Shader(quadVert,AssetManager.Instance.getAsset("shaders/gamma.frag").GetTextContent());
-        _blurShader = new Shader(quadVert,AssetManager.Instance.getAsset("shaders/blur.frag").GetTextContent());
+        _gammaShader = new Shader(_options.ShaderOptions.GetOrCreate("gamma"), null, "shaders/gamma.frag");
+        _blurShader = new Shader(_options.ShaderOptions.GetOrCreate("blur"), null, "shaders/blur.frag");
 
         float[] quadVertices = [
             -1.0f,  1.0f,  0.0f, 1.0f,
@@ -102,6 +101,7 @@ public class FramebufferManager
         {
             // TODO: make indivdual post processing passes control their shaders.
             _gammaShader.Bind();
+            _gammaShader.SetCommonUniforms(GameRenderer.ShaderInfo);
 
             float slider = _options.Gamma / 100.0f;
             float gammaValue = 0.25f + (slider * 1.5f);

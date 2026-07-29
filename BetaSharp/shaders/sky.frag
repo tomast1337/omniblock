@@ -8,11 +8,10 @@ out vec4 FragColor;
 
 uniform sampler2D u_Texture;
 uniform int u_UseTexture;
-uniform float u_FogStart;
-uniform float u_FogEnd;
 uniform int u_GradientMode;
 uniform vec3 u_SkyColor;
 uniform vec3 u_GroundColor;
+uniform vec3 fog;
 
 //const float PI = 3.14159265359;
 //const float PIH = 1.5707963268;
@@ -20,8 +19,8 @@ const float PIH2 = 0.7853981634;
 
 void main()
 {
-    float fogRange = max(u_FogEnd - u_FogStart, 0.001);
-    float fogFactor = clamp((u_FogEnd - v_FogDist) / fogRange, 0.0, 1.0);
+    float fogRange = max(fog.y - fog.x, 0.001);
+    float fogFactor = clamp((fog.y - v_FogDist) / fogRange, 0.0, 1.0);
 
     vec4 color;
 

@@ -78,7 +78,7 @@ void main()
     {
         finalColor = a_Color;
     }
-    
+
     v_ColorFlat = finalColor;
     v_ColorSmooth = finalColor;
 }
