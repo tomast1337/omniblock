@@ -18,6 +18,10 @@ public sealed class EntityBehaviorJsonTests
 {
     private static JsonElement Json(string json) => JsonSerializer.Deserialize<JsonElement>(json);
 
+    /// <summary>Deserializes one behavior entry the way the entity loader does.</summary>
+    private static EntityBehaviorDefinition Behavior(string json) =>
+        JsonSerializer.Deserialize<EntityBehaviorDefinition>(json)!;
+
     /// <summary>Behaviors are now built with a load-time context, once per entity type.</summary>
     private static object Build(string json, EntityDefinition? definition = null) =>
         EntityBehaviorRegistry.Build(new EntityBehaviorContext(
@@ -167,12 +171,84 @@ public sealed class EntityBehaviorJsonTests
         {
             ProtocolId = 55,
             Name = "test_slime",
-            Behaviors = [Json("""{"Slots":["Attack"],"Type":"melee"}""")]
+            Behaviors = [Behavior("""{"Slots":["Attack"],"Type":"melee"}""")]
         };
 
         // Validated at load from the registered base type, not per spawn.
         ArgumentException error = Assert.Throws<ArgumentException>(
             () => EntityFactory.BuildBehaviors(definition, typeof(EntityLiving)));
         Assert.Contains("EntityCreature", error.Message);
+    }
+
+    /// <summary>
+    /// A typed definition deserializes its snake_case parameters into C# properties, so the
+    /// behavior's constructor receives values rather than a JsonElement to dig through.
+    /// </summary>
+    [Fact]
+    public void A_typed_definition_reads_its_parameters_into_properties()
+    {
+        BoatDefinition boat = Assert.IsType<BoatDefinition>(Behavior("""
+            {
+              "Slots": ["Ticker"],
+              "Type": "boat",
+              "break_damage": 25,
+              "wreckage": [{ "Item": "betasharp:planks", "Count": 3 }]
+            }
+            """));
+
+        Assert.Equal(["Ticker"], boat.Slots);
+        Assert.Equal(25, boat.BreakDamage);
+        Assert.Equal("betasharp:planks", Assert.Single(boat.Wreckage).Item);
+        Assert.Equal(3, boat.Wreckage[0].Count);
+    }
+
+    /// <summary>An omitted parameter takes the property initialiser, not a hand-written fallback.</summary>
+    [Fact]
+    public void An_omitted_parameter_falls_back_to_the_property_default()
+    {
+        ArrowDefinition arrow = Assert.IsType<ArrowDefinition>(Behavior("""{"Slots":["Ticker"],"Type":"arrow"}"""));
+
+        Assert.Equal(4, arrow.Damage);
+    }
+
+    /// <summary>
+    /// The failure that used to surface as a bare TypeInitializationException: a bad value now
+    /// names the entity and the behavior that carried it.
+    /// </summary>
+    [Fact]
+    public void A_bad_value_names_the_entity_and_the_behavior()
+    {
+        EntityDefinition definition = new()
+        {
+            ProtocolId = 55,
+            Name = "test_boat",
+            Behaviors = [Behavior("""
+                {"Slots":["Ticker"],"Type":"boat","wreckage":[{"Item":"betasharp:not_a_real_item","Count":1}]}
+                """)]
+        };
+
+        ArgumentException error = Assert.Throws<ArgumentException>(
+            () => EntityFactory.BuildBehaviors(definition, typeof(EntityObject)));
+
+        Assert.Contains("test_boat", error.Message);
+        Assert.Contains("boat", error.Message);
+        Assert.Contains("not_a_real_item", error.Message);
+    }
+
+    [Fact]
+    public void An_unknown_behavior_type_names_itself()
+    {
+        EntityDefinition definition = new()
+        {
+            ProtocolId = 55,
+            Name = "test_entity",
+            Behaviors = [Behavior("""{"Slots":["Ticker"],"Type":"no_such_behavior"}""")]
+        };
+
+        ArgumentException error = Assert.Throws<ArgumentException>(
+            () => EntityFactory.BuildBehaviors(definition, typeof(EntityObject)));
+
+        Assert.Contains("no_such_behavior", error.Message);
+        Assert.Contains("test_entity", error.Message);
     }
 }

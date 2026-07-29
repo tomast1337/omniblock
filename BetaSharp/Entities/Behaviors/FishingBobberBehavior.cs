@@ -51,40 +51,36 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     private readonly int _biteDelayWhenRaining;
     private readonly double _maxAnglerDistanceSquared;
 
-    public FishingBobberBehavior(in EntityBehaviorContext context)
+    public FishingBobberBehavior(EntityStateLayout layout, Item rod, Item catches, int biteDelay, int biteDelayWhenRaining, double maxAnglerDistance)
     {
-        _catch = ItemNamed(context, "catches");
-        _rod = ItemNamed(context, "held_item");
-        _biteDelay = context.Int("bite_delay", 500);
-        _biteDelayWhenRaining = context.Int("bite_delay_raining", 300);
-        double leash = context.Double("max_angler_distance", 32.0D);
-        _maxAnglerDistanceSquared = leash * leash;
+        _rod = rod;
+        _catch = catches;
+        _biteDelay = biteDelay;
+        _biteDelayWhenRaining = biteDelayWhenRaining;
+        _maxAnglerDistanceSquared = maxAnglerDistance * maxAnglerDistance;
 
-        _angler = context.DeclareRef<EntityPlayer>();
-        _hooked = context.DeclareRef<Entity>();
-        _inGround = context.DeclareBool();
-        _inTile = context.DeclareInt();
-        _shake = context.DeclareInt();
-        _ticksInAir = context.DeclareInt();
-        _ticksInGround = context.DeclareInt();
-        _ticksCatchable = context.DeclareInt();
-        _tileX = context.DeclareInt(-1);
-        _tileY = context.DeclareInt(-1);
-        _tileZ = context.DeclareInt(-1);
+        _angler = layout.DeclareRef<EntityPlayer>();
+        _hooked = layout.DeclareRef<Entity>();
+        _inGround = layout.DeclareBool();
+        _inTile = layout.DeclareInt();
+        _shake = layout.DeclareInt();
+        _ticksInAir = layout.DeclareInt();
+        _ticksInGround = layout.DeclareInt();
+        _ticksCatchable = layout.DeclareInt();
+        _tileX = layout.DeclareInt(-1);
+        _tileY = layout.DeclareInt(-1);
+        _tileZ = layout.DeclareInt(-1);
 
-        _syncTicks = context.DeclareInt();
-        _targetX = context.DeclareDouble();
-        _targetY = context.DeclareDouble();
-        _targetZ = context.DeclareDouble();
-        _targetYaw = context.DeclareDouble();
-        _targetPitch = context.DeclareDouble();
-        _syncedVelocityX = context.DeclareDouble();
-        _syncedVelocityY = context.DeclareDouble();
-        _syncedVelocityZ = context.DeclareDouble();
+        _syncTicks = layout.DeclareInt();
+        _targetX = layout.DeclareDouble();
+        _targetY = layout.DeclareDouble();
+        _targetZ = layout.DeclareDouble();
+        _targetYaw = layout.DeclareDouble();
+        _targetPitch = layout.DeclareDouble();
+        _syncedVelocityX = layout.DeclareDouble();
+        _syncedVelocityY = layout.DeclareDouble();
+        _syncedVelocityZ = layout.DeclareDouble();
     }
-
-    private static Item ItemNamed(in EntityBehaviorContext context, string key) =>
-        Item.ByName(ResourceLocation.Parse(context.Json.GetProperty(key).GetString()!).Path);
 
     /// <summary>
     ///     Casts a bobber from the angler's hands and hangs it off them — a player has at most one,

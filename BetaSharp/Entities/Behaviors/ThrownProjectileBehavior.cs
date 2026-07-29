@@ -36,28 +36,23 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
     /// chance of one hatchling, itself 1-in-<c>BonusChance</c> upgraded to <c>BonusCount</c>.</summary>
     private readonly (string Entity, int Chance, int BonusChance, int BonusCount)? _hatch;
 
-    public ThrownProjectileBehavior(in EntityBehaviorContext context)
+    public ThrownProjectileBehavior(
+        EntityStateLayout layout,
+        string impactParticle,
+        (string Entity, int Chance, int BonusChance, int BonusCount)? hatch)
     {
-        _impactParticle = context.Json.TryGetProperty("impact_particle", out System.Text.Json.JsonElement particle)
-            ? particle.GetString()!
-            : "snowballpoof";
+        _impactParticle = impactParticle;
+        _hatch = hatch;
 
-        _hatch = context.Json.TryGetProperty("hatch", out System.Text.Json.JsonElement hatch)
-            ? (hatch.GetProperty("Entity").GetString()!,
-                hatch.GetProperty("Chance").GetInt32(),
-                hatch.GetProperty("BonusChance").GetInt32(),
-                hatch.GetProperty("BonusCount").GetInt32())
-            : null;
-
-        _thrower = context.DeclareRef<EntityLiving>();
-        _inGround = context.DeclareBool();
-        _inTile = context.DeclareInt();
-        _shake = context.DeclareInt();
-        _ticksInAir = context.DeclareInt();
-        _ticksInGround = context.DeclareInt();
-        _tileX = context.DeclareInt(-1);
-        _tileY = context.DeclareInt(-1);
-        _tileZ = context.DeclareInt(-1);
+        _thrower = layout.DeclareRef<EntityLiving>();
+        _inGround = layout.DeclareBool();
+        _inTile = layout.DeclareInt();
+        _shake = layout.DeclareInt();
+        _ticksInAir = layout.DeclareInt();
+        _ticksInGround = layout.DeclareInt();
+        _tileX = layout.DeclareInt(-1);
+        _tileY = layout.DeclareInt(-1);
+        _tileZ = layout.DeclareInt(-1);
     }
 
     /// <summary>

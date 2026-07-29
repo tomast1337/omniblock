@@ -31,21 +31,21 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
 
     private readonly int _damage;
 
-    public ArrowBehavior(in EntityBehaviorContext context)
+    public ArrowBehavior(EntityStateLayout layout, int damage)
     {
-        _damage = context.Int("damage", 4);
+        _damage = damage;
 
-        _owner = context.DeclareRef<EntityLiving>();
-        _belongsToPlayer = context.DeclareBool();
-        _inGround = context.DeclareBool();
-        _inTile = context.DeclareInt();
-        _inData = context.DeclareInt();
-        _shake = context.DeclareInt();
-        _ticksInAir = context.DeclareInt();
-        _ticksInGround = context.DeclareInt();
-        _tileX = context.DeclareInt(-1);
-        _tileY = context.DeclareInt(-1);
-        _tileZ = context.DeclareInt(-1);
+        _owner = layout.DeclareRef<EntityLiving>();
+        _belongsToPlayer = layout.DeclareBool();
+        _inGround = layout.DeclareBool();
+        _inTile = layout.DeclareInt();
+        _inData = layout.DeclareInt();
+        _shake = layout.DeclareInt();
+        _ticksInAir = layout.DeclareInt();
+        _ticksInGround = layout.DeclareInt();
+        _tileX = layout.DeclareInt(-1);
+        _tileY = layout.DeclareInt(-1);
+        _tileZ = layout.DeclareInt(-1);
     }
 
     /// <summary>Whether this entity is an arrow — the capability check that replaced `is EntityArrow`.</summary>

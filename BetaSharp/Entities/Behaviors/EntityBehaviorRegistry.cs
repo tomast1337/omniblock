@@ -55,25 +55,6 @@ internal static class EntityBehaviorRegistry
         // Attack + Ticker + Lifecycle, all moving one countdown
         ["fuse"] = (in EntityBehaviorContext c) => new FuseBehavior(c),
 
-        // Ticker + Lifecycle + Persistence, all moving one fuse
-        ["primed_explosive"] = (in EntityBehaviorContext c) => new PrimedExplosiveBehavior(c),
-
-        // Ticker + Persistence, all carrying one block
-        ["settle_as_block"] = (in EntityBehaviorContext c) => new SettleAsBlockBehavior(c),
-
-        // Ticker + Lifecycle + Physics, all reading one flash countdown
-        ["lightning_strike"] = (in EntityBehaviorContext c) => new LightningStrikeBehavior(c),
-
-        // Ticker + Lifecycle + Persistence + Interactable + Physics, all reading one stack
-        ["dropped_item"] = (in EntityBehaviorContext c) => new DroppedItemBehavior(c),
-        ["thrown_projectile"] = (in EntityBehaviorContext c) => new ThrownProjectileBehavior(c),
-        ["fireball"] = (in EntityBehaviorContext c) => new FireballBehavior(c),
-        ["arrow"] = (in EntityBehaviorContext c) => new ArrowBehavior(c),
-        ["hanging_art"] = (in EntityBehaviorContext c) => new HangingArtBehavior(c),
-        ["fishing_bobber"] = (in EntityBehaviorContext c) => new FishingBobberBehavior(c),
-        ["boat"] = (in EntityBehaviorContext c) => new BoatBehavior(c),
-        ["minecart"] = (in EntityBehaviorContext c) => new MinecartBehavior(c),
-
         // Physics
         ["ignore_fall_damage"] = (in EntityBehaviorContext c) => new IgnoreFallDamageBehavior(),
         ["flap_descent"] = (in EntityBehaviorContext c) => new FlapDescentBehavior(c),

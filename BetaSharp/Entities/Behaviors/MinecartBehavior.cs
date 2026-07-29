@@ -80,49 +80,44 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     private readonly int _coalItemId;
 
     /// <summary>Cart type to the object-spawn id it goes out on, and what each drops when broken.</summary>
-    private readonly Dictionary<int, int> _wireIds = [];
-    private readonly Dictionary<int, int[]> _wreckage = [];
+    private readonly Dictionary<int, int> _wireIds;
+    private readonly Dictionary<int, int[]> _wreckage;
 
-    public MinecartBehavior(in EntityBehaviorContext context)
+    public MinecartBehavior(
+        EntityStateLayout layout,
+        int breakDamage,
+        int fuelItemId,
+        int fuelPerCoal,
+        Dictionary<int, int> wireIds,
+        Dictionary<int, int[]> wreckage)
     {
-        _breakThreshold = context.Int("break_damage", 40);
-        _fuelPerCoal = context.Int("fuel_per_coal", 1200);
-        _coalItemId = ItemId(context.Json.GetProperty("fuel_item").GetString()!);
+        _breakThreshold = breakDamage;
+        _fuelPerCoal = fuelPerCoal;
+        _coalItemId = fuelItemId;
+        _wireIds = wireIds;
+        _wreckage = wreckage;
 
-        foreach (JsonElement entry in context.Json.GetProperty("wire_ids").EnumerateArray())
-        {
-            int type = entry.GetProperty("Type").GetInt32();
-            _wireIds[type] = entry.GetProperty("Id").GetInt32();
-            _wreckage[type] = [.. entry.GetProperty("Drops").EnumerateArray().Select(static drop => ItemId(drop.GetString()!))];
-        }
+        _type = layout.DeclareInt();
+        _cargo = layout.DeclareRef<MinecartCargo>();
+        _fuel = layout.DeclareInt();
+        _pushX = layout.DeclareDouble();
+        _pushZ = layout.DeclareDouble();
+        _yawFlipped = layout.DeclareBool();
 
-        _type = context.DeclareInt();
-        _cargo = context.DeclareRef<MinecartCargo>();
-        _fuel = context.DeclareInt();
-        _pushX = context.DeclareDouble();
-        _pushZ = context.DeclareDouble();
-        _yawFlipped = context.DeclareBool();
+        _rockDirection = layout.DeclareInt(1);
+        _timeSinceHit = layout.DeclareInt();
+        _damage = layout.DeclareInt();
 
-        _rockDirection = context.DeclareInt(1);
-        _timeSinceHit = context.DeclareInt();
-        _damage = context.DeclareInt();
-
-        _lerpSteps = context.DeclareInt();
-        _targetX = context.DeclareDouble();
-        _targetY = context.DeclareDouble();
-        _targetZ = context.DeclareDouble();
-        _targetYaw = context.DeclareDouble();
-        _targetPitch = context.DeclareDouble();
-        _syncedVelocityX = context.DeclareDouble();
-        _syncedVelocityY = context.DeclareDouble();
-        _syncedVelocityZ = context.DeclareDouble();
+        _lerpSteps = layout.DeclareInt();
+        _targetX = layout.DeclareDouble();
+        _targetY = layout.DeclareDouble();
+        _targetZ = layout.DeclareDouble();
+        _targetYaw = layout.DeclareDouble();
+        _targetPitch = layout.DeclareDouble();
+        _syncedVelocityX = layout.DeclareDouble();
+        _syncedVelocityY = layout.DeclareDouble();
+        _syncedVelocityZ = layout.DeclareDouble();
     }
-
-    /// <summary>Blocks dropped as items resolve through the shared lookup, not the item registry.</summary>
-    private static int ItemId(string name) =>
-        ItemLookup.TryGetItemId(ResourceLocation.Parse(name).Path, out int id)
-            ? id
-            : throw new ArgumentException($"Unknown minecart item '{name}'.");
 
     /// <summary>
     ///     Places a cart of the given kind on the track. The <c>y</c> given is the rail height; the

@@ -34,22 +34,22 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
     private readonly float _explosionPower;
 
-    public FireballBehavior(in EntityBehaviorContext context)
+    public FireballBehavior(EntityStateLayout layout, float explosionPower)
     {
-        _explosionPower = context.Float("explosion_power", 1.0F);
+        _explosionPower = explosionPower;
 
-        _owner = context.DeclareRef<EntityLiving>();
-        _inGround = context.DeclareBool();
-        _blockId = context.DeclareInt();
-        _shake = context.DeclareInt();
-        _inAirTime = context.DeclareInt();
-        _removalTimer = context.DeclareInt();
-        _tileX = context.DeclareInt(-1);
-        _tileY = context.DeclareInt(-1);
-        _tileZ = context.DeclareInt(-1);
-        _powerX = context.DeclareDouble();
-        _powerY = context.DeclareDouble();
-        _powerZ = context.DeclareDouble();
+        _owner = layout.DeclareRef<EntityLiving>();
+        _inGround = layout.DeclareBool();
+        _blockId = layout.DeclareInt();
+        _shake = layout.DeclareInt();
+        _inAirTime = layout.DeclareInt();
+        _removalTimer = layout.DeclareInt();
+        _tileX = layout.DeclareInt(-1);
+        _tileY = layout.DeclareInt(-1);
+        _tileZ = layout.DeclareInt(-1);
+        _powerX = layout.DeclareDouble();
+        _powerY = layout.DeclareDouble();
+        _powerZ = layout.DeclareDouble();
     }
 
     /// <summary>

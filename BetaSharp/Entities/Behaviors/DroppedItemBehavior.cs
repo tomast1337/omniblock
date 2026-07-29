@@ -32,23 +32,16 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
     /// <summary>Item id to the achievement its pickup awards, declared in the definition.</summary>
     private readonly (int ItemId, Achievement Achievement)[] _pickupAchievements;
 
-    public DroppedItemBehavior(in EntityBehaviorContext context)
+    public DroppedItemBehavior(EntityStateLayout layout, int despawnAge, int health, (int ItemId, Achievement Achievement)[] pickupAchievements)
     {
-        _despawnAge = context.Int("despawn_age", 6000);
+        _despawnAge = despawnAge;
+        _pickupAchievements = pickupAchievements;
 
-        _pickupAchievements = context.Json.TryGetProperty("pickup_achievements", out System.Text.Json.JsonElement awards)
-            ? [.. awards.EnumerateArray().Select(static entry => (
-                ItemLookup.TryGetItemId(ResourceLocation.Parse(entry.GetProperty("Item").GetString()!).Path, out int id)
-                    ? id
-                    : throw new ArgumentException($"Unknown pickup item '{entry.GetProperty("Item").GetString()}'."),
-                EntityBehaviorRegistry.Achievement(entry.GetProperty("Achievement").GetString()!)))]
-            : [];
-
-        _stack = context.DeclareRef<ItemStack>();
-        _health = context.DeclareInt(context.Int("health", 5));
-        _age = context.DeclareInt();
-        _pickupDelay = context.DeclareInt();
-        _bobPhase = context.DeclareFloat();
+        _stack = layout.DeclareRef<ItemStack>();
+        _health = layout.DeclareInt(health);
+        _age = layout.DeclareInt();
+        _pickupDelay = layout.DeclareInt();
+        _bobPhase = layout.DeclareFloat();
     }
 
     /// <summary>

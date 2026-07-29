@@ -23,15 +23,13 @@ public sealed class PrimedExplosiveBehavior : IEntityTicker, IEntityLifecycle, I
     private readonly float _power;
     private readonly string _particle;
 
-    public PrimedExplosiveBehavior(in EntityBehaviorContext context)
+    public PrimedExplosiveBehavior(EntityStateLayout layout, int fuseTicks, float power, string particle)
     {
-        _fuseTicks = context.Int("fuse_ticks", 80);
-        _power = context.Float("power", 4.0F);
-        _particle = context.Json.TryGetProperty("particle", out System.Text.Json.JsonElement p)
-            ? p.GetString() ?? "smoke"
-            : "smoke";
+        _fuseTicks = fuseTicks;
+        _power = power;
+        _particle = particle;
 
-        _fuse = context.DeclareInt();
+        _fuse = layout.DeclareInt();
     }
 
     public int FuseTicks(Entity self) => self.State[_fuse];

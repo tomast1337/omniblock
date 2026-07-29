@@ -33,18 +33,17 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
     private readonly int _checkInterval;
     private readonly Item _drop;
 
-    public HangingArtBehavior(in EntityBehaviorContext context)
+    public HangingArtBehavior(EntityStateLayout layout, int checkInterval, Item drop)
     {
-        _checkInterval = context.Int("check_interval", 100);
-        _drop = Item.ByName(ResourceLocation.Parse(
-            context.Json.GetProperty("drops").GetString()!).Path);
+        _checkInterval = checkInterval;
+        _drop = drop;
 
-        _art = context.DeclareRef<Painting>();
-        _direction = context.DeclareInt();
-        _tileX = context.DeclareInt();
-        _tileY = context.DeclareInt();
-        _tileZ = context.DeclareInt();
-        _tickCounter = context.DeclareInt();
+        _art = layout.DeclareRef<Painting>();
+        _direction = layout.DeclareInt();
+        _tileX = layout.DeclareInt();
+        _tileY = layout.DeclareInt();
+        _tileZ = layout.DeclareInt();
+        _tickCounter = layout.DeclareInt();
     }
 
     /// <summary>

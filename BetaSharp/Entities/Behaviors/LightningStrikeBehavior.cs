@@ -27,22 +27,18 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
     private readonly int _extraFires;
     private readonly double _strikeRadius;
 
-    public LightningStrikeBehavior(in EntityBehaviorContext context)
+    public LightningStrikeBehavior(EntityStateLayout layout, string thunderSound, string explodeSound, int minimumFireDifficulty, int extraFires, double strikeRadius)
     {
-        _thunderSound = context.Json.TryGetProperty("thunder_sound", out System.Text.Json.JsonElement thunder)
-            ? thunder.GetString() ?? "ambient.weather.thunder"
-            : "ambient.weather.thunder";
-        _explodeSound = context.Json.TryGetProperty("explode_sound", out System.Text.Json.JsonElement explode)
-            ? explode.GetString() ?? "random.explode"
-            : "random.explode";
-        _minimumFireDifficulty = context.Int("minimum_fire_difficulty", 2);
-        _extraFires = context.Int("extra_fires", 4);
-        _strikeRadius = context.Double("strike_radius", 3.0D);
+        _thunderSound = thunderSound;
+        _explodeSound = explodeSound;
+        _minimumFireDifficulty = minimumFireDifficulty;
+        _extraFires = extraFires;
+        _strikeRadius = strikeRadius;
 
-        _flashTimer = context.DeclareInt(2);
-        _flashCount = context.DeclareInt();
-        _renderSeed = context.DeclareLong();
-        _struck = context.DeclareBool();
+        _flashTimer = layout.DeclareInt(2);
+        _flashCount = layout.DeclareInt();
+        _renderSeed = layout.DeclareLong();
+        _struck = layout.DeclareBool();
     }
 
     /// <summary>Seed the client draws this flash's jagged path from; re-rolled per flash.</summary>

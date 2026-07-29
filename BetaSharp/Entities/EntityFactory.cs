@@ -20,21 +20,29 @@ internal static class EntityFactory
         EntityStateLayout layout = new();
         EntityBehaviorSet set = new(layout);
 
-        foreach (JsonElement entry in definition.Behaviors)
-        {
-            EntityBehaviorContext context = new(entry, definition, layout);
-            object behavior = EntityBehaviorRegistry.Build(context);
+        EntityBehaviorBuildContext context = new(definition, layout);
 
-            if (!entry.TryGetProperty("Slots", out JsonElement slots))
+        foreach (EntityBehaviorDefinition entry in definition.Behaviors)
+        {
+            // Naming the entity and the behavior here is the difference between a usable failure and
+            // a bare TypeInitializationException, since this runs inside a static constructor chain.
+            object behavior;
+            try
             {
-                throw new ArgumentException($"Behavior entry on '{definition.Name}' is missing its 'Slots' array.");
+                behavior = entry.Build(context);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException($"Failed to build {entry} on entity '{definition.Name}': {ex.Message}", ex);
             }
 
-            foreach (JsonElement slotJson in slots.EnumerateArray())
+            if (entry.Slots.Length == 0)
             {
-                string slot = slotJson.GetString()
-                    ?? throw new ArgumentException($"Behavior entry on '{definition.Name}' has a null entry in 'Slots'.");
+                throw new ArgumentException($"Behavior {entry} on '{definition.Name}' names no slots.");
+            }
 
+            foreach (string slot in entry.Slots)
+            {
                 Attach(set, definition, entityType, slot, behavior);
             }
         }

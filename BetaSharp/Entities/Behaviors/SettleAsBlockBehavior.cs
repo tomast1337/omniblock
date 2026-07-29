@@ -24,14 +24,12 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
     /// <summary>Block id to object-spawn wire id, in declaration order; the first is the fallback.</summary>
     private readonly (int BlockId, int WireId)[] _wireIds;
 
-    public SettleAsBlockBehavior(in EntityBehaviorContext context)
+    public SettleAsBlockBehavior(EntityStateLayout layout, (int BlockId, int SpawnObjectId)[] wireIds)
     {
-        _wireIds = [.. context.Json.GetProperty("wire_ids").EnumerateArray().Select(static entry => (
-            BlockRegistry.Get(entry.GetProperty("Block").GetString()!).id,
-            entry.GetProperty("Id").GetInt32()))];
+        _wireIds = wireIds;
 
-        _blockId = context.DeclareInt();
-        _fallTime = context.DeclareInt();
+        _blockId = layout.DeclareInt();
+        _fallTime = layout.DeclareInt();
     }
 
     public int BlockId(Entity self) => self.State[_blockId];

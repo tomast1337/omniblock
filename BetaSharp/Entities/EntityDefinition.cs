@@ -213,5 +213,5 @@ public sealed record EntityDefinition : IDataAsset
     ///     (<c>"Attack"</c>, <c>"Targeting"</c>, <c>"Loot"</c>, <c>"Lifecycle"</c>) and its own
     ///     <c>"Type"</c>, the <see cref="Behaviors.EntityBehaviorRegistry" /> key.
     /// </summary>
-    public List<JsonElement> Behaviors { get; init; } = [];
+    public List<Behaviors.EntityBehaviorDefinition> Behaviors { get; init; } = [];
 }

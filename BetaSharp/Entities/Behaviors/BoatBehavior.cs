@@ -44,30 +44,24 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     private readonly int _breakThreshold;
     private readonly (int ItemId, int Count)[] _wreckage;
 
-    public BoatBehavior(in EntityBehaviorContext context)
+    public BoatBehavior(EntityStateLayout layout, int breakDamage, (int ItemId, int Count)[] wreckage)
     {
-        _breakThreshold = context.Int("break_damage", 40);
-        // Planks are a block dropped as an item, so the id comes from the shared lookup rather
-        // than the item registry alone.
-        _wreckage = [.. context.Json.GetProperty("wreckage").EnumerateArray().Select(static entry => (
-            ItemLookup.TryGetItemId(ResourceLocation.Parse(entry.GetProperty("Item").GetString()!).Path, out int id)
-                ? id
-                : throw new ArgumentException($"Unknown wreckage item '{entry.GetProperty("Item").GetString()}'."),
-            entry.GetProperty("Count").GetInt32()))];
+        _breakThreshold = breakDamage;
+        _wreckage = wreckage;
 
-        _rockDirection = context.DeclareInt(1);
-        _timeSinceHit = context.DeclareInt();
-        _damage = context.DeclareInt();
+        _rockDirection = layout.DeclareInt(1);
+        _timeSinceHit = layout.DeclareInt();
+        _damage = layout.DeclareInt();
 
-        _lerpSteps = context.DeclareInt();
-        _targetX = context.DeclareDouble();
-        _targetY = context.DeclareDouble();
-        _targetZ = context.DeclareDouble();
-        _targetYaw = context.DeclareDouble();
-        _targetPitch = context.DeclareDouble();
-        _syncedVelocityX = context.DeclareDouble();
-        _syncedVelocityY = context.DeclareDouble();
-        _syncedVelocityZ = context.DeclareDouble();
+        _lerpSteps = layout.DeclareInt();
+        _targetX = layout.DeclareDouble();
+        _targetY = layout.DeclareDouble();
+        _targetZ = layout.DeclareDouble();
+        _targetYaw = layout.DeclareDouble();
+        _targetPitch = layout.DeclareDouble();
+        _syncedVelocityX = layout.DeclareDouble();
+        _syncedVelocityY = layout.DeclareDouble();
+        _syncedVelocityZ = layout.DeclareDouble();
     }
 
     /// <summary>
