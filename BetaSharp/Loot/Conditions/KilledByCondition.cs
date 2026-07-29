@@ -7,7 +7,7 @@ namespace BetaSharp.Loot.Conditions;
 ///     dropping a music disc when a skeleton shoots it.
 ///     <para>
 ///         Matched by registry id rather than by C# class, because most mobs no longer have one: a
-///         skeleton and a zombie are both an <c>EntityMonster</c>.
+///         skeleton and a zombie are both an <c>EntityCreature</c>.
 ///     </para>
 /// </summary>
 public sealed class KilledByCondition(string killerId) : ILootCondition

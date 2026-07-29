@@ -24,7 +24,7 @@ public sealed class BiomeSpawnListTests
     /// <summary>
     ///     Identifies each spawned mob by its registry id rather than its C# class. The class stopped
     ///     being an identity once several registered types began sharing one — a cow and a sheep are
-    ///     both an <c>EntityAnimal</c> — and the id is what the biome JSON names in the first place.
+    ///     both an <c>EntityCreature</c> — and the id is what the biome JSON names in the first place.
     /// </summary>
     private static (string Mob, int Weight)[] Actual(Biome biome, CreatureKind kind)
     {

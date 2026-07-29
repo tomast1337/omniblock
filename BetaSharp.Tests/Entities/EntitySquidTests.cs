@@ -5,10 +5,9 @@ using BetaSharp.Entities.Behaviors;
 namespace BetaSharp.Tests.Entities;
 
 /// <summary>
-/// Covers the squid, whose class and <c>EntityWaterMob</c> base both went the way of the ghast's.
-/// Swimming is one behavior across Physics and Ticker — the beat, the jet it produces and the
-/// velocity that gets applied are the same cycle seen three ways — with the water-only spawn rule
-/// beside it in the same slot.
+/// Covers the squid, which has no class of its own: a bare <see cref="EntityLiving"/> whose
+/// swimming is one behavior across Physics and Ticker, with the water-only spawn rule beside it in
+/// the same slot.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntitySquidTests
@@ -153,7 +152,7 @@ public sealed class EntitySquidTests
     }
 
     /// <summary>
-    ///     The rule <c>EntityWaterMob</c> existed for: a squid may spawn in a block full of water,
+    ///     A squid may spawn in a block full of water,
     ///     which the default placement check rejects outright.
     /// </summary>
     [Fact]
@@ -163,7 +162,7 @@ public sealed class EntitySquidTests
         Flood(world, 40, 40);
 
         EntityLiving squid = Squid(world, 40.5, 65.0, 40.5);
-        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
         zombie.SetPositionAndAngles(40.5, 65.0, 40.5, 0f, 0f);
 
         Assert.True(squid.CanSpawn());

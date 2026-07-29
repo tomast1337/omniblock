@@ -17,12 +17,12 @@ public sealed class EntityFuseTests
         return bolt;
     }
 
-    private static (EntityMonster Creeper, FuseBehavior Fuse) Creeper(FakeWorldContext world)
+    private static (EntityCreature Creeper, FuseBehavior Fuse) Creeper(FakeWorldContext world)
     {
-        EntityMonster creeper = (EntityMonster)EntityRegistry.ByName("creeper").Create(world);
+        EntityCreature creeper = (EntityCreature)EntityRegistry.ByName("creeper").Create(world);
         creeper.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(creeper));
-        return (creeper, Assert.IsType<FuseBehavior>(creeper.Behaviors.Attack));
+        return (creeper, creeper.Behaviors.Find<FuseBehavior>()!);
     }
 
     private static TestEntityPlayer Player(FakeWorldContext world)
@@ -37,20 +37,23 @@ public sealed class EntityFuseTests
     public void A_creeper_has_no_class_and_fills_three_slots_from_one_entry()
     {
         FakeWorldContext world = new();
-        (EntityMonster creeper, FuseBehavior fuse) = Creeper(world);
+        (EntityCreature creeper, FuseBehavior fuse) = Creeper(world);
 
-        Assert.Equal(typeof(EntityMonster), creeper.GetType());
+        Assert.Equal(typeof(EntityCreature), creeper.GetType());
 
-        // One instance, three slots — the same object, not three copies.
-        Assert.Same(fuse, creeper.Behaviors.Ticker);
-        Assert.Same(fuse, creeper.Behaviors.Lifecycle);
+        // One instance across Attack, Ticker and Lifecycle: the same object, not three copies. The
+        // slots themselves hold the composite it shares with the monster behavior.
+        Assert.Same(fuse, creeper.Behaviors.Find<FuseBehavior>());
+        Assert.NotNull(creeper.Behaviors.Attack);
+        Assert.NotNull(creeper.Behaviors.Ticker);
+        Assert.NotNull(creeper.Behaviors.Lifecycle);
     }
 
     [Fact]
     public void A_creeper_in_range_winds_its_fuse_up_and_detonates()
     {
         FakeWorldContext world = new();
-        (EntityMonster creeper, FuseBehavior fuse) = Creeper(world);
+        (EntityCreature creeper, FuseBehavior fuse) = Creeper(world);
         TestEntityPlayer player = Player(world);
 
         Assert.Equal(0.0F, fuse.FlashTime(creeper, 1.0F));
@@ -72,7 +75,7 @@ public sealed class EntityFuseTests
     public void An_unlit_creeper_ignores_a_target_that_is_merely_close()
     {
         FakeWorldContext world = new();
-        (EntityMonster creeper, FuseBehavior fuse) = Creeper(world);
+        (EntityCreature creeper, FuseBehavior fuse) = Creeper(world);
         TestEntityPlayer player = Player(world);
 
         fuse.AttackEntity(creeper, player, 5.0F);
@@ -90,7 +93,7 @@ public sealed class EntityFuseTests
     public void A_target_behind_cover_lets_the_fuse_burn_down()
     {
         FakeWorldContext world = new();
-        (EntityMonster creeper, FuseBehavior fuse) = Creeper(world);
+        (EntityCreature creeper, FuseBehavior fuse) = Creeper(world);
         TestEntityPlayer player = Player(world);
 
         fuse.AttackEntity(creeper, player, 2.0F);
@@ -106,7 +109,7 @@ public sealed class EntityFuseTests
     public void A_creeper_that_loses_its_target_winds_back_down()
     {
         FakeWorldContext world = new();
-        (EntityMonster creeper, FuseBehavior fuse) = Creeper(world);
+        (EntityCreature creeper, FuseBehavior fuse) = Creeper(world);
         TestEntityPlayer player = Player(world);
 
         fuse.AttackEntity(creeper, player, 2.0F);
@@ -124,7 +127,7 @@ public sealed class EntityFuseTests
     public void Lightning_supercharges_a_creeper_without_consuming_the_strike()
     {
         FakeWorldContext world = new();
-        (EntityMonster creeper, FuseBehavior fuse) = Creeper(world);
+        (EntityCreature creeper, FuseBehavior fuse) = Creeper(world);
 
         // False, so the default strike response (fire, damage) still runs afterwards.
         Assert.False(fuse.OnStruckByLightning(creeper, Bolt(world, creeper.X, creeper.Y, creeper.Z)));
@@ -139,8 +142,8 @@ public sealed class EntityFuseTests
     public void Two_creepers_burn_independently()
     {
         FakeWorldContext world = new();
-        (EntityMonster first, FuseBehavior fuse) = Creeper(world);
-        (EntityMonster second, FuseBehavior secondFuse) = Creeper(world);
+        (EntityCreature first, FuseBehavior fuse) = Creeper(world);
+        (EntityCreature second, FuseBehavior secondFuse) = Creeper(world);
         TestEntityPlayer player = Player(world);
 
         Assert.Same(fuse, secondFuse);

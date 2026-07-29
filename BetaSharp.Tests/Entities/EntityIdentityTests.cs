@@ -20,8 +20,8 @@ public sealed class EntityIdentityTests
     {
         FakeWorldContext world = new();
 
-        // Exactly EntityAnimal, not a subclass of it: nothing named "cow" exists in C# any more.
-        Assert.Equal(typeof(EntityAnimal), Cow(world).GetType());
+        // Exactly EntityCreature, not a subclass of it: nothing named "cow" exists in C# any more.
+        Assert.Equal(typeof(EntityCreature), Cow(world).GetType());
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class EntityIdentityTests
         Entity? loaded = EntityRegistry.GetEntityFromNbt(nbt, world);
 
         Assert.NotNull(loaded);
-        Assert.Equal(typeof(EntityAnimal), loaded.GetType());
+        Assert.Equal(typeof(EntityCreature), loaded.GetType());
         Assert.Equal("cow", EntityRegistry.GetId(loaded));
     }
 
@@ -92,8 +92,8 @@ public sealed class EntityIdentityTests
     [Fact]
     public void A_class_that_still_backs_one_type_resolves_by_class()
     {
-        // Wolf, cow, sheep, pig and chicken all share EntityAnimal now, so the class no longer identifies any of them.
-        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityAnimal)));
+        // Wolf, cow, sheep, pig and chicken all share EntityCreature now, so the class no longer identifies any of them.
+        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityCreature)));
     }
 
     [Theory]
@@ -104,18 +104,18 @@ public sealed class EntityIdentityTests
     {
         FakeWorldContext world = new();
 
-        Assert.Equal(typeof(EntityMonster), EntityRegistry.ByName(name).Create(world).GetType());
+        Assert.Equal(typeof(EntityCreature), EntityRegistry.ByName(name).Create(world).GetType());
         Assert.NotNull(EntityRegistry.ByName(name).Definition!.Renderer);
     }
 
     /// <summary>
-    ///     Three registered types now share <c>EntityMonster</c>, so the class identifies none of
+    ///     Three registered types now share <c>EntityCreature</c>, so the class identifies none of
     ///     them and the by-class index must refuse to answer.
     /// </summary>
     [Fact]
-    public void EntityMonster_no_longer_identifies_a_single_type()
+    public void The_shared_creature_class_no_longer_identifies_a_single_type()
     {
-        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityMonster)));
+        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityCreature)));
     }
 
     /// <summary>Held items are declared configuration now, not a per-class property override.</summary>

@@ -488,7 +488,7 @@ public abstract class EntityPlayer : EntityLiving
             WakeUp(true, true, false);
         }
 
-        if (damageSource is EntityMonster || ArrowBehavior.IsArrow(damageSource))
+        if (HostileMonsterBehavior.IsMonster(damageSource) || ArrowBehavior.IsArrow(damageSource))
         {
             amount = World.Difficulty switch
             {
@@ -995,7 +995,7 @@ public abstract class EntityPlayer : EntityLiving
 
     public override void OnKillOther(EntityLiving entityLiving)
     {
-        if (entityLiving is EntityMonster)
+        if (HostileMonsterBehavior.IsMonster(entityLiving))
         {
             IncrementStat(Achievements.KillEnemy);
         }

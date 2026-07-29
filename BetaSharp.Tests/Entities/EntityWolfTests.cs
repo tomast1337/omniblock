@@ -15,9 +15,9 @@ public sealed class EntityWolfTests
 {
     private static TameableBehavior Tame => EntityRegistry.ByName("wolf").Behaviors.Find<TameableBehavior>()!;
 
-    private static EntityAnimal Wolf(FakeWorldContext world, double x = 8.5, double z = 8.5)
+    private static EntityCreature Wolf(FakeWorldContext world, double x = 8.5, double z = 8.5)
     {
-        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(world);
+        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
         return wolf;
@@ -34,11 +34,11 @@ public sealed class EntityWolfTests
     }
 
     /// <summary>Offers bones until one is accepted; taming is a one-in-three roll.</summary>
-    private static EntityAnimal TamedWolf(FakeWorldContext world, TestEntityPlayer owner)
+    private static EntityCreature TamedWolf(FakeWorldContext world, TestEntityPlayer owner)
     {
         for (int attempt = 0; attempt < 500; attempt++)
         {
-            EntityAnimal wolf = Wolf(world);
+            EntityCreature wolf = Wolf(world);
             owner.Inventory.SetStack(owner.Inventory.SelectedSlot, new ItemStack(Item.ByName("bone"), 64));
 
             Assert.True(wolf.Interact(owner));
@@ -57,7 +57,7 @@ public sealed class EntityWolfTests
     {
         FakeWorldContext world = new();
 
-        Assert.Equal(typeof(EntityAnimal), Wolf(world).GetType());
+        Assert.Equal(typeof(EntityCreature), Wolf(world).GetType());
 
         EntityBehaviorSet behaviors = EntityRegistry.ByName("wolf").Behaviors;
         Assert.NotNull(behaviors.Find<TameableBehavior>());
@@ -93,7 +93,7 @@ public sealed class EntityWolfTests
     {
         FakeWorldContext world = new();
         TestEntityPlayer owner = Player(world);
-        EntityAnimal wolf = TamedWolf(world, owner);
+        EntityCreature wolf = TamedWolf(world, owner);
 
         Assert.True(Tame.IsTamed(wolf));
         Assert.Equal("tester", Tame.Owner(wolf));
@@ -108,7 +108,7 @@ public sealed class EntityWolfTests
     public void Only_a_bone_interests_an_untamed_wolf()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = Wolf(world);
+        EntityCreature wolf = Wolf(world);
 
         Assert.False(wolf.Interact(Player(world)));
         Assert.False(wolf.Interact(Player(world, Item.ByName("stick"), name: "other", x: 9.5)));
@@ -121,7 +121,7 @@ public sealed class EntityWolfTests
     {
         FakeWorldContext world = new();
         TestEntityPlayer owner = Player(world);
-        EntityAnimal wolf = TamedWolf(world, owner);
+        EntityCreature wolf = TamedWolf(world, owner);
         owner.Inventory.SetStack(owner.Inventory.SelectedSlot, null);
 
         Assert.True(Tame.IsSitting(wolf));
@@ -138,7 +138,7 @@ public sealed class EntityWolfTests
     {
         FakeWorldContext world = new();
         TestEntityPlayer owner = Player(world);
-        EntityAnimal wolf = TamedWolf(world, owner);
+        EntityCreature wolf = TamedWolf(world, owner);
 
         wolf.Health = 5;
         wolf.Tick();
@@ -154,7 +154,7 @@ public sealed class EntityWolfTests
     {
         FakeWorldContext world = new();
         TestEntityPlayer owner = Player(world);
-        EntityAnimal wolf = TamedWolf(world, owner);
+        EntityCreature wolf = TamedWolf(world, owner);
 
         Assert.False(Tame.CanDespawn(wolf));
         Assert.True(Tame.CanDespawn(Wolf(world, 40.5, 40.5)));
@@ -165,7 +165,7 @@ public sealed class EntityWolfTests
     public void A_sitting_wolf_stays_put_and_watches_less_closely()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = Wolf(world);
+        EntityCreature wolf = Wolf(world);
 
         Assert.Null(wolf.Behaviors.Physics!.IsMovementCeased(wolf));
         Assert.Null(wolf.Behaviors.Physics.MaxFallDistance(wolf));
@@ -184,8 +184,8 @@ public sealed class EntityWolfTests
     public void A_wolf_shrugs_off_half_of_anything_a_player_did_not_do()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = Wolf(world);
-        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature wolf = Wolf(world);
+        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
         TestEntityPlayer player = Player(world);
 
         Assert.Equal(3, wolf.Behaviors.Lifecycle!.ModifyDamage(wolf, zombie, 5));
@@ -197,8 +197,8 @@ public sealed class EntityWolfTests
     public void Hitting_a_wolf_angers_it_and_every_wolf_watching()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = Wolf(world);
-        EntityAnimal packMate = Wolf(world, 10.5, 8.5);
+        EntityCreature wolf = Wolf(world);
+        EntityCreature packMate = Wolf(world, 10.5, 8.5);
         TestEntityPlayer player = Player(world);
 
         Assert.True(wolf.Damage(player, 1));
@@ -214,7 +214,7 @@ public sealed class EntityWolfTests
     public void Only_an_angry_wolf_goes_looking_for_a_player()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = Wolf(world);
+        EntityCreature wolf = Wolf(world);
         TestEntityPlayer player = Player(world);
 
         Assert.Null(wolf.Targeting!.FindPlayerToAttack(wolf));
@@ -228,8 +228,8 @@ public sealed class EntityWolfTests
     {
         FakeWorldContext world = new();
         TestEntityPlayer owner = Player(world);
-        EntityAnimal wild = Wolf(world, 40.5, 40.5);
-        EntityAnimal pet = TamedWolf(world, owner);
+        EntityCreature wild = Wolf(world, 40.5, 40.5);
+        EntityCreature pet = TamedWolf(world, owner);
 
         BiteAttackBehavior bite = (BiteAttackBehavior)((JumpAttackBehavior)wild.Behaviors.Attack!).Fallback!;
 
@@ -256,7 +256,7 @@ public sealed class EntityWolfTests
     public void A_soaked_wolf_shakes_itself_dry_on_land()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = Wolf(world);
+        EntityCreature wolf = Wolf(world);
         ShakeOffWaterBehavior shake = wolf.Behaviors.Find<ShakeOffWaterBehavior>()!;
 
         Assert.False(shake.IsShaking(wolf));
@@ -278,7 +278,7 @@ public sealed class EntityWolfTests
     public void A_wolf_says_one_of_the_four_things_a_wolf_says()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = Wolf(world);
+        EntityCreature wolf = Wolf(world);
         HashSet<string> heard = [];
 
         for (int attempt = 0; attempt < 200; attempt++) heard.Add(wolf.Behaviors.Ticker!.LivingSound(wolf)!);

@@ -64,6 +64,7 @@ internal static class EntityBehaviorRegistry
 
         // Physics
         ["ignore_fall_damage"] = (in c) => new IgnoreFallDamageBehavior(),
+        ["grazing_animal"] = (in c) => new GrazingAnimalBehavior(),
         ["flap_descent"] = (in c) => new FlapDescentBehavior(c),
         ["light_seeking_path"] = (in c) => new LightSeekingPathBehavior(),
         ["wall_climb"] = (in c) => new WallClimbBehavior(),
@@ -95,6 +96,9 @@ internal static class EntityBehaviorRegistry
 
         // Physics + Ticker, all moving one swim cycle
         ["jet_swim"] = (in c) => new JetSwimBehavior(c),
+
+        // Physics + Ticker + Lifecycle: everything shared by a mob that hunts the player
+        ["hostile_monster"] = (in c) => new HostileMonsterBehavior(),
 
         // Ticker
         ["despawn_on_peaceful"] = (in c) => new DespawnOnPeacefulBehavior(),

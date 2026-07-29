@@ -12,23 +12,36 @@
   "HeldItem": "betasharp:sword_gold",
   "Behaviors": [
     {
-      "Slots": ["Ticker","Targeting","Lifecycle","Persistence"],
-      "Type": "anger",
-      "min_anger": 400,
-      "anger_range": 400,
-      "sound_delay_range": 40,
-      "alert_radius": 32.0,
-      "calm_speed": 0.5,
-      "angry_speed": 0.95,
-      "angry_sound": "mob.zombiepig.zpigangry",
-      "when_angry": {
-        "Type": "always_hunt"
-      }
-    },
-    {
-      "Slots": ["Physics"],
-      "Type": "spawn_ignoring_light",
-      "requires_difficulty": true
+      "Slots": [
+        "Ticker",
+        "Targeting",
+        "Lifecycle",
+        "Persistence",
+        "Physics"
+      ],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "anger",
+          "min_anger": 400,
+          "anger_range": 400,
+          "sound_delay_range": 40,
+          "alert_radius": 32.0,
+          "calm_speed": 0.5,
+          "angry_speed": 0.95,
+          "angry_sound": "mob.zombiepig.zpigangry",
+          "when_angry": {
+            "Type": "always_hunt"
+          }
+        },
+        {
+          "Type": "spawn_ignoring_light",
+          "requires_difficulty": true
+        },
+        {
+          "Type": "hostile_monster"
+        }
+      ]
     },
     {
       "Slots": ["Attack"],

@@ -13,8 +13,9 @@ namespace BetaSharp.Entities.Behaviors;
 ///         child does its share.
 ///     </para>
 /// </summary>
-public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLifecycle, IEntityPersistence, IEntityInteractable, IEntityTargetBehavior, IEntityBehaviorGroup
+public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLifecycle, IEntityPersistence, IEntityInteractable, IEntityTargetBehavior, IEntityAttackBehavior, IEntityBehaviorGroup
 {
+    private readonly IEntityAttackBehavior[] _attacks;
     private readonly object[] _children;
     private readonly IEntityInteractable[] _interactables;
     private readonly IEntityLifecycle[] _lifecycles;
@@ -41,6 +42,23 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         _persistence = [.. children.OfType<IEntityPersistence>()];
         _interactables = [.. children.OfType<IEntityInteractable>()];
         _targeting = [.. children.OfType<IEntityTargetBehavior>()];
+        _attacks = [.. children.OfType<IEntityAttackBehavior>()];
+    }
+
+    public void AttackEntity(EntityCreature self, Entity target, float distance)
+    {
+        foreach (IEntityAttackBehavior attack in _attacks)
+        {
+            attack.AttackEntity(self, target, distance);
+        }
+    }
+
+    public void AttackBlockedEntity(EntityCreature self, Entity target, float distance)
+    {
+        foreach (IEntityAttackBehavior attack in _attacks)
+        {
+            attack.AttackBlockedEntity(self, target, distance);
+        }
     }
 
     public IEnumerable<object> Children => _children;

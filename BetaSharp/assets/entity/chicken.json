@@ -17,8 +17,16 @@
   "Behaviors": [
     {
       "Slots": ["Physics"],
-      "Type": "flap_descent",
-      "descent_damping": 0.6
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "flap_descent",
+          "descent_damping": 0.6
+        },
+        {
+          "Type": "grazing_animal"
+        }
+      ]
     },
     {
       "Slots": ["Ticker"],
@@ -31,7 +39,11 @@
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:feather"}],
+          "Entries": [
+            {
+              "Item": "betasharp:feather"
+            }
+          ],
           "MinCount": 0,
           "MaxCount": 2
         }

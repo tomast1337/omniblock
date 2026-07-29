@@ -101,7 +101,7 @@ public class EntityLiving : Entity
     private double NewRotationYaw { get; set; }
     private double NewRotationPitch { get; set; }
     protected int DamageForDisplay { get; set; }
-    protected int EntityAge { get; set; }
+    protected internal int EntityAge { get; set; }
     protected internal float SidewaysSpeed { get; set; }
     protected internal float ForwardSpeed { get; set; }
     private float RotationSpeed { get; set; }

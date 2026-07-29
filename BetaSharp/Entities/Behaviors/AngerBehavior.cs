@@ -63,7 +63,7 @@ public sealed class AngerBehavior : IEntityTicker, IEntityTargetBehavior, IEntit
         foreach (Entity nearby in self.World.Entities.GetEntities(self, self.BoundingBox.Expand(_alertRadius, _alertRadius, _alertRadius)))
         {
             // Same behavior instance means same entity type, so only its own kind joins in.
-            if (ReferenceEquals(nearby.Behaviors.Lifecycle, this))
+            if (ReferenceEquals(nearby.Behaviors.Find<AngerBehavior>(), this))
             {
                 Provoke(nearby, attacker);
             }

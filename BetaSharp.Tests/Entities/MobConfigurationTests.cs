@@ -55,17 +55,17 @@ public sealed class MobConfigurationTests
 
     private static EntityLiving CreateMob(string name, IWorldContext world) => name switch
     {
-        "zombie" => (EntityMonster)EntityRegistry.ByName("zombie").Create(world),
-        "giant" => (EntityMonster)EntityRegistry.ByName("giant").Create(world),
-        "pig_zombie" => (EntityMonster)EntityRegistry.ByName("pigzombie").Create(world),
-        "skeleton" => (EntityMonster)EntityRegistry.ByName("skeleton").Create(world),
-        "creeper" => (EntityMonster)EntityRegistry.ByName("creeper").Create(world),
-        "spider" => (EntityMonster)EntityRegistry.ByName("spider").Create(world),
+        "zombie" => (EntityCreature)EntityRegistry.ByName("zombie").Create(world),
+        "giant" => (EntityCreature)EntityRegistry.ByName("giant").Create(world),
+        "pig_zombie" => (EntityCreature)EntityRegistry.ByName("pigzombie").Create(world),
+        "skeleton" => (EntityCreature)EntityRegistry.ByName("skeleton").Create(world),
+        "creeper" => (EntityCreature)EntityRegistry.ByName("creeper").Create(world),
+        "spider" => (EntityCreature)EntityRegistry.ByName("spider").Create(world),
         "ghast" => (EntityLiving)EntityRegistry.ByName("ghast").Create(world),
-        "pig" => (EntityAnimal)EntityRegistry.ByName("pig").Create(world),
-        "cow" => (EntityAnimal)EntityRegistry.ByName("cow").Create(world),
-        "sheep" => (EntityAnimal)EntityRegistry.ByName("sheep").Create(world),
-        "chicken" => (EntityAnimal)EntityRegistry.ByName("chicken").Create(world),
+        "pig" => (EntityCreature)EntityRegistry.ByName("pig").Create(world),
+        "cow" => (EntityCreature)EntityRegistry.ByName("cow").Create(world),
+        "sheep" => (EntityCreature)EntityRegistry.ByName("sheep").Create(world),
+        "chicken" => (EntityCreature)EntityRegistry.ByName("chicken").Create(world),
         "squid" => (EntityLiving)EntityRegistry.ByName("squid").Create(world),
         _ => throw new ArgumentOutOfRangeException(nameof(name), name, "Unknown mob.")
     };
@@ -84,7 +84,7 @@ public sealed class MobConfigurationTests
     public void Wolf_configuration_matches_except_its_randomised_living_sound()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(world);
+        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(world);
         MobConfig actual = Describe(wolf);
 
         Assert.Equal(

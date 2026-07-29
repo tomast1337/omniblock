@@ -7,14 +7,14 @@ namespace BetaSharp.Tests.Entities;
 
 /// <summary>
 /// Covers the Physics capability slot and the three animals that lost their classes to it. Pig,
-/// chicken and sheep are now <c>EntityAnimal</c> instances configured entirely by JSON.
+/// chicken and sheep are now <c>EntityCreature</c> instances configured entirely by JSON.
 /// </summary>
 [Collection("EntityTests")]
 public sealed class EntityPhysicsTests
 {
-    private static EntityAnimal Spawn(FakeWorldContext world, string name)
+    private static EntityCreature Spawn(FakeWorldContext world, string name)
     {
-        EntityAnimal animal = (EntityAnimal)EntityRegistry.ByName(name).Create(world);
+        EntityCreature animal = (EntityCreature)EntityRegistry.ByName(name).Create(world);
         animal.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         world.Entities.SpawnEntity(animal);
         return animal;
@@ -29,28 +29,29 @@ public sealed class EntityPhysicsTests
     {
         FakeWorldContext world = new();
 
-        Assert.Equal(typeof(EntityAnimal), EntityRegistry.ByName(name).Create(world).GetType());
+        Assert.Equal(typeof(EntityCreature), EntityRegistry.ByName(name).Create(world).GetType());
         Assert.NotNull(EntityRegistry.ByName(name).Definition!.Renderer);
     }
 
     /// <summary>
-    ///     Four registered types now share <c>EntityAnimal</c>, so the class identifies none of them
+    ///     Four registered types now share <c>EntityCreature</c>, so the class identifies none of them
     ///     and must resolve to nothing rather than to whichever registration ran first.
     /// </summary>
     [Fact]
     public void A_class_shared_by_several_types_resolves_to_nothing()
     {
-        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityAnimal)));
+        Assert.Null(EntityRegistry.ByRuntimeType(typeof(EntityCreature)));
     }
 
     [Fact]
     public void Slots_come_from_json_and_stay_null_where_undeclared()
     {
-        Assert.IsType<FlapDescentBehavior>(EntityRegistry.ByName("chicken").Behaviors.Physics);
-        Assert.IsType<RiderFallStatBehavior>(EntityRegistry.ByName("pig").Behaviors.Physics);
+        Assert.NotNull(EntityRegistry.ByName("chicken").Behaviors.Find<FlapDescentBehavior>());
+        Assert.NotNull(EntityRegistry.ByName("pig").Behaviors.Find<RiderFallStatBehavior>());
 
-        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Physics);
-        Assert.Null(EntityRegistry.ByName("sheep").Behaviors.Physics);
+        // A cow's only physics is the grazing rule every farm animal shares.
+        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Find<FlapDescentBehavior>());
+        Assert.Null(EntityRegistry.ByName("sheep").Behaviors.Find<RiderFallStatBehavior>());
     }
 
     /// <summary>
@@ -61,10 +62,10 @@ public sealed class EntityPhysicsTests
     public void A_chicken_absorbs_its_landing_and_a_cow_does_not()
     {
         FakeWorldContext world = new();
-        EntityAnimal chicken = Spawn(world, "chicken");
+        EntityCreature chicken = Spawn(world, "chicken");
 
         Assert.True(chicken.Behaviors.Physics!.OnLanding(chicken, 20.0F));
-        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Physics);
+        Assert.Null(EntityRegistry.ByName("cow").Behaviors.Find<FlapDescentBehavior>());
     }
 
     /// <summary>
@@ -75,7 +76,7 @@ public sealed class EntityPhysicsTests
     public void A_pig_credits_its_rider_without_suppressing_fall_damage()
     {
         FakeWorldContext world = new();
-        EntityAnimal pig = Spawn(world, "pig");
+        EntityCreature pig = Spawn(world, "pig");
         TestEntityPlayer player = new(world) { Name = "tester" };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         player.SetVehicle(pig);
@@ -95,7 +96,7 @@ public sealed class EntityPhysicsTests
     public void Shearing_a_sheep_drops_its_wool_and_keeps_its_colour()
     {
         FakeWorldContext world = new();
-        EntityAnimal sheep = Spawn(world, "sheep");
+        EntityCreature sheep = Spawn(world, "sheep");
         WoolBehavior wool = Assert.IsType<WoolBehavior>(sheep.Behaviors.Interactable);
         wool.SetColorOn(sheep, 11);
 
@@ -119,7 +120,7 @@ public sealed class EntityPhysicsTests
     public void A_sheep_round_trips_its_packed_wool_byte_through_nbt()
     {
         FakeWorldContext world = new();
-        EntityAnimal sheep = Spawn(world, "sheep");
+        EntityCreature sheep = Spawn(world, "sheep");
         WoolBehavior wool = (WoolBehavior)sheep.Behaviors.Interactable!;
         wool.SetColorOn(sheep, 12);
 
@@ -127,7 +128,7 @@ public sealed class EntityPhysicsTests
         Assert.True(sheep.SaveSelfNbt(nbt));
         Assert.Equal(12, nbt.GetByte("Color"));
 
-        Entity loaded = Assert.IsType<EntityAnimal>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        Entity loaded = Assert.IsType<EntityCreature>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
         Assert.Equal(12, wool.ColorOf(loaded));
         Assert.False(wool.IsShearedOn(loaded));
     }
@@ -140,7 +141,7 @@ public sealed class EntityPhysicsTests
     public void A_spawned_sheep_rolls_a_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntityAnimal sheep = Spawn(world, "sheep");
+        EntityCreature sheep = Spawn(world, "sheep");
         WoolBehavior wool = (WoolBehavior)sheep.Behaviors.Interactable!;
 
         sheep.PostSpawn();

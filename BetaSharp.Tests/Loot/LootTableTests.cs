@@ -111,8 +111,8 @@ public sealed class LootTableTests
         LootTable table = new(new LootPool([LootEntry.Of(s_bone)], 1, 1, new KilledByCondition("skeleton")));
 
         Assert.Empty(table.Roll(Context(killer: null)));
-        Assert.Empty(table.Roll(Context(killer: (EntityAnimal)EntityRegistry.ByName("pig").Create(world))));
-        Assert.Single(table.Roll(Context(killer: (EntityMonster)EntityRegistry.ByName("skeleton").Create(world))));
+        Assert.Empty(table.Roll(Context(killer: (EntityCreature)EntityRegistry.ByName("pig").Create(world))));
+        Assert.Single(table.Roll(Context(killer: (EntityCreature)EntityRegistry.ByName("skeleton").Create(world))));
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class LootTableTests
         public bool Test(in LootContext context) => false;
     }
 
-    private sealed class BurningPig(BetaSharp.Worlds.Core.Systems.IWorldContext world) : EntityAnimal(world, EntityRegistry.ByName("pig"))
+    private sealed class BurningPig(BetaSharp.Worlds.Core.Systems.IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("pig"))
     {
         public void Ignite() => FireTicks = 100;
     }

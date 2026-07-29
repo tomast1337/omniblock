@@ -80,7 +80,7 @@ public sealed class EntityLightningTests
     public void Nearby_entities_are_electrocuted()
     {
         FakeWorldContext world = new();
-        EntityMonster creeper = (EntityMonster)EntityRegistry.ByName("creeper").Create(world);
+        EntityCreature creeper = (EntityCreature)EntityRegistry.ByName("creeper").Create(world);
         creeper.SetPositionAndAngles(9.5, 64.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(creeper));
         Entity bolt = Bolt(world, y: 64.0);

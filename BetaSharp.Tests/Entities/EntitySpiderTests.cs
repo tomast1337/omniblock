@@ -11,9 +11,9 @@ namespace BetaSharp.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntitySpiderTests
 {
-    private static EntityMonster Spider(FakeWorldContext world)
+    private static EntityCreature Spider(FakeWorldContext world)
     {
-        EntityMonster spider = (EntityMonster)EntityRegistry.ByName("spider").Create(world);
+        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         return spider;
     }
@@ -23,9 +23,9 @@ public sealed class EntitySpiderTests
     {
         FakeWorldContext world = new();
 
-        Assert.Equal(typeof(EntityMonster), Spider(world).GetType());
-        Assert.IsType<WallClimbBehavior>(EntityRegistry.ByName("spider").Behaviors.Physics);
-        Assert.IsType<SpawnRiderBehavior>(EntityRegistry.ByName("spider").Behaviors.Lifecycle);
+        Assert.Equal(typeof(EntityCreature), Spider(world).GetType());
+        Assert.NotNull(EntityRegistry.ByName("spider").Behaviors.Find<WallClimbBehavior>());
+        Assert.NotNull(EntityRegistry.ByName("spider").Behaviors.Find<SpawnRiderBehavior>());
     }
 
     /// <summary>
@@ -36,8 +36,8 @@ public sealed class EntitySpiderTests
     public void A_spider_climbs_whatever_it_is_pressed_against()
     {
         FakeWorldContext world = new();
-        EntityMonster spider = Spider(world);
-        WallClimbBehavior climb = (WallClimbBehavior)spider.Behaviors.Physics!;
+        EntityCreature spider = Spider(world);
+        WallClimbBehavior climb = spider.Behaviors.Find<WallClimbBehavior>()!;
 
         Assert.False(climb.IsClimbing(spider));
 
@@ -74,12 +74,12 @@ public sealed class EntitySpiderTests
     public void A_spider_sometimes_spawns_a_skeleton_riding_it()
     {
         FakeWorldContext world = new();
-        SpawnRiderBehavior jockey = (SpawnRiderBehavior)EntityRegistry.ByName("spider").Behaviors.Lifecycle!;
+        SpawnRiderBehavior jockey = EntityRegistry.ByName("spider").Behaviors.Find<SpawnRiderBehavior>()!;
 
         // Roll until the one-in-a-hundred fires rather than depending on a particular seed.
         for (int attempt = 0; attempt < 5000; attempt++)
         {
-            EntityMonster spider = Spider(world);
+            EntityCreature spider = Spider(world);
             jockey.OnPostSpawn(spider);
 
             if (spider.Passenger is null) continue;
@@ -108,7 +108,7 @@ public sealed class EntitySpiderTests
     public void In_the_dark_a_spider_keeps_its_target_and_attacks()
     {
         FakeWorldContext world = new();
-        EntityMonster spider = Spider(world);
+        EntityCreature spider = Spider(world);
         Assert.True(world.Entities.SpawnEntity(spider));
 
         TestEntityPlayer player = new(world) { Name = "tester" };

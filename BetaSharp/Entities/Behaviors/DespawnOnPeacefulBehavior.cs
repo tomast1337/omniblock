@@ -1,8 +1,8 @@
 namespace BetaSharp.Entities.Behaviors;
 
 /// <summary>
-///     Removes the mob the moment the world is set to peaceful, for monsters that are not an
-///     <see cref="EntityMonster" /> and so do not get the rule from their class.
+///     Removes the mob the moment the world is set to peaceful, for a mob that wants the rule
+///     without the rest of <see cref="HostileMonsterBehavior" />.
 /// </summary>
 public sealed class DespawnOnPeacefulBehavior : IEntityTicker
 {

@@ -15,8 +15,16 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Ticker"],
-      "Type": "burn_in_daylight"
+      "Slots": [ "Ticker","Physics","Lifecycle" ],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "burn_in_daylight"
+        },
+        {
+          "Type": "hostile_monster"
+        }
+      ]
     },
     {
       "Slots": ["Attack"],

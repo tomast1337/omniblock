@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BetaSharp.Entities;
+using BetaSharp.Entities.Behaviors;
 using BetaSharp.Registries;
 
 namespace BetaSharp.Tests.Entities;
@@ -76,10 +77,10 @@ public sealed class EntityRegistryDefinitionTests
 
         // Reference equality, not value equality: this is what proves the mob reads through the
         // registry, so replacing the registered definition actually reaches it.
-        Assert.Same(EntityRegistry.ByName("zombie").Definition, ((EntityMonster)EntityRegistry.ByName("zombie").Create(world)).Definition);
+        Assert.Same(EntityRegistry.ByName("zombie").Definition, ((EntityCreature)EntityRegistry.ByName("zombie").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("wolf").Definition, ((EntityLiving)EntityRegistry.ByName("wolf").Create(world)).Definition);
         Assert.Same(EntityRegistry.ByName("ghast").Definition, ((EntityLiving)EntityRegistry.ByName("ghast").Create(world)).Definition);
-        Assert.Same(EntityRegistry.ByName("pigzombie").Definition, ((EntityMonster)EntityRegistry.ByName("pigzombie").Create(world)).Definition);
+        Assert.Same(EntityRegistry.ByName("pigzombie").Definition, ((EntityCreature)EntityRegistry.ByName("pigzombie").Create(world)).Definition);
     }
 
     /// <summary>
@@ -103,28 +104,31 @@ public sealed class EntityRegistryDefinitionTests
     }
 
     /// <summary>
-    /// Equivalence proof for moving spawn category out of the class hierarchy and into JSON: every
-    /// mob's declared <see cref="EntityDefinition.SpawnCategory"/> must match the
-    /// <see cref="EntityAnimal"/> / <see cref="EntityWaterMob"/> test <c>CreatureKind</c> used to
-    /// perform. <see cref="EntityAnimal"/> is the last of the three the hierarchy still names — the
-    /// <c>Monster</c> marker and <c>EntityWaterMob</c> have both been deleted along with the mobs
-    /// that needed them — so it is the last one that can be compared rather than restated. The
-    /// squid is checked by name because nothing but its definition says it lives in water.
+    /// Spawn category is declared, not inherited: no class in the hierarchy names one any more, so
+    /// the only thing left to check it against is what the mob is composed of. A farm animal carries
+    /// the grazing rules and a monster the hostile ones, and each must agree with the category its
+    /// JSON declares. The squid is checked by name because nothing but its definition says it lives
+    /// in water.
     /// </summary>
     [Fact]
-    public void Spawn_category_matches_what_is_left_of_the_type_hierarchy()
+    public void Spawn_category_agrees_with_the_behaviors_a_mob_carries()
     {
-        FakeWorldContext world = new();
         string[] known = [CreatureKind.MonsterCategory, CreatureKind.CreatureCategory, CreatureKind.WaterCreatureCategory];
 
         foreach (EntityType type in MobTypes)
         {
-            Entity entity = type.Create(world);
             string category = type.RequireDefinition().SpawnCategory;
-
             Assert.Contains(category, known);
-            if (entity is EntityAnimal) Assert.Equal(CreatureKind.CreatureCategory, category);
-            else Assert.NotEqual(CreatureKind.CreatureCategory, category);
+
+            if (type.Behaviors.Find<GrazingAnimalBehavior>() is not null)
+            {
+                Assert.Equal(CreatureKind.CreatureCategory, category);
+            }
+
+            if (type.Behaviors.Find<HostileMonsterBehavior>() is not null)
+            {
+                Assert.Equal(CreatureKind.MonsterCategory, category);
+            }
         }
 
         Assert.Equal(CreatureKind.WaterCreatureCategory, EntityRegistry.ByName("squid").RequireDefinition().SpawnCategory);
@@ -141,13 +145,10 @@ public sealed class EntityRegistryDefinitionTests
             Assert.True(world.Entities.SpawnEntity(entity));
         }
 
-        int animals = world.Entities.CountEntitiesOfType(typeof(EntityAnimal));
-        Assert.Equal(animals, world.Entities.CountEntitiesInCategory(CreatureKind.CreatureCategory));
-
-        // The other two have no class left to count by, so they are counted against what the
-        // definitions declare — which still proves the manager buckets a mob by its own category
-        // rather than by anything it inherits.
-        foreach (string category in new[] { CreatureKind.MonsterCategory, CreatureKind.WaterCreatureCategory })
+        // No class left to count by, so every category is counted against what the definitions
+        // declare, which is what proves the manager buckets a mob by its own category rather than by
+        // anything it inherits.
+        foreach (string category in new[] { CreatureKind.CreatureCategory, CreatureKind.MonsterCategory, CreatureKind.WaterCreatureCategory })
         {
             Assert.Equal(
                 MobTypes.Count(type => type.RequireDefinition().SpawnCategory == category),

@@ -50,7 +50,7 @@ public class EntityRenderDispatcher
     /// <summary>
     ///     Builds a renderer for every registered type whose definition declares one. These take
     ///     precedence over the by-class table, which is what lets several types share a class: a cow
-    ///     and a sheep are both an <c>EntityAnimal</c>, so the class can no longer choose the model.
+    ///     and a sheep are both an <c>EntityCreature</c>, so the class cannot choose the model.
     /// </summary>
     private void RegisterDeclaredRenderers()
     {

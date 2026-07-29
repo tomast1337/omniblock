@@ -30,14 +30,22 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Attack","Ticker","Lifecycle"],
-      "Type": "fuse",
-      "fuse_ticks": 30,
-      "trigger_range": 3.0,
-      "armed_range": 7.0,
-      "power": 3.0,
-      "powered_power": 6.0,
-      "fuse_sound": "random.fuse"
+      "Slots": ["Attack", "Ticker", "Lifecycle", "Physics"],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "fuse",
+          "fuse_ticks": 30,
+          "trigger_range": 3.0,
+          "armed_range": 7.0,
+          "power": 3.0,
+          "powered_power": 6.0,
+          "fuse_sound": "random.fuse"
+        },
+        {
+          "Type": "hostile_monster"
+        }
+      ]
     },
     {
       "Slots": ["Targeting"],
@@ -48,12 +56,21 @@
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:gunpowder"}],
+          "Entries": [
+            {
+              "Item": "betasharp:gunpowder"
+            }
+          ],
           "MinCount": 0,
           "MaxCount": 2
         },
         {
-          "Entries": [{"Item": "betasharp:record","RandomVariants": 2}],
+          "Entries": [
+            {
+              "Item": "betasharp:record",
+              "RandomVariants": 2
+            }
+          ],
           "MinCount": 1,
           "MaxCount": 1,
           "Condition": {

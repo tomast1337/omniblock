@@ -24,7 +24,11 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Interactable","Persistence","Lifecycle"],
+      "Slots": ["Physics"],
+      "Type": "grazing_animal"
+    },
+    {
+      "Slots": ["Interactable", "Persistence", "Lifecycle"],
       "Type": "wool",
       "property": "wool",
       "tool": "betasharp:shears",

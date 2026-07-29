@@ -35,23 +35,23 @@ public static class EntityRegistry
         RegisterDefined((world, type) => new EntityObject(world, type), "Snowball");
         RegisterDefined((world, type) => new EntityObject(world, type), "Item");
         RegisterDefined((world, type) => new EntityObject(world, type), "Painting");
-        RegisterDefined((world, type) => new EntityMonster(world, type), "Creeper");
-        RegisterDefined((world, type) => new EntityMonster(world, type), "Skeleton");
-        RegisterDefined((world, type) => new EntityMonster(world, type), "Spider");
-        RegisterDefined((world, type) => new EntityMonster(world, type), "Giant");
-        RegisterDefined((world, type) => new EntityMonster(world, type), "Zombie");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Creeper");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Skeleton");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Spider");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Giant");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Zombie");
         RegisterDefined((world, type) => new EntityLiving(world, type), "Slime");
         RegisterDefined((world, type) => new EntityLiving(world, type), "Ghast");
-        RegisterDefined((world, type) => new EntityMonster(world, type), "PigZombie");
-        RegisterDefined((world, type) => new EntityAnimal(world, type), "Pig");
-        RegisterDefined((world, type) => new EntityAnimal(world, type), "Sheep");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "PigZombie");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Pig");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Sheep");
 
-        // No class of their own: a cow is an EntityAnimal configured by cow.json, with everything
-        // specific to it in a capability slot.
-        RegisterDefined((world, type) => new EntityAnimal(world, type), "Cow");
-        RegisterDefined((world, type) => new EntityAnimal(world, type), "Chicken");
+        // No class of their own: every mob that paths is an EntityCreature configured by its JSON,
+        // with everything specific to it in a capability slot.
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Cow");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Chicken");
         RegisterDefined((world, type) => new EntityLiving(world, type), "Squid");
-        RegisterDefined((world, type) => new EntityAnimal(world, type), "Wolf");
+        RegisterDefined((world, type) => new EntityCreature(world, type), "Wolf");
         // Same for the non-living entities: primed TNT and falling sand are EntityObjects
         // configured by their JSON.
         RegisterDefined((world, type) => new EntityObject(world, type), "PrimedTnt");
@@ -90,7 +90,7 @@ public static class EntityRegistry
         EntityType type = new((w, t) => factory(w, t), typeof(T), id, definition);
         s_registry.Register(rawId, ResourceLocation.Parse(id.ToLower()), type);
 
-        // Several types share one class (every plain animal is an EntityAnimal). A class mapping to
+        // Several types share one class (every mob that paths is an EntityCreature). A class mapping to
         // more than one type identifies nothing, so it is struck from the index instead of resolving
         // to whichever registration ran first.
         if (!s_byRuntimeType.TryAdd(typeof(T), type))

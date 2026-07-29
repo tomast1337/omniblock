@@ -16,11 +16,19 @@
   },
   "Behaviors": [
     {
+      "Slots": ["Physics"],
+      "Type": "grazing_animal"
+    },
+    {
       "Slots": ["Loot"],
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:leather"}],
+          "Entries": [
+            {
+              "Item": "betasharp:leather"
+            }
+          ],
           "MinCount": 0,
           "MaxCount": 2
         }

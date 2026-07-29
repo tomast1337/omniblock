@@ -7,8 +7,16 @@
   "Texture": "/mob/zombie.png",
   "Behaviors": [
     {
-      "Slots": ["Physics"],
-      "Type": "light_seeking_path"
+      "Slots": ["Physics","Ticker","Lifecycle"],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "light_seeking_path"
+        },
+        {
+          "Type": "hostile_monster"
+        }
+      ]
     },
     {
       "Slots": ["Attack"],

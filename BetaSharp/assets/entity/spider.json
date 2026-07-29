@@ -11,14 +11,21 @@
   "DeathSound": "mob.spiderdeath",
   "Behaviors": [
     {
-      "Slots": ["Physics"],
-      "Type": "wall_climb"
-    },
-    {
-      "Slots": ["Lifecycle"],
-      "Type": "spawn_rider",
-      "rider": "skeleton",
-      "chance_one_in": 100
+      "Slots": ["Physics", "Lifecycle", "Ticker"],
+      "Type": "all",
+      "behaviors": [
+        {
+          "Type": "wall_climb"
+        },
+        {
+          "Type": "spawn_rider",
+          "rider": "skeleton",
+          "chance_one_in": 100
+        },
+        {
+          "Type": "hostile_monster"
+        }
+      ]
     },
     {
       "Slots": ["Attack"],

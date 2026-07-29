@@ -22,9 +22,9 @@ public sealed class EntityLineOfSightTests
         for (int y = 63; y < 69; y++) world.ReaderWriter.SetBlock(x, y, z, s_stone, 0);
     }
 
-    private static EntityMonster Spawn(FakeWorldContext world, string name, double x, double z)
+    private static EntityCreature Spawn(FakeWorldContext world, string name, double x, double z)
     {
-        EntityMonster mob = (EntityMonster)EntityRegistry.ByName(name).Create(world);
+        EntityCreature mob = (EntityCreature)EntityRegistry.ByName(name).Create(world);
         mob.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(mob));
         return mob;
@@ -56,7 +56,7 @@ public sealed class EntityLineOfSightTests
     public void An_entity_cannot_see_through_a_wall()
     {
         FakeWorldContext world = new();
-        EntityMonster zombie = Spawn(world, "zombie", 8.5, 8.5);
+        EntityCreature zombie = Spawn(world, "zombie", 8.5, 8.5);
         TestEntityPlayer player = Player(world, 14.5, 8.5);
 
         Assert.True(zombie.CanSee(player));
@@ -74,7 +74,7 @@ public sealed class EntityLineOfSightTests
     public void Always_hunt_targeting_rejects_a_player_behind_a_wall()
     {
         FakeWorldContext world = new();
-        EntityMonster zombie = Spawn(world, "zombie", 8.5, 8.5);
+        EntityCreature zombie = Spawn(world, "zombie", 8.5, 8.5);
         Player(world, 14.5, 8.5);
 
         Assert.NotNull(zombie.Targeting!.FindPlayerToAttack(zombie));
@@ -100,7 +100,7 @@ public sealed class EntityLineOfSightTests
     private static Entity? TargetThroughWall(string name)
     {
         FakeWorldContext world = new();
-        EntityMonster mob = Spawn(world, name, 8.5, 8.5);
+        EntityCreature mob = Spawn(world, name, 8.5, 8.5);
         Player(world, 14.5, 8.5);
         Wall(world, 11, 8);
 

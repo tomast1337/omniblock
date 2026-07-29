@@ -27,7 +27,7 @@ public sealed class EntityInteractableTests
     public void Milking_a_cow_swaps_the_bucket_for_milk()
     {
         FakeWorldContext world = new();
-        EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);
+        EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
         TestEntityPlayer player = Player(world, Item.ByName("bucket"));
 
         Assert.True(cow.Interact(player));
@@ -38,7 +38,7 @@ public sealed class EntityInteractableTests
     public void Milking_needs_the_right_item_in_hand()
     {
         FakeWorldContext world = new();
-        EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);
+        EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
 
         Assert.False(cow.Interact(Player(world)));
         Assert.False(cow.Interact(Player(world, Item.ByName("stick"))));
@@ -48,7 +48,7 @@ public sealed class EntityInteractableTests
     public void An_unsaddled_pig_cannot_be_ridden()
     {
         FakeWorldContext world = new();
-        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
         TestEntityPlayer player = Player(world);
 
         Assert.False(pig.Interact(player));
@@ -59,7 +59,7 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_carries_the_player()
     {
         FakeWorldContext world = new();
-        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         TestEntityPlayer player = Player(world);
@@ -72,7 +72,7 @@ public sealed class EntityInteractableTests
     public void A_saddled_pig_refuses_a_second_rider()
     {
         FakeWorldContext world = new();
-        EntityAnimal pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
         pig.Synced<bool>("saddled")!.Value = true;
         pig.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 

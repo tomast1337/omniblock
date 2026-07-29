@@ -11,18 +11,18 @@ namespace BetaSharp.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityAngerTests
 {
-    private static EntityMonster Spawn(FakeWorldContext world, string name, double x = 8.5, double z = 8.5)
+    private static EntityCreature Spawn(FakeWorldContext world, string name, double x = 8.5, double z = 8.5)
     {
-        EntityMonster mob = (EntityMonster)EntityRegistry.ByName(name).Create(world);
+        EntityCreature mob = (EntityCreature)EntityRegistry.ByName(name).Create(world);
         mob.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(mob));
         return mob;
     }
 
-    private static (AngerBehavior Anger, EntityMonster Mob) PigZombie(FakeWorldContext world, double x = 8.5, double z = 8.5)
+    private static (AngerBehavior Anger, EntityCreature Mob) PigZombie(FakeWorldContext world, double x = 8.5, double z = 8.5)
     {
-        EntityMonster mob = Spawn(world, "pigzombie", x, z);
-        return (Assert.IsType<AngerBehavior>(mob.Behaviors.Ticker), mob);
+        EntityCreature mob = Spawn(world, "pigzombie", x, z);
+        return (mob.Behaviors.Find<AngerBehavior>()!, mob);
     }
 
     /// <summary>
@@ -33,9 +33,9 @@ public sealed class EntityAngerTests
     public void A_giant_keeps_the_exact_float_box_its_constructor_produced()
     {
         FakeWorldContext world = new();
-        EntityMonster giant = Spawn(world, "giant");
+        EntityCreature giant = Spawn(world, "giant");
 
-        Assert.Equal(typeof(EntityMonster), giant.GetType());
+        Assert.Equal(typeof(EntityCreature), giant.GetType());
         Assert.Equal(0.6F * 6.0F, giant.Width);
         Assert.Equal(1.8F * 6.0F, giant.Height);
     }
@@ -43,26 +43,40 @@ public sealed class EntityAngerTests
     [Fact]
     public void A_giant_seeks_light_where_other_monsters_avoid_it()
     {
-        Assert.IsType<LightSeekingPathBehavior>(EntityRegistry.ByName("giant").Behaviors.Physics);
-        Assert.Null(EntityRegistry.ByName("zombie").Behaviors.Physics);
+        // The giant declares its own path preference beside the shared monster rule, and being
+        // first in the composite is what makes it win.
+        Assert.NotNull(EntityRegistry.ByName("giant").Behaviors.Find<LightSeekingPathBehavior>());
+        Assert.Null(EntityRegistry.ByName("zombie").Behaviors.Find<LightSeekingPathBehavior>());
+
+        FakeWorldContext lit = new();
+        EntityCreature giant = (EntityCreature)EntityRegistry.ByName("giant").Create(lit);
+        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(lit);
+
+        // Exact opposites: the giant reads luminance - 0.5 where every other monster reads
+        // 0.5 - luminance.
+        Assert.Equal(
+            -zombie.Behaviors.Physics!.GetBlockPathWeight(zombie, 8, 65, 8),
+            giant.Behaviors.Physics!.GetBlockPathWeight(giant, 8, 65, 8));
     }
 
     [Fact]
     public void A_pig_zombie_fills_four_slots_from_one_entry()
     {
         FakeWorldContext world = new();
-        (AngerBehavior anger, EntityMonster mob) = PigZombie(world);
+        (AngerBehavior anger, EntityCreature mob) = PigZombie(world);
 
-        Assert.Same(anger, mob.Behaviors.Targeting);
-        Assert.Same(anger, mob.Behaviors.Lifecycle);
-        Assert.Same(anger, mob.Behaviors.Persistence);
+        Assert.Same(anger, mob.Behaviors.Find<AngerBehavior>());
+        Assert.NotNull(mob.Behaviors.Targeting);
+        Assert.Same(anger, mob.Behaviors.Find<AngerBehavior>());
+        Assert.NotNull(mob.Behaviors.Lifecycle);
+        Assert.NotNull(mob.Behaviors.Persistence);
     }
 
     [Fact]
     public void An_unprovoked_pig_zombie_hunts_nobody()
     {
         FakeWorldContext world = new();
-        (AngerBehavior anger, EntityMonster mob) = PigZombie(world);
+        (AngerBehavior anger, EntityCreature mob) = PigZombie(world);
         TestEntityPlayer player = new(world) { Name = "tester" };
         player.SetPositionAndAngles(9.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
@@ -75,9 +89,9 @@ public sealed class EntityAngerTests
     public void Hitting_one_pig_zombie_angers_the_whole_neighbourhood()
     {
         FakeWorldContext world = new();
-        (AngerBehavior anger, EntityMonster struck) = PigZombie(world);
-        (_, EntityMonster bystander) = PigZombie(world, 12.5, 12.5);
-        EntityMonster zombie = Spawn(world, "zombie", 9.0, 9.0);
+        (AngerBehavior anger, EntityCreature struck) = PigZombie(world);
+        (_, EntityCreature bystander) = PigZombie(world, 12.5, 12.5);
+        EntityCreature zombie = Spawn(world, "zombie", 9.0, 9.0);
 
         TestEntityPlayer player = new(world) { Name = "tester" };
         player.SetPositionAndAngles(9.5, 65.0, 8.5, 0f, 0f);
@@ -98,7 +112,7 @@ public sealed class EntityAngerTests
     public void An_angered_pig_zombie_hunts_and_speeds_up()
     {
         FakeWorldContext world = new();
-        (AngerBehavior anger, EntityMonster mob) = PigZombie(world);
+        (AngerBehavior anger, EntityCreature mob) = PigZombie(world);
         TestEntityPlayer player = new(world) { Name = "tester" };
         player.SetPositionAndAngles(9.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
@@ -115,7 +129,7 @@ public sealed class EntityAngerTests
     public void Anger_survives_a_save_load_round_trip()
     {
         FakeWorldContext world = new();
-        (AngerBehavior anger, EntityMonster mob) = PigZombie(world);
+        (AngerBehavior anger, EntityCreature mob) = PigZombie(world);
         TestEntityPlayer player = new(world) { Name = "tester" };
         player.SetPositionAndAngles(9.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(player));
@@ -126,7 +140,7 @@ public sealed class EntityAngerTests
         Assert.True(mob.SaveSelfNbt(nbt));
         Assert.True(nbt.GetShort("Anger") > 0);
 
-        Entity loaded = Assert.IsType<EntityMonster>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
+        Entity loaded = Assert.IsType<EntityCreature>(EntityRegistry.GetEntityFromNbt(nbt, new FakeWorldContext()));
         Assert.True(anger.IsAngry(loaded));
     }
 
@@ -137,10 +151,10 @@ public sealed class EntityAngerTests
         FakeWorldContext world = new();
 
         // Not added to the world: a mob already occupying its own box blocks its own spawn check.
-        EntityMonster mob = (EntityMonster)EntityRegistry.ByName("pigzombie").Create(world);
+        EntityCreature mob = (EntityCreature)EntityRegistry.ByName("pigzombie").Create(world);
         mob.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
-        SpawnIgnoringLightBehavior spawn = Assert.IsType<SpawnIgnoringLightBehavior>(mob.Behaviors.Physics);
+        SpawnIgnoringLightBehavior spawn = mob.Behaviors.Find<SpawnIgnoringLightBehavior>()!;
 
         world.Difficulty = 0;
         Assert.False(spawn.CanSpawn(mob));

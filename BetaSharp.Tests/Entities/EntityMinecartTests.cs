@@ -434,7 +434,7 @@ public sealed class EntityMinecartTests
         cart.VelocityZ = 0.12;
         Assert.True(world.Entities.SpawnEntity(cart));
 
-        var pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        var pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
         pig.SetPosition(9.2, 65.0, 8.6);
         Assert.True(world.Entities.SpawnEntity(pig));
 

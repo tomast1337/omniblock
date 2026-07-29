@@ -11,14 +11,13 @@ public sealed class EntityHierarchySmokeTests
     [Fact]
     public void Mobs_and_projectiles_follow_expected_bases()
     {
-        var zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(_world);
-        Assert.IsAssignableFrom<EntityCreature>(zombie);
-        Assert.IsAssignableFrom<EntityMonster>(zombie);
+        // A monster and a farm animal are the same class now: what separates them is declared.
+        var zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(_world);
+        Assert.Equal(typeof(EntityCreature), zombie.GetType());
         Assert.IsAssignableFrom<EntityLiving>(zombie);
 
-        var pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(_world);
-        Assert.IsAssignableFrom<EntityAnimal>(pig);
-        Assert.IsAssignableFrom<EntityCreature>(pig);
+        var pig = (EntityCreature)EntityRegistry.ByName("pig").Create(_world);
+        Assert.Equal(typeof(EntityCreature), pig.GetType());
 
         // Like the ghast: no class, no water-mob base. Its swimming, its spawn rule and its water
         // test all come from behavior slots.

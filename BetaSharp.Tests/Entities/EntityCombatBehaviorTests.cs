@@ -18,7 +18,7 @@ public sealed class EntityCombatBehaviorTests
         skeleton.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(skeleton));
 
-        var pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        var pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
         pig.SetPositionAndAngles(10.0, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 
@@ -38,7 +38,7 @@ public sealed class EntityCombatBehaviorTests
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(spider));
 
-        var pig = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        var pig = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
         pig.SetPositionAndAngles(11.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(pig));
 
@@ -52,7 +52,7 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_damage_from_player_sets_angry_and_target()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(world);
+        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(world);
         wolf.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(wolf));
 
@@ -75,7 +75,7 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_server_status_shaking_branch_executes_without_throwing()
     {
         FakeWorldContext world = new();
-        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(world);
+        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(world);
 
         wolf.ProcessServerEntityStatus(8);
         wolf.Tick();
@@ -111,7 +111,7 @@ public sealed class EntityCombatBehaviorTests
     public void Wolf_nbt_roundtrip_preserves_owner_and_sitting_state()
     {
         FakeWorldContext worldA = new();
-        EntityAnimal wolf = (EntityAnimal)EntityRegistry.ByName("wolf").Create(worldA);
+        EntityCreature wolf = (EntityCreature)EntityRegistry.ByName("wolf").Create(worldA);
         TameableBehavior tame = wolf.Behaviors.Find<TameableBehavior>()!;
         wolf.Synced<string?>("owner")!.Value = "owner";
         tame.SetSitting(wolf, true);
@@ -128,14 +128,14 @@ public sealed class EntityCombatBehaviorTests
         Assert.True(tame.IsTamed(loaded));
     }
 
-    private sealed class TestSkeleton(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("skeleton"))
+    private sealed class TestSkeleton(IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("skeleton"))
     {
         public int ExposedAttackTime => AttackTime;
         public bool ExposedHasAttacked => HasAttacked;
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);
     }
 
-    private sealed class TestSpider(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("spider"))
+    private sealed class TestSpider(IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("spider"))
     {
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);
     }

@@ -44,8 +44,8 @@ public sealed class EntityBehaviorJsonTests
 
         // The nested melee is what a spider falls back to outside its lunge band.
         FakeWorldContext world = new();
-        EntityMonster spider = (EntityMonster)EntityRegistry.ByName("spider").Create(world);
-        EntityAnimal target = (EntityAnimal)EntityRegistry.ByName("pig").Create(world);
+        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
+        EntityCreature target = (EntityCreature)EntityRegistry.ByName("pig").Create(world);
         spider.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
         target.SetPositionAndAngles(9.0, 65.0, 8.5, 0f, 0f);
         int before = target.Health;
@@ -126,7 +126,7 @@ public sealed class EntityBehaviorJsonTests
     public void Sheep_wool_takes_its_meta_from_the_live_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntityAnimal sheep = (EntityAnimal)EntityRegistry.ByName("sheep").Create(world);
+        EntityCreature sheep = (EntityCreature)EntityRegistry.ByName("sheep").Create(world);
         ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 11);
 
         LootTable table = LootJson.ParseTable(Json("""
@@ -142,12 +142,12 @@ public sealed class EntityBehaviorJsonTests
     {
         FakeWorldContext world = new();
 
-        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
         Assert.IsType<MeleeAttackBehavior>(zombie.Attack);
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
         Assert.IsType<LootTableBehavior>(zombie.Loot);
 
-        EntityMonster spider = (EntityMonster)EntityRegistry.ByName("spider").Create(world);
+        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
         // The jump attack is wrapped: a spider in daylight loses interest before it attacks.
         Assert.IsType<JumpAttackBehavior>(Assert.IsType<LoseTargetInDaylightBehavior>(spider.Attack).Inner);
         Assert.IsType<DarknessOnlyTargetBehavior>(spider.Targeting);
@@ -157,7 +157,7 @@ public sealed class EntityBehaviorJsonTests
         Assert.IsType<LightningConversionBehavior>(EntityRegistry.ByName("pig").Behaviors.Lifecycle);
 
         // Animals declare no Attack/Targeting, and a wolf declares no Loot at all.
-        EntityAnimal cow = (EntityAnimal)EntityRegistry.ByName("cow").Create(world);
+        EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
         Assert.Null(cow.Attack);
         Assert.Null(cow.Targeting);
         Assert.Null(EntityRegistry.ByName("wolf").Behaviors.Loot);

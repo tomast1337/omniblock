@@ -11,9 +11,9 @@ namespace BetaSharp.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityDaylightTests
 {
-    private static EntityMonster Spawn(FakeWorldContext world, string name, double x = 8.5, double z = 8.5)
+    private static EntityCreature Spawn(FakeWorldContext world, string name, double x = 8.5, double z = 8.5)
     {
-        EntityMonster mob = (EntityMonster)EntityRegistry.ByName(name).Create(world);
+        EntityCreature mob = (EntityCreature)EntityRegistry.ByName(name).Create(world);
         mob.SetPositionAndAngles(x, 65.0, z, 0f, 0f);
         Assert.True(world.Entities.SpawnEntity(mob));
         return mob;
@@ -31,7 +31,7 @@ public sealed class EntityDaylightTests
     public void Lighting_is_dark_by_default_and_bright_once_raised()
     {
         FakeWorldContext world = new();
-        EntityMonster zombie = Spawn(world, "zombie");
+        EntityCreature zombie = Spawn(world, "zombie");
 
         // Light level 0 maps to the dimension's ambient floor rather than to true black.
         Assert.True(zombie.GetBrightnessAtEyes(1.0F) < 0.5F);
@@ -48,7 +48,7 @@ public sealed class EntityDaylightTests
         FakeWorldContext world = new();
         world.SetLightLevel(15);
 
-        EntityMonster distant = Spawn(world, "zombie", 520.5, 520.5);
+        EntityCreature distant = Spawn(world, "zombie", 520.5, 520.5);
 
         Assert.True(distant.GetBrightnessAtEyes(1.0F) > 0.5F);
     }
@@ -63,7 +63,7 @@ public sealed class EntityDaylightTests
         FakeWorldContext world = new();
         world.SetLightLevel(15);
 
-        EntityMonster spider = Spawn(world, "spider");
+        EntityCreature spider = Spawn(world, "spider");
         TestEntityPlayer player = Player(world);
         LoseTargetInDaylightBehavior attack = (LoseTargetInDaylightBehavior)spider.Behaviors.Attack!;
 
@@ -82,7 +82,7 @@ public sealed class EntityDaylightTests
     public void A_spider_in_the_dark_never_loses_interest()
     {
         FakeWorldContext world = new();
-        EntityMonster spider = Spawn(world, "spider");
+        EntityCreature spider = Spawn(world, "spider");
         TestEntityPlayer player = Player(world);
         LoseTargetInDaylightBehavior attack = (LoseTargetInDaylightBehavior)spider.Behaviors.Attack!;
 
@@ -104,13 +104,13 @@ public sealed class EntityDaylightTests
         FakeWorldContext world = new();
         world.SetLightLevel(15);
 
-        EntityMonster spider = Spawn(world, "spider");
+        EntityCreature spider = Spawn(world, "spider");
         TestEntityPlayer player = Player(world);
 
         Assert.Null(spider.Targeting!.FindPlayerToAttack(spider));
 
         // Always-hunt ignores light entirely, which is what the two behaviors differ on.
-        EntityMonster zombie = Spawn(world, "zombie", 10.5, 10.5);
+        EntityCreature zombie = Spawn(world, "zombie", 10.5, 10.5);
         Assert.Same(player, zombie.Targeting!.FindPlayerToAttack(zombie));
     }
 
@@ -124,10 +124,10 @@ public sealed class EntityDaylightTests
         FakeWorldContext world = new();
         world.SetLightLevel(15);
 
-        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
         zombie.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
 
-        EntityMonster pigZombie = (EntityMonster)EntityRegistry.ByName("pigzombie").Create(world);
+        EntityCreature pigZombie = (EntityCreature)EntityRegistry.ByName("pigzombie").Create(world);
         pigZombie.SetPositionAndAngles(40.5, 65.0, 40.5, 0f, 0f);
 
         Assert.False(zombie.CanSpawn());

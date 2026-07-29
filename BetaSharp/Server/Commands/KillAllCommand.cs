@@ -41,8 +41,8 @@ public class KillAllCommand : Command.Command
                 {
                     (byte)TypeFilter.All => true,
                     (byte)TypeFilter.Mob => entity is EntityLiving,
-                    (byte)TypeFilter.Hostile => entity is EntityMonster,
-                    (byte)TypeFilter.Friendly => entity is EntityAnimal,
+                    (byte)TypeFilter.Hostile => HostileMonsterBehavior.IsMonster(entity),
+                    (byte)TypeFilter.Friendly => entity.Behaviors.Find<GrazingAnimalBehavior>() is not null,
                     (byte)TypeFilter.Item => entity.Behaviors.Find<DroppedItemBehavior>() is not null,
                     (byte)TypeFilter.Tnt => entity.Behaviors.Find<PrimedExplosiveBehavior>() is not null,
                     _ => EntityRegistry.GetId(entity)?.Equals(filter, StringComparison.OrdinalIgnoreCase) ?? false

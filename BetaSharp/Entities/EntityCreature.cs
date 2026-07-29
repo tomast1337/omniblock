@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Entities;
 
-public abstract class EntityCreature(IWorldContext world, EntityType? type = null) : EntityLiving(world, type)
+public class EntityCreature(IWorldContext world, EntityType? type = null) : EntityLiving(world, type)
 {
     private const float Range = 16.0F;
     private PathEntity? _pathToEntity;
@@ -192,7 +192,11 @@ public abstract class EntityCreature(IWorldContext world, EntityType? type = nul
 
     protected virtual void attackBlockedEntity(Entity entity, float distance) => Attack?.AttackBlockedEntity(this, entity, distance);
 
-    protected virtual float GetBlockPathWeight(int x, int y, int z) => 0.0F;
+    /// <summary>
+    ///     How attractive a block is to path towards. Declared by the Physics slot; without one
+    ///     every block is equally uninteresting.
+    /// </summary>
+    protected virtual float GetBlockPathWeight(int x, int y, int z) => Physics?.GetBlockPathWeight(this, x, y, z) ?? 0.0F;
 
     protected virtual Entity? FindPlayerToAttack() => Targeting?.FindPlayerToAttack(this);
 

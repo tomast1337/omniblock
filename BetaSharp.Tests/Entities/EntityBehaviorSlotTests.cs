@@ -19,7 +19,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
         TestZombie zombie = Spawn(world, new TestZombie(world), 8.5, 65.0, 8.5);
-        EntityAnimal pig = Spawn(world, (EntityAnimal)EntityRegistry.ByName("pig").Create(world), 9.5, 65.0, 8.5);
+        EntityCreature pig = Spawn(world, (EntityCreature)EntityRegistry.ByName("pig").Create(world), 9.5, 65.0, 8.5);
         int healthBefore = pig.Health;
 
         zombie.ForceAttack(pig, 1.0f);
@@ -33,7 +33,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
         TestZombie zombie = Spawn(world, new TestZombie(world), 8.5, 65.0, 8.5);
-        EntityAnimal pig = Spawn(world, (EntityAnimal)EntityRegistry.ByName("pig").Create(world), 20.0, 65.0, 8.5);
+        EntityCreature pig = Spawn(world, (EntityCreature)EntityRegistry.ByName("pig").Create(world), 20.0, 65.0, 8.5);
         int healthBefore = pig.Health;
 
         zombie.ForceAttack(pig, 11.0f);
@@ -46,7 +46,7 @@ public sealed class EntityBehaviorSlotTests
     public void Monster_composes_melee_and_always_hunt_slots()
     {
         FakeWorldContext world = new();
-        EntityMonster zombie = (EntityMonster)EntityRegistry.ByName("zombie").Create(world);
+        EntityCreature zombie = (EntityCreature)EntityRegistry.ByName("zombie").Create(world);
 
         Assert.IsType<MeleeAttackBehavior>(zombie.Attack);
         Assert.IsType<AlwaysHuntTargetBehavior>(zombie.Targeting);
@@ -56,7 +56,7 @@ public sealed class EntityBehaviorSlotTests
     public void Spider_composes_jump_attack_and_darkness_only_targeting()
     {
         FakeWorldContext world = new();
-        EntityMonster spider = (EntityMonster)EntityRegistry.ByName("spider").Create(world);
+        EntityCreature spider = (EntityCreature)EntityRegistry.ByName("spider").Create(world);
 
         // The jump attack is wrapped: a spider in daylight loses interest before it attacks.
         Assert.IsType<JumpAttackBehavior>(Assert.IsType<LoseTargetInDaylightBehavior>(spider.Attack).Inner);
@@ -68,7 +68,7 @@ public sealed class EntityBehaviorSlotTests
     {
         FakeWorldContext world = new();
 
-        foreach (EntityCreature animal in new EntityCreature[] { (EntityAnimal)EntityRegistry.ByName("pig").Create(world), (EntityAnimal)EntityRegistry.ByName("cow").Create(world), (EntityAnimal)EntityRegistry.ByName("sheep").Create(world), (EntityAnimal)EntityRegistry.ByName("chicken").Create(world) })
+        foreach (EntityCreature animal in new EntityCreature[] { (EntityCreature)EntityRegistry.ByName("pig").Create(world), (EntityCreature)EntityRegistry.ByName("cow").Create(world), (EntityCreature)EntityRegistry.ByName("sheep").Create(world), (EntityCreature)EntityRegistry.ByName("chicken").Create(world) })
         {
             Assert.Null(animal.Attack);
             Assert.Null(animal.Targeting);
@@ -79,7 +79,7 @@ public sealed class EntityBehaviorSlotTests
     public void Darkness_only_targeting_acquires_player_while_unlit()
     {
         FakeWorldContext world = new();
-        EntityMonster spider = Spawn(world, (EntityMonster)EntityRegistry.ByName("spider").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature spider = Spawn(world, (EntityCreature)EntityRegistry.ByName("spider").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 9.5, 65.0, 8.5);
 
         // Unlit, so the brightness gate opens. The daylight rejection branch is covered by
@@ -91,7 +91,7 @@ public sealed class EntityBehaviorSlotTests
     public void Always_hunt_targeting_acquires_a_player_in_range()
     {
         FakeWorldContext world = new();
-        EntityMonster zombie = Spawn(world, (EntityMonster)EntityRegistry.ByName("zombie").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature zombie = Spawn(world, (EntityCreature)EntityRegistry.ByName("zombie").Create(world), 8.5, 65.0, 8.5);
         TestEntityPlayer player = Spawn(world, new TestEntityPlayer(world) { Name = "tester" }, 11.5, 65.0, 8.5);
 
         // Nothing between them, so the sightline is clear. The rejection branch and the light-based
@@ -104,7 +104,7 @@ public sealed class EntityBehaviorSlotTests
     public void Simple_loot_drops_only_its_own_item()
     {
         FakeWorldContext world = new();
-        EntityAnimal cow = Spawn(world, (EntityAnimal)EntityRegistry.ByName("cow").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature cow = Spawn(world, (EntityCreature)EntityRegistry.ByName("cow").Create(world), 8.5, 65.0, 8.5);
 
         List<int> dropped = CollectDrops(world, cow, killer: null, rolls: 100);
 
@@ -116,7 +116,7 @@ public sealed class EntityBehaviorSlotTests
     public void Skeleton_loot_drops_both_arrows_and_bones()
     {
         FakeWorldContext world = new();
-        EntityMonster skeleton = Spawn(world, (EntityMonster)EntityRegistry.ByName("skeleton").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature skeleton = Spawn(world, (EntityCreature)EntityRegistry.ByName("skeleton").Create(world), 8.5, 65.0, 8.5);
 
         List<int> dropped = CollectDrops(world, skeleton, killer: null, rolls: 100);
 
@@ -129,8 +129,8 @@ public sealed class EntityBehaviorSlotTests
     public void Creeper_loot_drops_record_only_when_killed_by_skeleton()
     {
         FakeWorldContext world = new();
-        EntityMonster creeper = Spawn(world, (EntityMonster)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
-        EntityMonster skeleton = Spawn(world, (EntityMonster)EntityRegistry.ByName("skeleton").Create(world), 12.5, 65.0, 12.5);
+        EntityCreature creeper = Spawn(world, (EntityCreature)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature skeleton = Spawn(world, (EntityCreature)EntityRegistry.ByName("skeleton").Create(world), 12.5, 65.0, 12.5);
         int recordId = Item.ByName("record").Id;
 
         List<int> withoutSkeleton = CollectDrops(world, creeper, killer: null, rolls: 60);
@@ -145,7 +145,7 @@ public sealed class EntityBehaviorSlotTests
     public void Sheep_loot_drops_one_wool_stamped_with_its_fleece_colour()
     {
         FakeWorldContext world = new();
-        EntityAnimal sheep = Spawn(world, (EntityAnimal)EntityRegistry.ByName("sheep").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature sheep = Spawn(world, (EntityCreature)EntityRegistry.ByName("sheep").Create(world), 8.5, 65.0, 8.5);
         ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 4);
 
         List<ItemStack> drops = CollectDropStacks(world, sheep, killer: null, rolls: 1);
@@ -238,7 +238,7 @@ public sealed class EntityBehaviorSlotTests
     public void Pig_lightning_converts_the_pig_into_a_zombie_pigman()
     {
         FakeWorldContext world = new();
-        EntityAnimal pig = Spawn(world, (EntityAnimal)EntityRegistry.ByName("pig").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature pig = Spawn(world, (EntityCreature)EntityRegistry.ByName("pig").Create(world), 8.5, 65.0, 8.5);
 
         pig.OnStruckByLightning(Bolt(world, pig.X, pig.Y, pig.Z));
 
@@ -252,10 +252,10 @@ public sealed class EntityBehaviorSlotTests
     public void Creeper_is_supercharged_through_its_lifecycle_slot()
     {
         FakeWorldContext world = new();
-        EntityMonster creeper = Spawn(world, (EntityMonster)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
+        EntityCreature creeper = Spawn(world, (EntityCreature)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
 
         // The fuse behavior fills Lifecycle too, so the strike no longer needs a class to catch it.
-        Assert.IsType<FuseBehavior>(creeper.Behaviors.Lifecycle);
+        Assert.NotNull(creeper.Behaviors.Find<FuseBehavior>());
         Assert.False(creeper.Synced<bool>("powered")!.Value);
 
         creeper.OnStruckByLightning(Bolt(world, creeper.X, creeper.Y, creeper.Z));
@@ -298,13 +298,13 @@ public sealed class EntityBehaviorSlotTests
             .Select(entity => EntityTestHarness.DroppedStack(entity)!)];
     }
 
-    private sealed class TestZombie(IWorldContext world) : EntityMonster(world, EntityRegistry.ByName("zombie"))
+    private sealed class TestZombie(IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("zombie"))
     {
         public int ExposedAttackTime => AttackTime;
         public void ForceAttack(Entity target, float distance) => attackEntity(target, distance);
     }
 
-    private sealed class TestPig(IWorldContext world) : EntityAnimal(world, EntityRegistry.ByName("pig"))
+    private sealed class TestPig(IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("pig"))
     {
         public void Ignite() => FireTicks = 100;
     }
