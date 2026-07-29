@@ -53,7 +53,7 @@ public class Biome
 
         foreach (ResourceLocation key in s_registry.Keys)
         {
-            Biome biome = s_registry.Get(key)!;
+            Biome biome = s_registry.GetOrThrow(key);
             biome.MonsterList.Clear();
             biome.CreatureList.Clear();
             biome.WaterCreatureList.Clear();
@@ -71,8 +71,10 @@ public class Biome
         foreach (BiomeSpawnEntry entry in entries)
         {
             string path = ResourceLocation.Parse(entry.Entity).Path;
-            EntityType type = DefaultRegistries.EntityTypes.Get(ResourceLocation.Parse(path))
-                ?? throw new ArgumentException($"Biome spawn list references unknown entity '{entry.Entity}'.");
+            if (!DefaultRegistries.EntityTypes.TryGet(ResourceLocation.Parse(path), out EntityType? type))
+            {
+                throw new ArgumentException($"Biome spawn list references unknown entity '{entry.Entity}'.");
+            }
 
             list.Add(new SpawnListEntry(w => (EntityLiving)type.Create(w)), entry.Weight);
         }

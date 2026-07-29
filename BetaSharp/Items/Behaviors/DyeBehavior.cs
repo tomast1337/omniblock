@@ -105,7 +105,7 @@ internal sealed class DyeBehavior : IItemBehavior
     public void UseOnEntity(Item item, ItemStack itemStack, EntityLiving target, EntityPlayer player)
     {
         // Dyeable because it has a fleece, not because it is a sheep.
-        if (target.Behaviors.Interactable is WoolBehavior wool)
+        if (target.Behaviors.Find<WoolBehavior>() is { } wool)
         {
             int woolColor = ClothVisualBehavior.GetBlockMeta(itemStack.getDamage());
             if (!wool.IsShearedOn(target) && wool.ColorOf(target) != woolColor)

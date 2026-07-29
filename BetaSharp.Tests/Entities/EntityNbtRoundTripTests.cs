@@ -16,7 +16,7 @@ public sealed class EntityNbtRoundTripTests
         {
             if (key.Path == "player") continue;
 
-            yield return [BetaSharp.Registries.DefaultRegistries.EntityTypes.Get(key)!];
+            yield return [BetaSharp.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
         }
     }
 

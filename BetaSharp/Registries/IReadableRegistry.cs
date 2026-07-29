@@ -28,6 +28,14 @@ public interface IReadableRegistry<T> : IEnumerable<T> where T : class
     /// </summary>
     T? GetValue(ResourceLocation key) => Get(key)?.Value;
 
+    /// <summary>
+    /// Returns the current value for the given key, throwing if there is none. For lookups where a
+    /// miss is a bug rather than an outcome — a hardcoded name, or an id already validated at load.
+    /// </summary>
+    /// <exception cref="ArgumentException">No entry is registered under <paramref name="key"/>.</exception>
+    T GetOrThrow(ResourceLocation key) =>
+        Get(key)?.Value ?? throw new ArgumentException($"No entry '{key}' in registry '{RegistryKey}'.", nameof(key));
+
     int GetId(T value);
     ResourceLocation? GetKey(T value);
 

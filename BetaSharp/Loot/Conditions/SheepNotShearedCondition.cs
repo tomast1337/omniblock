@@ -6,5 +6,5 @@ namespace BetaSharp.Loot.Conditions;
 public sealed class SheepNotShearedCondition : ILootCondition
 {
     public bool Test(in LootContext context) =>
-        context.Self?.Behaviors.Interactable is WoolBehavior wool && !wool.IsShearedOn(context.Self);
+        context.Self?.Behaviors.Find<WoolBehavior>() is { } wool && !wool.IsShearedOn(context.Self);
 }

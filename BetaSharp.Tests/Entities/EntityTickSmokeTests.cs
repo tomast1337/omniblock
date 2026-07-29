@@ -13,7 +13,7 @@ public sealed class EntityTickSmokeTests
         {
             if (key.Path == "player") continue;
 
-            yield return [key.Path, BetaSharp.Registries.DefaultRegistries.EntityTypes.Get(key)!];
+            yield return [key.Path, BetaSharp.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
         }
     }
 

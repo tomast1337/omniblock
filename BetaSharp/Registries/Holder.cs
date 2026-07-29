@@ -77,8 +77,6 @@ public sealed class Holder<T> where T : class
         _resolver = null;
     }
 
-    public static implicit operator T(Holder<T> h) => h.Value;
-
     public override string ToString() => _value?.ToString() ?? "<unresolved>";
 
     /// <summary>Creates a directly-valued holder (already resolved).</summary>

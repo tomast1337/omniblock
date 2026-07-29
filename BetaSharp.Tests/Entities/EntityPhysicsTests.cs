@@ -69,6 +69,55 @@ public sealed class EntityPhysicsTests
     }
 
     /// <summary>
+    ///     The wings drive the render angle, and a renderer reaches them by capability rather than by
+    ///     reading the Physics slot: the chicken shares that slot with the grazing rules, so the slot
+    ///     holds a composite and a cast to <see cref="FlapDescentBehavior"/> finds nothing.
+    /// </summary>
+    [Fact]
+    public void A_chickens_wings_are_reachable_even_though_the_slot_holds_a_composite()
+    {
+        EntityBehaviorSet behaviors = EntityRegistry.ByName("chicken").Behaviors;
+
+        Assert.IsNotType<FlapDescentBehavior>(behaviors.Physics);
+        Assert.NotNull(behaviors.Find<FlapDescentBehavior>());
+    }
+
+    /// <summary>
+    ///     Grounded versus falling is the whole animation: a chicken standing still folds its wings
+    ///     away, and one in the air beats them and has its descent damped.
+    /// </summary>
+    [Fact]
+    public void A_chickens_wings_fold_on_the_ground_and_beat_in_the_air()
+    {
+        FakeWorldContext world = new();
+        EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
+
+        EntityCreature chicken = (EntityCreature)EntityRegistry.ByName("chicken").Create(world);
+        chicken.SetPositionAndAngles(8.5, 64.0, 8.5, 0f, 0f);
+        Assert.True(world.Entities.SpawnEntity(chicken));
+
+        FlapDescentBehavior wings = chicken.Behaviors.Find<FlapDescentBehavior>()!;
+
+        // Standing on the floor: the wings fold flat, so the angle collapses to nothing.
+        EntityTestHarness.AdvanceGameTicks(world, 20);
+        Assert.True(chicken.OnGround);
+        Assert.Equal(0.0F, wings.WingRotation(chicken, 1.0F), 3);
+
+        // In the air they extend, and the beat carries the angle above zero at some point in it.
+        chicken.SetPositionAndAngles(8.5, 80.0, 8.5, 0f, 0f);
+        chicken.OnGround = false;
+
+        float highest = 0.0F;
+        for (int i = 0; i < 10; i++)
+        {
+            EntityTestHarness.AdvanceGameTicks(world, 1);
+            highest = Math.Max(highest, wings.WingRotation(chicken, 1.0F));
+        }
+
+        Assert.True(highest > 0.0F, $"wings never left the body: peak angle was {highest}");
+    }
+
+    /// <summary>
     ///     A pig's landing hook credits its rider but returns <c>false</c>, so the pig still takes
     ///     its own fall damage — the order the original override had.
     /// </summary>

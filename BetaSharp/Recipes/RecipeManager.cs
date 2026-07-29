@@ -70,8 +70,10 @@ public class RecipeManager : IRegistryReloadListener
     {
         ItemLookup.Initialize();
 
-        foreach (RecipeDefinition def in items)
+        foreach (Holder<RecipeDefinition> holder in items)
         {
+            RecipeDefinition def = holder.Value;
+
             try
             {
                 if (!BuildRecipe(def))

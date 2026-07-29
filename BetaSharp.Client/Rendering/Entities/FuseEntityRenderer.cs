@@ -26,7 +26,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
         _overlayProperty = overlayProperty;
     }
 
-    private static FuseBehavior? Fuse(EntityLiving entity) => entity.Behaviors.Attack as FuseBehavior;
+    private static FuseBehavior? Fuse(EntityLiving entity) => entity.Behaviors.Find<FuseBehavior>();
 
     protected override void PreRenderCallback(EntityLiving entity, float partialTick)
     {

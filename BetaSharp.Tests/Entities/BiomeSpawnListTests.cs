@@ -87,7 +87,7 @@ public sealed class BiomeSpawnListTests
 
         foreach (ResourceLocation key in BetaSharp.Registries.DefaultRegistries.Biomes.Keys)
         {
-            Biome biome = BetaSharp.Registries.DefaultRegistries.Biomes.Get(key)!;
+            Biome biome = BetaSharp.Registries.DefaultRegistries.Biomes.GetOrThrow(key);
 
             foreach (CreatureKind kind in CreatureKind.Values)
             {
@@ -101,6 +101,5 @@ public sealed class BiomeSpawnListTests
     }
 
     private static Biome Get(string name) =>
-        BetaSharp.Registries.DefaultRegistries.Biomes.Get(ResourceLocation.Parse(name))
-        ?? throw new InvalidOperationException($"Unknown biome '{name}'.");
+        BetaSharp.Registries.DefaultRegistries.Biomes.GetOrThrow(ResourceLocation.Parse(name));
 }

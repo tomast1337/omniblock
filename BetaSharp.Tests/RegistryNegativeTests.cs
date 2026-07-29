@@ -304,7 +304,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess ra = Build();
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
-        TestEnchantment sharpness = reg.Get(ResourceLocation.Parse("betasharp:sharpness"))!;
+        TestEnchantment sharpness = reg.GetOrThrow(ResourceLocation.Parse("betasharp:sharpness"));
 
         Assert.Equal(-1, reg.GetId(sharpness));
     }
@@ -332,7 +332,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess ra = Build(datapackPath: _tempDir);
 
         TestEnchantment sharpness = ra.GetOrThrow(s_enchKey)
-            .Get(ResourceLocation.Parse("betasharp:sharpness"))!;
+            .GetOrThrow(ResourceLocation.Parse("betasharp:sharpness"));
 
         Assert.Equal(1, sharpness.MaxLevel);
         // AllowedOnBooks reverts to the C# default (true) because Replace discards

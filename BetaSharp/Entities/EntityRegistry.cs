@@ -129,8 +129,11 @@ public static class EntityRegistry
     }
 
     public static EntityType ByName(string name) =>
-        s_registry.Get(ResourceLocation.Parse(name.ToLowerInvariant()))
-        ?? throw new ArgumentException($"Unknown entity type: '{name}'", nameof(name));
+        s_registry.GetOrThrow(ResourceLocation.Parse(name.ToLowerInvariant()));
+
+    /// <summary>Whether a name resolves to a registered type, for callers validating user input.</summary>
+    public static bool Exists(string name) =>
+        s_registry.ContainsKey(ResourceLocation.Parse(name.ToLowerInvariant()));
 
     /// <summary>
     ///     Resolves a type by the object-spawn wire id its definition declares, or <c>null</c> if no
@@ -168,7 +171,12 @@ public static class EntityRegistry
 
     public static bool TryCreate(string id, IWorldContext world, [MaybeNullWhen(false)] out Entity entity, EntityType? skip = null)
     {
-        EntityType? type = s_registry.Get(ResourceLocation.Parse(id.ToLower()));
+        if (!s_registry.TryGet(ResourceLocation.Parse(id.ToLower()), out EntityType? type))
+        {
+            s_logger.LogInformation($"Unable to find entity with id {id}");
+            entity = null;
+            return false;
+        }
 
         if (type == skip)
         {
@@ -176,15 +184,8 @@ public static class EntityRegistry
             return false;
         }
 
-        if (type != null)
-        {
-            entity = type.Create(world);
-            return true;
-        }
-
-        s_logger.LogInformation($"Unable to find entity with id {id}");
-        entity = null;
-        return false;
+        entity = type.Create(world);
+        return true;
     }
 
     public static Entity? Create(int rawId, IWorldContext world) => TryCreate(rawId, world, out Entity? entity) ? entity : null;
@@ -209,15 +210,14 @@ public static class EntityRegistry
 
     public static bool TryGetTypeFromName(string name, [MaybeNullWhen(false)] out Type type)
     {
-        EntityType? entityType = s_registry.Get(ResourceLocation.Parse(name.ToLower()));
-        if (entityType != null)
+        if (!s_registry.TryGet(ResourceLocation.Parse(name.ToLower()), out EntityType? entityType))
         {
-            type = entityType.BaseType;
-            return true;
+            type = null;
+            return false;
         }
 
-        type = null;
-        return false;
+        type = entityType.BaseType;
+        return true;
     }
 
     public static Entity? GetEntityFromNbt(NBTTagCompound nbt, IWorldContext world)

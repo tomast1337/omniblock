@@ -23,7 +23,7 @@ public sealed class FleeceEntityRenderer : LivingEntityRenderer
 
     protected override bool ShouldRenderPass(EntityLiving entity, int renderPass, float tickDelta)
     {
-        if (renderPass != 0 || entity.Behaviors.Interactable is not WoolBehavior wool) return false;
+        if (renderPass != 0 || entity.Behaviors.Find<WoolBehavior>() is not { } wool) return false;
         if (wool.IsShearedOn(entity)) return false;
 
         loadTexture(_texture);

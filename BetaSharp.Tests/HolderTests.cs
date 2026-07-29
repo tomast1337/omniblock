@@ -68,17 +68,20 @@ public class HolderTests
         Assert.Equal(1, calls);
     }
 
-    // ---- Implicit conversion ----
+    // ---- Unwrapping ----
 
+    /// <summary>
+    ///     Unwrapping is spelled out. There is deliberately no implicit conversion: one would let
+    ///     <c>Widget w = registry.Get(key);</c> compile against a lookup that missed and fault at
+    ///     runtime, which is what callers use <c>TryGet</c> and <c>GetOrThrow</c> to avoid.
+    /// </summary>
     [Fact]
-    public void Implicit_conversion_returns_value()
+    public void Value_returns_what_the_holder_holds()
     {
-        var w = new Widget { Label = "implicit" };
+        var w = new Widget { Label = "unwrapped" };
         var h = new Holder<Widget>(w);
 
-        Widget converted = h;
-
-        Assert.Same(w, converted);
+        Assert.Same(w, h.Value);
     }
 
     // ---- Internal setter ----

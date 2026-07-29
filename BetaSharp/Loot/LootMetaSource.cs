@@ -20,7 +20,7 @@ internal static class LootMetaSourceExtensions
 {
     public static int Resolve(this LootMetaSource source, in LootContext context, int literal) => source switch
     {
-        LootMetaSource.FleeceColor => context.Self?.Behaviors.Interactable is WoolBehavior wool
+        LootMetaSource.FleeceColor => context.Self?.Behaviors.Find<WoolBehavior>() is { } wool
             ? wool.ColorOf(context.Self)
             : literal,
         _ => literal
