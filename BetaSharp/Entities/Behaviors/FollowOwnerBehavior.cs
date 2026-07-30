@@ -1,4 +1,3 @@
-using BetaSharp.PathFinding;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Entities.Behaviors;
@@ -69,15 +68,15 @@ public sealed class FollowOwnerBehavior : IEntityTicker
     }
 
     /// <summary>
-    ///     Walks to the owner if there is a way there, and teleports beside them if there is not and
-    ///     they are far enough away not to see it.
+    ///     Queues a path to the owner, and teleports beside them when it has no path already and is
+    ///     far enough away not to be seen doing it. The queued path lands on a later tick, via
+    ///     PathingCoordinator.RunBatch.
     /// </summary>
     private void PathOrTeleport(EntityCreature self, Entity owner, float distance)
     {
-        PathEntity? path = self.World.Pathing.findPath(self, owner, _leashRange);
-        if (path != null || distance <= _teleportRange)
+        self.World.PathingRequests.RequestPath(self, owner, _leashRange);
+        if (self.HasPath || distance <= _teleportRange)
         {
-            self.setPathToEntity(path);
             return;
         }
 

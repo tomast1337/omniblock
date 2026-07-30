@@ -35,7 +35,7 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
             Target = FindPlayerToAttack();
             if (Target != null)
             {
-                _pathToEntity = World.Pathing.findPath(this, Target, Range);
+                World.PathingRequests.RequestPath(this, Target, Range);
             }
         }
         else if (!Target.CanBeTargeted)
@@ -64,7 +64,7 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
         }
         else
         {
-            _pathToEntity = World.Pathing.findPath(this, Target, Range);
+            World.PathingRequests.RequestPath(this, Target, Range);
         }
 
         int floorY = MathHelper.Floor(BoundingBox.MinY + 0.5D);
@@ -184,7 +184,7 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
 
         if (foundWanderTarget)
         {
-            _pathToEntity = World.Pathing.findPath(this, bestTile.x, bestTile.y, bestTile.z, 10.0F);
+            World.PathingRequests.RequestPath(this, bestTile.x, bestTile.y, bestTile.z, 10.0F);
         }
     }
 

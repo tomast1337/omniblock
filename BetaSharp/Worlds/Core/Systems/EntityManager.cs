@@ -305,6 +305,11 @@ public class EntityManager
             }
         }
 
+        using (Profiler.Begin("PathingBatch"))
+        {
+            _world.PathingRequests.RunBatch();
+        }
+
         _processingDeferred = true;
         using (Profiler.Begin("UpdateBlockEntities"))
         {

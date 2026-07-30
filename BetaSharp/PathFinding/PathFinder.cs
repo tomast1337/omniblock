@@ -54,7 +54,8 @@ internal class PathFinder
         _worldMap = worldMap;
     }
 
-    private PathEntity? CreateEntityPathTo(Entity entity, double targetX, double targetY, double targetZ,
+    /// <summary>Shared by both public findPath overloads, and by PathingCoordinator's batch (background threads use their own PathFinder instance, see PathingCoordinator).</summary>
+    internal PathEntity? CreateEntityPathTo(Entity entity, double targetX, double targetY, double targetZ,
         float maxDistance)
     {
         _path.ClearPath();
@@ -258,6 +259,11 @@ internal class PathFinder
             {
                 for (int iz = z; iz < z + size.Z; ++iz)
                 {
+                    // Fail closed on unloaded chunks instead of reading through them: GetBlockId
+                    // would force-load the chunk, which mutates ServerChunkCache's plain
+                    // Dictionary/List and isn't safe when called from a background pathing thread.
+                    if (!_worldMap.IsPosLoaded(ix, iy, iz)) return 0;
+
                     int blockId = _worldMap.GetBlockId(ix, iy, iz);
                     if (blockId > 0)
                     {

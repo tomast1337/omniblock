@@ -24,6 +24,7 @@ public sealed class FakeWorldContext : IWorldContext
     private readonly World _broadcasterWorld;
     private readonly FakeChunkSource _chunkSource;
     private readonly PathFinder _pathFinder;
+    private readonly PathingCoordinator _pathingRequests;
 
     public FakeWorldContext()
     {
@@ -42,6 +43,7 @@ public sealed class FakeWorldContext : IWorldContext
         TickSchedulerSpy = new RecordingTickScheduler(this);
         Rules = new RuleSet(RuleRegistry.Instance);
         _pathFinder = new PathFinder(this);
+        _pathingRequests = new PathingCoordinator(this);
     }
 
     public FakeBlockGrid ReaderWriter { get; }
@@ -72,6 +74,7 @@ public sealed class FakeWorldContext : IWorldContext
     };
     public JavaRandom Random { get; } = new(1234L);
     PathFinder IWorldContext.Pathing => _pathFinder;
+    PathingCoordinator IWorldContext.PathingRequests => _pathingRequests;
 
     /// <summary>Returned by <see cref="GetTime"/> for tests that need advancing world time (e.g. torch burnout history pruning).</summary>
     public long SimulatedWorldTime { get; set; }

@@ -79,6 +79,10 @@ public abstract class World : IWorldContext
 
         BlockHost = new ChunkHost(chunkSource);
         Reader = new WorldReader(this, Dimension);
+        // Constructed here, not with Pathing above: PathFinder captures world.Reader once at
+        // construction and (unlike Pathing) is never re-primed via SetWorld before use, so it
+        // needs Reader to already be assigned.
+        PathingRequests = new PathFinding.PathingCoordinator(this);
         Writer = new WorldWriter(BlockHost, Reader);
         Writer.OnBlockChanged += BlockUpdate;
 
@@ -132,6 +136,7 @@ public abstract class World : IWorldContext
     public LightingEngine Lighting { get; }
 
     private PathFinder Pathing { get; }
+    private PathFinding.PathingCoordinator PathingRequests { get; }
     private RedstoneEngine Redstone { get; }
     protected IWorldStorage Storage { get; }
     public long Seed => Properties.RandomSeed;
@@ -153,6 +158,7 @@ public abstract class World : IWorldContext
     Dimension IWorldContext.Dimension => Dimension;
     long IWorldContext.Seed => Properties.RandomSeed;
     PathFinder IWorldContext.Pathing => Pathing;
+    PathFinding.PathingCoordinator IWorldContext.PathingRequests => PathingRequests;
 
     public RuleSet Rules { get; protected set; }
 
