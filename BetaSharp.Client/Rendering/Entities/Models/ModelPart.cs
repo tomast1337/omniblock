@@ -224,79 +224,91 @@ public class ModelPart
         }
     }
 
+    // Uses System.Numerics rather than Silk.NET.Maths for the actual math here: System.Numerics.Vector3/
+    // Matrix4x4 get real hardware SIMD intrinsics from the JIT, the generic Silk.NET.Maths types don't.
+    // This loop runs per vertex, per box, per entity, per frame, so that gap is not academic.
     private unsafe void SubmitBakedVertices(float scale)
     {
         if (_bakedVertices == null || _bakedVertices.Length == 0) return;
 
         Span<float> matrixData = stackalloc float[16];
         GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, matrixData);
-        Matrix4X4<float> modelView = new(
+        System.Numerics.Matrix4x4 modelView = new(
             matrixData[0], matrixData[1], matrixData[2], matrixData[3],
             matrixData[4], matrixData[5], matrixData[6], matrixData[7],
             matrixData[8], matrixData[9], matrixData[10], matrixData[11],
             matrixData[12], matrixData[13], matrixData[14], matrixData[15]);
 
-        Matrix3X3<float> normalMatrix = ComputeNormalMatrix(modelView);
+        System.Numerics.Matrix4x4 normalMatrix = ComputeNormalMatrix(modelView);
 
         EmulatedGL emuGl = (EmulatedGL)GLManager.GL;
-        Vector4D<float> tint = emuGl.GetCurrentColorTint();
-        EntityLightingSnapshot lighting = emuGl.GetLightingState();
+        Vector4D<float> tintSrc = emuGl.GetCurrentColorTint();
+        System.Numerics.Vector4 tint = new(tintSrc.X, tintSrc.Y, tintSrc.Z, tintSrc.W);
+        EntityLightingSnapshot lightingSrc = emuGl.GetLightingState();
+        System.Numerics.Vector3 light0Dir = new(lightingSrc.Light0Dir.X, lightingSrc.Light0Dir.Y, lightingSrc.Light0Dir.Z);
+        System.Numerics.Vector3 light0Diffuse = new(lightingSrc.Light0Diffuse.X, lightingSrc.Light0Diffuse.Y, lightingSrc.Light0Diffuse.Z);
+        System.Numerics.Vector3 light1Dir = new(lightingSrc.Light1Dir.X, lightingSrc.Light1Dir.Y, lightingSrc.Light1Dir.Z);
+        System.Numerics.Vector3 light1Diffuse = new(lightingSrc.Light1Diffuse.X, lightingSrc.Light1Diffuse.Y, lightingSrc.Light1Diffuse.Z);
+        System.Numerics.Vector3 ambient = new(lightingSrc.Ambient.X, lightingSrc.Ambient.Y, lightingSrc.Ambient.Z);
+        bool lightingEnabled = lightingSrc.Enabled;
 
+        float a = Math.Clamp(tint.W, 0f, 1f);
+
+        System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
         Span<EntityVertex> outVerts = stackalloc EntityVertex[_bakedVertices.Length];
-        for (int i = 0; i < _bakedVertices.Length; ++i)
+
+        // Faces are flat-shaded: BakeLocalVertices groups _bakedVertices into blocks of 6 (one quad,
+        // split into 2 triangles) sharing a single face normal, so the normal transform + lighting -
+        // the expensive part - only needs to happen once per face, not once per vertex.
+        for (int faceStart = 0; faceStart < _bakedVertices.Length; faceStart += 6)
         {
-            ModelVertexLocal local = _bakedVertices[i];
+            System.Numerics.Vector3 localNormal = new(
+                _bakedVertices[faceStart].Normal.X, _bakedVertices[faceStart].Normal.Y, _bakedVertices[faceStart].Normal.Z);
+            System.Numerics.Vector3 normal = System.Numerics.Vector3.Normalize(System.Numerics.Vector3.TransformNormal(localNormal, normalMatrix));
 
-            Vector3D<float> scaledPos = local.Position * scale;
-            Vector4D<float> worldPos = Vector4D.Transform(new Vector4D<float>(scaledPos, 1f), modelView);
-
-            Vector3D<float> normal = Vector3D.Normalize(TransformDirection(local.Normal, normalMatrix));
-
-            Vector3D<float> lit = lighting.Enabled
-                ? lighting.Ambient
-                    + lighting.Light0Diffuse * MathF.Max(Vector3D.Dot(normal, lighting.Light0Dir), 0f)
-                    + lighting.Light1Diffuse * MathF.Max(Vector3D.Dot(normal, lighting.Light1Dir), 0f)
-                : Vector3D<float>.One;
+            System.Numerics.Vector3 lit = lightingEnabled
+                ? ambient
+                    + light0Diffuse * MathF.Max(System.Numerics.Vector3.Dot(normal, light0Dir), 0f)
+                    + light1Diffuse * MathF.Max(System.Numerics.Vector3.Dot(normal, light1Dir), 0f)
+                : System.Numerics.Vector3.One;
 
             float r = Math.Clamp(lit.X * tint.X, 0f, 1f);
             float g = Math.Clamp(lit.Y * tint.Y, 0f, 1f);
             float b = Math.Clamp(lit.Z * tint.Z, 0f, 1f);
-            float a = Math.Clamp(tint.W, 0f, 1f);
+            uint color = (uint)new Color(r, g, b, a);
 
-            outVerts[i] = new EntityVertex
+            int faceEnd = faceStart + 6;
+            for (int i = faceStart; i < faceEnd; ++i)
             {
-                X = worldPos.X,
-                Y = worldPos.Y,
-                Z = worldPos.Z,
-                U = local.U,
-                V = local.V,
-                Color = (uint)new Color(r, g, b, a),
-                PartId = _partId
-            };
+                ModelVertexLocal local = _bakedVertices[i];
+
+                System.Numerics.Vector3 scaledPos = new System.Numerics.Vector3(local.Position.X, local.Position.Y, local.Position.Z) * scale;
+                System.Numerics.Vector4 worldPos = System.Numerics.Vector4.Transform(scaledPos, modelView);
+
+                outVerts[i] = new EntityVertex
+                {
+                    X = worldPos.X,
+                    Y = worldPos.Y,
+                    Z = worldPos.Z,
+                    U = local.U,
+                    V = local.V,
+                    Color = color,
+                    PartId = _partId
+                };
+            }
         }
 
+        EntityBatchRenderer.DiagBakeMs += sw.Elapsed.TotalMilliseconds;
         EntityBatchRenderer.Instance.SubmitTriangles(outVerts);
     }
 
-    private static Matrix3X3<float> ComputeNormalMatrix(Matrix4X4<float> modelView)
+    private static System.Numerics.Matrix4x4 ComputeNormalMatrix(System.Numerics.Matrix4x4 modelView)
     {
-        if (!Matrix4X4.Invert(modelView, out Matrix4X4<float> inverted))
+        if (!System.Numerics.Matrix4x4.Invert(modelView, out System.Numerics.Matrix4x4 inverted))
         {
-            return Matrix3X3<float>.Identity;
+            return System.Numerics.Matrix4x4.Identity;
         }
 
-        Matrix4X4<float> t = Matrix4X4.Transpose(inverted);
-        return new Matrix3X3<float>(
-            t.M11, t.M12, t.M13,
-            t.M21, t.M22, t.M23,
-            t.M31, t.M32, t.M33);
-    }
-
-    private static Vector3D<float> TransformDirection(Vector3D<float> v, Matrix3X3<float> m)
-    {
-        return new Vector3D<float>(
-            v.X * m.M11 + v.Y * m.M21 + v.Z * m.M31,
-            v.X * m.M12 + v.Y * m.M22 + v.Z * m.M32,
-            v.X * m.M13 + v.Y * m.M23 + v.Z * m.M33);
+        return System.Numerics.Matrix4x4.Transpose(inverted);
     }
 }

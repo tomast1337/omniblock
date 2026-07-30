@@ -395,36 +395,73 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void Enable(GLEnum cap)
     {
-        OnRasterStateChanging(cap);
+        // Redundant Enable(AlphaTest)/Enable(Fog) calls are extremely common (e.g. every
+        // entity re-asserts AlphaTest on unconditionally) and RasterStateChanging forces
+        // batched renderers (EntityBatchRenderer) to flush, so only fire it on a real
+        // state transition - otherwise every one of those calls flushes the batch for
+        // nothing.
         switch (cap)
         {
-            case GLEnum.Texture2D: _useTexture = true; _dirtyState.StateDirty = true; return;
-            case GLEnum.AlphaTest: _alphaTestEnabled = true; _dirtyState.StateDirty = true; return;
-            case GLEnum.Lighting: _lightingState.LightingEnabled = true; _dirtyState.StateDirty = true; _dirtyState.DirtyLighting = true; return;
-            case GLEnum.Fog: _fogState.FogEnabled = true; _dirtyState.StateDirty = true; _dirtyState.DirtyFog = true; return;
+            case GLEnum.Texture2D:
+                if (_useTexture) return;
+                _useTexture = true; _dirtyState.StateDirty = true;
+                OnRasterStateChanging(cap);
+                return;
+            case GLEnum.AlphaTest:
+                if (_alphaTestEnabled) return;
+                _alphaTestEnabled = true; _dirtyState.StateDirty = true;
+                OnRasterStateChanging(cap);
+                return;
+            case GLEnum.Lighting:
+                if (_lightingState.LightingEnabled) return;
+                _lightingState.LightingEnabled = true; _dirtyState.StateDirty = true; _dirtyState.DirtyLighting = true;
+                OnRasterStateChanging(cap);
+                return;
+            case GLEnum.Fog:
+                if (_fogState.FogEnabled) return;
+                _fogState.FogEnabled = true; _dirtyState.StateDirty = true; _dirtyState.DirtyFog = true;
+                OnRasterStateChanging(cap);
+                return;
             case GLEnum.Light0: return;
             case GLEnum.Light1: return;
             case GLEnum.ColorMaterial: return;
             case GLEnum.RescaleNormal: return;
         }
+        OnRasterStateChanging(cap);
         if (_displayLists.IsCompiling) return;
         SilkGL.Enable(cap.ToModern());
     }
 
     public override void Disable(GLEnum cap)
     {
-        OnRasterStateChanging(cap);
         switch (cap)
         {
-            case GLEnum.Texture2D: _useTexture = false; _dirtyState.StateDirty = true; return;
-            case GLEnum.AlphaTest: _alphaTestEnabled = false; _dirtyState.StateDirty = true; return;
-            case GLEnum.Lighting: _lightingState.LightingEnabled = false; _dirtyState.StateDirty = true; return;
-            case GLEnum.Fog: _fogState.FogEnabled = false; _dirtyState.StateDirty = true; return;
+            case GLEnum.Texture2D:
+                if (!_useTexture) return;
+                _useTexture = false; _dirtyState.StateDirty = true;
+                OnRasterStateChanging(cap);
+                return;
+            case GLEnum.AlphaTest:
+                if (!_alphaTestEnabled) return;
+                _alphaTestEnabled = false; _dirtyState.StateDirty = true;
+                OnRasterStateChanging(cap);
+                return;
+            case GLEnum.Lighting:
+                if (!_lightingState.LightingEnabled) return;
+                _lightingState.LightingEnabled = false; _dirtyState.StateDirty = true;
+                OnRasterStateChanging(cap);
+                return;
+            case GLEnum.Fog:
+                if (!_fogState.FogEnabled) return;
+                _fogState.FogEnabled = false; _dirtyState.StateDirty = true;
+                OnRasterStateChanging(cap);
+                return;
             case GLEnum.Light0: return;
             case GLEnum.Light1: return;
             case GLEnum.ColorMaterial: return;
             case GLEnum.RescaleNormal: return;
         }
+        OnRasterStateChanging(cap);
         if (_displayLists.IsCompiling) return;
         SilkGL.Disable(cap.ToModern());
     }

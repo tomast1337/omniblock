@@ -73,6 +73,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float skyPlaneY = 16.0F;
 
         ChunkRenderer = new(gameInstance.World, _game.Options);
+        EntityBatchRenderer.Initialize(_game.Options);
 
         OnCloudsQualityChanged();
 

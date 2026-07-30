@@ -1,3 +1,4 @@
+using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using Silk.NET.Maths;
@@ -11,7 +12,16 @@ namespace BetaSharp.Client.Rendering.Entities;
 /// </summary>
 public sealed unsafe class EntityBatchRenderer : IDisposable
 {
-    public static readonly EntityBatchRenderer Instance = new();
+    // TEMP diagnostics: accumulated across frames, read + reset by the fps title-bar tick in BetaSharp.cs.
+    public static int DiagFlushCount;
+    public static double DiagFlushMs;
+    public static double DiagBakeMs;
+
+    private static EntityBatchRenderer? s_instance;
+    public static EntityBatchRenderer Instance =>
+        s_instance ?? throw new InvalidOperationException($"{nameof(EntityBatchRenderer)}.{nameof(Initialize)} must be called before use.");
+
+    public static void Initialize(GameOptions options) => s_instance ??= new EntityBatchRenderer(options);
 
     private const int MaxVertices = 65536;
 
@@ -28,11 +38,12 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     private bool _useTexture;
     private bool _active;
 
-    private EntityBatchRenderer()
+    private EntityBatchRenderer(GameOptions options)
     {
         _shader = new Shader(
-            AssetManager.Instance.getAsset("shaders/entity_batch.vert").GetTextContent(),
-            AssetManager.Instance.getAsset("shaders/entity_batch.frag").GetTextContent());
+            options.ShaderOptions.GetOrCreate("entity_batch"),
+            "shaders/entity_batch.vert",
+            "shaders/entity_batch.frag");
         _legacyGL = (LegacyGL)GLManager.GL;
         _silkGL = _legacyGL.SilkGL;
 
@@ -153,6 +164,8 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     {
         if (_vertexCount == 0) return;
 
+        System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+
         uint callerTexture = _legacyGL.BoundTexture2D;
 
         GLManager.GL.UseProgram(_shader.ProgramId);
@@ -178,6 +191,9 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
         GLManager.GL.UseProgram(0);
         _silkGL.BindTexture(TextureTarget.Texture2D, callerTexture);
+
+        DiagFlushCount++;
+        DiagFlushMs += sw.Elapsed.TotalMilliseconds;
     }
 
     /// <summary>Mirrors the fixed-function state the queued vertices were posed under.</summary>
