@@ -254,6 +254,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             EntityRenderDispatcher.Instance.CacheRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, _game.Options, partialTicks);
 
             EntityBatchRenderer.Instance.Begin();
+            EntityInstanceBatchRenderer.Instance.Begin();
             CountEntitiesTotal = 0;
             CountEntitiesRendered = 0;
             CountEntitiesHidden = 0;
@@ -328,6 +329,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 }
             }
 
+            EntityInstanceBatchRenderer.Instance.End();
             EntityBatchRenderer.Instance.End();
         }
     }

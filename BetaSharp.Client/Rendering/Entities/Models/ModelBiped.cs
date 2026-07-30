@@ -33,8 +33,10 @@ public class ModelBiped : BbModelEntityModel
         BipedLeftLeg = GetPart("bipedLeftLeg");
         BipedEars = new ModelPart(24, 0) { Name = "bipedEars" };
         BipedEars.AddBox(-3.0f, -6.0f, -1.0f, 6, 6, 1, inflationOffset);
+        RegisterExtraPart(BipedEars);
         BipedCloak = new ModelPart(0, 0) { Name = "bipedCloak" };
         BipedCloak.AddBox(-5.0f, 0.0f, -1.0f, 10, 16, 1, inflationOffset);
+        RegisterExtraPart(BipedCloak);
     }
 
     public void RenderEars(float scale)

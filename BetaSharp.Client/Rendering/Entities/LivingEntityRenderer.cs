@@ -84,49 +84,61 @@ public class LivingEntityRenderer : EntityRenderer
             if ((colorMultiplier >> 24 & 255) > 0 || entity.HurtTime > 0 || entity.DeathTime > 0)
             {
                 EntityBatchRenderer.Instance.SetNoTexture();
-                GLManager.GL.Disable(GLEnum.Texture2D);
-                GLManager.GL.Disable(GLEnum.AlphaTest);
-                GLManager.GL.Enable(GLEnum.Blend);
-                GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-                GLManager.GL.DepthFunc(GLEnum.Equal);
-                if (entity.HurtTime > 0 || entity.DeathTime > 0)
+                // No instanced no-texture mode, so force this overlay onto the legacy path.
+                EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
+                // Flush the queued body now: it draws with DepthFunc(Equal) below, which needs
+                // the depth buffer already written.
+                EntityInstanceBatchRenderer.Instance.Flush();
+                try
                 {
-                    GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
-                    Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-
-                    for (int damagePass = 0; damagePass < 4; ++damagePass)
+                    GLManager.GL.Disable(GLEnum.Texture2D);
+                    GLManager.GL.Disable(GLEnum.AlphaTest);
+                    GLManager.GL.Enable(GLEnum.Blend);
+                    GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+                    GLManager.GL.DepthFunc(GLEnum.Equal);
+                    if (entity.HurtTime > 0 || entity.DeathTime > 0)
                     {
-                        if (func_27005_b(entity, damagePass, tickDelta))
+                        GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                        Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+
+                        for (int damagePass = 0; damagePass < 4; ++damagePass)
                         {
-                            GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
-                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            if (func_27005_b(entity, damagePass, tickDelta))
+                            {
+                                GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                                renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            }
                         }
                     }
-                }
 
-                if ((colorMultiplier >> 24 & 255) > 0)
-                {
-                    float red = (colorMultiplier >> 16 & 255) / 255.0F;
-                    float green = (colorMultiplier >> 8 & 255) / 255.0F;
-                    float blue = (colorMultiplier & 255) / 255.0F;
-                    float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
-                    GLManager.GL.Color4(red, green, blue, alpha);
-                    Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-
-                    for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
+                    if ((colorMultiplier >> 24 & 255) > 0)
                     {
-                        if (func_27005_b(entity, overlayPass, tickDelta))
+                        float red = (colorMultiplier >> 16 & 255) / 255.0F;
+                        float green = (colorMultiplier >> 8 & 255) / 255.0F;
+                        float blue = (colorMultiplier & 255) / 255.0F;
+                        float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
+                        GLManager.GL.Color4(red, green, blue, alpha);
+                        Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+
+                        for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
                         {
-                            GLManager.GL.Color4(red, green, blue, alpha);
-                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            if (func_27005_b(entity, overlayPass, tickDelta))
+                            {
+                                GLManager.GL.Color4(red, green, blue, alpha);
+                                renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+                            }
                         }
                     }
-                }
 
-                GLManager.GL.DepthFunc(GLEnum.Lequal);
-                GLManager.GL.Disable(GLEnum.Blend);
-                GLManager.GL.Enable(GLEnum.AlphaTest);
-                GLManager.GL.Enable(GLEnum.Texture2D);
+                    GLManager.GL.DepthFunc(GLEnum.Lequal);
+                    GLManager.GL.Disable(GLEnum.Blend);
+                    GLManager.GL.Enable(GLEnum.AlphaTest);
+                    GLManager.GL.Enable(GLEnum.Texture2D);
+                }
+                finally
+                {
+                    EntityInstanceBatchRenderer.Instance.ForceLegacyPath = false;
+                }
             }
 
             GLManager.GL.Disable(GLEnum.RescaleNormal);

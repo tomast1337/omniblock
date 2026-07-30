@@ -290,6 +290,8 @@ public class AssetManager
         defineEmbeddedAsset("shaders/cloud.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/entity_batch.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/entity_batch.frag", AssetType.Text);
+        defineEmbeddedAsset("shaders/entity_instanced.vert", AssetType.Text);
+        defineEmbeddedAsset("shaders/entity_instanced.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/entity_textures.properties", AssetType.Text);
         defineEmbeddedAsset("shaders/entity_parts.properties", AssetType.Text);
         defineEmbeddedAsset("shaders/gamma.frag", AssetType.Text);

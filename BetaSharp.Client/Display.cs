@@ -487,7 +487,7 @@ public static unsafe class Display
             options.VSync = _swapInterval > 0;
             options.IsVisible = true;
             options.Samples = MSAA_Samples;
-            options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, DebugMode ? ContextFlags.Debug : ContextFlags.Default, new APIVersion(4, 1));
+            options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, DebugMode ? ContextFlags.Debug : ContextFlags.Default, new APIVersion(4, 3));
 
             if (_x >= 0 && _y >= 0)
                 options.Position = new Vector2D<int>(_x, _y);

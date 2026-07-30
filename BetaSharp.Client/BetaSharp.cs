@@ -297,6 +297,9 @@ public partial class BetaSharp :
 
     private void SetupCoreSystems()
     {
+        // Must run before EntityRenderDispatcher.Instance below constructs every entity model.
+        Rendering.Entities.EntityInstanceBatchRenderer.Initialize(Options);
+
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
         TextRenderer = new TextRenderer(Options, TextureManager);
@@ -811,10 +814,7 @@ public partial class BetaSharp :
                     {
                         DebugText = frameCounter + " fps";
                         MetricRegistry.Set(ClientMetrics.Fps, frameCounter);
-                        Display.setTitle($"BetaSharp {Version} - {frameCounter} fps - flush:{Rendering.Entities.EntityBatchRenderer.DiagFlushCount} flushMs:{Rendering.Entities.EntityBatchRenderer.DiagFlushMs:F1} bakeMs:{Rendering.Entities.EntityBatchRenderer.DiagBakeMs:F1}");
-                        Rendering.Entities.EntityBatchRenderer.DiagFlushCount = 0;
-                        Rendering.Entities.EntityBatchRenderer.DiagFlushMs = 0;
-                        Rendering.Entities.EntityBatchRenderer.DiagBakeMs = 0;
+                        Display.setTitle($"BetaSharp {Version} - {frameCounter} fps");
                         lastFpsCheckTime += 1000L;
                     }
                 }

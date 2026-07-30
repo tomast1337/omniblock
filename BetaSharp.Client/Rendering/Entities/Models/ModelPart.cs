@@ -9,11 +9,33 @@ namespace BetaSharp.Client.Rendering.Entities.Models;
 
 public class ModelPart
 {
+    /// <summary>Upper bound on <see cref="LocalSlot"/> per model. Spider uses 11, the current max.</summary>
+    public const int MaxPartsPerModel = 16;
+
+    private static int s_nextStaticVertexOffset;
+
     private PositionTextureVertex[] Corners;
     private Quad[] Faces;
     private ModelVertexLocal[] _bakedVertices;
     private readonly int TextureOffsetX;
     private readonly int TextureOffsetY;
+
+    /// <summary>Vertex offset of this part's baked geometry in the shared static GPU buffer. -1 until baked.</summary>
+    public int StaticVertexOffset { get; private set; } = -1;
+
+    /// <summary>Baked vertex count (36 for a single box; 0 until baked).</summary>
+    public int BakedVertexCount => _bakedVertices?.Length ?? 0;
+
+    /// <summary>
+    /// Pose-matrix slot within the owning model's per-instance data. Distinct from the
+    /// symbolic <see cref="Name"/>-derived part id: that one's shared across e.g. every leg of a
+    /// quadruped for the fragment-shader effect hook, but each leg still needs its own pose. -1
+    /// until assigned by <see cref="BbModelEntityModel"/>.
+    /// </summary>
+    public int LocalSlot { get; set; } = -1;
+
+    /// <summary>The <see cref="Name"/>-derived <see cref="EntityShaderIds.ForPart"/> id.</summary>
+    public uint SymbolicPartId => _partId;
     public float RotationPointX;
     public float RotationPointY;
     public float RotationPointZ;
@@ -139,6 +161,80 @@ public class ModelPart
         RotationPointZ = z;
     }
 
+    /// <summary>Local baked geometry, for the static buffer upload.</summary>
+    internal ReadOnlySpan<ModelVertexLocal> GetBakedVertices() => _bakedVertices;
+
+    // Collapses to a point at the view-space origin instead of a zero matrix, which would leave
+    // an undefined w=0 clip-space position.
+    private static readonly System.Numerics.Matrix4x4 s_hiddenPose = new(
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 1);
+
+    /// <summary>Pose matrix captured by the most recent <see cref="CapturePose"/> call.</summary>
+    internal System.Numerics.Matrix4x4 CapturedPose { get; private set; }
+
+    /// <summary>Instanced-path counterpart to <see cref="Render"/>: same matrix stack walk, but captures the pose instead of transforming vertices.</summary>
+    public void CapturePose(float scale)
+    {
+        if (Hidden || !Visible)
+        {
+            CapturedPose = s_hiddenPose;
+            return;
+        }
+
+        if (RotateAngleX == 0.0F && RotateAngleY == 0.0F && RotateAngleZ == 0.0F)
+        {
+            if (RotationPointX == 0.0F && RotationPointY == 0.0F && RotationPointZ == 0.0F)
+            {
+                CaptureCurrentMatrix(scale);
+            }
+            else
+            {
+                GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                CaptureCurrentMatrix(scale);
+                GLManager.GL.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
+            }
+        }
+        else
+        {
+            GLManager.GL.PushMatrix();
+            GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            if (RotateAngleZ != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+            }
+
+            if (RotateAngleY != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+            }
+
+            if (RotateAngleX != 0.0F)
+            {
+                GLManager.GL.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+            }
+
+            CaptureCurrentMatrix(scale);
+            GLManager.GL.PopMatrix();
+        }
+    }
+
+    private unsafe void CaptureCurrentMatrix(float scale)
+    {
+        Span<float> matrixData = stackalloc float[16];
+        GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, matrixData);
+        System.Numerics.Matrix4x4 modelView = new(
+            matrixData[0], matrixData[1], matrixData[2], matrixData[3],
+            matrixData[4], matrixData[5], matrixData[6], matrixData[7],
+            matrixData[8], matrixData[9], matrixData[10], matrixData[11],
+            matrixData[12], matrixData[13], matrixData[14], matrixData[15]);
+
+        // Fold scale in here so the shader never needs its own scale uniform.
+        CapturedPose = System.Numerics.Matrix4x4.CreateScale(scale) * modelView;
+    }
+
     public void Render(float scale)
     {
         if (Hidden) return;
@@ -222,11 +318,15 @@ public class ModelPart
         {
             Faces[faceIndex].GetTriangles(_bakedVertices.AsSpan(faceIndex * 6, 6));
         }
+
+        if (StaticVertexOffset < 0)
+        {
+            StaticVertexOffset = s_nextStaticVertexOffset;
+            s_nextStaticVertexOffset += _bakedVertices.Length;
+        }
     }
 
-    // Uses System.Numerics rather than Silk.NET.Maths for the actual math here: System.Numerics.Vector3/
-    // Matrix4x4 get real hardware SIMD intrinsics from the JIT, the generic Silk.NET.Maths types don't.
-    // This loop runs per vertex, per box, per entity, per frame, so that gap is not academic.
+    // System.Numerics gets JIT SIMD here, Silk.NET.Maths doesn't.
     private unsafe void SubmitBakedVertices(float scale)
     {
         if (_bakedVertices == null || _bakedVertices.Length == 0) return;
@@ -254,12 +354,9 @@ public class ModelPart
 
         float a = Math.Clamp(tint.W, 0f, 1f);
 
-        System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
         Span<EntityVertex> outVerts = stackalloc EntityVertex[_bakedVertices.Length];
 
-        // Faces are flat-shaded: BakeLocalVertices groups _bakedVertices into blocks of 6 (one quad,
-        // split into 2 triangles) sharing a single face normal, so the normal transform + lighting -
-        // the expensive part - only needs to happen once per face, not once per vertex.
+        // Faces are flat-shaded: each block of 6 shares one normal, so lighting runs once per face.
         for (int faceStart = 0; faceStart < _bakedVertices.Length; faceStart += 6)
         {
             System.Numerics.Vector3 localNormal = new(
@@ -277,9 +374,7 @@ public class ModelPart
             float b = Math.Clamp(lit.Z * tint.Z, 0f, 1f);
             uint color = (uint)new Color(r, g, b, a);
 
-            // Quad.GetTriangles emits each face as 6 verts via order = [0, 1, 2, 2, 3, 0]: local
-            // slots 3 and 5 are byte-for-byte the same corner (position and UV) as slots 2 and 0,
-            // so only 4 of the 6 actually need transforming; the other 2 are a straight copy.
+            // Order [0,1,2,2,3,0]: slots 3 and 5 duplicate 2 and 0, so only 4 need transforming.
             int i0 = faceStart, i1 = faceStart + 1, i2 = faceStart + 2, i3 = faceStart + 3, i4 = faceStart + 4, i5 = faceStart + 5;
             TransformVertex(ref outVerts[i0], in _bakedVertices[i0], scale, modelView, color, _partId);
             TransformVertex(ref outVerts[i1], in _bakedVertices[i1], scale, modelView, color, _partId);
@@ -289,7 +384,6 @@ public class ModelPart
             outVerts[i5] = outVerts[i0];
         }
 
-        EntityBatchRenderer.DiagBakeMs += sw.Elapsed.TotalMilliseconds;
         EntityBatchRenderer.Instance.SubmitTriangles(outVerts);
 
         static void TransformVertex(ref EntityVertex dest, in ModelVertexLocal local, float scale, System.Numerics.Matrix4x4 modelView, uint color, uint partId)
