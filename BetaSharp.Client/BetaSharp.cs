@@ -814,7 +814,6 @@ public partial class BetaSharp :
                     {
                         DebugText = frameCounter + " fps";
                         MetricRegistry.Set(ClientMetrics.Fps, frameCounter);
-                        Display.setTitle($"BetaSharp {Version} - {frameCounter} fps");
                         lastFpsCheckTime += 1000L;
                     }
                 }

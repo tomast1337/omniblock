@@ -44,13 +44,18 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private int _staticVboCapacity;
 
     // Layout mirrors the SSBO's std430 EntityInstance array: MaxPartsPerModel*16 floats of pose
-    // matrices then 4 floats of tint, per instance.
+    // matrices then 4 floats of tint, per instance. Written in submission order, which interleaves
+    // different models (entities aren't grouped by type) — _bucketInstanceIndices below tracks
+    // which of these slots belong to which bucket, and Flush reorders into _flushData so each
+    // bucket's instances are actually contiguous before the draw.
     private readonly float[] _instanceData = new float[MaxInstances * FloatsPerInstance];
+    private readonly float[] _flushData = new float[MaxInstances * FloatsPerInstance];
     private int _instanceCount;
 
     // One bucket per (model, texture) pair seen this frame.
-    private readonly record struct Bucket(int InstanceStart, int InstanceCount, int VertexBase, int VertexCount, uint TextureId);
+    private readonly record struct Bucket(int VertexBase, int VertexCount, uint TextureId);
     private readonly List<Bucket> _buckets = [];
+    private readonly List<List<int>> _bucketInstanceIndices = [];
     private readonly Dictionary<(ModelBase Model, uint TextureId), int> _bucketIndexByKey = [];
 
     private bool _active;
@@ -186,6 +191,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _active = true;
         _instanceCount = 0;
         _buckets.Clear();
+        _bucketInstanceIndices.Clear();
         _bucketIndexByKey.Clear();
     }
 
@@ -226,16 +232,15 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _instanceData[tintOffset + 3] = tint.W;
 
         (ModelBase, uint) key = (model, textureId);
-        if (_bucketIndexByKey.TryGetValue(key, out int bucketIndex))
+        if (!_bucketIndexByKey.TryGetValue(key, out int bucketIndex))
         {
-            Bucket existing = _buckets[bucketIndex];
-            _buckets[bucketIndex] = existing with { InstanceCount = existing.InstanceCount + 1 };
+            bucketIndex = _buckets.Count;
+            _bucketIndexByKey[key] = bucketIndex;
+            _buckets.Add(new Bucket(model.StaticVertexBase, model.StaticVertexCount, textureId));
+            _bucketInstanceIndices.Add([]);
         }
-        else
-        {
-            _bucketIndexByKey[key] = _buckets.Count;
-            _buckets.Add(new Bucket(instanceIndex, 1, model.StaticVertexBase, model.StaticVertexCount, textureId));
-        }
+
+        _bucketInstanceIndices[bucketIndex].Add(instanceIndex);
     }
 
     /// <summary>Draws every bucket queued since <see cref="Begin"/> and closes the pass.</summary>
@@ -261,8 +266,23 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
         uint callerTexture = _legacyGL.BoundTexture2D;
 
+        // Submissions interleave by entity, not by bucket, so pack each bucket's instances
+        // contiguously into _flushData before upload — DrawArraysInstanced needs its instances
+        // at a single contiguous [instanceBase, instanceBase+count) range.
+        Span<int> bucketStarts = stackalloc int[_buckets.Count];
+        int cursor = 0;
+        for (int b = 0; b < _buckets.Count; b++)
+        {
+            bucketStarts[b] = cursor;
+            foreach (int instanceIndex in _bucketInstanceIndices[b])
+            {
+                Array.Copy(_instanceData, instanceIndex * FloatsPerInstance, _flushData, cursor * FloatsPerInstance, FloatsPerInstance);
+                cursor++;
+            }
+        }
+
         _silkGL.BindBuffer(BufferTargetARB.ShaderStorageBuffer, _ssboId);
-        fixed (float* ptr = _instanceData)
+        fixed (float* ptr = _flushData)
         {
             _silkGL.BufferSubData(BufferTargetARB.ShaderStorageBuffer, 0, (nuint)(_instanceCount * FloatsPerInstance * sizeof(float)), ptr);
         }
@@ -272,12 +292,13 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
         _silkGL.BindVertexArray(_vaoId);
 
-        foreach (Bucket bucket in _buckets)
+        for (int b = 0; b < _buckets.Count; b++)
         {
-            _shader.SetUniform1("instanceBase", bucket.InstanceStart);
+            Bucket bucket = _buckets[b];
+            _shader.SetUniform1("instanceBase", bucketStarts[b]);
             _silkGL.ActiveTexture(TextureUnit.Texture0);
             _silkGL.BindTexture(TextureTarget.Texture2D, bucket.TextureId);
-            _silkGL.DrawArraysInstanced(PrimitiveType.Triangles, bucket.VertexBase, (uint)bucket.VertexCount, (uint)bucket.InstanceCount);
+            _silkGL.DrawArraysInstanced(PrimitiveType.Triangles, bucket.VertexBase, (uint)bucket.VertexCount, (uint)_bucketInstanceIndices[b].Count);
         }
 
         _silkGL.BindVertexArray(0);
@@ -288,6 +309,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
         _instanceCount = 0;
         _buckets.Clear();
+        _bucketInstanceIndices.Clear();
         _bucketIndexByKey.Clear();
     }
 
