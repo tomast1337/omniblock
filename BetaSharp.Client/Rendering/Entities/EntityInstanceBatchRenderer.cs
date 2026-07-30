@@ -189,9 +189,16 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     public void Begin()
     {
         _active = true;
+        ResetBuckets();
+    }
+
+    // Clears the inner per-bucket List<int>s in place rather than dropping them, so their
+    // backing arrays get reused frame to frame instead of reallocated.
+    private void ResetBuckets()
+    {
         _instanceCount = 0;
         _buckets.Clear();
-        _bucketInstanceIndices.Clear();
+        foreach (List<int> indices in _bucketInstanceIndices) indices.Clear();
         _bucketIndexByKey.Clear();
     }
 
@@ -237,7 +244,12 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             bucketIndex = _buckets.Count;
             _bucketIndexByKey[key] = bucketIndex;
             _buckets.Add(new Bucket(model.StaticVertexBase, model.StaticVertexCount, textureId));
-            _bucketInstanceIndices.Add([]);
+            // Reuse a pooled (already-cleared) list from a previous frame if one exists at this
+            // index rather than allocating a new one every frame.
+            if (bucketIndex == _bucketInstanceIndices.Count)
+            {
+                _bucketInstanceIndices.Add([]);
+            }
         }
 
         _bucketInstanceIndices[bucketIndex].Add(instanceIndex);
@@ -307,10 +319,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         GLManager.GL.UseProgram(0);
         _silkGL.BindTexture(TextureTarget.Texture2D, callerTexture);
 
-        _instanceCount = 0;
-        _buckets.Clear();
-        _bucketInstanceIndices.Clear();
-        _bucketIndexByKey.Clear();
+        ResetBuckets();
     }
 
     /// <summary>Mirrors the fixed-function state the queued instances were posed under.</summary>
