@@ -13,7 +13,9 @@ namespace BetaSharp.PathFinding;
 /// </summary>
 internal sealed class PathingCoordinator(IWorldContext world)
 {
-    private readonly PathFinder _finder = new(world);
+    // One PathFinder per worker thread: PathFinder's open-list/point-pool state is mutable
+    // and not reentrant, so threads can't share a single instance (see docs/parallel-pathfinding.md).
+    private readonly ThreadLocal<PathFinder> _threadFinder = new(() => new PathFinder(world));
     private readonly List<PathRequest> _pendingRequests = [];
 
     internal void RequestPath(Entity entity, Entity target, float range) =>
@@ -25,12 +27,25 @@ internal sealed class PathingCoordinator(IWorldContext world)
     /// <summary>Runs every request queued since the last call. Call once per world tick, after all entities have ticked.</summary>
     internal void RunBatch()
     {
-        foreach (PathRequest request in _pendingRequests)
+        if (_pendingRequests.Count == 0) return;
+
+        PathRequest[] requests = [.. _pendingRequests];
+        PathEntity?[] results = new PathEntity?[requests.Length];
+
+        Parallel.For(0, requests.Length, i =>
         {
-            PathEntity? path = _finder.CreateEntityPathTo(request.Entity, request.TargetX, request.TargetY, request.TargetZ, request.Range);
-            if (request.Entity is EntityCreature creature)
+            PathFinder finder = _threadFinder.Value!;
+            ref readonly PathRequest request = ref requests[i];
+            results[i] = finder.CreateEntityPathTo(request.Entity, request.TargetX, request.TargetY, request.TargetZ, request.Range);
+        });
+
+        // Apply serially: setPathToEntity just writes one field on the target entity,
+        // not worth risking two requests racing the same entity in the same batch.
+        for (int i = 0; i < requests.Length; i++)
+        {
+            if (requests[i].Entity is EntityCreature creature)
             {
-                creature.setPathToEntity(path);
+                creature.setPathToEntity(results[i]);
             }
         }
 
