@@ -277,29 +277,34 @@ public class ModelPart
             float b = Math.Clamp(lit.Z * tint.Z, 0f, 1f);
             uint color = (uint)new Color(r, g, b, a);
 
-            int faceEnd = faceStart + 6;
-            for (int i = faceStart; i < faceEnd; ++i)
-            {
-                ModelVertexLocal local = _bakedVertices[i];
-
-                System.Numerics.Vector3 scaledPos = new System.Numerics.Vector3(local.Position.X, local.Position.Y, local.Position.Z) * scale;
-                System.Numerics.Vector4 worldPos = System.Numerics.Vector4.Transform(scaledPos, modelView);
-
-                outVerts[i] = new EntityVertex
-                {
-                    X = worldPos.X,
-                    Y = worldPos.Y,
-                    Z = worldPos.Z,
-                    U = local.U,
-                    V = local.V,
-                    Color = color,
-                    PartId = _partId
-                };
-            }
+            // Quad.GetTriangles emits each face as 6 verts via order = [0, 1, 2, 2, 3, 0]: local
+            // slots 3 and 5 are byte-for-byte the same corner (position and UV) as slots 2 and 0,
+            // so only 4 of the 6 actually need transforming; the other 2 are a straight copy.
+            int i0 = faceStart, i1 = faceStart + 1, i2 = faceStart + 2, i3 = faceStart + 3, i4 = faceStart + 4, i5 = faceStart + 5;
+            TransformVertex(ref outVerts[i0], in _bakedVertices[i0], scale, modelView, color, _partId);
+            TransformVertex(ref outVerts[i1], in _bakedVertices[i1], scale, modelView, color, _partId);
+            TransformVertex(ref outVerts[i2], in _bakedVertices[i2], scale, modelView, color, _partId);
+            TransformVertex(ref outVerts[i4], in _bakedVertices[i4], scale, modelView, color, _partId);
+            outVerts[i3] = outVerts[i2];
+            outVerts[i5] = outVerts[i0];
         }
 
         EntityBatchRenderer.DiagBakeMs += sw.Elapsed.TotalMilliseconds;
         EntityBatchRenderer.Instance.SubmitTriangles(outVerts);
+
+        static void TransformVertex(ref EntityVertex dest, in ModelVertexLocal local, float scale, System.Numerics.Matrix4x4 modelView, uint color, uint partId)
+        {
+            System.Numerics.Vector3 scaledPos = new System.Numerics.Vector3(local.Position.X, local.Position.Y, local.Position.Z) * scale;
+            System.Numerics.Vector4 worldPos = System.Numerics.Vector4.Transform(scaledPos, modelView);
+
+            dest.X = worldPos.X;
+            dest.Y = worldPos.Y;
+            dest.Z = worldPos.Z;
+            dest.U = local.U;
+            dest.V = local.V;
+            dest.Color = color;
+            dest.PartId = partId;
+        }
     }
 
     private static System.Numerics.Matrix4x4 ComputeNormalMatrix(System.Numerics.Matrix4x4 modelView)
