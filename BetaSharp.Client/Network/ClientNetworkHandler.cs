@@ -17,6 +17,7 @@ using BetaSharp.Items.Behaviors;
 using BetaSharp.Network;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
+using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
@@ -55,6 +56,13 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     public override MessageRegistry? Messages { get; } = new();
 
+    /// <summary>
+    ///     Synchronised server clock. Null for the loopback path (<see cref="InternalConnection" />),
+    ///     where offset is identically zero and there is no jitter to measure. Polled each tick and
+    ///     fed from <see cref="onTimeSyncResponse" />.
+    /// </summary>
+    public ServerClock? Clock { get; }
+
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
         _context = context;
@@ -67,6 +75,8 @@ public class ClientNetworkHandler : NetHandler
         socket.Connect(endPoint);
 
         _netManager = new Connection(socket, "Client", this);
+
+        Clock = new ServerClock();
     }
 
     public ClientNetworkHandler(ClientNetworkContext context, Connection connection)
@@ -88,6 +98,29 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.IsInternal, _netManager is InternalConnection);
             MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
 
+            PacketArrivalHistogram arrivals = _netManager.ReadIntervals;
+            MetricRegistry.Set(ClientMetrics.ReadIntervalSamples, arrivals.Count);
+            MetricRegistry.Set(ClientMetrics.ReadIntervalMeanMs, arrivals.MeanMs);
+            MetricRegistry.Set(ClientMetrics.ReadIntervalP50Ms, arrivals.PercentileMs(50));
+            MetricRegistry.Set(ClientMetrics.ReadIntervalP95Ms, arrivals.PercentileMs(95));
+            MetricRegistry.Set(ClientMetrics.ReadIntervalP99Ms, arrivals.PercentileMs(99));
+            MetricRegistry.Set(ClientMetrics.ReadIntervalMaxMs, arrivals.MaxMs);
+
+            // Drive the time-sync state machine: burst during login, then background pacer.
+            PollClock();
+
+            if (Clock is { Synchronised: true })
+            {
+                MetricRegistry.Set(ClientMetrics.ClockOffsetMs, Clock.OffsetMs);
+                MetricRegistry.Set(ClientMetrics.ClockRttMs, Clock.RttMedianMs);
+                MetricRegistry.Set(ClientMetrics.ClockJitterMs, Clock.JitterMs);
+                MetricRegistry.Set(ClientMetrics.ClockSynchronised, true);
+            }
+            else
+            {
+                MetricRegistry.Set(ClientMetrics.ClockSynchronised, false);
+            }
+
             if (_ticks++ - _lastKeepAliveTime > 200)
             {
                 SendPacket(KeepAlivePacket.Get());
@@ -102,6 +135,28 @@ public class ClientNetworkHandler : NetHandler
             _netManager.sendPacket(packet);
             _lastKeepAliveTime = _ticks;
         }
+    }
+
+    private void PollClock()
+    {
+        if (Clock is null)
+        {
+            return;
+        }
+
+        (uint Sequence, long ClientSendTime)? probe = Clock.Poll();
+        if (probe is not null)
+        {
+            SendPacket(TimeSyncRequestC2SPacket.Get(probe.Value.Sequence, probe.Value.ClientSendTime));
+        }
+    }
+
+    public override void onTimeSyncResponse(TimeSyncResponseS2CPacket packet)
+    {
+        // T3 was stamped by Connection.Reading before queueing. The handler reads it rather than
+        // stamping its own, because it runs on the game thread up to a tick later.
+        Clock?.Complete(packet.Sequence, packet.ClientSendTime, packet.ServerRecvTime,
+            packet.ServerSendTime, packet.ClientRecvTime);
     }
 
     public override void onHello(LoginHelloPacket packet)

@@ -95,6 +95,22 @@ public abstract class NetHandler
     {
     }
 
+    /// <summary>
+    ///     Client sends a time-sync probe. Server stamps T1 here (on the read path), then
+    ///     <see cref="onTimeSyncResponse" /> stamps T2 on the write path.
+    /// </summary>
+    public virtual void onTimeSyncRequest(TimeSyncRequestC2SPacket packet)
+    {
+    }
+
+    /// <summary>
+    ///     Server echoes a completed time-sync probe. Client stamps T3 here (on the read path) and
+    ///     feeds the four timestamps to its <see cref="ServerClock" />.
+    /// </summary>
+    public virtual void onTimeSyncResponse(TimeSyncResponseS2CPacket packet)
+    {
+    }
+
     public virtual void handle(Packet packet)
     {
     }

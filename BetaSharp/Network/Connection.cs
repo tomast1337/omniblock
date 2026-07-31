@@ -1,7 +1,10 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Network.Packets;
+using BetaSharp.Network.Packets.C2SPlay;
+using BetaSharp.Network.Packets.S2CPlay;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
@@ -25,6 +28,25 @@ public class Connection
     public long BytesWritten { get; protected set; }
     public int PacketsRead { get; protected set; }
     public int PacketsWritten { get; protected set; }
+
+    /// <summary>
+    ///     Gap between successive packet arrivals. On a client this is the head-of-line stall the
+    ///     snapshot buffer will have to absorb, which is what sizes the interpolation delay — see
+    ///     <c>docs/time-sync-and-interpolation.md</c> §3.4.
+    /// </summary>
+    public PacketArrivalHistogram ReadIntervals { get; } = new();
+
+    /// <summary>
+    ///     Time spent inside a single blocking write. This is the stall's <em>cause</em> rather than
+    ///     its symptom: the send queue is drained strictly in order, so a large packet occupies the
+    ///     socket for its whole duration and everything behind it waits.
+    /// </summary>
+    public PacketArrivalHistogram WriteDurations { get; } = new();
+
+    /// <summary>Largest single packet written, in bytes. Expected to be a chunk.</summary>
+    public int LargestPacketWritten { get; private set; }
+
+    private long _lastReadTimestamp;
 
     private int _timeout;
     private readonly ConcurrentQueue<Packet> _sendQueue = [];
@@ -158,6 +180,27 @@ public class Connection
         return 0;
     }
 
+    /// <summary>
+    ///     Stamps T1 (server receiving request) or T3 (client receiving response) on the read
+    ///     thread, before the packet is queued for the game thread's drain. Called from
+    ///     <see cref="Reading" />.
+    /// </summary>
+    private static void StampTimeSyncTimestamp(Packet packet, long timestampTicks)
+    {
+        long ms = (long)(timestampTicks * (1000.0 / Stopwatch.Frequency));
+
+        switch (packet)
+        {
+            case TimeSyncRequestC2SPacket request:
+                request.ServerRecvTime = ms;
+                break;
+
+            case TimeSyncResponseS2CPacket response:
+                response.ClientRecvTime = ms;
+                break;
+        }
+    }
+
     private void Reading()
     {
         while (open && !closed)
@@ -171,6 +214,20 @@ public class Connection
 
                 if (packet is not null)
                 {
+                    // Stamped here rather than where the packet is drained in tick(): draining
+                    // happens on the game thread up to a full tick later, which would measure the
+                    // tick phase instead of the network. T1 and T3 in particular must be on the
+                    // read path for clock sync to be honest.
+                    long now = Stopwatch.GetTimestamp();
+                    if (_lastReadTimestamp != 0)
+                    {
+                        ReadIntervals.Record((now - _lastReadTimestamp) * 1000.0 / Stopwatch.Frequency);
+                    }
+
+                    _lastReadTimestamp = now;
+
+                    StampTimeSyncTimestamp(packet, now);
+
                     BytesRead += packet.Size();
                     PacketsRead++;
                     readQueue.Enqueue(packet);
@@ -219,11 +276,29 @@ public class Connection
     {
         ArgumentNullException.ThrowIfNull(_networkStream);
 
+        // T2: the server's timestamp for the time-sync response, stamped as late as possible —
+        // inside the write path, immediately before the bytes go to the socket, rather than in the
+        // handler where a send-queue drain could add up to a chunk's worth of delay.
+        if (packet is TimeSyncResponseS2CPacket response && response.ServerSendTime == 0)
+        {
+            response.ServerSendTime = (long)(Stopwatch.GetTimestamp() * (1000.0 / Stopwatch.Frequency));
+        }
+
+        long start = Stopwatch.GetTimestamp();
+
         Packet.Write(packet, _networkStream);
 
-        BytesWritten += packet.Size();
+        int size = packet.Size();
+        BytesWritten += size;
         PacketsWritten++;
 
         _networkStream.Flush();
+
+        WriteDurations.Record((Stopwatch.GetTimestamp() - start) * 1000.0 / Stopwatch.Frequency);
+
+        if (size > LargestPacketWritten)
+        {
+            LargestPacketWritten = size;
+        }
     }
 }

@@ -80,6 +80,98 @@ internal sealed class NetworkInfoWindow : DebugWindow
             ImGui.Spacing();
             _downloadGraph.Draw(40f, 1024 * 512f);
         }
+
+        DrawPacketArrival(isInternal);
+        DrawClockSync(isInternal);
+    }
+
+    /// <summary>
+    ///     Gap between successive packet arrivals. Phase 1 of the interpolation work: the delay is
+    ///     sized against p95 rather than the maximum, so both are shown, and the histogram shape
+    ///     matters more than either number — a long flat tail means TCP head-of-line blocking, while
+    ///     a tight cluster near the 50 ms tick means the stream is keeping up.
+    /// </summary>
+    private static void DrawPacketArrival(bool isInternal)
+    {
+        if (!ImGui.CollapsingHeader("Packet arrival"))
+        {
+            return;
+        }
+
+        if (isInternal)
+        {
+            // InternalConnection hands packets straight to the remote handler's queue: it starts no
+            // read thread and never calls WritePacket, so there is no arrival gap to sample. Said
+            // plainly, because an empty histogram here is structural rather than a fault.
+            ImGuiTextSafe.Text("Loopback connection: packets are handed over directly,");
+            ImGuiTextSafe.Text("so there is no transport delay to measure. Join a remote");
+            ImGuiTextSafe.Text("server to collect arrival statistics.");
+            return;
+        }
+
+        long samples = MetricRegistry.Get(ClientMetrics.ReadIntervalSamples);
+        if (samples == 0)
+        {
+            ImGuiTextSafe.Text("No packets received yet.");
+            return;
+        }
+
+        double p95 = MetricRegistry.Get(ClientMetrics.ReadIntervalP95Ms);
+
+        ImGuiTextSafe.Text($"Samples: {samples:N0}");
+        ImGuiTextSafe.Text($"Mean:  {MetricRegistry.Get(ClientMetrics.ReadIntervalMeanMs):F1} ms");
+        ImGuiTextSafe.Text($"p50:  <= {MetricRegistry.Get(ClientMetrics.ReadIntervalP50Ms):F0} ms");
+        ImGuiTextSafe.Text($"p95:  <= {p95:F0} ms");
+        ImGuiTextSafe.Text($"p99:  <= {MetricRegistry.Get(ClientMetrics.ReadIntervalP99Ms):F0} ms");
+        ImGuiTextSafe.Text($"Max:     {MetricRegistry.Get(ClientMetrics.ReadIntervalMaxMs):F1} ms");
+
+        ImGui.Spacing();
+
+        // clamp(2 * tickInterval + 2 * jitter, 100, 500), with p95 standing in for the jitter term
+        // until the sync handshake supplies a real one. See docs/time-sync-and-interpolation.md §3.4.
+        double suggested = Math.Clamp(100.0 + (2.0 * Math.Max(0.0, p95 - 50.0)), 100.0, 500.0);
+        ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms");
+    }
+
+    /// <summary>
+    ///     NTP-style clock synchronisation. Phase 2 of the interpolation work — RTT, offset and
+    ///     jitter are visible before anything depends on them, so a session of watching them catches
+    ///     surprises before they become bugs.
+    /// </summary>
+    private static void DrawClockSync(bool isInternal)
+    {
+        if (!ImGui.CollapsingHeader("Server clock"))
+        {
+            return;
+        }
+
+        if (isInternal)
+        {
+            ImGuiTextSafe.Text("Loopback connection: offset is identically zero.");
+            ImGuiTextSafe.Text("Clock sync runs only against a remote server.");
+            return;
+        }
+
+        bool synced = MetricRegistry.Get(ClientMetrics.ClockSynchronised);
+        if (!synced)
+        {
+            ImGuiTextSafe.Text("Synchronising... (login burst in progress)");
+            return;
+        }
+
+        long offset = MetricRegistry.Get(ClientMetrics.ClockOffsetMs);
+        long rtt = MetricRegistry.Get(ClientMetrics.ClockRttMs);
+        long jitter = MetricRegistry.Get(ClientMetrics.ClockJitterMs);
+
+        ImGuiTextSafe.Text($"Clock offset: {offset:+0;-0;0} ms  (server minus client)");
+        ImGuiTextSafe.Text($"RTT (median):  {rtt} ms");
+        ImGuiTextSafe.Text($"Jitter:        {jitter} ms");
+        ImGui.Spacing();
+
+        // The interpolation delay formula from docs/time-sync-and-interpolation.md §3.4,
+        // now with a real jitter term instead of the p95 stand-in.
+        double suggested = Math.Clamp(100.0 + 2.0 * jitter, 100.0, 500.0);
+        ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms");
     }
 
     private static string FormatMemory(long bytes)

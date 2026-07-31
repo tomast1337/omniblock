@@ -69,6 +69,8 @@ public enum PacketId : byte
     // so adding messages never consumes another slot here. See Network/Messages/.
     MessageRegistrySyncS2C = 240,
     OmniMessage = 241,
+    TimeSyncRequest = 242,
+    TimeSyncResponse = 243,
 
     Disconnect = 255
 }

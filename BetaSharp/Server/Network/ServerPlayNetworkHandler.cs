@@ -78,6 +78,17 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     }
 
 
+    public override void onTimeSyncRequest(TimeSyncRequestC2SPacket packet)
+    {
+        // T1 was stamped by Connection.Reading before queueing. T2 is zero here — it is stamped
+        // by Connection.WritePacket immediately before the bytes go to the socket, which is as late
+        // as the architecture can place it.
+        TimeSyncResponseS2CPacket response = TimeSyncResponseS2CPacket.Get(
+            packet.Sequence, packet.ClientSendTime, packet.ServerRecvTime, serverSendTime: 0);
+
+        SendPacket(response);
+    }
+
     public override void onPlayerInput(PlayerInputC2SPacket packet) => player.updateInput(packet);
 
     public override void onPlayerMove(PacketPlayerMoveAbstract packet)
