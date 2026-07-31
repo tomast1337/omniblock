@@ -157,7 +157,8 @@ public class ClientNetworkHandler : NetHandler
             EntityInterpolator.Current = Interpolation;
 
             MetricRegistry.Set(ClientMetrics.InterpolationActive, Interpolation.Active);
-            MetricRegistry.Set(ClientMetrics.InterpolationDelayMs, Interpolation.DelayMs);
+            MetricRegistry.Set(ClientMetrics.InterpolationDelayMs, Interpolation.MinAppliedDelayMs);
+            MetricRegistry.Set(ClientMetrics.InterpolationDelayMaxMs, Interpolation.MaxAppliedDelayMs);
             MetricRegistry.Set(ClientMetrics.InterpolationTracked, Interpolation.TrackedCount);
             MetricRegistry.Set(ClientMetrics.InterpolationInterpolated, Interpolation.InterpolatedCount);
             MetricRegistry.Set(ClientMetrics.InterpolationExtrapolated, Interpolation.ExtrapolatedCount);
@@ -202,8 +203,9 @@ public class ClientNetworkHandler : NetHandler
     }
 
     /// <summary>
-    ///     Samples every interpolated entity onto the current render instant. Called once per frame
-    ///     from the world renderer, before entities are drawn.
+    ///     Samples every interpolated entity onto the current instant on the server timeline. Called
+    ///     once per tick, immediately after the entities tick — see
+    ///     <see cref="EntityInterpolator.Apply" /> for why it is not per frame.
     /// </summary>
     public void ApplyInterpolation(World world)
     {

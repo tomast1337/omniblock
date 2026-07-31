@@ -26,6 +26,7 @@ using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Client.UI.Screens.Menu;
 using BetaSharp.Client.UI.Screens.Menu.Net;
+using BetaSharp.Client.Worlds;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Items;
@@ -1036,6 +1037,14 @@ public partial class BetaSharp :
                         --World.Environment.LightningTicksLeft;
                     }
                     World.Entities.TickEntities();
+
+                    // After the tick, so Prev*/LastTick* still hold the previous tick's values and
+                    // the renderer has a real interval to glide across. Before it, they would be
+                    // overwritten and remote entities would step rather than move.
+                    if (World is ClientWorld clientWorld)
+                    {
+                        clientWorld.NetworkHandler.ApplyInterpolation(World);
+                    }
                 }
             }
 

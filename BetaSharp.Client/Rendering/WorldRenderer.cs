@@ -11,7 +11,6 @@ using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Particles;
-using BetaSharp.Client.Worlds;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
@@ -251,14 +250,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
         else
         {
-            // Before anything reads an entity position this frame. Sampling here rather than in the
-            // tick is the point of the whole scheme: render time advances continuously off the
-            // synchronised clock, so a stalled stream does not stall the motion.
-            if (_world is ClientWorld clientWorld)
-            {
-                clientWorld.NetworkHandler.ApplyInterpolation(_world);
-            }
-
             BlockEntityRenderer.Instance.CacheActiveRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, partialTicks);
             EntityRenderDispatcher.Instance.CacheRenderInfo(_world, _textureManager, _game.TextRenderer, _game.Camera, _game.Options, partialTicks);
 

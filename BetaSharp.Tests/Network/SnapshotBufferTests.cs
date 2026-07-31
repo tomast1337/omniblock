@@ -129,6 +129,71 @@ public sealed class SnapshotBufferTests
         }
     }
 
+    // ---- observed interval ----
+
+    [Fact]
+    public void Interval_is_unknown_below_two_snapshots()
+    {
+        SnapshotBuffer buffer = new();
+        Assert.Equal(0, buffer.MedianIntervalMs);
+
+        buffer.Push(At(1000));
+        Assert.Equal(0, buffer.MedianIntervalMs);
+    }
+
+    [Theory]
+    [InlineData(2, 100)]    // players and arrows
+    [InlineData(3, 150)]    // mobs
+    [InlineData(5, 250)]    // boats
+    [InlineData(20, 1000)]  // dropped items
+    public void Interval_matches_the_tracking_frequency_that_produced_it(int ticks, long expected)
+    {
+        // EntityTrackerEntry sends one update every trackingFrequency ticks, so snapshot spacing is
+        // that many 50 ms ticks — not the 50 ms tick itself. Sizing the delay off the wrong one is
+        // what left nothing interpolating.
+        SnapshotBuffer buffer = new();
+        for (int i = 0; i < 6; i++)
+        {
+            buffer.Push(At(1000 + (i * ticks * 50)));
+        }
+
+        Assert.Equal(expected, buffer.MedianIntervalMs);
+    }
+
+    [Fact]
+    public void One_long_stall_does_not_drag_the_interval()
+    {
+        // Median, not mean: an entity that stopped moving and started again leaves one huge gap.
+        SnapshotBuffer buffer = new();
+        buffer.Push(At(1000));
+        buffer.Push(At(1150));
+        buffer.Push(At(1300));
+        buffer.Push(At(6300));  // five second gap
+        buffer.Push(At(6450));
+
+        Assert.Equal(150, buffer.MedianIntervalMs);
+    }
+
+    [Fact]
+    public void A_mob_paced_buffer_interpolates_at_twice_its_interval()
+    {
+        // The exact case that reported Interpolated 0: mobs update every 3 ticks, so a 100 ms delay
+        // left render time permanently past the newest snapshot. At 2x the interval it brackets.
+        SnapshotBuffer buffer = new();
+        for (int i = 0; i < 6; i++)
+        {
+            buffer.Push(At(1000 + (i * 150), x: i));
+        }
+
+        long newest = buffer.NewestServerTimeMs;
+        long delay = buffer.MedianIntervalMs * 2;
+
+        Assert.Equal(SampleKind.Interpolated, buffer.Sample(newest - delay, out _));
+
+        // And the old constant does not, which is the regression being pinned.
+        Assert.NotEqual(SampleKind.Interpolated, buffer.Sample(newest + 150 - 100, out _));
+    }
+
     // ---- clamping ----
 
     [Fact]

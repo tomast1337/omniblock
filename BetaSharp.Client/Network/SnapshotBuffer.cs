@@ -85,6 +85,45 @@ public sealed class SnapshotBuffer
     public long OldestServerTimeMs => _count == 0 ? 0 : At(0).ServerTimeMs;
 
     /// <summary>
+    ///     Median gap between consecutive snapshots, or 0 with fewer than two.
+    ///     <para>
+    ///         This is the quantity the interpolation delay has to be sized against, and it is not
+    ///         the server tick interval. <c>EntityTrackerEntry</c> only sends an update every
+    ///         <c>trackingFrequency</c> ticks — 2 for players, 3 for mobs, 20 for dropped items — so
+    ///         snapshots arrive 100 ms to 1000 ms apart depending on what the entity is. A delay
+    ///         sized for the 50 ms tick leaves render time permanently past the newest snapshot and
+    ///         nothing ever interpolates.
+    ///     </para>
+    ///     <para>
+    ///         Median rather than mean so one stall, or the long gap left by an entity that stopped
+    ///         moving and then started again, does not drag the estimate.
+    ///     </para>
+    /// </summary>
+    public long MedianIntervalMs
+    {
+        get
+        {
+            if (_count < 2)
+            {
+                return 0;
+            }
+
+            Span<long> gaps = stackalloc long[_count - 1];
+            for (int i = 1; i < _count; i++)
+            {
+                gaps[i - 1] = At(i).ServerTimeMs - At(i - 1).ServerTimeMs;
+            }
+
+            gaps.Sort();
+
+            int mid = gaps.Length / 2;
+            return gaps.Length % 2 == 0
+                ? (gaps[mid - 1] + gaps[mid]) / 2
+                : gaps[mid];
+        }
+    }
+
+    /// <summary>
     ///     Appends a snapshot.
     ///     <para>
     ///         Snapshots at or before the newest already held are discarded. TCP delivers in order so

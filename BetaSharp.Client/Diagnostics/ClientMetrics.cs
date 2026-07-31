@@ -43,6 +43,7 @@ internal static class ClientMetrics
     public static readonly MetricHandle<bool> InterpolationActive = MetricRegistry.Register<bool>("client:interp_active");
 
     public static readonly MetricHandle<long> InterpolationDelayMs = MetricRegistry.Register<long>("client:interp_delay_ms");
+    public static readonly MetricHandle<long> InterpolationDelayMaxMs = MetricRegistry.Register<long>("client:interp_delay_max_ms");
     public static readonly MetricHandle<long> InterpolationTracked = MetricRegistry.Register<long>("client:interp_tracked");
     public static readonly MetricHandle<long> InterpolationInterpolated = MetricRegistry.Register<long>("client:interp_interpolated");
     public static readonly MetricHandle<long> InterpolationExtrapolated = MetricRegistry.Register<long>("client:interp_extrapolated");

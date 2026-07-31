@@ -34,6 +34,14 @@ public sealed class EntityInterpolator
     public const long DefaultDelayMs = 100;
 
     /// <summary>
+    ///     Ceiling on the per-entity delay. Dropped items update once a second, and honouring that
+    ///     in full would render them two seconds in the past. Beyond this they starve and hold their
+    ///     last known position instead, which is what the legacy scheme effectively did for them
+    ///     anyway and is unobjectionable for entities that barely move.
+    /// </summary>
+    public const long MaxDelayMs = 600;
+
+    /// <summary>
     ///     Buffers not sampled for this long are dropped. A backstop only — the normal removal path
     ///     is <see cref="Forget" /> from the entity-destroy packet — for entities that leave
     ///     tracking range without one, which would otherwise leak a buffer per entity per session.
@@ -80,6 +88,15 @@ public sealed class EntityInterpolator
     public int ExtrapolatedCount { get; private set; }
     public int FrozenCount { get; private set; }
     public int ClampedCount { get; private set; }
+
+    /// <summary>
+    ///     Range of per-entity delays applied this frame. A range rather than one number because the
+    ///     delay tracks each entity's own update rate — seeing players at 200 ms and items at the
+    ///     600 ms ceiling in the same frame is correct, not a fault.
+    /// </summary>
+    public long MinAppliedDelayMs { get; private set; }
+
+    public long MaxAppliedDelayMs { get; private set; }
 
     /// <summary>Entities currently carrying a snapshot buffer.</summary>
     public int TrackedCount => _buffers.Count;
@@ -128,8 +145,21 @@ public sealed class EntityInterpolator
     }
 
     /// <summary>
-    ///     Samples every tracked entity and writes the result. Call once per frame, before entities
-    ///     are rendered.
+    ///     Samples every tracked entity and writes the result.
+    ///     <para>
+    ///         <b>Called once per tick, immediately after the entities tick</b> — not per frame.
+    ///         Sampling per frame and pinning <c>Prev*</c> to match would make the rendered position
+    ///         independent of <c>partialTicks</c>, which sounds right and is not: it collapses the
+    ///         interval the renderer lerps across, so motion steps at snapshot rate, and it zeroes
+    ///         the <c>X - PrevX</c> delta that <c>EntityLiving.Tick</c> turns into limb animation.
+    ///     </para>
+    ///     <para>
+    ///         Sampling per tick instead leaves the existing two-stage arrangement intact: this sets
+    ///         where the entity is at this tick, and the renderer glides between consecutive ticks
+    ///         exactly as it always has. Render time still advances off the synchronised clock, so
+    ///         the property that matters — that a stalled stream does not stall motion — is
+    ///         unaffected.
+    ///     </para>
     /// </summary>
     /// <param name="serverTimeMs">The client's estimate of the server's clock right now.</param>
     public void Apply(World world, long serverTimeMs)
@@ -138,13 +168,13 @@ public sealed class EntityInterpolator
         ExtrapolatedCount = 0;
         FrozenCount = 0;
         ClampedCount = 0;
+        MinAppliedDelayMs = 0;
+        MaxAppliedDelayMs = 0;
 
         if (!Active || _buffers.Count == 0)
         {
             return;
         }
-
-        long renderTimeMs = serverTimeMs - DelayMs;
 
         foreach (Entity entity in world.Entities.Entities)
         {
@@ -153,7 +183,11 @@ public sealed class EntityInterpolator
                 continue;
             }
 
-            SampleKind kind = buffer.Sample(renderTimeMs, out Snapshot sample);
+            long delay = DelayForMs(buffer);
+            MinAppliedDelayMs = MinAppliedDelayMs == 0 ? delay : Math.Min(MinAppliedDelayMs, delay);
+            MaxAppliedDelayMs = Math.Max(MaxAppliedDelayMs, delay);
+
+            SampleKind kind = buffer.Sample(serverTimeMs - delay, out Snapshot sample);
 
             switch (kind)
             {
@@ -173,17 +207,54 @@ public sealed class EntityInterpolator
                     break;
             }
 
-            // Sets X/Y/Z with their Prev counterparts and refreshes the bounding box. LastTick*
-            // is not covered by it and is read by EntityRenderer and the camera offsets, so it is
-            // pinned separately; leaving it stale would reintroduce a per-frame wobble through the
-            // other interpolation formula.
-            entity.SetPositionAndAngles(sample.X, sample.Y, sample.Z, sample.Yaw, sample.Pitch);
-            entity.LastTickX = sample.X;
-            entity.LastTickY = sample.Y;
-            entity.LastTickZ = sample.Z;
+            // Only the current position. Prev*/LastTick* are deliberately left alone: EntityManager
+            // captured them before the tick and Entity.Tick set PrevX = X, so they already hold the
+            // previous tick's sample. That gives the renderer a real interval to lerp across and
+            // leaves X - PrevX equal to genuine per-tick movement.
+            //
+            // Writing Prev* here instead — as SetPositionAndAngles does — zeroes that delta, and
+            // EntityLiving.Tick derives WalkProgress from it. The visible result is entities that
+            // slide without animating, with only the head still turning.
+            entity.SetPosition(sample.X, sample.Y, sample.Z);
+
+            // Entity.SetRotation is protected internal and out of reach from this assembly; these
+            // are the same two assignments it makes, wrap included.
+            entity.Yaw = sample.Yaw % 360.0F;
+            entity.Pitch = sample.Pitch % 360.0F;
         }
 
         PruneStale(serverTimeMs);
+    }
+
+    /// <summary>
+    ///     How far behind the server clock this particular entity is rendered.
+    ///     <para>
+    ///         Per-entity, because the update rate is per-entity: <c>EntityTrackerEntry</c> sends
+    ///         one update every <c>trackingFrequency</c> ticks and that ranges from 2 (players) to 20
+    ///         (dropped items). A single global delay cannot serve both — sized for players it leaves
+    ///         everything slower permanently starved, and sized for items it renders players half a
+    ///         second in the past.
+    ///     </para>
+    ///     <para>
+    ///         Twice the observed interval, because the newest snapshot is on average half an
+    ///         interval old and can be a full one; anything less than one interval of delay leaves
+    ///         render time past the newest snapshot much of the time, which is exactly the
+    ///         Interpolated-zero case this replaced. <see cref="DelayMs" /> remains the floor, so
+    ///         network jitter is still covered when it exceeds the update spacing.
+    ///     </para>
+    /// </summary>
+    private long DelayForMs(SnapshotBuffer buffer)
+    {
+        long interval = buffer.MedianIntervalMs;
+
+        // Below two snapshots there is no interval to measure and nothing to interpolate between,
+        // so the network floor is as good an answer as exists.
+        if (interval <= 0)
+        {
+            return DelayMs;
+        }
+
+        return Math.Clamp(Math.Max(DelayMs, interval * 2), DelayMs, MaxDelayMs);
     }
 
     private void PruneStale(long serverTimeMs)

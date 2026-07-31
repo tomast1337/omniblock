@@ -130,7 +130,10 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         long frozen = MetricRegistry.Get(ClientMetrics.InterpolationFrozen);
 
-        ImGuiTextSafe.Text($"Delay:        {MetricRegistry.Get(ClientMetrics.InterpolationDelayMs)} ms");
+        // A range: the delay follows each entity's own update rate, so players and dropped items
+        // are legitimately rendered at different depths.
+        ImGuiTextSafe.Text($"Delay:        {MetricRegistry.Get(ClientMetrics.InterpolationDelayMs)}"
+            + $"-{MetricRegistry.Get(ClientMetrics.InterpolationDelayMaxMs)} ms");
         ImGuiTextSafe.Text($"Tracked:      {MetricRegistry.Get(ClientMetrics.InterpolationTracked)}");
         ImGuiTextSafe.Text($"Interpolated: {MetricRegistry.Get(ClientMetrics.InterpolationInterpolated)}");
         ImGuiTextSafe.Text($"Extrapolated: {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)}");
