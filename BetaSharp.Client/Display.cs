@@ -42,6 +42,9 @@ public static unsafe class Display
 
     static Display()
     {
+        // Must happen before Silk.NET resolves GLFW for the first time.
+        PreloadBundledGlfw();
+
         // Initialize GLFW
         _glfw = Glfw.GetApi();
         if (!_glfw.Init())
@@ -55,6 +58,65 @@ public static unsafe class Display
         _initialMode = new DisplayMode(videoMode->Width, videoMode->Height,
             videoMode->RefreshRate, videoMode->RedBits + videoMode->GreenBits + videoMode->BlueBits);
         _currentMode = _initialMode;
+    }
+
+    /// <summary>
+    /// Loads the GLFW bundled with the app, by full path, before Silk.NET can resolve one by name.
+    /// Linux only; a no-op everywhere else.
+    /// </summary>
+    /// <remarks>
+    /// ImGuiImplGLFW.so declares <c>NEEDED: libglfw.so</c> with <c>RUNPATH: $ORIGIN</c>, so it is
+    /// hard-pinned to the GLFW sitting next to it. Silk.NET instead asks the OS for
+    /// "libglfw.so.3" by bare name, which on a machine with GLFW installed system-wide resolves to
+    /// /usr/lib. That leaves two GLFW libraries mapped into one process, each with its own global
+    /// state: Silk creates the window on its instance, the ImGui backend registers input callbacks
+    /// on the other, and because that instance has never seen the window, the callbacks never fire.
+    /// The debug overlay still renders (ImGuiImplOpenGL3 only touches OpenGL) but receives no mouse
+    /// or keyboard input whatsoever.
+    ///
+    /// dlopen-ing the bundled file by full path first fixes both halves: the loaded object is
+    /// registered under its SONAME ("libglfw.so.3"), so Silk's by-name lookup matches it instead of
+    /// searching the system, and ImGuiImplGLFW's "$ORIGIN/libglfw.so" resolves to the same
+    /// st_dev/st_ino, which the dynamic linker deduplicates onto the already-loaded object. Both
+    /// sides then share a single GLFW. Preloading the identically named "libglfw.so" (rather than
+    /// "libglfw.so.3") is what makes the inode match, so the order of the candidates below matters.
+    /// </remarks>
+    private static void PreloadBundledGlfw()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return;
+        }
+
+        string rid = RuntimeInformation.ProcessArchitecture switch
+        {
+            Architecture.X64 => "linux-x64",
+            Architecture.Arm64 => "linux-arm64",
+            Architecture.Arm => "linux-arm",
+            _ => string.Empty
+        };
+
+        List<string> candidates = [];
+        if (rid.Length != 0)
+        {
+            string nativeDir = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native");
+            candidates.Add(Path.Combine(nativeDir, "libglfw.so"));
+            candidates.Add(Path.Combine(nativeDir, "libglfw.so.3"));
+        }
+
+        candidates.Add(Path.Combine(AppContext.BaseDirectory, "libglfw.so"));
+        candidates.Add(Path.Combine(AppContext.BaseDirectory, "libglfw.so.3"));
+
+        foreach (string candidate in candidates)
+        {
+            if (File.Exists(candidate) && NativeLibrary.TryLoad(candidate, out _))
+            {
+                return;
+            }
+        }
+
+        // Nothing bundled: the app is relying on a system-wide GLFW, which both sides will then
+        // resolve to identically. Nothing to do.
     }
 
     /// <summary>

@@ -898,6 +898,24 @@ public partial class BetaSharp :
         if (f3Down && !_prevF3Down)
         {
             Options.ShowDebugInfo = !Options.ShowDebugInfo;
+
+            // The overlay needs a visible cursor to be usable at all: while InGameHasFocus is
+            // true, DebugWindowManager sets ImGuiConfigFlags.NoMouse and ImGui ignores the mouse
+            // entirely. Every other path that drops in-game focus goes through Navigate(screen),
+            // which opens (and pauses behind) a game screen. Releasing here is what makes the
+            // "debug overlay, no screen" row of the state table in
+            // docs/debug-system-implementation-guide.md reachable; closing re-grabs.
+            if (CurrentScreen == null && World != null)
+            {
+                if (Options.ShowDebugInfo)
+                {
+                    SetIngameNotInFocus();
+                }
+                else
+                {
+                    SetIngameFocus();
+                }
+            }
         }
         _prevF3Down = f3Down;
 
@@ -1080,7 +1098,9 @@ public partial class BetaSharp :
 
                         Options.ZoomScale = Math.Clamp(Options.ZoomScale, 1.25F, 20.0F);
                     }
-                    else
+                    // Same rule as clicks: with the cursor freed by the overlay, a wheel event over
+                    // a debug window is the overlay's to scroll, not a hotbar change.
+                    else if (!Options.ShowDebugInfo || InGameHasFocus || _debugWindowManager.GameViewportFocused)
                     {
                         Player.Inventory.ChangeCurrentItem(mouseWheelDelta);
                         if (Options.InvertScrolling)
@@ -1094,9 +1114,17 @@ public partial class BetaSharp :
 
                 if (CurrentScreen == null)
                 {
-                    if (!InGameHasFocus && Mouse.getEventButtonState())
+                    if (!InGameHasFocus)
                     {
-                        SetIngameFocus();
+                        // The cursor is free. A click only means "back into the game" when it lands
+                        // on the game viewport — re-grabbing on any click would swallow the first
+                        // click on every debug widget, and letting it fall through to ClickMouse
+                        // would swing the held item at whatever is behind the overlay.
+                        bool clickTargetsGame = !Options.ShowDebugInfo || _debugWindowManager.GameViewportFocused;
+                        if (Mouse.getEventButtonState() && clickTargetsGame)
+                        {
+                            SetIngameFocus();
+                        }
                     }
                     else
                     {

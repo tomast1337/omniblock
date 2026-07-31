@@ -43,15 +43,27 @@
     ImGuiImplGLFW.so has RUNPATH $ORIGIN and a NEEDED entry for "libglfw.so", but the
     bundled GLFW from ultz.native.glfw is named "libglfw.so.3". The OS dynamic linker
     looks for the exact filename "libglfw.so" in the same directory, so it fails unless
-    we provide a copy under that name. This target runs after every build and creates
-    "libglfw.so" copies in each Linux native output directory that contains "libglfw.so.3".
+    that name exists. This target runs after every build and creates it in each Linux
+    native output directory that contains "libglfw.so.3".
+
+    It MUST be a symlink, not a copy. Both files carry SONAME "libglfw.so.3", but ld.so
+    only collapses two DT_NEEDED requests into one mapping when they resolve to the same
+    st_dev/st_ino. A copy is a distinct inode, so "libglfw.so.3" (loaded by Silk.NET, which
+    creates the window) and "libglfw.so" (loaded via ImGuiImplGLFW.so's NEEDED entry) map as
+    two independent GLFW instances with separate global state. ImGui then registers its
+    input callbacks on the second instance while passing a GLFWwindow* owned by the first,
+    which that instance has never seen — so the callbacks never fire and the debug overlay
+    renders but receives no mouse or keyboard input at all (ImGuiImplOpenGL3 draws fine
+    because it only touches OpenGL). A symlink shares the inode and keeps GLFW a singleton.
   -->
-  <Target Name="CreateGlfwCompatCopy" AfterTargets="Build">
+  <Target Name="CreateGlfwCompatSymlink" AfterTargets="Build" Condition="'$(OS)' != 'Windows_NT'">
     <ItemGroup>
       <_GlfwSo3Files Include="$(OutDir)runtimes\linux-*\native\libglfw.so.3" />
       <_GlfwSo3Files Include="$(OutDir)libglfw.so.3" Condition="Exists('$(OutDir)libglfw.so.3')" />
     </ItemGroup>
-    <Copy SourceFiles="@(_GlfwSo3Files)" DestinationFiles="@(_GlfwSo3Files->'%(RootDir)%(Directory)libglfw.so')" SkipUnchangedFiles="true" />
+    <!-- Remove any regular-file copy left by an older build, otherwise the symlink is skipped. -->
+    <Delete Files="@(_GlfwSo3Files->'%(RootDir)%(Directory)libglfw.so')" />
+    <Exec Command="ln -sfn libglfw.so.3 '%(_GlfwSo3Files.RootDir)%(_GlfwSo3Files.Directory)libglfw.so'" Condition="'@(_GlfwSo3Files)' != ''" />
   </Target>
 
 </Project>
