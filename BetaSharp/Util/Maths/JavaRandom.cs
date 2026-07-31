@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using BetaSharp.Util;
 
 namespace BetaSharp.Util.Maths;
 
@@ -41,6 +42,11 @@ public class JavaRandom
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int Next(int bits)
     {
+        // Single choke point for every draw, so one guard covers NextInt/NextFloat/NextDouble/
+        // NextLong/NextBoolean/NextGaussian. Compiled out unless DETERMINISM_GUARD is defined:
+        // the LCG below is untouched and the release inline is unchanged.
+        DeterminismGuard.AssertPure("JavaRandom draw");
+
         _seed = (_seed * Multiplier + Addend) & Mask;
         return (int)((ulong)_seed >> (48 - bits));
     }

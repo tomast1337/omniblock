@@ -9,6 +9,16 @@
     <RootNamespace>BetaSharp</RootNamespace>
   </PropertyGroup>
 
+  <!--
+    Arms the DeterminismGuard runtime tripwire (Util/DeterminismGuard.cs). Debug only: every guard
+    entry point is [Conditional("DETERMINISM_GUARD")], so a Release build carries no branch and no
+    call. This matters at JavaRandom.Next(int), which is aggressively inlined and drawn from
+    constantly during world generation.
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>$(DefineConstants);DETERMINISM_GUARD</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Brigadier.NET" Version="2.0.15-beta" />
     <PackageReference Include="Hexa.NET.ImGui" Version="2.2.9" />

@@ -3,6 +3,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Rules;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Worlds.Core.Systems;
@@ -15,6 +16,8 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void PlaySoundAtEntity(Entity entity, string sound, float volume, float pitch)
     {
+        DeterminismGuard.AssertPure("sound broadcast");
+
         foreach (IWorldEventListener t in eventListeners)
         {
             t.PlaySound(sound, entity.X, entity.Y - entity.StandingEyeHeight, entity.Z, volume, pitch);
@@ -39,6 +42,8 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
 
     public void AddParticle(string particle, double x, double y, double z, double velocityX, double velocityY, double velocityZ)
     {
+        DeterminismGuard.AssertPure("particle spawn");
+
         foreach (IWorldEventListener t in eventListeners)
         {
             t.SpawnParticle(particle, x, y, z, velocityX, velocityY, velocityZ);
