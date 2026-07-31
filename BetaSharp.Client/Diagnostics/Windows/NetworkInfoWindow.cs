@@ -1,3 +1,4 @@
+using BetaSharp.Client.Network;
 using BetaSharp.Diagnostics;
 using Hexa.NET.ImGui;
 
@@ -83,6 +84,64 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         DrawPacketArrival(isInternal);
         DrawClockSync(isInternal);
+        DrawInterpolation(isInternal);
+    }
+
+    /// <summary>
+    ///     Render-time interpolation, and the switch to turn it off. Toggling live on one connection
+    ///     is the only honest A/B — comparing across two sessions compares two different networks.
+    /// </summary>
+    private static void DrawInterpolation(bool isInternal)
+    {
+        if (!ImGui.CollapsingHeader("Entity interpolation"))
+        {
+            return;
+        }
+
+        if (isInternal)
+        {
+            ImGuiTextSafe.Text("Loopback connection: entities are not interpolated,");
+            ImGuiTextSafe.Text("since there is no transport delay to hide.");
+            return;
+        }
+
+        EntityInterpolator? interpolator = EntityInterpolator.Current;
+        if (interpolator is null)
+        {
+            ImGuiTextSafe.Text("No active connection.");
+            return;
+        }
+
+        bool enabled = interpolator.Enabled;
+        if (ImGui.Checkbox("Enabled", ref enabled))
+        {
+            interpolator.Enabled = enabled;
+        }
+
+        if (!MetricRegistry.Get(ClientMetrics.InterpolationActive))
+        {
+            // Enabled but inactive means the timeline is missing, not that the switch is off. The
+            // two are worth distinguishing here or the checkbox looks broken.
+            ImGuiTextSafe.Text(enabled
+                ? "Inactive: waiting for a stamped, clock-synced server."
+                : "Off: using legacy move-toward-target.");
+            return;
+        }
+
+        long frozen = MetricRegistry.Get(ClientMetrics.InterpolationFrozen);
+
+        ImGuiTextSafe.Text($"Delay:        {MetricRegistry.Get(ClientMetrics.InterpolationDelayMs)} ms");
+        ImGuiTextSafe.Text($"Tracked:      {MetricRegistry.Get(ClientMetrics.InterpolationTracked)}");
+        ImGuiTextSafe.Text($"Interpolated: {MetricRegistry.Get(ClientMetrics.InterpolationInterpolated)}");
+        ImGuiTextSafe.Text($"Extrapolated: {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)}");
+        ImGuiTextSafe.Text($"Frozen:       {frozen}");
+
+        if (frozen > 0)
+        {
+            // Starvation: render time has run past the newest snapshot by more than the
+            // extrapolation cap, which means the delay is too small for this connection.
+            ImGuiTextSafe.Text("Buffer starving; delay is undersized.");
+        }
     }
 
     /// <summary>

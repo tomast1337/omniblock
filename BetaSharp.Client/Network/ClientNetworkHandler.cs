@@ -25,6 +25,7 @@ using BetaSharp.Screens;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
+using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Mechanics;
 using BetaSharp.Worlds.Storage;
 using Microsoft.Extensions.Logging;
@@ -62,6 +63,21 @@ public class ClientNetworkHandler : NetHandler
     ///     fed from <see cref="onTimeSyncResponse" />.
     /// </summary>
     public ServerClock? Clock { get; }
+
+    /// <summary>
+    ///     Render-time interpolation for remote entities. Present on every connection, but only
+    ///     does anything once the server is stamping batches and the clock has synchronised — see
+    ///     <see cref="ShouldInterpolate" />.
+    /// </summary>
+    public EntityInterpolator Interpolation { get; } = new();
+
+    /// <summary>
+    ///     Whether there is a shared timeline to interpolate against. False on the loopback path
+    ///     (no clock), against a server that does not stamp, and during the login burst before the
+    ///     first offset lands. In each case the legacy behaviour stays in charge.
+    /// </summary>
+    public bool ShouldInterpolate =>
+        Clock is { Synchronised: true } && CurrentBatchServerTimeMs != 0;
 
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
@@ -123,11 +139,29 @@ public class ClientNetworkHandler : NetHandler
                 {
                     MetricRegistry.Set(ClientMetrics.TickStampAgeMs, Clock.ServerTimeMs - CurrentBatchServerTimeMs);
                 }
+
+                // A step moved the timeline. Every buffered stamp is on the old one, so they are
+                // dropped rather than interpolated across — gliding through a correction that large
+                // is more visible than cutting to it.
+                if (Clock.ConsumeSnapshotFlush())
+                {
+                    Interpolation.Clear();
+                }
             }
             else
             {
                 MetricRegistry.Set(ClientMetrics.ClockSynchronised, false);
             }
+
+            Interpolation.Available = ShouldInterpolate;
+            EntityInterpolator.Current = Interpolation;
+
+            MetricRegistry.Set(ClientMetrics.InterpolationActive, Interpolation.Active);
+            MetricRegistry.Set(ClientMetrics.InterpolationDelayMs, Interpolation.DelayMs);
+            MetricRegistry.Set(ClientMetrics.InterpolationTracked, Interpolation.TrackedCount);
+            MetricRegistry.Set(ClientMetrics.InterpolationInterpolated, Interpolation.InterpolatedCount);
+            MetricRegistry.Set(ClientMetrics.InterpolationExtrapolated, Interpolation.ExtrapolatedCount);
+            MetricRegistry.Set(ClientMetrics.InterpolationFrozen, Interpolation.FrozenCount);
 
             if (_ticks++ - _lastKeepAliveTime > 200)
             {
@@ -165,6 +199,20 @@ public class ClientNetworkHandler : NetHandler
         // stamping its own, because it runs on the game thread up to a tick later.
         Clock?.Complete(packet.Sequence, packet.ClientSendTime, packet.ServerRecvTime,
             packet.ServerSendTime, packet.ClientRecvTime);
+    }
+
+    /// <summary>
+    ///     Samples every interpolated entity onto the current render instant. Called once per frame
+    ///     from the world renderer, before entities are drawn.
+    /// </summary>
+    public void ApplyInterpolation(World world)
+    {
+        if (Clock is not { Synchronised: true })
+        {
+            return;
+        }
+
+        Interpolation.Apply(world, Clock.ServerTimeMs);
     }
 
     public override void onTickStamp(TickStampS2CPacket packet)
@@ -377,7 +425,36 @@ public class ClientNetworkHandler : NetHandler
             ent.TrackedPosZ = packet.Z;
             float yaw = packet.Yaw * 360 / 256.0F;
             float pitch = packet.Pitch * 360 / 256.0F;
-            ent.SetPositionAndAnglesAvoidEntities(yaw, pitch, 5);
+            RetargetEntity(ent, yaw, pitch);
+        }
+    }
+
+    /// <summary>
+    ///     Hands an entity's new server position to whichever movement scheme is active.
+    ///     <para>
+    ///         The snapshot is always recorded, so toggling <see cref="EntityInterpolator.Enabled" />
+    ///         mid-session takes effect on the next frame rather than after a buffer refills. The
+    ///         legacy retarget is skipped while interpolating: leaving it running would have
+    ///         <c>EntityLiving</c> stepping toward its own target every tick underneath the sampled
+    ///         position, and its collision-and-step block would shove entities around between
+    ///         frames.
+    ///     </para>
+    /// </summary>
+    private void RetargetEntity(Entity entity, float yaw, float pitch)
+    {
+        // TrackedPos* is fixed-point in 1/32 blocks, the same conversion the legacy overload does.
+        Interpolation.Record(
+            entity.ID,
+            CurrentBatchServerTimeMs,
+            entity.TrackedPosX / 32.0D,
+            entity.TrackedPosY / 32.0D,
+            entity.TrackedPosZ / 32.0D,
+            yaw,
+            pitch);
+
+        if (!Interpolation.IsInterpolating(entity.ID))
+        {
+            entity.SetPositionAndAnglesAvoidEntities(yaw, pitch, 5);
         }
     }
 
@@ -386,7 +463,7 @@ public class ClientNetworkHandler : NetHandler
         Entity? ent = GetEntityById(packet);
         if (ent != null)
         {
-            ent.SetPositionAndAnglesAvoidEntities(5);
+            RetargetEntity(ent, ent.Yaw, ent.Pitch);
         }
     }
 
@@ -397,7 +474,7 @@ public class ClientNetworkHandler : NetHandler
         {
             float yaw = packet.Yaw * 360 / 256.0F;
             float pitch = packet.Pitch * 360 / 256.0F;
-            ent.SetPositionAndAnglesAvoidEntities(yaw, pitch, 5);
+            RetargetEntity(ent, yaw, pitch);
         }
     }
 
@@ -409,7 +486,7 @@ public class ClientNetworkHandler : NetHandler
             ent.TrackedPosX += s2CPacket.DeltaX;
             ent.TrackedPosY += s2CPacket.DeltaY;
             ent.TrackedPosZ += s2CPacket.DeltaZ;
-            ent.SetPositionAndAnglesAvoidEntities(5);
+            RetargetEntity(ent, ent.Yaw, ent.Pitch);
         }
     }
 
@@ -423,12 +500,13 @@ public class ClientNetworkHandler : NetHandler
             ent.TrackedPosZ += s2CPacket.DeltaZ;
             float yaw = s2CPacket.Yaw * 360 / 256.0F;
             float pitch = s2CPacket.Pitch * 360 / 256.0F;
-            ent.SetPositionAndAnglesAvoidEntities(yaw, pitch, 5);
+            RetargetEntity(ent, yaw, pitch);
         }
     }
 
     public override void onEntityDestroy(EntityDestroyS2CPacket packet)
     {
+        Interpolation.Forget(packet.EntityId);
         _worldClient.RemoveEntityFromWorld(packet.EntityId);
     }
 

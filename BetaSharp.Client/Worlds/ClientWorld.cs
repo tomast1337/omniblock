@@ -16,6 +16,10 @@ public class ClientWorld : World
 {
     private readonly List<BlockReset> _blockResets = [];
     private readonly ClientNetworkHandler _networkHandler;
+
+    /// <summary>The connection feeding this world. Exposed for the renderer's per-frame
+    ///     interpolation sample, which has no other route to it.</summary>
+    public ClientNetworkHandler NetworkHandler => _networkHandler;
     private MultiplayerChunkCache _chunkCache;
     private readonly HashSet<Entity> forcedEntities = [];
     private readonly HashSet<Entity> pendingEntities = [];

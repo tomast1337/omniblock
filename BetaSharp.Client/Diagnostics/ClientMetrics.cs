@@ -39,5 +39,16 @@ internal static class ClientMetrics
     /// </summary>
     public static readonly MetricHandle<long> TickStampAgeMs = MetricRegistry.Register<long>("client:tick_stamp_age_ms");
 
+    /// <summary>Whether remote entities are being driven from snapshots rather than the legacy path.</summary>
+    public static readonly MetricHandle<bool> InterpolationActive = MetricRegistry.Register<bool>("client:interp_active");
+
+    public static readonly MetricHandle<long> InterpolationDelayMs = MetricRegistry.Register<long>("client:interp_delay_ms");
+    public static readonly MetricHandle<long> InterpolationTracked = MetricRegistry.Register<long>("client:interp_tracked");
+    public static readonly MetricHandle<long> InterpolationInterpolated = MetricRegistry.Register<long>("client:interp_interpolated");
+    public static readonly MetricHandle<long> InterpolationExtrapolated = MetricRegistry.Register<long>("client:interp_extrapolated");
+
+    /// <summary>Entities past the extrapolation cap. A rising count means the delay is undersized.</summary>
+    public static readonly MetricHandle<long> InterpolationFrozen = MetricRegistry.Register<long>("client:interp_frozen");
+
     static ClientMetrics() { }
 }
