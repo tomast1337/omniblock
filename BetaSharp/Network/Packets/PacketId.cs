@@ -71,6 +71,7 @@ public enum PacketId : byte
     OmniMessage = 241,
     TimeSyncRequest = 242,
     TimeSyncResponse = 243,
+    TickStamp = 244,
 
     Disconnect = 255
 }

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using BetaSharp.Util;
 
 namespace BetaSharp.Client.Network;
 
@@ -62,13 +62,6 @@ public sealed class ServerClock
 
     /// <summary>Outstanding probes. Sequence → T0.</summary>
     private readonly Dictionary<uint, long> _pending = [];
-
-    private readonly double _ticksToMs;
-
-    public ServerClock()
-    {
-        _ticksToMs = 1000.0 / Stopwatch.Frequency;
-    }
 
     // ---- queries ----
 
@@ -225,8 +218,7 @@ public sealed class ServerClock
     ///     timestamps from the same machine are meaningful. The offset computed from the four
     ///     timestamps cancels the epochs.
     /// </summary>
-    public static long MonotonicNowMs() =>
-        (long)(Stopwatch.GetTimestamp() * (1000.0 / Stopwatch.Frequency));
+    public static long MonotonicNowMs() => MonotonicClock.NowMs();
 
     // ---- internal ----
 

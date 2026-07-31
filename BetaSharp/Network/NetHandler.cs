@@ -111,6 +111,14 @@ public abstract class NetHandler
     {
     }
 
+    /// <summary>
+    ///     Server announces the simulation instant that the entity updates following it describe.
+    ///     Everything received until the next stamp belongs to this instant.
+    /// </summary>
+    public virtual void onTickStamp(TickStampS2CPacket packet)
+    {
+    }
+
     public virtual void handle(Packet packet)
     {
     }

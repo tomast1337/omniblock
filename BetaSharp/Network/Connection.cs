@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
@@ -187,7 +188,7 @@ public class Connection
     /// </summary>
     private static void StampTimeSyncTimestamp(Packet packet, long timestampTicks)
     {
-        long ms = (long)(timestampTicks * (1000.0 / Stopwatch.Frequency));
+        long ms = MonotonicClock.ToMs(timestampTicks);
 
         switch (packet)
         {
@@ -218,10 +219,10 @@ public class Connection
                     // happens on the game thread up to a full tick later, which would measure the
                     // tick phase instead of the network. T1 and T3 in particular must be on the
                     // read path for clock sync to be honest.
-                    long now = Stopwatch.GetTimestamp();
+                    long now = MonotonicClock.NowTicks();
                     if (_lastReadTimestamp != 0)
                     {
-                        ReadIntervals.Record((now - _lastReadTimestamp) * 1000.0 / Stopwatch.Frequency);
+                        ReadIntervals.Record(MonotonicClock.ElapsedMs(_lastReadTimestamp, now));
                     }
 
                     _lastReadTimestamp = now;
@@ -281,10 +282,10 @@ public class Connection
         // handler where a send-queue drain could add up to a chunk's worth of delay.
         if (packet is TimeSyncResponseS2CPacket response && response.ServerSendTime == 0)
         {
-            response.ServerSendTime = (long)(Stopwatch.GetTimestamp() * (1000.0 / Stopwatch.Frequency));
+            response.ServerSendTime = MonotonicClock.NowMs();
         }
 
-        long start = Stopwatch.GetTimestamp();
+        long start = MonotonicClock.NowTicks();
 
         Packet.Write(packet, _networkStream);
 
@@ -294,7 +295,7 @@ public class Connection
 
         _networkStream.Flush();
 
-        WriteDurations.Record((Stopwatch.GetTimestamp() - start) * 1000.0 / Stopwatch.Frequency);
+        WriteDurations.Record(MonotonicClock.ElapsedMs(start, MonotonicClock.NowTicks()));
 
         if (size > LargestPacketWritten)
         {

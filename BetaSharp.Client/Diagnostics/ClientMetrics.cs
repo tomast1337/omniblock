@@ -29,5 +29,15 @@ internal static class ClientMetrics
     public static readonly MetricHandle<long> ClockJitterMs = MetricRegistry.Register<long>("client:clock_jitter_ms");
     public static readonly MetricHandle<bool> ClockSynchronised = MetricRegistry.Register<bool>("client:clock_synchronised");
 
+    /// <summary>Count of per-tick snapshot stamps received. Zero means the server does not stamp.</summary>
+    public static readonly MetricHandle<long> TickStampsReceived = MetricRegistry.Register<long>("client:tick_stamps_received");
+
+    /// <summary>
+    ///     Age of the newest snapshot stamp, measured against the client's estimate of server time.
+    ///     This is the quantity phase 4's interpolation delay has to cover: render at
+    ///     <c>ServerTime - delay</c> and a delay smaller than this age starves the buffer.
+    /// </summary>
+    public static readonly MetricHandle<long> TickStampAgeMs = MetricRegistry.Register<long>("client:tick_stamp_age_ms");
+
     static ClientMetrics() { }
 }

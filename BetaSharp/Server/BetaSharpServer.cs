@@ -13,6 +13,7 @@ using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Network;
 using BetaSharp.Server.Worlds;
+using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
@@ -58,6 +59,18 @@ public abstract class BetaSharpServer : ICommandOutput
     private readonly Queue<PendingCommand> _pendingCommands = new();
     private readonly object _pendingCommandsLock = new();
     public EntityTracker[] entityTrackers = new EntityTracker[2];
+
+    /// <summary>
+    ///     <see cref="MonotonicClock" /> reading at the start of the most recent simulation tick.
+    ///     This is the instant that every entity position set during that tick describes, and it is
+    ///     what <see cref="TickStampS2CPacket" /> carries — see that packet for why it is not the
+    ///     send time.
+    /// </summary>
+    private long _simulationTimeMs;
+
+    /// <summary>The value last broadcast, so a fixed tick with no simulation between it and the
+    ///     previous one does not re-announce a stamp the client already has.</summary>
+    private long _broadcastSimulationTimeMs;
     public bool onlineMode;
     public bool spawnAnimals;
     public bool pvpEnabled;
@@ -497,6 +510,15 @@ public abstract class BetaSharpServer : ICommandOutput
         playerManager.updateAllChunks();
         playerManager.flushPendingChunkUpdates();
 
+        // Ahead of the tracker, so that TCP's ordering guarantee makes the stamp cover every entity
+        // update that follows it. Skipped when no simulation tick has run since the last broadcast:
+        // Tick and TickFixed are driven by separate accumulators, so they do not interleave 1:1.
+        if (_simulationTimeMs != _broadcastSimulationTimeMs)
+        {
+            _broadcastSimulationTimeMs = _simulationTimeMs;
+            playerManager.sendToAll(TickStampS2CPacket.Get(_simulationTimeMs));
+        }
+
         foreach (EntityTracker t in entityTrackers)
         {
             t.tick();
@@ -506,6 +528,10 @@ public abstract class BetaSharpServer : ICommandOutput
     public void Tick()
     {
         _ticks++;
+
+        // Captured before anything moves. Every position written during this call describes this
+        // instant, whenever the tracker gets around to broadcasting it.
+        _simulationTimeMs = MonotonicClock.NowMs();
 
         for (int i = 0; i < worlds.Length; i++)
         {

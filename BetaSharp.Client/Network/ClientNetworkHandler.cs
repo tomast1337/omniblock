@@ -115,6 +115,14 @@ public class ClientNetworkHandler : NetHandler
                 MetricRegistry.Set(ClientMetrics.ClockRttMs, Clock.RttMedianMs);
                 MetricRegistry.Set(ClientMetrics.ClockJitterMs, Clock.JitterMs);
                 MetricRegistry.Set(ClientMetrics.ClockSynchronised, true);
+
+                // Only meaningful once the clock is synchronised: before that, ServerTimeMs is a
+                // degenerate guess and the age would be a reading of the offset error, not of how
+                // stale the newest batch is.
+                if (CurrentBatchServerTimeMs != 0)
+                {
+                    MetricRegistry.Set(ClientMetrics.TickStampAgeMs, Clock.ServerTimeMs - CurrentBatchServerTimeMs);
+                }
             }
             else
             {
@@ -158,6 +166,30 @@ public class ClientNetworkHandler : NetHandler
         Clock?.Complete(packet.Sequence, packet.ClientSendTime, packet.ServerRecvTime,
             packet.ServerSendTime, packet.ClientRecvTime);
     }
+
+    public override void onTickStamp(TickStampS2CPacket packet)
+    {
+        // Every entity update read after this and before the next stamp describes this instant.
+        // Phase 4 will attach it to snapshots; for now it is recorded so the F3 overlay can show
+        // that the stream really is stamped, and how far behind the client's estimate of server
+        // time the newest batch is.
+        CurrentBatchServerTimeMs = packet.ServerTimeMs;
+        TickStampsReceived++;
+        MetricRegistry.Set(ClientMetrics.TickStampsReceived, TickStampsReceived);
+    }
+
+    /// <summary>
+    ///     Server-clock instant of the most recent <see cref="TickStampS2CPacket" />, or 0 if the
+    ///     stream has never been stamped. Zero is the signal that this server does not stamp — an
+    ///     older OmniBlock build, or the loopback path — and that phase 4's interpolation must fall
+    ///     back to the legacy move-toward-target behaviour rather than interpolate against a
+    ///     timeline that does not exist.
+    /// </summary>
+    public long CurrentBatchServerTimeMs { get; private set; }
+
+    /// <summary>Count of stamps seen, for the overlay. Also distinguishes "not stamped" from
+    ///     "stamped once, long ago".</summary>
+    public long TickStampsReceived { get; private set; }
 
     public override void onHello(LoginHelloPacket packet)
     {

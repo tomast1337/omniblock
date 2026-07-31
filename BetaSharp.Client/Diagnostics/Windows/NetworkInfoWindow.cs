@@ -172,6 +172,30 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // now with a real jitter term instead of the p95 stand-in.
         double suggested = Math.Clamp(100.0 + 2.0 * jitter, 100.0, 500.0);
         ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms");
+
+        ImGui.Spacing();
+
+        long stamps = MetricRegistry.Get(ClientMetrics.TickStampsReceived);
+        if (stamps == 0)
+        {
+            // Distinguishes an unstamped server from a stalled one. Phase 4 must fall back to the
+            // legacy behaviour here rather than interpolate against a timeline that does not exist.
+            ImGuiTextSafe.Text("Snapshot stamps: none (server does not stamp)");
+            return;
+        }
+
+        long age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
+
+        ImGuiTextSafe.Text($"Snapshot stamps: {stamps:N0}");
+        ImGuiTextSafe.Text($"Newest batch age: {age} ms");
+
+        // The delay has to exceed the stamp age or the buffer starves every frame. Flagged rather
+        // than left to be read off two numbers, because it is the one comparison that decides
+        // whether the suggested delay above is usable on this connection.
+        if (age > suggested)
+        {
+            ImGuiTextSafe.Text("  (age exceeds suggested delay: buffer would starve)");
+        }
     }
 
     private static string FormatMemory(long bytes)
