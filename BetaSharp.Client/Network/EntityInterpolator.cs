@@ -147,18 +147,17 @@ public sealed class EntityInterpolator
     /// <summary>
     ///     Samples every tracked entity and writes the result.
     ///     <para>
-    ///         <b>Called once per tick, immediately after the entities tick</b> — not per frame.
-    ///         Sampling per frame and pinning <c>Prev*</c> to match would make the rendered position
-    ///         independent of <c>partialTicks</c>, which sounds right and is not: it collapses the
-    ///         interval the renderer lerps across, so motion steps at snapshot rate, and it zeroes
-    ///         the <c>X - PrevX</c> delta that <c>EntityLiving.Tick</c> turns into limb animation.
+    ///         <b>Called once per tick, immediately before the entities tick</b> — not per frame,
+    ///         and not after. This sets each entity's target; <c>TickMovement</c> moves it there
+    ///         during the tick, between <c>Entity.Tick</c> assigning <c>PrevX = X</c> and
+    ///         <c>EntityLiving.Tick</c> reading <c>X - PrevX</c>. Both the renderer's interpolation
+    ///         interval and the walk animation are derived from that window, so a position written
+    ///         outside it satisfies neither.
     ///     </para>
     ///     <para>
-    ///         Sampling per tick instead leaves the existing two-stage arrangement intact: this sets
-    ///         where the entity is at this tick, and the renderer glides between consecutive ticks
-    ///         exactly as it always has. Render time still advances off the synchronised clock, so
-    ///         the property that matters — that a stalled stream does not stall motion — is
-    ///         unaffected.
+    ///         Render time still advances off the synchronised clock, so the property that matters —
+    ///         that a stalled stream does not stall motion — is unaffected by sampling at tick rate.
+    ///         The renderer's existing <c>partialTicks</c> lerp supplies the sub-tick smoothing.
     ///     </para>
     /// </summary>
     /// <param name="serverTimeMs">The client's estimate of the server's clock right now.</param>
@@ -207,20 +206,16 @@ public sealed class EntityInterpolator
                     break;
             }
 
-            // Only the current position. Prev*/LastTick* are deliberately left alone: EntityManager
-            // captured them before the tick and Entity.Tick set PrevX = X, so they already hold the
-            // previous tick's sample. That gives the renderer a real interval to lerp across and
-            // leaves X - PrevX equal to genuine per-tick movement.
+            // The engine's own in-tick movement hook, with one step so the entity lands exactly on
+            // the sample instead of a fraction of the way toward it.
             //
-            // Writing Prev* here instead — as SetPositionAndAngles does — zeroes that delta, and
-            // EntityLiving.Tick derives WalkProgress from it. The visible result is entities that
-            // slide without animating, with only the head still turning.
-            entity.SetPosition(sample.X, sample.Y, sample.Z);
-
-            // Entity.SetRotation is protected internal and out of reach from this assembly; these
-            // are the same two assignments it makes, wrap included.
-            entity.Yaw = sample.Yaw % 360.0F;
-            entity.Pitch = sample.Pitch % 360.0F;
+            // Setting the position directly does not work, in either order. Entity.Tick assigns
+            // PrevX = X at its start and EntityLiving.Tick reads X - PrevX after TickMovement, so a
+            // write before the tick is erased and a write after it comes too late — either way the
+            // delta is zero, WalkProgress never advances and the legs never move. Routing through
+            // NewPos* puts the movement where every consumer expects it: between those two points,
+            // which is exactly where the scheme this replaces put it.
+            entity.SetPositionAndAnglesAvoidEntities(sample.X, sample.Y, sample.Z, sample.Yaw, sample.Pitch, 1);
         }
 
         PruneStale(serverTimeMs);

@@ -204,8 +204,8 @@ public class ClientNetworkHandler : NetHandler
 
     /// <summary>
     ///     Samples every interpolated entity onto the current instant on the server timeline. Called
-    ///     once per tick, immediately after the entities tick — see
-    ///     <see cref="EntityInterpolator.Apply" /> for why it is not per frame.
+    ///     once per tick, immediately before the entities tick — see
+    ///     <see cref="EntityInterpolator.Apply" /> for why the ordering is load-bearing.
     /// </summary>
     public void ApplyInterpolation(World world)
     {

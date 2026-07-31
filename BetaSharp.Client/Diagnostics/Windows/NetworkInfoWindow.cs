@@ -141,9 +141,11 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         if (frozen > 0)
         {
-            // Starvation: render time has run past the newest snapshot by more than the
-            // extrapolation cap, which means the delay is too small for this connection.
-            ImGuiTextSafe.Text("Buffer starving; delay is undersized.");
+            // Not necessarily a fault. Entities on slow tracking frequencies — dropped items update
+            // once a second — need more delay than the ceiling allows, so they starve by design and
+            // hold position, which is what the legacy scheme did for them too. Worth investigating
+            // only if the count is large or the frozen entities are ones that move.
+            ImGuiTextSafe.Text($"{frozen} starving: update slower than the {EntityInterpolator.MaxDelayMs} ms cap.");
         }
     }
 

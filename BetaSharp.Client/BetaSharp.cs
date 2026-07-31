@@ -1036,15 +1036,15 @@ public partial class BetaSharp :
                     {
                         --World.Environment.LightningTicksLeft;
                     }
-                    World.Entities.TickEntities();
-
-                    // After the tick, so Prev*/LastTick* still hold the previous tick's values and
-                    // the renderer has a real interval to glide across. Before it, they would be
-                    // overwritten and remote entities would step rather than move.
+                    // Before the tick, not after: this sets each entity's target for the tick and
+                    // TickMovement consumes it during the tick, which is where the animation delta
+                    // and the renderer's interpolation interval are both derived from.
                     if (World is ClientWorld clientWorld)
                     {
                         clientWorld.NetworkHandler.ApplyInterpolation(World);
                     }
+
+                    World.Entities.TickEntities();
                 }
             }
 
