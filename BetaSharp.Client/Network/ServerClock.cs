@@ -44,6 +44,12 @@ public sealed class ServerClock
     private const double SlewStepMs = 5.0;
     private const double StepThresholdMs = 200.0;
 
+    /// <summary>
+    ///     How long an outstanding probe is kept before it is assumed lost. Well past any RTT worth
+    ///     accepting — a reply this late would be rejected by the outlier filter anyway.
+    /// </summary>
+    private const long PendingTimeoutMs = 30_000;
+
     private long _appliedOffsetMs;
     private long _targetOffsetMs;
     private long _rttMedianMs;
@@ -226,6 +232,22 @@ public sealed class ServerClock
     {
         uint seq = _nextSequence++;
         long t0 = MonotonicNowMs();
+
+        // Drop probes old enough that a reply is no longer plausible. Without this, every lost
+        // response leaks an entry for the life of the connection, and a peer that drops them all —
+        // as happens when outgoing extended packets are gated off — grows the table unboundedly at
+        // one entry per second.
+        if (_pending.Count > 0)
+        {
+            foreach (uint stale in _pending
+                         .Where(p => t0 - p.Value > PendingTimeoutMs)
+                         .Select(p => p.Key)
+                         .ToArray())
+            {
+                _pending.Remove(stale);
+            }
+        }
+
         _pending[seq] = t0;
         return (seq, t0);
     }

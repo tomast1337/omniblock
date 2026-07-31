@@ -152,6 +152,11 @@ internal sealed class NetworkInfoWindow : DebugWindow
             return;
         }
 
+        // Stamp arrival is reported before and independently of sync state. The two are separate
+        // mechanisms in separate directions, and gating this behind sync hid the fact that stamps
+        // were arriving fine while the client's own probes were being dropped.
+        DrawStampArrival();
+
         bool synced = MetricRegistry.Get(ClientMetrics.ClockSynchronised);
         if (!synced)
         {
@@ -173,29 +178,36 @@ internal sealed class NetworkInfoWindow : DebugWindow
         double suggested = Math.Clamp(100.0 + 2.0 * jitter, 100.0, 500.0);
         ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms");
 
-        ImGui.Spacing();
+        long age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
 
+        // The delay has to exceed the stamp age or the buffer starves every frame. Flagged rather
+        // than left to be read off two numbers, because it is the one comparison that decides
+        // whether the suggested delay above is usable on this connection.
+        if (MetricRegistry.Get(ClientMetrics.TickStampsReceived) > 0 && age > suggested)
+        {
+            ImGuiTextSafe.Text($"Newest batch age {age} ms exceeds it: buffer would starve.");
+        }
+    }
+
+    /// <summary>
+    ///     Whether the server stamps its entity batches, and how stale the newest one is. Server to
+    ///     client, so it works whether or not the client's own clock probes are getting through.
+    /// </summary>
+    private static void DrawStampArrival()
+    {
         long stamps = MetricRegistry.Get(ClientMetrics.TickStampsReceived);
         if (stamps == 0)
         {
             // Distinguishes an unstamped server from a stalled one. Phase 4 must fall back to the
             // legacy behaviour here rather than interpolate against a timeline that does not exist.
             ImGuiTextSafe.Text("Snapshot stamps: none (server does not stamp)");
-            return;
         }
-
-        long age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
-
-        ImGuiTextSafe.Text($"Snapshot stamps: {stamps:N0}");
-        ImGuiTextSafe.Text($"Newest batch age: {age} ms");
-
-        // The delay has to exceed the stamp age or the buffer starves every frame. Flagged rather
-        // than left to be read off two numbers, because it is the one comparison that decides
-        // whether the suggested delay above is usable on this connection.
-        if (age > suggested)
+        else
         {
-            ImGuiTextSafe.Text("  (age exceeds suggested delay: buffer would starve)");
+            ImGuiTextSafe.Text($"Snapshot stamps: {stamps:N0}");
         }
+
+        ImGui.Spacing();
     }
 
     private static string FormatMemory(long bytes)

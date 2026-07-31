@@ -12,6 +12,21 @@ namespace BetaSharp.Network;
 
 public class Connection
 {
+    /// <summary>
+    ///     True once the <em>peer</em> on this connection is known to speak the extended protocol.
+    ///     Gates outgoing <see cref="ExtendedProtocolPacket" />s, so a vanilla peer never receives
+    ///     an id it cannot parse.
+    ///     <para>
+    ///         Set two ways, because the two ends learn it differently. The server infers it from
+    ///         the login signature before it has sent anything. The client has no such signal ahead
+    ///         of time, so both ends also set it on receipt of any extended packet — receiving one
+    ///         is proof the sender speaks the protocol.
+    ///     </para>
+    ///     <para>
+    ///         This is a compatibility filter, not an authorisation check. A peer that sends an
+    ///         extended packet has demonstrated the capability; there is nothing here to bypass.
+    ///     </para>
+    /// </summary>
     public bool betaSharpClient = false;
 
     private readonly ILogger<Connection> _logger = Log.Instance.For<Connection>();
@@ -123,6 +138,13 @@ public class Connection
         }
     }
 
+    /// <summary>
+    ///     Packets queued for the writer but not yet on the socket. A rising depth is the send side
+    ///     of the same stall <see cref="WriteDurations" /> measures, and is what the priority queue
+    ///     in <c>docs/time-sync-and-interpolation.md</c> §4.1 would reorder.
+    /// </summary>
+    public int SendQueueDepth => _sendQueue.Count;
+
     public virtual void tick()
     {
         if (_sendQueue.Count > 1048576)
@@ -186,6 +208,25 @@ public class Connection
     ///     thread, before the packet is queued for the game thread's drain. Called from
     ///     <see cref="Reading" />.
     /// </summary>
+    /// <summary>
+    ///     Marks the peer as speaking the extended protocol once it sends something only such a
+    ///     peer could send.
+    ///     <para>
+    ///         This is the client's only capability signal. The server infers it from the login
+    ///         signature before it has sent anything, but nothing travels back the other way, so
+    ///         without this the client's <see cref="betaSharpClient" /> stays false for the life of
+    ///         the connection and <see cref="sendPacket" /> silently discards every extended packet
+    ///         it tries to send — including the time-sync probes the clock needs to converge.
+    ///     </para>
+    /// </summary>
+    internal void NotePeerCapability(Packet packet)
+    {
+        if (packet is ExtendedProtocolPacket)
+        {
+            betaSharpClient = true;
+        }
+    }
+
     private static void StampTimeSyncTimestamp(Packet packet, long timestampTicks)
     {
         long ms = MonotonicClock.ToMs(timestampTicks);
@@ -227,6 +268,7 @@ public class Connection
 
                     _lastReadTimestamp = now;
 
+                    NotePeerCapability(packet);
                     StampTimeSyncTimestamp(packet, now);
 
                     BytesRead += packet.Size();
