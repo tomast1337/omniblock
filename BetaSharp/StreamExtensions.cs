@@ -6,6 +6,24 @@ namespace BetaSharp;
 
 internal static class StreamExtensions
 {
+    /// <summary>
+    ///     Bytes <see cref="WriteVarInt" /> will emit for <paramref name="value" />, so
+    ///     <c>Packet.Size()</c> can be computed without serialising.
+    /// </summary>
+    public static int VarIntSize(int value)
+    {
+        uint remaining = (uint)value;
+        int bytes = 1;
+
+        while (remaining >= 0x80)
+        {
+            remaining >>= 7;
+            bytes++;
+        }
+
+        return bytes;
+    }
+
     extension(Stream stream)
     {
         public void WriteBoolean(bool value)
@@ -198,6 +216,67 @@ internal static class StreamExtensions
         {
             stream.WriteNamespace(resourceLocation.Namespace);
             stream.WriteAscii256(resourceLocation.Path);
+        }
+
+        /// <summary>
+        ///     Writes a 32-bit value as LEB128: seven bits per byte, low group first, high bit set
+        ///     on every byte but the last. One to five bytes.
+        ///     <para>
+        ///         Deliberately not big-endian like the rest of this file. A varint is a compact
+        ///         encoding rather than a fixed-width integer, and the message layer uses it for
+        ///         lengths and IDs where small values dominate — a message ID below 128 costs one
+        ///         byte instead of four.
+        ///     </para>
+        /// </summary>
+        public void WriteVarInt(int value)
+        {
+            uint remaining = (uint)value;
+
+            while (remaining >= 0x80)
+            {
+                stream.WriteByte((byte)(remaining | 0x80));
+                remaining >>= 7;
+            }
+
+            stream.WriteByte((byte)remaining);
+        }
+
+        /// <summary>
+        ///     Reads a value written by <see cref="WriteVarInt" />. Negative values round-trip: they
+        ///     are cast through <see cref="uint" />, so they occupy the full five bytes.
+        /// </summary>
+        /// <exception cref="InvalidDataException">
+        ///     The encoding runs past five bytes. An unbounded read is a denial of service — a peer
+        ///     sending 0x80 forever would otherwise spin here — so the length is capped rather than
+        ///     trusted.
+        /// </exception>
+        /// <exception cref="EndOfStreamException">The stream ends mid-value.</exception>
+        public int ReadVarInt()
+        {
+            int result = 0;
+            int shift = 0;
+
+            while (true)
+            {
+                int read = stream.ReadByte();
+                if (read < 0)
+                {
+                    throw new EndOfStreamException("Unexpected end of stream while reading a VarInt.");
+                }
+
+                result |= (read & 0x7F) << shift;
+
+                if ((read & 0x80) == 0)
+                {
+                    return result;
+                }
+
+                shift += 7;
+                if (shift >= 35)
+                {
+                    throw new InvalidDataException("VarInt is longer than the five bytes a 32-bit value can occupy.");
+                }
+            }
         }
 
         public byte[] ReadUntil(byte terminator)

@@ -4,6 +4,7 @@ using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
@@ -35,6 +36,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     private Dictionary<int, short> transactions = new();
 
     private readonly ILogger<ServerPlayNetworkHandler> _logger = Log.Instance.For<ServerPlayNetworkHandler>();
+
+    /// <summary>
+    ///     The server's table, shared by every connection. Client-to-server messages resolve against
+    ///     the same ordering the client was told during configuration.
+    /// </summary>
+    public override MessageRegistry? Messages => server.Messages;
 
     public ServerPlayNetworkHandler(BetaSharpServer server, Connection connection, ServerPlayerEntity player)
     {

@@ -1,15 +1,97 @@
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
 
 public abstract class NetHandler
 {
+    private static readonly ILogger<NetHandler> s_logger = Log.Instance.For<NetHandler>();
+
+    /// <summary>Keys already reported as unknown, so a repeating message logs once, not per packet.</summary>
+    private readonly HashSet<int> _reportedUnknownMessages = [];
+
     public abstract bool isServerSide();
 
+    /// <summary>
+    ///     The session's negotiated message table, or null on a handler that does not participate in
+    ///     the extensible layer. Null makes <see cref="onOmniMessage" /> a no-op drop, which is the
+    ///     correct behaviour during login, before negotiation has happened.
+    /// </summary>
+    public virtual MessageRegistry? Messages => null;
+
     public virtual void handleChunkData(ChunkDataS2CPacket packet)
+    {
+    }
+
+    /// <summary>
+    ///     Adopts the server's message ordering. Client side; a server receiving this is a protocol
+    ///     error and ignores it.
+    /// </summary>
+    public virtual void onMessageRegistrySync(MessageRegistrySyncS2CPacket packet)
+    {
+        if (isServerSide())
+        {
+            return;
+        }
+
+        Messages?.AdoptOrdering(packet.Keys);
+    }
+
+    /// <summary>
+    ///     Resolves an envelope against the negotiated table and dispatches it to
+    ///     <see cref="onMessage" />.
+    ///     <para>
+    ///         The unknown-message path is the reason this layer exists, so it lives here rather
+    ///         than in each subclass: an ID this peer cannot decode is logged once and dropped. The
+    ///         envelope already consumed exactly its declared length, so the stream stays aligned
+    ///         and the connection survives — which is precisely what the legacy byte-ID framing
+    ///         cannot offer.
+    ///     </para>
+    /// </summary>
+    public virtual void onOmniMessage(OmniMessagePacket packet)
+    {
+        MessageRegistry? registry = Messages;
+        if (registry is null || !registry.Negotiated)
+        {
+            return;
+        }
+
+        Message? message = registry.Create(packet.MessageId);
+        if (message is null)
+        {
+            if (_reportedUnknownMessages.Add(packet.MessageId))
+            {
+                s_logger.LogInformation(
+                    "Dropping unknown message id {Id} ({Key}); this peer does not implement it. Further occurrences are not logged.",
+                    packet.MessageId,
+                    registry.GetKey(packet.MessageId)?.ToString() ?? "not in table");
+            }
+
+            return;
+        }
+
+        try
+        {
+            using MemoryStream payload = new(packet.Payload, writable: false);
+            message.Read(payload);
+        }
+        catch (Exception e) when (e is InvalidDataException or EndOfStreamException or ArgumentException)
+        {
+            // A malformed payload is contained: the envelope bounded it, so only this message is
+            // lost rather than the connection.
+            s_logger.LogWarning(e, "Malformed payload for message {Key}; dropped.", message.Key);
+            return;
+        }
+
+        onMessage(message);
+    }
+
+    /// <summary>Handles a decoded message. The override point for content and mods.</summary>
+    public virtual void onMessage(Message message)
     {
     }
 

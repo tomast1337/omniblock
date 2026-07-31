@@ -15,6 +15,7 @@ using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -46,6 +47,13 @@ public class ClientNetworkHandler : NetHandler
     private int _lastKeepAliveTime;
 
     private readonly ClientRegistryAccess _clientRegistries = new();
+
+    /// <summary>
+    ///     This connection's message table. Populated locally at construction, then re-ordered to
+    ///     match the server's when <c>MessageRegistrySyncS2CPacket</c> arrives during configuration.
+    ///     Per-connection rather than static, since two servers may advertise different tables.
+    /// </summary>
+    public override MessageRegistry? Messages { get; } = new();
 
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {

@@ -182,6 +182,8 @@ public abstract class Packet
             New(PacketId.FinishConfigurationS2C, true, false, false, () => new FinishConfigurationS2CPacket()),
             New(PacketId.BundleS2C, true, false, false, () => new BundleS2CPacket()),
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
+            New(PacketId.MessageRegistrySyncS2C, true, false, false, () => new MessageRegistrySyncS2CPacket()),
+            New(PacketId.OmniMessage, true, true, false, () => new OmniMessagePacket()),
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);
 

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using BetaSharp.Diagnostics;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -26,6 +27,18 @@ namespace BetaSharp.Server;
 public abstract class BetaSharpServer : ICommandOutput
 {
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
+
+    /// <summary>
+    ///     The extensible message table this server advertises. One instance for the whole server,
+    ///     not one per connection: the advertised ordering is derived from the registered key set,
+    ///     so it is identical for every client and is frozen once, at startup.
+    ///     <para>
+    ///         Content registers into this before <see cref="Init" /> completes. After negotiation
+    ///         it is immutable — <see cref="MessageRegistry.Register" /> throws — because the table
+    ///         has by then been promised to connecting clients.
+    ///     </para>
+    /// </summary>
+    public MessageRegistry Messages { get; } = new();
 
     public Holder<GameMode> DefaultGameMode { get; set; } = new(new GameMode());
 
@@ -96,6 +109,10 @@ public abstract class BetaSharpServer : ICommandOutput
 
         RegisterReloadListener(new DefaultGameModeListener(this));
         RegisterReloadListener(new RecipeManager());
+
+        // Freeze the message table before the listener accepts anyone. Every client is told this
+        // ordering during configuration, so it must not be able to change afterwards.
+        Messages.NegotiateAsServer();
 
         onlineMode = config.GetOnlineMode(true);
         spawnAnimals = config.GetSpawnAnimals(true);
@@ -581,6 +598,11 @@ public abstract class BetaSharpServer : ICommandOutput
     /// </summary>
     public void SendConfigurationTo(Action<Packet> send)
     {
+        // First: it establishes how every later message is identified, so nothing name-keyed can be
+        // sent before the client holds it. Dropped for non-OmniBlock clients by sendPacket, since
+        // it is an ExtendedProtocolPacket.
+        send(MessageRegistrySyncS2CPacket.Get(Messages.NegotiatedOrder));
+
         foreach (RegistryDataS2CPacket packet in RegistryAccess.BuildSyncPackets())
         {
             send(packet);
