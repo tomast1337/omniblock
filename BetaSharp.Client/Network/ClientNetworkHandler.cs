@@ -12,7 +12,6 @@ using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
-using BetaSharp.Registries;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.Network;

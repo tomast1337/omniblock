@@ -4,7 +4,7 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.PathFinding;
 
 /// <summary>
-/// Per-world owner of AI path requests (EntityCreature/EntityWolf), separate from the plain
+/// Per-world owner of AI path requests (EntityCreature, FollowOwnerBehavior), separate from the plain
 /// PathFinder NaturalSpawner uses directly and synchronously. RequestPath just queues; results
 /// get pushed onto the entity (via setPathToEntity) once a batch completes, rather than requiring
 /// the caller to poll for them — a caller that only requests occasionally (e.g. the ~1/80-chance
