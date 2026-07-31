@@ -333,7 +333,10 @@ public partial class BetaSharp :
             Timer,
             navigator: this,
             hasWorld: () => World != null,
-            mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y)
+            mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y),
+            renderTargetSize: () => FramebufferManager is { } fb
+                ? new Vector2D<int>(fb.FramebufferWidth, fb.FramebufferHeight)
+                : new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight())
         );
 
         SkinManager = new SkinManager(TextureManager);

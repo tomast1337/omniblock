@@ -163,8 +163,16 @@ public class UIRenderer
         float right = left + width;
         float bottom = top + height;
 
-        int framebufferWidth = Display.getFramebufferWidth();
-        int framebufferHeight = Display.getFramebufferHeight();
+        // Scissor rectangles are relative to the framebuffer currently bound for drawing, which is
+        // the offscreen FBO the world and screens render into (GameRenderer wraps CurrentScreen.Render
+        // in FramebufferManager.Begin/End). That FBO is the size of the window normally, but is
+        // resized to the ImGui viewport while the F3 overlay hosts the game — so measuring against
+        // the window's framebuffer overstates the scale and pushes the clip rect right, cutting the
+        // left edge off every row of the world and server lists. The origin stays at zero either
+        // way: the FBO starts at the viewport, it does not contain it.
+        Vector2D<int> renderTarget = _context.RenderTargetSize;
+        int framebufferWidth = Math.Max(1, renderTarget.X);
+        int framebufferHeight = Math.Max(1, renderTarget.Y);
         float scaleX = framebufferWidth / (float)res.ScaledWidth;
         float scaleY = framebufferHeight / (float)res.ScaledHeight;
 
