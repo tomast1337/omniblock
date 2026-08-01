@@ -254,6 +254,34 @@ public sealed class ChunkBlobCacheTests : IDisposable
         Assert.Equal(Blob(1), cache.Read(new ChunkPos(1, 2)));
     }
 
+    /// <summary>
+    ///     Data must reach disk without a clean shutdown, because a game usually stops by being
+    ///     killed. A <see cref="FileStream" /> buffers and .NET Core gave it no finalizer that
+    ///     flushes, so relying on <see cref="ChunkBlobCache.Dispose" /> meant an interrupted session
+    ///     cached nothing at all.
+    /// </summary>
+    [Fact]
+    public void Chunks_reach_disk_without_a_clean_shutdown()
+    {
+        // Deliberately not disposed: this models the process going away.
+        ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+
+        for (int i = 0; i < 200; i++)
+        {
+            cache.Write(new ChunkPos(i, 0), (ulong)i, Blob(i));
+        }
+
+        long onDisk = new FileInfo(Path_).Length;
+        Assert.True(onDisk > 0, "nothing was flushed");
+
+        // The handle has to go before another opener can have it, which is the same exclusivity that
+        // made the missing teardown visible in the first place.
+        cache.Dispose();
+
+        using ChunkBlobCache reopened = ChunkBlobCache.Open(Path_);
+        Assert.Equal(200, reopened.Count);
+    }
+
     [Fact]
     public void Entries_lists_everything_held_for_advertising()
     {

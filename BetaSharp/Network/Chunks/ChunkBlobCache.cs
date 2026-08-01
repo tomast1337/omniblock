@@ -71,6 +71,10 @@ public sealed class ChunkBlobCache : IDisposable
     private readonly Dictionary<ChunkPos, Entry> _index = [];
     private FileStream? _file;
     private long _deadBytes;
+    private int _writesSinceFlush;
+
+    /// <summary>How many stored chunks between flushes. See <see cref="Write" />.</summary>
+    private const int WritesPerFlush = 64;
 
     private readonly record struct Entry(ulong Hash, long Offset, int Length);
 
@@ -178,6 +182,17 @@ public sealed class ChunkBlobCache : IDisposable
             _file.Write(blob);
 
             _index[position] = new Entry(hash, recordStart + RecordHeaderBytes, blob.Length);
+
+            // Periodic, because a FileStream buffers and .NET Core deliberately gave it no
+            // finalizer that flushes. Without this, a session that ends any way other than a clean
+            // Dispose loses everything it cached — and "any way other than a clean Dispose" includes
+            // the client being killed, which is how a game usually stops. Every 64 chunks bounds the
+            // loss to about a second of streaming for one write syscall.
+            if (++_writesSinceFlush >= WritesPerFlush)
+            {
+                _writesSinceFlush = 0;
+                Flush();
+            }
         }
         catch (IOException exception)
         {

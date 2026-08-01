@@ -902,6 +902,7 @@ public class ClientNetworkHandler : NetHandler
     {
         _netManager.disconnect("disconnect.kicked");
         Disconnected = true;
+        ReleaseResources();
         _context.WorldHost.ChangeWorld(null);
         _context.Navigator.Navigate(_context.Factory.CreateFailedScreen("disconnect.disconnected", string.Format(Translations.Get("disconnect.genericReason"), packet.Reason), [packet.Reason]));
     }
@@ -911,6 +912,7 @@ public class ClientNetworkHandler : NetHandler
         if (!Disconnected)
         {
             Disconnected = true;
+            ReleaseResources();
             _context.WorldHost.ChangeWorld(null);
             _context.Navigator.Navigate(_context.Factory.CreateFailedScreen("disconnect.lost", reason, args));
         }
@@ -922,6 +924,11 @@ public class ClientNetworkHandler : NetHandler
         {
             SendPacket(packet);
             _netManager.disconnect();
+
+            // This is the path quitting to the title screen actually takes, so teardown belongs here
+            // as much as anywhere. Disconnected is not set: the caller leaves that to the disconnect
+            // handling that follows, and ReleaseResources is safe to run twice.
+            ReleaseResources();
         }
     }
 
@@ -1000,15 +1007,31 @@ public class ClientNetworkHandler : NetHandler
     {
         Disconnected = true;
         _netManager.disconnect("disconnect.closed");
+        ReleaseResources();
+    }
 
-        // The transport owns a bound port and a receive thread. Leaving them behind would leak both
-        // per server the player joins in a session, which the stream transport did not do because
+    /// <summary>
+    ///     Releases everything this connection owns outside managed memory. Idempotent, and called
+    ///     from every path that ends a connection rather than from one of them.
+    ///     <para>
+    ///         That matters because the obvious path is not the common one. Quitting to the title
+    ///         screen goes through <c>ClientWorld.Disconnect</c> and
+    ///         <see cref="SendPacketAndDisconnect" />, never through <see cref="Disconnect" />, which
+    ///         only the connecting screen calls. Hanging teardown off that one left a bound UDP port,
+    ///         a receive thread, and an exclusively-held cache file behind on every ordinary
+    ///         disconnect — the cache made it visible, because the next join could not open its own
+    ///         file and said so.
+    ///     </para>
+    /// </summary>
+    private void ReleaseResources()
+    {
+        // The transport owns a bound port and a receive thread. Leaving them behind leaks both per
+        // server the player joins in a session, which the stream transport did not do because
         // closing its socket was the whole of its teardown.
         _transport?.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
-        // Flushes and compacts. Losing this on an unclean exit costs the session's newly cached
-        // chunks, not the whole cache — appends before the last flush are already durable, and a
-        // partial trailing record is truncated on the next open.
+        // Flushes, compacts, and releases the exclusive handle. Losing this costs the session's
+        // chunks since the last periodic flush, not the whole cache.
         _chunkCache?.Dispose();
         _chunkCache = null;
     }
