@@ -126,12 +126,21 @@ public sealed class ChunkDataMessage : Message
     ///         which is the whole of what a decompression bomb is asking for.
     ///     </para>
     /// </summary>
-    public byte[] Decompress()
+    public byte[] Decompress() => Decompress(Compressed);
+
+    /// <summary>
+    ///     Decompresses a payload in this message's format. Static so the chunk cache, which stores
+    ///     the compressed bytes exactly as they arrived, can read them back without going through a
+    ///     message it does not have.
+    /// </summary>
+    public static byte[] Decompress(byte[] compressed)
     {
-        using MemoryStream input = new(Compressed, writable: false);
+        ArgumentNullException.ThrowIfNull(compressed);
+
+        using MemoryStream input = new(compressed, writable: false);
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
 
-        MemoryStream output = new(Compressed.Length * 4);
+        MemoryStream output = new(compressed.Length * 4);
         byte[] buffer = new byte[8192];
         int read;
 

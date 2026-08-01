@@ -32,6 +32,24 @@ public sealed class ChunkBlobCache : IDisposable
     public const int MaxBlobBytes = 1024 * 1024;
 
     /// <summary>
+    ///     Live bytes kept, after which the chunks furthest from <see cref="LastCentre" /> are
+    ///     dropped.
+    ///     <para>
+    ///         At around two kilobytes a chunk this holds roughly sixty thousand of them, which is a
+    ///         view distance of 32 several times over and far more than one player explores. It
+    ///         exists because there was previously no bound at all: one file per world per server,
+    ///         growing for as long as the player keeps visiting. Measured at 118 MB for a single
+    ///         world before records were stored compressed.
+    ///     </para>
+    ///     <para>
+    ///         Furthest-first, because the value of an entry is the chance the player comes back to
+    ///         it, and the offer is centred on where they logged out. Least-recently-used would need
+    ///         a timestamp per record and would answer a worse question.
+    ///     </para>
+    /// </summary>
+    public const long MaxLiveBytes = 128L * 1024 * 1024;
+
+    /// <summary>
     ///     Chunk coordinates, hash, and where the payload lives. Sixteen bytes of header plus the
     ///     four-byte length precede every payload on disk.
     /// </summary>
@@ -40,7 +58,11 @@ public sealed class ChunkBlobCache : IDisposable
     /// <summary>Identifies the file, so a foreign or older one is discarded rather than parsed.</summary>
     private const uint Magic = 0x4F42_4348;   // "OBCH"
 
-    private const byte FormatVersion = 1;
+    /// <summary>
+    ///     Bumped to 2 when records changed from decoded blobs to the compressed bytes as received.
+    ///     An older file is discarded rather than misread, which for a cache costs one re-fetch.
+    /// </summary>
+    private const byte FormatVersion = 2;
 
     /// <summary>
     ///     Magic, version, three reserved bytes, then the chunk coordinates the player was last at.
@@ -212,7 +234,14 @@ public sealed class ChunkBlobCache : IDisposable
 
         try
         {
-            if (_deadBytes > 0 && _deadBytes >= LiveBytes() * CompactionRatio)
+            long live = LiveBytes();
+
+            if (live > MaxLiveBytes)
+            {
+                EvictFurthest(live);
+                Compact();
+            }
+            else if (_deadBytes > 0 && _deadBytes >= live * CompactionRatio)
             {
                 Compact();
             }
@@ -236,6 +265,35 @@ public sealed class ChunkBlobCache : IDisposable
     }
 
     // ---- internals ----
+
+    /// <summary>
+    ///     Drops the entries furthest from <see cref="LastCentre" /> until the live set fits.
+    ///     <para>
+    ///         Index only — the records stay on disk until <see cref="Compact" /> rewrites the file,
+    ///         which is why the caller does both. Dropping them from the index is what makes them
+    ///         dead weight for the compactor to leave behind.
+    ///     </para>
+    /// </summary>
+    private void EvictFurthest(long live)
+    {
+        foreach ((ChunkPos position, Entry entry) in _index
+                     .OrderByDescending(pair => Math.Max(
+                         Math.Abs(pair.Key.X - LastCentre.X),
+                         Math.Abs(pair.Key.Z - LastCentre.Z)))
+                     .ToArray())
+        {
+            if (live <= MaxLiveBytes)
+            {
+                break;
+            }
+
+            live -= RecordHeaderBytes + entry.Length;
+            _deadBytes += RecordHeaderBytes + entry.Length;
+            _index.Remove(position);
+        }
+
+        s_logger.LogInformation("Chunk cache trimmed to {Count} chunks.", _index.Count);
+    }
 
     private long LiveBytes()
     {
