@@ -323,7 +323,23 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     private void onChunkUnchanged(ChunkUnchangedMessage message)
     {
-        byte[]? blob = _chunkCache?.Read(new ChunkPos(message.ChunkX, message.ChunkZ));
+        byte[]? stored = _chunkCache?.Read(new ChunkPos(message.ChunkX, message.ChunkZ));
+        byte[]? blob = null;
+
+        if (stored is not null)
+        {
+            try
+            {
+                blob = ChunkDataMessage.Decompress(stored);
+            }
+            catch (InvalidDataException exception)
+            {
+                // A cache entry that will not decompress is the cache being wrong, which it is
+                // allowed to be. Treated as a miss.
+                _logger.LogWarning(exception, "Cached chunk {X},{Z} is unreadable.", message.ChunkX, message.ChunkZ);
+            }
+        }
+
         if (blob is null)
         {
             _logger.LogWarning(
@@ -342,6 +358,7 @@ public class ClientNetworkHandler : NetHandler
 
         _chunksFromCache++;
         _chunkBytesSaved += blob.Length;
+        _ = stored;
         MetricRegistry.Set(ClientMetrics.ChunksFromCache, _chunksFromCache);
         MetricRegistry.Set(ClientMetrics.ChunkCacheBytesSaved, _chunkBytesSaved);
     }
@@ -365,10 +382,14 @@ public class ClientNetworkHandler : NetHandler
         byte[] blob = message.Decompress();
         _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, blob);
 
-        // Cached under the hash the server would compute for the same bytes. Nothing carries the
-        // hash on the wire: it is a function of the blob, so both ends derive it and there is no
-        // opportunity for the two to disagree about what a chunk hashes to.
-        _chunkCache?.Write(new ChunkPos(message.ChunkX, message.ChunkZ), ChunkHash.Of(blob), blob);
+        // Stored compressed, exactly as it arrived. The blob is six times larger and we already
+        // hold the small version, so decompressing to store it would spend disk to save a
+        // decompression that the network path pays anyway.
+        //
+        // The hash is still over the *decoded* blob, because that is what the server hashes. It goes
+        // in the record, so reading back never has to re-derive it from bytes it no longer has.
+        _chunkCache?.Write(
+            new ChunkPos(message.ChunkX, message.ChunkZ), ChunkHash.Of(blob), message.Compressed);
 
         _chunksViaMessage++;
         _chunkMessageBytes += message.Compressed.Length;

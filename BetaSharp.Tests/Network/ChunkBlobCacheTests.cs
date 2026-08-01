@@ -282,6 +282,35 @@ public sealed class ChunkBlobCacheTests : IDisposable
         Assert.Equal(200, reopened.Count);
     }
 
+    /// <summary>
+    ///     The cache is bounded. It previously was not, and a single world reached 118 MB — one file
+    ///     per world per server, growing for as long as the player kept visiting.
+    /// </summary>
+    [Fact]
+    public void The_cache_is_trimmed_to_its_size_bound()
+    {
+        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        cache.LastCentre = new ChunkPos(0, 0);
+
+        // Deliberately over the bound, using large records so the count stays manageable.
+        const int recordBytes = ChunkBlobCache.MaxBlobBytes;
+        int needed = (int)(ChunkBlobCache.MaxLiveBytes / recordBytes) + 8;
+
+        for (int i = 0; i < needed; i++)
+        {
+            cache.Write(new ChunkPos(i, 0), (ulong)i, new byte[recordBytes]);
+        }
+
+        cache.Flush();
+
+        Assert.True(cache.Count < needed, "nothing was evicted");
+
+        // Furthest-first: the chunks nearest the centre are the ones kept, because the offer is
+        // centred there and proximity is the best guess at what will be wanted again.
+        Assert.NotNull(cache.Read(new ChunkPos(0, 0)));
+        Assert.Null(cache.Read(new ChunkPos(needed - 1, 0)));
+    }
+
     [Fact]
     public void Entries_lists_everything_held_for_advertising()
     {
