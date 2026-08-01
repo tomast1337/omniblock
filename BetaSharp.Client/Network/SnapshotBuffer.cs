@@ -33,7 +33,11 @@ public enum SampleKind
     /// </summary>
     Extrapolated,
 
-    /// <summary>Past the extrapolation cap. The entity holds still until data arrives.</summary>
+    /// <summary>
+    ///     Past the extrapolation cap. The entity holds at the capped position until data arrives —
+    ///     where the extrapolation had reached, not where the newest snapshot left it, so that giving
+    ///     up on the guess is not itself a visible jump.
+    /// </summary>
     Frozen
 }
 
@@ -63,7 +67,17 @@ public enum SampleKind
 /// </summary>
 public sealed class SnapshotBuffer
 {
-    /// <summary>Twenty updates, whatever rate this entity is tracked at.</summary>
+    /// <summary>
+    ///     Twenty updates, whatever rate this entity is tracked at.
+    ///     <para>
+    ///         This is also what bounds recovery from a stall, and it binds before the delay's own
+    ///         three-second ceiling does. <see cref="EntityInterpolator" /> pins render time while an
+    ///         entity is starved so that playback resumes where it stopped, but it can only pin
+    ///         within the history still held — twenty updates is two seconds for a player and less
+    ///         for anything faster. A stall longer than that overwrites the entries render time was
+    ///         pinned among, and recovery skips regardless of how much delay was banked.
+    ///     </para>
+    /// </summary>
     public const int Capacity = 20;
 
     /// <summary>
@@ -217,11 +231,17 @@ public sealed class SnapshotBuffer
     private SampleKind SampleAheadOfBuffer(long renderTimeMs, in Snapshot newest, out Snapshot result)
     {
         long ahead = renderTimeMs - newest.ServerTimeMs;
+        bool frozen = ahead > ExtrapolationCapMs;
 
-        if (ahead > ExtrapolationCapMs)
+        // Past the cap the entity holds *where the extrapolation had reached*, not where the newest
+        // snapshot put it. Returning the snapshot instead makes freezing a jump backwards by up to a
+        // quarter second of motion — the model walks forward on the guess, then snaps back the
+        // moment the guess is abandoned, which is a visible event caused entirely by giving up.
+        // Clamping keeps the position continuous, so freezing is the motion stopping and nothing
+        // more.
+        if (frozen)
         {
-            result = newest;
-            return SampleKind.Frozen;
+            ahead = ExtrapolationCapMs;
         }
 
         // Velocity from the last interval. Angles are deliberately not extrapolated — a player
@@ -240,13 +260,15 @@ public sealed class SnapshotBuffer
 
         result = newest with
         {
-            ServerTimeMs = renderTimeMs,
+            // The instant the returned position actually describes, which is render time only while
+            // extrapolating; once frozen it is the capped instant the motion stopped at.
+            ServerTimeMs = newest.ServerTimeMs + ahead,
             X = newest.X + ((newest.X - previous.X) * scale),
             Y = newest.Y + ((newest.Y - previous.Y) * scale),
             Z = newest.Z + ((newest.Z - previous.Z) * scale)
         };
 
-        return SampleKind.Extrapolated;
+        return frozen ? SampleKind.Frozen : SampleKind.Extrapolated;
     }
 
     private static Snapshot Lerp(in Snapshot s0, in Snapshot s1, double t, long renderTimeMs) => new(

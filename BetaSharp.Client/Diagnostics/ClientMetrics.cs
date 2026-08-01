@@ -62,5 +62,12 @@ internal static class ClientMetrics
     public static readonly MetricHandle<long> InterpolationFrozen = MetricRegistry.Register<long>("client:interp_frozen");
     public static readonly MetricHandle<long> InterpolationAdjusting = MetricRegistry.Register<long>("client:interp_adjusting");
 
+    /// <summary>
+    ///     Cumulative entries into starvation, not entities currently in it. The rising-count metric
+    ///     from <c>docs/time-sync-and-interpolation.md</c> §3.5 — a standing Frozen count says some
+    ///     entities are idle, whereas this climbing says the buffer is undersized for this link.
+    /// </summary>
+    public static readonly MetricHandle<long> InterpolationStarvations = MetricRegistry.Register<long>("client:interp_starvations");
+
     static ClientMetrics() { }
 }

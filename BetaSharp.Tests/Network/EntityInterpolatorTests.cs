@@ -128,10 +128,68 @@ public sealed class EntityInterpolatorTests
     [Fact]
     public void The_default_delay_is_the_documented_floor()
     {
-        // clamp(2 * tickInterval + 2 * jitter, 100, 500) with zero jitter. Two tick intervals at
+        // The floor from clamp(2 * interval + 2 * jitter, floor, bound). Two tick intervals at
         // 20 TPS is the minimum that keeps two snapshots bracketing render time.
         Assert.Equal(100, EntityInterpolator.DefaultDelayMs);
         Assert.Equal(EntityInterpolator.DefaultDelayMs, new EntityInterpolator().DelayMs);
+    }
+
+    /// <summary>
+    ///     §3.4's jitter term, which was measured from phase 2 onward and never applied. It reads 4 ms
+    ///     on loopback UDP and 0 on loopback TCP, which is why it could not be sized from a local
+    ///     session and why it is added rather than tuned: twice the mean absolute deviation is what
+    ///     the design asks for, and there is nothing local to calibrate against.
+    /// </summary>
+    [Theory]
+    [InlineData(0, 300)]
+    [InlineData(20, 340)]
+    [InlineData(80, 460)]
+    public void Jitter_widens_every_entitys_delay_by_twice_its_value(long jitterMs, long expected)
+    {
+        EntityInterpolator interpolator = new() { NetworkJitterMs = jitterMs };
+
+        Assert.Equal(expected, interpolator.DelayForMs(BufferAtInterval(150)));
+    }
+
+    /// <summary>
+    ///     Added to the interval term rather than folded into it. They answer different questions —
+    ///     how often the server speaks about this entity, and how unevenly the network delivers what
+    ///     it says — so an entity on a slow tracking frequency over a jittery link needs both
+    ///     margins, not the larger of the two.
+    /// </summary>
+    [Fact]
+    public void The_jitter_margin_applies_on_top_of_a_slow_tracking_frequency()
+    {
+        EntityInterpolator interpolator = new() { NetworkJitterMs = 100 };
+
+        // A dropped item at one update per second: 2000 ms of interval, plus 200 ms of jitter.
+        Assert.Equal(2200, interpolator.DelayForMs(BufferAtInterval(1000)));
+    }
+
+    /// <summary>
+    ///     Jitter cannot push the delay past the bound. It is measured from a peer that may be
+    ///     misbehaving, and an unbounded delay is a worse failure than a jittery one.
+    /// </summary>
+    [Fact]
+    public void The_jitter_margin_is_still_bounded()
+    {
+        EntityInterpolator interpolator = new() { NetworkJitterMs = 10_000 };
+
+        Assert.Equal(EntityInterpolator.MaxDelayMs, interpolator.DelayForMs(BufferAtInterval(150)));
+    }
+
+    /// <summary>
+    ///     The floor case: too few snapshots to measure an interval still gets the jitter margin,
+    ///     since a newly-tracked entity on a jittery link is exactly where the margin is needed.
+    /// </summary>
+    [Fact]
+    public void A_buffer_with_no_measurable_interval_still_gets_the_jitter_margin()
+    {
+        EntityInterpolator interpolator = new() { NetworkJitterMs = 40 };
+
+        Assert.Equal(
+            EntityInterpolator.DefaultDelayMs + 80,
+            interpolator.DelayForMs(BufferAtInterval(150, snapshots: 1)));
     }
 
     private static SnapshotBuffer BufferAtInterval(long intervalMs, int snapshots = 8)
