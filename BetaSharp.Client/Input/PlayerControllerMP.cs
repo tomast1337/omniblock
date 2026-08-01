@@ -215,14 +215,14 @@ public class PlayerControllerMP : PlayerController
     public override void AttackEntity(EntityPlayer player, Entity target)
     {
         SyncCurrentPlayItem();
-        _netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 1));
+        _netClientHandler.SendInteractEntity(player.ID, target.ID, 1);
         player.Attack(target);
     }
 
     public override void InteractWithEntity(EntityPlayer player, Entity target)
     {
         SyncCurrentPlayItem();
-        _netClientHandler.AddToSendQueue(PlayerInteractEntityC2SPacket.Get(player.ID, target.ID, 0));
+        _netClientHandler.SendInteractEntity(player.ID, target.ID, 0);
         player.Interact(target);
     }
 

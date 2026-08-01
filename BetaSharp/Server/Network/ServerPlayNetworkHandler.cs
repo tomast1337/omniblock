@@ -11,6 +11,7 @@ using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens.Slots;
 using BetaSharp.Server.Command;
+using BetaSharp.Server.Entities;
 using BetaSharp.Server.Internal;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -88,6 +89,10 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
             case ChunkCacheOfferMessage offer:
                 onChunkCacheOffer(offer);
+                break;
+
+            case InteractEntityMessage interact:
+                InteractWithEntity(interact.EntityId, interact.Action, interact.RenderTimeMs);
                 break;
         }
     }
@@ -651,21 +656,68 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     public string Name => player.Name;
     public byte PermissionLevel => server.playerManager.isOperator(player.Name) ? (byte)4 : (byte)0;
 
+    /// <summary>
+    ///     The legacy path, from a peer that cannot say when it was aiming. It gets no rewind, which
+    ///     is what every peer got before <see cref="InteractEntityMessage" /> existed.
+    /// </summary>
     public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
     {
+        ArgumentNullException.ThrowIfNull(packet);
+
+        InteractWithEntity(packet.EntityId, (byte)packet.IsLeftClick, renderTimeMs: 0);
+    }
+
+    /// <summary>
+    ///     Resolves a click on an entity, checking reach against where the clicking player actually
+    ///     saw the target rather than against where it is now.
+    ///     <para>
+    ///         <b>Only the reach check is rewound.</b> The effect — damage, knockback, whatever the
+    ///         interaction does — lands on the entity in the present, because that is the entity that
+    ///         exists. Rewinding the world to apply an effect in the past would mean reconciling
+    ///         everything that happened since, which is a different and much larger problem than the
+    ///         one worth solving here: a hit that was visibly on target being rejected for latency
+    ///         the player did not cause.
+    ///     </para>
+    ///     <para>
+    ///         The attacker's own position is not rewound and must not be. They are authoritative
+    ///         over it and it is already the position they had when they clicked; rewinding it too
+    ///         would double-count the latency and hand back reach.
+    ///     </para>
+    /// </summary>
+    private void InteractWithEntity(int entityId, byte action, long renderTimeMs)
+    {
         ServerWorld playerWorld = server.getWorld(player.DimensionId);
-        Entity? targetEntity = playerWorld.getEntity(packet.EntityId);
-        float reach = player.GameMode.EntityReach + 1f;
-        if (targetEntity != null && player.CanSee(targetEntity) && player.GetSquaredDistance(targetEntity) < reach * reach)
+        Entity? targetEntity = playerWorld.getEntity(entityId);
+
+        if (targetEntity is null || !player.CanSee(targetEntity))
         {
-            if (packet.IsLeftClick == 0)
-            {
-                player.Interact(targetEntity);
-            }
-            else if (packet.IsLeftClick == 1)
-            {
-                player.Attack(targetEntity);
-            }
+            return;
+        }
+
+        float reach = player.GameMode.EntityReach + 1f;
+
+        long rewindMs = EntityPositionHistory.ClampRewind(renderTimeMs, server.SimulationTimeMs);
+        EntityPositionHistory? history = server.getEntityTracker(player.DimensionId).HistoryFor(entityId);
+
+        // Falls through to the present when the entity has no history — it was spawned this tick, or
+        // nothing tracks it — which is the same answer as no rewind and needs no separate branch.
+        double squaredDistance =
+            history is not null && history.Sample(rewindMs, out double pastX, out double pastY, out double pastZ)
+                ? player.GetSquaredDistance(pastX, pastY, pastZ)
+                : player.GetSquaredDistance(targetEntity);
+
+        if (squaredDistance >= reach * reach)
+        {
+            return;
+        }
+
+        if (action == 0)
+        {
+            player.Interact(targetEntity);
+        }
+        else if (action == 1)
+        {
+            player.Attack(targetEntity);
         }
     }
 

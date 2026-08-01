@@ -34,6 +34,13 @@ internal class EntityTrackerEntry
     public bool newPlayerDataUpdated;
     public HashSet<ServerPlayerEntity> listeners = [];
 
+    /// <summary>
+    ///     Where this entity has been for the last couple of seconds, for lag-compensated hit
+    ///     registration. Lives on the tracker entry because its lifetime is exactly the entry's — an
+    ///     entity nobody tracks is one nobody can have aimed at.
+    /// </summary>
+    public EntityPositionHistory History { get; } = new();
+
     public EntityTrackerEntry(Entity entity, int trackedDistance, int trackedFrequency, bool alwaysUpdateVelocity)
     {
         currentTrackedEntity = entity;
@@ -57,8 +64,14 @@ internal class EntityTrackerEntry
         return currentTrackedEntity.ID;
     }
 
-    public void notifyNewLocation(IEnumerable<ServerPlayerEntity> players)
+    public void notifyNewLocation(IEnumerable<ServerPlayerEntity> players, long simulationTimeMs)
     {
+        // Before any of the send decisions below, and unconditionally. What gets broadcast is a
+        // question of bandwidth; where the entity actually was is a question of fact, and hit
+        // registration needs the latter at full tick resolution even for an entity the tracker has
+        // decided is not worth a packet this tick.
+        History.Record(simulationTimeMs, currentTrackedEntity.X, currentTrackedEntity.Y, currentTrackedEntity.Z);
+
         newPlayerDataUpdated = false;
         if (!isInitialized || currentTrackedEntity.GetSquaredDistance(x, y, z) > 16.0)
         {
