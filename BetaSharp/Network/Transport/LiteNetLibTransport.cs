@@ -279,6 +279,22 @@ public sealed class LiteNetLibTransport : ITransport
 
         public bool TryReceive(out ReceivedDatagram datagram) => _inbox.TryDequeue(out datagram);
 
+        /// <summary>
+        ///     Depth of the peer's outgoing reliable-ordered queue for one channel. Both delivery
+        ///     modes we map onto a channel are asked for, since a caller pacing against a channel
+        ///     cares about everything queued on it and not about how it was addressed.
+        /// </summary>
+        public int PendingPackets(byte channel)
+        {
+            if (!_connected || channel >= channelCount)
+            {
+                return 0;
+            }
+
+            return peer.GetPacketsCountInReliableQueue(channel, ordered: true)
+                + peer.GetPacketsCountInReliableQueue(channel, ordered: false);
+        }
+
         public void Close(DisconnectReason reason)
         {
             if (_connected)

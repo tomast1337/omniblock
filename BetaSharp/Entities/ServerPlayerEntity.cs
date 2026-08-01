@@ -27,7 +27,6 @@ namespace BetaSharp.Entities;
 
 public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 {
-    private const int MaxChunkPackets = 16;
     private static readonly ILogger s_logger = Log.Instance.For<ServerPlayerEntity>();
     private readonly ItemStack?[] _equipment = [null, null, null, null, null];
     private readonly PlayerChunkSendQueue _pendingChunkUpdates = new();
@@ -298,7 +297,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
     }
 
-    private bool CanSendMoreChunkData() => NetworkHandler != null && NetworkHandler.getBlockDataSendQueueSize() < MaxChunkPackets;
+    /// <summary>
+    ///     Paces chunk streaming against the transport's own queue. See <see cref="ChunkSendPacer" />
+    ///     for why the queue rather than a bandwidth estimate.
+    /// </summary>
+    private readonly ChunkSendPacer _chunkPacer = new();
 
     public void ResetChunkStreamingState()
     {
@@ -326,17 +329,28 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
 
         ServerWorld world = _server.getWorld(DimensionId);
-        while (CanSendMoreChunkData() && _pendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
+        _chunkPacer.BeginTick();
+
+        int pending = NetworkHandler?.getWorldPacketBacklog() ?? 0;
+
+        // CanSend is evaluated first, so a refusal leaves the queue untouched: the chunk stays at
+        // its priority and is reconsidered next tick, by which time the player may have moved and
+        // re-prioritising should decide afresh.
+        while (_chunkPacer.CanSend(pending) && _pendingChunkUpdates.TryDequeue(out ChunkPos chunkPos))
         {
             if (!ActiveChunks.Contains(chunkPos))
             {
                 continue;
             }
 
-            SendChunkData(world, chunkPos);
+            _chunkPacer.Record(SendChunkData(world, chunkPos));
             ChunksTerrainSentToClient[chunkPos] = Environment.TickCount64;
             SendBlockEntityUpdates(world, chunkPos);
             _server.getEntityTracker(DimensionId).updateListenerForChunk(this, chunkPos.X, chunkPos.Z);
+
+            // Re-read rather than assume: block updates and block entities for the chunk just sent
+            // share this queue, so the depth after one chunk is not the depth before it plus one.
+            pending = NetworkHandler?.getWorldPacketBacklog() ?? 0;
         }
     }
 
@@ -358,12 +372,13 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         return new ChunkPriority(ring, directionPenalty, sequence);
     }
 
-    private void SendChunkData(IWorldContext world, ChunkPos chunkPos)
+    /// <summary>Sends one chunk and returns the bytes it cost, for the pacer.</summary>
+    private int SendChunkData(IWorldContext world, ChunkPos chunkPos)
     {
         ServerPlayNetworkHandler? handler = NetworkHandler;
         if (handler is null)
         {
-            return;
+            return 0;
         }
 
         // A peer that speaks the protocol gets the palette encoding; a vanilla client, and loopback,
@@ -387,23 +402,27 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             if (OfferedChunkHashes.TryGetValue(chunkPos, out ulong offered)
                 && offered == ChunkHash.Of(blob))
             {
-                handler.SendMessage(new ChunkUnchangedMessage { ChunkX = chunkPos.X, ChunkZ = chunkPos.Z });
-                return;
+                ChunkUnchangedMessage unchanged = new() { ChunkX = chunkPos.X, ChunkZ = chunkPos.Z };
+                handler.SendMessage(unchanged);
+                return unchanged.Size();
             }
 
-            handler.SendMessage(new ChunkDataMessage
+            ChunkDataMessage message = new()
             {
                 ChunkX = chunkPos.X,
                 ChunkZ = chunkPos.Z,
                 Compressed = ChunkDataMessage.Compress(blob),
-            });
+            };
 
-            return;
+            handler.SendMessage(message);
+            return message.Size();
         }
 
         int worldX = chunkPos.X * 16;
         int worldZ = chunkPos.Z * 16;
-        handler.SendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, ChuckFormat.WorldHeight, 16, world));
+        ChunkDataS2CPacket packet = ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, ChuckFormat.WorldHeight, 16, world);
+        handler.SendPacket(packet);
+        return packet.Size();
     }
 
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)

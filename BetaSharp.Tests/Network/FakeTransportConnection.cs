@@ -34,6 +34,11 @@ internal sealed class FakeTransportConnection : ITransportConnection
 
     public bool TryReceive(out ReceivedDatagram datagram) => _inbox.TryDequeue(out datagram);
 
+    /// <summary>Settable, so a test can pose as a transport that is behind without a real link.</summary>
+    public int Pending { get; set; }
+
+    public int PendingPackets(byte channel) => Pending;
+
     public void Close(DisconnectReason reason)
     {
         ClosedWith = reason;
