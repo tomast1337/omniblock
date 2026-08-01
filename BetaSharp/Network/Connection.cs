@@ -264,10 +264,18 @@ public class Connection
         disconnect(new Exception("disconnect.closed"));
     }
 
-    public int getWorldPacketBacklog()
-    {
-        return 0;
-    }
+    /// <summary>
+    ///     Packets queued in the transport for world data — chunks and block updates.
+    ///     <para>
+    ///         <b>Returned 0 unconditionally between the UDP cutover and this.</b> The stream
+    ///         transport answered it from its own send queue; that queue went away with the socket
+    ///         and the accessor was stubbed rather than re-pointed, so every caller pacing against it
+    ///         silently stopped pacing. The visible consequence was chunk streaming: its throttle is
+    ///         expressed against this number, so a join handed the entire view distance to the
+    ///         transport in a single tick.
+    ///     </para>
+    /// </summary>
+    public virtual int getWorldPacketBacklog() => 0;
 
     /// <summary>
     ///     Stamps T1 (server receiving request) or T3 (client receiving response) on the read

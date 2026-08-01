@@ -107,6 +107,23 @@ public interface ITransportConnection : IDisposable
     void Send(byte channel, DeliveryMode mode, ReadOnlySpan<byte> payload);
 
     /// <summary>
+    ///     Packets handed to the transport for <paramref name="channel" /> that it has not yet got
+    ///     rid of.
+    ///     <para>
+    ///         The signal a sender paces against, and the reason it is on the interface rather than
+    ///         inferred: it is the only direct measurement of whether we are ahead of the link.
+    ///         Bandwidth estimates and round-trip inflation are both proxies for this number, and
+    ///         both need tuning constants that this does not.
+    ///     </para>
+    ///     <para>
+    ///         Zero from a transport that cannot answer, which reads as "not backed up" and so paces
+    ///         nothing. That is the right default: a transport with no queue to report is either
+    ///         loopback or is doing its own pacing.
+    ///     </para>
+    /// </summary>
+    int PendingPackets(byte channel);
+
+    /// <summary>
     ///     Takes the next received payload, or returns false when none is waiting. Never blocks:
     ///     the game thread polls this and must not be parked by a quiet network.
     /// </summary>

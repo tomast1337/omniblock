@@ -137,6 +137,13 @@ public sealed class UdpConnection : Connection
     ///         timestamp that would otherwise be lost travels on the datagram instead.
     ///     </para>
     /// </summary>
+    /// <summary>
+    ///     Depth of the transport's queue for the channel world data travels on. Entity replication
+    ///     and timing are deliberately excluded: they ride <see cref="StateChannel" /> and must never
+    ///     be a reason to slow chunk streaming, nor chunk streaming a reason to slow them.
+    /// </summary>
+    public override int getWorldPacketBacklog() => _transport.PendingPackets(OrderedChannel);
+
     public override void tick()
     {
         Receive();
