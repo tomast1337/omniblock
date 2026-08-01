@@ -443,17 +443,6 @@ public class ClientNetworkHandler : NetHandler
 
     private ChunkBlobCache? _chunkCache;
 
-    /// <summary>
-    ///     How far around the player its cached chunks are advertised.
-    ///     <para>
-    ///         Generous against any view distance, and bounded on purpose: an offer is upstream cost
-    ///         paid before any chunk arrives, and a player who has explored ten thousand chunks does
-    ///         not need to mention the ones on the other side of the world to save the ones under
-    ///         their feet. Rejoining where you logged out is the case this exists for, and this
-    ///         covers it entirely.
-    ///     </para>
-    /// </summary>
-    private const int CacheOfferRadius = 24;
 
     /// <summary>Whether the cache for the current world has been advertised yet.</summary>
     private bool _cacheOffered;
@@ -523,23 +512,25 @@ public class ClientNetworkHandler : NetHandler
         int centreX = _chunkCache.LastCentre.X;
         int centreZ = _chunkCache.LastCentre.Z;
 
+        // Nearest first, then take as many as the message allows.
+        //
+        // There is no distance cutoff, deliberately. One was tried at a radius chosen to be
+        // "generous against any view distance" and a server running view-distance 32 immediately
+        // exceeded it: 4,225 chunks cached, 2,401 advertised, and the missing ring re-sent in full
+        // on every join. The client cannot know the server's view distance at this point, so any
+        // constant here is a guess that some server invalidates.
+        //
+        // Offering too much is nearly free by comparison: sixteen bytes to maybe save two thousand.
+        // The only real bound is upstream cost, which is what MaxEntries is for, and ordering by
+        // distance means hitting it discards the least likely to be wanted rather than an arbitrary
+        // subset.
         ChunkCacheOfferMessage offer = new();
 
-        foreach ((ChunkPos position, ulong hash) in _chunkCache.Entries)
-        {
-            if (Math.Abs(position.X - centreX) > CacheOfferRadius
-                || Math.Abs(position.Z - centreZ) > CacheOfferRadius)
-            {
-                continue;
-            }
-
-            offer.Entries.Add(new KeyValuePair<ChunkPos, ulong>(position, hash));
-
-            if (offer.Entries.Count == ChunkCacheOfferMessage.MaxEntries)
-            {
-                break;
-            }
-        }
+        offer.Entries.AddRange(_chunkCache.Entries
+            .OrderBy(entry => Math.Max(
+                Math.Abs(entry.Key.X - centreX),
+                Math.Abs(entry.Key.Z - centreZ)))
+            .Take(ChunkCacheOfferMessage.MaxEntries));
 
         if (offer.Entries.Count > 0)
         {
