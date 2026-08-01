@@ -69,5 +69,14 @@ internal static class ClientMetrics
     /// </summary>
     public static readonly MetricHandle<long> InterpolationStarvations = MetricRegistry.Register<long>("client:interp_starvations");
 
+    /// <summary>
+    ///     Chunks received through <c>ChunkDataMessage</c> — the palette encoding — as opposed to the
+    ///     legacy packet. Zero against a vanilla server, and zero on loopback, both by design.
+    /// </summary>
+    public static readonly MetricHandle<long> ChunksViaMessage = MetricRegistry.Register<long>("client:chunks_via_message");
+
+    /// <summary>Compressed bytes those chunks cost, so the per-chunk average can be read live.</summary>
+    public static readonly MetricHandle<long> ChunkMessageBytes = MetricRegistry.Register<long>("client:chunk_message_bytes");
+
     static ClientMetrics() { }
 }

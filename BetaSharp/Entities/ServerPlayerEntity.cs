@@ -3,6 +3,7 @@ using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
@@ -352,9 +353,30 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private void SendChunkData(IWorldContext world, ChunkPos chunkPos)
     {
+        ServerPlayNetworkHandler? handler = NetworkHandler;
+        if (handler is null)
+        {
+            return;
+        }
+
+        // A peer that speaks the protocol gets the palette encoding; a vanilla client, and loopback,
+        // get the format Beta 1.7.3 defines. The choice is made per send rather than per session
+        // because the capability is only known once the client has declared it, which is after the
+        // first chunks are already queued.
+        if (handler.WantsCompactPayloads)
+        {
+            Chunk chunk = world.ChunkHost.GetChunk(chunkPos.X, chunkPos.Z);
+
+            handler.SendMessage(ChunkDataMessage.Of(
+                chunkPos.X, chunkPos.Z,
+                chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
+
+            return;
+        }
+
         int worldX = chunkPos.X * 16;
         int worldZ = chunkPos.Z * 16;
-        NetworkHandler?.SendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, ChuckFormat.WorldHeight, 16, world));
+        handler.SendPacket(ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, ChuckFormat.WorldHeight, 16, world));
     }
 
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)

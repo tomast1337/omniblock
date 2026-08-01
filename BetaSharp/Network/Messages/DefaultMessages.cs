@@ -24,5 +24,6 @@ public static class DefaultMessages
         registry.Register(TimeSyncRequestMessage.Id, 1, () => new TimeSyncRequestMessage());
         registry.Register(TimeSyncResponseMessage.Id, 1, () => new TimeSyncResponseMessage());
         registry.Register(TickStampMessage.Id, 1, () => new TickStampMessage());
+        registry.Register(ChunkDataMessage.Id, 1, () => new ChunkDataMessage());
     }
 }

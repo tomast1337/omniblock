@@ -18,6 +18,8 @@ public class InternalConnection : Connection
         Name = name;
     }
 
+    public override bool IsInternal => true;
+
     public void AssignRemote(InternalConnection remote)
     {
         RemoteConnection = remote;

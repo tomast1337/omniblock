@@ -290,8 +290,41 @@ public class ClientNetworkHandler : NetHandler
             case TickStampMessage stamp:
                 onTickStamp(stamp);
                 break;
+
+            case ChunkDataMessage chunk:
+                onChunkData(chunk);
+                break;
         }
     }
+
+    /// <summary>
+    ///     A whole chunk in the palette encoding. The legacy <c>handleChunkData</c> path stays for
+    ///     vanilla servers and for the batched region updates <c>ChunkMap</c> still sends as packets.
+    /// </summary>
+    private void onChunkData(ChunkDataMessage message)
+    {
+        int worldX = message.ChunkX * 16;
+        int worldZ = message.ChunkZ * 16;
+
+        // Pending single-block corrections for this chunk are superseded by a full send, exactly as
+        // they are on the legacy path. Leaving them would re-apply a change the chunk already
+        // contains, on top of data that is newer than they are.
+        _worldClient.ClearBlockResets(
+            worldX, 0, worldZ,
+            worldX + 15, ChuckFormat.WorldHeight - 1, worldZ + 15);
+
+        _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, message.Decompress());
+
+        _chunksViaMessage++;
+        _chunkMessageBytes += message.Compressed.Length;
+        MetricRegistry.Set(ClientMetrics.ChunksViaMessage, _chunksViaMessage);
+        MetricRegistry.Set(ClientMetrics.ChunkMessageBytes, _chunkMessageBytes);
+    }
+
+    /// <summary>Session totals behind the two chunk metrics, which are gauges rather than counters.</summary>
+    private long _chunksViaMessage;
+
+    private long _chunkMessageBytes;
 
     private void onTimeSyncResponse(TimeSyncResponseMessage response)
     {
